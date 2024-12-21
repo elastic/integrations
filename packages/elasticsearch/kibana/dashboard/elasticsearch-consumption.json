@@ -143,11 +143,6 @@
                                 "id": "elasticsearch-monitoringindices",
                                 "name": "indexpattern-datasource-layer-ce1c04fd-9867-4587-a278-1ab22b07025a",
                                 "type": "index-pattern"
-                            },
-                            {
-                                "id": "elasticsearch-monitoringindices",
-                                "name": "indexpattern-datasource-layer-4051b87f-a170-41a8-a602-641c1fd02750",
-                                "type": "index-pattern"
                             }
                         ],
                         "state": {
@@ -156,114 +151,165 @@
                                 "formBased": {
                                     "currentIndexPatternId": "elasticsearch-monitoringindices",
                                     "layers": {
-                                        "4051b87f-a170-41a8-a602-641c1fd02750": {
-                                            "columnOrder": [
-                                                "a6c73df2-a3aa-4db1-9e68-dcbeee69c0eb",
-                                                "4132abe1-77d3-4764-80eb-6e00a8e5e769",
-                                                "b9446df2-a3a4-4e06-9415-a096600820cd"
-                                            ],
-                                            "columns": {
-                                                "4132abe1-77d3-4764-80eb-6e00a8e5e769": {
-                                                    "customLabel": true,
-                                                    "dataType": "number",
-                                                    "isBucketed": false,
-                                                    "label": "Ingested doc count",
-                                                    "operationType": "sum",
-                                                    "params": {
-                                                        "emptyAsNull": true,
-                                                        "format": {
-                                                            "id": "number",
-                                                            "params": {
-                                                                "compact": true,
-                                                                "decimals": 2
-                                                            }
-                                                        }
-                                                    },
-                                                    "scale": "ratio",
-                                                    "sourceField": "elasticsearch.index.primaries.docs.count_delta"
-                                                },
-                                                "a6c73df2-a3aa-4db1-9e68-dcbeee69c0eb": {
-                                                    "dataType": "date",
-                                                    "isBucketed": true,
-                                                    "label": "@timestamp",
-                                                    "operationType": "date_histogram",
-                                                    "params": {
-                                                        "dropPartials": false,
-                                                        "includeEmptyRows": true,
-                                                        "interval": "auto"
-                                                    },
-                                                    "scale": "interval",
-                                                    "sourceField": "@timestamp"
-                                                },
-                                                "b9446df2-a3a4-4e06-9415-a096600820cd": {
-                                                    "customLabel": true,
-                                                    "dataType": "number",
-                                                    "isBucketed": false,
-                                                    "label": "Written primary volume",
-                                                    "operationType": "sum",
-                                                    "params": {
-                                                        "emptyAsNull": true,
-                                                        "format": {
-                                                            "id": "bytes",
-                                                            "params": {
-                                                                "decimals": 2
-                                                            }
-                                                        }
-                                                    },
-                                                    "scale": "ratio",
-                                                    "sourceField": "elasticsearch.index.primaries.store.total_data_set_size_in_bytes_delta"
-                                                }
-                                            },
-                                            "ignoreGlobalFilters": false,
-                                            "incompleteColumns": {},
-                                            "indexPatternId": "elasticsearch-monitoringindices",
-                                            "linkToLayers": [
-                                                "ce1c04fd-9867-4587-a278-1ab22b07025a"
-                                            ],
-                                            "sampling": 1
-                                        },
                                         "ce1c04fd-9867-4587-a278-1ab22b07025a": {
                                             "columnOrder": [
                                                 "6599e62e-40c9-46b4-a122-32c5ec10e4e5",
-                                                "e5245e53-083d-4594-9311-1d5e314bb52a"
+                                                "e5245e53-083d-4594-9311-1d5e314bb52a",
+                                                "e5245e53-083d-4594-9311-1d5e314bb52aX0",
+                                                "e5245e53-083d-4594-9311-1d5e314bb52aX1",
+                                                "e5245e53-083d-4594-9311-1d5e314bb52aX2",
+                                                "6599e62e-40c9-46b4-a122-32c5ec10e4e5X0",
+                                                "6599e62e-40c9-46b4-a122-32c5ec10e4e5X1",
+                                                "6599e62e-40c9-46b4-a122-32c5ec10e4e5X2"
                                             ],
                                             "columns": {
                                                 "6599e62e-40c9-46b4-a122-32c5ec10e4e5": {
                                                     "customLabel": true,
                                                     "dataType": "number",
                                                     "isBucketed": false,
-                                                    "label": "Ingested doc count",
-                                                    "operationType": "sum",
+                                                    "label": "Doc count",
+                                                    "operationType": "formula",
                                                     "params": {
-                                                        "emptyAsNull": true,
                                                         "format": {
                                                             "id": "number",
                                                             "params": {
                                                                 "compact": true,
                                                                 "decimals": 2
                                                             }
-                                                        }
+                                                        },
+                                                        "formula": "sum(elasticsearch.index.primaries.docs.count)/unique_count(@timestamp)",
+                                                        "isFormulaBroken": false
+                                                    },
+                                                    "references": [
+                                                        "6599e62e-40c9-46b4-a122-32c5ec10e4e5X2"
+                                                    ],
+                                                    "scale": "ratio"
+                                                },
+                                                "6599e62e-40c9-46b4-a122-32c5ec10e4e5X0": {
+                                                    "customLabel": true,
+                                                    "dataType": "number",
+                                                    "isBucketed": false,
+                                                    "label": "Part of Doc count",
+                                                    "operationType": "sum",
+                                                    "params": {
+                                                        "emptyAsNull": false
                                                     },
                                                     "scale": "ratio",
-                                                    "sourceField": "elasticsearch.index.primaries.docs.count_delta"
+                                                    "sourceField": "elasticsearch.index.primaries.docs.count"
+                                                },
+                                                "6599e62e-40c9-46b4-a122-32c5ec10e4e5X1": {
+                                                    "customLabel": true,
+                                                    "dataType": "number",
+                                                    "isBucketed": false,
+                                                    "label": "Part of Doc count",
+                                                    "operationType": "unique_count",
+                                                    "params": {
+                                                        "emptyAsNull": false
+                                                    },
+                                                    "scale": "ratio",
+                                                    "sourceField": "@timestamp"
+                                                },
+                                                "6599e62e-40c9-46b4-a122-32c5ec10e4e5X2": {
+                                                    "customLabel": true,
+                                                    "dataType": "number",
+                                                    "isBucketed": false,
+                                                    "label": "Part of Doc count",
+                                                    "operationType": "math",
+                                                    "params": {
+                                                        "tinymathAst": {
+                                                            "args": [
+                                                                "6599e62e-40c9-46b4-a122-32c5ec10e4e5X0",
+                                                                "6599e62e-40c9-46b4-a122-32c5ec10e4e5X1"
+                                                            ],
+                                                            "location": {
+                                                                "max": 70,
+                                                                "min": 0
+                                                            },
+                                                            "name": "divide",
+                                                            "text": "sum(elasticsearch.index.primaries.docs.count)/unique_count(@timestamp)",
+                                                            "type": "function"
+                                                        }
+                                                    },
+                                                    "references": [
+                                                        "6599e62e-40c9-46b4-a122-32c5ec10e4e5X0",
+                                                        "6599e62e-40c9-46b4-a122-32c5ec10e4e5X1"
+                                                    ],
+                                                    "scale": "ratio"
                                                 },
                                                 "e5245e53-083d-4594-9311-1d5e314bb52a": {
                                                     "customLabel": true,
                                                     "dataType": "number",
                                                     "isBucketed": false,
-                                                    "label": "Written primary volume",
-                                                    "operationType": "sum",
+                                                    "label": "Searchable store",
+                                                    "operationType": "formula",
                                                     "params": {
-                                                        "emptyAsNull": true,
                                                         "format": {
                                                             "id": "bytes",
                                                             "params": {
-                                                                "decimals": 2
+                                                                "decimals": 0
                                                             }
+                                                        },
+                                                        "formula": "sum(elasticsearch.index.primaries.store.total_data_set_size_in_bytes)/unique_count(@timestamp)",
+                                                        "isFormulaBroken": false
+                                                    },
+                                                    "reducedTimeRange": "1d",
+                                                    "references": [
+                                                        "e5245e53-083d-4594-9311-1d5e314bb52aX2"
+                                                    ],
+                                                    "scale": "ratio"
+                                                },
+                                                "e5245e53-083d-4594-9311-1d5e314bb52aX0": {
+                                                    "customLabel": true,
+                                                    "dataType": "number",
+                                                    "isBucketed": false,
+                                                    "label": "Part of Written primary volume",
+                                                    "operationType": "sum",
+                                                    "params": {
+                                                        "emptyAsNull": false
+                                                    },
+                                                    "reducedTimeRange": "1d",
+                                                    "scale": "ratio",
+                                                    "sourceField": "elasticsearch.index.primaries.store.total_data_set_size_in_bytes"
+                                                },
+                                                "e5245e53-083d-4594-9311-1d5e314bb52aX1": {
+                                                    "customLabel": true,
+                                                    "dataType": "number",
+                                                    "isBucketed": false,
+                                                    "label": "Part of Written primary volume",
+                                                    "operationType": "unique_count",
+                                                    "params": {
+                                                        "emptyAsNull": false
+                                                    },
+                                                    "reducedTimeRange": "1d",
+                                                    "scale": "ratio",
+                                                    "sourceField": "@timestamp"
+                                                },
+                                                "e5245e53-083d-4594-9311-1d5e314bb52aX2": {
+                                                    "customLabel": true,
+                                                    "dataType": "number",
+                                                    "isBucketed": false,
+                                                    "label": "Part of Written primary volume",
+                                                    "operationType": "math",
+                                                    "params": {
+                                                        "tinymathAst": {
+                                                            "args": [
+                                                                "e5245e53-083d-4594-9311-1d5e314bb52aX0",
+                                                                "e5245e53-083d-4594-9311-1d5e314bb52aX1"
+                                                            ],
+                                                            "location": {
+                                                                "max": 94,
+                                                                "min": 0
+                                                            },
+                                                            "name": "divide",
+                                                            "text": "sum(elasticsearch.index.primaries.store.total_data_set_size_in_bytes)/unique_count(@timestamp)",
+                                                            "type": "function"
                                                         }
                                                     },
-                                                    "scale": "ratio",
-                                                    "sourceField": "elasticsearch.index.primaries.store.total_data_set_size_in_bytes_delta"
+                                                    "references": [
+                                                        "e5245e53-083d-4594-9311-1d5e314bb52aX0",
+                                                        "e5245e53-083d-4594-9311-1d5e314bb52aX1"
+                                                    ],
+                                                    "scale": "ratio"
                                                 }
                                             },
                                             "ignoreGlobalFilters": false,
@@ -292,11 +338,7 @@
                                 "metricAccessor": "e5245e53-083d-4594-9311-1d5e314bb52a",
                                 "secondaryMetricAccessor": "6599e62e-40c9-46b4-a122-32c5ec10e4e5",
                                 "showBar": false,
-                                "trendlineLayerId": "4051b87f-a170-41a8-a602-641c1fd02750",
-                                "trendlineLayerType": "metricTrendline",
-                                "trendlineMetricAccessor": "b9446df2-a3a4-4e06-9415-a096600820cd",
-                                "trendlineSecondaryMetricAccessor": "4132abe1-77d3-4764-80eb-6e00a8e5e769",
-                                "trendlineTimeAccessor": "a6c73df2-a3aa-4db1-9e68-dcbeee69c0eb"
+                                "trendlineSecondaryMetricAccessor": "4132abe1-77d3-4764-80eb-6e00a8e5e769"
                             }
                         },
                         "title": "",
@@ -1967,7 +2009,10 @@
                                             "columnOrder": [
                                                 "3d423901-8bb5-4e07-84b8-677c29faa6f4",
                                                 "469a1954-c3a9-4f7a-bcdb-353b6dc85fac",
-                                                "c2b6f47a-9b5e-4054-963a-f22c6f40b09b"
+                                                "c2b6f47a-9b5e-4054-963a-f22c6f40b09b",
+                                                "c2b6f47a-9b5e-4054-963a-f22c6f40b09bX0",
+                                                "c2b6f47a-9b5e-4054-963a-f22c6f40b09bX1",
+                                                "c2b6f47a-9b5e-4054-963a-f22c6f40b09bX2"
                                             ],
                                             "columns": {
                                                 "3d423901-8bb5-4e07-84b8-677c29faa6f4": {
@@ -2010,10 +2055,10 @@
                                                         "includeIsRegex": false,
                                                         "missingBucket": false,
                                                         "orderBy": {
-                                                            "columnId": "c2b6f47a-9b5e-4054-963a-f22c6f40b09b",
-                                                            "type": "column"
+                                                            "fallback": true,
+                                                            "type": "alphabetical"
                                                         },
-                                                        "orderDirection": "desc",
+                                                        "orderDirection": "asc",
                                                         "otherBucket": true,
                                                         "parentFormat": {
                                                             "id": "terms"
@@ -2028,12 +2073,72 @@
                                                     "dataType": "number",
                                                     "isBucketed": false,
                                                     "label": "Primary storage",
+                                                    "operationType": "formula",
+                                                    "params": {
+                                                        "format": {
+                                                            "id": "bytes",
+                                                            "params": {
+                                                                "decimals": 2
+                                                            }
+                                                        },
+                                                        "formula": "sum(elasticsearch.index.primaries.store.total_data_set_size_in_bytes)/unique_count(@timestamp)",
+                                                        "isFormulaBroken": false
+                                                    },
+                                                    "references": [
+                                                        "c2b6f47a-9b5e-4054-963a-f22c6f40b09bX2"
+                                                    ],
+                                                    "scale": "ratio"
+                                                },
+                                                "c2b6f47a-9b5e-4054-963a-f22c6f40b09bX0": {
+                                                    "customLabel": true,
+                                                    "dataType": "number",
+                                                    "isBucketed": false,
+                                                    "label": "Part of Primary storage",
                                                     "operationType": "sum",
                                                     "params": {
-                                                        "emptyAsNull": true
+                                                        "emptyAsNull": false
                                                     },
                                                     "scale": "ratio",
-                                                    "sourceField": "elasticsearch.index.primaries.store.total_data_set_size_in_bytes_delta"
+                                                    "sourceField": "elasticsearch.index.primaries.store.total_data_set_size_in_bytes"
+                                                },
+                                                "c2b6f47a-9b5e-4054-963a-f22c6f40b09bX1": {
+                                                    "customLabel": true,
+                                                    "dataType": "number",
+                                                    "isBucketed": false,
+                                                    "label": "Part of Primary storage",
+                                                    "operationType": "unique_count",
+                                                    "params": {
+                                                        "emptyAsNull": false
+                                                    },
+                                                    "scale": "ratio",
+                                                    "sourceField": "@timestamp"
+                                                },
+                                                "c2b6f47a-9b5e-4054-963a-f22c6f40b09bX2": {
+                                                    "customLabel": true,
+                                                    "dataType": "number",
+                                                    "isBucketed": false,
+                                                    "label": "Part of Primary storage",
+                                                    "operationType": "math",
+                                                    "params": {
+                                                        "tinymathAst": {
+                                                            "args": [
+                                                                "c2b6f47a-9b5e-4054-963a-f22c6f40b09bX0",
+                                                                "c2b6f47a-9b5e-4054-963a-f22c6f40b09bX1"
+                                                            ],
+                                                            "location": {
+                                                                "max": 94,
+                                                                "min": 0
+                                                            },
+                                                            "name": "divide",
+                                                            "text": "sum(elasticsearch.index.primaries.store.total_data_set_size_in_bytes)/unique_count(@timestamp)",
+                                                            "type": "function"
+                                                        }
+                                                    },
+                                                    "references": [
+                                                        "c2b6f47a-9b5e-4054-963a-f22c6f40b09bX0",
+                                                        "c2b6f47a-9b5e-4054-963a-f22c6f40b09bX1"
+                                                    ],
+                                                    "scale": "ratio"
                                                 }
                                             },
                                             "ignoreGlobalFilters": false,
@@ -2183,7 +2288,7 @@
                 "gridData": {
                     "h": 20,
                     "i": "5142e2b9-b5a0-4d45-b0e5-1de018a7d1a4",
-                    "w": 23,
+                    "w": 24,
                     "x": 24,
                     "y": 51
                 },
@@ -4675,6 +4780,11 @@
                                 "id": "elasticsearch-monitoringindices",
                                 "name": "indexpattern-datasource-layer-3b24a44c-d134-4125-bd87-e0bce0a48560",
                                 "type": "index-pattern"
+                            },
+                            {
+                                "id": "elasticsearch-monitoringindices",
+                                "name": "indexpattern-datasource-layer-1f91aa94-832f-45f8-9bdb-6024d8cea081",
+                                "type": "index-pattern"
                             }
                         ],
                         "state": {
@@ -4683,6 +4793,196 @@
                                 "formBased": {
                                     "currentIndexPatternId": "elasticsearch-monitoringindices",
                                     "layers": {
+                                        "1f91aa94-832f-45f8-9bdb-6024d8cea081": {
+                                            "columnOrder": [
+                                                "cf32a75b-f1fd-49bc-a72a-bba8d097d0ab",
+                                                "f39e140d-6b5f-4a2a-8946-87d63bce8574",
+                                                "8747cf7a-f5e3-4934-b43d-d700754fc694",
+                                                "ccb82814-39c4-4e93-ac46-6b257c02e5b8",
+                                                "5ac78812-d3eb-4346-9f59-016e75b42bec",
+                                                "c8e03ea2-8f7d-46e2-b7db-83977f47bb68",
+                                                "8747cf7a-f5e3-4934-b43d-d700754fc694X0",
+                                                "8747cf7a-f5e3-4934-b43d-d700754fc694X1",
+                                                "8747cf7a-f5e3-4934-b43d-d700754fc694X2"
+                                            ],
+                                            "columns": {
+                                                "5ac78812-d3eb-4346-9f59-016e75b42bec": {
+                                                    "customLabel": true,
+                                                    "dataType": "number",
+                                                    "isBucketed": false,
+                                                    "label": "Part of Primary store",
+                                                    "operationType": "unique_count",
+                                                    "params": {
+                                                        "emptyAsNull": false
+                                                    },
+                                                    "scale": "ratio",
+                                                    "sourceField": "@timestamp"
+                                                },
+                                                "8747cf7a-f5e3-4934-b43d-d700754fc694": {
+                                                    "customLabel": true,
+                                                    "dataType": "number",
+                                                    "isBucketed": false,
+                                                    "label": "Total searchable store",
+                                                    "operationType": "formula",
+                                                    "params": {
+                                                        "format": {
+                                                            "id": "bytes",
+                                                            "params": {
+                                                                "decimals": 2
+                                                            }
+                                                        },
+                                                        "formula": "sum(elasticsearch.index.primaries.store.total_data_set_size_in_bytes)/unique_count(@timestamp)",
+                                                        "isFormulaBroken": false
+                                                    },
+                                                    "references": [
+                                                        "8747cf7a-f5e3-4934-b43d-d700754fc694X2"
+                                                    ],
+                                                    "scale": "ratio"
+                                                },
+                                                "8747cf7a-f5e3-4934-b43d-d700754fc694X0": {
+                                                    "customLabel": true,
+                                                    "dataType": "number",
+                                                    "isBucketed": false,
+                                                    "label": "Part of Total Primary store",
+                                                    "operationType": "sum",
+                                                    "params": {
+                                                        "emptyAsNull": false
+                                                    },
+                                                    "scale": "ratio",
+                                                    "sourceField": "elasticsearch.index.primaries.store.total_data_set_size_in_bytes"
+                                                },
+                                                "8747cf7a-f5e3-4934-b43d-d700754fc694X1": {
+                                                    "customLabel": true,
+                                                    "dataType": "number",
+                                                    "isBucketed": false,
+                                                    "label": "Part of Total Primary store",
+                                                    "operationType": "unique_count",
+                                                    "params": {
+                                                        "emptyAsNull": false
+                                                    },
+                                                    "scale": "ratio",
+                                                    "sourceField": "@timestamp"
+                                                },
+                                                "8747cf7a-f5e3-4934-b43d-d700754fc694X2": {
+                                                    "customLabel": true,
+                                                    "dataType": "number",
+                                                    "isBucketed": false,
+                                                    "label": "Part of Total Primary store",
+                                                    "operationType": "math",
+                                                    "params": {
+                                                        "tinymathAst": {
+                                                            "args": [
+                                                                "8747cf7a-f5e3-4934-b43d-d700754fc694X0",
+                                                                "8747cf7a-f5e3-4934-b43d-d700754fc694X1"
+                                                            ],
+                                                            "location": {
+                                                                "max": 94,
+                                                                "min": 0
+                                                            },
+                                                            "name": "divide",
+                                                            "text": "sum(elasticsearch.index.primaries.store.total_data_set_size_in_bytes)/unique_count(@timestamp)",
+                                                            "type": "function"
+                                                        }
+                                                    },
+                                                    "references": [
+                                                        "8747cf7a-f5e3-4934-b43d-d700754fc694X0",
+                                                        "8747cf7a-f5e3-4934-b43d-d700754fc694X1"
+                                                    ],
+                                                    "scale": "ratio"
+                                                },
+                                                "c8e03ea2-8f7d-46e2-b7db-83977f47bb68": {
+                                                    "customLabel": true,
+                                                    "dataType": "number",
+                                                    "isBucketed": false,
+                                                    "label": "Part of Primary store",
+                                                    "operationType": "math",
+                                                    "params": {
+                                                        "tinymathAst": {
+                                                            "args": [
+                                                                "ccb82814-39c4-4e93-ac46-6b257c02e5b8",
+                                                                "5ac78812-d3eb-4346-9f59-016e75b42bec"
+                                                            ],
+                                                            "location": {
+                                                                "max": 94,
+                                                                "min": 0
+                                                            },
+                                                            "name": "divide",
+                                                            "text": "sum(elasticsearch.index.primaries.store.total_data_set_size_in_bytes)/unique_count(@timestamp)",
+                                                            "type": "function"
+                                                        }
+                                                    },
+                                                    "references": [
+                                                        "ccb82814-39c4-4e93-ac46-6b257c02e5b8",
+                                                        "5ac78812-d3eb-4346-9f59-016e75b42bec"
+                                                    ],
+                                                    "scale": "ratio"
+                                                },
+                                                "ccb82814-39c4-4e93-ac46-6b257c02e5b8": {
+                                                    "customLabel": true,
+                                                    "dataType": "number",
+                                                    "isBucketed": false,
+                                                    "label": "Part of Primary store",
+                                                    "operationType": "sum",
+                                                    "params": {
+                                                        "emptyAsNull": false
+                                                    },
+                                                    "scale": "ratio",
+                                                    "sourceField": "elasticsearch.index.primaries.store.total_data_set_size_in_bytes"
+                                                },
+                                                "cf32a75b-f1fd-49bc-a72a-bba8d097d0ab": {
+                                                    "dataType": "string",
+                                                    "isBucketed": true,
+                                                    "label": "Top value of elasticsearch.index.datastream",
+                                                    "operationType": "terms",
+                                                    "params": {
+                                                        "exclude": [],
+                                                        "excludeIsRegex": false,
+                                                        "include": [],
+                                                        "includeIsRegex": false,
+                                                        "missingBucket": false,
+                                                        "orderAgg": {
+                                                            "dataType": "number",
+                                                            "isBucketed": false,
+                                                            "label": "Sum of elasticsearch.index.primaries.store.total_data_set_size_in_bytes",
+                                                            "operationType": "sum",
+                                                            "params": {
+                                                                "emptyAsNull": true
+                                                            },
+                                                            "scale": "ratio",
+                                                            "sourceField": "elasticsearch.index.primaries.store.total_data_set_size_in_bytes"
+                                                        },
+                                                        "orderBy": {
+                                                            "type": "custom"
+                                                        },
+                                                        "orderDirection": "desc",
+                                                        "otherBucket": true,
+                                                        "parentFormat": {
+                                                            "id": "terms"
+                                                        },
+                                                        "size": 1
+                                                    },
+                                                    "scale": "ordinal",
+                                                    "sourceField": "elasticsearch.index.datastream"
+                                                },
+                                                "f39e140d-6b5f-4a2a-8946-87d63bce8574": {
+                                                    "dataType": "date",
+                                                    "isBucketed": true,
+                                                    "label": "@timestamp",
+                                                    "operationType": "date_histogram",
+                                                    "params": {
+                                                        "dropPartials": false,
+                                                        "includeEmptyRows": true,
+                                                        "interval": "auto"
+                                                    },
+                                                    "scale": "interval",
+                                                    "sourceField": "@timestamp"
+                                                }
+                                            },
+                                            "ignoreGlobalFilters": false,
+                                            "incompleteColumns": {},
+                                            "indexPatternId": "elasticsearch-monitoringindices",
+                                            "sampling": 1
+                                        },
                                         "3b24a44c-d134-4125-bd87-e0bce0a48560": {
                                             "columnOrder": [
                                                 "afb0f21e-d655-4bf6-858a-0b08ec20e29d",
@@ -4706,7 +5006,7 @@
                                                                 "decimals": 2
                                                             }
                                                         },
-                                                        "formula": "sum(elasticsearch.index.primaries.store.total_data_set_size_in_bytes)/(interval()/1000/60/10)",
+                                                        "formula": "sum(elasticsearch.index.primaries.store.total_data_set_size_in_bytes)/unique_count(@timestamp)",
                                                         "isFormulaBroken": false
                                                     },
                                                     "references": [
@@ -4731,9 +5031,12 @@
                                                     "dataType": "number",
                                                     "isBucketed": false,
                                                     "label": "Part of Primary store",
-                                                    "operationType": "interval",
-                                                    "references": [],
-                                                    "scale": "ratio"
+                                                    "operationType": "unique_count",
+                                                    "params": {
+                                                        "emptyAsNull": false
+                                                    },
+                                                    "scale": "ratio",
+                                                    "sourceField": "@timestamp"
                                                 },
                                                 "3bc3b43f-6be7-4630-abe1-a3dec469b294X2": {
                                                     "customLabel": true,
@@ -4745,40 +5048,14 @@
                                                         "tinymathAst": {
                                                             "args": [
                                                                 "3bc3b43f-6be7-4630-abe1-a3dec469b294X0",
-                                                                {
-                                                                    "args": [
-                                                                        {
-                                                                            "args": [
-                                                                                {
-                                                                                    "args": [
-                                                                                        "3bc3b43f-6be7-4630-abe1-a3dec469b294X1",
-                                                                                        1000
-                                                                                    ],
-                                                                                    "name": "divide",
-                                                                                    "type": "function"
-                                                                                },
-                                                                                60
-                                                                            ],
-                                                                            "name": "divide",
-                                                                            "type": "function"
-                                                                        },
-                                                                        10
-                                                                    ],
-                                                                    "location": {
-                                                                        "max": 92,
-                                                                        "min": 71
-                                                                    },
-                                                                    "name": "divide",
-                                                                    "text": "interval()/1000/60/10",
-                                                                    "type": "function"
-                                                                }
+                                                                "3bc3b43f-6be7-4630-abe1-a3dec469b294X1"
                                                             ],
                                                             "location": {
-                                                                "max": 93,
+                                                                "max": 94,
                                                                 "min": 0
                                                             },
                                                             "name": "divide",
-                                                            "text": "sum(elasticsearch.index.primaries.store.total_data_set_size_in_bytes)/(interval()/1000/60/10)",
+                                                            "text": "sum(elasticsearch.index.primaries.store.total_data_set_size_in_bytes)/unique_count(@timestamp)",
                                                             "type": "function"
                                                         }
                                                     },
@@ -4894,6 +5171,43 @@
                                         "showGridlines": false,
                                         "splitAccessor": "afb0f21e-d655-4bf6-858a-0b08ec20e29d",
                                         "xAccessor": "699379e9-4da9-4b94-9572-b787b4fab3f1"
+                                    },
+                                    {
+                                        "accessors": [
+                                            "8747cf7a-f5e3-4934-b43d-d700754fc694"
+                                        ],
+                                        "collapseFn": "sum",
+                                        "colorMapping": {
+                                            "assignments": [],
+                                            "colorMode": {
+                                                "type": "categorical"
+                                            },
+                                            "paletteId": "eui_amsterdam_color_blind",
+                                            "specialAssignments": [
+                                                {
+                                                    "color": {
+                                                        "type": "loop"
+                                                    },
+                                                    "rule": {
+                                                        "type": "other"
+                                                    },
+                                                    "touched": false
+                                                }
+                                            ]
+                                        },
+                                        "layerId": "1f91aa94-832f-45f8-9bdb-6024d8cea081",
+                                        "layerType": "data",
+                                        "position": "top",
+                                        "seriesType": "line",
+                                        "showGridlines": false,
+                                        "splitAccessor": "cf32a75b-f1fd-49bc-a72a-bba8d097d0ab",
+                                        "xAccessor": "f39e140d-6b5f-4a2a-8946-87d63bce8574",
+                                        "yConfig": [
+                                            {
+                                                "color": "#000000",
+                                                "forAccessor": "8747cf7a-f5e3-4934-b43d-d700754fc694"
+                                            }
+                                        ]
                                     }
                                 ],
                                 "legend": {
@@ -4905,7 +5219,7 @@
                                     "position": "right",
                                     "showSingleSeries": true
                                 },
-                                "preferredSeriesType": "bar_stacked",
+                                "preferredSeriesType": "line",
                                 "title": "Empty XY chart",
                                 "valueLabels": "hide"
                             }
@@ -4918,7 +5232,7 @@
                     "enhancements": {}
                 },
                 "gridData": {
-                    "h": 12,
+                    "h": 13,
                     "i": "b9744f71-a2b7-430c-a4c6-564367bf13bb",
                     "w": 48,
                     "x": 0,
@@ -4935,6 +5249,11 @@
                             {
                                 "id": "elasticsearch-monitoringindices",
                                 "name": "indexpattern-datasource-layer-3b24a44c-d134-4125-bd87-e0bce0a48560",
+                                "type": "index-pattern"
+                            },
+                            {
+                                "id": "elasticsearch-monitoringindices",
+                                "name": "indexpattern-datasource-layer-daeba258-8914-47f2-ab61-5a6ee0601728",
                                 "type": "index-pattern"
                             }
                         ],
@@ -4967,7 +5286,7 @@
                                                                 "decimals": 2
                                                             }
                                                         },
-                                                        "formula": "sum(elasticsearch.index.primaries.store.total_data_set_size_in_bytes)/(interval()/1000/60/10)",
+                                                        "formula": "sum(elasticsearch.index.primaries.store.total_data_set_size_in_bytes)/unique_count(@timestamp)",
                                                         "isFormulaBroken": false
                                                     },
                                                     "references": [
@@ -4992,9 +5311,12 @@
                                                     "dataType": "number",
                                                     "isBucketed": false,
                                                     "label": "Part of Primary store",
-                                                    "operationType": "interval",
-                                                    "references": [],
-                                                    "scale": "ratio"
+                                                    "operationType": "unique_count",
+                                                    "params": {
+                                                        "emptyAsNull": false
+                                                    },
+                                                    "scale": "ratio",
+                                                    "sourceField": "@timestamp"
                                                 },
                                                 "3bc3b43f-6be7-4630-abe1-a3dec469b294X2": {
                                                     "customLabel": true,
@@ -5006,40 +5328,14 @@
                                                         "tinymathAst": {
                                                             "args": [
                                                                 "3bc3b43f-6be7-4630-abe1-a3dec469b294X0",
-                                                                {
-                                                                    "args": [
-                                                                        {
-                                                                            "args": [
-                                                                                {
-                                                                                    "args": [
-                                                                                        "3bc3b43f-6be7-4630-abe1-a3dec469b294X1",
-                                                                                        1000
-                                                                                    ],
-                                                                                    "name": "divide",
-                                                                                    "type": "function"
-                                                                                },
-                                                                                60
-                                                                            ],
-                                                                            "name": "divide",
-                                                                            "type": "function"
-                                                                        },
-                                                                        10
-                                                                    ],
-                                                                    "location": {
-                                                                        "max": 92,
-                                                                        "min": 71
-                                                                    },
-                                                                    "name": "divide",
-                                                                    "text": "interval()/1000/60/10",
-                                                                    "type": "function"
-                                                                }
+                                                                "3bc3b43f-6be7-4630-abe1-a3dec469b294X1"
                                                             ],
                                                             "location": {
-                                                                "max": 93,
+                                                                "max": 94,
                                                                 "min": 0
                                                             },
                                                             "name": "divide",
-                                                            "text": "sum(elasticsearch.index.primaries.store.total_data_set_size_in_bytes)/(interval()/1000/60/10)",
+                                                            "text": "sum(elasticsearch.index.primaries.store.total_data_set_size_in_bytes)/unique_count(@timestamp)",
                                                             "type": "function"
                                                         }
                                                     },
@@ -5097,6 +5393,197 @@
                                                     },
                                                     "scale": "ordinal",
                                                     "sourceField": "elasticsearch.index.tier"
+                                                }
+                                            },
+                                            "ignoreGlobalFilters": false,
+                                            "incompleteColumns": {},
+                                            "indexPatternId": "elasticsearch-monitoringindices",
+                                            "sampling": 1
+                                        },
+                                        "daeba258-8914-47f2-ab61-5a6ee0601728": {
+                                            "columnOrder": [
+                                                "129f04c6-ad69-4110-be3c-1a35a343cb49",
+                                                "1111f45b-80ca-46b6-8397-3814fa244e0e",
+                                                "2dee9ef1-a274-43fc-b42c-5ac87776907c",
+                                                "97cffa01-d576-4261-84e1-a75a69d61990",
+                                                "5bf421b6-f90e-453e-bbeb-e1682795d136",
+                                                "d043f3b3-b183-4f58-b9ee-368502273211",
+                                                "2dee9ef1-a274-43fc-b42c-5ac87776907cX0",
+                                                "2dee9ef1-a274-43fc-b42c-5ac87776907cX1",
+                                                "2dee9ef1-a274-43fc-b42c-5ac87776907cX2"
+                                            ],
+                                            "columns": {
+                                                "1111f45b-80ca-46b6-8397-3814fa244e0e": {
+                                                    "dataType": "date",
+                                                    "isBucketed": true,
+                                                    "label": "@timestamp",
+                                                    "operationType": "date_histogram",
+                                                    "params": {
+                                                        "dropPartials": false,
+                                                        "includeEmptyRows": true,
+                                                        "interval": "auto"
+                                                    },
+                                                    "scale": "interval",
+                                                    "sourceField": "@timestamp"
+                                                },
+                                                "129f04c6-ad69-4110-be3c-1a35a343cb49": {
+                                                    "dataType": "string",
+                                                    "isBucketed": true,
+                                                    "label": "Top value of elasticsearch.index.tier",
+                                                    "operationType": "terms",
+                                                    "params": {
+                                                        "exclude": [],
+                                                        "excludeIsRegex": false,
+                                                        "include": [],
+                                                        "includeIsRegex": false,
+                                                        "missingBucket": false,
+                                                        "orderAgg": {
+                                                            "dataType": "number",
+                                                            "isBucketed": false,
+                                                            "label": "Sum of elasticsearch.index.primaries.store.total_data_set_size_in_bytes",
+                                                            "operationType": "sum",
+                                                            "params": {
+                                                                "emptyAsNull": true
+                                                            },
+                                                            "scale": "ratio",
+                                                            "sourceField": "elasticsearch.index.primaries.store.total_data_set_size_in_bytes"
+                                                        },
+                                                        "orderBy": {
+                                                            "type": "custom"
+                                                        },
+                                                        "orderDirection": "desc",
+                                                        "otherBucket": true,
+                                                        "parentFormat": {
+                                                            "id": "terms"
+                                                        },
+                                                        "secondaryFields": [],
+                                                        "size": 1
+                                                    },
+                                                    "scale": "ordinal",
+                                                    "sourceField": "elasticsearch.index.tier"
+                                                },
+                                                "2dee9ef1-a274-43fc-b42c-5ac87776907c": {
+                                                    "customLabel": true,
+                                                    "dataType": "number",
+                                                    "isBucketed": false,
+                                                    "label": "Total searchable store",
+                                                    "operationType": "formula",
+                                                    "params": {
+                                                        "format": {
+                                                            "id": "bytes",
+                                                            "params": {
+                                                                "decimals": 2
+                                                            }
+                                                        },
+                                                        "formula": "sum(elasticsearch.index.primaries.store.total_data_set_size_in_bytes)/unique_count(@timestamp)",
+                                                        "isFormulaBroken": false
+                                                    },
+                                                    "references": [
+                                                        "2dee9ef1-a274-43fc-b42c-5ac87776907cX2"
+                                                    ],
+                                                    "scale": "ratio"
+                                                },
+                                                "2dee9ef1-a274-43fc-b42c-5ac87776907cX0": {
+                                                    "customLabel": true,
+                                                    "dataType": "number",
+                                                    "isBucketed": false,
+                                                    "label": "Part of Total searchable store",
+                                                    "operationType": "sum",
+                                                    "params": {
+                                                        "emptyAsNull": false
+                                                    },
+                                                    "scale": "ratio",
+                                                    "sourceField": "elasticsearch.index.primaries.store.total_data_set_size_in_bytes"
+                                                },
+                                                "2dee9ef1-a274-43fc-b42c-5ac87776907cX1": {
+                                                    "customLabel": true,
+                                                    "dataType": "number",
+                                                    "isBucketed": false,
+                                                    "label": "Part of Total searchable store",
+                                                    "operationType": "unique_count",
+                                                    "params": {
+                                                        "emptyAsNull": false
+                                                    },
+                                                    "scale": "ratio",
+                                                    "sourceField": "@timestamp"
+                                                },
+                                                "2dee9ef1-a274-43fc-b42c-5ac87776907cX2": {
+                                                    "customLabel": true,
+                                                    "dataType": "number",
+                                                    "isBucketed": false,
+                                                    "label": "Part of Total searchable store",
+                                                    "operationType": "math",
+                                                    "params": {
+                                                        "tinymathAst": {
+                                                            "args": [
+                                                                "2dee9ef1-a274-43fc-b42c-5ac87776907cX0",
+                                                                "2dee9ef1-a274-43fc-b42c-5ac87776907cX1"
+                                                            ],
+                                                            "location": {
+                                                                "max": 94,
+                                                                "min": 0
+                                                            },
+                                                            "name": "divide",
+                                                            "text": "sum(elasticsearch.index.primaries.store.total_data_set_size_in_bytes)/unique_count(@timestamp)",
+                                                            "type": "function"
+                                                        }
+                                                    },
+                                                    "references": [
+                                                        "2dee9ef1-a274-43fc-b42c-5ac87776907cX0",
+                                                        "2dee9ef1-a274-43fc-b42c-5ac87776907cX1"
+                                                    ],
+                                                    "scale": "ratio"
+                                                },
+                                                "5bf421b6-f90e-453e-bbeb-e1682795d136": {
+                                                    "customLabel": true,
+                                                    "dataType": "number",
+                                                    "isBucketed": false,
+                                                    "label": "Part of Primary store",
+                                                    "operationType": "unique_count",
+                                                    "params": {
+                                                        "emptyAsNull": false
+                                                    },
+                                                    "scale": "ratio",
+                                                    "sourceField": "@timestamp"
+                                                },
+                                                "97cffa01-d576-4261-84e1-a75a69d61990": {
+                                                    "customLabel": true,
+                                                    "dataType": "number",
+                                                    "isBucketed": false,
+                                                    "label": "Part of Primary store",
+                                                    "operationType": "sum",
+                                                    "params": {
+                                                        "emptyAsNull": false
+                                                    },
+                                                    "scale": "ratio",
+                                                    "sourceField": "elasticsearch.index.primaries.store.total_data_set_size_in_bytes"
+                                                },
+                                                "d043f3b3-b183-4f58-b9ee-368502273211": {
+                                                    "customLabel": true,
+                                                    "dataType": "number",
+                                                    "isBucketed": false,
+                                                    "label": "Part of Primary store",
+                                                    "operationType": "math",
+                                                    "params": {
+                                                        "tinymathAst": {
+                                                            "args": [
+                                                                "97cffa01-d576-4261-84e1-a75a69d61990",
+                                                                "5bf421b6-f90e-453e-bbeb-e1682795d136"
+                                                            ],
+                                                            "location": {
+                                                                "max": 94,
+                                                                "min": 0
+                                                            },
+                                                            "name": "divide",
+                                                            "text": "sum(elasticsearch.index.primaries.store.total_data_set_size_in_bytes)/unique_count(@timestamp)",
+                                                            "type": "function"
+                                                        }
+                                                    },
+                                                    "references": [
+                                                        "97cffa01-d576-4261-84e1-a75a69d61990",
+                                                        "5bf421b6-f90e-453e-bbeb-e1682795d136"
+                                                    ],
+                                                    "scale": "ratio"
                                                 }
                                             },
                                             "ignoreGlobalFilters": false,
@@ -5227,6 +5714,114 @@
                                         "showGridlines": false,
                                         "splitAccessor": "afb0f21e-d655-4bf6-858a-0b08ec20e29d",
                                         "xAccessor": "699379e9-4da9-4b94-9572-b787b4fab3f1"
+                                    },
+                                    {
+                                        "accessors": [
+                                            "2dee9ef1-a274-43fc-b42c-5ac87776907c"
+                                        ],
+                                        "collapseFn": "sum",
+                                        "colorMapping": {
+                                            "assignments": [
+                                                {
+                                                    "color": {
+                                                        "colorIndex": 2,
+                                                        "paletteId": "neutral",
+                                                        "type": "categorical"
+                                                    },
+                                                    "rule": {
+                                                        "type": "matchExactly",
+                                                        "values": [
+                                                            "unknown"
+                                                        ]
+                                                    },
+                                                    "touched": true
+                                                },
+                                                {
+                                                    "color": {
+                                                        "colorIndex": 9,
+                                                        "paletteId": "eui_amsterdam_color_blind",
+                                                        "type": "categorical"
+                                                    },
+                                                    "rule": {
+                                                        "type": "matchExactly",
+                                                        "values": [
+                                                            "hot/content"
+                                                        ]
+                                                    },
+                                                    "touched": true
+                                                },
+                                                {
+                                                    "color": {
+                                                        "colorIndex": 5,
+                                                        "paletteId": "eui_amsterdam_color_blind",
+                                                        "type": "categorical"
+                                                    },
+                                                    "rule": {
+                                                        "type": "matchExactly",
+                                                        "values": [
+                                                            "warm"
+                                                        ]
+                                                    },
+                                                    "touched": true
+                                                },
+                                                {
+                                                    "color": {
+                                                        "colorIndex": 1,
+                                                        "paletteId": "eui_amsterdam_color_blind",
+                                                        "type": "categorical"
+                                                    },
+                                                    "rule": {
+                                                        "type": "matchExactly",
+                                                        "values": [
+                                                            "cold"
+                                                        ]
+                                                    },
+                                                    "touched": true
+                                                },
+                                                {
+                                                    "color": {
+                                                        "colorIndex": 0,
+                                                        "paletteId": "eui_amsterdam_color_blind",
+                                                        "type": "categorical"
+                                                    },
+                                                    "rule": {
+                                                        "type": "matchExactly",
+                                                        "values": [
+                                                            "frozen"
+                                                        ]
+                                                    },
+                                                    "touched": true
+                                                }
+                                            ],
+                                            "colorMode": {
+                                                "type": "categorical"
+                                            },
+                                            "paletteId": "eui_amsterdam_color_blind",
+                                            "specialAssignments": [
+                                                {
+                                                    "color": {
+                                                        "type": "loop"
+                                                    },
+                                                    "rule": {
+                                                        "type": "other"
+                                                    },
+                                                    "touched": false
+                                                }
+                                            ]
+                                        },
+                                        "layerId": "daeba258-8914-47f2-ab61-5a6ee0601728",
+                                        "layerType": "data",
+                                        "position": "top",
+                                        "seriesType": "line",
+                                        "showGridlines": false,
+                                        "splitAccessor": "129f04c6-ad69-4110-be3c-1a35a343cb49",
+                                        "xAccessor": "1111f45b-80ca-46b6-8397-3814fa244e0e",
+                                        "yConfig": [
+                                            {
+                                                "color": "#000000",
+                                                "forAccessor": "2dee9ef1-a274-43fc-b42c-5ac87776907c"
+                                            }
+                                        ]
                                     }
                                 ],
                                 "legend": {
@@ -5234,7 +5829,7 @@
                                     "position": "right",
                                     "showSingleSeries": false
                                 },
-                                "preferredSeriesType": "bar_stacked",
+                                "preferredSeriesType": "line",
                                 "title": "Empty XY chart",
                                 "valueLabels": "hide"
                             }
@@ -5251,7 +5846,7 @@
                     "i": "37b0cdea-57e8-4ceb-920b-cac975544a6b",
                     "w": 48,
                     "x": 0,
-                    "y": 101
+                    "y": 102
                 },
                 "panelIndex": "37b0cdea-57e8-4ceb-920b-cac975544a6b",
                 "title": "Searchable store per tier",
@@ -5288,7 +5883,7 @@
                     "i": "fd5c239e-63c1-4bf4-ba31-7eec79287a00",
                     "w": 48,
                     "x": 0,
-                    "y": 109
+                    "y": 110
                 },
                 "panelIndex": "fd5c239e-63c1-4bf4-ba31-7eec79287a00",
                 "type": "visualization"
@@ -5301,6 +5896,11 @@
                                 "id": "elasticsearch-monitoringindices",
                                 "name": "indexpattern-datasource-layer-822a3526-e634-42df-bc62-066499acd70c",
                                 "type": "index-pattern"
+                            },
+                            {
+                                "id": "elasticsearch-monitoringindices",
+                                "name": "indexpattern-datasource-layer-01afa5ba-9fd1-48dd-ac5f-944c1f6da71c",
+                                "type": "index-pattern"
                             }
                         ],
                         "state": {
@@ -5309,6 +5909,77 @@
                                 "formBased": {
                                     "currentIndexPatternId": "elasticsearch-monitoringindices",
                                     "layers": {
+                                        "01afa5ba-9fd1-48dd-ac5f-944c1f6da71c": {
+                                            "columnOrder": [
+                                                "a0bd0588-cc4a-4800-87b9-fe8bf95d119e",
+                                                "a72f5105-71dc-42f0-8671-a61764c1cd51",
+                                                "06579072-f0b0-455a-ad98-25472d7ede5f"
+                                            ],
+                                            "columns": {
+                                                "06579072-f0b0-455a-ad98-25472d7ede5f": {
+                                                    "customLabel": true,
+                                                    "dataType": "number",
+                                                    "isBucketed": false,
+                                                    "label": "Total ingest",
+                                                    "operationType": "sum",
+                                                    "params": {
+                                                        "emptyAsNull": true,
+                                                        "format": {
+                                                            "id": "number",
+                                                            "params": {
+                                                                "decimals": 0,
+                                                                "suffix": " doc"
+                                                            }
+                                                        }
+                                                    },
+                                                    "scale": "ratio",
+                                                    "sourceField": "elasticsearch.index.primaries.docs.count_delta",
+                                                    "timeScale": "s"
+                                                },
+                                                "a0bd0588-cc4a-4800-87b9-fe8bf95d119e": {
+                                                    "dataType": "string",
+                                                    "isBucketed": true,
+                                                    "label": "Top value of elasticsearch.index.datastream",
+                                                    "operationType": "terms",
+                                                    "params": {
+                                                        "exclude": [],
+                                                        "excludeIsRegex": false,
+                                                        "include": [],
+                                                        "includeIsRegex": false,
+                                                        "missingBucket": true,
+                                                        "orderBy": {
+                                                            "columnId": "06579072-f0b0-455a-ad98-25472d7ede5f",
+                                                            "type": "column"
+                                                        },
+                                                        "orderDirection": "desc",
+                                                        "otherBucket": true,
+                                                        "parentFormat": {
+                                                            "id": "terms"
+                                                        },
+                                                        "size": 1
+                                                    },
+                                                    "scale": "ordinal",
+                                                    "sourceField": "elasticsearch.index.datastream"
+                                                },
+                                                "a72f5105-71dc-42f0-8671-a61764c1cd51": {
+                                                    "dataType": "date",
+                                                    "isBucketed": true,
+                                                    "label": "@timestamp",
+                                                    "operationType": "date_histogram",
+                                                    "params": {
+                                                        "dropPartials": true,
+                                                        "includeEmptyRows": true,
+                                                        "interval": "auto"
+                                                    },
+                                                    "scale": "interval",
+                                                    "sourceField": "@timestamp"
+                                                }
+                                            },
+                                            "ignoreGlobalFilters": false,
+                                            "incompleteColumns": {},
+                                            "indexPatternId": "elasticsearch-monitoringindices",
+                                            "sampling": 1
+                                        },
                                         "822a3526-e634-42df-bc62-066499acd70c": {
                                             "columnOrder": [
                                                 "434a78c7-e298-4caa-8886-eea50bc7a3a5",
@@ -5322,7 +5993,7 @@
                                                     "label": "@timestamp",
                                                     "operationType": "date_histogram",
                                                     "params": {
-                                                        "dropPartials": false,
+                                                        "dropPartials": true,
                                                         "includeEmptyRows": true,
                                                         "interval": "auto"
                                                     },
@@ -5431,6 +6102,43 @@
                                         "showGridlines": false,
                                         "splitAccessor": "434a78c7-e298-4caa-8886-eea50bc7a3a5",
                                         "xAccessor": "3f3111cc-3c88-4973-9bb7-f45c5a29d425"
+                                    },
+                                    {
+                                        "accessors": [
+                                            "06579072-f0b0-455a-ad98-25472d7ede5f"
+                                        ],
+                                        "collapseFn": "sum",
+                                        "colorMapping": {
+                                            "assignments": [],
+                                            "colorMode": {
+                                                "type": "categorical"
+                                            },
+                                            "paletteId": "eui_amsterdam_color_blind",
+                                            "specialAssignments": [
+                                                {
+                                                    "color": {
+                                                        "type": "loop"
+                                                    },
+                                                    "rule": {
+                                                        "type": "other"
+                                                    },
+                                                    "touched": false
+                                                }
+                                            ]
+                                        },
+                                        "layerId": "01afa5ba-9fd1-48dd-ac5f-944c1f6da71c",
+                                        "layerType": "data",
+                                        "position": "top",
+                                        "seriesType": "line",
+                                        "showGridlines": false,
+                                        "splitAccessor": "a0bd0588-cc4a-4800-87b9-fe8bf95d119e",
+                                        "xAccessor": "a72f5105-71dc-42f0-8671-a61764c1cd51",
+                                        "yConfig": [
+                                            {
+                                                "color": "#000000",
+                                                "forAccessor": "06579072-f0b0-455a-ad98-25472d7ede5f"
+                                            }
+                                        ]
                                     }
                                 ],
                                 "legend": {
@@ -5442,7 +6150,7 @@
                                     "position": "right",
                                     "showSingleSeries": true
                                 },
-                                "preferredSeriesType": "area_stacked",
+                                "preferredSeriesType": "line",
                                 "title": "Empty XY chart",
                                 "valueLabels": "hide"
                             }
@@ -5454,11 +6162,11 @@
                     "enhancements": {}
                 },
                 "gridData": {
-                    "h": 13,
+                    "h": 14,
                     "i": "6e206a73-2e45-4b44-abfb-58703f66c37f",
                     "w": 48,
                     "x": 0,
-                    "y": 113
+                    "y": 114
                 },
                 "panelIndex": "6e206a73-2e45-4b44-abfb-58703f66c37f",
                 "title": "Ingest by datastream (primary documents)",
@@ -5471,6 +6179,11 @@
                             {
                                 "id": "elasticsearch-monitoringindices",
                                 "name": "indexpattern-datasource-layer-822a3526-e634-42df-bc62-066499acd70c",
+                                "type": "index-pattern"
+                            },
+                            {
+                                "id": "elasticsearch-monitoringindices",
+                                "name": "indexpattern-datasource-layer-f5c42521-8df2-4469-afd1-45cc86a9f48d",
                                 "type": "index-pattern"
                             }
                         ],
@@ -5529,7 +6242,77 @@
                                                     "customLabel": true,
                                                     "dataType": "number",
                                                     "isBucketed": false,
-                                                    "label": "Document count",
+                                                    "label": "Primary write",
+                                                    "operationType": "sum",
+                                                    "params": {
+                                                        "emptyAsNull": true,
+                                                        "format": {
+                                                            "id": "bytes",
+                                                            "params": {
+                                                                "decimals": 0
+                                                            }
+                                                        }
+                                                    },
+                                                    "scale": "ratio",
+                                                    "sourceField": "elasticsearch.index.primaries.store.total_data_set_size_in_bytes_delta",
+                                                    "timeScale": "s"
+                                                }
+                                            },
+                                            "ignoreGlobalFilters": false,
+                                            "incompleteColumns": {},
+                                            "indexPatternId": "elasticsearch-monitoringindices",
+                                            "sampling": 1
+                                        },
+                                        "f5c42521-8df2-4469-afd1-45cc86a9f48d": {
+                                            "columnOrder": [
+                                                "394ef20d-8221-4750-bd81-83ce6c4afc58",
+                                                "7797267c-97f1-4250-8218-b323d7764ab9",
+                                                "8068e698-558b-45dc-9c6e-5b227d801a63"
+                                            ],
+                                            "columns": {
+                                                "394ef20d-8221-4750-bd81-83ce6c4afc58": {
+                                                    "dataType": "string",
+                                                    "isBucketed": true,
+                                                    "label": "Top value of elasticsearch.index.datastream",
+                                                    "operationType": "terms",
+                                                    "params": {
+                                                        "exclude": [],
+                                                        "excludeIsRegex": false,
+                                                        "include": [],
+                                                        "includeIsRegex": false,
+                                                        "missingBucket": true,
+                                                        "orderBy": {
+                                                            "columnId": "8068e698-558b-45dc-9c6e-5b227d801a63",
+                                                            "type": "column"
+                                                        },
+                                                        "orderDirection": "desc",
+                                                        "otherBucket": true,
+                                                        "parentFormat": {
+                                                            "id": "terms"
+                                                        },
+                                                        "size": 1
+                                                    },
+                                                    "scale": "ordinal",
+                                                    "sourceField": "elasticsearch.index.datastream"
+                                                },
+                                                "7797267c-97f1-4250-8218-b323d7764ab9": {
+                                                    "dataType": "date",
+                                                    "isBucketed": true,
+                                                    "label": "@timestamp",
+                                                    "operationType": "date_histogram",
+                                                    "params": {
+                                                        "dropPartials": false,
+                                                        "includeEmptyRows": true,
+                                                        "interval": "auto"
+                                                    },
+                                                    "scale": "interval",
+                                                    "sourceField": "@timestamp"
+                                                },
+                                                "8068e698-558b-45dc-9c6e-5b227d801a63": {
+                                                    "customLabel": true,
+                                                    "dataType": "number",
+                                                    "isBucketed": false,
+                                                    "label": "Total primary write",
                                                     "operationType": "sum",
                                                     "params": {
                                                         "emptyAsNull": true,
@@ -5601,6 +6384,43 @@
                                         "showGridlines": false,
                                         "splitAccessor": "434a78c7-e298-4caa-8886-eea50bc7a3a5",
                                         "xAccessor": "3f3111cc-3c88-4973-9bb7-f45c5a29d425"
+                                    },
+                                    {
+                                        "accessors": [
+                                            "8068e698-558b-45dc-9c6e-5b227d801a63"
+                                        ],
+                                        "collapseFn": "sum",
+                                        "colorMapping": {
+                                            "assignments": [],
+                                            "colorMode": {
+                                                "type": "categorical"
+                                            },
+                                            "paletteId": "eui_amsterdam_color_blind",
+                                            "specialAssignments": [
+                                                {
+                                                    "color": {
+                                                        "type": "loop"
+                                                    },
+                                                    "rule": {
+                                                        "type": "other"
+                                                    },
+                                                    "touched": false
+                                                }
+                                            ]
+                                        },
+                                        "layerId": "f5c42521-8df2-4469-afd1-45cc86a9f48d",
+                                        "layerType": "data",
+                                        "position": "top",
+                                        "seriesType": "line",
+                                        "showGridlines": false,
+                                        "splitAccessor": "394ef20d-8221-4750-bd81-83ce6c4afc58",
+                                        "xAccessor": "7797267c-97f1-4250-8218-b323d7764ab9",
+                                        "yConfig": [
+                                            {
+                                                "color": "#000000",
+                                                "forAccessor": "8068e698-558b-45dc-9c6e-5b227d801a63"
+                                            }
+                                        ]
                                     }
                                 ],
                                 "legend": {
@@ -5612,7 +6432,7 @@
                                     "position": "right",
                                     "showSingleSeries": true
                                 },
-                                "preferredSeriesType": "area_stacked",
+                                "preferredSeriesType": "line",
                                 "title": "Empty XY chart",
                                 "valueLabels": "hide"
                             }
@@ -5621,14 +6441,15 @@
                         "type": "lens",
                         "visualizationType": "lnsXY"
                     },
+                    "description": "⚠️ Please note that this line can appear \"jittery\" because of the underlying merge activity of the cluster.",
                     "enhancements": {}
                 },
                 "gridData": {
-                    "h": 13,
+                    "h": 14,
                     "i": "61ab4612-491b-449f-b6d7-30bd33f0dbc0",
                     "w": 48,
                     "x": 0,
-                    "y": 126
+                    "y": 128
                 },
                 "panelIndex": "61ab4612-491b-449f-b6d7-30bd33f0dbc0",
                 "title": "Ingest by datastream (primary volume)",
@@ -5640,7 +6461,7 @@
         "version": 2
     },
     "coreMigrationVersion": "8.8.0",
-    "created_at": "2024-12-17T10:30:00.204Z",
+    "created_at": "2024-12-21T20:02:47.004Z",
     "created_by": "u_mGBROF_q5bmFCATbLXAcCwKa0k8JvONAwSruelyKA5E_0",
     "id": "elasticsearch-consumption",
     "managed": false,
@@ -5648,11 +6469,6 @@
         {
             "id": "elasticsearch-monitoringindices",
             "name": "d7718890-b67b-47ae-84d4-d945d08ec417:indexpattern-datasource-layer-ce1c04fd-9867-4587-a278-1ab22b07025a",
-            "type": "index-pattern"
-        },
-        {
-            "id": "elasticsearch-monitoringindices",
-            "name": "d7718890-b67b-47ae-84d4-d945d08ec417:indexpattern-datasource-layer-4051b87f-a170-41a8-a602-641c1fd02750",
             "type": "index-pattern"
         },
         {
@@ -5802,7 +6618,17 @@
         },
         {
             "id": "elasticsearch-monitoringindices",
+            "name": "b9744f71-a2b7-430c-a4c6-564367bf13bb:indexpattern-datasource-layer-1f91aa94-832f-45f8-9bdb-6024d8cea081",
+            "type": "index-pattern"
+        },
+        {
+            "id": "elasticsearch-monitoringindices",
             "name": "37b0cdea-57e8-4ceb-920b-cac975544a6b:indexpattern-datasource-layer-3b24a44c-d134-4125-bd87-e0bce0a48560",
+            "type": "index-pattern"
+        },
+        {
+            "id": "elasticsearch-monitoringindices",
+            "name": "37b0cdea-57e8-4ceb-920b-cac975544a6b:indexpattern-datasource-layer-daeba258-8914-47f2-ab61-5a6ee0601728",
             "type": "index-pattern"
         },
         {
@@ -5812,7 +6638,17 @@
         },
         {
             "id": "elasticsearch-monitoringindices",
+            "name": "6e206a73-2e45-4b44-abfb-58703f66c37f:indexpattern-datasource-layer-01afa5ba-9fd1-48dd-ac5f-944c1f6da71c",
+            "type": "index-pattern"
+        },
+        {
+            "id": "elasticsearch-monitoringindices",
             "name": "61ab4612-491b-449f-b6d7-30bd33f0dbc0:indexpattern-datasource-layer-822a3526-e634-42df-bc62-066499acd70c",
+            "type": "index-pattern"
+        },
+        {
+            "id": "elasticsearch-monitoringindices",
+            "name": "61ab4612-491b-449f-b6d7-30bd33f0dbc0:indexpattern-datasource-layer-f5c42521-8df2-4469-afd1-45cc86a9f48d",
             "type": "index-pattern"
         },
         {
