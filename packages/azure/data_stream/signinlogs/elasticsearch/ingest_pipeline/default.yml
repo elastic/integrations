@@ -283,7 +283,37 @@ processors:
   - user_agent:
       field: user_agent.original
       ignore_missing: true
-
+      
+  - append:
+      field: related.entity
+      value: '{{{ azure.signinlogs.properties.app_id }}}'
+      allow_duplicates: false
+      if: ctx.azure?.signinlogs?.properties?.app_id != null && ctx.azure.signinlogs.properties.app_id != ''
+  - append:
+      field: related.entity
+      value: '{{{ azure.signinlogs.properties.resource_id }}}'
+      allow_duplicates: false
+      if: ctx.azure?.signinlogs?.properties?.resource_id != null && ctx.azure.signinlogs.properties.resource_id != ''
+  - append:
+      field: related.entity
+      value: '{{{ azure.signinlogs.properties.service_principal_id }}}'
+      allow_duplicates: false
+      if: ctx.azure?.signinlogs?.properties?.service_principal_id != null && ctx.azure.signinlogs.properties.service_principal_id != ''
+  - append:
+      field: related.entity
+      value: '{{{ azure.signinlogs.properties.service_principal_credential_key_id }}}'
+      allow_duplicates: false
+      if: ctx.azure?.signinlogs?.properties?.service_principal_credential_key_id != null && ctx.azure.signinlogs.properties.service_principal_credential_key_id != ''
+  - append:
+      field: related.entity
+      value: '{{{ azure.signinlogs.properties.user_id }}}'
+      allow_duplicates: false
+      if: ctx.azure?.signinlogs?.properties?.user_id != null && ctx.azure.signinlogs.properties.user_id != ''
+  - append:
+      field: related.entity
+      value: '{{{ azure.signinlogs.properties.device_detail.device_id }}}'
+      allow_duplicates: false
+      if: ctx.azure?.signinlogs?.properties?.device_detail?.device_id != null && ctx.azure.signinlogs.properties.device_detail.device_id != ''
   - pipeline:
       name: '{{ IngestPipeline "azure-shared-pipeline" }}'
 on_failure:

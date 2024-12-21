@@ -10,7 +10,7 @@ The Amazon Security Lake integration can be used in two different modes to colle
 
 ## Compatibility
 
-This module follows the latest OCSF Schema Version **v1.0.0**.
+This module follows the OCSF Schema Version **v1.1.0**.
 
 ## Data streams
 
@@ -18,6 +18,8 @@ The Amazon Security Lake integration collects logs from both [Third-party servic
 
 ### **NOTE**:
 - The Amazon Security Lake integration supports events collected from [AWS services](https://docs.aws.amazon.com/security-lake/latest/userguide/internal-sources.html) and [third-party services](https://docs.aws.amazon.com/security-lake/latest/userguide/custom-sources.html).
+
+- Due to the nature and structure of the OCSF schema, this integration has limitations on how deep the mappings run. Some important objects like 'Actor', 'User' and 'Product' have more fleshed-out mappings compared to others which get flattened after the initial 2-3 levels of nesting to keep them maintainable and stay within field mapping [limits](https://www.elastic.co/guide/en/elasticsearch/reference/current/mapping-settings-limit.html). This will evolve as needed.
 
 ## Requirements
 
@@ -88,15 +90,20 @@ This is the `Event` dataset.
 | data_stream.namespace | Data stream namespace. | constant_keyword |
 | data_stream.type | Data stream type. | constant_keyword |
 | event.dataset | Event dataset. | constant_keyword |
+| event.message | Log message optimized for viewing in a log viewer. | text |
 | event.module | Event module. | constant_keyword |
-| input.type | Type of filebeat input. | keyword |
-| log.offset | Log offset. | long |
+| input.type | Type of Filebeat input. | keyword |
+| log.flags | Flags for the log file. | keyword |
+| log.offset | Offset of the entry in the log file. | long |
 | ocsf.access_mask | The access mask in a platform-native format. | long |
+| ocsf.action | The normalized caption of action_id. | keyword |
+| ocsf.action_id | The action taken by a control or other policy-based system leading to an outcome or disposition. Dispositions conform to an action of 1 'Allowed' or 2 'Denied' in most cases. | integer |
 | ocsf.activity_id | The normalized identifier of the activity that triggered the event. | keyword |
 | ocsf.activity_name | The event activity name, as defined by the activity_id. | keyword |
 | ocsf.actor.authorizations.decision | Authorization Result/outcome, e.g. allowed, denied. | keyword |
 | ocsf.actor.authorizations.policy.desc | The description of the policy. | keyword |
 | ocsf.actor.authorizations.policy.group.desc | The group description. | keyword |
+| ocsf.actor.authorizations.policy.group.domain | The domain where the group is defined. For example, the LDAP or Active Directory domain. | keyword |
 | ocsf.actor.authorizations.policy.group.name | The group name. | keyword |
 | ocsf.actor.authorizations.policy.group.privileges | The group privileges. | keyword |
 | ocsf.actor.authorizations.policy.group.type | The type of the group or account. | keyword |
@@ -140,15 +147,14 @@ This is the `Event` dataset.
 | ocsf.actor.process.file.accessor.email_addr | The user's email address. | keyword |
 | ocsf.actor.process.file.accessor.full_name | The full name of the person, as per the LDAP Common Name attribute (cn). | keyword |
 | ocsf.actor.process.file.accessor.groups.desc | The group description. | keyword |
+| ocsf.actor.process.file.accessor.groups.domain | The domain where the group is defined. For example, the LDAP or Active Directory domain. | keyword |
 | ocsf.actor.process.file.accessor.groups.name | The group name. | keyword |
 | ocsf.actor.process.file.accessor.groups.privileges | The group privileges. | keyword |
 | ocsf.actor.process.file.accessor.groups.type | The type of the group or account. | keyword |
 | ocsf.actor.process.file.accessor.groups.uid | The unique identifier of the group. For example, for Windows events this is the security identifier (SID) of the group. | keyword |
+| ocsf.actor.process.file.accessor.ldap_person | The LDAP attributes of the user. | flattened |
 | ocsf.actor.process.file.accessor.name | The username. For example, janedoe1. | keyword |
-| ocsf.actor.process.file.accessor.org.name | The name of the organization. For example, Widget, Inc. | keyword |
-| ocsf.actor.process.file.accessor.org.ou_name | The name of the organizational unit, within an organization. For example, Finance, IT, R&D. | keyword |
-| ocsf.actor.process.file.accessor.org.ou_uid | The alternate identifier for an entity's unique identifier. For example, its Active Directory OU DN or AWS OU ID. | keyword |
-| ocsf.actor.process.file.accessor.org.uid | The unique identifier of the organization. For example, its Active Directory or AWS Org ID. | keyword |
+| ocsf.actor.process.file.accessor.org.\* | Organization and org unit related to the user. | object |
 | ocsf.actor.process.file.accessor.type | The type of the user. For example, System, AWS IAM User, etc. | keyword |
 | ocsf.actor.process.file.accessor.type_id | The account type identifier. | keyword |
 | ocsf.actor.process.file.accessor.uid | The unique user identifier. For example, the Windows user SID, ActiveDirectory DN or AWS user ARN. | keyword |
@@ -156,7 +162,7 @@ This is the `Event` dataset.
 | ocsf.actor.process.file.attributes | The Bitmask value that represents the file attributes. | long |
 | ocsf.actor.process.file.company_name | The name of the company that published the file. For example: Microsoft Corporation. | keyword |
 | ocsf.actor.process.file.confidentiality | The file content confidentiality, normalized to the confidentiality_id value. In the case of 'Other', it is defined by the event source. | keyword |
-| ocsf.actor.process.file.confidentiality_id | The normalized identifier of the file content confidentiality indicator. | keyword |
+| ocsf.actor.process.file.confidentiality_id | The normalized identifier of the file content confidentiality indicator. | integer |
 | ocsf.actor.process.file.created_time | The time when the file was created. | date |
 | ocsf.actor.process.file.created_time_dt | The time when the file was created. | date |
 | ocsf.actor.process.file.creator.account.name | The name of the account (e.g. GCP Account Name). | keyword |
@@ -168,15 +174,14 @@ This is the `Event` dataset.
 | ocsf.actor.process.file.creator.email_addr | The user's email address. | keyword |
 | ocsf.actor.process.file.creator.full_name | The full name of the person, as per the LDAP Common Name attribute (cn). | keyword |
 | ocsf.actor.process.file.creator.groups.desc | The group description. | keyword |
+| ocsf.actor.process.file.creator.groups.domain | The domain where the group is defined. For example, the LDAP or Active Directory domain. | keyword |
 | ocsf.actor.process.file.creator.groups.name | The group name. | keyword |
 | ocsf.actor.process.file.creator.groups.privileges | The group privileges. | keyword |
 | ocsf.actor.process.file.creator.groups.type | The type of the group or account. | keyword |
 | ocsf.actor.process.file.creator.groups.uid | The unique identifier of the group. For example, for Windows events this is the security identifier (SID) of the group. | keyword |
+| ocsf.actor.process.file.creator.ldap_person | The LDAP attributes of the user. | flattened |
 | ocsf.actor.process.file.creator.name | The name of the city. | keyword |
-| ocsf.actor.process.file.creator.org.name | The name of the organization. For example, Widget, Inc. | keyword |
-| ocsf.actor.process.file.creator.org.ou_name | The name of the organizational unit, within an organization. For example, Finance, IT, R&D. | keyword |
-| ocsf.actor.process.file.creator.org.ou_uid | The alternate identifier for an entity's unique identifier. For example, its Active Directory OU DN or AWS OU ID. | keyword |
-| ocsf.actor.process.file.creator.org.uid | The unique identifier of the organization. For example, its Active Directory or AWS Org ID. | keyword |
+| ocsf.actor.process.file.creator.org.\* | Organization and org unit related to the user. | object |
 | ocsf.actor.process.file.creator.type | The type of the user. For example, System, AWS IAM User, etc. | keyword |
 | ocsf.actor.process.file.creator.type_id | The account type identifier. | keyword |
 | ocsf.actor.process.file.creator.uid | The unique user identifier. For example, the Windows user SID, ActiveDirectory DN or AWS user ARN. | keyword |
@@ -198,15 +203,14 @@ This is the `Event` dataset.
 | ocsf.actor.process.file.modifier.email_addr | The image name. For example: elixir. | keyword |
 | ocsf.actor.process.file.modifier.full_name | The user's email address. | keyword |
 | ocsf.actor.process.file.modifier.groups.desc | The group description. | keyword |
+| ocsf.actor.process.file.modifier.groups.domain | The domain where the group is defined. For example, the LDAP or Active Directory domain. | keyword |
 | ocsf.actor.process.file.modifier.groups.name | The group name. | keyword |
 | ocsf.actor.process.file.modifier.groups.privileges | The group privileges. | keyword |
 | ocsf.actor.process.file.modifier.groups.type | The type of the group or account. | keyword |
 | ocsf.actor.process.file.modifier.groups.uid | The unique identifier of the group. For example, for Windows events this is the security identifier (SID) of the group. | keyword |
+| ocsf.actor.process.file.modifier.ldap_person | The LDAP attributes of the user. | flattened |
 | ocsf.actor.process.file.modifier.name | The username. For example, janedoe1. | keyword |
-| ocsf.actor.process.file.modifier.org.name | The name of the organization. For example, Widget, Inc. | keyword |
-| ocsf.actor.process.file.modifier.org.ou_name | The name of the organizational unit, within an organization. For example, Finance, IT, R&D. | keyword |
-| ocsf.actor.process.file.modifier.org.ou_uid | The alternate identifier for an entity's unique identifier. For example, its Active Directory OU DN or AWS OU ID. | keyword |
-| ocsf.actor.process.file.modifier.org.uid | The unique identifier of the organization. For example, its Active Directory or AWS Org ID. | keyword |
+| ocsf.actor.process.file.modifier.org.\* | Organization and org unit related to the user. | object |
 | ocsf.actor.process.file.modifier.type | The type of the user. For example, System, AWS IAM User, etc. | keyword |
 | ocsf.actor.process.file.modifier.type_id | The account type identifier. | keyword |
 | ocsf.actor.process.file.modifier.uid | The unique user identifier. For example, the Windows user SID, ActiveDirectory DN or AWS user ARN. | keyword |
@@ -221,24 +225,21 @@ This is the `Event` dataset.
 | ocsf.actor.process.file.owner.email_addr | The user's email address. | keyword |
 | ocsf.actor.process.file.owner.full_name | The full name of the person, as per the LDAP Common Name attribute (cn). | keyword |
 | ocsf.actor.process.file.owner.groups.desc | The group description. | keyword |
+| ocsf.actor.process.file.owner.groups.domain | The domain where the group is defined. For example, the LDAP or Active Directory domain. | keyword |
 | ocsf.actor.process.file.owner.groups.name | The group name. | keyword |
 | ocsf.actor.process.file.owner.groups.privileges | The group privileges. | keyword |
 | ocsf.actor.process.file.owner.groups.type | The type of the group or account. | keyword |
 | ocsf.actor.process.file.owner.groups.uid | The unique identifier of the group. For example, for Windows events this is the security identifier (SID) of the group. | keyword |
+| ocsf.actor.process.file.owner.ldap_person | The LDAP attributes of the user. | flattened |
 | ocsf.actor.process.file.owner.name | The username. For example, janedoe1. | keyword |
-| ocsf.actor.process.file.owner.org.name | The name of the organization. For example, Widget, Inc. | keyword |
-| ocsf.actor.process.file.owner.org.ou_name | The name of the organizational unit, within an organization. For example, Finance, IT, R&D. | keyword |
-| ocsf.actor.process.file.owner.org.ou_uid | The alternate identifier for an entity's unique identifier. For example, its Active Directory OU DN or AWS OU ID. | keyword |
-| ocsf.actor.process.file.owner.org.uid | The unique identifier of the organization. For example, its Active Directory or AWS Org ID. | keyword |
+| ocsf.actor.process.file.owner.org.\* | Organization and org unit related to the user. | object |
 | ocsf.actor.process.file.owner.type | The event occurred on a personal device.The type of the user. For example, System, AWS IAM User, etc. | keyword |
 | ocsf.actor.process.file.owner.type_id | The account type identifier. | keyword |
 | ocsf.actor.process.file.owner.uid | The unique user identifier. For example, the Windows user SID, ActiveDirectory DN or AWS user ARN. | keyword |
 | ocsf.actor.process.file.owner.uid_alt | The alternate user identifier. For example, the Active Directory user GUID or AWS user Principal ID. | keyword |
 | ocsf.actor.process.file.parent_folder | The parent folder in which the file resides. For example: c:\windows\system32. | keyword |
 | ocsf.actor.process.file.path | The full path to the file. For example: c:\windows\system32\svchost.exe. | keyword |
-| ocsf.actor.process.file.product.feature.name | The name of the feature. | keyword |
-| ocsf.actor.process.file.product.feature.uid | The unique identifier of the feature. | keyword |
-| ocsf.actor.process.file.product.feature.version | The version of the feature. | keyword |
+| ocsf.actor.process.file.product.feature.\* | The Feature object provides information about the software product feature that generated a specific event. | object |
 | ocsf.actor.process.file.product.lang | The two letter lower case language codes, as defined by ISO 639-1. For example: en (English), de (German), or fr (French). | keyword |
 | ocsf.actor.process.file.product.name | The name of the feature. | keyword |
 | ocsf.actor.process.file.product.path | The installation path of the product. | keyword |
@@ -259,6 +260,7 @@ This is the `Event` dataset.
 | ocsf.actor.process.file.signature.certificate.issuer | The certificate issuer distinguished name. | keyword |
 | ocsf.actor.process.file.signature.certificate.serial_number | The serial number of the certificate used to create the digital signature. | keyword |
 | ocsf.actor.process.file.signature.certificate.subject | The certificate subject distinguished name. | keyword |
+| ocsf.actor.process.file.signature.certificate.uid | The unique identifier of the certificate. | keyword |
 | ocsf.actor.process.file.signature.certificate.version | The certificate version. | keyword |
 | ocsf.actor.process.file.signature.created_time | The time when the digital signature was created. | date |
 | ocsf.actor.process.file.signature.created_time_dt | The time when the digital signature was created. | date |
@@ -273,12 +275,13 @@ This is the `Event` dataset.
 | ocsf.actor.process.file.version | The file version. For example: 8.0.7601.17514. | keyword |
 | ocsf.actor.process.file.xattributes | An unordered collection of zero or more name/value pairs where each pair represents a file or folder extended attribute. | flattened |
 | ocsf.actor.process.group.desc | The group description. | keyword |
+| ocsf.actor.process.group.domain | The domain where the group is defined. For example, the LDAP or Active Directory domain. | keyword |
 | ocsf.actor.process.group.name | The group name. | keyword |
 | ocsf.actor.process.group.privileges | The group privileges. | keyword |
 | ocsf.actor.process.group.type | The type of the group or account. | keyword |
 | ocsf.actor.process.group.uid | The unique identifier of the group. For example, for Windows events this is the security identifier (SID) of the group. | keyword |
 | ocsf.actor.process.integrity | The process integrity level, normalized to the caption of the direction_id value. In the case of 'Other', it is defined by the event source (Windows only). | keyword |
-| ocsf.actor.process.integrity_id | The normalized identifier of the process integrity level (Windows only). | keyword |
+| ocsf.actor.process.integrity_id | The normalized identifier of the process integrity level (Windows only). | integer |
 | ocsf.actor.process.lineage | The lineage of the process, represented by a list of paths for each ancestor process. For example: ['/usr/sbin/sshd', '/usr/bin/bash', '/usr/bin/whoami']. | keyword |
 | ocsf.actor.process.loaded_modules | The list of loaded module names. | keyword |
 | ocsf.actor.process.name | The friendly name of the process, for example: Notepad++. | keyword |
@@ -316,15 +319,14 @@ This is the `Event` dataset.
 | ocsf.actor.process.parent_process.file.accessor.email_addr | The user's email address. | keyword |
 | ocsf.actor.process.parent_process.file.accessor.full_name | The full name of the person, as per the LDAP Common Name attribute (cn). | keyword |
 | ocsf.actor.process.parent_process.file.accessor.groups.desc | The group description. | keyword |
+| ocsf.actor.process.parent_process.file.accessor.groups.domain | The domain where the group is defined. For example, the LDAP or Active Directory domain. | keyword |
 | ocsf.actor.process.parent_process.file.accessor.groups.name | The group name. | keyword |
 | ocsf.actor.process.parent_process.file.accessor.groups.privileges | The group privileges. | keyword |
 | ocsf.actor.process.parent_process.file.accessor.groups.type | The type of the group or account. | keyword |
 | ocsf.actor.process.parent_process.file.accessor.groups.uid | The unique identifier of the group. For example, for Windows events this is the security identifier (SID) of the group. | keyword |
+| ocsf.actor.process.parent_process.file.accessor.ldap_person | The LDAP attributes of the user. | flattened |
 | ocsf.actor.process.parent_process.file.accessor.name | The username. For example, janedoe1. | keyword |
-| ocsf.actor.process.parent_process.file.accessor.org.name | The name of the organization. For example, Widget, Inc. | keyword |
-| ocsf.actor.process.parent_process.file.accessor.org.ou_name | The name of the organizational unit, within an organization. For example, Finance, IT, R&D. | keyword |
-| ocsf.actor.process.parent_process.file.accessor.org.ou_uid | The alternate identifier for an entity's unique identifier. For example, its Active Directory OU DN or AWS OU ID. | keyword |
-| ocsf.actor.process.parent_process.file.accessor.org.uid | The unique identifier of the organization. For example, its Active Directory or AWS Org ID. | keyword |
+| ocsf.actor.process.parent_process.file.accessor.org.\* |  | object |
 | ocsf.actor.process.parent_process.file.accessor.type | The type of the user. For example, System, AWS IAM User, etc. | keyword |
 | ocsf.actor.process.parent_process.file.accessor.type_id | The account type identifier. | keyword |
 | ocsf.actor.process.parent_process.file.accessor.uid | The unique user identifier. For example, the Windows user SID, ActiveDirectory DN or AWS user ARN. | keyword |
@@ -332,7 +334,7 @@ This is the `Event` dataset.
 | ocsf.actor.process.parent_process.file.attributes | The Bitmask value that represents the file attributes. | long |
 | ocsf.actor.process.parent_process.file.company_name | The name of the company that published the file. For example: Microsoft Corporation. | keyword |
 | ocsf.actor.process.parent_process.file.confidentiality | The file content confidentiality, normalized to the confidentiality_id value. In the case of 'Other', it is defined by the event source. | keyword |
-| ocsf.actor.process.parent_process.file.confidentiality_id | The normalized identifier of the file content confidentiality indicator. | keyword |
+| ocsf.actor.process.parent_process.file.confidentiality_id | The normalized identifier of the file content confidentiality indicator. | integer |
 | ocsf.actor.process.parent_process.file.created_time | The time when the file was created. | date |
 | ocsf.actor.process.parent_process.file.created_time_dt | The time when the file was created. | date |
 | ocsf.actor.process.parent_process.file.creator.account.name | The name of the account (e.g. GCP Account Name). | keyword |
@@ -344,15 +346,14 @@ This is the `Event` dataset.
 | ocsf.actor.process.parent_process.file.creator.email_addr | The user's email address. | keyword |
 | ocsf.actor.process.parent_process.file.creator.full_name | The full name of the person, as per the LDAP Common Name attribute (cn). | keyword |
 | ocsf.actor.process.parent_process.file.creator.groups.desc | The group description. | keyword |
+| ocsf.actor.process.parent_process.file.creator.groups.domain | The domain where the group is defined. For example, the LDAP or Active Directory domain. | keyword |
 | ocsf.actor.process.parent_process.file.creator.groups.name | The group name. | keyword |
 | ocsf.actor.process.parent_process.file.creator.groups.privileges | The group privileges. | keyword |
 | ocsf.actor.process.parent_process.file.creator.groups.type | The type of the group or account. | keyword |
 | ocsf.actor.process.parent_process.file.creator.groups.uid | The unique identifier of the group. For example, for Windows events this is the security identifier (SID) of the group. | keyword |
+| ocsf.actor.process.parent_process.file.creator.ldap_person | The LDAP attributes of the user. | flattened |
 | ocsf.actor.process.parent_process.file.creator.name | The name of the city. | keyword |
-| ocsf.actor.process.parent_process.file.creator.org.name | The name of the organization. For example, Widget, Inc. | keyword |
-| ocsf.actor.process.parent_process.file.creator.org.ou_name | The name of the organizational unit, within an organization. For example, Finance, IT, R&D. | keyword |
-| ocsf.actor.process.parent_process.file.creator.org.ou_uid | The alternate identifier for an entity's unique identifier. For example, its Active Directory OU DN or AWS OU ID. | keyword |
-| ocsf.actor.process.parent_process.file.creator.org.uid | The unique identifier of the organization. For example, its Active Directory or AWS Org ID. | keyword |
+| ocsf.actor.process.parent_process.file.creator.org.\* |  | object |
 | ocsf.actor.process.parent_process.file.creator.type | The type of the user. For example, System, AWS IAM User, etc. | keyword |
 | ocsf.actor.process.parent_process.file.creator.type_id | The account type identifier. | keyword |
 | ocsf.actor.process.parent_process.file.creator.uid | The unique user identifier. For example, the Windows user SID, ActiveDirectory DN or AWS user ARN. | keyword |
@@ -374,15 +375,14 @@ This is the `Event` dataset.
 | ocsf.actor.process.parent_process.file.modifier.email_addr | The image name. For example: elixir. | keyword |
 | ocsf.actor.process.parent_process.file.modifier.full_name | The user's email address. | keyword |
 | ocsf.actor.process.parent_process.file.modifier.groups.desc | The group description. | keyword |
+| ocsf.actor.process.parent_process.file.modifier.groups.domain | The domain where the group is defined. For example, the LDAP or Active Directory domain. | keyword |
 | ocsf.actor.process.parent_process.file.modifier.groups.name | The group name. | keyword |
 | ocsf.actor.process.parent_process.file.modifier.groups.privileges | The group privileges. | keyword |
 | ocsf.actor.process.parent_process.file.modifier.groups.type | The type of the group or account. | keyword |
 | ocsf.actor.process.parent_process.file.modifier.groups.uid | The unique identifier of the group. For example, for Windows events this is the security identifier (SID) of the group. | keyword |
+| ocsf.actor.process.parent_process.file.modifier.ldap_person | The LDAP attributes of the user. | flattened |
 | ocsf.actor.process.parent_process.file.modifier.name | The username. For example, janedoe1. | keyword |
-| ocsf.actor.process.parent_process.file.modifier.org.name | The name of the organization. For example, Widget, Inc. | keyword |
-| ocsf.actor.process.parent_process.file.modifier.org.ou_name | The name of the organizational unit, within an organization. For example, Finance, IT, R&D. | keyword |
-| ocsf.actor.process.parent_process.file.modifier.org.ou_uid | The alternate identifier for an entity's unique identifier. For example, its Active Directory OU DN or AWS OU ID. | keyword |
-| ocsf.actor.process.parent_process.file.modifier.org.uid | The unique identifier of the organization. For example, its Active Directory or AWS Org ID. | keyword |
+| ocsf.actor.process.parent_process.file.modifier.org.\* |  | object |
 | ocsf.actor.process.parent_process.file.modifier.type | The type of the user. For example, System, AWS IAM User, etc. | keyword |
 | ocsf.actor.process.parent_process.file.modifier.type_id | The account type identifier. | keyword |
 | ocsf.actor.process.parent_process.file.modifier.uid | The unique user identifier. For example, the Windows user SID, ActiveDirectory DN or AWS user ARN. | keyword |
@@ -397,24 +397,21 @@ This is the `Event` dataset.
 | ocsf.actor.process.parent_process.file.owner.email_addr | The user's email address. | keyword |
 | ocsf.actor.process.parent_process.file.owner.full_name | The full name of the person, as per the LDAP Common Name attribute (cn). | keyword |
 | ocsf.actor.process.parent_process.file.owner.groups.desc | The group description. | keyword |
+| ocsf.actor.process.parent_process.file.owner.groups.domain | The domain where the group is defined. For example, the LDAP or Active Directory domain. | keyword |
 | ocsf.actor.process.parent_process.file.owner.groups.name | The group name. | keyword |
 | ocsf.actor.process.parent_process.file.owner.groups.privileges | The group privileges. | keyword |
 | ocsf.actor.process.parent_process.file.owner.groups.type | The type of the group or account. | keyword |
 | ocsf.actor.process.parent_process.file.owner.groups.uid | The unique identifier of the group. For example, for Windows events this is the security identifier (SID) of the group. | keyword |
+| ocsf.actor.process.parent_process.file.owner.ldap_person | The LDAP attributes of the user. | flattened |
 | ocsf.actor.process.parent_process.file.owner.name | The username. For example, janedoe1. | keyword |
-| ocsf.actor.process.parent_process.file.owner.org.name | The name of the organization. For example, Widget, Inc. | keyword |
-| ocsf.actor.process.parent_process.file.owner.org.ou_name | The name of the organizational unit, within an organization. For example, Finance, IT, R&D. | keyword |
-| ocsf.actor.process.parent_process.file.owner.org.ou_uid | The alternate identifier for an entity's unique identifier. For example, its Active Directory OU DN or AWS OU ID. | keyword |
-| ocsf.actor.process.parent_process.file.owner.org.uid | The unique identifier of the organization. For example, its Active Directory or AWS Org ID. | keyword |
+| ocsf.actor.process.parent_process.file.owner.org.\* |  | object |
 | ocsf.actor.process.parent_process.file.owner.type | The event occurred on a personal device.The type of the user. For example, System, AWS IAM User, etc. | keyword |
 | ocsf.actor.process.parent_process.file.owner.type_id | The account type identifier. | keyword |
 | ocsf.actor.process.parent_process.file.owner.uid | The unique user identifier. For example, the Windows user SID, ActiveDirectory DN or AWS user ARN. | keyword |
 | ocsf.actor.process.parent_process.file.owner.uid_alt | The alternate user identifier. For example, the Active Directory user GUID or AWS user Principal ID. | keyword |
 | ocsf.actor.process.parent_process.file.parent_folder | The parent folder in which the file resides. For example: c:\windows\system32. | keyword |
 | ocsf.actor.process.parent_process.file.path | The full path to the file. For example: c:\windows\system32\svchost.exe. | keyword |
-| ocsf.actor.process.parent_process.file.product.feature.name | The name of the feature. | keyword |
-| ocsf.actor.process.parent_process.file.product.feature.uid | The unique identifier of the feature. | keyword |
-| ocsf.actor.process.parent_process.file.product.feature.version | The version of the feature. | keyword |
+| ocsf.actor.process.parent_process.file.product.feature.\* | The Feature object provides information about the software product feature that generated a specific event. | object |
 | ocsf.actor.process.parent_process.file.product.lang | The two letter lower case language codes, as defined by ISO 639-1. For example: en (English), de (German), or fr (French). | keyword |
 | ocsf.actor.process.parent_process.file.product.name | The name of the feature. | keyword |
 | ocsf.actor.process.parent_process.file.product.path | The installation path of the product. | keyword |
@@ -435,6 +432,7 @@ This is the `Event` dataset.
 | ocsf.actor.process.parent_process.file.signature.certificate.issuer | The certificate issuer distinguished name. | keyword |
 | ocsf.actor.process.parent_process.file.signature.certificate.serial_number | The serial number of the certificate used to create the digital signature. | keyword |
 | ocsf.actor.process.parent_process.file.signature.certificate.subject | The certificate subject distinguished name. | keyword |
+| ocsf.actor.process.parent_process.file.signature.certificate.uid | The unique identifier of the certificate. | keyword |
 | ocsf.actor.process.parent_process.file.signature.certificate.version | The certificate version. | keyword |
 | ocsf.actor.process.parent_process.file.signature.created_time | The time when the digital signature was created. | date |
 | ocsf.actor.process.parent_process.file.signature.created_time_dt | The time when the digital signature was created. | date |
@@ -449,12 +447,13 @@ This is the `Event` dataset.
 | ocsf.actor.process.parent_process.file.version | The file version. For example: 8.0.7601.17514. | keyword |
 | ocsf.actor.process.parent_process.file.xattributes | An unordered collection of zero or more name/value pairs where each pair represents a file or folder extended attribute. | flattened |
 | ocsf.actor.process.parent_process.group.desc | The group description. | keyword |
+| ocsf.actor.process.parent_process.group.domain | The domain where the group is defined. For example, the LDAP or Active Directory domain. | keyword |
 | ocsf.actor.process.parent_process.group.name | The group name. | keyword |
 | ocsf.actor.process.parent_process.group.privileges | The group privileges. | keyword |
 | ocsf.actor.process.parent_process.group.type | The type of the group or account. | keyword |
 | ocsf.actor.process.parent_process.group.uid | The unique identifier of the group. For example, for Windows events this is the security identifier (SID) of the group. | keyword |
 | ocsf.actor.process.parent_process.integrity | The process integrity level, normalized to the caption of the direction_id value. In the case of 'Other', it is defined by the event source (Windows only). | keyword |
-| ocsf.actor.process.parent_process.integrity_id | The normalized identifier of the process integrity level (Windows only). | keyword |
+| ocsf.actor.process.parent_process.integrity_id | The normalized identifier of the process integrity level (Windows only). | integer |
 | ocsf.actor.process.parent_process.lineage | The lineage of the process, represented by a list of paths for each ancestor process. For example: ['/usr/sbin/sshd', '/usr/bin/bash', '/usr/bin/whoami']. | keyword |
 | ocsf.actor.process.parent_process.loaded_modules | The list of loaded module names. | keyword |
 | ocsf.actor.process.parent_process.name | The friendly name of the process, for example: Notepad++. | keyword |
@@ -471,6 +470,7 @@ This is the `Event` dataset.
 | ocsf.actor.process.parent_process.session.is_remote | The indication of whether the session is remote. | boolean |
 | ocsf.actor.process.parent_process.session.issuer | The identifier of the session issuer. | keyword |
 | ocsf.actor.process.parent_process.session.mfa |  | boolean |
+| ocsf.actor.process.parent_process.session.terminal | The Pseudo Terminal associated with the session. Ex, the tty or pts value. | keyword |
 | ocsf.actor.process.parent_process.session.uid | The unique identifier of the session. | keyword |
 | ocsf.actor.process.parent_process.session.uuid | The universally unique identifier of the session. | keyword |
 | ocsf.actor.process.parent_process.terminated_time | The time when the process was terminated. | date |
@@ -486,15 +486,14 @@ This is the `Event` dataset.
 | ocsf.actor.process.parent_process.user.email_addr | The user's email address. | keyword |
 | ocsf.actor.process.parent_process.user.full_name | The full name of the person, as per the LDAP Common Name attribute (cn). | keyword |
 | ocsf.actor.process.parent_process.user.groups.desc | The group description. | keyword |
+| ocsf.actor.process.parent_process.user.groups.domain | The domain where the group is defined. For example, the LDAP or Active Directory domain. | keyword |
 | ocsf.actor.process.parent_process.user.groups.name | The group name. | keyword |
 | ocsf.actor.process.parent_process.user.groups.privileges | The group privileges. | keyword |
 | ocsf.actor.process.parent_process.user.groups.type | The type of the group or account. | keyword |
 | ocsf.actor.process.parent_process.user.groups.uid | The unique identifier of the group. For example, for Windows events this is the security identifier (SID) of the group. | keyword |
+| ocsf.actor.process.parent_process.user.ldap_person | The LDAP attributes of the user. | flattened |
 | ocsf.actor.process.parent_process.user.name | The username. For example, janedoe1. | keyword |
-| ocsf.actor.process.parent_process.user.org.name | The name of the organization. For example, Widget, Inc. | keyword |
-| ocsf.actor.process.parent_process.user.org.ou_name | The name of the organizational unit, within an organization. For example, Finance, IT, R&D. | keyword |
-| ocsf.actor.process.parent_process.user.org.ou_uid | The alternate identifier for an entity's unique identifier. For example, its Active Directory OU DN or AWS OU ID. | keyword |
-| ocsf.actor.process.parent_process.user.org.uid | The unique identifier of the organization. For example, its Active Directory or AWS Org ID. | keyword |
+| ocsf.actor.process.parent_process.user.org.\* | Organization and org unit related to the user. | object |
 | ocsf.actor.process.parent_process.user.type | The type of the user. For example, System, AWS IAM User, etc. | keyword |
 | ocsf.actor.process.parent_process.user.type_id | The account type identifier. | keyword |
 | ocsf.actor.process.parent_process.user.uid | The unique user identifier. For example, the Windows user SID, ActiveDirectory DN or AWS user ARN. | keyword |
@@ -510,6 +509,7 @@ This is the `Event` dataset.
 | ocsf.actor.process.session.is_remote | The indication of whether the session is remote. | boolean |
 | ocsf.actor.process.session.issuer | The identifier of the session issuer. | keyword |
 | ocsf.actor.process.session.mfa |  | boolean |
+| ocsf.actor.process.session.terminal | The Pseudo Terminal associated with the session. Ex, the tty or pts value. | keyword |
 | ocsf.actor.process.session.uid | The unique identifier of the session. | keyword |
 | ocsf.actor.process.session.uuid | The universally unique identifier of the session. | keyword |
 | ocsf.actor.process.terminated_time | The time when the process was terminated. | date |
@@ -525,29 +525,33 @@ This is the `Event` dataset.
 | ocsf.actor.process.user.email_addr | The user's email address. | keyword |
 | ocsf.actor.process.user.full_name | The full name of the person, as per the LDAP Common Name attribute (cn). | keyword |
 | ocsf.actor.process.user.groups.desc | The group description. | keyword |
+| ocsf.actor.process.user.groups.domain | The domain where the group is defined. For example, the LDAP or Active Directory domain. | keyword |
 | ocsf.actor.process.user.groups.name | The group name. | keyword |
 | ocsf.actor.process.user.groups.privileges | The group privileges. | keyword |
 | ocsf.actor.process.user.groups.type | The type of the group or account. | keyword |
 | ocsf.actor.process.user.groups.uid | The unique identifier of the group. For example, for Windows events this is the security identifier (SID) of the group. | keyword |
 | ocsf.actor.process.user.name | The username. For example, janedoe1. | keyword |
-| ocsf.actor.process.user.org.name | The name of the organization. For example, Widget, Inc. | keyword |
-| ocsf.actor.process.user.org.ou_name | The name of the organizational unit, within an organization. For example, Finance, IT, R&D. | keyword |
-| ocsf.actor.process.user.org.ou_uid | The alternate identifier for an entity's unique identifier. For example, its Active Directory OU DN or AWS OU ID. | keyword |
-| ocsf.actor.process.user.org.uid | The unique identifier of the organization. For example, its Active Directory or AWS Org ID. | keyword |
+| ocsf.actor.process.user.org.\* |  | object |
 | ocsf.actor.process.user.type | The type of the user. For example, System, AWS IAM User, etc. | keyword |
 | ocsf.actor.process.user.type_id | The account type identifier. | keyword |
 | ocsf.actor.process.user.uid | The unique user identifier. For example, the Windows user SID, ActiveDirectory DN or AWS user ARN. | keyword |
 | ocsf.actor.process.user.uid_alt | The alternate user identifier. For example, the Active Directory user GUID or AWS user Principal ID. | keyword |
 | ocsf.actor.process.xattributes | An unordered collection of zero or more name/value pairs that represent a process extended attribute. | flattened |
+| ocsf.actor.session.count | The number of identical sessions spawned from the same source IP, destination IP, application, and content/threat type seen over a period of time. | integer |
 | ocsf.actor.session.created_time | The time when the session was created. | date |
 | ocsf.actor.session.created_time_dt | The time when the session was created. | date |
 | ocsf.actor.session.credential_uid | The unique identifier of the user's credential. For example, AWS Access Key ID. | keyword |
+| ocsf.actor.session.expiration_reason | The reason which triggered the session expiration. | keyword |
 | ocsf.actor.session.expiration_time | The session expiration time. | date |
 | ocsf.actor.session.expiration_time_dt | The session expiration time. | date |
+| ocsf.actor.session.is_mfa | Indicates whether Multi Factor Authentication was used during authentication. | boolean |
 | ocsf.actor.session.is_remote | The indication of whether the session is remote. | boolean |
+| ocsf.actor.session.is_vpn | The indication of whether the session is a VPN session. | boolean |
 | ocsf.actor.session.issuer | The identifier of the session issuer. | keyword |
 | ocsf.actor.session.mfa |  | boolean |
+| ocsf.actor.session.terminal | The Pseudo Terminal associated with the session. Ex, the tty or pts value. | keyword |
 | ocsf.actor.session.uid | The unique identifier of the session. | keyword |
+| ocsf.actor.session.uid_alt | The alternate unique identifier of the session. e.g. AWS ARN - arn:aws:sts::123344444444:assumed-role/Admin/example-session. | keyword |
 | ocsf.actor.session.uuid | The universally unique identifier of the session. | keyword |
 | ocsf.actor.user.account.name | The name of the account (e.g. GCP Account Name). | keyword |
 | ocsf.actor.user.account.type | The account type, normalized to the caption of 'account_type_id'. In the case of 'Other', it is defined by the event source. | keyword |
@@ -558,15 +562,14 @@ This is the `Event` dataset.
 | ocsf.actor.user.email_addr | The user's email address. | keyword |
 | ocsf.actor.user.full_name | The full name of the person, as per the LDAP Common Name attribute (cn). | keyword |
 | ocsf.actor.user.groups.desc | The group description. | keyword |
+| ocsf.actor.user.groups.domain | The domain where the group is defined. For example, the LDAP or Active Directory domain. | keyword |
 | ocsf.actor.user.groups.name | The group name. | keyword |
 | ocsf.actor.user.groups.privileges | The group privileges. | keyword |
 | ocsf.actor.user.groups.type | The type of the group or account. | keyword |
 | ocsf.actor.user.groups.uid | The unique identifier of the group. For example, for Windows events this is the security identifier (SID) of the group. | keyword |
+| ocsf.actor.user.ldap_person | The LDAP attributes of the user. | flattened |
 | ocsf.actor.user.name | The username. For example, janedoe1. | keyword |
-| ocsf.actor.user.org.name | The name of the organization. For example, Widget, Inc. | keyword |
-| ocsf.actor.user.org.ou_name | The name of the organizational unit, within an organization. For example, Finance, IT, R&D. | keyword |
-| ocsf.actor.user.org.ou_uid | The alternate identifier for an entity's unique identifier. For example, its Active Directory OU DN or AWS OU ID. | keyword |
-| ocsf.actor.user.org.uid | The unique identifier of the organization. For example, its Active Directory or AWS Org ID. | keyword |
+| ocsf.actor.user.org.\* | Organization and org unit related to the user. | object |
 | ocsf.actor.user.type | The type of the user. For example, System, AWS IAM User, etc. | keyword |
 | ocsf.actor.user.type_id | The account type identifier. | keyword |
 | ocsf.actor.user.uid | The unique user identifier. For example, the Windows user SID, ActiveDirectory DN or AWS user ARN. | keyword |
@@ -594,22 +597,48 @@ This is the `Event` dataset.
 | ocsf.answers.rdata | The data describing the DNS resource. The meaning of this data depends on the type and class of the resource record. | keyword |
 | ocsf.answers.ttl | The time interval that the resource record may be cached. Zero value means that the resource record can only be used for the transaction in progress, and should not be cached. | long |
 | ocsf.answers.type | The type of data contained in this resource record. See RFC1035. For example: CNAME. | keyword |
+| ocsf.api.group.desc | The group description. | text |
+| ocsf.api.group.domain | The domain where the group is defined. For example, the LDAP or Active Directory domain. | keyword |
+| ocsf.api.group.name | The group name. | keyword |
+| ocsf.api.group.privileges | The group privileges. | keyword |
+| ocsf.api.group.type | The type of the group or account. | keyword |
+| ocsf.api.group.uid | The unique identifier of the group. For example, for Windows events this is the security identifier (SID) of the group. | keyword |
 | ocsf.api.operation | Verb/Operation associated with the request. | keyword |
-| ocsf.api.request.flags | The list of communication flags, normalized to the captions of the flag_ids values. In the case of 'Other', they are defined by the event source. | keyword |
+| ocsf.api.request.containers.hash | Commit hash of image created for docker or the SHA256 hash of the container. | flattened |
+| ocsf.api.request.containers.image | The container image used as a template to run the container. | flattened |
+| ocsf.api.request.containers.name | The container name. | keyword |
+| ocsf.api.request.containers.network_driver | The network driver used by the container. For example, bridge, overlay, host, none, etc. | keyword |
+| ocsf.api.request.containers.orchestrator | The orchestrator managing the container, such as ECS, EKS, K8s, or OpenShift. | keyword |
+| ocsf.api.request.containers.pod_uuid | The unique identifier of the pod (or equivalent) that the container is executing on. | keyword |
+| ocsf.api.request.containers.runtime | The backend running the container, such as containerd or cri-o. | keyword |
+| ocsf.api.request.containers.size | The size of the container image. | integer |
+| ocsf.api.request.containers.tag | The tag used by the container. It can indicate version, format, OS. | keyword |
+| ocsf.api.request.containers.uid | The full container unique identifier for this instantiation of the container. | keyword |
+| ocsf.api.request.data | The additional data that is associated with the api request. | flattened |
+| ocsf.api.request.flags | The list of communication flags, normalized to the captions of the flag_ids values. | keyword |
 | ocsf.api.request.uid | The unique request identifier. | keyword |
-| ocsf.api.response.code | The numeric response sent to a request. | long |
+| ocsf.api.response.code | The numeric response sent to a request. | integer |
+| ocsf.api.response.containers.hash | Commit hash of image created for docker or the SHA256 hash of the container. | flattened |
+| ocsf.api.response.containers.image | The container image used as a template to run the container. | flattened |
+| ocsf.api.response.containers.name | The container name. | keyword |
+| ocsf.api.response.containers.network_driver | The network driver used by the container. For example, bridge, overlay, host, none, etc. | keyword |
+| ocsf.api.response.containers.orchestrator | The orchestrator managing the container, such as ECS, EKS, K8s, or OpenShift. | keyword |
+| ocsf.api.response.containers.pod_uuid | The unique identifier of the pod (or equivalent) that the container is executing on. | keyword |
+| ocsf.api.response.containers.runtime | The backend running the container, such as containerd or cri-o. | keyword |
+| ocsf.api.response.containers.size | The size of the container image. | integer |
+| ocsf.api.response.containers.tag | The tag used by the container. It can indicate version, format, OS. | keyword |
+| ocsf.api.response.containers.uid | The full container unique identifier for this instantiation of the container. | keyword |
+| ocsf.api.response.data | The additional data that is associated with the api response. | flattened |
 | ocsf.api.response.error | Error Code. | keyword |
-| ocsf.api.response.error_message | Error Message. | keyword |
-| ocsf.api.response.flags | The list of communication flags, normalized to the captions of the flag_ids values. In the case of 'Other', they are defined by the event source. | keyword |
-| ocsf.api.response.message | The description of the event, as defined by the event source. | keyword |
+| ocsf.api.response.error_message | Error Message. | text |
+| ocsf.api.response.flags | The list of communication flags, normalized to the captions of the flag_ids values. | keyword |
+| ocsf.api.response.message | The description of the event/finding, as defined by the source. | text |
 | ocsf.api.service.labels | The list of labels associated with the service. | keyword |
 | ocsf.api.service.name | The name of the service. | keyword |
 | ocsf.api.service.uid | The unique identifier of the service. | keyword |
 | ocsf.api.service.version | The version of the service. | keyword |
 | ocsf.api.version | The version of the API service. | keyword |
-| ocsf.app.feature.name | The name of the feature. | keyword |
-| ocsf.app.feature.uid | The unique identifier of the feature. | keyword |
-| ocsf.app.feature.version | The version of the feature. | keyword |
+| ocsf.app.feature.\* | The Feature object provides information about the software product feature that generated a specific event. | object |
 | ocsf.app.lang | The two letter lower case language codes, as defined by ISO 639-1. | keyword |
 | ocsf.app.name | The CIS benchmark name. | keyword |
 | ocsf.app.path | The installation path of the product. | keyword |
@@ -618,6 +647,8 @@ This is the `Event` dataset.
 | ocsf.app.vendor_name | The name of the vendor of the product. | keyword |
 | ocsf.app.version | The version of the product, as defined by the event source. | keyword |
 | ocsf.app_name | The name of the application that is associated with the event or object. | keyword |
+| ocsf.assignee | The details of the user assigned to an Incident. | flattened |
+| ocsf.assignee_group | The details of the group assigned to an Incident. | flattened |
 | ocsf.attacks.tactics.name | The tactic name that is associated with the attack technique, as defined by ATT&CK MatrixTM. | keyword |
 | ocsf.attacks.tactics.uid | The tactic ID that is associated with the attack technique, as defined by ATT&CK MatrixTM. | keyword |
 | ocsf.attacks.technique.name | The name of the attack technique, as defined by ATT&CK MatrixTM. For example: Drive-by Compromise. | keyword |
@@ -626,6 +657,17 @@ This is the `Event` dataset.
 | ocsf.attempt | The attempt number for attempting to deliver the email. | long |
 | ocsf.auth_protocol | The authentication protocol as defined by the caption of 'auth_protocol_id'. In the case of 'Other', it is defined by the event source. | keyword |
 | ocsf.auth_protocol_id | The normalized identifier of the authentication protocol used to create the user session. | keyword |
+| ocsf.authorizations.decision | Authorization Result/outcome, e.g. allowed, denied. | keyword |
+| ocsf.authorizations.policy.desc | The description of the policy. | keyword |
+| ocsf.authorizations.policy.group.desc | The group description. | keyword |
+| ocsf.authorizations.policy.group.domain | The domain where the group is defined. For example, the LDAP or Active Directory domain. | keyword |
+| ocsf.authorizations.policy.group.name | The group name. | keyword |
+| ocsf.authorizations.policy.group.privileges | The group privileges. | keyword |
+| ocsf.authorizations.policy.group.type | The type of the group or account. | keyword |
+| ocsf.authorizations.policy.group.uid | The unique identifier of the group. For example, for Windows events this is the security identifier (SID) of the group. | keyword |
+| ocsf.authorizations.policy.name | The policy name. For example: IAM Policy. | keyword |
+| ocsf.authorizations.policy.uid | A unique identifier of the policy instance. | keyword |
+| ocsf.authorizations.policy.version | The policy version number. | keyword |
 | ocsf.banner | The initial SMTP connection response that a messaging server receives after it connects to a email server. | keyword |
 | ocsf.base_address | The memory address that was access or requested. | keyword |
 | ocsf.capabilities | A list of RDP capabilities. | keyword |
@@ -646,7 +688,9 @@ This is the `Event` dataset.
 | ocsf.cis_benchmark_result.desc | The CIS benchmark description. | keyword |
 | ocsf.cis_benchmark_result.name | The CIS benchmark name. | keyword |
 | ocsf.cis_benchmark_result.remediation.desc | The description of the remediation strategy. | keyword |
+| ocsf.cis_benchmark_result.remediation.kb_article_list | A list of KB articles or patches related to an endpoint. | flattened |
 | ocsf.cis_benchmark_result.remediation.kb_articles | The KB article/s related to the entity. | keyword |
+| ocsf.cis_benchmark_result.remediation.references | A list of supporting URL/s, references that help describe the remediation strategy. | keyword |
 | ocsf.cis_benchmark_result.rule.category | The rule category. | keyword |
 | ocsf.cis_benchmark_result.rule.desc | The description of the rule that generated the event. | keyword |
 | ocsf.cis_benchmark_result.rule.name | The name of the rule that generated the event. | keyword |
@@ -677,10 +721,15 @@ This is the `Event` dataset.
 | ocsf.codes | The list of return codes to the FTP command. | long |
 | ocsf.command | The command name. | keyword |
 | ocsf.command_responses | The list of responses to the FTP command. | keyword |
+| ocsf.command_uid | The command identifier that is associated with this scan event. This ID uniquely identifies the proactive scan command, e.g., if remotely initiated. | keyword |
 | ocsf.comment | The user provided comment about why the entity was changed. | keyword |
-| ocsf.compliance.requirements | A list of applicable compliance requirements for which this finding is related to. | keyword |
-| ocsf.compliance.status | The event status, normalized to the caption of the status_id value. In the case of 'Other', it is defined by the event source. | keyword |
-| ocsf.compliance.status_detail | The status details contains additional information about the event outcome. | keyword |
+| ocsf.compliance.control | A Control is prescriptive, prioritized, and simplified set of best practices that one can use to strengthen their cybersecurity posture. e.g. AWS SecurityHub Controls, CIS Controls. | keyword |
+| ocsf.compliance.requirements | A list of requirements associated to a specific control in an industry or regulatory framework. e.g. NIST.800-53.r5 AU-10. | keyword |
+| ocsf.compliance.standards | Security standards are a set of criteria organizations can follow to protect sensitive and confidential information. e.g. NIST SP 800-53, CIS AWS Foundations Benchmark v1.4.0, ISO/IEC 27001. | keyword |
+| ocsf.compliance.status | The resultant status of the compliance check normalized to the caption of the status_id value. In the case of 'Other', it is defined by the event source. | keyword |
+| ocsf.compliance.status_code | The resultant status code of the compliance check. | keyword |
+| ocsf.compliance.status_detail | The contextual description of the status, status_code values. | text |
+| ocsf.compliance.status_id | The normalized status identifier of the compliance check. | integer |
 | ocsf.component | The name or relative pathname of a sub-component of the data object, if applicable. | keyword |
 | ocsf.confidence | The confidence, normalized to the caption of the confidence_id value. In the case of 'Other', it is defined by the event source. | keyword |
 | ocsf.confidence_id | The normalized confidence refers to the accuracy of the rule that created the finding. A rule with a low confidence means that the finding scope is wide and may create finding reports that may not be malicious in nature. | keyword |
@@ -699,6 +748,8 @@ This is the `Event` dataset.
 | ocsf.count | The number of times that events in the same logical group occurred during the event Start Time to End Time period. | long |
 | ocsf.create_mask | The original Windows mask that is required to create the object. | keyword |
 | ocsf.data_sources | The data sources for the finding. | keyword |
+| ocsf.database | The database object is used for databases which are typically datastore services that contain an organized collection of structured and unstructured data or a types of data. | flattened |
+| ocsf.databucket | The data bucket object is a basic container that holds data, typically organized through the use of data partitions. | flattened |
 | ocsf.dce_rpc.command | The request command (e.g. REQUEST, BIND). | keyword |
 | ocsf.dce_rpc.command_response | The reply to the request command (e.g. RESPONSE, BINDACK or FAULT). | keyword |
 | ocsf.dce_rpc.flags | The list of interface flags. | keyword |
@@ -707,7 +758,9 @@ This is the `Event` dataset.
 | ocsf.dce_rpc.rpc_interface.ack_result | An integer that denotes the acknowledgment result of the DCE/RPC call. | long |
 | ocsf.dce_rpc.rpc_interface.uuid | The unique identifier of the particular remote procedure or service. | keyword |
 | ocsf.dce_rpc.rpc_interface.version | The version of the DCE/RPC protocol being used in the session. | keyword |
+| ocsf.desc | The short description of the incident. | keyword |
 | ocsf.device.autoscale_uid | The unique identifier of the cloud autoscale configuration. | keyword |
+| ocsf.device.container | The information describing an instance of a container. | flattened |
 | ocsf.device.created_time | The time when the device was known to have been created. | date |
 | ocsf.device.created_time_dt | TThe time when the device was known to have been created. | date |
 | ocsf.device.desc | The description of the device, ordinarily as reported by the operating system. | keyword |
@@ -715,6 +768,7 @@ This is the `Event` dataset.
 | ocsf.device.first_seen_time | The initial discovery time of the device. | date |
 | ocsf.device.first_seen_time_dt | The initial discovery time of the device. | date |
 | ocsf.device.groups.desc | The group description. | keyword |
+| ocsf.device.groups.domain | The domain where the group is defined. For example, the LDAP or Active Directory domain. | keyword |
 | ocsf.device.groups.name | The group name. | keyword |
 | ocsf.device.groups.privileges | The group privileges. | keyword |
 | ocsf.device.groups.type | The type of the group or account. | keyword |
@@ -772,6 +826,7 @@ This is the `Event` dataset.
 | ocsf.device.modified_time | The time when the device was last known to have been modified. | date |
 | ocsf.device.modified_time_dt | The time when the device was last known to have been modified. | date |
 | ocsf.device.name | The alternate device name, ordinarily as assigned by an administrator. The Name could be any other string that helps to identify the device, such as a phone number; for example 310-555-1234. | keyword |
+| ocsf.device.namespace_pid | If running under a process namespace (such as in a container), the process identifier within that process namespace. | integer |
 | ocsf.device.network_interfaces.hostname | The hostname associated with the network interface. | keyword |
 | ocsf.device.network_interfaces.ip | The IP address associated with the network interface. | ip |
 | ocsf.device.network_interfaces.mac | The MAC address of the network interface. | keyword |
@@ -808,6 +863,7 @@ This is the `Event` dataset.
 | ocsf.device.uid_alt | The alternate user identifier. For example, the Active Directory user GUID or AWS user Principal ID. | keyword |
 | ocsf.device.vlan_uid | The Virtual LAN identifier. | keyword |
 | ocsf.device.vpc_uid | The unique identifier of the Virtual Private Cloud (VPC). | keyword |
+| ocsf.device.zone | The network zone or LAN segment. | keyword |
 | ocsf.dialect | The negotiated protocol dialect. | keyword |
 | ocsf.direction | The direction of the email, as defined by the direction_id value. | keyword |
 | ocsf.direction_id | The direction of the email relative to the scanning host or organization. | keyword |
@@ -829,10 +885,7 @@ This is the `Event` dataset.
 | ocsf.driver.file.accessor.groups.type | The type of the group or account. | keyword |
 | ocsf.driver.file.accessor.groups.uid | The unique identifier of the group. For example, for Windows events this is the security identifier (SID) of the group. | keyword |
 | ocsf.driver.file.accessor.name | The username. For example, janedoe1. | keyword |
-| ocsf.driver.file.accessor.org.name | The name of the organization. For example, Widget, Inc. | keyword |
-| ocsf.driver.file.accessor.org.ou_name | The name of the organizational unit, within an organization. For example, Finance, IT, R&D. | keyword |
-| ocsf.driver.file.accessor.org.ou_uid | The alternate identifier for an entity's unique identifier. For example, its Active Directory OU DN or AWS OU ID. | keyword |
-| ocsf.driver.file.accessor.org.uid | The unique identifier of the organization. For example, its Active Directory or AWS Org ID. | keyword |
+| ocsf.driver.file.accessor.org.\* |  | object |
 | ocsf.driver.file.accessor.type | The type of the user. For example, System, AWS IAM User, etc. | keyword |
 | ocsf.driver.file.accessor.type_id | The account type identifier. | keyword |
 | ocsf.driver.file.accessor.uid | The unique user identifier. For example, the Windows user SID, ActiveDirectory DN or AWS user ARN. | keyword |
@@ -857,10 +910,7 @@ This is the `Event` dataset.
 | ocsf.driver.file.creator.groups.type | The type of the group or account. | keyword |
 | ocsf.driver.file.creator.groups.uid | The unique identifier of the group. For example, for Windows events this is the security identifier (SID) of the group. | keyword |
 | ocsf.driver.file.creator.name | The username. For example, janedoe1. | keyword |
-| ocsf.driver.file.creator.org.name | The name of the organization. For example, Widget, Inc. | keyword |
-| ocsf.driver.file.creator.org.ou_name | The name of the organizational unit, within an organization. For example, Finance, IT, R&D. | keyword |
-| ocsf.driver.file.creator.org.ou_uid | The alternate identifier for an entity's unique identifier. For example, its Active Directory OU DN or AWS OU ID. | keyword |
-| ocsf.driver.file.creator.org.uid | The unique identifier of the organization. For example, its Active Directory or AWS Org ID. | keyword |
+| ocsf.driver.file.creator.org.\* |  | object |
 | ocsf.driver.file.creator.type | The type of the user. For example, System, AWS IAM User, etc. | keyword |
 | ocsf.driver.file.creator.type_id | The account type identifier. | keyword |
 | ocsf.driver.file.creator.uid | The unique user identifier. For example, the Windows user SID, ActiveDirectory DN or AWS user ARN. | keyword |
@@ -887,10 +937,7 @@ This is the `Event` dataset.
 | ocsf.driver.file.modifier.groups.type | The type of the group or account. | keyword |
 | ocsf.driver.file.modifier.groups.uid | The unique identifier of the group. For example, for Windows events this is the security identifier (SID) of the group. | keyword |
 | ocsf.driver.file.modifier.name | The username. For example, janedoe1. | keyword |
-| ocsf.driver.file.modifier.org.name | The name of the organization. For example, Widget, Inc. | keyword |
-| ocsf.driver.file.modifier.org.ou_name | The name of the organizational unit, within an organization. For example, Finance, IT, R&D. | keyword |
-| ocsf.driver.file.modifier.org.ou_uid | The alternate identifier for an entity's unique identifier. For example, its Active Directory OU DN or AWS OU ID. | keyword |
-| ocsf.driver.file.modifier.org.uid | The unique identifier of the organization. For example, its Active Directory or AWS Org ID. | keyword |
+| ocsf.driver.file.modifier.org.\* |  | object |
 | ocsf.driver.file.modifier.type | The type of the user. For example, System, AWS IAM User, etc. | keyword |
 | ocsf.driver.file.modifier.type_id | The account type identifier. | keyword |
 | ocsf.driver.file.modifier.uid | The unique user identifier. For example, the Windows user SID, ActiveDirectory DN or AWS user ARN. | keyword |
@@ -910,19 +957,14 @@ This is the `Event` dataset.
 | ocsf.driver.file.owner.groups.type | The type of the group or account. | keyword |
 | ocsf.driver.file.owner.groups.uid | The unique identifier of the group. For example, for Windows events this is the security identifier (SID) of the group. | keyword |
 | ocsf.driver.file.owner.name | The username. For example, janedoe1. | keyword |
-| ocsf.driver.file.owner.org.name | The name of the organization. For example, Widget, Inc. | keyword |
-| ocsf.driver.file.owner.org.ou_name | The name of the organizational unit, within an organization. For example, Finance, IT, R&D. | keyword |
-| ocsf.driver.file.owner.org.ou_uid | The alternate identifier for an entity's unique identifier. For example, its Active Directory OU DN or AWS OU ID. | keyword |
-| ocsf.driver.file.owner.org.uid | The unique identifier of the organization. For example, its Active Directory or AWS Org ID. | keyword |
+| ocsf.driver.file.owner.org.\* |  | object |
 | ocsf.driver.file.owner.type | The type of the user. For example, System, AWS IAM User, etc. | keyword |
 | ocsf.driver.file.owner.type_id | The account type identifier. | keyword |
 | ocsf.driver.file.owner.uid | The unique user identifier. For example, the Windows user SID, ActiveDirectory DN or AWS user ARN. | keyword |
 | ocsf.driver.file.owner.uid_alt | The alternate user identifier. For example, the Active Directory user GUID or AWS user Principal ID. | keyword |
 | ocsf.driver.file.parent_folder | The parent folder in which the file resides. For example: c:\windows\system32. | keyword |
 | ocsf.driver.file.path | The full path to the file. For example: c:\windows\system32\svchost.exe. | keyword |
-| ocsf.driver.file.product.feature.name | The name of the feature. | keyword |
-| ocsf.driver.file.product.feature.uid | The unique identifier of the feature. | keyword |
-| ocsf.driver.file.product.feature.version | The version of the feature. | keyword |
+| ocsf.driver.file.product.feature.\* | The Feature object provides information about the software product feature that generated a specific event. | object |
 | ocsf.driver.file.product.lang | The two letter lower case language codes, as defined by ISO 639-1. For example: en (English), de (German), or fr (French). | keyword |
 | ocsf.driver.file.product.name | The name of the product. | keyword |
 | ocsf.driver.file.product.path | The installation path of the product. | keyword |
@@ -955,8 +997,10 @@ This is the `Event` dataset.
 | ocsf.driver.file.uid | The unique identifier of the file as defined by the storage system, such the file system file ID. | keyword |
 | ocsf.driver.file.version | The file version. For example: 8.0.7601.17514. | keyword |
 | ocsf.driver.file.xattributes | An unordered collection of zero or more name/value pairs where each pair represents a file or folder extended attribute. | flattened |
+| ocsf.dst_endpoint.container | The information describing an instance of a container. | flattened |
 | ocsf.dst_endpoint.domain | The name of the domain. | keyword |
 | ocsf.dst_endpoint.hostname | The fully qualified name of the endpoint. | keyword |
+| ocsf.dst_endpoint.hw_info | The endpoint hardware information. | flattened |
 | ocsf.dst_endpoint.instance_uid | The unique identifier of a VM instance. | keyword |
 | ocsf.dst_endpoint.interface_name | The name of the network interface (e.g. eth2). | keyword |
 | ocsf.dst_endpoint.interface_uid | The unique identifier of the network interface. | keyword |
@@ -974,12 +1018,18 @@ This is the `Event` dataset.
 | ocsf.dst_endpoint.location.region | The alphanumeric code that identifies the principal subdivision (e.g. province or state) of the country. Region codes are defined at ISO 3166-2 and have a limit of three characters. For example, see the region codes for the US. | keyword |
 | ocsf.dst_endpoint.mac | The Media Access Control (MAC) address of the endpoint. | keyword |
 | ocsf.dst_endpoint.name | The short name of the endpoint. | keyword |
+| ocsf.dst_endpoint.namespace_pid | If running under a process namespace (such as in a container), the process identifier within that process namespace. | integer |
+| ocsf.dst_endpoint.os | The endpoint operating system. | flattened |
 | ocsf.dst_endpoint.port | The port used for communication within the network connection. | long |
+| ocsf.dst_endpoint.proxy_endpoint | The network proxy information pertaining to a specific endpoint. This can be used to describe information pertaining to network address translation (NAT). | flattened |
 | ocsf.dst_endpoint.subnet_uid | The unique identifier of a virtual subnet. | keyword |
 | ocsf.dst_endpoint.svc_name | The service name in service-to-service connections. For example, AWS VPC logs the pkt-src-aws-service and pkt-dst-aws-service fields identify the connection is coming from or going to an AWS service. | keyword |
+| ocsf.dst_endpoint.type | The network endpoint type. For example, unknown, server, desktop, laptop, tablet, mobile, virtual, browser, or other. | keyword |
+| ocsf.dst_endpoint.type_id | The network endpoint type ID. | keyword |
 | ocsf.dst_endpoint.uid | The unique identifier of the endpoint. | keyword |
 | ocsf.dst_endpoint.vlan_uid | The Virtual LAN identifier. | keyword |
 | ocsf.dst_endpoint.vpc_uid | The unique identifier of the Virtual Private Cloud (VPC). | keyword |
+| ocsf.dst_endpoint.zone | The network zone or LAN segment. | keyword |
 | ocsf.duration | The event duration or aggregate time, the amount of time the event covers from start_time to end_time in milliseconds. | long |
 | ocsf.email.cc | The email header Cc values, as defined by RFC 5322. | keyword |
 | ocsf.email.delivered_to | The Delivered-To email header field. | keyword |
@@ -1020,6 +1070,7 @@ This is the `Event` dataset.
 | ocsf.entity_result.uid | The identifier of the managed entity. | keyword |
 | ocsf.entity_result.version | The version of the managed entity. | keyword |
 | ocsf.evidence | The data the finding exposes to the analyst. | flattened |
+| ocsf.evidences | Describes various evidence artifacts associated to the activity/activities that triggered a security detection. | flattened |
 | ocsf.exit_code | The exit code reported by a process when it terminates. The convention is that zero indicates success and any non-zero exit code indicates that some error occurred. | keyword |
 | ocsf.expiration_time | The share expiration time. | date |
 | ocsf.expiration_time_dt | The share expiration time. | date |
@@ -1038,6 +1089,7 @@ This is the `Event` dataset.
 | ocsf.file.accessor.groups.privileges | The group privileges. | keyword |
 | ocsf.file.accessor.groups.type | The type of the group or account. | keyword |
 | ocsf.file.accessor.groups.uid | The unique identifier of the group. For example, for Windows events this is the security identifier (SID) of the group. | keyword |
+| ocsf.file.accessor.ldap_person | The LDAP person object. | flattened |
 | ocsf.file.accessor.name | The username. For example, janedoe1. | keyword |
 | ocsf.file.accessor.org.name | The name of the organization. For example, Widget, Inc. | keyword |
 | ocsf.file.accessor.org.ou_name | The name of the organizational unit, within an organization. For example, Finance, IT, R&D. | keyword |
@@ -1066,6 +1118,7 @@ This is the `Event` dataset.
 | ocsf.file.creator.groups.privileges | The group privileges. | keyword |
 | ocsf.file.creator.groups.type | The type of the group or account. | keyword |
 | ocsf.file.creator.groups.uid | The unique identifier of the group. For example, for Windows events this is the security identifier (SID) of the group. | keyword |
+| ocsf.file.creator.ldap_person | The LDAP person object. | flattened |
 | ocsf.file.creator.name | The username. For example, janedoe1. | keyword |
 | ocsf.file.creator.org.name | The name of the organization. For example, Widget, Inc. | keyword |
 | ocsf.file.creator.org.ou_name | The name of the organizational unit, within an organization. For example, Finance, IT, R&D. | keyword |
@@ -1096,6 +1149,7 @@ This is the `Event` dataset.
 | ocsf.file.modifier.groups.privileges | The group privileges. | keyword |
 | ocsf.file.modifier.groups.type | The type of the group or account. | keyword |
 | ocsf.file.modifier.groups.uid | The unique identifier of the group. For example, for Windows events this is the security identifier (SID) of the group. | keyword |
+| ocsf.file.modifier.ldap_person | The LDAP person object. | flattened |
 | ocsf.file.modifier.name | The username. For example, janedoe1. | keyword |
 | ocsf.file.modifier.org.name | The name of the organization. For example, Widget, Inc. | keyword |
 | ocsf.file.modifier.org.ou_name | The name of the organizational unit, within an organization. For example, Finance, IT, R&D. | keyword |
@@ -1119,6 +1173,7 @@ This is the `Event` dataset.
 | ocsf.file.owner.groups.privileges | The group privileges. | keyword |
 | ocsf.file.owner.groups.type | The type of the group or account. | keyword |
 | ocsf.file.owner.groups.uid | The unique identifier of the group. For example, for Windows events this is the security identifier (SID) of the group. | keyword |
+| ocsf.file.owner.ldap_person | The LDAP person object. | flattened |
 | ocsf.file.owner.name | The username. For example, janedoe1. | keyword |
 | ocsf.file.owner.org.name | The name of the organization. For example, Widget, Inc. | keyword |
 | ocsf.file.owner.org.ou_name | The name of the organizational unit, within an organization. For example, Finance, IT, R&D. | keyword |
@@ -1130,9 +1185,7 @@ This is the `Event` dataset.
 | ocsf.file.owner.uid_alt | The alternate user identifier. For example, the Active Directory user GUID or AWS user Principal ID. | keyword |
 | ocsf.file.parent_folder | The parent folder in which the file resides. For example: c:\windows\system32. | keyword |
 | ocsf.file.path | The full path to the file. For example: c:\windows\system32\svchost.exe. | keyword |
-| ocsf.file.product.feature.name | The name of the feature. | keyword |
-| ocsf.file.product.feature.uid | The unique identifier of the feature. | keyword |
-| ocsf.file.product.feature.version | The version of the feature. | keyword |
+| ocsf.file.product.feature.\* | The Feature object provides information about the software product feature that generated a specific event. | object |
 | ocsf.file.product.lang | The two letter lower case language codes, as defined by ISO 639-1. For example: en (English), de (German), or fr (French). | keyword |
 | ocsf.file.product.name | The name of the product. | keyword |
 | ocsf.file.product.path | The installation path of the product. | keyword |
@@ -1274,9 +1327,7 @@ This is the `Event` dataset.
 | ocsf.file_result.owner.uid_alt | The alternate user identifier. For example, the Active Directory user GUID or AWS user Principal ID. | keyword |
 | ocsf.file_result.parent_folder | The parent folder in which the file resides. For example: c:\windows\system32. | keyword |
 | ocsf.file_result.path | The full path to the file. For example: c:\windows\system32\svchost.exe. | keyword |
-| ocsf.file_result.product.feature.name | The name of the feature. | keyword |
-| ocsf.file_result.product.feature.uid | The unique identifier of the feature. | keyword |
-| ocsf.file_result.product.feature.version | The version of the feature. | keyword |
+| ocsf.file_result.product.feature.\* | The Feature object provides information about the software product feature that generated a specific event. | object |
 | ocsf.file_result.product.lang | The two letter lower case language codes, as defined by ISO 639-1. For example: en (English), de (German), or fr (French). | keyword |
 | ocsf.file_result.product.name | The name of the product. | keyword |
 | ocsf.file_result.product.path | The installation path of the product. | keyword |
@@ -1324,12 +1375,16 @@ This is the `Event` dataset.
 | ocsf.finding.related_events.type_uid | The unique identifier of the related event type. For example: 100701. | keyword |
 | ocsf.finding.related_events.uid | The unique identifier of the related event. | keyword |
 | ocsf.finding.remediation.desc | The description of the remediation strategy. | keyword |
+| ocsf.finding.remediation.kb_article_list | A list of KB articles or patches related to an endpoint. | flattened |
 | ocsf.finding.remediation.kb_articles | The KB article/s related to the entity. | keyword |
+| ocsf.finding.remediation.references | A list of supporting URL/s, references that help describe the remediation strategy. | keyword |
 | ocsf.finding.src_url | The URL pointing to the source of the finding. | keyword |
 | ocsf.finding.supporting_data | Additional data supporting a finding as provided by security tool. | flattened |
 | ocsf.finding.title | The title of the reported finding. | keyword |
 | ocsf.finding.types | One or more types of the reported finding. | keyword |
 | ocsf.finding.uid | The unique identifier of the reported finding. | keyword |
+| ocsf.finding_info | Describes the supporting information about a generated finding. | flattened |
+| ocsf.firewall_rule | The firewall rule that triggered the event. | flattened |
 | ocsf.group.desc | The group description. | keyword |
 | ocsf.group.name | The group name. | keyword |
 | ocsf.group.privileges | The group privileges. | keyword |
@@ -1372,6 +1427,18 @@ This is the `Event` dataset.
 | ocsf.is_new_logon | Indicates logon is from a device not seen before or a first time account logon. | boolean |
 | ocsf.is_remote | The attempted authentication is over a remote connection. | boolean |
 | ocsf.is_renewal | The indication of whether this is a lease/session renewal event. | boolean |
+| ocsf.kb_article_list.bulletin | The kb article bulletin identifier. | keyword |
+| ocsf.kb_article_list.classification | The vendors classification of the kb article. | keyword |
+| ocsf.kb_article_list.created_time | The date the kb article was released by the vendor. | long |
+| ocsf.kb_article_list.created_time_dt | The date the kb article was released by the vendor. | date |
+| ocsf.kb_article_list.is_superseded | The patch is superseded | boolean |
+| ocsf.kb_article_list.os | The operating system the kb article applies. | flattened |
+| ocsf.kb_article_list.product | The product details the kb article applies. | flattened |
+| ocsf.kb_article_list.severity | The severity of the kb article. | keyword |
+| ocsf.kb_article_list.size | The size in bytes for the kb article. | long |
+| ocsf.kb_article_list.src_url | The kb article link from the source vendor. | keyword |
+| ocsf.kb_article_list.title | The title of the kb article. | keyword |
+| ocsf.kb_article_list.uid | The unique identifier for the kb article. | keyword |
 | ocsf.kernel.is_system | The indication of whether the object is part of the operating system. | boolean |
 | ocsf.kernel.name | The name of the kernel resource. | keyword |
 | ocsf.kernel.path | The full path of the kernel resource. | keyword |
@@ -1381,6 +1448,7 @@ This is the `Event` dataset.
 | ocsf.kill_chain.phase | The cyber kill chain phase. | keyword |
 | ocsf.kill_chain.phase_id | The cyber kill chain phase identifier. | keyword |
 | ocsf.lease_dur | This represents the length of the DHCP lease in seconds. This is present in DHCP Ack events. (activity_id = 1) | long |
+| ocsf.load_balancer | The Load Balancer object contains information related to the device that is distributing incoming traffic to specified destinations. | flattened |
 | ocsf.logon_type | The logon type, normalized to the caption of the logon_type_id value. In the case of 'Other', it is defined by the event source. | keyword |
 | ocsf.logon_type_id | The normalized logon type identifier | keyword |
 | ocsf.malware.classification_ids | The list of normalized identifiers of the malware classifications. | keyword |
@@ -1399,9 +1467,7 @@ This is the `Event` dataset.
 | ocsf.malware.cves.cwe_url | Common Weakness Enumeration (CWE) definition URL. | keyword |
 | ocsf.malware.cves.modified_time | The Record Modified Date identifies when the CVE record was last updated. | date |
 | ocsf.malware.cves.modified_time_dt | The Record Modified Date identifies when the CVE record was last updated. | date |
-| ocsf.malware.cves.product.feature.name | The name of the feature. | keyword |
-| ocsf.malware.cves.product.feature.uid | The unique identifier of the feature. | keyword |
-| ocsf.malware.cves.product.feature.version | The version of the feature. | keyword |
+| ocsf.malware.cves.product.feature.\* | The Feature object provides information about the software product feature that generated a specific event. | object |
 | ocsf.malware.cves.product.lang | The two letter lower case language codes, as defined by ISO 639-1. | keyword |
 | ocsf.malware.cves.product.name | The name of the product. | keyword |
 | ocsf.malware.cves.product.path | The installation path of the product. | keyword |
@@ -1421,20 +1487,24 @@ This is the `Event` dataset.
 | ocsf.metadata.extension.name | The schema extension name. For example: dev. | keyword |
 | ocsf.metadata.extension.uid | The schema extension unique identifier. For example: 999. | keyword |
 | ocsf.metadata.extension.version | The schema extension version. For example: 1.0.0-alpha.2. | keyword |
+| ocsf.metadata.extensions.name | The schema extension name. For example: dev. | keyword |
+| ocsf.metadata.extensions.uid | The schema extension unique identifier. For example: 999. | keyword |
+| ocsf.metadata.extensions.version | The schema extension version. For example: 1.0.0-alpha.2. | keyword |
 | ocsf.metadata.labels | The list of category labels attached to the event or specific attributes. Labels are user defined tags or aliases added at normalization time. | keyword |
+| ocsf.metadata.log_level | The log level of the event. | keyword |
 | ocsf.metadata.log_name | The event log name. For example, syslog file name or Windows logging subsystem: Security. | keyword |
 | ocsf.metadata.log_provider | The logging provider or logging service that logged the event. For example, Microsoft-Windows-Security-Auditing. | keyword |
 | ocsf.metadata.log_version | The event log schema version that specifies the format of the original event. For example syslog version or Cisco Log Schema Version. | keyword |
 | ocsf.metadata.logged_time | The time when the logging system collected and logged the event. This attribute is distinct from the event time in that event time typically contain the time extracted from the original event. Most of the time, these two times will be different. | date |
 | ocsf.metadata.logged_time_dt | The time when the logging system collected and logged the event. This attribute is distinct from the event time in that event time typically contain the time extracted from the original event. Most of the time, these two times will be different. | date |
+| ocsf.metadata.loggers | An array of Logger objects that describe the devices and logging products between the event source and its eventual destination. | flattened |
 | ocsf.metadata.modified_time | The time when the event was last modified or enriched. | date |
 | ocsf.metadata.modified_time_dt | The time when the event was last modified or enriched. | date |
 | ocsf.metadata.original_time | The original event time as reported by the event source. For example, the time in the original format from system event log such as Syslog on Unix/Linux and the System event file on Windows. Omit if event is generated instead of collected via logs. | keyword |
 | ocsf.metadata.processed_time | The event processed time, such as an ETL operation. | date |
 | ocsf.metadata.processed_time_dt | The event processed time, such as an ETL operation. | date |
-| ocsf.metadata.product.feature.name | The name of the feature. | keyword |
-| ocsf.metadata.product.feature.uid | The unique identifier of the feature. | keyword |
-| ocsf.metadata.product.feature.version | The version of the feature. | keyword |
+| ocsf.metadata.product.cpe_name | The Common Platform Enumeration (CPE) name as described by (NIST) For example, cpe:/a:apple:safari:16.2. | keyword |
+| ocsf.metadata.product.feature.\* | The Feature object provides information about the software product feature that generated a specific event. | object |
 | ocsf.metadata.product.lang | The two letter lowercase language codes, as defined by ISO 639-1. For example: en (English), de (German), or fr (French). | keyword |
 | ocsf.metadata.product.name | The name of the product. | keyword |
 | ocsf.metadata.product.path | The installation path of the product. | keyword |
@@ -1444,6 +1514,7 @@ This is the `Event` dataset.
 | ocsf.metadata.product.version | The version of the product, as defined by the event source. For example: 2013.1.3-beta. | keyword |
 | ocsf.metadata.profiles | The list of profiles used to create the event. | keyword |
 | ocsf.metadata.sequence | Sequence number of the event. The sequence number is a value available in some events, to make the exact ordering of events unambiguous, regardless of the event time precision. | long |
+| ocsf.metadata.tenant_uid | The audit level at which an event was generated. | keyword |
 | ocsf.metadata.uid | The logging system-assigned unique identifier of an event instance. | keyword |
 | ocsf.metadata.version | The version of the OCSF schema, using Semantic Versioning Specification (SemVer). For example: 1.0.0. Event consumers use the version to determine the available event attributes. | keyword |
 | ocsf.module.base_address | The memory address where the module was loaded. | keyword |
@@ -1463,10 +1534,7 @@ This is the `Event` dataset.
 | ocsf.module.file.accessor.groups.type | The type of the group or account. | keyword |
 | ocsf.module.file.accessor.groups.uid | The unique identifier of the group. For example, for Windows events this is the security identifier (SID) of the group. | keyword |
 | ocsf.module.file.accessor.name | The username. For example, janedoe1. | keyword |
-| ocsf.module.file.accessor.org.name | The name of the organization. For example, Widget, Inc. | keyword |
-| ocsf.module.file.accessor.org.ou_name | The name of the organizational unit, within an organization. For example, Finance, IT, R&D. | keyword |
-| ocsf.module.file.accessor.org.ou_uid | The alternate identifier for an entity's unique identifier. For example, its Active Directory OU DN or AWS OU ID. | keyword |
-| ocsf.module.file.accessor.org.uid | The unique identifier of the organization. For example, its Active Directory or AWS Org ID. | keyword |
+| ocsf.module.file.accessor.org.\* |  | object |
 | ocsf.module.file.accessor.type | The type of the user. For example, System, AWS IAM User, etc. | keyword |
 | ocsf.module.file.accessor.type_id | The account type identifier. | keyword |
 | ocsf.module.file.accessor.uid | The unique user identifier. For example, the Windows user SID, ActiveDirectory DN or AWS user ARN. | keyword |
@@ -1491,10 +1559,7 @@ This is the `Event` dataset.
 | ocsf.module.file.creator.groups.type | The type of the group or account. | keyword |
 | ocsf.module.file.creator.groups.uid | The unique identifier of the group. For example, for Windows events this is the security identifier (SID) of the group. | keyword |
 | ocsf.module.file.creator.name | The username. For example, janedoe1. | keyword |
-| ocsf.module.file.creator.org.name | The name of the organization. For example, Widget, Inc. | keyword |
-| ocsf.module.file.creator.org.ou_name | The name of the organizational unit, within an organization. For example, Finance, IT, R&D. | keyword |
-| ocsf.module.file.creator.org.ou_uid | The alternate identifier for an entity's unique identifier. For example, its Active Directory OU DN or AWS OU ID. | keyword |
-| ocsf.module.file.creator.org.uid | The unique identifier of the organization. For example, its Active Directory or AWS Org ID. | keyword |
+| ocsf.module.file.creator.org.\* |  | object |
 | ocsf.module.file.creator.type | The type of the user. For example, System, AWS IAM User, etc. | keyword |
 | ocsf.module.file.creator.type_id | The account type identifier. | keyword |
 | ocsf.module.file.creator.uid | The unique user identifier. For example, the Windows user SID, ActiveDirectory DN or AWS user ARN. | keyword |
@@ -1521,10 +1586,7 @@ This is the `Event` dataset.
 | ocsf.module.file.modifier.groups.type | The type of the group or account. | keyword |
 | ocsf.module.file.modifier.groups.uid | The unique identifier of the group. For example, for Windows events this is the security identifier (SID) of the group. | keyword |
 | ocsf.module.file.modifier.name | The username. For example, janedoe1. | keyword |
-| ocsf.module.file.modifier.org.name | The name of the organization. For example, Widget, Inc. | keyword |
-| ocsf.module.file.modifier.org.ou_name | The name of the organizational unit, within an organization. For example, Finance, IT, R&D. | keyword |
-| ocsf.module.file.modifier.org.ou_uid | The alternate identifier for an entity's unique identifier. For example, its Active Directory OU DN or AWS OU ID. | keyword |
-| ocsf.module.file.modifier.org.uid | The unique identifier of the organization. For example, its Active Directory or AWS Org ID. | keyword |
+| ocsf.module.file.modifier.org.\* |  | object |
 | ocsf.module.file.modifier.type | The type of the user. For example, System, AWS IAM User, etc. | keyword |
 | ocsf.module.file.modifier.type_id | The account type identifier. | keyword |
 | ocsf.module.file.modifier.uid | The unique user identifier. For example, the Windows user SID, ActiveDirectory DN or AWS user ARN. | keyword |
@@ -1544,19 +1606,14 @@ This is the `Event` dataset.
 | ocsf.module.file.owner.groups.type | The type of the group or account. | keyword |
 | ocsf.module.file.owner.groups.uid | The unique identifier of the group. For example, for Windows events this is the security identifier (SID) of the group. | keyword |
 | ocsf.module.file.owner.name | The username. For example, janedoe1. | keyword |
-| ocsf.module.file.owner.org.name | The name of the organization. For example, Widget, Inc. | keyword |
-| ocsf.module.file.owner.org.ou_name | The name of the organizational unit, within an organization. For example, Finance, IT, R&D. | keyword |
-| ocsf.module.file.owner.org.ou_uid | The alternate identifier for an entity's unique identifier. For example, its Active Directory OU DN or AWS OU ID. | keyword |
-| ocsf.module.file.owner.org.uid | The unique identifier of the organization. For example, its Active Directory or AWS Org ID. | keyword |
+| ocsf.module.file.owner.org.\* |  | object |
 | ocsf.module.file.owner.type | The type of the user. For example, System, AWS IAM User, etc. | keyword |
 | ocsf.module.file.owner.type_id | The account type identifier. | keyword |
 | ocsf.module.file.owner.uid | The unique user identifier. For example, the Windows user SID, ActiveDirectory DN or AWS user ARN. | keyword |
 | ocsf.module.file.owner.uid_alt | The alternate user identifier. For example, the Active Directory user GUID or AWS user Principal ID. | keyword |
 | ocsf.module.file.parent_folder | The parent folder in which the file resides. For example: c:\windows\system32. | keyword |
 | ocsf.module.file.path | The full path to the file. For example: c:\windows\system32\svchost.exe. | keyword |
-| ocsf.module.file.product.feature.name | The name of the feature. | keyword |
-| ocsf.module.file.product.feature.uid | The unique identifier of the feature. | keyword |
-| ocsf.module.file.product.feature.version | The version of the feature. | keyword |
+| ocsf.module.file.product.feature.\* | The Feature object provides information about the software product feature that generated a specific event. | object |
 | ocsf.module.file.product.lang | The two letter lower case language codes, as defined by ISO 639-1. For example: en (English), de (German), or fr (French). | keyword |
 | ocsf.module.file.product.name | The name of the product. | keyword |
 | ocsf.module.file.product.path | The installation path of the product. | keyword |
@@ -1596,6 +1653,7 @@ This is the `Event` dataset.
 | ocsf.module.type | The module type. | keyword |
 | ocsf.name | The name of the data affiliated with the command. | keyword |
 | ocsf.nist | The NIST Cybersecurity Framework recommendations for managing the cybersecurity risk. | keyword |
+| ocsf.num_\* | The number fields for counting various item scan results. | integer |
 | ocsf.observables.name | The full name of the observable attribute. The name is a pointer/reference to an attribute within the event data. For example: file.name. | keyword |
 | ocsf.observables.reputation.base_score | The reputation score as reported by the event source. | double |
 | ocsf.observables.reputation.provider | The provider of the reputation information. | keyword |
@@ -1605,7 +1663,13 @@ This is the `Event` dataset.
 | ocsf.observables.type_id | The observable value type identifier. | keyword |
 | ocsf.observables.value | The value associated with the observable attribute. | keyword |
 | ocsf.open_type | Indicates how the file was opened (e.g. normal, delete on close). | keyword |
+| ocsf.policy | The policy that was used to scan the device. | flattened |
 | ocsf.port | The dynamic port established for impending data transfers. | long |
+| ocsf.precision | The NTP precision quantifies a clock's accuracy and stability in log2 seconds, as defined in RFC-5905. | integer |
+| ocsf.prev_security_states.state | The security state, normalized to the caption of the state_id value. | keyword |
+| ocsf.prev_security_states.state_id | The security state of the managed entity. | keyword |
+| ocsf.priority | The priority, normalized to the caption of the priority_id value. | keyword |
+| ocsf.priority_id | The priority, normalized to the ID of the priority_id value. | integer |
 | ocsf.privileges | The list of sensitive privileges, assigned to the new user session. | keyword |
 | ocsf.protocol_ver | The Protocol version. | keyword |
 | ocsf.proxy.domain | The name of the domain. | keyword |
@@ -1633,16 +1697,55 @@ This is the `Event` dataset.
 | ocsf.proxy.uid | The unique identifier of the endpoint. | keyword |
 | ocsf.proxy.vlan_uid | The Virtual LAN identifier. | keyword |
 | ocsf.proxy.vpc_uid | The unique identifier of the Virtual Private Cloud (VPC). | keyword |
+| ocsf.proxy_connection_info | The connection information from the proxy server to the remote server. | flattened |
+| ocsf.proxy_endpoint.container | The information describing an instance of a container. | flattened |
+| ocsf.proxy_endpoint.domain | The name of the domain. | keyword |
+| ocsf.proxy_endpoint.hostname | The fully qualified name of the endpoint. | keyword |
+| ocsf.proxy_endpoint.hw_info | The endpoint hardware information. | flattened |
+| ocsf.proxy_endpoint.instance_uid | The unique identifier of a VM instance. | keyword |
+| ocsf.proxy_endpoint.interface_name | The name of the network interface (e.g. eth2). | keyword |
+| ocsf.proxy_endpoint.interface_uid | The unique identifier of the network interface. | keyword |
+| ocsf.proxy_endpoint.intermediate_ips | The intermediate IP Addresses. For example, the IP addresses in the HTTP X-Forwarded-For header. | ip |
+| ocsf.proxy_endpoint.ip | The IP address of the endpoint, in either IPv4 or IPv6 format. | ip |
+| ocsf.proxy_endpoint.location.city | The name of the city. | keyword |
+| ocsf.proxy_endpoint.location.continent | The name of the continent. | keyword |
+| ocsf.proxy_endpoint.location.coordinates | A two-element array, containing a longitude/latitude pair. The format conforms with GeoJSON. | geo_point |
+| ocsf.proxy_endpoint.location.country | The ISO 3166-1 Alpha-2 country code. For the complete list of country codes see ISO 3166-1 alpha-2 codes. The two letter country code should be capitalized. | keyword |
+| ocsf.proxy_endpoint.location.desc | The description of the geographical location. | keyword |
+| ocsf.proxy_endpoint.location.is_on_premises | The indication of whether the location is on premises. | boolean |
+| ocsf.proxy_endpoint.location.isp | The name of the Internet Service Provider (ISP). | keyword |
+| ocsf.proxy_endpoint.location.postal_code | The postal code of the location. | keyword |
+| ocsf.proxy_endpoint.location.provider | The provider of the geographical location data. | keyword |
+| ocsf.proxy_endpoint.location.region | The alphanumeric code that identifies the principal subdivision (e.g. province or state) of the country. Region codes are defined at ISO 3166-2 and have a limit of three characters. For example, see the region codes for the US. | keyword |
+| ocsf.proxy_endpoint.mac | The Media Access Control (MAC) address of the endpoint. | keyword |
+| ocsf.proxy_endpoint.name | The short name of the endpoint. | keyword |
+| ocsf.proxy_endpoint.namespace_pid | If running under a process namespace (such as in a container), the process identifier within that process namespace. | integer |
+| ocsf.proxy_endpoint.os | The endpoint operating system. | flattened |
+| ocsf.proxy_endpoint.port | The port used for communication within the network connection. | long |
+| ocsf.proxy_endpoint.proxy_endpoint | The network proxy information pertaining to a specific endpoint. This can be used to describe information pertaining to network address translation (NAT). | flattened |
+| ocsf.proxy_endpoint.subnet_uid | The unique identifier of a virtual subnet. | keyword |
+| ocsf.proxy_endpoint.svc_name | The service name in service-to-service connections. For example, AWS VPC logs the pkt-src-aws-service and pkt-dst-aws-service fields identify the connection is coming from or going to an AWS service. | keyword |
+| ocsf.proxy_endpoint.type | The network endpoint type. For example, unknown, server, desktop, laptop, tablet, mobile, virtual, browser, or other. | keyword |
+| ocsf.proxy_endpoint.type_id | The network endpoint type ID. | keyword |
+| ocsf.proxy_endpoint.uid | The unique identifier of the endpoint. | keyword |
+| ocsf.proxy_endpoint.vlan_uid | The Virtual LAN identifier. | keyword |
+| ocsf.proxy_endpoint.vpc_uid | The unique identifier of the Virtual Private Cloud (VPC). | keyword |
+| ocsf.proxy_endpoint.zone | The network zone or LAN segment. | keyword |
+| ocsf.proxy_http_request | The HTTP Request from the proxy server to the remote server. | flattened |
+| ocsf.proxy_http_response | The HTTP Response from the remote server to the proxy server. | flattened |
+| ocsf.proxy_tls | The TLS protocol negotiated between the proxy server and the remote server. | flattened |
+| ocsf.proxy_traffic | The network traffic refers to the amount of data moving across a network, from proxy to remote server at a given point of time. | flattened |
 | ocsf.query.class | The class of resource records being queried. See RFC1035. For example: IN. | keyword |
 | ocsf.query.hostname | The hostname or domain being queried. For example: www.example.com | keyword |
 | ocsf.query.opcode | The DNS opcode specifies the type of the query message. | keyword |
 | ocsf.query.opcode_id | The DNS opcode ID specifies the normalized query message type. | keyword |
 | ocsf.query.packet_uid | The DNS packet identifier assigned by the program that generated the query. The identifier is copied to the response. | keyword |
 | ocsf.query.type | The type of resource records being queried. See RFC1035. For example: A, AAAA, CNAME, MX, and NS. | keyword |
+| ocsf.query_info | The query info object holds information related to data access within a datastore. | flattened |
 | ocsf.query_time | The Domain Name System (DNS) query time. | date |
 | ocsf.query_time_dt | The Domain Name System (DNS) query time. | date |
 | ocsf.raw_data | The event data as received from the event source. | flattened |
-| ocsf.raw_data_keyword |  | keyword |
+| ocsf.raw_data_keyword | The event data as received from the event source. | match_only_text |
 | ocsf.rcode | The DNS server response code, normalized to the caption of the rcode_id value. In the case of 'Other', it is defined by the event source. | keyword |
 | ocsf.rcode_id | The normalized identifier of the DNS server response code. | keyword |
 | ocsf.relay.hostname | The hostname associated with the network interface. | keyword |
@@ -1654,6 +1757,10 @@ This is the `Event` dataset.
 | ocsf.relay.type | The type of network interface. | keyword |
 | ocsf.relay.type_id | The network interface type identifier. | keyword |
 | ocsf.relay.uid | The unique identifier for the network interface. | keyword |
+| ocsf.remediation.desc | The description of the remediation strategy. | keyword |
+| ocsf.remediation.kb_article_list | A list of KB articles or patches related to an endpoint. | flattened |
+| ocsf.remediation.kb_articles | The KB article/s related to the entity. | keyword |
+| ocsf.remediation.references | A list of supporting URL/s, references that help describe the remediation strategy. | keyword |
 | ocsf.remote_display.color_depth | The numeric color depth. | long |
 | ocsf.remote_display.physical_height | The numeric physical height of display. | long |
 | ocsf.remote_display.physical_orientation | The numeric physical orientation of display. | long |
@@ -1662,42 +1769,6 @@ This is the `Event` dataset.
 | ocsf.request.flags | The list of communication flags, normalized to the captions of the flag_ids values. In the case of 'Other', they are defined by the event source. | date |
 | ocsf.request.uid | The unique request identifier. | keyword |
 | ocsf.requested_permissions | The permissions mask that were requested by the process. | long |
-| ocsf.resource.cloud_partition | The canonical cloud partition name to which the region is assigned (e.g. AWS Partitions: aws, aws-cn, aws-us-gov). | keyword |
-| ocsf.resource.criticality | The criticality of the resource as defined by the event source. | keyword |
-| ocsf.resource.data | Additional data describing the resource. | flattened |
-| ocsf.resource.group.desc | The group description. | keyword |
-| ocsf.resource.group.name | The group name. | keyword |
-| ocsf.resource.group.privileges | The group privileges. | keyword |
-| ocsf.resource.group.type | The type of the group or account. | keyword |
-| ocsf.resource.group.uid | The unique identifier of the group. For example, for Windows events this is the security identifier (SID) of the group. | keyword |
-| ocsf.resource.labels | The list of labels/tags associated to a resource. | keyword |
-| ocsf.resource.name | The name of the resource. | keyword |
-| ocsf.resource.owner.account.name | The name of the account (e.g. GCP Account Name). | keyword |
-| ocsf.resource.owner.account.type | The account type, normalized to the caption of 'account_type_id'. In the case of 'Other', it is defined by the event source. | keyword |
-| ocsf.resource.owner.account.type_id | The normalized account type identifier. | keyword |
-| ocsf.resource.owner.account.uid | The unique identifier of the account (e.g. AWS Account ID). | keyword |
-| ocsf.resource.owner.credential_uid | The unique identifier of the user's credential. For example, AWS Access Key ID. | keyword |
-| ocsf.resource.owner.domain | The domain where the user is defined. For example: the LDAP or Active Directory domain. | keyword |
-| ocsf.resource.owner.email_addr | The user's email address. | keyword |
-| ocsf.resource.owner.full_name | The full name of the person, as per the LDAP Common Name attribute (cn). | keyword |
-| ocsf.resource.owner.groups.desc | The group description. | keyword |
-| ocsf.resource.owner.groups.name | The group name. | keyword |
-| ocsf.resource.owner.groups.privileges | The group privileges. | keyword |
-| ocsf.resource.owner.groups.type | The type of the group or account. | keyword |
-| ocsf.resource.owner.groups.uid | The unique identifier of the group. For example, for Windows events this is the security identifier (SID) of the group. | keyword |
-| ocsf.resource.owner.name | The username. For example, janedoe1. | keyword |
-| ocsf.resource.owner.org.name | The name of the organization. For example, Widget, Inc. | keyword |
-| ocsf.resource.owner.org.ou_name | The name of the organizational unit, within an organization. For example, Finance, IT, R&D. | keyword |
-| ocsf.resource.owner.org.ou_uid | The alternate identifier for an entity's unique identifier. For example, its Active Directory OU DN or AWS OU ID. | keyword |
-| ocsf.resource.owner.org.uid | The unique identifier of the organization. For example, its Active Directory or AWS Org ID. | keyword |
-| ocsf.resource.owner.type | The type of the user. For example, System, AWS IAM User, etc. | keyword |
-| ocsf.resource.owner.type_id | The account type identifier. | keyword |
-| ocsf.resource.owner.uid | The unique user identifier. For example, the Windows user SID, ActiveDirectory DN or AWS user ARN. | keyword |
-| ocsf.resource.owner.uid_alt | The alternate user identifier. For example, the Active Directory user GUID or AWS user Principal ID. | keyword |
-| ocsf.resource.region | The cloud region of the resource. | keyword |
-| ocsf.resource.type | The resource type as defined by the event source. | keyword |
-| ocsf.resource.uid | The unique identifier of the resource. | keyword |
-| ocsf.resource.version | The version of the resource. For example 1.2.3. | keyword |
 | ocsf.resources.cloud_partition | The canonical cloud partition name to which the region is assigned (e.g. AWS Partitions: aws, aws-cn, aws-us-gov). | keyword |
 | ocsf.resources.criticality | The criticality of the resource as defined by the event source. | keyword |
 | ocsf.resources.data | Additional data describing the resource. | flattened |
@@ -1708,6 +1779,7 @@ This is the `Event` dataset.
 | ocsf.resources.group.uid | The unique identifier of the group. For example, for Windows events this is the security identifier (SID) of the group. | keyword |
 | ocsf.resources.labels | The list of labels/tags associated to a resource. | keyword |
 | ocsf.resources.name | The name of the resource. | keyword |
+| ocsf.resources.namespace | The namespace is useful when similar entities exist that you need to keep separate. | keyword |
 | ocsf.resources.owner.account.name | The name of the account (e.g. GCP Account Name). | keyword |
 | ocsf.resources.owner.account.type | The account type, normalized to the caption of 'account_type_id'. In the case of 'Other', it is defined by the event source. | keyword |
 | ocsf.resources.owner.account.type_id | The normalized account type identifier. | keyword |
@@ -1720,7 +1792,9 @@ This is the `Event` dataset.
 | ocsf.resources.owner.groups.name | The group name. | keyword |
 | ocsf.resources.owner.groups.privileges | The group privileges. | keyword |
 | ocsf.resources.owner.groups.type | The type of the group or account. | keyword |
+| ocsf.resources.owner.groups.type_id | The resource group type identifier. | keyword |
 | ocsf.resources.owner.groups.uid | The unique identifier of the group. For example, for Windows events this is the security identifier (SID) of the group. | keyword |
+| ocsf.resources.owner.ldap_person | The LDAP person object. | flattened |
 | ocsf.resources.owner.name | The username. For example, janedoe1. | keyword |
 | ocsf.resources.owner.org.name | The name of the organization. For example, Widget, Inc. | keyword |
 | ocsf.resources.owner.org.ou_name | The name of the organizational unit, within an organization. For example, Finance, IT, R&D. | keyword |
@@ -1732,6 +1806,7 @@ This is the `Event` dataset.
 | ocsf.resources.owner.uid_alt | The alternate user identifier. For example, the Active Directory user GUID or AWS user Principal ID. | keyword |
 | ocsf.resources.region | The cloud region of the resource. | keyword |
 | ocsf.resources.type | The resource type as defined by the event source. | keyword |
+| ocsf.resources.type_id | The resource type identifier. | keyword |
 | ocsf.resources.uid | The unique identifier of the resource. | keyword |
 | ocsf.resources.version | The version of the resource. For example 1.2.3. | keyword |
 | ocsf.response.code | The numeric response sent to a request. | long |
@@ -1744,6 +1819,15 @@ This is the `Event` dataset.
 | ocsf.risk_level | The risk level, normalized to the caption of the risk_level_id value. In the case of 'Other', it is defined by the event source. | keyword |
 | ocsf.risk_level_id | The normalized risk level id. | keyword |
 | ocsf.risk_score | The risk score as reported by the event source. | long |
+| ocsf.scan.name | The administrator-supplied or application-generated name of the scan. | keyword |
+| ocsf.scan.type | The type of scan. | keyword |
+| ocsf.scan.type_id | The type id of the scan. | keyword |
+| ocsf.scan.uid | The application-defined unique identifier assigned to an instance of a scan. | keyword |
+| ocsf.schedule_uid | The unique identifier of the schedule associated with a scan job. | keyword |
+| ocsf.security_level | The current security level of the entity. | keyword |
+| ocsf.security_level_id | The current security level of the entity. | integer |
+| ocsf.security_states.state | The security state, normalized to the caption of the state_id value. | keyword |
+| ocsf.security_states.state_id | The security state of the managed entity. | keyword |
 | ocsf.server_hassh.algorithm | The concatenation of key exchange, encryption, authentication and compression algorithms (separated by ';'). NOTE: This is not the underlying algorithm for the hash implementation. | keyword |
 | ocsf.server_hassh.fingerprint.algorithm | The hash algorithm used to create the digital fingerprint, normalized to the caption of 'algorithm_id'. In the case of 'Other', it is defined by the event source. | keyword |
 | ocsf.server_hassh.fingerprint.algorithm_id | The identifier of the normalized hash algorithm, which was used to create the digital fingerprint. | keyword |
@@ -1769,8 +1853,10 @@ This is the `Event` dataset.
 | ocsf.share_type_id | The normalized identifier of the SMB share type. | keyword |
 | ocsf.size | The memory size that was access or requested. | long |
 | ocsf.smtp_hello | The value of the SMTP HELO or EHLO command sent by the initiator (client). | keyword |
+| ocsf.src_endpoint.container | The information describing an instance of a container. | flattened |
 | ocsf.src_endpoint.domain | The name of the domain. | keyword |
 | ocsf.src_endpoint.hostname | The fully qualified name of the endpoint. | keyword |
+| ocsf.src_endpoint.hw_info | The endpoint hardware information. | flattened |
 | ocsf.src_endpoint.instance_uid | The unique identifier of a VM instance. | keyword |
 | ocsf.src_endpoint.interface_name | The name of the network interface (e.g. eth2). | keyword |
 | ocsf.src_endpoint.interface_uid | The unique identifier of the network interface. | keyword |
@@ -1788,12 +1874,19 @@ This is the `Event` dataset.
 | ocsf.src_endpoint.location.region | The alphanumeric code that identifies the principal subdivision (e.g. province or state) of the country. Region codes are defined at ISO 3166-2 and have a limit of three characters. For example, see the region codes for the US. | keyword |
 | ocsf.src_endpoint.mac | The Media Access Control (MAC) address of the endpoint. | keyword |
 | ocsf.src_endpoint.name | The short name of the endpoint. | keyword |
+| ocsf.src_endpoint.namespace_pid | If running under a process namespace (such as in a container), the process identifier within that process namespace. | integer |
+| ocsf.src_endpoint.os | The endpoint operating system. | flattened |
 | ocsf.src_endpoint.port | The port used for communication within the network connection. | long |
+| ocsf.src_endpoint.proxy_endpoint | The network proxy information pertaining to a specific endpoint. This can be used to describe information pertaining to network address translation (NAT). | flattened |
 | ocsf.src_endpoint.subnet_uid | The unique identifier of a virtual subnet. | keyword |
 | ocsf.src_endpoint.svc_name | The service name in service-to-service connections. For example, AWS VPC logs the pkt-src-aws-service and pkt-dst-aws-service fields identify the connection is coming from or going to an AWS service. | keyword |
+| ocsf.src_endpoint.type | The network endpoint type. For example, unknown, server, desktop, laptop, tablet, mobile, virtual, browser, or other. | keyword |
+| ocsf.src_endpoint.type_id | The network endpoint type ID. | keyword |
 | ocsf.src_endpoint.uid | The unique identifier of the endpoint. | keyword |
 | ocsf.src_endpoint.vlan_uid | The Virtual LAN identifier. | keyword |
 | ocsf.src_endpoint.vpc_uid | The unique identifier of the Virtual Private Cloud (VPC). | keyword |
+| ocsf.src_endpoint.zone | The network zone or LAN segment. | keyword |
+| ocsf.src_url | A Url link used to access the original incident. | keyword |
 | ocsf.start_time | The start time of a time period, or the time of the least recent event included in the aggregate event. | date |
 | ocsf.start_time_dt | The start time of a time period, or the time of the least recent event included in the aggregate event. | date |
 | ocsf.state | The normalized state of a security finding. | keyword |
@@ -1802,6 +1895,9 @@ This is the `Event` dataset.
 | ocsf.status_code | The event status code, as reported by the event source. For example, in a Windows Failed Authentication event, this would be the value of 'Failure Code', e.g. 0x18. | keyword |
 | ocsf.status_detail | The status details contains additional information about the event outcome. | keyword |
 | ocsf.status_id | The normalized identifier of the event status. | keyword |
+| ocsf.stratum | The stratum level of the NTP server's time source, normalized to the caption of the stratum_id value. | keyword |
+| ocsf.stratum_id | The normalized identifier of the stratum level, as defined in RFC-5905. | integer |
+| ocsf.table | The table object represents a table within a structured relational database or datastore, which contains columns and rows of data that are able to be create, updated, deleted and queried. | flattened |
 | ocsf.time | The normalized event occurrence time. | date |
 | ocsf.time_dt | The normalized event occurrence time. | date |
 | ocsf.timezone_offset | The number of minutes that the reported event time is ahead or behind UTC, in the range -1,080 to +1,080. | long |
@@ -1836,6 +1932,7 @@ This is the `Event` dataset.
 | ocsf.tls.server_ciphers | The server cipher suites that were exchanged during the TLS handshake negotiation. | keyword |
 | ocsf.tls.sni | The Server Name Indication (SNI) extension sent by the client. | keyword |
 | ocsf.tls.version | The TLS protocol version. | keyword |
+| ocsf.total | The total number of items that were scanned; zero if no items were scanned. | integer |
 | ocsf.traffic.bytes | The total number of bytes (in and out). | long |
 | ocsf.traffic.bytes_in | The number of bytes sent from the destination to the source. | long |
 | ocsf.traffic.bytes_out | The number of bytes sent from the source to the destination. | long |
@@ -1844,7 +1941,8 @@ This is the `Event` dataset.
 | ocsf.traffic.packets_out | The number of packets sent from the source to the destination. | long |
 | ocsf.transaction_uid | The unique identifier of the transaction. This is typically a random number generated from the client to associate a dhcp request/response pair. | keyword |
 | ocsf.tree_uid | The tree id is a unique SMB identifier which represents an open connection to a share. | keyword |
-| ocsf.type | The type of FTP network connection (e.g. active, passive). | keyword |
+| ocsf.type | The type the event. | keyword |
+| ocsf.type_id | The normalized event type identifier. | keyword |
 | ocsf.type_name | The event type name, as defined by the type_uid. | keyword |
 | ocsf.type_uid | The event type ID. It identifies the events semantics and structure. The value is calculated by the logging system as: class_uid \* 100 + activity_id. | keyword |
 | ocsf.unmapped | The attributes that are not mapped to the event schema. The names and values of those attributes are specific to the event source. | flattened |
@@ -1867,15 +1965,65 @@ This is the `Event` dataset.
 | ocsf.user.email_addr | The user's email address. | keyword |
 | ocsf.user.full_name | The full name of the person, as per the LDAP Common Name attribute (cn). | keyword |
 | ocsf.user.groups.desc | The group description. | keyword |
+| ocsf.user.groups.domain | The domain where the group is defined. For example, the LDAP or Active Directory domain. | keyword |
 | ocsf.user.groups.name | The group name. | keyword |
 | ocsf.user.groups.privileges | The group privileges. | keyword |
 | ocsf.user.groups.type | The type of the group or account. | keyword |
 | ocsf.user.groups.uid | The unique identifier of the group. For example, for Windows events this is the security identifier (SID) of the group. | keyword |
+| ocsf.user.ldap_person.cost_center | The cost center associated with the user. | keyword |
+| ocsf.user.ldap_person.created_time | The timestamp when the user was created. | date |
+| ocsf.user.ldap_person.created_time_dt | The date when the user was created. | date |
+| ocsf.user.ldap_person.deleted_time | The timestamp when the user was deleted. | date |
+| ocsf.user.ldap_person.deleted_time_dt | The date when the user was deleted. | date |
+| ocsf.user.ldap_person.email_addrs | A list of additional email addresses for the user. | keyword |
+| ocsf.user.ldap_person.employee_uid | The employee identifier assigned to the user by the organization. | keyword |
+| ocsf.user.ldap_person.given_name | The given or first name of the user. | keyword |
+| ocsf.user.ldap_person.hire_time | The timestamp when the user was or will be hired by the organization. | date |
+| ocsf.user.ldap_person.hire_time_dt | The date when the user was or will be hired by the organization. | date |
+| ocsf.user.ldap_person.job_title | The user's job title. | keyword |
+| ocsf.user.ldap_person.labels | The labels associated with the user. For example in AD this could be the userType, employeeType. | keyword |
+| ocsf.user.ldap_person.last_login_time | The last time when the user logged in. | date |
+| ocsf.user.ldap_person.last_login_time_dt | The last date when the user logged in. | date |
+| ocsf.user.ldap_person.ldap_cn | The LDAP and X.500 commonName attribute, typically the full name of the person. For example, John Doe. | keyword |
+| ocsf.user.ldap_person.ldap_dn | The X.500 Distinguished Name (DN) is a structured string that uniquely identifies an entry, such as a user, in an X.500 directory service For example, cn=John Doe,ou=People,dc=example,dc=com. | keyword |
+| ocsf.user.ldap_person.leave_time | The timestamp when the user left or will be leaving the organization. | date |
+| ocsf.user.ldap_person.leave_time_dt | The date when the user left or will be leaving the organization. | date |
+| ocsf.user.ldap_person.location.city | The name of the city. | keyword |
+| ocsf.user.ldap_person.location.continent | The name of the continent. | keyword |
+| ocsf.user.ldap_person.location.coordinates | A two-element array, containing a longitude/latitude pair. The format conforms with GeoJSON. | geo_point |
+| ocsf.user.ldap_person.location.country | The ISO 3166-1 Alpha-2 country code. For the complete list of country codes see ISO 3166-1 alpha-2 codes. The two letter country code should be capitalized. | keyword |
+| ocsf.user.ldap_person.location.desc | The description of the geographical location. | keyword |
+| ocsf.user.ldap_person.location.is_on_premises | The indication of whether the location is on premises. | boolean |
+| ocsf.user.ldap_person.location.isp | The name of the Internet Service Provider (ISP). | keyword |
+| ocsf.user.ldap_person.location.postal_code | The postal code of the location. | keyword |
+| ocsf.user.ldap_person.location.provider | The provider of the geographical location data. | keyword |
+| ocsf.user.ldap_person.location.region | The alphanumeric code that identifies the principal subdivision (e.g. province or state) of the country. Region codes are defined at ISO 3166-2 and have a limit of three characters. For example, see the region codes for the US. | keyword |
+| ocsf.user.ldap_person.manager.account.name | The name of the account (e.g. GCP Account Name). | keyword |
+| ocsf.user.ldap_person.manager.account.type | The account type, normalized to the caption of 'account_type_id'. In the case of 'Other', it is defined by the event source. | keyword |
+| ocsf.user.ldap_person.manager.account.type_id | The normalized account type identifier. | keyword |
+| ocsf.user.ldap_person.manager.account.uid | The unique identifier of the account (e.g. AWS Account ID). | keyword |
+| ocsf.user.ldap_person.manager.credential_uid | The unique identifier of the user's credential. For example, AWS Access Key ID. | keyword |
+| ocsf.user.ldap_person.manager.domain | The domain where the user is defined. For example: the LDAP or Active Directory domain. | keyword |
+| ocsf.user.ldap_person.manager.email_addr | The user's email address. | keyword |
+| ocsf.user.ldap_person.manager.full_name | The full name of the person, as per the LDAP Common Name attribute (cn). | keyword |
+| ocsf.user.ldap_person.manager.groups.desc | The group description. | keyword |
+| ocsf.user.ldap_person.manager.groups.domain | The domain where the group is defined. For example, the LDAP or Active Directory domain. | keyword |
+| ocsf.user.ldap_person.manager.groups.name | The group name. | keyword |
+| ocsf.user.ldap_person.manager.groups.privileges | The group privileges. | keyword |
+| ocsf.user.ldap_person.manager.groups.type | The type of the group or account. | keyword |
+| ocsf.user.ldap_person.manager.groups.uid | The unique identifier of the group. For example, for Windows events this is the security identifier (SID) of the group. | keyword |
+| ocsf.user.ldap_person.manager.name | The username. For example, janedoe1. | keyword |
+| ocsf.user.ldap_person.manager.org.\* | Organization and org unit related to the user. | object |
+| ocsf.user.ldap_person.manager.type | The type of the user. For example, System, AWS IAM User, etc. | keyword |
+| ocsf.user.ldap_person.manager.type_id | The account type identifier. | keyword |
+| ocsf.user.ldap_person.manager.uid | The unique user identifier. For example, the Windows user SID, ActiveDirectory DN or AWS user ARN. | keyword |
+| ocsf.user.ldap_person.manager.uid_alt | The alternate user identifier. For example, the Active Directory user GUID or AWS user Principal ID. | keyword |
+| ocsf.user.ldap_person.modified_time | The timestamp when the user entry was last modified. | date |
+| ocsf.user.ldap_person.modified_time_dt | The date when the user entry was last modified. | date |
+| ocsf.user.ldap_person.office_location | The primary office location associated with the user. This could be any string and isn't a specific address. | keyword |
+| ocsf.user.ldap_person.surname | The last or family name for the user. | keyword |
 | ocsf.user.name | The username. For example, janedoe1. | keyword |
-| ocsf.user.org.name | The name of the organization. For example, Widget, Inc. | keyword |
-| ocsf.user.org.ou_name | The name of the organizational unit, within an organization. For example, Finance, IT, R&D. | keyword |
-| ocsf.user.org.ou_uid | The alternate identifier for an entity's unique identifier. For example, its Active Directory OU DN or AWS OU ID. | keyword |
-| ocsf.user.org.uid | The unique identifier of the organization. For example, its Active Directory or AWS Org ID. | keyword |
+| ocsf.user.org.\* | Organization and org unit related to the user. | object |
 | ocsf.user.type | The type of the user. For example, System, AWS IAM User, etc. | keyword |
 | ocsf.user.type_id | The account type identifier. | keyword |
 | ocsf.user.uid | The unique user identifier. For example, the Windows user SID, ActiveDirectory DN or AWS user ARN. | keyword |
@@ -1902,6 +2050,9 @@ This is the `Event` dataset.
 | ocsf.user_result.type_id | The account type identifier. | keyword |
 | ocsf.user_result.uid | The unique user identifier. For example, the Windows user SID, ActiveDirectory DN or AWS user ARN. | keyword |
 | ocsf.user_result.uid_alt | The alternate user identifier. For example, the Active Directory user GUID or AWS user Principal ID. | keyword |
+| ocsf.verdict | The verdict assigned to an Incident finding. | keyword |
+| ocsf.verdict_id | The normalized verdict of an Incident. | integer |
+| ocsf.version | The version number of the NTP protocol. | keyword |
 | ocsf.vulnerabilities.cve.created_time | The Record Creation Date identifies when the CVE ID was issued to a CVE Numbering Authority (CNA) or the CVE Record was published on the CVE List. Note that the Record Creation Date does not necessarily indicate when this vulnerability was discovered, shared with the affected vendor, publicly disclosed, or updated in CVE. | date |
 | ocsf.vulnerabilities.cve.created_time_dt | The Record Creation Date identifies when the CVE ID was issued to a CVE Numbering Authority (CNA) or the CVE Record was published on the CVE List. Note that the Record Creation Date does not necessarily indicate when this vulnerability was discovered, shared with the affected vendor, publicly disclosed, or updated in CVE. | date |
 | ocsf.vulnerabilities.cve.cvss.base_score | The CVSS base score. For example: 9.1. | double |
@@ -1912,13 +2063,15 @@ This is the `Event` dataset.
 | ocsf.vulnerabilities.cve.cvss.severity | The Common Vulnerability Scoring System (CVSS) Qualitative Severity Rating. A textual representation of the numeric score. | keyword |
 | ocsf.vulnerabilities.cve.cvss.vector_string | The CVSS vector string is a text representation of a set of CVSS metrics. It is commonly used to record or transfer CVSS metric information in a concise form. For example: 3.1/AV:L/AC:L/PR:L/UI:N/S:U/C:H/I:N/A:H. | keyword |
 | ocsf.vulnerabilities.cve.cvss.version | The CVSS version. For example: 3.1. | keyword |
+| ocsf.vulnerabilities.cve.cwe | The Common Weakness Enumeration (CWE) object describes the type of weakness identified in the vulnerability. | flattened |
 | ocsf.vulnerabilities.cve.cwe_uid | The Common Weakness Enumeration (CWE) unique identifier. For example: CWE-787. | keyword |
 | ocsf.vulnerabilities.cve.cwe_url | Common Weakness Enumeration (CWE) definition URL. For example: https://cwe.mitre.org/data/definitions/787.html. | keyword |
+| ocsf.vulnerabilities.cve.desc | The description of the vulnerability. | keyword |
+| ocsf.vulnerabilities.cve.epss | The Exploit Prediction Scoring System (EPSS) object describes the estimated probability a vulnerability will be exploited. | flattened |
+| ocsf.vulnerabilities.cve.fix_available | Indicates if a fix is available for the reported vulnerability. | boolean |
 | ocsf.vulnerabilities.cve.modified_time | The Record Modified Date identifies when the CVE record was last updated. | date |
 | ocsf.vulnerabilities.cve.modified_time_dt | The Record Modified Date identifies when the CVE record was last updated. | date |
-| ocsf.vulnerabilities.cve.product.feature.name | The name of the feature. | keyword |
-| ocsf.vulnerabilities.cve.product.feature.uid | The unique identifier of the feature. | keyword |
-| ocsf.vulnerabilities.cve.product.feature.version | The version of the feature. | keyword |
+| ocsf.vulnerabilities.cve.product.feature.\* | The Feature object provides information about the software product feature that generated a specific event. | object |
 | ocsf.vulnerabilities.cve.product.lang | The two letter lower case language codes, as defined by ISO 639-1. For example: en (English), de (German), or fr (French). | keyword |
 | ocsf.vulnerabilities.cve.product.name | The name of the product. | keyword |
 | ocsf.vulnerabilities.cve.product.path | The installation path of the product. | keyword |
@@ -1926,10 +2079,13 @@ This is the `Event` dataset.
 | ocsf.vulnerabilities.cve.product.url_string | The URL pointing towards the product. | keyword |
 | ocsf.vulnerabilities.cve.product.vendor_name | The name of the vendor of the product. | keyword |
 | ocsf.vulnerabilities.cve.product.version | The version of the product, as defined by the event source. For example: 2013.1.3-beta. | keyword |
+| ocsf.vulnerabilities.cve.references | Supporting reference URLs. | keyword |
+| ocsf.vulnerabilities.cve.title | The title of the cve. | keyword |
 | ocsf.vulnerabilities.cve.type | The vulnerability type as selected from a large dropdown menu during CVE refinement. | keyword |
 | ocsf.vulnerabilities.cve.uid | The Common Vulnerabilities and Exposures unique number assigned to a specific computer vulnerability. A CVE Identifier begins with 4 digits representing the year followed by a sequence of digits that acts as a unique identifier. For example: CVE-2021-12345. | keyword |
-| ocsf.vulnerabilities.desc | The description of the vulnerability. | keyword |
-| ocsf.vulnerabilities.fix_available | Indicates if a fix is available for the reported vulnerability. | boolean |
+| ocsf.vulnerabilities.cwe.caption | The caption assigned to the Common Weakness Enumeration unique identifier. | keyword |
+| ocsf.vulnerabilities.cwe.src_url | URL pointing to the CWE Specification. | keyword |
+| ocsf.vulnerabilities.cwe.uid | The Common Weakness Enumeration unique number assigned to a specific weakness. | keyword |
 | ocsf.vulnerabilities.kb_articles | The KB article/s related to the entity. | keyword |
 | ocsf.vulnerabilities.packages.architecture | Architecture is a shorthand name describing the type of computer hardware the packaged software is meant to run on. | keyword |
 | ocsf.vulnerabilities.packages.epoch | The software package epoch. Epoch is a way to define weighted dependencies based on version numbers. | long |

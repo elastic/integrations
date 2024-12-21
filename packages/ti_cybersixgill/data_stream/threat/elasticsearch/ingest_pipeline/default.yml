@@ -105,12 +105,12 @@ processors:
       processor:
         set:
           field: threat.indicator.type
-          value: "{{_ingest._value}}"
+          value: "{{{_ingest._value}}}"
           override: false
       ignore_missing: true
   - set:
       field: threat.indicator.name
-      value: '{{_temp_.threatvalue}}'
+      value: '{{{_temp_.threatvalue}}}'
       ignore_empty_value: true
   - set:
       field: threat.indicator.name
@@ -179,7 +179,7 @@ processors:
       ignore_missing: true
   - set:
       field: threat.indicator.reference
-      value: "https://portal.cybersixgill.com/#/search?q=_id:{{cybersixgill.sixgill_postid}}"
+      value: "https://portal.cybersixgill.com/#/search?q=_id:{{{cybersixgill.sixgill_postid}}}"
       if: ctx.cybersixgill?.sixgill_postid != null
   - convert:
       field: cybersixgill.sixgill_confidence
@@ -274,7 +274,7 @@ processors:
       processor:
         append:
           field: tags
-          value: "{{_ingest._value}}"
+          value: "{{{_ingest._value}}}"
       ignore_missing: true
       ignore_failure: true
       if: ctx._temp_?.tags != null
@@ -326,11 +326,6 @@ processors:
         }
         handleMap(ctx);
   - remove:
-      field: event.original
-      if: "ctx?.tags == null || !(ctx.tags.contains('preserve_original_event'))"
-      ignore_failure: true
-      ignore_missing: true
-  - remove:
       field:
         - _temp_
         - cybersixgill.sixgill_postid
@@ -357,6 +352,10 @@ on_failure:
   - set:
       field: event.kind
       value: pipeline_error
+  - append:
+      field: tags
+      value: preserve_original_event
+      allow_duplicates: false
   - append:
       field: error.message
       value: '{{{ _ingest.on_failure_message }}}'

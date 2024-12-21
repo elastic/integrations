@@ -1,0 +1,202 @@
+---
+description: Pipeline for processing Business Application logs.
+processors:
+  - set:
+      field: event.kind
+      tag: set_event_kind_to_event_cmdb_ci_business_app
+      value: event
+  - set:
+      field: event.category
+      tag: append_event_category_cmdb_ci_business_app
+      value: ['configuration','host']
+  - convert:
+      field: servicenow.event.active_user_count.value
+      tag: convert_active_user_count_value_to_long
+      type: long
+      ignore_missing: true
+      if: ctx.servicenow?.event?.active_user_count?.value != ''
+      on_failure:
+        - remove:
+            field: servicenow.event.active_user_count.value
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - convert:
+      field: servicenow.event.certified.display_value
+      tag: convert_certified_display_value_to_boolean
+      type: boolean
+      ignore_missing: true
+      if: ctx.servicenow?.event?.certified?.display_value != ''
+      on_failure:
+        - remove:
+            field: servicenow.event.certified.display_value
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - convert:
+      field: servicenow.event.certified.value
+      tag: convert_certified_value_to_boolean
+      type: boolean
+      ignore_missing: true
+      if: ctx.servicenow?.event?.certified?.value != ''
+      on_failure:
+        - remove:
+            field: servicenow.event.certified.value
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - date:
+      field: servicenow.event.contract_end_date.display_value
+      tag: date_contract_end_date_display_value
+      target_field: servicenow.event.contract_end_date.display_value
+      formats:
+        - yyyy-MM-dd H:mm:ss
+        - yyyy-MM-dd HH:mm:ss
+        - yyyy-MM-dd
+        - MM-dd-yyyy H:mm:ss
+        - MM-dd-yyyy HH:mm:ss
+        - MM-dd-yyyy
+        - dd-MM-yyyy H:mm:ss
+        - dd-MM-yyyy HH:mm:ss
+        - dd-MM-yyyy
+        - MM/dd/yyyy H:mm:ss
+        - MM/dd/yyyy HH:mm:ss
+        - MM/dd/yyyy
+        - dd/MM/yyyy H:mm:ss
+        - dd/MM/yyyy HH:mm:ss
+        - dd/MM/yyyy
+        - MM/dd/yy H:mm:ss
+        - MM/dd/yy HH:mm:ss
+        - MM/dd/yy
+        - dd.MM.yyyy H:mm:ss
+        - dd.MM.yyyy HH:mm:ss
+        - dd.MM.yyyy
+      if: ctx.servicenow?.event?.contract_end_date?.display_value != null && ctx.servicenow.event.contract_end_date.display_value != ''
+      on_failure:
+        - remove:
+            field: servicenow.event.contract_end_date.display_value
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - date:
+      field: servicenow.event.contract_end_date.value
+      tag: date_contract_end_date_value
+      target_field: servicenow.event.contract_end_date.value
+      formats:
+        - yyyy-MM-dd H:mm:ss
+        - yyyy-MM-dd HH:mm:ss
+        - yyyy-MM-dd
+        - MM-dd-yyyy H:mm:ss
+        - MM-dd-yyyy HH:mm:ss
+        - MM-dd-yyyy
+        - dd-MM-yyyy H:mm:ss
+        - dd-MM-yyyy HH:mm:ss
+        - dd-MM-yyyy
+        - MM/dd/yyyy H:mm:ss
+        - MM/dd/yyyy HH:mm:ss
+        - MM/dd/yyyy
+        - dd/MM/yyyy H:mm:ss
+        - dd/MM/yyyy HH:mm:ss
+        - dd/MM/yyyy
+        - MM/dd/yy H:mm:ss
+        - MM/dd/yy HH:mm:ss
+        - MM/dd/yy
+        - dd.MM.yyyy H:mm:ss
+        - dd.MM.yyyy HH:mm:ss
+        - dd.MM.yyyy
+      if: ctx.servicenow?.event?.contract_end_date?.value != null && ctx.servicenow.event.contract_end_date.value != ''
+      on_failure:
+        - remove:
+            field: servicenow.event.contract_end_date.value
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - date:
+      field: servicenow.event.next_assessment_date.display_value
+      tag: date_next_assessment_date_display_value
+      target_field: servicenow.event.next_assessment_date.display_value
+      formats:
+        - yyyy-MM-dd H:mm:ss
+        - yyyy-MM-dd HH:mm:ss
+        - yyyy-MM-dd
+        - MM-dd-yyyy H:mm:ss
+        - MM-dd-yyyy HH:mm:ss
+        - MM-dd-yyyy
+        - dd-MM-yyyy H:mm:ss
+        - dd-MM-yyyy HH:mm:ss
+        - dd-MM-yyyy
+        - MM/dd/yyyy H:mm:ss
+        - MM/dd/yyyy HH:mm:ss
+        - MM/dd/yyyy
+        - dd/MM/yyyy H:mm:ss
+        - dd/MM/yyyy HH:mm:ss
+        - dd/MM/yyyy
+        - MM/dd/yy H:mm:ss
+        - MM/dd/yy HH:mm:ss
+        - MM/dd/yy
+        - dd.MM.yyyy H:mm:ss
+        - dd.MM.yyyy HH:mm:ss
+        - dd.MM.yyyy
+      if: ctx.servicenow?.event?.next_assessment_date?.display_value != null && ctx.servicenow.event.next_assessment_date.display_value != ''
+      on_failure:
+        - remove:
+            field: servicenow.event.next_assessment_date.display_value
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - date:
+      field: servicenow.event.next_assessment_date.value
+      tag: date_next_assessment_date_value
+      target_field: servicenow.event.next_assessment_date.value
+      formats:
+        - yyyy-MM-dd H:mm:ss
+        - yyyy-MM-dd HH:mm:ss
+        - yyyy-MM-dd
+        - MM-dd-yyyy H:mm:ss
+        - MM-dd-yyyy HH:mm:ss
+        - MM-dd-yyyy
+        - dd-MM-yyyy H:mm:ss
+        - dd-MM-yyyy HH:mm:ss
+        - dd-MM-yyyy
+        - MM/dd/yyyy H:mm:ss
+        - MM/dd/yyyy HH:mm:ss
+        - MM/dd/yyyy
+        - dd/MM/yyyy H:mm:ss
+        - dd/MM/yyyy HH:mm:ss
+        - dd/MM/yyyy
+        - MM/dd/yy H:mm:ss
+        - MM/dd/yy HH:mm:ss
+        - MM/dd/yy
+        - dd.MM.yyyy H:mm:ss
+        - dd.MM.yyyy HH:mm:ss
+        - dd.MM.yyyy
+      if: ctx.servicenow?.event?.next_assessment_date?.value != null && ctx.servicenow.event.next_assessment_date.value != ''
+      on_failure:
+        - remove:
+            field: servicenow.event.next_assessment_date.value
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - convert:
+      field: servicenow.event.organization_unit_count.value
+      tag: convert_organization_unit_count_value_to_long
+      type: long
+      ignore_missing: true
+      if: ctx.servicenow?.event?.organization_unit_count?.value != ''
+      on_failure:
+        - remove:
+            field: servicenow.event.organization_unit_count.value
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+on_failure:
+  - append:
+      field: error.message
+      value: >-
+        Processor '{{{ _ingest.on_failure_processor_type }}}'
+        {{{#_ingest.on_failure_processor_tag}}}with tag '{{{ _ingest.on_failure_processor_tag }}}'
+        {{{/_ingest.on_failure_processor_tag}}}failed with message '{{{ _ingest.on_failure_message }}}'
+  - set:
+      field: event.kind
+      tag: set_pipeline_error_to_event_kind
+      value: pipeline_error

@@ -107,22 +107,26 @@ program: |
         "plugin": {
           "type": "codec",
           "codec": {
-          "id":codec.id,
-          "name":codec.name,
+            "id":codec.id,
+            "name":codec.name,
             "flow": has(codec.flow) ? codec.flow : {},
-            "decode":{
-              "duration":{
-                "ms":codec.decode.duration_in_millis
-              },
-              "in":codec.decode.writes_in,
-              "out":codec.decode.out,
-            },
-            "encode":{
-              "in":codec.encode.writes_in,
-              "duration":{
-                "ms":codec.encode.duration_in_millis
-              }
-            }
+            "decode": has(codec.decode) ?
+              {
+                "duration":{
+                  "ms":codec.decode.duration_in_millis
+                },
+                "in":codec.decode.writes_in,
+                "out":codec.decode.out,
+              } :
+              {},
+            "encode": has(codec.encode) ?
+              {
+                "in":codec.encode.writes_in,
+                "duration":{
+                  "ms":codec.encode.duration_in_millis
+                }
+              } :
+              {}
           }
         }
       }.drop_empty()),

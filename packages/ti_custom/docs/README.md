@@ -46,6 +46,26 @@ However, for APIs that don't follow a specific communication protocol. The corre
 
 By default the integration only supports STIX 2.1 indicators. This means that to process IOCs in other formats, the `Restrict STIX 2.1 format` option must be disabled, and a custom pipeline added to map the indicators correctly.
 
+### Collecting Threat Intelligence from ISAC Feeds
+
+The Custom Threat Intelligence integration allows you to connect to and pull threat indicators from any server supporting the TAXII protocol. This makes this integration the perfect fit for retrieving structured threat intelligence from Information Sharing and Analysis Centers (ISACs), such as MS-ISAC, FS-ISAC, H-ISAC, and others. These ISACs provide STIX-formatted threat data through TAXII servers.
+
+To configure the integration to pull threat intelligence from an ISAC feed, follow these steps:
+
+1. Ensure ISAC Membership: Confirm that you are a member of the desired ISAC (e.g., MS-ISAC, FS-ISAC) and have access to its TAXII server credentials. Some ISACs require registration and approval before providing TAXII feed access.
+
+2. Obtain the following information from your ISAC:
+    - Server URL: The endpoint for the ISAC’s TAXII server (e.g. https://example-isac.org/taxii/).
+    - Collection Name: The specific collection containing the threat intelligence you want to retrieve.
+    - Authentication Credentials: Username, password, API Key, or client certificate, as required by the ISAC.
+
+3. Set up the integration:
+    - The server URL and collection name should be used to build the URL as follows: `https://{base_url}/{api-root}/collections/{name}/objects/`
+    - Provide the username/password, API Key or upload a client certificate, depending on the ISAC’s requirements.
+    - Set how often the integration should pull updates (e.g. every hour). You can also set the time range to search for indicators when the agent runs for the first time with the Initial Interval.
+
+Once the integration is running and pulling data, it automatically maps threat indicator fields from STIX to ECS. Verify that the imported indicators (e.g. IPs, domains, hashes) align with your detection rules.
+
 ### Expiration of Indicators of Compromise (IOCs)
 
 The Custom Threat Intelligence integration supports IOC expiration. The ingested IOCs expire after certain duration. Based on the [STIX 2.1 reference](https://docs.oasis-open.org/cti/stix/v2.1/os/stix-v2.1-os.html), the following options are available to determine the expiration of indicators:
@@ -79,24 +99,24 @@ An example event for `indicator` looks as following:
 {
     "@timestamp": "2015-05-15T09:12:16.432Z",
     "agent": {
-        "ephemeral_id": "e9b7affb-d2fa-46df-8a5b-7aa4b0be26d6",
-        "id": "7cab520a-0f06-4789-9ad6-56085169c3db",
-        "name": "elastic-agent-24648",
+        "ephemeral_id": "3179505d-300c-450f-9a13-6c48e97a6453",
+        "id": "f2593b61-002f-42d8-b72b-c4181b590c92",
+        "name": "elastic-agent-77457",
         "type": "filebeat",
-        "version": "8.15.0"
+        "version": "8.14.0"
     },
     "data_stream": {
         "dataset": "ti_custom.indicator",
-        "namespace": "56403",
+        "namespace": "36027",
         "type": "logs"
     },
     "ecs": {
         "version": "8.11.0"
     },
     "elastic_agent": {
-        "id": "7cab520a-0f06-4789-9ad6-56085169c3db",
+        "id": "f2593b61-002f-42d8-b72b-c4181b590c92",
         "snapshot": false,
-        "version": "8.15.0"
+        "version": "8.14.0"
     },
     "event": {
         "agent_id_status": "verified",
@@ -104,7 +124,7 @@ An example event for `indicator` looks as following:
             "threat"
         ],
         "dataset": "ti_custom.indicator",
-        "ingested": "2024-09-12T17:23:58Z",
+        "ingested": "2024-10-02T10:51:17Z",
         "kind": "enrichment",
         "original": "{\"type\":\"indicator\",\"spec_version\":\"2.1\",\"pattern_type\":\"stix\",\"id\":\"indicator--745e1537-b4f3-49da-9f64-df6b1b5df190\",\"created\":\"2015-05-15T09:12:16.432Z\",\"modified\":\"2015-05-15T09:12:16.432Z\",\"name\":\"Appendix E MD5 hash '002325a0a67fded0381b5648d7fe9b8e'\",\"description\":\"Test description.\",\"pattern\":\"[file:hashes.md5 = '002325a0a67fded0381b5648d7fe9b8e']\",\"indicator_types\":[\"malicious-activity\"],\"valid_from\":\"2015-05-15T09:12:16.432678Z\"}",
         "type": [
@@ -117,7 +137,7 @@ An example event for `indicator` looks as following:
     "log": {
         "file": {
             "device_id": "36",
-            "inode": "239",
+            "inode": "125",
             "path": "/tmp/service_logs/stix-indicators-ndjson.log"
         },
         "offset": 3409

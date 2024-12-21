@@ -19,49 +19,49 @@ data_stream:
     program: |
       state.with(
         request(
-        	"GET",
-        	(has(state.initial_interval) && state.initial_interval != "") ?
-        	  (
-        			state.url.trim_right("/") + "?" + {
-        				"start": [(now() - duration(state.initial_interval)).format(time_layout.RFC3339)],
-        			}.format_query()
-        		)
-        	:
-        		state.url
+          "GET",
+          (has(state.initial_interval) && state.initial_interval != "") ?
+            (
+              state.url.trim_right("/") + "?" + {
+                "start": [(now() - duration(state.initial_interval)).format(time_layout.RFC3339)],
+              }.format_query()
+            )
+          :
+            state.url
         ).with(
-        	{
-        		"Header": {
-        			"api-key": [string(state.api_key)],
-        		}
-        	}
+          {
+            "Header": {
+              "api-key": [string(state.api_key)],
+            }
+          }
         ).do_request().as(resp, (resp.StatusCode == 200) ?
-        	bytes(resp.Body).decode_json().as(body,
-        		{
-        			"events": body.objects.map(e,
-        				{
-        					"message": e.encode_json(),
-        				}
-        			),
-        			"url": state.url,
+          bytes(resp.Body).decode_json().as(body,
+            {
+              "events": body.objects.map(e,
+                {
+                  "message": e.encode_json(),
+                }
+              ),
+              "url": state.url,
               "api_key": state.api_key,
-        		}
-        	)
+            }
+          )
         :
-        	{
-        		"events": {
-        			"error": {
-        				"code": string(resp.StatusCode),
-        				"id": string(resp.Status),
-        				"message": "GET:" +
-        				(
-        					(size(resp.Body) != 0) ?
-        						string(resp.Body)
-        					:
-        						string(resp.Status) + " (" + string(resp.StatusCode) + ")"
-        				),
-        			},
-        		}
-        	}
+          {
+            "events": {
+              "error": {
+                "code": string(resp.StatusCode),
+                "id": string(resp.Status),
+                "message": "GET:" +
+                (
+                  (size(resp.Body) != 0) ?
+                    string(resp.Body)
+                  :
+                    string(resp.Status) + " (" + string(resp.StatusCode) + ")"
+                ),
+              },
+            }
+          }
         )
       )
 assert:

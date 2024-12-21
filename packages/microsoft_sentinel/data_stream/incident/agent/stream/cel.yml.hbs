@@ -1,0 +1,96 @@
+config_version: 2
+interval: {{interval}}
+{{#if enable_request_tracer}}
+resource.tracer.filename: "../../logs/cel/http-request-trace-*.ndjson"
+request.tracer.maxbackups: 5
+{{/if}}
+{{#if proxy_url}}
+resource.proxy_url: {{proxy_url}}
+{{/if}}
+{{#if ssl}}
+resource.ssl: {{ssl}}
+{{/if}}
+{{#if http_client_timeout}}
+resource.timeout: {{http_client_timeout}}
+{{/if}}
+resource.url: {{url}}/subscriptions/{{subscription_id}}/resourceGroups/{{resource_group_name}}/providers/Microsoft.OperationalInsights/workspaces/{{workspace_name}}/providers/Microsoft.SecurityInsights
+auth.oauth2:
+  client.id: {{client_id}}
+  client.secret: {{client_secret}}
+  token_url:  {{login_url}}/{{tenant_id}}/oauth2/token
+  endpoint_params:
+    resource: https://management.azure.com/
+state:
+  want_more: false
+  initial_interval: {{initial_interval}}
+  batch_size: {{batch_size}}
+redact:
+  fields: ~
+program: |
+  state.with(
+    state.?cursor.last_timestamp.orValue((now - duration(state.initial_interval))).as(last_modified_time, request(
+      "GET",
+      has(state.?next_page.link) ?
+        // The nextLink URL is unescaped, so we need to parse
+        // and reformat the query, otherwise the request fails.
+        state.url.trim_right("/") + "/incidents?" + state.next_page.link.parse_url().RawQuery.parse_query().format_query()
+      :
+        state.url.trim_right("/") + "/incidents?" + {
+          "api-version": ["2024-03-01"],
+          "$top": [string(state.batch_size)], 
+          "$orderby": ["properties/lastModifiedTimeUtc asc"],
+          "$filter": ["properties/lastModifiedTimeUtc ge " + string(last_modified_time)]
+        }.format_query()
+    )).do_request().as(resp, resp.StatusCode == 200 ?
+      bytes(resp.Body).decode_json().as(body, {
+        "events": body.?value.orValue([]).map(e, {
+          "message": e.encode_json(),
+        }),
+        "cursor": {
+          ?"last_timestamp": has(body.value) && size(body.value) > 0 && !has(body.nextLink)?
+            optional.of(
+              body.value.map(e, timestamp(e.properties.lastModifiedTimeUtc)).max()
+            )
+          :
+            state.?cursor.last_timestamp,
+        },
+        "next_page": {
+          ?"link": body.?nextLink,
+        },
+        "want_more": has(body.nextLink),
+      })
+    :
+      {
+        "events": [{
+          "error": {
+            "code": string(resp.StatusCode),
+            "id": string(resp.Status),
+            "message": "GET:"+ (
+              size(resp.Body) != 0 ?
+                string(resp.Body)
+                :
+                string(resp.Status) + ' (' + string(resp.StatusCode) + ')'
+            ),
+          },
+        }],
+        "want_more": false,
+      }
+    )
+  )
+tags:
+{{#if preserve_original_event}}
+  - preserve_original_event
+{{/if}}
+{{#if preserve_duplicate_custom_fields}}
+  - preserve_duplicate_custom_fields
+{{/if}}
+{{#each tags as |tag|}}
+  - {{tag}}
+{{/each}}
+{{#contains "forwarded" tags}}
+publisher_pipeline.disable_host: true
+{{/contains}}
+{{#if processors}}
+processors:
+{{processors}}
+{{/if}}

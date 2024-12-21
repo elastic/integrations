@@ -52,7 +52,7 @@ The minimum **kibana.version** required is **8.12.0**.
 
 Check the prerequisites for [Transforms](https://www.elastic.co/guide/en/elasticsearch/reference/current/transform-setup.html#transform-setup).
 
-Check the prerequisites for [Actions and Connectors](https://www.elastic.co/guide/en/kibana/current/create-connector-api.html#_prerequisites_16).
+Check the prerequisites for [Actions and Connectors](https://www.elastic.co/guide/en/kibana/current/action-types.html).
 
 ## Setup
 
