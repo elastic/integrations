@@ -2654,6 +2654,7 @@ An example event for `shard` looks as following:
 | source_node.uuid |  | alias |
 | timestamp |  | alias |
 
+
 ### Datastream usage analysis
 
 __Technical preview: please report any issue [here](https://github.com/elastic/integrations/issues), and specify the "elasticsearch" integration__
