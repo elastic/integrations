@@ -2684,6 +2684,8 @@ Other visualizations in the dashboards allow you to compare the relative footpri
 Both approaches can be used in conjunction, allowing you to fine-tune ILM on a datastream basis (if required) to closely match usage patterns.
 
 ⚠️ Important notes:
+
+* The transform job will process all compatible historical data, which has two implications: 1. if you have pre-8.17.1 data, this will not get picked up by the job and 2. it might take time for "live" data to be available, as the transform job works its way through all documents. You can modify the transform job as you please if need be.
 * The target index `monitoring-indices` is not controlled by ILM. In case you work on a setup with a high count of indices or with a high retention, you may need to tune the transform job, or [activate ILM on the target index](https://www.elastic.co/guide/en/elasticsearch/reference/current/getting-started-index-lifecycle-management.html#manage-time-series-data-without-data-streams). Per our testing on a cluster with 5000 indices, we generated around 1GB of primary data for each week.
 * The identification of the datastream is based on the following grok pattern: `^(?:partial-)?(?:restored-)?(?:shrink-.{4}-)?(?:\\.ds-)?(?<elasticsearch.index.datastream>[a-z_0-9\\-\\.]+?)(-(?:\\d{4}\\.\\d{2}(\\.\\d{2})?))?(?:-\\d+)?$`. This should cover all "out of the box" names, but you can modify this to your liking in the `{VERSION}-monitoring_indices` ingest pipeline (though a copy is advised), if you are using non-standard names or would like to aggregate data differently.
 
