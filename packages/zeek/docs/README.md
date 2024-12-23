@@ -1533,7 +1533,7 @@ The `known_certs` dataset captures information about SSL/TLS certificates seen o
 | tls.server.subject | Subject of the x.509 certificate presented by the server. | keyword |
 | tls.server.x509.issuer.common_name | List of common name (CN) of issuing certificate authority. | keyword |
 | tls.server.x509.issuer.distinguished_name | Distinguished name (DN) of issuing certificate authority. | keyword |
-| tls.server.x509.serial_number | Unique serial number issued by the certificate authority. For consistency, if this value is alphanumeric, it should be formatted without colons and uppercase characters. | keyword |
+| tls.server.x509.serial_number | Unique serial number issued by the certificate authority. For consistency, this should be encoded in base 16 and formatted without colons and uppercase characters. | keyword |
 | tls.server.x509.subject.common_name | List of common names (CN) of subject. | keyword |
 | tls.server.x509.subject.distinguished_name | Distinguished name (DN) of the certificate subject entity. | keyword |
 
@@ -4428,7 +4428,7 @@ X.509 certificate info.
 | file.x509.public_key_curve | The curve used by the elliptic curve public key algorithm. This is algorithm specific. | keyword |
 | file.x509.public_key_exponent | Exponent used to derive the public key. This is algorithm specific. | long |
 | file.x509.public_key_size | The size of the public key space in bits. | long |
-| file.x509.serial_number | Unique serial number issued by the certificate authority. For consistency, if this value is alphanumeric, it should be formatted without colons and uppercase characters. | keyword |
+| file.x509.serial_number | Unique serial number issued by the certificate authority. For consistency, this should be encoded in base 16 and formatted without colons and uppercase characters. | keyword |
 | file.x509.signature_algorithm | Identifier for certificate signature algorithm. We recommend using names found in Go Lang Crypto library. See https://github.com/golang/go/blob/go1.14/src/crypto/x509/x509.go#L337-L353. | keyword |
 | file.x509.subject.common_name | List of common names (CN) of subject. | keyword |
 | file.x509.subject.country | List of country \(C) code | keyword |
