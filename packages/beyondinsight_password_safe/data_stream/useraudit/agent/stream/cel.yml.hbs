@@ -1,0 +1,120 @@
+config_version: 2
+interval: {{interval}}
+{{#if enable_request_tracer}}
+resource.tracer.filename: "../../logs/beyondinsight_password_safe/http-request-trace-*.ndjson"
+request.tracer.maxbackups: 5
+{{/if}}
+{{#if proxy_url}}
+resource.proxy_url: {{proxy_url}}
+{{/if}}
+{{#if ssl}}
+resource.ssl: {{ssl}}
+{{/if}}
+{{#if http_client_timeout}}
+resource.timeout: {{http_client_timeout}}
+{{/if}}
+resource.ssl.renegotiation: "freely"
+resource.ssl.verification_mode: "certificate"
+resource.url: {{url}}
+state:
+  initial_interval: {{initial_interval}}
+  limit: {{limit}}
+  apikeytoken: {{apikeytoken}}
+  password: {{password}}
+  username: {{username}}
+  preserve_original_event: true
+redact:
+  fields:
+    - apikey
+program: |-
+  
+  (
+  	(state.?cursor.auth_cookie.orValue(null) == null) ?
+  		// Authenticating using API to retrieve auth Cookie
+  		request("POST", state.url.trim_suffix("/") + "/Auth/SignAppin").with(
+  			{
+  				"Header": {
+  					"Authorization": [
+  						"PS-Auth key=" + state.apikeytoken + ";runas=" + state.username + ";pwd=[" + state.password + "];",
+  					],
+  					"Content-Type": ["application/json"],
+  				},
+  			}
+  		).do_request().as(resp,
+  			resp.Header["Set-Cookie"].filter(e, e.contains("ASP.NET_SessionId")).as(auth_cookie,
+  				auth_cookie[0]
+  			)
+  		)
+  	:
+  		state.cursor.auth_cookie
+  ).as(auth_cookie,
+  	{
+  		"limit": [string(state.limit)],
+  		"startdate": [string(state.?cursor.startdate.orValue((now - duration(string(int(int(state.initial_interval)) / 24) + "h")).format(time_layout.RFC3339)))],
+  		"enddate": [string(state.?cursor.enddate.orValue(""))],
+  	}.as(params,
+  		request(
+  			"GET",
+  			state.url.trim_suffix("/") + "/UserAudits?" + params.format_query()
+  		).with(
+  			{
+  				"Header": {
+  					"Content-Type": ["application/json"],
+  					"Cookie": [auth_cookie],
+  				},
+  			}
+  		).do_request().as(resp,
+  			(resp.StatusCode == 401) ?
+  				state.with(
+  					{
+  						"events": {"error": {"message": "User not authenticated", "statuscode": string(resp.StatusCode)}},
+  						"want_more": true,
+  						"cursor": {
+  							"auth_cookie": null,
+  							"enddate": state.?cursor.enddate.orValue(params.enddate[0]),
+  							"startdate": state.?cursor.startdate.orValue(params.startdate[0]),
+  							"tempStartDate": state.?cursor.tempStartDate.orValue(""),
+  						},
+  					}
+  				)
+  			:
+  				bytes(resp.Body).decode_json().as(body,
+  					bool(size(body.Data) > 0 && state.?cursor.enddate.orValue(params.enddate[0]) != body.?Data[size(body.Data) - 1].CreateDate.orValue("")).as(wantMore,
+  						string(wantMore ? body.Data[size(body.Data) - 1].CreateDate : "").as(enddate,
+  							state.with(
+  								{
+  									"events": body.Data.map(e,
+  										{
+  											"message": e,
+  											?"event.original": state.?preserve_original_event.orValue(false) ? optional.of(e.encode_json()) : optional.none(),
+  										}
+  									),
+  									"want_more": wantMore,
+  									"cursor": {
+  										"auth_cookie": auth_cookie,
+  										"enddate": enddate,
+  										"startdate": wantMore ? state.?cursor.startdate.orValue(params.startdate[0]) : state.?cursor.tempStartDate.orValue(""),
+  										"tempStartDate": (enddate == "") ? string(body.Data[0].CreateDate) : state.?cursor.tempStartDate.orValue(""),
+  									},
+  								}
+  							)
+  						)
+  					)
+  				)
+  		)
+  	)
+  )
+tags:
+{{#if preserve_original_event}}
+  - preserve_original_event
+{{/if}}
+{{#each tags as |tag|}}
+  - {{tag}}
+{{/each}}
+{{#contains "forwarded" tags}}
+publisher_pipeline.disable_host: true
+{{/contains}}
+{{#if processors}}
+processors:
+{{processors}}
+{{/if}}
