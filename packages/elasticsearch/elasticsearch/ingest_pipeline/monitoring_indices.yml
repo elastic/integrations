@@ -51,10 +51,10 @@ processors:
       tag: date_parse_index_creation_date
   - script:
       source: |
-        ZonedDateTime currentDate = ZonedDateTime.parse(ctx['@timestamp']);
-        ZonedDateTime creationDate = ZonedDateTime.parse(ctx['elasticsearch']['index']['creation_date']);
+        ZonedDateTime currentDate = ZonedDateTime.parse(ctx.@timestamp);
+        ZonedDateTime creationDate = ZonedDateTime.parse(ctx.elasticsearch.index.creation_date);
         long ageInMillis = ChronoUnit.MILLIS.between(creationDate, currentDate);
-        ctx['elasticsearch']['index']['age'] = (ageInMillis / (1000 * 60 * 60 * 24)).intValue();
+        ctx.elasticsearch.index.age = (ageInMillis / (1000 * 60 * 60 * 24)).intValue();
       ignore_failure: true
       tag: script_compute_index_age
   - convert:
