@@ -1,6 +1,6 @@
 name: docker
 title: Docker
-version: 2.12.1
+version: 2.13.0
 description: Collect metrics and logs from Docker instances with Elastic Agent.
 type: integration
 icons:
@@ -19,7 +19,7 @@ categories:
   - containers
 conditions:
   kibana:
-    version: ^8.8.0
+    version: ^8.16.2
 policy_templates:
   - name: docker
     title: Docker logs and metrics
@@ -28,6 +28,16 @@ policy_templates:
       - type: docker/metrics
         title: Collect Docker metrics
         description: Collecting container, cpu, diskio, event, healthcheck, image, info, memory and network metrics from Docker instances
+        vars:
+          - name: podman
+            type: bool
+            title: Podman
+            multi: false
+            required: false
+            show_user: true
+            default: false
+            description: >
+              If True, Docker integration is used to collect metrics for Podman
       - type: filestream
         title: Collect Docker container logs
         description: Collecting docker container logs
