@@ -23,7 +23,7 @@ resource.url: {{api_host}}
 state:
   user_key: {{user_key}}
   initial_interval: {{initial_interval}}
-  page_size: {{page_size}}
+  batch_size: {{batch_size}}
 program: |
   (
     state.?want_more.orValue(false) ?
@@ -37,7 +37,7 @@ program: |
     request(
       "GET",
       state.url.trim_right("/") + "/admin/reports/v1/activity/users/" + state.user_key + "/applications/chrome?"+ {
-        "maxResults": [string(state.page_size)],
+        "maxResults": [string(state.batch_size)],
         "endTime": [string(state.end_time)],
         "startTime": [string(state.start_time)],
         ?"pageToken": has(state.next_page_token) ? optional.of([string(state.next_page_token)]) : optional.none(),
