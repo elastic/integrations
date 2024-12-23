@@ -1015,11 +1015,19 @@ The Docker `network` data stream collects network metrics.
 | data_stream.namespace | Data stream namespace. | constant_keyword |  |
 | data_stream.type | Data stream type. | constant_keyword |  |
 | docker.container.labels.\* | Container labels | object |  |
+| docker.network.in.bytes | Incoming bytes per seconds. | long |  |
+| docker.network.in.dropped | Dropped incoming packets per second. | scaled_float |  |
+| docker.network.in.errors | Errors on incoming packets per second. | long |  |
+| docker.network.in.packets | Incoming packets per second. | long |  |
 | docker.network.inbound.bytes | Total number of incoming bytes. | long | counter |
 | docker.network.inbound.dropped | Total number of dropped incoming packets. | long | counter |
 | docker.network.inbound.errors | Total errors on incoming packets. | long | counter |
 | docker.network.inbound.packets | Total number of incoming packets. | long | counter |
 | docker.network.interface | Network interface name. | keyword |  |
+| docker.network.out.bytes | Outgoing bytes per second. | long |  |
+| docker.network.out.dropped | Dropped outgoing packets per second. | scaled_float |  |
+| docker.network.out.errors | Errors on outgoing packets per second. | long |  |
+| docker.network.out.packets | Outgoing packets per second. | long |  |
 | docker.network.outbound.bytes | Total number of outgoing bytes. | long | counter |
 | docker.network.outbound.dropped | Total number of dropped outgoing packets. | long | counter |
 | docker.network.outbound.errors | Total errors on outgoing packets. | long | counter |
