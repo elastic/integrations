@@ -1434,7 +1434,7 @@ processors:
         - "^BFD Session (created|deleted) for neighbor %{IP:server.ip} on interface %{GREEDYDATA:aruba.interface.name}"
 
   # SSH server events (520x)
-  # https://www.arubanetworks.com/techdocs/AOS-CX/10.15/HTML/elmrg/Content/events/SFTP_CLIENT.htm
+  # https://www.arubanetworks.com/techdocs/AOS-CX/10.15/HTML/elmrg/Content/events/SSH_SERVER.htm
   - dissect:
       if: "ctx.event?.code == '5201'"
       tag: sftps_event_5201
@@ -1477,7 +1477,7 @@ processors:
         - "^User %{DATA:user.name} logged out of SSH session from %{IP:client.ip}."
   - grok:
       if: "['5212','5213','5214'].contains(ctx.event?.code)"
-      tag: sftps_event_
+      tag: sftps_event_5212_5213_5214
       field: "message"
       description: "Logs a message when a user tries to login while maximum number of sessions are reached | user session is closed while maximum number of sessions per user are reached | session is closed due to host key failurE"
       patterns:
