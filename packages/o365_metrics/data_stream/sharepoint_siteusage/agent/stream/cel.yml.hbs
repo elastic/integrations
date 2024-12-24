@@ -45,39 +45,67 @@ state:
   want_more: false
   base:
     tenant_id: "{{azure_tenant_id}}"
+    period: "{{period}}"
 
 redact:
   fields:
     - base.tenant_id
 
 
+
 program: |
     state.with(
-      request(
-        "GET",
-        state.url
-      ).do_request().as(resp,
-        resp.StatusCode == 200
-        ?
-          bytes(resp.Body).mime("text/csv; header=present").as(events, {
-                                     "events": events.map(e, {"sharepoint_siteusagestorage": e.encode_json()}),                     
-
-          })
-        :
-          {
-            "events": {
-              "error": {
-                "code": string(resp.StatusCode),
-                "id": string(resp.Status),
-                "message": "GET:"+(
-                  size(resp.Body) != 0 ?
-                    string(resp.Body)
+    request(
+      "GET",
+      state.url + "/reports/getSharePointSiteUsageStorage(period='" + state.base.period + "')"
+    ).do_request().as(resp1,
+            resp1.StatusCode == 200
+            ?
+              bytes(resp1.Body).mime("text/csv; header=present").as(events1,
+                request(
+                  "GET",
+                  state.url + "GET /reports/getSharePointSiteUsageDetail(period='" + state.base.period + "')"
+                ).do_request().as(resp2,
+                  resp2.StatusCode == 200
+                  ?
+                    bytes(resp2.Body).mime("text/csv; header=present").as(events2, {
+                      "events": 
+                        events1.map(e, {"sharepoint_siteusagestorage": e.encode_json()}) +
+                        events2.map(e, {"sharepoint_siteusagedetails": e.encode_json()})
+                    })
                   :
-                    string(resp.Status) + ' (' + string(resp.StatusCode) + ')'
-                ),
-              },
-            },
-            "want_more": false,
-          }
-      )
-    )
+                    {
+                      "events": {
+                        "error": {
+                          "code": string(resp2.StatusCode),
+                          "id": string(resp2.Status),
+                          "message": "GET:"+(
+                            size(resp2.Body) != 0 ?
+                              string(resp2.Body)
+                            :
+                              string(resp2.Status) + ' (' + string(resp2.StatusCode) + ')'
+                          ),
+                        },
+                      },
+                      "want_more": false,
+                    }
+                )
+              )
+            :
+              {
+                "events": {
+                  "error": {
+                    "code": string(resp1.StatusCode),
+                    "id": string(resp1.Status),
+                    "message": "GET:"+(
+                      size(resp1.Body) != 0 ?
+                        string(resp1.Body)
+                      :
+                        string(resp1.Status) + ' (' + string(resp1.StatusCode) + ')'
+                    ),
+                  },
+                },
+                "want_more": false,
+              }
+          )
+        )

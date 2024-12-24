@@ -36,63 +36,9 @@ Once the secret is created and permissions are granted by admin, setup Elastic A
 
 ## Metrics
 
-### SharePoint Site Usage Details
-
-Uses the Office 365 Management Graph API to retrieve metrics from Office 365. 
-
-
+### SharePoint Site Usage
 **Exported fields**
 
-| Field | Description | Type |
-|---|---|---|
-| @timestamp | Event timestamp. | date |
-| cloud.image.id | Image ID for the cloud instance. | keyword |
-| data_stream.dataset | Data stream dataset. | constant_keyword |
-| data_stream.namespace | Data stream namespace. | constant_keyword |
-| data_stream.type | Data stream type. | constant_keyword |
-| host.containerized | If the host is a container. | boolean |
-| host.os.build | OS build information. | keyword |
-| host.os.codename | OS codename, if any. | keyword |
-| input.type | Type of Filebeat input. | keyword |
-| o365metrics.sharepoint_siteusagedetails.ActiveFileCount | The number of active files on the SharePoint site during the reporting period. | integer |
-| o365metrics.sharepoint_siteusagedetails.FileCount | The total number of files on the SharePoint site. | integer |
-| o365metrics.sharepoint_siteusagedetails.IsDeleted | Indicates whether the SharePoint site is marked as deleted (True or False). | boolean |
-| o365metrics.sharepoint_siteusagedetails.LastActivityDate | The date of the last recorded activity on the SharePoint site. May be blank if no activity is recorded. | date |
-| o365metrics.sharepoint_siteusagedetails.OwnerDisplayName | The display name of the SharePoint site owner. | keyword |
-| o365metrics.sharepoint_siteusagedetails.OwnerPrincipalName | The principal name (email or username) of the SharePoint site owner. | keyword |
-| o365metrics.sharepoint_siteusagedetails.PageViewCount | The number of page views on the SharePoint site during the reporting period. | integer |
-| o365metrics.sharepoint_siteusagedetails.ReportPeriod | The duration of the reporting period for SharePoint site usage, in days. | integer |
-| o365metrics.sharepoint_siteusagedetails.ReportRefreshDate | The date when the SharePoint site usage data was last refreshed. | date |
-| o365metrics.sharepoint_siteusagedetails.RootWebTemplate | The template used to create the root web of the SharePoint site (e.g., Team Site). | keyword |
-| o365metrics.sharepoint_siteusagedetails.SiteId | The unique identifier of the SharePoint site. | keyword |
-| o365metrics.sharepoint_siteusagedetails.SiteURL | The URL of the SharePoint site. | keyword |
-| o365metrics.sharepoint_siteusagedetails.StorageAllocatedByte | The total storage allocated to the SharePoint site, in bytes. | integer |
-| o365metrics.sharepoint_siteusagedetails.StorageUsedByte | The amount of storage used on the SharePoint site, in bytes. | integer |
-| o365metrics.sharepoint_siteusagedetails.VisitedPageCount | The number of unique page visits on the SharePoint site during the reporting period. | integer |
-
-
-### SharePoint Site Usage Storage
-
-Uses the Office 365 Management Graph API to retrieve metrics from Office 365. 
-
-
-**Exported fields**
-
-| Field | Description | Type |
-|---|---|---|
-| @timestamp | Event timestamp. | date |
-| cloud.image.id | Image ID for the cloud instance. | keyword |
-| data_stream.dataset | Data stream dataset. | constant_keyword |
-| data_stream.namespace | Data stream namespace. | constant_keyword |
-| data_stream.type | Data stream type. | constant_keyword |
-| host.containerized | If the host is a container. | boolean |
-| host.os.build | OS build information. | keyword |
-| host.os.codename | OS codename, if any. | keyword |
-| input.type | Type of Filebeat input. | keyword |
-| o365metrics.sharepoint_siteusagestorage.ReportDate | The date the SharePoint site storage usage report was generated. | date |
-| o365metrics.sharepoint_siteusagestorage.ReportPeriod | The duration of the reporting period for SharePoint site storage usage, in days. | integer |
-| o365metrics.sharepoint_siteusagestorage.ReportRefreshDate | The date when the SharePoint site storage usage data was last refreshed. | date |
-| o365metrics.sharepoint_siteusagestorage.SiteType | The type of SharePoint sites included in the report (e.g., All, Team, Personal). | keyword |
-| o365metrics.sharepoint_siteusagestorage.StorageUsedByte | The total storage used across SharePoint sites during the reporting period, in bytes. | integer |
+(no fields available)
 
 

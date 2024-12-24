@@ -36,17 +36,6 @@ Once the secret is created and permissions are granted by admin, setup Elastic A
 
 ## Metrics
 
-### SharePoint Site Usage Details
-
-Uses the Office 365 Management Graph API to retrieve metrics from Office 365. 
-
-
-{{fields "sharepoint_siteusagedetails"}}
-
-### SharePoint Site Usage Storage
-
-Uses the Office 365 Management Graph API to retrieve metrics from Office 365. 
-
-
+### SharePoint Site Usage
 {{fields "sharepoint_siteusagestorage"}}
 
