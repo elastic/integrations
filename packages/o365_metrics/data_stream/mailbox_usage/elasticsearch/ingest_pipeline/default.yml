@@ -18,7 +18,8 @@ processors:
       if: ctx.o365?.metrics?.mailbox?.quota?.status instanceof Map
       source: |
         String underscore(String s) {
-          return /[ -]/.matcher(s).replaceAll('_').replace("/", "_").toLowerCase();
+          String result = /[ -]/.matcher(s).replaceAll('_').replace("/", "_").toLowerCase();
+          return /[\ufeff]/.matcher(result).replaceAll('')
         }
         
         def out = [:];
@@ -80,8 +81,7 @@ processors:
       source: |
         String underscore(String s) {
           String result = /[ -]/.matcher(s).replaceAll('_').replace("/", "_").toLowerCase();
-          
-          return /[()]/.matcher(result).replaceAll('')
+          return /[\ufeff]/.matcher(result).replaceAll('')
         }
         
         def out = [:];

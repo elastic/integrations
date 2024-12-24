@@ -103,7 +103,6 @@ An example event for `mailbox_usage` looks as following:
                         "deleted_item_quota": {
                             "byte": "32212254720"
                         },
-                        "report_refresh_date": "2024-12-22",
                         "issue_warning_quota": {
                             "byte": "105226698752"
                         },
@@ -113,7 +112,8 @@ An example event for `mailbox_usage` looks as following:
                         "report": {
                             "period": {
                                 "day": "7"
-                            }
+                            },
+                            "refresh_date": "2024-12-22"
                         },
                         "prohibit_send_receive_quota": {
                             "byte": "107374182400"
@@ -125,9 +125,6 @@ An example event for `mailbox_usage` looks as following:
                 }
             }
         }
-    },
-    "input": {
-        "type": "cel"
     },
     "tags": [
         "o365.metrics.mailbox.usage"
@@ -230,17 +227,14 @@ An example event for `onedrive_usage` looks as following:
                     "storage": {
                         "report": {
                             "date": "2024-12-16",
-                            "period": "7"
+                            "period": "7",
+                            "refresh_date": "2024-12-22"
                         },
-                        "used_byte": "91893426",
-                        "report_refresh_date": "2024-12-22"
+                        "used_byte": "91893426"
                     }
                 }
             }
         }
-    },
-    "input": {
-        "type": "cel"
     },
     "tags": [
         "o365.metrics.onedrive"
@@ -306,18 +300,15 @@ An example event for `outlook_activity` looks as following:
                         "date": "2024-12-16",
                         "period": {
                             "day": "7"
-                        }
+                        },
+                        "refresh_date": "2024-12-22"
                     },
                     "emails_read": {
                         "count": ""
-                    },
-                    "﻿report_refresh_date": "2024-12-22"
+                    }
                 }
             }
         }
-    },
-    "input": {
-        "type": "cel"
     },
     "agent": {
         "name": "docker-fleet-agent",
@@ -423,7 +414,8 @@ An example event for `outlook_app_usage` looks as following:
                         "report": {
                             "period": {
                                 "day": "7"
-                            }
+                            },
+                            "refresh_date": "2024-12-22"
                         },
                         "outlook_2019": {
                             "count": ""
@@ -431,7 +423,6 @@ An example event for `outlook_app_usage` looks as following:
                         "outlook_m365": {
                             "count": ""
                         },
-                        "report_refresh_date": "2024-12-22",
                         "outlook_2010": {
                             "count": ""
                         }
@@ -439,9 +430,6 @@ An example event for `outlook_app_usage` looks as following:
                 }
             }
         }
-    },
-    "input": {
-        "type": "cel"
     },
     "agent": {
         "name": "docker-fleet-agent",
