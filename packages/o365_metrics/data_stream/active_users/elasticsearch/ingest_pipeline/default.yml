@@ -1,0 +1,105 @@
+---
+description: Pipeline for renaming object
+processors:
+  - set:
+      field: ecs.version
+      value: "8.16.0"
+  - json:
+      field: active_users
+      target_field: o365.metrics.active.count.users   
+  - script:
+      lang: painless
+      description: Replace spaces and dashes in field names under o365.metrics.active.count.users.
+      tag: painless_purge_spaces_and_dashes
+      if: ctx.o365.metrics?.active?.count?.users instanceof Map
+      source: |
+        String underscore(String s) {
+          return /[ -]/.matcher(s).replaceAll('_').toLowerCase();
+        }
+        
+        def out = [:];
+        for (def item : ctx.o365.metrics.active.count.users.entrySet()) {
+          out[underscore(item.getKey())] = item.getValue();
+        }
+        ctx.o365.metrics.active.count.users = out;
+  - remove:
+      if: ctx.active_users != null
+      field: active_users
+      ignore_missing: true                        
+  - rename:
+      field: o365.metrics.active.count.users.exchange_active
+      target_field: o365.metrics.active.count.users.exchange.active.count
+      ignore_missing: true
+  - rename:
+      field: o365.metrics.active.count.users.exchange_inactive
+      target_field: o365.metrics.active.count.users.exchange.inactive.count
+      ignore_missing: true
+  - rename:
+      field: o365.metrics.active.count.users.office_365_active
+      target_field: o365.metrics.active.count.users.office365.active.count
+      ignore_missing: true
+  - rename:
+      field: o365.metrics.active.count.users.office_365_inactive
+      target_field: o365.metrics.active.count.users.office365.inactive.count
+      ignore_missing: true
+  - rename:
+      field: o365.metrics.active.count.users.onedrive_active
+      target_field: o365.metrics.active.count.users.onedrive.active.count
+      ignore_missing: true
+  - rename:
+      field: o365.metrics.active.count.users.onedrive_inactive
+      target_field: o365.metrics.active.count.users.onedrive.inactive.count
+      ignore_missing: true
+  - rename:
+      field: o365.metrics.active.count.users.report_period
+      target_field: o365.metrics.active.count.users.report.period.day
+      ignore_missing: true
+  - rename:
+      field: o365.metrics.active.count.users.report_refresh_date
+      target_field: o365.metrics.active.count.users.report.refresh_date
+      ignore_missing: true
+  - rename:
+      field: o365.metrics.active.count.users.sharepoint_active
+      target_field: o365.metrics.active.count.users.sharepoint.active.count
+      ignore_missing: true
+  - rename:
+      field: o365.metrics.active.count.users.sharepoint_inactive
+      target_field: o365.metrics.active.count.users.sharepoint.inactive.count
+      ignore_missing: true
+  - rename:
+      field: o365.metrics.active.count.users.skype_for_business_active
+      target_field: o365.metrics.active.count.users.skype_for_business.active.count
+      ignore_missing: true
+  - rename:
+      field: o365.metrics.active.count.users.skype_for_business_inactive
+      target_field: o365.metrics.active.count.users.skype_for_business.inactive.count
+      ignore_missing: true
+  - rename:
+      field: o365.metrics.active.count.users.teams_active
+      target_field: o365.metrics.active.count.users.teams.active.count
+      ignore_missing: true
+  - rename:
+      field: o365.metrics.active.count.users.teams_inactive
+      target_field: o365.metrics.active.count.users.teams.inactive.count
+      ignore_missing: true
+  - rename:
+      field: o365.metrics.active.count.users.yammer_active
+      target_field: o365.metrics.active.count.users.yammer.active.count
+      ignore_missing: true
+  - rename:
+      field: o365.metrics.active.count.users.yammer_inactive
+      target_field: o365.metrics.active.count.users.yammer.inactive.count
+      ignore_missing: true
+  - remove:
+      field:
+        - o365.metrics.active.count.users.skype_for_business
+      ignore_missing: true
+
+on_failure:
+  - append:
+      field: error.message
+      value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - append:
+      field: event.kind
+      value: pipeline_error
+      allow_duplicates: false
