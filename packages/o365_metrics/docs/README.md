@@ -38,7 +38,11 @@ Once the secret is created and permissions are granted by admin, setup Elastic A
 
 Uses the Office 365 Management Graph API to retrieve metrics from Office 365.
 
+<<<<<<< HEAD
 ### OutlookActivity
+=======
+### Outlook Activity
+>>>>>>> origin
 **Exported fields**
 
 | Field | Description | Type |
@@ -61,7 +65,12 @@ Uses the Office 365 Management Graph API to retrieve metrics from Office 365.
 | o365.metrics.outlook.activity.report_refresh_date | The date when the report data was last updated. | date |
 
 
+<<<<<<< HEAD
 ### Active Users
+=======
+
+### One Drive Usage
+>>>>>>> origin
 **Exported fields**
 
 | Field | Description | Type |
@@ -90,3 +99,17 @@ Uses the Office 365 Management Graph API to retrieve metrics from Office 365.
 | o365.metrics.active.users.teams.inactive | Number of Teams inactive users. | integer |
 | o365.metrics.active.users.yammer.active | Number of Yammer active users. | integer |
 | o365.metrics.active.users.yammer.inactive | Number of Yammer inactive users. | integer |
+| o365.metrics.onedrive.usage.account.counts.active.count | The number of OneDrive accounts that were active during the reporting period. | integer |
+| o365.metrics.onedrive.usage.account.counts.report.date | The date the report was generated. | date |
+| o365.metrics.onedrive.usage.account.counts.report.period | The duration of the reporting period, in days. | integer |
+| o365.metrics.onedrive.usage.account.counts.report.refresh_date | The date when the data in the report was last refreshed. | date |
+| o365.metrics.onedrive.usage.account.counts.total.count | The total number of OneDrive accounts evaluated in the report. | integer |
+| o365.metrics.onedrive.usage.file.counts.active.count | The number of OneDrive accounts with active file usage during the reporting period. | integer |
+| o365.metrics.onedrive.usage.file.counts.report.date | The date the report was generated. | date |
+| o365.metrics.onedrive.usage.file.counts.report.period | The duration of the reporting period, in days. | integer |
+| o365.metrics.onedrive.usage.file.counts.report.refresh_date | The date when the data in the report was last refreshed. | date |
+| o365.metrics.onedrive.usage.file.counts.total.count | The total number of OneDrive accounts evaluated in the report. | integer |
+| o365.metrics.onedrive.usage.storage.report.date | The date the report was generated. | date |
+| o365.metrics.onedrive.usage.storage.report.period | The duration of the reporting period, in days. | integer |
+| o365.metrics.onedrive.usage.storage.report.refresh_date | The date when the data in the report was last refreshed. | date |
+| o365.metrics.onedrive.usage.storage.used_byte | The total storage used across OneDrive accounts during the reporting period, in bytes. | integer |
