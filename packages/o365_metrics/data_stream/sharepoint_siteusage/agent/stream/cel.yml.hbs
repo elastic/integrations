@@ -64,14 +64,14 @@ program: |
               bytes(resp1.Body).mime("text/csv; header=present").as(events1,
                 request(
                   "GET",
-                  state.url + "GET /reports/getSharePointSiteUsageDetail(period='" + state.base.period + "')"
+                  state.url + "/reports/getSharePointSiteUsageDetail(period='" + state.base.period + "')"
                 ).do_request().as(resp2,
                   resp2.StatusCode == 200
                   ?
                     bytes(resp2.Body).mime("text/csv; header=present").as(events2, {
                       "events": 
-                        events1.map(e, {"sharepoint_siteusagestorage": e.encode_json()}) +
-                        events2.map(e, {"sharepoint_siteusagedetails": e.encode_json()})
+                        events1.map(e, {"sharepoint_siteusage_storage": e.encode_json()}) +
+                        events2.map(e, {"sharepoint_siteusage_detail": e.encode_json()})
                     })
                   :
                     {

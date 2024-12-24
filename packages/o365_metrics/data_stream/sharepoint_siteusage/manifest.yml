@@ -1,18 +1,12 @@
-title: Collect SharePoint Usage Storage metrics from O365
+title: Microsoft Office 365 Sharepoint Site Usage metrics
 type: metrics
 streams:
   - input: cel
-    title: O365 sharepoint usage storage metrics
+    title: Office 365 Sharepoint Site Usage metrics.
     enabled: true
-    description: Collect sharepoint usage storage metrics from O365.
+    description: Collect Office 365 Sharepoint Site Usage metrics.
     template_path: cel.yml.hbs
     vars:
-      - name: url
-        type: text
-        title: Base URL of Office Graph API
-        show_user: true
-        required: false
-        default: https://graph.microsoft.com/v1.0/reports/getSharePointSiteUsageStorage(period='D7')
       - name: interval
         type: text
         title: Interval
@@ -20,44 +14,6 @@ streams:
         show_user: true
         required: true
         default: 3m
-      - name: azure_tenant_id
-        type: text
-        title: Directory (tenant) ID
-        description: Directory (tenant) ID
-        show_user: true
-        multi: false
-        required: true
-      - name: client_id
-        type: text
-        title: Application (client) ID
-        description: Client ID used for Oauth2 authentication
-        show_user: true
-        required: true
-      - name: client_secret
-        type: password
-        title: Client Secret
-        description: Client secret used for Oauth2 authentication
-        show_user: true
-        required: true
-        secret: true
-      - name: token_url
-        type: text
-        title: Oauth2 Token URL
-        description: The Base URL endpoint that will be used to generate the tokens during the oauth2 flow. If not provided, above `Azure Tenant ID` will be used for oauth2 token generation. Default value - `https://login.microsoftonline.com`
-        show_user: true
-        required: false
-        default: https://login.microsoftonline.com
-        secret: false
-      - name: token_scopes
-        type: text
-        title: Token Scopes
-        multi: true
-        default:
-          - "https://graph.microsoft.com/.default"
-        description: Scopes for OAuth2 token.
-        required: true
-        show_user: false
-        secret: false
       - name: processors
         type: yaml
         title: Processors
@@ -66,7 +22,14 @@ streams:
         show_user: false
         description: >
           Processors are used to reduce the number of fields in the exported event or to enhance the event with metadata. This executes in the agent before the logs are parsed. See [Processors](https://www.elastic.co/guide/en/beats/filebeat/current/filtering-and-enhancing-data.html) for details.
-
+      - name: period
+        type: text
+        title: Period
+        description: >
+          Specifies the length of time over which the report is aggregated. The supported values for {period} are: D7, D30, D90, and D180.
+        show_user: true
+        required: true
+        default: D7
       - name: tags
         type: text
         title: Tags
@@ -74,7 +37,7 @@ streams:
         required: true
         show_user: false
         default:
-          - o365metrics-sharepoint_siteusagestorage
+          - o365.metrics.sharepoint.siteusage
       - name: enable_request_tracer
         type: bool
         title: Enable request tracing

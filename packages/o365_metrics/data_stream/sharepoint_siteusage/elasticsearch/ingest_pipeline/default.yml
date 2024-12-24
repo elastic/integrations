@@ -7,58 +7,136 @@ processors:
 
 # SharePoint Site Usage Storage            
   - json:
-      field: sharepoint_siteusagestorage
-      target_field: o365metrics.sharepoint_siteusagestorage   
+      field: sharepoint_siteusage_storage
+      target_field: o365metrics.sharepoint_siteusage_storage
+      ignore_failure: true 
   - script:
       lang: painless
-      description: Replace spaces and dashes in field names under o365metrics.sharepoint_siteusagestorage.
+      description: Replace spaces and dashes in field names under o365metrics.sharepoint_siteusage_storage.
       tag: painless_purge_spaces_and_dashes
-      if: ctx.o365metrics?.sharepoint_siteusagestorage instanceof Map
+      if: ctx.o365metrics?.sharepoint_siteusage_storage instanceof Map
       source: |
         String underscore(String s) {
-          return /[ -]/.matcher(s).replaceAll('');
+          return /[ -]/.matcher(s).replaceAll('_').toLowerCase();
         }
         
         def out = [:];
-        for (def item : ctx.o365metrics.sharepoint_siteusagestorage.entrySet()) {
+        for (def item : ctx.o365metrics.sharepoint_siteusage_storage.entrySet()) {
           out[underscore(item.getKey())] = item.getValue();
         }
-        ctx.o365metrics.sharepoint_siteusagestorage = out;
+        ctx.o365metrics.sharepoint_siteusage_storage = out;
   - remove:
-      if: ctx.sharepoint_siteusagestorage != null
-      field: sharepoint_siteusagestorage
+      if: ctx.sharepoint_siteusage_storage != null
+      field: sharepoint_siteusage_storage
       ignore_missing: true
   - rename:
-      field: o365metrics.sharepoint_siteusagestorage.StorageUsed(Byte)
-      target_field: o365metrics.sharepoint_siteusagestorage.StorageUsedByte
+      field: o365metrics.sharepoint_siteusage_storage.storage_used_(byte)
+      target_field: o365metrics.sharepoint_siteusage_storage.storage_used.byte
+      ignore_missing: true
+  - rename:
+      field: o365metrics.sharepoint_siteusage_storage.report_date
+      target_field: o365metrics.sharepoint_siteusage_storage.report.date
+      ignore_missing: true
+  - rename:
+      field: o365metrics.sharepoint_siteusage_storage.report_period
+      target_field: o365metrics.sharepoint_siteusage_storage.report.period
+      ignore_missing: true
+  - rename:
+      field: o365metrics.sharepoint_siteusage_storage.report_refresh_date
+      target_field: o365metrics.sharepoint_siteusage_storage.report.refresh_date
       ignore_missing: true
 
 # SharePoint Site Usage Details
   - json:
-      field: sharepoint_siteusagedetails
-      target_field: o365metrics.sharepoint_siteusagedetails   
+      field: sharepoint_siteusage_detail
+      target_field: o365metrics.sharepoint_siteusage_detail
+      ignore_failure: true 
   - script:
       lang: painless
-      description: Replace spaces and dashes in field names under o365metrics.sharepoint_siteusagedetails.
+      description: Replace spaces and dashes in field names under o365metrics.sharepoint_siteusage_detail.
       tag: painless_purge_spaces_and_dashes
-      if: ctx.o365metrics?.sharepoint_siteusagedetails instanceof Map
+      if: ctx.o365metrics?.sharepoint_siteusage_detail instanceof Map
       source: |
         String underscore(String s) {
-          return /[ -]/.matcher(s).replaceAll('');
+          return /[ -]/.matcher(s).replaceAll('_').toLowerCase();
         }
         
         def out = [:];
-        for (def item : ctx.o365metrics.sharepoint_siteusagedetails.entrySet()) {
+        for (def item : ctx.o365metrics.sharepoint_siteusage_detail.entrySet()) {
           out[underscore(item.getKey())] = item.getValue();
         }
-        ctx.o365metrics.sharepoint_siteusagedetails = out;
+        ctx.o365metrics.sharepoint_siteusage_detail = out;
   - remove:
-      if: ctx.sharepoint_siteusagedetails != null
-      field: sharepoint_siteusagedetails
+      if: ctx.sharepoint_siteusage_detail != null
+      field: sharepoint_siteusage_detail
       ignore_missing: true
   - rename:
-      field: o365metrics.sharepoint_siteusagedetails.StorageUsed(Byte)
-      target_field: o365metrics.sharepoint_siteusagedetails.StorageUsedByte
+      field: o365metrics.sharepoint_siteusage_detail.storageallocated(byte)
+      target_field: o365metrics.sharepoint_siteusage_detail.storage_allocated.byte
+      ignore_missing: true
+  - rename:
+      field: o365metrics.sharepoint_siteusage_detail.storageusedbyte
+      target_field: o365metrics.sharepoint_siteusage_detail.storage_used.byte
+      ignore_missing: true
+  - rename:
+      field: o365metrics.sharepoint_siteusage_detail.activefilecount
+      target_field: o365metrics.sharepoint_siteusage_detail.active_file.count
+      ignore_missing: true
+  - rename:
+      field: o365metrics.sharepoint_siteusage_detail.filecount
+      target_field: o365metrics.sharepoint_siteusage_detail.file.count
+      ignore_missing: true
+  - rename:
+      field: o365metrics.sharepoint_siteusage_detail.isdeleted
+      target_field: o365metrics.sharepoint_siteusage_detail.is_deleted
+      ignore_missing: true
+  - rename:
+      field: o365metrics.sharepoint_siteusage_detail.lastactivitydate
+      target_field: o365metrics.sharepoint_siteusage_detail.last_activity_date
+      ignore_missing: true
+  - rename:
+      field: o365metrics.sharepoint_siteusage_detail.ownerdisplayname
+      target_field: o365metrics.sharepoint_siteusage_detail.owner_display_name
+      ignore_missing: true
+  - rename:
+      field: o365metrics.sharepoint_siteusage_detail.ownerprincipalname
+      target_field: o365metrics.sharepoint_siteusage_detail.owner_principal_name
+      ignore_missing: true
+  - rename:
+      field: o365metrics.sharepoint_siteusage_detail.pageviewcount
+      target_field: o365metrics.sharepoint_siteusage_detail.page_view.count
+      ignore_missing: true
+  - rename:
+      field: o365metrics.sharepoint_siteusage_detail.reportperiod
+      target_field: o365metrics.sharepoint_siteusage_detail.report.period
+      ignore_missing: true
+  - rename:
+      field: o365metrics.sharepoint_siteusage_detail.reportrefreshdate
+      target_field: o365metrics.sharepoint_siteusage_detail.report.refresh_date
+      ignore_missing: true
+  - rename:
+      field: o365metrics.sharepoint_siteusage_detail.reportsiteid
+      target_field: o365metrics.sharepoint_siteusage_detail.report.site.id
+      ignore_missing: true
+  - rename:
+      field: o365metrics.sharepoint_siteusage_detail.reportsiteurl
+      target_field: o365metrics.sharepoint_siteusage_detail.report.site.url
+      ignore_missing: true
+  - rename:
+      field: o365metrics.sharepoint_siteusage_detail.siteid
+      target_field: o365metrics.sharepoint_siteusage_detail.site.id
+      ignore_missing: true
+  - rename:
+      field: o365metrics.sharepoint_siteusage_detail.siteurl
+      target_field: o365metrics.sharepoint_siteusage_detail.site.url
+      ignore_missing: true
+  - rename:
+      field: o365metrics.sharepoint_siteusage_detail.visitedpagecount
+      target_field: o365metrics.sharepoint_siteusage_detail.visited_page.count
+      ignore_missing: true
+  - rename:
+      field: o365metrics.sharepoint_siteusage_detail.rootwebtemplate
+      target_field: o365metrics.sharepoint_siteusage_detail.root_web_template
       ignore_missing: true
 
 on_failure:

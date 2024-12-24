@@ -36,6 +36,12 @@ Once the secret is created and permissions are granted by admin, setup Elastic A
 
 ## Metrics
 
+### SharePoint Site Usage
+**Exported fields**
+
+(no fields available)
+
+
 Uses the Office 365 Management Graph API to retrieve metrics from Office 365.
 
 ### Outlook Activity
@@ -89,3 +95,4 @@ Uses the Office 365 Management Graph API to retrieve metrics from Office 365.
 | o365.metrics.onedrive.usage.storage.report.period | The duration of the reporting period, in days. | integer |
 | o365.metrics.onedrive.usage.storage.report.refresh_date | The date when the data in the report was last refreshed. | date |
 | o365.metrics.onedrive.usage.storage.used_byte | The total storage used across OneDrive accounts during the reporting period, in bytes. | integer |
+
