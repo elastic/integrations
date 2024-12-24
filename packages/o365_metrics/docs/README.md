@@ -111,7 +111,7 @@ Uses the Office 365 Management Graph API to retrieve metrics from Office 365.
 | o365.metrics.active.count.users.office365.inactive.count | Number of Office 365 inactive users. | integer |
 | o365.metrics.active.count.users.onedrive.active.count | Number of OneDrive active users. | integer |
 | o365.metrics.active.count.users.onedrive.inactive.count | Number of OneDrive inactive users. | integer |
-| o365.metrics.active.count.users.report.period | Report period in days. | integer |
+| o365.metrics.active.count.users.report.period.day | Report period in days. | integer |
 | o365.metrics.active.count.users.report.refresh_date | Date when the report was refreshed. | date |
 | o365.metrics.active.count.users.sharepoint.active.count | Number of SharePoint active users. | integer |
 | o365.metrics.active.count.users.sharepoint.inactive.count | Number of SharePoint inactive users. | integer |
