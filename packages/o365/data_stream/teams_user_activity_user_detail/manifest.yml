@@ -1,0 +1,136 @@
+title: Microsoft Teams User Activity by User report metrics
+type: metrics
+streams:
+  - input: cel
+    title: Microsoft Teams User Activity by User report metrics
+    description: Collect User Activity by User report mtrics from Microsoft Teams via the Graph API using CEL Input.
+    template_path: cel.yml.hbs
+    enabled: false
+    vars:
+      - name: url
+        type: text
+        title: Base URL of Microsoft Graph API
+        show_user: true
+        required: false
+        default: https://graph.microsoft.com/v1.0
+      - name: interval
+        type: text
+        title: Interval
+        description: >-
+          Interval between two API calls. Supported units for this parameter are h/m/s.
+        default: 24h
+        multi: false
+        required: true
+        show_user: true
+      - name: initial_interval
+        type: integer
+        title: Initial Interval
+        multi: false
+        required: true
+        show_user: true
+        default: 7
+        description: How far back (in number of days) to pull the Microsoft Teams User Activity by User data from Microsoft Graph API. This is an integer value indicating the number of days in the past. Only values between 1-29 are allowed.
+      - name: sync_days
+        type: integer
+        title: Sync Days in the past
+        description: >
+          Specifies the number of days in the past to sync per request. As Microsoft reports are not real-time, and can take upto 48h or more to be available, this value allows to fetch the data from *N* days in the past. This re-fetching of data helps in filling any gaps between Elastic and Microsoft reports. Only values between 1-29 are allowed.
+
+        show_user: true
+        required: true
+        default: 3
+      - name: azure_tenant_id
+        type: text
+        title: Directory (tenant) ID
+        description: Directory (tenant) ID. This is used to fetch Oauth2 token.
+        show_user: true
+        multi: false
+        required: true
+      - name: client_id
+        type: text
+        title: Application (client) ID
+        description: Client ID used for Oauth2 authentication
+        show_user: true
+        required: true
+      - name: client_secret
+        type: password
+        title: Client Secret
+        description: Client secret used for Oauth2 authentication
+        show_user: true
+        required: true
+        secret: true
+      - name: token_url
+        type: text
+        title: Oauth2 Token URL
+        description: The Base URL endpoint that will be used to generate the tokens during the oauth2 flow. If not provided, `Directory (tenant) ID` and default token URL `https://login.microsoftonline.com` will be used for oauth2 token generation.
+        show_user: true
+        required: false
+        default: https://login.microsoftonline.com
+        secret: false
+      - name: token_scopes
+        type: text
+        title: Token Scopes
+        multi: true
+        default:
+          - "https://graph.microsoft.com/.default"
+        description: Scopes for OAuth2 token.
+        required: true
+        show_user: false
+        secret: false
+      - name: ssl
+        type: yaml
+        title: Resource SSL Configuration
+        description: i.e. certificate_authorities, supported_protocols, verification_mode etc, more examples found in the [documentation](https://www.elastic.co/guide/en/beats/filebeat/current/configuration-ssl.html#ssl-common-config)
+        multi: false
+        required: false
+        show_user: false
+      - name: resource_timeout
+        type: text
+        title: Resource Timeout
+        description: Duration before declaring that the HTTP client connection has timed out. Valid time units are ns, us, ms, s, m, h. Default is "30"s.
+        show_user: false
+        multi: false
+        required: false
+        default: 5m
+      - name: tags
+        type: text
+        title: Tags
+        multi: true
+        required: true
+        show_user: false
+        default:
+          - forwarded
+          - o365-teams_user_activity_user_detail
+      - name: preserve_duplicate_custom_fields
+        required: true
+        show_user: false
+        title: Preserve duplicate custom fields
+        description: Preserve o365.teams.user_activity.user_detail fields that were copied to Elastic Common Schema (ECS) fields.
+        type: bool
+        multi: false
+        default: false
+      - name: preserve_original_event
+        required: true
+        show_user: false
+        title: Preserve original event
+        description: Preserves a raw copy of the original event, added to the field `event.original`.
+        type: bool
+        multi: false
+        default: false
+      - name: processors
+        type: yaml
+        title: Processors
+        multi: false
+        required: false
+        show_user: false
+        description: >-
+          Processors are used to reduce the number of fields in the exported event or to enhance the event with metadata. This executes in the agent before the data is parsed. See [Processors](https://www.elastic.co/guide/en/beats/filebeat/current/filtering-and-enhancing-data.html) for details.
+      - name: enable_request_tracer
+        type: bool
+        title: Enable request tracing
+        multi: false
+        required: false
+        show_user: false
+        description: >
+          The request tracer logs HTTP requests and responses to the agent's local file-system for debugging configurations. Enabling this request tracing compromises security and should only be used for debugging. See [documentation](https://www.elastic.co/guide/en/beats/filebeat/current/filebeat-input-cel.html#_resource_tracer_filename) for details.
+

@@ -366,3 +366,145 @@ An example event for `audit` looks as following:
 | o365.audit.WorkspaceName |  | keyword |
 | o365.audit.YammerNetworkId |  | keyword |
 
+
+### Microsoft Teams User Activity by User
+
+Uses the Microsoft Graph API to retrieve Microsoft Teams User Activity by User report. These events are from the same report that is available under `Reports -> Usage -> Microsoft Teams -> User Activity` in the Microsoft 365 Admin Center.
+
+An example event for `teams_user_activity_user_detail` looks as following:
+
+```json
+{
+    "@timestamp": "2024-12-17T15:57:14.753Z",
+    "agent": {
+        "ephemeral_id": "11eef08e-4919-426c-b1e4-e89dd7bb4e32",
+        "id": "f594b622-3327-4b6b-b3eb-b756fbe15421",
+        "name": "elastic-agent-41973",
+        "type": "filebeat",
+        "version": "8.13.0"
+    },
+    "data_stream": {
+        "dataset": "o365.teams_user_activity_user_detail",
+        "namespace": "73329",
+        "type": "logs"
+    },
+    "ecs": {
+        "version": "8.11.0"
+    },
+    "elastic_agent": {
+        "id": "f594b622-3327-4b6b-b3eb-b756fbe15421",
+        "snapshot": false,
+        "version": "8.13.0"
+    },
+    "event": {
+        "agent_id_status": "verified",
+        "dataset": "o365.teams_user_activity_user_detail",
+        "ingested": "2024-12-17T15:57:17Z",
+        "original": "{\"Ad Hoc Meetings Attended Count\":\"501\",\"Ad Hoc Meetings Organized Count\":\"350\",\"Assigned Products\":\"MICROSOFT 365 E5\",\"Audio Duration\":\"PT0S\",\"Audio Duration In Seconds\":\"0\",\"Call Count\":\"50\",\"Deleted Date\":\"\",\"Has Other Action\":\"No\",\"Is Deleted\":\"False\",\"Is Licensed\":\"Yes\",\"Last Activity Date\":\"\",\"Meeting Count\":\"50\",\"Meetings Attended Count\":\"250\",\"Meetings Organized Count\":\"30\",\"Post Messages\":\"20\",\"Private Chat Message Count\":\"10\",\"Reply Messages\":\"10\",\"Report Period\":\"7\",\"Report Refresh Date\":\"2024-12-15\",\"Scheduled One-time Meetings Attended Count\":\"500\",\"Scheduled One-time Meetings Organized Count\":\"50\",\"Scheduled Recurring Meetings Attended Count\":\"50\",\"Scheduled Recurring Meetings Organized Count\":\"50\",\"Screen Share Duration\":\"PT0S\",\"Screen Share Duration In Seconds\":\"30\",\"Shared Channel Tenant Display Names\":\"\",\"Team Chat Message Count\":\"50\",\"Tenant Display Name\":\"MSFT\",\"Urgent Messages\":\"0\",\"User Id\":\"82f04e26-e0ec-49ee-8f1f-8a3de75e430f\",\"User Principal Name\":\"HenriettaM@abc.onmicrosoft.com\",\"Video Duration\":\"PT0S\",\"Video Duration In Seconds\":\"10\"}"
+    },
+    "input": {
+        "type": "cel"
+    },
+    "o365": {
+        "teams": {
+            "user_activity": {
+                "user_detail": {
+                    "Ad_Hoc_Meetings_Attended_Count": 501,
+                    "Ad_Hoc_Meetings_Organized_Count": 350,
+                    "Assigned_Products": "MICROSOFT 365 E5",
+                    "Audio_Duration": "PT0S",
+                    "Audio_Duration_In_Seconds": 0,
+                    "Call_Count": 50,
+                    "Has_Other_Action": "No",
+                    "Is_Deleted": false,
+                    "Is_Licensed": true,
+                    "Meeting_Count": 50,
+                    "Meetings_Attended_Count": 250,
+                    "Meetings_Organized_Count": 30,
+                    "Post_Messages": 20,
+                    "Private_Chat_Message_Count": 10,
+                    "Reply_Messages": 10,
+                    "Report_Period": "7",
+                    "Report_Refresh_Date": "2024-12-15T00:00:00.000Z",
+                    "Scheduled_One_time_Meetings_Attended_Count": 500,
+                    "Scheduled_One_time_Meetings_Organized_Count": 50,
+                    "Scheduled_Recurring_Meetings_Attended_Count": 50,
+                    "Scheduled_Recurring_Meetings_Organized_Count": 50,
+                    "Screen_Share_Duration": "PT0S",
+                    "Screen_Share_Duration_In_Seconds": 30,
+                    "Team_Chat_Message_Count": 50,
+                    "Tenant_Display_Name": "MSFT",
+                    "Urgent_Messages": 0,
+                    "User_Id": "82f04e26-e0ec-49ee-8f1f-8a3de75e430f",
+                    "User_Principal_Name": "HenriettaM@abc.onmicrosoft.com",
+                    "Video_Duration": "PT0S",
+                    "Video_Duration_In_Seconds": 10
+                }
+            }
+        }
+    },
+    "related": {
+        "user": [
+            "82f04e26-e0ec-49ee-8f1f-8a3de75e430f",
+            "HenriettaM@abc.onmicrosoft.com"
+        ]
+    },
+    "tags": [
+        "preserve_duplicate_custom_fields",
+        "preserve_original_event",
+        "forwarded",
+        "o365-teams_user_activity_user_detail"
+    ],
+    "user": {
+        "email": "HenriettaM@abc.onmicrosoft.com",
+        "id": "82f04e26-e0ec-49ee-8f1f-8a3de75e430f"
+    }
+}
+```
+
+**Exported fields**
+
+| Field | Description | Type |
+|---|---|---|
+| @timestamp | Date/time when the event originated. This is the date/time extracted from the event, typically representing when the event was generated by the source. If the event source has no original timestamp, this value is typically populated by the first time the event was received by the pipeline. Required field for all events. | date |
+| data_stream.dataset | The field can contain anything that makes sense to signify the source of the data. Examples include `nginx.access`, `prometheus`, `endpoint` etc. For data streams that otherwise fit, but that do not have dataset set we use the value "generic" for the dataset value. `event.dataset` should have the same value as `data_stream.dataset`. Beyond the Elasticsearch data stream naming criteria noted above, the `dataset` value has additional restrictions:   \* Must not contain `-`   \* No longer than 100 characters | constant_keyword |
+| data_stream.namespace | A user defined namespace. Namespaces are useful to allow grouping of data. Many users already organize their indices this way, and the data stream naming scheme now provides this best practice as a default. Many users will populate this field with `default`. If no value is used, it falls back to `default`. Beyond the Elasticsearch index naming criteria noted above, `namespace` value has the additional restrictions:   \* Must not contain `-`   \* No longer than 100 characters | constant_keyword |
+| data_stream.type | An overarching type for the data stream. Currently allowed values are "logs" and "metrics". We expect to also add "traces" and "synthetics" in the near future. | constant_keyword |
+| event.dataset | Name of the dataset. If an event source publishes more than one type of log or events (e.g. access log, error log), the dataset is used to specify which one the event comes from. It's recommended but not required to start the dataset name with the module name, followed by a dot, then the dataset name. | constant_keyword |
+| event.module | Name of the module this data is coming from. If your monitoring agent supports the concept of modules or plugins to process events of a given source (e.g. Apache logs), `event.module` should contain the name of this module. | constant_keyword |
+| input.type | Type of filebeat input. | keyword |
+| labels.is_transform_source | Distinguishes between documents that are a source for a transform and documents that are an output of a transform, to facilitate easier filtering. | constant_keyword |
+| o365.teams.user_activity.user_detail.Ad_Hoc_Meetings_Attended_Count |  | long |
+| o365.teams.user_activity.user_detail.Ad_Hoc_Meetings_Organized_Count |  | long |
+| o365.teams.user_activity.user_detail.Assigned_Products |  | keyword |
+| o365.teams.user_activity.user_detail.Audio_Duration |  | keyword |
+| o365.teams.user_activity.user_detail.Audio_Duration_In_Seconds |  | long |
+| o365.teams.user_activity.user_detail.Call_Count |  | long |
+| o365.teams.user_activity.user_detail.Deleted_Date |  | date |
+| o365.teams.user_activity.user_detail.Has_Other_Action |  | keyword |
+| o365.teams.user_activity.user_detail.Is_Deleted |  | boolean |
+| o365.teams.user_activity.user_detail.Is_Licensed |  | boolean |
+| o365.teams.user_activity.user_detail.Last_Activity_Date |  | date |
+| o365.teams.user_activity.user_detail.Meeting_Count |  | long |
+| o365.teams.user_activity.user_detail.Meetings_Attended_Count |  | long |
+| o365.teams.user_activity.user_detail.Meetings_Organized_Count |  | long |
+| o365.teams.user_activity.user_detail.Post_Messages |  | long |
+| o365.teams.user_activity.user_detail.Private_Chat_Message_Count |  | long |
+| o365.teams.user_activity.user_detail.Reply_Messages |  | long |
+| o365.teams.user_activity.user_detail.Report_Period |  | keyword |
+| o365.teams.user_activity.user_detail.Report_Refresh_Date |  | date |
+| o365.teams.user_activity.user_detail.Scheduled_One_time_Meetings_Attended_Count |  | long |
+| o365.teams.user_activity.user_detail.Scheduled_One_time_Meetings_Organized_Count |  | long |
+| o365.teams.user_activity.user_detail.Scheduled_Recurring_Meetings_Attended_Count |  | long |
+| o365.teams.user_activity.user_detail.Scheduled_Recurring_Meetings_Organized_Count |  | long |
+| o365.teams.user_activity.user_detail.Screen_Share_Duration |  | keyword |
+| o365.teams.user_activity.user_detail.Screen_Share_Duration_In_Seconds |  | long |
+| o365.teams.user_activity.user_detail.Shared_Channel_Tenant_Display_Names |  | keyword |
+| o365.teams.user_activity.user_detail.Team_Chat_Message_Count |  | long |
+| o365.teams.user_activity.user_detail.Tenant_Display_Name |  | keyword |
+| o365.teams.user_activity.user_detail.Urgent_Messages |  | long |
+| o365.teams.user_activity.user_detail.User_Id |  | keyword |
+| o365.teams.user_activity.user_detail.User_Principal_Name |  | keyword |
+| o365.teams.user_activity.user_detail.Video_Duration |  | keyword |
+| o365.teams.user_activity.user_detail.Video_Duration_In_Seconds |  | long |
+
