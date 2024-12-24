@@ -1,0 +1,83 @@
+---
+description: Pipeline to parse rubrik.managed_volumes workload data
+processors:
+  - set:
+      field: ecs.version
+      value: 8.11.0
+      ignore_failure: true
+      ignore_empty_value: true
+  - set:
+      field: event.kind
+      value: metric
+      ignore_failure: true
+      ignore_empty_value: true
+  - rename:
+      field: message
+      target_field: event.original
+      ignore_missing: true
+      if: "ctx.event?.original == null"
+      description: 'Renames the original `message` field to `event.original` to store a copy of the original message. The `event.original` field is not touched if the document already has one; it may happen when Logstash sends the document.'
+  - remove:
+      field: message
+      ignore_missing: true
+      if: "ctx.event?.original != null"
+      description: 'The `message` field is no longer required if the document has an `event.original` field.'
+  - json:
+      field: event.original
+      target_field: response
+      on_failure:
+        - set:
+            field: error.message
+            value: 'Received invalid JSON. Unable to parse the source log message'
+            ignore_failure: true
+  - rename:
+      field: response.name
+      target_field: rubrik.managed_volumes.name
+      ignore_missing: true
+      if: "ctx.response?.name != null"
+  - rename:
+      field: response.state
+      target_field: rubrik.managed_volumes.state
+      ignore_missing: true
+      if: "ctx.response?.state != null"
+  - rename:
+      field: response.provisionedSize
+      target_field: rubrik.managed_volumes.volume_size
+      ignore_missing: true
+      if: "ctx.response?.provisionedSize != null"
+  - rename:
+      field: response.mainMount.logicalUsedSize
+      target_field: rubrik.managed_volumes.used_size
+      ignore_missing: true
+      if: "ctx.response?.mainMount?.logicalUsedSize != null"
+  - rename:
+      field: response.snapshotDistribution.totalCount
+      target_field: rubrik.managed_volumes.snapshot_count
+      ignore_missing: true
+      if: "ctx.response?.snapshotDistribution?.totalCount != null"
+  - rename:
+      field: response.numChannels
+      target_field: rubrik.managed_volumes.num_channels
+      ignore_missing: true
+      if: "ctx.response?.numChannels != null"
+  - script:
+      lang: "painless"
+      source: |
+        if (ctx.rubrik?.managed_volumes?.volume_size != null && ctx.rubrik?.managed_volumes?.used_size != null) {
+          // Calculate free capacity
+          ctx.rubrik.managed_volumes.free_size = ctx.rubrik.managed_volumes.volume_size - ctx.rubrik.managed_volumes.used_size;
+        } else {
+          // Set free_size to null if required fields are missing
+          ctx.rubrik.managed_volumes.free_size = null;
+        }
+  - remove:
+      field: response
+      ignore_missing: true
+      if: "ctx.rubrik.managed_volumes != null"
+on_failure:
+  - set:
+      field: event.kind
+      value: pipeline_error
+  - set:
+      field: error.message
+      value: "{{{_ingest.on_failure_message}}}"
