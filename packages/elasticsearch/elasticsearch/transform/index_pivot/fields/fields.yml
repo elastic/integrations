@@ -1,0 +1,118 @@
+- name: "@timestamp"
+  type: date
+  description: The time the event was recorded.
+
+- name: elasticsearch
+  type: group
+  description: Elasticsearch metrics and metadata
+  fields:
+    - name: cluster
+      type: group
+      description: Information about the Elasticsearch cluster.
+      fields:
+        - name: name
+          type: keyword
+          description: The name of the Elasticsearch cluster.
+
+    - name: index
+      type: group
+      description: Information about the specific index being monitored.
+      fields:
+        - name: datastream
+          type: keyword
+          description: The data stream associated with the index.
+        - name: tier
+          type: keyword
+          description: The data tier of the index (e.g., hot, warm, cold, frozen, or unknown).
+        - name: name
+          type: keyword
+          description: Name of the Elasticsearch index.
+        - name: creation_date
+          type: date
+          description: The creation date of the index.
+        - name: age
+          type: long
+          description: Age of the index in days.
+
+        - name: primaries
+          type: group
+          description: Metrics related to the primary shards of the index.
+          fields:
+            - name: docs
+              type: group
+              description: Metrics related to the number of documents in the index.
+              fields:
+                - name: count
+                  type: long
+                  description: Number of primary documents in the index.
+                - name: count_delta
+                  type: long
+                  description: Change in the number of primary documents in the index since the last measurement.
+
+            - name: store
+              type: group
+              description: Metrics related to data storage.
+              fields:
+                - name: total_data_set_size_in_bytes
+                  type: long
+                  description: Primary size of the data set in bytes.
+                - name: total_data_set_size_in_bytes_delta
+                  type: long
+                  description: Change in the primary size of the data set in bytes since the last measurement.
+
+        - name: total
+          type: group
+          description: Aggregated metrics related to the index.
+          fields:
+            - name: search
+              type: group
+              description: Metrics related to search operations.
+              fields:
+                - name: query_total
+                  type: long
+                  description: Total number of search queries executed.
+                - name: query_time_in_millis
+                  type: long
+                  description: Total time in milliseconds spent on search queries.
+                - name: query_total_delta
+                  type: long
+                  description: Change in the number of search queries since the last measurement.
+                - name: query_time_in_millis_delta
+                  type: long
+                  description: Change in the total time in milliseconds for search queries since the last measurement.
+
+            - name: indexing
+              type: group
+              description: Metrics related to document indexing.
+              fields:
+                - name: index_total
+                  type: long
+                  description: Total number of documents indexed.
+                - name: index_time_in_millis
+                  type: long
+                  description: Total time in milliseconds spent on indexing documents.
+                - name: index_total_delta
+                  type: long
+                  description: Change in the number of documents indexed since the last measurement.
+                - name: index_time_in_millis_delta
+                  type: long
+                  description: Change in the total time in milliseconds for indexing documents since the last measurement.
+
+            - name: store
+              type: group
+              description: Metrics related to data storage.
+              fields:
+                - name: size_in_bytes
+                  type: long
+                  description: Total size of the data set in bytes.
+                - name: size_in_bytes_delta
+                  type: long
+                  description: Change in the total size of the data set in bytes since the last measurement.
+
+- name: event
+  type: group
+  description: Information about the event.
+  fields:
+    - name: ingested
+      type: date
+      description: Timestamp when the event was ingested by Elasticsearch.
