@@ -18,7 +18,8 @@ processors:
       if: ctx.o365?.metrics?.onedrive?.usage?.account?.counts instanceof Map
       source: |
         String underscore(String s) {
-          return /[ -]/.matcher(s).replaceAll('_').toLowerCase();
+          String result = /[ -]/.matcher(s).replaceAll('_').toLowerCase();
+          return /[\ufeff]/.matcher(result).replaceAll('')
         }
         
         def out = [:];
@@ -68,7 +69,8 @@ processors:
       if: ctx.o365?.metrics?.onedrive?.usage?.file?.counts instanceof Map
       source: |
         String underscore(String s) {
-          return /[ -]/.matcher(s).replaceAll('_').toLowerCase();
+          String result = /[ -]/.matcher(s).replaceAll('_').toLowerCase();
+          return /[\ufeff]/.matcher(result).replaceAll('')
         }
         
         def out = [:];
@@ -117,7 +119,8 @@ processors:
       if: ctx.o365?.metrics?.onedrive?.usage?.storage instanceof Map
       source: |
         String underscore(String s) {
-          return /[ -]/.matcher(s).replaceAll('_').toLowerCase();
+          String result = /[ -]/.matcher(s).replaceAll('_').toLowerCase();
+          return /[\ufeff]/.matcher(result).replaceAll('')
         }
         
         def out = [:];
@@ -153,7 +156,7 @@ processors:
 on_failure:
   - append:
       field: error.message
-      value: "{{{_ingest.on_failure_message}}}"
+      value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - append:
       field: event.kind
       value: pipeline_error
