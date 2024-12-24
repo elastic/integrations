@@ -2969,6 +2969,34 @@ processors:
       patterns:
         - "%{DATA:aruba.dns.type} event for VRF %{DATA:aruba.dns.vrf_name}$"
 
+  # Telnet server events (1290x)
+  # https://www.arubanetworks.com/techdocs/AOS-CX/10.15/HTML/elmrg/Content/events/TELNET_SERVER.htm
+  - grok:
+      field: message
+      tag: telnet_server_event_12901_12902_12903
+      description: "Logs a message when the Telnet server is [enabled|disabled] on a VRF | Logs a message when a user tries to enable Telnet server without setting admin password"
+      if: "['12901','12902','12903'].contains(ctx.event?.code)"
+      patterns:
+        - "^Failed to enable Telnet server on VRF %{DATA:aruba.vrf.name}. Admin password is not set."
+        - "on VRF %{GREEDYDATA:aruba.vrf.name}."
+  - grok:
+      field: message
+      tag: telnet_server_event_12904_12905_12906_12907
+      description: "Logs a message when a user login is [successful|fails] | when a user logs out of a session | when a user tries to login while maximum number of sessions are reached."
+      if: "['12904','12905','12906','12907'].contains(ctx.event?.code)"
+      patterns:
+        - "^User %{DATA:user.name} (logged in|login|logged out of TELNET session) from %{IP:client.ip}"
+        - "^TELNET session from %{IP:client.ip} is rejected because maximum number of TELNET sessions is reached."
+  - grok:
+      field: message
+      tag: telnet_server_event_
+      description: ""
+      # Possible documentation error with duplicate definition of 12908, will parse 12908 and 12909 together in the same grok
+      if: "['12908','12909'].contains(ctx.event?.code)"
+      patterns:
+        - "^TELNET session from User %{DATA:user.name} is closed because maximum number of sessions per user is reached."
+        - "^User %{DATA:user.name} login from %{IP:client.ip} for TELNET session has failed since the user is trying to login through an interface which is not allowed. Allowed interfaces are: %{GREEDYDATA:aruba.interface.id}."
+
   # Cleanup MAC addresses for different fields
   - uppercase:
       field: client.mac

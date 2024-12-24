@@ -1128,6 +1128,14 @@ Note: Descriptions have not been filled out
 |--------------------|------------------------------|
 | `<table_name>`     | aruba.tcam.table_name        |
 
+#### [Telnet server events](https://www.arubanetworks.com/techdocs/AOS-CX/10.15/HTML/elmrg/Content/events/TELNET_SERVER.htm)
+| Docs Field         | Schema Mapping               |
+|--------------------|------------------------------|
+| `<ip_address>`     | client.ip                    |
+| `<mgmt_intf>`      | aruba.interface.id           |
+| `<user_name>`      | user.name                    |
+| `<vrf_name>`       | aruba.vrf.name               |
+
 #### [Temperature events](https://www.arubanetworks.com/techdocs/AOS-CX/10.07/HTML/5200-8214/Content/events/TEMPERATURE.htm)
 | Field                     | Description | Type | Common                       |
 |---------------------------|-------------|------|------------------------------|
