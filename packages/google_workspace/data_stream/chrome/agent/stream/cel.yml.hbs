@@ -1,0 +1,96 @@
+config_version: 2
+interval: {{interval}}
+{{#if enable_request_tracer}}
+resource.tracer.filename: "../../logs/cel/http-request-trace-*.ndjson"
+resource.tracer.maxbackups: 5
+{{/if}}
+{{#if proxy_url}}
+resource.proxy_url: {{proxy_url}}
+{{/if}}
+{{#if ssl}}
+resource.ssl: {{ssl}}
+{{/if}}
+{{#if http_client_timeout}}
+resource.timeout: {{http_client_timeout}}
+{{/if}}
+auth.oauth2.provider: google
+auth.oauth2.google.jwt_file: {{jwt_file}}
+auth.oauth2.google.jwt_json: {{jwt_json}}
+auth.oauth2.google.delegated_account: {{delegated_account}}
+auth.oauth2.scopes:
+  - https://www.googleapis.com/auth/admin.reports.audit.readonly
+resource.url: {{api_host}}
+state:
+  user_key: {{user_key}}
+  initial_interval: {{initial_interval}}
+  batch_size: {{batch_size}}
+program: |
+  (
+    state.?want_more.orValue(false) ?
+      state
+    :
+      state.with({
+        "start_time": state.?cursor.last_timestamp.orValue((now - duration(state.initial_interval)).format(time_layout.RFC3339)),
+        "end_time": now.format(time_layout.RFC3339),
+      })
+  ).as(state, state.with(
+    request(
+      "GET",
+      state.url.trim_right("/") + "/admin/reports/v1/activity/users/" + state.user_key + "/applications/chrome?"+ {
+        "maxResults": [string(state.batch_size)],
+        "endTime": [string(state.end_time)],
+        "startTime": [string(state.start_time)],
+        ?"pageToken": has(state.next_page_token) ? optional.of([string(state.next_page_token)]) : optional.none(),
+      }.format_query()
+    ).do_request().as(resp, resp.StatusCode == 200 ?
+      bytes(resp.Body).decode_json().as(body,{
+         "events": (
+            has(body.items)
+          ?
+            body.items.map(item, item.events.map(event, item.drop("events").as(root,
+              {"message":root.with({"events": event}).encode_json()}
+            ))).flatten()
+          :
+            []
+          ),
+        "cursor": {
+           "last_timestamp": state.end_time,
+         },
+        "want_more": has(body.nextPageToken),
+        ?"next_page_token": body.?nextPageToken,
+      })
+    :
+      {
+        "events": {
+          "error": {
+            "code": string(resp.StatusCode),
+            "id": string(resp.Status),
+            "message": "GET:"+(
+              size(resp.Body) != 0 ?
+                string(resp.Body)
+              :
+                string(resp.Status) + ' (' + string(resp.StatusCode) + ')'
+            ),
+          },
+        },
+        "want_more": false,
+      }
+    )
+  ))
+tags:
+{{#if preserve_original_event}}
+  - preserve_original_event
+{{/if}}
+{{#if preserve_duplicate_custom_fields}}
+  - preserve_duplicate_custom_fields
+{{/if}}
+{{#each tags as |tag|}}
+  - {{tag}}
+{{/each}}
+{{#contains "forwarded" tags}}
+publisher_pipeline.disable_host: true
+{{/contains}}
+{{#if processors}}
+processors:
+{{processors}}
+{{/if}}
