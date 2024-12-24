@@ -127,7 +127,7 @@ Once Service Account credentials are downloaded as a JSON file, then the integra
 
 ### Google Workspace Reports ECS fields
 
-This is a list of Google Workspace Reports fields that are mapped to ECS that are common to all data sets except the chrome events.
+This is a list of Google Workspace Reports fields that are mapped to ECS that are common to all data sets.
 
 | Google Workspace Reports     | ECS Fields                                                    |
 |------------------------------|---------------------------------------------------------------|

@@ -368,8 +368,8 @@ processors:
       ignore_empty_value: true
   - set:
       field: '@timestamp'
-      tag: set_@timestamp_from_chrome_timestamp
-      copy_from: google_workspace.chrome.timestamp
+      tag: set_@timestamp_from_chrome_id_time
+      copy_from: google_workspace.chrome.id.time
       ignore_empty_value: true
   - set:
       field: device.id
@@ -415,6 +415,114 @@ processors:
       tag: set_user_email_from_chrome_actor_email
       copy_from: google_workspace.chrome.actor.email
       ignore_empty_value: true
+  - set:
+      field: event.id
+      tag: set_event_id_from_uniqueQualifier
+      copy_from: google_workspace.chrome.id.unique_qualifier
+      ignore_empty_value: true
+  - set:
+      field: event.provider
+      tag: set_event_provider_from_application_name
+      copy_from: google_workspace.chrome.id.application_name
+      ignore_empty_value: true
+  - set:
+      field: event.action
+      tag: set_event_action_from_name
+      copy_from: google_workspace.chrome.name
+      ignore_empty_value: true
+  - lowercase:
+      field: event.action
+      tag: lowercase_event_action
+      ignore_missing: true
+  - split:
+      field: event.action
+      tag: split_event_action
+      separator: \s+
+      ignore_missing: true
+      if: ctx.event?.action != ''
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - join:
+      field: event.action
+      tag: join_event_action
+      separator: '-'
+      if: ctx.event?.action instanceof List
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - set:
+      field: organization.id
+      tag: set_organization_id_from_customerId
+      copy_from: google_workspace.chrome.id.customer_id
+      ignore_empty_value: true
+  - set:
+      field: source.ip
+      tag: set_source_ip_from_ipAddress
+      copy_from: google_workspace.chrome.ip_address
+      ignore_empty_value: true
+  - geoip:
+      field: source.ip
+      tag: geoip_source_geo_from_source_ip
+      target_field: source.geo
+      ignore_missing: true
+  - geoip:
+      field: source.ip
+      tag: set_source_as_from_source_ip
+      database_file: GeoLite2-ASN.mmdb
+      target_field: source.as
+      properties:
+        - asn
+        - organization_name
+      ignore_missing: true
+  - set:
+      field: source.user.email
+      tag: set_source_user_email
+      copy_from: user.email
+      ignore_empty_value: true
+  - script:
+      lang: painless
+      tag: script_to_extract_source_user_name_and_domain
+      if: 'ctx?.source?.user?.email != null && ctx?.source?.user?.email.contains("@")'
+      source: >
+        String[] splitmail = ctx.source.user.email.splitOnToken('@');
+        if (splitmail.length != 2) {
+          return;
+        }
+        if (ctx.user == null) {
+          ctx.user = new HashMap();
+        }
+        ctx.source.user.name = splitmail[0];
+        ctx.source.user.domain = splitmail[1];
+  - set:
+      field: source.user.id
+      tag: set_source_user_id
+      copy_from: user.id
+      ignore_empty_value: true
+  - remove:
+      field:
+        - google_workspace.chrome.actor.email
+        - google_workspace.chrome.actor.profile_id
+        - google_workspace.chrome.content_hash
+        - google_workspace.chrome.device_id
+        - google_workspace.chrome.device_name
+        - google_workspace.chrome.device_platform
+        - google_workspace.chrome.event_reason
+        - google_workspace.chrome.evidence_locker_filepath
+        - google_workspace.chrome.id.application_name
+        - google_workspace.chrome.id.customer_id
+        - google_workspace.chrome.id.time
+        - google_workspace.chrome.id.unique_qualifier
+        - google_workspace.chrome.ip_address
+        - google_workspace.chrome.owner_domain
+        - google_workspace.chrome.url
+        - google_workspace.chrome.user_agent
+        - google_workspace.chrome.user_justification
+      tag: remove_custom_duplicate_fields
+      ignore_missing: true
+      if: ctx.tags == null || !(ctx.tags.contains('preserve_duplicate_custom_fields'))
   - script:
       tag: script_to_drop_null_values
       lang: painless
@@ -437,25 +545,6 @@ processors:
         - append:
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
-  - remove:
-      field:
-        - google_workspace.chrome.actor.email
-        - google_workspace.chrome.actor.profile_id
-        - google_workspace.chrome.content_hash
-        - google_workspace.chrome.device_id
-        - google_workspace.chrome.device_name
-        - google_workspace.chrome.device_platform
-        - google_workspace.chrome.event_reason
-        - google_workspace.chrome.evidence_locker_filepath
-        - google_workspace.chrome.ip_address
-        - google_workspace.chrome.owner_domain
-        - google_workspace.chrome.timestamp
-        - google_workspace.chrome.url
-        - google_workspace.chrome.user_agent
-        - google_workspace.chrome.user_justification
-      tag: remove_custom_duplicate_fields
-      ignore_missing: true
-      if: ctx.tags == null || !(ctx.tags.contains('preserve_duplicate_custom_fields'))
   - remove:
       field: json
       tag: remove_json
