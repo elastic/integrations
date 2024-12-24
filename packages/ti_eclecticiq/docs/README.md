@@ -33,7 +33,7 @@ for Elasticsearch to connect to it. See [Set up EclecticIQ Intelligence Center](
 ## Setup
 
 For step-by-step instructions on how to set up an integration, see the
-[Getting started](https://www.elastic.co/guide/en/welcome-to-elastic/current/getting-started-observability.html) guide.
+[Getting started](https://www.elastic.co/guide/en/starting-with-the-elasticsearch-platform-and-its-solutions/current/getting-started-observability.html) guide.
 
 You must create one integration instance per
 EclecticIQ Intelligence Center outgoing feed
