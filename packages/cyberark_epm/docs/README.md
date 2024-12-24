@@ -905,9 +905,9 @@ An example event for `admin_audit` looks as following:
 {
     "@timestamp": "2024-11-25T05:37:28.373Z",
     "agent": {
-        "ephemeral_id": "216196d7-5cf4-40a5-97aa-b5faf7af2de2",
-        "id": "3ffa37d5-f51b-4299-8d26-c1b35f3e3ac1",
-        "name": "elastic-agent-32634",
+        "ephemeral_id": "32e9f84f-40df-43a3-bf36-d1a1a47380fe",
+        "id": "94cfbed9-bae5-47eb-aec0-7883b045016f",
+        "name": "elastic-agent-70369",
         "type": "filebeat",
         "version": "8.16.0"
     },
@@ -927,14 +927,14 @@ An example event for `admin_audit` looks as following:
     },
     "data_stream": {
         "dataset": "cyberark_epm.admin_audit",
-        "namespace": "61710",
+        "namespace": "33896",
         "type": "logs"
     },
     "ecs": {
         "version": "8.11.0"
     },
     "elastic_agent": {
-        "id": "3ffa37d5-f51b-4299-8d26-c1b35f3e3ac1",
+        "id": "94cfbed9-bae5-47eb-aec0-7883b045016f",
         "snapshot": false,
         "version": "8.16.0"
     },
@@ -944,7 +944,7 @@ An example event for `admin_audit` looks as following:
             "iam"
         ],
         "dataset": "cyberark_epm.admin_audit",
-        "ingested": "2024-12-20T05:44:26Z",
+        "ingested": "2024-12-24T08:13:05Z",
         "kind": "event",
         "original": "{\"Administrator\":\"bob@example.com\",\"Description\":\"Enter Set Elastic/test\",\"EventTime\":\"2024-11-25T05:37:28.373Z\",\"Feature\":\"Sets\",\"InternalSessionId\":876,\"LoggedAt\":\"2024-11-25T05:25:13.167Z\",\"LoggedFrom\":\"175.16.199.1\",\"PermissionDescription\":\"None\",\"Role\":\"SetAdmin\",\"SetName\":\"Elastic/test\"}",
         "type": [
