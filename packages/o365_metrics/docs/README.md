@@ -89,3 +89,39 @@ Uses the Office 365 Management Graph API to retrieve metrics from Office 365.
 | o365.metrics.onedrive.usage.storage.report.period | The duration of the reporting period, in days. | integer |
 | o365.metrics.onedrive.usage.storage.report.refresh_date | The date when the data in the report was last refreshed. | date |
 | o365.metrics.onedrive.usage.storage.used_byte | The total storage used across OneDrive accounts during the reporting period, in bytes. | integer |
+
+
+### SharePoint Site Usage
+**Exported fields**
+
+| Field | Description | Type |
+|---|---|---|
+| @timestamp | Event timestamp. | date |
+| cloud.image.id | Image ID for the cloud instance. | keyword |
+| data_stream.dataset | Data stream dataset. | constant_keyword |
+| data_stream.namespace | Data stream namespace. | constant_keyword |
+| data_stream.type | Data stream type. | constant_keyword |
+| host.containerized | If the host is a container. | boolean |
+| host.os.build | OS build information. | keyword |
+| host.os.codename | OS codename, if any. | keyword |
+| input.type | Type of Filebeat input. | keyword |
+| o365metrics.sharepoint.site.usage.detail.active_file.count | The number of active files in the SharePoint site during the reporting period. | integer |
+| o365metrics.sharepoint.site.usage.detail.file.count | The total number of files in the SharePoint site. | integer |
+| o365metrics.sharepoint.site.usage.detail.is_deleted | Indicates whether the SharePoint site is deleted. | boolean |
+| o365metrics.sharepoint.site.usage.detail.last_activity_date | The last date of activity in the SharePoint site. | date |
+| o365metrics.sharepoint.site.usage.detail.owner_display_name | The display name of the SharePoint site owner. | keyword |
+| o365metrics.sharepoint.site.usage.detail.owner_principal_name | The principal name (email address) of the SharePoint site owner. | keyword |
+| o365metrics.sharepoint.site.usage.detail.page_view.count | The number of page views in the SharePoint site during the reporting period. | integer |
+| o365metrics.sharepoint.site.usage.detail.report.period | The duration of the reporting period for SharePoint site usage, in days. | integer |
+| o365metrics.sharepoint.site.usage.detail.report.refresh_date | The date when the SharePoint site usage data was last refreshed. | date |
+| o365metrics.sharepoint.site.usage.detail.root_web_template | The template used for the root web of the SharePoint site (e.g., Team Site). | keyword |
+| o365metrics.sharepoint.site.usage.detail.site.id | The unique identifier for the SharePoint site. | keyword |
+| o365metrics.sharepoint.site.usage.detail.site.url | The URL of the SharePoint site. | keyword |
+| o365metrics.sharepoint.site.usage.detail.storage_allocated.byte | The amount of storage allocated to the SharePoint site, in bytes. | integer |
+| o365metrics.sharepoint.site.usage.detail.storage_used.byte | The amount of storage used in the SharePoint site, in bytes. | integer |
+| o365metrics.sharepoint.site.usage.detail.visited_page.count | The number of visited pages in the SharePoint site during the reporting period. | integer |
+| o365metrics.sharepoint.site.usage.storage.report.date | The date the SharePoint site storage usage report was generated. | date |
+| o365metrics.sharepoint.site.usage.storage.report.period | The duration of the reporting period for SharePoint site storage usage, in days. | integer |
+| o365metrics.sharepoint.site.usage.storage.report.refresh_date | The date when the SharePoint site storage usage data was last refreshed. | date |
+| o365metrics.sharepoint.site.usage.storage.site_type | The type of SharePoint sites included in the report (e.g., All, Team, Personal). | keyword |
+| o365metrics.sharepoint.site.usage.storage.storage_used.byte | The total storage used across SharePoint sites during the reporting period, in bytes. | integer |

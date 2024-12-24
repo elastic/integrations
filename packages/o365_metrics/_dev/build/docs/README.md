@@ -44,3 +44,6 @@ Uses the Office 365 Management Graph API to retrieve metrics from Office 365.
 
 ### One Drive Usage
 {{fields "onedrive_usage"}}
+
+### SharePoint Site Usage
+{{fields "sharepoint_siteusage"}}
