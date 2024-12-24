@@ -1,0 +1,1220 @@
+rules:
+  - path: /EPM/API/24.12.0.4372/Auth/EPM/Logon
+    methods: ['POST']
+    request_headers:
+      Content-Type:
+        - "application/json"
+    request_body: '{"ApplicationID":"Elastic Integration CyberArk EPM","Password":"password","Username":"username"}'
+    responses:
+      - status_code: 200
+        headers:
+          Content-Type:
+            - 'application/json'
+        body: |-
+          {
+            "IsPasswordExpired": false,
+            "ManagerURL": "http://{{ hostname }}:{{ env "PORT" }}",
+            "EPMAuthenticationResult": "token"
+          }
+  - path: /EPM/API/24.12.0.4372/Sets
+    methods: ['GET']
+    query_params:
+      Limit: 1000
+      Offset: 0
+    request_headers:
+      Authorization:
+        - "basic token"
+    responses:
+      - status_code: 200
+        headers:
+          Content-Type:
+            - 'application/json'
+        body: |-
+          {{ minify_json `
+          {
+            "SetsCount": 2,
+            "Sets": [
+              {
+                "Id": "123456cf-1234-5678-abcd-b12345678d14",
+                "Name": "Elastic/test",
+                "Description": "",
+                "IsNPVDI": false,
+                "SetType": 1
+              },
+              {
+                "Id": "abcdef3f-1234-5678-abcd-0bc6abcdefd6",
+                "Name": "Set2",
+                "Description": "",
+                "IsNPVDI": false,
+                "SetType": 1
+              }
+            ]
+          }
+          `}}
+  - path: /EPM/API/24.12.0.4372/Sets
+    methods: ['GET']
+    query_params:
+      Limit: 1000
+      Offset: 2
+    request_headers:
+      Authorization:
+        - "basic token"
+    responses:
+      - status_code: 200
+        headers:
+          Content-Type:
+            - 'application/json'
+        body: |-
+          {{ minify_json `
+          {
+            "SetsCount": 0,
+            "Sets": []
+          }
+          `}}
+  - path: /EPM/API/24.12.0.4372/Sets/123456cf-1234-5678-abcd-b12345678d14/Events/Search
+    methods: ['POST']
+    query_params:
+      limit: 2
+      nextCursor: start
+    request_headers:
+      Content-Type:
+        - "application/json"
+      Authorization:
+        - "basic token"
+    responses:
+      - status_code: 200
+        headers:
+          Content-Type:
+            - 'application/json'
+        body: |-
+          {{ minify_json `
+          {
+            "nextCursor": "1734326375622",
+            "events": [
+              {
+                "fileName": "conhost.exe",
+                "originalFileName": "CONHOST.EXE",
+                "displayName": "Console Window Host (conhost.exe)",
+                "policyName": null,
+                "hash": "C09AA822157967C4A27728F5C33D0226C2889954",
+                "publisher": "Microsoft Windows",
+                "eventType": "DetectAccess",
+                "sourceType": "Windows",
+                "sourceName": "Microsoft Windows",
+                "lastEventDate": "2024-11-28T16:30:12.725Z",
+                "firstEventDate": "2024-11-28T16:30:12.725Z",
+                "userName": "NT SERVICE\\OracleServiceOEMREP",
+                "justification": null,
+                "justificationEmail": null,
+                "fileSize": 823296,
+                "threatProtectionAction": "ALL",
+                "threatProtectionActionId": 0,
+                "packageName": "Console Window Host (conhost.exe)",
+                "company": "Microsoft Corporation",
+                "filePath": "C:\\Windows\\System32\\conhost.exe",
+                "filePathWithoutFilename": "C:\\Windows\\System32\\",
+                "fileDescription": "Console Window Host",
+                "productName": "Microsoft® Windows® Operating System",
+                "productVersion": "10.0.17763.4840",
+                "bundleName": null,
+                "bundleVersion": null,
+                "bundleId": null,
+                "applicationSubType": null,
+                "interpreter": null,
+                "runAsUsername": null,
+                "workingDirectory": null,
+                "originUserUID": null,
+                "fileAccessPermission": null,
+                "symLink": null,
+                "fileVersion": "10.0.17763.4840",
+                "modificationTime": "2024-10-29T16:30:15.31Z",
+                "userIsAdmin": false,
+                "agentEventCount": 1,
+                "skippedCount": 0,
+                "eventCount": 1,
+                "accessAction": "true",
+                "accessTargetType": "ProcessMemory",
+                "accessTargetName": "C:\\Windows\\System32\\cmd.exe",
+                "processCommandLine": "0xffffffff -ForceV1",
+                "sourceProcessCommandLine": null,
+                "sourceProcessUsername": null,
+                "sourceProcessHash": null,
+                "sourceProcessPublisher": null,
+                "sourceProcessSigner": null,
+                "evidences": null,
+                "exposedUsers": null,
+                "owner": "NT SERVICE\\TrustedInstaller",
+                "fileQualifier": "7071500510605240154",
+                "sourceProcessCertificateIssuer": null,
+                "processCertificateIssuer": null,
+                "operatingSystemType": "Windows",
+                "arrivalTime": "2024-11-28T16:30:15.366Z",
+                "policyCategory": null,
+                "deceptionType": 0,
+                "lureUser": null,
+                "sourceWSName": null,
+                "fatherProcess": null,
+                "sourceWSIp": null,
+                "winEventType": 0,
+                "winEventRecordId": 0,
+                "logonAttemptTypeId": 3,
+                "logonStatusId": 3221225692,
+                "productCode": null,
+                "upgradeCode": null,
+                "authorizationRights": null,
+                "agentId": "109f521d-2ee1-450b-9f71-3cc56d8ebf37",
+                "computerName": "ELASTICTEST"
+              },
+              {
+                "fileName": "setup_em13200p1_win64.exe",
+                "originalFileName": "ouiSFX.EXE",
+                "displayName": "GUI self extractor (setup_em13200p1_win64.exe)",
+                "policyName": "test-rule3",
+                "hash": "E110E5B6E1E9D27BCA13EE6793B228A9D2AFEB4B",
+                "publisher": "",
+                "eventType": "Ransomware",
+                "sourceType": "OldApplication",
+                "sourceName": "Old Application",
+                "lastEventDate": "2024-11-28T05:36:15.907Z",
+                "firstEventDate": "2024-11-28T05:36:15.907Z",
+                "userName": "TEST-PC\\Administrator",
+                "justification": null,
+                "justificationEmail": null,
+                "fileSize": 444756247,
+                "threatProtectionAction": "ALL",
+                "threatProtectionActionId": 0,
+                "packageName": "GUI self extractor (setup_em13200p1_win64.exe)",
+                "company": "Oracle, Inc.",
+                "filePath": "C:\\Oracle_OEM\\setup_em13200p1_win64.exe",
+                "filePathWithoutFilename": "C:\\Oracle_OEM\\",
+                "fileDescription": "GUI self extractor",
+                "productName": "ouiSFX",
+                "productVersion": "1.0.0.1",
+                "bundleName": null,
+                "bundleVersion": null,
+                "bundleId": null,
+                "applicationSubType": null,
+                "interpreter": null,
+                "runAsUsername": null,
+                "workingDirectory": null,
+                "originUserUID": null,
+                "fileAccessPermission": null,
+                "symLink": null,
+                "fileVersion": "1.0.0.1",
+                "modificationTime": "2024-11-18T05:54:15.41Z",
+                "userIsAdmin": true,
+                "agentEventCount": 1,
+                "skippedCount": 0,
+                "eventCount": 1,
+                "accessAction": "true",
+                "accessTargetType": "ransomware",
+                "accessTargetName": "C:\\Users\\TEMP\\AppData\\Local\\Temp\\2\\sfx9D4B.tmp\\Disk1\\stage\\Components\\oracle.rcu.doc",
+                "processCommandLine": null,
+                "sourceProcessCommandLine": null,
+                "sourceProcessUsername": null,
+                "sourceProcessHash": null,
+                "sourceProcessPublisher": null,
+                "sourceProcessSigner": null,
+                "evidences": null,
+                "exposedUsers": null,
+                "owner": "BUILTIN\\Administrators",
+                "fileQualifier": "8641449963969277268",
+                "sourceProcessCertificateIssuer": null,
+                "processCertificateIssuer": null,
+                "operatingSystemType": "Windows",
+                "arrivalTime": "2024-11-28T05:54:09.754Z",
+                "policyCategory": null,
+                "deceptionType": 0,
+                "lureUser": null,
+                "sourceWSName": null,
+                "fatherProcess": null,
+                "sourceWSIp": null,
+                "winEventType": 0,
+                "winEventRecordId": 0,
+                "logonAttemptTypeId": 4,
+                "logonStatusId": 3221225692,
+                "productCode": null,
+                "upgradeCode": null,
+                "authorizationRights": null,
+                "agentId": "109f521d-2ee1-450b-9f71-3cc56d8ebf37",
+                "computerName": "TEST-PC"
+              }
+            ],
+            "filteredCount": 3,
+            "returnedCount": 2
+          }
+          `}}
+  - path: /EPM/API/24.12.0.4372/Sets/123456cf-1234-5678-abcd-b12345678d14/Events/Search
+    methods: ['POST']
+    query_params:
+      limit: 2
+      nextCursor: 1734326375622
+    request_headers:
+      Content-Type:
+        - "application/json"
+      Authorization:
+        - "basic token"
+    responses:
+      - status_code: 200
+        headers:
+          Content-Type:
+            - 'application/json'
+        body: |-
+          {{ minify_json `
+          {
+            "nextCursor": "1734777875622",
+            "events": [
+              {
+                "fileName": "rundll32.exe",
+                "originalFileName": "RUNDLL32.EXE",
+                "displayName": "Windows host process (Rundll32) (rundll32.exe)",
+                "policyName": "test-rule2",
+                "hash": "A40886F98905F3D9DBDD61DA1D59CCB4F4854758",
+                "publisher": "Microsoft Windows",
+                "eventType": "Launch",
+                "sourceType": "Windows",
+                "sourceName": "Microsoft Windows",
+                "lastEventDate": "2024-11-28T05:03:10.094Z",
+                "firstEventDate": "2024-11-28T05:03:10.094Z",
+                "userName": "TEST-PC\\Administrator",
+                "justification": null,
+                "justificationEmail": null,
+                "fileSize": 71168,
+                "threatProtectionAction": "ALL",
+                "threatProtectionActionId": 0,
+                "packageName": "Windows host process (Rundll32) (rundll32.exe)",
+                "company": "Microsoft Corporation",
+                "filePath": "C:\\Windows\\System32\\rundll32.exe",
+                "filePathWithoutFilename": "C:\\Windows\\System32\\",
+                "fileDescription": "Windows host process (Rundll32)",
+                "productName": "Microsoft® Windows® Operating System",
+                "productVersion": "10.0.17763.1697",
+                "bundleName": null,
+                "bundleVersion": null,
+                "bundleId": null,
+                "applicationSubType": null,
+                "interpreter": null,
+                "runAsUsername": null,
+                "workingDirectory": null,
+                "originUserUID": null,
+                "fileAccessPermission": null,
+                "symLink": null,
+                "fileVersion": "10.0.17763.1697",
+                "modificationTime": "2024-10-29T05:24:15.618Z",
+                "userIsAdmin": true,
+                "agentEventCount": 1,
+                "skippedCount": 0,
+                "eventCount": 1,
+                "accessAction": "false",
+                "accessTargetType": "Internet",
+                "accessTargetName": null,
+                "processCommandLine": "Startupscan.dll,SusRunTask",
+                "sourceProcessCommandLine": null,
+                "sourceProcessUsername": null,
+                "sourceProcessHash": null,
+                "sourceProcessPublisher": null,
+                "sourceProcessSigner": null,
+                "evidences": null,
+                "exposedUsers": null,
+                "owner": "NT SERVICE\\TrustedInstaller",
+                "fileQualifier": "-6929158130464282036",
+                "sourceProcessCertificateIssuer": null,
+                "processCertificateIssuer": null,
+                "operatingSystemType": "Windows",
+                "arrivalTime": "2024-11-28T05:24:15.693Z",
+                "policyCategory": null,
+                "deceptionType": 0,
+                "lureUser": null,
+                "sourceWSName": null,
+                "fatherProcess": null,
+                "sourceWSIp": null,
+                "winEventType": 0,
+                "winEventRecordId": 0,
+                "logonAttemptTypeId": 5,
+                "logonStatusId": 3221225779,
+                "productCode": null,
+                "upgradeCode": null,
+                "authorizationRights": null,
+                "agentId": "109f521d-2ee1-450b-9f71-3cc56d8ebf37",
+                "computerName": "TEST-PC"
+              }
+            ],
+            "filteredCount": 3,
+            "returnedCount": 1
+          }
+          `}}
+  - path: /EPM/API/24.12.0.4372/Sets/123456cf-1234-5678-abcd-b12345678d14/Events/Search
+    methods: ['POST']
+    query_params:
+      limit: 2
+      nextCursor: 1734777875622
+    request_headers:
+      Content-Type:
+        - "application/json"
+      Authorization:
+        - "basic token"
+    responses:
+      - status_code: 200
+        headers:
+          Content-Type:
+            - 'application/json'
+        body: |-
+          {{ minify_json `
+          {
+            "nextCursor": null,
+            "events": [],
+            "filteredCount": 3,
+            "returnedCount": 0
+          }
+          `}}
+  - path: /EPM/API/24.12.0.4372/Sets/abcdef3f-1234-5678-abcd-0bc6abcdefd6/Events/Search
+    methods: ['POST']
+    query_params:
+      limit: 2
+      nextCursor: start
+    request_headers:
+      Content-Type:
+        - "application/json"
+      Authorization:
+        - "basic token"
+    responses:
+      - status_code: 200
+        headers:
+          Content-Type:
+            - 'application/json'
+        body: |-
+          {{ minify_json `
+          {
+            "nextCursor": null,
+            "events": [],
+            "filteredCount": 0,
+            "returnedCount": 0
+          }
+          `}}
+  - path: /EPM/API/24.12.0.4372/Sets/123456cf-1234-5678-abcd-b12345678d14/policyaudits/search
+    methods: ['POST']
+    query_params:
+      limit: 2
+      nextCursor: start
+    request_headers:
+      Content-Type:
+        - "application/json"
+      Authorization:
+        - "basic token"
+    responses:
+      - status_code: 200
+        headers:
+          Content-Type:
+            - 'application/json'
+        body: |-
+          {{ minify_json `
+          {
+            "nextCursor": "1734326123422",
+            "events": [
+              {
+                "hash": "5f344897632b50114a8ff649054599c6f7fa8a69",
+                "publisher": "",
+                "eventType": "StartElevated",
+                "sourceType": "LocalDisk",
+                "sourceName": "/usr/bin/systemctl",
+                "lastEventDate": "2024-11-25T10:28:24.298Z",
+                "userName": "serviceuser",
+                "fileName": "systemctl",
+                "fileSize": 1115760,
+                "fileDescription": "systemctl",
+                "packageName": "systemctl",
+                "company": "",
+                "filePath": "/usr/bin/systemctl",
+                "firstEventDate": "2024-11-25T10:28:24.298Z",
+                "productName": "ouiSFX",
+                "productVersion": "",
+                "bundleName": "",
+                "bundleVersion": "",
+                "fileVersion": "",
+                "modificationTime": "2024-10-26T14:27:54.041Z",
+                "userIsAdmin": false,
+                "agentEventCount": 1,
+                "skippedCount": 0,
+                "workingDirectory": "/home/serviceuser",
+                "runAsUsername": "root",
+                "originUserUID": "1000",
+                "interpreter": "",
+                "fileAccessPermission": "-rwxr-xr-x",
+                "symLink": "",
+                "commandInfo": "",
+                "arguments": "status epm",
+                "justification": "",
+                "justificationEmail": "",
+                "displayName": "systemctl",
+                "originalFileName": "",
+                "owner": "root",
+                "policyName": "Test-elastic",
+                "fileQualifier": "2375697114193346955",
+                "arrivalTime": "2024-11-25T14:27:54.963Z",
+                "operatingSystemType": "Linux",
+                "applicationSubType": null,
+                "accessTargetType": "ProcessMemory",
+                "accessTargetName": "C:\\Windows\\System32\\cmd.exe",
+                "policyAction": "Elevate",
+                "productCode": "",
+                "upgradeCode": "",
+                "mimeType": "",
+                "codeURL": "",
+                "authorizationRights": null,
+                "parentProcess": "",
+                "agentId": "48b4bf28-5257-4460-a384-9aac70fb7db2",
+                "computerName": "k8sworker1-50-2-19"
+              },
+              {
+                "hash": "5f344897632b50114a8ff649054599c6f7fa8a69",
+                "publisher": "",
+                "eventType": "StartElevated",
+                "sourceType": "LocalDisk",
+                "sourceName": "/usr/bin/systemctl",
+                "lastEventDate": "2024-11-25T10:37:58.431Z",
+                "userName": "root",
+                "fileName": "systemctl",
+                "fileSize": 1115760,
+                "fileDescription": "systemctl",
+                "packageName": "systemctl",
+                "company": "",
+                "filePath": "/usr/bin/systemctl",
+                "firstEventDate": "2024-11-25T10:31:12.018Z",
+                "productName": "SQL*PLUS",
+                "productVersion": "",
+                "bundleName": "",
+                "bundleVersion": "",
+                "fileVersion": "",
+                "modificationTime": "2024-10-26T14:27:54.041Z",
+                "userIsAdmin": true,
+                "agentEventCount": 2,
+                "skippedCount": 0,
+                "workingDirectory": "/home/serviceuser",
+                "runAsUsername": "root",
+                "originUserUID": "0",
+                "interpreter": "",
+                "fileAccessPermission": "-rwxr-xr-x",
+                "symLink": "",
+                "commandInfo": "",
+                "arguments": "status sshd",
+                "justification": "",
+                "justificationEmail": "",
+                "displayName": "systemctl",
+                "originalFileName": "",
+                "owner": "root",
+                "policyName": "Test-elastic",
+                "fileQualifier": "2375697114193346955",
+                "arrivalTime": "2024-11-25T14:27:54.054Z",
+                "operatingSystemType": "Linux",
+                "applicationSubType": null,
+                "accessTargetType": "ransomware",
+                "accessTargetName": "C:\\Oracle\\oemmw\\OPatch\\version.txt",
+                "policyAction": "Elevate",
+                "productCode": "",
+                "upgradeCode": "",
+                "mimeType": "",
+                "codeURL": "",
+                "authorizationRights": null,
+                "parentProcess": "",
+                "agentId": "48b4bf28-5257-4460-a384-9aac70fb7db2",
+                "computerName": "k8sworker1-50-2-19"
+              }
+            ],
+            "filteredCount": 3,
+            "returnedCount": 2
+          }
+          `}}
+  - path: /EPM/API/24.12.0.4372/Sets/123456cf-1234-5678-abcd-b12345678d14/policyaudits/search
+    methods: ['POST']
+    query_params:
+      limit: 2
+      nextCursor: 1734326123422
+    request_headers:
+      Content-Type:
+        - "application/json"
+      Authorization:
+        - "basic token"
+    responses:
+      - status_code: 200
+        headers:
+          Content-Type:
+            - 'application/json'
+        body: |-
+          {{ minify_json `
+          {
+            "nextCursor": "1734777870622",
+            "events": [
+              {
+                "hash": "5f344897632b50114a8ff649054599c6f7fa8a69",
+                "publisher": "",
+                "eventType": "StartElevated",
+                "sourceType": "LocalDisk",
+                "sourceName": "/usr/bin/systemctl",
+                "lastEventDate": "2024-11-25T10:38:05.096Z",
+                "userName": "serviceuser",
+                "fileName": "systemctl",
+                "fileSize": 1115760,
+                "fileDescription": "systemctl",
+                "packageName": "systemctl",
+                "company": "",
+                "filePath": "/usr/bin/systemctl",
+                "firstEventDate": "2024-11-25T10:27:47.42Z",
+                "productName": "Java(TM) Platform SE 8",
+                "productVersion": "",
+                "bundleName": "",
+                "bundleVersion": "",
+                "fileVersion": "",
+                "modificationTime": "2024-10-26T14:27:54.04Z",
+                "userIsAdmin": false,
+                "agentEventCount": 6,
+                "skippedCount": 0,
+                "workingDirectory": "/home/serviceuser",
+                "runAsUsername": "root",
+                "originUserUID": "1000",
+                "interpreter": "",
+                "fileAccessPermission": "-rwxr-xr-x",
+                "symLink": "",
+                "commandInfo": "",
+                "arguments": "status sshd",
+                "justification": "",
+                "justificationEmail": "",
+                "displayName": "systemctl",
+                "originalFileName": "",
+                "owner": "root",
+                "policyName": "Test-elastic",
+                "fileQualifier": "2375697114193346955",
+                "arrivalTime": "2024-11-25T14:27:54.967Z",
+                "operatingSystemType": "Linux",
+                "applicationSubType": null,
+                "accessTargetType": "ProcessMemory",
+                "accessTargetName": "C:\\Oracle\\oemmw\\oracle_common\\jdk\\bin\\java.exe",
+                "policyAction": "Elevate",
+                "productCode": "",
+                "upgradeCode": "",
+                "mimeType": "",
+                "codeURL": "",
+                "authorizationRights": null,
+                "parentProcess": "",
+                "agentId": "48b4bf28-5257-4460-a384-9aac70fb7db2",
+                "computerName": "k8sworker1-50-2-19"
+              }
+            ],
+            "filteredCount": 3,
+            "returnedCount": 1
+          }
+          `}}
+  - path: /EPM/API/24.12.0.4372/Sets/123456cf-1234-5678-abcd-b12345678d14/policyaudits/search
+    methods: ['POST']
+    query_params:
+      limit: 2
+      nextCursor: 1734777870622
+    request_headers:
+      Content-Type:
+        - "application/json"
+      Authorization:
+        - "basic token"
+    responses:
+      - status_code: 200
+        headers:
+          Content-Type:
+            - 'application/json'
+        body: |-
+          {{ minify_json `
+          {
+            "nextCursor": null,
+            "events": [],
+            "filteredCount": 3,
+            "returnedCount": 0
+          }
+          `}}
+  - path: /EPM/API/24.12.0.4372/Sets/abcdef3f-1234-5678-abcd-0bc6abcdefd6/policyaudits/search
+    methods: ['POST']
+    query_params:
+      limit: 2
+      nextCursor: start
+    request_headers:
+      Content-Type:
+        - "application/json"
+      Authorization:
+        - "basic token"
+    responses:
+      - status_code: 200
+        headers:
+          Content-Type:
+            - 'application/json'
+        body: |-
+          {{ minify_json `
+          {
+            "nextCursor": "1734770123422",
+            "events": [
+              {
+                "hash": "7448a72f7519d1d1564a2456bc178b30673836d6",
+                "publisher": "",
+                "eventType": "Block",
+                "sourceType": "LocalDisk",
+                "sourceName": "/usr/bin/ls",
+                "lastEventDate": "2024-11-26T11:36:20.716Z",
+                "userName": "devuser",
+                "fileName": "ls",
+                "fileSize": 138216,
+                "fileDescription": "ls",
+                "packageName": "ls",
+                "company": "",
+                "filePath": "/usr/bin/ls",
+                "firstEventDate": "2024-11-26T11:36:20.716Z",
+                "productName": "Microsoft® Windows® Operating System",
+                "productVersion": "",
+                "bundleName": "",
+                "bundleVersion": "",
+                "fileVersion": "",
+                "modificationTime": "2024-10-27T11:36:43.978Z",
+                "userIsAdmin": false,
+                "agentEventCount": 1,
+                "skippedCount": 0,
+                "workingDirectory": "/home/devuser",
+                "runAsUsername": "devuser",
+                "originUserUID": "1001",
+                "interpreter": "",
+                "fileAccessPermission": "-rwxr-xr-x",
+                "symLink": "",
+                "commandInfo": "",
+                "arguments": "--color=auto",
+                "justification": "",
+                "justificationEmail": "",
+                "displayName": "ls",
+                "originalFileName": "",
+                "owner": "root",
+                "policyName": "test",
+                "fileQualifier": "-4809306995265559738",
+                "arrivalTime": "2024-11-26T11:36:43.99Z",
+                "operatingSystemType": "Linux",
+                "applicationSubType": null,
+                "accessTargetType": "ProcessMemory",
+                "accessTargetName": "C:\\Oracle\\oemmw\\oracle_common\\jdk\\bin\\java.exe",
+                "policyAction": "Block",
+                "productCode": "",
+                "upgradeCode": "",
+                "mimeType": "",
+                "codeURL": "",
+                "authorizationRights": null,
+                "parentProcess": "",
+                "agentId": "4f5d03a7-0b42-455c-8afd-226423cc34b1",
+                "computerName": "k8smaster-50-2-72"
+              }
+            ],
+            "filteredCount": 1,
+            "returnedCount": 1
+          }
+          `}}
+  - path: /EPM/API/24.12.0.4372/Sets/abcdef3f-1234-5678-abcd-0bc6abcdefd6/policyaudits/search
+    methods: ['POST']
+    query_params:
+      limit: 2
+      nextCursor: 1734770123422
+    request_headers:
+      Content-Type:
+        - "application/json"
+      Authorization:
+        - "basic token"
+    responses:
+      - status_code: 200
+        headers:
+          Content-Type:
+            - 'application/json'
+        body: |-
+          {{ minify_json `
+          {
+            "nextCursor": null,
+            "events": [],
+            "filteredCount": 1,
+            "returnedCount": 0
+          }
+          `}}
+  - path: /EPM/API/24.12.0.4372/Sets/123456cf-1234-5678-abcd-b12345678d14/policyaudits/aggregations/search
+    methods: ['POST']
+    query_params:
+      limit: 2
+      nextCursor: start
+    request_headers:
+      Content-Type:
+        - "application/json"
+      Authorization:
+        - "basic token"
+    responses:
+      - status_code: 200
+        headers:
+          Content-Type:
+            - 'application/json'
+        body: |-
+          {{ minify_json `
+          {
+            "nextCursor": "1734378903422",
+            "events": [
+              {
+                "fileQualifier": "-5566271857083130002",
+                "lastEventDisplayName": "Google Crash Handler (GoogleCrashHandler64.exe)",
+                "hash": "SHA1##C340EFFBAED989E7F8FFC6F7574856CD8ED0D18B",
+                "publisher": "Google LLC",
+                "totalEvents": 8,
+                "applicationType": "Executable",
+                "eventType": "Launch",
+                "lastEventSourceType": "Updater",
+                "lastEventSourceName": "Updater (Google Updater)",
+                "lastEventDate": "2022-12-19T01:04:47.284Z",
+                "lastEventUserName": "NT AUTHORITY\\SYSTEM",
+                "lastEventId": "QtvvKIUB8k35oa3KjVf7",
+                "lastEventJustification": "",
+                "policyId": 11161,
+                "policyName": "QQQ",
+                "lastEventFileName": "GoogleCrashHandler64.exe",
+                "affectedComputers": 1,
+                "affectedUsers": 1,
+                "firstEventDate": "2022-12-14T21:06:44.756Z",
+                "firstEventUserName": "NT AUTHORITY\\SYSTEM",
+                "fileSize": 408536,
+                "CLSID": "",
+                "adminTaskId": "",
+                "appPackageDisplayName": "",
+                "firstEventAgentId": "b074b7d4-664a-40d1-b929-69e89bbd254c",
+                "lastEventAgentId": "b074b7d4-664a-40d1-b929-69e89bbd254c",
+                "fileLocation": "C:\\Program Files (x86)\\Google\\Update\\1.3.36.152\\",
+                "aggregatedBy": "C340EFFBAED989E7F8FFC6F7574856CD8ED0D18B,QQQ",
+                "operatingSystemType": "Windows",
+                "arrivalTime": "2022-12-19T05:51:06.024Z",
+                "skippedCount": 0,
+                "skipped": false,
+                "lastEventPackageName": "Google Update (GoogleUpdate.exe)",
+                "lastEventAccessTargetType": "Registry",
+                "lastEventAccessTarget": null,
+                "policyAction": null,
+                "productCode": null,
+                "upgradeCode": null,
+                "mimeType": "",
+                "url": "",
+                "lastEventSymlink": "",
+                "authorizationRight": "com.apple.AOSNotification.FindMyMac.modify"
+              },
+              {
+                "fileQualifier": "2375697114193346955",
+                "lastEventDisplayName": "systemctl",
+                "hash": "sha1##5f344897632b50114a8ff649054599c6f7fa8a69",
+                "publisher": "",
+                "totalEvents": 9,
+                "applicationType": "LinuxCommand",
+                "eventType": "StartElevated",
+                "lastEventSourceType": "LocalDisk",
+                "lastEventSourceName": "/usr/bin/systemctl",
+                "lastEventDate": "2024-11-25T10:38:05.096Z",
+                "lastEventUserName": "serviceuser",
+                "lastEventId": "1aS4Y5MBWKRe9qjDzYAN",
+                "lastEventJustification": "",
+                "policyId": 23470,
+                "policyName": "Test-rule",
+                "lastEventFileName": "systemctl",
+                "lastEventOriginalFileName": "",
+                "affectedComputers": 1,
+                "affectedUsers": 2,
+                "firstEventDate": "2024-11-25T10:27:47.42Z",
+                "firstEventUserName": "serviceuser",
+                "fileSize": 1115760,
+                "CLSID": "",
+                "adminTaskId": "",
+                "appPackageDisplayName": "",
+                "firstEventAgentId": "48b4bf28-1234-5678-abcd-9aaabcdefdb2",
+                "lastEventAgentId": "48b4bf28-1234-5678-abcd-9aaabcdefdb2",
+                "fileLocation": "/usr/bin/",
+                "aggregatedBy": "5f344897632b50114a8ff649054599c6f7fa8a69,Test-rule",
+                "operatingSystemType": "Linux",
+                "arrivalTime": "2024-11-25T14:27:54.967Z",
+                "skippedCount": 0,
+                "skipped": false,
+                "lastEventPackageName": "systemctl",
+                "lastEventAccessTargetType": null,
+                "lastEventAccessTargetName": "",
+                "policyAction": "Elevate",
+                "productCode": "",
+                "upgradeCode": "",
+                "productVersion": "",
+                "mimeType": "",
+                "url": "",
+                "parentProcess": "",
+                "interpreter": "",
+                "lastEventAuthorizationRights": ""
+              }
+            ],
+            "filteredCount": 2,
+            "returnedCount": 2
+          }
+          `}}
+  - path: /EPM/API/24.12.0.4372/Sets/123456cf-1234-5678-abcd-b12345678d14/policyaudits/aggregations/search
+    methods: ['POST']
+    query_params:
+      limit: 2
+      nextCursor: 1734378903422
+    request_headers:
+      Content-Type:
+        - "application/json"
+      Authorization:
+        - "basic token"
+    responses:
+      - status_code: 200
+        headers:
+          Content-Type:
+            - 'application/json'
+        body: |-
+          {{ minify_json `
+          {
+            "nextCursor": null,
+            "events": [],
+            "filteredCount": 2,
+            "returnedCount": 0
+          }
+          `}}
+  - path: /EPM/API/24.12.0.4372/Sets/abcdef3f-1234-5678-abcd-0bc6abcdefd6/policyaudits/aggregations/search
+    methods: ['POST']
+    query_params:
+      limit: 2
+      nextCursor: start
+    request_headers:
+      Content-Type:
+        - "application/json"
+      Authorization:
+        - "basic token"
+    responses:
+      - status_code: 200
+        headers:
+          Content-Type:
+            - 'application/json'
+        body: |-
+          {{ minify_json `
+          {
+            "nextCursor": null,
+            "events": [],
+            "filteredCount": 0,
+            "returnedCount": 0
+          }
+          `}}
+  - path: /EPM/API/24.12.0.4372/Sets/123456cf-1234-5678-abcd-b12345678d14/events/aggregations/search
+    methods: ['POST']
+    query_params:
+      limit: 2
+      nextCursor: start
+    request_headers:
+      Content-Type:
+        - "application/json"
+      Authorization:
+        - "basic token"
+    responses:
+      - status_code: 200
+        headers:
+          Content-Type:
+            - 'application/json'
+        body: |-
+          {{ minify_json `
+          {
+            "nextCursor": "1012345678422",
+            "events": [
+              {
+                "fileQualifier": "549309085493630080",
+                "lastEventDisplayName": "Updater.exe (UNICODE)",
+                "hash": "SHA1##8F21AAF3DC1EFEDF2BB5C94231CE9E24943FF512",
+                "publisher": "Logitech Inc",
+                "totalEvents": 3,
+                "applicationType": "Executable",
+                "eventType": "DetectAccess",
+                "lastEventSourceType": "LocalDisk",
+                "lastEventSourceName": "LogiOptionsFiles Setup (PDSetup.exe)",
+                "lastEventDate": "2021-07-07T06:44:52Z",
+                "firstEventDate": "2021-06-23T06:20:07Z",
+                "lastEventUserName": "AGENT\\caadmin",
+                "lastEventComputerName": null,
+                "lastEventJustification": "",
+                "policyId": 0,
+                "threatDetectionAction": "",
+                "lastEventFileName": "updater.exe",
+                "lastEventOriginalFileName": "updater.exe",
+                "affectedComputers": 1,
+                "affectedUsers": 1,
+                "exposedUsers": null,
+                "firstEventUserName": "JOHNBLACK\\caadmin",
+                "firstEventComputerName": null,
+                "fileSize": 544904,
+                "CLSID": "",
+                "mimeType": "",
+                "adminTaskId": "",
+                "url": "",
+                "appPackageDisplayName": "",
+                "agentId": "0fe5ed4e-9f8f-48d1-b3f9-4b1d862faf50",
+                "fileLocation": "",
+                "skippedCount": 0,
+                "skipped": false,
+                "deceptionType": 1,
+                "aggregatedBy": "8F21AAF3DC1EFEDF2BB5C94231CE9E24943FF512,8192",
+                "defenceActionId": 0,
+                "lastAgentId": "78750d2c-5960-4f21-975-ed07b",
+                "lastEventInitiatedProcess": "cmd.exe",
+                "lastEventInitiatedProcessLocation": "C:\\WINDOWS\\system32",
+                "lastEventExposedUsers": null,
+                "LastEventExposedUsersCount": 0,
+                "LastEventSymLink": 0,
+                "authorizationRight": "com.apple.AOSNotification.FindMyMac.modify"
+              }
+            ],
+            "filteredCount": 1,
+            "returnedCount": 0
+          }
+          `}}
+  - path: /EPM/API/24.12.0.4372/Sets/123456cf-1234-5678-abcd-b12345678d14/events/aggregations/search
+    methods: ['POST']
+    query_params:
+      limit: 2
+      nextCursor: 1012345678422
+    request_headers:
+      Content-Type:
+        - "application/json"
+      Authorization:
+        - "basic token"
+    responses:
+      - status_code: 200
+        headers:
+          Content-Type:
+            - 'application/json'
+        body: |-
+          {{ minify_json `
+          {
+            "nextCursor": null,
+            "events": [],
+            "filteredCount": 1,
+            "returnedCount": 0
+          }
+          `}}
+  - path: /EPM/API/24.12.0.4372/Sets/abcdef3f-1234-5678-abcd-0bc6abcdefd6/events/aggregations/search
+    methods: ['POST']
+    query_params:
+      limit: 2
+      nextCursor: start
+    request_headers:
+      Content-Type:
+        - "application/json"
+      Authorization:
+        - "basic token"
+    responses:
+      - status_code: 200
+        headers:
+          Content-Type:
+            - 'application/json'
+        body: |-
+          {{ minify_json `
+          {
+            "nextCursor": "1012388990422",
+            "events": [
+              {
+                "fileQualifier": "-1035712369269809536",
+                "lastEventFileName": "setupCCR.exe",
+                "lastEventOriginalFileName": "",
+                "lastEventDisplayName": "setupCCR.exe -a -d -S...",
+                "hash": "SHA1##0E4B8652719D84B66BFBFCF195C43513AF8459D8",
+                "publisher": "",
+                "totalEvents": 1,
+                "applicationType": "Executable",
+                "applicationTypeId": 3,
+                "eventType": "Launch",
+                "eventTypeId": 2048,
+                "lastEventSourceType": "LocalDisk",
+                "lastEventSourceName": "ouiSFX (setup_em13200p1_win64.exe)",
+                "lastEventDate": "2024-11-25T11:25:17.114Z",
+                "lastEventPackageName": null,
+                "lastEventUserName": "TEST\\Administrator",
+                "lastEventComputerName": "TEST",
+                "lastEventId": "ZpURY5MBdDBWucfdnK1j",
+                "lastEventJustification": "",
+                "threatDetectionAction": "",
+                "affectedComputers": 1,
+                "affectedUsers": 1,
+                "exposedUsers": 0,
+                "lastEventExposedUsersCount": 0,
+                "lastEventExposedUsers": null,
+                "firstEventDate": "2024-11-25T11:25:17.114Z",
+                "firstEventUserName": "TEST\\Administrator",
+                "firstEventComputerName": "TEST",
+                "fileSize": 13312,
+                "CLSID": "",
+                "mimeType": "",
+                "url": "",
+                "appPackageDisplayName": "",
+                "agentId": "109f521d-2ee1-450b-9f71-3cc56d8ebf37",
+                "fileLocation": "C:\\Oracle\\oemmw\\oracle_common\\ccr\\bin\\",
+                "skippedCount": 0,
+                "skipped": false,
+                "aggregatedBy": "0E4B8652719D84B66BFBFCF195C43513AF8459D8,2048",
+                "deceptionType": 0,
+                "defenceActionId": 0,
+                "lastAgentId": "109f521d-2ee1-450b-9f71-3cc56d8ebf37",
+                "lastEventAgentId": null,
+                "packageName": "ouiSFX (setup_em13200p1_win64.exe)",
+                "lastEventInitiatedProcess": null,
+                "lastEventInitiatedProcessLocation": null,
+                "operatingSystemType": "Windows",
+                "arrivalTime": "2024-11-25T11:25:18.712Z",
+                "lastEventAccessTargetType": null,
+                "lastEventAccessTargetName": "",
+                "lastEventSymLink": "",
+                "productCode": null,
+                "upgradeCode": null,
+                "lastEventAuthorizationRights": ""
+              }
+            ],
+            "filteredCount": 1,
+            "returnedCount": 0
+          }
+          `}}
+  - path: /EPM/API/24.12.0.4372/Sets/abcdef3f-1234-5678-abcd-0bc6abcdefd6/events/aggregations/search
+    methods: ['POST']
+    query_params:
+      limit: 2
+      nextCursor: 1012388990422
+    request_headers:
+      Content-Type:
+        - "application/json"
+      Authorization:
+        - "basic token"
+    responses:
+      - status_code: 200
+        headers:
+          Content-Type:
+            - 'application/json'
+        body: |-
+          {{ minify_json `
+          {
+            "nextCursor": null,
+            "events": [],
+            "filteredCount": 1,
+            "returnedCount": 0
+          }
+          `}}
+  - path: /EPM/API/24.12.0.4372/Sets/123456cf-1234-5678-abcd-b12345678d14/AdminAudit
+    methods: ['GET']
+    query_params:
+      DateFrom: "{DateFrom:.*}"
+      DateTo: "{DateTo:.*}"
+      Limit: 2
+      Offset: 0
+    request_headers:
+      Authorization:
+        - "basic token"
+    responses:
+      - status_code: 200
+        headers:
+          Content-Type:
+            - 'application/json'
+        body: |-
+          {{ minify_json `
+          {
+            "TotalCount": 3,
+            "AdminAudits": [
+              {
+                "SetName": "Elastic/test",
+                "EventTime": "2024-11-25T05:37:28.373Z",
+                "PermissionDescription": "None",
+                "Description": "Enter Set Elastic/test",
+                "Feature": "Sets",
+                "LoggedAt": "2024-11-25T05:25:13.167Z",
+                "LoggedFrom": "175.16.199.1",
+                "Administrator": "bob@example.com",
+                "InternalSessionId": 876,
+                "Role": "SetAdmin"
+              },
+              {
+                "SetName": "Elastic/test",
+                "EventTime": "2024-11-25T05:43:18.18Z",
+                "PermissionDescription": "View Download Agent Installation",
+                "Description": "Get agent installation package URL: https://epm-downloads.s3.us-east-2.amazonaws.com/latest/Windows/VFAgentSetupX64.msi",
+                "Feature": "My Computers",
+                "LoggedAt": "2024-11-25T05:25:13.167Z",
+                "LoggedFrom": "67.43.156.0",
+                "Administrator": "james@example.com",
+                "InternalSessionId": 876,
+                "Role": "SetAdmin"
+              }
+            ]
+          }
+          `}}
+  - path: /EPM/API/24.12.0.4372/Sets/123456cf-1234-5678-abcd-b12345678d14/AdminAudit
+    methods: ['GET']
+    query_params:
+      DateFrom: "{DateFrom:.*}"
+      DateTo: "{DateTo:.*}"
+      Limit: 2
+      Offset: 2
+    request_headers:
+      Authorization:
+        - "basic token"
+    responses:
+      - status_code: 200
+        headers:
+          Content-Type:
+            - 'application/json'
+        body: |-
+          {{ minify_json `
+          {
+            "TotalCount": 3,
+            "AdminAudits": [
+              {
+                "SetName": "Elastic/test",
+                "EventTime": "2024-11-25T05:38:39.13Z",
+                "PermissionDescription": "View all policies and application groups. Read and export policy and application group",
+                "Description": "Read \"General configuration\" Agent Configuration policy",
+                "Feature": "Agent Config",
+                "LoggedAt": "2024-11-25T05:25:13.167Z",
+                "LoggedFrom": "89.160.20.128",
+                "Administrator": "rhodes@example.com",
+                "InternalSessionId": 876,
+                "Role": "SetAdmin"
+              }
+            ]
+          }
+          `}}
+  - path: /EPM/API/24.12.0.4372/Sets/123456cf-1234-5678-abcd-b12345678d14/AdminAudit
+    methods: ['GET']
+    query_params:
+      DateFrom: "{DateFrom:.*}"
+      DateTo: "{DateTo:.*}"
+      Limit: 2
+      Offset: 3
+    request_headers:
+      Authorization:
+        - "basic token"
+    responses:
+      - status_code: 200
+        headers:
+          Content-Type:
+            - 'application/json'
+        body: |-
+          {{ minify_json `
+          {
+            "TotalCount": 3,
+            "AdminAudits": []
+          }
+          `}}
+  - path: /EPM/API/24.12.0.4372/Sets/abcdef3f-1234-5678-abcd-0bc6abcdefd6/AdminAudit
+    methods: ['GET']
+    query_params:
+      DateFrom: "{DateFrom:.*}"
+      DateTo: "{DateTo:.*}"
+      Limit: 2
+      Offset: 0
+    request_headers:
+      Authorization:
+        - "basic token"
+    responses:
+      - status_code: 200
+        headers:
+          Content-Type:
+            - 'application/json'
+        body: |-
+          {{ minify_json `
+          {
+            "TotalCount": 0,
+            "AdminAudits": []
+          }
+          `}}
