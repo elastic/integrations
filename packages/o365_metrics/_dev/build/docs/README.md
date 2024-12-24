@@ -30,26 +30,46 @@ Once the secret is created and permissions are granted by admin, setup Elastic A
 - Modify any other parameters as necessary.
 
 
-
-## Compatibility
-
-
 ## Metrics
 
 Uses the Office 365 Graph API to retrieve metrics from Office 365.
 
 ### Mailbox Usage
 
+{{event "mailbox_usage"}}
+
+**ECS Field Reference**
+
+Please refer to the following [document](https://www.elastic.co/guide/en/ecs/current/ecs-field-reference.html) for detailed information on ECS fields.
+
 {{fields "mailbox_usage"}}
 
 ### One Drive Usage
+
+{{event "onedrive_usage"}}
+
+**ECS Field Reference**
+
+Please refer to the following [document](https://www.elastic.co/guide/en/ecs/current/ecs-field-reference.html) for detailed information on ECS fields.
 
 {{fields "onedrive_usage"}}
 
 ### Outlook Activity
 
+{{event "outlook_activity"}}
+
+**ECS Field Reference**
+
+Please refer to the following [document](https://www.elastic.co/guide/en/ecs/current/ecs-field-reference.html) for detailed information on ECS fields.
+
 {{fields "outlook_activity"}}
 
 ### Outlook App Usage
+
+{{event "outlook_app_usage"}}
+
+**ECS Field Reference**
+
+Please refer to the following [document](https://www.elastic.co/guide/en/ecs/current/ecs-field-reference.html) for detailed information on ECS fields.
 
 {{fields "outlook_app_usage"}}

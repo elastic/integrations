@@ -30,49 +30,227 @@ Once the secret is created and permissions are granted by admin, setup Elastic A
 - Modify any other parameters as necessary.
 
 
-
-## Compatibility
-
-
 ## Metrics
 
 Uses the Office 365 Graph API to retrieve metrics from Office 365.
 
 ### Mailbox Usage
 
+An example event for `mailbox_usage` looks as following:
+
+```json
+{
+    "@timestamp": "2024-12-24T09:24:40.827Z",
+    "agent": {
+        "name": "docker-fleet-agent",
+        "id": "abf38fab-f7b6-4e1c-a3b3-a70a64f9e5db",
+        "ephemeral_id": "08417a8d-9698-4c62-b7dc-e1b048647626",
+        "type": "filebeat",
+        "version": "8.16.0"
+    },
+    "data_stream": {
+        "namespace": "default",
+        "type": "metrics",
+        "dataset": "o365_metrics.mailbox_usage"
+    },
+    "ecs": {
+        "version": "8.16.0"
+    },
+    "elastic_agent": {
+        "id": "abf38fab-f7b6-4e1c-a3b3-a70a64f9e5db",
+        "version": "8.16.0",
+        "snapshot": false
+    },
+    "event": {
+        "agent_id_status": "verified",
+        "ingested": "2024-12-24T09:24:41Z",
+        "dataset": "o365_metrics.mailbox_usage"
+    },
+    "host": {
+        "hostname": "docker-fleet-agent",
+        "os": {
+            "kernel": "5.10.104-linuxkit",
+            "name": "Wolfi",
+            "type": "linux",
+            "family": "",
+            "version": "20230201",
+            "platform": "wolfi"
+        },
+        "containerized": false,
+        "ip": [
+            "192.168.48.7"
+        ],
+        "name": "docker-fleet-agent",
+        "mac": [
+            "02-42-C0-A8-30-07"
+        ],
+        "architecture": "aarch64"
+    },
+    "o365": {
+        "metrics": {
+            "mailbox": {
+                "usage": {
+                    "detail": {
+                        "item": {
+                            "count": "82"
+                        },
+                        "deleted_item_size": {
+                            "byte": "0"
+                        },
+                        "prohibit_send_quota": {
+                            "byte": "106300440576"
+                        },
+                        "deleted_item_quota": {
+                            "byte": "32212254720"
+                        },
+                        "report_refresh_date": "2024-12-22",
+                        "issue_warning_quota": {
+                            "byte": "105226698752"
+                        },
+                        "deleted_item": {
+                            "count": "0"
+                        },
+                        "report": {
+                            "period": {
+                                "day": "7"
+                            }
+                        },
+                        "prohibit_send_receive_quota": {
+                            "byte": "107374182400"
+                        },
+                        "storage_used": {
+                            "byte": "7986169"
+                        }
+                    }
+                }
+            }
+        }
+    },
+    "input": {
+        "type": "cel"
+    },
+    "tags": [
+        "o365.metrics.mailbox.usage"
+    ]
+}
+```
+
+**ECS Field Reference**
+
+Please refer to the following [document](https://www.elastic.co/guide/en/ecs/current/ecs-field-reference.html) for detailed information on ECS fields.
+
 **Exported fields**
 
-| Field | Description | Type |
-|---|---|---|
-| @timestamp | Event timestamp. | date |
-| cloud.image.id | Image ID for the cloud instance. | keyword |
-| data_stream.dataset | Data stream dataset. | constant_keyword |
-| data_stream.namespace | Data stream namespace. | constant_keyword |
-| data_stream.type | Data stream type. | constant_keyword |
-| host.containerized | If the host is a container. | boolean |
-| host.os.build | OS build information. | keyword |
-| host.os.codename | OS codename, if any. | keyword |
-| o365.metrics.mailbox.quota.status.indeterminate.count | The number of mailboxes where the quota status could not be determined. | integer |
-| o365.metrics.mailbox.quota.status.report.date | The specific date for which the report data applies. | date |
-| o365.metrics.mailbox.quota.status.report.period | The duration (e.g., 7 days) over which the quota status data is aggregated. | integer |
-| o365.metrics.mailbox.quota.status.report.refresh_date | The date when the report data was last updated. | date |
-| o365.metrics.mailbox.quota.status.send/receive_prohibited.count | The number of mailboxes restricted from both sending and receiving emails due to exceeding their total quota during the reporting period. | integer |
-| o365.metrics.mailbox.quota.status.send_prohibited.count | The number of mailboxes restricted from sending emails due to exceeding their send quota during the reporting period. | integer |
-| o365.metrics.mailbox.quota.status.under_limit.count | The number of mailboxes operating within their assigned quota limits during the reporting period. | integer |
-| o365.metrics.mailbox.quota.status.warning_issued.count | The number of mailboxes that have exceeded their warning threshold quota during the reporting period. | integer |
-| o365.metrics.mailbox.usage.detail.deleted_item.count | The number of items in the deleted items folder. | integer |
-| o365.metrics.mailbox.usage.detail.deleted_item_quota.byte | The quota limit for the deleted items folder (in bytes). | integer |
-| o365.metrics.mailbox.usage.detail.deleted_item_size.byte | The total size of items in the deleted items folder (in bytes). | integer |
-| o365.metrics.mailbox.usage.detail.issue_warning_quota.byte | The mailbox size limit at which a warning is issued (in bytes). | integer |
-| o365.metrics.mailbox.usage.detail.item.count | The total number of items in the mailbox. | integer |
-| o365.metrics.mailbox.usage.detail.prohibit_send/receive_quota.byte | The mailbox size limit at which sending and receiving messages is prohibited (in bytes). | integer |
-| o365.metrics.mailbox.usage.detail.prohibit_send_quota.byte | The mailbox size limit at which sending messages is prohibited (in bytes). | integer |
-| o365.metrics.mailbox.usage.detail.report.period | The reporting period over which the data is aggregated (in days). | integer |
-| o365.metrics.mailbox.usage.detail.report.refresh_date | The date when the report data was last updated. | date |
-| o365.metrics.mailbox.usage.detail.storage_used.byte | The total storage used in the mailbox (in bytes). | integer |
+| Field | Description | Type | Unit |
+|---|---|---|---|
+| @timestamp | Event timestamp. | date |  |
+| cloud.image.id | Image ID for the cloud instance. | keyword |  |
+| data_stream.dataset | Data stream dataset. | constant_keyword |  |
+| data_stream.namespace | Data stream namespace. | constant_keyword |  |
+| data_stream.type | Data stream type. | constant_keyword |  |
+| host.containerized | If the host is a container. | boolean |  |
+| host.os.build | OS build information. | keyword |  |
+| host.os.codename | OS codename, if any. | keyword |  |
+| o365.metrics.mailbox.quota.status.indeterminate.count | The number of mailboxes where the quota status could not be determined. | integer |  |
+| o365.metrics.mailbox.quota.status.report.date | The specific date for which the report data applies. | date |  |
+| o365.metrics.mailbox.quota.status.report.period.day | The duration (e.g., 7 days) over which the quota status data is aggregated. | integer | d |
+| o365.metrics.mailbox.quota.status.report.refresh_date | The date when the report data was last updated. | date |  |
+| o365.metrics.mailbox.quota.status.send_prohibited.count | The number of mailboxes restricted from sending emails due to exceeding their send quota during the reporting period. | integer |  |
+| o365.metrics.mailbox.quota.status.send_receive_prohibited.count | The number of mailboxes restricted from both sending and receiving emails due to exceeding their total quota during the reporting period. | integer |  |
+| o365.metrics.mailbox.quota.status.under_limit.count | The number of mailboxes operating within their assigned quota limits during the reporting period. | integer |  |
+| o365.metrics.mailbox.quota.status.warning_issued.count | The number of mailboxes that have exceeded their warning threshold quota during the reporting period. | integer |  |
+| o365.metrics.mailbox.usage.detail.deleted_item.count | The number of items in the deleted items folder. | integer |  |
+| o365.metrics.mailbox.usage.detail.deleted_item_quota.byte | The quota limit for the deleted items folder (in bytes). | integer |  |
+| o365.metrics.mailbox.usage.detail.deleted_item_size.byte | The total size of items in the deleted items folder (in bytes). | integer |  |
+| o365.metrics.mailbox.usage.detail.issue_warning_quota.byte | The mailbox size limit at which a warning is issued (in bytes). | integer |  |
+| o365.metrics.mailbox.usage.detail.item.count | The total number of items in the mailbox. | integer |  |
+| o365.metrics.mailbox.usage.detail.prohibit_send_quota.byte | The mailbox size limit at which sending messages is prohibited (in bytes). | integer |  |
+| o365.metrics.mailbox.usage.detail.prohibit_send_receive_quota.byte | The mailbox size limit at which sending and receiving messages is prohibited (in bytes). | integer |  |
+| o365.metrics.mailbox.usage.detail.report.period.day | The reporting period over which the data is aggregated (in days). | integer | d |
+| o365.metrics.mailbox.usage.detail.report.refresh_date | The date when the report data was last updated. | date |  |
+| o365.metrics.mailbox.usage.detail.storage_used.byte | The total storage used in the mailbox (in bytes). | integer |  |
 
 
 ### One Drive Usage
+
+An example event for `onedrive_usage` looks as following:
+
+```json
+{
+    "@timestamp": "2024-12-24T09:33:50.076Z",
+    "agent": {
+        "name": "docker-fleet-agent",
+        "id": "abf38fab-f7b6-4e1c-a3b3-a70a64f9e5db",
+        "ephemeral_id": "08417a8d-9698-4c62-b7dc-e1b048647626",
+        "type": "filebeat",
+        "version": "8.16.0"
+    },
+    "data_stream": {
+        "namespace": "default",
+        "type": "metrics",
+        "dataset": "o365_metrics.onedrive_usage"
+    },
+    "ecs": {
+        "version": "8.16.0"
+    },
+    "elastic_agent": {
+        "id": "abf38fab-f7b6-4e1c-a3b3-a70a64f9e5db",
+        "version": "8.16.0",
+        "snapshot": false
+    },
+    "event": {
+        "agent_id_status": "verified",
+        "ingested": "2024-12-24T09:33:51Z",
+        "dataset": "o365_metrics.onedrive_usage"
+    },
+    "host": {
+        "hostname": "docker-fleet-agent",
+        "os": {
+            "kernel": "5.10.104-linuxkit",
+            "name": "Wolfi",
+            "type": "linux",
+            "family": "",
+            "version": "20230201",
+            "platform": "wolfi"
+        },
+        "containerized": false,
+        "ip": [
+            "192.168.48.7"
+        ],
+        "name": "docker-fleet-agent",
+        "mac": [
+            "02-42-C0-A8-30-07"
+        ],
+        "architecture": "aarch64"
+    },
+    "o365": {
+        "metrics": {
+            "onedrive": {
+                "usage": {
+                    "storage": {
+                        "report": {
+                            "date": "2024-12-16",
+                            "period": "7"
+                        },
+                        "used_byte": "91893426",
+                        "report_refresh_date": "2024-12-22"
+                    }
+                }
+            }
+        }
+    },
+    "input": {
+        "type": "cel"
+    },
+    "tags": [
+        "o365.metrics.onedrive"
+    ]
+}
+```
+
+**ECS Field Reference**
+
+Please refer to the following [document](https://www.elastic.co/guide/en/ecs/current/ecs-field-reference.html) for detailed information on ECS fields.
 
 **Exported fields**
 
@@ -104,49 +282,242 @@ Uses the Office 365 Graph API to retrieve metrics from Office 365.
 
 ### Outlook Activity
 
+An example event for `outlook_activity` looks as following:
+
+```json
+{
+    "o365": {
+        "metrics": {
+            "outlook": {
+                "activity": {
+                    "meeting_interacted": {
+                        "count": ""
+                    },
+                    "meeting_created": {
+                        "count": "0"
+                    },
+                    "emails_received": {
+                        "count": "3"
+                    },
+                    "emails_sent": {
+                        "count": ""
+                    },
+                    "report": {
+                        "date": "2024-12-16",
+                        "period": {
+                            "day": "7"
+                        }
+                    },
+                    "emails_read": {
+                        "count": ""
+                    },
+                    "﻿report_refresh_date": "2024-12-22"
+                }
+            }
+        }
+    },
+    "input": {
+        "type": "cel"
+    },
+    "agent": {
+        "name": "docker-fleet-agent",
+        "id": "abf38fab-f7b6-4e1c-a3b3-a70a64f9e5db",
+        "type": "filebeat",
+        "ephemeral_id": "08417a8d-9698-4c62-b7dc-e1b048647626",
+        "version": "8.16.0"
+    },
+    "@timestamp": "2024-12-24T09:36:40.780Z",
+    "ecs": {
+        "version": "8.16.0"
+    },
+    "data_stream": {
+        "namespace": "default",
+        "type": "metrics",
+        "dataset": "o365_metrics.outlook_activity"
+    },
+    "host": {
+        "hostname": "docker-fleet-agent",
+        "os": {
+            "kernel": "5.10.104-linuxkit",
+            "name": "Wolfi",
+            "family": "",
+            "type": "linux",
+            "version": "20230201",
+            "platform": "wolfi"
+        },
+        "containerized": false,
+        "ip": [
+            "192.168.48.7"
+        ],
+        "name": "docker-fleet-agent",
+        "mac": [
+            "02-42-C0-A8-30-07"
+        ],
+        "architecture": "aarch64"
+    },
+    "elastic_agent": {
+        "id": "abf38fab-f7b6-4e1c-a3b3-a70a64f9e5db",
+        "version": "8.16.0",
+        "snapshot": false
+    },
+    "event": {
+        "agent_id_status": "verified",
+        "ingested": "2024-12-24T09:36:41Z",
+        "dataset": "o365_metrics.outlook_activity"
+    },
+    "tags": [
+        "o365.metrics.outlook.activity"
+    ]
+}
+```
+
+**ECS Field Reference**
+
+Please refer to the following [document](https://www.elastic.co/guide/en/ecs/current/ecs-field-reference.html) for detailed information on ECS fields.
+
 **Exported fields**
 
-| Field | Description | Type |
-|---|---|---|
-| @timestamp | Event timestamp. | date |
-| cloud.image.id | Image ID for the cloud instance. | keyword |
-| data_stream.dataset | Data stream dataset. | constant_keyword |
-| data_stream.namespace | Data stream namespace. | constant_keyword |
-| data_stream.type | Data stream type. | constant_keyword |
-| host.containerized | If the host is a container. | boolean |
-| host.os.build | OS build information. | keyword |
-| host.os.codename | OS codename, if any. | keyword |
-| o365.metrics.outlook.activity.emails_read.count | The count of email messages read by users during the reporting period. | integer |
-| o365.metrics.outlook.activity.emails_received.count | The count of email messages received by users during the reporting period. | integer |
-| o365.metrics.outlook.activity.emails_sent.count | The count of email messages sent by users during the reporting period. | integer |
-| o365.metrics.outlook.activity.meeting_created.count | The count of calendar meetings created by users during the reporting period. | integer |
-| o365.metrics.outlook.activity.meeting_interacted.count | The count of meetings where users interacted (e.g., accepted, declined, or modified) during the reporting period. | integer |
-| o365.metrics.outlook.activity.report_date | The specific date for which the report data applies. | date |
-| o365.metrics.outlook.activity.report_period | The duration (e.g., 7 days) over which the quota status data is aggregated. | integer |
-| o365.metrics.outlook.activity.report_refresh_date | The date when the report data was last updated. | date |
+| Field | Description | Type | Unit |
+|---|---|---|---|
+| @timestamp | Event timestamp. | date |  |
+| cloud.image.id | Image ID for the cloud instance. | keyword |  |
+| data_stream.dataset | Data stream dataset. | constant_keyword |  |
+| data_stream.namespace | Data stream namespace. | constant_keyword |  |
+| data_stream.type | Data stream type. | constant_keyword |  |
+| host.containerized | If the host is a container. | boolean |  |
+| host.os.build | OS build information. | keyword |  |
+| host.os.codename | OS codename, if any. | keyword |  |
+| o365.metrics.outlook.activity.emails_read.count | The count of email messages read by users during the reporting period. | integer |  |
+| o365.metrics.outlook.activity.emails_received.count | The count of email messages received by users during the reporting period. | integer |  |
+| o365.metrics.outlook.activity.emails_sent.count | The count of email messages sent by users during the reporting period. | integer |  |
+| o365.metrics.outlook.activity.meeting_created.count | The count of calendar meetings created by users during the reporting period. | integer |  |
+| o365.metrics.outlook.activity.meeting_interacted.count | The count of meetings where users interacted (e.g., accepted, declined, or modified) during the reporting period. | integer |  |
+| o365.metrics.outlook.activity.report.date | The specific date for which the report data applies. | date |  |
+| o365.metrics.outlook.activity.report.period.day | The duration (e.g., 7 days) over which the report data is aggregated. | integer | d |
+| o365.metrics.outlook.activity.report.refresh_date | The date when the report data was last updated. | date |  |
 
 
 ### Outlook App Usage
 
+An example event for `outlook_app_usage` looks as following:
+
+```json
+{
+    "o365": {
+        "metrics": {
+            "outlook": {
+                "app": {
+                    "usage": {
+                        "outlook_2013": {
+                            "count": ""
+                        },
+                        "outlook_2016": {
+                            "count": ""
+                        },
+                        "outlook_2007": {
+                            "count": ""
+                        },
+                        "undetermined": {
+                            "count": ""
+                        },
+                        "report": {
+                            "period": {
+                                "day": "7"
+                            }
+                        },
+                        "outlook_2019": {
+                            "count": ""
+                        },
+                        "outlook_m365": {
+                            "count": ""
+                        },
+                        "report_refresh_date": "2024-12-22",
+                        "outlook_2010": {
+                            "count": ""
+                        }
+                    }
+                }
+            }
+        }
+    },
+    "input": {
+        "type": "cel"
+    },
+    "agent": {
+        "name": "docker-fleet-agent",
+        "id": "abf38fab-f7b6-4e1c-a3b3-a70a64f9e5db",
+        "ephemeral_id": "08417a8d-9698-4c62-b7dc-e1b048647626",
+        "type": "filebeat",
+        "version": "8.16.0"
+    },
+    "@timestamp": "2024-12-24T09:39:43.406Z",
+    "ecs": {
+        "version": "8.16.0"
+    },
+    "data_stream": {
+        "namespace": "default",
+        "type": "metrics",
+        "dataset": "o365_metrics.outlook_app_usage"
+    },
+    "host": {
+        "hostname": "docker-fleet-agent",
+        "os": {
+            "kernel": "5.10.104-linuxkit",
+            "name": "Wolfi",
+            "family": "",
+            "type": "linux",
+            "version": "20230201",
+            "platform": "wolfi"
+        },
+        "ip": [
+            "192.168.48.7"
+        ],
+        "containerized": false,
+        "name": "docker-fleet-agent",
+        "mac": [
+            "02-42-C0-A8-30-07"
+        ],
+        "architecture": "aarch64"
+    },
+    "elastic_agent": {
+        "id": "abf38fab-f7b6-4e1c-a3b3-a70a64f9e5db",
+        "version": "8.16.0",
+        "snapshot": false
+    },
+    "event": {
+        "agent_id_status": "verified",
+        "ingested": "2024-12-24T09:39:44Z",
+        "dataset": "o365_metrics.outlook_app_usage"
+    },
+    "tags": [
+        "o365metrics-outlook_app_usage"
+    ]
+}
+```
+
+**ECS Field Reference**
+
+Please refer to the following [document](https://www.elastic.co/guide/en/ecs/current/ecs-field-reference.html) for detailed information on ECS fields.
+
 **Exported fields**
 
-| Field | Description | Type |
-|---|---|---|
-| @timestamp | Event timestamp. | date |
-| cloud.image.id | Image ID for the cloud instance. | keyword |
-| data_stream.dataset | Data stream dataset. | constant_keyword |
-| data_stream.namespace | Data stream namespace. | constant_keyword |
-| data_stream.type | Data stream type. | constant_keyword |
-| host.containerized | If the host is a container. | boolean |
-| host.os.build | OS build information. | keyword |
-| host.os.codename | OS codename, if any. | keyword |
-| o365.metrics.outlook.app.usage.outlook_2007.count | The count of unique users using Outlook 2007 during the reporting period. | integer |
-| o365.metrics.outlook.app.usage.outlook_2010.count | The count of unique users using Outlook 2010 during the reporting period. | integer |
-| o365.metrics.outlook.app.usage.outlook_2013.count | The count of unique users using Outlook 2013 during the reporting period. | integer |
-| o365.metrics.outlook.app.usage.outlook_2016.count | The count of unique users using Outlook 2016 during the reporting period. | integer |
-| o365.metrics.outlook.app.usage.outlook_2019.count | The count of unique users using Outlook 2019 during the reporting period. | integer |
-| o365.metrics.outlook.app.usage.outlook_m365.count | The count of unique users using the Outlook Microsoft 365 version during the reporting period. | integer |
-| o365.metrics.outlook.app.usage.report.period | The duration (e.g., 7 days) over which the report data is aggregated. | integer |
-| o365.metrics.outlook.app.usage.report.refresh_date | The date when the report data was last updated. | date |
-| o365.metrics.outlook.app.usage.undetermined.count | The count of unique users whose Outlook version could not be identified. | integer |
+| Field | Description | Type | Unit |
+|---|---|---|---|
+| @timestamp | Event timestamp. | date |  |
+| cloud.image.id | Image ID for the cloud instance. | keyword |  |
+| data_stream.dataset | Data stream dataset. | constant_keyword |  |
+| data_stream.namespace | Data stream namespace. | constant_keyword |  |
+| data_stream.type | Data stream type. | constant_keyword |  |
+| host.containerized | If the host is a container. | boolean |  |
+| host.os.build | OS build information. | keyword |  |
+| host.os.codename | OS codename, if any. | keyword |  |
+| o365.metrics.outlook.app.usage.outlook_2007.count | The count of unique users using Outlook 2007 during the reporting period. | integer |  |
+| o365.metrics.outlook.app.usage.outlook_2010.count | The count of unique users using Outlook 2010 during the reporting period. | integer |  |
+| o365.metrics.outlook.app.usage.outlook_2013.count | The count of unique users using Outlook 2013 during the reporting period. | integer |  |
+| o365.metrics.outlook.app.usage.outlook_2016.count | The count of unique users using Outlook 2016 during the reporting period. | integer |  |
+| o365.metrics.outlook.app.usage.outlook_2019.count | The count of unique users using Outlook 2019 during the reporting period. | integer |  |
+| o365.metrics.outlook.app.usage.outlook_m365.count | The count of unique users using the Outlook Microsoft 365 version during the reporting period. | integer |  |
+| o365.metrics.outlook.app.usage.report.period.day | The duration (e.g., 7 days) over which the report data is aggregated. | integer | d |
+| o365.metrics.outlook.app.usage.report.refresh_date | The date when the report data was last updated. | date |  |
+| o365.metrics.outlook.app.usage.undetermined.count | The count of unique users whose Outlook version could not be identified. | integer |  |
 
