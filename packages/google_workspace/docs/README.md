@@ -26,6 +26,7 @@ It is compatible with a subset of applications under the [Google Reports API v1]
 | [Access Transparency](https://developers.google.com/admin-sdk/reports/v1/appendix/activity/access-transparency) [help](https://support.google.com/a/answer/9230474?hl=en) | The Access Transparency activity report returns information about various types of Access Transparency activity events. |
 | [Context Aware Access](https://developers.google.com/admin-sdk/reports/v1/appendix/activity/context-aware-access) [help](https://support.google.com/a/answer/9394107?hl=en#zippy=) | The Context Aware Access activity report returns information about various types of Context-Aware Access Audit activity events. |
 | [GCP](https://developers.google.com/admin-sdk/reports/v1/appendix/activity/gcp) | The GCP activity report returns information about various types of Google Cloud Platform activity events. |
+| [Chrome](https://developers.google.com/admin-sdk/reports/v1/appendix/activity/chrome) | The Chrome activity reports return information about Chrome browser and Chrome OS events. |
 
 ## Requirements
 
@@ -42,7 +43,7 @@ This integration will make use of the following *oauth2 scope*:
 
 Once you have downloaded your service account credentials as a JSON file, you are ready to set up your integration.
 
-Click the Advanced option of Google Workspace Audit Reports. The default value of "API Host" is `https://www.googleapis.com`. The API Host will be used for collecting `access_transparency`, `admin`, `device`, `context_aware_access`, `drive`, `gcp`, `groups`, `group_enterprise`, `login`, `rules`, `saml`, `token` and `user accounts` logs.
+Click the Advanced option of Google Workspace Audit Reports. The default value of "API Host" is `https://www.googleapis.com`. The API Host will be used for collecting `access_transparency`, `admin`, `chrome`, `context_aware_access`, `device`, `drive`, `gcp`, `groups`, `group_enterprise`, `login`, `rules`, `saml`, `token` and `user accounts` logs.
 
 >  NOTE: The `Delegated Account` value in the configuration, is expected to be the email of the administrator account, and not the email of the ServiceAccount.
 
@@ -126,7 +127,7 @@ Once Service Account credentials are downloaded as a JSON file, then the integra
 
 ### Google Workspace Reports ECS fields
 
-This is a list of Google Workspace Reports fields that are mapped to ECS that are common to al data sets.
+This is a list of Google Workspace Reports fields that are mapped to ECS that are common to all data sets.
 
 | Google Workspace Reports     | ECS Fields                                                    |
 |------------------------------|---------------------------------------------------------------|
@@ -2789,5 +2790,216 @@ An example event for `gcp` looks as following:
 | google_workspace.kind | The type of API resource, mapped from `kind` in the original payload, more details can be found [here](https://developers.google.com/admin-sdk/reports/reference/rest/v1/activities/list#activity). | keyword |
 | google_workspace.organization.domain | The domain that is affected by the report's event. | keyword |
 | input.type | Type of Filebeat input. | keyword |
+| log.offset | Log offset. | long |
+
+
+### Chrome
+
+This is the `chrome` dataset.
+
+An example event for `chrome` looks as following:
+
+```json
+{
+    "@timestamp": "2024-12-09T14:18:25.405Z",
+    "agent": {
+        "ephemeral_id": "7917124f-6a0b-493b-be4b-a928a4f17334",
+        "id": "499a39d7-b13c-4994-a354-0d3791cf15e6",
+        "name": "docker-fleet-agent",
+        "type": "filebeat",
+        "version": "8.16.0"
+    },
+    "data_stream": {
+        "dataset": "google_workspace.chrome",
+        "namespace": "12964",
+        "type": "logs"
+    },
+    "device": {
+        "model": {
+            "name": "NXKUTSI002429051947600"
+        }
+    },
+    "ecs": {
+        "version": "8.16.0"
+    },
+    "elastic_agent": {
+        "id": "499a39d7-b13c-4994-a354-0d3791cf15e6",
+        "snapshot": false,
+        "version": "8.16.0"
+    },
+    "event": {
+        "action": "browser_extension_install",
+        "agent_id_status": "verified",
+        "dataset": "google_workspace.chrome",
+        "id": "-3640711002716937498",
+        "ingested": "2024-12-24T07:36:34Z",
+        "kind": "event",
+        "original": "{\"actor\":{\"callerType\":\"USER\",\"email\":\"kalpesh.kumar@example.io\",\"profileId\":\"109689693170624712102\"},\"etag\":\"\\\"CfV-pEPVZc7PJf2fWsHJTliD34MdGbO8iFIk3L4uBwQ/cBsNSJx2A9Lg8kiQCGLddmq827A\\\"\",\"events\":{\"name\":\"BROWSER_EXTENSION_INSTALL\",\"parameters\":[{\"intValue\":\"1733753905405\",\"name\":\"TIMESTAMP\"},{\"name\":\"EVENT_REASON\",\"value\":\"BROWSER_EXTENSION_INSTALL\"},{\"name\":\"APP_ID\",\"value\":\"lmjegmlicamnimmfhcmpkclmigmmcbeh\"},{\"name\":\"APP_NAME\",\"value\":\"Application Launcher For Drive (by Google)\"},{\"name\":\"BROWSER_VERSION\",\"value\":\"123.0.6312.112\"},{\"name\":\"CHROME_ORG_UNIT_ID\",\"value\":\"02gajno12larrqx\"},{\"name\":\"CLIENT_TYPE\",\"value\":\"CHROME_OS_DEVICE\"},{\"name\":\"DEVICE_NAME\",\"value\":\"NXKUTSI002429051947600\"},{\"name\":\"DEVICE_PLATFORM\",\"value\":\"ChromeOS 15786.48.2\"},{\"name\":\"DEVICE_USER\",\"value\":\"kalpesh.kumar@example.io\"},{\"name\":\"DIRECTORY_DEVICE_ID\",\"value\":\"efa9510f-8cd2-4d85-b6c2-939cfb335e9e\"},{\"name\":\"EVENT_RESULT\",\"value\":\"REPORTED\"},{\"name\":\"EXTENSION_ACTION\",\"value\":\"INSTALL\"},{\"name\":\"EXTENSION_SOURCE\",\"value\":\"CHROME_WEBSTORE\"},{\"name\":\"EXTENSION_VERSION\",\"value\":\"3.10\"},{\"name\":\"ORG_UNIT_NAME\",\"value\":\"example.io\"},{\"name\":\"PROFILE_USER_NAME\",\"value\":\"kalpesh.kumar@example.io\"},{\"name\":\"USER_AGENT\",\"value\":\"Mozilla/5.0 (X11; CrOS x86_64 14541.0.0) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/123.0.0.0 Safari/537.36\"},{\"name\":\"VIRTUAL_DEVICE_ID\",\"value\":\"3d69c5a5-0afc-474b-a1a3-d3dc617e2a60\"}],\"type\":\"BROWSER_EXTENSION_INSTALL_TYPE\"},\"id\":{\"applicationName\":\"chrome\",\"customerId\":\"C03puekhd\",\"time\":\"2024-12-09T14:18:25.405Z\",\"uniqueQualifier\":\"-3640711002716937498\"},\"kind\":\"admin#reports#activity\"}",
+        "outcome": "success",
+        "provider": "chrome",
+        "reason": "BROWSER_EXTENSION_INSTALL"
+    },
+    "google_workspace": {
+        "chrome": {
+            "actor": {
+                "caller_type": "USER",
+                "email": "kalpesh.kumar@example.io",
+                "profile_id": "109689693170624712102"
+            },
+            "app_id": "lmjegmlicamnimmfhcmpkclmigmmcbeh",
+            "app_name": "Application Launcher For Drive (by Google)",
+            "browser_version": "123.0.6312.112",
+            "chrome_org_unit_id": "02gajno12larrqx",
+            "client_type": "CHROME_OS_DEVICE",
+            "device_name": "NXKUTSI002429051947600",
+            "device_platform": "ChromeOS 15786.48.2",
+            "device_user": "kalpesh.kumar@example.io",
+            "directory_device_id": "efa9510f-8cd2-4d85-b6c2-939cfb335e9e",
+            "etag": "\"CfV-pEPVZc7PJf2fWsHJTliD34MdGbO8iFIk3L4uBwQ/cBsNSJx2A9Lg8kiQCGLddmq827A\"",
+            "event_reason": "BROWSER_EXTENSION_INSTALL",
+            "event_result": "REPORTED",
+            "extension_action": "INSTALL",
+            "extension_source": "CHROME_WEBSTORE",
+            "extension_version": "3.10",
+            "id": {
+                "application_name": "chrome",
+                "customer_id": "C03puekhd",
+                "time": "2024-12-09T14:18:25.405Z",
+                "unique_qualifier": "-3640711002716937498"
+            },
+            "kind": "admin#reports#activity",
+            "name": "BROWSER_EXTENSION_INSTALL",
+            "org_unit_name": "example.io",
+            "profile_user_name": "kalpesh.kumar@example.io",
+            "timestamp": "2024-12-09T14:18:25.405Z",
+            "type": "BROWSER_EXTENSION_INSTALL_TYPE",
+            "user_agent": "Mozilla/5.0 (X11; CrOS x86_64 14541.0.0) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/123.0.0.0 Safari/537.36",
+            "virtual_device_id": "3d69c5a5-0afc-474b-a1a3-d3dc617e2a60"
+        }
+    },
+    "host": {
+        "os": {
+            "full": "ChromeOS 15786.48.2"
+        }
+    },
+    "input": {
+        "type": "cel"
+    },
+    "observer": {
+        "product": "Chrome",
+        "vendor": "Google Workspace"
+    },
+    "organization": {
+        "id": "C03puekhd"
+    },
+    "related": {
+        "user": [
+            "kalpesh.kumar@example.io",
+            "109689693170624712102"
+        ]
+    },
+    "source": {
+        "user": {
+            "domain": "example.io",
+            "email": "kalpesh.kumar@example.io",
+            "id": "109689693170624712102",
+            "name": "kalpesh.kumar"
+        }
+    },
+    "tags": [
+        "preserve_original_event",
+        "preserve_duplicate_custom_fields",
+        "forwarded",
+        "google_workspace-chrome"
+    ],
+    "user": {
+        "domain": "example.io",
+        "email": "kalpesh.kumar@example.io",
+        "id": "109689693170624712102",
+        "name": "kalpesh.kumar"
+    },
+    "user_agent": {
+        "device": {
+            "name": "Other"
+        },
+        "name": "Chrome",
+        "original": "Mozilla/5.0 (X11; CrOS x86_64 14541.0.0) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/123.0.0.0 Safari/537.36",
+        "os": {
+            "full": "Chrome OS 14541.0.0",
+            "name": "Chrome OS",
+            "version": "14541.0.0"
+        },
+        "version": "123.0.0.0"
+    }
+}
+```
+
+**Exported fields**
+
+| Field | Description | Type |
+|---|---|---|
+| @timestamp | Event timestamp. | date |
+| data_stream.dataset | Data stream dataset. | constant_keyword |
+| data_stream.namespace | Data stream namespace. | constant_keyword |
+| data_stream.type | Data stream type. | constant_keyword |
+| event.dataset | Event dataset. | constant_keyword |
+| event.module | Event module. | constant_keyword |
+| google_workspace.chrome.actor.caller_type |  | keyword |
+| google_workspace.chrome.actor.email |  | keyword |
+| google_workspace.chrome.actor.key |  | keyword |
+| google_workspace.chrome.actor.profile_id |  | keyword |
+| google_workspace.chrome.app_id |  | keyword |
+| google_workspace.chrome.app_name | App name. | keyword |
+| google_workspace.chrome.browser_version | Browser version event parameter. | keyword |
+| google_workspace.chrome.chrome_org_unit_id |  | keyword |
+| google_workspace.chrome.client_type | Event client type parameter. | keyword |
+| google_workspace.chrome.content_hash | Content hash event parameter. | keyword |
+| google_workspace.chrome.content_name | Content name event parameter. | keyword |
+| google_workspace.chrome.content_size | Content size event parameter. | long |
+| google_workspace.chrome.content_transfer_method | The method for content transferring. | keyword |
+| google_workspace.chrome.content_type | Content type event parameter. | keyword |
+| google_workspace.chrome.device_id | Device id event name. | keyword |
+| google_workspace.chrome.device_name | Device name event parameter. | keyword |
+| google_workspace.chrome.device_platform | Device platform event parameter. | keyword |
+| google_workspace.chrome.device_user | Device user name event parameter. | keyword |
+| google_workspace.chrome.directory_device_id | Directory API device ID of the device or browser on which the event happened. | keyword |
+| google_workspace.chrome.etag |  | keyword |
+| google_workspace.chrome.event_reason | Event reason event parameter. | keyword |
+| google_workspace.chrome.event_result | Event result event parameter. | keyword |
+| google_workspace.chrome.evidence_locker_filepath | A parameter that contains the filepath of the evidence locker. | keyword |
+| google_workspace.chrome.extension_action |  | keyword |
+| google_workspace.chrome.extension_source |  | keyword |
+| google_workspace.chrome.extension_version |  | keyword |
+| google_workspace.chrome.federated_origin | A parameter that contains the domain of the federated 3rd party provding the login flow. | keyword |
+| google_workspace.chrome.id.application_name |  | keyword |
+| google_workspace.chrome.id.customer_id |  | keyword |
+| google_workspace.chrome.id.time |  | date |
+| google_workspace.chrome.id.unique_qualifier |  | keyword |
+| google_workspace.chrome.ip_address |  | ip |
+| google_workspace.chrome.is_federated | A parameter that contains whether the login is through a federated 3rd party. | boolean |
+| google_workspace.chrome.kind |  | keyword |
+| google_workspace.chrome.login_failure_reason | Login failure event reason parameter. | keyword |
+| google_workspace.chrome.login_user_name | A Parameter that contains the username used by the user when performing the login that triggered the login event report. | keyword |
+| google_workspace.chrome.name |  | keyword |
+| google_workspace.chrome.new_boot_mode | New device boot mode. | keyword |
+| google_workspace.chrome.org_unit_name | Org unit name. | keyword |
+| google_workspace.chrome.owner_domain |  | keyword |
+| google_workspace.chrome.previous_boot_mode | Previous device boot mode. | keyword |
+| google_workspace.chrome.profile_user_name | GSuite user name of the profile. | keyword |
+| google_workspace.chrome.remove_user_reason | Parameter explaining why a user was removed from a device. | keyword |
+| google_workspace.chrome.scan_id | A parameter that contains the scan id of the content analysis scan which triggered the event. | keyword |
+| google_workspace.chrome.server_scan_status | Status indicates the outcome of the event's server scan, which could be complete, require a manual audit due to configuration settings, or require a manual audit because the scan took too long. | keyword |
+| google_workspace.chrome.timestamp | The server timestamp of the Chrome Safe Browsing event. | date |
+| google_workspace.chrome.trigger_destination | A parameter that contains the destination of the rule which triggered the event. | keyword |
+| google_workspace.chrome.trigger_source | A parameter that contains the source of the rule which triggered the event. | keyword |
+| google_workspace.chrome.trigger_type | Event trigger type parameter. | keyword |
+| google_workspace.chrome.trigger_user | Trigger user event parameter. | keyword |
+| google_workspace.chrome.triggered_rules_reason | Triggered rules reason event parameter. | keyword |
+| google_workspace.chrome.type |  | keyword |
+| google_workspace.chrome.url | The URL that event happened on. | keyword |
+| google_workspace.chrome.user_agent | User agent event parameter. | keyword |
+| google_workspace.chrome.user_justification | A parameter that contains a justification message provided by users. | keyword |
+| google_workspace.chrome.virtual_device_id | Virtual device ID of the browser on which the event happened. | keyword |
+| input.type | Type of filebeat input. | keyword |
 | log.offset | Log offset. | long |
 
