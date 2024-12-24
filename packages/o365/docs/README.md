@@ -473,6 +473,7 @@ An example event for `teams_user_activity_user_detail` looks as following:
 | event.dataset | Name of the dataset. If an event source publishes more than one type of log or events (e.g. access log, error log), the dataset is used to specify which one the event comes from. It's recommended but not required to start the dataset name with the module name, followed by a dot, then the dataset name. | constant_keyword |
 | event.module | Name of the module this data is coming from. If your monitoring agent supports the concept of modules or plugins to process events of a given source (e.g. Apache logs), `event.module` should contain the name of this module. | constant_keyword |
 | input.type | Type of filebeat input. | keyword |
+| labels.is_transform_source | Distinguishes between documents that are a source for a transform and documents that are an output of a transform, to facilitate easier filtering. | constant_keyword |
 | o365.teams.user_activity.user_detail.Ad_Hoc_Meetings_Attended_Count |  | long |
 | o365.teams.user_activity.user_detail.Ad_Hoc_Meetings_Organized_Count |  | long |
 | o365.teams.user_activity.user_detail.Assigned_Products |  | keyword |

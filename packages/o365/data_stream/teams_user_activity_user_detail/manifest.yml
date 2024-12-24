@@ -1,27 +1,18 @@
-title: Collect User Activity by User data from Microsoft Teams.
-type: logs
+title: Microsoft Teams User Activity by User report metrics
+type: metrics
 streams:
   - input: cel
-    title: Microsoft Teams User Activity by User
-    description: Collect User Activity by User data from Microsoft Teams.
+    title: Microsoft Teams User Activity by User report metrics
+    description: Collect User Activity by User report mtrics from Microsoft Teams via the Graph API using CEL Input.
     template_path: cel.yml.hbs
     enabled: false
     vars:
       - name: url
         type: text
-        title: Base URL of Microsoft Graph API.
+        title: Base URL of Microsoft Graph API
         show_user: true
         required: false
         default: https://graph.microsoft.com/v1.0
-      - name: period
-        type: text
-        title: Period
-        description: >
-          Specifies the length of time over which the report is aggregated. The supported values are: D7, D30, D90, and D180. These values follow the format D_n_ where _n_ represents the number of days over which the report is aggregated.
-
-        show_user: true
-        required: true
-        default: D7
       - name: interval
         type: text
         title: Interval
@@ -31,6 +22,30 @@ streams:
         multi: false
         required: true
         show_user: true
+      - name: initial_interval
+        type: integer
+        title: Initial Interval
+        multi: false
+        required: true
+        show_user: true
+        default: 7
+        description: How far back (in number of days) to pull the Microsoft Teams User Activity by User data from Microsoft Graph API. This is an integer value indicating the number of days in the past. Only values between 1-29 are allowed.
+      - name: sync_days
+        type: integer
+        title: Sync Days in the past
+        description: >
+          Specifies the number of days in the past to sync per request. As Microsoft reports are not real-time, and can take upto 48h or more to be available, this value allows to fetch the data from *N* days in the past. This re-fetching of data helps in filling any gaps between Elastic and Microsoft reports. Only values between 1-29 are allowed.
+
+        show_user: true
+        required: true
+        default: 3
+      - name: azure_tenant_id
+        type: text
+        title: Directory (tenant) ID
+        description: Directory (tenant) ID. This is used to fetch Oauth2 token.
+        show_user: true
+        multi: false
+        required: true
       - name: client_id
         type: text
         title: Application (client) ID
@@ -44,13 +59,6 @@ streams:
         show_user: true
         required: true
         secret: true
-      - name: azure_tenant_id
-        type: text
-        title: Directory (tenant) ID
-        description: Directory (tenant) ID. This is used to fetch Oauth2 token.
-        show_user: true
-        multi: false
-        required: true
       - name: token_url
         type: text
         title: Oauth2 Token URL

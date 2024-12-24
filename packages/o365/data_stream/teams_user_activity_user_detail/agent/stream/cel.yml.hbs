@@ -30,92 +30,72 @@ auth.oauth2:
   azure.tenant_id: {{azure_tenant_id}}
 {{/if}}
 state:
-  period: {{period}}
+  initial_interval: "{{initial_interval}}"
+  sync_days: "{{sync_days}}"
   path: /reports/getTeamsUserActivityUserDetail
+  want_more: false
 redact:
   fields: ~
 program: |
-    state.with(
+  state.with(
+    (
+      state.want_more
+      ?
+        // Ongoing request to fetch data until current day. Fetch the next date from cursor.
+        string(state.?cursor.next_report_date.value())
+      :
+        // New request
+        (
+          has(state.?cursor.next_report_date)
+          ?
+            // New request but has existing state. Start fetching from min(sync_days, cursor.next_report_date) from the past to help with filling gaps in data.
+            int((now - duration(string(int(state.sync_days) * 24) + "h"))).as(sync_time, 
+              (int(string(state.?cursor.next_report_date.value()).parse_time("2006-01-02")) < sync_time) 
+              ?
+                string(state.?cursor.next_report_date.value())
+              :
+                (now - duration(string(int(state.sync_days) * 24) + "h")).format("2006-01-02")
+            )
+          :
+            // New request during initial setup. Start fetching from `initial_interval` days in the past.
+            (now - duration(string(int(state.initial_interval) * 24) + "h")).format("2006-01-02")
+        )
+    ).as(report_date,
       request("GET",
-        state.url.trim_right("/") + state.path + "(period='" + state.period + "')"
+        state.url.trim_right("/") + state.path + "(date=" + report_date + ")"
       ).do_request().as(resp,
-        // Response is 200 success containing CSV without any redirect.
+        // Response is 200 success containing CSV. Any redirects are handled within CEL input.
         resp.StatusCode == 200
         ?
           bytes(resp.Body).mime("text/csv; header=present").as(data, {
             "events": data.map(e, {
               "message": e.encode_json(),
             }),
-            "want_more": false,
+            "cursor": {
+              // Add 24h to existing report_date to prepare for next report date.
+              ?"next_report_date": optional.of((report_date.parse_time("2006-01-02") + duration("24h")).format("2006-01-02")),
+            },
+            "want_more": ((report_date.parse_time("2006-01-02") + duration("24h")) < now),
           })
         :
-          (
-            // Response is 302 indicating a redirect.
-            resp.StatusCode == 302
-            ?
-              (
-                has(resp.Header) && has(resp.Header.Location) && size(resp.Header.Location) > 0
-                ?
-                  (resp.Header.Location[0].as(location, 
-                    get(location).as(rdr_resp, 
-                      rdr_resp.StatusCode == 200
-                      ?
-                        bytes(rdr_resp.Body).mime("text/csv; header=present").as(data, {
-                          "events": data.map(e, {
-                            "message": e.encode_json(),
-                          }),
-                          "want_more": false,
-                        })
-                      :
-                        {
-                          "events": {
-                            "error": {
-                              "code": string(rdr_resp.StatusCode),
-                              "id": string(rdr_resp.Status),
-                              "message": "GET " + state.path + ": " + (
-                                size(resp.Body) != 0 ?
-                                  string(resp.Body)
-                                :
-                                  string(resp.Status) + ' (' + string(resp.StatusCode) + ')'
-                              ),
-                            },
-                          },
-                          "want_more": false,
-                        }
-                    )
-                  ))
-                :
-                  // Response indicates a redirect but without a Location header to redirect to.
-                  {
-                    "events": {
-                      "error": {
-                        "code": string(resp.StatusCode),
-                        "id": string(resp.Status),
-                        "message": "Location not available in redirected response",
-                      },
-                    },
-                    "want_more": false,
-                  }  
-              )
-            :
-              {
-                "events": {
-                  "error": {
-                    "code": string(resp.StatusCode),
-                    "id": string(resp.Status),
-                    "message": "GET " + state.path + ": " + (
-                      size(resp.Body) != 0 ?
-                        string(resp.Body)
-                      :
-                        string(resp.Status) + ' (' + string(resp.StatusCode) + ')'
-                    ),
-                  },
-                },
-                "want_more": false,
-              }
-          )
+          {
+            "events": {
+              "error": {
+                "code": string(resp.StatusCode),
+                "id": string(resp.Status),
+                "message": "GET " + state.path + ": " + (
+                  size(resp.Body) != 0 ?
+                    string(resp.Body)
+                  :
+                    string(resp.Status) + ' (' + string(resp.StatusCode) + ')'
+                ),
+              },
+            },
+            "want_more": false,
+          }
       )
     )
+  )
 tags:
 {{#if preserve_duplicate_custom_fields}}
   - preserve_duplicate_custom_fields
