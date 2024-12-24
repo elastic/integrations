@@ -1,0 +1,59 @@
+---
+description: Pipeline for renaming object
+processors:
+  - set:
+      field: ecs.version
+      value: "8.16.0"
+  - json:
+      field: outlookactivity
+      target_field: o365.metrics.outlook.activity
+  - script:
+      lang: painless
+      description: Replace spaces and dashes in field names under o365.metrics.outlook.activity.
+      tag: painless_purge_spaces_and_dashes
+      if: ctx.o365.metrics?.outlook.activity instanceof Map
+      source: |
+        String underscore(String s) {
+          return /[ -]/.matcher(s).replaceAll('_').toLowerCase();
+        }
+        
+        def out = [:];
+        for (def item : ctx.o365.metrics.outlook.activity.entrySet()) {
+          out[underscore(item.getKey())] = item.getValue();
+        }
+        ctx.o365.metrics.outlook.activity = out;
+
+  - remove:
+      if: ctx.outlookactivity != null
+      field: outlookactivity
+      ignore_missing: true
+
+  - rename:
+      field: o365.metrics.outlook.activity.read
+      target_field: o365.metrics.outlook.activity.emails_read.count
+      ignore_missing: true
+  - rename:
+      field: o365.metrics.outlook.activity.receive
+      target_field: o365.metrics.outlook.activity.emails_received.count
+      ignore_missing: true
+  - rename:
+      field: o365.metrics.outlook.activity.send
+      target_field: o365.metrics.outlook.activity.emails_sent.count
+      ignore_missing: true
+  - rename:
+      field: o365.metrics.outlook.activity.meeting_created
+      target_field: o365.metrics.outlook.activity.meeting_created.count
+      ignore_missing: true
+  - rename:
+      field: o365.metrics.outlook.activity.meeting_interacted
+      target_field: o365.metrics.outlook.activity.meeting_interacted.count
+      ignore_missing: true
+
+on_failure:
+  - append:
+      field: error.message
+      value: "{{{_ingest.on_failure_message}}}"
+  - append:
+      field: event.kind
+      value: pipeline_error
+      allow_duplicates: false

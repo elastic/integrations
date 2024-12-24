@@ -1,6 +1,6 @@
 # Microsoft Office 365 Metrics Integration
 
-This integration is to collect metrics for [Microsoft Office 365](https://learn.microsoft.com/en-us/graph/overview).
+This integration uses the [Microsoft Graph API](https://learn.microsoft.com/en-us/graph/overview) to collect essential metrics from Microsoft Office 365, offering detailed insights into user activity, application usage, and overall system performance.
 
 ## Setup
 
@@ -39,3 +39,11 @@ Once the secret is created and permissions are granted by admin, setup Elastic A
 ### SharePoint Site Usage
 {{fields "sharepoint_siteusagestorage"}}
 
+Uses the Office 365 Management Graph API to retrieve metrics from Office 365.
+
+### Outlook Activity
+{{fields "outlook_activity"}}
+
+
+### One Drive Usage
+{{fields "onedrive_usage"}}

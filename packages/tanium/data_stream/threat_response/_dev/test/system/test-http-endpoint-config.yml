@@ -1,9 +1,6 @@
 service: tanium-threat_response-http-endpoint
 service_notify_signal: SIGHUP
 input: http_endpoint
-skip_ignored_fields:
-  - tanium.threat_response.other_parameters.log_details.payload
-  - tanium.threat_response.other_parameters.original
 vars:
   listen_address: 0.0.0.0
 data_stream:
@@ -12,4 +9,12 @@ data_stream:
     preserve_original_event: true
     preserve_duplicate_custom_fields: true
 numeric_keyword_fields:
-  - tanium.threat_response.other_parameters.log_details.payload_decoded.finding.whats.intel_intra_ids.id
+  - tanium.threat_response.id
+  - tanium.threat_response.intel_id
+  - tanium.threat_response.match_details.config_id
+  - tanium.threat_response.match_details.config_rev_id
+  - tanium.threat_response.match_details.finding.whats.intel_intra_ids.id
+  - tanium.threat_response.match_details.finding.whats.intel_intra_ids.id_v2
+  - tanium.threat_response.match_details.intel_id
+assert:
+  hit_count: 42
