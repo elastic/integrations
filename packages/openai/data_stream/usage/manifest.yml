@@ -1,0 +1,72 @@
+title: "OpenAI API Usage Metrics"
+type: metrics
+streams:
+  - input: openai/metrics
+    title: OpenAI API Usage
+    enabled: true
+    description: Collect usage metrics from OpenAI.
+    template_path: usage.yml.hbs
+    vars:
+      - name: api_keys
+        type: password
+        title: OpenAI API Key
+        description: OpenAI API key.
+        required: true
+        show_user: true
+        secret: true
+      - name: period
+        type: text
+        required: false
+        title: Period
+        description: Period to collect usage metrics for. Defaults to `24h` if not set.
+        default: 24h
+        show_user: true
+      - name: api_url
+        type: url
+        title: OpenAI usage API endpoint
+        default: "https://api.openai.com/v1/usage"
+        description: OpenAI usage API endpoint. Defaults to `https://api.openai.com/v1/usage` if not set.
+        show_user: false
+        required: false
+      - name: headers
+        type: text
+        title: Custom headers
+        description: Custom headers to be sent with the request to the OpenAI usage API endpoint.
+        multi: true
+        show_user: false
+        required: false
+      - name: rate_limit.limit
+        type: integer
+        default: 12
+        title: Rate limit (limit)
+        description: Duration (in seconds) to wait before sending another request.
+        show_user: false
+        required: false
+      - name: rate_limit.burst
+        type: integer
+        title: Rate limit (burst)
+        default: 1
+        description: Maximum number of concurrent requests.
+        show_user: false
+        required: false
+      - name: timeout
+        type: text
+        title: Request timeout
+        default: 30s
+        description: Request timeout duration.
+        show_user: false
+        required: false
+      - name: collection.lookback_days
+        type: integer
+        title: Lookback days
+        default: 30
+        description: Number of days to look back for usage data.
+        show_user: true
+        required: true
+      - name: collection.realtime
+        type: bool
+        title: Realtime data collection
+        default: false
+        description: Enable realtime data collection. It is recommended to keep this disabled to avoid inconsistent data because of the behavior of the OpenAI API.
+        show_user: false
+        required: false
