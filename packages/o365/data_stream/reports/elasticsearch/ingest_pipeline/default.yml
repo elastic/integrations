@@ -51,25 +51,6 @@ processors:
           out[underscore(key)] = item.getValue();
         }
         ctx.json = out;
-  # - script:
-  #     lang: painless
-  #     description: Extract report metadata into o365.reports.metadata.
-  #     tag: painless_report_metadata
-  #     if: ctx.json?.metadata instanceof Map
-  #     source: |
-  #       if (ctx.o365 == null) {
-  #         ctx.o365 = [:];
-  #       }
-  #       if (ctx.o365.reports == null) {
-  #         ctx.o365.reports = [:];
-  #       }
-  #       if (ctx.o365.reports.metadata == null) {
-  #         ctx.o365.reports.metadata = [:];
-  #       }
-  #       ctx.o365.reports.metadata.name = ctx.json.metadata.name;
-  #       ctx.o365.reports.metadata.api_path = ctx.json.metadata.api_path;
-
-  # Route to the appropriate pipeline based on the report's source API. Refer CEL state variable "type_to_api_map".
   - pipeline:
       name: '{{ IngestPipeline "teams_user_activity_user" }}'
       if: ctx.o365?.reports?.metadata?.name == 'Microsoft Teams User Activity User Detail'
