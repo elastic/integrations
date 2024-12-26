@@ -519,61 +519,59 @@ An example event for `active_users` looks as following:
     "o365": {
         "metrics": {
             "active": {
-                "count": {
-                    "users": {
-                        "teams": {
-                            "inactive": {
-                                "count": "20"
-                            },
-                            "active": {
-                                "count": "0"
-                            }
+                "users": {
+                    "teams": {
+                        "inactive": {
+                            "count": "20"
                         },
-                        "sharepoint": {
-                            "inactive": {
-                                "count": "20"
-                            },
-                            "active": {
-                                "count": "0"
-                            }
+                        "active": {
+                            "count": "0"
+                        }
+                    },
+                    "sharepoint": {
+                        "inactive": {
+                            "count": "20"
                         },
-                        "yammer": {
-                            "inactive": {
-                                "count": "25"
-                            },
-                            "active": {
-                                "count": "0"
-                            }
+                        "active": {
+                            "count": "0"
+                        }
+                    },
+                    "yammer": {
+                        "inactive": {
+                            "count": "25"
                         },
-                        "office365": {
-                            "inactive": {
-                                "count": "25"
-                            },
-                            "active": {
-                                "count": "0"
-                            }
+                        "active": {
+                            "count": "0"
+                        }
+                    },
+                    "office365": {
+                        "inactive": {
+                            "count": "25"
                         },
-                        "report": {
-                            "period": {
-                                "day": "7"
-                            },
-                            "refresh_date": "2024-11-29"
+                        "active": {
+                            "count": "0"
+                        }
+                    },
+                    "report": {
+                        "period": {
+                            "day": "7"
                         },
-                        "exchange": {
-                            "inactive": {
-                                "count": "20"
-                            },
-                            "active": {
-                                "count": "0"
-                            }
+                        "refresh_date": "2024-11-29"
+                    },
+                    "exchange": {
+                        "inactive": {
+                            "count": "20"
                         },
-                        "onedrive": {
-                            "inactive": {
-                                "count": "20"
-                            },
-                            "active": {
-                                "count": "0"
-                            }
+                        "active": {
+                            "count": "0"
+                        }
+                    },
+                    "onedrive": {
+                        "inactive": {
+                            "count": "20"
+                        },
+                        "active": {
+                            "count": "0"
                         }
                     }
                 }
@@ -649,17 +647,17 @@ Please refer to the following [document](https://www.elastic.co/guide/en/ecs/cur
 | host.containerized | If the host is a container. | boolean |
 | host.os.build | OS build information. | keyword |
 | host.os.codename | OS codename, if any. | keyword |
-| o365.metrics.active.count.users.exchange.active.count | Number of Exchange active users. | integer |
-| o365.metrics.active.count.users.exchange.inactive.count | Number of Exchange inactive users. | integer |
-| o365.metrics.active.count.users.office365.active.count | Number of Office 365 active users. | integer |
-| o365.metrics.active.count.users.office365.inactive.count | Number of Office 365 inactive users. | integer |
-| o365.metrics.active.count.users.onedrive.active.count | Number of OneDrive active users. | integer |
-| o365.metrics.active.count.users.onedrive.inactive.count | Number of OneDrive inactive users. | integer |
-| o365.metrics.active.count.users.report.period.day | Report period in days. | integer |
-| o365.metrics.active.count.users.report.refresh_date | Date when the report was refreshed. | date |
-| o365.metrics.active.count.users.sharepoint.active.count | Number of SharePoint active users. | integer |
-| o365.metrics.active.count.users.sharepoint.inactive.count | Number of SharePoint inactive users. | integer |
-| o365.metrics.active.count.users.teams.active.count | Number of Teams active users. | integer |
-| o365.metrics.active.count.users.teams.inactive.count | Number of Teams inactive users. | integer |
-| o365.metrics.active.count.users.yammer.active.count | Number of Yammer active users. | integer |
-| o365.metrics.active.count.users.yammer.inactive.count | Number of Yammer inactive users. | integer |
+| o365.metrics.active.users.exchange.active.count | Number of Exchange active users. | integer |
+| o365.metrics.active.users.exchange.inactive.count | Number of Exchange inactive users. | integer |
+| o365.metrics.active.users.office365.active.count | Number of Office 365 active users. | integer |
+| o365.metrics.active.users.office365.inactive.count | Number of Office 365 inactive users. | integer |
+| o365.metrics.active.users.onedrive.active.count | Number of OneDrive active users. | integer |
+| o365.metrics.active.users.onedrive.inactive.count | Number of OneDrive inactive users. | integer |
+| o365.metrics.active.users.report.period.day | Report period in days. | integer |
+| o365.metrics.active.users.report.refresh_date | Date when the report was refreshed. | date |
+| o365.metrics.active.users.sharepoint.active.count | Number of SharePoint active users. | integer |
+| o365.metrics.active.users.sharepoint.inactive.count | Number of SharePoint inactive users. | integer |
+| o365.metrics.active.users.teams.active.count | Number of Teams active users. | integer |
+| o365.metrics.active.users.teams.inactive.count | Number of Teams inactive users. | integer |
+| o365.metrics.active.users.yammer.active.count | Number of Yammer active users. | integer |
+| o365.metrics.active.users.yammer.inactive.count | Number of Yammer inactive users. | integer |
