@@ -48,20 +48,24 @@ redact:
   fields: ~
 program: |
   state.with(
-    state.?cursor.setup_list.orValue(state.types.map(t, {"type": t, "setup_done": false})).as(setup_list, debug("setup_list",
+    // setup_list stores the state for each report type. It has following job: 
+    // 1. Indicates whether initial pull for this type is done using "setup_done".
+    // 2. Stores "last_report_date" to refill gaps in data.
+    state.?cursor.setup_list.orValue(state.types.map(t, {"type": t, "setup_done": false})).as(setup_list, 
       size(setup_list) == 0 
       ?
         state.types.map(t, {"type": t, "setup_done": false})
       :
         setup_list
-    )).as(setup_list,
-      state.?cursor.work_list.orValue(state.types.map(t, {"type": t})).as(work_list, debug("work_list",
+    ).as(setup_list,
+      // work_list maintains report types to run during this interval. It is gradually purged and made empty.
+      state.?cursor.work_list.orValue(state.types.map(t, {"type": t})).as(work_list, 
         size(work_list) == 0 
         ?
           state.types.map(t, {"type": t})
         :
           work_list
-      )).as(work_list,
+      ).as(work_list,
         (
           has(work_list[0].next_report_date)
           ?
@@ -84,39 +88,38 @@ program: |
             )
         ).as(report_date,
           request("GET",
-            debug("url", state.url.trim_right("/") + state.type_to_api_map[work_list[0].type] + "(date=" + report_date + ")")
+            state.url.trim_right("/") + state.type_to_api_map[work_list[0].type] + "(date=" + report_date + ")"
           ).do_request().as(resp,
             // Response is 200 success containing CSV. Any redirects are handled within CEL input.
             resp.StatusCode == 200
             ?
               bytes(resp.Body).mime("text/csv; header=present").as(data, {
-                "events": debug("events", data.map(e, {
+                "events": data.map(e, {
                   "message": e.with({
                     "metadata": {
                       "name": work_list[0].type,
                       "api_path": state.type_to_api_map[work_list[0].type],
                     }
                   }).encode_json(),
-                })),
+                }),
                 "cursor": {
-                  // Setup list indicates whether initial pull for this type is done.
-                  "setup_list": debug("cursor_setup_list", debug("cursor_setup_list_filt_noteq", setup_list.filter(t, t.type != work_list[0].type)) + [
-                    debug("cursor_setup_list_filt_eq", setup_list.filter(t, t.type == work_list[0].type)).as(s, 
+                  "setup_list": setup_list.filter(t, t.type != work_list[0].type) + [
+                    setup_list.filter(t, t.type == work_list[0].type).as(s, 
                       {
                         "type": work_list[0].type, 
                         "setup_done": true,
-                        "setup_date": debug("cursor_setup_date", (
+                        "setup_date": (
                           has(s[0].setup_date)
                           ?
                             s[0].setup_date
                           :
                             report_date
-                        )),
+                        ),
                         "last_report_date": report_date,
                       }
                     )
-                  ]),
-                  "work_list": debug("cursor_work_list", ((
+                  ],
+                  "work_list": ((
                     ((report_date.parse_time("2006-01-02") + duration("24h")) < now)?
                       // Add 24h to existing report_date to prepare for next report date.
                       [work_list[0].with({
@@ -124,7 +127,7 @@ program: |
                       })]
                     :
                       []
-                  ) + tail(work_list))),
+                  ) + tail(work_list)),
                 },
                 "want_more": ((report_date.parse_time("2006-01-02") + duration("24h")) < now),
               }.as(to_publish, to_publish.with({
