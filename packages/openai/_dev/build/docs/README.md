@@ -24,8 +24,12 @@ You need an OpenAI account to access the API with a valid API key.
 
 ### Usage
 
-The `usage` data stream captures events related to OpenAI API usage — token usage, API calls, etc.
+The `usage` data stream captures events related to OpenAI API usage — token usage, API calls, and other related metrics for models provided by OpenAI.
 
 {{event "usage"}}
+
+**ECS Field Reference**
+
+Please refer to the following [document](https://www.elastic.co/guide/en/ecs/current/ecs-field-reference.html) for detailed information on ECS fields.
 
 {{fields "usage"}}
