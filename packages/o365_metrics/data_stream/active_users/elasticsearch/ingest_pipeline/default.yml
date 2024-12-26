@@ -6,7 +6,8 @@ processors:
       value: "8.16.0"
   - json:
       field: active_users
-      target_field: o365.metrics.active.count.users   
+      target_field: o365.metrics.active.count.users
+      ignore_failure: true
   - script:
       lang: painless
       description: Replace spaces and dashes in field names under o365.metrics.active.count.users.
@@ -14,7 +15,8 @@ processors:
       if: ctx.o365.metrics?.active?.count?.users instanceof Map
       source: |
         String underscore(String s) {
-          return /[ -]/.matcher(s).replaceAll('_').toLowerCase();
+          String result = /[ -]/.matcher(s).replaceAll('_').toLowerCase();
+          return /[\ufeff]/.matcher(result).replaceAll('')
         }
         
         def out = [:];
