@@ -118,25 +118,26 @@ processors:
   - date:
       if: ctx._temp_?.raw_date != null
       timezone: "{{{ event.timezone }}}"
+      tag: process_raw_date
       field: "_temp_.raw_date"
       formats:
-        - "ISO8601"
-        - "MMM  d HH:mm:ss"
-        - "MMM dd HH:mm:ss"
-        - "EEE MMM  d HH:mm:ss"
-        - "EEE MMM dd HH:mm:ss"
-        - "MMM  d HH:mm:ss z"
-        - "MMM dd HH:mm:ss z"
-        - "EEE MMM  d HH:mm:ss z"
-        - "EEE MMM dd HH:mm:ss z"
-        - "MMM  d yyyy HH:mm:ss"
-        - "MMM dd yyyy HH:mm:ss"
-        - "EEE MMM  d yyyy HH:mm:ss"
-        - "EEE MMM dd yyyy HH:mm:ss"
-        - "MMM  d yyyy HH:mm:ss z"
-        - "MMM dd yyyy HH:mm:ss z"
-        - "EEE MMM  d yyyy HH:mm:ss z"
-        - "EEE MMM dd yyyy HH:mm:ss z"
+        - ISO8601
+        - "MMM  d HH:mm:ss[.n]"
+        - "MMM dd HH:mm:ss[.n]"
+        - "EEE MMM  d HH:mm:ss[.n]"
+        - "EEE MMM dd HH:mm:ss[.n]"
+        - "MMM  d HH:mm:ss[.n] z"
+        - "MMM dd HH:mm:ss[.n] z"
+        - "EEE MMM  d HH:mm:ss[.n] z"
+        - "EEE MMM dd HH:mm:ss[.n] z"
+        - "MMM  d yyyy HH:mm:ss[.n]"
+        - "MMM dd yyyy HH:mm:ss[.n]"
+        - "EEE MMM  d yyyy HH:mm:ss[.n]"
+        - "EEE MMM dd yyyy HH:mm:ss[.n]"
+        - "MMM  d yyyy HH:mm:ss[.n] z"
+        - "MMM dd yyyy HH:mm:ss[.n] z"
+        - "EEE MMM  d yyyy HH:mm:ss[.n] z"
+        - "EEE MMM dd yyyy HH:mm:ss[.n] z"
       on_failure:
         # Try to re-parse as UTC to catch when TZ is invalid or unknown.
         - remove:
@@ -144,25 +145,26 @@ processors:
             ignore_missing: true
         - date:
             if: ctx._temp_?.raw_date != null
+            tag: parse_raw_timestamp_without_timezone
             field: "_temp_.raw_date"
             formats:
-              - "ISO8601"
-              - "MMM  d HH:mm:ss"
-              - "MMM dd HH:mm:ss"
-              - "EEE MMM  d HH:mm:ss"
-              - "EEE MMM dd HH:mm:ss"
-              - "MMM  d HH:mm:ss z"
-              - "MMM dd HH:mm:ss z"
-              - "EEE MMM  d HH:mm:ss z"
-              - "EEE MMM dd HH:mm:ss z"
-              - "MMM  d yyyy HH:mm:ss"
-              - "MMM dd yyyy HH:mm:ss"
-              - "EEE MMM  d yyyy HH:mm:ss"
-              - "EEE MMM dd yyyy HH:mm:ss"
-              - "MMM  d yyyy HH:mm:ss z"
-              - "MMM dd yyyy HH:mm:ss z"
-              - "EEE MMM  d yyyy HH:mm:ss z"
-              - "EEE MMM dd yyyy HH:mm:ss z"
+              - ISO8601
+              - "MMM  d HH:mm:ss[.n]"
+              - "MMM dd HH:mm:ss[.n]"
+              - "EEE MMM  d HH:mm:ss[.n]"
+              - "EEE MMM dd HH:mm:ss[.n]"
+              - "MMM  d HH:mm:ss[.n] z"
+              - "MMM dd HH:mm:ss[.n] z"
+              - "EEE MMM  d HH:mm:ss[.n] z"
+              - "EEE MMM dd HH:mm:ss[.n] z"
+              - "MMM  d yyyy HH:mm:ss[.n]"
+              - "MMM dd yyyy HH:mm:ss[.n]"
+              - "EEE MMM  d yyyy HH:mm:ss[.n]"
+              - "EEE MMM dd yyyy HH:mm:ss[.n]"
+              - "MMM  d yyyy HH:mm:ss[.n] z"
+              - "MMM dd yyyy HH:mm:ss[.n] z"
+              - "EEE MMM  d yyyy HH:mm:ss[.n] z"
+              - "EEE MMM dd yyyy HH:mm:ss[.n] z"
 
   #
   # Set log.level
