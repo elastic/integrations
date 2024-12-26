@@ -371,7 +371,7 @@ An example event for `audit` looks as following:
 
 Uses the Microsoft Graph API to retrieve Microsoft Teams User Activity by User report. These events are from the same report that is available under `Reports -> Usage -> Microsoft Teams -> User Activity` in the Microsoft 365 Admin Center.
 
-An example event for `teams_user_activity_user_detail` looks as following:
+An example event for `reports` looks as following:
 
 ```json
 {
@@ -474,37 +474,51 @@ An example event for `teams_user_activity_user_detail` looks as following:
 | event.module | Name of the module this data is coming from. If your monitoring agent supports the concept of modules or plugins to process events of a given source (e.g. Apache logs), `event.module` should contain the name of this module. | constant_keyword |
 | input.type | Type of filebeat input. | keyword |
 | labels.is_transform_source | Distinguishes between documents that are a source for a transform and documents that are an output of a transform, to facilitate easier filtering. | constant_keyword |
-| o365.teams.user_activity.user_detail.Ad_Hoc_Meetings_Attended_Count |  | long |
-| o365.teams.user_activity.user_detail.Ad_Hoc_Meetings_Organized_Count |  | long |
-| o365.teams.user_activity.user_detail.Assigned_Products |  | keyword |
-| o365.teams.user_activity.user_detail.Audio_Duration |  | keyword |
-| o365.teams.user_activity.user_detail.Audio_Duration_In_Seconds |  | long |
-| o365.teams.user_activity.user_detail.Call_Count |  | long |
-| o365.teams.user_activity.user_detail.Deleted_Date |  | date |
-| o365.teams.user_activity.user_detail.Has_Other_Action |  | keyword |
-| o365.teams.user_activity.user_detail.Is_Deleted |  | boolean |
-| o365.teams.user_activity.user_detail.Is_Licensed |  | boolean |
-| o365.teams.user_activity.user_detail.Last_Activity_Date |  | date |
-| o365.teams.user_activity.user_detail.Meeting_Count |  | long |
-| o365.teams.user_activity.user_detail.Meetings_Attended_Count |  | long |
-| o365.teams.user_activity.user_detail.Meetings_Organized_Count |  | long |
-| o365.teams.user_activity.user_detail.Post_Messages |  | long |
-| o365.teams.user_activity.user_detail.Private_Chat_Message_Count |  | long |
-| o365.teams.user_activity.user_detail.Reply_Messages |  | long |
-| o365.teams.user_activity.user_detail.Report_Period |  | keyword |
-| o365.teams.user_activity.user_detail.Report_Refresh_Date |  | date |
-| o365.teams.user_activity.user_detail.Scheduled_One_time_Meetings_Attended_Count |  | long |
-| o365.teams.user_activity.user_detail.Scheduled_One_time_Meetings_Organized_Count |  | long |
-| o365.teams.user_activity.user_detail.Scheduled_Recurring_Meetings_Attended_Count |  | long |
-| o365.teams.user_activity.user_detail.Scheduled_Recurring_Meetings_Organized_Count |  | long |
-| o365.teams.user_activity.user_detail.Screen_Share_Duration |  | keyword |
-| o365.teams.user_activity.user_detail.Screen_Share_Duration_In_Seconds |  | long |
-| o365.teams.user_activity.user_detail.Shared_Channel_Tenant_Display_Names |  | keyword |
-| o365.teams.user_activity.user_detail.Team_Chat_Message_Count |  | long |
-| o365.teams.user_activity.user_detail.Tenant_Display_Name |  | keyword |
-| o365.teams.user_activity.user_detail.Urgent_Messages |  | long |
-| o365.teams.user_activity.user_detail.User_Id |  | keyword |
-| o365.teams.user_activity.user_detail.User_Principal_Name |  | keyword |
-| o365.teams.user_activity.user_detail.Video_Duration |  | keyword |
-| o365.teams.user_activity.user_detail.Video_Duration_In_Seconds |  | long |
+| o365.reports.metadata.api_path |  | keyword |
+| o365.reports.metadata.name |  | keyword |
+| o365.reports.teams.user_activity.user.Ad_Hoc_Meetings_Attended_Count |  | long |
+| o365.reports.teams.user_activity.user.Ad_Hoc_Meetings_Organized_Count |  | long |
+| o365.reports.teams.user_activity.user.Assigned_Products |  | keyword |
+| o365.reports.teams.user_activity.user.Audio_Duration |  | keyword |
+| o365.reports.teams.user_activity.user.Audio_Duration_In_Seconds |  | long |
+| o365.reports.teams.user_activity.user.Call_Count |  | long |
+| o365.reports.teams.user_activity.user.Deleted_Date |  | date |
+| o365.reports.teams.user_activity.user.Has_Other_Action |  | keyword |
+| o365.reports.teams.user_activity.user.Is_Deleted |  | boolean |
+| o365.reports.teams.user_activity.user.Is_Licensed |  | boolean |
+| o365.reports.teams.user_activity.user.Last_Activity_Date |  | date |
+| o365.reports.teams.user_activity.user.Meeting_Count |  | long |
+| o365.reports.teams.user_activity.user.Meetings_Attended_Count |  | long |
+| o365.reports.teams.user_activity.user.Meetings_Organized_Count |  | long |
+| o365.reports.teams.user_activity.user.Post_Messages |  | long |
+| o365.reports.teams.user_activity.user.Private_Chat_Message_Count |  | long |
+| o365.reports.teams.user_activity.user.Reply_Messages |  | long |
+| o365.reports.teams.user_activity.user.Report_Period |  | keyword |
+| o365.reports.teams.user_activity.user.Report_Refresh_Date |  | date |
+| o365.reports.teams.user_activity.user.Scheduled_One_time_Meetings_Attended_Count |  | long |
+| o365.reports.teams.user_activity.user.Scheduled_One_time_Meetings_Organized_Count |  | long |
+| o365.reports.teams.user_activity.user.Scheduled_Recurring_Meetings_Attended_Count |  | long |
+| o365.reports.teams.user_activity.user.Scheduled_Recurring_Meetings_Organized_Count |  | long |
+| o365.reports.teams.user_activity.user.Screen_Share_Duration |  | keyword |
+| o365.reports.teams.user_activity.user.Screen_Share_Duration_In_Seconds |  | long |
+| o365.reports.teams.user_activity.user.Shared_Channel_Tenant_Display_Names |  | keyword |
+| o365.reports.teams.user_activity.user.Team_Chat_Message_Count |  | long |
+| o365.reports.teams.user_activity.user.Tenant_Display_Name |  | keyword |
+| o365.reports.teams.user_activity.user.Urgent_Messages |  | long |
+| o365.reports.teams.user_activity.user.User_Id |  | keyword |
+| o365.reports.teams.user_activity.user.User_Principal_Name |  | keyword |
+| o365.reports.teams.user_activity.user.Video_Duration |  | keyword |
+| o365.reports.teams.user_activity.user.Video_Duration_In_Seconds |  | long |
+| o365.reports.viva_engage.groups_activity.group.Group_Display_Name |  | keyword |
+| o365.reports.viva_engage.groups_activity.group.Group_Type |  | keyword |
+| o365.reports.viva_engage.groups_activity.group.Is_Deleted |  | boolean |
+| o365.reports.viva_engage.groups_activity.group.Last_Activity_Date |  | date |
+| o365.reports.viva_engage.groups_activity.group.Liked_Count |  | long |
+| o365.reports.viva_engage.groups_activity.group.Member_Count |  | long |
+| o365.reports.viva_engage.groups_activity.group.Office_365_Connected |  | boolean |
+| o365.reports.viva_engage.groups_activity.group.Owner_Principal_Name |  | keyword |
+| o365.reports.viva_engage.groups_activity.group.Posted_Count |  | long |
+| o365.reports.viva_engage.groups_activity.group.Read_Count |  | long |
+| o365.reports.viva_engage.groups_activity.group.Report_Period |  | keyword |
+| o365.reports.viva_engage.groups_activity.group.Report_Refresh_Date |  | date |
 

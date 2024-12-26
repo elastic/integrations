@@ -65,6 +65,6 @@ Uses the Office 365 Management Activity API to retrieve audit messages from Offi
 
 Uses the Microsoft Graph API to retrieve Microsoft Teams User Activity by User report. These events are from the same report that is available under `Reports -> Usage -> Microsoft Teams -> User Activity` in the Microsoft 365 Admin Center.
 
-{{event "teams_user_activity_user_detail"}}
+{{event "reports"}}
 
-{{fields "teams_user_activity_user_detail"}}
+{{fields "reports"}}

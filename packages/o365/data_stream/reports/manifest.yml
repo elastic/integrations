@@ -1,9 +1,9 @@
-title: Microsoft Teams User Activity by User report metrics
+title: Microsoft 365 Reports
 type: metrics
 streams:
   - input: cel
-    title: Microsoft Teams User Activity by User report metrics
-    description: Collect User Activity by User report mtrics from Microsoft Teams via the Graph API using CEL Input.
+    title: Microsoft 365 Reports
+    description: Collect Microsoft 365 Reports metrics via Microsoft Graph API using CEL Input.
     template_path: cel.yml.hbs
     enabled: false
     vars:
@@ -13,6 +13,16 @@ streams:
         show_user: true
         required: false
         default: https://graph.microsoft.com/v1.0
+      - name: report_types
+        title: Report Types
+        description: Select the types of report to ingest data. See [Report Types](https://www.elastic.co/guide/en/integrations/current/o365.html#o365-audit) for allowed values.
+        type: text
+        multi: true
+        required: true
+        show_user: true
+        default:
+          - 'Microsoft Teams User Activity User Detail'
+          - 'Viva Engage Groups Activity Group Detail'
       - name: interval
         type: text
         title: Interval
@@ -29,7 +39,7 @@ streams:
         required: true
         show_user: true
         default: 7
-        description: How far back (in number of days) to pull the Microsoft Teams User Activity by User data from Microsoft Graph API. This is an integer value indicating the number of days in the past. Only values between 1-29 are allowed.
+        description: How far back (in number of days) to pull the Microsoft Reports data via Microsoft Graph API. This is an integer value indicating the number of days in the past. Only values between 1-29 are allowed.
       - name: sync_days
         type: integer
         title: Sync Days in the past
@@ -100,12 +110,12 @@ streams:
         show_user: false
         default:
           - forwarded
-          - o365-teams_user_activity_user_detail
+          - o365-reports
       - name: preserve_duplicate_custom_fields
         required: true
         show_user: false
         title: Preserve duplicate custom fields
-        description: Preserve o365.teams.user_activity.user_detail fields that were copied to Elastic Common Schema (ECS) fields.
+        description: Preserve o365.reports fields that were copied to Elastic Common Schema (ECS) fields.
         type: bool
         multi: false
         default: false
