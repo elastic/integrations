@@ -85,11 +85,11 @@ An example event for `cloudfront` looks as following:
 {
     "@timestamp": "2019-12-04T21:02:31.000Z",
     "agent": {
-        "ephemeral_id": "2e56d54c-2c59-4b67-8f1a-41cf7dbd9d08",
-        "id": "acba78ef-1401-4689-977c-d8c2e5d6a8fa",
-        "name": "docker-fleet-agent",
+        "ephemeral_id": "ea8d1f6d-f155-460c-9a81-17e4b2e25281",
+        "id": "4303444e-1f0c-42c6-981a-73737910b81c",
+        "name": "elastic-agent-18453",
         "type": "filebeat",
-        "version": "8.10.1"
+        "version": "8.16.0"
     },
     "aws": {
         "cloudfront": {
@@ -102,8 +102,8 @@ An example event for `cloudfront` looks as following:
         },
         "s3": {
             "bucket": {
-                "arn": "arn:aws:s3:::elastic-package-aws-bucket-58094",
-                "name": "elastic-package-aws-bucket-58094"
+                "arn": "arn:aws:s3:::elastic-package-aws-bucket-20687",
+                "name": "elastic-package-aws-bucket-20687"
             },
             "object": {
                 "key": "cloudfront"
@@ -116,7 +116,7 @@ An example event for `cloudfront` looks as following:
     },
     "data_stream": {
         "dataset": "aws.cloudfront_logs",
-        "namespace": "ep",
+        "namespace": "66517",
         "type": "logs"
     },
     "destination": {
@@ -127,9 +127,9 @@ An example event for `cloudfront` looks as following:
         "version": "8.11.0"
     },
     "elastic_agent": {
-        "id": "acba78ef-1401-4689-977c-d8c2e5d6a8fa",
+        "id": "4303444e-1f0c-42c6-981a-73737910b81c",
         "snapshot": false,
-        "version": "8.10.1"
+        "version": "8.16.0"
     },
     "event": {
         "agent_id_status": "verified",
@@ -137,8 +137,9 @@ An example event for `cloudfront` looks as following:
             "web"
         ],
         "dataset": "aws.cloudfront_logs",
+        "duration": 1000000,
         "id": "SOX4xwn4XV6Q4rgb7XiVGOHms_BGlTAC4KyHmureZmBNrjGdRLiNIQ==",
-        "ingested": "2023-11-03T13:01:05Z",
+        "ingested": "2024-11-23T12:54:04Z",
         "kind": "event",
         "original": "2019-12-04\t21:02:31\tLAX1\t392\t89.160.20.112\tGET\td111111abcdef8.cloudfront.net\t/index.html\t200\t-\tMozilla/5.0%20(Windows%20NT%2010.0;%20Win64;%20x64)%20AppleWebKit/537.36%20(KHTML,%20like%20Gecko)%20Chrome/78.0.3904.108%20Safari/537.36\t-\t-\tHit\tSOX4xwn4XV6Q4rgb7XiVGOHms_BGlTAC4KyHmureZmBNrjGdRLiNIQ==\td111111abcdef8.cloudfront.net\thttps\t23\t0.001\t-\tTLSv1.2\tECDHE-RSA-AES128-GCM-SHA256\tHit\tHTTP/2.0\t-\t-\t11040\t0.001\tHit\ttext/html\t78\t-\t-",
         "outcome": "success",
@@ -167,7 +168,7 @@ An example event for `cloudfront` looks as following:
     },
     "log": {
         "file": {
-            "path": "https://elastic-package-aws-bucket-58094.s3.us-east-1.amazonaws.com/cloudfront"
+            "path": "https://elastic-package-aws-bucket-20687.s3.us-east-1.amazonaws.com/cloudfront"
         },
         "offset": 471
     },

@@ -5,6 +5,9 @@ resource.url: {{url}}
 {{#if ssl}}
 resource.ssl: {{ssl}}
 {{/if}}
+{{#if proxy_url}}
+resource.proxy_url: {{proxy_url}}
+{{/if}}
 {{#if oauth2}}
 auth.oauth2: {{oauth2}}
 {{/if}}
@@ -34,7 +37,9 @@ resource.tracer.maxsize: 5
 {{#if enable_taxii}}
 state:
   url: {{url}}
+{{#if initial_interval}}
   initial_interval: {{initial_interval}}
+{{/if}}
   want_more: false
 {{#if api_key}}
   api_key: {{api_key}}
@@ -44,6 +49,9 @@ state:
   username: {{username}}
   password: {{password}}
 {{/if}}
+{{/if}}
+{{#if limit}}
+  limit: {{limit}}
 {{/if}}
 redact:
   fields:
@@ -60,8 +68,13 @@ program: |
                 state.next_url
             : (has(state.initial_interval) && state.initial_interval != "") ?
                 (
-                    state.url.trim_right("/") + "?" + {
-                        "date_added": [(now() - duration(state.initial_interval)).format(time_layout.RFC3339)],
+                    state.url.trim_right("/") + "/?" + {
+                        ?"added_after": state.?cursor.last_timestamp.optMap(ts,
+                            [ts]
+                        ).or(
+                            state.?initial_interval.optMap(i, [(now() - duration(i)).format(time_layout.RFC3339)])
+                        ),
+                        ?"limit": state.?limit.optMap(l, [string(int(l))]),
                     }.format_query()
                 )
                 :
@@ -79,7 +92,7 @@ program: |
                         []
                 },
             }
-        ).do_request().as(resp, (resp.StatusCode == 200) ?
+        ).do_request().as(resp, (resp.StatusCode == 200 || resp.StatusCode == 206) ?
             bytes(resp.Body).decode_json().as(body,
                 {
                     "events": body.objects.map(e,
@@ -94,12 +107,16 @@ program: |
                     "want_more": has(body.next) && body.next != null && body.next != "",
                     "next_url": (has(body.next) && body.next != null && body.next != "") ?
                         (
-                            state.url.trim_right("/") + "?" + {
+                            state.url.trim_right("/") + "/?" + {
                                 "next": [string(body.next)],
+                                ?"limit": state.?limit.optMap(l, [string(int(l))]),
                             }.format_query()
                         )
                     :
                         state.url,
+                    "cursor": {
+                        ?"last_timestamp": resp.Header[?"X-Taxii-Date-Added-Last"][0],
+                    },
                 }
             )
         :

@@ -654,7 +654,7 @@
                                         }
                                     ],
                                     "layers": {
-                                        "9d4c0103-d7bd-43c1-8328-b609e20b0098": {
+                                        "df0740ad-996f-4bfb-a1d3-84173736b167": {
                                             "columns": [
                                                 {
                                                     "columnId": "Automated SSH Session Indicators",
@@ -668,7 +668,7 @@
                                             ],
                                             "index": "b2bcbb11fd7b30e2a9f2ee93a6a5ffd1f700ee82fff0bfc92dd439c707a35ebb",
                                             "query": {
-                                                "esql": "from logs-corelight.various-*\r\n| limit 10000\r\n| where observer.vendor == \"Corelight\" and event.dataset == \"ssh\" and observer.hostname is not null\r\n| stats count() by event.id, source.ip, destination.ip, inferences \r\n| eval Description =case(\r\n    inferences == \"PKA\", \"The client automatically auth'd using pubkey auth.  This inference applies to only the auth type that succeeded. Before it, publickey or password authentication attempts could have occurred.\",\r\n    inferences == \"KS\", \"Interactive session\",\r\n    inferences == \"AUTO\", \"The client was a script or automated utility and not driven by a user\",\r\n    inferences == \"CTS\", \"The client likely already had an entry in its known_hosts file for this server\"\r\n)\r\n| where Description is not null\r\n| stats count() by event.id, source.ip, destination.ip, inferences \r\n| rename event.id as uid, source.ip as src_ip, destination.ip as dest_ip, inferences as inference, `count()` as count\r\n| keep uid , src_ip, dest_ip, inference,count\r\n| stats count()\r\n| rename `count()` as `Automated SSH Session Indicators`"
+                                                "esql": "from logs-corelight.various-*\r\n| limit 10000\r\n| where observer.vendor == \"Corelight\" and event.dataset == \"ssh\" and observer.hostname is not null\r\n| stats count() by event.id, source.ip, destination.ip, ssh.inferences \r\n| eval Description =case(\r\n    ssh.inferences == \"PKA\", \"The client automatically auth'd using pubkey auth.  This inference applies to only the auth type that succeeded. Before it, publickey or password authentication attempts could have occurred.\",\r\n    ssh.inferences == \"KS\", \"Interactive session\",\r\n    ssh.inferences == \"AUTO\", \"The client was a script or automated utility and not driven by a user\",\r\n    ssh.inferences == \"CTS\", \"The client likely already had an entry in its known_hosts file for this server\"\r\n)\r\n| where Description is not null\r\n| stats count() by event.id, source.ip, destination.ip, ssh.inferences \r\n| rename event.id as uid, source.ip as src_ip, destination.ip as dest_ip, ssh.inferences as inference, `count()` as count\r\n| keep uid , src_ip, dest_ip, inference,count\r\n| stats count()\r\n| rename `count()` as `Automated SSH Session Indicators`"
                                             },
                                             "timeField": "@timestamp"
                                         }
@@ -677,10 +677,10 @@
                             },
                             "filters": [],
                             "query": {
-                                "esql": "from logs-corelight.various-*\r\n| limit 10000\r\n| where observer.vendor == \"Corelight\" and event.dataset == \"ssh\" and observer.hostname is not null\r\n| stats count() by event.id, source.ip, destination.ip, inferences \r\n| eval Description =case(\r\n    inferences == \"PKA\", \"The client automatically auth'd using pubkey auth.  This inference applies to only the auth type that succeeded. Before it, publickey or password authentication attempts could have occurred.\",\r\n    inferences == \"KS\", \"Interactive session\",\r\n    inferences == \"AUTO\", \"The client was a script or automated utility and not driven by a user\",\r\n    inferences == \"CTS\", \"The client likely already had an entry in its known_hosts file for this server\"\r\n)\r\n| where Description is not null\r\n| stats count() by event.id, source.ip, destination.ip, inferences \r\n| rename event.id as uid, source.ip as src_ip, destination.ip as dest_ip, inferences as inference, `count()` as count\r\n| keep uid , src_ip, dest_ip, inference,count\r\n| stats count()\r\n| rename `count()` as `Automated SSH Session Indicators`"
+                                "esql": "from logs-corelight.various-*\r\n| limit 10000\r\n| where observer.vendor == \"Corelight\" and event.dataset == \"ssh\" and observer.hostname is not null\r\n| stats count() by event.id, source.ip, destination.ip, ssh.inferences \r\n| eval Description =case(\r\n    ssh.inferences == \"PKA\", \"The client automatically auth'd using pubkey auth.  This inference applies to only the auth type that succeeded. Before it, publickey or password authentication attempts could have occurred.\",\r\n    ssh.inferences == \"KS\", \"Interactive session\",\r\n    ssh.inferences == \"AUTO\", \"The client was a script or automated utility and not driven by a user\",\r\n    ssh.inferences == \"CTS\", \"The client likely already had an entry in its known_hosts file for this server\"\r\n)\r\n| where Description is not null\r\n| stats count() by event.id, source.ip, destination.ip, ssh.inferences \r\n| rename event.id as uid, source.ip as src_ip, destination.ip as dest_ip, ssh.inferences as inference, `count()` as count\r\n| keep uid , src_ip, dest_ip, inference,count\r\n| stats count()\r\n| rename `count()` as `Automated SSH Session Indicators`"
                             },
                             "visualization": {
-                                "layerId": "9d4c0103-d7bd-43c1-8328-b609e20b0098",
+                                "layerId": "df0740ad-996f-4bfb-a1d3-84173736b167",
                                 "layerType": "data",
                                 "metricAccessor": "Automated SSH Session Indicators"
                             }
@@ -771,7 +771,7 @@
                                         }
                                     ],
                                     "layers": {
-                                        "0ca7554e-9a61-4b4e-bf0c-81796e9660d3": {
+                                        "eb34cb23-bae6-46db-b726-cff1aac4fb05": {
                                             "columns": [
                                                 {
                                                     "columnId": "Interactive Sessions and Keystrokes",
@@ -785,7 +785,7 @@
                                             ],
                                             "index": "b2bcbb11fd7b30e2a9f2ee93a6a5ffd1f700ee82fff0bfc92dd439c707a35ebb",
                                             "query": {
-                                                "esql": "from logs-corelight.various-*\r\n| limit 10000\r\n| where observer.vendor == \"Corelight\" and event.dataset == \"ssh\" and observer.hostname is not null\r\n| stats count() by event.id, source.ip, destination.ip, inferences \r\n| eval Description =case(\r\n    inferences == \"AUTO\", \"The client is a script automated utility and not driven by a user\",\r\n    inferences == \"KS\", \"Interactive session\"\r\n)\r\n| where Description is not null\r\n| stats count() by event.id, source.ip, destination.ip, inferences , Description\r\n| rename event.id as uid, source.ip as src_ip, destination.ip as dest_ip, inferences as inference, `count()` as count\r\n| keep uid , src_ip, dest_ip, inference, Description,count\r\n| stats count()\r\n| rename `count()` as `Interactive Sessions and Keystrokes`"
+                                                "esql": "from logs-corelight.various-*\r\n| limit 10000\r\n| where observer.vendor == \"Corelight\" and event.dataset == \"ssh\" and observer.hostname is not null\r\n| stats count() by event.id, source.ip, destination.ip, ssh.inferences \r\n| eval Description =case(\r\n    ssh.inferences == \"AUTO\", \"The client is a script automated utility and not driven by a user\",\r\n    ssh.inferences == \"KS\", \"Interactive session\"\r\n)\r\n| where Description is not null\r\n| stats count() by event.id, source.ip, destination.ip, ssh.inferences , Description\r\n| rename event.id as uid, source.ip as src_ip, destination.ip as dest_ip, ssh.inferences as inference, `count()` as count\r\n| keep uid , src_ip, dest_ip, inference, Description,count\r\n| stats count()\r\n| rename `count()` as `Interactive Sessions and Keystrokes`"
                                             },
                                             "timeField": "@timestamp"
                                         }
@@ -794,10 +794,10 @@
                             },
                             "filters": [],
                             "query": {
-                                "esql": "from logs-corelight.various-*\r\n| limit 10000\r\n| where observer.vendor == \"Corelight\" and event.dataset == \"ssh\" and observer.hostname is not null\r\n| stats count() by event.id, source.ip, destination.ip, inferences \r\n| eval Description =case(\r\n    inferences == \"AUTO\", \"The client is a script automated utility and not driven by a user\",\r\n    inferences == \"KS\", \"Interactive session\"\r\n)\r\n| where Description is not null\r\n| stats count() by event.id, source.ip, destination.ip, inferences , Description\r\n| rename event.id as uid, source.ip as src_ip, destination.ip as dest_ip, inferences as inference, `count()` as count\r\n| keep uid , src_ip, dest_ip, inference, Description,count\r\n| stats count()\r\n| rename `count()` as `Interactive Sessions and Keystrokes`"
+                                "esql": "from logs-corelight.various-*\r\n| limit 10000\r\n| where observer.vendor == \"Corelight\" and event.dataset == \"ssh\" and observer.hostname is not null\r\n| stats count() by event.id, source.ip, destination.ip, ssh.inferences \r\n| eval Description =case(\r\n    ssh.inferences == \"AUTO\", \"The client is a script automated utility and not driven by a user\",\r\n    ssh.inferences == \"KS\", \"Interactive session\"\r\n)\r\n| where Description is not null\r\n| stats count() by event.id, source.ip, destination.ip, ssh.inferences , Description\r\n| rename event.id as uid, source.ip as src_ip, destination.ip as dest_ip, ssh.inferences as inference, `count()` as count\r\n| keep uid , src_ip, dest_ip, inference, Description,count\r\n| stats count()\r\n| rename `count()` as `Interactive Sessions and Keystrokes`"
                             },
                             "visualization": {
-                                "layerId": "0ca7554e-9a61-4b4e-bf0c-81796e9660d3",
+                                "layerId": "eb34cb23-bae6-46db-b726-cff1aac4fb05",
                                 "layerType": "data",
                                 "metricAccessor": "Interactive Sessions and Keystrokes"
                             }
@@ -888,7 +888,7 @@
                                         }
                                     ],
                                     "layers": {
-                                        "66a2b798-b4b3-4fd5-8a37-e7add25f12f6": {
+                                        "495f3c21-0b76-4c30-bd24-d10a8ec80019": {
                                             "columns": [
                                                 {
                                                     "columnId": "uid",
@@ -938,7 +938,7 @@
                                             ],
                                             "index": "b2bcbb11fd7b30e2a9f2ee93a6a5ffd1f700ee82fff0bfc92dd439c707a35ebb",
                                             "query": {
-                                                "esql": "from logs-corelight.various-*\r\n| limit 10000\r\n| where observer.vendor == \"Corelight\" and event.dataset == \"ssh\" and observer.hostname is not null\r\n| stats count() by event.id, source.ip, destination.ip, inferences \r\n| stats count() by event.id, source.ip, destination.ip, inferences \r\n| eval Description =case(\r\n    inferences == \"PKA\", \"The client automatically auth'd using pubkey auth.  This inference applies to only the auth type that succeeded. Before it, publickey or password authentication attempts could have occurred.\",\r\n    inferences == \"KS\", \"Interactive session\",\r\n    inferences == \"AUTO\", \"The client was a script or automated utility and not driven by a user\",\r\n    inferences == \"CTS\", \"The client likely already had an entry in its known_hosts file for this server\"\r\n)\r\n| where Description is not null\r\n| rename event.id as uid, source.ip as src_ip, destination.ip as dest_ip, inferences as Inferences, `count()` as Count\r\n| keep uid , src_ip, dest_ip, Inferences,Count,Description"
+                                                "esql": "from logs-corelight.various-*\r\n| limit 10000\r\n| where observer.vendor == \"Corelight\" and event.dataset == \"ssh\" and observer.hostname is not null\r\n| stats count() by event.id, source.ip, destination.ip, ssh.inferences \r\n| stats count() by event.id, source.ip, destination.ip, ssh.inferences \r\n| eval Description =case(\r\n    ssh.inferences == \"PKA\", \"The client automatically auth'd using pubkey auth.  This inference applies to only the auth type that succeeded. Before it, publickey or password authentication attempts could have occurred.\",\r\n    ssh.inferences == \"KS\", \"Interactive session\",\r\n    ssh.inferences == \"AUTO\", \"The client was a script or automated utility and not driven by a user\",\r\n    ssh.inferences == \"CTS\", \"The client likely already had an entry in its known_hosts file for this server\"\r\n)\r\n| where Description is not null\r\n| rename event.id as uid, source.ip as src_ip, destination.ip as dest_ip, ssh.inferences as Inferences, `count()` as Count\r\n| keep uid , src_ip, dest_ip, Inferences,Count,Description"
                                             },
                                             "timeField": "@timestamp"
                                         }
@@ -947,7 +947,7 @@
                             },
                             "filters": [],
                             "query": {
-                                "esql": "from logs-corelight.various-*\r\n| limit 10000\r\n| where observer.vendor == \"Corelight\" and event.dataset == \"ssh\" and observer.hostname is not null\r\n| stats count() by event.id, source.ip, destination.ip, inferences \r\n| stats count() by event.id, source.ip, destination.ip, inferences \r\n| eval Description =case(\r\n    inferences == \"PKA\", \"The client automatically auth'd using pubkey auth.  This inference applies to only the auth type that succeeded. Before it, publickey or password authentication attempts could have occurred.\",\r\n    inferences == \"KS\", \"Interactive session\",\r\n    inferences == \"AUTO\", \"The client was a script or automated utility and not driven by a user\",\r\n    inferences == \"CTS\", \"The client likely already had an entry in its known_hosts file for this server\"\r\n)\r\n| where Description is not null\r\n| rename event.id as uid, source.ip as src_ip, destination.ip as dest_ip, inferences as Inferences, `count()` as Count\r\n| keep uid , src_ip, dest_ip, Inferences,Count,Description"
+                                "esql": "from logs-corelight.various-*\r\n| limit 10000\r\n| where observer.vendor == \"Corelight\" and event.dataset == \"ssh\" and observer.hostname is not null\r\n| stats count() by event.id, source.ip, destination.ip, ssh.inferences \r\n| stats count() by event.id, source.ip, destination.ip, ssh.inferences \r\n| eval Description =case(\r\n    ssh.inferences == \"PKA\", \"The client automatically auth'd using pubkey auth.  This inference applies to only the auth type that succeeded. Before it, publickey or password authentication attempts could have occurred.\",\r\n    ssh.inferences == \"KS\", \"Interactive session\",\r\n    ssh.inferences == \"AUTO\", \"The client was a script or automated utility and not driven by a user\",\r\n    ssh.inferences == \"CTS\", \"The client likely already had an entry in its known_hosts file for this server\"\r\n)\r\n| where Description is not null\r\n| rename event.id as uid, source.ip as src_ip, destination.ip as dest_ip, ssh.inferences as Inferences, `count()` as Count\r\n| keep uid , src_ip, dest_ip, Inferences,Count,Description"
                             },
                             "visualization": {
                                 "columns": [
@@ -967,7 +967,7 @@
                                         "columnId": "Count"
                                     }
                                 ],
-                                "layerId": "66a2b798-b4b3-4fd5-8a37-e7add25f12f6",
+                                "layerId": "495f3c21-0b76-4c30-bd24-d10a8ec80019",
                                 "layerType": "data"
                             }
                         },
@@ -1020,7 +1020,7 @@
                                         }
                                     ],
                                     "layers": {
-                                        "bfcbfadc-677b-4344-adc9-2bed3af7a028": {
+                                        "4fbc45bb-a55f-4cb2-ae08-7176a6b75e80": {
                                             "columns": [
                                                 {
                                                     "columnId": "uid",
@@ -1070,7 +1070,7 @@
                                             ],
                                             "index": "b2bcbb11fd7b30e2a9f2ee93a6a5ffd1f700ee82fff0bfc92dd439c707a35ebb",
                                             "query": {
-                                                "esql": "from logs-corelight.various-*\r\n| limit 10000\r\n| where observer.vendor == \"Corelight\" and event.dataset == \"ssh\" and observer.hostname is not null\r\n| stats count() by event.id, source.ip, destination.ip, inferences \r\n| eval Description =case(\r\n    inferences == \"AUTO\", \"The client is a script automated utility and not driven by a user\",\r\n    inferences == \"KS\", \"Interactive session\"\r\n)\r\n| where Description is not null\r\n| stats count() by event.id, source.ip, destination.ip, inferences , Description\r\n| rename event.id as uid, source.ip as src_ip, destination.ip as dest_ip, inferences as Inference, `count()` as Count\r\n| keep uid , src_ip, dest_ip, Inference, Description,Count"
+                                                "esql": "from logs-corelight.various-*\r\n| limit 10000\r\n| where observer.vendor == \"Corelight\" and event.dataset == \"ssh\" and observer.hostname is not null\r\n| stats count() by event.id, source.ip, destination.ip, ssh.inferences \r\n| eval Description =case(\r\n    ssh.inferences == \"AUTO\", \"The client is a script automated utility and not driven by a user\",\r\n    ssh.inferences == \"KS\", \"Interactive session\"\r\n)\r\n| where Description is not null\r\n| stats count() by event.id, source.ip, destination.ip, ssh.inferences , Description\r\n| rename event.id as uid, source.ip as src_ip, destination.ip as dest_ip, ssh.inferences as Inference, `count()` as Count\r\n| keep uid , src_ip, dest_ip, Inference, Description,Count"
                                             },
                                             "timeField": "@timestamp"
                                         }
@@ -1079,7 +1079,7 @@
                             },
                             "filters": [],
                             "query": {
-                                "esql": "from logs-corelight.various-*\r\n| limit 10000\r\n| where observer.vendor == \"Corelight\" and event.dataset == \"ssh\" and observer.hostname is not null\r\n| stats count() by event.id, source.ip, destination.ip, inferences \r\n| eval Description =case(\r\n    inferences == \"AUTO\", \"The client is a script automated utility and not driven by a user\",\r\n    inferences == \"KS\", \"Interactive session\"\r\n)\r\n| where Description is not null\r\n| stats count() by event.id, source.ip, destination.ip, inferences , Description\r\n| rename event.id as uid, source.ip as src_ip, destination.ip as dest_ip, inferences as Inference, `count()` as Count\r\n| keep uid , src_ip, dest_ip, Inference, Description,Count"
+                                "esql": "from logs-corelight.various-*\r\n| limit 10000\r\n| where observer.vendor == \"Corelight\" and event.dataset == \"ssh\" and observer.hostname is not null\r\n| stats count() by event.id, source.ip, destination.ip, ssh.inferences \r\n| eval Description =case(\r\n    ssh.inferences == \"AUTO\", \"The client is a script automated utility and not driven by a user\",\r\n    ssh.inferences == \"KS\", \"Interactive session\"\r\n)\r\n| where Description is not null\r\n| stats count() by event.id, source.ip, destination.ip, ssh.inferences , Description\r\n| rename event.id as uid, source.ip as src_ip, destination.ip as dest_ip, ssh.inferences as Inference, `count()` as Count\r\n| keep uid , src_ip, dest_ip, Inference, Description,Count"
                             },
                             "visualization": {
                                 "columns": [
@@ -1099,7 +1099,7 @@
                                         "columnId": "Description"
                                     }
                                 ],
-                                "layerId": "bfcbfadc-677b-4344-adc9-2bed3af7a028",
+                                "layerId": "4fbc45bb-a55f-4cb2-ae08-7176a6b75e80",
                                 "layerType": "data"
                             }
                         },
@@ -1152,7 +1152,7 @@
                                         }
                                     ],
                                     "layers": {
-                                        "4dd547db-fdb7-4312-b843-601055369c0b": {
+                                        "2696ea14-6260-4e27-8d13-fef5178543ba": {
                                             "columns": [
                                                 {
                                                     "columnId": "Possible File Uploaded",
@@ -1166,7 +1166,7 @@
                                             ],
                                             "index": "b2bcbb11fd7b30e2a9f2ee93a6a5ffd1f700ee82fff0bfc92dd439c707a35ebb",
                                             "query": {
-                                                "esql": "from logs-corelight.various-*\r\n| limit 10000\r\n| where observer.vendor == \"Corelight\" and event.dataset == \"ssh\" and observer.hostname is not null\r\n| stats count() by event.id, source.ip, destination.ip, inferences \r\n| eval Description =case(\r\n    inferences == \"SFD\", \"This indicates a small file download.\",\r\n    inferences == \"LFD\", \"This indicates a non interactive session where a file was possibly downloaded.\",\r\n    inferences == \"SFU\", \"This indicates a small file upload.\",\r\n    inferences == \"LFU\", \"This indicates a non interactive session where a file was possibly uploaded.\"\r\n)\r\n| where Description is not null\r\n| stats count() by event.id, source.ip, destination.ip, inferences , Description\r\n| rename event.id as uid, source.ip as src_ip, destination.ip as dest_ip, inferences as inference, `count()` as count\r\n| keep uid , src_ip, dest_ip, inference, Description,count\r\n| stats count()\r\n| rename `count()` as `Possible File Uploaded`"
+                                                "esql": "from logs-corelight.various-*\r\n| limit 10000\r\n| where observer.vendor == \"Corelight\" and event.dataset == \"ssh\" and observer.hostname is not null\r\n| stats count() by event.id, source.ip, destination.ip, ssh.inferences \r\n| eval Description =case(\r\n    ssh.inferences == \"SFD\", \"This indicates a small file download.\",\r\n    ssh.inferences == \"LFD\", \"This indicates a non interactive session where a file was possibly downloaded.\",\r\n    ssh.inferences == \"SFU\", \"This indicates a small file upload.\",\r\n    ssh.inferences == \"LFU\", \"This indicates a non interactive session where a file was possibly uploaded.\"\r\n)\r\n| where Description is not null\r\n| stats count() by event.id, source.ip, destination.ip, ssh.inferences , Description\r\n| rename event.id as uid, source.ip as src_ip, destination.ip as dest_ip, ssh.inferences as inference, `count()` as count\r\n| keep uid , src_ip, dest_ip, inference, Description,count\r\n| stats count()\r\n| rename `count()` as `Possible File Uploaded`"
                                             },
                                             "timeField": "@timestamp"
                                         }
@@ -1175,10 +1175,10 @@
                             },
                             "filters": [],
                             "query": {
-                                "esql": "from logs-corelight.various-*\r\n| limit 10000\r\n| where observer.vendor == \"Corelight\" and event.dataset == \"ssh\" and observer.hostname is not null\r\n| stats count() by event.id, source.ip, destination.ip, inferences \r\n| eval Description =case(\r\n    inferences == \"SFD\", \"This indicates a small file download.\",\r\n    inferences == \"LFD\", \"This indicates a non interactive session where a file was possibly downloaded.\",\r\n    inferences == \"SFU\", \"This indicates a small file upload.\",\r\n    inferences == \"LFU\", \"This indicates a non interactive session where a file was possibly uploaded.\"\r\n)\r\n| where Description is not null\r\n| stats count() by event.id, source.ip, destination.ip, inferences , Description\r\n| rename event.id as uid, source.ip as src_ip, destination.ip as dest_ip, inferences as inference, `count()` as count\r\n| keep uid , src_ip, dest_ip, inference, Description,count\r\n| stats count()\r\n| rename `count()` as `Possible File Uploaded`"
+                                "esql": "from logs-corelight.various-*\r\n| limit 10000\r\n| where observer.vendor == \"Corelight\" and event.dataset == \"ssh\" and observer.hostname is not null\r\n| stats count() by event.id, source.ip, destination.ip, ssh.inferences \r\n| eval Description =case(\r\n    ssh.inferences == \"SFD\", \"This indicates a small file download.\",\r\n    ssh.inferences == \"LFD\", \"This indicates a non interactive session where a file was possibly downloaded.\",\r\n    ssh.inferences == \"SFU\", \"This indicates a small file upload.\",\r\n    ssh.inferences == \"LFU\", \"This indicates a non interactive session where a file was possibly uploaded.\"\r\n)\r\n| where Description is not null\r\n| stats count() by event.id, source.ip, destination.ip, ssh.inferences , Description\r\n| rename event.id as uid, source.ip as src_ip, destination.ip as dest_ip, ssh.inferences as inference, `count()` as count\r\n| keep uid , src_ip, dest_ip, inference, Description,count\r\n| stats count()\r\n| rename `count()` as `Possible File Uploaded`"
                             },
                             "visualization": {
-                                "layerId": "4dd547db-fdb7-4312-b843-601055369c0b",
+                                "layerId": "2696ea14-6260-4e27-8d13-fef5178543ba",
                                 "layerType": "data",
                                 "metricAccessor": "Possible File Uploaded"
                             }
@@ -1269,7 +1269,7 @@
                                         }
                                     ],
                                     "layers": {
-                                        "8631d8c7-ce0c-4d1a-8b74-06ec92051357": {
+                                        "d23d3981-4172-46d8-a72f-0041b2981f74": {
                                             "columns": [
                                                 {
                                                     "columnId": "Potential Security Risks",
@@ -1283,7 +1283,7 @@
                                             ],
                                             "index": "b2bcbb11fd7b30e2a9f2ee93a6a5ffd1f700ee82fff0bfc92dd439c707a35ebb",
                                             "query": {
-                                                "esql": "from logs-corelight.various-*\r\n| limit 10000\r\n| where observer.vendor == \"Corelight\" and event.dataset == \"ssh\" and observer.hostname is not null and inferences in ( \"SC\", \"SP\", \"SV\", \"SA\", \"AFR\", \"BAN\" )\r\n| stats count() by event.id,source.ip,destination.ip,inferences\r\n| stats count()\r\n| rename `count()` as `Potential Security Risks`\r\n| keep `Potential Security Risks`"
+                                                "esql": "from logs-corelight.various-*\r\n| limit 10000\r\n| where observer.vendor == \"Corelight\" and event.dataset == \"ssh\" and observer.hostname is not null and ssh.inferences in ( \"SC\", \"SP\", \"SV\", \"SA\", \"AFR\", \"BAN\" )\r\n| stats count() by event.id,source.ip,destination.ip,ssh.inferences\r\n| stats count()\r\n| rename `count()` as `Potential Security Risks`\r\n| keep `Potential Security Risks`"
                                             },
                                             "timeField": "@timestamp"
                                         }
@@ -1292,10 +1292,10 @@
                             },
                             "filters": [],
                             "query": {
-                                "esql": "from logs-corelight.various-*\r\n| limit 10000\r\n| where observer.vendor == \"Corelight\" and event.dataset == \"ssh\" and observer.hostname is not null and inferences in ( \"SC\", \"SP\", \"SV\", \"SA\", \"AFR\", \"BAN\" )\r\n| stats count() by event.id,source.ip,destination.ip,inferences\r\n| stats count()\r\n| rename `count()` as `Potential Security Risks`\r\n| keep `Potential Security Risks`"
+                                "esql": "from logs-corelight.various-*\r\n| limit 10000\r\n| where observer.vendor == \"Corelight\" and event.dataset == \"ssh\" and observer.hostname is not null and ssh.inferences in ( \"SC\", \"SP\", \"SV\", \"SA\", \"AFR\", \"BAN\" )\r\n| stats count() by event.id,source.ip,destination.ip,ssh.inferences\r\n| stats count()\r\n| rename `count()` as `Potential Security Risks`\r\n| keep `Potential Security Risks`"
                             },
                             "visualization": {
-                                "layerId": "8631d8c7-ce0c-4d1a-8b74-06ec92051357",
+                                "layerId": "d23d3981-4172-46d8-a72f-0041b2981f74",
                                 "layerType": "data",
                                 "metricAccessor": "Potential Security Risks"
                             }
@@ -1386,7 +1386,7 @@
                                         }
                                     ],
                                     "layers": {
-                                        "d9ee20a0-33ea-4764-9b5d-ab96f96f5631": {
+                                        "7523aa3d-bf35-4d6b-b36e-d294e4375e0c": {
                                             "columns": [
                                                 {
                                                     "columnId": "uid",
@@ -1436,7 +1436,7 @@
                                             ],
                                             "index": "b2bcbb11fd7b30e2a9f2ee93a6a5ffd1f700ee82fff0bfc92dd439c707a35ebb",
                                             "query": {
-                                                "esql": "from logs-corelight.various-*\r\n| limit 10000\r\n| where observer.vendor == \"Corelight\" and event.dataset == \"ssh\" and observer.hostname is not null\r\n| stats count() by event.id, source.ip, destination.ip, inferences \r\n| eval Description =case(\r\n    inferences == \"SFD\", \"This indicates a small file download.\",\r\n    inferences == \"LFD\", \"This indicates a non interactive session where a file was possibly downloaded.\",\r\n    inferences == \"SFU\", \"This indicates a small file upload.\",\r\n    inferences == \"LFU\", \"This indicates a non interactive session where a file was possibly uploaded.\"\r\n)\r\n| where Description is not null\r\n| stats count() by event.id, source.ip, destination.ip, inferences , Description\r\n| rename event.id as uid, source.ip as src_ip, destination.ip as dest_ip, inferences as Inference, `count()` as Count\r\n| keep uid , src_ip, dest_ip, Inference, Description,Count"
+                                                "esql": "from logs-corelight.various-*\r\n| limit 10000\r\n| where observer.vendor == \"Corelight\" and event.dataset == \"ssh\" and observer.hostname is not null\r\n| stats count() by event.id, source.ip, destination.ip, ssh.inferences \r\n| eval Description =case(\r\n    ssh.inferences == \"SFD\", \"This indicates a small file download.\",\r\n    ssh.inferences == \"LFD\", \"This indicates a non interactive session where a file was possibly downloaded.\",\r\n    ssh.inferences == \"SFU\", \"This indicates a small file upload.\",\r\n    ssh.inferences == \"LFU\", \"This indicates a non interactive session where a file was possibly uploaded.\"\r\n)\r\n| where Description is not null\r\n| stats count() by event.id, source.ip, destination.ip, ssh.inferences , Description\r\n| rename event.id as uid, source.ip as src_ip, destination.ip as dest_ip, ssh.inferences as Inference, `count()` as Count\r\n| keep uid , src_ip, dest_ip, Inference, Description,Count"
                                             },
                                             "timeField": "@timestamp"
                                         }
@@ -1445,7 +1445,7 @@
                             },
                             "filters": [],
                             "query": {
-                                "esql": "from logs-corelight.various-*\r\n| limit 10000\r\n| where observer.vendor == \"Corelight\" and event.dataset == \"ssh\" and observer.hostname is not null\r\n| stats count() by event.id, source.ip, destination.ip, inferences \r\n| eval Description =case(\r\n    inferences == \"SFD\", \"This indicates a small file download.\",\r\n    inferences == \"LFD\", \"This indicates a non interactive session where a file was possibly downloaded.\",\r\n    inferences == \"SFU\", \"This indicates a small file upload.\",\r\n    inferences == \"LFU\", \"This indicates a non interactive session where a file was possibly uploaded.\"\r\n)\r\n| where Description is not null\r\n| stats count() by event.id, source.ip, destination.ip, inferences , Description\r\n| rename event.id as uid, source.ip as src_ip, destination.ip as dest_ip, inferences as Inference, `count()` as Count\r\n| keep uid , src_ip, dest_ip, Inference, Description,Count"
+                                "esql": "from logs-corelight.various-*\r\n| limit 10000\r\n| where observer.vendor == \"Corelight\" and event.dataset == \"ssh\" and observer.hostname is not null\r\n| stats count() by event.id, source.ip, destination.ip, ssh.inferences \r\n| eval Description =case(\r\n    ssh.inferences == \"SFD\", \"This indicates a small file download.\",\r\n    ssh.inferences == \"LFD\", \"This indicates a non interactive session where a file was possibly downloaded.\",\r\n    ssh.inferences == \"SFU\", \"This indicates a small file upload.\",\r\n    ssh.inferences == \"LFU\", \"This indicates a non interactive session where a file was possibly uploaded.\"\r\n)\r\n| where Description is not null\r\n| stats count() by event.id, source.ip, destination.ip, ssh.inferences , Description\r\n| rename event.id as uid, source.ip as src_ip, destination.ip as dest_ip, ssh.inferences as Inference, `count()` as Count\r\n| keep uid , src_ip, dest_ip, Inference, Description,Count"
                             },
                             "visualization": {
                                 "columns": [
@@ -1465,7 +1465,7 @@
                                         "columnId": "Description"
                                     }
                                 ],
-                                "layerId": "d9ee20a0-33ea-4764-9b5d-ab96f96f5631",
+                                "layerId": "7523aa3d-bf35-4d6b-b36e-d294e4375e0c",
                                 "layerType": "data"
                             }
                         },
@@ -1518,7 +1518,7 @@
                                         }
                                     ],
                                     "layers": {
-                                        "f34fbda2-85fd-48bb-b8d4-25cfe122e3e7": {
+                                        "368cec63-5aa4-4e0e-948a-c72d88fffb30": {
                                             "columns": [
                                                 {
                                                     "columnId": "uid",
@@ -1568,7 +1568,7 @@
                                             ],
                                             "index": "b2bcbb11fd7b30e2a9f2ee93a6a5ffd1f700ee82fff0bfc92dd439c707a35ebb",
                                             "query": {
-                                                "esql": "from logs-corelight.various-*\r\n| limit 10000\r\n| where observer.vendor == \"Corelight\" and event.dataset == \"ssh\" and observer.hostname is not null and inferences in ( \"SC\", \"SP\", \"SV\", \"SA\", \"AFR\", \"BAN\" )\r\n| stats count() by event.id,source.ip,destination.ip,inferences\r\n| rename event.id as uid, source.ip as src_ip, destination.ip as dest_ip,`count()` as Count, inferences as Inferences\r\n| keep uid, src_ip,dest_ip,Count,Inferences"
+                                                "esql": "from logs-corelight.various-*\r\n| limit 10000\r\n| where observer.vendor == \"Corelight\" and event.dataset == \"ssh\" and observer.hostname is not null and ssh.inferences in ( \"SC\", \"SP\", \"SV\", \"SA\", \"AFR\", \"BAN\" )\r\n| stats count() by event.id,source.ip,destination.ip,ssh.inferences\r\n| rename event.id as uid, source.ip as src_ip, destination.ip as dest_ip,`count()` as Count, ssh.inferences as Inferences\r\n| keep uid, src_ip,dest_ip,Count,Inferences"
                                             },
                                             "timeField": "@timestamp"
                                         }
@@ -1577,7 +1577,7 @@
                             },
                             "filters": [],
                             "query": {
-                                "esql": "from logs-corelight.various-*\r\n| limit 10000\r\n| where observer.vendor == \"Corelight\" and event.dataset == \"ssh\" and observer.hostname is not null and inferences in ( \"SC\", \"SP\", \"SV\", \"SA\", \"AFR\", \"BAN\" )\r\n| stats count() by event.id,source.ip,destination.ip,inferences\r\n| rename event.id as uid, source.ip as src_ip, destination.ip as dest_ip,`count()` as Count, inferences as Inferences\r\n| keep uid, src_ip,dest_ip,Count,Inferences"
+                                "esql": "from logs-corelight.various-*\r\n| limit 10000\r\n| where observer.vendor == \"Corelight\" and event.dataset == \"ssh\" and observer.hostname is not null and ssh.inferences in ( \"SC\", \"SP\", \"SV\", \"SA\", \"AFR\", \"BAN\" )\r\n| stats count() by event.id,source.ip,destination.ip,ssh.inferences\r\n| rename event.id as uid, source.ip as src_ip, destination.ip as dest_ip,`count()` as Count, ssh.inferences as Inferences\r\n| keep uid, src_ip,dest_ip,Count,Inferences"
                             },
                             "visualization": {
                                 "columns": [
@@ -1597,7 +1597,7 @@
                                         "columnId": "Inferences"
                                     }
                                 ],
-                                "layerId": "f34fbda2-85fd-48bb-b8d4-25cfe122e3e7",
+                                "layerId": "368cec63-5aa4-4e0e-948a-c72d88fffb30",
                                 "layerType": "data"
                             }
                         },
@@ -1650,7 +1650,7 @@
                                         }
                                     ],
                                     "layers": {
-                                        "d5db6488-1189-4f11-9126-eec66fb075b5": {
+                                        "8a1695cf-2393-4091-8b98-a6149628d4ca": {
                                             "columns": [
                                                 {
                                                     "columnId": "Advanced Threat Indicators",
@@ -1664,7 +1664,7 @@
                                             ],
                                             "index": "b2bcbb11fd7b30e2a9f2ee93a6a5ffd1f700ee82fff0bfc92dd439c707a35ebb",
                                             "query": {
-                                                "esql": "from logs-corelight.various-*\r\n| limit 10000\r\n| where observer.vendor == \"Corelight\" and event.dataset == \"ssh\" and observer.hostname is not null\r\n| stats count() by event.id, source.ip, destination.ip, inferences \r\n| eval Description =case(\r\n    inferences == \"ABP\", \"The client did not complete the SSH state machine for authentication and likely sent the server an exploit\",\r\n    inferences == \"RSP\", \"The client connected with a -R flag, which provisions the ports to be used for a Reverse Session to be set up at any point onwards. ssh -R 31337:localhost:22 user@192.168.20.33\",\r\n    inferences == \"RSI\", \"The Reverse session is inititated from the server back to the Client. This initiation can be done at any stage during the session. From the Server, the attacker would initiate the Reverse session by e.g.ssh victim@localhost -p 31337\",\r\n    inferences == \"RSIA\", \"The inititation of the Reverse session happened very early in the packet stream, indicating automation\",\r\n    inferences == \"RSL\", \"The Reverse tunnel login login has succeeded, the attacker now has shell on the victim's device\",\r\n    inferences == \"RSK\", \"Keystrokes are detected within the Reverse tunnel\"\r\n)\r\n| where Description is not null\r\n| stats count() by event.id, source.ip, destination.ip, inferences\r\n| rename event.id as uid, source.ip as src_ip, destination.ip as dest_ip, inferences as inference, `count()` as count\r\n| keep uid , src_ip, dest_ip, inference,count\r\n| stats count()\r\n| rename `count()` as `Advanced Threat Indicators`\r\n| keep `Advanced Threat Indicators`"
+                                                "esql": "from logs-corelight.various-*\r\n| limit 10000\r\n| where observer.vendor == \"Corelight\" and event.dataset == \"ssh\" and observer.hostname is not null\r\n| stats count() by event.id, source.ip, destination.ip, ssh.inferences \r\n| eval Description =case(\r\n    ssh.inferences == \"ABP\", \"The client did not complete the SSH state machine for authentication and likely sent the server an exploit\",\r\n    ssh.inferences == \"RSP\", \"The client connected with a -R flag, which provisions the ports to be used for a Reverse Session to be set up at any point onwards. ssh -R 31337:localhost:22 user@192.168.20.33\",\r\n    ssh.inferences == \"RSI\", \"The Reverse session is inititated from the server back to the Client. This initiation can be done at any stage during the session. From the Server, the attacker would initiate the Reverse session by e.g.ssh victim@localhost -p 31337\",\r\n    ssh.inferences == \"RSIA\", \"The inititation of the Reverse session happened very early in the packet stream, indicating automation\",\r\n    ssh.inferences == \"RSL\", \"The Reverse tunnel login login has succeeded, the attacker now has shell on the victim's device\",\r\n    ssh.inferences == \"RSK\", \"Keystrokes are detected within the Reverse tunnel\"\r\n)\r\n| where Description is not null\r\n| stats count() by event.id, source.ip, destination.ip, ssh.inferences\r\n| rename event.id as uid, source.ip as src_ip, destination.ip as dest_ip, ssh.inferences as inference, `count()` as count\r\n| keep uid , src_ip, dest_ip, inference,count\r\n| stats count()\r\n| rename `count()` as `Advanced Threat Indicators`\r\n| keep `Advanced Threat Indicators`"
                                             },
                                             "timeField": "@timestamp"
                                         }
@@ -1673,10 +1673,10 @@
                             },
                             "filters": [],
                             "query": {
-                                "esql": "from logs-corelight.various-*\r\n| limit 10000\r\n| where observer.vendor == \"Corelight\" and event.dataset == \"ssh\" and observer.hostname is not null\r\n| stats count() by event.id, source.ip, destination.ip, inferences \r\n| eval Description =case(\r\n    inferences == \"ABP\", \"The client did not complete the SSH state machine for authentication and likely sent the server an exploit\",\r\n    inferences == \"RSP\", \"The client connected with a -R flag, which provisions the ports to be used for a Reverse Session to be set up at any point onwards. ssh -R 31337:localhost:22 user@192.168.20.33\",\r\n    inferences == \"RSI\", \"The Reverse session is inititated from the server back to the Client. This initiation can be done at any stage during the session. From the Server, the attacker would initiate the Reverse session by e.g.ssh victim@localhost -p 31337\",\r\n    inferences == \"RSIA\", \"The inititation of the Reverse session happened very early in the packet stream, indicating automation\",\r\n    inferences == \"RSL\", \"The Reverse tunnel login login has succeeded, the attacker now has shell on the victim's device\",\r\n    inferences == \"RSK\", \"Keystrokes are detected within the Reverse tunnel\"\r\n)\r\n| where Description is not null\r\n| stats count() by event.id, source.ip, destination.ip, inferences\r\n| rename event.id as uid, source.ip as src_ip, destination.ip as dest_ip, inferences as inference, `count()` as count\r\n| keep uid , src_ip, dest_ip, inference,count\r\n| stats count()\r\n| rename `count()` as `Advanced Threat Indicators`\r\n| keep `Advanced Threat Indicators`"
+                                "esql": "from logs-corelight.various-*\r\n| limit 10000\r\n| where observer.vendor == \"Corelight\" and event.dataset == \"ssh\" and observer.hostname is not null\r\n| stats count() by event.id, source.ip, destination.ip, ssh.inferences \r\n| eval Description =case(\r\n    ssh.inferences == \"ABP\", \"The client did not complete the SSH state machine for authentication and likely sent the server an exploit\",\r\n    ssh.inferences == \"RSP\", \"The client connected with a -R flag, which provisions the ports to be used for a Reverse Session to be set up at any point onwards. ssh -R 31337:localhost:22 user@192.168.20.33\",\r\n    ssh.inferences == \"RSI\", \"The Reverse session is inititated from the server back to the Client. This initiation can be done at any stage during the session. From the Server, the attacker would initiate the Reverse session by e.g.ssh victim@localhost -p 31337\",\r\n    ssh.inferences == \"RSIA\", \"The inititation of the Reverse session happened very early in the packet stream, indicating automation\",\r\n    ssh.inferences == \"RSL\", \"The Reverse tunnel login login has succeeded, the attacker now has shell on the victim's device\",\r\n    ssh.inferences == \"RSK\", \"Keystrokes are detected within the Reverse tunnel\"\r\n)\r\n| where Description is not null\r\n| stats count() by event.id, source.ip, destination.ip, ssh.inferences\r\n| rename event.id as uid, source.ip as src_ip, destination.ip as dest_ip, ssh.inferences as inference, `count()` as count\r\n| keep uid , src_ip, dest_ip, inference,count\r\n| stats count()\r\n| rename `count()` as `Advanced Threat Indicators`\r\n| keep `Advanced Threat Indicators`"
                             },
                             "visualization": {
-                                "layerId": "d5db6488-1189-4f11-9126-eec66fb075b5",
+                                "layerId": "8a1695cf-2393-4091-8b98-a6149628d4ca",
                                 "layerType": "data",
                                 "metricAccessor": "Advanced Threat Indicators"
                             }
@@ -1767,7 +1767,7 @@
                                         }
                                     ],
                                     "layers": {
-                                        "9165c358-1dc3-4a01-ba83-2421c6ac0244": {
+                                        "9f0a36b7-f323-48db-a4ec-0376e36aa6c0": {
                                             "columns": [
                                                 {
                                                     "columnId": "uid",
@@ -1817,7 +1817,7 @@
                                             ],
                                             "index": "b2bcbb11fd7b30e2a9f2ee93a6a5ffd1f700ee82fff0bfc92dd439c707a35ebb",
                                             "query": {
-                                                "esql": "from logs-corelight.various-*\r\n| limit 10000\r\n| where observer.vendor == \"Corelight\" and event.dataset == \"ssh\" and observer.hostname is not null\r\n| stats count() by event.id, source.ip, destination.ip, inferences\r\n| eval Description =case(\r\n    inferences == \"ABP\", \"The client did not complete the SSH state machine for authentication and likely sent the server an exploit\",\r\n    inferences == \"RSP\", \"The client connected with a -R flag, which provisions the ports to be used for a Reverse Session to be set up at any point onwards. ssh -R 31337:localhost:22 user@192.168.20.33\",\r\n    inferences == \"RSI\", \"The Reverse session is inititated from the server back to the Client. This initiation can be done at any stage during the session. From the Server, the attacker would initiate the Reverse session by e.g.ssh victim@localhost -p 31337\",\r\n    inferences == \"RSIA\", \"The inititation of the Reverse session happened very early in the packet stream, indicating automation\",\r\n    inferences == \"RSL\", \"The Reverse tunnel login login has succeeded, the attacker now has shell on the victim's device\",\r\n    inferences == \"RSK\", \"Keystrokes are detected within the Reverse tunnel\"\r\n)\r\n| where Description is not null\r\n| rename event.id as uid, source.ip as src_ip, destination.ip as dest_ip, inferences as Inference, `count()` as Count\r\n| keep uid , src_ip, dest_ip, Inference,Count, Description"
+                                                "esql": "from logs-corelight.various-*\r\n| limit 10000\r\n| where observer.vendor == \"Corelight\" and event.dataset == \"ssh\" and observer.hostname is not null\r\n| stats count() by event.id, source.ip, destination.ip, ssh.inferences\r\n| eval Description =case(\r\n    ssh.inferences == \"ABP\", \"The client did not complete the SSH state machine for authentication and likely sent the server an exploit\",\r\n    ssh.inferences == \"RSP\", \"The client connected with a -R flag, which provisions the ports to be used for a Reverse Session to be set up at any point onwards. ssh -R 31337:localhost:22 user@192.168.20.33\",\r\n    ssh.inferences == \"RSI\", \"The Reverse session is inititated from the server back to the Client. This initiation can be done at any stage during the session. From the Server, the attacker would initiate the Reverse session by e.g.ssh victim@localhost -p 31337\",\r\n    ssh.inferences == \"RSIA\", \"The inititation of the Reverse session happened very early in the packet stream, indicating automation\",\r\n    ssh.inferences == \"RSL\", \"The Reverse tunnel login login has succeeded, the attacker now has shell on the victim's device\",\r\n    ssh.inferences == \"RSK\", \"Keystrokes are detected within the Reverse tunnel\"\r\n)\r\n| where Description is not null\r\n| rename event.id as uid, source.ip as src_ip, destination.ip as dest_ip, ssh.inferences as Inference, `count()` as Count\r\n| keep uid , src_ip, dest_ip, Inference,Count, Description"
                                             },
                                             "timeField": "@timestamp"
                                         }
@@ -1826,7 +1826,7 @@
                             },
                             "filters": [],
                             "query": {
-                                "esql": "from logs-corelight.various-*\r\n| limit 10000\r\n| where observer.vendor == \"Corelight\" and event.dataset == \"ssh\" and observer.hostname is not null\r\n| stats count() by event.id, source.ip, destination.ip, inferences\r\n| eval Description =case(\r\n    inferences == \"ABP\", \"The client did not complete the SSH state machine for authentication and likely sent the server an exploit\",\r\n    inferences == \"RSP\", \"The client connected with a -R flag, which provisions the ports to be used for a Reverse Session to be set up at any point onwards. ssh -R 31337:localhost:22 user@192.168.20.33\",\r\n    inferences == \"RSI\", \"The Reverse session is inititated from the server back to the Client. This initiation can be done at any stage during the session. From the Server, the attacker would initiate the Reverse session by e.g.ssh victim@localhost -p 31337\",\r\n    inferences == \"RSIA\", \"The inititation of the Reverse session happened very early in the packet stream, indicating automation\",\r\n    inferences == \"RSL\", \"The Reverse tunnel login login has succeeded, the attacker now has shell on the victim's device\",\r\n    inferences == \"RSK\", \"Keystrokes are detected within the Reverse tunnel\"\r\n)\r\n| where Description is not null\r\n| rename event.id as uid, source.ip as src_ip, destination.ip as dest_ip, inferences as Inference, `count()` as Count\r\n| keep uid , src_ip, dest_ip, Inference,Count, Description"
+                                "esql": "from logs-corelight.various-*\r\n| limit 10000\r\n| where observer.vendor == \"Corelight\" and event.dataset == \"ssh\" and observer.hostname is not null\r\n| stats count() by event.id, source.ip, destination.ip, ssh.inferences\r\n| eval Description =case(\r\n    ssh.inferences == \"ABP\", \"The client did not complete the SSH state machine for authentication and likely sent the server an exploit\",\r\n    ssh.inferences == \"RSP\", \"The client connected with a -R flag, which provisions the ports to be used for a Reverse Session to be set up at any point onwards. ssh -R 31337:localhost:22 user@192.168.20.33\",\r\n    ssh.inferences == \"RSI\", \"The Reverse session is inititated from the server back to the Client. This initiation can be done at any stage during the session. From the Server, the attacker would initiate the Reverse session by e.g.ssh victim@localhost -p 31337\",\r\n    ssh.inferences == \"RSIA\", \"The inititation of the Reverse session happened very early in the packet stream, indicating automation\",\r\n    ssh.inferences == \"RSL\", \"The Reverse tunnel login login has succeeded, the attacker now has shell on the victim's device\",\r\n    ssh.inferences == \"RSK\", \"Keystrokes are detected within the Reverse tunnel\"\r\n)\r\n| where Description is not null\r\n| rename event.id as uid, source.ip as src_ip, destination.ip as dest_ip, ssh.inferences as Inference, `count()` as Count\r\n| keep uid , src_ip, dest_ip, Inference,Count, Description"
                             },
                             "visualization": {
                                 "columns": [
@@ -1846,7 +1846,7 @@
                                         "columnId": "Count"
                                     }
                                 ],
-                                "layerId": "9165c358-1dc3-4a01-ba83-2421c6ac0244",
+                                "layerId": "9f0a36b7-f323-48db-a4ec-0376e36aa6c0",
                                 "layerType": "data"
                             }
                         },
@@ -1882,7 +1882,7 @@
         "version": 2
     },
     "coreMigrationVersion": "8.8.0",
-    "created_at": "2024-09-02T13:54:02.174Z",
+    "created_at": "2024-11-06T06:41:37.294Z",
     "id": "corelight-45197477-c13f-4e52-a5dd-fb4f53564963",
     "managed": false,
     "references": [

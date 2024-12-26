@@ -33,8 +33,8 @@ processors:
       pattern_definitions:
         LEVEL: '<?%{IDENT:citrix.facility:keyword}\.%{IDENT:citrix.priority:keyword}>?'
         IDENT: '[a-zA-Z][a-zA-Z0-9]*'
-        SYSLOG_TIMESTAMP: '(?:%{SYSLOGTIMESTAMP:_tmp.timestamp}|%{TIMESTAMP_ISO8601:_tmp.timestamp8601})'
-        TIMESTAMP_ISO8601: '%{YEAR}-%{MONTHNUM}-%{MONTHDAY}[T ]%{HOUR}:?%{MINUTE}(?::?%{SECOND})?%{ISO8601_TIMEZONE:event.timezone}?'
+        SYSLOG_TIMESTAMP: '(?:%{SYSLOGTIMESTAMP:_tmp.syslog_timestamp}|%{TIMESTAMP_ISO8601:_tmp.syslog_timestamp8601})'
+        TIMESTAMP_ISO8601: '%{YEAR}-%{MONTHNUM}-%{MONTHDAY}[T ]%{HOUR}:?%{MINUTE}(?::?%{SECOND})?%{ISO8601_TIMEZONE:_tmp.tz}?'
   - pipeline:
       name: '{{ IngestPipeline "cef" }}'
       tag: pipeline_cef
@@ -48,32 +48,57 @@ processors:
       tag: convert_event_severity_to_long
       type: long
       ignore_missing: true
+
+# Time zone (in order: log, config, locale, default to UTC).
+
   - set:
-      field: _conf.tz_offset
-      tag: set_tz_offset_utc
+      field: _tmp.tz
+      value: UTC
+      if: ctx._tmp?.tz == 'Z'
+  - set:
+      field: _tmp.tz
+      copy_from: _conf.tz_offset
+      override: false
+      ignore_empty_value: true
+  - set:
+      field: _tmp.tz
+      copy_from: event.timezone
+      override: false
+      if: ctx.event?.timezone != null
+  - set:
+      field: _tmp.tz
       value: UTC
       override: false
   - set:
       field: event.timezone
-      tag: set_event_timezone_from_tz_offset
-      copy_from: _conf.tz_offset
-      if: ctx.event?.timezone == null || ctx.event?.timezone == ""
+      copy_from: _tmp.tz
+
+# Syslog timestamp
+
   - date:
       if: ctx._tmp?.timestamp8601 != null
-      tag: date_tmp_timestamp8601
-      field: _tmp.timestamp8601
+      tag: date_syslog_timestamp8601
+      field: _tmp.syslog_timestamp8601
       timezone: '{{{event.timezone}}}'
       formats:
         - ISO8601
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - set:
-      field: _tmp.timestamp
-      tag: set_tmp_timestamp
-      if: ctx._tmp?.timestamp != null && ctx.citrix?.event_year != null
-      value: "{{{citrix.event_year}}} {{{_tmp.timestamp}}}"
+      field: _tmp.syslog_timestamp
+      tag: enrich_syslog_timestamp_with_year
+      if: ctx._tmp?.syslog_timestamp != null && ctx.citrix?.event_year != null
+      value: "{{{citrix.event_year}}} {{{_tmp.syslog_timestamp}}}"
+  - remove:
+      field: citrix.event_year
+      tag: remove_event_year
+      ignore_missing: true
   - date:
-      if: ctx._tmp?.timestamp != null
-      tag: date_tmp_timestamp
-      field: _tmp.timestamp
+      if: ctx._tmp?.syslog_timestamp != null
+      tag: date_syslog_timestamp
+      field: _tmp.syslog_timestamp
       timezone: '{{{event.timezone}}}'
       formats:
         - MMM d HH:mm:ss
@@ -88,35 +113,183 @@ processors:
         - yyyy MMMM d HH:mm:ss
         - yyyy MMMM  d HH:mm:ss
         - yyyy MMMM dd HH:mm:ss
-  - script:
-      description: Convert timestamp_native via custom format
-      tag: date_tmp_timestamp_native_custom_format
-      lang: painless
-      source: >-
-        def dateFormat = ctx["_conf"]["custom_date_format"];
-        def formatter = DateTimeFormatter.ofPattern(dateFormat);
-        def text = ctx["_tmp"]["timestamp_native"];
-        def parsedDate = LocalDateTime.parse(text, formatter);
-        ctx["_tmp"]["timestamp_native"] = parsedDate.toString();
-
-      if: ctx._tmp?.timestamp_native != null && ctx?._conf?.custom_date_format != null && ctx?._conf?.custom_date_format != ''
       on_failure:
         - append:
             field: error.message
-            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}. Offending format: {{{_conf.custom_date_format}}}.'
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+
+  - script:
+      tag: trim_time_fields
+      lang: painless
+      params:
+        fields:
+          - timestamp_native
+          - timestamp
+          - delink_time
+          - start_time
+          - end_time
+      source: |-
+        params.fields.forEach(field -> {
+          if (!ctx._tmp?.containsKey(field) || !(ctx._tmp[field] instanceof String)) {
+            return true;
+          }
+
+          String val = ctx._tmp[field];
+          ctx._tmp[field] = val.trim();
+        });
+
+  - script:
+      tag: parse_custom_time_formats
+      if: ctx._conf?.custom_date_format != null
+      lang: painless
+      params:
+        fields:
+          - timestamp_native
+          - timestamp
+          - delink_time
+          - start_time
+          - end_time
+      source: |-
+        def zone = ctx.event?.timezone != null ? ZoneId.of(ctx.event.timezone) : null;
+        def formatter = DateTimeFormatter.ofPattern(ctx._conf.custom_date_format);
+        def outFormatter = DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm:ss.SSSXXX");
+
+        params.fields.forEach(field -> {
+          if (!ctx._tmp?.containsKey(field)) {
+            return true;
+          }
+
+          try {
+            def localDateTime = LocalDateTime.parse(ctx._tmp[field], formatter);
+            ctx.citrix_adc.log[field] = outFormatter.format(ZonedDateTime.of(localDateTime, zone));
+          } catch (Exception e) {
+            /* Intentionally ignored */
+            return true;
+          }
+        });
+
+# Native-format timestamp
+
   - date:
-      if: ctx._tmp?.timestamp_native != null && ctx?._conf?.custom_date_format == null
-      tag: date_tmp_timestamp_native
+      tag: date_timestamp_native
       field: _tmp.timestamp_native
-      formats:
-        - MM/dd/yyyy:HH:mm:ss
-        - yyyy/MM/dd:HH:mm:ss
-        - dd/MM/yyyy:HH:mm:ss
+      target_field: citrix_adc.log.timestamp_native
       timezone: '{{{event.timezone}}}'
+      if: ctx._tmp?.timestamp_native != null && ctx.citrix_adc?.log?.timestamp_native == null
+      formats:
+        - ISO8601
+        - yyyy/MM/dd:HH:mm:ss
+        - yyyy/MM/dd:HH:mm:ss z
+        - MM/dd/yyyy:HH:mm:ss
+        - MM/dd/yyyy:HH:mm:ss z
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - date:
+      tag: date_timestamp
+      field: _tmp.timestamp
+      target_field: citrix_adc.log.timestamp
+      timezone: '{{{event.timezone}}}'
+      if: ctx._tmp?.timestamp != null && ctx.citrix_adc?.log?.timestamp == null
+      formats:
+        - ISO8601
+        - yyyy/MM/dd:HH:mm:ss
+        - yyyy/MM/dd:HH:mm:ss z
+        - MM/dd/yyyy:HH:mm:ss
+        - MM/dd/yyyy:HH:mm:ss z
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - date:
+      tag: date_start_time
+      field: _tmp.start_time
+      target_field: citrix_adc.log.start_time
+      timezone: '{{{event.timezone}}}'
+      if: ctx._tmp?.start_time != null && ctx.citrix_adc?.log?.start_time == null
+      formats:
+        - ISO8601
+        - yyyy/MM/dd:HH:mm:ss
+        - yyyy/MM/dd:HH:mm:ss z
+        - MM/dd/yyyy:HH:mm:ss
+        - MM/dd/yyyy:HH:mm:ss z
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - date:
+      tag: date_end_time
+      field: _tmp.end_time
+      timezone: '{{{event.timezone}}}'
+      target_field: citrix_adc.log.end_time
+      if: ctx._tmp?.end_time != null && ctx.citrix_adc?.log?.end_time == null
+      formats:
+        - ISO8601
+        - yyyy/MM/dd:HH:mm:ss
+        - yyyy/MM/dd:HH:mm:ss z
+        - MM/dd/yyyy:HH:mm:ss
+        - MM/dd/yyyy:HH:mm:ss z
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - date:
+      tag: date_delink_time
+      field: _tmp.delink_time
+      target_field: citrix_adc.log.delink_time
+      timezone: '{{{event.timezone}}}'
+      if: ctx._tmp?.delink_time != null && ctx.citrix_adc?.log?.delink_time == null
+      formats:
+        - ISO8601
+        - yyyy/MM/dd:HH:mm:ss
+        - yyyy/MM/dd:HH:mm:ss z
+        - MM/dd/yyyy:HH:mm:ss
+        - MM/dd/yyyy:HH:mm:ss z
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+
+# Move vendor time fields to ECS.
+
+  - set:
+      tag: set_@timestamp_from_citrix_native
+      field: '@timestamp'
+      copy_from: citrix_adc.log.timestamp_native
+      ignore_empty_value: true
   - remove:
-      field: citrix.event_year
-      tag: remove_event_year
+      tag: remove_citrix_timestamp_native
+      field: citrix_adc.log.timestamp_native
       ignore_missing: true
+
+  - set:
+      tag: set_event_start_from_citrix_start_time
+      field: event.start
+      copy_from: citrix_adc.log.start_time
+      ignore_empty_value: true
+
+  - set:
+      tag: set_event_end_from_citrix_delink_time
+      field: event.end
+      copy_from: citrix_adc.log.delink_time
+      ignore_empty_value: true
+  - set:
+      tag: set_event_end_from_citrix_end_time
+      field: event.end
+      copy_from: citrix_adc.log.end_time
+      ignore_empty_value: true
+
+  - script:
+      lang: painless
+      description: Calculates duration from event.start and event.end, as its easer than parsing citrix_adc.log.duration
+      if: ctx?.event?.start != null && ctx?.event?.end != null && ctx?.event?.duration == null
+      source: >-
+        ZonedDateTime start = ZonedDateTime.parse(ctx.event.start);
+        ZonedDateTime end = ZonedDateTime.parse(ctx.event.end);
+        ctx.event.duration = ChronoUnit.NANOS.between(start, end);
+      tag: calculate_event_duration
+
   - geoip:
       field: client.ip
       tag: geoip_client_ip_to_client_geo
@@ -127,6 +300,7 @@ processors:
       tag: geoip_source_ip_to_source_geo
       target_field: source.geo
       ignore_missing: true
+
   # IP Autonomous System (AS) Lookup
   - geoip:
       database_file: GeoLite2-ASN.mmdb
@@ -204,7 +378,8 @@ on_failure:
       ignore_missing: true
   - append:
       field: error.message
-      value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+      value: |-
+        Processor "{{{ _ingest.on_failure_processor_type }}}" with tag "{{{ _ingest.on_failure_processor_tag }}}" in pipeline "{{{ _ingest.on_failure_pipeline }}}" failed with message "{{{ _ingest.on_failure_message }}}"
   - set:
       field: event.kind
       tag: set_pipeline_error_to_event_kind

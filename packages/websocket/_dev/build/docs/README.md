@@ -6,7 +6,7 @@ This input type connects to a WebSocket URL, listens for messages sent by the se
 
 ## Configuration
 
-The full documentation for configuring the WebSocket input can be found [here](https://www.elastic.co/guide/en/beats/filebeat/current/filebeat-input-websocket.html).
+The full documentation for configuring the WebSocket input can be found [here](https://www.elastic.co/guide/en/beats/filebeat/8.15/filebeat-input-websocket.html).
 
 To configure the WebSocket input, specify the connection URL and other optional parameters such as headers for authentication or protocol versions. Advanced options for connection handling, such as timeouts and subprotocols, can be configured in the "Advanced options" section.
 

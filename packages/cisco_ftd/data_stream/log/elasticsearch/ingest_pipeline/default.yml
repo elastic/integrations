@@ -435,12 +435,13 @@ processors:
       if: "ctx._temp_.cisco.message_id == '305006'"
       field: "message"
       description: "305006"
-      tag: "305013"
+      tag: "305006"
       patterns:
-        - "^%{NOTSPACE:_temp_.cisco.translation_type} translation creation failed for %{NOTSPACE:network.protocol} src %{NOTCOLON:_temp_.cisco.source_interface}:%{IPORHOST:source.address} dst %{NOTCOLON:_temp_.cisco.destination_interface}:%{IPORHOST:destination.address} \\(type %{NUMBER:_temp_.cisco.icmp_type}, code %{NUMBER:_temp_.cisco.icmp_code}\\)$"
+        - '^%{NOTSPACE:_temp_.cisco.translation_type} translation creation failed for %{NOTSPACE:network.protocol} src %{NOTCOLON:_temp_.cisco.source_interface}:%{IPORHOST:source.address}(/%{NUMBER:source.port})?(\s*\(%{CISCO_USER:_temp_.cisco.source_username}\))? dst %{NOTCOLON:_temp_.cisco.destination_interface}:%{IPORHOST:destination.address}(/%{NUMBER:destination.port})?(\s*\(%{CISCO_USER:_temp_.cisco.destination_username}\))? \(type %{NUMBER:_temp_.cisco.icmp_type}, code %{NUMBER:_temp_.cisco.icmp_code}\)$' 
       pattern_definitions:
         NOTCOLON: "[^:]*"
         IPORHOST: "(?:%{IP}|%{HOSTNAME})"
+        CISCO_USER: ((LOCAL\\)?(%{HOSTNAME}\\)?%{USERNAME}(@%{HOSTNAME})?(, *%{NUMBER})?)
   - grok:
       if: "ctx._temp_.cisco.message_id == '305012'"
       field: "message"

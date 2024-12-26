@@ -17,7 +17,7 @@ processors:
       description: Convert host.mac to an array.
       if: ctx.host?.mac != null && ctx.host.mac instanceof String
       lang: painless
-      source:
+      source: |
         ctx.host.mac = [ctx.host.mac];
   # User agent
   - user_agent:
@@ -75,6 +75,10 @@ on_failure:
   - set:
       field: event.kind
       value: pipeline_error
+  - append:
+      field: tags
+      value: preserve_original_event
+      allow_duplicates: false
   - append:
       field: error.message
       value: "{{{ _ingest.on_failure_message }}}"

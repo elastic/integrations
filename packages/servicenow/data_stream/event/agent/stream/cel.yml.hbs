@@ -20,8 +20,10 @@ state:
   table_name: {{table_name}}
   batch_size: {{batch_size}}
   initial_interval: {{initial_interval}}
+  timestamp_field: {{timestamp_field}}
 regexp:
   next_link: '<([^,]*)>;rel="next"'
+  content: 'text/html'
 redact:
   fields: ~
 program: |
@@ -32,10 +34,10 @@ program: |
           "sysparm_display_value": ["all"],
           "sysparm_exclude_reference_link": ["true"],
           "sysparm_limit": [string(state.batch_size)],
-          "sysparm_query": ["ORDERBYsys_updated_on^sys_updated_on>"+start],
+          "sysparm_query": ["ORDERBY"+state.timestamp_field+"^"+state.timestamp_field+">"+start],
         }.format_query()
       )
-    )).as(resp, resp.StatusCode == 200 ?
+    )).as(resp, resp.StatusCode == 200 && (resp.Header["Content-Type"][0].re_find_submatch("content") == []) ?
       (
         (has(resp.?Header.Link) && size(resp.Header.Link) != 0) ?
           resp.Header.Link[0].re_find_submatch("next_link")[?1]
@@ -49,20 +51,14 @@ program: |
             "message": modEvt.encode_json()
           })),
           "cursor": {
-            "last_event": (
-              has(body.result) && size(body.result) > 0 ?
-                (
-                  has(state.?cursor.last_event) ?
-                    max([body.result.map(e, e.sys_updated_on.value).max(), state.cursor.last_event])
-                  :
-                    body.result.map(e, e.sys_updated_on.value).max()
-                )
-              :
-                state.?cursor.last_event.orValue(now)
-            ),
+            "last_event": (body.?result.orValue([]).map(r,
+              state.timestamp_field in r && has(r[state.timestamp_field].value),
+              r[state.timestamp_field].value
+            )+[state.?cursor.last_event.orValue(now)]).max(),
             ?"next_page": next_page,
           },
           "want_more": next_page.hasValue() && body.?result.orValue([]).size() != 0,
+          "timestamp_field": state.timestamp_field,
         })
       )
     :
@@ -80,6 +76,7 @@ program: |
           },
         },
         "want_more": false,
+        "timestamp_field": state.timestamp_field,
       }
     )
   )
@@ -105,7 +102,8 @@ publisher_pipeline.disable_host: true
 fields_under_root: true
 fields:
   _conf:
-    timezone: {{timezone}}
+    timestamp_field: {{timestamp_field}}
+    tz_offset: {{tz_offset}}
 {{#if processors}}
 processors:
 {{processors}}
