@@ -1,0 +1,90 @@
+config_version: "2"
+interval: {{interval}}
+{{#if enable_request_tracer}}
+request.tracer.filename: "../../logs/httpjson/http-request-trace-*.ndjson"
+request.tracer.maxbackups: 5
+{{/if}}
+request.method: "POST"
+request.url: https://{{hostname}}.my.rubrik.com/api/graphql
+{{#if http_client_timeout}}
+request.timeout: {{http_client_timeout}}
+{{/if}}
+request.transforms:
+  - set:
+      target: "header.Content-Type"
+      value: "application/json"
+auth.oauth2:
+  client.id: {{client_id}}
+  client.secret: {{client_secret}}
+  token_url: {{token_url}}
+
+request.body:
+  query: |
+    query UnmanagedObjectsQuery($first: Int, $after: String, $last: Int, $before: String, $input: UnmanagedObjectsInput!) {
+      unmanagedObjects(first: $first, after: $after, last: $last, before: $before, input: $input) {
+        pageInfo {
+          startCursor
+          endCursor
+          hasPreviousPage
+          hasNextPage
+        }
+        nodes {
+          archiveStorage
+          localStorage
+          snapshotCount
+          unmanagedStatus
+        }
+      }
+    }
+  variables: |
+    {
+      {{#if first}}
+      "first": {{first}},
+      {{/if}}
+      {{#if after}}
+      "after": {{after}},
+      {{/if}}
+      {{#if last}}
+      "last": {{last}},
+      {{/if}}
+      {{#if before}}
+      "before": {{before}},
+      {{/if}}
+      "input": {
+        "clusterUuid": "{{cluster_uuid}}",
+        "unmanagedStatuses": [{{#each unmanaged_statuses}}"{{this}}"{{#unless @last}}, {{/unless}}{{/each}}]
+        "objectTypes": [{{#each object_types}}"{{this}}"{{#unless @last}}, {{/unless}}{{/each}}]
+        "retentionSlaDomainIds": [{{#each retention_sla_domain_ids}}"{{this}}"{{#unless @last}}, {{/unless}}{{/each}}]
+      }
+    } 
+
+response.split:
+  target: body.data.unmanagedObjects.nodes
+  type: array
+  keep_parent: false
+  ignore_empty_value: true
+  transforms:
+    - set:
+        target: body.pageInfo
+        value: '[[.last_response.body.data.unmanagedObjects.pageInfo]]'
+        value_type: json
+ 
+{{#if tags.length}}
+tags:
+{{else if preserve_original_event}}
+tags:
+{{/if}}
+{{#each tags as |tag i|}}
+  - {{tag}}
+{{/each}}
+{{#if preserve_original_event}}
+  - preserve_original_event
+{{/if}}
+{{#contains "forwarded" tags}}
+publisher_pipeline.disable_host: true
+{{/contains}}
+
+{{#if processors}}
+processors:
+{{processors}}
+{{/if}}
