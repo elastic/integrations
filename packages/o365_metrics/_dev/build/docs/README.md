@@ -73,3 +73,13 @@ Please refer to the following [document](https://www.elastic.co/guide/en/ecs/cur
 Please refer to the following [document](https://www.elastic.co/guide/en/ecs/current/ecs-field-reference.html) for detailed information on ECS fields.
 
 {{fields "outlook_app_usage"}}
+
+### Active Users
+
+{{event "active_users"}}
+
+**ECS Field Reference**
+
+Please refer to the following [document](https://www.elastic.co/guide/en/ecs/current/ecs-field-reference.html) for detailed information on ECS fields.
+
+{{fields "active_users"}}
