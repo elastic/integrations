@@ -6,7 +6,7 @@ streams:
     title: Microsoft 365 Reports
     description: Collect Microsoft 365 Reports metrics via Microsoft Graph API using CEL Input.
     template_path: cel.yml.hbs
-    enabled: true
+    enabled: false
     vars:
       - name: url
         type: text
@@ -23,16 +23,16 @@ streams:
         show_user: true
         default:
           - 'Microsoft Teams User Activity User Detail'
-          - 'Viva Engage Groups Activity Group Detail'
           - 'Office365 Groups Activity Group Detail'
-          - 'SharePoint Site Usage Site Detail'
           - 'OneDrive Usage Account Detail'
+          - 'SharePoint Site Usage Site Detail'
+          - 'Viva Engage Groups Activity Group Detail'
       - name: interval
         type: text
         title: Interval
         description: >-
           Interval between two API calls. Supported units for this parameter are h/m/s.
-        default: 1m
+        default: 24h
         multi: false
         required: true
         show_user: true
@@ -42,7 +42,7 @@ streams:
         multi: false
         required: true
         show_user: true
-        default: 6
+        default: 10
         description: How far back (in number of days) to pull the Microsoft Reports data via Microsoft Graph API. This is an integer value indicating the number of days in the past. Only values between 1-29 are allowed.
       - name: sync_days
         type: integer
@@ -130,7 +130,7 @@ streams:
         description: Preserves a raw copy of the original event, added to the field `event.original`.
         type: bool
         multi: false
-        default: true
+        default: false
       - name: processors
         type: yaml
         title: Processors
@@ -145,7 +145,6 @@ streams:
         multi: false
         required: false
         show_user: false
-        default: true
         description: >
           The request tracer logs HTTP requests and responses to the agent's local file-system for debugging configurations. Enabling this request tracing compromises security and should only be used for debugging. See [documentation](https://www.elastic.co/guide/en/beats/filebeat/current/filebeat-input-cel.html#_resource_tracer_filename) for details.
 

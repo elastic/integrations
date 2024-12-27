@@ -17,35 +17,46 @@ The following content types are supported:
 - Audit.General (includes all other workloads not included in the previous content types)
 - DLP.All (DLP events only for all workloads)
 
-### Usage Reports 
+### Usage Reports
 
 Microsoft 365 usage reports collected using Microsoft Graph API give you insight into the how people in your business are using Microsoft 365 services. This data is ingested into `metrics` datatype and can be viewed under `metrics-*` dataview.
+
+#### Usage Reports Available
+
 Following Microsoft 365 usage reports can be collected by Microsoft Office 365 integration.
 
 | Report          | API | 
 |------------------|:-------:|
 | [Microsoft Teams User Activity User Detail](https://learn.microsoft.com/en-us/microsoft-365/admin/activity-reports/microsoft-teams-user-activity-preview?view=o365-worldwide)      |    [reportRoot: getTeamsUserActivityUserDetail](https://learn.microsoft.com/en-us/graph/api/reportroot-getteamsuseractivityuserdetail?view=graph-rest-1.0&tabs=http)    |
-| [Viva Engage Groups Activity Group Detail](https://learn.microsoft.com/en-us/microsoft-365/admin/activity-reports/viva-engage-groups-activity-report-ww?view=o365-worldwide)      |    [reportRoot: getYammerGroupsActivityDetail](https://learn.microsoft.com/en-us/graph/api/reportroot-getyammergroupsactivitydetail?view=graph-rest-1.0&tabs=http)    |
 | [Office365 Groups Activity Group Detail](https://learn.microsoft.com/en-us/microsoft-365/admin/activity-reports/office-365-groups-ww?view=o365-worldwide)      |    [reportRoot: getOffice365GroupsActivityDetail](https://learn.microsoft.com/en-us/graph/api/reportroot-getoffice365groupsactivitydetail?view=graph-rest-1.0&tabs=http)    |
+| [OneDrive Usage Account Detail](https://learn.microsoft.com/en-us/microsoft-365/admin/activity-reports/onedrive-for-business-usage-ww?view=o365-worldwide)      |    [reportRoot: getOneDriveUsageAccountDetail](https://learn.microsoft.com/en-us/graph/api/reportroot-getonedriveusageaccountdetail?view=graph-rest-1.0&tabs=http)    |
+| [SharePoint Site Usage Site Detail](https://learn.microsoft.com/en-us/microsoft-365/admin/activity-reports/sharepoint-site-usage-ww?view=o365-worldwide)      |    [reportRoot: getSharePointSiteUsageDetail](https://learn.microsoft.com/en-us/graph/api/reportroot-getsharepointsiteusagedetail?view=graph-rest-1.0&tabs=http)    |
+| [Viva Engage Groups Activity Group Detail](https://learn.microsoft.com/en-us/microsoft-365/admin/activity-reports/viva-engage-groups-activity-report-ww?view=o365-worldwide)      |    [reportRoot: getYammerGroupsActivityDetail](https://learn.microsoft.com/en-us/graph/api/reportroot-getyammergroupsactivitydetail?view=graph-rest-1.0&tabs=http)    |
+
 
 #### Data Setup in Usage Reports
 
-The reports are distingushed from one another using the field `o365.reports.metadata.name`.
+All the reports are under one generic dataset which can be queried as `data_stream.dataset: o365.reports`. The reports are distingushed from one another using the field `o365.reports.metadata.name`.
 
-Microsoft 365 reports are typically available within [48 hours](https://learn.microsoft.com/en-us/microsoft-365/admin/activity-reports/activity-reports?view=o365-worldwide), but may sometimes take several days. As per their [documentation](https://learn.microsoft.com/en-us/microsoft-365/admin/activity-reports/microsoft-teams-user-activity-preview?view=o365-worldwide#interpret-the-microsoft-teams-user-activity-report), data quality is ensured by performing daily validation checks for past 3 days to fill any gaps in data. 
+Microsoft 365 reports are typically available within [48 hours](https://learn.microsoft.com/en-us/microsoft-365/admin/activity-reports/activity-reports?view=o365-worldwide), but may sometimes take several days. As per their [documentation](https://learn.microsoft.com/en-us/microsoft-365/admin/activity-reports/microsoft-teams-user-activity-preview?view=o365-worldwide#interpret-the-microsoft-teams-user-activity-report), data quality is ensured by performing daily validation checks to fill any gaps in data. 
 
-To ensure these gaps from the reports are also ingested into Elastic, the Microsoft Office 365 integration enables you to adjust `Sync Days in the past` parameter when configuring the integration. You can change this parameter to re-fetch the Microsoft 365 reports starting from *N* days in the past. Default value for this paramater is `3`.
+To ensure these filled gaps from the reports are also ingested into Elastic, the Microsoft Office 365 integration enables you to adjust `Sync Days in the past` parameter when configuring the integration. You can use this parameter to re-fetch the Microsoft 365 reports starting from *N* days in the past. Default value for this paramater is `3`. You can gradually increase this value (maximum allowed is `29`) if you see any discrepancies between Microsoft Reports and Elastic data.
 
-Due to the re-fetching of data on same dates and the way Elastic data-streams work in [append-only](https://www.elastic.co/guide/en/elasticsearch/reference/current/data-streams.html) design, the ingested data will have duplicates. For example, you may see duplicate documents in Elastic on the source data-stream backed indices per resource (user/group/site) per report date. To maintain only the latest copy of document, the Microsoft Office 365 integration installs [Latest Transforms](https://www.elastic.co/guide/en/elasticsearch/reference/current/transform-overview.html#latest-transform-overview), one per report. These latest transform periodically pulls the data maintains from source data-stream backed indices into a destination non-data-stream backed index. Hence the destination indices only contains single (latest) document per resource (user/group/site) per report date. Inside the reports data, you can distinguish between source and destination indices using the field `labels.is_transform_source`. This is set to `true` for source data-stream backed indices and `false` for destination (latest) indices.
+Due to this re-fetching of data on same dates and the way Elastic data-streams work in [append-only](https://www.elastic.co/guide/en/elasticsearch/reference/current/data-streams.html) design, the ingested data may have duplicates. For example, you may see duplicate documents in Elastic on the source data-stream backed indices per resource (user/group/site) per report date. To maintain only the latest copy of document, the Microsoft Office 365 integration installs [Latest Transforms](https://www.elastic.co/guide/en/elasticsearch/reference/current/transform-overview.html#latest-transform-overview), one per report type. These latest transform periodically pulls the data from source data-stream backed indices into a destination non-data-stream backed index. Hence the destination indices only contains single (latest) document per resource (user/group/site) per report date. Inside the reports dataset, you can distinguish between source and destination indices using the field `labels.is_transform_source`. This is set to `true` for source data-stream backed indices and `false` for destination (latest) indices.
 
-When searching for data, you should use a filter `labels.is_transform_source: false` to avoid seeing any duplicates. The Microsoft Office 365 dashboards also has this filter to only show the latest datapoints.
+Thus when searching for data, you should use a filter `labels.is_transform_source: false` to avoid seeing any duplicates. The Microsoft Office 365 dashboards also has this filter to only show the latest datapoints.
 
 As the latest data is available in destination indices, the source data-stream backed indices are purged based on ILM policy `metrics-o365.reports-default_policy`.
 
-| o365.reports.metadata.name          | Source filter | Source indices pattern | Destination filter | Destination indices pattern | Destination alias |
+| o365.reports.metadata.name          | Source filter | Source indices | Destination filter | Destination indices | Destination alias |
 |------------------|:-------:|:-------:|:-------:|:-------:|:-------:|
-| Microsoft Teams User Activity User Detail  |  `labels.is_transform_source: true`  | `.ds-metrics-o365.reports-*` | `metrics-o365_latest.teams_user_activity_user-*` | `metrics-o365_latest.teams_user_activity_user` |
-| Viva Engage Groups Activity Group Detail  |  `labels.is_transform_source: true`  | `.ds-metrics-o365.reports-*` | `metrics-o365_latest.viva_engage_groups_activity_group-*` | `metrics-o365_latest.viva_engage_groups_activity_group` |
+| Microsoft Teams User Activity User Detail  |  `labels.is_transform_source: true`  | `.ds-metrics-o365.reports-*` |  `labels.is_transform_source: false`  | `metrics-o365_latest.teams_user_activity_user-*` | `metrics-o365_latest.teams_user_activity_user` |
+| Office365 Groups Activity Group Detail  |  `labels.is_transform_source: true`  | `.ds-metrics-o365.reports-*` |  `labels.is_transform_source: false`  | `metrics-o365_latest.office365_groups_activity_group-*` | `metrics-o365_latest.office365_groups_activity_group` |
+| OneDrive Usage Account Detail  |  `labels.is_transform_source: true`  | `.ds-metrics-o365.reports-*` |  `labels.is_transform_source: false`  | `metrics-o365_latest.onedrive_usage_account-*` | `metrics-o365_latest.onedrive_usage_account` |
+| SharePoint Site Usage Site Detail  |  `labels.is_transform_source: true`  | `.ds-metrics-o365.reports-*` |  `labels.is_transform_source: false`  | `metrics-o365_latest.sharepoint_site_usage_site-*` | `metrics-o365_latest.sharepoint_site_usage_site` |
+| Viva Engage Groups Activity Group Detail  |  `labels.is_transform_source: true`  | `.ds-metrics-o365.reports-*` |  `labels.is_transform_source: false`  | `metrics-o365_latest.viva_engage_groups_activity_group-*` | `metrics-o365_latest.viva_engage_groups_activity_group` |
+
+To view the latest transforms after installation, navigate to `Management` --> `Stack Management` --> `Transforms` in Kibana.
 
 ## Requirements
 
@@ -512,90 +523,95 @@ An example event for `reports` looks as following:
 
 ```json
 {
-    "@timestamp": "2024-12-17T15:57:14.753Z",
-    "agent": {
-        "ephemeral_id": "11eef08e-4919-426c-b1e4-e89dd7bb4e32",
-        "id": "f594b622-3327-4b6b-b3eb-b756fbe15421",
-        "name": "elastic-agent-41973",
-        "type": "filebeat",
-        "version": "8.13.0"
-    },
-    "data_stream": {
-        "dataset": "o365.teams_user_activity_user_detail",
-        "namespace": "73329",
-        "type": "logs"
-    },
-    "ecs": {
-        "version": "8.11.0"
-    },
-    "elastic_agent": {
-        "id": "f594b622-3327-4b6b-b3eb-b756fbe15421",
-        "snapshot": false,
-        "version": "8.13.0"
-    },
-    "event": {
-        "agent_id_status": "verified",
-        "dataset": "o365.teams_user_activity_user_detail",
-        "ingested": "2024-12-17T15:57:17Z",
-        "original": "{\"Ad Hoc Meetings Attended Count\":\"501\",\"Ad Hoc Meetings Organized Count\":\"350\",\"Assigned Products\":\"MICROSOFT 365 E5\",\"Audio Duration\":\"PT0S\",\"Audio Duration In Seconds\":\"0\",\"Call Count\":\"50\",\"Deleted Date\":\"\",\"Has Other Action\":\"No\",\"Is Deleted\":\"False\",\"Is Licensed\":\"Yes\",\"Last Activity Date\":\"\",\"Meeting Count\":\"50\",\"Meetings Attended Count\":\"250\",\"Meetings Organized Count\":\"30\",\"Post Messages\":\"20\",\"Private Chat Message Count\":\"10\",\"Reply Messages\":\"10\",\"Report Period\":\"7\",\"Report Refresh Date\":\"2024-12-15\",\"Scheduled One-time Meetings Attended Count\":\"500\",\"Scheduled One-time Meetings Organized Count\":\"50\",\"Scheduled Recurring Meetings Attended Count\":\"50\",\"Scheduled Recurring Meetings Organized Count\":\"50\",\"Screen Share Duration\":\"PT0S\",\"Screen Share Duration In Seconds\":\"30\",\"Shared Channel Tenant Display Names\":\"\",\"Team Chat Message Count\":\"50\",\"Tenant Display Name\":\"MSFT\",\"Urgent Messages\":\"0\",\"User Id\":\"82f04e26-e0ec-49ee-8f1f-8a3de75e430f\",\"User Principal Name\":\"HenriettaM@abc.onmicrosoft.com\",\"Video Duration\":\"PT0S\",\"Video Duration In Seconds\":\"10\"}"
-    },
-    "input": {
-        "type": "cel"
-    },
     "o365": {
-        "teams": {
-            "user_activity": {
-                "user_detail": {
-                    "Ad_Hoc_Meetings_Attended_Count": 501,
-                    "Ad_Hoc_Meetings_Organized_Count": 350,
-                    "Assigned_Products": "MICROSOFT 365 E5",
-                    "Audio_Duration": "PT0S",
-                    "Audio_Duration_In_Seconds": 0,
-                    "Call_Count": 50,
-                    "Has_Other_Action": "No",
-                    "Is_Deleted": false,
-                    "Is_Licensed": true,
-                    "Meeting_Count": 50,
-                    "Meetings_Attended_Count": 250,
-                    "Meetings_Organized_Count": 30,
-                    "Post_Messages": 20,
-                    "Private_Chat_Message_Count": 10,
-                    "Reply_Messages": 10,
-                    "Report_Period": "7",
-                    "Report_Refresh_Date": "2024-12-15T00:00:00.000Z",
-                    "Scheduled_One_time_Meetings_Attended_Count": 500,
-                    "Scheduled_One_time_Meetings_Organized_Count": 50,
-                    "Scheduled_Recurring_Meetings_Attended_Count": 50,
-                    "Scheduled_Recurring_Meetings_Organized_Count": 50,
-                    "Screen_Share_Duration": "PT0S",
-                    "Screen_Share_Duration_In_Seconds": 30,
-                    "Team_Chat_Message_Count": 50,
-                    "Tenant_Display_Name": "MSFT",
-                    "Urgent_Messages": 0,
-                    "User_Id": "82f04e26-e0ec-49ee-8f1f-8a3de75e430f",
-                    "User_Principal_Name": "HenriettaM@abc.onmicrosoft.com",
-                    "Video_Duration": "PT0S",
-                    "Video_Duration_In_Seconds": 10
+        "reports": {
+            "metadata": {
+                "name": "Microsoft Teams User Activity User Detail",
+                "api_path": "/reports/getTeamsUserActivityUserDetail"
+            },
+            "teams": {
+                "user_activity": {
+                    "user": {
+                        "Meetings_Attended_Count": 0,
+                        "Video_Duration_In_Seconds": 0,
+                        "Screen_Share_Duration_In_Seconds": 0,
+                        "Report_Period": "1",
+                        "Screen_Share_Duration": "PT0S",
+                        "Ad_Hoc_Meetings_Attended_Count": 0,
+                        "Ad_Hoc_Meetings_Organized_Count": 0,
+                        "Has_Other_Action": "No",
+                        "Reply_Messages": 0,
+                        "Tenant_Display_Name": "ABCD",
+                        "Audio_Duration": "PT0S",
+                        "Scheduled_Recurring_Meetings_Attended_Count": 0,
+                        "Video_Duration": "PT0S",
+                        "Is_Deleted": false,
+                        "Audio_Duration_In_Seconds": 0,
+                        "Assigned_Products": "MICROSOFT 365",
+                        "Last_Activity_Date": "2024-12-17T00:00:00.000Z",
+                        "Urgent_Messages": 0,
+                        "Scheduled_One_time_Meetings_Attended_Count": 0,
+                        "Report_Refresh_Date": "2024-12-17T00:00:00.000Z",
+                        "Call_Count": 0,
+                        "Is_Licensed": true,
+                        "Private_Chat_Message_Count": 0,
+                        "Scheduled_Recurring_Meetings_Organized_Count": 0,
+                        "Scheduled_One_time_Meetings_Organized_Count": 0,
+                        "Team_Chat_Message_Count": 1,
+                        "Meetings_Organized_Count": 0,
+                        "Post_Messages": 1,
+                        "Meeting_Count": 0
+                    }
                 }
             }
         }
     },
+    "input": {
+        "type": "cel"
+    },
+    "agent": {
+        "name": "docker-fleet-agent",
+        "id": "02c7f2bd-8f60-456f-8651-e15cb4ddbe5c",
+        "ephemeral_id": "acb55f0d-55db-4513-8480-b53bf6aeee8a",
+        "type": "filebeat",
+        "version": "8.15.0"
+    },
+    "@timestamp": "2024-12-17T00:00:00.000Z",
+    "ecs": {
+        "version": "8.11.0"
+    },
     "related": {
         "user": [
-            "82f04e26-e0ec-49ee-8f1f-8a3de75e430f",
-            "HenriettaM@abc.onmicrosoft.com"
+            "3cb1cad2-87d9-411c-8911-e72422342098",
+            "user@abc.onmicrosoft.com"
         ]
     },
+    "data_stream": {
+        "namespace": "default",
+        "type": "metrics",
+        "dataset": "o365.reports"
+    },
+    "elastic_agent": {
+        "id": "02c7f2bd-8f60-456f-8651-e15cb4ddbe5c",
+        "version": "8.15.0",
+        "snapshot": false
+    },
+    "event": {
+        "agent_id_status": "verified",
+        "ingested": "2024-12-27T15:09:09Z",
+        "original": "{\"Ad Hoc Meetings Attended Count\":\"0\",\"Ad Hoc Meetings Organized Count\":\"0\",\"Assigned Products\":\"MICROSOFT 365\",\"Audio Duration\":\"PT0S\",\"Audio Duration In Seconds\":\"0\",\"Call Count\":\"0\",\"Deleted Date\":\"\",\"Has Other Action\":\"No\",\"Is Deleted\":\"False\",\"Is Licensed\":\"Yes\",\"Last Activity Date\":\"2024-12-17\",\"Meeting Count\":\"0\",\"Meetings Attended Count\":\"0\",\"Meetings Organized Count\":\"0\",\"Post Messages\":\"1\",\"Private Chat Message Count\":\"0\",\"Reply Messages\":\"0\",\"Report Period\":\"1\",\"Scheduled One-time Meetings Attended Count\":\"0\",\"Scheduled One-time Meetings Organized Count\":\"0\",\"Scheduled Recurring Meetings Attended Count\":\"0\",\"Scheduled Recurring Meetings Organized Count\":\"0\",\"Screen Share Duration\":\"PT0S\",\"Screen Share Duration In Seconds\":\"0\",\"Shared Channel Tenant Display Names\":\"\",\"Team Chat Message Count\":\"1\",\"Tenant Display Name\":\"ABCD\",\"Urgent Messages\":\"0\",\"User Id\":\"3cb1cad2-87d9-411c-8911-e72422342098\",\"User Principal Name\":\"user@abc.onmicrosoft.com\",\"Video Duration\":\"PT0S\",\"Video Duration In Seconds\":\"0\",\"metadata\":{\"api_path\":\"/reports/getTeamsUserActivityUserDetail\",\"name\":\"Microsoft Teams User Activity User Detail\"},\"﻿Report Refresh Date\":\"2024-12-17\"}",
+        "dataset": "o365.reports"
+    },
+    "user": {
+        "name": "user@abc.onmicrosoft.com",
+        "id": "3cb1cad2-87d9-411c-8911-e72422342098",
+        "email": "user@abc.onmicrosoft.com"
+    },
     "tags": [
-        "preserve_duplicate_custom_fields",
         "preserve_original_event",
         "forwarded",
-        "o365-teams_user_activity_user_detail"
-    ],
-    "user": {
-        "email": "HenriettaM@abc.onmicrosoft.com",
-        "id": "82f04e26-e0ec-49ee-8f1f-8a3de75e430f"
-    }
+        "o365-reports"
+    ]
 }
 ```
 
