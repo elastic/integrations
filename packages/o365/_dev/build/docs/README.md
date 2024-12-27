@@ -24,10 +24,13 @@ Following Microsoft 365 usage reports can be collected by Microsoft Office 365 i
 
 | Report          | API | 
 |------------------|:-------:|
-| [Microsoft Teams User Activity by User](https://learn.microsoft.com/en-us/microsoft-365/admin/activity-reports/microsoft-teams-user-activity-preview?view=o365-worldwide)      |    [reportRoot: getTeamsUserActivityUserDetail](https://learn.microsoft.com/en-us/graph/api/reportroot-getteamsuseractivityuserdetail?view=graph-rest-1.0&tabs=http)    |
-| [Viva Engage (formerly Yammer) Groups Activity by Group](https://learn.microsoft.com/en-us/microsoft-365/admin/activity-reports/viva-engage-groups-activity-report-ww?view=o365-worldwide)      |    [reportRoot: getYammerGroupsActivityDetail](https://learn.microsoft.com/en-us/graph/api/reportroot-getyammergroupsactivitydetail?view=graph-rest-1.0&tabs=http)    |
+| [Microsoft Teams User Activity User Detail](https://learn.microsoft.com/en-us/microsoft-365/admin/activity-reports/microsoft-teams-user-activity-preview?view=o365-worldwide)      |    [reportRoot: getTeamsUserActivityUserDetail](https://learn.microsoft.com/en-us/graph/api/reportroot-getteamsuseractivityuserdetail?view=graph-rest-1.0&tabs=http)    |
+| [Viva Engage Groups Activity Group Detail](https://learn.microsoft.com/en-us/microsoft-365/admin/activity-reports/viva-engage-groups-activity-report-ww?view=o365-worldwide)      |    [reportRoot: getYammerGroupsActivityDetail](https://learn.microsoft.com/en-us/graph/api/reportroot-getyammergroupsactivitydetail?view=graph-rest-1.0&tabs=http)    |
+| [Office365 Groups Activity Group Detail](https://learn.microsoft.com/en-us/microsoft-365/admin/activity-reports/office-365-groups-ww?view=o365-worldwide)      |    [reportRoot: getOffice365GroupsActivityDetail](https://learn.microsoft.com/en-us/graph/api/reportroot-getoffice365groupsactivitydetail?view=graph-rest-1.0&tabs=http)    |
 
 #### Data Setup in Usage Reports
+
+The reports are distingushed from one another using the field `o365.reports.metadata.name`.
 
 Microsoft 365 reports are typically available within [48 hours](https://learn.microsoft.com/en-us/microsoft-365/admin/activity-reports/activity-reports?view=o365-worldwide), but may sometimes take several days. As per their [documentation](https://learn.microsoft.com/en-us/microsoft-365/admin/activity-reports/microsoft-teams-user-activity-preview?view=o365-worldwide#interpret-the-microsoft-teams-user-activity-report), data quality is ensured by performing daily validation checks for past 3 days to fill any gaps in data. 
 
@@ -39,9 +42,10 @@ When searching for data, you should use a filter `labels.is_transform_source: fa
 
 As the latest data is available in destination indices, the source data-stream backed indices are purged based on ILM policy `metrics-o365.reports-default_policy`.
 
-| Report          | Source filter | Source indices pattern | Destination filter | Destination indices pattern | Destination alias |
+| o365.reports.metadata.name          | Source filter | Source indices pattern | Destination filter | Destination indices pattern | Destination alias |
 |------------------|:-------:|:-------:|:-------:|:-------:|:-------:|
-| Microsoft Teams User Activity by User  |  `labels.is_transform_source: true`  | `.ds-metrics-o365.reports-*` | `.ds-metrics-o365.reports-*` |
+| Microsoft Teams User Activity User Detail  |  `labels.is_transform_source: true`  | `.ds-metrics-o365.reports-*` | `metrics-o365_latest.teams_user_activity_user-*` | `metrics-o365_latest.teams_user_activity_user` |
+| Viva Engage Groups Activity Group Detail  |  `labels.is_transform_source: true`  | `.ds-metrics-o365.reports-*` | `metrics-o365_latest.viva_engage_groups_activity_group-*` | `metrics-o365_latest.viva_engage_groups_activity_group` |
 
 ## Requirements
 

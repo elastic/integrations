@@ -6,7 +6,7 @@ streams:
     title: Microsoft 365 Reports
     description: Collect Microsoft 365 Reports metrics via Microsoft Graph API using CEL Input.
     template_path: cel.yml.hbs
-    enabled: false
+    enabled: true
     vars:
       - name: url
         type: text
@@ -22,14 +22,15 @@ streams:
         required: true
         show_user: true
         default:
-          - 'Microsoft Teams User Activity User Detail'
-          - 'Viva Engage Groups Activity Group Detail'
+          # - 'Microsoft Teams User Activity User Detail'
+          # - 'Viva Engage Groups Activity Group Detail'
+          - 'Office365 Groups Activity Group Detail'
       - name: interval
         type: text
         title: Interval
         description: >-
           Interval between two API calls. Supported units for this parameter are h/m/s.
-        default: 24h
+        default: 1m
         multi: false
         required: true
         show_user: true
@@ -39,7 +40,7 @@ streams:
         multi: false
         required: true
         show_user: true
-        default: 7
+        default: 6
         description: How far back (in number of days) to pull the Microsoft Reports data via Microsoft Graph API. This is an integer value indicating the number of days in the past. Only values between 1-29 are allowed.
       - name: sync_days
         type: integer
@@ -57,12 +58,14 @@ streams:
         show_user: true
         multi: false
         required: true
+        default: 514756bc-f1b4-4ab3-a16d-b94010998f96
       - name: client_id
         type: text
         title: Application (client) ID
         description: Client ID used for Oauth2 authentication
         show_user: true
         required: true
+        default: a95aea20-b835-4275-9232-6b42c573c02f
       - name: client_secret
         type: password
         title: Client Secret
@@ -70,6 +73,7 @@ streams:
         show_user: true
         required: true
         secret: true
+        default: wjE8Q~v.oW4-EAmSqqdB0wzjxwGULY6HFBao7dy.
       - name: token_url
         type: text
         title: Oauth2 Token URL
@@ -127,7 +131,7 @@ streams:
         description: Preserves a raw copy of the original event, added to the field `event.original`.
         type: bool
         multi: false
-        default: false
+        default: true
       - name: processors
         type: yaml
         title: Processors
@@ -142,6 +146,7 @@ streams:
         multi: false
         required: false
         show_user: false
+        default: true
         description: >
           The request tracer logs HTTP requests and responses to the agent's local file-system for debugging configurations. Enabling this request tracing compromises security and should only be used for debugging. See [documentation](https://www.elastic.co/guide/en/beats/filebeat/current/filebeat-input-cel.html#_resource_tracer_filename) for details.
 

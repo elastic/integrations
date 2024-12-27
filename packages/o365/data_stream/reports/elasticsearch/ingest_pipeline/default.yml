@@ -39,16 +39,17 @@ processors:
       tag: painless_sanitize_fields
       if: ctx.json instanceof Map
       source: |
-        String underscore(String s) {
-          return /[ -]/.matcher(s).replaceAll('_');
+        String sanitize(String s) {
+          String t = /[ -]/.matcher(s).replaceAll('_');
+          return /[\(\)]/.matcher(t).replaceAll('');
         }
 
         def out = [:];
         for (def item : ctx.json.entrySet()) {
           // Remove control characters from CSV header
           String key = /\p{C}/.matcher(item.getKey()).replaceAll('');
-          // Replace spaces and hyphens with underscore
-          out[underscore(key)] = item.getValue();
+          // Replace spaces and hyphens with sanitize
+          out[sanitize(key)] = item.getValue();
         }
         ctx.json = out;
   - pipeline:
@@ -62,6 +63,12 @@ processors:
       if: ctx.o365?.reports?.metadata?.name == 'Viva Engage Groups Activity Group Detail'
       tag: pipeline_viva_engage_groups_activity_group
       description: Route to viva_engage_groups_activity_group
+      ignore_missing_pipeline: true
+  - pipeline:
+      name: '{{ IngestPipeline "office365_groups_activity_group" }}'
+      if: ctx.o365?.reports?.metadata?.name == 'Office365 Groups Activity Group Detail'
+      tag: pipeline_office365_groups_activity_group
+      description: Route to office365_groups_activity_group
       ignore_missing_pipeline: true
 
   # Cleanup

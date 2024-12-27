@@ -24,8 +24,28 @@ Following Microsoft 365 usage reports can be collected by Microsoft Office 365 i
 
 | Report          | API | 
 |------------------|:-------:|
-| [Microsoft Teams User Activity by User](https://learn.microsoft.com/en-us/microsoft-365/admin/activity-reports/microsoft-teams-user-activity-preview?view=o365-worldwide)      |    [reportRoot: getTeamsUserActivityUserDetail](https://learn.microsoft.com/en-us/graph/api/reportroot-getteamsuseractivityuserdetail?view=graph-rest-1.0&tabs=http)    |
-| [Viva Engage (formerly Yammer) Groups Activity by Group](https://learn.microsoft.com/en-us/microsoft-365/admin/activity-reports/viva-engage-groups-activity-report-ww?view=o365-worldwide)      |    [reportRoot: getYammerGroupsActivityDetail](https://learn.microsoft.com/en-us/graph/api/reportroot-getyammergroupsactivitydetail?view=graph-rest-1.0&tabs=http)    |
+| [Microsoft Teams User Activity User Detail](https://learn.microsoft.com/en-us/microsoft-365/admin/activity-reports/microsoft-teams-user-activity-preview?view=o365-worldwide)      |    [reportRoot: getTeamsUserActivityUserDetail](https://learn.microsoft.com/en-us/graph/api/reportroot-getteamsuseractivityuserdetail?view=graph-rest-1.0&tabs=http)    |
+| [Viva Engage Groups Activity Group Detail](https://learn.microsoft.com/en-us/microsoft-365/admin/activity-reports/viva-engage-groups-activity-report-ww?view=o365-worldwide)      |    [reportRoot: getYammerGroupsActivityDetail](https://learn.microsoft.com/en-us/graph/api/reportroot-getyammergroupsactivitydetail?view=graph-rest-1.0&tabs=http)    |
+| [Office365 Groups Activity Group Detail](https://learn.microsoft.com/en-us/microsoft-365/admin/activity-reports/office-365-groups-ww?view=o365-worldwide)      |    [reportRoot: getOffice365GroupsActivityDetail](https://learn.microsoft.com/en-us/graph/api/reportroot-getoffice365groupsactivitydetail?view=graph-rest-1.0&tabs=http)    |
+
+#### Data Setup in Usage Reports
+
+The reports are distingushed from one another using the field `o365.reports.metadata.name`.
+
+Microsoft 365 reports are typically available within [48 hours](https://learn.microsoft.com/en-us/microsoft-365/admin/activity-reports/activity-reports?view=o365-worldwide), but may sometimes take several days. As per their [documentation](https://learn.microsoft.com/en-us/microsoft-365/admin/activity-reports/microsoft-teams-user-activity-preview?view=o365-worldwide#interpret-the-microsoft-teams-user-activity-report), data quality is ensured by performing daily validation checks for past 3 days to fill any gaps in data. 
+
+To ensure these gaps from the reports are also ingested into Elastic, the Microsoft Office 365 integration enables you to adjust `Sync Days in the past` parameter when configuring the integration. You can change this parameter to re-fetch the Microsoft 365 reports starting from *N* days in the past. Default value for this paramater is `3`.
+
+Due to the re-fetching of data on same dates and the way Elastic data-streams work in [append-only](https://www.elastic.co/guide/en/elasticsearch/reference/current/data-streams.html) design, the ingested data will have duplicates. For example, you may see duplicate documents in Elastic on the source data-stream backed indices per resource (user/group/site) per report date. To maintain only the latest copy of document, the Microsoft Office 365 integration installs [Latest Transforms](https://www.elastic.co/guide/en/elasticsearch/reference/current/transform-overview.html#latest-transform-overview), one per report. These latest transform periodically pulls the data maintains from source data-stream backed indices into a destination non-data-stream backed index. Hence the destination indices only contains single (latest) document per resource (user/group/site) per report date. Inside the reports data, you can distinguish between source and destination indices using the field `labels.is_transform_source`. This is set to `true` for source data-stream backed indices and `false` for destination (latest) indices.
+
+When searching for data, you should use a filter `labels.is_transform_source: false` to avoid seeing any duplicates. The Microsoft Office 365 dashboards also has this filter to only show the latest datapoints.
+
+As the latest data is available in destination indices, the source data-stream backed indices are purged based on ILM policy `metrics-o365.reports-default_policy`.
+
+| o365.reports.metadata.name          | Source filter | Source indices pattern | Destination filter | Destination indices pattern | Destination alias |
+|------------------|:-------:|:-------:|:-------:|:-------:|:-------:|
+| Microsoft Teams User Activity User Detail  |  `labels.is_transform_source: true`  | `.ds-metrics-o365.reports-*` | `metrics-o365_latest.teams_user_activity_user-*` | `metrics-o365_latest.teams_user_activity_user` |
+| Viva Engage Groups Activity Group Detail  |  `labels.is_transform_source: true`  | `.ds-metrics-o365.reports-*` | `metrics-o365_latest.viva_engage_groups_activity_group-*` | `metrics-o365_latest.viva_engage_groups_activity_group` |
 
 ## Requirements
 
@@ -593,6 +613,25 @@ An example event for `reports` looks as following:
 | labels.is_transform_source | Distinguishes between documents that are a source for a transform and documents that are an output of a transform, to facilitate easier filtering. | constant_keyword |
 | o365.reports.metadata.api_path |  | keyword |
 | o365.reports.metadata.name |  | keyword |
+| o365.reports.office365.groups_activity.group.Exchange_Mailbox_Storage_Used_Byte |  | long |
+| o365.reports.office365.groups_activity.group.Exchange_Mailbox_Total_Item_Count |  | long |
+| o365.reports.office365.groups_activity.group.Exchange_Received_Email_Count |  | long |
+| o365.reports.office365.groups_activity.group.External_Member_Count |  | long |
+| o365.reports.office365.groups_activity.group.Group_Display_Name |  | keyword |
+| o365.reports.office365.groups_activity.group.Group_Id |  | keyword |
+| o365.reports.office365.groups_activity.group.Group_Type |  | keyword |
+| o365.reports.office365.groups_activity.group.Is_Deleted |  | boolean |
+| o365.reports.office365.groups_activity.group.Last_Activity_Date |  | date |
+| o365.reports.office365.groups_activity.group.Member_Count |  | long |
+| o365.reports.office365.groups_activity.group.Owner_Principal_Name |  | keyword |
+| o365.reports.office365.groups_activity.group.Report_Period |  | keyword |
+| o365.reports.office365.groups_activity.group.Report_Refresh_Date |  | date |
+| o365.reports.office365.groups_activity.group.SharePoint_Active_File_Count |  | long |
+| o365.reports.office365.groups_activity.group.SharePoint_Site_Storage_Used_Byte |  | long |
+| o365.reports.office365.groups_activity.group.SharePoint_Total_File_Count |  | long |
+| o365.reports.office365.groups_activity.group.Yammer_Liked_Message_Count |  | long |
+| o365.reports.office365.groups_activity.group.Yammer_Posted_Message_Count |  | long |
+| o365.reports.office365.groups_activity.group.Yammer_Read_Message_Count |  | long |
 | o365.reports.teams.user_activity.user.Ad_Hoc_Meetings_Attended_Count |  | long |
 | o365.reports.teams.user_activity.user.Ad_Hoc_Meetings_Organized_Count |  | long |
 | o365.reports.teams.user_activity.user.Assigned_Products |  | keyword |
