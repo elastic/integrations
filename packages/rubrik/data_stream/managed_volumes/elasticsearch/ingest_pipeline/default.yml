@@ -1,9 +1,9 @@
 ---
-description: Pipeline to parse rubrik.managed_volumes workload data
+description: Pipeline to parse Rubrik Managed Volumes data
 processors:
   - set:
       field: ecs.version
-      value: 8.11.0
+      value: 8.16.0
       ignore_failure: true
       ignore_empty_value: true
   - set:
@@ -15,7 +15,7 @@ processors:
       field: message
       target_field: event.original
       ignore_missing: true
-      if: "ctx.event?.original == null"
+      if: ctx.event?.original == null
       description: 'Renames the original `message` field to `event.original` to store a copy of the original message. The `event.original` field is not touched if the document already has one; it may happen when Logstash sends the document.'
   - remove:
       field: message
@@ -34,42 +34,53 @@ processors:
       field: response.name
       target_field: rubrik.managed_volumes.name
       ignore_missing: true
-      if: "ctx.response?.name != null"
   - rename:
       field: response.state
       target_field: rubrik.managed_volumes.state
       ignore_missing: true
-      if: "ctx.response?.state != null"
   - rename:
       field: response.provisionedSize
-      target_field: rubrik.managed_volumes.volume_size
+      target_field: rubrik.managed_volumes.volume_size.bytes
       ignore_missing: true
-      if: "ctx.response?.provisionedSize != null"
   - rename:
       field: response.mainMount.logicalUsedSize
-      target_field: rubrik.managed_volumes.used_size
+      target_field: rubrik.managed_volumes.used_size.bytes
       ignore_missing: true
-      if: "ctx.response?.mainMount?.logicalUsedSize != null"
   - rename:
       field: response.snapshotDistribution.totalCount
-      target_field: rubrik.managed_volumes.snapshot_count
+      target_field: rubrik.managed_volumes.total_snapshots.count
       ignore_missing: true
-      if: "ctx.response?.snapshotDistribution?.totalCount != null"
   - rename:
       field: response.numChannels
-      target_field: rubrik.managed_volumes.num_channels
+      target_field: rubrik.managed_volumes.num_channels.count
       ignore_missing: true
-      if: "ctx.response?.numChannels != null"
   - script:
-      lang: "painless"
-      source: |
-        if (ctx.rubrik?.managed_volumes?.volume_size != null && ctx.rubrik?.managed_volumes?.used_size != null) {
-          // Calculate free capacity
-          ctx.rubrik.managed_volumes.free_size = ctx.rubrik.managed_volumes.volume_size - ctx.rubrik.managed_volumes.used_size;
-        } else {
-          // Set free_size to null if required fields are missing
-          ctx.rubrik.managed_volumes.free_size = null;
-        }
+        lang: painless
+        source: |
+            if (ctx.rubrik.managed_volumes?.volume_size?.bytes != null && ctx.rubrik.managed_volumes?.used_size?.bytes != null) {
+                ctx.rubrik.managed_volumes.free_size = [:];
+                ctx.rubrik.managed_volumes.free_size.bytes = ctx.rubrik.managed_volumes.volume_size.bytes - ctx.rubrik.managed_volumes.used_size.bytes;
+            } else {
+                ctx.rubrik.managed_volumes.free_size = [:];
+                ctx.rubrik.managed_volumes.free_size.bytes = 0;
+            }
+
+            // Calculate pending snapshots which is the difference of the total snapshot count and the scheduled snapshot count.
+             if (ctx.response?.snapshotDistribution != null) {
+                def snapshotDistribution = ctx.response.snapshotDistribution;
+
+                def totalCount = snapshotDistribution.totalCount != null ? snapshotDistribution.totalCount : 0;
+                def scheduledCount = snapshotDistribution.scheduledCount != null ? snapshotDistribution.scheduledCount : 0;
+
+                // Initialize pending_snapshots field and set the count
+                ctx.rubrik.managed_volumes.pending_snapshots = [:];
+                ctx.rubrik.managed_volumes.pending_snapshots.count = totalCount - scheduledCount;
+            } else {
+                // If snapshotDistribution is missing, initialize pending_snapshots with a default value
+                ctx.rubrik.managed_volumes.pending_snapshots = [:];
+                ctx.rubrik.managed_volumes.pending_snapshots.count = 0;
+            }
+
   - remove:
       field: response
       ignore_missing: true
