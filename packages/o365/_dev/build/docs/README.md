@@ -27,6 +27,22 @@ Following Microsoft 365 usage reports can be collected by Microsoft Office 365 i
 | [Microsoft Teams User Activity by User](https://learn.microsoft.com/en-us/microsoft-365/admin/activity-reports/microsoft-teams-user-activity-preview?view=o365-worldwide)      |    [reportRoot: getTeamsUserActivityUserDetail](https://learn.microsoft.com/en-us/graph/api/reportroot-getteamsuseractivityuserdetail?view=graph-rest-1.0&tabs=http)    |
 | [Viva Engage (formerly Yammer) Groups Activity by Group](https://learn.microsoft.com/en-us/microsoft-365/admin/activity-reports/viva-engage-groups-activity-report-ww?view=o365-worldwide)      |    [reportRoot: getYammerGroupsActivityDetail](https://learn.microsoft.com/en-us/graph/api/reportroot-getyammergroupsactivitydetail?view=graph-rest-1.0&tabs=http)    |
 
+#### Data Setup in Usage Reports
+
+Microsoft 365 reports are typically available within [48 hours](https://learn.microsoft.com/en-us/microsoft-365/admin/activity-reports/activity-reports?view=o365-worldwide), but may sometimes take several days. As per their [documentation](https://learn.microsoft.com/en-us/microsoft-365/admin/activity-reports/microsoft-teams-user-activity-preview?view=o365-worldwide#interpret-the-microsoft-teams-user-activity-report), data quality is ensured by performing daily validation checks for past 3 days to fill any gaps in data. 
+
+To ensure these gaps from the reports are also ingested into Elastic, the Microsoft Office 365 integration enables you to adjust `Sync Days in the past` parameter when configuring the integration. You can change this parameter to re-fetch the Microsoft 365 reports starting from *N* days in the past. Default value for this paramater is `3`.
+
+Due to the re-fetching of data on same dates and the way Elastic data-streams work in [append-only](https://www.elastic.co/guide/en/elasticsearch/reference/current/data-streams.html) design, the ingested data will have duplicates. For example, you may see duplicate documents in Elastic on the source data-stream backed indices per resource (user/group/site) per report date. To maintain only the latest copy of document, the Microsoft Office 365 integration installs [Latest Transforms](https://www.elastic.co/guide/en/elasticsearch/reference/current/transform-overview.html#latest-transform-overview), one per report. These latest transform periodically pulls the data maintains from source data-stream backed indices into a destination non-data-stream backed index. Hence the destination indices only contains single (latest) document per resource (user/group/site) per report date. Inside the reports data, you can distinguish between source and destination indices using the field `labels.is_transform_source`. This is set to `true` for source data-stream backed indices and `false` for destination (latest) indices.
+
+When searching for data, you should use a filter `labels.is_transform_source: false` to avoid seeing any duplicates. The Microsoft Office 365 dashboards also has this filter to only show the latest datapoints.
+
+As the latest data is available in destination indices, the source data-stream backed indices are purged based on ILM policy `metrics-o365.reports-default_policy`.
+
+| Report          | Source filter | Source indices pattern | Destination filter | Destination indices pattern | Destination alias |
+|------------------|:-------:|:-------:|:-------:|:-------:|:-------:|
+| Microsoft Teams User Activity by User  |  `labels.is_transform_source: true`  | `.ds-metrics-o365.reports-*` | `.ds-metrics-o365.reports-*` |
+
 ## Requirements
 
 ### Installing and managing an Elastic Agent
