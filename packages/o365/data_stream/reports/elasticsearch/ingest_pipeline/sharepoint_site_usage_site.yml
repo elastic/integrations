@@ -1,0 +1,157 @@
+---
+description: Pipeline for processing SharePoint Site Usage by Site report data.
+processors:
+  - rename:
+      field: json
+      target_field: o365.reports.sharepoint.site_usage.site
+      ignore_missing: true
+  - fingerprint:
+      fields:
+        - o365.reports.sharepoint.site_usage.site.Report_Refresh_Date
+        - o365.reports.sharepoint.site_usage.site.Site_Id
+        - o365.reports.sharepoint.site_usage.site.Site_URL
+        - o365.reports.sharepoint.site_usage.site.Last_Activity_Date
+      target_field: _id
+  - set:
+      field: user.name
+      tag: set_user_name
+      copy_from: o365.reports.sharepoint.site_usage.site.Owner_Display_Name
+      if: ctx.o365?.reports?.sharepoint?.site_usage?.site?.Owner_Display_Name != null
+      ignore_empty_value: true
+  - append:
+      field: related.user
+      tag: append_related_user_user_name
+      value: "{{{user.name}}}"
+      allow_duplicates: false
+      if: ctx.user?.name != null
+  - date:
+      field: o365.reports.sharepoint.site_usage.site.Report_Refresh_Date
+      target_field: o365.reports.sharepoint.site_usage.site.Report_Refresh_Date
+      tag: date_o365_reports_sharepoint_site_usage_site_Report_Refresh_Date
+      if: ctx.o365?.reports?.sharepoint?.site_usage?.site?.Report_Refresh_Date != null && ctx.o365.reports.sharepoint.site_usage.site.Report_Refresh_Date != ''
+      timezone: UTC
+      formats:
+        - yyyy-MM-dd
+      on_failure:
+        - remove:
+            field: o365.reports.sharepoint.site_usage.site.Report_Refresh_Date
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - set:
+      field: '@timestamp'
+      tag: set_timestamp_from_Report_Refresh_Date
+      copy_from: o365.reports.sharepoint.site_usage.site.Report_Refresh_Date
+      ignore_empty_value: true
+  - date:
+      field: o365.reports.sharepoint.site_usage.site.Last_Activity_Date
+      target_field: o365.reports.sharepoint.site_usage.site.Last_Activity_Date
+      tag: date_o365_reports_sharepoint_site_usage_site_Last_Activity_Date
+      if: ctx.o365?.reports?.sharepoint?.site_usage?.site?.Last_Activity_Date != null && ctx.o365.reports.sharepoint.site_usage.site.Last_Activity_Date != ''
+      timezone: UTC
+      formats:
+        - yyyy-MM-dd
+      on_failure:
+        - remove:
+            field: o365.reports.sharepoint.site_usage.site.Last_Activity_Date
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - lowercase:
+      field: o365.reports.sharepoint.site_usage.site.Is_Deleted
+      tag: lowercase_o365_reports_sharepoint_site_usage_site_Is_Deleted
+      if: ctx.o365?.reports?.sharepoint?.site_usage?.site?.Is_Deleted != null && ctx.o365.reports.sharepoint.site_usage.site.Is_Deleted != ''
+  - convert:
+      field: o365.reports.sharepoint.site_usage.site.Is_Deleted
+      tag: convert_o365_reports_sharepoint_site_usage_site_Is_Deleted
+      target_field: o365.reports.sharepoint.site_usage.site.Is_Deleted
+      type: boolean
+      if: ctx.o365?.reports?.sharepoint?.site_usage?.site?.Is_Deleted != null && ctx.o365.reports.sharepoint.site_usage.site.Is_Deleted != ''
+      on_failure:
+        - remove:
+            field: o365.reports.sharepoint.site_usage.site.Is_Deleted
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+
+  # Convert _Count fields to long
+  - convert:
+      field: o365.reports.sharepoint.site_usage.site.File_Count
+      tag: convert_o365_reports_sharepoint_site_usage_site_File_Count
+      target_field: o365.reports.sharepoint.site_usage.site.File_Count
+      type: long
+      if: ctx.o365?.reports?.sharepoint?.site_usage?.site?.File_Count != null && ctx.o365.reports.sharepoint.site_usage.site.File_Count != ''
+      on_failure:
+        - remove:
+            field: o365.reports.sharepoint.site_usage.site.File_Count
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - convert:
+      field: o365.reports.sharepoint.site_usage.site.Active_File_Count
+      tag: convert_o365_reports_sharepoint_site_usage_site_Active_File_Count
+      target_field: o365.reports.sharepoint.site_usage.site.Active_File_Count
+      type: long
+      if: ctx.o365?.reports?.sharepoint?.site_usage?.site?.Active_File_Count != null && ctx.o365.reports.sharepoint.site_usage.site.Active_File_Count != ''
+      on_failure:
+        - remove:
+            field: o365.reports.sharepoint.site_usage.site.Active_File_Count
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - convert:
+      field: o365.reports.sharepoint.site_usage.site.Page_View_Count
+      tag: convert_o365_reports_sharepoint_site_usage_site_Page_View_Count
+      target_field: o365.reports.sharepoint.site_usage.site.Page_View_Count
+      type: long
+      if: ctx.o365?.reports?.sharepoint?.site_usage?.site?.Page_View_Count != null && ctx.o365.reports.sharepoint.site_usage.site.Page_View_Count != ''
+      on_failure:
+        - remove:
+            field: o365.reports.sharepoint.site_usage.site.Page_View_Count
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - convert:
+      field: o365.reports.sharepoint.site_usage.site.Visited_Page_Count
+      tag: convert_o365_reports_sharepoint_site_usage_site_Visited_Page_Count
+      target_field: o365.reports.sharepoint.site_usage.site.Visited_Page_Count
+      type: long
+      if: ctx.o365?.reports?.sharepoint?.site_usage?.site?.Visited_Page_Count != null && ctx.o365.reports.sharepoint.site_usage.site.Visited_Page_Count != ''
+      on_failure:
+        - remove:
+            field: o365.reports.sharepoint.site_usage.site.Visited_Page_Count
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+
+  # Convert Byte fields to long
+  - convert:
+      field: o365.reports.sharepoint.site_usage.site.Storage_Used_Byte
+      tag: convert_o365_reports_sharepoint_site_usage_site_Storage_Used_Byte
+      target_field: o365.reports.sharepoint.site_usage.site.Storage_Used_Byte
+      type: long
+      if: ctx.o365?.reports?.sharepoint?.site_usage?.site?.Storage_Used_Byte != null && ctx.o365.reports.sharepoint.site_usage.site.Storage_Used_Byte != ''
+      on_failure:
+        - remove:
+            field: o365.reports.sharepoint.site_usage.site.Storage_Used_Byte
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - convert:
+      field: o365.reports.sharepoint.site_usage.site.Storage_Allocated_Byte
+      tag: convert_o365_reports_sharepoint_site_usage_site_Storage_Allocated_Byte
+      target_field: o365.reports.sharepoint.site_usage.site.Storage_Allocated_Byte
+      type: long
+      if: ctx.o365?.reports?.sharepoint?.site_usage?.site?.Storage_Allocated_Byte != null && ctx.o365.reports.sharepoint.site_usage.site.Storage_Allocated_Byte != ''
+      on_failure:
+        - remove:
+            field: o365.reports.sharepoint.site_usage.site.Storage_Allocated_Byte
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - remove:
+      tag: remove_duplicate_custom_fields
+      if: ctx.tags == null || !ctx.tags.contains('preserve_duplicate_custom_fields')
+      field:
+        - o365.reports.sharepoint.site_usage.site.Owner_Display_Name
+      ignore_missing: true
