@@ -74,12 +74,13 @@ Please refer to the following [document](https://www.elastic.co/guide/en/ecs/cur
 
 {{fields "outlook_app_usage"}}
 
-### SharePoint Site Usage
+### Active Users
 
-{{event "sharepoint_siteusage"}}
+{{event "active_users"}}
 
 **ECS Field Reference**
 
 Please refer to the following [document](https://www.elastic.co/guide/en/ecs/current/ecs-field-reference.html) for detailed information on ECS fields.
 
 {{fields "sharepoint_siteusage"}}
+{{fields "active_users"}}

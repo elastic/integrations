@@ -510,25 +510,68 @@ Please refer to the following [document](https://www.elastic.co/guide/en/ecs/cur
 | o365.metrics.outlook.app.usage.undetermined.count | The count of unique users whose Outlook version could not be identified. | integer |  |
 
 
-### SharePoint Site Usage
+### Active Users
 
-An example event for `sharepoint_siteusage` looks as following:
+An example event for `active_users` looks as following:
 
 ```json
 {
-    "o365metrics": {
-        "sharepoint": {
-            "site": {
-                "usage": {
-                    "storage": {
-                        "site_type": "All",
-                        "report": {
-                            "date": "2024-12-25",
-                            "period": "7",
-                            "refresh_date": "2024-12-25"
+    "o365": {
+        "metrics": {
+            "active": {
+                "users": {
+                    "teams": {
+                        "inactive": {
+                            "count": "20"
                         },
-                        "storage_used": {
-                            "byte": "1942032506"
+                        "active": {
+                            "count": "0"
+                        }
+                    },
+                    "sharepoint": {
+                        "inactive": {
+                            "count": "20"
+                        },
+                        "active": {
+                            "count": "0"
+                        }
+                    },
+                    "yammer": {
+                        "inactive": {
+                            "count": "25"
+                        },
+                        "active": {
+                            "count": "0"
+                        }
+                    },
+                    "office365": {
+                        "inactive": {
+                            "count": "25"
+                        },
+                        "active": {
+                            "count": "0"
+                        }
+                    },
+                    "report": {
+                        "period": {
+                            "day": "7"
+                        },
+                        "refresh_date": "2024-11-29"
+                    },
+                    "exchange": {
+                        "inactive": {
+                            "count": "20"
+                        },
+                        "active": {
+                            "count": "0"
+                        }
+                    },
+                    "onedrive": {
+                        "inactive": {
+                            "count": "20"
+                        },
+                        "active": {
+                            "count": "0"
                         }
                     }
                 }
@@ -537,19 +580,24 @@ An example event for `sharepoint_siteusage` looks as following:
     },
     "agent": {
         "name": "docker-fleet-agent",
-        "id": "027b7b81-b3c6-49b9-8f61-1a5e892e7bfe",
-        "ephemeral_id": "f4133cae-978e-44e1-83e0-cab27e682a99",
+        "id": "1bd16076-38b3-44b9-980b-eab55ebe95b9",
+        "ephemeral_id": "b21b52df-710e-4014-bb1c-d9e60091e1e7",
         "type": "filebeat",
         "version": "8.16.0"
     },
-    "@timestamp": "2024-12-26T23:18:42.620Z",
+    "@timestamp": "2024-12-24T10:36:47.702Z",
     "ecs": {
         "version": "8.16.0"
     },
     "data_stream": {
         "namespace": "default",
         "type": "metrics",
-        "dataset": "o365_metrics.sharepoint_siteusage"
+        "dataset": "o365_metrics.active_users"
+    },
+    "elastic_agent": {
+        "id": "1bd16076-38b3-44b9-980b-eab55ebe95b9",
+        "version": "8.16.0",
+        "snapshot": false
     },
     "host": {
         "hostname": "docker-fleet-agent",
@@ -572,18 +620,13 @@ An example event for `sharepoint_siteusage` looks as following:
         ],
         "architecture": "x86_64"
     },
-    "elastic_agent": {
-        "id": "027b7b81-b3c6-49b9-8f61-1a5e892e7bfe",
-        "version": "8.16.0",
-        "snapshot": false
-    },
     "event": {
         "agent_id_status": "verified",
-        "ingested": "2024-12-26T23:18:52Z",
-        "dataset": "o365_metrics.sharepoint_siteusage"
+        "ingested": "2024-12-24T10:36:57Z",
+        "dataset": "o365_metrics.active_users"
     },
     "tags": [
-        "o365.metrics.sharepoint.siteusage"
+        "o365.metrics.active.users"
     ]
 }
 ```
@@ -604,24 +647,17 @@ Please refer to the following [document](https://www.elastic.co/guide/en/ecs/cur
 | host.containerized | If the host is a container. | boolean |
 | host.os.build | OS build information. | keyword |
 | host.os.codename | OS codename, if any. | keyword |
-| input.type | Type of Filebeat input. | keyword |
-| o365metrics.sharepoint.site.usage.detail.active_file.count | The number of active files in the SharePoint site during the reporting period. | integer |
-| o365metrics.sharepoint.site.usage.detail.file.count | The total number of files in the SharePoint site. | integer |
-| o365metrics.sharepoint.site.usage.detail.is_deleted | Indicates whether the SharePoint site is deleted. | boolean |
-| o365metrics.sharepoint.site.usage.detail.last_activity_date | The last date of activity in the SharePoint site. | date |
-| o365metrics.sharepoint.site.usage.detail.owner_display_name | The display name of the SharePoint site owner. | keyword |
-| o365metrics.sharepoint.site.usage.detail.owner_principal_name | The principal name (email address) of the SharePoint site owner. | keyword |
-| o365metrics.sharepoint.site.usage.detail.page_view.count | The number of page views in the SharePoint site during the reporting period. | integer |
-| o365metrics.sharepoint.site.usage.detail.report.period | The duration of the reporting period for SharePoint site usage, in days. | integer |
-| o365metrics.sharepoint.site.usage.detail.report.refresh_date | The date when the SharePoint site usage data was last refreshed. | date |
-| o365metrics.sharepoint.site.usage.detail.root_web_template | The template used for the root web of the SharePoint site (e.g., Team Site). | keyword |
-| o365metrics.sharepoint.site.usage.detail.site.id | The unique identifier for the SharePoint site. | keyword |
-| o365metrics.sharepoint.site.usage.detail.site.url | The URL of the SharePoint site. | keyword |
-| o365metrics.sharepoint.site.usage.detail.storage_allocated.byte | The amount of storage allocated to the SharePoint site, in bytes. | integer |
-| o365metrics.sharepoint.site.usage.detail.storage_used.byte | The amount of storage used in the SharePoint site, in bytes. | integer |
-| o365metrics.sharepoint.site.usage.detail.visited_page.count | The number of visited pages in the SharePoint site during the reporting period. | integer |
-| o365metrics.sharepoint.site.usage.storage.report.date | The date the SharePoint site storage usage report was generated. | date |
-| o365metrics.sharepoint.site.usage.storage.report.period | The duration of the reporting period for SharePoint site storage usage, in days. | integer |
-| o365metrics.sharepoint.site.usage.storage.report.refresh_date | The date when the SharePoint site storage usage data was last refreshed. | date |
-| o365metrics.sharepoint.site.usage.storage.site_type | The type of SharePoint sites included in the report (e.g., All, Team, Personal). | keyword |
-| o365metrics.sharepoint.site.usage.storage.storage_used.byte | The total storage used across SharePoint sites during the reporting period, in bytes. | integer |
+| o365.metrics.active.users.exchange.active.count | Number of Exchange active users. | integer |
+| o365.metrics.active.users.exchange.inactive.count | Number of Exchange inactive users. | integer |
+| o365.metrics.active.users.office365.active.count | Number of Office 365 active users. | integer |
+| o365.metrics.active.users.office365.inactive.count | Number of Office 365 inactive users. | integer |
+| o365.metrics.active.users.onedrive.active.count | Number of OneDrive active users. | integer |
+| o365.metrics.active.users.onedrive.inactive.count | Number of OneDrive inactive users. | integer |
+| o365.metrics.active.users.report.period.day | Report period in days. | integer |
+| o365.metrics.active.users.report.refresh_date | Date when the report was refreshed. | date |
+| o365.metrics.active.users.sharepoint.active.count | Number of SharePoint active users. | integer |
+| o365.metrics.active.users.sharepoint.inactive.count | Number of SharePoint inactive users. | integer |
+| o365.metrics.active.users.teams.active.count | Number of Teams active users. | integer |
+| o365.metrics.active.users.teams.inactive.count | Number of Teams inactive users. | integer |
+| o365.metrics.active.users.yammer.active.count | Number of Yammer active users. | integer |
+| o365.metrics.active.users.yammer.inactive.count | Number of Yammer inactive users. | integer |
