@@ -524,9 +524,9 @@ An example event for `sharepoint_siteusage` looks as following:
                         "site_type": "All",
                         "report": {
                             "date": "2024-12-25",
-                            "period": "7"
+                            "period": "7",
+                            "refresh_date": "2024-12-25"
                         },
-                        "report.refresh_date": "2024-12-25",
                         "storage_used": {
                             "byte": "1942032506"
                         }
