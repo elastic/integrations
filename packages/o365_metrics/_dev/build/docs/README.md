@@ -93,11 +93,3 @@ Please refer to the following [document](https://www.elastic.co/guide/en/ecs/cur
 Please refer to the following [document](https://www.elastic.co/guide/en/ecs/current/ecs-field-reference.html) for detailed information on ECS fields.
 
 {{fields "sharepoint_site_usage"}}
-
-### SharePoint Site Usage Detail
-
-**ECS Field Reference**
-
-Please refer to the following [document](https://www.elastic.co/guide/en/ecs/current/ecs-field-reference.html) for detailed information on ECS fields.
-
-{{fields "sharepoint_site_usage_detail"}}

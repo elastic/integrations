@@ -674,7 +674,6 @@ An example event for `sharepoint_site_usage` looks as following:
             "site": {
                 "usage": {
                     "storage": {
-                        "site_type": "All",
                         "report": {
                             "date": "2024-12-25",
                             "period": "7",
@@ -702,7 +701,7 @@ An example event for `sharepoint_site_usage` looks as following:
     "data_stream": {
         "namespace": "default",
         "type": "metrics",
-        "dataset": "o365_metrics.sharepoint_siteusage"
+        "dataset": "o365_metrics.sharepoint_site_usage"
     },
     "host": {
         "hostname": "docker-fleet-agent",
@@ -733,10 +732,10 @@ An example event for `sharepoint_site_usage` looks as following:
     "event": {
         "agent_id_status": "verified",
         "ingested": "2024-12-26T23:18:52Z",
-        "dataset": "o365_metrics.sharepoint_siteusage"
+        "dataset": "o365_metrics.sharepoint_site_usage"
     },
     "tags": [
-        "o365.metrics.sharepoint.siteusage"
+        "o365.metrics.sharepoint_site_usage"
     ]
 }
 ```
@@ -760,32 +759,13 @@ Please refer to the following [document](https://www.elastic.co/guide/en/ecs/cur
 | input.type | Type of Filebeat input. | keyword |
 | o365metrics.sharepoint.site.usage.detail.active_file.count | The number of active files in the SharePoint site during the reporting period. | integer |
 | o365metrics.sharepoint.site.usage.detail.file.count | The total number of files in the SharePoint site. | integer |
-| o365metrics.sharepoint.site.usage.detail.is_deleted | Indicates whether the SharePoint site is deleted. | boolean |
-| o365metrics.sharepoint.site.usage.detail.last_activity_date | The last date of activity in the SharePoint site. | date |
-| o365metrics.sharepoint.site.usage.detail.owner_display_name | The display name of the SharePoint site owner. | keyword |
-| o365metrics.sharepoint.site.usage.detail.owner_principal_name | The principal name (email address) of the SharePoint site owner. | keyword |
 | o365metrics.sharepoint.site.usage.detail.page_view.count | The number of page views in the SharePoint site during the reporting period. | integer |
 | o365metrics.sharepoint.site.usage.detail.report.period | The duration of the reporting period for SharePoint site usage, in days. | integer |
 | o365metrics.sharepoint.site.usage.detail.report.refresh_date | The date when the SharePoint site usage data was last refreshed. | date |
-| o365metrics.sharepoint.site.usage.detail.root_web_template | The template used for the root web of the SharePoint site (e.g., Team Site). | keyword |
-| o365metrics.sharepoint.site.usage.detail.site.id | The unique identifier for the SharePoint site. | keyword |
-| o365metrics.sharepoint.site.usage.detail.site.url | The URL of the SharePoint site. | keyword |
 | o365metrics.sharepoint.site.usage.detail.storage_allocated.byte | The amount of storage allocated to the SharePoint site, in bytes. | integer |
 | o365metrics.sharepoint.site.usage.detail.storage_used.byte | The amount of storage used in the SharePoint site, in bytes. | integer |
 | o365metrics.sharepoint.site.usage.detail.visited_page.count | The number of visited pages in the SharePoint site during the reporting period. | integer |
 | o365metrics.sharepoint.site.usage.storage.report.date | The date the SharePoint site storage usage report was generated. | date |
 | o365metrics.sharepoint.site.usage.storage.report.period | The duration of the reporting period for SharePoint site storage usage, in days. | integer |
 | o365metrics.sharepoint.site.usage.storage.report.refresh_date | The date when the SharePoint site storage usage data was last refreshed. | date |
-| o365metrics.sharepoint.site.usage.storage.site_type | The type of SharePoint sites included in the report (e.g., All, Team, Personal). | keyword |
 | o365metrics.sharepoint.site.usage.storage.storage_used.byte | The total storage used across SharePoint sites during the reporting period, in bytes. | integer |
-
-
-### SharePoint Site Usage Detail
-
-**ECS Field Reference**
-
-Please refer to the following [document](https://www.elastic.co/guide/en/ecs/current/ecs-field-reference.html) for detailed information on ECS fields.
-
-**Exported fields**
-
-(no fields available)
