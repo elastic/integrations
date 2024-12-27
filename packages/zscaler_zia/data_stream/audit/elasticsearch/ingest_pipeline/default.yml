@@ -288,8 +288,13 @@ processors:
         if (ctx.json?.category == null || params.get(ctx.json.category) == null) {
           return;
         }
-        def hm = new HashMap(params.get(ctx.json.category));
-        hm.forEach((k, v) -> ctx.event[k] = v);
+        params.get(ctx.json.category).forEach((k, v) -> {
+          if (v instanceof List) {
+            ctx.event[k] = new ArrayList(v);
+          } else {
+            ctx.event[k] = v;
+          }
+        });
       on_failure:
         - append:
             field: error.message
