@@ -619,12 +619,12 @@ Please refer to the following [document](https://www.elastic.co/guide/en/ecs/cur
 | host.containerized | If the host is a container. | boolean |  |
 | host.os.build | OS build information. | keyword |  |
 | host.os.codename | OS codename, if any. | keyword |  |
-| o365.metrics.yammer.device.usage.android_phone.count | The count of unique users using Outlook 2007 during the reporting period. | integer |  |
-| o365.metrics.yammer.device.usage.ipad.count | The count of unique users using Outlook 2016 during the reporting period. | integer |  |
-| o365.metrics.yammer.device.usage.iphone.count | The count of unique users using Outlook 2010 during the reporting period. | integer |  |
-| o365.metrics.yammer.device.usage.other.count | The count of unique users whose Outlook version could not be identified. | integer |  |
+| o365.metrics.yammer.device.usage.android_phone.count | The count of users accessing Yammer on Android phones. | integer |  |
+| o365.metrics.yammer.device.usage.ipad.count | The count of users accessing Yammer on iPads. | integer |  |
+| o365.metrics.yammer.device.usage.iphone.count | The count of users accessing Yammer on iPhones. | integer |  |
+| o365.metrics.yammer.device.usage.other.count | The count of users accessing Yammer on devices not listed. | integer |  |
 | o365.metrics.yammer.device.usage.report.date | The specific date for which the report data applies. | date |  |
 | o365.metrics.yammer.device.usage.report.period.day | The duration (e.g., 7 days) over which the quota status data is aggregated. | integer | d |
 | o365.metrics.yammer.device.usage.report.refresh_date | The date when the report data was last updated. | date |  |
-| o365.metrics.yammer.device.usage.web.count | The count of unique users using the Outlook Microsoft 365 version during the reporting period. | integer |  |
-| o365.metrics.yammer.device.usage.windows_phone.count | The count of unique users using Outlook 2019 during the reporting period. | integer |  |
+| o365.metrics.yammer.device.usage.web.count | The count of users accessing Yammer via web browsers. | integer |  |
+| o365.metrics.yammer.device.usage.windows_phone.count | The count of users accessing Yammer on Windows Phone devices. | integer |  |
