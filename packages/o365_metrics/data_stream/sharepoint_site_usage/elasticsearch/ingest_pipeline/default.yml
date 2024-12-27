@@ -7,7 +7,7 @@ processors:
 
 # SharePoint Site Usage Storage            
   - json:
-      field: sharepoint_siteusagestorage
+      field: sharepoint_site_usage_storage
       target_field: o365metrics.sharepoint.site.usage.storage
       ignore_failure: true 
   - script:
@@ -18,7 +18,8 @@ processors:
       if: ctx.o365metrics?.sharepoint?.site?.usage?.storage instanceof Map
       source: |
         String underscore(String s) {
-          return /[ -]/.matcher(s).replaceAll('_').toLowerCase();
+          String result = /[ -]/.matcher(s).replaceAll('_').toLowerCase();
+          return /[\ufeff]/.matcher(result).replaceAll('')
         }
         
         def out = [:];
@@ -27,8 +28,8 @@ processors:
         }
         ctx.o365metrics.sharepoint.site.usage.storage = out;
   - remove:
-      if: ctx.sharepoint_siteusagestorage != null
-      field: sharepoint_siteusagestorage
+      if: ctx.sharepoint_site_usage_storage != null
+      field: sharepoint_site_usage_storage
       ignore_missing: true
   - rename:
       field: o365metrics.sharepoint.site.usage.storage.storage_used_(byte)
@@ -49,7 +50,7 @@ processors:
 
 # SharePoint Site Usage Details
   - json:
-      field: sharepoint_siteusagedetail
+      field: sharepoint_site_usage_detail
       target_field: o365metrics.sharepoint.site.usage.detail
       ignore_failure: true 
   - script:
@@ -70,8 +71,8 @@ processors:
         }
         ctx.o365metrics.sharepoint.site.usage.detail = out;
   - remove:
-      if: ctx.sharepoint_siteusagedetail != null
-      field: sharepoint_siteusagedetail
+      if: ctx.sharepoint_site_usage_detail != null
+      field: sharepoint_site_usage_detail
       ignore_missing: true
   - rename:
       field: o365metrics.sharepoint.site.usage.detail.storageallocated(byte)
