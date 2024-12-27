@@ -133,7 +133,11 @@ processors:
           return;
         }
         params.get(ctx.authentik.event.action).forEach((k, v) -> {
-          ctx.event[k] = v
+          if (v instanceof List) {
+            ctx.event[k] = new ArrayList(v);
+          } else {
+            ctx.event[k] = v;
+          }
         });
   - set:
       field: observer.vendor
