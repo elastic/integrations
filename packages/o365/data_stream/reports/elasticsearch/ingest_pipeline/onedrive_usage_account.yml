@@ -24,6 +24,12 @@ processors:
       value: "{{{user.name}}}"
       allow_duplicates: false
       if: ctx.user?.name != null
+  - set:
+      field: user.email
+      tag: set_user_email
+      copy_from: user.name
+      if: ctx.user?.name != null && ctx.user.name.contains('@')
+      ignore_empty_value: true
   - date:
       field: o365.reports.onedrive.usage.account.Report_Refresh_Date
       target_field: o365.reports.onedrive.usage.account.Report_Refresh_Date
