@@ -17,9 +17,12 @@ The following content types are supported:
 - Audit.General (includes all other workloads not included in the previous content types)
 - DLP.All (DLP events only for all workloads)
 
-### Usage Reports 
+### Usage Reports
 
 Microsoft 365 usage reports collected using Microsoft Graph API give you insight into the how people in your business are using Microsoft 365 services. This data is ingested into `metrics` datatype and can be viewed under `metrics-*` dataview.
+
+#### Usage Reports Available
+
 Following Microsoft 365 usage reports can be collected by Microsoft Office 365 integration.
 
 | Report          | API | 
