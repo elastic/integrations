@@ -515,6 +515,9 @@ An example event for `asset_host_detection` looks as following:
 | qualys_vmdr.asset_host_detection.os |  | keyword |
 | qualys_vmdr.asset_host_detection.os_cpe |  | keyword |
 | qualys_vmdr.asset_host_detection.package_nested |  | nested |
+| qualys_vmdr.asset_host_detection.package_nested.fixed_version |  | keyword |
+| qualys_vmdr.asset_host_detection.package_nested.name |  | keyword |
+| qualys_vmdr.asset_host_detection.package_nested.version |  | keyword |
 | qualys_vmdr.asset_host_detection.qg_hostid |  | keyword |
 | qualys_vmdr.asset_host_detection.tags.background_color |  | keyword |
 | qualys_vmdr.asset_host_detection.tags.color |  | keyword |
