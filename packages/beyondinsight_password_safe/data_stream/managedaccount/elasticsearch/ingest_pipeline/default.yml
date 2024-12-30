@@ -96,8 +96,49 @@ processors:
       field: event.module
       value: beyondinsight_password_safe
 
-  - drop:
-      if: ctx.beyondinsight_password_safe.managedaccount?.code == '401'
+  - set:
+      field: host.id
+      copy_from: beyondinsight_password_safe.managedaccount.system_id
+
+  - append:
+      field: related.hosts
+      value:
+        - '{{{beyondinsight_password_safe.managedaccount.system_name}}}'
+        - '{{{beyondinsight_password_safe.managedaccount.domain_name}}}'
+        - '{{{beyondinsight_password_safe.managedaccount.system_id}}}'
+      allow_duplicates: false
+
+  - append:
+      field: host.hostname
+      value: '{{{beyondinsight_password_safe.managedaccount.system_name}}}'
+      allow_duplicates: false
+      ignore_failure: true
+
+  - set:
+      field: host.domain
+      copy_from: beyondinsight_password_safe.managedaccount.domain_name
+
+  - set:
+      field: user.id
+      copy_from: beyondinsight_password_safe.managedaccount.account_id
+
+  - set:
+      field: user.name
+      copy_from: beyondinsight_password_safe.managedaccount.account_name
+
+  - set:
+      field: user.email
+      copy_from: beyondinsight_password_safe.managedaccount.user_principal_name
+
+  - append:
+      field: related.user
+      value:
+        - '{{beyondinsight_password_safe.managedaccount.account_id}}'
+        - '{{beyondinsight_password_safe.managedaccount.account_name}}'
+        - '{{beyondinsight_password_safe.managedaccount.user_principal_name}}'
+      allow_duplicates: false
+
+
 ####################
 # Managed Account Fields #
 ####################
