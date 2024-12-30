@@ -118,11 +118,11 @@ An example event for `asset_host_detection` looks as following:
 
 ```json
 {
-    "@timestamp": "2024-12-10T07:06:53.228Z",
+    "@timestamp": "2024-12-30T12:26:10.423Z",
     "agent": {
-        "ephemeral_id": "7f075414-f3ac-4700-a6ea-4617f1aeb76e",
-        "id": "fe428e85-d26e-4618-84c0-bd1e2e02d7ba",
-        "name": "elastic-agent-59344",
+        "ephemeral_id": "0ff76a5a-f050-491d-abd6-915e663eeede",
+        "id": "d46c7710-aeeb-485c-9a89-a9d5785eb65e",
+        "name": "elastic-agent-83797",
         "type": "filebeat",
         "version": "8.16.0"
     },
@@ -133,14 +133,14 @@ An example event for `asset_host_detection` looks as following:
     },
     "data_stream": {
         "dataset": "qualys_vmdr.asset_host_detection",
-        "namespace": "78840",
+        "namespace": "96595",
         "type": "logs"
     },
     "ecs": {
         "version": "8.11.0"
     },
     "elastic_agent": {
-        "id": "fe428e85-d26e-4618-84c0-bd1e2e02d7ba",
+        "id": "d46c7710-aeeb-485c-9a89-a9d5785eb65e",
         "snapshot": false,
         "version": "8.16.0"
     },
@@ -151,7 +151,7 @@ An example event for `asset_host_detection` looks as following:
         ],
         "dataset": "qualys_vmdr.asset_host_detection",
         "id": "11111111",
-        "ingested": "2024-12-10T07:06:56Z",
+        "ingested": "2024-12-30T12:26:13Z",
         "kind": "alert",
         "original": "{\"DETECTION_LIST\":{\"AFFECT_RUNNING_KERNEL\":\"0\",\"FIRST_FOUND_DATETIME\":\"2021-02-05T04:50:45Z\",\"IS_DISABLED\":\"0\",\"IS_IGNORED\":\"0\",\"LAST_FIXED_DATETIME\":\"2022-12-14T06:52:57Z\",\"LAST_FOUND_DATETIME\":\"2024-03-08T20:15:41Z\",\"LAST_PROCESSED_DATETIME\":\"2024-03-08T20:15:41Z\",\"LAST_TEST_DATETIME\":\"2024-03-08T20:15:41Z\",\"LAST_UPDATE_DATETIME\":\"2024-03-08T20:15:41Z\",\"QDS\":{\"#text\":\"35\",\"severity\":\"LOW\"},\"QDS_FACTORS\":{\"QDS_FACTOR\":[{\"#text\":\"7.7\",\"name\":\"CVSS\"},{\"#text\":\"v3.x\",\"name\":\"CVSS_version\"},{\"#text\":\"0.00232\",\"name\":\"epss\"},{\"#text\":\"AV:N/AC:L/PR:L/UI:N/S:C/C:N/I:N/A:H\",\"name\":\"CVSS_vector\"}]},\"QID\":\"101\",\"RESULTS\":\"Package\\tInstalled Version\\tRequired Version\\nlinux-cloud-tools-4.4.0\\t1074-aws_4.4.0-1074.84\\t1092\\nlinux-aws-tools-4.4.0\\t1074_4.4.0-1074.84\\t1092\\nlinux-aws-headers-4.4.0\\t1074_4.15.0-1126.135\\t1092\\nlinux-tools-4.4.0\\t1074-aws_4.4.0-1074.84\\t1092\\nlinux-aws-cloud-tools-4.4.0\\t1074_4.4.0-1074.84\\t1092\",\"SEVERITY\":\"3\",\"SSL\":\"0\",\"STATUS\":\"Active\",\"TIMES_FOUND\":\"5393\",\"TYPE\":\"Confirmed\",\"UNIQUE_VULN_ID\":\"11111111\"},\"DNS\":\"adfssrvr.adfs.local\",\"DNS_DATA\":{\"DOMAIN\":\"adfs.local\",\"FQDN\":\"adfssrvr.adfs.local\",\"HOSTNAME\":\"adfssrvr\"},\"ID\":\"1\",\"IP\":\"10.50.2.111\",\"KNOWLEDGE_BASE\":{\"CATEGORY\":\"CGI\",\"CONSEQUENCE\":\"Depending on the vulnerability being exploited, an unauthenticated remote attacker could conduct cross-site scripting, clickjacking or MIME-type sniffing attacks.\",\"CVE_LIST\":[\"CVE-2022-31629\",\"CVE-2022-31628\"],\"DIAGNOSIS\":\"This QID reports the absence of the following\",\"DISCOVERY\":{\"REMOTE\":\"1\"},\"LAST_SERVICE_MODIFICATION_DATETIME\":\"2023-06-29T12:20:46Z\",\"PATCHABLE\":\"0\",\"PCI_FLAG\":\"1\",\"PUBLISHED_DATETIME\":\"2017-06-05T21:34:49Z\",\"QID\":\"101\",\"SEVERITY_LEVEL\":\"2\",\"SOFTWARE_LIST\":{\"SOFTWARE\":[{\"PRODUCT\":\"None\",\"VENDOR\":\"multi-vendor\"}]},\"SOLUTION\":\"\\u003cB\\u003eNote:\\u003c/B\\u003e To better debug the results of this QID\",\"THREAT_INTELLIGENCE\":{\"THREAT_INTEL\":[{\"id\":\"8\"}]},\"TITLE\":\"HTTP Security Header Not Detected\",\"VULN_TYPE\":\"Vulnerability\"},\"LAST_PC_SCANNED_DATE\":\"2023-06-28T09:58:12Z\",\"LAST_SCAN_DATETIME\":\"2023-07-03T06:25:17Z\",\"LAST_VM_SCANNED_DATE\":\"2023-07-03T06:23:47Z\",\"LAST_VM_SCANNED_DURATION\":\"1113\",\"NETBIOS\":\"ADFSSRVR\",\"OS\":\"Windows 2016/2019/10\",\"TRACKING_METHOD\":\"IP\"}",
         "type": [
@@ -259,6 +259,29 @@ An example event for `asset_host_detection` looks as following:
             "last_vm_scanned_duration": 1113,
             "netbios": "ADFSSRVR",
             "os": "Windows 2016/2019/10",
+            "package_nested": {
+                "fixed_version": [
+                    "1092",
+                    "1092",
+                    "1092",
+                    "1092",
+                    "1092"
+                ],
+                "name": [
+                    "linux-cloud-tools-4.4.0",
+                    "linux-aws-tools-4.4.0",
+                    "linux-aws-headers-4.4.0",
+                    "linux-tools-4.4.0",
+                    "linux-aws-cloud-tools-4.4.0"
+                ],
+                "version": [
+                    "1074-aws_4.4.0-1074.84",
+                    "1074_4.4.0-1074.84",
+                    "1074_4.15.0-1126.135",
+                    "1074-aws_4.4.0-1074.84",
+                    "1074_4.4.0-1074.84"
+                ]
+            },
             "tracking_method": "IP",
             "vulnerability": {
                 "affect_running_kernel": "0",
@@ -293,7 +316,7 @@ An example event for `asset_host_detection` looks as following:
                     }
                 ],
                 "qid": 101,
-                "results": "Package|Installed Version|Required Version;linux-cloud-tools-4.4.0|1074-aws_4.4.0-1074.84|1092;linux-aws-tools-4.4.0|1074_4.4.0-1074.84|1092;linux-aws-headers-4.4.0|1074_4.15.0-1126.135|1092;linux-tools-4.4.0|1074-aws_4.4.0-1074.84|1092;linux-aws-cloud-tools-4.4.0|1074_4.4.0-1074.84|1092",
+                "results": "Package||Installed Version||Required Version;;linux-cloud-tools-4.4.0||1074-aws_4.4.0-1074.84||1092;;linux-aws-tools-4.4.0||1074_4.4.0-1074.84||1092;;linux-aws-headers-4.4.0||1074_4.15.0-1126.135||1092;;linux-tools-4.4.0||1074-aws_4.4.0-1074.84||1092;;linux-aws-cloud-tools-4.4.0||1074_4.4.0-1074.84||1092",
                 "severity": 3,
                 "ssl": "0",
                 "status": "Active",
@@ -331,11 +354,8 @@ An example event for `asset_host_detection` looks as following:
         ],
         "classification": "CVSS",
         "description": "This QID reports the absence of the following",
-        "enumeration": "CVE",
-        "id": [
-            "CVE-2022-31629",
-            "CVE-2022-31628"
-        ],
+        "enumeration": "QID",
+        "id": "101",
         "package": {
             "fixed_version": [
                 "1092",
