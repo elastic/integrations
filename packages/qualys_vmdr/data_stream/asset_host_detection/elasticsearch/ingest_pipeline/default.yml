@@ -1127,6 +1127,11 @@ processors:
       tag: rename_qualys_vmdr_asset_host_detection_vulnerability_QID_1
       target_field: qualys_vmdr.asset_host_detection.vulnerability.qid
       ignore_missing: true
+  - set:
+      field: vulnerability.id
+      tag: set_vulnerability_id
+      copy_from: qualys_vmdr.asset_host_detection.vulnerability.qid
+      ignore_empty_value: true
   - convert:
       field: qualys_vmdr.asset_host_detection.vulnerability.qid
       tag: convert_qualys_vmdr_asset_host_detection_vulnerability_qid_1_to_integer
@@ -1136,6 +1141,11 @@ processors:
         - append:
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - set:
+      field: vulnerability.enumeration
+      tag: set_vulnerability_enumeration
+      value: QID
+      ignore_empty_value: true
   - rename:
       if: ctx.qualys_vmdr?.asset_host_detection?.vulnerability?.RESULTS != null
       field: qualys_vmdr.asset_host_detection.vulnerability.RESULTS
