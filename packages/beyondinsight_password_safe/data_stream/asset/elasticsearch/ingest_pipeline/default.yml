@@ -106,12 +106,6 @@ processors:
       type: ip
       if: ctx.beyondinsight_password_safe.asset?.ipaddress != null && ctx.beyondinsight_password_safe.asset.ipaddress != ''
       ignore_failure: true
-      ignore_missing: true
-
-  - append:
-      field: host.ip
-      value: "{{{beyondinsight_password_safe.asset.ipaddress}}}"
-      ignore_failure: true
 
   - geoip:
       field: host.ip
@@ -122,18 +116,41 @@ processors:
   - append:
       field: host.ip
       value: '{{{beyondinsight_password_safe.asset.ipaddress}}}'
-      ignore_failure: true
+      allow_duplicates: false
+
+  - append:
+      field: related.hosts
+      value: '{{{beyondinsight_password_safe.asset.ipaddress}}}'
+      allow_duplicates: false
+      if: ctx.beyondinsight_password_safe.asset.ipaddress != null
 
   - append:
       if: ctx.beyondinsight_password_safe.asset?.mac_address != null && ctx.beyondinsight_password_safe.asset.mac_address != ''
       field: host.mac
       value: '{{{beyondinsight_password_safe.asset.mac_address}}}'
-      ignore_failure: true
+
+  - append:
+      if: ctx.beyondinsight_password_safe.asset?.mac_address != null && ctx.beyondinsight_password_safe.asset.mac_address != ''
+      field: related.hosts
+      value: '{{{beyondinsight_password_safe.asset.mac_address}}}'
+      allow_duplicates: false
 
   - set:
       field: os.name
       value: "{{{beyondinsight_password_safe.asset.operating_system}}}"
       ignore_empty_value: true
+
+  - set:
+      field: host.domain
+      copy_from: beyondinsight_password_safe.asset.domain_name
+      if: ctx.beyondinsight_password_safe.asset.domain_name != null
+
+  - append:
+      field: related.hosts
+      value: '{{{beyondinsight_password_safe.asset.domain_name}}}'
+      allow_duplicates: false
+      if: ctx.beyondinsight_password_safe.asset.domain_name != null
+
 
 on_failure:
   - append:
