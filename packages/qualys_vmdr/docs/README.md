@@ -390,8 +390,6 @@ An example event for `asset_host_detection` looks as following:
 | log.offset | Log offset. | long |
 | observer.vendor |  | constant_keyword |
 | package.fixed_version |  | keyword |
-| package.name |  | keyword |
-| package.version |  | keyword |
 | qualys_vmdr.asset_host_detection.asset_id |  | long |
 | qualys_vmdr.asset_host_detection.cloud_provider |  | keyword |
 | qualys_vmdr.asset_host_detection.cloud_provider_tags.cloud_tag.last_success_date |  | date |
@@ -516,6 +514,7 @@ An example event for `asset_host_detection` looks as following:
 | qualys_vmdr.asset_host_detection.network_id |  | keyword |
 | qualys_vmdr.asset_host_detection.os |  | keyword |
 | qualys_vmdr.asset_host_detection.os_cpe |  | keyword |
+| qualys_vmdr.asset_host_detection.package_nested |  | nested |
 | qualys_vmdr.asset_host_detection.qg_hostid |  | keyword |
 | qualys_vmdr.asset_host_detection.tags.background_color |  | keyword |
 | qualys_vmdr.asset_host_detection.tags.color |  | keyword |

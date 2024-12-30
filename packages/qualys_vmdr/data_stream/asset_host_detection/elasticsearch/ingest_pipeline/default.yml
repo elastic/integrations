@@ -1127,6 +1127,11 @@ processors:
       tag: rename_qualys_vmdr_asset_host_detection_vulnerability_QID_1
       target_field: qualys_vmdr.asset_host_detection.vulnerability.qid
       ignore_missing: true
+  - set:
+      field: vulnerability.id
+      tag: set_vulnerability_id
+      copy_from: qualys_vmdr.asset_host_detection.vulnerability.qid
+      ignore_empty_value: true
   - convert:
       field: qualys_vmdr.asset_host_detection.vulnerability.qid
       tag: convert_qualys_vmdr_asset_host_detection_vulnerability_qid_1_to_integer
@@ -1136,6 +1141,11 @@ processors:
         - append:
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - set:
+      field: vulnerability.enumeration
+      tag: set_vulnerability_enumeration
+      value: QID
+      ignore_empty_value: true
   - rename:
       if: ctx.qualys_vmdr?.asset_host_detection?.vulnerability?.RESULTS != null
       field: qualys_vmdr.asset_host_detection.vulnerability.RESULTS
@@ -1167,23 +1177,30 @@ processors:
         if (results.startsWith("Package||")) {
           if (ctx.package == null) {
             ctx.package = new HashMap();
+            ctx.qualys_vmdr.asset_host_detection.package_nested = new HashMap();
           }
           if (ctx.package.name == null) {
             ctx.package.name = new ArrayList();
+            ctx.qualys_vmdr.asset_host_detection.package_nested.name = new ArrayList();
           }
           if (ctx.package.version == null) {
             ctx.package.version = new ArrayList();
+            ctx.qualys_vmdr.asset_host_detection.package_nested.version = new ArrayList();
           }
           if (ctx.package.fixed_version == null) {
             ctx.package.fixed_version = new ArrayList();
+            ctx.qualys_vmdr.asset_host_detection.package_nested.fixed_version = new ArrayList();
           }
           def res = results.splitOnToken(";;");
           for (int i=1; i < res.length; i++) {
             def pkg = res[i].splitOnToken("||");
             ctx.package.name.add(pkg[0]);
+            ctx.qualys_vmdr.asset_host_detection.package_nested.name.add(pkg[0]);
             ctx.package.version.add(pkg[1]);
+            ctx.qualys_vmdr.asset_host_detection.package_nested.version.add(pkg[1]);
             if (pkg.length == 3) {
               ctx.package.fixed_version.add(pkg[2]);
+              ctx.qualys_vmdr.asset_host_detection.package_nested.fixed_version.add(pkg[2]);
             }
           }
         }
