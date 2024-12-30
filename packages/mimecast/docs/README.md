@@ -228,6 +228,131 @@ An example event for `audit_events` looks as following:
 | mimecast.timezone | Timezone reported in the event message. | keyword |
 
 
+### Cloud Integrated Logs
+
+This is the `mimecast.cloud_integrated_logs` dataset. These logs contain Mimecast
+threats and security events with the following details: entities, mail flows and URL
+protected events. More information about [these logs](
+https://developer.services.mimecast.com/docs/threatssecurityeventsanddataforci/1/routes/siem/v1/batch/events/ci/get).
+
+An example event for `cloud_integrated` looks as following:
+
+```json
+{
+    "@timestamp": "2024-11-21T18:03:26.960Z",
+    "agent": {
+        "ephemeral_id": "d0571978-95ee-4d4e-9fc1-2c0b57f47a64",
+        "id": "27a1a18b-9cc1-424a-8573-425423e11318",
+        "name": "elastic-agent-77334",
+        "type": "filebeat",
+        "version": "8.15.0"
+    },
+    "data_stream": {
+        "dataset": "mimecast.cloud_integrated_logs",
+        "namespace": "67059",
+        "type": "logs"
+    },
+    "ecs": {
+        "version": "8.11.0"
+    },
+    "elastic_agent": {
+        "id": "27a1a18b-9cc1-424a-8573-425423e11318",
+        "snapshot": false,
+        "version": "8.15.0"
+    },
+    "email": {
+        "message_id": "<2ae37333-38e7-89ff-dc36-c8d48c6e3df3@demovation-ci.b41.one>"
+    },
+    "event": {
+        "agent_id_status": "verified",
+        "category": [
+            "email"
+        ],
+        "created": "2024-11-21T18:03:26.960Z",
+        "dataset": "mimecast.cloud_integrated_logs",
+        "ingested": "2024-12-09T23:17:44Z",
+        "original": "{\"_offset\":1803841,\"_partition\":53,\"accountId\":\"AUS2474\",\"aggregateId\":\"4XvR1B4m7BzFB8L-qk59b4szrgayciaagczc977rzb_1732212206\",\"authResults\":[{\"aligned\":true,\"result\":\"pass\",\"type\":\"SPF\"},{\"aligned\":false,\"result\":\"none\",\"type\":\"DKIM\"},{\"aligned\":null,\"result\":\"pass\",\"type\":\"DMARC\"}],\"messageId\":\"\\u003c2ae37333-38e7-89ff-dc36-c8d48c6e3df3@demovation-ci.b41.one\\u003e\",\"processingId\":\"c40337e6860db0301575d8d09362bff214c0b010d6c4d41da9d770759ff54d10_1732212206\",\"subtype\":null,\"timestamp\":1732212206960,\"type\":\"mailflow\"}"
+    },
+    "input": {
+        "type": "cel"
+    },
+    "mimecast": {
+        "accountId": "AUS2474",
+        "aggregateId": "4XvR1B4m7BzFB8L-qk59b4szrgayciaagczc977rzb_1732212206",
+        "authResults": [
+            {
+                "aligned": true,
+                "result": "pass",
+                "type": "SPF"
+            },
+            {
+                "aligned": false,
+                "result": "none",
+                "type": "DKIM"
+            },
+            {
+                "result": "pass",
+                "type": "DMARC"
+            }
+        ],
+        "log_type": "mailflow",
+        "processingId": "c40337e6860db0301575d8d09362bff214c0b010d6c4d41da9d770759ff54d10_1732212206"
+    },
+    "tags": [
+        "preserve_original_event",
+        "forwarded",
+        "mimecast-cloud-integrated-logs"
+    ]
+}
+```
+
+**Exported fields**
+
+| Field | Description | Type |
+|---|---|---|
+| @timestamp | Event timestamp. | date |
+| cloud.image.id | Image ID for the cloud instance. | keyword |
+| data_stream.dataset | Data stream dataset. | constant_keyword |
+| data_stream.namespace | Data stream namespace. | constant_keyword |
+| data_stream.type | Data stream type. | constant_keyword |
+| event.dataset | Event dataset | constant_keyword |
+| event.module | Event module | constant_keyword |
+| host.containerized | If the host is a container. | boolean |
+| host.os.build | OS build information. | keyword |
+| host.os.codename | OS codename, if any. | keyword |
+| input.type | Input type | keyword |
+| log.offset | Log offset | long |
+| mimecast.accountId | The Mimecast account code for your account. | keyword |
+| mimecast.action | The action taken for this message. | keyword |
+| mimecast.aggregateId | Unique identifier that allows you to correlate/group related events. | keyword |
+| mimecast.attachments | The filenames of all attachments on the emai. | keyword |
+| mimecast.authResults.aligned |  | boolean |
+| mimecast.authResults.result |  | keyword |
+| mimecast.authResults.type |  | keyword |
+| mimecast.direction | The direction of the email based on the sending and receiving domains. | keyword |
+| mimecast.historicalMail | Identifies whether the scan was from historical email (prior to Mimecast). | boolean |
+| mimecast.log_type |  | keyword |
+| mimecast.messageId | The internet message id of the email. | keyword |
+| mimecast.originalUrl | The original URL Clicked. | keyword |
+| mimecast.policiesApplied.action |  | keyword |
+| mimecast.policiesApplied.mode |  | keyword |
+| mimecast.policiesApplied.name |  | keyword |
+| mimecast.processingId | Unique identifier that allows you to correlate/group related events. | keyword |
+| mimecast.recipients | The recipient of the email. | keyword |
+| mimecast.redirectUrl | The redirect URL, following original URL click. | keyword |
+| mimecast.senderEnvelope | The sender of the email. | keyword |
+| mimecast.senderHeader | The sender address found in the from header of the email. | keyword |
+| mimecast.senderIp | The source IP of the sending mail server. | keyword |
+| mimecast.source |  | keyword |
+| mimecast.sourceIp | The source IP of the original message. | keyword |
+| mimecast.subject | The subject of the email, limited to 150 characters. | keyword |
+| mimecast.subtype |  | keyword |
+| mimecast.tags | The determination if the email was untrustworthy. | keyword |
+| mimecast.threatState | The action taken. | keyword |
+| mimecast.threatType | The type of threat identified where applicable. no detections= allowed. | keyword |
+| mimecast.timestamp | The date and time of event. | keyword |
+
+
 ### DLP Logs
 
 This is the `mimecast.dlp_logs` dataset. These logs contain information about

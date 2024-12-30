@@ -79,7 +79,7 @@ Expects a two-column table that looks like a key/value result. The left column i
 table:
 Expects any number of columns. This mode generates a single event for each row.
 
-For more examples of response format pelase refer [here](https://www.elastic.co/guide/en/beats/metricbeat/current/metricbeat-module-sql.html)
+For more examples of response format please refer [here](https://www.elastic.co/guide/en/beats/metricbeat/current/metricbeat-module-sql.html)
 
 
 ### Merge Results

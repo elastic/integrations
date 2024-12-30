@@ -500,6 +500,14 @@ processors:
                       }
                     }
                   }
+                } else if(blockMap.containsKey('content') && blockMap.content instanceof List) {
+                  // To record Guardrail response content, function calling and agentic workflow response
+                  List contentList = (List) blockMap.content;
+                    for (def cont : contentList) {
+                      if (cont.containsKey('text')) {
+                        completionText.append(cont.text);
+                      }
+                    }
                 }
               }
             }else if (ctx.aws_bedrock.invocation.output.output_body_json instanceof String){

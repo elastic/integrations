@@ -3,9 +3,11 @@ rules:
     methods: ['GET']
     query_params:
       action: list
+      host_metadata: all
+      show_qds: 1
+      show_qds_factors: 1
       truncation_limit: 2
       ids: 1,2,3
-      host_metadata: all
     responses:
       - status_code: 200
         body: |-
@@ -186,18 +188,20 @@ rules:
               <WARNING>
                 <CODE>1980</CODE>
                 <TEXT>1000 record limit exceeded. Use URL to get next batch of results.</TEXT>
-                <URL><![CDATA[http://{{ env "SERVER_ADDRESS" }}/api/2.0/fo/asset/host/vm/detection/?action=list&truncation_limit=2&ids=3&host_metadata=all&show_cloud_tags=1]]></URL>
-                </WARNING>
+                <URL><![CDATA[http://{{ env "SERVER_ADDRESS" }}/api/2.0/fo/asset/host/vm/detection/?action=list&host_metadata=all&show_qds=1&show_qds_factors=1&truncation_limit=2&ids=3&show_cloud_tags=1]]></URL>
+              </WARNING>
             </RESPONSE>
           </HOST_LIST_VM_DETECTION_OUTPUT>
-  # Pagination request
+  # Pagination request 1
   - path: /api/2.0/fo/asset/host/vm/detection/
     methods: ['GET']
     query_params:
       action: list
+      host_metadata: all
+      show_qds: 1
+      show_qds_factors: 1
       truncation_limit: 2
       ids: 3
-      host_metadata: all
       show_cloud_tags: 1
     responses:
       - status_code: 200
@@ -290,8 +294,28 @@ rules:
                   </DETECTION_LIST>
                 </HOST>
               </HOST_LIST>
+              <WARNING>
+                <CODE>1980</CODE>
+                <TEXT>2 record limit exceeded. Use URL to get next batch of results.</TEXT>
+                <URL><![CDATA[http://{{ env "SERVER_ADDRESS" }}/api/2.0/fo/asset/host/vm/detection/?action=list&host_metadata=all&show_qds=1&show_qds_factors=1&truncation_limit=2&id_min=77777777&show_cloud_tags=1]]></URL>
+              </WARNING>
             </RESPONSE>
           </HOST_LIST_VM_DETECTION_OUTPUT>
+  # Pagination request 2. Should returns 0 events.
+  - path: /api/2.0/fo/asset/host/vm/detection/
+    methods: ['GET']
+    query_params:
+      action: list
+      host_metadata: all
+      show_qds: 1
+      show_qds_factors: 1
+      truncation_limit: 2
+      id_min: 77777777 
+      show_cloud_tags: 1
+    responses:
+      - status_code: 200
+        body: |- # handling empty XML response
+
   # Request knowledge_base with QID from Asset Host QID.
   # QID: 101 (for host ID: 1,2)
   - path: /api/2.0/fo/knowledge_base/vuln/

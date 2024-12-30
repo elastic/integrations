@@ -1,0 +1,71 @@
+---
+description: Pipeline for normalizing envoy HTTP ACCESS logs
+processors:
+- script:
+    lang: painless
+    source: >-
+      ctx['http'] = new HashMap();
+      def p = ctx.proto.indexOf ('/');
+      def l = ctx.proto.length();
+      ctx.http.version = ctx.proto.substring(p+1, l);
+    if: ctx.proto != null && ctx.proto != '-'
+- rename:
+    field: method
+    target_field: http.request.method
+- rename:
+    field: path
+    target_field: url.path
+    override: true
+- convert:
+    field: response_code
+    type: long
+- rename:
+    field: response_code
+    target_field: http.response.status_code
+- rename:
+    field: bytes_received
+    target_field: http.response.body.bytes
+- convert:
+    field: http.response.body.bytes
+    type: long
+- rename:
+    field: bytes_sent
+    target_field: http.request.body.bytes
+- convert:
+    field: http.request.body.bytes
+    type: long
+- script:
+    lang: painless
+    source: ctx.envoyproxy.log.upstream_service_time = Math.round(Double.parseDouble(ctx.upstream_service_time) * params.scale)
+    params:
+      scale: 1000000
+    if: ctx.upstream_service_time != null && ctx.upstream_service_time != '-'
+- set:
+    field: envoyproxy.log.proxy_type
+    value: http
+- set:
+    field: url.domain
+    value: '{{envoyproxy.log.authority}}'
+    if: ctx.envoyproxy?.log?.authority != null && ctx.envoyproxy?.log?.authority != '-'
+- registered_domain:
+    field: url.domain
+    target_field: url
+- user_agent:
+    field: user_agent.original
+    ignore_missing: true
+- append:
+    field: event.type
+    allow_duplicates: false
+    value:
+      - connection
+      - protocol
+- set:
+    field: network.protocol
+    value: http
+on_failure:
+  - set:
+      field: event.kind
+      value: pipeline_error
+  - append:
+      field: error.message
+      value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'

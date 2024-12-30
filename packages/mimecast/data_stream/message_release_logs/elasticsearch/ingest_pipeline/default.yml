@@ -220,11 +220,6 @@ processors:
           return false;
         }
         drop(ctx);
-  - remove:
-      field: event.original
-      if: ctx.tags == null || !ctx.tags.contains('preserve_original_event')
-      ignore_failure: true
-      ignore_missing: true
   - rename:
       tag: move_fields_into_place
       field: mimecast
@@ -234,6 +229,10 @@ on_failure:
   - set:
       field: event.kind
       value: pipeline_error
+  - append:
+      field: tags
+      value: preserve_original_event
+      allow_duplicates: false
   - append:
       field: error.message
       value: >-

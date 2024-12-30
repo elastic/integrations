@@ -1553,7 +1553,6 @@ processors:
       target_field: event.original
       ignore_missing: true
       ignore_failure: true
-      if: ctx.tags?.contains('preserve_original_event') == true
   - remove:
       tag: remove_json
       field:
@@ -1649,13 +1648,12 @@ processors:
       if: ctx.error?.message != null
 on_failure:
   - append:
-      field: tags
-      tag: append_tags_preserve_original_event_2
-      value: preserve_original_event
-      allow_duplicates: false
-  - append:
       field: error.message
       value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - set:
       field: event.kind
       value: pipeline_error
+  - append:
+      field: tags
+      value: preserve_original_event
+      allow_duplicates: false
