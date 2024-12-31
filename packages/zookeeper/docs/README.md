@@ -184,7 +184,6 @@ Please refer to the following [document](https://www.elastic.co/guide/en/ecs/cur
 | zookeeper.mntr.approximate_data_size | Approximate size of ZooKeeper data. | long | gauge |
 | zookeeper.mntr.ephemerals_count | Number of ephemeral znodes. | long | gauge |
 | zookeeper.mntr.followers | Number of followers seen by the current host. | long | gauge |
-| zookeeper.mntr.hostname | ZooKeeper hostname. | keyword |  |
 | zookeeper.mntr.latency.avg | Average latency between ensemble hosts in milliseconds. | long | gauge |
 | zookeeper.mntr.latency.max | Maximum latency in milliseconds. | long | gauge |
 | zookeeper.mntr.latency.min | Minimum latency in milliseconds. | long | gauge |

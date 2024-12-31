@@ -5,11 +5,10 @@ processors:
       tag: set_ecs_version
       field: ecs.version
       value: '8.11.0'
-  - append:
-      tag: append_event_kind
+  - set:
+      tag: set_event_kind_default
       field: event.kind
       value: event
-      allow_duplicates: false
   - set:
       tag: set_event_category
       field: event.category
@@ -33,6 +32,46 @@ processors:
             field: error.message
             value: '{{{_ingest.on_failure_message}}}'
             allow_duplicates: false
+  - rename:
+      tag: rename_json_alert_id
+      field: json.Alert Id
+      target_field: tanium.threat_response.alert_id
+      ignore_missing: true
+  - set:
+      tag: set_event_kind_alert
+      field: event.kind
+      value: alert
+      if: ctx.tanium?.threat_response?.alert_id != null && ctx.tanium.threat_response.alert_id != ''
+  - rename:
+      tag: rename_json_intel_id
+      field: json.Intel Id
+      target_field: tanium.threat_response.intel_id
+      ignore_missing: true
+  - rename:
+      tag: rename_json_intel_type
+      field: json.Intel Type
+      target_field: tanium.threat_response.intel_type
+      ignore_missing: true
+  - rename:
+      tag: rename_json_intel_name
+      field: json.Intel Name
+      target_field: tanium.threat_response.intel_name
+      ignore_missing: true
+  - rename:
+      tag: rename_json_intel_labels
+      field: json.Intel Labels
+      target_field: tanium.threat_response.intel_labels
+      ignore_missing: true
+  - rename:
+      tag: rename_json_impact_score
+      field: json.Impact Score
+      target_field: tanium.threat_response.impact_score
+      ignore_missing: true
+  - rename:
+      tag: rename_json_link
+      field: json.Link
+      target_field: tanium.threat_response.link
+      ignore_missing: true
   - date:
       tag: date_json_updatedat
       field: json.updatedAt
@@ -50,19 +89,17 @@ processors:
   - convert:
       tag: convert_json_id
       field: json.id
-      target_field: tanium.threat_response.id
       type: string
       ignore_missing: true
-      if: ctx.json?.id != ''
-      on_failure:
-        - append:
-            field: error.message
-            value: '{{{_ingest.on_failure_message}}}'
-            allow_duplicates: false
+  - set:
+      tag: set_tanium_threat_response_id
+      field: tanium.threat_response.id
+      copy_from: json.id
+      ignore_empty_value: true
   - set:
       tag: set_event_id
       field: event.id
-      copy_from: tanium.threat_response.id
+      copy_from: json.id
       ignore_empty_value: true
   - rename:
       tag: rename_json_action
@@ -80,12 +117,6 @@ processors:
       target_field: tanium.threat_response.user.id
       type: string
       ignore_missing: true
-      if: ctx.json.userId != ''
-      on_failure:
-        - append:
-            field: error.message
-            value: '{{{_ingest.on_failure_message}}}'
-            allow_duplicates: false
   - rename:
       tag: rename_json_username
       field: json.userName
@@ -102,12 +133,6 @@ processors:
       target_field: tanium.threat_response.row_id
       type: string
       ignore_missing: true
-      if: ctx.json?.rowId != ''
-      on_failure:
-        - append:
-            field: error.message
-            value: '{{{_ingest.on_failure_message}}}'
-            allow_duplicates: false
   - rename:
       tag: rename_json_revision
       field: json.revision
@@ -283,12 +308,6 @@ processors:
       target_field: tanium.threat_response.user.id
       type: string
       ignore_missing: true
-      if: ctx.json['User Id'] != ''
-      on_failure:
-        - append:
-            field: error.message
-            value: '{{{_ingest.on_failure_message}}}'
-            allow_duplicates: false
   - rename:
       tag: rename_json_user_name
       field: json.User Name
@@ -316,27 +335,63 @@ processors:
       value: '{{{user.name}}}'
       if: ctx.user?.name != null
       allow_duplicates: false
-  - rename:
-      tag: rename_json_other_parameters
-      field: json.Other Parameters
-      target_field: tanium.threat_response.other_parameters.original
-      ignore_missing: true
+
+  # Parse 'Other Parameters', decode any payload value and store it as match details data
   - kv:
-      tag: kv_tanium_threat_response_other_parameters_original
-      field: tanium.threat_response.other_parameters.original
-      target_field: tanium.threat_response.other_parameters.log_details
-      field_split: "\\|"
-      value_split: "="
+      tag: kv_json_other_parameters
+      field: json.Other Parameters
+      target_field: tanium.threat_response.other_parameters
+      field_split: '\|'
+      value_split: '='
       ignore_missing: true
       on_failure:
         - append:
             field: error.message
             value: '{{{_ingest.on_failure_message}}}'
             allow_duplicates: false
+  - script:
+      tag: script_decode_base64_json_field
+      description: Decode base64 json field.
+      lang: painless
+      if: ctx.tanium.threat_response.other_parameters?.payload != null
+      source: ctx.tanium.threat_response.other_parameters.payload_json = ctx.tanium.threat_response.other_parameters.payload.decodeBase64()
+      on_failure:
+        - append:
+            field: error.message
+            value: '{{{_ingest.on_failure_message}}}'
+            allow_duplicates: false
+  - json:
+      tag: json_tanium_threat_response_other_parameters_payload_json
+      field: tanium.threat_response.other_parameters.payload_json
+      target_field: tanium.threat_response.match_details
+      if: ctx.tanium.threat_response.other_parameters?.payload_json instanceof String
+      on_failure:
+        - append:
+            field: error.message
+            value: '{{{_ingest.on_failure_message}}}'
+            allow_duplicates: false
+  - remove:
+      field:
+        - tanium.threat_response.other_parameters.payload
+        - tanium.threat_response.other_parameters.payload_json
+      ignore_missing: true
+
+  # Add the data from the Match Details column to any other match details data
+  - script:
+      tag: script_handle_match_details_content_the_same_as_when_it_appears_in_an_encoded_payload
+      description: Handle 'Match Details' content the same as when it appears in an encoded payload.
+      lang: painless
+      if: ctx.json['Match Details'] instanceof Map
+      source: |
+        ctx.tanium.threat_response.match_details = ctx.tanium.threat_response.match_details ?: [:];
+        ctx.tanium.threat_response.match_details.putAll(ctx.json['Match Details']);
+
+  # Process match details data
   - pipeline:
-      tag: pipeline_payload
-      name: '{{ IngestPipeline "pipeline_payload" }}'
-      if: ctx.tanium?.threat_response?.other_parameters?.log_details?.payload != null || ctx.json['Match Details'] instanceof Map
+      tag: pipeline_match_details
+      name: '{{ IngestPipeline "match_details" }}'
+      if: ctx.tanium?.threat_response?.match_details instanceof Map
+
   - append:
       tag: append_event_kind_pipeline_error_if_error_message
       field: event.kind
@@ -346,11 +401,6 @@ processors:
   - remove:
       tag: remove_json
       field: json
-      ignore_missing: true
-  - remove:
-      tag: remove_event_original
-      field: event.original
-      if: ctx.tags == null || !(ctx.tags.contains("preserve_original_event"))
       ignore_missing: true
   - remove:
       tag: remove_duplicate_custom_fields
@@ -367,6 +417,54 @@ processors:
         - tanium.threat_response.timestamp
         - tanium.threat_response.user.domain
       ignore_missing: true
+  - script:
+      tag: script_truncate_at_a_maximum_depth
+      description: Truncate at a maximum depth.
+      lang: painless
+      source: |
+        Map truncateMap(Map node, int depth, int maxDepth, List path, List truncations) {
+            if (depth > maxDepth) {
+                truncations.add(String.join(".", path));
+                return null; // Return null if max depth is exceeded
+            }
+            for (entry in node.entrySet()) {
+                List newPath = new ArrayList(path);
+                newPath.add(entry.getKey());
+                Object value = entry.getValue();
+                if (value instanceof Map) {
+                    entry.setValue(truncateMap((Map) value, depth + 1, maxDepth, newPath, truncations));
+                } else if (value instanceof List) {
+                    // A list in a map doesn't add depth - multiple values are treated the same as a single value
+                    entry.setValue(truncateList((List) value, depth, maxDepth, newPath, truncations));
+                }
+                // Otherwise it's a plain value, so leave it
+            }
+            return node;
+
+        }
+        List truncateList(List node, int depth, int maxDepth, List path, List truncations) {
+            List input = new ArrayList(node);
+            node.clear();
+            if (depth > maxDepth) {
+                truncations.add(String.join(".", path));
+                return null;
+            }
+            for (item in input) {
+                if (item instanceof Map) {
+                    node.add(truncateMap((Map) item, depth + 1, maxDepth, path, truncations));
+                } else if (item instanceof List) {
+                    // A list in a list adds depth - but isn't common in our data
+                    node.add(truncateList((List) item, depth + 1, maxDepth, path, truncations));
+                } else {
+                    node.add(item); // It's a plain value
+                }
+            }
+            return node;
+        }
+        int maxDepth = 20;
+        List truncations = [];
+        truncateMap(ctx, 1, maxDepth, [], truncations);
+        ctx.tanium.truncations = truncations;
   - script:
       tag: script_drops_null_empty_values_recursively
       description: Drops null/empty values recursively.
@@ -387,9 +485,15 @@ processors:
         dropEmptyFields(ctx);
 on_failure:
   - set:
+      tag: set_event_kind
       field: event.kind
       value: pipeline_error
   - append:
+      field: tags
+      value: preserve_original_event
+      allow_duplicates: false
+  - append:
+      tag: append_error_message
       field: error.message
       value: >
         Processor "{{{ _ingest.on_failure_processor_type }}}"
