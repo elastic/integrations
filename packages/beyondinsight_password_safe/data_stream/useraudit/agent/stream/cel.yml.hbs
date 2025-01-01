@@ -80,7 +80,7 @@ program: |-
   			:
   				bytes(resp.Body).decode_json().as(body,
   					bool(size(body.Data) > 0 && state.?cursor.enddate.orValue(params.enddate[0]) != body.?Data[size(body.Data) - 1].CreateDate.orValue("")).as(wantMore,
-  						string(wantMore ? body.Data[size(body.Data) - 1].CreateDate : "").as(enddate,
+  						string(wantMore ? body.Data[size(body.Data) - 1].CreateDate : "").as(newEnddate,
   							state.with(
   								{
   									"events": body.Data.map(e,
@@ -92,9 +92,9 @@ program: |-
   									"want_more": wantMore,
   									"cursor": {
   										"auth_cookie": auth_cookie,
-  										"enddate": enddate,
+  										"enddate": newEnddate,
   										"startdate": wantMore ? state.?cursor.startdate.orValue(params.startdate[0]) : state.?cursor.tempStartDate.orValue(""),
-  										"tempStartDate": (enddate == "") ? string(body.Data[0].CreateDate) : state.?cursor.tempStartDate.orValue(""),
+  										"tempStartDate": (newEnddate == "") ? string(body.Data[0].CreateDate) : state.?cursor.tempStartDate.orValue(""),
   									},
   								}
   							)

@@ -6,14 +6,13 @@ processors:
       target_field: beyondinsight_password_safe.managedsystem
 
   - drop:
-      if: ctx.beyondinsight_password_safe.managedsystem?.code == '401'
+      if: ctx.beyondinsight_password_safe.managedsystem?.statuscode == '401'
 
   - fingerprint:
       fields:
         - beyondinsight_password_safe.managedsystem.ManagedSystemID
       target_field: "_id"
-  - drop:
-      if: ctx.beyondinsight_password_safe.managedsystem?.statuscode == '401'
+
 ####################
 # Scripts for processing input #
 ####################
@@ -175,7 +174,7 @@ processors:
       target_field: host.geo
       ignore_missing: true
       ignore_failure: true
-      
+
 on_failure:
   - append:
       field: error.message
