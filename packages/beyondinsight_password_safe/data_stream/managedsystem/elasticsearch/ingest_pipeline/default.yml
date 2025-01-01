@@ -150,7 +150,32 @@ processors:
       field: url.full
       value: '{{{beyondinsight_password_safe.managedsystem.access_url}}}'
       if: ctx.beyondinsight_password_safe.managedsystem.access_url != null
+ #################### Override host.ip ######################
+  - script:
+      lang: painless
+      source: |
+         def ipstring = ctx.beyondinsight_password_safe.managedsystem.ipaddress.toString().splitOnToken(".");
+         def ip = String.valueOf(Integer.parseInt(ipstring[0]))+"."+String.valueOf(Integer.parseInt(ipstring[1]))+"."+String.valueOf(Integer.parseInt(ipstring[2]))+"."+String.valueOf(Integer.parseInt(ipstring[3]));
+         ctx.beyondinsight_password_safe.managedsystem.ipaddress = ip;
 
+  - convert:
+      field: beyondinsight_password_safe.managedsystem.ipaddress
+      target_field: beyondinsight_password_safe.managedsystem.ipaddress
+      type: ip
+      if: ctx.beyondinsight_password_safe.managedsystem?.ipaddress != null && ctx.beyondinsight_password_safe.managedsystem.ipaddress != ''
+      ignore_failure: true 
+      ignore_missing: true
+
+  - append:
+      field: host.ip
+      value: "{{{beyondinsight_password_safe.managedsystem.ipaddress}}}"
+
+  - geoip:
+      field: host.ip
+      target_field: host.geo
+      ignore_missing: true
+      ignore_failure: true
+      
 on_failure:
   - append:
       field: error.message

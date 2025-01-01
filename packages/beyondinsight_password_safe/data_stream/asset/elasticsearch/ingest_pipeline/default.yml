@@ -151,6 +151,31 @@ processors:
       allow_duplicates: false
       if: ctx.beyondinsight_password_safe.asset.domain_name != null
 
+ #################### Override host.ip ######################
+  - script:
+      lang: painless
+      source: |
+         def ipstring = ctx.beyondinsight_password_safe.asset.ipaddress.toString().splitOnToken(".");
+         def ip = String.valueOf(Integer.parseInt(ipstring[0]))+"."+String.valueOf(Integer.parseInt(ipstring[1]))+"."+String.valueOf(Integer.parseInt(ipstring[2]))+"."+String.valueOf(Integer.parseInt(ipstring[3]));
+         ctx.beyondinsight_password_safe.asset.ipaddress = ip;
+
+  - convert:
+      field: beyondinsight_password_safe.asset.ipaddress
+      target_field: beyondinsight_password_safe.asset.ipaddress
+      type: ip
+      if: ctx.beyondinsight_password_safe.asset?.ipaddress != null && ctx.beyondinsight_password_safe.asset.ipaddress != ''
+      ignore_failure: true 
+      ignore_missing: true
+
+  - append:
+      field: host.ip
+      value: "{{{beyondinsight_password_safe.asset.ipaddress}}}"
+
+  - geoip:
+      field: host.ip
+      target_field: host.geo
+      ignore_missing: true
+      ignore_failure: true
 
 on_failure:
   - append:
