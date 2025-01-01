@@ -3,10 +3,20 @@
 [Corelight](https://corelight.com/) provides network detection and response (NDR) solutions that enhance visibility, threat detection, and incident response by leveraging open-source technologies like Zeek. Its platform integrates with existing security tools to deliver high-fidelity network data, helping organizations detect and respond to threats more effectively across both on-premises and cloud environments​.
 
 This integration includes only the Corelight dashboards mentioned below:
-- Security Posture
-- Remote Activity Insights
-- Name Resolution Insights
-- Secure Channel Insights
+- **Security Posture**
+- Data Insights
+  - **Remote Activity Insights**
+  - **Name Resolution Insights**
+  - **Secure Channel Insights**
+- Security Workflows
+  - **Intel**
+  - **IP Interrogation**
+  - **Log Hunting**
+  - **Notices**
+  - **RDP Inferences Overview**
+  - **SSH Inferences Overview**
+  - **Corelight Suricata IDS Alert Overview**
+  - **VPN Insights**
 
 ## Prerequisites:
 
