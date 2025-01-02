@@ -11,3 +11,4 @@ The following connectors are available as Elastic-managed connectors:
 
 - [Github](https://www.elastic.co/guide/en/enterprise-search/current/connectors-github.html)
 - [Google Drive](https://www.elastic.co/guide/en/enterprise-search/current/connectors-google-drive.html)
+- [Gmail](https://www.elastic.co/guide/en/elasticsearch/reference/current/es-connectors-gmail.html)
