@@ -67,9 +67,9 @@ The configuration parameters serve specific purposes:
 
 The period (`period`) parameter defaults to `24h` (24 hours) to align with OpenAI's usage data availability. This timing ensures complete daily metrics while preventing duplicate data collection. Your API key from the "Default" project enables access to organization-wide metrics across all projects.
 
-Rate limiting (`rate_limit`) parameters (`limit`: 12, `burst`: 1) are calibrated to respect OpenAI's standard rate limits of 5 requests per minute. The integration spaces requests every 12 seconds with a single concurrent request allowed.
+The rate limiting (`rate_limit`) parameters (`limit`: 12, `burst`: 1) are calibrated to respect OpenAI's standard rate limits of 5 requests per minute. The integration spaces requests every 12 seconds with a single concurrent request allowed.
 
-The Lookback days (`collection.lookback_days`) setting determines how much historical data to fetch on initial setup. The default 30-day lookback provides a comprehensive view of recent usage patterns while maintaining reasonable data volumes.
+The lookback days (`collection.lookback_days`) parameter determines how much historical data to fetch on initial setup. The default 30-day lookback provides a comprehensive view of recent usage patterns while maintaining reasonable data volumes.
 
 ### Collection behavior
 
@@ -109,6 +109,7 @@ The optimal collection strategy is to use `time.Now() (in UTC) - 24h`, which pro
 
 With these settings, each collection gathers exactly one day's worth of data, creating clean, non-overlapping data points ideal for analytics and storage efficiency. The 24-hour delay in data availability enables complete and accurate daily usage metrics.
 
+There's also an internal cursor that tracks the last collected timestamp. This cursor is updated after each collection to ensure that the next collection starts from the next day's data.
 ## Metrics reference
 
 ### Usage
