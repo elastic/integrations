@@ -17,6 +17,7 @@ resource.ssl.renegotiation: "freely"
 resource.ssl.verification_mode: "certificate"
 resource.url: {{url}}
 state:
+  default_offset: 0
   limit: {{limit}}
   apikeytoken: {{apikeytoken}}
   password: {{password}}
@@ -63,10 +64,11 @@ program: |-
   				state.with(
   					{
   						"cursor": {
-  							"workgroups": workgroups.map(w, w.ID).flatten(),
+  							"workgroups": workgroups.map(w, string(w.ID)).flatten(),
   							"auth_cookie": auth_cookie,
   							"total_workgroups": int(size(workgroups)),
   							"call_workgroup_api": false,
+  							"current_workgroup_index": 0,
   						},
   					}
   				)
@@ -77,9 +79,9 @@ program: |-
   ).as(state,
   	request(
   		"GET",
-  		state.url.trim_suffix("/") + "/Workgroups/" + string(state.cursor.workgroups[state.cursor.?current_workgroup_index.orValue(0)]) + "/Assets?" + {
+  		state.url.trim_suffix("/") + "/Workgroups/" + state.cursor.workgroups[state.cursor.current_workgroup_index] + "/Assets?" + {
   			"limit": [string(state.limit)],
-  			"offset": [string(state.cursor.?offset.orValue(0))],
+  			"offset": [string(state.?cursor["workgroup_" + state.cursor.workgroups[state.cursor.current_workgroup_index]].orValue(state.default_offset))],
   		}.format_query()
   	).with(
   		{
@@ -100,40 +102,44 @@ program: |-
   							}
   						),
   						"want_more": true,
-  						"cursor": {
-  							"workgroups": state.cursor.workgroups,
-  							"call_workgroup_api": false,
-  							"auth_cookie": state.cursor.auth_cookie,
-  							"offset": int(state.cursor.?offset.orValue(0)) + int(size(assetBody.Data)),
-  							"total_workgroups": state.cursor.total_workgroups,
-  							"current_workgroup_index": int(state.cursor.?current_workgroup_index.orValue(0)),
-  						},
+  						"cursor": state.cursor.with(
+  							{
+  								"workgroup_" + state.cursor.workgroups[state.cursor.current_workgroup_index]: int(state.?cursor["workgroup_" + state.cursor.workgroups[state.cursor.current_workgroup_index]].orValue(state.default_offset)) + int(size(assetBody.Data)),
+  							}
+  						),
   					}
   				)
-  			: (int(state.cursor.?current_workgroup_index.orValue(0)) + 1 < int(state.cursor.total_workgroups)) ?
+  			: (int(state.cursor.current_workgroup_index) + 1 < int(state.cursor.total_workgroups)) ?
   				state.with(
   					{
-  						"events": [],
+  						"events": [
+  							{
+  								"message": "No assets found in workgroup " + state.cursor.workgroups[state.cursor.current_workgroup_index],
+  							},
+  						],
   						"want_more": true,
-  						"cursor": {
-  							"workgroups": state.cursor.workgroups,
-  							"call_workgroup_api": false,
-  							"auth_cookie": state.cursor.auth_cookie,
-  							"total_workgroups": int(state.cursor.total_workgroups),
-  							"current_workgroup_index": int(state.cursor.?current_workgroup_index.orValue(0)) + 1,
-  						},
+  						"cursor": state.cursor.with(
+  							{
+  								"current_workgroup_index": int(state.cursor.current_workgroup_index) + 1,
+  							}
+  						),
   					}
   				)
   			:
   				state.with(
   					{
-  						"events": [],
+  						"events": [
+  							{
+  								"message": "All workgroups processed.",
+  							},
+  						],
   						"want_more": false,
-  						"cursor": {
-  							"call_workgroup_api": true,
-  							"auth_cookie": state.cursor.auth_cookie,
-  							"offset": 0,
-  						},
+  						"cursor": state.cursor.with(
+  							{
+  								"call_workgroup_api": true,
+  								"current_workgroup_index": 0,
+  							}
+  						),
   					}
   				)
   		)
