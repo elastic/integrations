@@ -32,44 +32,23 @@ You need an OpenAI account to access the API with a valid API key.
 
 ## Configuration
 
-Internally, the OpenAI integration uses the OpenAI module in beats to collect metrics data from OpenAI. Parameters for the OpenAI from the UI are used to configure the following settings:
-
-```yaml
-  metricsets: ["usage"]
-  enabled: true
-  period: 24h
-  api_keys:
-  - key: <api_key1>
-  - key: <api_key2>
-  api_url: "https://api.openai.com/v1/usage"
-  headers:
-    - <key>: <value>
-  rate_limit:
-    limit: 12
-    burst: 1
-  timeout: 30s
-  collection:
-    lookback_days: 30
-    realtime: false
-```
-
 The configuration parameters serve specific purposes:
 
-* Period (`period`): The interval at which metrics are collected. Defaults to 24 hours.
-* OpenAI API key (`api_keys.key`): The API key used to authenticate with the OpenAI API. Required field.
-* OpenAI usage API endpoint (`api_url`): The URL of the OpenAI usage API endpoint. Defaults to `https://api.openai.com/v1/usage`. This is useful if you want to use a custom API endpoint.
-* Custom headers (`headers`): Custom headers to be included in the API requests. Optional field.
-* Rate limit (limit) (`rate_limit.limit`): The rate limit for the OpenAI API. Defaults to 12.
-* Rate limit (burst) (`rate_limit.burst`): The burst rate for the OpenAI API. Defaults to 1.
-* Request timeout (`timeout`): The timeout for API requests. Defaults to 30 seconds.
-* Lookback days (`collection.lookback_days`): The number of days to look back for collection. Defaults to 30.
-* Realtime data collection (`collection.realtime`): Whether to collect data in real-time. Defaults to false.
+* Period: The interval at which metrics are collected. Defaults to 24 hours.
+* OpenAI API key: The API key used to authenticate with the OpenAI API. Required field.
+* OpenAI usage API endpoint: The URL of the OpenAI usage API endpoint. Defaults to `https://api.openai.com/v1/usage`. This is useful if you want to use a custom API endpoint.
+* Custom headers: Custom headers to be included in the API requests. Optional field.
+* Rate limit (limit): The rate limit for the OpenAI API. Defaults to 12.
+* Rate limit (burst): The burst rate for the OpenAI API. Defaults to 1.
+* Request timeout: The timeout for API requests. Defaults to 30 seconds.
+* Lookback days: The number of days to look back for collection. Defaults to 30.
+* Realtime data collection: Whether to collect data in real-time. Defaults to false.
 
-The period (`period`) parameter defaults to `24h` (24 hours) to align with OpenAI's usage data availability. This timing ensures complete daily metrics while preventing duplicate data collection. Your API key from the "Default" project enables access to organization-wide metrics across all projects.
+The period parameter defaults to `24h` (24 hours) to align with OpenAI's usage data availability. This timing ensures complete daily metrics while preventing duplicate data collection. Your API key from the "Default" project enables access to organization-wide metrics across all projects.
 
-The rate limiting (`rate_limit`) parameters (`limit`: 12, `burst`: 1) are calibrated to respect OpenAI's standard rate limits of 5 requests per minute. The integration spaces requests every 12 seconds with a single concurrent request allowed.
+The rate limiting parameters (`limit`: 12, `burst`: 1) are calibrated to respect OpenAI's standard rate limits of 5 requests per minute. The integration spaces requests every 12 seconds with a single concurrent request allowed.
 
-The lookback days (`collection.lookback_days`) parameter determines how much historical data to fetch on initial setup. The default 30-day lookback provides a comprehensive view of recent usage patterns while maintaining reasonable data volumes.
+The lookback days parameter determines how much historical data to fetch on initial setup. The default 30-day lookback provides a comprehensive view of recent usage patterns while maintaining reasonable data volumes.
 
 ### Collection behavior
 
@@ -110,6 +89,7 @@ The optimal collection strategy is to use `time.Now() (in UTC) - 24h`, which pro
 With these settings, each collection gathers exactly one day's worth of data, creating clean, non-overlapping data points ideal for analytics and storage efficiency. The 24-hour delay in data availability enables complete and accurate daily usage metrics.
 
 There's also an internal cursor that tracks the last collected timestamp. This cursor is updated after each collection to ensure that the next collection starts from the next day's data.
+
 ## Metrics reference
 
 ### Usage
@@ -220,10 +200,10 @@ Please refer to the following [document](https://www.elastic.co/guide/en/ecs/cur
 | openai.usage.dalle.operation | Operation type | keyword |
 | openai.usage.dalle.requests_total | Number of requests | long |
 | openai.usage.dalle.user_id | User identifier | keyword |
-| openai.usage.data.cached_context_tokens_total | Total number of cached context tokens | long |
-| openai.usage.data.context_tokens_total | Total number of context tokens used | long |
+| openai.usage.data.cached_context_tokens_total | Total number of cached input tokens | long |
+| openai.usage.data.context_tokens_total | Total number of input tokens used | long |
 | openai.usage.data.email | User email | keyword |
-| openai.usage.data.generated_tokens_total | Total number of generated tokens | long |
+| openai.usage.data.generated_tokens_total | Total number of output tokens | long |
 | openai.usage.data.operation | Operation type | keyword |
 | openai.usage.data.request_type | Type of request | keyword |
 | openai.usage.data.requests_total | Number of requests made | long |
