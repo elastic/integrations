@@ -65,11 +65,11 @@ The configuration parameters serve specific purposes:
 * Lookback days (`collection.lookback_days`): The number of days to look back for collection. Defaults to 30.
 * Realtime data collection (`collection.realtime`): Whether to collect data in real-time. Defaults to false.
 
-The period parameter defaults to `24h` (24 hours) to align with OpenAI's usage data availability. This timing ensures complete daily metrics while preventing duplicate data collection. Your API key from the "Default" project enables access to organization-wide metrics across all projects.
+The period (`period`) parameter defaults to `24h` (24 hours) to align with OpenAI's usage data availability. This timing ensures complete daily metrics while preventing duplicate data collection. Your API key from the "Default" project enables access to organization-wide metrics across all projects.
 
-Rate limiting `rate_limit` parameters (`limit`: 12, `burst`: 1) are calibrated to respect OpenAI's standard rate limits of 5 requests per minute. The integration spaces requests every 12 seconds with a single concurrent request allowed.
+Rate limiting (`rate_limit`) parameters (`limit`: 12, `burst`: 1) are calibrated to respect OpenAI's standard rate limits of 5 requests per minute. The integration spaces requests every 12 seconds with a single concurrent request allowed.
 
-The `lookback_days` setting determines how much historical data to fetch on initial setup. The default 30-day lookback provides a comprehensive view of recent usage patterns while maintaining reasonable data volumes.
+The Lookback days (`collection.lookback_days`) setting determines how much historical data to fetch on initial setup. The default 30-day lookback provides a comprehensive view of recent usage patterns while maintaining reasonable data volumes.
 
 ### Collection behavior
 
@@ -90,7 +90,7 @@ new entry `usage_metrics_1` added to the empty log.
    usage_metrics_1: *
    usage_metrics_2: *
 ```
-new entry `usage_metrics_3` added to the end of the log.
+new entry `usage_metrics_2` appended to the end of the log.
 
 * At `tn` (continuous collection):
 ```
@@ -101,7 +101,7 @@ new entry `usage_metrics_3` added to the end of the log.
    usage_metrics_n: *
 ```
 
-new entries `usage_metrics_*` added to the end of the log.
+new entries `usage_metrics_{3,4,...,n}` appended to the end of the log.
 
 This append-only pattern means new usage metrics are continuously added throughout the day. Setting `collection.realtime: true` with frequent collection periods would result in duplicate data points, as each collection would gather the entire day's accumulated log.
 
