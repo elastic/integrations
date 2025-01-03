@@ -1,12 +1,14 @@
 ---
 description: Pipeline for processing BeyondInsight Password Safe asset logs
 processors:
+  - drop:
+        if: ctx.error?.statuscode == '204'
+  - drop:
+        if: ctx.error?.statuscode == '401'
+
   - rename:
       field: message
       target_field: beyondinsight_password_safe.asset
-
-  - drop:
-      if: ctx.beyondinsight_password_safe.asset?.statuscode == '401'
 
   - fingerprint:
       fields:
