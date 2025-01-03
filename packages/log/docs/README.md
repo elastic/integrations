@@ -1,6 +1,6 @@
 # Custom Logs Package
 
-The **Custom Logs** package is used to ingest arbitrary log files and manipulate their contents using [Ingest Pipelines](https://www.elastic.co/guide/en/elasticsearch/reference/current/ingest.html). Follow the steps below to set up and use this package.
+The **Custom Logs** package is used to ingest arbitrary log files and parse their contents using [Ingest Pipelines](https://www.elastic.co/guide/en/elasticsearch/reference/current/ingest.html). Follow the steps below to set up and use this package.
 
 ## Get started
 
@@ -10,12 +10,13 @@ The **Custom Logs** package is used to ingest arbitrary log files and manipulate
 2. **Identify the Log Location**
    Identify the log location on that machine, for example, `/tmp/custom.log`.
    - If you need to include multiple log files or an entire directory, consider using wildcard patterns such as `/tmp/*.log` to capture all `.log` files, or `/tmp/*` to include all file types.
-   - Note that `/var/log/*.log` is already ingested by the [System integration](https://docs.elastic.co/en/integrations/system). You do not need to add this path if the System integration is in use.
+   - Note that the [System integration](https://docs.elastic.co/en/integrations/system) ingests `/var/log/*.log`. You do not need to add this path if the System integration is in use.
 
 3. **Enroll the Custom Logs Integration**
    - Add the **Custom Logs** integration to your installed Elastic Agent.
-   - Provide a dataset name that reflects the purpose of your logs (for example, `python` for Python application logs).
+   - Provide an Integration name. A descriptive name will make managing this integration in the Kibana UI more intuitive.
    - Configure the path to match the location(s) identified in the previous step.
+   - Provide a dataset name that reflects the purpose of your logs (for example, `python` for Python application logs).
 
 4. **Verify Data in Discover**
    - Open [Discover](https://www.elastic.co/guide/en/kibana/current/discover.html) in Kibana and filter the `logs-*` indices to your dataset name (e.g., `logs-python`) to confirm that the raw log data is being ingested.
