@@ -224,6 +224,7 @@ Please refer to the following [document](https://www.elastic.co/guide/en/ecs/cur
 | Field | Description | Type |
 |---|---|---|
 | @timestamp | Event timestamp. | date |
+| actor.entity.id | ID or multiple IDs of the entity performing the action described by the event. | keyword |
 | cloud.image.id | Image ID for the cloud instance. | keyword |
 | data_stream.dataset | Data stream dataset. | constant_keyword |
 | data_stream.namespace | Data stream namespace. | constant_keyword |
@@ -288,6 +289,8 @@ Please refer to the following [document](https://www.elastic.co/guide/en/ecs/cur
 | host.os.codename | OS codename, if any. | keyword |
 | input.type | Input type | keyword |
 | log.offset | Log offset | long |
+| related.entity | A collection of all entity identifiers associated with the document. If the document  contains multiple entities, identifiers for each will be included. Example identifiers include (but not limited to) cloud resource IDs, email addresses, and hostnames. | keyword |
+| target.entity.id | ID or multiple IDs of the entity targeted by the action described by the event. | keyword |
 
 
 An example event for `audit` looks as following:

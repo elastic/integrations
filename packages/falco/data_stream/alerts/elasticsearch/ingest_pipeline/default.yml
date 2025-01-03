@@ -8,7 +8,6 @@ processors:
     field: event.original
     copy_from: message
     ignore_empty_value: true
-    if: ctx.event?.original == null && ctx['tags'] != null && ctx['tags'].contains('preserve_original_event')
 - json:
     field: message
     target_field: falco
@@ -17,6 +16,8 @@ processors:
     tag: move_falco_fields
     lang: painless
     if: ctx?.output_fields != null
+    description: >
+      For events forwarded directly from Falco Sidekick, we need to adjust the event to the expected format by the pipeline.
     params:
         fields:
             - uuid
@@ -36,7 +37,14 @@ processors:
                 ctx.remove(v);
             }
         }
-        ctx['falco'] = m
+        ctx['falco'] = m;
+        def original = Json.dump(ctx.falco);
+        if (original != null) {
+            if (ctx.event == null) {
+                ctx.event = new HashMap();
+            }
+            ctx.event.original = original;
+        }
 - dot_expander:
     field: 'container.image'
     path: falco.output_fields
@@ -714,3 +722,7 @@ on_failure:
 - set:
     field: event.kind
     value: pipeline_error
+- append:
+    field: tags
+    value: preserve_original_event
+    allow_duplicates: false

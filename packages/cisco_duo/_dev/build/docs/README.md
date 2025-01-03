@@ -10,7 +10,7 @@ This module has been tested against Cisco Duo `Core Authentication Service: D224
 
 In order to ingest data from the Cisco Duo Admin API you must:
 - Have a the Cisco Duo administrator account with **Owner** role [Sign up](https://signup.duo.com/)
-- Sign in to [Duo Admin Panel](https://admin.duosecurity.com/)
+- Sign in to [Duo Admin Panel](https://admin.duosecurity.com/login)
 - Go through following tabs **Application > Protect an Application > Admin API > Protect**
 - Now you will find your **Hostname**, **Integration key** and **Secret key** which will be required while configuring the integration package.
 - For this integration you will require **Grant read information** and **Grant read log** permissions.

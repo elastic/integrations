@@ -55,6 +55,21 @@ streams:
         show_user: false
         description: >-
           Processors are used to reduce the number of fields in the exported event or to enhance the event with metadata. This executes in the agent before the logs are parsed. See [Processors](https://www.elastic.co/guide/en/beats/filebeat/current/filtering-and-enhancing-data.html) for details.
+      - name: max_in_flight_bytes
+        type: integer
+        title: Maximum Message Volume
+        description: The limit on total volume of messages from the server that will be allowed at any instant (if zero, no limit). This depends on using the `wait_for_completion_timeout` request query in requests to the server to enable request ACKing. For more details, see [here](https://www.elastic.co/guide/en/beats/filebeat/current/filebeat-input-http_endpoint.html#_max_in_flight_bytes). See the [HTTP Endpoint documentation](https://www.elastic.co/guide/en/beats/filebeat/current/filebeat-input-http_endpoint.html) for an explanation of how to use `wait_for_completion_timeout`.
+        multi: false
+        required: false
+        show_user: false
+      - name: retry_after
+        type: integer
+        title: Retry After
+        description: The time in seconds to request the client waits after receiving an over-volume response from the server due to exceeding the Maximum Message Volume. For more details, see [here](https://www.elastic.co/guide/en/beats/filebeat/current/filebeat-input-http_endpoint.html#_retry_after).
+        multi: false
+        required: false
+        show_user: false
+        default: 10
   - input: aws-s3
     title: Sinkhole HTTP logs
     description: Collect Sinkhole HTTP logs from Cloudflare via S3 or SQS.
@@ -77,11 +92,11 @@ streams:
         description: Prefix to apply for the list request to the S3 bucket.
       - name: cloudflare_r2_sinkhole_http
         type: text
-        title: "[Sinkhole HTTP][S3] Cloudflare R2 Bucket Name"
+        title: "[Sinkhole HTTP][S3] S3-Compatible Bucket Name"
         multi: false
         required: false
         show_user: true
-        description: "Cloudflare R2 is an S3-compatible, globally distributed object storage. This parameter can replace Bucket ARN with a Bucket Name for collecting logs from Cloudflare R2 or another 3rd party S3-compatible service. It will override the global Cloudflare R2 Bucket Name if provided."
+        description: "Name of an S3-compatible bucket such as Cloudflare R2, a globally distributed object storage. This parameter can replace Bucket ARN with a Bucket Name for collecting logs from Cloudflare R2 or another 3rd party S3-compatible service. It will override the global S3-Compatible Bucket Name if provided."
       - name: interval
         type: text
         title: '[S3] Interval'

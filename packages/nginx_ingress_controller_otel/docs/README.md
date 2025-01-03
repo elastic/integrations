@@ -15,7 +15,7 @@ The integration was tested with the Nginx Ingress Controller v0.30.0 and v0.40.2
 - Filelog receiver v0.112.0+
 - Transform processor v0.112.0+
 - Resource detector processor v0.112.0+
-- (Optional) GeoIP processor v0.112.0+
+- (Optional) GeoIP processor v0.112.0+: The optional GeoIP processor is not available in the EDOT collector yet. To use this processor, you must switch to the OpenTelemetry Contrib collector instead.
 - Elasticsearch exporter v0.112.0+
 - Filestorage extension v0.112.0+
 

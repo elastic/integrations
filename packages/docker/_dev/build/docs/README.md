@@ -7,8 +7,9 @@ The `container_logs` data stream for containers' logs collection is enabled by d
 
 ## Compatibility
 
-The Docker module is currently tested on Linux and Mac with the community
-edition engine, versions 1.11 and 17.09.0-ce.
+The Docker module is currently tested on Linux and Mac with the community edition engine, versions 1.11 and 17.09.0-ce. It is not tested on Windows, but it should also work there.
+
+The Docker module supports collection of metrics from Podman’s Docker-compatible API. It has been tested on Linux and Mac with Podman Rest API v2.0.0 and above.
 
 ## Running from within Docker
 
@@ -51,6 +52,8 @@ that is 3 seconds or longer. The request to the
 Docker API already takes up to 2 seconds. Specifying less than 3 seconds will
 result in requests that timeout, and no data will be reported for those
 requests.
+
+In the case of Podman, the configuration parameter podman should be switched to true. This enables streaming of container stats output, which allows for more accurate CPU percentage calculations when using Podman.
 
 ## Metrics
 

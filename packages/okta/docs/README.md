@@ -53,11 +53,11 @@ An example event for `system` looks as following:
 {
     "@timestamp": "2020-02-14T20:18:57.718Z",
     "agent": {
-        "ephemeral_id": "6ac1caae-4aba-4b61-8408-14b46e15b668",
-        "id": "c3650180-e3d1-4dad-9094-89c988e721d7",
-        "name": "docker-fleet-agent",
+        "ephemeral_id": "79c264cb-1acc-4d23-a584-5733ab7959e0",
+        "id": "57a230ab-7bcd-4245-b2b7-77c5118fbc4f",
+        "name": "elastic-agent-64832",
         "type": "filebeat",
-        "version": "8.13.0"
+        "version": "8.15.0"
     },
     "client": {
         "geo": {
@@ -78,16 +78,16 @@ An example event for `system` looks as following:
     },
     "data_stream": {
         "dataset": "okta.system",
-        "namespace": "ep",
+        "namespace": "48163",
         "type": "logs"
     },
     "ecs": {
         "version": "8.11.0"
     },
     "elastic_agent": {
-        "id": "c3650180-e3d1-4dad-9094-89c988e721d7",
+        "id": "57a230ab-7bcd-4245-b2b7-77c5118fbc4f",
         "snapshot": false,
-        "version": "8.13.0"
+        "version": "8.15.0"
     },
     "event": {
         "action": "user.session.start",
@@ -96,10 +96,10 @@ An example event for `system` looks as following:
             "authentication",
             "session"
         ],
-        "created": "2024-05-17T05:51:14.737Z",
+        "created": "2024-12-16T22:31:39.714Z",
         "dataset": "okta.system",
         "id": "3aeede38-4f67-11ea-abd3-1f5d113f2546",
-        "ingested": "2024-05-17T05:51:24Z",
+        "ingested": "2024-12-16T22:31:40Z",
         "kind": "event",
         "original": "{\"actor\":{\"alternateId\":\"xxxxxx@elastic.co\",\"detailEntry\":null,\"displayName\":\"xxxxxx\",\"id\":\"00u1abvz4pYqdM8ms4x6\",\"type\":\"User\"},\"authenticationContext\":{\"authenticationProvider\":null,\"authenticationStep\":0,\"credentialProvider\":null,\"credentialType\":null,\"externalSessionId\":\"102bZDNFfWaQSyEZQuDgWt-uQ\",\"interface\":null,\"issuer\":null},\"client\":{\"device\":\"Computer\",\"geographicalContext\":{\"city\":\"Dublin\",\"country\":\"United States\",\"geolocation\":{\"lat\":37.7201,\"lon\":-121.919},\"postalCode\":\"94568\",\"state\":\"California\"},\"id\":null,\"ipAddress\":\"108.255.197.247\",\"userAgent\":{\"browser\":\"FIREFOX\",\"os\":\"Mac OS X\",\"rawUserAgent\":\"Mozilla/5.0 (Macintosh; Intel Mac OS X 10.15; rv:72.0) Gecko/20100101 Firefox/72.0\"},\"zone\":\"null\"},\"debugContext\":{\"debugData\":{\"deviceFingerprint\":\"541daf91d15bef64a7e08c946fd9a9d0\",\"requestId\":\"XkcAsWb8WjwDP76xh@1v8wAABp0\",\"requestUri\":\"/api/v1/authn\",\"threatSuspected\":\"false\",\"url\":\"/api/v1/authn?\"}},\"displayMessage\":\"User login to Okta\",\"eventType\":\"user.session.start\",\"legacyEventType\":\"core.user_auth.login_success\",\"outcome\":{\"reason\":null,\"result\":\"SUCCESS\"},\"published\":\"2020-02-14T20:18:57.718Z\",\"request\":{\"ipChain\":[{\"geographicalContext\":{\"city\":\"Dublin\",\"country\":\"United States\",\"geolocation\":{\"lat\":37.7201,\"lon\":-121.919},\"postalCode\":\"94568\",\"state\":\"California\"},\"ip\":\"108.255.197.247\",\"source\":null,\"version\":\"V4\"}]},\"securityContext\":{\"asNumber\":null,\"asOrg\":null,\"domain\":null,\"isProxy\":null,\"isp\":null},\"severity\":\"INFO\",\"target\":null,\"transaction\":{\"detail\":{},\"id\":\"XkcAsWb8WjwDP76xh@1v8wAABp0\",\"type\":\"WEB\"},\"uuid\":\"3aeede38-4f67-11ea-abd3-1f5d113f2546\",\"version\":\"0\"}",
         "outcome": "success",
@@ -301,6 +301,7 @@ An example event for `system` looks as following:
 | okta.debug_context.debug_data.risk_object |  | keyword |
 | okta.debug_context.debug_data.risk_reasons | The reasons for the risk. | keyword |
 | okta.debug_context.debug_data.threat_suspected | Threat suspected. | keyword |
+| okta.debug_context.debug_data.tunnels |  | object |
 | okta.debug_context.debug_data.url | The URL. | keyword |
 | okta.device.device_integrator |  | flattened |
 | okta.device.disk_encryption_type | The value of the device profile’s disk encryption type. One of "NONE", "FULL", "USER", "ALL_INTERNAL_VOLUMES" or "SYSTEM_VOLUME". | keyword |
