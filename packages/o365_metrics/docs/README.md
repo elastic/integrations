@@ -661,3 +661,123 @@ Please refer to the following [document](https://www.elastic.co/guide/en/ecs/cur
 | o365.metrics.active.users.teams.inactive.count | Number of Teams inactive users. | integer |
 | o365.metrics.active.users.yammer.active.count | Number of Yammer active users. | integer |
 | o365.metrics.active.users.yammer.inactive.count | Number of Yammer inactive users. | integer |
+
+
+### Teams Device Usage
+
+An example event for `teams_device_usage` looks as following:
+
+```json
+{
+    "o365": {
+        "metrics": {
+            "teams": {
+                "device": {
+                    "usage": {
+                        "windows_phone": {
+                            "count": "0"
+                        },
+                        "web": {
+                            "count": "0"
+                        },
+                        "report": {
+                            "date": "2024-12-25",
+                            "period": {
+                                "day": "7"
+                            },
+                            "refresh_date": "2024-12-31"
+                        },
+                        "ios": {
+                            "count": "0"
+                        },
+                        "windows": {
+                            "count": "0"
+                        },
+                        "android_phone": {
+                            "count": "0"
+                        },
+                        "mac": {
+                            "count": "0"
+                        }
+                    }
+                }
+            }
+        }
+    },
+    "agent": {
+        "name": "docker-fleet-agent",
+        "id": "8eca9f6b-266f-4410-9055-349d6d4e1f58",
+        "type": "filebeat",
+        "ephemeral_id": "f69fe39f-6198-40c4-aa5d-489486892dd7",
+        "version": "8.16.0"
+    },
+    "@timestamp": "2025-01-02T06:25:32.102Z",
+    "ecs": {
+        "version": "8.16.0"
+    },
+    "data_stream": {
+        "namespace": "default",
+        "type": "metrics",
+        "dataset": "o365_metrics.teams_device_usage"
+    },
+    "host": {
+        "hostname": "docker-fleet-agent",
+        "os": {
+            "kernel": "5.10.104-linuxkit",
+            "name": "Wolfi",
+            "type": "linux",
+            "family": "",
+            "version": "20230201",
+            "platform": "wolfi"
+        },
+        "containerized": false,
+        "ip": [
+            "192.168.160.7"
+        ],
+        "name": "docker-fleet-agent",
+        "mac": [
+            "02-42-C0-A8-A0-07"
+        ],
+        "architecture": "aarch64"
+    },
+    "elastic_agent": {
+        "id": "8eca9f6b-266f-4410-9055-349d6d4e1f58",
+        "version": "8.16.0",
+        "snapshot": false
+    },
+    "event": {
+        "agent_id_status": "verified",
+        "ingested": "2025-01-02T06:25:33Z",
+        "dataset": "o365_metrics.teams_device_usage"
+    },
+    "tags": [
+        "o365.metrics.outlook.activity"
+    ]
+}
+```
+
+**ECS Field Reference**
+
+Please refer to the following [document](https://www.elastic.co/guide/en/ecs/current/ecs-field-reference.html) for detailed information on ECS fields.
+
+**Exported fields**
+
+| Field | Description | Type | Unit |
+|---|---|---|---|
+| @timestamp | Event timestamp. | date |  |
+| cloud.image.id | Image ID for the cloud instance. | keyword |  |
+| data_stream.dataset | Data stream dataset. | constant_keyword |  |
+| data_stream.namespace | Data stream namespace. | constant_keyword |  |
+| data_stream.type | Data stream type. | constant_keyword |  |
+| host.containerized | If the host is a container. | boolean |  |
+| host.os.build | OS build information. | keyword |  |
+| host.os.codename | OS codename, if any. | keyword |  |
+| o365.metrics.teams.device.usage.android_phone.count | The number of active Teams users on Android devices. | integer |  |
+| o365.metrics.teams.device.usage.ios.count | The number of active Teams users on iOS devices (iPhone and iPad). | integer |  |
+| o365.metrics.teams.device.usage.mac.count | The number of active Teams users on macOS devices. | integer |  |
+| o365.metrics.teams.device.usage.report.date | The specific date for which the report data applies. | date |  |
+| o365.metrics.teams.device.usage.report.period.day | The duration (e.g., 7 days) over which the report data is aggregated. | integer | d |
+| o365.metrics.teams.device.usage.report.refresh_date | The date when the report data was last updated. | date |  |
+| o365.metrics.teams.device.usage.web.count | The number of active Teams users accessing via web browsers. | integer |  |
+| o365.metrics.teams.device.usage.windows.count | The number of active Teams users on Windows devices. | integer |  |
+| o365.metrics.teams.device.usage.windows_phone.count | The number of active Teams users on Windows Phone devices. | integer |  |
