@@ -510,14 +510,48 @@ Please refer to the following [document](https://www.elastic.co/guide/en/ecs/cur
 | o365.metrics.outlook.app.usage.undetermined.count | The count of unique users whose Outlook version could not be identified. | integer |  |
 
 
+
+### Yammer Device Usage
+
+An example event for `yammer_device_usage` looks as following:
+
 ### Active Users
 
 An example event for `active_users` looks as following:
+
 
 ```json
 {
     "o365": {
         "metrics": {
+            "yammer": {
+                "device": {
+                    "usage": {
+                        "other": {
+                            "count": ""
+                        },
+                        "windows_phone": {
+                            "count": ""
+                        },
+                        "web": {
+                            "count": ""
+                        },
+                        "report": {
+                            "date": "2024-12-18",
+                            "period": {
+                                "day": "7"
+                            },
+                            "refresh_date": "2024-12-24"
+                        },
+                        "ipad": {
+                            "count": ""
+                        },
+                        "android_phone": {
+                            "count": ""
+                        },
+                        "iphone": {
+                            "count": ""
+
             "active": {
                 "users": {
                     "teams": {
@@ -572,6 +606,7 @@ An example event for `active_users` looks as following:
                         },
                         "active": {
                             "count": "0"
+
                         }
                     }
                 }
@@ -580,28 +615,70 @@ An example event for `active_users` looks as following:
     },
     "agent": {
         "name": "docker-fleet-agent",
+
+        "id": "2f0e797b-2ccc-4639-b6f4-f1d3647cf01d",
+        "type": "filebeat",
+        "ephemeral_id": "131c1ad1-8f88-4dff-b6f9-d1bd298cb934",
+        "version": "8.16.0"
+    },
+    "@timestamp": "2024-12-26T12:42:17.877Z",
+
         "id": "1bd16076-38b3-44b9-980b-eab55ebe95b9",
         "ephemeral_id": "b21b52df-710e-4014-bb1c-d9e60091e1e7",
         "type": "filebeat",
         "version": "8.16.0"
     },
     "@timestamp": "2024-12-24T10:36:47.702Z",
+
     "ecs": {
         "version": "8.16.0"
     },
     "data_stream": {
         "namespace": "default",
         "type": "metrics",
+
+        "dataset": "o365_metrics.yammer_device_usage"
+    },
+    "elastic_agent": {
+        "id": "2f0e797b-2ccc-4639-b6f4-f1d3647cf01d",
+
         "dataset": "o365_metrics.active_users"
     },
     "elastic_agent": {
         "id": "1bd16076-38b3-44b9-980b-eab55ebe95b9",
+
         "version": "8.16.0",
         "snapshot": false
     },
     "host": {
         "hostname": "docker-fleet-agent",
         "os": {
+
+            "kernel": "5.10.104-linuxkit",
+            "name": "Wolfi",
+            "type": "linux",
+            "family": "",
+            "version": "20230201",
+            "platform": "wolfi"
+        },
+        "ip": [
+            "192.168.144.7"
+        ],
+        "containerized": false,
+        "name": "docker-fleet-agent",
+        "mac": [
+            "02-42-C0-A8-90-07"
+        ],
+        "architecture": "aarch64"
+    },
+    "event": {
+        "agent_id_status": "verified",
+        "ingested": "2024-12-26T12:42:18Z",
+        "dataset": "o365_metrics.yammer_device_usage"
+    },
+    "tags": [
+        "o365metrics-yammer_device_usage"
+
             "kernel": "5.15.153.1-microsoft-standard-WSL2",
             "codename": "noble",
             "name": "Ubuntu",
@@ -627,6 +704,7 @@ An example event for `active_users` looks as following:
     },
     "tags": [
         "o365.metrics.active.users"
+
     ]
 }
 ```
@@ -636,6 +714,27 @@ An example event for `active_users` looks as following:
 Please refer to the following [document](https://www.elastic.co/guide/en/ecs/current/ecs-field-reference.html) for detailed information on ECS fields.
 
 **Exported fields**
+
+
+| Field | Description | Type | Unit |
+|---|---|---|---|
+| @timestamp | Event timestamp. | date |  |
+| cloud.image.id | Image ID for the cloud instance. | keyword |  |
+| data_stream.dataset | Data stream dataset. | constant_keyword |  |
+| data_stream.namespace | Data stream namespace. | constant_keyword |  |
+| data_stream.type | Data stream type. | constant_keyword |  |
+| host.containerized | If the host is a container. | boolean |  |
+| host.os.build | OS build information. | keyword |  |
+| host.os.codename | OS codename, if any. | keyword |  |
+| o365.metrics.yammer.device.usage.android_phone.count | The count of users accessing Yammer on Android phones. | integer |  |
+| o365.metrics.yammer.device.usage.ipad.count | The count of users accessing Yammer on iPads. | integer |  |
+| o365.metrics.yammer.device.usage.iphone.count | The count of users accessing Yammer on iPhones. | integer |  |
+| o365.metrics.yammer.device.usage.other.count | The count of users accessing Yammer on devices not listed. | integer |  |
+| o365.metrics.yammer.device.usage.report.date | The specific date for which the report data applies. | date |  |
+| o365.metrics.yammer.device.usage.report.period.day | The duration (e.g., 7 days) over which the quota status data is aggregated. | integer | d |
+| o365.metrics.yammer.device.usage.report.refresh_date | The date when the report data was last updated. | date |  |
+| o365.metrics.yammer.device.usage.web.count | The count of users accessing Yammer via web browsers. | integer |  |
+| o365.metrics.yammer.device.usage.windows_phone.count | The count of users accessing Yammer on Windows Phone devices. | integer |  |
 
 | Field | Description | Type |
 |---|---|---|
@@ -661,3 +760,4 @@ Please refer to the following [document](https://www.elastic.co/guide/en/ecs/cur
 | o365.metrics.active.users.teams.inactive.count | Number of Teams inactive users. | integer |
 | o365.metrics.active.users.yammer.active.count | Number of Yammer active users. | integer |
 | o365.metrics.active.users.yammer.inactive.count | Number of Yammer inactive users. | integer |
+
