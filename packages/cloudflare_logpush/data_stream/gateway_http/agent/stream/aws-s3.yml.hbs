@@ -3,6 +3,7 @@
 {{!
 When using an S3 bucket, you can specify only one of the following options:
 - An AWS bucket ARN
+- An AWS Access Point ARN
 - A non-AWS bucket name
 }}
 
@@ -21,19 +22,36 @@ bucket_list_interval: {{ bucket_list_interval }}
 {{/if}}
 
 {{! AWS S3 bucket ARN options }}
-{{#unless non_aws_bucket_name}}
+{{#unless cloudflare_r2_gateway_http}}
+{{#unless cloudflare_r2}}
+{{#unless access_point_arn}}
 {{#if bucket_arn }}
 bucket_arn: {{ bucket_arn }}
 {{/if}}
 {{/unless}}
+{{/unless}}
+{{/unless}}
+
+{{! AWS S3 Access Point ARN options }}
+{{#unless cloudflare_r2_gateway_http}}
+{{#unless cloudflare_r2}}
+{{#unless bucket_arn}}
+{{#if access_point_arn }}
+access_point_arn: {{ access_point_arn }}
+{{/if}}
+{{/unless}}
+{{/unless}}
+{{/unless}}
 
 {{! non-AWS S3 bucket ARN options }}
 {{#unless bucket_arn}}
+{{#unless access_point_arn}}
 {{#if cloudflare_r2_gateway_http }}
 non_aws_bucket_name: {{cloudflare_r2_gateway_http}}
 {{else if cloudflare_r2}}
 non_aws_bucket_name: {{cloudflare_r2}}
 {{/if}}
+{{/unless}}
 {{/unless}}
 
 {{else}}
