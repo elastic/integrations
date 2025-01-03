@@ -1,11 +1,11 @@
 source:
-  index: "infosec_logs-okta.system"
+  index: "logs-*"
   query:
     bool:
       filter:
         - range:
               '@timestamp':
-                gte: now-6M
+                gte: now-1M
         - exists:
             field: okta.event_type
         - term:
@@ -15,13 +15,13 @@ source:
         - terms:
             'okta.event_type': ["user.session.start","user.session.end"]
 dest:
-  index: ml_okta_multiple_user_sessions_privileged_access-0.0.1
+  index: ml_okta_multiple_user_sessions_pad-1.0.0
   aliases:
-    - alias: ml_okta_multiple_user_sessions_privileged_access.latest
+    - alias: ml_okta_multiple_user_sessions_pad.latest
       move_on_creation: true
-    - alias: ml_okta_multiple_user_sessions_privileged_access.all
+    - alias: ml_okta_multiple_user_sessions_pad.all
       move_on_creation: false
-description: This transform runs hourly and collects user session information for Okta events for Privilege Access Detection package.
+description: This transform runs hourly and collects user session information for Okta events for the Privileged Access Detection package.
 frequency: 1h
 pivot:
   aggregations:
@@ -58,5 +58,5 @@ sync:
     delay: 60s
     field: '@timestamp'
 _meta:
-  fleet_transform_version: 0.0.1
+  fleet_transform_version: 1.0.0
   run_as_kibana_system: false
