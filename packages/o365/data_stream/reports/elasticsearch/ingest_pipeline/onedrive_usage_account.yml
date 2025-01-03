@@ -1,0 +1,133 @@
+---
+description: Pipeline for processing OneDrive Usage by Account report data.
+processors:
+  - rename:
+      field: json
+      target_field: o365.reports.onedrive.usage.account
+      ignore_missing: true
+  - fingerprint:
+      fields:
+        - o365.reports.onedrive.usage.account.Report_Refresh_Date
+        - o365.reports.onedrive.usage.account.Owner_Display_Name
+        - o365.reports.onedrive.usage.account.Owner_Principal_Name
+        - o365.reports.onedrive.usage.account.Last_Activity_Date
+      target_field: _id
+  - set:
+      field: user.name
+      tag: set_user_name
+      copy_from: o365.reports.onedrive.usage.account.Owner_Principal_Name
+      if: ctx.o365?.reports?.onedrive?.usage?.account?.Owner_Principal_Name != null
+      ignore_empty_value: true
+  - append:
+      field: related.user
+      tag: append_related_user_user_name
+      value: "{{{user.name}}}"
+      allow_duplicates: false
+      if: ctx.user?.name != null
+  - set:
+      field: user.email
+      tag: set_user_email
+      copy_from: user.name
+      if: ctx.user?.name != null && ctx.user.name.contains('@')
+      ignore_empty_value: true
+  - date:
+      field: o365.reports.onedrive.usage.account.Report_Refresh_Date
+      target_field: o365.reports.onedrive.usage.account.Report_Refresh_Date
+      tag: date_o365_reports_onedrive_usage_account_Report_Refresh_Date
+      if: ctx.o365?.reports?.onedrive?.usage?.account?.Report_Refresh_Date != null && ctx.o365.reports.onedrive.usage.account.Report_Refresh_Date != ''
+      timezone: UTC
+      formats:
+        - yyyy-MM-dd
+      on_failure:
+        - remove:
+            field: o365.reports.onedrive.usage.account.Report_Refresh_Date
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - set:
+      field: '@timestamp'
+      tag: set_timestamp_from_Report_Refresh_Date
+      copy_from: o365.reports.onedrive.usage.account.Report_Refresh_Date
+      ignore_empty_value: true
+  - date:
+      field: o365.reports.onedrive.usage.account.Last_Activity_Date
+      target_field: o365.reports.onedrive.usage.account.Last_Activity_Date
+      tag: date_o365_reports_onedrive_usage_account_Last_Activity_Date
+      if: ctx.o365?.reports?.onedrive?.usage?.account?.Last_Activity_Date != null && ctx.o365.reports.onedrive.usage.account.Last_Activity_Date != ''
+      timezone: UTC
+      formats:
+        - yyyy-MM-dd
+      on_failure:
+        - remove:
+            field: o365.reports.onedrive.usage.account.Last_Activity_Date
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - lowercase:
+      field: o365.reports.onedrive.usage.account.Is_Deleted
+      tag: lowercase_o365_reports_onedrive_usage_account_Is_Deleted
+      if: ctx.o365?.reports?.onedrive?.usage?.account?.Is_Deleted != null && ctx.o365.reports.onedrive.usage.account.Is_Deleted != ''
+  - convert:
+      field: o365.reports.onedrive.usage.account.Is_Deleted
+      tag: convert_o365_reports_onedrive_usage_account_Is_Deleted
+      target_field: o365.reports.onedrive.usage.account.Is_Deleted
+      type: boolean
+      if: ctx.o365?.reports?.onedrive?.usage?.account?.Is_Deleted != null && ctx.o365.reports.onedrive.usage.account.Is_Deleted != ''
+      on_failure:
+        - remove:
+            field: o365.reports.onedrive.usage.account.Is_Deleted
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+
+  # Convert _Count fields to long
+  - convert:
+      field: o365.reports.onedrive.usage.account.File_Count
+      tag: convert_o365_reports_onedrive_usage_account_File_Count
+      target_field: o365.reports.onedrive.usage.account.File_Count
+      type: long
+      if: ctx.o365?.reports?.onedrive?.usage?.account?.File_Count != null && ctx.o365.reports.onedrive.usage.account.File_Count != ''
+      on_failure:
+        - remove:
+            field: o365.reports.onedrive.usage.account.File_Count
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - convert:
+      field: o365.reports.onedrive.usage.account.Active_File_Count
+      tag: convert_o365_reports_onedrive_usage_account_Active_File_Count
+      target_field: o365.reports.onedrive.usage.account.Active_File_Count
+      type: long
+      if: ctx.o365?.reports?.onedrive?.usage?.account?.Active_File_Count != null && ctx.o365.reports.onedrive.usage.account.Active_File_Count != ''
+      on_failure:
+        - remove:
+            field: o365.reports.onedrive.usage.account.Active_File_Count
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+
+  # Convert Byte fields to long
+  - convert:
+      field: o365.reports.onedrive.usage.account.Storage_Used_Byte
+      tag: convert_o365_reports_onedrive_usage_account_Storage_Used_Byte
+      target_field: o365.reports.onedrive.usage.account.Storage_Used_Byte
+      type: long
+      if: ctx.o365?.reports?.onedrive?.usage?.account?.Storage_Used_Byte != null && ctx.o365.reports.onedrive.usage.account.Storage_Used_Byte != ''
+      on_failure:
+        - remove:
+            field: o365.reports.onedrive.usage.account.Storage_Used_Byte
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - convert:
+      field: o365.reports.onedrive.usage.account.Storage_Allocated_Byte
+      tag: convert_o365_reports_onedrive_usage_account_Storage_Allocated_Byte
+      target_field: o365.reports.onedrive.usage.account.Storage_Allocated_Byte
+      type: long
+      if: ctx.o365?.reports?.onedrive?.usage?.account?.Storage_Allocated_Byte != null && ctx.o365.reports.onedrive.usage.account.Storage_Allocated_Byte != ''
+      on_failure:
+        - remove:
+            field: o365.reports.onedrive.usage.account.Storage_Allocated_Byte
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'

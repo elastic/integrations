@@ -1,0 +1,153 @@
+---
+description: Pipeline for processing Microsoft Viva Engage Groups Activity Group Detail
+processors:
+  - rename:
+      field: json
+      target_field: o365.reports.viva_engage.groups_activity.group
+      ignore_missing: true
+  - fingerprint:
+      fields:
+        - o365.reports.viva_engage.groups_activity.group.Report_Refresh_Date
+        - o365.reports.viva_engage.groups_activity.group.Group_Display_Name
+        - o365.reports.viva_engage.groups_activity.group.Last_Activity_Date
+      target_field: _id
+  - set:
+      field: group.name
+      tag: set_group_name
+      copy_from: o365.reports.viva_engage.groups_activity.group.Group_Display_Name
+      if: ctx.o365?.reports?.viva_engage?.groups_activity?.group?.Group_Display_Name != null
+      ignore_empty_value: true
+  - set:
+      field: user.group.name
+      tag: set_user_group_name
+      copy_from: group.name
+      ignore_empty_value: true
+  - date:
+      field: o365.reports.viva_engage.groups_activity.group.Report_Refresh_Date
+      target_field: o365.reports.viva_engage.groups_activity.group.Report_Refresh_Date
+      tag: date_o365_reports_viva_engage_groups_activity_group_Report_Refresh_Date
+      if: ctx.o365?.reports?.viva_engage?.groups_activity?.group?.Report_Refresh_Date != null && ctx.o365.reports.viva_engage.groups_activity.group.Report_Refresh_Date != ''
+      timezone: UTC
+      formats:
+        - yyyy-MM-dd
+      on_failure:
+        - remove:
+            field: o365.reports.viva_engage.groups_activity.group.Report_Refresh_Date
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - set:
+      field: '@timestamp'
+      tag: set_timestamp_from_Report_Refresh_Date
+      copy_from: o365.reports.viva_engage.groups_activity.group.Report_Refresh_Date
+      ignore_empty_value: true
+  - date:
+      field: o365.reports.viva_engage.groups_activity.group.Last_Activity_Date
+      target_field: o365.reports.viva_engage.groups_activity.group.Last_Activity_Date
+      tag: date_o365_reports_viva_engage_groups_activity_group_Last_Activity_Date
+      if: ctx.o365?.reports?.viva_engage?.groups_activity?.group?.Last_Activity_Date != null && ctx.o365.reports.viva_engage.groups_activity.group.Last_Activity_Date != ''
+      timezone: UTC
+      formats:
+        - yyyy-MM-dd
+      on_failure:
+        - remove:
+            field: o365.reports.viva_engage.groups_activity.group.Last_Activity_Date
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - lowercase:
+      field: o365.reports.viva_engage.groups_activity.group.Is_Deleted
+      tag: lowercase_o365_reports_viva_engage_groups_activity_group_Is_Deleted
+      if: ctx.o365?.reports?.viva_engage?.groups_activity?.group?.Is_Deleted != null && ctx.o365.reports.viva_engage.groups_activity.group.Is_Deleted != ''
+  - convert:
+      field: o365.reports.viva_engage.groups_activity.group.Is_Deleted
+      tag: convert_o365_reports_viva_engage_groups_activity_group_Is_Deleted
+      target_field: o365.reports.viva_engage.groups_activity.group.Is_Deleted
+      type: boolean
+      if: ctx.o365?.reports?.viva_engage?.groups_activity?.group?.Is_Deleted != null && ctx.o365.reports.viva_engage.groups_activity.group.Is_Deleted != ''
+      on_failure:
+        - remove:
+            field: o365.reports.viva_engage.groups_activity.group.Is_Deleted
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+
+  # Convert _Count fields to long
+  - convert:
+      field: o365.reports.viva_engage.groups_activity.group.Member_Count
+      tag: convert_o365_reports_viva_engage_groups_activity_group_Member_Count
+      target_field: o365.reports.viva_engage.groups_activity.group.Member_Count
+      type: long
+      if: ctx.o365?.reports?.viva_engage?.groups_activity?.group?.Member_Count != null && ctx.o365.reports.viva_engage.groups_activity.group.Member_Count != ''
+      on_failure:
+        - remove:
+            field: o365.reports.viva_engage.groups_activity.group.Member_Count
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - convert:
+      field: o365.reports.viva_engage.groups_activity.group.Liked_Count
+      tag: convert_o365_reports_viva_engage_groups_activity_group_Liked_Count
+      target_field: o365.reports.viva_engage.groups_activity.group.Liked_Count
+      type: long
+      if: ctx.o365?.reports?.viva_engage?.groups_activity?.group?.Liked_Count != null && ctx.o365.reports.viva_engage.groups_activity.group.Liked_Count != ''
+      on_failure:
+        - remove:
+            field: o365.reports.viva_engage.groups_activity.group.Liked_Count
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - convert:
+      field: o365.reports.viva_engage.groups_activity.group.Posted_Count
+      tag: convert_o365_reports_viva_engage_groups_activity_group_Posted_Count
+      target_field: o365.reports.viva_engage.groups_activity.group.Posted_Count
+      type: long
+      if: ctx.o365?.reports?.viva_engage?.groups_activity?.group?.Posted_Count != null && ctx.o365.reports.viva_engage.groups_activity.group.Posted_Count != ''
+      on_failure:
+        - remove:
+            field: o365.reports.viva_engage.groups_activity.group.Posted_Count
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - convert:
+      field: o365.reports.viva_engage.groups_activity.group.Read_Count
+      tag: convert_o365_reports_viva_engage_groups_activity_group_Read_Count
+      target_field: o365.reports.viva_engage.groups_activity.group.Read_Count
+      type: long
+      if: ctx.o365?.reports?.viva_engage?.groups_activity?.group?.Read_Count != null && ctx.o365.reports.viva_engage.groups_activity.group.Read_Count != ''
+      on_failure:
+        - remove:
+            field: o365.reports.viva_engage.groups_activity.group.Read_Count
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - set:
+      field: o365.reports.viva_engage.groups_activity.group.Office_365_Connected
+      tag: set_o365_reports_viva_engage_groups_activity_group_Office_365_Connected_true
+      value: 'true'
+      if: ctx.o365?.reports?.viva_engage?.groups_activity?.group?.Office_365_Connected != null && ctx.o365.reports.viva_engage.groups_activity.group.Office_365_Connected.toLowerCase() == 'yes'
+      ignore_empty_value: true
+  - set:
+      field: o365.reports.viva_engage.groups_activity.group.Office_365_Connected
+      tag: set_o365_reports_viva_engage_groups_activity_group_Office_365_Connected_false
+      value: 'false'
+      if: ctx.o365?.reports?.viva_engage?.groups_activity?.group?.Office_365_Connected != null && ctx.o365.reports.viva_engage.groups_activity.group.Office_365_Connected.toLowerCase() == 'no'
+      ignore_empty_value: true
+  - convert:
+      field: o365.reports.viva_engage.groups_activity.group.Office_365_Connected
+      tag: convert_o365_reports_viva_engage_groups_activity_group_Office_365_Connected
+      target_field: o365.reports.viva_engage.groups_activity.group.Office_365_Connected
+      type: boolean
+      if: ctx.o365?.reports?.viva_engage?.groups_activity?.group?.Office_365_Connected != null && ctx.o365.reports.viva_engage.groups_activity.group.Office_365_Connected != ''
+      on_failure:
+        - remove:
+            field: o365.reports.viva_engage.groups_activity.group.Office_365_Connected
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - remove:
+      tag: remove_duplicate_custom_fields
+      if: ctx.tags == null || !ctx.tags.contains('preserve_duplicate_custom_fields')
+      field:
+        - o365.reports.viva_engage.groups_activity.group.Group_Display_Name
+      ignore_missing: true
