@@ -1,0 +1,199 @@
+config_version: 2
+interval: {{interval}}
+{{#if enable_request_tracer}}
+resource.tracer.filename: "../../logs/cel/http-request-trace-*.ndjson"
+request.tracer.maxbackups: 5
+{{/if}}
+{{#if proxy_url}}
+resource.proxy_url: {{proxy_url}}
+{{/if}}
+{{#if ssl}}
+resource.ssl: {{ssl}}
+{{/if}}
+{{#if http_client_timeout}}
+resource.timeout: {{http_client_timeout}}
+{{/if}}
+resource.ssl.renegotiation: "freely"
+resource.ssl.verification_mode: "certificate"
+resource.url: {{url}}
+state:
+  default_offset: 0
+  limit: {{limit}}
+  apikeytoken: {{apikeytoken}}
+  password: {{password}}
+  username: {{username}}
+redact:
+  fields:
+    - apikey
+program: |-
+  
+  (
+  	(state.?cursor.auth_cookie.orValue(null) == null) ?
+  		// Authenticating using API to retrieve auth Cookie
+  		request("POST", state.url.trim_suffix("/") + "/Auth/SignAppin").with(
+  			{
+  				"Header": {
+  					"Authorization": [
+  						"PS-Auth key=" + state.apikeytoken + ";runas=" + state.username + ";pwd=[" + state.password + "];",
+  					],
+  					"Content-Type": ["application/json"],
+  				},
+  			}
+  		).do_request().as(resp,
+  			resp.Header["Set-Cookie"].filter(e, e.contains("ASP.NET_SessionId")).as(auth_cookie,
+  				auth_cookie[0]
+  			)
+  		)
+  	:
+  		state.cursor.auth_cookie
+  ).as(auth_cookie,
+  	(state.?cursor.call_workgroup_api.orValue(true) == true) ?
+  		// Fetching total workgroups
+  		request(
+  			"GET",
+  			state.url.trim_suffix("/") + "/Workgroups"
+  		).with(
+  			{
+  				"Header": {
+  					"Content-Type": ["application/json"],
+  					"Cookie": [auth_cookie],
+  				},
+  			}
+  		).do_request().as(resp,
+  			(resp.StatusCode == 401) ?
+  				state.with(
+  					{
+  						"events": {"error": {"message": "User not authenticated", "statuscode": string(resp.StatusCode)}},
+  						"want_more": true,
+  						"cursor": state.cursor.with(
+  							{
+  								"auth_cookie": null,
+  							}
+  						),
+  					}
+  				)
+  			:
+  				bytes(resp.Body).decode_json().as(workgroups,
+  					state.with(
+  						{
+  							"cursor": state.?cursor.orValue({}).with(
+  								{
+  									"workgroups": workgroups.map(w, string(w.ID)).flatten(),
+  									"auth_cookie": auth_cookie,
+  									"total_workgroups": int(size(workgroups)),
+  									"call_workgroup_api": false,
+  									"current_workgroup_index": 0,
+  								}
+  							),
+  						}
+  					)
+  				)
+  		)
+  	:
+  		state
+  ).as(state,
+  	(state.cursor.auth_cookie == null) ?
+  		state
+  	:
+  		request(
+  			"GET",
+  			state.url.trim_suffix("/") + "/Workgroups/" + state.cursor.workgroups[state.cursor.current_workgroup_index] + "/Assets?" + {
+  				"limit": [string(state.limit)],
+  				"offset": [string(state.?cursor["workgroup_" + state.cursor.workgroups[state.cursor.current_workgroup_index]].orValue(state.default_offset))],
+  			}.format_query()
+  		).with(
+  			{
+  				"Header": {
+  					"Content-Type": ["application/json"],
+  					"Cookie": [state.cursor.auth_cookie],
+  				},
+  			}
+  		).do_request().as(assetResp,
+  			(assetResp.StatusCode == 401) ?
+  				state.with(
+  					{
+  						"events": {"error": {"message": "User not authenticated", "statuscode": string(assetResp.StatusCode)}},
+  						"want_more": true,
+  						"cursor": state.cursor.with(
+  							{
+  								"auth_cookie": null,
+  							}
+  						),
+  					}
+  				)
+  			:
+  				bytes(assetResp.Body).decode_json().as(assetBody,
+  					(int(size(assetBody.Data)) > 0) ?
+  						state.with(
+  							{
+  								"events": assetBody.Data.map(e,
+  									{
+  										"message": e,
+  										"cursor": state.cursor,
+  										?"event.original": state.?preserve_original_event.orValue(false) ? optional.of(e.encode_json()) : optional.none(),
+  									}
+  								),
+  								"want_more": true,
+  								"cursor": state.cursor.with(
+  									{
+  										"workgroup_" + state.cursor.workgroups[state.cursor.current_workgroup_index]: int(state.?cursor["workgroup_" + state.cursor.workgroups[state.cursor.current_workgroup_index]].orValue(state.default_offset)) + int(size(assetBody.Data)),
+  									}
+  								),
+  							}
+  						)
+  					: (int(state.cursor.current_workgroup_index) + 1 < int(state.cursor.total_workgroups)) ?
+  						state.with(
+  							{
+  								"events": [
+  									{
+  										"error": {
+  											"message": "All assets fetched. No new assets found.",
+  											"statuscode": "204",
+  										},
+  									},
+  								],
+  								"want_more": true,
+  								"cursor": state.cursor.with(
+  									{
+  										"current_workgroup_index": int(state.cursor.current_workgroup_index) + 1,
+  									}
+  								),
+  							}
+  						)
+  					:
+  						state.with(
+  							{
+  								"events": [
+  									{
+  										"error": {
+  											"message": "All workgroups processed.",
+  											"statuscode": "204",
+  										},
+  									},
+  								],
+  								"want_more": false,
+  								"cursor": state.cursor.with(
+  									{
+  										"call_workgroup_api": true,
+  										"current_workgroup_index": 0,
+  									}
+  								),
+  							}
+  						)
+  				)
+  		)
+  )
+tags:
+{{#if preserve_original_event}}
+  - preserve_original_event
+{{/if}}
+{{#each tags as |tag|}}
+  - {{tag}}
+{{/each}}
+{{#contains "forwarded" tags}}
+publisher_pipeline.disable_host: true
+{{/contains}}
+{{#if processors}}
+processors:
+{{processors}}
+{{/if}}
