@@ -486,6 +486,7 @@ Please refer to the following [document](https://www.elastic.co/guide/en/ecs/cur
 | mssql.metrics.server_name | Name of the mssql server. | keyword |  |
 | mssql.metrics.transactions | Total number of transactions | long | gauge |
 | mssql.metrics.user_connections | Total number of user connections. | long | gauge |
+| mssql.query | Executed queries by this package. | keyword |  |
 | service.address | Address where data about this service was collected from. This should be a URI, network address (ipv4:port or [ipv6]:port) or a resource path (sockets). | keyword |  |
 
 
