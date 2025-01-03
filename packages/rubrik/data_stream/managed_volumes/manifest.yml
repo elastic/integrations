@@ -1,0 +1,68 @@
+type: logs
+title: Rubrik Managed Volume Metrics
+streams:
+  - input: httpjson
+    vars:
+      - name: http_client_timeout
+        type: text
+        title: HTTP Client Timeout
+        description: Duration before declaring that the HTTP client connection has timed out. Valid time units are ns, us, ms, s, m, h.
+        multi: false
+        required: false
+        show_user: true
+        default: 60s
+      - name: interval
+        type: text
+        title: Interval
+        multi: false
+        required: true
+        show_user: true
+        description: Interval at which the alerts will be pulled. The value must be between 2m and 1h. Supported units for this parameter are h/m/s.
+        default: 5m
+      - name: tags
+        type: text
+        title: Tags
+        multi: true
+        required: false
+        show_user: true
+      - name: preserve_original_event
+        required: true
+        show_user: true
+        title: Preserve original event
+        description: Preserves a raw copy of the original event, added to the field `event.original`
+        type: bool
+        multi: false
+        default: false
+      - name: first
+        type: integer
+        title: First
+        description: Specifies the first n elements to fetch from the list.
+        show_user: true
+        required: false
+        default: 10
+      - name: filters
+        type: yaml
+        title: Filters
+        multi: false
+        required: false
+        show_user: true
+        default: |
+          # filter:
+          #   - field: "location"
+          #     texts: 
+          #       - "prod-lab.local"
+        description: >
+          Specify filters for refining the data. Filters must be defined as an array of Filter objects. Refer to the [Rubrik API documentation](https://rubrikinc.github.io/rubrik-api-documentation/schema/reference/filter.doc.html) for valid fields.
+
+      - name: processors
+        type: yaml
+        title: Processors
+        multi: false
+        required: false
+        show_user: false
+        description: >
+          Processors are used to reduce the number of fields in the exported event or to enhance the event with metadata.  This executes in the agent before the logs are parsed.  See [Processors](https://www.elastic.co/guide/en/fleet/current/elastic-agent-processor-configuration.html) for details.
+
+    template_path: httpjson.yml.hbs
+    title: Rubrik Managed Volumes
+    description: Collect Rubrik Managed Volumes data via the API
