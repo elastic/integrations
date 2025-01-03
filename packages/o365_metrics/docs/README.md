@@ -661,3 +661,119 @@ Please refer to the following [document](https://www.elastic.co/guide/en/ecs/cur
 | o365.metrics.active.users.teams.inactive.count | Number of Teams inactive users. | integer |
 | o365.metrics.active.users.yammer.active.count | Number of Yammer active users. | integer |
 | o365.metrics.active.users.yammer.inactive.count | Number of Yammer inactive users. | integer |
+
+
+### Teams User Activity
+
+An example event for `teams_user_activity` looks as following:
+
+```json
+{
+    "o365": {
+        "metrics": {
+            "teams": {
+                "user": {
+                    "activity": {
+                        "other_actions": {
+                            "count": "0"
+                        },
+                        "calls": {
+                            "count": "0"
+                        },
+                        "private_chat_messages": {
+                            "count": "0"
+                        },
+                        "report": {
+                            "date": "2024-12-25",
+                            "period": {
+                                "day": "7"
+                            },
+                            "refresh_date": "2024-12-31"
+                        },
+                        "meetings": {
+                            "count": "0"
+                        },
+                        "team_chat_messages": {
+                            "count": "0"
+                        }
+                    }
+                }
+            }
+        }
+    },
+    "agent": {
+        "name": "docker-fleet-agent",
+        "id": "912ee420-1a2f-468d-bd26-72e08cfa9db6",
+        "ephemeral_id": "47368821-c491-41df-bcdc-81be28c08ee3",
+        "type": "filebeat",
+        "version": "8.16.0"
+    },
+    "@timestamp": "2025-01-02T08:13:16.780Z",
+    "ecs": {
+        "version": "8.16.0"
+    },
+    "data_stream": {
+        "namespace": "default",
+        "type": "metrics",
+        "dataset": "o365_metrics.teams_user_activity"
+    },
+    "elastic_agent": {
+        "id": "912ee420-1a2f-468d-bd26-72e08cfa9db6",
+        "version": "8.16.0",
+        "snapshot": false
+    },
+    "host": {
+        "hostname": "docker-fleet-agent",
+        "os": {
+            "kernel": "5.10.104-linuxkit",
+            "name": "Wolfi",
+            "type": "linux",
+            "family": "",
+            "version": "20230201",
+            "platform": "wolfi"
+        },
+        "containerized": false,
+        "ip": [
+            "192.168.176.7"
+        ],
+        "name": "docker-fleet-agent",
+        "mac": [
+            "02-42-C0-A8-B0-07"
+        ],
+        "architecture": "aarch64"
+    },
+    "event": {
+        "agent_id_status": "verified",
+        "ingested": "2025-01-02T08:13:17Z",
+        "dataset": "o365_metrics.teams_user_activity"
+    },
+    "tags": [
+        "o365.metrics.outlook.activity"
+    ]
+}
+```
+
+**ECS Field Reference**
+
+Please refer to the following [document](https://www.elastic.co/guide/en/ecs/current/ecs-field-reference.html) for detailed information on ECS fields.
+
+**Exported fields**
+
+| Field | Description | Type | Unit |
+|---|---|---|---|
+| @timestamp | Event timestamp. | date |  |
+| cloud.image.id | Image ID for the cloud instance. | keyword |  |
+| data_stream.dataset | Data stream dataset. | constant_keyword |  |
+| data_stream.namespace | Data stream namespace. | constant_keyword |  |
+| data_stream.type | Data stream type. | constant_keyword |  |
+| host.containerized | If the host is a container. | boolean |  |
+| host.os.build | OS build information. | keyword |  |
+| host.os.codename | OS codename, if any. | keyword |  |
+| o365.metrics.teams.user.activity.calls.count | The number of calls made by Teams users. | integer |  |
+| o365.metrics.teams.user.activity.meetings.count | The number of meetings attended or organized by Teams users. | integer |  |
+| o365.metrics.teams.user.activity.other_actions.count | The count of other user actions within Teams. | integer |  |
+| o365.metrics.teams.user.activity.private_chat_messages.count | The number of messages sent in private 1:1 or group chats. | integer |  |
+| o365.metrics.teams.user.activity.report.date | The specific date for which the report data applies. | date |  |
+| o365.metrics.teams.user.activity.report.period.day | The duration (e.g., 7 days) over which the report data is aggregated. | integer | d |
+| o365.metrics.teams.user.activity.report.refresh_date | The date when the report data was last updated. | date |  |
+| o365.metrics.teams.user.activity.team_chat_messages.count | The number of messages sent in Teams channels. | integer |  |
