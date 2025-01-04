@@ -12,15 +12,31 @@ processors:
       field: event.kind
       value: event
       tag: set_event_kind
+      if: ctx.m365_defender.event.category.toLowerCase() != 'advancedhunting-identityinfo'
+  - set:
+      field: event.kind
+      value: asset
+      tag: set_event_kind
+      if: ctx.m365_defender.event.category.toLowerCase().contains('identityinfo')          
   - append:
       field: event.category
       value: authentication
       tag: append_event_category
       if: ctx.m365_defender.event.category.toLowerCase().contains('identitylogonevents')
   - append:
+      field: event.category
+      value: iam
+      tag: append_event_category
+      if: ctx.m365_defender.event.category.toLowerCase().contains('identityinfo')      
+  - append:
       field: event.type
       value: info
       tag: append_event_type
+  - append:
+      field: event.type
+      value: user
+      tag: append_event_type
+      if: ctx.m365_defender.event.category.toLowerCase().contains('identityinfo')            
 
   # Json Processors
   - json:
@@ -159,19 +175,30 @@ processors:
         ctx.m365_defender.event.is_anonymous_proxy = isTruthy(ctx.json?.properties?.IsAnonymousProxy);
         ctx.m365_defender.event.is_external_user = isTruthy(ctx.json?.properties?.IsExternalUser);
         ctx.m365_defender.event.is_impersonated = isTruthy(ctx.json?.properties?.IsImpersonated);
-
-
+    
   # Rename Processors
   - rename:
       field: json.properties.City
       target_field: m365_defender.event.city
       tag: rename_json_properties_City
+      if: ctx.m365_defender.event.category.toLowerCase() != 'advancedhunting-identityinfo'
       ignore_missing: true
+  - rename:
+      field: json.properties.City
+      target_field: m365_defender.event.account.city
+      tag: rename_json_properties_City
+      if: ctx.m365_defender.event.category.toLowerCase().contains('identityinfo')      
+      ignore_missing: true      
   - rename:
       field: json.properties.AccountName
       target_field: m365_defender.event.account.name
       tag: rename_json_properties_AccountName
       ignore_missing: true
+  - rename:
+      field: json.properties.IsAccountEnabled
+      target_field: m365_defender.event.account.is_enabled
+      tag: rename_json_properties_IsAccountEnabled
+      ignore_missing: true      
   - rename:
       field: json.properties.AccountSid
       target_field: m365_defender.event.account.sid
@@ -238,9 +265,27 @@ processors:
       tag: rename_json_properties_UserAgent
       ignore_missing: true
   - rename:
+      field: json.properties.Country
+      target_field: m365_defender.event.country
+      tag: rename_json_properties_Country
+      if: ctx.m365_defender.event.category.toLowerCase() != 'advancedhunting-identityinfo'
+      ignore_missing: true      
+  - rename:
+      field: json.properties.Country
+      target_field: m365_defender.event.account.country
+      tag: rename_json_properties_Country
+      if: ctx.m365_defender.event.category.toLowerCase() == 'advancedhunting-identityinfo'
+      ignore_missing: true
+  - rename:
       field: json.properties.CountryCode
       target_field: m365_defender.event.country_code
       tag: rename_json_properties_CountryCode
+      ignore_missing: true
+  - rename:
+      field: json.properties.State
+      target_field: m365_defender.event.account.state
+      tag: rename_json_properties_State
+      if: ctx.m365_defender.event.category.toLowerCase() == 'advancedhunting-identityinfo'
       ignore_missing: true
   - rename:
       field: json.properties.Protocol
@@ -357,7 +402,142 @@ processors:
       target_field: m365_defender.event.user_agent_tags
       tag: rename_json_properties_UserAgentTags
       ignore_missing: true
-  
+  - rename:
+      field: json.properties.OnPremSid
+      target_field: m365_defender.event.account.on_prem_sid
+      tag: rename_json_properties_OnPremSid
+      ignore_missing: true 
+  - rename:
+      field: json.properties.SourceProvider
+      target_field: m365_defender.event.source_provider
+      tag: rename_json_properties_SourceProvider
+      ignore_missing: true            
+  - rename:
+      field: json.properties.SourceSystem
+      target_field: m365_defender.event.source_system
+      tag: rename_json_properties_SourceSystem
+      ignore_missing: true        
+  - rename:
+      field: json.properties.AssignedRoles
+      target_field: m365_defender.event.account.assigned_roles
+      tag: rename_json_properties_AssignedRoles
+      ignore_missing: true    
+  - rename:
+      field: json.properties.ChangeSource
+      target_field: m365_defender.event.change_source
+      tag: rename_json_properties_ChangeSource
+      ignore_missing: true          
+  - rename:
+      field: json.properties.EmailAddress
+      target_field: m365_defender.event.account.email_address
+      tag: rename_json_properties_EmailAddress
+      ignore_missing: true    
+  - rename:
+      field: json.properties.Address
+      target_field: m365_defender.event.account.address
+      tag: rename_json_properties_Address
+      ignore_missing: true  
+  - rename:
+      field: json.properties.Phone
+      target_field: m365_defender.event.account.phone
+      tag: rename_json_properties_Phone
+      ignore_missing: true  
+  - rename:
+      field: json.properties.Manager
+      target_field: m365_defender.event.account.manager
+      tag: rename_json_properties_Manager
+      ignore_missing: true  
+  - rename:
+      field: json.properties.SipProxyAddress
+      target_field: m365_defender.event.account.sip_proxy_address
+      tag: rename_json_properties_SipProxyAddress
+      ignore_missing: true  
+  - rename:
+      field: json.properties.CreatedDateTime
+      target_field: m365_defender.event.account.created
+      tag: rename_json_properties_CreatedDateTime
+      ignore_missing: true
+  - rename:
+      field: json.properties.JobTitle
+      target_field: m365_defender.event.account.job_title
+      tag: rename_json_properties_JobTitle
+      ignore_missing: true                  
+  - rename:
+      field: json.properties.Department
+      target_field: m365_defender.event.account.department
+      tag: rename_json_properties_Department
+      ignore_missing: true          
+  - rename:
+      field: json.properties.EmployeeId
+      target_field: m365_defender.event.account.employee_id
+      tag: rename_json_properties_EmployeeId
+      ignore_missing: true      
+  - rename:
+      field: json.properties.Surname
+      target_field: m365_defender.event.account.surname
+      tag: rename_json_properties_Surname
+      ignore_missing: true    
+  - rename:
+      field: json.properties.GivenName
+      target_field: m365_defender.event.account.given_name
+      tag: rename_json_properties_GivenName
+      ignore_missing: true    
+  - rename:
+      field: json.properties.Type
+      target_field: m365_defender.event.type
+      tag: rename_json_properties_Type
+      ignore_missing: true          
+  - rename:
+      field: json.properties.DistinguishedName
+      target_field: m365_defender.event.account.distinguished_name
+      tag: rename_json_properties_DistinguishedName
+      ignore_missing: true    
+  - rename:
+      field: json.properties.CloudSid
+      target_field: m365_defender.event.account.cloud_sid
+      tag: rename_json_properties_CloudSid
+      ignore_missing: true    
+  - rename:
+      field: json.properties.Tags
+      target_field: m365_defender.event.account.tags
+      tag: rename_json_properties_Tags
+      ignore_missing: true   
+  - rename:
+      field: json.properties.BlastRadius
+      target_field: m365_defender.event.account.blast_radius
+      tag: rename_json_properties_BlastRadius
+      ignore_missing: true    
+  - rename:
+      field: json.properties.OtherMailAddresses
+      target_field: m365_defender.event.account.other_mail_addresses
+      tag: rename_json_properties_OtherMailAddresses
+      ignore_missing: true    
+  - rename:
+      field: json.properties.CompanyName
+      target_field: m365_defender.event.account.company_name
+      tag: rename_json_properties_CompanyName
+      ignore_missing: true   
+  - rename:
+      field: json.properties.DeletedDateTime
+      target_field: m365_defender.event.account.deleted_date_time
+      tag: rename_json_properties_DeletedDateTime
+      ignore_missing: true    
+  - rename:
+      field: json.properties.CriticalityLevel
+      target_field: m365_defender.event.account.criticality_level
+      tag: rename_json_properties_CriticalityLevel
+      ignore_missing: true    
+  - rename:
+      field: json.properties.RiskLevel
+      target_field: m365_defender.event.account.risk_level
+      tag: rename_json_properties_RiskLevel
+      ignore_missing: true   
+  - rename:
+      field: json.properties.RiskLevelDetails
+      target_field: m365_defender.event.account.risk_level_details
+      tag: rename_json_properties_RiskLevelDetails
+      ignore_missing: true   
+                           
   # Destination mapping
   - set:
       field: destination.domain
@@ -489,7 +669,21 @@ processors:
       copy_from: m365_defender.event.account.display_name
       tag: set_user_name
       if: ctx.m365_defender?.event?.account?.display_name != null && ctx.user?.name == null
-
+  - set:
+      field: user.full_name
+      copy_from: m365_defender.event.account.display_name
+      if: ctx.m365_defender?.event?.account?.display_name != null && ctx.user?.full_name == null && ctx.m365_defender.event.category.toLowerCase().contains('identityinfo')
+      tag: set_user_full_name
+  - set:
+      field: user.email
+      copy_from: m365_defender.event.account.email_address
+      tag: set_user_email
+      if: ctx.m365_defender?.event?.account?.email_address != null
+  - set:
+      field: user.id
+      copy_from: m365_defender.event.account.object_id
+      tag: set_id
+      if: ctx.m365_defender.event.category.toLowerCase().contains('identityinfo')
   # User Agent mapping
   - user_agent:
       field: m365_defender.event.user_agent
@@ -519,6 +713,30 @@ processors:
       tag: append_related_user
       if: ctx.m365_defender?.event?.target?.account_display_name != null
       allow_duplicates: false
+  - append:
+      field: related.user
+      value: '{{{m365_defender.event.account.cloud_sid}}}'
+      tag: append_related_user
+      if: ctx.m365_defender?.event?.account.cloud_sid != null
+      allow_duplicates: false   
+  - append:
+      field: related.user
+      value: '{{{m365_defender.event.account.on_prem_sid}}}'
+      tag: append_related_user
+      if: ctx.m365_defender?.event?.account.on_prem_sid != null
+      allow_duplicates: false
+  - append:
+      field: related.user
+      value: '{{{m365_defender.event.account.upn}}}'
+      tag: append_related_user
+      if: ctx.m365_defender?.event?.account.upn != null
+      allow_duplicates: false   
+  - append:
+      field: related.user
+      value: '{{{m365_defender.event.account.email_address}}}'
+      tag: append_related_user
+      if: ctx.m365_defender?.event?.account.email_address != null
+      allow_duplicates: false           
   - append:
       field: related.hosts
       value: '{{{destination.domain}}}'
@@ -575,6 +793,7 @@ processors:
         - m365_defender.event.device.type
         - m365_defender.event.protocol
         - m365_defender.event.account.domain
+        - m365_defender.event.account.email_address
         - m365_defender.event.account.sid
         - m365_defender.event.account.id
         - m365_defender.event.account.display_name
