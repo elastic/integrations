@@ -1,7 +1,7 @@
 format_version: "3.0.0"
 name: jolokia
 title: "Jolokia Input"
-version: "0.5.0"
+version: "0.6.0"
 description: "Collects Metrics from Jolokia Agents"
 type: input
 categories:
@@ -35,6 +35,9 @@ policy_templates:
       - name: period
         type: text
         title: Period
+        multi: false
+        required: true
+        show_user: true
         default: 10s
       - name: metrics_path
         type: text
@@ -43,6 +46,91 @@ policy_templates:
         required: true
         show_user: true
         default: /jolokia
+      - name: http_method
+        type: text
+        title: HTTP Method
+        multi: false
+        required: true
+        show_user: true
+        default: GET
+      - name: bearer_token_file
+        type: text
+        title: 'HTTP config options: bearer_token_file'
+        description: If defined, the contents of the file will be read once at initialization and then the value will be used in an HTTP Authorization header.
+        multi: false
+        secret: false
+        required: false
+        show_user: false
+      - name: ssl.verification_mode
+        type: text
+        title: SSL Verification Mode
+        multi: false
+        required: false
+        show_user: false
+        default: none
+      - name: ssl.certificate_authorities
+        type: text
+        title: SSL Certificate Authorities
+        multi: true
+        required: false
+        show_user: true
+      - name: ssl.certificate
+        type: text
+        title: SSL Certificate
+        show_user: true
+      - name: ssl.key
+        type: text
+        title: SSL Private Key
+        show_user: true
+      - name: ssl.key_passphrase
+        type: password
+        title: SSL Key Passphrase
+        secret: true
+        show_user: true
+      - name: ssl.ca_trusted_fingerprint
+        type: text
+        title: SSL CA Trusted Fingerprint
+        show_user: true
+      - name: username
+        type: text
+        title: 'HTTP config options: Username'
+        description: The username to use for basic authentication.
+        multi: false
+        required: false
+        show_user: false
+      - name: password
+        type: password
+        secret: true
+        title: 'HTTP config options: Password'
+        description: The password to use for basic authentication.
+        multi: false
+        required: false
+        show_user: false
+      - name: connect_timeout
+        type: text
+        title: 'HTTP config options: connect_timeout'
+        description: Total time limit for an HTTP connection to be completed (Default 2 seconds)
+        multi: false
+        required: false
+        show_user: false
+      - name: timeout
+        type: text
+        title: 'HTTP config options: timeout'
+        description: Total time limit for HTTP requests made by the module (Default 10 seconds)
+        multi: false
+        required: false
+        show_user: false
+      - name: headers
+        type: yaml
+        title: "HTTP config options: headers"
+        description: A list of headers to use with the HTTP request
+        multi: false
+        required: false
+        show_user: false
+        default: |
+          # headers:
+          #   Cookie: abcdef=123456
+          #   My-Custom-Header: my-custom-value
       - name: jmx.mappings
         type: yaml
         title: JMX Mappings

@@ -40,7 +40,7 @@ To use the Threat Map dashboard, ensure the following:
 
 ## Data Format
 
-Data is retrieved from Elasticsearch using the `_all` index search endpoint. Ensure the following fields exist in each document:
+Data is retrieved from Elasticsearch using the `_all,*:_all` index search endpoint. Ensure the following fields exist in each document:
 
 | Field                         | Description                                                        | Required/Optional | Default Value |
 |-------------------------------|--------------------------------------------------------------------|-------------------|---------------|
@@ -53,7 +53,7 @@ Data is retrieved from Elasticsearch using the `_all` index search endpoint. Ens
 | `destination.geo.country_name`| Country name of the destination                                    | Required          |               |
 | `destination.ip`              | IP address of the destination                                      | Required          |               |
 | `color`                       | Arc color                                                          | Optional          | `"#54B399"`   |
-| `animate`                     | Determines if the arc is animated                                  | Optional          | `false`       |
+| `animate`                     | Determines if the arc is animated                                  | Optional          | `true`       |
 | `weight`                      | Arc line thickness                                                 | Optional          | `1`           |
 | `source_label`                | Label at the source location                                       | Optional          |               |
 | `destination_label`           | Label at the destination location                                  | Optional          |               |
