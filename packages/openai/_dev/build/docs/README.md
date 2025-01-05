@@ -46,7 +46,7 @@ The configuration parameters serve specific purposes:
 
 The period parameter defaults to `24h` (24 hours) to align with OpenAI's usage data availability. This timing ensures complete daily metrics while preventing duplicate data collection. Your API key from the "Default" project enables access to organization-wide metrics across all projects.
 
-The rate limiting parameters (`limit`: 12, `burst`: 1) are calibrated to respect OpenAI's standard rate limits of 5 requests per minute. The integration spaces requests every 12 seconds with a single concurrent request allowed.
+The rate limiting parameters (**limit: 12**, **burst: 1**) are calibrated to respect OpenAI's standard rate limits of **5 requests per minute**. The integration spaces requests **every 12 seconds with a single concurrent request** allowed.
 
 The lookback days parameter determines how much historical data to fetch on initial setup. The default 30-day lookback provides a comprehensive view of recent usage patterns while maintaining reasonable data volumes.
 
@@ -60,31 +60,31 @@ Given timestamps `t0`, `t1`, `t2`, ... `tn` in ascending order:
 
 * At `t0` (first collection):
 ```
-   usage_metrics_1: *
+usage_metrics_1: *
 ```
 new entry `usage_metrics_1` added to the empty log.
 
 * At `t1` (continuous collection):
 ```
-   usage_metrics_1: *
-   usage_metrics_2: *
+usage_metrics_1: *
+usage_metrics_2: *
 ```
 new entry `usage_metrics_2` appended to the end of the log.
 
 * At `tn` (continuous collection):
 ```
-   usage_metrics_1: *
-   usage_metrics_2: *
-   usage_metrics_3: *
-   ...
-   usage_metrics_n: *
+usage_metrics_1: *
+usage_metrics_2: *
+usage_metrics_3: *
+...
+usage_metrics_n: *
 ```
 
-new entries `usage_metrics_{3,4,...,n}` appended to the end of the log.
+new entries `usage_metrics_{3,...,n}` appended to the end of the log.
 
 This append-only pattern means new usage metrics are continuously added throughout the day. Setting `collection.realtime: true` with frequent collection periods would result in duplicate data points, as each collection would gather the entire day's accumulated log.
 
-The optimal collection strategy is to use `time.Now() (in UTC) - 24h`, which provides complete usage data for the previous day while eliminating duplicates. This is why we set `collection.realtime: false` and `period: 24h` as the recommended configuration.
+The optimal collection strategy is to use `current time (in UTC) - 24h`, which provides complete usage data for the previous day while eliminating duplicates. This is why we set `collection.realtime: false` and `period: 24h` as the recommended configuration, as the full daily data becomes available the following day.
 
 With these settings, each collection gathers exactly one day's worth of data, creating clean, non-overlapping data points ideal for analytics and storage efficiency. The 24-hour delay in data availability enables complete and accurate daily usage metrics.
 
