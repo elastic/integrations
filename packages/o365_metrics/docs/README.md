@@ -661,3 +661,4 @@ Please refer to the following [document](https://www.elastic.co/guide/en/ecs/cur
 | o365.metrics.active.users.teams.inactive.count | Number of Teams inactive users. | integer |
 | o365.metrics.active.users.yammer.active.count | Number of Yammer active users. | integer |
 | o365.metrics.active.users.yammer.inactive.count | Number of Yammer inactive users. | integer |
+
