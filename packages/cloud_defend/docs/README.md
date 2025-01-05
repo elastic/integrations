@@ -257,12 +257,12 @@ The following fields are populated for all events where `event.category: process
 | [host.mac](https://www.elastic.co/guide/en/ecs/current/ecs-host.html#field-host-mac) | ['32:a9:cc:26:4c:e5', '7a:ec:f0:3e:29:ee'] |
 | [host.name](https://www.elastic.co/guide/en/ecs/current/ecs-host.html#field-host-name) | 'kibana-node.myapp.co' |
 | [host.os.family](https://www.elastic.co/guide/en/ecs/current/ecs-host.html#field-host-os-family) | 'ubuntu' |
-| [host.os.full](https://www.elastic.co/guide/en/ecs/current/ecs-host.html#field-host-os-full) | 'Ubuntu 20.04.5' |
-| [host.os.kernel](https://www.elastic.co/guide/en/ecs/current/ecs-host.html#field-host-os-kernel) | '5.10.161+ #1 SMP Thu Jan 5 22:49:42 UTC 2023' |
-| [host.os.name](https://www.elastic.co/guide/en/ecs/current/ecs-host.html#field-host-os-name) | 'Linux |
-| [host.os.platform](https://www.elastic.co/guide/en/ecs/current/ecs-host.html#field-host-os-platform) | 'ubuntu' |
-| [host.os.type](https://www.elastic.co/guide/en/ecs/current/ecs-host.html#field-host-os-type) | 'linux' |
-| [host.os.version](https://www.elastic.co/guide/en/ecs/current/ecs-host.html#field-host-os-version) | '20.04.5' |
+| [host.os.full](https://www.elastic.co/guide/en/ecs/current/ecs-host.html) | 'Ubuntu 20.04.5' |
+| [host.os.kernel](https://www.elastic.co/guide/en/ecs/current/ecs-host.html) | '5.10.161+ #1 SMP Thu Jan 5 22:49:42 UTC 2023' |
+| [host.os.name](https://www.elastic.co/guide/en/ecs/current/ecs-host.html) | 'Linux |
+| [host.os.platform](https://www.elastic.co/guide/en/ecs/current/ecs-host.html) | 'ubuntu' |
+| [host.os.type](https://www.elastic.co/guide/en/ecs/current/ecs-host.html) | 'linux' |
+| [host.os.version](https://www.elastic.co/guide/en/ecs/current/ecs-host.html) | '20.04.5' |
 | [host.pid_ns_ino](https://www.elastic.co/guide/en/ecs/current/ecs-host.html#field-host-pid-ns-ino) | 4026531836 |
 | [orchestrator.cluster.id](https://www.elastic.co/guide/en/ecs/current/ecs-orchestrator.html#field-orchestrator-cluster-id) | '12345' |
 | [orchestrator.cluster.name](https://www.elastic.co/guide/en/ecs/current/ecs-orchestrator.html#field-orchestrator-cluster-name) | 'website' |
@@ -280,7 +280,7 @@ The following fields are populated for all events where `event.category: process
 | [process.entry_leader.entity_id](https://www.elastic.co/guide/en/ecs/current/ecs-process.html#field-process-entity-id) | 'NzgyOWYyNmQtYzJkMS00ZWFmLWExYWMtY2Q5Y2I5ZTEyZjc1LTE5MTU1MzUtMTY3OTMyODIzOQ==' |
 | [process.entry_leader.entry_meta.type](https://www.elastic.co/guide/en/ecs/current/ecs-process.html#field-process-entry-meta-type) | 'container' |
 | [process.entry_leader.executable](https://www.elastic.co/guide/en/ecs/current/ecs-process.html#field-process-executable) | '/bin/bash' |
-| [process.entry_leader.group.id](https://www.elastic.co/guide/en/ecs/current/ecs-process.html#field-process-group-id) | '0' |
+| [process.entry_leader.group.id](https://www.elastic.co/guide/en/ecs/current/ecs-process.html) | '0' |
 | [process.entry_leader.interactive](https://www.elastic.co/guide/en/ecs/current/ecs-process.html#field-process-interactive) | true |
 | [process.entry_leader.name](https://www.elastic.co/guide/en/ecs/current/ecs-process.html#field-process-name) | 'bash' |
 | [process.entry_leader.pid](https://www.elastic.co/guide/en/ecs/current/ecs-process.html#field-process-pid) | 1915529 |
@@ -314,11 +314,11 @@ The following fields are populated for all events where `event.category: process
 | [process.parent.user.id](https://www.elastic.co/guide/en/ecs/current/ecs-process.html#field-process-user-id) | '0' |
 | [process.parent.working_directory](https://www.elastic.co/guide/en/ecs/current/ecs-process.html#field-process-working-directory) | '/usr/share/elastic-agent'
 | [process.pid](https://www.elastic.co/guide/en/ecs/current/ecs-process.html#field-process-pid) | 1916234 |
-| [process.previous](https://www.elastic.co/guide/en/ecs/current/ecs-process.html#field-process-previous) | [{ args: ['bash'], executable: '/bin/bash'}] |
-| [process.previous.args](https://www.elastic.co/guide/en/ecs/current/ecs-process.html#field-process-previous-args) | ['bash']
-| [process.previous.executable](https://www.elastic.co/guide/en/ecs/current/ecs-process.html#field-process-previous-executable) | '/bin/bash' |
+| [process.previous](https://www.elastic.co/guide/en/ecs/current/ecs-process.html) | [{ args: ['bash'], executable: '/bin/bash'}] |
+| [process.previous.args](https://www.elastic.co/guide/en/ecs/current/ecs-process.html) | ['bash']
+| [process.previous.executable](https://www.elastic.co/guide/en/ecs/current/ecs-process.html) | '/bin/bash' |
 | [process.session_leader.args](https://www.elastic.co/guide/en/ecs/current/ecs-process.html#field-process-args) | ['bash'] |
-| [process.session_leader.entity_id](https://www.elastic.co/guide/en/ecs/current/ecs-process.html#field-process-entity-id) | 'NzgyOWYyNmQtYzJkMS00ZWFmLWExYWMtY2Q5Y2I5ZTEyZjc1LTE5MTU1MzUtMTY3OTMyODIzOQ==' |
+| [process.session_leader.entity_id](https://www.elastic.co/guide/en/ecs/current/ecs-process.html) | 'NzgyOWYyNmQtYzJkMS00ZWFmLWExYWMtY2Q5Y2I5ZTEyZjc1LTE5MTU1MzUtMTY3OTMyODIzOQ==' |
 | [process.session_leader.executable](https://www.elastic.co/guide/en/ecs/current/ecs-process.html#field-process-executable) | '/bin/bash' |
 | [process.session_leader.group.id](https://www.elastic.co/guide/en/ecs/current/ecs-process.html#field-process-group-id) | '0' |
 | [process.session_leader.interactive](https://www.elastic.co/guide/en/ecs/current/ecs-process.html#field-process-interactive) | true |
