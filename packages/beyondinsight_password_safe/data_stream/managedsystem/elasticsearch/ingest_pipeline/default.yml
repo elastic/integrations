@@ -149,6 +149,21 @@ processors:
       field: url.full
       value: '{{{beyondinsight_password_safe.managedsystem.access_url}}}'
       if: ctx.beyondinsight_password_safe.managedsystem.access_url != null
+
+  - script:
+      description: Convert ssh_key_enforcement_mode to their text meaning
+      lang: painless
+      source: |
+        if (ctx.beyondinsight_password_safe?.managedsystem?.ssh_key_enforcement_mode != null) {
+          int enforcementmode = ctx.beyondinsight_password_safe.managedsystem.ssh_key_enforcement_mode;
+          if (enforcementmode == 0) {
+            ctx.beyondinsight_password_safe.managedsystem.ssh_key_enforcement_mode = "None";
+          } else if (enforcementmode == 1) {
+            ctx.beyondinsight_password_safe.managedsystem.ssh_key_enforcement_mode = "Auto";
+          } else if (enforcementmode == 2) {
+            ctx.beyondinsight_password_safe.managedsystem.ssh_key_enforcement_mode = "Strict";
+          } 
+        }      
  #################### Override host.ip ######################
   - script:
       lang: painless
