@@ -1054,33 +1054,44 @@ Note: Descriptions have not been filled out
 | aruba.sflow.port_name     |             |      | server.port                  |
 | aruba.sflow.unit          |             |      | aruba.unit                   |
 
-#### [SFTP Client events](https://www.arubanetworks.com/techdocs/AOS-CX/10.07/HTML/5200-8214/Content/events/SFTP_CLIENT.htm)
-| Field                | Description | Type | Common                       |
-|----------------------|-------------|------|------------------------------|
-| aruba.sftp.from      |             |      | source.address               |
-| aruba.sftp.status    |             |      | aruba.status                 |
-| aruba.sftp.to        |             |      | destination.address          |
+#### [SFTP Client events](https://www.arubanetworks.com/techdocs/AOS-CX/10.15/HTML/elmrg/Content/events/SFTP_CLIENT.htm)
+| Docs Field | Schema Mapping         |
+|------------|------------------------|
+| `<from>`   | source.address         |
+| `<status>` | aruba.status           |
+| `<to>`     | destination.address    |
 
-#### [SNMP events](https://www.arubanetworks.com/techdocs/AOS-CX/10.07/HTML/5200-8214/Content/events/SNMP.htm)
-| Field                     | Description | Type | Common                       |
-|---------------------------|-------------|------|------------------------------|
-| aruba.snmp.truth_value    |             |      |                              |
-| aruba.snmp.vrf            |             |      | aruba.vrf.id                 |
+#### [Smartlink events](https://www.arubanetworks.com/techdocs/AOS-CX/10.15/HTML/elmrg/Content/events/SMARTLINK.htm)
+| Docs Field | Schema Mapping         |
+|------------|------------------------|
+| `<id>`     | group.id               |
+| `<id>`     | network.vlan.id        |
+| `<ifName>` | aruba.interface.name   |
 
-#### [SSH server events](https://www.arubanetworks.com/techdocs/AOS-CX/10.07/HTML/5200-8214/Content/events/SSH_SERVER.htm)
-| Field                     | Description | Type | Common                       |
-|---------------------------|-------------|------|------------------------------|
-| aruba.ssh.key_name        |             |      |                              |
-| aruba.ssh.username        |             |      | user.name                    |
-| aruba.ssh.vrf_name        |             |      | aruba.vrf.name               |
+#### [SNMP events](https://www.arubanetworks.com/techdocs/AOS-CX/10.15/HTML/elmrg/Content/events/SNMP.htm)
+| Docs Field          | Schema Mapping               |
+|---------------------|------------------------------|
+| `<truth_value>`     | aruba.snmp.truth_value       |
+| `<vrf>`             | aruba.vrf.id                 |
 
-#### [SSH_CLIENT events](https://www.arubanetworks.com/techdocs/AOS-CX/10.07/HTML/5200-8214/Content/events/SSH_CLIENT.htm)
-| Field                | Description | Type | Common                       |
-|----------------------|-------------|------|------------------------------|
-| aruba.ssh.ipaddr     |             |      | server.ip                    |
-| aruba.ssh.port_num   |             |      | server.port                  |
-| aruba.ssh.username   |             |      | user.name                    |
-| aruba.ssh.vrf_name   |             |      | aruba.vrf.name               |
+#### [SSH client events](https://www.arubanetworks.com/techdocs/AOS-CX/10.15/HTML/elmrg/Content/events/SSH_CLIENT.htm)
+| Docs Field   | Schema Mapping        |
+|--------------|-----------------------|
+| `<ipaddr>`   | server.ip             |
+| `<port_num>` | server.port           |
+| `<username>` | user.name             |
+| `<vrf_name>` | aruba.vrf.name        |
+
+#### [SSH server events](https://www.arubanetworks.com/techdocs/AOS-CX/10.15/HTML/elmrg/Content/events/SSH_SERVER.htm)
+| Docs Field       | Schema Mapping        |
+|------------------|-----------------------|
+| `<ip_address>`   | client.ip             |
+| `<key_name>`     | aruba.ssh.key_name    |
+| `<mgmt_intf>`    | aruba.interface.id    |
+| `<new_ip>`       | aruba.ssh.new_ip      |
+| `<original_ip>`  | client.ip             |
+| `<username>`     | user.name             |
+| `<vrf_name>`     | aruba.vrf.name        |
 
 #### [Supportability events](https://www.arubanetworks.com/techdocs/AOS-CX/10.15/HTML/elmrg/Content/events/SUPPORTABILITY.htm)
 | Docs Field           | Schema Mapping                   |
@@ -1612,6 +1623,9 @@ The `log` dataset collects the HPE Aruba CX logs.
 | aruba.session.id |  | keyword |
 | aruba.session.name |  | keyword |
 | aruba.slot |  | long |
+| aruba.snmp.truth_value |  | keyword |
+| aruba.ssh.key_name |  | keyword |
+| aruba.ssh.new_ip |  | keyword |
 | aruba.state |  | keyword |
 | aruba.status |  | keyword |
 | aruba.storage.name |  | keyword |

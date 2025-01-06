@@ -1530,6 +1530,96 @@ processors:
       patterns:
         - "^BFD Session (created|deleted) for neighbor %{IP:server.ip} on interface %{GREEDYDATA:aruba.interface.name}"
 
+  # SSH server events (520x)
+  # https://www.arubanetworks.com/techdocs/AOS-CX/10.15/HTML/elmrg/Content/events/SSH_SERVER.htm
+  - dissect:
+      if: "ctx.event?.code == '5201'"
+      tag: sftps_event_5201
+      field: "message"
+      description: "Logs a message when the SSH host-key generated"
+      pattern: "SSH host-key %{aruba.ssh.key_name} is installed."
+  - grok:
+      if: "['5202', '5203'].contains(ctx.event?.code)"
+      tag: sftps_event_5202_5203
+      field: "message"
+      description: "Logs a message when the SSH server is [enabled|disabled] on a VRF"
+      patterns:
+        - "^SSH server is (enabled|disabled) on VRF %{GREEDYDATA:aruba.vrf.name}."
+  - grok:
+      if: "['5204', '5205'].contains(ctx.event?.code)"
+      tag: sftps_event_5204_5205
+      field: "message"
+      description: "Logs a message when [add|delete] ssh client-public-key into authorized_keys file"
+      patterns:
+        - "^SSH client-public-key %{DATA:aruba.ssh.key_name} was (installed|removed) for the user %{GREEDYDATA:user.name}."
+  - dissect:
+      if: "ctx.event?.code == '5207'"
+      tag: sftps_event_5207
+      field: "message"
+      description: "Logs a message when the SSH host-key is corrupted"
+      pattern: "An internal error occurred while reading the SSH host-key %{aruba.ssh.key_name}."
+  - dissect:
+      if: "ctx.event?.code == '5208'"
+      tag: sftps_event_5208
+      field: "message"
+      description: "Logs a message when a user tries to enable SSH server without setting admin password"
+      pattern: "Failed to enable SSH server on VRF %{aruba.vrf.name}. Admin password is not set."
+  - grok:
+      if: "['5209','5210','5211'].contains(ctx.event?.code)"
+      tag: sftps_event_5209_5210_5211
+      field: "message"
+      description: "Logs a message when a user login is successful | failed | logout"
+      patterns:
+        - "^User %{DATA:user.name} (logged in|login) from %{IP:client.ip} "
+        - "^User %{DATA:user.name} logged out of SSH session from %{IP:client.ip}."
+  - grok:
+      if: "['5212','5213','5214'].contains(ctx.event?.code)"
+      tag: sftps_event_5212_5213_5214
+      field: "message"
+      description: "Logs a message when a user tries to login while maximum number of sessions are reached | user session is closed while maximum number of sessions per user are reached | session is closed due to host key failurE"
+      patterns:
+        - "^SSH session from %{IP:client.ip} "
+        - "^SSH session from user %{DATA:user.name} closed because maximum number of sessions per user is reached."
+  - grok:
+      if: "['5215', '5216'].contains(ctx.event?.code)"
+      tag: sftps_event_5215_5216
+      field: "message"
+      description: "Logs a message when a user login fails since the access through this management interface is not allowed | when a user login fails due to public key failure"
+      patterns:
+        - "^SSH session from %{IP:client.ip} for user %{DATA:user.name} denied. The allowed user management interfaces are: %{GREEDYDATA:aruba.interface.id}."
+        - "^SSH session from %{IP:client.ip} for user %{DATA:user.name} rejected due to failed public key validation"
+  - dissect:
+      if: "ctx.event?.code == '5217'"
+      tag: sftps_event_5217
+      field: "message"
+      description: "Logs a message when SSH server goes into an error state."
+      pattern: "SSH server on VRF %{aruba.vrf.name} is in an error state."
+  - grok:
+      if: "['5218', '5219'].contains(ctx.event?.code)"
+      tag: sftps_event_5218_5219
+      field: "message"
+      description: "Logs a message when SSH server (fails)? converts an IP address to CIDR format | "
+      patterns:
+        - "^Converting configured SSH server allow-list entry %{IP:client.ip} to CIDR format \\(%{GREEDYDATA:aruba.ssh.new_ip}\\)"
+        - "^Failed to convert configured SSH server allow-list entry %{IP:client.ip} to CIDR format, using original address as-is"
+  - grok:
+      if: "['5220', '5221','5222'].contains(ctx.event?.code)"
+      tag: sftps_event_5220_5221_5222
+      field: "message"
+      description: "Logs a message when SSH connection fails due to authorize-only attempt | authenticating username was searched for and not found in the authenticating certificate | when the authenticating IP is denied due to the SSH server allow list"
+      patterns:
+        - "^RADIUS authorize-only request failed for SSH session from %{IP:client.ip} for user %{GREEDYDATA:user.name}."
+        - "^SSH session from %{IP:client.ip} (denied because username|for user) %{DATA:user.name} "
+
+  # SFTP Client events (530x)
+  # https://www.arubanetworks.com/techdocs/AOS-CX/10.15/HTML/elmrg/Content/events/SFTP_CLIENT.htm
+  - grok:
+      if: "['5301', '5302'].contains(ctx.event?.code)"
+      tag: sftpc_event_5301_5302
+      field: "message"
+      description: "SFTP file transfer completed | failed"
+      patterns:
+        - "^SFTP file transfer from %{DATA:source.address} to %{DATA:destination.address} (completed|failed - %{GREEDYDATA:aruba.status})."
 
   # HTTPS Server events (560x)
   # https://www.arubanetworks.com/techdocs/AOS-CX/10.07/HTML/5200-8214/Content/events/HTTPS_SERVER.htm
@@ -1817,6 +1907,22 @@ processors:
       field: "message"
       description: "Action has been triggered by an NAE agent"
       pattern: "An action has been triggered by the NAE agent %{aruba.nae.name}"
+
+  # SNMP events (71xx)
+  # https://www.arubanetworks.com/techdocs/AOS-CX/10.15/HTML/elmrg/Content/events/SNMP.htm
+  - grok:
+      if: "['7101','7102','7103','7104'].contains(ctx.event?.code)"
+      tag: snmp_event_7101_7102_7103_7104
+      field: "message"
+      description: "SNMP (sub)? agent is [enabled|disabled]"
+      patterns:
+        - "namespace %{GREEDYDATA:aruba.vrf.id}"
+  - dissect:
+      if: "ctx.event.code == '7111'"
+      tag: snmp_event_7111
+      field: "message"
+      description: "SNMP on demand idl sync."
+      pattern: "SNMP cache sync on-demand is set to: %{aruba.snmp.truth_value}"
 
   # In-System Programming events (72xx)
   # https://www.arubanetworks.com/techdocs/AOS-CX/10.07/HTML/5200-8214/Content/events/ISP.htm
@@ -2548,6 +2654,17 @@ processors:
       patterns:
         - "^CDP neighbor %{MAC:source.mac} is (added|updated|deleted) on %{GREEDYDATA:aruba.interface.name}"
 
+  # SSH client events (900x)
+  # https://www.arubanetworks.com/techdocs/AOS-CX/10.15/HTML/elmrg/Content/events/SSH_CLIENT.htm
+  - grok:
+      if: "['9001','9002','9003'].contains(ctx.event?.code)"
+      tag: sshc_event_9001_9002_9003
+      field: "message"
+      description: "SSH client session is successful|denied"
+      patterns:
+        - "^Connection to SSH server %{IP:server.ip} on VRF %{DATA:aruba.vrf.name} is (established|successfully closed) for user %{DATA:user.name} over port %{GREEDYDATA:aruba.port}"
+        - "^Connection to SSH server %{IP:server.ip} on VRF %{DATA:aruba.vrf.name} over port %{DATA:aruba.port} is denied"
+        
   # Internal storage events (910x)
   # https://www.arubanetworks.com/techdocs/AOS-CX/10.07/HTML/5200-8214/Content/events/INTERNAL-STORAGE.htm
   - grok:
@@ -2929,6 +3046,17 @@ processors:
         - "^MKA session secured for Connectivity Association %{DATA:aruba.mac.ckn} on interface %{GREEDYDATA:aruba.interface.name}"
         - "^Secure Association key updated for Connectivity Association %{DATA:aruba.mac.ckn} on interface %{DATA:aruba.interface.name} - Latest AN/KN %{DATA:aruba.mac.latest_an}/%{DATA:aruba.mac.latest_kn}, Old AN/KN %{DATA:aruba.mac.old_an}/%{GREEDYDATA:aruba.mac.old_kn}"
         - "^Possible replay attempt detected on the Secure Channel %{GREEDYDATA:aruba.mac.sci}."
+
+  # Smartlink events (1130x)
+  # https://www.arubanetworks.com/techdocs/AOS-CX/10.15/HTML/elmrg/Content/events/SMARTLINK.htm
+  - grok:
+      field: message
+      tag: smartlink_event_11301_11302_11303
+      if: "['11301','11302','11303'].contains(ctx.event?.code)"
+      description: "flush message received on interface with control vlan | when [active|backup] link changed in the smartlink group"
+      patterns:
+        - "^Flush message received on %{DATA:aruba.interface.name} with control VLAN %{GREEDYDATA:network.vlan.id}"
+        - "^(Active|Backup) link of the smartlink group %{DATA:group.id} changed to %{GREEDYDATA:aruba.interface.name}"
 
   # L3 Resource Manager events (1150x)
   # https://www.arubanetworks.com/techdocs/AOS-CX/10.07/HTML/5200-8214/Content/events/L3_RESMGR.htm
