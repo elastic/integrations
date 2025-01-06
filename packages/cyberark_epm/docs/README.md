@@ -2,7 +2,7 @@
 
 [CyberArk Endpoint Privilege Manager (EPM)](https://www.cyberark.com/products/endpoint-privilege-manager/) enforces least privilege and enables organizations to block and contain attacks on endpoint computers, reducing the risk of information being stolen or encrypted and held for ransom. A combination of privilege security, application control and credential theft prevention reduces the risk of malware infection.
 
-The CyberArk EPM integration collects event, policy audit, and admin audit logs using the REST API.
+The CyberArk EPM integration collects events (raw and aggregated), policy audit events (raw and aggregated), and admin audit logs using the REST API.
 
 ## Compatibility
 
@@ -57,7 +57,9 @@ Please note, there are minimum requirements for running Elastic Agent. For more 
 5. Add all the required integration configuration parameters, including the URL, Username, Password, Session Timeout, Interval, and Initial Interval, to enable data collection.
 6. Select "Save and continue" to save the integration.
 
-**Note**: The default URL is `https://login.epm.cyberark.com`, but this may vary depending on your region. Please refer to the [Documentation](https://docs.cyberark.com/epm/latest/en/content/webservices/webservicesintro.htm#EPMdispatcherservername) to find the correct URL for your region.
+**Note**:
+  - The default URL is `https://login.epm.cyberark.com`, but this may vary depending on your region. Please refer to the [Documentation](https://docs.cyberark.com/epm/latest/en/content/webservices/webservicesintro.htm#EPMdispatcherservername) to find the correct URL for your region.
+  - If you encounter an error indicating that the usage limit has been reached, consider lowering the "Resource Rate Limit" parameter in the advanced section. For more details, please refer to the [documentation](https://docs.cyberark.com/epm/latest/en/content/webservices/webservicesintro.htm#APIlimitations).
 
 ## Logs reference
 
@@ -73,9 +75,9 @@ An example event for `raw_event` looks as following:
 {
     "@timestamp": "2024-11-28T05:24:15.693Z",
     "agent": {
-        "ephemeral_id": "8b92c114-35b4-4ca0-aaac-01a766c0dddc",
-        "id": "6879c517-eb6f-4a07-8805-9d948628bf27",
-        "name": "elastic-agent-74783",
+        "ephemeral_id": "b2114da7-4d06-4236-a161-456e590812c4",
+        "id": "ffd91dcb-1e39-4e3d-a0ca-06e5b5d75873",
+        "name": "elastic-agent-96710",
         "type": "filebeat",
         "version": "8.16.0"
     },
@@ -93,6 +95,8 @@ An example event for `raw_event` looks as following:
             "display_name": "Windows host process (Rundll32) (rundll32.exe)",
             "file_description": "Windows host process (Rundll32)",
             "file_name": "rundll32.exe",
+            "file_owner_domain": "NT SERVICE",
+            "file_owner_name": "TrustedInstaller",
             "file_path": "C:\\Windows\\System32\\rundll32.exe",
             "file_path_without_filename": "C:\\Windows\\System32\\",
             "file_qualifier": "-6929158130464282036",
@@ -108,7 +112,6 @@ An example event for `raw_event` looks as following:
             "modification_time": "2024-10-29T05:24:15.618Z",
             "operating_system_type": "Windows",
             "original_file_name": "RUNDLL32.EXE",
-            "owner": "NT SERVICE\\TrustedInstaller",
             "package_name": "Windows host process (Rundll32) (rundll32.exe)",
             "policy_name": "test-rule2",
             "process_command_line": "Startupscan.dll,SusRunTask",
@@ -121,22 +124,23 @@ An example event for `raw_event` looks as following:
             "threat_protection_action": "ALL",
             "threat_protection_action_id": "0",
             "type": "Launch",
+            "user_domain": "TEST-PC",
             "user_is_admin": true,
-            "user_name": "TEST-PC\\Administrator",
+            "user_name": "Administrator",
             "win_event_record_id": 0,
             "win_event_type": 0
         }
     },
     "data_stream": {
         "dataset": "cyberark_epm.raw_event",
-        "namespace": "30363",
+        "namespace": "33414",
         "type": "logs"
     },
     "ecs": {
         "version": "8.11.0"
     },
     "elastic_agent": {
-        "id": "6879c517-eb6f-4a07-8805-9d948628bf27",
+        "id": "ffd91dcb-1e39-4e3d-a0ca-06e5b5d75873",
         "snapshot": false,
         "version": "8.16.0"
     },
@@ -148,7 +152,7 @@ An example event for `raw_event` looks as following:
         ],
         "dataset": "cyberark_epm.raw_event",
         "end": "2024-11-28T05:03:10.094Z",
-        "ingested": "2024-12-20T05:55:12Z",
+        "ingested": "2025-01-06T05:28:21Z",
         "kind": "event",
         "original": "{\"accessAction\":\"false\",\"accessTargetName\":null,\"accessTargetType\":\"Internet\",\"agentEventCount\":1,\"agentId\":\"109f521d-2ee1-450b-9f71-3cc56d8ebf37\",\"applicationSubType\":null,\"arrivalTime\":\"2024-11-28T05:24:15.693Z\",\"authorizationRights\":null,\"bundleId\":null,\"bundleName\":null,\"bundleVersion\":null,\"company\":\"Microsoft Corporation\",\"computerName\":\"TEST-PC\",\"deceptionType\":0,\"displayName\":\"Windows host process (Rundll32) (rundll32.exe)\",\"eventCount\":1,\"eventType\":\"Launch\",\"evidences\":null,\"exposedUsers\":null,\"fatherProcess\":null,\"fileAccessPermission\":null,\"fileDescription\":\"Windows host process (Rundll32)\",\"fileName\":\"rundll32.exe\",\"filePath\":\"C:\\\\Windows\\\\System32\\\\rundll32.exe\",\"filePathWithoutFilename\":\"C:\\\\Windows\\\\System32\\\\\",\"fileQualifier\":\"-6929158130464282036\",\"fileSize\":71168,\"fileVersion\":\"10.0.17763.1697\",\"firstEventDate\":\"2024-11-28T05:03:10.094Z\",\"hash\":\"A40886F98905F3D9DBDD61DA1D59CCB4F4854758\",\"interpreter\":null,\"justification\":null,\"justificationEmail\":null,\"lastEventDate\":\"2024-11-28T05:03:10.094Z\",\"logonAttemptTypeId\":5,\"logonStatusId\":3221225779,\"lureUser\":null,\"modificationTime\":\"2024-10-29T05:24:15.618Z\",\"operatingSystemType\":\"Windows\",\"originUserUID\":null,\"originalFileName\":\"RUNDLL32.EXE\",\"owner\":\"NT SERVICE\\\\TrustedInstaller\",\"packageName\":\"Windows host process (Rundll32) (rundll32.exe)\",\"policyCategory\":null,\"policyName\":\"test-rule2\",\"processCertificateIssuer\":null,\"processCommandLine\":\"Startupscan.dll,SusRunTask\",\"productCode\":null,\"productName\":\"Microsoft® Windows® Operating System\",\"productVersion\":\"10.0.17763.1697\",\"publisher\":\"Microsoft Windows\",\"runAsUsername\":null,\"skippedCount\":0,\"sourceName\":\"Microsoft Windows\",\"sourceProcessCertificateIssuer\":null,\"sourceProcessCommandLine\":null,\"sourceProcessHash\":null,\"sourceProcessPublisher\":null,\"sourceProcessSigner\":null,\"sourceProcessUsername\":null,\"sourceType\":\"Windows\",\"sourceWSIp\":null,\"sourceWSName\":null,\"symLink\":null,\"threatProtectionAction\":\"ALL\",\"threatProtectionActionId\":0,\"upgradeCode\":null,\"userIsAdmin\":true,\"userName\":\"TEST-PC\\\\Administrator\",\"winEventRecordId\":0,\"winEventType\":0,\"workingDirectory\":null}",
         "start": "2024-11-28T05:03:10.094Z",
@@ -163,7 +167,7 @@ An example event for `raw_event` looks as following:
         },
         "mtime": "2024-10-29T05:24:15.618Z",
         "name": "rundll32.exe",
-        "owner": "NT SERVICE\\TrustedInstaller",
+        "owner": "TrustedInstaller",
         "path": "C:\\Windows\\System32\\rundll32.exe",
         "size": 71168
     },
@@ -184,16 +188,21 @@ An example event for `raw_event` looks as following:
         "name": "Microsoft Corporation"
     },
     "package": {
+        "checksum": "A40886F98905F3D9DBDD61DA1D59CCB4F4854758",
         "name": "Windows host process (Rundll32) (rundll32.exe)",
+        "size": 71168,
         "version": "10.0.17763.1697"
     },
     "related": {
         "hash": [
             "A40886F98905F3D9DBDD61DA1D59CCB4F4854758"
         ],
+        "hosts": [
+            "TEST-PC"
+        ],
         "user": [
-            "NT SERVICE\\TrustedInstaller",
-            "TEST-PC\\Administrator"
+            "TrustedInstaller",
+            "Administrator"
         ]
     },
     "rule": {
@@ -206,7 +215,8 @@ An example event for `raw_event` looks as following:
         "cyberark_epm-raw_event"
     ],
     "user": {
-        "name": "TEST-PC\\Administrator"
+        "domain": "TEST-PC",
+        "name": "Administrator"
     }
 }
 ```
@@ -242,6 +252,8 @@ An example event for `raw_event` looks as following:
 | cyberark_epm.raw_event.file_access_permission | The file access permission. | keyword |
 | cyberark_epm.raw_event.file_description | File description of the file that triggered the event. | keyword |
 | cyberark_epm.raw_event.file_name | The name of the event file that triggered the event. | keyword |
+| cyberark_epm.raw_event.file_owner_domain |  | keyword |
+| cyberark_epm.raw_event.file_owner_name | Owner of the file that triggered the event. | keyword |
 | cyberark_epm.raw_event.file_path | File path of the file that triggered the event. | keyword |
 | cyberark_epm.raw_event.file_path_without_filename |  | keyword |
 | cyberark_epm.raw_event.file_qualifier |  | keyword |
@@ -263,7 +275,6 @@ An example event for `raw_event` looks as following:
 | cyberark_epm.raw_event.operating_system_type |  | keyword |
 | cyberark_epm.raw_event.origin_user_uid | The unique name of the user. | keyword |
 | cyberark_epm.raw_event.original_file_name | The original name of the event file that triggered the event. | keyword |
-| cyberark_epm.raw_event.owner | Owner of the file that triggered the event. | keyword |
 | cyberark_epm.raw_event.package_name | Installation package or executable that created the file that triggered the event. | keyword |
 | cyberark_epm.raw_event.policy_category |  | keyword |
 | cyberark_epm.raw_event.policy_name | The policy that triggered the event. | keyword |
@@ -290,6 +301,7 @@ An example event for `raw_event` looks as following:
 | cyberark_epm.raw_event.threat_protection_action_id |  | keyword |
 | cyberark_epm.raw_event.type | Type of event. | keyword |
 | cyberark_epm.raw_event.upgrade_code | The upgrade code of the file that triggered the most recent event. | keyword |
+| cyberark_epm.raw_event.user_domain |  | keyword |
 | cyberark_epm.raw_event.user_is_admin | Whether the user who triggered the event is a local administrator. | boolean |
 | cyberark_epm.raw_event.user_name | User who triggered the event. | keyword |
 | cyberark_epm.raw_event.win_event_record_id | Microsoft Windows event viewer report number that indicates the logged OS event. | long |
@@ -316,9 +328,9 @@ An example event for `policyaudit_raw_event` looks as following:
 {
     "@timestamp": "2024-11-25T14:27:54.054Z",
     "agent": {
-        "ephemeral_id": "b76535c1-6550-408e-9447-589b2c152554",
-        "id": "65c1835d-aada-4b51-aea7-c91f2ed15c42",
-        "name": "elastic-agent-56319",
+        "ephemeral_id": "1a61d14a-fd5a-4285-8fa6-044656c01031",
+        "id": "204b047e-1c2d-4330-9821-2d3b668edf6b",
+        "name": "elastic-agent-60258",
         "type": "filebeat",
         "version": "8.16.0"
     },
@@ -335,6 +347,7 @@ An example event for `policyaudit_raw_event` looks as following:
             "file_access_permission": "-rwxr-xr-x",
             "file_description": "systemctl",
             "file_name": "systemctl",
+            "file_owner_name": "root",
             "file_path": "/usr/bin/systemctl",
             "file_qualifier": "2375697114193346955",
             "file_size": 1115760,
@@ -344,7 +357,6 @@ An example event for `policyaudit_raw_event` looks as following:
             "modification_time": "2024-10-26T14:27:54.041Z",
             "operating_system_type": "Linux",
             "origin_user_uid": "0",
-            "owner": "root",
             "package_name": "systemctl",
             "policy_action": "Elevate",
             "policy_name": "Test-elastic",
@@ -361,14 +373,14 @@ An example event for `policyaudit_raw_event` looks as following:
     },
     "data_stream": {
         "dataset": "cyberark_epm.policyaudit_raw_event",
-        "namespace": "59486",
+        "namespace": "49746",
         "type": "logs"
     },
     "ecs": {
         "version": "8.11.0"
     },
     "elastic_agent": {
-        "id": "65c1835d-aada-4b51-aea7-c91f2ed15c42",
+        "id": "204b047e-1c2d-4330-9821-2d3b668edf6b",
         "snapshot": false,
         "version": "8.16.0"
     },
@@ -379,7 +391,7 @@ An example event for `policyaudit_raw_event` looks as following:
         ],
         "dataset": "cyberark_epm.policyaudit_raw_event",
         "end": "2024-11-25T10:37:58.431Z",
-        "ingested": "2024-12-20T05:52:33Z",
+        "ingested": "2025-01-06T05:27:15Z",
         "kind": "event",
         "original": "{\"accessTargetName\":\"C:\\\\Oracle\\\\oemmw\\\\OPatch\\\\version.txt\",\"accessTargetType\":\"ransomware\",\"agentEventCount\":2,\"agentId\":\"48b4bf28-5257-4460-a384-9aac70fb7db2\",\"applicationSubType\":null,\"arguments\":\"status sshd\",\"arrivalTime\":\"2024-11-25T14:27:54.054Z\",\"authorizationRights\":null,\"bundleName\":\"\",\"bundleVersion\":\"\",\"codeURL\":\"\",\"commandInfo\":\"\",\"company\":\"\",\"computerName\":\"k8sworker1-50-2-19\",\"displayName\":\"systemctl\",\"eventType\":\"StartElevated\",\"fileAccessPermission\":\"-rwxr-xr-x\",\"fileDescription\":\"systemctl\",\"fileName\":\"systemctl\",\"filePath\":\"/usr/bin/systemctl\",\"fileQualifier\":\"2375697114193346955\",\"fileSize\":1115760,\"fileVersion\":\"\",\"firstEventDate\":\"2024-11-25T10:31:12.018Z\",\"hash\":\"5f344897632b50114a8ff649054599c6f7fa8a69\",\"interpreter\":\"\",\"justification\":\"\",\"justificationEmail\":\"\",\"lastEventDate\":\"2024-11-25T10:37:58.431Z\",\"mimeType\":\"\",\"modificationTime\":\"2024-10-26T14:27:54.041Z\",\"operatingSystemType\":\"Linux\",\"originUserUID\":\"0\",\"originalFileName\":\"\",\"owner\":\"root\",\"packageName\":\"systemctl\",\"parentProcess\":\"\",\"policyAction\":\"Elevate\",\"policyName\":\"Test-elastic\",\"productCode\":\"\",\"productName\":\"SQL*PLUS\",\"productVersion\":\"\",\"publisher\":\"\",\"runAsUsername\":\"root\",\"skippedCount\":0,\"sourceName\":\"/usr/bin/systemctl\",\"sourceType\":\"LocalDisk\",\"symLink\":\"\",\"upgradeCode\":\"\",\"userIsAdmin\":true,\"userName\":\"root\",\"workingDirectory\":\"/home/serviceuser\"}",
         "start": "2024-11-25T10:31:12.018Z",
@@ -412,7 +424,9 @@ An example event for `policyaudit_raw_event` looks as following:
         "vendor": "CyberArk"
     },
     "package": {
-        "name": "systemctl"
+        "checksum": "5f344897632b50114a8ff649054599c6f7fa8a69",
+        "name": "systemctl",
+        "size": 1115760
     },
     "process": {
         "working_directory": "/home/serviceuser"
@@ -420,6 +434,9 @@ An example event for `policyaudit_raw_event` looks as following:
     "related": {
         "hash": [
             "5f344897632b50114a8ff649054599c6f7fa8a69"
+        ],
+        "hosts": [
+            "k8sworker1-50-2-19"
         ],
         "user": [
             "0",
@@ -467,6 +484,8 @@ An example event for `policyaudit_raw_event` looks as following:
 | cyberark_epm.policyaudit_raw_event.file_access_permission | Details of the file access permissions. | keyword |
 | cyberark_epm.policyaudit_raw_event.file_description | File description of the file that triggered the event. | keyword |
 | cyberark_epm.policyaudit_raw_event.file_name | The name of the event file that triggered the event (files with the same hash can have different names). | keyword |
+| cyberark_epm.policyaudit_raw_event.file_owner_domain |  | keyword |
+| cyberark_epm.policyaudit_raw_event.file_owner_name | Owner of the file that triggered the event. | keyword |
 | cyberark_epm.policyaudit_raw_event.file_path | File path of the file that triggered the event. | keyword |
 | cyberark_epm.policyaudit_raw_event.file_qualifier | The unique file identifier. | keyword |
 | cyberark_epm.policyaudit_raw_event.file_size | The file size. If the size is zero, consider not returning this parameter. | long |
@@ -482,7 +501,6 @@ An example event for `policyaudit_raw_event` looks as following:
 | cyberark_epm.policyaudit_raw_event.operating_system_type | The operating system type of the file. | keyword |
 | cyberark_epm.policyaudit_raw_event.origin_user_uid | The user's unique name. | keyword |
 | cyberark_epm.policyaudit_raw_event.original_file_name | The name of the original file. | keyword |
-| cyberark_epm.policyaudit_raw_event.owner | Owner of the file that triggered the event. | keyword |
 | cyberark_epm.policyaudit_raw_event.package_name | Installation package or executable that created the file that triggered the event. | keyword |
 | cyberark_epm.policyaudit_raw_event.parent_process |  | keyword |
 | cyberark_epm.policyaudit_raw_event.policy_action | The detected policy action. | keyword |
@@ -499,6 +517,7 @@ An example event for `policyaudit_raw_event` looks as following:
 | cyberark_epm.policyaudit_raw_event.sym_link | A Linux/UNIX link that points to another file or folder. | keyword |
 | cyberark_epm.policyaudit_raw_event.type | Type of event. | keyword |
 | cyberark_epm.policyaudit_raw_event.upgrade_code | The upgrade code of the file that triggered the most recent event. | keyword |
+| cyberark_epm.policyaudit_raw_event.user_domain |  | keyword |
 | cyberark_epm.policyaudit_raw_event.user_is_admin | Whether the user who triggered the event is a local administrator. | boolean |
 | cyberark_epm.policyaudit_raw_event.user_name | User who triggered the event. | keyword |
 | cyberark_epm.policyaudit_raw_event.working_directory | The directory where the file ran. | keyword |
@@ -523,9 +542,9 @@ An example event for `aggregated_event` looks as following:
 {
     "@timestamp": "2024-11-25T11:25:18.712Z",
     "agent": {
-        "ephemeral_id": "2581d4f5-9bbe-45f9-aa75-c4a86958d800",
-        "id": "c4ec8b49-4c55-4d2c-ad72-8db90a84b3e8",
-        "name": "elastic-agent-55639",
+        "ephemeral_id": "41121a9e-2b78-42e1-b4ee-97279ee58824",
+        "id": "497e924b-d605-4c9d-a197-8e5804077321",
+        "name": "elastic-agent-46395",
         "type": "filebeat",
         "version": "8.16.0"
     },
@@ -547,7 +566,8 @@ An example event for `aggregated_event` looks as following:
             "file_size": 13312,
             "first_event_computer_name": "TEST",
             "first_event_date": "2024-11-25T11:25:17.114Z",
-            "first_event_user_name": "TEST\\Administrator",
+            "first_event_user_domain": "TEST",
+            "first_event_user_name": "Administrator",
             "hash": "SHA1##0E4B8652719D84B66BFBFCF195C43513AF8459D8",
             "last_agent_id": "109f521d-2ee1-450b-9f71-3cc56d8ebf37",
             "last_event_computer_name": "TEST",
@@ -558,7 +578,8 @@ An example event for `aggregated_event` looks as following:
             "last_event_id": "ZpURY5MBdDBWucfdnK1j",
             "last_event_source_name": "ouiSFX (setup_em13200p1_win64.exe)",
             "last_event_source_type": "LocalDisk",
-            "last_event_user_name": "TEST\\Administrator",
+            "last_event_user_domain": "TEST",
+            "last_event_user_name": "Administrator",
             "operating_system_type": "Windows",
             "package_name": "ouiSFX (setup_em13200p1_win64.exe)",
             "skipped": false,
@@ -570,14 +591,14 @@ An example event for `aggregated_event` looks as following:
     },
     "data_stream": {
         "dataset": "cyberark_epm.aggregated_event",
-        "namespace": "98972",
+        "namespace": "99704",
         "type": "logs"
     },
     "ecs": {
         "version": "8.11.0"
     },
     "elastic_agent": {
-        "id": "c4ec8b49-4c55-4d2c-ad72-8db90a84b3e8",
+        "id": "497e924b-d605-4c9d-a197-8e5804077321",
         "snapshot": false,
         "version": "8.16.0"
     },
@@ -588,7 +609,7 @@ An example event for `aggregated_event` looks as following:
         ],
         "dataset": "cyberark_epm.aggregated_event",
         "end": "2024-11-25T11:25:17.114Z",
-        "ingested": "2024-12-20T05:47:20Z",
+        "ingested": "2025-01-06T05:25:15Z",
         "kind": "event",
         "original": "{\"CLSID\":\"\",\"affectedComputers\":1,\"affectedUsers\":1,\"agentId\":\"109f521d-2ee1-450b-9f71-3cc56d8ebf37\",\"aggregatedBy\":\"0E4B8652719D84B66BFBFCF195C43513AF8459D8,2048\",\"appPackageDisplayName\":\"\",\"applicationType\":\"Executable\",\"applicationTypeId\":3,\"arrivalTime\":\"2024-11-25T11:25:18.712Z\",\"deceptionType\":0,\"defenceActionId\":0,\"eventType\":\"Launch\",\"eventTypeId\":2048,\"exposedUsers\":0,\"fileLocation\":\"C:\\\\Oracle\\\\oemmw\\\\oracle_common\\\\ccr\\\\bin\\\\\",\"fileQualifier\":\"-1035712369269809536\",\"fileSize\":13312,\"firstEventComputerName\":\"TEST\",\"firstEventDate\":\"2024-11-25T11:25:17.114Z\",\"firstEventUserName\":\"TEST\\\\Administrator\",\"hash\":\"SHA1##0E4B8652719D84B66BFBFCF195C43513AF8459D8\",\"lastAgentId\":\"109f521d-2ee1-450b-9f71-3cc56d8ebf37\",\"lastEventAccessTargetName\":\"\",\"lastEventAccessTargetType\":null,\"lastEventAgentId\":null,\"lastEventAuthorizationRights\":\"\",\"lastEventComputerName\":\"TEST\",\"lastEventDate\":\"2024-11-25T11:25:17.114Z\",\"lastEventDisplayName\":\"setupCCR.exe -a -d -S...\",\"lastEventExposedUsers\":null,\"lastEventExposedUsersCount\":0,\"lastEventFileName\":\"setupCCR.exe\",\"lastEventId\":\"ZpURY5MBdDBWucfdnK1j\",\"lastEventInitiatedProcess\":null,\"lastEventInitiatedProcessLocation\":null,\"lastEventJustification\":\"\",\"lastEventOriginalFileName\":\"\",\"lastEventPackageName\":null,\"lastEventSourceName\":\"ouiSFX (setup_em13200p1_win64.exe)\",\"lastEventSourceType\":\"LocalDisk\",\"lastEventSymLink\":\"\",\"lastEventUserName\":\"TEST\\\\Administrator\",\"mimeType\":\"\",\"operatingSystemType\":\"Windows\",\"packageName\":\"ouiSFX (setup_em13200p1_win64.exe)\",\"productCode\":null,\"publisher\":\"\",\"skipped\":false,\"skippedCount\":0,\"threatDetectionAction\":\"\",\"totalEvents\":1,\"upgradeCode\":null,\"url\":\"\"}",
         "start": "2024-11-25T11:25:17.114Z",
@@ -617,14 +638,19 @@ An example event for `aggregated_event` looks as following:
         "vendor": "CyberArk"
     },
     "package": {
-        "name": "ouiSFX (setup_em13200p1_win64.exe)"
+        "checksum": "0E4B8652719D84B66BFBFCF195C43513AF8459D8",
+        "name": "ouiSFX (setup_em13200p1_win64.exe)",
+        "size": 13312
     },
     "related": {
         "hash": [
             "0E4B8652719D84B66BFBFCF195C43513AF8459D8"
         ],
+        "hosts": [
+            "TEST"
+        ],
         "user": [
-            "TEST\\Administrator"
+            "Administrator"
         ]
     },
     "tags": [
@@ -661,6 +687,7 @@ An example event for `aggregated_event` looks as following:
 | cyberark_epm.aggregated_event.file_size | The file size. | long |
 | cyberark_epm.aggregated_event.first_event_computer_name |  | keyword |
 | cyberark_epm.aggregated_event.first_event_date | The first date of the first event in the aggregation. | date |
+| cyberark_epm.aggregated_event.first_event_user_domain |  | keyword |
 | cyberark_epm.aggregated_event.first_event_user_name | Name of the first user who triggered first event in the aggregation. | keyword |
 | cyberark_epm.aggregated_event.hash | Hash value (SHA1) of the application that triggered the event. | keyword |
 | cyberark_epm.aggregated_event.last_agent_id | Last event in the aggregation agent id. | keyword |
@@ -683,6 +710,7 @@ An example event for `aggregated_event` looks as following:
 | cyberark_epm.aggregated_event.last_event_source_name | Point of origin from where the file that triggered the last event was acquired. | keyword |
 | cyberark_epm.aggregated_event.last_event_source_type | The type of origin from where the file that triggered the last event was acquired. | keyword |
 | cyberark_epm.aggregated_event.last_event_sym_link | A Linux/UNIX link that points to another file or folder. | keyword |
+| cyberark_epm.aggregated_event.last_event_user_domain |  | keyword |
 | cyberark_epm.aggregated_event.last_event_user_name | User who triggered the last event. | keyword |
 | cyberark_epm.aggregated_event.mime_type | The type of the file. (i.e., application, media, etc.). | keyword |
 | cyberark_epm.aggregated_event.operating_system_type | The endpoint operating system. | keyword |
@@ -719,9 +747,9 @@ An example event for `policyaudit_aggregated_event` looks as following:
 {
     "@timestamp": "2022-12-19T05:51:06.024Z",
     "agent": {
-        "ephemeral_id": "7a16795f-9380-4933-91de-40a6b7bf1838",
-        "id": "88586b20-cb1c-4e31-9a6c-ac7352771f92",
-        "name": "elastic-agent-94199",
+        "ephemeral_id": "4a9c2d55-8e03-42ee-9d25-55164bff9092",
+        "id": "f1613af9-3456-4b63-b774-f20eda58a491",
+        "name": "elastic-agent-46379",
         "type": "filebeat",
         "version": "8.16.0"
     },
@@ -738,7 +766,8 @@ An example event for `policyaudit_aggregated_event` looks as following:
             "file_size": 408536,
             "first_event_agent_id": "b074b7d4-664a-40d1-b929-69e89bbd254c",
             "first_event_date": "2022-12-14T21:06:44.756Z",
-            "first_event_user_name": "NT AUTHORITY\\SYSTEM",
+            "first_event_user_domain": "NT AUTHORITY",
+            "first_event_user_name": "SYSTEM",
             "hash": "SHA1##C340EFFBAED989E7F8FFC6F7574856CD8ED0D18B",
             "last_event_access_target_type": "Registry",
             "last_event_agent_id": "b074b7d4-664a-40d1-b929-69e89bbd254c",
@@ -749,7 +778,8 @@ An example event for `policyaudit_aggregated_event` looks as following:
             "last_event_package_name": "Google Update (GoogleUpdate.exe)",
             "last_event_source_name": "Updater (Google Updater)",
             "last_event_source_type": "Updater",
-            "last_event_user_name": "NT AUTHORITY\\SYSTEM",
+            "last_event_user_domain": "NT AUTHORITY",
+            "last_event_user_name": "SYSTEM",
             "operating_system_type": "Windows",
             "policy_id": "11161",
             "policy_name": "QQQ",
@@ -762,14 +792,14 @@ An example event for `policyaudit_aggregated_event` looks as following:
     },
     "data_stream": {
         "dataset": "cyberark_epm.policyaudit_aggregated_event",
-        "namespace": "30625",
+        "namespace": "90464",
         "type": "logs"
     },
     "ecs": {
         "version": "8.11.0"
     },
     "elastic_agent": {
-        "id": "88586b20-cb1c-4e31-9a6c-ac7352771f92",
+        "id": "f1613af9-3456-4b63-b774-f20eda58a491",
         "snapshot": false,
         "version": "8.16.0"
     },
@@ -780,7 +810,7 @@ An example event for `policyaudit_aggregated_event` looks as following:
         ],
         "dataset": "cyberark_epm.policyaudit_aggregated_event",
         "end": "2022-12-19T01:04:47.284Z",
-        "ingested": "2024-12-20T05:49:56Z",
+        "ingested": "2025-01-06T05:26:14Z",
         "kind": "event",
         "original": "{\"CLSID\":\"\",\"adminTaskId\":\"\",\"affectedComputers\":1,\"affectedUsers\":1,\"aggregatedBy\":\"C340EFFBAED989E7F8FFC6F7574856CD8ED0D18B,QQQ\",\"appPackageDisplayName\":\"\",\"applicationType\":\"Executable\",\"arrivalTime\":\"2022-12-19T05:51:06.024Z\",\"authorizationRight\":\"com.apple.AOSNotification.FindMyMac.modify\",\"eventType\":\"Launch\",\"fileLocation\":\"C:\\\\Program Files (x86)\\\\Google\\\\Update\\\\1.3.36.152\\\\\",\"fileQualifier\":\"-5566271857083130002\",\"fileSize\":408536,\"firstEventAgentId\":\"b074b7d4-664a-40d1-b929-69e89bbd254c\",\"firstEventDate\":\"2022-12-14T21:06:44.756Z\",\"firstEventUserName\":\"NT AUTHORITY\\\\SYSTEM\",\"hash\":\"SHA1##C340EFFBAED989E7F8FFC6F7574856CD8ED0D18B\",\"lastEventAccessTarget\":null,\"lastEventAccessTargetType\":\"Registry\",\"lastEventAgentId\":\"b074b7d4-664a-40d1-b929-69e89bbd254c\",\"lastEventDate\":\"2022-12-19T01:04:47.284Z\",\"lastEventDisplayName\":\"Google Crash Handler (GoogleCrashHandler64.exe)\",\"lastEventFileName\":\"GoogleCrashHandler64.exe\",\"lastEventId\":\"QtvvKIUB8k35oa3KjVf7\",\"lastEventJustification\":\"\",\"lastEventPackageName\":\"Google Update (GoogleUpdate.exe)\",\"lastEventSourceName\":\"Updater (Google Updater)\",\"lastEventSourceType\":\"Updater\",\"lastEventSymlink\":\"\",\"lastEventUserName\":\"NT AUTHORITY\\\\SYSTEM\",\"mimeType\":\"\",\"operatingSystemType\":\"Windows\",\"policyAction\":null,\"policyId\":11161,\"policyName\":\"QQQ\",\"productCode\":null,\"publisher\":\"Google LLC\",\"skipped\":false,\"skippedCount\":0,\"totalEvents\":8,\"upgradeCode\":null,\"url\":\"\"}",
         "start": "2022-12-14T21:06:44.756Z",
@@ -809,14 +839,16 @@ An example event for `policyaudit_aggregated_event` looks as following:
         "vendor": "CyberArk"
     },
     "package": {
-        "name": "Google Update (GoogleUpdate.exe)"
+        "checksum": "C340EFFBAED989E7F8FFC6F7574856CD8ED0D18B",
+        "name": "Google Update (GoogleUpdate.exe)",
+        "size": 408536
     },
     "related": {
         "hash": [
             "C340EFFBAED989E7F8FFC6F7574856CD8ED0D18B"
         ],
         "user": [
-            "NT AUTHORITY\\SYSTEM"
+            "SYSTEM"
         ]
     },
     "rule": {
@@ -851,6 +883,7 @@ An example event for `policyaudit_aggregated_event` looks as following:
 | cyberark_epm.policyaudit_aggregated_event.file_size | The file size of the last policy audit event. | long |
 | cyberark_epm.policyaudit_aggregated_event.first_event_agent_id | The agentId specified in the first policy audit event. | keyword |
 | cyberark_epm.policyaudit_aggregated_event.first_event_date | The first time that the event was triggered. | date |
+| cyberark_epm.policyaudit_aggregated_event.first_event_user_domain |  | keyword |
 | cyberark_epm.policyaudit_aggregated_event.first_event_user_name | Name of the first user who triggered the event. | keyword |
 | cyberark_epm.policyaudit_aggregated_event.hash | Hash value (SHA1) of the application that triggered the event. | keyword |
 | cyberark_epm.policyaudit_aggregated_event.interpreter |  | keyword |
@@ -868,6 +901,7 @@ An example event for `policyaudit_aggregated_event` looks as following:
 | cyberark_epm.policyaudit_aggregated_event.last_event_source_name | Point of origin from where the file that triggered the last event was acquired. | keyword |
 | cyberark_epm.policyaudit_aggregated_event.last_event_source_type | The type of origin from where the file that triggered the last event was acquired. | keyword |
 | cyberark_epm.policyaudit_aggregated_event.last_event_symlink | A Linux/UNIX link that points to another file or folder. | keyword |
+| cyberark_epm.policyaudit_aggregated_event.last_event_user_domain |  | keyword |
 | cyberark_epm.policyaudit_aggregated_event.last_event_user_name | User who triggered the event. | keyword |
 | cyberark_epm.policyaudit_aggregated_event.mime_type | The type of the file (i.e., application, media etc.) of the last policy audit event. | keyword |
 | cyberark_epm.policyaudit_aggregated_event.operating_system_type | The endpoint operating system. | keyword |
@@ -905,9 +939,9 @@ An example event for `admin_audit` looks as following:
 {
     "@timestamp": "2024-11-25T05:37:28.373Z",
     "agent": {
-        "ephemeral_id": "32e9f84f-40df-43a3-bf36-d1a1a47380fe",
-        "id": "94cfbed9-bae5-47eb-aec0-7883b045016f",
-        "name": "elastic-agent-70369",
+        "ephemeral_id": "31a04b1e-c4a5-4d72-9a1d-1c5aea2eaa42",
+        "id": "a15af379-3ffb-49ce-b759-f12c44c6a9e0",
+        "name": "elastic-agent-82404",
         "type": "filebeat",
         "version": "8.16.0"
     },
@@ -927,14 +961,14 @@ An example event for `admin_audit` looks as following:
     },
     "data_stream": {
         "dataset": "cyberark_epm.admin_audit",
-        "namespace": "33896",
+        "namespace": "66939",
         "type": "logs"
     },
     "ecs": {
         "version": "8.11.0"
     },
     "elastic_agent": {
-        "id": "94cfbed9-bae5-47eb-aec0-7883b045016f",
+        "id": "a15af379-3ffb-49ce-b759-f12c44c6a9e0",
         "snapshot": false,
         "version": "8.16.0"
     },
@@ -944,7 +978,7 @@ An example event for `admin_audit` looks as following:
             "iam"
         ],
         "dataset": "cyberark_epm.admin_audit",
-        "ingested": "2024-12-24T08:13:05Z",
+        "ingested": "2025-01-06T05:24:02Z",
         "kind": "event",
         "original": "{\"Administrator\":\"bob@example.com\",\"Description\":\"Enter Set Elastic/test\",\"EventTime\":\"2024-11-25T05:37:28.373Z\",\"Feature\":\"Sets\",\"InternalSessionId\":876,\"LoggedAt\":\"2024-11-25T05:25:13.167Z\",\"LoggedFrom\":\"175.16.199.1\",\"PermissionDescription\":\"None\",\"Role\":\"SetAdmin\",\"SetName\":\"Elastic/test\"}",
         "type": [
@@ -980,21 +1014,21 @@ An example event for `admin_audit` looks as following:
             "region_iso_code": "CN-22",
             "region_name": "Jilin Sheng"
         },
-        "ip": "175.16.199.1",
-        "user": {
-            "email": "bob@example.com",
-            "name": "bob@example.com",
-            "roles": [
-                "SetAdmin"
-            ]
-        }
+        "ip": "175.16.199.1"
     },
     "tags": [
         "preserve_original_event",
         "preserve_duplicate_custom_fields",
         "forwarded",
         "cyberark_epm-admin_audit"
-    ]
+    ],
+    "user": {
+        "email": "bob@example.com",
+        "name": "bob@example.com",
+        "roles": [
+            "SetAdmin"
+        ]
+    }
 }
 ```
 

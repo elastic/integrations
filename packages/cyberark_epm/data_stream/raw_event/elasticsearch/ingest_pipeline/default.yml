@@ -241,6 +241,11 @@ processors:
       tag: set_host_name_from_raw_event_computer_name
       copy_from: cyberark_epm.raw_event.computer_name
       ignore_empty_value: true
+  - append:
+      field: related.hosts
+      tag: append_raw_event_computer_name_to_related_hosts
+      value: '{{{cyberark_epm.raw_event.computer_name}}}'
+      allow_duplicates: false
   - convert:
       field: json.eventCount
       tag: convert_eventCount_to_long
@@ -425,6 +430,11 @@ processors:
       tag: set_file_size_from_raw_event_file_size
       copy_from: cyberark_epm.raw_event.file_size
       ignore_empty_value: true
+  - set:
+      field: package.size
+      tag: set_package_size_from_raw_event_file_size
+      copy_from: cyberark_epm.raw_event.file_size
+      ignore_empty_value: true
   - rename:
       field: json.fileVersion
       tag: rename_fileVersion
@@ -491,6 +501,11 @@ processors:
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - set:
+      field: package.checksum
+      tag: set_package_checksum_from_file_hash_sha1
+      copy_from: file.hash.sha1
+      ignore_empty_value: true
+  - set:
       field: threat.indicator.name
       tag: set_threat_indicator_name_from_file_hash_sha1
       copy_from: file.hash.sha1
@@ -543,6 +558,11 @@ processors:
       tag: rename_lastEventComputerName
       target_field: cyberark_epm.raw_event.last_event_computer_name
       ignore_missing: true
+  - append:
+      field: related.hosts
+      tag: append_raw_event_last_event_computer_name_to_related_hosts
+      value: '{{{cyberark_epm.raw_event.last_event_computer_name}}}'
+      allow_duplicates: false
   - date:
       field: json.lastEventDate
       tag: date_lastEventDate
@@ -717,20 +737,24 @@ processors:
       tag: rename_originalFileName
       target_field: cyberark_epm.raw_event.original_file_name
       ignore_missing: true
-  - rename:
+  - grok:
       field: json.owner
-      tag: rename_owner
-      target_field: cyberark_epm.raw_event.owner
-      ignore_missing: true
+      tag: grok_parse_file_owner_name_and_file_owner_domain
+      patterns:
+        - '^%{DATA:cyberark_epm.raw_event.file_owner_domain}\\%{DATA:cyberark_epm.raw_event.file_owner_name}$'
+        - '^%{DATA:cyberark_epm.raw_event.file_owner_domain}\\\\%{DATA:cyberark_epm.raw_event.file_owner_name}$'
+        - '^%{DATA:cyberark_epm.raw_event.file_owner_name}@%{DATA:cyberark_epm.raw_event.file_owner_domain}$'
+        - '^%{DATA:cyberark_epm.raw_event.file_owner_name}$'
+      ignore_failure: true
   - set:
       field: file.owner
-      tag: set_file_owner_from_raw_event_owner
-      copy_from: cyberark_epm.raw_event.owner
+      tag: set_file_owner_from_raw_event_file_owner_name
+      copy_from: cyberark_epm.raw_event.file_owner_name
       ignore_empty_value: true
   - append:
       field: related.user
-      tag: append_raw_event_owner_to_related_user
-      value: '{{{cyberark_epm.raw_event.owner}}}'
+      tag: append_raw_event_file_owner_name_to_related_user
+      value: '{{{cyberark_epm.raw_event.file_owner_name}}}'
       allow_duplicates: false
   - rename:
       field: json.packageName
@@ -989,15 +1013,24 @@ processors:
         - append:
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
-  - rename:
+  - grok:
       field: json.userName
-      tag: rename_userName
-      target_field: cyberark_epm.raw_event.user_name
-      ignore_missing: true
+      tag: grok_parse_user_name_and_user_domain
+      patterns:
+        - '^%{DATA:cyberark_epm.raw_event.user_domain}\\%{DATA:cyberark_epm.raw_event.user_name}$'
+        - '^%{DATA:cyberark_epm.raw_event.user_domain}\\\\%{DATA:cyberark_epm.raw_event.user_name}$'
+        - '^%{DATA:cyberark_epm.raw_event.user_name}@%{DATA:cyberark_epm.raw_event.user_domain}$'
+        - '^%{DATA:cyberark_epm.raw_event.user_name}$'
+      ignore_failure: true
   - set:
       field: user.name
       tag: set_user_name_from_raw_event_user_name
       copy_from: cyberark_epm.raw_event.user_name
+      ignore_empty_value: true
+  - set:
+      field: user.domain
+      tag: set_user_domain_from_raw_event_user_domain
+      copy_from: cyberark_epm.raw_event.user_domain
       ignore_empty_value: true
   - append:
       field: related.user
@@ -1048,7 +1081,7 @@ processors:
         - cyberark_epm.raw_event.modification_time
         - cyberark_epm.raw_event.origin_user_uid
         - cyberark_epm.raw_event.file_name
-        - cyberark_epm.raw_event.owner
+        - cyberark_epm.raw_event.file_owner_name
         - cyberark_epm.raw_event.package_name
         - cyberark_epm.raw_event.policy_name
         - cyberark_epm.raw_event.source_process_command_line

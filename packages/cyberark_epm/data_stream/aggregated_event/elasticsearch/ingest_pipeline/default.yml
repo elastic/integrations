@@ -311,11 +311,21 @@ processors:
       tag: set_file_size_from_aggregated_event_file_size
       copy_from: cyberark_epm.aggregated_event.file_size
       ignore_empty_value: true
+  - set:
+      field: package.size
+      tag: set_package_size_from_aggregated_event_file_size
+      copy_from: cyberark_epm.aggregated_event.file_size
+      ignore_empty_value: true
   - rename:
       field: json.firstEventComputerName
       tag: rename_firstEventComputerName
       target_field: cyberark_epm.aggregated_event.first_event_computer_name
       ignore_missing: true
+  - append:
+      field: related.hosts
+      tag: append_aggregated_event_first_event_computer_name_to_related_hosts
+      value: '{{{cyberark_epm.aggregated_event.first_event_computer_name}}}'
+      allow_duplicates: false
   - date:
       field: json.firstEventDate
       tag: date_firstEventDate
@@ -344,11 +354,15 @@ processors:
           ctx.cyberark_epm.aggregated_event.type.equalsIgnoreCase('SuspiciousActivityBlock')
         )
       ignore_empty_value: true
-  - rename:
+  - grok:
       field: json.firstEventUserName
-      tag: rename_firstEventUserName
-      target_field: cyberark_epm.aggregated_event.first_event_user_name
-      ignore_missing: true
+      tag: grok_parse_first_event_user_name_and_first_event_user_domain
+      patterns:
+        - '^%{DATA:cyberark_epm.aggregated_event.first_event_user_domain}\\%{DATA:cyberark_epm.aggregated_event.first_event_user_name}$'
+        - '^%{DATA:cyberark_epm.aggregated_event.first_event_user_domain}\\\\%{DATA:cyberark_epm.aggregated_event.first_event_user_name}$'
+        - '^%{DATA:cyberark_epm.aggregated_event.first_event_user_name}@%{DATA:cyberark_epm.aggregated_event.first_event_user_domain}$'
+        - '^%{DATA:cyberark_epm.aggregated_event.first_event_user_name}$'
+      ignore_failure: true
   - append:
       field: related.user
       tag: append_first_event_user_name_to_related_user
@@ -381,6 +395,11 @@ processors:
         - append:
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - set:
+      field: package.checksum
+      tag: set_package_checksum_from_file_hash_sha1
+      copy_from: file.hash.sha1
+      ignore_empty_value: true
   - set:
       field: threat.indicator.name
       tag: set_threat_indicator_name_from_file_hash_sha1
@@ -439,6 +458,11 @@ processors:
       tag: rename_lastEventComputerName
       target_field: cyberark_epm.aggregated_event.last_event_computer_name
       ignore_missing: true
+  - append:
+      field: related.hosts
+      tag: append_aggregated_event_last_event_computer_name_to_related_hosts
+      value: '{{{cyberark_epm.aggregated_event.last_event_computer_name}}}'
+      allow_duplicates: false
   - date:
       field: json.lastEventDate
       tag: date_lastEventDate
@@ -556,11 +580,15 @@ processors:
       tag: set_file_target_path_from_aggregated_event_last_event_sym_link
       copy_from: cyberark_epm.aggregated_event.last_event_sym_link
       ignore_empty_value: true
-  - rename:
+  - grok:
       field: json.lastEventUserName
-      tag: rename_lastEventUserName
-      target_field: cyberark_epm.aggregated_event.last_event_user_name
-      ignore_missing: true
+      tag: grok_parse_last_event_user_name_and_last_event_user_domain
+      patterns:
+        - '^%{DATA:cyberark_epm.aggregated_event.last_event_user_domain}\\%{DATA:cyberark_epm.aggregated_event.last_event_user_name}$'
+        - '^%{DATA:cyberark_epm.aggregated_event.last_event_user_domain}\\\\%{DATA:cyberark_epm.aggregated_event.last_event_user_name}$'
+        - '^%{DATA:cyberark_epm.aggregated_event.last_event_user_name}@%{DATA:cyberark_epm.aggregated_event.last_event_user_domain}$'
+        - '^%{DATA:cyberark_epm.aggregated_event.last_event_user_name}$'
+      ignore_failure: true
   - append:
       field: related.user
       tag: append_last_event_user_name_to_related_user

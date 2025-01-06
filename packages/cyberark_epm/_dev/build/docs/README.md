@@ -2,7 +2,7 @@
 
 [CyberArk Endpoint Privilege Manager (EPM)](https://www.cyberark.com/products/endpoint-privilege-manager/) enforces least privilege and enables organizations to block and contain attacks on endpoint computers, reducing the risk of information being stolen or encrypted and held for ransom. A combination of privilege security, application control and credential theft prevention reduces the risk of malware infection.
 
-The CyberArk EPM integration collects event, policy audit, and admin audit logs using the REST API.
+The CyberArk EPM integration collects events (raw and aggregated), policy audit events (raw and aggregated), and admin audit logs using the REST API.
 
 ## Compatibility
 
@@ -57,7 +57,9 @@ Please note, there are minimum requirements for running Elastic Agent. For more 
 5. Add all the required integration configuration parameters, including the URL, Username, Password, Session Timeout, Interval, and Initial Interval, to enable data collection.
 6. Select "Save and continue" to save the integration.
 
-**Note**: The default URL is `https://login.epm.cyberark.com`, but this may vary depending on your region. Please refer to the [Documentation](https://docs.cyberark.com/epm/latest/en/content/webservices/webservicesintro.htm#EPMdispatcherservername) to find the correct URL for your region.
+**Note**:
+  - The default URL is `https://login.epm.cyberark.com`, but this may vary depending on your region. Please refer to the [Documentation](https://docs.cyberark.com/epm/latest/en/content/webservices/webservicesintro.htm#EPMdispatcherservername) to find the correct URL for your region.
+  - If you encounter an error indicating that the usage limit has been reached, consider lowering the "Resource Rate Limit" parameter in the advanced section. For more details, please refer to the [documentation](https://docs.cyberark.com/epm/latest/en/content/webservices/webservicesintro.htm#APIlimitations).
 
 ## Logs reference
 
