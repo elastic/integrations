@@ -992,67 +992,78 @@ Note: Descriptions have not been filled out
 |--------------|------------------------------|
 | `<uuid_str>` | aruba.instance.id            |
 
-#### [REST events](https://www.arubanetworks.com/techdocs/AOS-CX/10.07/HTML/5200-8214/Content/events/RESTD.htm)
-| Field                     | Description | Type | Common                       |
-|---------------------------|-------------|------|------------------------------|
-| aruba.rest.action         |             |      | event.action                 |
-| aruba.rest.activate_address |           |      | server.address               |
-| aruba.rest.added_user     |             |      |                              |
-| aruba.rest.added_user_role |            |      | aruba.role                   |
-| aruba.rest.agent_name     |             |      | agent.name                   |
-| aruba.rest.autztype       |             |      |                              |
-| aruba.rest.central_location |           |      | server.address               |
-| aruba.rest.reboot_command |             |      |                              |
-| aruba.rest.config_from_name |           |      |                              |
-| aruba.rest.config_to_name |             |      |                              |
-| aruba.rest.deleted_user   |             |      |                              |
-| aruba.rest.dns            |             |      |                              |
-| aruba.rest.dns_nameserver |             |      | dns.id                       |
-| aruba.rest.error          |             |      | error.message                |
-| aruba.rest.match          |             |      |                              |
-| aruba.rest.mode           |             |      |                              |
-| aruba.rest.resource       |             |      |                              |
-| aruba.rest.rest_operation |             |      |                              |
-| aruba.rest.script_name    |             |      |                              |
-| aruba.rest.sessionid      |             |      |                              |
-| aruba.rest.source_ip      |             |      | source.ip                    |
-| aruba.rest.subscriber     |             |      |                              |
-| aruba.rest.subscription   |             |      |                              |
-| aruba.rest.config_value   |             |      |                              |
-| aruba.rest.uri            |             |      | url.full                     |
-| aruba.rest.url            |             |      | url.full                     |
-| aruba.rest.user           |             |      | user.name                    |
-| aruba.rest.vrf            |             |      | aruba.vrf.id                 |
+#### [REST events](https://www.arubanetworks.com/techdocs/AOS-CX/10.15/HTML/elmrg/Content/events/RESTD.htm)
+| Docs Field           | Schema Mapping             |
+|----------------------|----------------------------|
+| `<action>`           | event.action               |
+| `<activate_address>` | aruba.rest.activate_address|
+| `<added_user>`       | aruba.rest.added_user      |
+| `<added_user_role>`  | aruba.role                 |
+| `<autztype>`         | aruba.rest.autztype        |
+| `<central_location>` | aruba.rest.central_location|
+| `<central_source>`   | aruba.rest.central_source  |
+| `<command>`          | aruba.rest.command         |
+| `<config_name>`      | aruba.rest.config_name     |
+| `<deleted_user>`     | aruba.rest.deleted_user    |
+| `<dns>`              | aruba.rest.ip              |
+| `<dns_nameserver>`   | aruba.rest.dns_nameserver  |
+| `<error>`            | event.reason               |
+| `<from_name>`        | aruba.rest.config_from_name|
+| `<identity>`         | aruba.rest.identity        |
+| `<ip_address>`       | client.ip                  |
+| `<match>`            | aruba.rest.match           |
+| `<mgmt_intf>`        | aruba.interface.id         |
+| `<mode>`             | aruba.rest.mode            |
+| `<name>`             | aruba.rest.name            |
+| `<resource>`         | aruba.rest.resource        |
+| `<rest_operation>`   | aruba.rest.operation       |
+| `<sessionid>`        | aruba.session.id           |
+| `<source_ip>`        | source.ip                  |
+| `<subscriber>`       | aruba.rest.subscriber      |
+| `<subscription>`     | aruba.rest.subscription    |
+| `<to_name>`          | aruba.rest.config_to_name  |
+| `<uri>`              | url.original               |
+| `<url>`              | url.original               |
+| `<user>`             | user.name                  |
+| `<vrf>`              | aruba.vrf.id               |
+| `<vrf_name>`         | aruba.vrf.name             |
+| `<value>`            | aruba.rest.type            |
 
-#### [Self Test events](https://www.arubanetworks.com/techdocs/AOS-CX/10.07/HTML/5200-8214/Content/events/SELFTEST.htm)
-| Field                     | Description | Type | Common                       |
-|---------------------------|-------------|------|------------------------------|
-| aruba.self_test.error     |             |      | error.message                |
-| aruba.self_test.interface |             |      |                              |
-| aruba.self_test.slot      |             |      | aruba.slot                   |
-| aruba.self_test.stack     |             |      |                              |
-| aruba.self_test.subsystem |             |      | aruba.subsystem              |
+#### [Self Test events](https://www.arubanetworks.com/techdocs/AOS-CX/10.15/HTML/elmrg/Content/events/SELFTEST.htm)
+| Docs Field   | Schema Mapping              |
+|--------------|-----------------------------|
+| `<interface>`| aruba.interface.id          |
+| `<slot>`     | aruba.slot                  |
+| `<stack>`    | aruba.self_test.stack       |
+| `<subsystem>`| aruba.subsystem             |
+| `<value>`    | event.reason                |
+
+#### [Self Test Monitor events](https://www.arubanetworks.com/techdocs/AOS-CX/10.15/HTML/elmrg/Content/events/SelfTestMonitor.htm)
+| Docs Field   | Schema Mapping              |
+|--------------|-----------------------------|
 
 #### [sFlow events](https://www.arubanetworks.com/techdocs/AOS-CX/10.07/HTML/5200-8214/Content/events/SFLOW.htm)
-| Field                     | Description | Type | Common                       |
-|---------------------------|-------------|------|------------------------------|
-| aruba.sflow.bridge        |             |      |                              |
-| aruba.sflow.chain         |             |      |                              |
-| aruba.sflow.desc          |             |      |                              |
-| aruba.sflow.dgramsize     |             |      |                              |
-| aruba.sflow.error         |             |      | error.message                |
-| aruba.sflow.file          |             |      | file.name                    |
-| aruba.sflow.hdrlen        |             |      | aruba.len                    |
-| aruba.sflow.ifIndex       |             |      | observer.ingress.interface.id|
-| aruba.sflow.intvl         |             |      |                              |
-| aruba.sflow.ip_address    |             |      | destination.ip               |
-| aruba.sflow.mode          |             |      |                              |
-| aruba.sflow.new_rate      |             |      |                              |
-| aruba.sflow.old_rate      |             |      |                              |
-| aruba.sflow.operation     |             |      | event.action                 |
-| aruba.sflow.port          |             |      | server.port                  |
-| aruba.sflow.port_name     |             |      | server.port                  |
-| aruba.sflow.unit          |             |      | aruba.unit                   |
+| Docs Field        | Schema Mapping                             |
+|-------------------|--------------------------------------------|
+| `<bridge>`        | aruba.sflow.bridge                         |
+| `<chain>`         | aruba.sflow.chain                          |
+| `<desc>`          | aruba.error.description                    |
+| `<dgramsize>`     | aruba.sflow.dgramsize                      |
+| `<error>`         | event.reason                               |
+| `<file>`          | file.name                                  |
+| `<hdrlen>`        | aruba.len                                  |
+| `<ifIndex>`       | aruba.interface.id                         |
+| `<interface>`     | aruba.interface.id                         |
+| `<intvl>`         | aruba.sflow.intvl                          |
+| `<ip_addr>`       | client.ip                                  |
+| `<ip_address>`    | client.ip                                  |
+| `<mode>`          | aruba.sflow.mode                           |
+| `<new_rate>`      | aruba.sflow.new_rate                       |
+| `<old_rate>`      | aruba.sflow.old_rate                       |
+| `<operation>`     | aruba.sflow.operation                      |
+| `<port>`          | aruba.port                                 |
+| `<port_name>`     | aruba.port                                 |
+| `<unit>`          | aruba.unit                                 |
 
 #### [SFTP Client events](https://www.arubanetworks.com/techdocs/AOS-CX/10.15/HTML/elmrg/Content/events/SFTP_CLIENT.htm)
 | Docs Field | Schema Mapping         |

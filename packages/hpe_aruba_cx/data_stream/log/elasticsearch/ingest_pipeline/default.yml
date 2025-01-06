@@ -444,6 +444,120 @@ processors:
       patterns:
         - "^Loopback Interface %{DATA:aruba.interface.id}, (created|deleted|configured administratively %{GREEDYDATA:aruba.interface.state})"
 
+    # sFlow events (10xx)
+    # https://www.arubanetworks.com/techdocs/AOS-CX/10.15/HTML/elmrg/Content/events/SFLOW.htm
+  - grok:
+      field: message
+      tag: sflow_event_1001_1002_1003
+      description: "Log a failure when trying to start/stop/restart host sFlow daemon | read/write to host sFlow configuration file | trying to configure sFlow on SIM OVS"
+      if: "['1001','1002','1003'].contains(ctx.event?.code)"
+      patterns:
+        - "^Failed to %{DATA:aruba.sflow.operation} host sFlow (agent|configuration file %{DATA:file.name}): %{GREEDYDATA:event.reason}"
+        - "^Failed to %{DATA:aruba.sflow.operation} sFlow configuration from bridge %{DATA:aruba.sflow.bridge}: %{GREEDYDATA:event.reason}"
+  - dissect:
+      field: message
+      tag: sflow_event_1005
+      description: "Log a failure when trying to add/delete an iptable rule for sFlow."
+      if: "ctx.event?.code == '1005'"
+      pattern: "Failed to %{aruba.sflow.operation} %{aruba.sflow.chain} iptable rules for %{aruba.port}: %{event.reason}"
+  - dissect:
+      field: message
+      tag: sflow_event_1008
+      description: "Logs an error if an interface does not have a netdev class."
+      if: "ctx.event?.code == '1008'"
+      pattern: "Unable to get netdev for interface %{aruba.interface.id}"
+  - dissect:
+      field: message
+      tag: sflow_event_1010
+      description: "Logs an error if sFlow KNET filter creation fails."
+      if: "ctx.event?.code == '1010'"
+      pattern: "Failed to create KNET filter for: %{aruba.error.description}"
+  - grok:
+      field: message
+      tag: sflow_event_1014_1015
+      description: "Logs an error if sFlow is enabled/disabled on an invalid port | if sFlow sampler is missing on a port"
+      if: "['1014','1015'].contains(ctx.event?.code)"
+      patterns:
+        - "port: %{GREEDYDATA:aruba.port}"
+  - grok:
+      field: message
+      tag: sflow_event_1004_1017
+      description: "Log a failure when trying to delete all iptable rules added for sFlow | if port configuration is not available"
+      if: "['1004','1017'].contains(ctx.event?.code)"
+      patterns:
+        - ": %{GREEDYDATA:event.reason}"
+  - grok:
+      field: message
+      tag: sflow_event_1018_1019
+      description: "Logs an error if (getting|setting) a sampling rate on a port fails."
+      if: "['1018','1019'].contains(ctx.event?.code)"
+      patterns:
+        - "^Failed to (get|set) sampling rate on port %{DATA:aruba.port}: %{GREEDYDATA:event.reason}"
+  - grok:
+      field: message
+      tag: sflow_event_1020_1021
+      description: "Logs an error in case of invalid agent interface IP address configuration | invalid collector IP address configuration."
+      if: "['1020','1021'].contains(ctx.event?.code)"
+      patterns:
+        - "IP address: %{IP:client.ip}"
+  - dissect:
+      field: message
+      tag: sflow_event_1022
+      description: "Logs an error if unable to retrieve interface statistics."
+      if: "ctx.event?.code == '1022'"
+      pattern: "Failed to get interface statistics for unit %{aruba.unit} port %{aruba.port}: %{event.reason}"
+  - dissect:
+      field: message
+      tag: sflow_event_1025
+      description: "Logs a change in sFlow sampling rate."
+      if: "ctx.event?.code == '1025'"
+      pattern: "Changed sFlow sampling rate from %{aruba.sflow.old_rate} to %{aruba.sflow.new_rate}."
+  - grok:
+      field: message
+      tag: sflow_event_1026
+      description: "Logs sFlow agents header length event."
+      if: "ctx.event?.code == '1026'"
+      patterns: 
+        - "Set sFlow agents header len to %{NUMBER:aruba.len:long}."
+  - grok:
+      field: message
+      tag: sflow_event_1027
+      description: "Logs sFlow agents header length event."
+      if: "ctx.event?.code == '1027'"
+      patterns: 
+        - "^Set sFlow agents IP to %{IP:client.ip}."
+  - grok:
+      field: message
+      tag: sflow_event_1028
+      description: "Log setting max datagram size on sFlow agent."
+      if: "ctx.event?.code == '1028'"
+      patterns: 
+        - "^Set max datagram size on sFlow agent to %{NUMBER:aruba.sflow.dgramsize:long}."
+  - dissect:
+      field: message
+      tag: sflow_event_1029
+      description: "Add sFlow poller on a port"
+      if: "ctx.event?.code == '1029'"
+      pattern: "Add sFlow poller on %{aruba.port} with ifIndex %{aruba.interface.id} at interval %{aruba.sflow.intvl}."
+  - dissect:
+      field: message
+      tag: sflow_event_1030
+      description: "Delete sFlow poller on a port."
+      if: "ctx.event?.code == '1030'"
+      pattern: "Remove sFlow poller on%{aruba.interface.id}."
+  - dissect:
+      field: message
+      tag: sflow_event_1031
+      description: "Set polling interval for sFlow agent."
+      if: "ctx.event?.code == '1031'"
+      pattern: "Set polling interval of %{aruba.sflow.intvl} on sFlow agent."
+  - dissect:
+      field: message
+      tag: sflow_event_1032
+      description: "Logs change in sFlow mode."
+      if: "ctx.event?.code == '1032'"
+      pattern: "sFlow sampling mode set to %{aruba.sflow.mode}."
+
     # Supportability events (12xx)
     # https://www.arubanetworks.com/techdocs/AOS-CX/10.15/HTML/elmrg/Content/events/SUPPORTABILITY.htm
   - grok:
@@ -1328,6 +1442,183 @@ processors:
       description: "Indicates that a switch firmware update failed from a remote or local source"
       patterns:
         - "^User %{DATA:user.name}: %{DATA:aruba.firmware.image_profile} image update failed via %{DATA:aruba.firmware.dnld_type}( from %{HOSTNAME:source.address})?$"
+
+  # Self Test events (450x)
+  # https://www.arubanetworks.com/techdocs/AOS-CX/10.15/HTML/elmrg/Content/events/SELFTEST.htm
+  - grok:
+      if: "['4501','4502'].contains(ctx.event?.code)"
+      tag: self_test_event_4501_4502
+      field: "message"
+      description: "logs the [started|completion] of selftest on a particular subsystem"
+      patterns:
+        - "^Selftest has (started|completed) on subsystem %{GREEDYDATA:aruba.subsystem}"
+  - dissect:
+      if: "ctx.event?.code == '4503'"
+      tag: self_test_event_4503
+      field: "message"
+      description: "logs the selftest failure of a particular subsystem"
+      pattern: "Selftest has failed on subsystem %{aruba.subsystem} with error code %{event.reason}"
+  - dissect:
+      if: "ctx.event?.code == '4504'"
+      tag: self_test_event_4504
+      field: "message"
+      description: "logs the port selftest failure on a given subsystem"
+      pattern: 'Selftest has failed on %{aruba.self_test.stack}/%{aruba.slot}/%{aruba.interface.id} with error code %{event.reason}'
+
+# REST events (46xx)
+# https://www.arubanetworks.com/techdocs/AOS-CX/10.15/HTML/elmrg/Content/events/RESTD.htm
+  - grok:
+      if: "['4601','4602'].contains(ctx.event?.code)"
+      tag: rest_event_4601_4602
+      field: "message"
+      description: "logs a [failed|successful] authentication attempt of a user via REST"
+      patterns:
+        - "^Authentication (failed|succeeded) for user %{DATA:user.name} in session %{GREEDYDATA:aruba.session.id}"
+  - dissect:
+      if: "ctx.event?.code == '4603'"
+      tag: rest_event_4603
+      field: "message"
+      description: "logs an authorization configuration conflict"
+      pattern: 'Conflict in authorization configuration. Existing config::URL(%{aruba.rest.match}), type(%{aruba.rest.type}) New config::(%{url.original}), type(%{aruba.rest.autztype})'
+  - grok:
+      if: "['4606','4607','4608'].contains(ctx.event?.code)"
+      tag: rest_event_4606_4607_4608
+      field: "message"
+      description: "logs a [failed|successful|allowed] authorization attempt of a user via REST "
+      patterns:
+        - "^Authorization (failed|succeeded|allowed) for user %{DATA:user.name}, for resource %{DATA:aruba.rest.resource}, with action %{GREEDYDATA:event.action}"
+  - dissect:
+      if: "ctx.event?.code == '4609'"
+      tag: rest_event_4609
+      field: "message"
+      description: "logs a successful add of a user via REST"
+      pattern: "User %{user.name} added %{aruba.rest.added_user} with role %{aruba.role}"
+  - grok:
+      if: "['4610','4653'].contains(ctx.event?.code)"
+      tag: rest_event_4610_4653
+      field: "message"
+      description: "logs a successful deletion of a user via REST | Logs a message when a user changes the REST configuration lockout mode"
+      patterns: 
+        - "^User %{DATA:user.name} deleted %{GREEDYDATA:aruba.rest.deleted_user}"
+        - "^User %{DATA:user.name} has configured %{DATA:aruba.rest.mode} for configuration lockout"
+  - grok:
+      if: "['4611','4612'].contains(ctx.event?.code)"
+      tag: rest_event_4611_4612
+      field: "message"
+      description: "logs a [unsuccessful|successful] password change for a user via REST"
+      patterns:
+        - "^User %{DATA:user.name} (successfully changed password|password change failed)"
+  - grok:
+      if: "['4613','4614','4615','4616'].contains(ctx.event?.code)"
+      tag: rest_event_4613_4614_4615_4616
+      field: "message"
+      description: "logs a success config write operation | success copy of saved | success when the nameserver is written to ovsdb | success when the nameserver is deleted from ovsdb"
+      patterns:
+        - "%{USER_PATTERN} written a new switch configuration to %{GREEDYDATA:aruba.rest.config_name}"
+        - "%{USER_PATTERN} copied switch configuration %{DATA:aruba.rest.config_from_name} to %{GREEDYDATA:aruba.rest.config_to_name}"
+        - "%{USER_PATTERN} configured %{DATA:aruba.rest.dns_nameserver} DNS nameserver to %{GREEDYDATA:aruba.rest.dns}"
+        - "%{USER_PATTERN} deleted all DNS nameservers"
+      pattern_definitions:
+        USER_PATTERN: "^%{DATA:user.name} has"
+  - grok:
+      if: "['4617','4618','4619'].contains(ctx.event?.code)"
+      tag: rest_event_4617_4618_4619
+      field: "message"
+      description: "A user has successfully [created|deleted|modified] a new resource in OVSDB"
+      patterns:
+        - "^%{DATA:user.name} (created|deleted|modified)( %{GREEDYDATA:url.original})?"
+  - grok:
+      if: "['4620','4621'].contains(ctx.event?.code)"
+      tag: rest_event_4620_4621
+      field: "message"
+      description: "A user has [added|removed] new notification subscriber"
+      patterns:
+        - "^User: %{DATA:user.name} (added|removed) subscriber: %{GREEDYDATA:aruba.rest.subscriber}."
+  - grok:
+      if: "['4622','4623','4625'].contains(ctx.event?.code)"
+      tag: rest_event_4622_4623_4625
+      field: "message"
+      description: "A subscriber has [added|removed] new subscription | Unable to add new subscription as max number reached for the specified subscriber"
+      patterns:
+        - "^Subscriber: %{DATA:aruba.rest.subscriber} (added|removed) subscription: %{GREEDYDATA:aruba.rest.subscription}."
+        - "^Unable to add new subscription. Max number of subscriptions for %{DATA:aruba.rest.subscriber} has been reached."
+  - grok:
+      if: "['4626','4627','4628','4629','4630','4631'].contains(ctx.event?.code)"
+      tag: rest_event_4626_4627_4628_4629_4630_4631
+      field: "message"
+      description: "NAE [Script|Agent] has been [created|deleted] successfully | Logs an error if a reboot fails"
+      patterns:
+        - "^NAE (Script|Agent) %{DATA:aruba.rest.name} has been (created|updated|deleted) by user %{GREEDYDATA:user.name}."
+        - "^Error rebooting switch, reboot command: %{DATA:aruba.rest.command}, error received: %{GREEDYDATA:event.reason}"
+  - grok:
+      if: "['4632','4633','4634','4635','4636','4637','4639','4640','4642'].contains(ctx.event?.code)"
+      tag: rest_event_4632_4633_4634_4635_4636_4637_4639_4640_4642
+      field: "message"
+      description: "HPE Aruba Networking Central type logs"
+      patterns:
+        - "location %{DATA:aruba.rest.central_location} on VRF %{DATA:aruba.vrf.id} (with|and) Source IP %{IP:source.ip}"
+  - grok:
+      if: "['4645','4649'].contains(ctx.event?.code)"
+      tag: rest_event_4645_4649
+      field: "message"
+      description: "Aruba Activate server is reachable via an active VRF | Unable to sync switch time with Aruba Activate Server"
+      patterns:
+        - "(S|s)erver %{DATA:server.address}( is reachable)? via VRF %{GREEDYDATA:aruba.vrf.id}."
+  - grok:
+      if: "['4646','4648'].contains(ctx.event?.code)"
+      tag: rest_event_4646_4648
+      field: "message"
+      description: "Aruba Activate server is not reachable through any supported VRF | Switch time is synced with Aruba Activate Server"
+      patterns:
+        - "server %{DATA:server.address} "
+        - "Server %{GREEDYDATA:server.address}."
+  - grok:
+      if: "['4650', '4651'].contains(ctx.event?.code)"
+      tag: rest_event_4650_4651
+      field: "message"
+      description: "(Unable|Successfully) to fetch HPE Aruba Networking Central location from Central Source (CLI/DHCP/Aruba Activate Server)"
+      patterns:
+        - "location( %{DATA:aruba.rest.central_location})? successfully fetched from %{DATA:aruba.rest.central_source} via VRF( %{GREEDYDATA:aruba.vrf.id})?"
+        - "location( %{DATA:aruba.rest.central_location})? from %{DATA:aruba.rest.central_source} via VRF( %{GREEDYDATA:aruba.vrf.id})?."
+  - grok:
+      if: "ctx.event?.code == '4652'"
+      tag: rest_event_4652
+      field: "message"
+      description: "Central connected, any config change through rest may not be persistent, Central can overwrite the change"
+      patterns: 
+        - "Central connected, any config change through rest %{DATA:aruba.rest.operation} operation may not be persistent. If central reapplies the config, change can be overwritten"
+  - grok:
+      if: "ctx.event?.code == '4654'"
+      tag: rest_event_4654
+      field: "message"
+      description: "Logs a message when a HPE Aruba Networking Central support mode is enabled or disabled"
+      patterns: 
+        - "support mode is %{DATA:aruba.rest.mode} for a vtysh session"
+  - grok:
+      if: "['4655','4656','4657'].contains(ctx.event?.code)"
+      tag: rest_event_4655_4656_4657
+      field: "message"
+      description: "Logs a message when a user login is [successful|failed] | Logs a message when a user logs out of a session"
+      patterns:
+        - "^User %{DATA:user.name} (logged in|login) from %{DATA:aruba.rest.identity} "
+        - "^User %{DATA:user.name} logged out of REST session from %{GREEDYDATA:aruba.rest.identity}"
+  - grok:
+      if: "['4658','4659'].contains(ctx.event?.code)"
+      tag: rest_event_4658_4659
+      field: "message"
+      description: "Logs a message when a user tries to login while maximum number of sessions are reached | when a REST session timed out due to the session being idle"
+      patterns:
+        - "^REST session from %{DATA:aruba.rest.identity} with User %{DATA:user.name} is rejected because maximum session limit is reached"
+        - "^%{DATA:user_agent.name:} session from %{DATA:aruba.rest.identity} with User %{DATA:user.name} timed out due to idle timeout"
+  - grok:
+      if: "['4660','4661','4662'].contains(ctx.event?.code)"
+      tag: rest_event_4660_4661_4662
+      field: "message"
+      description: "Logs a message when the REST server is [enabled|disabled] on a VRF | when a user login fails since the access through this management interface is not allowed"
+      patterns:
+        - "^REST server is (enabled|disabled) on VRF %{GREEDYDATA:aruba.vrf.name}"
+        - "^User %{DATA:user.name} login from %{IP:client.ip} for REST session has failed since the user is trying to login through an interface which is not allowed. Allowed interfaces are: %{GREEDYDATA:aruba.interface.id}"
+
 
     # MAC Learning events (480x)
     # https://www.arubanetworks.com/techdocs/AOS-CX/10.07/HTML/5200-8214/Content/events/MAC-LEARN.htm
