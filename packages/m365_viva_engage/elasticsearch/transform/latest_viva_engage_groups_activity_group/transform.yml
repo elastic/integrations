@@ -1,14 +1,14 @@
 # Use of "*" to use all namespaces defined.
 source:
   index:
-    - "metrics-o365.reports-*"
+    - "metrics-m365_viva_engage.groups_activity-*"
   query:
     bool:
       filter:
         - exists:
-            field: o365.reports.metadata.name
+            field: m365_viva_engage.groups_activity.metadata.name
         - term:
-            o365.reports.metadata.name: 'Viva Engage Groups Activity Group Detail'
+            m365_viva_engage.groups_activity.metadata.name: 'Viva Engage Groups Activity Group Detail'
 # The version suffix on the dest.index should be incremented if a breaking
 # change is made to the index mapping. You must also bump the
 # fleet_transform_version for any change to this transform configuration to
@@ -17,13 +17,13 @@ source:
 # that ability in order to prevent having duplicate data and prevent query
 # time field type conflicts.
 dest:
-  index: "metrics-o365_latest.viva_engage_groups_activity_group-1"
+  index: "metrics-m365_viva_engage_latest.groups_activity_group_detail-1"
   aliases:
-    - alias: "metrics-o365_latest.viva_engage_groups_activity_group"
+    - alias: "metrics-m365_viva_engage_latest.groups_activity_group_detail"
       move_on_creation: true
 latest:
   unique_key:
-    - o365.reports.viva_engage.groups_activity.group.Report_Refresh_Date
+    - m365_viva_engage.groups_activity.group_detail.Report_Refresh_Date
     - group.name
   sort: "event.ingested"
 description: Latest report data from Microsoft Viva Engage Groups Activity by Group report.
