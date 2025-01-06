@@ -1054,73 +1054,98 @@ Note: Descriptions have not been filled out
 | aruba.sflow.port_name     |             |      | server.port                  |
 | aruba.sflow.unit          |             |      | aruba.unit                   |
 
-#### [SFTP Client events](https://www.arubanetworks.com/techdocs/AOS-CX/10.07/HTML/5200-8214/Content/events/SFTP_CLIENT.htm)
-| Field                | Description | Type | Common                       |
-|----------------------|-------------|------|------------------------------|
-| aruba.sftp.from      |             |      | source.address               |
-| aruba.sftp.status    |             |      | aruba.status                 |
-| aruba.sftp.to        |             |      | destination.address          |
+#### [SFTP Client events](https://www.arubanetworks.com/techdocs/AOS-CX/10.15/HTML/elmrg/Content/events/SFTP_CLIENT.htm)
+| Docs Field | Schema Mapping         |
+|------------|------------------------|
+| `<from>`   | source.address         |
+| `<status>` | aruba.status           |
+| `<to>`     | destination.address    |
 
-#### [SNMP events](https://www.arubanetworks.com/techdocs/AOS-CX/10.07/HTML/5200-8214/Content/events/SNMP.htm)
-| Field                     | Description | Type | Common                       |
-|---------------------------|-------------|------|------------------------------|
-| aruba.snmp.truth_value    |             |      |                              |
-| aruba.snmp.vrf            |             |      | aruba.vrf.id                 |
+#### [Smartlink events](https://www.arubanetworks.com/techdocs/AOS-CX/10.15/HTML/elmrg/Content/events/SMARTLINK.htm)
+| Docs Field | Schema Mapping         |
+|------------|------------------------|
+| `<id>`     | group.id               |
+| `<id>`     | network.vlan.id        |
+| `<ifName>` | aruba.interface.name   |
 
-#### [SSH server events](https://www.arubanetworks.com/techdocs/AOS-CX/10.07/HTML/5200-8214/Content/events/SSH_SERVER.htm)
-| Field                     | Description | Type | Common                       |
-|---------------------------|-------------|------|------------------------------|
-| aruba.ssh.key_name        |             |      |                              |
-| aruba.ssh.username        |             |      | user.name                    |
-| aruba.ssh.vrf_name        |             |      | aruba.vrf.name               |
+#### [SNMP events](https://www.arubanetworks.com/techdocs/AOS-CX/10.15/HTML/elmrg/Content/events/SNMP.htm)
+| Docs Field          | Schema Mapping               |
+|---------------------|------------------------------|
+| `<truth_value>`     | aruba.snmp.truth_value       |
+| `<vrf>`             | aruba.vrf.id                 |
 
-#### [SSH_CLIENT events](https://www.arubanetworks.com/techdocs/AOS-CX/10.07/HTML/5200-8214/Content/events/SSH_CLIENT.htm)
-| Field                | Description | Type | Common                       |
-|----------------------|-------------|------|------------------------------|
-| aruba.ssh.ipaddr     |             |      | server.ip                    |
-| aruba.ssh.port_num   |             |      | server.port                  |
-| aruba.ssh.username   |             |      | user.name                    |
-| aruba.ssh.vrf_name   |             |      | aruba.vrf.name               |
+#### [SSH client events](https://www.arubanetworks.com/techdocs/AOS-CX/10.15/HTML/elmrg/Content/events/SSH_CLIENT.htm)
+| Docs Field   | Schema Mapping        |
+|--------------|-----------------------|
+| `<ipaddr>`   | server.ip             |
+| `<port_num>` | server.port           |
+| `<username>` | user.name             |
+| `<vrf_name>` | aruba.vrf.name        |
 
-#### [Supportability events](https://www.arubanetworks.com/techdocs/AOS-CX/10.07/HTML/5200-8214/Content/events/SUPPORTABILITY.htm)
-| Field                                | Description | Type | Common                       |
-|--------------------------------------|-------------|------|------------------------------|
-| aruba.supportability.alarm_index     |             |      |                              |
-| aruba.supportability.boot_id         |             |      | host.boot.id                 |
-| aruba.supportability.err_desc        |             |      | error.message                |
-| aruba.supportability.module          |             |      |                              |
-| aruba.supportability.oid             |             |      |                              |
-| aruba.supportability.process         |             |      | process.pid                  |
-| aruba.supportability.reason          |             |      | event.reason                 |
-| aruba.supportability.remote_host     |             |      | server.address               |
-| aruba.supportability.signal          |             |      | process.exit_code            |
-| aruba.supportability.state           |             |      | service.state                |
-| aruba.supportability.supported_files_name |        |      |                              |
-| aruba.supportability.threshold       |             |      | aruba.limit.threshold                  |
-| aruba.supportability.timestamp       |             |      | process.end                  |
-| aruba.supportability.type            |             |      | file.type                    |
-| aruba.supportability.vrf             |             |      | aruba.vrf.id                 |
+#### [SSH server events](https://www.arubanetworks.com/techdocs/AOS-CX/10.15/HTML/elmrg/Content/events/SSH_SERVER.htm)
+| Docs Field       | Schema Mapping        |
+|------------------|-----------------------|
+| `<ip_address>`   | client.ip             |
+| `<key_name>`     | aruba.ssh.key_name    |
+| `<mgmt_intf>`    | aruba.interface.id    |
+| `<new_ip>`       | aruba.ssh.new_ip      |
+| `<original_ip>`  | client.ip             |
+| `<username>`     | user.name             |
+| `<vrf_name>`     | aruba.vrf.name        |
 
-#### [SYS events](https://www.arubanetworks.com/techdocs/AOS-CX/10.07/HTML/5200-8214/Content/events/SYS.htm)
-| Field                                | Description | Type | Common                       |
-|--------------------------------------|-------------|------|------------------------------|
-| aruba.sys.mem_alloc_value            |             |      |                              |
+#### [Supportability events](https://www.arubanetworks.com/techdocs/AOS-CX/10.15/HTML/elmrg/Content/events/SUPPORTABILITY.htm)
+| Docs Field           | Schema Mapping                   |
+|----------------------|----------------------------------|
+| `<boot_id>`          | host.boot.id                     |
+| `<boot_count_status>`| aruba.status                     |
+| `<daemons>`          | aruba.supportability.daemons     |
+| `<err_desc>`         | aruba.error.description          |
+| `<index>`            | aruba.supportability.alarm_index |
+| `<log_type>`         | aruba.supportability.log_type    |
+| `<module>`           | aruba.supportability.module      |
+| `<name>`             | file.name                        |
+| `<oid>`              | aruba.supportability.oid         |
+| `<process>`          | process.name                     |
+| `<reason>`           | event.reason                     |
+| `<remote_host>`      | client.address                   |
+| `<signal>`           | process.exit_code                |
+| `<state>`            | aruba.state                      |
+| `<threshold>`        | aruba.limit.threshold            |
+| `<timestamp>`        | process.end                      |
+| `<type>`             | file.type                        |
+| `<vrf>`              | aruba.vrf.id                     |
 
-#### [SYSMON events](https://www.arubanetworks.com/techdocs/AOS-CX/10.07/HTML/5200-8214/Content/events/SYSMON.htm)
-| Field                     | Description | Type | Common                       |
-|---------------------------|-------------|------|------------------------------|
-| aruba.sysmon.mem_usage    |             |      |                              |
-| aruba.sysmon.module_name  |             |      |                              |
-| aruba.sysmon.module_num   |             |      |                              |
-| aruba.sysmon.partition_name |           |      |                              |
-| aruba.sysmon.poll         |             |      |                              |
-| aruba.sysmon.unit         |             |      |                              |
-| aruba.sysmon.utilization  |             |      |                              |
+#### [SYS events](https://www.arubanetworks.com/techdocs/AOS-CX/10.15/HTML/elmrg/Content/events/SYS.htm)
+| Docs Field       | Schema Mapping               |
+|------------------|------------------------------|
+| `<error_sbe>`    | aruba.error.description      |
+| `<module>`       | aruba.sys.module             |
+| `<value>`        | aruba.sys.name               |
 
-#### [TCAM events](https://www.arubanetworks.com/techdocs/AOS-CX/10.07/HTML/5200-8214/Content/events/TCAM.htm)
-| Field                     | Description | Type | Common                       |
-|---------------------------|-------------|------|------------------------------|
-| aruba.tcam.table_name     |             |      |                              |
+#### [SYSMON events](https://www.arubanetworks.com/techdocs/AOS-CX/10.15/HTML/elmrg/Content/events/SYSMON.htm)
+| Docs Field         | Schema Mapping               |
+|--------------------|------------------------------|
+| `<mem_usage>`      | aruba.sysmon.mem_usage       |
+| `<module_name>`    | aruba.sysmon.module_name     |
+| `<module_num>`     | aruba.sysmon.module_num      |
+| `<partition_name>` | aruba.sysmon.partition_name  |
+| `<poll>`           | aruba.sysmon.poll            |
+| `<unit>`           | aruba.sysmon.unit            |
+| `<unit_count>`     | aruba.sysmon.unit_count      |
+| `<utilization>`    | aruba.sysmon.utilization     |
+
+#### [TCAM events](https://www.arubanetworks.com/techdocs/AOS-CX/10.15/HTML/elmrg/Content/events/TCAM.htm)
+| Docs Field         | Schema Mapping               |
+|--------------------|------------------------------|
+| `<table_name>`     | aruba.tcam.table_name        |
+
+#### [Telnet server events](https://www.arubanetworks.com/techdocs/AOS-CX/10.15/HTML/elmrg/Content/events/TELNET_SERVER.htm)
+| Docs Field         | Schema Mapping               |
+|--------------------|------------------------------|
+| `<ip_address>`     | client.ip                    |
+| `<mgmt_intf>`      | aruba.interface.id           |
+| `<user_name>`      | user.name                    |
+| `<vrf_name>`       | aruba.vrf.name               |
 
 #### [Temperature events](https://www.arubanetworks.com/techdocs/AOS-CX/10.15/HTML/elmrg/Content/events/TEMPERATURE.htm)
 | Docs Field    | Schema Mapping               |
@@ -1616,17 +1641,36 @@ The `log` dataset collects the HPE Aruba CX logs.
 | aruba.session.id |  | keyword |
 | aruba.session.name |  | keyword |
 | aruba.slot |  | long |
+| aruba.snmp.truth_value |  | keyword |
+| aruba.ssh.key_name |  | keyword |
+| aruba.ssh.new_ip |  | keyword |
 | aruba.state |  | keyword |
 | aruba.status |  | keyword |
 | aruba.storage.name |  | keyword |
 | aruba.storage.usage |  | long |
 | aruba.subsystem |  | keyword |
+| aruba.supportability.alarm_index |  | keyword |
+| aruba.supportability.daemons |  | keyword |
+| aruba.supportability.log_type |  | keyword |
+| aruba.supportability.module |  | keyword |
+| aruba.supportability.oid |  | keyword |
+| aruba.sys.module |  | keyword |
+| aruba.sys.name |  | keyword |
+| aruba.sysmon.mem_usage |  | long |
+| aruba.sysmon.module_name |  | keyword |
+| aruba.sysmon.module_num |  | long |
+| aruba.sysmon.partition_name |  | keyword |
+| aruba.sysmon.poll |  | keyword |
+| aruba.sysmon.unit |  | keyword |
+| aruba.sysmon.unit_count |  | long |
+| aruba.sysmon.utilization |  | long |
 | aruba.system.devicespec |  | keyword |
 | aruba.system.line |  | long |
 | aruba.system.modspec |  | keyword |
 | aruba.system.numdevs |  | long |
 | aruba.system.pass |  | keyword |
 | aruba.system.time |  | long |
+| aruba.tcam.table_name |  | keyword |
 | aruba.temp.celsius |  | long |
 | aruba.temp.limit_type |  | keyword |
 | aruba.temp.module |  | keyword |
@@ -1679,6 +1723,8 @@ The `log` dataset collects the HPE Aruba CX logs.
 | event.sequence | Sequence number of the event. The sequence number is a value published by some event sources, to make the exact ordering of events unambiguous, regardless of the timestamp precision. | long |
 | event.type | This is one of four ECS Categorization Fields, and indicates the third level in the ECS category hierarchy. `event.type` represents a categorization "sub-bucket" that, when used along with the `event.category` field values, enables filtering events down to a level appropriate for single visualization. This field is an array. This will allow proper categorization of some events that fall in multiple event types. | keyword |
 | file.name | Name of the file including the extension, without the directory. | keyword |
+| file.type | File type (file, dir, or symlink). | keyword |
+| host.boot.id | Linux boot uuid taken from /proc/sys/kernel/random/boot_id. Note the boot_id value from /proc may or may not be the same in containers as on the host. Some container runtimes will bind mount a new boot_id value onto the proc file in each container. | keyword |
 | host.ip | Host ip addresses. | ip |
 | host.mac | Host MAC addresses. The notation format from RFC 7042 is suggested: Each octet (that is, 8-bit byte) is represented by two [uppercase] hexadecimal digits giving the value of the octet as an unsigned integer. Successive octets are separated by a hyphen. | keyword |
 | host.name | Name of the host. It can contain what hostname returns on Unix systems, the fully qualified domain name (FQDN), or a name specified by the user. The recommended value is the lowercase FQDN of the host. | keyword |
@@ -1702,6 +1748,9 @@ The `log` dataset collects the HPE Aruba CX logs.
 | observer.ingress.interface.name | Interface name as reported by the system. | keyword |
 | package.installed | Time when package was installed. | date |
 | package.version | Package version | keyword |
+| process.end | The time the process ended. | date |
+| process.name | Process name. Sometimes called program name or similar. | keyword |
+| process.name.text | Multi-field of `process.name`. | match_only_text |
 | server.address | Some event server addresses are defined ambiguously. The event will sometimes list an IP, a domain or a unix socket.  You should always store the raw address in the `.address` field. Then it should be duplicated to `.ip` or `.domain`, depending on which one it is. | keyword |
 | server.ip | IP address of the server (IPv4 or IPv6). | ip |
 | server.mac | MAC address of the server. The notation format from RFC 7042 is suggested: Each octet (that is, 8-bit byte) is represented by two [uppercase] hexadecimal digits giving the value of the octet as an unsigned integer. Successive octets are separated by a hyphen. | keyword |
