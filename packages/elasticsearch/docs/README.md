@@ -2665,9 +2665,9 @@ For version 8.17.1+ of the module and collected data, the integration also insta
 * Aggregate the index-level stats in data-stream-centric insights, such as query count, query time or overall data volume.
 * This aggregated data is then processed through an additional, integration-installed, ingest pipeline (`{VERSION}-monitoring_indices`) before being shipped to a `monitoring-indices` index.
 
-You can then visualize the resulting data in the `[Elasticsearch] Indices & datatastreams usage` dashboard.
+You can then visualize the resulting data in the `[Elasticsearch] Indices & data streams usage` dashboard.
 
-![Indices & datastreams usage](../img/indices_datastream_view.png)
+![Indices & data streams usage](../img/indices_datastream_view.png)
 
 Apart from some high-level statistics, such as total query count, total query time and total addressable data, the dashboard surfaces usage information centered on two dimensions:
 
@@ -2678,7 +2678,7 @@ Apart from some high-level statistics, such as total query count, total query ti
 
 As data ages, it commonly reduces in relative importance and is commonly stored on less efficient and more cost-effective hardware. Usage count and query time should also proportionally diminish. Various visualizations in the dashboard allow you to verify this assumption on your data, and ensure your ILM policy (and therefore data tier transitions) are aligned with how the data is actually being used.
 
-#### Indices and datastreams usage
+#### Indices and data streams usage
 
 Other visualizations in the dashboard allow you to compare the relative footprint of each data stream, from a storage, querying and indexing perspective. This can help you identify anomalies, stemming from faulty configuration or poor user behavior.
 
