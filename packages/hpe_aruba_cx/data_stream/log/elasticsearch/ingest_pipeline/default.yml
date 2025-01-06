@@ -369,6 +369,71 @@ processors:
         - "^Failed to allocate memory for %{GREEDYDATA:aruba.sys.name}"
         - "^Detected DDR errors during uboot BIST, module %{DATA:aruba.sys.module} reported %{GREEDYDATA:aruba.error.description}"
 
+    # Temperature events (8xx)
+    # https://www.arubanetworks.com/techdocs/AOS-CX/10.15/HTML/elmrg/Content/events/TEMPERATURE.htm
+  - dissect:
+      field: message
+      tag: temp_event_801
+      description: "Log event when sensor type is unrecognized"
+      if: "ctx.event?.code == '801'"
+      pattern: "Unrecognized sensor type %{aruba.temp.type}"
+  - grok:
+      field: message
+      tag: temp_event_802
+      description: "Log event when sensor temperature is above the critical threshold"
+      if: "ctx.event?.code == '802'"
+      patterns:
+        - "^Module %{DATA:aruba.temp.module} shutdown initiated for sensor %{DATA:aruba.temp.name} with critical temperature, %{NUMBER:aruba.temp.celsius:long} degC."
+  - grok:
+      field: message
+      tag: temp_event_803_804
+      description: "Log event when sensor temperature is above the over-temperature threshold | when a sensor returns to safe operating conditions"
+      if: "['803','804'].contains(ctx.event?.code)"
+      patterns:
+        - "(S|s)ensor %{DATA:aruba.temp.name}( back to safe temperature)?, %{NUMBER:aruba.temp.celsius:long} degC."
+  - dissect:
+      field: message
+      tag: temp_event_805
+      description: "Log when the system derate changes."
+      if: "ctx.event?.code == '805'"
+      pattern: "System derate changed from %{aruba.temp.old} to %{aruba.temp.new}"
+  - grok:
+      field: message
+      tag: temp_event_806_807
+      description: "Log when ambient temperature is above the ambient temperature limits | returns to safe operating conditions"
+      if: "['806','807'].contains(ctx.event?.code)"
+      patterns:
+        - "^Ambient temperature for sensor %{DATA:aruba.temp.name} above %{NUMBER:aruba.temp.celsius:long} degC"
+        - "^Ambient temperature for sensor %{DATA:aruba.temp.name} back to safe temperature, between %{NUMBER:aruba.temp.t_low:long} and %{NUMBER:aruba.temp.t_high:long} degC"
+  - dissect:
+      field: message
+      tag: temp_event_808
+      description: "Log failures in configuring sensor temperature warning/critical limits."
+      if: "ctx.event?.code == '808'"
+      pattern: "Sensor %{aruba.temp.name} %{aruba.temp.limit_type} limit configuration %{aruba.status}"
+  - grok:
+      field: message
+      tag: temp_event_809_810
+      description: "Log when ambient temperature is [above|below] commercial grade transceiver upper limit when non-industrial transceivers are installed"
+      if: "['809','810'].contains(ctx.event?.code)"
+      patterns:
+        - "^Ambient temperature %{NUMBER:aruba.temp.celsius:long} degC is (above|below) the commercial grade transceiver (limit|range) of %{DATA:aruba.limit.threshold} degC"
+  - grok:
+      field: message
+      tag: temp_event_811
+      description: "Log when ambient temperature returns to commercial grade transceiver range when non-industrial transceivers are installed."
+      if: "ctx.event?.code == '811'"
+      patterns: 
+        - "^Ambient temperature %{NUMBER:aruba.temp.celsius:long} degC returned to within the commercial grade transceiver range of %{DATA:aruba.temp.t_low:long}-%{DATA:aruba.temp.t_high:long} degC"
+  - grok:
+      field: message
+      tag: temp_event_812_813_814
+      description: "Log when ambient temperature is below the ambient temperature limits | temperature is below the under-temperature threshold | temperature is below the low critical threshold"
+      if: "['812','813','814'].contains(ctx.event?.code)"
+      patterns:
+        - "^(Ambient |Under-)temperature for sensor %{DATA:aruba.temp.name}(,| below) %{NUMBER:aruba.temp.celsius:long} degC"
+        - "^Module %{DATA:aruba.temp.module} shutdown initiated for sensor %{DATA:aruba.temp.name} with low critical temperature, %{NUMBER:aruba.temp.celsius:long} degC"
+
     # Loopback events (90x)
     # https://www.arubanetworks.com/techdocs/AOS-CX/10.07/HTML/5200-8214/Content/events/LOOPBACK.htm
   - grok:
@@ -1784,6 +1849,21 @@ processors:
         - "^Duplicate (IPv4|IPv6) address %{IP:client.ip} is detected on port %{DATA:aruba.port} with a MAC address of %{MAC:client.mac}"
         - "^Throttled %{NUMBER:aruba.throttle_count:long} Messages"
   
+  # Time management events (620x)
+  # https://www.arubanetworks.com/techdocs/AOS-CX/10.07/HTML/5200-8214/Content/events/CREDMGR.htm
+  - dissect:
+      if: "ctx.event.code == '6201'"
+      tag: timemgmt_event_6201
+      field: "message"
+      description: "Change the system timezone"
+      pattern: "System timezone changed from %{aruba.time.old_tz} to %{aruba.time.new_tz}"
+  - dissect:
+      if: "ctx.event.code == '6202'"
+      tag: timemgmt_event_6202
+      field: "message"
+      description: "Change the system date/time"
+      pattern: "System date/time changed from %{aruba.time.old_time} to %{aruba.time.new_time}"
+
   # SYSMON events (63xx)
   # https://www.arubanetworks.com/techdocs/AOS-CX/10.15/HTML/elmrg/Content/events/SYSMON.htm
   - grok:
@@ -3097,7 +3177,7 @@ processors:
       patterns:
         - "%{DATA:aruba.dns.type} event for VRF %{DATA:aruba.dns.vrf_name}$"
 
-  # Telnet server events (1290x)
+# Telnet server events (1290x)
   # https://www.arubanetworks.com/techdocs/AOS-CX/10.15/HTML/elmrg/Content/events/TELNET_SERVER.htm
   - grok:
       field: message
@@ -3125,6 +3205,59 @@ processors:
         - "^TELNET session from User %{DATA:user.name} is closed because maximum number of sessions per user is reached."
         - "^User %{DATA:user.name} login from %{IP:client.ip} for TELNET session has failed since the user is trying to login through an interface which is not allowed. Allowed interfaces are: %{GREEDYDATA:aruba.interface.id}."
 
+  # TPM events (1360x)
+  # https://www.arubanetworks.com/techdocs/AOS-CX/10.15/HTML/elmrg/Content/events/TPMD.htm
+  - dissect:
+      field: message
+      tag: tpm_event_13601
+      description: "Indicates a TPM_Sign operation was successfully executed"
+      if: "ctx.event?.code == '13601'"
+      pattern: "TPM_Sign requested by %{process.name} was successful"
+  - dissect:
+      field: message
+      tag: tpm_event_13602
+      description: "Indicates a TPM_Sign operation failed"
+      if: "ctx.event?.code == '13602'"
+      pattern: "TPM_Sign requested by %{process.name} failed with code %{event.reason}"
+  - dissect:
+      field: message
+      tag: tpm_event_13604
+      description: "Indicates the system was rebooted some number of time to recovery from a TPM selftest error"
+      if: "ctx.event?.code == '13604'"
+      pattern: "Rebooted %{aruba.tpm.reboot_num} times to retry TPM selftests"
+
+  # Traffic Insight events (1400x)
+  # https://www.arubanetworks.com/techdocs/AOS-CX/10.15/HTML/elmrg/Content/events/TRAFFIC_INSIGHT.htm
+  - grok:
+      field: message
+      tag: traffic_insight_event_14001_14002
+      description: "Event indicates new traffic insight instance is [c]reated|deleted]"
+      if: "['14001','14002'].contains(ctx.event?.code)"
+      patterns:
+        - "^Instance %{DATA:aruba.instance.id} (created|deleted)"
+  - grok:
+      field: message
+      tag: traffic_insight_event_14003_14004
+      description: "Flow running-statistics timeout expired | aggregate-statistics timeout expired"
+      if: "['14003','14004'].contains(ctx.event?.code)"
+      patterns:
+        - "^Top-N flows (running|aggregate)-statistics cleared for the monitor %{DATA:aruba.traffic.monitor_name} and instance %{GREEDYDATA:aruba.instance.id}"
+  - grok:
+      field: message
+      tag: traffic_insight_event_14005_14006
+      description: "Event indicates traffic insight instance is [enabled|disabled] "
+      if: "['14005','14006'].contains(ctx.event?.code)"
+      patterns:
+        - "^Traffic Insight instance %{DATA:aruba.instance.id} (enabled|disabled)"
+  - grok:
+      field: message
+      tag: traffic_insight_event_14007_14008
+      description: "Event indicates maximum application flow cache limit reached for a traffic insight instance | DNS average latency statistics cache gets cleared after the timeout"
+      if: "['14007','14008'].contains(ctx.event?.code)"
+      patterns:
+        - "^Ignoring the flow for monitor %{DATA:aruba.traffic.monitor_name} instance %{DATA:aruba.instance.id}, maximum application flow cache limit reached"
+        - "^DNS Average Latency statistics cache cleared for the monitor %{DATA:aruba.traffic.monitor_name} and instance %{GREEDYDATA:aruba.instance.id}"
+  
   # Cleanup MAC addresses for different fields
   - uppercase:
       field: client.mac

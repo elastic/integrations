@@ -1147,24 +1147,42 @@ Note: Descriptions have not been filled out
 | `<user_name>`      | user.name                    |
 | `<vrf_name>`       | aruba.vrf.name               |
 
-#### [Temperature events](https://www.arubanetworks.com/techdocs/AOS-CX/10.07/HTML/5200-8214/Content/events/TEMPERATURE.htm)
-| Field                     | Description | Type | Common                       |
-|---------------------------|-------------|------|------------------------------|
-| aruba.temp.sensor_type    |             |      |                              |
-| aruba.temp.sensor_name    |             |      |                              |
-| aruba.temp.celcius        |             |      |                              |
-| aruba.temp.derate_old     |             |      |                              |
-| aruba.temp.derate_new     |             |      |                              |
-| aruba.temp.limit_type     |             |      |                              |
-| aruba.temp.status         |             |      | aruba.status                 |
+#### [Temperature events](https://www.arubanetworks.com/techdocs/AOS-CX/10.15/HTML/elmrg/Content/events/TEMPERATURE.htm)
+| Docs Field    | Schema Mapping               |
+|---------------|------------------------------|
+| `<name>`      | aruba.temp.name              |
+| `<new>`       | aruba.temp.new               |
+| `<limit_high>`| aruba.limit.threshold        |
+| `<limit_low>` | aruba.limit.threshold        |
+| `<limit_type>`| aruba.temp.limit_type        |
+| `<module>`    | aruba.temp.module            |
+| `<old>`       | aruba.temp.old               |
+| `<status>`    | aruba.status                 |
+| `<temp>`      | aruba.temp.celsius           |
+| `<type>`      | aruba.temp.type              |
+| `<t_high>`    | aruba.temp.t_high            |
+| `<t_low>`     | aruba.temp.t_low             |
 
-#### [Time management events](https://www.arubanetworks.com/techdocs/AOS-CX/10.07/HTML/5200-8214/Content/events/TIME_MGMT.htm)
-| Field                | Description | Type | Common                       |
-|----------------------|-------------|------|------------------------------|
-| aruba.time.new_time  |             |      | aruba.time.local             |
-| aruba.time.newtz     |             |      | aruba.time.tz                |
-| aruba.time.old_time  |             |      | aruba.time.local_old         |
-| aruba.time.oldtz     |             |      | aruba.time.tz_old            |
+#### [Time management events](https://www.arubanetworks.com/techdocs/AOS-CX/10.15/HTML/elmrg/Content/events/TIME_MGMT.htm)
+| Docs Field     | Schema Mapping             |
+|----------------|----------------------------|
+| `<new_time>`   | aruba.time.new_time        |
+| `<newtz>`      | aruba.time.new_tz          |
+| `<old_time>`   | aruba.time.old_time        |
+| `<oldtz>`      | aruba.time.old_tz          |
+
+#### [TPM events](https://www.arubanetworks.com/techdocs/AOS-CX/10.15/HTML/elmrg/Content/events/TPMD.htm)
+| Docs Field       | Schema Mapping       |
+|------------------|----------------------|
+| `<process_name>` | process.name         |
+| `<reason>`       | event.reason         |
+| `<reboot_num>`   | aruba.tpm.reboot_num |
+
+#### [Traffic Insight events](https://www.arubanetworks.com/techdocs/AOS-CX/10.15/HTML/elmrg/Content/events/TRAFFIC_INSIGHT.htm)
+| Docs Field       | Schema Mapping             |
+|------------------|----------------------------|
+| `<instance_name>`| aruba.instance.id          |
+| `<monitor_name>` | aruba.traffic.monitor_name |
 
 #### [Transceiver events](https://www.arubanetworks.com/techdocs/AOS-CX/10.07/HTML/5200-8214/Content/events/XCVR.htm)
 | Field                          | Description | Type | Common                       |
@@ -1653,9 +1671,24 @@ The `log` dataset collects the HPE Aruba CX logs.
 | aruba.system.pass |  | keyword |
 | aruba.system.time |  | long |
 | aruba.tcam.table_name |  | keyword |
+| aruba.temp.celsius |  | long |
+| aruba.temp.limit_type |  | keyword |
+| aruba.temp.module |  | keyword |
+| aruba.temp.name |  | keyword |
+| aruba.temp.new |  | keyword |
+| aruba.temp.old |  | keyword |
+| aruba.temp.t_high |  | long |
+| aruba.temp.t_low |  | long |
+| aruba.temp.type |  | keyword |
 | aruba.throttle_count |  | long |
+| aruba.time.new_time |  | keyword |
+| aruba.time.new_tz |  | keyword |
+| aruba.time.old_time |  | keyword |
+| aruba.time.old_tz |  | keyword |
 | aruba.time.seconds |  | long |
 | aruba.timeout |  | long |
+| aruba.tpm.reboot_num |  | keyword |
+| aruba.traffic.monitor_name |  | keyword |
 | aruba.tunnel.name |  | keyword |
 | aruba.tunnel.ttl |  | keyword |
 | aruba.tunnel.type |  | keyword |
