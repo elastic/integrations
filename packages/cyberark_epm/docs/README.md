@@ -54,7 +54,7 @@ Please note, there are minimum requirements for running Elastic Agent. For more 
 2. In "Search for integrations" top bar, search for `CyberArk EPM`.
 3. Select the "CyberArk EPM" integration from the search results.
 4. Select "Add CyberArk EPM" to add the integration.
-5. Add all the required integration configuration parameters, including the URL, Username, Password, Session Timeout, Interval, and Initial Interval, to enable data collection.
+5. Add all the required integration configuration parameters, including the URL, Username, Password, API Version, Session Timeout, Interval, and Initial Interval, to enable data collection.
 6. Select "Save and continue" to save the integration.
 
 **Note**:
