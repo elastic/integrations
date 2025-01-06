@@ -358,6 +358,17 @@ processors:
       if: "ctx.event?.code == '607'"
       pattern: "Overlapping networks observed for %{client.ip}"
 
+    # SYS events (7xx)
+    # https://www.arubanetworks.com/techdocs/AOS-CX/10.15/HTML/elmrg/Content/events/SYS.htm
+  - grok:
+      field: message
+      tag: sys_event_705_711
+      description: "Log when  failed to allocate memory | Indicates that the system has detected DDR errors during uboot BIST"
+      if: "['705','711'].contains(ctx.event?.code)"
+      patterns:
+        - "^Failed to allocate memory for %{GREEDYDATA:aruba.sys.name}"
+        - "^Detected DDR errors during uboot BIST, module %{DATA:aruba.sys.module} reported %{GREEDYDATA:aruba.error.description}"
+
     # Loopback events (90x)
     # https://www.arubanetworks.com/techdocs/AOS-CX/10.07/HTML/5200-8214/Content/events/LOOPBACK.htm
   - grok:
@@ -367,6 +378,92 @@ processors:
       if: "['901','902','903'].contains(ctx.event?.code)"
       patterns:
         - "^Loopback Interface %{DATA:aruba.interface.id}, (created|deleted|configured administratively %{GREEDYDATA:aruba.interface.state})"
+
+    # Supportability events (12xx)
+    # https://www.arubanetworks.com/techdocs/AOS-CX/10.15/HTML/elmrg/Content/events/SUPPORTABILITY.htm
+  - grok:
+      field: message
+      tag: supportability_event_1201
+      description: "A daemon has crashed and generated core dump"
+      if: "ctx.event?.code == '1201'"
+      patterns: 
+        # Documentation doesn't align with actual logs, accounting for both formats
+        - "^%{DATA:process.name} crashed due to %{NUMBER:process.exit_code:long},%{GREEDYDATA:process.end}"
+        - "^%{DATA:process.name} crashed due to signal:%{NUMBER:process.exit_code:long}"
+  - grok:
+      field: message
+      tag: supportability_event_1203_1204
+      description: "Logs kernel failed to compress vmcore | occurred and secondary kernel core failed to save uncompressed core"
+      if: "['1203','1204'].contains(ctx.event?.code)"
+      patterns:
+        - "Error log:%{GREEDYDATA:aruba.error.description}"
+  - dissect:
+      field: message
+      tag: supportability_event_1206
+      description: "Logs reboot information"
+      if: "ctx.event?.code == '1206'"
+      pattern: "Module rebooted. Reason: %{event.reason}, Boot-ID: %{host.boot.id}"
+  - dissect:
+      field: message
+      tag: supportability_event_1208
+      description: "Event raised when system memory usage goes beyond high threshold."
+      if: "ctx.event?.code == '1208'"
+      # <daemons> could be an array, need real logs to warrant parsing as array
+      pattern: "High system memory usage detected. High memory usage daemons are %{aruba.supportability.daemons}"
+  - grok:
+      field: message
+      tag: supportability_event_1213_1214
+      description: "Event raised when the sampled value has reached the [rising|falling] threshold "
+      if: "['1213','1214'].contains(ctx.event?.code)"
+      patterns:
+        - "^RMON alarm %{DATA:aruba.supportability.alarm_index} - (Rising|Falling) threshold value of %{DATA:aruba.limit.threshold} reached for %{GREEDYDATA:aruba.supportability.oid}."
+  - dissect:
+      field: message
+      tag: supportability_event_1215_1216
+      description: "A (critical)? process is exiting due to an unrecoverable error"
+      if: "['1215','1216'].contains(ctx.event?.code)"
+      pattern: "%{process.name} exiting. Reason: %{event.reason}"
+  - grok:
+      field: message
+      tag: supportability_event_1218_1219_1220
+      description: "Event raised when a new syslog server is added for remote logging | when a syslog server is removed from remote logging | when an existing syslog server configuration is modified"
+      if: "['1218','1219','1220'].contains(ctx.event?.code)"
+      patterns:
+        - "logging to %{DATA:client.address} over %{DATA:aruba.vrf.id} vrf"
+  - grok:
+      field: message
+      tag: supportability_event_1223_1224
+      description: "Event raised the log buffer is almost full. User can copy these logs before the logs being overwritten | log buffer has wrapped; older logs will be overwritten."
+      if: "['1223','1224'].contains(ctx.event?.code)"
+      patterns:
+        - "^The %{DATA:aruba.supportability.log_type} buffer"
+  - dissect:
+      field: message
+      tag: supportability_event_1225
+      description: "Event raised when suppuort-files collection is requested"
+      if: "ctx.event?.code == '1225'"
+      pattern: "Collection of support-files named %{file.name} of type %{file.type} is requested for the module %{aruba.supportability.module}."
+  - grok:
+      field: message
+      tag: supportability_event_1226_1227
+      description: "Event raised when a requst received to delete given support-files | when support-files is deleted"
+      if: "['1226','1227'].contains(ctx.event?.code)"
+      patterns:
+        - "^Support-files named %{DATA:file.name} is"
+  - grok:
+      field: message
+      tag: supportability_event_1228_1229_1230
+      description: "Event raised when collection support-files failed | failed to delete a given support-files | collection of support-files state changes"
+      if: "['1228','1229','1230'].contains(ctx.event?.code)"
+      patterns:
+        - "^(Collection|Deletion) of support-files named %{DATA:file.name} failed due to %{GREEDYDATA:event.reason}."
+        - "^Collection of support-files named %{DATA:file.name} is %{GREEDYDATA:aruba.state}."
+  - dissect:
+      field: message
+      tag: supportability_event_1235
+      description: "Logs reboot count information"
+      if: "ctx.event?.code == '1235'"
+      pattern: "Switch boot count is : %{aruba.status}"
 
     # LACP events (13xx)
     # https://www.arubanetworks.com/techdocs/AOS-CX/10.07/HTML/5200-8214/Content/events/LACP.htm
@@ -1597,6 +1694,40 @@ processors:
         - "^Duplicate (IPv4|IPv6) address %{IP:client.ip} is detected on port %{DATA:aruba.port} with a MAC address of %{MAC:client.mac}"
         - "^Throttled %{NUMBER:aruba.throttle_count:long} Messages"
   
+  # SYSMON events (63xx)
+  # https://www.arubanetworks.com/techdocs/AOS-CX/10.15/HTML/elmrg/Content/events/SYSMON.htm
+  - grok:
+      if: "ctx.event?.code == '6301'"
+      tag: sysmon_event_6301
+      field: "message"
+      description: "System resource utilization poll change event"
+      patterns: 
+        - "^System resource utilization poll interval is changed to %{GREEDYDATA:aruba.sysmon.poll}"
+        - "^Throttled %{NUMBER:aruba.throttle_count:long} Messages"
+  - grok:
+      if: "['6302','6303'].contains(ctx.event?.code)"
+      tag: sysmon_event_6302_6303
+      field: "message"
+      description: "Warns a user when system memory usage read failed | Reports current system memory usage in percentage"
+      patterns:
+        - "^Failed to read system memory usage for module %{GREEDYDATA:aruba.sysmon.module_name}"
+        - "^Current system memory usage for module %{DATA:aruba.sysmon.module_name} is %{NUMBER:aruba.sysmon.mem_usage:long}%"
+  - grok:
+      if: "['6304','6305'].contains(ctx.event?.code)"
+      tag: sysmon_event_6304_6305
+      field: "message"
+      description: "Warns a user when the storage utilization has exceeded the warning limit | Raises high storage utilization alert when the utilization crosses higher utilization limit"
+      patterns:
+        - "^Storage( utilization for)? %{DATA:aruba.sysmon.partition_name} (partition is at|partition high utilization alert. Utilization is at) %{NUMBER:aruba.sysmon.utilization:long}% in module %{GREEDYDATA:aruba.sysmon.module_name}"
+  - grok:
+      if: "['6306','6307','6308','6309'].contains(ctx.event?.code)"
+      tag: sysmon_event_6306_6307_6308_6309
+      field: "message"
+      description: "Warns a user when [higher|excessive] write to the [swap|storage] observed"
+      patterns:
+        - "^Excessive write to %{DATA:aruba.sysmon.partition_name} partition in module %{DATA:aruba.sysmon.module_name} observed. %{NUMBER:aruba.sysmon.mem_usage:long}GB written over past %{NUMBER:aruba.sysmon.unit_count:long} %{GREEDYDATA:aruba.sysmon.unit}"
+        - "^Excessive write to swap in module %{DATA:aruba.sysmon.module_name} observed. %{NUMBER:aruba.sysmon.mem_usage:long}GB written over past %{NUMBER:aruba.sysmon.unit_count:long} %{GREEDYDATA:aruba.sysmon.unit}"
+  
   # Credential Manager events (65xx)
   # https://www.arubanetworks.com/techdocs/AOS-CX/10.07/HTML/5200-8214/Content/events/CREDMGR.htm
   #
@@ -2613,6 +2744,17 @@ processors:
       description: "Policy application failure"
       pattern: "Policy %{aruba.policy.name} failed to apply on %{aruba.policy.application}"
 
+  # TCAM events (102xx)
+  # https://www.arubanetworks.com/techdocs/AOS-CX/10.15/HTML/elmrg/Content/events/TCAM.htm
+  - grok:
+      if: "['10202','10203','10204','10205','10209','10210'].contains(ctx.event?.code)"
+      tag: tcam_event_10202_10203_10204_10205_10209_10210
+      field: "message"
+      description: "[entry|table] [installation|uninstallation] failure | High-capacity TCAM/LPM [entry|table] [installation|uninstallation] failure "
+      patterns:
+        - "TCAM(/LPM)? table %{DATA:aruba.tcam.table_name} "
+        - "in table %{GREEDYDATA:aruba.tcam.table_name}"
+
   # RBAC events (1030x)
   # https://www.arubanetworks.com/techdocs/AOS-CX/10.07/HTML/5200-8214/Content/events/RBACD.htm
   - grok:
@@ -2826,6 +2968,34 @@ processors:
       if: "['11901'].contains(ctx.event?.code)"
       patterns:
         - "%{DATA:aruba.dns.type} event for VRF %{DATA:aruba.dns.vrf_name}$"
+
+  # Telnet server events (1290x)
+  # https://www.arubanetworks.com/techdocs/AOS-CX/10.15/HTML/elmrg/Content/events/TELNET_SERVER.htm
+  - grok:
+      field: message
+      tag: telnet_server_event_12901_12902_12903
+      description: "Logs a message when the Telnet server is [enabled|disabled] on a VRF | Logs a message when a user tries to enable Telnet server without setting admin password"
+      if: "['12901','12902','12903'].contains(ctx.event?.code)"
+      patterns:
+        - "^Failed to enable Telnet server on VRF %{DATA:aruba.vrf.name}. Admin password is not set."
+        - "on VRF %{GREEDYDATA:aruba.vrf.name}."
+  - grok:
+      field: message
+      tag: telnet_server_event_12904_12905_12906_12907
+      description: "Logs a message when a user login is [successful|fails] | when a user logs out of a session | when a user tries to login while maximum number of sessions are reached."
+      if: "['12904','12905','12906','12907'].contains(ctx.event?.code)"
+      patterns:
+        - "^User %{DATA:user.name} (logged in|login|logged out of TELNET session) from %{IP:client.ip}"
+        - "^TELNET session from %{IP:client.ip} is rejected because maximum number of TELNET sessions is reached."
+  - grok:
+      field: message
+      tag: telnet_server_event_
+      description: ""
+      # Possible documentation error with duplicate definition of 12908, will parse 12908 and 12909 together in the same grok
+      if: "['12908','12909'].contains(ctx.event?.code)"
+      patterns:
+        - "^TELNET session from User %{DATA:user.name} is closed because maximum number of sessions per user is reached."
+        - "^User %{DATA:user.name} login from %{IP:client.ip} for TELNET session has failed since the user is trying to login through an interface which is not allowed. Allowed interfaces are: %{GREEDYDATA:aruba.interface.id}."
 
   # Cleanup MAC addresses for different fields
   - uppercase:
