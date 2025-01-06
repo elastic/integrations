@@ -26,3 +26,15 @@ services:
       - ./sample_logs:/sample_logs:ro
       - ${SERVICE_LOGS_DIR}:/var/log
     command: /bin/sh -c "cp /sample_logs/*.log /var/log/"
+  system-syslog-journald:
+    build: .
+    volumes:
+      - ./sample_logs:/sample_logs:ro
+      - ${SERVICE_LOGS_DIR}:/var/log
+    command: /bin/sh -c "/lib/systemd/systemd-journal-remote -o /var/log/system-syslog.journal /sample_logs/debian-12-syslog.export"
+  system-auth-journald:
+    build: .
+    volumes:
+      - ./sample_logs:/sample_logs:ro
+      - ${SERVICE_LOGS_DIR}:/var/log
+    command: /bin/sh -c "/lib/systemd/systemd-journal-remote -o /var/log/system-auth.journal /sample_logs/debian-12-auth.export"

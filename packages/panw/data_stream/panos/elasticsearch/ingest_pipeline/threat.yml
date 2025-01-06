@@ -318,6 +318,11 @@ processors:
       tag: set_url_from_file
       field: url.original
       copy_from: _temp_.future_use3
+  - set:
+      if: 'ctx.panw?.panos?.threat_category == "domain-edl" && ctx.panw?.panos?.misc instanceof String'
+      tag: set_domain_edl_url
+      field: url.original
+      copy_from: panw.panos.misc
   # Crude implementation of `uri_parts` as its not working well due to lack of scheme.
   # When the scheme of the URL is absent, this script parses the URL in `ctx.panw.panos.misc` into components namely 
   # `url.original`, `url.domain`, `url.port`, `url.path`, `url.query`, `url.extension`

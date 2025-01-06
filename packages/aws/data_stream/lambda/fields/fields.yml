@@ -16,6 +16,10 @@
           type: keyword
           dimension: true
           description: Use the ExecutedVersion dimension to compare error rates for two versions of a function that are both targets of a weighted alias.
+        - name: EventSourceMappingUUID
+          type: keyword
+          dimension: true
+          description: The identifier of the event source mapping.
     - name: lambda
       type: group
       fields:
@@ -103,6 +107,34 @@
               unit: ms
               metric_type: gauge
               description: The average time between when Lambda successfully queues the event and when the function is invoked.
+            - name: PolledEventCount.sum
+              metric_type: gauge
+              type: double
+              description: The number of events that Lambda reads successfully from the event source.
+            - name: FilteredOutEventCount.sum
+              metric_type: gauge
+              type: double
+              description: For event source mapping with a filter criteria, the number of events excluded based on the specified criteria.
+            - name: InvokedEventCount.sum
+              metric_type: gauge
+              type: double
+              description: The number of events that invoked your Lambda function. Use this metric to verify that events are properly invoking your function.
+            - name: FailedInvokeEventCount.sum
+              metric_type: gauge
+              type: double
+              description: The number of events that Lambda tried to invoke your function with, but failed.
+            - name: DroppedEventCount.sum
+              metric_type: gauge
+              type: double
+              description: The number of events that Lambda dropped due to expiry or retry exhaustion.
+            - name: OnFailureDestinationDeliveredEventCount.sum
+              metric_type: gauge
+              type: double
+              description: For event source mappings with an on-failure destination configured, the number of events sent to that destination.
+            - name: DeletedEventCount.sum
+              metric_type: gauge
+              type: double
+              description: The number of events that Lambda successfully deletes after processing.
     - name: cloudwatch
       type: group
       fields:
