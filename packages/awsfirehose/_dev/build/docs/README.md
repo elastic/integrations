@@ -85,9 +85,11 @@ This is a current limitation in Firehose, which we are working with AWS to resol
     This endpoint can be found in the Elastic Cloud console. An example is https://my-deployment-28u274.es.eu-west-1.aws.found.io.
 
     2. **API key** should be a Base64 encoded Elastic API key, which can be created in Kibana by following the
-    instructions under API Keys. If you are using an API key with “Restrict privileges”, be sure to review the Indices
+    instructions under API Keys. If you are using an API key with “Restricted privileges”, be sure to review the Indices
     privileges to provide at least "auto_configure" & "write" permissions for the indices you will be using with this
-    delivery stream.
+    delivery stream. By default, logs will be stored in `logs-awsfirehose-default` index and metrics will be stored in
+    `metrics-aws.cloudwatch-default` index. Therefore, Elastic highly recommends giving `logs-awsfirehose-default` and 
+    `metrics-aws.cloudwatch-default` indices with "write" privilege.
 
     3. We recommend leaving **Content encoding** set to **GZIP** for improved network efficiency.
 
@@ -101,9 +103,11 @@ This is a current limitation in Firehose, which we are working with AWS to resol
 
     7. **Parameters**
 
-       1. Elastic recommends setting the `es_datastream_name` parameter to `logs-awsfirehose-default` in order to
-       leverage the routing rules defined in this integration. If this parameter is not specified, data is sent to the
-       `logs-generic-default` data stream by default.
+       1. Elastic recommends only setting the `es_datastream_name` parameter when ingesting logs that are not supported
+       by this Firehose integration. If this parameter is not specified, data is sent to the `logs-awsfirehose-default`
+       index by default and the routing rules defined in this integration will be applied automatically.
+       Please make sure the index specified with this `es_datastream_name` parameter has the proper permission given by
+       the API key.
        ![Firehose Destination Settings](../img/destination-settings.png)
 
        2. The **include_cw_extracted_fields** parameter is optional and can be set when using a CloudWatch logs subscription

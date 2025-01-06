@@ -1,0 +1,270 @@
+{
+    "attributes": {
+        "description": "This dashboard shows CMDB CI, REL and DB Instance logs collected by the ServiceNow integration.",
+        "kibanaSavedObjectMeta": {
+            "searchSourceJSON": {
+                "filter": [
+                    {
+                        "$state": {
+                            "store": "appState"
+                        },
+                        "meta": {
+                            "alias": null,
+                            "disabled": false,
+                            "field": "data_stream.dataset",
+                            "indexRefName": "kibanaSavedObjectMeta.searchSourceJSON.filter[0].meta.index",
+                            "key": "data_stream.dataset",
+                            "negate": false,
+                            "params": {
+                                "query": "servicenow.event"
+                            },
+                            "type": "phrase"
+                        },
+                        "query": {
+                            "match_phrase": {
+                                "data_stream.dataset": "servicenow.event"
+                            }
+                        }
+                    },
+                    {
+                        "$state": {
+                            "store": "appState"
+                        },
+                        "meta": {
+                            "alias": null,
+                            "disabled": false,
+                            "field": "tags",
+                            "indexRefName": "kibanaSavedObjectMeta.searchSourceJSON.filter[1].meta.index",
+                            "key": "tags",
+                            "negate": false,
+                            "params": [
+                                "cmdb",
+                                "cmdb_rel_ci",
+                                "cmdb_ci",
+                                "cmdb_ci_db_instance"
+                            ],
+                            "type": "phrases"
+                        },
+                        "query": {
+                            "bool": {
+                                "minimum_should_match": 1,
+                                "should": [
+                                    {
+                                        "match_phrase": {
+                                            "tags": "cmdb"
+                                        }
+                                    },
+                                    {
+                                        "match_phrase": {
+                                            "tags": "cmdb_rel_ci"
+                                        }
+                                    },
+                                    {
+                                        "match_phrase": {
+                                            "tags": "cmdb_ci"
+                                        }
+                                    },
+                                    {
+                                        "match_phrase": {
+                                            "tags": "cmdb_ci_db_instance"
+                                        }
+                                    }
+                                ]
+                            }
+                        }
+                    }
+                ],
+                "query": {
+                    "language": "kuery",
+                    "query": ""
+                }
+            }
+        },
+        "optionsJSON": {
+            "hidePanelTitles": false,
+            "syncColors": false,
+            "syncCursor": true,
+            "syncTooltips": false,
+            "useMargins": true
+        },
+        "panelsJSON": [
+            {
+                "embeddableConfig": {
+                    "description": "",
+                    "enhancements": {},
+                    "savedVis": {
+                        "data": {
+                            "aggs": [],
+                            "searchSource": {
+                                "filter": [],
+                                "query": {
+                                    "language": "kuery",
+                                    "query": ""
+                                }
+                            }
+                        },
+                        "description": "",
+                        "id": "",
+                        "params": {
+                            "fontSize": 12,
+                            "markdown": "**Navigation**\n\n[**ServiceNow**](/app/integrations/detail/servicenow/overview)\n\n- [Incident](#/dashboard/servicenow-d929c3a1-7af8-428e-8357-8b2e8d3e3050)\n- [Problem](#/dashboard/servicenow-d8977587-d9b4-4487-b321-a8402da07d48)\n- [Change Task and Request](#/dashboard/servicenow-d2eb3f0c-4ddb-4683-afab-2820d2616ca2)\n- [User and Group](#/dashboard/servicenow-b4795d3e-8c8b-48b2-900e-edc89db4d336)\n- [CMDB CI Servers](#/dashboard/servicenow-22d413b7-ffb5-450f-b5f8-7dcd54fab22f)\n- [CMDB CI Services and CMN Location](#/dashboard/servicenow-648308f9-ebdf-46fe-b6ce-b90dfcf2d1dd)\n- **CMDB CI, REL and DB Instance Overview**\n- [Knowledge](#/dashboard/servicenow-e6093b0d-38a6-4b05-8354-4bbaef28b667)\n- [ALM and CMDB CI Hardware and Computer](#/dashboard/servicenow-b182c6a6-3b4e-413f-899d-dd255b1a3623)\n- [Service Catalog](#/dashboard/servicenow-488772bc-4ce5-48c6-9e8a-d948439dbf39)\n- [Business Application](#/dashboard/servicenow-297414cc-3b65-40b1-b15b-e33cf676b3bf)\n- [ESX and Hyper-V Server](#/dashboard/servicenow-014c13b4-59bc-4bfa-bcb2-fdc1828020bf)\n\n**Overview**\n\nThis dashboard offers a summary of the ServiceNow Integration, focusing on general statistics on the ingested CMDB, CMDB CI, CMDB REL CI and CI DB Instance logs.\n\nThe dashboard provides insights on CMDB, CMDB CI, CMDB REL CI and CI DB Instance Details.",
+                            "openLinksInNewTab": false
+                        },
+                        "title": "",
+                        "type": "markdown",
+                        "uiState": {}
+                    }
+                },
+                "gridData": {
+                    "h": 28,
+                    "i": "c0d76bf3-ecba-47d2-9c44-7271a86a29f8",
+                    "w": 13,
+                    "x": 0,
+                    "y": 0
+                },
+                "panelIndex": "c0d76bf3-ecba-47d2-9c44-7271a86a29f8",
+                "title": "Table of Content",
+                "type": "visualization"
+            },
+            {
+                "embeddableConfig": {
+                    "enhancements": {}
+                },
+                "gridData": {
+                    "h": 28,
+                    "i": "e451cd8d-d421-4275-becf-1b014a8c6d1c",
+                    "w": 35,
+                    "x": 13,
+                    "y": 0
+                },
+                "panelIndex": "e451cd8d-d421-4275-becf-1b014a8c6d1c",
+                "panelRefName": "panel_e451cd8d-d421-4275-becf-1b014a8c6d1c",
+                "type": "search"
+            },
+            {
+                "embeddableConfig": {
+                    "columns": [
+                        "@timestamp",
+                        "servicenow.event.asset_tag.display_value",
+                        "servicenow.event.name.display_value",
+                        "servicenow.event.managed_by.display_value",
+                        "device.manufacturer",
+                        "servicenow.event.cost.display_value",
+                        "host.ip",
+                        "servicenow.event.assigned_to.display_value"
+                    ],
+                    "enhancements": {}
+                },
+                "gridData": {
+                    "h": 15,
+                    "i": "85aafcc1-cc2d-45a4-bdf1-490399278d4f",
+                    "w": 48,
+                    "x": 0,
+                    "y": 28
+                },
+                "panelIndex": "85aafcc1-cc2d-45a4-bdf1-490399278d4f",
+                "panelRefName": "panel_85aafcc1-cc2d-45a4-bdf1-490399278d4f",
+                "type": "search"
+            },
+            {
+                "embeddableConfig": {
+                    "columns": [
+                        "@timestamp",
+                        "servicenow.event.name.display_value",
+                        "servicenow.event.serial_number.display_value",
+                        "servicenow.event.warranty_expiration.display_value",
+                        "device.manufacturer",
+                        "servicenow.event.assigned_to.display_value"
+                    ],
+                    "enhancements": {}
+                },
+                "gridData": {
+                    "h": 17,
+                    "i": "1d41c7d1-ef76-442b-aef6-126797594e52",
+                    "w": 48,
+                    "x": 0,
+                    "y": 43
+                },
+                "panelIndex": "1d41c7d1-ef76-442b-aef6-126797594e52",
+                "panelRefName": "panel_1d41c7d1-ef76-442b-aef6-126797594e52",
+                "type": "search"
+            },
+            {
+                "embeddableConfig": {
+                    "columns": [
+                        "@timestamp",
+                        "device.model.name",
+                        "servicenow.event.install_status.display_value",
+                        "servicenow.event.used_for.display_value",
+                        "organization.name",
+                        "servicenow.event.cl_port.display_value",
+                        "servicenow.event.cost.display_value",
+                        "host.ip"
+                    ],
+                    "enhancements": {}
+                },
+                "gridData": {
+                    "h": 16,
+                    "i": "c6436f31-7221-4895-be3b-b3d189b0f923",
+                    "w": 48,
+                    "x": 0,
+                    "y": 60
+                },
+                "panelIndex": "c6436f31-7221-4895-be3b-b3d189b0f923",
+                "panelRefName": "panel_c6436f31-7221-4895-be3b-b3d189b0f923",
+                "type": "search"
+            }
+        ],
+        "timeRestore": false,
+        "title": "[Logs ServiceNow] CMDB CI, REL and DB Instance Overview",
+        "version": 2
+    },
+    "coreMigrationVersion": "8.8.0",
+    "created_at": "2024-11-01T11:39:17.820Z",
+    "id": "servicenow-0305f883-12a8-4021-af73-fbe05e797c3f",
+    "managed": false,
+    "references": [
+        {
+            "id": "logs-*",
+            "name": "kibanaSavedObjectMeta.searchSourceJSON.filter[0].meta.index",
+            "type": "index-pattern"
+        },
+        {
+            "id": "logs-*",
+            "name": "kibanaSavedObjectMeta.searchSourceJSON.filter[1].meta.index",
+            "type": "index-pattern"
+        },
+        {
+            "id": "servicenow-b9cc24b4-0cfe-458c-8645-23838623ca09",
+            "name": "e451cd8d-d421-4275-becf-1b014a8c6d1c:panel_e451cd8d-d421-4275-becf-1b014a8c6d1c",
+            "type": "search"
+        },
+        {
+            "id": "servicenow-afa470f8-4e19-4fee-8b17-5649a7b0ae51",
+            "name": "85aafcc1-cc2d-45a4-bdf1-490399278d4f:panel_85aafcc1-cc2d-45a4-bdf1-490399278d4f",
+            "type": "search"
+        },
+        {
+            "id": "servicenow-44db573d-f3e6-4f59-b1a4-328040220991",
+            "name": "1d41c7d1-ef76-442b-aef6-126797594e52:panel_1d41c7d1-ef76-442b-aef6-126797594e52",
+            "type": "search"
+        },
+        {
+            "id": "servicenow-722e7751-818d-41e2-b7ac-fcc90bb8241b",
+            "name": "c6436f31-7221-4895-be3b-b3d189b0f923:panel_c6436f31-7221-4895-be3b-b3d189b0f923",
+            "type": "search"
+        },
+        {
+            "id": "servicenow-security-solution-default",
+            "name": "tag-ref-servicenow-security-solution-default",
+            "type": "tag"
+        },
+        {
+            "id": "servicenow-security-solution-default",
+            "name": "tag-ref-security-solution-default",
+            "type": "tag"
+        }
+    ],
+    "type": "dashboard",
+    "typeMigrationVersion": "10.2.0"
+}

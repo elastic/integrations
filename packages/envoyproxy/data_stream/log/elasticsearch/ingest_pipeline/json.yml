@@ -1,0 +1,28 @@
+---
+description: Pipeline for normalizing envoyproxy access logs
+processors:
+- json:
+    field: message
+    target_field: json
+- remove:
+    field:
+    - message
+- rename:
+    field: json.message
+    target_field: message
+- rename:
+    field: json.kubernetes
+    target_field: kubernetes
+    ignore_failure: true
+- remove:
+    field:
+    - json
+- pipeline:
+    name: '{{ IngestPipeline "plaintext"}}'
+on_failure:
+  - set:
+      field: event.kind
+      value: pipeline_error
+  - append:
+      field: error.message
+      value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'

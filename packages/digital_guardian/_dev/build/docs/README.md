@@ -67,6 +67,12 @@ Please note, there are minimum requirements for running Elastic Agent. For more 
 
 This is the `arc` dataset.
 
+The `@timestamp` field will be assigned one of several values, in the following order of precedence:
+1. `digital_guardian.arc.dg_time`
+2. `digital_guardian.arc.dg_processed_time`
+3. `digital_guardian.arc.inc_mtime`
+4. The time received by the pipeline (if none of the above are available).
+
 #### Example
 
 {{event "arc"}}

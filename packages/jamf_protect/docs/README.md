@@ -112,26 +112,26 @@ An example event for `alerts` looks as following:
 
 ```json
 {
-    "@timestamp": "2024-09-04T07:30:39.656Z",
+    "@timestamp": "2024-10-29T15:33:09.283Z",
     "agent": {
-        "ephemeral_id": "75181666-4505-45af-90dd-156c8f2e1306",
-        "id": "81686acf-dfab-47d7-9dbe-c5e404724032",
-        "name": "elastic-agent-92357",
+        "ephemeral_id": "671ffaef-2f9c-40c3-bc44-8f7dd8f41bf3",
+        "id": "fffef289-536c-44b3-8a3a-7edce9a79be4",
+        "name": "elastic-agent-79065",
         "type": "filebeat",
-        "version": "8.13.0"
+        "version": "8.14.3"
     },
     "data_stream": {
         "dataset": "jamf_protect.alerts",
-        "namespace": "22598",
+        "namespace": "64311",
         "type": "logs"
     },
     "ecs": {
         "version": "8.11.0"
     },
     "elastic_agent": {
-        "id": "81686acf-dfab-47d7-9dbe-c5e404724032",
+        "id": "fffef289-536c-44b3-8a3a-7edce9a79be4",
         "snapshot": false,
-        "version": "8.13.0"
+        "version": "8.14.3"
     },
     "event": {
         "action": "CustomURLHandlerCreation",
@@ -142,7 +142,7 @@ An example event for `alerts` looks as following:
         ],
         "dataset": "jamf_protect.alerts",
         "id": "6bdb0697-6d07-47bc-a37d-6c3348a5d953",
-        "ingested": "2024-09-04T07:30:49Z",
+        "ingested": "2024-10-29T15:33:10Z",
         "kind": "alert",
         "provider": "Jamf Protect",
         "reason": "Application that uses custom url handler created",
@@ -304,17 +304,17 @@ An example event for `telemetry` looks as following:
 
 ```json
 {
-    "@timestamp": "2024-09-04T07:32:31.324Z",
+    "@timestamp": "2024-10-29T15:34:50.724Z",
     "agent": {
-        "ephemeral_id": "b8187d5d-0325-40c6-ade8-0779fa3be88a",
-        "id": "be948a10-ee85-46d4-a496-ca5c5117936d",
-        "name": "elastic-agent-10576",
+        "ephemeral_id": "15f81264-c6eb-4699-bab6-6aa64dfd43aa",
+        "id": "f70df138-4dc9-4972-8510-57226731f5a0",
+        "name": "elastic-agent-91650",
         "type": "filebeat",
-        "version": "8.13.0"
+        "version": "8.14.3"
     },
     "data_stream": {
         "dataset": "jamf_protect.telemetry",
-        "namespace": "51899",
+        "namespace": "55238",
         "type": "logs"
     },
     "device": {
@@ -325,9 +325,9 @@ An example event for `telemetry` looks as following:
         "version": "8.11.0"
     },
     "elastic_agent": {
-        "id": "be948a10-ee85-46d4-a496-ca5c5117936d",
+        "id": "f70df138-4dc9-4972-8510-57226731f5a0",
         "snapshot": false,
-        "version": "8.13.0"
+        "version": "8.14.3"
     },
     "event": {
         "action": "exec",
@@ -338,7 +338,7 @@ An example event for `telemetry` looks as following:
         "code": "9",
         "dataset": "jamf_protect.telemetry",
         "id": "CDB31202-8CB4-4C72-A9C6-7F494CD5F598",
-        "ingested": "2024-09-04T07:32:41Z",
+        "ingested": "2024-10-29T15:34:51Z",
         "kind": "event",
         "provider": "Jamf Protect",
         "reason": "A new process has been executed",
@@ -600,17 +600,17 @@ An example event for `web_threat_events` looks as following:
 
 ```json
 {
-    "@timestamp": "2024-09-04T07:36:11.911Z",
+    "@timestamp": "2024-10-29T15:41:26.096Z",
     "agent": {
-        "ephemeral_id": "b7f943fb-c06d-4222-93bd-358288578b26",
-        "id": "4470df0e-f5ad-4b31-9480-44c2ad6ae7b3",
-        "name": "elastic-agent-80181",
+        "ephemeral_id": "e88ac039-e2c1-4189-b7ef-f8fa987d1edc",
+        "id": "e64da853-f2f4-4421-b48f-87613b992b84",
+        "name": "elastic-agent-68255",
         "type": "filebeat",
-        "version": "8.13.2"
+        "version": "8.14.3"
     },
     "data_stream": {
         "dataset": "jamf_protect.web_threat_events",
-        "namespace": "37455",
+        "namespace": "25188",
         "type": "logs"
     },
     "destination": {
@@ -622,9 +622,9 @@ An example event for `web_threat_events` looks as following:
         "version": "8.11.0"
     },
     "elastic_agent": {
-        "id": "4470df0e-f5ad-4b31-9480-44c2ad6ae7b3",
+        "id": "e64da853-f2f4-4421-b48f-87613b992b84",
         "snapshot": false,
-        "version": "8.13.2"
+        "version": "8.14.3"
     },
     "event": {
         "action": "Detected",
@@ -634,7 +634,7 @@ An example event for `web_threat_events` looks as following:
         ],
         "dataset": "jamf_protect.web_threat_events",
         "id": "013b15c9-8f62-4bf1-948a-d82367af2a10",
-        "ingested": "2024-09-04T07:36:21Z",
+        "ingested": "2024-10-29T15:41:27Z",
         "kind": "alert",
         "provider": "Jamf Protect",
         "reason": "Sideloaded App",
@@ -727,17 +727,17 @@ An example event for `web_traffic_events` looks as following:
 
 ```json
 {
-    "@timestamp": "2024-09-04T07:38:01.195Z",
+    "@timestamp": "2024-10-29T15:44:14.195Z",
     "agent": {
-        "ephemeral_id": "77808a3e-9a5a-4ce3-a074-f2cdaa7d0a03",
-        "id": "94e5efaa-97be-4d20-9330-c38adb3f3ebd",
-        "name": "elastic-agent-25706",
+        "ephemeral_id": "8e610613-0597-4898-8f02-f6ee4bca6af8",
+        "id": "a93c9dd6-0141-4441-8f5e-c6d1999c4351",
+        "name": "elastic-agent-59905",
         "type": "filebeat",
-        "version": "8.13.2"
+        "version": "8.14.3"
     },
     "data_stream": {
         "dataset": "jamf_protect.web_traffic_events",
-        "namespace": "39208",
+        "namespace": "79225",
         "type": "logs"
     },
     "dns": {
@@ -756,9 +756,9 @@ An example event for `web_traffic_events` looks as following:
         "version": "8.11.0"
     },
     "elastic_agent": {
-        "id": "94e5efaa-97be-4d20-9330-c38adb3f3ebd",
+        "id": "a93c9dd6-0141-4441-8f5e-c6d1999c4351",
         "snapshot": false,
-        "version": "8.13.2"
+        "version": "8.14.3"
     },
     "event": {
         "action": "DNS Lookup",
@@ -768,7 +768,7 @@ An example event for `web_traffic_events` looks as following:
             "network"
         ],
         "dataset": "jamf_protect.web_traffic_events",
-        "ingested": "2024-09-04T07:38:11Z",
+        "ingested": "2024-10-29T15:44:15Z",
         "kind": "event",
         "outcome": [
             "success"

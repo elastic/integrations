@@ -1,0 +1,78 @@
+---
+description: Pipeline for renaming object
+processors:
+  - set:
+      field: ecs.version
+      value: "8.16.0"
+  - json:
+      field: outlookappusage
+      target_field: o365.metrics.outlook.app.usage
+  - script:
+      lang: painless
+      description: Replace spaces and dashes in field names under o365.metrics.outlook.app.usage.
+      tag: painless_purge_spaces_and_dashes
+      if: ctx.o365.metrics?.outlook.app.usage instanceof Map
+      source: |
+        String underscore(String s) {
+          String result = /[ -]/.matcher(s).replaceAll('_').toLowerCase();
+          return /[\ufeff]/.matcher(result).replaceAll('')
+        }
+        
+        def out = [:];
+        for (def item : ctx.o365.metrics.outlook.app.usage.entrySet()) {
+          out[underscore(item.getKey())] = item.getValue();
+        }
+        ctx.o365.metrics.outlook.app.usage = out;
+            
+  - remove:
+      if: ctx.outlookappusage != null
+      field: outlookappusage
+      ignore_missing: true                               
+
+  - rename:
+      field: o365.metrics.outlook.app.usage.outlook_2007
+      target_field: o365.metrics.outlook.app.usage.outlook_2007.count
+      ignore_missing: true
+  - rename:
+      field: o365.metrics.outlook.app.usage.outlook_2010
+      target_field: o365.metrics.outlook.app.usage.outlook_2010.count
+      ignore_missing: true
+  - rename:
+      field: o365.metrics.outlook.app.usage.outlook_2013
+      target_field: o365.metrics.outlook.app.usage.outlook_2013.count
+      ignore_missing: true
+  - rename:
+      field: o365.metrics.outlook.app.usage.outlook_2016
+      target_field: o365.metrics.outlook.app.usage.outlook_2016.count
+      ignore_missing: true
+  - rename:
+      field: o365.metrics.outlook.app.usage.outlook_2019
+      target_field: o365.metrics.outlook.app.usage.outlook_2019.count
+      ignore_missing: true
+
+  - rename:
+      field: o365.metrics.outlook.app.usage.outlook_m365
+      target_field: o365.metrics.outlook.app.usage.outlook_m365.count
+      ignore_missing: true
+
+  - rename:
+      field: o365.metrics.outlook.app.usage.undetermined
+      target_field: o365.metrics.outlook.app.usage.undetermined.count
+      ignore_missing: true
+  - rename:
+      field: o365.metrics.outlook.app.usage.report_period
+      target_field: o365.metrics.outlook.app.usage.report.period.day
+      ignore_missing: true
+  - rename:
+      field: o365.metrics.outlook.app.usage.report_refresh_date
+      target_field: o365.metrics.outlook.app.usage.report.refresh_date
+      ignore_missing: true
+
+on_failure:
+  - set:
+      field: error.message
+      value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - append:
+      field: event.kind
+      value: pipeline_error
+      allow_duplicates: false

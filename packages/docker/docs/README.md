@@ -7,8 +7,9 @@ The `container_logs` data stream for containers' logs collection is enabled by d
 
 ## Compatibility
 
-The Docker module is currently tested on Linux and Mac with the community
-edition engine, versions 1.11 and 17.09.0-ce.
+The Docker module is currently tested on Linux and Mac with the community edition engine, versions 1.11 and 17.09.0-ce. It is not tested on Windows, but it should also work there.
+
+The Docker module supports collection of metrics from Podman’s Docker-compatible API. It has been tested on Linux and Mac with Podman Rest API v2.0.0 and above.
 
 ## Running from within Docker
 
@@ -52,6 +53,8 @@ Docker API already takes up to 2 seconds. Specifying less than 3 seconds will
 result in requests that timeout, and no data will be reported for those
 requests.
 
+In the case of Podman, the configuration parameter podman should be switched to true. This enables streaming of container stats output, which allows for more accurate CPU percentage calculations when using Podman.
+
 ## Metrics
 
 ### Container
@@ -86,7 +89,7 @@ running Docker containers.
 | docker.container.status | Container status. | keyword |  |
 | docker.container.tags | Image tags. | keyword |  |
 | ecs.version | ECS version this event conforms to. `ecs.version` is a required field and must exist in all events. When querying across multiple indices -- which may conform to slightly different ECS versions -- this field lets integrations adjust to the schema version of the events. | keyword |  |
-| event.dataset | Event dataset | constant_keyword |  |
+| event.dataset | Name of the dataset. If an event source publishes more than one type of log or events (e.g. access log, error log), the dataset is used to specify which one the event comes from. It's recommended but not required to start the dataset name with the module name, followed by a dot, then the dataset name. | keyword |  |
 | event.module | Event module | constant_keyword |  |
 | host | A host is defined as a general computing instance. ECS host.\* fields should be populated with details about the host on which the event happened, or from which the measurement was taken. Host types include hardware, virtual machines, Docker containers, and Kubernetes nodes. | group |  |
 | host.architecture | Operating system architecture. | keyword |  |
@@ -209,7 +212,7 @@ The Docker `cpu` data stream collects runtime CPU metrics.
 | docker.cpu.user.pct | Percentage of time in user space. | scaled_float | percent | gauge |
 | docker.cpu.user.ticks | CPU ticks in user space. | long |  | counter |
 | ecs.version | ECS version this event conforms to. `ecs.version` is a required field and must exist in all events. When querying across multiple indices -- which may conform to slightly different ECS versions -- this field lets integrations adjust to the schema version of the events. | keyword |  |  |
-| event.dataset | Event dataset | constant_keyword |  |  |
+| event.dataset | Name of the dataset. If an event source publishes more than one type of log or events (e.g. access log, error log), the dataset is used to specify which one the event comes from. It's recommended but not required to start the dataset name with the module name, followed by a dot, then the dataset name. | keyword |  |  |
 | event.module | Event module | constant_keyword |  |  |
 | host | A host is defined as a general computing instance. ECS host.\* fields should be populated with details about the host on which the event happened, or from which the measurement was taken. Host types include hardware, virtual machines, Docker containers, and Kubernetes nodes. | group |  |  |
 | host.architecture | Operating system architecture. | keyword |  |  |
@@ -400,7 +403,7 @@ The Docker `diskio` data stream collects disk I/O metrics.
 | docker.diskio.write.service_time | Total time to service IO requests, in nanoseconds | long |  | counter |
 | docker.diskio.write.wait_time | Total time requests spent waiting in queues for service, in nanoseconds | long |  | counter |
 | ecs.version | ECS version this event conforms to. `ecs.version` is a required field and must exist in all events. When querying across multiple indices -- which may conform to slightly different ECS versions -- this field lets integrations adjust to the schema version of the events. | keyword |  |  |
-| event.dataset | Event dataset | constant_keyword |  |  |
+| event.dataset | Name of the dataset. If an event source publishes more than one type of log or events (e.g. access log, error log), the dataset is used to specify which one the event comes from. It's recommended but not required to start the dataset name with the module name, followed by a dot, then the dataset name. | keyword |  |  |
 | event.module | Event module | constant_keyword |  |  |
 | host | A host is defined as a general computing instance. ECS host.\* fields should be populated with details about the host on which the event happened, or from which the measurement was taken. Host types include hardware, virtual machines, Docker containers, and Kubernetes nodes. | group |  |  |
 | host.architecture | Operating system architecture. | keyword |  |  |
@@ -502,7 +505,7 @@ The Docker `event` data stream collects docker events
 | docker.event.status | Event status | keyword |
 | docker.event.type | The type of object emitting the event | keyword |
 | ecs.version | ECS version this event conforms to. `ecs.version` is a required field and must exist in all events. When querying across multiple indices -- which may conform to slightly different ECS versions -- this field lets integrations adjust to the schema version of the events. | keyword |
-| event.dataset | Event dataset | constant_keyword |
+| event.dataset | Name of the dataset. If an event source publishes more than one type of log or events (e.g. access log, error log), the dataset is used to specify which one the event comes from. It's recommended but not required to start the dataset name with the module name, followed by a dot, then the dataset name. | keyword |
 | event.module | Event module | constant_keyword |
 | host | A host is defined as a general computing instance. ECS host.\* fields should be populated with details about the host on which the event happened, or from which the measurement was taken. Host types include hardware, virtual machines, Docker containers, and Kubernetes nodes. | group |
 | host.architecture | Operating system architecture. | keyword |
@@ -590,7 +593,7 @@ docker `HEALTHCHECK` instruction has been used to build the docker image.
 | docker.healthcheck.failingstreak | concurent failed check | integer | counter |
 | docker.healthcheck.status | Healthcheck status code | keyword |  |
 | ecs.version | ECS version this event conforms to. `ecs.version` is a required field and must exist in all events. When querying across multiple indices -- which may conform to slightly different ECS versions -- this field lets integrations adjust to the schema version of the events. | keyword |  |
-| event.dataset | Event dataset | constant_keyword |  |
+| event.dataset | Name of the dataset. If an event source publishes more than one type of log or events (e.g. access log, error log), the dataset is used to specify which one the event comes from. It's recommended but not required to start the dataset name with the module name, followed by a dot, then the dataset name. | keyword |  |
 | event.module | Event module | constant_keyword |  |
 | host | A host is defined as a general computing instance. ECS host.\* fields should be populated with details about the host on which the event happened, or from which the measurement was taken. Host types include hardware, virtual machines, Docker containers, and Kubernetes nodes. | group |  |
 | host.architecture | Operating system architecture. | keyword |  |
@@ -704,7 +707,7 @@ The Docker `image` data stream collects metrics on docker images
 | docker.image.size.virtual | Size of the image. | long | gauge |
 | docker.image.tags | Image tags. | keyword |  |
 | ecs.version | ECS version this event conforms to. `ecs.version` is a required field and must exist in all events. When querying across multiple indices -- which may conform to slightly different ECS versions -- this field lets integrations adjust to the schema version of the events. | keyword |  |
-| event.dataset | Event dataset | constant_keyword |  |
+| event.dataset | Name of the dataset. If an event source publishes more than one type of log or events (e.g. access log, error log), the dataset is used to specify which one the event comes from. It's recommended but not required to start the dataset name with the module name, followed by a dot, then the dataset name. | keyword |  |
 | event.module | Event module | constant_keyword |  |
 | host | A host is defined as a general computing instance. ECS host.\* fields should be populated with details about the host on which the event happened, or from which the measurement was taken. Host types include hardware, virtual machines, Docker containers, and Kubernetes nodes. | group |  |
 | host.architecture | Operating system architecture. | keyword |  |
@@ -801,7 +804,7 @@ https://docs.docker.com/engine/reference/api/docker_remote_api_v1.24/#/display-s
 | docker.info.id | Unique Docker host identifier. | keyword |  |
 | docker.info.images | Total number of existing images. | long | counter |
 | ecs.version | ECS version this event conforms to. `ecs.version` is a required field and must exist in all events. When querying across multiple indices -- which may conform to slightly different ECS versions -- this field lets integrations adjust to the schema version of the events. | keyword |  |
-| event.dataset | Event dataset | constant_keyword |  |
+| event.dataset | Name of the dataset. If an event source publishes more than one type of log or events (e.g. access log, error log), the dataset is used to specify which one the event comes from. It's recommended but not required to start the dataset name with the module name, followed by a dot, then the dataset name. | keyword |  |
 | event.module | Event module | constant_keyword |  |
 | host | A host is defined as a general computing instance. ECS host.\* fields should be populated with details about the host on which the event happened, or from which the measurement was taken. Host types include hardware, virtual machines, Docker containers, and Kubernetes nodes. | group |  |
 | host.architecture | Operating system architecture. | keyword |  |
@@ -890,7 +893,7 @@ The Docker `memory` data stream collects memory metrics from docker.
 | docker.memory.usage.pct | Memory usage percentage. | scaled_float | percent | gauge |
 | docker.memory.usage.total | Total memory usage. | long | byte | gauge |
 | ecs.version | ECS version this event conforms to. `ecs.version` is a required field and must exist in all events. When querying across multiple indices -- which may conform to slightly different ECS versions -- this field lets integrations adjust to the schema version of the events. | keyword |  |  |
-| event.dataset | Event dataset | constant_keyword |  |  |
+| event.dataset | Name of the dataset. If an event source publishes more than one type of log or events (e.g. access log, error log), the dataset is used to specify which one the event comes from. It's recommended but not required to start the dataset name with the module name, followed by a dot, then the dataset name. | keyword |  |  |
 | event.module | Event module | constant_keyword |  |  |
 | host | A host is defined as a general computing instance. ECS host.\* fields should be populated with details about the host on which the event happened, or from which the measurement was taken. Host types include hardware, virtual machines, Docker containers, and Kubernetes nodes. | group |  |  |
 | host.architecture | Operating system architecture. | keyword |  |  |
@@ -1015,17 +1018,25 @@ The Docker `network` data stream collects network metrics.
 | data_stream.namespace | Data stream namespace. | constant_keyword |  |
 | data_stream.type | Data stream type. | constant_keyword |  |
 | docker.container.labels.\* | Container labels | object |  |
+| docker.network.in.bytes | Incoming bytes per seconds. | long |  |
+| docker.network.in.dropped | Dropped incoming packets per second. | scaled_float |  |
+| docker.network.in.errors | Errors on incoming packets per second. | long |  |
+| docker.network.in.packets | Incoming packets per second. | long |  |
 | docker.network.inbound.bytes | Total number of incoming bytes. | long | counter |
 | docker.network.inbound.dropped | Total number of dropped incoming packets. | long | counter |
 | docker.network.inbound.errors | Total errors on incoming packets. | long | counter |
 | docker.network.inbound.packets | Total number of incoming packets. | long | counter |
 | docker.network.interface | Network interface name. | keyword |  |
+| docker.network.out.bytes | Outgoing bytes per second. | long |  |
+| docker.network.out.dropped | Dropped outgoing packets per second. | scaled_float |  |
+| docker.network.out.errors | Errors on outgoing packets per second. | long |  |
+| docker.network.out.packets | Outgoing packets per second. | long |  |
 | docker.network.outbound.bytes | Total number of outgoing bytes. | long | counter |
 | docker.network.outbound.dropped | Total number of dropped outgoing packets. | long | counter |
 | docker.network.outbound.errors | Total errors on outgoing packets. | long | counter |
 | docker.network.outbound.packets | Total number of outgoing packets. | long | counter |
 | ecs.version | ECS version this event conforms to. `ecs.version` is a required field and must exist in all events. When querying across multiple indices -- which may conform to slightly different ECS versions -- this field lets integrations adjust to the schema version of the events. | keyword |  |
-| event.dataset | Event dataset | constant_keyword |  |
+| event.dataset | Name of the dataset. If an event source publishes more than one type of log or events (e.g. access log, error log), the dataset is used to specify which one the event comes from. It's recommended but not required to start the dataset name with the module name, followed by a dot, then the dataset name. | keyword |  |
 | event.module | Event module | constant_keyword |  |
 | host | A host is defined as a general computing instance. ECS host.\* fields should be populated with details about the host on which the event happened, or from which the measurement was taken. Host types include hardware, virtual machines, Docker containers, and Kubernetes nodes. | group |  |
 | host.architecture | Operating system architecture. | keyword |  |
@@ -1132,7 +1143,7 @@ The Docker `container_logs` data stream collects container logs.
 | data_stream.namespace | Data stream namespace. | constant_keyword |
 | data_stream.type | Data stream type. | constant_keyword |
 | ecs.version | ECS version this event conforms to. `ecs.version` is a required field and must exist in all events. When querying across multiple indices -- which may conform to slightly different ECS versions -- this field lets integrations adjust to the schema version of the events. | keyword |
-| event.dataset | Event dataset | constant_keyword |
+| event.dataset | Name of the dataset. If an event source publishes more than one type of log or events (e.g. access log, error log), the dataset is used to specify which one the event comes from. It's recommended but not required to start the dataset name with the module name, followed by a dot, then the dataset name. | keyword |
 | event.module | Event module | constant_keyword |
 | host | A host is defined as a general computing instance. ECS host.\* fields should be populated with details about the host on which the event happened, or from which the measurement was taken. Host types include hardware, virtual machines, Docker containers, and Kubernetes nodes. | group |
 | host.architecture | Operating system architecture. | keyword |

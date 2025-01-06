@@ -3,6 +3,15 @@ interval: {{interval}}
 resource.url: {{hostname}}
 resource.rate_limit.burst: 1
 resource.rate_limit.limit: {{rate_limit}}
+{{#if resource_retry_max_attempts}}
+resource.retry.max_attempts: {{resource_retry_max_attempts}}
+{{/if}}
+{{#if resource_retry_wait_min}}
+resource.retry.wait_min: {{resource_retry_wait_min}}
+{{/if}}
+{{#if resource_retry_wait_max}}
+resource.retry.wait_max: {{resource_retry_wait_max}}
+{{/if}}
 
 {{#if enable_request_tracer}}
 resource.tracer.filename: "../../logs/cel/http-request-trace-*.ndjson"
@@ -19,6 +28,7 @@ state:
   want_more: false
 redact:
   fields:
+    - integration_key
     - secret_key
 
 program: |
@@ -27,20 +37,29 @@ program: |
             state
         :
             state.with({
-                "mintime": state.?cursor.last_timestamp_ms.orValue(string(int(now - duration(state.initial_interval)) * 1000)),
-                "maxtime": string(int(now - duration("2m")) * 1000),
+                "mintime": string(int(state.?cursor.last_timestamp_ms.orValue(int(now - duration(state.initial_interval)) * 1000))),
             })
-    ).as(state, state.with(
+    ).as(state, state.with({
+        // the duration between maxtime and mintime should be less than 180d to avoid error_code 400 from API.
+        "maxtime": state.want_more ?
+            string(state.maxtime)
+        :
+            string(int([
+                int(timestamp(int(state.mintime)/1000) + duration("4320h")),
+                int(now - duration("2m"))
+            ].min()) * 1000)
+    })).as(state, state.with(
+        // prepare request data
         {
-            // prepare request data
+            // data should be calculated for each request to avoid error_code 40103.
             "date": now.format(time_layout.RFC1123Z),
             "method": "GET",
             "url_base": state.url.trim_right("/"),
             "url_path": "/admin/v2/logs/authentication",
             "query_string": {
-                 "limit": [string(int(state.limit))],
-                 "maxtime": [state.maxtime],
-                 "mintime": [state.mintime],
+                 "limit": [string(dyn(state).limit)],
+                 "maxtime": [string(state.maxtime)],
+                 "mintime": [string(state.mintime)],
                  ?"next_offset": state.?next_offset_joined.optMap(v, [v]),
                  "sort": ["ts:asc"],
             }.format_query(),

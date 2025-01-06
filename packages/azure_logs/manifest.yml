@@ -1,0 +1,149 @@
+format_version: 3.3.0
+name: azure_logs
+title: "Custom Azure Logs"
+version: 0.1.0
+source:
+  license: Elastic-2.0
+description: "Collect log events from Azure Event Hubs with Elastic Agent"
+type: input
+categories:
+  - azure
+  - custom
+  - observability
+conditions:
+  kibana:
+    version: "^8.13.0"
+  elastic:
+    subscription: "basic"
+icons:
+  - src: "/img/icon.svg"
+    type: "image/svg+xml"
+policy_templates:
+  - name: azure-logs
+    type: logs
+    title: Collect Azure logs from Event Hub
+    description: Collect Azure logs from Event Hub using the azure-eventhub input.
+    input: azure-eventhub
+    template_path: input.yml.hbs
+    vars:
+      - name: eventhub
+        type: text
+        title: Event Hub Name
+        multi: false
+        required: true
+        show_user: true
+        description: >-
+          The event hub name that contains the logs to ingest.
+          Do not use the event hub namespace here. Elastic
+          recommends using one event hub for each integration.
+          Visit [Create an event hub](https://docs.elastic.co/integrations/azure#create-an-event-hub)
+          to learn more. Use event hub names up to 30 characters long
+          to avoid compatibility issues.
+      - name: consumer_group
+        type: text
+        title: Consumer Group
+        multi: false
+        required: true
+        show_user: true
+        default: $Default
+      - name: connection_string
+        type: password
+        secret: true
+        title: Connection String
+        multi: false
+        required: true
+        show_user: true
+        description: >-
+          The connection string required to communicate with Event Hubs.
+          See [Get an Event Hubs connection string](https://docs.microsoft.com/en-us/azure/event-hubs/event-hubs-get-connection-string)
+          to learn more.
+      - name: storage_account
+        type: text
+        title: Storage Account
+        multi: false
+        required: true
+        show_user: true
+        description: >-
+          The name of the storage account where the consumer group's state/offsets
+          will be stored and updated.
+      - name: storage_account_key
+        type: password
+        secret: true
+        title: Storage Account Key
+        multi: false
+        required: true
+        show_user: true
+        description: >-
+          The storage account key, this key will be used to authorize access to
+          data in your storage account.
+      - name: data_stream.dataset
+        type: text
+        title: Dataset name
+        description: >-
+          Dataset to write data to. Changing the dataset will send the data to a different index. 
+          You can't use `-` in the name of a dataset and only valid characters for
+          [Elasticsearch index names](https://www.elastic.co/guide/en/elasticsearch/reference/current/docs-index_.html).
+        default: azure_logs.generic
+        required: true
+        show_user: true
+      - name: pipeline
+        type: text
+        title: Ingest Pipeline
+        description: >-
+          The ingest pipeline ID to use for processing the data. If provided,
+          replaces the default pipeline for this integration.
+        required: false
+        show_user: true        
+      - name: resource_manager_endpoint
+        type: text
+        title: Resource Manager Endpoint
+        description: >-
+          The Azure Resource Manager endpoint to use for authentication.
+        multi: false
+        required: false
+        show_user: false
+      - name: tags
+        type: text
+        title: Tags
+        multi: true
+        required: true
+        show_user: false
+        default:
+          - azure-eventhub
+          - forwarded
+      - name: processors
+        type: yaml
+        title: Processors
+        multi: false
+        required: false
+        show_user: false
+        description: >
+          Processors are used to reduce the number of fields in the exported
+          event or to enhance the event with metadata. This runs in the agent
+          before the logs are parsed.
+          Check [Processors](https://www.elastic.co/guide/en/beats/filebeat/current/filtering-and-enhancing-data.html)
+          for details.
+      - name: sanitize_newlines
+        type: bool
+        title: Sanitizes New Lines
+        description: >
+          Removes new lines in logs to ensure proper formatting of JSON data and
+          avoid parsing issues during processing.
+        multi: false
+        required: false
+        show_user: false
+        default: false
+      - name: sanitize_singlequotes
+        required: true
+        show_user: false
+        title: Sanitizes Single Quotes
+        description: >
+          Replaces single quotes with double quotes (single quotes inside double
+          quotes are omitted) in logs to ensure proper formatting of JSON data
+          and avoid parsing issues during processing.
+        type: bool
+        multi: false
+        default: false        
+owner:
+  github: elastic/obs-infraobs-integrations
+  type: elastic

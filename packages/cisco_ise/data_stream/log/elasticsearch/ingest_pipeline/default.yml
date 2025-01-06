@@ -29,7 +29,8 @@ processors:
       if: ctx._tmp?.message != null
       patterns:
         - '^%{NOTCOLON:cisco_ise.log.log_severity_level}%{SPACE}: %{NOTCOLON:event.action}%{SPACE}: %{GREEDYDATA:message}$'
-        - '^%{DATA:cisco_ise.log.message.id} %{DATA:cisco_ise.log.segment.total:long} %{DATA:cisco_ise.log.segment.number:long} %{GREEDYDATA:message}$'
+        - ^%{NUMBER:cisco_ise.log.message.id} %{NUMBER:cisco_ise.log.segment.total:long} %{NUMBER:cisco_ise.log.segment.number:long} %{GREEDYDATA:message}$
+        - ^%{GREEDYDATA:message}$
       pattern_definitions:
         NOTCOLON: '[^:]*?'
       on_failure:
@@ -146,6 +147,9 @@ processors:
   - pipeline:
       name: '{{ IngestPipeline "pipeline_alarm" }}'
       if: ctx.cisco_ise?.log?.category?.name == "CISE_Alarm"
+  - pipeline:
+      name: '{{ IngestPipeline "pipeline_monitoring_data_purge_audit" }}'
+      if: ctx.cisco_ise?.log?.category?.name?.toUpperCase() == 'CISE_MONITORING_DATA_PURGE_AUDIT'
   - set:
       field: host.ip
       value: ['{{{host.ip}}}']

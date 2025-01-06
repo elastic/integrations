@@ -1,8 +1,8 @@
 # Lumos Integration
 
-The Lumos integration uses [Lumos' API](https://api.lumos.com/) to retrieve Activity Logs and ingest them into Elasticsearch. This allows you to search, observe, and visualize the Activity Logs through Elasticsearch.
+The Lumos integration uses [Lumos' API](https://www.lumos.com/) to retrieve Activity Logs and ingest them into Elasticsearch. This allows you to search, observe, and visualize the Activity Logs through Elasticsearch.
 
-The Elastic agent running this integration interacts with Lumos' infrastructure using their APIs to retrieve [Activity Logs](https://api.lumos.com/activity_logs) for a Lumos tenant.
+The Elastic agent running this integration interacts with Lumos' infrastructure using their APIs to retrieve Activity Logs for a Lumos tenant.
 
 ## Configuration
 

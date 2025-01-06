@@ -4,12 +4,6 @@ processors:
   - set:
       field: ecs.version
       value: '8.11.0'
-  - set:
-      field: event.action
-      value: "code_scanning"
-  - set:
-      field: event.kind
-      value: "alert"
   - rename:
       field: message
       target_field: event.original
@@ -21,12 +15,19 @@ processors:
   - fail:
       if: "!(ctx.github.code_scanning instanceof Map)"
       message: Missing JSON object
-  - fingerprint:
-      fields:
-        - github.code_scanning.number
-        - github.code_scanning.updated_at
-      target_field: "_id"
+  - remove:
+      field: 
+        - event.kind
       ignore_missing: true
+      description: Fields defined as constant_keyword are removed from _source for storage efficiency.
+  - append:
+      field: event.type
+      value: creation
+      if: ctx.github?.code_scanning?.fixed_at == null && ctx.github?.code_scanning?.dismissed_at == null
+  - append:
+      field: event.type
+      value: deletion
+      if: ctx.github?.code_scanning?.fixed_at != null || ctx.github?.code_scanning?.dismissed_at != null
   - date:
       field: github.code_scanning.created_at
       formats:
@@ -48,6 +49,13 @@ processors:
       timezone: UTC
       target_field: "@timestamp"
       if: ctx.github.code_scanning.updated_at != null
+  - date:
+      field: github.code_scanning.dismissed_at
+      formats:
+        - ISO8601
+      timezone: UTC
+      target_field: github.code_scanning.dismissed_at
+      if: ctx.github?.code_scanning?.dismissed_at != null
   - rename:
       target_field: _temp
       field: github.code_scanning.repository
@@ -135,24 +143,22 @@ processors:
       target_field: github.code_scanning.number
       if: ctx.github.code_scanning.number == null
       ignore_missing: true
+  - fingerprint:
+      fields:
+        - github.repository.owner.login
+        - github.repository.name
+        - github.code_scanning.number
+        - github.code_scanning.created_at
+        - github.code_scanning.updated_at
+        - github.code_scanning.dismissed_at
+      target_field: "_id"
+      ignore_missing: true
   - lowercase:
       field: github.code_scanning.state
       ignore_missing: true
   - lowercase:
       field: github.code_scanning.rule.security_severity_level
       ignore_missing: true
-  - set:
-      field: github.severity
-      value: "{{{github.code_scanning.rule.security_severity_level}}}"
-      if: ctx.github.code_scanning.rule?.security_severity_level != null
-  - set:
-      field: github.severity
-      value: "undefined"
-      if: ctx.github.severity == null
-  - set:
-      field: github.state
-      value: "{{{github.code_scanning.state}}}"
-      if: ctx.github.code_scanning.state != null
   - rename:
       target_field: _temp.dismissed_by
       field: github.code_scanning.dismissed_by
@@ -244,11 +250,6 @@ processors:
       field:
         - _temp
       ignore_missing: true
-  - remove:
-      field: event.original
-      if: ctx.tags?.contains('preserve_original_event') != true
-      ignore_failure: true
-      ignore_missing: true
   - script:
       lang: painless
       description: This script processor iterates over the whole document to remove fields with null values.
@@ -278,6 +279,10 @@ on_failure:
   - set:
       field: event.kind
       value: pipeline_error
+  - append:
+      field: tags
+      value: preserve_original_event
+      allow_duplicates: false
   - append:
       field: error.message
       value: '{{{ _ingest.on_failure_message }}}'

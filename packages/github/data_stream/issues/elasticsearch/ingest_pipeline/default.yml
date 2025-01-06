@@ -4,12 +4,6 @@ processors:
   - set:
       field: ecs.version
       value: '8.11.0'
-  - set:
-      field: event.action
-      value: "event"
-  - set:
-      field: event.kind
-      value: "event"
   - rename:
       field: message
       target_field: event.original
@@ -21,19 +15,41 @@ processors:
   - fail:
       if: "!(ctx.github.issues instanceof Map)"
       message: Missing JSON object
-  - fingerprint:
-      if: ctx.github.issues.url != null
-      fields:
-        - github.issues.url
-      target_field: "_id"
+  - remove:
+      field: 
+        - event.kind
       ignore_missing: true
+      description: Fields defined as constant_keyword are removed from _source for storage efficiency.
+  - append:
+      field: event.type
+      value: creation
+      if: ctx.github?.issues?.created_at == ctx.github?.issues?.updated_at
+  - append:
+      field: event.type
+      value: deletion
+      if: ctx.github?.issues?.closed_at != null || ctx.github?.issues?.pull_request?.merged_at != null
+  - append:
+      field: event.type
+      value: change
+      if: ctx.github?.issues?.created_at != ctx.github?.issues?.updated_at && ctx.github?.issues?.closed_at == null && ctx.github?.issues?.pull_request?.merged_at == null
+  - date:
+      field: github.issues.updated_at
+      formats:
+        - ISO8601
+      timezone: UTC
+      target_field: github.issues.updated_at
+      if: ctx.github.issues.updated_at != null
   - date:
       field: github.issues.created_at
       formats:
         - ISO8601
       timezone: UTC
-      target_field: "@timestamp"
+      target_field: github.issues.created_at
       if: ctx.github.issues.created_at != null
+  - set:
+      field: '@timestamp'
+      copy_from: github.issues.updated_at
+      ignore_empty_value: true
   - set:
       field: event.created
       copy_from: "@timestamp"
@@ -45,13 +61,6 @@ processors:
       if: ctx.github.issues.pull_request != null
       field: github.issues.is_pr
       value: true
-  - date:
-      field: github.issues.updated_at
-      formats:
-        - ISO8601
-      timezone: UTC
-      target_field: github.issues.updated_at
-      if: ctx.github.issues.updated_at != null
   - dissect:
       field: github.issues.url
       pattern: "https://api.github.com/repos/%{_temp_.owner}/%{_temp_.repository}/issues/%{_temp_.number}"
@@ -72,16 +81,22 @@ processors:
       field: github.repository.owner.login
       value: "{{{_temp_.owner}}}"
       if: ctx._temp_?.owner != null
-  - set:
-      field: github.state
-      value: "{{{github.issues.state}}}"
-      if: ctx.github.issues.state != null
   - foreach:
       field: github.issues.assignees
       ignore_missing: true
       processor:
         remove:
           field: ["_ingest._value.node_id", "_ingest._value.avatar_url", "_ingest._value.gravatar_id", "_ingest._value.followers_url", "_ingest._value.following_url", "_ingest._value.gists_url", "_ingest._value.starred_url", "_ingest._value.subscriptions_url", "_ingest._value.organizations_url", "_ingest._value.repos_url", "_ingest._value.events_url", "_ingest._value.received_events_url"]
+  - fingerprint:
+      fields:
+        - github.repository.owner.login
+        - github.repository.name
+        - github.issues.url
+        - github.issues.created_at
+        - github.issues.updated_at
+        - github.issues.closed_at
+      target_field: "_id"
+      ignore_missing: true
   - remove:
       field:
         - github.issues.user.node_id
@@ -198,16 +213,6 @@ processors:
         - _temp_
         - github.issues.repository
       ignore_missing: true
-  - remove:
-      field:
-        - github.issues.state
-      if: ctx.tags?.contains('preserve_duplicate_custom_fields') != true
-      ignore_missing: true
-  - remove:
-      field: event.original
-      if: ctx.tags?.contains('preserve_original_event') != true
-      ignore_failure: true
-      ignore_missing: true
   - script:
       lang: painless
       description: This script processor iterates over the whole document to remove fields with null values.
@@ -237,6 +242,10 @@ on_failure:
   - set:
       field: event.kind
       value: pipeline_error
+  - append:
+      field: tags
+      value: preserve_original_event
+      allow_duplicates: false
   - append:
       field: error.message
       value: '{{{ _ingest.on_failure_message }}}'

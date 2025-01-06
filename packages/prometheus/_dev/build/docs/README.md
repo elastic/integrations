@@ -21,7 +21,7 @@ to retrieve the metrics from (`/metrics` by default) can be configured with Metr
 `Use Types` parameter (default: true) enables a different layout for metrics storage, leveraging Elasticsearch
 types, including {{ url "elasticsearch-histograms" "histograms" }}.
 
-`Rate Counters` parameter (default: true) enables calculating a rate out of Prometheus counters. When enabled, Metricbeat stores
+`Rate Counters` parameter (default: true) enables calculating a rate out of Prometheus counters. When enabled, Elastic Agent stores
 the counter increment since the last collection. This metric should make some aggregations easier and with better
 performance. This parameter can only be enabled in combination with `Use Types`.
 
@@ -101,6 +101,10 @@ When `Use Types` and `Rate Counters` are enabled, metrics are stored like this:
 }
 ```
 
+#### Metrics count
+
+The Prometheus integration's `collector` dataset provides a `Metrics Count` parameter, which is disabled by default. When enabled, it counts the total number of Prometheus metrics within each Elasticsearch document. This count is stored in a field called `metrics_count` and its value is calculated prior to any enrichments by Ingest Pipelines or Agent Processors, ensuring consistency. This field name is reserved for internal use and must not be altered using Agent Processors or Ingest Pipelines.
+
 #### Scraping all metrics from a Prometheus server
 
 We recommend using the Remote Write dataset for this, and make Prometheus push metrics to Agent.
@@ -177,14 +181,14 @@ remote_write:
 > TIP: In order to assure the health of the whole queue, the following configuration
  [parameters](https://prometheus.io/docs/practices/remote_write/#parameters) should be considered:
 
-- `max_shards`: Sets the maximum number of parallelism with which Prometheus will try to send samples to Metricbeat.
-It is recommended that this setting should be equal to the number of cores of the machine where Metricbeat runs.
-Metricbeat can handle connections in parallel and hence setting `max_shards` to the number of parallelism that
-Metricbeat can actually achieve is the optimal queue configuration.
+- `max_shards`: Sets the maximum number of parallelism with which Prometheus will try to send samples to Elastic Agent.
+It is recommended that this setting should be equal to the number of cores of the machine where Elastic Agent runs.
+Elastic Agent can handle connections in parallel and hence setting `max_shards` to the number of parallelism that
+Elastic Agent can actually achieve is the optimal queue configuration.
 - `max_samples_per_send`: Sets the number of samples to batch together for each send. Recommended values are
 between 100 (default) and 1000. Having a bigger batch can lead to improved throughput and in more efficient
-storage since Metricbeat groups metrics with the same labels into same event documents.
-However this will increase the memory usage of Metricbeat.
+storage since Elastic Agent groups metrics with the same labels into same event documents.
+However this will increase the memory usage of Elastic Agent.
 - `capacity`: It is recommended to set capacity to 3-5 times `max_samples_per_send`.
 Capacity sets the number of samples that are queued in memory per shard, and hence capacity should be high enough so as to
 be able to cover `max_samples_per_send`.
@@ -245,7 +249,7 @@ Please refer to the following [document](https://www.elastic.co/guide/en/ecs/cur
 `use_types` parameter (default: true) enables a different layout for metrics storage, leveraging Elasticsearch
 types, including {{ url "elasticsearch-histograms" "histograms" }}.
 
-`rate_counters` parameter (default: true) enables calculating a rate out of Prometheus counters. When enabled, Metricbeat stores
+`rate_counters` parameter (default: true) enables calculating a rate out of Prometheus counters. When enabled, Elastic Agent stores
 the counter increment since the last collection. This metric should make some aggregations easier and with better
 performance. This parameter can only be enabled in combination with `use_types`.
 
@@ -320,6 +324,10 @@ types_patterns:
 Note that when using `types_patterns`, the provided patterns have higher priority than the default patterns.
 For instance if `_histogram_total` is a defined histogram pattern, then a metric like `network_bytes_histogram_total`
 will be handled as a histogram, even if it has the suffix `_total` which is a default pattern for counters.
+
+#### Metrics count
+
+The Prometheus integration's `remote_write` dataset provides a `Metrics Count` parameter, which is disabled by default. When enabled, it counts the total number of Prometheus metrics within each Elasticsearch document. This count is stored in a field called `metrics_count` and its value is calculated prior to any enrichments by Ingest Pipelines or Agent Processors, ensuring consistency. This field name is reserved for internal use and must not be altered using Agent Processors or Ingest Pipelines.
 
 ### Prometheus Queries (PromQL)
 

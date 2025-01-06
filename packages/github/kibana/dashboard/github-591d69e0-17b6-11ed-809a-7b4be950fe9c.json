@@ -3,11 +3,53 @@
         "controlGroupInput": {
             "chainingSystem": "HIERARCHICAL",
             "controlStyle": "oneLine",
-            "ignoreParentSettingsJSON": "{\"ignoreFilters\":false,\"ignoreQuery\":false,\"ignoreTimerange\":false,\"ignoreValidations\":false}",
-            "panelsJSON": "{\"66d2324e-be32-41be-b685-54ba2cc58c2b\":{\"order\":0,\"width\":\"medium\",\"grow\":true,\"type\":\"optionsListControl\",\"explicitInput\":{\"fieldName\":\"github.repository.owner.login\",\"title\":\"Owner/Organization\",\"id\":\"66d2324e-be32-41be-b685-54ba2cc58c2b\",\"enhancements\":{}}},\"54e33c68-ad08-412f-852a-f669391018b0\":{\"order\":1,\"width\":\"medium\",\"grow\":true,\"type\":\"optionsListControl\",\"explicitInput\":{\"fieldName\":\"github.repository.name\",\"title\":\"Repository\",\"id\":\"54e33c68-ad08-412f-852a-f669391018b0\",\"enhancements\":{}}},\"9fd25971-d168-4a50-985f-9e1bb266c93e\":{\"order\":2,\"width\":\"medium\",\"grow\":true,\"type\":\"optionsListControl\",\"explicitInput\":{\"fieldName\":\"github.state\",\"title\":\"State\",\"id\":\"9fd25971-d168-4a50-985f-9e1bb266c93e\",\"enhancements\":{}}},\"bcb03b9e-5278-4d66-a4da-762d41ec13cd\":{\"order\":3,\"width\":\"medium\",\"grow\":true,\"type\":\"optionsListControl\",\"explicitInput\":{\"fieldName\":\"github.severity\",\"title\":\"Severity\",\"id\":\"bcb03b9e-5278-4d66-a4da-762d41ec13cd\",\"enhancements\":{}}}}"
+            "ignoreParentSettingsJSON": {
+                "ignoreFilters": false,
+                "ignoreQuery": false,
+                "ignoreTimerange": false,
+                "ignoreValidations": false
+            },
+            "panelsJSON": {
+                "54e33c68-ad08-412f-852a-f669391018b0": {
+                    "explicitInput": {
+                        "enhancements": {},
+                        "fieldName": "github.repository.name",
+                        "id": "54e33c68-ad08-412f-852a-f669391018b0",
+                        "title": "Repository"
+                    },
+                    "grow": true,
+                    "order": 1,
+                    "type": "optionsListControl",
+                    "width": "medium"
+                },
+                "66d2324e-be32-41be-b685-54ba2cc58c2b": {
+                    "explicitInput": {
+                        "enhancements": {},
+                        "fieldName": "github.repository.owner.login",
+                        "id": "66d2324e-be32-41be-b685-54ba2cc58c2b",
+                        "title": "Owner/Organization"
+                    },
+                    "grow": true,
+                    "order": 0,
+                    "type": "optionsListControl",
+                    "width": "medium"
+                },
+                "9fd25971-d168-4a50-985f-9e1bb266c93e": {
+                    "explicitInput": {
+                        "enhancements": {},
+                        "fieldName": "github.secret_scanning.state",
+                        "id": "9fd25971-d168-4a50-985f-9e1bb266c93e",
+                        "searchTechnique": "prefix",
+                        "title": "State"
+                    },
+                    "grow": true,
+                    "order": 2,
+                    "type": "optionsListControl",
+                    "width": "medium"
+                }
+            }
         },
         "description": "",
-        "hits": 0,
         "kibanaSavedObjectMeta": {
             "searchSourceJSON": {
                 "filter": [
@@ -19,25 +61,51 @@
                             "alias": "Secret Scanning",
                             "disabled": false,
                             "indexRefName": "kibanaSavedObjectMeta.searchSourceJSON.filter[0].meta.index",
-                            "key": "event.action",
                             "negate": false,
                             "params": [
-                                "secret_scanning"
-                            ],
-                            "type": "phrases"
-                        },
-                        "query": {
-                            "bool": {
-                                "minimum_should_match": 1,
-                                "should": [
-                                    {
+                                {
+                                    "meta": {
+                                        "alias": null,
+                                        "disabled": false,
+                                        "field": "event.dataset",
+                                        "index": "logs-*",
+                                        "key": "event.dataset",
+                                        "negate": false,
+                                        "params": {
+                                            "query": "github.secret_scanning"
+                                        },
+                                        "type": "phrase"
+                                    },
+                                    "query": {
                                         "match_phrase": {
-                                            "event.action": "secret_scanning"
+                                            "event.dataset": "github.secret_scanning"
                                         }
                                     }
-                                ]
-                            }
-                        }
+                                },
+                                {
+                                    "meta": {
+                                        "alias": null,
+                                        "disabled": false,
+                                        "field": "labels.is_transform_source",
+                                        "index": "logs-*",
+                                        "key": "labels.is_transform_source",
+                                        "negate": false,
+                                        "params": {
+                                            "query": "false"
+                                        },
+                                        "type": "phrase"
+                                    },
+                                    "query": {
+                                        "match_phrase": {
+                                            "labels.is_transform_source": "false"
+                                        }
+                                    }
+                                }
+                            ],
+                            "relation": "AND",
+                            "type": "combined"
+                        },
+                        "query": {}
                     }
                 ],
                 "query": {
@@ -49,10 +117,48 @@
         "optionsJSON": {
             "hidePanelTitles": false,
             "syncColors": false,
+            "syncCursor": true,
             "syncTooltips": false,
             "useMargins": true
         },
         "panelsJSON": [
+            {
+                "embeddableConfig": {
+                    "enhancements": {},
+                    "savedVis": {
+                        "data": {
+                            "aggs": [],
+                            "searchSource": {
+                                "filter": [],
+                                "query": {
+                                    "language": "kuery",
+                                    "query": ""
+                                }
+                            }
+                        },
+                        "description": "",
+                        "id": "",
+                        "params": {
+                            "fontSize": 12,
+                            "markdown": "**Navigation**\n\n**Github**  \n\n- **Audit**\n  - [Audit Log Activity](#/dashboard/github-dcee84c0-2059-11ec-8b10-11a4c5e322a0)\n  - [User Change Audit](#/dashboard/github-8bfd8310-205c-11ec-8b10-11a4c5e322a0)\n- **Github Advanced Security**\n  - [Advanced Security Overview](#/dashboard/github-6a6d7c40-17ab-11ed-809a-7b4be950fe9c)\n  - [Code Scanning](#/dashboard/github-4da91aa0-12fc-11ed-af77-016e1a977d80)\n  - [**Secret Scanning (This Page)**](#/dashboard/github-591d69e0-17b6-11ed-809a-7b4be950fe9c)\n  - [Dependabot](#/dashboard/github-6197be80-220c-11ed-88c4-e3caca48250a)\n- [Issues](#/dashboard/github-f0104680-ae18-11ed-83fa-df5d96a45724)\n\n**Overview**\nThis dashboard provides an overview of the events ingested from Github.\n\nThe dashboard provides details on secret scanning alerts that are open and resolved. It deep-dives into the top 10 repositories where secret scanning alerts are found. It also calculates the mean-time to resolve (or dismiss) an open secret scanning alert. The dashboard presents a view of the type of secrets that are currently open. Finally, it gives a layout of top users resolving the secret scanning alerts.\n\n[**Integrations Page**](/app/integrations/detail/github/overview)",
+                            "openLinksInNewTab": false
+                        },
+                        "title": "",
+                        "type": "markdown",
+                        "uiState": {}
+                    }
+                },
+                "gridData": {
+                    "h": 29,
+                    "i": "aa215acc-3b4a-4247-88d8-219552a28650",
+                    "w": 10,
+                    "x": 0,
+                    "y": 0
+                },
+                "panelIndex": "aa215acc-3b4a-4247-88d8-219552a28650",
+                "title": "Table of Contents",
+                "type": "visualization"
+            },
             {
                 "embeddableConfig": {
                     "attributes": {
@@ -65,11 +171,17 @@
                             },
                             {
                                 "id": "logs-*",
-                                "name": "a27a9357-b353-46a3-9116-530f354b09b9",
+                                "name": "74a98555-38d3-4ce6-8771-b4e706f99285",
+                                "type": "index-pattern"
+                            },
+                            {
+                                "id": "logs-*",
+                                "name": "b87bf6d3-a1cf-49ca-91fc-1f89a43ce946",
                                 "type": "index-pattern"
                             }
                         ],
                         "state": {
+                            "adHocDataViews": {},
                             "datasourceStates": {
                                 "formBased": {
                                     "layers": {
@@ -104,13 +216,16 @@
                                     "meta": {
                                         "alias": null,
                                         "disabled": false,
-                                        "index": "a27a9357-b353-46a3-9116-530f354b09b9",
+                                        "index": "74a98555-38d3-4ce6-8771-b4e706f99285",
                                         "key": "data_stream.dataset",
                                         "negate": false,
                                         "params": [
                                             "github.secret_scanning"
                                         ],
-                                        "type": "phrases"
+                                        "type": "phrases",
+                                        "value": [
+                                            "github.secret_scanning"
+                                        ]
                                     },
                                     "query": {
                                         "bool": {
@@ -124,36 +239,57 @@
                                             ]
                                         }
                                     }
+                                },
+                                {
+                                    "$state": {
+                                        "store": "appState"
+                                    },
+                                    "meta": {
+                                        "alias": null,
+                                        "disabled": false,
+                                        "field": "labels.is_transform_source",
+                                        "index": "b87bf6d3-a1cf-49ca-91fc-1f89a43ce946",
+                                        "key": "labels.is_transform_source",
+                                        "negate": false,
+                                        "params": {
+                                            "query": "false"
+                                        },
+                                        "type": "phrase"
+                                    },
+                                    "query": {
+                                        "match_phrase": {
+                                            "labels.is_transform_source": "false"
+                                        }
+                                    }
                                 }
                             ],
+                            "internalReferences": [],
                             "query": {
                                 "language": "kuery",
                                 "query": ""
                             },
                             "visualization": {
-                                "accessor": "ccdc8558-1d3f-4c8b-a31e-d59ac78d0212",
+                                "color": "#6092C0",
                                 "layerId": "3f8b858f-a1ee-4d69-a100-d59282acd94d",
                                 "layerType": "data",
-                                "textAlign": "center",
-                                "titlePosition": "top"
+                                "metricAccessor": "ccdc8558-1d3f-4c8b-a31e-d59ac78d0212"
                             }
                         },
                         "title": "Total Secrets Found [GitHub Secret Scanning]",
-                        "visualizationType": "lnsLegacyMetric"
+                        "type": "lens",
+                        "visualizationType": "lnsMetric"
                     },
-                    "enhancements": {},
-                    "type": "lens"
+                    "enhancements": {}
                 },
                 "gridData": {
                     "h": 5,
                     "i": "77e597be-8cdc-4fa3-9dee-4e4ed1103e55",
                     "w": 14,
-                    "x": 0,
+                    "x": 10,
                     "y": 0
                 },
                 "panelIndex": "77e597be-8cdc-4fa3-9dee-4e4ed1103e55",
-                "type": "lens",
-                "version": "8.7.0"
+                "type": "lens"
             },
             {
                 "embeddableConfig": {
@@ -164,16 +300,13 @@
                                 "id": "logs-*",
                                 "name": "indexpattern-datasource-layer-df5f2c10-bc9b-4a7e-be41-d13240c21d95",
                                 "type": "index-pattern"
-                            },
-                            {
-                                "id": "logs-*",
-                                "name": "ef2a4614-151f-42d0-8707-257d009298ea",
-                                "type": "index-pattern"
                             }
                         ],
                         "state": {
+                            "adHocDataViews": {},
                             "datasourceStates": {
                                 "formBased": {
+                                    "currentIndexPatternId": "logs-*",
                                     "layers": {
                                         "df5f2c10-bc9b-4a7e-be41-d13240c21d95": {
                                             "columnOrder": [
@@ -187,7 +320,7 @@
                                                     "customLabel": true,
                                                     "dataType": "number",
                                                     "isBucketed": false,
-                                                    "label": "Secrets Found/Fixed Ratio",
+                                                    "label": "Secrets Found/Resolved Ratio",
                                                     "operationType": "formula",
                                                     "params": {
                                                         "format": {
@@ -196,7 +329,7 @@
                                                                 "decimals": 2
                                                             }
                                                         },
-                                                        "formula": "count()/count(kql='github.state:dismissed or github.state:resolved')",
+                                                        "formula": "count()/count(kql='github.secret_scanning.state:dismissed or github.secret_scanning.state:resolved')",
                                                         "isFormulaBroken": false
                                                     },
                                                     "references": [
@@ -221,7 +354,7 @@
                                                     "dataType": "number",
                                                     "filter": {
                                                         "language": "kuery",
-                                                        "query": "github.state:dismissed or github.state:resolved"
+                                                        "query": "github.secret_scanning.state:dismissed or github.secret_scanning.state:resolved"
                                                     },
                                                     "isBucketed": false,
                                                     "label": "Part of Secrets Found/Fixed Ratio",
@@ -245,11 +378,11 @@
                                                                 "01aff5fe-21ab-474d-9ef6-8b5aa69c5a5eX1"
                                                             ],
                                                             "location": {
-                                                                "max": 68,
+                                                                "max": 100,
                                                                 "min": 0
                                                             },
                                                             "name": "divide",
-                                                            "text": "count()/count(kql='github.state:dismissed or github.state:resolved')",
+                                                            "text": "count()/count(kql='github.secret_scanning.state:dismissed or github.secret_scanning.state:resolved')",
                                                             "type": "function"
                                                         }
                                                     },
@@ -260,7 +393,8 @@
                                                     "scale": "ratio"
                                                 }
                                             },
-                                            "incompleteColumns": {}
+                                            "incompleteColumns": {},
+                                            "indexPatternId": "logs-*"
                                         }
                                     }
                                 }
@@ -273,13 +407,16 @@
                                     "meta": {
                                         "alias": null,
                                         "disabled": false,
-                                        "index": "ef2a4614-151f-42d0-8707-257d009298ea",
+                                        "index": "c2aca70b-c3ca-4864-ba2d-ec20af7a35c9",
                                         "key": "data_stream.dataset",
                                         "negate": false,
                                         "params": [
                                             "github.secret_scanning"
                                         ],
-                                        "type": "phrases"
+                                        "type": "phrases",
+                                        "value": [
+                                            "github.secret_scanning"
+                                        ]
                                     },
                                     "query": {
                                         "bool": {
@@ -293,36 +430,58 @@
                                             ]
                                         }
                                     }
+                                },
+                                {
+                                    "$state": {
+                                        "store": "appState"
+                                    },
+                                    "meta": {
+                                        "alias": null,
+                                        "disabled": false,
+                                        "field": "labels.is_transform_source",
+                                        "index": "453c9cb4-550a-481c-b522-f3baa873a452",
+                                        "key": "labels.is_transform_source",
+                                        "negate": false,
+                                        "params": {
+                                            "query": "false"
+                                        },
+                                        "type": "phrase"
+                                    },
+                                    "query": {
+                                        "match_phrase": {
+                                            "labels.is_transform_source": "false"
+                                        }
+                                    }
                                 }
                             ],
+                            "internalReferences": [],
                             "query": {
                                 "language": "kuery",
                                 "query": ""
                             },
                             "visualization": {
-                                "accessor": "01aff5fe-21ab-474d-9ef6-8b5aa69c5a5e",
-                                "colorMode": "None",
+                                "color": "#6092C0",
                                 "layerId": "df5f2c10-bc9b-4a7e-be41-d13240c21d95",
                                 "layerType": "data",
-                                "textAlign": "center"
+                                "metricAccessor": "01aff5fe-21ab-474d-9ef6-8b5aa69c5a5e"
                             }
                         },
                         "title": "Secrets Found/Fixed Ratio [GitHub Secret Scanning]",
-                        "visualizationType": "lnsLegacyMetric"
+                        "type": "lens",
+                        "visualizationType": "lnsMetric"
                     },
-                    "enhancements": {},
-                    "type": "lens"
+                    "enhancements": {}
                 },
                 "gridData": {
-                    "h": 5,
+                    "h": 7,
                     "i": "277a4af7-61c6-40d9-80a6-2d73df097618",
-                    "w": 14,
-                    "x": 14,
+                    "w": 12,
+                    "x": 24,
                     "y": 0
                 },
                 "panelIndex": "277a4af7-61c6-40d9-80a6-2d73df097618",
-                "type": "lens",
-                "version": "8.7.0"
+                "title": "Secrets Found/Resolved Ratio [GitHub Secret Scanning]",
+                "type": "lens"
             },
             {
                 "embeddableConfig": {
@@ -336,11 +495,17 @@
                             },
                             {
                                 "id": "logs-*",
-                                "name": "d7c9ae82-adc1-4169-a1ac-2fea90204f25",
+                                "name": "b4c59839-c76c-4634-ad1f-04870a39a7b1",
+                                "type": "index-pattern"
+                            },
+                            {
+                                "id": "logs-*",
+                                "name": "b72103a9-fcc2-4435-808c-4f1ced14163e",
                                 "type": "index-pattern"
                             }
                         ],
                         "state": {
+                            "adHocDataViews": {},
                             "datasourceStates": {
                                 "formBased": {
                                     "layers": {
@@ -371,7 +536,7 @@
                                                         "size": 10
                                                     },
                                                     "scale": "ordinal",
-                                                    "sourceField": "github.state"
+                                                    "sourceField": "github.secret_scanning.state"
                                                 },
                                                 "4525c4ae-5f82-4b4d-9867-48e4aba462fd": {
                                                     "dataType": "number",
@@ -398,13 +563,16 @@
                                     "meta": {
                                         "alias": null,
                                         "disabled": false,
-                                        "index": "d7c9ae82-adc1-4169-a1ac-2fea90204f25",
+                                        "index": "b4c59839-c76c-4634-ad1f-04870a39a7b1",
                                         "key": "data_stream.dataset",
                                         "negate": false,
                                         "params": [
                                             "github.secret_scanning"
                                         ],
-                                        "type": "phrases"
+                                        "type": "phrases",
+                                        "value": [
+                                            "github.secret_scanning"
+                                        ]
                                     },
                                     "query": {
                                         "bool": {
@@ -418,8 +586,31 @@
                                             ]
                                         }
                                     }
+                                },
+                                {
+                                    "$state": {
+                                        "store": "appState"
+                                    },
+                                    "meta": {
+                                        "alias": null,
+                                        "disabled": false,
+                                        "field": "labels.is_transform_source",
+                                        "index": "b72103a9-fcc2-4435-808c-4f1ced14163e",
+                                        "key": "labels.is_transform_source",
+                                        "negate": false,
+                                        "params": {
+                                            "query": "false"
+                                        },
+                                        "type": "phrase"
+                                    },
+                                    "query": {
+                                        "match_phrase": {
+                                            "labels.is_transform_source": "false"
+                                        }
+                                    }
                                 }
                             ],
+                            "internalReferences": [],
                             "query": {
                                 "language": "kuery",
                                 "query": ""
@@ -452,21 +643,21 @@
                             }
                         },
                         "title": "Open vs Fixed/Resolved Secrets[GitHub Secret Scanning]",
+                        "type": "lens",
                         "visualizationType": "lnsPie"
                     },
-                    "enhancements": {},
-                    "type": "lens"
+                    "enhancements": {}
                 },
                 "gridData": {
                     "h": 15,
                     "i": "51a087d0-9c56-4047-9404-b4b7b37497b0",
-                    "w": 20,
-                    "x": 28,
+                    "w": 12,
+                    "x": 36,
                     "y": 0
                 },
                 "panelIndex": "51a087d0-9c56-4047-9404-b4b7b37497b0",
-                "type": "lens",
-                "version": "8.7.0"
+                "title": "Open vs Resolved Secrets[GitHub Secret Scanning]",
+                "type": "lens"
             },
             {
                 "embeddableConfig": {
@@ -477,21 +668,13 @@
                                 "id": "logs-*",
                                 "name": "indexpattern-datasource-layer-df5f2c10-bc9b-4a7e-be41-d13240c21d95",
                                 "type": "index-pattern"
-                            },
-                            {
-                                "id": "logs-*",
-                                "name": "b2d41cbe-238c-4c90-994d-d8e8f1668a44",
-                                "type": "index-pattern"
-                            },
-                            {
-                                "id": "logs-*",
-                                "name": "d4cc48c0-fb83-4b1d-9c91-369a087165c4",
-                                "type": "index-pattern"
                             }
                         ],
                         "state": {
+                            "adHocDataViews": {},
                             "datasourceStates": {
                                 "formBased": {
+                                    "currentIndexPatternId": "logs-*",
                                     "layers": {
                                         "df5f2c10-bc9b-4a7e-be41-d13240c21d95": {
                                             "columnOrder": [
@@ -502,7 +685,7 @@
                                                     "customLabel": true,
                                                     "dataType": "number",
                                                     "isBucketed": false,
-                                                    "label": "Open Alerts",
+                                                    "label": "Open Secret Scanning Alerts",
                                                     "operationType": "count",
                                                     "params": {
                                                         "emptyAsNull": true,
@@ -517,7 +700,8 @@
                                                     "sourceField": "___records___"
                                                 }
                                             },
-                                            "incompleteColumns": {}
+                                            "incompleteColumns": {},
+                                            "indexPatternId": "logs-*"
                                         }
                                     }
                                 }
@@ -530,24 +714,17 @@
                                     "meta": {
                                         "alias": null,
                                         "disabled": false,
-                                        "index": "b2d41cbe-238c-4c90-994d-d8e8f1668a44",
+                                        "index": "ad21b84c-900e-4b07-9247-32e08b2aca4d",
                                         "key": "data_stream.dataset",
                                         "negate": false,
-                                        "params": [
-                                            "github.secret_scanning"
-                                        ],
-                                        "type": "phrases"
+                                        "params": {
+                                            "query": "github.secret_scanning"
+                                        },
+                                        "type": "phrase"
                                     },
                                     "query": {
-                                        "bool": {
-                                            "minimum_should_match": 1,
-                                            "should": [
-                                                {
-                                                    "match_phrase": {
-                                                        "data_stream.dataset": "github.secret_scanning"
-                                                    }
-                                                }
-                                            ]
+                                        "match_phrase": {
+                                            "data_stream.dataset": "github.secret_scanning"
                                         }
                                     }
                                 },
@@ -558,8 +735,9 @@
                                     "meta": {
                                         "alias": null,
                                         "disabled": false,
-                                        "index": "d4cc48c0-fb83-4b1d-9c91-369a087165c4",
-                                        "key": "github.state",
+                                        "field": "github.secret_scanning.state",
+                                        "index": "0b2547b7-260a-4346-a477-7a0f7914f6ac",
+                                        "key": "github.secret_scanning.state",
                                         "negate": false,
                                         "params": {
                                             "query": "open"
@@ -568,82 +746,60 @@
                                     },
                                     "query": {
                                         "match_phrase": {
-                                            "github.state": "open"
+                                            "github.secret_scanning.state": "open"
+                                        }
+                                    }
+                                },
+                                {
+                                    "$state": {
+                                        "store": "appState"
+                                    },
+                                    "meta": {
+                                        "alias": null,
+                                        "disabled": false,
+                                        "field": "labels.is_transform_source",
+                                        "index": "93dc220c-b419-41fe-8544-fbf57ac9cf38",
+                                        "key": "labels.is_transform_source",
+                                        "negate": false,
+                                        "params": {
+                                            "query": "false"
+                                        },
+                                        "type": "phrase"
+                                    },
+                                    "query": {
+                                        "match_phrase": {
+                                            "labels.is_transform_source": "false"
                                         }
                                     }
                                 }
                             ],
+                            "internalReferences": [],
                             "query": {
                                 "language": "kuery",
                                 "query": ""
                             },
                             "visualization": {
-                                "accessor": "01aff5fe-21ab-474d-9ef6-8b5aa69c5a5e",
-                                "colorMode": "Labels",
+                                "color": "#E7664C",
                                 "layerId": "df5f2c10-bc9b-4a7e-be41-d13240c21d95",
                                 "layerType": "data",
-                                "palette": {
-                                    "name": "custom",
-                                    "params": {
-                                        "colorStops": [
-                                            {
-                                                "color": "#209280",
-                                                "stop": 0
-                                            },
-                                            {
-                                                "color": "#d6bf57",
-                                                "stop": 1
-                                            },
-                                            {
-                                                "color": "#cc5642",
-                                                "stop": 1000
-                                            }
-                                        ],
-                                        "continuity": "above",
-                                        "maxSteps": 5,
-                                        "name": "custom",
-                                        "progression": "fixed",
-                                        "rangeMax": null,
-                                        "rangeMin": 0,
-                                        "rangeType": "number",
-                                        "reverse": false,
-                                        "steps": 3,
-                                        "stops": [
-                                            {
-                                                "color": "#209280",
-                                                "stop": 1
-                                            },
-                                            {
-                                                "color": "#d6bf57",
-                                                "stop": 1000
-                                            },
-                                            {
-                                                "color": "#cc5642",
-                                                "stop": 1001
-                                            }
-                                        ]
-                                    },
-                                    "type": "palette"
-                                },
-                                "textAlign": "center"
+                                "metricAccessor": "01aff5fe-21ab-474d-9ef6-8b5aa69c5a5e"
                             }
                         },
                         "title": "Open Secrets Count [GitHub Secret Scanning]",
-                        "visualizationType": "lnsLegacyMetric"
+                        "type": "lens",
+                        "visualizationType": "lnsMetric"
                     },
-                    "enhancements": {},
-                    "type": "lens"
+                    "enhancements": {}
                 },
                 "gridData": {
                     "h": 5,
                     "i": "3c9e482b-4cd2-43e2-a1aa-5a6d66050c16",
                     "w": 14,
-                    "x": 0,
+                    "x": 10,
                     "y": 5
                 },
                 "panelIndex": "3c9e482b-4cd2-43e2-a1aa-5a6d66050c16",
-                "type": "lens",
-                "version": "8.7.0"
+                "type": "lens"
             },
             {
                 "embeddableConfig": {
@@ -657,16 +813,22 @@
                             },
                             {
                                 "id": "logs-*",
-                                "name": "9c0d6963-bc22-4d2d-9028-20e603d307e7",
+                                "name": "82707691-0a6e-4141-a447-a4949afde05e",
                                 "type": "index-pattern"
                             },
                             {
                                 "id": "logs-*",
-                                "name": "dac33af7-8640-4326-8c95-afddf6194657",
+                                "name": "ebb37af2-6f6a-4163-8bc0-730dc706980e",
+                                "type": "index-pattern"
+                            },
+                            {
+                                "id": "logs-*",
+                                "name": "efb8e7ed-a6ee-4430-aad5-fcc6dcbc4ab1",
                                 "type": "index-pattern"
                             }
                         ],
                         "state": {
+                            "adHocDataViews": {},
                             "datasourceStates": {
                                 "formBased": {
                                     "layers": {
@@ -701,7 +863,7 @@
                                     "meta": {
                                         "alias": null,
                                         "disabled": false,
-                                        "index": "9c0d6963-bc22-4d2d-9028-20e603d307e7",
+                                        "index": "82707691-0a6e-4141-a447-a4949afde05e",
                                         "key": "data_stream.dataset",
                                         "negate": false,
                                         "params": {
@@ -722,7 +884,7 @@
                                     "meta": {
                                         "alias": null,
                                         "disabled": false,
-                                        "index": "dac33af7-8640-4326-8c95-afddf6194657",
+                                        "index": "ebb37af2-6f6a-4163-8bc0-730dc706980e",
                                         "key": "github.secret_scanning.time_to_resolution.sec",
                                         "negate": false,
                                         "type": "exists",
@@ -733,36 +895,57 @@
                                             "field": "github.secret_scanning.time_to_resolution.sec"
                                         }
                                     }
+                                },
+                                {
+                                    "$state": {
+                                        "store": "appState"
+                                    },
+                                    "meta": {
+                                        "alias": null,
+                                        "disabled": false,
+                                        "field": "labels.is_transform_source",
+                                        "index": "efb8e7ed-a6ee-4430-aad5-fcc6dcbc4ab1",
+                                        "key": "labels.is_transform_source",
+                                        "negate": false,
+                                        "params": {
+                                            "query": "false"
+                                        },
+                                        "type": "phrase"
+                                    },
+                                    "query": {
+                                        "match_phrase": {
+                                            "labels.is_transform_source": "false"
+                                        }
+                                    }
                                 }
                             ],
+                            "internalReferences": [],
                             "query": {
                                 "language": "kuery",
                                 "query": ""
                             },
                             "visualization": {
-                                "accessor": "e33d2853-5b3d-4be9-9312-2d8da64d9523",
-                                "colorMode": "None",
+                                "color": "#6092C0",
                                 "layerId": "df5f2c10-bc9b-4a7e-be41-d13240c21d95",
                                 "layerType": "data",
-                                "textAlign": "center"
+                                "metricAccessor": "e33d2853-5b3d-4be9-9312-2d8da64d9523"
                             }
                         },
                         "title": "Mean Time to Resolution [GitHub Secret Scanning]",
-                        "visualizationType": "lnsLegacyMetric"
+                        "type": "lens",
+                        "visualizationType": "lnsMetric"
                     },
-                    "enhancements": {},
-                    "type": "lens"
+                    "enhancements": {}
                 },
                 "gridData": {
-                    "h": 10,
+                    "h": 8,
                     "i": "e6cb0087-c5ba-49f2-8ae9-b206d2346609",
-                    "w": 14,
-                    "x": 14,
-                    "y": 5
+                    "w": 12,
+                    "x": 24,
+                    "y": 7
                 },
                 "panelIndex": "e6cb0087-c5ba-49f2-8ae9-b206d2346609",
-                "type": "lens",
-                "version": "8.7.0"
+                "type": "lens"
             },
             {
                 "embeddableConfig": {
@@ -773,63 +956,40 @@
                                 "id": "logs-*",
                                 "name": "indexpattern-datasource-layer-df5f2c10-bc9b-4a7e-be41-d13240c21d95",
                                 "type": "index-pattern"
-                            },
-                            {
-                                "id": "logs-*",
-                                "name": "e9f91f71-3727-4bf1-9d0a-2742347e223f",
-                                "type": "index-pattern"
-                            },
-                            {
-                                "id": "logs-*",
-                                "name": "f34d1f77-a34c-4ac9-ab7a-6892d9505a80",
-                                "type": "index-pattern"
                             }
                         ],
                         "state": {
+                            "adHocDataViews": {},
                             "datasourceStates": {
                                 "formBased": {
+                                    "currentIndexPatternId": "logs-*",
                                     "layers": {
                                         "df5f2c10-bc9b-4a7e-be41-d13240c21d95": {
                                             "columnOrder": [
-                                                "01aff5fe-21ab-474d-9ef6-8b5aa69c5a5e",
-                                                "01aff5fe-21ab-474d-9ef6-8b5aa69c5a5eX0"
+                                                "01aff5fe-21ab-474d-9ef6-8b5aa69c5a5e"
                                             ],
                                             "columns": {
                                                 "01aff5fe-21ab-474d-9ef6-8b5aa69c5a5e": {
                                                     "customLabel": true,
                                                     "dataType": "number",
                                                     "isBucketed": false,
-                                                    "label": "Resolved/Dismissed Alerts",
-                                                    "operationType": "formula",
+                                                    "label": "Resolved (Dismissed) Secret Scanning Alerts",
+                                                    "operationType": "count",
                                                     "params": {
+                                                        "emptyAsNull": true,
                                                         "format": {
                                                             "id": "number",
                                                             "params": {
                                                                 "decimals": 0
                                                             }
-                                                        },
-                                                        "formula": "count()",
-                                                        "isFormulaBroken": false
-                                                    },
-                                                    "references": [
-                                                        "01aff5fe-21ab-474d-9ef6-8b5aa69c5a5eX0"
-                                                    ],
-                                                    "scale": "ratio"
-                                                },
-                                                "01aff5fe-21ab-474d-9ef6-8b5aa69c5a5eX0": {
-                                                    "customLabel": true,
-                                                    "dataType": "number",
-                                                    "isBucketed": false,
-                                                    "label": "Part of Dismissed Alerts",
-                                                    "operationType": "count",
-                                                    "params": {
-                                                        "emptyAsNull": false
+                                                        }
                                                     },
                                                     "scale": "ratio",
                                                     "sourceField": "___records___"
                                                 }
                                             },
-                                            "incompleteColumns": {}
+                                            "incompleteColumns": {},
+                                            "indexPatternId": "logs-*"
                                         }
                                     }
                                 }
@@ -842,13 +1002,38 @@
                                     "meta": {
                                         "alias": null,
                                         "disabled": false,
-                                        "index": "e9f91f71-3727-4bf1-9d0a-2742347e223f",
+                                        "index": "092da6c8-e8a2-4b6f-8a79-be406069bd66",
                                         "key": "data_stream.dataset",
                                         "negate": false,
+                                        "params": {
+                                            "query": "github.secret_scanning"
+                                        },
+                                        "type": "phrase"
+                                    },
+                                    "query": {
+                                        "match_phrase": {
+                                            "data_stream.dataset": "github.secret_scanning"
+                                        }
+                                    }
+                                },
+                                {
+                                    "$state": {
+                                        "store": "appState"
+                                    },
+                                    "meta": {
+                                        "alias": null,
+                                        "disabled": false,
+                                        "field": "github.secret_scanning.state",
+                                        "index": "b98168d4-a1e2-4ef9-9260-83b37803b076",
+                                        "key": "github.secret_scanning.state",
+                                        "negate": false,
                                         "params": [
-                                            "github.secret_scanning"
+                                            "resolved"
                                         ],
-                                        "type": "phrases"
+                                        "type": "phrases",
+                                        "value": [
+                                            "resolved"
+                                        ]
                                     },
                                     "query": {
                                         "bool": {
@@ -856,7 +1041,7 @@
                                             "should": [
                                                 {
                                                     "match_phrase": {
-                                                        "data_stream.dataset": "github.secret_scanning"
+                                                        "github.secret_scanning.state": "resolved"
                                                     }
                                                 }
                                             ]
@@ -870,91 +1055,50 @@
                                     "meta": {
                                         "alias": null,
                                         "disabled": false,
-                                        "index": "f34d1f77-a34c-4ac9-ab7a-6892d9505a80",
-                                        "key": "github.state",
+                                        "field": "labels.is_transform_source",
+                                        "index": "8e815d6b-8c90-430f-adda-b85791836570",
+                                        "key": "labels.is_transform_source",
                                         "negate": false,
-                                        "params": [
-                                            "dismissed",
-                                            "resolved"
-                                        ],
-                                        "type": "phrases"
+                                        "params": {
+                                            "query": "false"
+                                        },
+                                        "type": "phrase"
                                     },
                                     "query": {
-                                        "bool": {
-                                            "minimum_should_match": 1,
-                                            "should": [
-                                                {
-                                                    "match_phrase": {
-                                                        "github.state": "dismissed"
-                                                    }
-                                                },
-                                                {
-                                                    "match_phrase": {
-                                                        "github.state": "resolved"
-                                                    }
-                                                }
-                                            ]
+                                        "match_phrase": {
+                                            "labels.is_transform_source": "false"
                                         }
                                     }
                                 }
                             ],
+                            "internalReferences": [],
                             "query": {
                                 "language": "kuery",
                                 "query": ""
                             },
                             "visualization": {
-                                "accessor": "01aff5fe-21ab-474d-9ef6-8b5aa69c5a5e",
-                                "colorMode": "Labels",
+                                "color": "#54B399",
                                 "layerId": "df5f2c10-bc9b-4a7e-be41-d13240c21d95",
                                 "layerType": "data",
-                                "palette": {
-                                    "name": "positive",
-                                    "params": {
-                                        "continuity": "above",
-                                        "maxSteps": 5,
-                                        "name": "positive",
-                                        "progression": "fixed",
-                                        "rangeMax": null,
-                                        "rangeMin": 0,
-                                        "rangeType": "number",
-                                        "reverse": false,
-                                        "steps": 3,
-                                        "stops": [
-                                            {
-                                                "color": "#bbdad3",
-                                                "stop": 0
-                                            },
-                                            {
-                                                "color": "#77b6a8",
-                                                "stop": 8
-                                            },
-                                            {
-                                                "color": "#209280",
-                                                "stop": 16
-                                            }
-                                        ]
-                                    },
-                                    "type": "palette"
-                                },
-                                "textAlign": "center"
+                                "metricAccessor": "01aff5fe-21ab-474d-9ef6-8b5aa69c5a5e"
                             }
                         },
                         "title": "Fixed Secrets Count [GitHub Secret Scanning]",
-                        "visualizationType": "lnsLegacyMetric"
+                        "type": "lens",
+                        "visualizationType": "lnsMetric"
                     },
-                    "enhancements": {},
-                    "type": "lens"
+                    "enhancements": {}
                 },
                 "gridData": {
                     "h": 5,
                     "i": "892ed6dd-afe7-4685-bebb-5f1a70b44692",
                     "w": 14,
-                    "x": 0,
+                    "x": 10,
                     "y": 10
                 },
                 "panelIndex": "892ed6dd-afe7-4685-bebb-5f1a70b44692",
-                "type": "lens",
-                "version": "8.7.0"
+                "title": "Resolved Secrets Count [GitHub Secret Scanning]",
+                "type": "lens"
             },
             {
                 "embeddableConfig": {
@@ -968,11 +1112,17 @@
                             },
                             {
                                 "id": "logs-*",
-                                "name": "89debdad-d323-4640-918b-2c38d061e212",
+                                "name": "6478570c-21b8-419e-88ec-f5430727e67d",
+                                "type": "index-pattern"
+                            },
+                            {
+                                "id": "logs-*",
+                                "name": "c4f14f66-1d6b-4b28-9310-c4f6bd1aae69",
                                 "type": "index-pattern"
                             }
                         ],
                         "state": {
+                            "adHocDataViews": {},
                             "datasourceStates": {
                                 "formBased": {
                                     "layers": {
@@ -1071,13 +1221,16 @@
                                     "meta": {
                                         "alias": null,
                                         "disabled": false,
-                                        "index": "89debdad-d323-4640-918b-2c38d061e212",
+                                        "index": "6478570c-21b8-419e-88ec-f5430727e67d",
                                         "key": "data_stream.dataset",
                                         "negate": false,
                                         "params": [
                                             "github.secret_scanning"
                                         ],
-                                        "type": "phrases"
+                                        "type": "phrases",
+                                        "value": [
+                                            "github.secret_scanning"
+                                        ]
                                     },
                                     "query": {
                                         "bool": {
@@ -1091,8 +1244,31 @@
                                             ]
                                         }
                                     }
+                                },
+                                {
+                                    "$state": {
+                                        "store": "appState"
+                                    },
+                                    "meta": {
+                                        "alias": null,
+                                        "disabled": false,
+                                        "field": "labels.is_transform_source",
+                                        "index": "c4f14f66-1d6b-4b28-9310-c4f6bd1aae69",
+                                        "key": "labels.is_transform_source",
+                                        "negate": false,
+                                        "params": {
+                                            "query": "false"
+                                        },
+                                        "type": "phrase"
+                                    },
+                                    "query": {
+                                        "match_phrase": {
+                                            "labels.is_transform_source": "false"
+                                        }
+                                    }
                                 }
                             ],
+                            "internalReferences": [],
                             "query": {
                                 "language": "kuery",
                                 "query": ""
@@ -1147,21 +1323,20 @@
                             }
                         },
                         "title": "Found Secrets count by owner and by repository [GitHub Secret Scanning]",
+                        "type": "lens",
                         "visualizationType": "lnsXY"
                     },
-                    "enhancements": {},
-                    "type": "lens"
+                    "enhancements": {}
                 },
                 "gridData": {
-                    "h": 12,
+                    "h": 14,
                     "i": "429f2ded-1aca-42cd-9190-9afddb03eabf",
-                    "w": 24,
-                    "x": 0,
+                    "w": 21,
+                    "x": 10,
                     "y": 15
                 },
                 "panelIndex": "429f2ded-1aca-42cd-9190-9afddb03eabf",
-                "type": "lens",
-                "version": "8.7.0"
+                "type": "lens"
             },
             {
                 "embeddableConfig": {
@@ -1175,11 +1350,17 @@
                             },
                             {
                                 "id": "logs-*",
-                                "name": "11287d36-4d96-447c-b336-56ae03fcbc16",
+                                "name": "aa689156-ebeb-462b-b8f7-ae6fa597a250",
+                                "type": "index-pattern"
+                            },
+                            {
+                                "id": "logs-*",
+                                "name": "eef2d1bb-8cb1-4d86-b987-9580ec987f27",
                                 "type": "index-pattern"
                             }
                         ],
                         "state": {
+                            "adHocDataViews": {},
                             "datasourceStates": {
                                 "formBased": {
                                     "layers": {
@@ -1258,28 +1439,44 @@
                                     "meta": {
                                         "alias": null,
                                         "disabled": false,
-                                        "index": "11287d36-4d96-447c-b336-56ae03fcbc16",
+                                        "index": "aa689156-ebeb-462b-b8f7-ae6fa597a250",
                                         "key": "data_stream.dataset",
                                         "negate": false,
-                                        "params": [
-                                            "github.secret_scanning"
-                                        ],
-                                        "type": "phrases"
+                                        "params": {
+                                            "query": "github.secret_scanning"
+                                        },
+                                        "type": "phrase"
                                     },
                                     "query": {
-                                        "bool": {
-                                            "minimum_should_match": 1,
-                                            "should": [
-                                                {
-                                                    "match_phrase": {
-                                                        "data_stream.dataset": "github.secret_scanning"
-                                                    }
-                                                }
-                                            ]
+                                        "match_phrase": {
+                                            "data_stream.dataset": "github.secret_scanning"
+                                        }
+                                    }
+                                },
+                                {
+                                    "$state": {
+                                        "store": "appState"
+                                    },
+                                    "meta": {
+                                        "alias": null,
+                                        "disabled": false,
+                                        "field": "labels.is_transform_source",
+                                        "index": "eef2d1bb-8cb1-4d86-b987-9580ec987f27",
+                                        "key": "labels.is_transform_source",
+                                        "negate": false,
+                                        "params": {
+                                            "query": "false"
+                                        },
+                                        "type": "phrase"
+                                    },
+                                    "query": {
+                                        "match_phrase": {
+                                            "labels.is_transform_source": "false"
                                         }
                                     }
                                 }
                             ],
+                            "internalReferences": [],
                             "query": {
                                 "language": "kuery",
                                 "query": ""
@@ -1306,21 +1503,20 @@
                             }
                         },
                         "title": "Found Secrets % by owner and by repository [GitHub Secret Scanning]",
+                        "type": "lens",
                         "visualizationType": "lnsPie"
                     },
-                    "enhancements": {},
-                    "type": "lens"
+                    "enhancements": {}
                 },
                 "gridData": {
-                    "h": 12,
+                    "h": 14,
                     "i": "a7adc099-113f-4113-b592-24b5ceff484e",
-                    "w": 24,
-                    "x": 24,
+                    "w": 17,
+                    "x": 31,
                     "y": 15
                 },
                 "panelIndex": "a7adc099-113f-4113-b592-24b5ceff484e",
-                "type": "lens",
-                "version": "8.7.0"
+                "type": "lens"
             },
             {
                 "embeddableConfig": {
@@ -1334,16 +1530,22 @@
                             },
                             {
                                 "id": "logs-*",
-                                "name": "25c2db0c-d286-407e-9c0b-55252a2ad165",
+                                "name": "567fc10c-ce82-4b9c-a6d5-0981e9e41087",
                                 "type": "index-pattern"
                             },
                             {
                                 "id": "logs-*",
-                                "name": "82cbb0d6-87ad-47e3-bed4-84e8d7f812d1",
+                                "name": "c5adbfcc-88bf-45df-b656-04896b48ed9a",
+                                "type": "index-pattern"
+                            },
+                            {
+                                "id": "logs-*",
+                                "name": "bfd462b5-9f2d-43a6-8452-eb1aef1b9765",
                                 "type": "index-pattern"
                             }
                         ],
                         "state": {
+                            "adHocDataViews": {},
                             "datasourceStates": {
                                 "formBased": {
                                     "layers": {
@@ -1402,24 +1604,17 @@
                                     "meta": {
                                         "alias": null,
                                         "disabled": false,
-                                        "index": "25c2db0c-d286-407e-9c0b-55252a2ad165",
+                                        "index": "567fc10c-ce82-4b9c-a6d5-0981e9e41087",
                                         "key": "data_stream.dataset",
                                         "negate": false,
-                                        "params": [
-                                            "github.secret_scanning"
-                                        ],
-                                        "type": "phrases"
+                                        "params": {
+                                            "query": "github.secret_scanning"
+                                        },
+                                        "type": "phrase"
                                     },
                                     "query": {
-                                        "bool": {
-                                            "minimum_should_match": 1,
-                                            "should": [
-                                                {
-                                                    "match_phrase": {
-                                                        "data_stream.dataset": "github.secret_scanning"
-                                                    }
-                                                }
-                                            ]
+                                        "match_phrase": {
+                                            "data_stream.dataset": "github.secret_scanning"
                                         }
                                     }
                                 },
@@ -1430,8 +1625,9 @@
                                     "meta": {
                                         "alias": null,
                                         "disabled": false,
-                                        "index": "82cbb0d6-87ad-47e3-bed4-84e8d7f812d1",
-                                        "key": "github.state",
+                                        "field": "github.secret_scanning.state",
+                                        "index": "c5adbfcc-88bf-45df-b656-04896b48ed9a",
+                                        "key": "github.secret_scanning.state",
                                         "negate": false,
                                         "params": {
                                             "query": "open"
@@ -1440,11 +1636,34 @@
                                     },
                                     "query": {
                                         "match_phrase": {
-                                            "github.state": "open"
+                                            "github.secret_scanning.state": "open"
+                                        }
+                                    }
+                                },
+                                {
+                                    "$state": {
+                                        "store": "appState"
+                                    },
+                                    "meta": {
+                                        "alias": null,
+                                        "disabled": false,
+                                        "field": "labels.is_transform_source",
+                                        "index": "bfd462b5-9f2d-43a6-8452-eb1aef1b9765",
+                                        "key": "labels.is_transform_source",
+                                        "negate": false,
+                                        "params": {
+                                            "query": "false"
+                                        },
+                                        "type": "phrase"
+                                    },
+                                    "query": {
+                                        "match_phrase": {
+                                            "labels.is_transform_source": "false"
                                         }
                                     }
                                 }
                             ],
+                            "internalReferences": [],
                             "query": {
                                 "language": "kuery",
                                 "query": ""
@@ -1477,7 +1696,7 @@
                                         "xAccessor": "257a7d8d-1315-4775-97d9-e679c0f3aa79",
                                         "yConfig": [
                                             {
-                                                "color": "#6dc9cd",
+                                                "color": "#6092c0",
                                                 "forAccessor": "e1d8072b-7268-444a-864e-ef1117b17b65"
                                             }
                                         ]
@@ -1497,21 +1716,20 @@
                             }
                         },
                         "title": "Open Secrets Count by Type [GitHub Secret Scanning]",
+                        "type": "lens",
                         "visualizationType": "lnsXY"
                     },
-                    "enhancements": {},
-                    "type": "lens"
+                    "enhancements": {}
                 },
                 "gridData": {
                     "h": 13,
                     "i": "883397dd-0064-48f2-b257-c8ed4295b0b9",
                     "w": 24,
                     "x": 0,
-                    "y": 27
+                    "y": 29
                 },
                 "panelIndex": "883397dd-0064-48f2-b257-c8ed4295b0b9",
-                "type": "lens",
-                "version": "8.7.0"
+                "type": "lens"
             },
             {
                 "embeddableConfig": {
@@ -1525,16 +1743,22 @@
                             },
                             {
                                 "id": "logs-*",
-                                "name": "acfd1c9a-be16-4275-ae7d-0ad42b060de0",
+                                "name": "6f786b20-f828-4ef4-b888-97f280ac8dc6",
                                 "type": "index-pattern"
                             },
                             {
                                 "id": "logs-*",
-                                "name": "42fcf4b5-0905-4d97-baa9-c08a61bc3b7a",
+                                "name": "eb9a956f-1e94-48c2-9170-352ae07d0241",
+                                "type": "index-pattern"
+                            },
+                            {
+                                "id": "logs-*",
+                                "name": "5947d171-d241-4770-8342-4b28919970ca",
                                 "type": "index-pattern"
                             }
                         ],
                         "state": {
+                            "adHocDataViews": {},
                             "datasourceStates": {
                                 "formBased": {
                                     "layers": {
@@ -1592,13 +1816,16 @@
                                     "meta": {
                                         "alias": null,
                                         "disabled": false,
-                                        "index": "acfd1c9a-be16-4275-ae7d-0ad42b060de0",
+                                        "index": "6f786b20-f828-4ef4-b888-97f280ac8dc6",
                                         "key": "data_stream.dataset",
                                         "negate": false,
                                         "params": [
                                             "github.secret_scanning"
                                         ],
-                                        "type": "phrases"
+                                        "type": "phrases",
+                                        "value": [
+                                            "github.secret_scanning"
+                                        ]
                                     },
                                     "query": {
                                         "bool": {
@@ -1620,8 +1847,9 @@
                                     "meta": {
                                         "alias": null,
                                         "disabled": false,
-                                        "index": "42fcf4b5-0905-4d97-baa9-c08a61bc3b7a",
-                                        "key": "github.state",
+                                        "field": "github.secret_scanning.state",
+                                        "index": "eb9a956f-1e94-48c2-9170-352ae07d0241",
+                                        "key": "github.secret_scanning.state",
                                         "negate": false,
                                         "params": {
                                             "query": "open"
@@ -1630,11 +1858,34 @@
                                     },
                                     "query": {
                                         "match_phrase": {
-                                            "github.state": "open"
+                                            "github.secret_scanning.state": "open"
+                                        }
+                                    }
+                                },
+                                {
+                                    "$state": {
+                                        "store": "appState"
+                                    },
+                                    "meta": {
+                                        "alias": null,
+                                        "disabled": false,
+                                        "field": "labels.is_transform_source",
+                                        "index": "5947d171-d241-4770-8342-4b28919970ca",
+                                        "key": "labels.is_transform_source",
+                                        "negate": false,
+                                        "params": {
+                                            "query": "false"
+                                        },
+                                        "type": "phrase"
+                                    },
+                                    "query": {
+                                        "match_phrase": {
+                                            "labels.is_transform_source": "false"
                                         }
                                     }
                                 }
                             ],
+                            "internalReferences": [],
                             "query": {
                                 "language": "kuery",
                                 "query": ""
@@ -1664,21 +1915,20 @@
                             }
                         },
                         "title": "Open Secrets % by Type [GitHub Secret Scanning]",
+                        "type": "lens",
                         "visualizationType": "lnsPie"
                     },
-                    "enhancements": {},
-                    "type": "lens"
+                    "enhancements": {}
                 },
                 "gridData": {
                     "h": 13,
                     "i": "d0ec4a50-b9da-4775-9f64-5389f898aee3",
                     "w": 24,
                     "x": 24,
-                    "y": 27
+                    "y": 29
                 },
                 "panelIndex": "d0ec4a50-b9da-4775-9f64-5389f898aee3",
-                "type": "lens",
-                "version": "8.7.0"
+                "type": "lens"
             },
             {
                 "embeddableConfig": {
@@ -1692,22 +1942,29 @@
                             },
                             {
                                 "id": "logs-*",
-                                "name": "c26ebed6-b942-43ed-9f00-ccf3c5842f5f",
+                                "name": "1ac19e51-e199-42a7-828e-605917ab1e27",
                                 "type": "index-pattern"
                             },
                             {
                                 "id": "logs-*",
-                                "name": "54bf50e3-8882-4a5e-a4ad-e4d684c3abaa",
+                                "name": "2b87a91f-94c3-473c-8355-135532524691",
+                                "type": "index-pattern"
+                            },
+                            {
+                                "id": "logs-*",
+                                "name": "4e8c0fa0-90c0-4551-af33-76c6ccbf7efe",
                                 "type": "index-pattern"
                             }
                         ],
                         "state": {
+                            "adHocDataViews": {},
                             "datasourceStates": {
                                 "formBased": {
                                     "layers": {
                                         "725aa594-f41c-4b3e-a6cf-8c115b602f57": {
                                             "columnOrder": [
                                                 "98acffa4-7380-4b18-9f9a-4025ca8ac0c6",
+                                                "b45a8469-4547-4294-a737-68a51ca76eee",
                                                 "197c6dc3-cb49-4482-8381-a89e27cc960f",
                                                 "e81fb515-1196-411c-818d-8f4d837ce000",
                                                 "2059204b-f8ae-4a1f-911e-c7ed705f2ba9",
@@ -1836,7 +2093,7 @@
                                                     "customLabel": true,
                                                     "dataType": "string",
                                                     "isBucketed": true,
-                                                    "label": "Fixed Secret",
+                                                    "label": "Resolved Secret",
                                                     "operationType": "terms",
                                                     "params": {
                                                         "missingBucket": false,
@@ -1853,6 +2110,27 @@
                                                     },
                                                     "scale": "ordinal",
                                                     "sourceField": "github.secret_scanning.secret"
+                                                },
+                                                "b45a8469-4547-4294-a737-68a51ca76eee": {
+                                                    "customLabel": true,
+                                                    "dataType": "number",
+                                                    "isBucketed": true,
+                                                    "label": "Secret Alert Number",
+                                                    "operationType": "range",
+                                                    "params": {
+                                                        "includeEmptyRows": true,
+                                                        "maxBars": "auto",
+                                                        "ranges": [
+                                                            {
+                                                                "from": 0,
+                                                                "label": "",
+                                                                "to": 1000
+                                                            }
+                                                        ],
+                                                        "type": "histogram"
+                                                    },
+                                                    "scale": "interval",
+                                                    "sourceField": "github.secret_scanning.number"
                                                 },
                                                 "e81fb515-1196-411c-818d-8f4d837ce000": {
                                                     "customLabel": true,
@@ -1890,13 +2168,16 @@
                                     "meta": {
                                         "alias": null,
                                         "disabled": false,
-                                        "index": "c26ebed6-b942-43ed-9f00-ccf3c5842f5f",
+                                        "index": "1ac19e51-e199-42a7-828e-605917ab1e27",
                                         "key": "data_stream.dataset",
                                         "negate": false,
                                         "params": [
                                             "github.secret_scanning"
                                         ],
-                                        "type": "phrases"
+                                        "type": "phrases",
+                                        "value": [
+                                            "github.secret_scanning"
+                                        ]
                                     },
                                     "query": {
                                         "bool": {
@@ -1918,34 +2199,45 @@
                                     "meta": {
                                         "alias": null,
                                         "disabled": false,
-                                        "index": "54bf50e3-8882-4a5e-a4ad-e4d684c3abaa",
-                                        "key": "github.state",
+                                        "field": "github.secret_scanning.state",
+                                        "index": "2b87a91f-94c3-473c-8355-135532524691",
+                                        "key": "github.secret_scanning.state",
                                         "negate": false,
-                                        "params": [
-                                            "dismissed",
-                                            "resolved"
-                                        ],
-                                        "type": "phrases"
+                                        "params": {
+                                            "query": "resolved"
+                                        },
+                                        "type": "phrase"
                                     },
                                     "query": {
-                                        "bool": {
-                                            "minimum_should_match": 1,
-                                            "should": [
-                                                {
-                                                    "match_phrase": {
-                                                        "github.state": "dismissed"
-                                                    }
-                                                },
-                                                {
-                                                    "match_phrase": {
-                                                        "github.state": "resolved"
-                                                    }
-                                                }
-                                            ]
+                                        "match_phrase": {
+                                            "github.secret_scanning.state": "resolved"
+                                        }
+                                    }
+                                },
+                                {
+                                    "$state": {
+                                        "store": "appState"
+                                    },
+                                    "meta": {
+                                        "alias": null,
+                                        "disabled": false,
+                                        "field": "labels.is_transform_source",
+                                        "index": "4e8c0fa0-90c0-4551-af33-76c6ccbf7efe",
+                                        "key": "labels.is_transform_source",
+                                        "negate": false,
+                                        "params": {
+                                            "query": "false"
+                                        },
+                                        "type": "phrase"
+                                    },
+                                    "query": {
+                                        "match_phrase": {
+                                            "labels.is_transform_source": "false"
                                         }
                                     }
                                 }
                             ],
+                            "internalReferences": [],
                             "query": {
                                 "language": "kuery",
                                 "query": ""
@@ -1961,6 +2253,7 @@
                                     },
                                     {
                                         "columnId": "197c6dc3-cb49-4482-8381-a89e27cc960f",
+                                        "isMetric": false,
                                         "isTransposed": false
                                     },
                                     {
@@ -1987,6 +2280,11 @@
                                     {
                                         "columnId": "432976f9-4218-49dc-9922-f7dc093cbaa1",
                                         "isTransposed": false
+                                    },
+                                    {
+                                        "columnId": "b45a8469-4547-4294-a737-68a51ca76eee",
+                                        "isMetric": false,
+                                        "isTransposed": false
                                     }
                                 ],
                                 "layerId": "725aa594-f41c-4b3e-a6cf-8c115b602f57",
@@ -1994,21 +2292,21 @@
                             }
                         },
                         "title": "Fixed Secrets [GitHub Secret Scanning]",
+                        "type": "lens",
                         "visualizationType": "lnsDatatable"
                     },
-                    "enhancements": {},
-                    "type": "lens"
+                    "enhancements": {}
                 },
                 "gridData": {
                     "h": 15,
                     "i": "7cccdf3a-7c20-4bb6-8adb-3b2d83c7a0b8",
                     "w": 48,
                     "x": 0,
-                    "y": 40
+                    "y": 42
                 },
                 "panelIndex": "7cccdf3a-7c20-4bb6-8adb-3b2d83c7a0b8",
-                "type": "lens",
-                "version": "8.7.0"
+                "title": "Resolved Secret Details [GitHub Secret Scanning]",
+                "type": "lens"
             },
             {
                 "embeddableConfig": {
@@ -2022,22 +2320,29 @@
                             },
                             {
                                 "id": "logs-*",
-                                "name": "ee8e512a-72ec-4ab7-9c01-8bc987dc2b42",
+                                "name": "62fa5cf0-5645-4953-91a7-4049d24dcf0e",
                                 "type": "index-pattern"
                             },
                             {
                                 "id": "logs-*",
-                                "name": "94bf6c5a-a948-40c1-95a7-52d11ef68bad",
+                                "name": "138b89f4-4c57-4f00-8330-6bdb0948c3e2",
+                                "type": "index-pattern"
+                            },
+                            {
+                                "id": "logs-*",
+                                "name": "698830c1-cb7c-4887-b8eb-ef9f26cfabed",
                                 "type": "index-pattern"
                             }
                         ],
                         "state": {
+                            "adHocDataViews": {},
                             "datasourceStates": {
                                 "formBased": {
                                     "layers": {
                                         "725aa594-f41c-4b3e-a6cf-8c115b602f57": {
                                             "columnOrder": [
                                                 "98acffa4-7380-4b18-9f9a-4025ca8ac0c6",
+                                                "fa668b20-3728-46d0-a810-0a6e3727e9dd",
                                                 "197c6dc3-cb49-4482-8381-a89e27cc960f",
                                                 "e81fb515-1196-411c-818d-8f4d837ce000",
                                                 "4b29a17b-d4c4-4d29-a120-296f69b2875e",
@@ -2126,7 +2431,7 @@
                                                     "customLabel": true,
                                                     "dataType": "string",
                                                     "isBucketed": true,
-                                                    "label": "Found Secret",
+                                                    "label": "Secret",
                                                     "operationType": "terms",
                                                     "params": {
                                                         "missingBucket": false,
@@ -2165,6 +2470,27 @@
                                                     },
                                                     "scale": "ordinal",
                                                     "sourceField": "github.repository.name"
+                                                },
+                                                "fa668b20-3728-46d0-a810-0a6e3727e9dd": {
+                                                    "customLabel": true,
+                                                    "dataType": "number",
+                                                    "isBucketed": true,
+                                                    "label": "Secret Alert Number",
+                                                    "operationType": "range",
+                                                    "params": {
+                                                        "includeEmptyRows": true,
+                                                        "maxBars": "auto",
+                                                        "ranges": [
+                                                            {
+                                                                "from": 0,
+                                                                "label": "",
+                                                                "to": 1000
+                                                            }
+                                                        ],
+                                                        "type": "histogram"
+                                                    },
+                                                    "scale": "interval",
+                                                    "sourceField": "github.secret_scanning.number"
                                                 }
                                             },
                                             "incompleteColumns": {}
@@ -2180,13 +2506,16 @@
                                     "meta": {
                                         "alias": null,
                                         "disabled": false,
-                                        "index": "ee8e512a-72ec-4ab7-9c01-8bc987dc2b42",
+                                        "index": "62fa5cf0-5645-4953-91a7-4049d24dcf0e",
                                         "key": "data_stream.dataset",
                                         "negate": false,
                                         "params": [
                                             "github.secret_scanning"
                                         ],
-                                        "type": "phrases"
+                                        "type": "phrases",
+                                        "value": [
+                                            "github.secret_scanning"
+                                        ]
                                     },
                                     "query": {
                                         "bool": {
@@ -2208,28 +2537,45 @@
                                     "meta": {
                                         "alias": null,
                                         "disabled": false,
-                                        "index": "94bf6c5a-a948-40c1-95a7-52d11ef68bad",
-                                        "key": "github.state",
+                                        "field": "github.secret_scanning.state",
+                                        "index": "138b89f4-4c57-4f00-8330-6bdb0948c3e2",
+                                        "key": "github.secret_scanning.state",
                                         "negate": false,
-                                        "params": [
-                                            "open"
-                                        ],
-                                        "type": "phrases"
+                                        "params": {
+                                            "query": "open"
+                                        },
+                                        "type": "phrase"
                                     },
                                     "query": {
-                                        "bool": {
-                                            "minimum_should_match": 1,
-                                            "should": [
-                                                {
-                                                    "match_phrase": {
-                                                        "github.state": "open"
-                                                    }
-                                                }
-                                            ]
+                                        "match_phrase": {
+                                            "github.secret_scanning.state": "open"
+                                        }
+                                    }
+                                },
+                                {
+                                    "$state": {
+                                        "store": "appState"
+                                    },
+                                    "meta": {
+                                        "alias": null,
+                                        "disabled": false,
+                                        "field": "labels.is_transform_source",
+                                        "index": "698830c1-cb7c-4887-b8eb-ef9f26cfabed",
+                                        "key": "labels.is_transform_source",
+                                        "negate": false,
+                                        "params": {
+                                            "query": "false"
+                                        },
+                                        "type": "phrase"
+                                    },
+                                    "query": {
+                                        "match_phrase": {
+                                            "labels.is_transform_source": "false"
                                         }
                                     }
                                 }
                             ],
+                            "internalReferences": [],
                             "query": {
                                 "language": "kuery",
                                 "query": ""
@@ -2245,6 +2591,7 @@
                                     },
                                     {
                                         "columnId": "197c6dc3-cb49-4482-8381-a89e27cc960f",
+                                        "isMetric": false,
                                         "isTransposed": false
                                     },
                                     {
@@ -2263,6 +2610,11 @@
                                         "columnId": "308e4990-dd31-471d-a467-d9c8a775476d",
                                         "hidden": true,
                                         "isTransposed": false
+                                    },
+                                    {
+                                        "columnId": "fa668b20-3728-46d0-a810-0a6e3727e9dd",
+                                        "isMetric": false,
+                                        "isTransposed": false
                                     }
                                 ],
                                 "layerId": "725aa594-f41c-4b3e-a6cf-8c115b602f57",
@@ -2276,22 +2628,193 @@
                             }
                         },
                         "title": "Found Secrets [GitHub Secret Scanning]",
+                        "type": "lens",
                         "visualizationType": "lnsDatatable"
                     },
                     "enhancements": {},
-                    "hidePanelTitles": false,
-                    "type": "lens"
+                    "hidePanelTitles": false
                 },
                 "gridData": {
                     "h": 15,
                     "i": "991aa388-e5d6-469b-911a-1cbcd1b84417",
                     "w": 48,
                     "x": 0,
-                    "y": 55
+                    "y": 57
                 },
                 "panelIndex": "991aa388-e5d6-469b-911a-1cbcd1b84417",
-                "type": "lens",
-                "version": "8.7.0"
+                "title": "Open Secret Details [GitHub Secret Scanning]",
+                "type": "lens"
+            },
+            {
+                "embeddableConfig": {
+                    "attributes": {
+                        "description": "",
+                        "references": [
+                            {
+                                "id": "logs-*",
+                                "name": "indexpattern-datasource-layer-ebd4f001-671a-4772-a2c4-b07f94e34845",
+                                "type": "index-pattern"
+                            },
+                            {
+                                "id": "logs-*",
+                                "name": "14da57f1-2ea1-460e-8a76-54fa2a265d53",
+                                "type": "index-pattern"
+                            },
+                            {
+                                "id": "logs-*",
+                                "name": "59f0a3b7-7686-43fe-8a25-c86a7b4fed69",
+                                "type": "index-pattern"
+                            }
+                        ],
+                        "state": {
+                            "adHocDataViews": {},
+                            "datasourceStates": {
+                                "formBased": {
+                                    "layers": {
+                                        "ebd4f001-671a-4772-a2c4-b07f94e34845": {
+                                            "columnOrder": [
+                                                "fc40a758-e2ae-45db-88c1-439660cb7f66",
+                                                "5caf7916-eab1-42d2-b591-41039ee8ed72"
+                                            ],
+                                            "columns": {
+                                                "5caf7916-eab1-42d2-b591-41039ee8ed72": {
+                                                    "dataType": "number",
+                                                    "isBucketed": false,
+                                                    "label": "Count of records",
+                                                    "operationType": "count",
+                                                    "params": {
+                                                        "emptyAsNull": true
+                                                    },
+                                                    "scale": "ratio",
+                                                    "sourceField": "___records___"
+                                                },
+                                                "fc40a758-e2ae-45db-88c1-439660cb7f66": {
+                                                    "dataType": "date",
+                                                    "isBucketed": true,
+                                                    "label": "@timestamp",
+                                                    "operationType": "date_histogram",
+                                                    "params": {
+                                                        "dropPartials": false,
+                                                        "includeEmptyRows": true,
+                                                        "interval": "auto"
+                                                    },
+                                                    "scale": "interval",
+                                                    "sourceField": "@timestamp"
+                                                }
+                                            },
+                                            "incompleteColumns": {}
+                                        }
+                                    }
+                                }
+                            },
+                            "filters": [
+                                {
+                                    "$state": {
+                                        "store": "appState"
+                                    },
+                                    "meta": {
+                                        "alias": null,
+                                        "disabled": false,
+                                        "index": "14da57f1-2ea1-460e-8a76-54fa2a265d53",
+                                        "key": "data_stream.dataset",
+                                        "negate": false,
+                                        "params": {
+                                            "query": "github.secret_scanning"
+                                        },
+                                        "type": "phrase"
+                                    },
+                                    "query": {
+                                        "match_phrase": {
+                                            "data_stream.dataset": "github.secret_scanning"
+                                        }
+                                    }
+                                },
+                                {
+                                    "$state": {
+                                        "store": "appState"
+                                    },
+                                    "meta": {
+                                        "alias": null,
+                                        "disabled": false,
+                                        "field": "labels.is_transform_source",
+                                        "index": "59f0a3b7-7686-43fe-8a25-c86a7b4fed69",
+                                        "key": "labels.is_transform_source",
+                                        "negate": false,
+                                        "params": {
+                                            "query": "false"
+                                        },
+                                        "type": "phrase"
+                                    },
+                                    "query": {
+                                        "match_phrase": {
+                                            "labels.is_transform_source": "false"
+                                        }
+                                    }
+                                }
+                            ],
+                            "internalReferences": [],
+                            "query": {
+                                "language": "kuery",
+                                "query": ""
+                            },
+                            "visualization": {
+                                "axisTitlesVisibilitySettings": {
+                                    "x": true,
+                                    "yLeft": true,
+                                    "yRight": true
+                                },
+                                "fittingFunction": "None",
+                                "gridlinesVisibilitySettings": {
+                                    "x": true,
+                                    "yLeft": true,
+                                    "yRight": true
+                                },
+                                "labelsOrientation": {
+                                    "x": 0,
+                                    "yLeft": 0,
+                                    "yRight": 0
+                                },
+                                "layers": [
+                                    {
+                                        "accessors": [
+                                            "5caf7916-eab1-42d2-b591-41039ee8ed72"
+                                        ],
+                                        "layerId": "ebd4f001-671a-4772-a2c4-b07f94e34845",
+                                        "layerType": "data",
+                                        "position": "top",
+                                        "seriesType": "line",
+                                        "showGridlines": false,
+                                        "xAccessor": "fc40a758-e2ae-45db-88c1-439660cb7f66"
+                                    }
+                                ],
+                                "legend": {
+                                    "isVisible": true,
+                                    "position": "right"
+                                },
+                                "preferredSeriesType": "line",
+                                "tickLabelsVisibilitySettings": {
+                                    "x": true,
+                                    "yLeft": true,
+                                    "yRight": true
+                                },
+                                "valueLabels": "hide"
+                            }
+                        },
+                        "title": "Events Timeline [GitHub Secret Scanning]",
+                        "type": "lens",
+                        "visualizationType": "lnsXY"
+                    },
+                    "enhancements": {}
+                },
+                "gridData": {
+                    "h": 11,
+                    "i": "36cee00b-70b3-4bb5-a4b3-2448061135f8",
+                    "w": 33,
+                    "x": 0,
+                    "y": 72
+                },
+                "panelIndex": "36cee00b-70b3-4bb5-a4b3-2448061135f8",
+                "type": "lens"
             },
             {
                 "embeddableConfig": {
@@ -2305,11 +2828,17 @@
                             },
                             {
                                 "id": "logs-*",
-                                "name": "8908ff94-5bd3-4a76-b219-1ba7128998c6",
+                                "name": "7be3a271-20b7-4016-a272-f9348f992bc6",
+                                "type": "index-pattern"
+                            },
+                            {
+                                "id": "logs-*",
+                                "name": "608e4caa-5893-4834-b81d-f45535001da2",
                                 "type": "index-pattern"
                             }
                         ],
                         "state": {
+                            "adHocDataViews": {},
                             "datasourceStates": {
                                 "formBased": {
                                     "layers": {
@@ -2368,13 +2897,16 @@
                                     "meta": {
                                         "alias": null,
                                         "disabled": false,
-                                        "index": "8908ff94-5bd3-4a76-b219-1ba7128998c6",
+                                        "index": "7be3a271-20b7-4016-a272-f9348f992bc6",
                                         "key": "data_stream.dataset",
                                         "negate": false,
                                         "params": [
                                             "github.secret_scanning"
                                         ],
-                                        "type": "phrases"
+                                        "type": "phrases",
+                                        "value": [
+                                            "github.secret_scanning"
+                                        ]
                                     },
                                     "query": {
                                         "bool": {
@@ -2388,127 +2920,7 @@
                                             ]
                                         }
                                     }
-                                }
-                            ],
-                            "query": {
-                                "language": "kuery",
-                                "query": ""
-                            },
-                            "visualization": {
-                                "axisTitlesVisibilitySettings": {
-                                    "x": true,
-                                    "yLeft": true,
-                                    "yRight": true
                                 },
-                                "fittingFunction": "None",
-                                "gridlinesVisibilitySettings": {
-                                    "x": true,
-                                    "yLeft": true,
-                                    "yRight": true
-                                },
-                                "labelsOrientation": {
-                                    "x": 0,
-                                    "yLeft": 0,
-                                    "yRight": 0
-                                },
-                                "layers": [
-                                    {
-                                        "accessors": [
-                                            "871b560f-f208-41a2-978b-b97664f99807"
-                                        ],
-                                        "layerId": "2321cd3f-039b-44be-90a5-03028195d49e",
-                                        "layerType": "data",
-                                        "seriesType": "bar_horizontal",
-                                        "xAccessor": "37a962c0-4797-484d-b2e6-00a280b3edc2"
-                                    }
-                                ],
-                                "legend": {
-                                    "isVisible": true,
-                                    "position": "right"
-                                },
-                                "preferredSeriesType": "bar_horizontal",
-                                "tickLabelsVisibilitySettings": {
-                                    "x": true,
-                                    "yLeft": true,
-                                    "yRight": true
-                                },
-                                "valueLabels": "hide"
-                            }
-                        },
-                        "title": "Top users resolving secrets [GitHub Secret Scanning]",
-                        "visualizationType": "lnsXY"
-                    },
-                    "enhancements": {},
-                    "type": "lens"
-                },
-                "gridData": {
-                    "h": 11,
-                    "i": "ff2747ad-ec9c-44a5-b8f9-9347be86c98b",
-                    "w": 15,
-                    "x": 33,
-                    "y": 70
-                },
-                "panelIndex": "ff2747ad-ec9c-44a5-b8f9-9347be86c98b",
-                "type": "lens",
-                "version": "8.7.0"
-            },
-            {
-                "embeddableConfig": {
-                    "attributes": {
-                        "description": "",
-                        "references": [
-                            {
-                                "id": "logs-*",
-                                "name": "indexpattern-datasource-layer-ebd4f001-671a-4772-a2c4-b07f94e34845",
-                                "type": "index-pattern"
-                            },
-                            {
-                                "id": "logs-*",
-                                "name": "6a77e887-9ac6-4cc2-90b9-9013fb2bf30a",
-                                "type": "index-pattern"
-                            }
-                        ],
-                        "state": {
-                            "datasourceStates": {
-                                "formBased": {
-                                    "layers": {
-                                        "ebd4f001-671a-4772-a2c4-b07f94e34845": {
-                                            "columnOrder": [
-                                                "fc40a758-e2ae-45db-88c1-439660cb7f66",
-                                                "5caf7916-eab1-42d2-b591-41039ee8ed72"
-                                            ],
-                                            "columns": {
-                                                "5caf7916-eab1-42d2-b591-41039ee8ed72": {
-                                                    "dataType": "number",
-                                                    "isBucketed": false,
-                                                    "label": "Count of records",
-                                                    "operationType": "count",
-                                                    "params": {
-                                                        "emptyAsNull": true
-                                                    },
-                                                    "scale": "ratio",
-                                                    "sourceField": "___records___"
-                                                },
-                                                "fc40a758-e2ae-45db-88c1-439660cb7f66": {
-                                                    "dataType": "date",
-                                                    "isBucketed": true,
-                                                    "label": "@timestamp",
-                                                    "operationType": "date_histogram",
-                                                    "params": {
-                                                        "dropPartials": false,
-                                                        "includeEmptyRows": true,
-                                                        "interval": "auto"
-                                                    },
-                                                    "scale": "interval",
-                                                    "sourceField": "@timestamp"
-                                                }
-                                            },
-                                            "incompleteColumns": {}
-                                        }
-                                    }
-                                }
-                            },
-                            "filters": [
                                 {
                                     "$state": {
                                         "store": "appState"
@@ -2516,135 +2928,94 @@
                                     "meta": {
                                         "alias": null,
                                         "disabled": false,
-                                        "index": "6a77e887-9ac6-4cc2-90b9-9013fb2bf30a",
-                                        "key": "data_stream.dataset",
+                                        "field": "labels.is_transform_source",
+                                        "index": "608e4caa-5893-4834-b81d-f45535001da2",
+                                        "key": "labels.is_transform_source",
                                         "negate": false,
                                         "params": {
-                                            "query": "github.secret_scanning"
+                                            "query": "false"
                                         },
                                         "type": "phrase"
                                     },
                                     "query": {
                                         "match_phrase": {
-                                            "data_stream.dataset": "github.secret_scanning"
+                                            "labels.is_transform_source": "false"
                                         }
                                     }
                                 }
                             ],
+                            "internalReferences": [],
                             "query": {
                                 "language": "kuery",
                                 "query": ""
                             },
                             "visualization": {
-                                "axisTitlesVisibilitySettings": {
-                                    "x": true,
-                                    "yLeft": true,
-                                    "yRight": true
-                                },
-                                "fittingFunction": "None",
-                                "gridlinesVisibilitySettings": {
-                                    "x": true,
-                                    "yLeft": true,
-                                    "yRight": true
-                                },
-                                "labelsOrientation": {
-                                    "x": 0,
-                                    "yLeft": 0,
-                                    "yRight": 0
-                                },
                                 "layers": [
                                     {
-                                        "accessors": [
-                                            "5caf7916-eab1-42d2-b591-41039ee8ed72"
-                                        ],
-                                        "layerId": "ebd4f001-671a-4772-a2c4-b07f94e34845",
+                                        "categoryDisplay": "default",
+                                        "colorMapping": {
+                                            "assignments": [],
+                                            "colorMode": {
+                                                "type": "categorical"
+                                            },
+                                            "paletteId": "eui_amsterdam_color_blind",
+                                            "specialAssignments": [
+                                                {
+                                                    "color": {
+                                                        "type": "loop"
+                                                    },
+                                                    "rule": {
+                                                        "type": "other"
+                                                    },
+                                                    "touched": false
+                                                }
+                                            ]
+                                        },
+                                        "layerId": "2321cd3f-039b-44be-90a5-03028195d49e",
                                         "layerType": "data",
-                                        "position": "top",
-                                        "seriesType": "line",
-                                        "showGridlines": false,
-                                        "xAccessor": "fc40a758-e2ae-45db-88c1-439660cb7f66"
+                                        "legendDisplay": "default",
+                                        "metrics": [
+                                            "871b560f-f208-41a2-978b-b97664f99807"
+                                        ],
+                                        "nestedLegend": false,
+                                        "numberDisplay": "percent",
+                                        "primaryGroups": [
+                                            "37a962c0-4797-484d-b2e6-00a280b3edc2"
+                                        ]
                                     }
                                 ],
-                                "legend": {
-                                    "isVisible": true,
-                                    "position": "right"
-                                },
-                                "preferredSeriesType": "line",
-                                "tickLabelsVisibilitySettings": {
-                                    "x": true,
-                                    "yLeft": true,
-                                    "yRight": true
-                                },
-                                "valueLabels": "hide"
+                                "shape": "pie"
                             }
                         },
-                        "title": "Events Timeline [GitHub Secret Scanning]",
-                        "visualizationType": "lnsXY"
+                        "title": "Top users resolving secrets [GitHub Secret Scanning]",
+                        "type": "lens",
+                        "visualizationType": "lnsPie"
                     },
-                    "enhancements": {},
-                    "type": "lens"
+                    "enhancements": {}
                 },
                 "gridData": {
                     "h": 11,
-                    "i": "36cee00b-70b3-4bb5-a4b3-2448061135f8",
-                    "w": 33,
-                    "x": 0,
-                    "y": 70
+                    "i": "ff2747ad-ec9c-44a5-b8f9-9347be86c98b",
+                    "w": 15,
+                    "x": 33,
+                    "y": 72
                 },
-                "panelIndex": "36cee00b-70b3-4bb5-a4b3-2448061135f8",
-                "type": "lens",
-                "version": "8.7.0"
+                "panelIndex": "ff2747ad-ec9c-44a5-b8f9-9347be86c98b",
+                "type": "lens"
             }
         ],
         "timeRestore": false,
         "title": "[GitHub] Secret Scanning Alerts",
         "version": 1
     },
-    "coreMigrationVersion": "8.7.1",
-    "created_at": "2023-07-10T01:33:52.035Z",
+    "coreMigrationVersion": "8.8.0",
+    "created_at": "2024-10-28T13:02:29.889Z",
     "id": "github-591d69e0-17b6-11ed-809a-7b4be950fe9c",
-    "migrationVersion": {
-        "dashboard": "8.7.0"
-    },
+    "managed": false,
     "references": [
         {
             "id": "logs-*",
             "name": "kibanaSavedObjectMeta.searchSourceJSON.filter[0].meta.index",
-            "type": "index-pattern"
-        },
-        {
-            "id": "logs-*",
-            "name": "991aa388-e5d6-469b-911a-1cbcd1b84417:indexpattern-datasource-layer-725aa594-f41c-4b3e-a6cf-8c115b602f57",
-            "type": "index-pattern"
-        },
-        {
-            "id": "logs-*",
-            "name": "991aa388-e5d6-469b-911a-1cbcd1b84417:99882a8f-757f-4692-b7dd-56e561a7a5ac",
-            "type": "index-pattern"
-        },
-        {
-            "id": "logs-*",
-            "name": "991aa388-e5d6-469b-911a-1cbcd1b84417:fac9d156-24f2-409d-9f1b-200dbd5a9b5a",
-            "type": "index-pattern"
-        },
-        {
-            "id": "logs-*",
-            "name": "controlGroup_66d2324e-be32-41be-b685-54ba2cc58c2b:optionsListDataView",
-            "type": "index-pattern"
-        },
-        {
-            "id": "logs-*",
-            "name": "controlGroup_54e33c68-ad08-412f-852a-f669391018b0:optionsListDataView",
-            "type": "index-pattern"
-        },
-        {
-            "id": "logs-*",
-            "name": "controlGroup_9fd25971-d168-4a50-985f-9e1bb266c93e:optionsListDataView",
-            "type": "index-pattern"
-        },
-        {
-            "id": "logs-*",
-            "name": "controlGroup_bcb03b9e-5278-4d66-a4da-762d41ec13cd:optionsListDataView",
             "type": "index-pattern"
         },
         {
@@ -2654,7 +3025,12 @@
         },
         {
             "id": "logs-*",
-            "name": "77e597be-8cdc-4fa3-9dee-4e4ed1103e55:a27a9357-b353-46a3-9116-530f354b09b9",
+            "name": "77e597be-8cdc-4fa3-9dee-4e4ed1103e55:74a98555-38d3-4ce6-8771-b4e706f99285",
+            "type": "index-pattern"
+        },
+        {
+            "id": "logs-*",
+            "name": "77e597be-8cdc-4fa3-9dee-4e4ed1103e55:b87bf6d3-a1cf-49ca-91fc-1f89a43ce946",
             "type": "index-pattern"
         },
         {
@@ -2664,17 +3040,17 @@
         },
         {
             "id": "logs-*",
-            "name": "277a4af7-61c6-40d9-80a6-2d73df097618:ef2a4614-151f-42d0-8707-257d009298ea",
-            "type": "index-pattern"
-        },
-        {
-            "id": "logs-*",
             "name": "51a087d0-9c56-4047-9404-b4b7b37497b0:indexpattern-datasource-layer-cbc5557e-f6b9-4140-90b2-3100f33083c4",
             "type": "index-pattern"
         },
         {
             "id": "logs-*",
-            "name": "51a087d0-9c56-4047-9404-b4b7b37497b0:d7c9ae82-adc1-4169-a1ac-2fea90204f25",
+            "name": "51a087d0-9c56-4047-9404-b4b7b37497b0:b4c59839-c76c-4634-ad1f-04870a39a7b1",
+            "type": "index-pattern"
+        },
+        {
+            "id": "logs-*",
+            "name": "51a087d0-9c56-4047-9404-b4b7b37497b0:b72103a9-fcc2-4435-808c-4f1ced14163e",
             "type": "index-pattern"
         },
         {
@@ -2684,27 +3060,22 @@
         },
         {
             "id": "logs-*",
-            "name": "3c9e482b-4cd2-43e2-a1aa-5a6d66050c16:b2d41cbe-238c-4c90-994d-d8e8f1668a44",
-            "type": "index-pattern"
-        },
-        {
-            "id": "logs-*",
-            "name": "3c9e482b-4cd2-43e2-a1aa-5a6d66050c16:d4cc48c0-fb83-4b1d-9c91-369a087165c4",
-            "type": "index-pattern"
-        },
-        {
-            "id": "logs-*",
             "name": "e6cb0087-c5ba-49f2-8ae9-b206d2346609:indexpattern-datasource-layer-df5f2c10-bc9b-4a7e-be41-d13240c21d95",
             "type": "index-pattern"
         },
         {
             "id": "logs-*",
-            "name": "e6cb0087-c5ba-49f2-8ae9-b206d2346609:9c0d6963-bc22-4d2d-9028-20e603d307e7",
+            "name": "e6cb0087-c5ba-49f2-8ae9-b206d2346609:82707691-0a6e-4141-a447-a4949afde05e",
             "type": "index-pattern"
         },
         {
             "id": "logs-*",
-            "name": "e6cb0087-c5ba-49f2-8ae9-b206d2346609:dac33af7-8640-4326-8c95-afddf6194657",
+            "name": "e6cb0087-c5ba-49f2-8ae9-b206d2346609:ebb37af2-6f6a-4163-8bc0-730dc706980e",
+            "type": "index-pattern"
+        },
+        {
+            "id": "logs-*",
+            "name": "e6cb0087-c5ba-49f2-8ae9-b206d2346609:efb8e7ed-a6ee-4430-aad5-fcc6dcbc4ab1",
             "type": "index-pattern"
         },
         {
@@ -2714,22 +3085,17 @@
         },
         {
             "id": "logs-*",
-            "name": "892ed6dd-afe7-4685-bebb-5f1a70b44692:e9f91f71-3727-4bf1-9d0a-2742347e223f",
-            "type": "index-pattern"
-        },
-        {
-            "id": "logs-*",
-            "name": "892ed6dd-afe7-4685-bebb-5f1a70b44692:f34d1f77-a34c-4ac9-ab7a-6892d9505a80",
-            "type": "index-pattern"
-        },
-        {
-            "id": "logs-*",
             "name": "429f2ded-1aca-42cd-9190-9afddb03eabf:indexpattern-datasource-layer-2592c6ef-cf07-4080-b4fe-014cc142e3c8",
             "type": "index-pattern"
         },
         {
             "id": "logs-*",
-            "name": "429f2ded-1aca-42cd-9190-9afddb03eabf:89debdad-d323-4640-918b-2c38d061e212",
+            "name": "429f2ded-1aca-42cd-9190-9afddb03eabf:6478570c-21b8-419e-88ec-f5430727e67d",
+            "type": "index-pattern"
+        },
+        {
+            "id": "logs-*",
+            "name": "429f2ded-1aca-42cd-9190-9afddb03eabf:c4f14f66-1d6b-4b28-9310-c4f6bd1aae69",
             "type": "index-pattern"
         },
         {
@@ -2739,7 +3105,12 @@
         },
         {
             "id": "logs-*",
-            "name": "a7adc099-113f-4113-b592-24b5ceff484e:11287d36-4d96-447c-b336-56ae03fcbc16",
+            "name": "a7adc099-113f-4113-b592-24b5ceff484e:aa689156-ebeb-462b-b8f7-ae6fa597a250",
+            "type": "index-pattern"
+        },
+        {
+            "id": "logs-*",
+            "name": "a7adc099-113f-4113-b592-24b5ceff484e:eef2d1bb-8cb1-4d86-b987-9580ec987f27",
             "type": "index-pattern"
         },
         {
@@ -2749,12 +3120,17 @@
         },
         {
             "id": "logs-*",
-            "name": "883397dd-0064-48f2-b257-c8ed4295b0b9:25c2db0c-d286-407e-9c0b-55252a2ad165",
+            "name": "883397dd-0064-48f2-b257-c8ed4295b0b9:567fc10c-ce82-4b9c-a6d5-0981e9e41087",
             "type": "index-pattern"
         },
         {
             "id": "logs-*",
-            "name": "883397dd-0064-48f2-b257-c8ed4295b0b9:82cbb0d6-87ad-47e3-bed4-84e8d7f812d1",
+            "name": "883397dd-0064-48f2-b257-c8ed4295b0b9:c5adbfcc-88bf-45df-b656-04896b48ed9a",
+            "type": "index-pattern"
+        },
+        {
+            "id": "logs-*",
+            "name": "883397dd-0064-48f2-b257-c8ed4295b0b9:bfd462b5-9f2d-43a6-8452-eb1aef1b9765",
             "type": "index-pattern"
         },
         {
@@ -2764,12 +3140,17 @@
         },
         {
             "id": "logs-*",
-            "name": "d0ec4a50-b9da-4775-9f64-5389f898aee3:acfd1c9a-be16-4275-ae7d-0ad42b060de0",
+            "name": "d0ec4a50-b9da-4775-9f64-5389f898aee3:6f786b20-f828-4ef4-b888-97f280ac8dc6",
             "type": "index-pattern"
         },
         {
             "id": "logs-*",
-            "name": "d0ec4a50-b9da-4775-9f64-5389f898aee3:42fcf4b5-0905-4d97-baa9-c08a61bc3b7a",
+            "name": "d0ec4a50-b9da-4775-9f64-5389f898aee3:eb9a956f-1e94-48c2-9170-352ae07d0241",
+            "type": "index-pattern"
+        },
+        {
+            "id": "logs-*",
+            "name": "d0ec4a50-b9da-4775-9f64-5389f898aee3:5947d171-d241-4770-8342-4b28919970ca",
             "type": "index-pattern"
         },
         {
@@ -2779,12 +3160,17 @@
         },
         {
             "id": "logs-*",
-            "name": "7cccdf3a-7c20-4bb6-8adb-3b2d83c7a0b8:c26ebed6-b942-43ed-9f00-ccf3c5842f5f",
+            "name": "7cccdf3a-7c20-4bb6-8adb-3b2d83c7a0b8:1ac19e51-e199-42a7-828e-605917ab1e27",
             "type": "index-pattern"
         },
         {
             "id": "logs-*",
-            "name": "7cccdf3a-7c20-4bb6-8adb-3b2d83c7a0b8:54bf50e3-8882-4a5e-a4ad-e4d684c3abaa",
+            "name": "7cccdf3a-7c20-4bb6-8adb-3b2d83c7a0b8:2b87a91f-94c3-473c-8355-135532524691",
+            "type": "index-pattern"
+        },
+        {
+            "id": "logs-*",
+            "name": "7cccdf3a-7c20-4bb6-8adb-3b2d83c7a0b8:4e8c0fa0-90c0-4551-af33-76c6ccbf7efe",
             "type": "index-pattern"
         },
         {
@@ -2794,22 +3180,17 @@
         },
         {
             "id": "logs-*",
-            "name": "991aa388-e5d6-469b-911a-1cbcd1b84417:ee8e512a-72ec-4ab7-9c01-8bc987dc2b42",
+            "name": "991aa388-e5d6-469b-911a-1cbcd1b84417:62fa5cf0-5645-4953-91a7-4049d24dcf0e",
             "type": "index-pattern"
         },
         {
             "id": "logs-*",
-            "name": "991aa388-e5d6-469b-911a-1cbcd1b84417:94bf6c5a-a948-40c1-95a7-52d11ef68bad",
+            "name": "991aa388-e5d6-469b-911a-1cbcd1b84417:138b89f4-4c57-4f00-8330-6bdb0948c3e2",
             "type": "index-pattern"
         },
         {
             "id": "logs-*",
-            "name": "ff2747ad-ec9c-44a5-b8f9-9347be86c98b:indexpattern-datasource-layer-2321cd3f-039b-44be-90a5-03028195d49e",
-            "type": "index-pattern"
-        },
-        {
-            "id": "logs-*",
-            "name": "ff2747ad-ec9c-44a5-b8f9-9347be86c98b:8908ff94-5bd3-4a76-b219-1ba7128998c6",
+            "name": "991aa388-e5d6-469b-911a-1cbcd1b84417:698830c1-cb7c-4887-b8eb-ef9f26cfabed",
             "type": "index-pattern"
         },
         {
@@ -2819,9 +3200,55 @@
         },
         {
             "id": "logs-*",
-            "name": "36cee00b-70b3-4bb5-a4b3-2448061135f8:6a77e887-9ac6-4cc2-90b9-9013fb2bf30a",
+            "name": "36cee00b-70b3-4bb5-a4b3-2448061135f8:14da57f1-2ea1-460e-8a76-54fa2a265d53",
             "type": "index-pattern"
+        },
+        {
+            "id": "logs-*",
+            "name": "36cee00b-70b3-4bb5-a4b3-2448061135f8:59f0a3b7-7686-43fe-8a25-c86a7b4fed69",
+            "type": "index-pattern"
+        },
+        {
+            "id": "logs-*",
+            "name": "ff2747ad-ec9c-44a5-b8f9-9347be86c98b:indexpattern-datasource-layer-2321cd3f-039b-44be-90a5-03028195d49e",
+            "type": "index-pattern"
+        },
+        {
+            "id": "logs-*",
+            "name": "ff2747ad-ec9c-44a5-b8f9-9347be86c98b:7be3a271-20b7-4016-a272-f9348f992bc6",
+            "type": "index-pattern"
+        },
+        {
+            "id": "logs-*",
+            "name": "ff2747ad-ec9c-44a5-b8f9-9347be86c98b:608e4caa-5893-4834-b81d-f45535001da2",
+            "type": "index-pattern"
+        },
+        {
+            "id": "logs-*",
+            "name": "controlGroup_54e33c68-ad08-412f-852a-f669391018b0:optionsListDataView",
+            "type": "index-pattern"
+        },
+        {
+            "id": "logs-*",
+            "name": "controlGroup_66d2324e-be32-41be-b685-54ba2cc58c2b:optionsListDataView",
+            "type": "index-pattern"
+        },
+        {
+            "id": "logs-*",
+            "name": "controlGroup_9fd25971-d168-4a50-985f-9e1bb266c93e:optionsListDataView",
+            "type": "index-pattern"
+        },
+        {
+            "id": "github-security-solution-default",
+            "name": "tag-ref-github-security-solution-default",
+            "type": "tag"
+        },
+        {
+            "id": "github-security-solution-default",
+            "name": "tag-ref-security-solution-default",
+            "type": "tag"
         }
     ],
-    "type": "dashboard"
+    "type": "dashboard",
+    "typeMigrationVersion": "8.9.0"
 }
