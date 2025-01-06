@@ -1,0 +1,240 @@
+---
+description: Pipeline for processing Microsoft 365 groups activity by group report data.
+processors:
+  - rename:
+      field: json
+      target_field: o365.reports.office365.groups_activity.group
+      ignore_missing: true
+  - fingerprint:
+      fields:
+        - o365.reports.office365.groups_activity.group.Report_Refresh_Date
+        - o365.reports.office365.groups_activity.group.Group_Id
+        - o365.reports.office365.groups_activity.group.Group_Display_Name
+        - o365.reports.office365.groups_activity.group.Last_Activity_Date
+      target_field: _id
+  - set:
+      field: user.name
+      tag: set_user_name
+      copy_from: o365.reports.office365.groups_activity.group.Owner_Principal_Name
+      if: ctx.o365?.reports?.office365?.groups_activity?.group?.Owner_Principal_Name != null
+      ignore_empty_value: true
+  - append:
+      field: related.user
+      tag: append_related_user_user_name
+      value: "{{{user.name}}}"
+      allow_duplicates: false
+      if: ctx.user?.name != null
+  - set:
+      field: group.id
+      tag: set_group_name
+      copy_from: o365.reports.office365.groups_activity.group.Group_Id
+      if: ctx.o365?.reports?.office365?.groups_activity?.group?.Group_Id != null
+      ignore_empty_value: true
+  - set:
+      field: user.group.id
+      tag: set_user_group_id
+      copy_from: group.id
+      ignore_empty_value: true
+  - set:
+      field: group.name
+      tag: set_group_name
+      copy_from: o365.reports.office365.groups_activity.group.Group_Display_Name
+      if: ctx.o365?.reports?.office365?.groups_activity?.group?.Group_Display_Name != null
+      ignore_empty_value: true
+  - set:
+      field: user.group.name
+      tag: set_user_group_name
+      copy_from: group.name
+      ignore_empty_value: true
+  - date:
+      field: o365.reports.office365.groups_activity.group.Report_Refresh_Date
+      target_field: o365.reports.office365.groups_activity.group.Report_Refresh_Date
+      tag: date_o365_reports_office365_groups_activity_group_Report_Refresh_Date
+      if: ctx.o365?.reports?.office365?.groups_activity?.group?.Report_Refresh_Date != null && ctx.o365.reports.office365.groups_activity.group.Report_Refresh_Date != ''
+      timezone: UTC
+      formats:
+        - yyyy-MM-dd
+      on_failure:
+        - remove:
+            field: o365.reports.office365.groups_activity.group.Report_Refresh_Date
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - set:
+      field: '@timestamp'
+      tag: set_timestamp_from_Report_Refresh_Date
+      copy_from: o365.reports.office365.groups_activity.group.Report_Refresh_Date
+      ignore_empty_value: true
+  - date:
+      field: o365.reports.office365.groups_activity.group.Last_Activity_Date
+      target_field: o365.reports.office365.groups_activity.group.Last_Activity_Date
+      tag: date_o365_reports_office365_groups_activity_group_Last_Activity_Date
+      if: ctx.o365?.reports?.office365?.groups_activity?.group?.Last_Activity_Date != null && ctx.o365.reports.office365.groups_activity.group.Last_Activity_Date != ''
+      timezone: UTC
+      formats:
+        - yyyy-MM-dd
+      on_failure:
+        - remove:
+            field: o365.reports.office365.groups_activity.group.Last_Activity_Date
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - lowercase:
+      field: o365.reports.office365.groups_activity.group.Is_Deleted
+      tag: lowercase_o365_reports_office365_groups_activity_group_Is_Deleted
+      if: ctx.o365?.reports?.office365?.groups_activity?.group?.Is_Deleted != null && ctx.o365.reports.office365.groups_activity.group.Is_Deleted != ''
+  - convert:
+      field: o365.reports.office365.groups_activity.group.Is_Deleted
+      tag: convert_o365_reports_office365_groups_activity_group_Is_Deleted
+      target_field: o365.reports.office365.groups_activity.group.Is_Deleted
+      type: boolean
+      if: ctx.o365?.reports?.office365?.groups_activity?.group?.Is_Deleted != null && ctx.o365.reports.office365.groups_activity.group.Is_Deleted != ''
+      on_failure:
+        - remove:
+            field: o365.reports.office365.groups_activity.group.Is_Deleted
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+
+  # Convert _Count fields to long
+  - convert:
+      field: o365.reports.office365.groups_activity.group.Member_Count
+      tag: convert_o365_reports_office365_groups_activity_group_Member_Count
+      target_field: o365.reports.office365.groups_activity.group.Member_Count
+      type: long
+      if: ctx.o365?.reports?.office365?.groups_activity?.group?.Member_Count != null && ctx.o365.reports.office365.groups_activity.group.Member_Count != ''
+      on_failure:
+        - remove:
+            field: o365.reports.office365.groups_activity.group.Member_Count
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - convert:
+      field: o365.reports.office365.groups_activity.group.External_Member_Count
+      tag: convert_o365_reports_office365_groups_activity_group_External_Member_Count
+      target_field: o365.reports.office365.groups_activity.group.External_Member_Count
+      type: long
+      if: ctx.o365?.reports?.office365?.groups_activity?.group?.External_Member_Count != null && ctx.o365.reports.office365.groups_activity.group.External_Member_Count != ''
+      on_failure:
+        - remove:
+            field: o365.reports.office365.groups_activity.group.External_Member_Count
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - convert:
+      field: o365.reports.office365.groups_activity.group.Exchange_Received_Email_Count
+      tag: convert_o365_reports_office365_groups_activity_group_Exchange_Received_Email_Count
+      target_field: o365.reports.office365.groups_activity.group.Exchange_Received_Email_Count
+      type: long
+      if: ctx.o365?.reports?.office365?.groups_activity?.group?.Exchange_Received_Email_Count != null && ctx.o365.reports.office365.groups_activity.group.Exchange_Received_Email_Count != ''
+      on_failure:
+        - remove:
+            field: o365.reports.office365.groups_activity.group.Exchange_Received_Email_Count
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - convert:
+      field: o365.reports.office365.groups_activity.group.SharePoint_Active_File_Count
+      tag: convert_o365_reports_office365_groups_activity_group_SharePoint_Active_File_Count
+      target_field: o365.reports.office365.groups_activity.group.SharePoint_Active_File_Count
+      type: long
+      if: ctx.o365?.reports?.office365?.groups_activity?.group?.SharePoint_Active_File_Count != null && ctx.o365.reports.office365.groups_activity.group.SharePoint_Active_File_Count != ''
+      on_failure:
+        - remove:
+            field: o365.reports.office365.groups_activity.group.SharePoint_Active_File_Count
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - convert:
+      field: o365.reports.office365.groups_activity.group.Yammer_Liked_Message_Count
+      tag: convert_o365_reports_office365_groups_activity_group_Yammer_Liked_Message_Count
+      target_field: o365.reports.office365.groups_activity.group.Yammer_Liked_Message_Count
+      type: long
+      if: ctx.o365?.reports?.office365?.groups_activity?.group?.Yammer_Liked_Message_Count != null && ctx.o365.reports.office365.groups_activity.group.Yammer_Liked_Message_Count != ''
+      on_failure:
+        - remove:
+            field: o365.reports.office365.groups_activity.group.Yammer_Liked_Message_Count
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - convert:
+      field: o365.reports.office365.groups_activity.group.Yammer_Posted_Message_Count
+      tag: convert_o365_reports_office365_groups_activity_group_Yammer_Posted_Message_Count
+      target_field: o365.reports.office365.groups_activity.group.Yammer_Posted_Message_Count
+      type: long
+      if: ctx.o365?.reports?.office365?.groups_activity?.group?.Yammer_Posted_Message_Count != null && ctx.o365.reports.office365.groups_activity.group.Yammer_Posted_Message_Count != ''
+      on_failure:
+        - remove:
+            field: o365.reports.office365.groups_activity.group.Yammer_Posted_Message_Count
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - convert:
+      field: o365.reports.office365.groups_activity.group.Yammer_Read_Message_Count
+      tag: convert_o365_reports_office365_groups_activity_group_Yammer_Read_Message_Count
+      target_field: o365.reports.office365.groups_activity.group.Yammer_Read_Message_Count
+      type: long
+      if: ctx.o365?.reports?.office365?.groups_activity?.group?.Yammer_Read_Message_Count != null && ctx.o365.reports.office365.groups_activity.group.Yammer_Read_Message_Count != ''
+      on_failure:
+        - remove:
+            field: o365.reports.office365.groups_activity.group.Yammer_Read_Message_Count
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - convert:
+      field: o365.reports.office365.groups_activity.group.Exchange_Mailbox_Total_Item_Count
+      tag: convert_o365_reports_office365_groups_activity_group_Exchange_Mailbox_Total_Item_Count
+      target_field: o365.reports.office365.groups_activity.group.Exchange_Mailbox_Total_Item_Count
+      type: long
+      if: ctx.o365?.reports?.office365?.groups_activity?.group?.Exchange_Mailbox_Total_Item_Count != null && ctx.o365.reports.office365.groups_activity.group.Exchange_Mailbox_Total_Item_Count != ''
+      on_failure:
+        - remove:
+            field: o365.reports.office365.groups_activity.group.Exchange_Mailbox_Total_Item_Count
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - convert:
+      field: o365.reports.office365.groups_activity.group.SharePoint_Total_File_Count
+      tag: convert_o365_reports_office365_groups_activity_group_SharePoint_Total_File_Count
+      target_field: o365.reports.office365.groups_activity.group.SharePoint_Total_File_Count
+      type: long
+      if: ctx.o365?.reports?.office365?.groups_activity?.group?.SharePoint_Total_File_Count != null && ctx.o365.reports.office365.groups_activity.group.SharePoint_Total_File_Count != ''
+      on_failure:
+        - remove:
+            field: o365.reports.office365.groups_activity.group.SharePoint_Total_File_Count
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+
+  # Convert Byte fields to long
+  - convert:
+      field: o365.reports.office365.groups_activity.group.Exchange_Mailbox_Storage_Used_Byte
+      tag: convert_o365_reports_office365_groups_activity_group_Exchange_Mailbox_Storage_Used_Byte
+      target_field: o365.reports.office365.groups_activity.group.Exchange_Mailbox_Storage_Used_Byte
+      type: long
+      if: ctx.o365?.reports?.office365?.groups_activity?.group?.Exchange_Mailbox_Storage_Used_Byte != null && ctx.o365.reports.office365.groups_activity.group.Exchange_Mailbox_Storage_Used_Byte != ''
+      on_failure:
+        - remove:
+            field: o365.reports.office365.groups_activity.group.Exchange_Mailbox_Storage_Used_Byte
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - convert:
+      field: o365.reports.office365.groups_activity.group.SharePoint_Site_Storage_Used_Byte
+      tag: convert_o365_reports_office365_groups_activity_group_SharePoint_Site_Storage_Used_Byte
+      target_field: o365.reports.office365.groups_activity.group.SharePoint_Site_Storage_Used_Byte
+      type: long
+      if: ctx.o365?.reports?.office365?.groups_activity?.group?.SharePoint_Site_Storage_Used_Byte != null && ctx.o365.reports.office365.groups_activity.group.SharePoint_Site_Storage_Used_Byte != ''
+      on_failure:
+        - remove:
+            field: o365.reports.office365.groups_activity.group.SharePoint_Site_Storage_Used_Byte
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - remove:
+      tag: remove_duplicate_custom_fields
+      if: ctx.tags == null || !ctx.tags.contains('preserve_duplicate_custom_fields')
+      field:
+        - o365.reports.office365.groups_activity.group.Group_Display_Name
+        - o365.reports.office365.groups_activity.group.Group_Id
+      ignore_missing: true

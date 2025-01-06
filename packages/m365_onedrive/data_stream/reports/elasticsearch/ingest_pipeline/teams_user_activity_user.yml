@@ -1,0 +1,362 @@
+---
+description: Pipeline for processing Microsoft Teams user activity by user report data.
+processors:
+  - rename:
+      field: json
+      target_field: o365.reports.teams.user_activity.user
+      ignore_missing: true
+  - fingerprint:
+      fields:
+        - o365.reports.teams.user_activity.user.Report_Refresh_Date
+        - o365.reports.teams.user_activity.user.User_Id
+        - o365.reports.teams.user_activity.user.User_Principal_Name
+        - o365.reports.teams.user_activity.user.Last_Activity_Date
+      target_field: _id
+  - set:
+      field: user.id
+      tag: set_user_id
+      copy_from: o365.reports.teams.user_activity.user.User_Id
+      ignore_empty_value: true
+  - set:
+      field: user.name
+      tag: set_user_name
+      copy_from: o365.reports.teams.user_activity.user.User_Principal_Name
+      if: ctx.o365?.reports?.teams?.user_activity?.user?.User_Principal_Name != null
+      ignore_empty_value: true
+  - set:
+      field: user.email
+      tag: set_user_email
+      copy_from: user.name
+      if: ctx.user?.name != null && ctx.user.name.contains('@')
+      ignore_empty_value: true
+  - append:
+      field: related.user
+      tag: append_related_user_user_id
+      value: "{{{user.id}}}"
+      allow_duplicates: false
+      if: ctx.user?.id != null
+  - append:
+      field: related.user
+      tag: append_related_user_user_name
+      value: "{{{user.name}}}"
+      allow_duplicates: false
+      if: ctx.user?.name != null
+  - append:
+      field: related.user
+      tag: append_related_user_user_email
+      value: "{{{user.email}}}"
+      allow_duplicates: false
+      if: ctx.user?.email != null
+  - date:
+      field: o365.reports.teams.user_activity.user.Report_Refresh_Date
+      target_field: o365.reports.teams.user_activity.user.Report_Refresh_Date
+      tag: date_o365_reports_teams_user_activity_user_Report_Refresh_Date
+      if: ctx.o365?.reports?.teams?.user_activity?.user?.Report_Refresh_Date != null && ctx.o365.reports.teams.user_activity.user.Report_Refresh_Date != ''
+      timezone: UTC
+      formats:
+        - yyyy-MM-dd
+      on_failure:
+        - remove:
+            field: o365.reports.teams.user_activity.user.Report_Refresh_Date
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - set:
+      field: '@timestamp'
+      tag: set_timestamp_from_Report_Refresh_Date
+      copy_from: o365.reports.teams.user_activity.user.Report_Refresh_Date
+      ignore_empty_value: true
+  - date:
+      field: o365.reports.teams.user_activity.user.Last_Activity_Date
+      target_field: o365.reports.teams.user_activity.user.Last_Activity_Date
+      tag: date_o365_reports_teams_user_activity_user_Last_Activity_Date
+      if: ctx.o365?.reports?.teams?.user_activity?.user?.Last_Activity_Date != null && ctx.o365.reports.teams.user_activity.user.Last_Activity_Date != ''
+      timezone: UTC
+      formats:
+        - yyyy-MM-dd
+      on_failure:
+        - remove:
+            field: o365.reports.teams.user_activity.user.Last_Activity_Date
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - lowercase:
+      field: o365.reports.teams.user_activity.user.Is_Deleted
+      tag: lowercase_o365_reports_teams_user_activity_user_Is_Deleted
+      if: ctx.o365?.reports?.teams?.user_activity?.user?.Is_Deleted != null && ctx.o365.reports.teams.user_activity.user.Is_Deleted != ''
+  - convert:
+      field: o365.reports.teams.user_activity.user.Is_Deleted
+      tag: convert_o365_reports_teams_user_activity_user_Is_Deleted
+      target_field: o365.reports.teams.user_activity.user.Is_Deleted
+      type: boolean
+      if: ctx.o365?.reports?.teams?.user_activity?.user?.Is_Deleted != null && ctx.o365.reports.teams.user_activity.user.Is_Deleted != ''
+      on_failure:
+        - remove:
+            field: o365.reports.teams.user_activity.user.Is_Deleted
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - date:
+      field: o365.reports.teams.user_activity.user.Deleted_Date
+      target_field: o365.reports.teams.user_activity.user.Deleted_Date
+      tag: date_o365_reports_teams_user_activity_user_Deleted_Date
+      if: ctx.o365?.reports?.teams?.user_activity?.user?.Deleted_Date != null && ctx.o365.reports.teams.user_activity.user.Deleted_Date != ''
+      timezone: UTC
+      formats:
+        - yyyy-MM-dd
+      on_failure:
+        - remove:
+            field: o365.reports.teams.user_activity.user.Deleted_Date
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  # Convert _Count fields to long
+  - convert:
+      field: o365.reports.teams.user_activity.user.Team_Chat_Message_Count
+      tag: convert_o365_reports_teams_user_activity_user_Team_Chat_Message_Count
+      target_field: o365.reports.teams.user_activity.user.Team_Chat_Message_Count
+      type: long
+      if: ctx.o365?.reports?.teams?.user_activity?.user?.Team_Chat_Message_Count != null && ctx.o365.reports.teams.user_activity.user.Team_Chat_Message_Count != ''
+      on_failure:
+        - remove:
+            field: o365.reports.teams.user_activity.user.Team_Chat_Message_Count
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - convert:
+      field: o365.reports.teams.user_activity.user.Private_Chat_Message_Count
+      tag: convert_o365_reports_teams_user_activity_user_Private_Chat_Message_Count
+      target_field: o365.reports.teams.user_activity.user.Private_Chat_Message_Count
+      type: long
+      if: ctx.o365?.reports?.teams?.user_activity?.user?.Private_Chat_Message_Count != null && ctx.o365.reports.teams.user_activity.user.Private_Chat_Message_Count != ''
+      on_failure:
+        - remove:
+            field: o365.reports.teams.user_activity.user.Private_Chat_Message_Count
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - convert:
+      field: o365.reports.teams.user_activity.user.Call_Count
+      tag: convert_o365_reports_teams_user_activity_user_Call_Count
+      target_field: o365.reports.teams.user_activity.user.Call_Count
+      type: long
+      if: ctx.o365?.reports?.teams?.user_activity?.user?.Call_Count != null && ctx.o365.reports.teams.user_activity.user.Call_Count != ''
+      on_failure:
+        - remove:
+            field: o365.reports.teams.user_activity.user.Call_Count
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - convert:
+      field: o365.reports.teams.user_activity.user.Meeting_Count
+      tag: convert_o365_reports_teams_user_activity_user_Meeting_Count
+      target_field: o365.reports.teams.user_activity.user.Meeting_Count
+      type: long
+      if: ctx.o365?.reports?.teams?.user_activity?.user?.Meeting_Count != null && ctx.o365.reports.teams.user_activity.user.Meeting_Count != ''
+      on_failure:
+        - remove:
+            field: o365.reports.teams.user_activity.user.Meeting_Count
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - convert:
+      field: o365.reports.teams.user_activity.user.Meetings_Organized_Count
+      tag: convert_o365_reports_teams_user_activity_user_Meetings_Organized_Count
+      target_field: o365.reports.teams.user_activity.user.Meetings_Organized_Count
+      type: long
+      if: ctx.o365?.reports?.teams?.user_activity?.user?.Meetings_Organized_Count != null && ctx.o365.reports.teams.user_activity.user.Meetings_Organized_Count != ''
+      on_failure:
+        - remove:
+            field: o365.reports.teams.user_activity.user.Meetings_Organized_Count
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - convert:
+      field: o365.reports.teams.user_activity.user.Meetings_Attended_Count
+      tag: convert_o365_reports_teams_user_activity_user_Meetings_Attended_Count
+      target_field: o365.reports.teams.user_activity.user.Meetings_Attended_Count
+      type: long
+      if: ctx.o365?.reports?.teams?.user_activity?.user?.Meetings_Attended_Count != null && ctx.o365.reports.teams.user_activity.user.Meetings_Attended_Count != ''
+      on_failure:
+        - remove:
+            field: o365.reports.teams.user_activity.user.Meetings_Attended_Count
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - convert:
+      field: o365.reports.teams.user_activity.user.Ad_Hoc_Meetings_Organized_Count
+      tag: convert_o365_reports_teams_user_activity_user_Ad_Hoc_Meetings_Organized_Count
+      target_field: o365.reports.teams.user_activity.user.Ad_Hoc_Meetings_Organized_Count
+      type: long
+      if: ctx.o365?.reports?.teams?.user_activity?.user?.Ad_Hoc_Meetings_Organized_Count != null && ctx.o365.reports.teams.user_activity.user.Ad_Hoc_Meetings_Organized_Count != ''
+      on_failure:
+        - remove:
+            field: o365.reports.teams.user_activity.user.Ad_Hoc_Meetings_Organized_Count
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - convert:
+      field: o365.reports.teams.user_activity.user.Ad_Hoc_Meetings_Attended_Count
+      tag: convert_o365_reports_teams_user_activity_user_Ad_Hoc_Meetings_Attended_Count
+      target_field: o365.reports.teams.user_activity.user.Ad_Hoc_Meetings_Attended_Count
+      type: long
+      if: ctx.o365?.reports?.teams?.user_activity?.user?.Ad_Hoc_Meetings_Attended_Count != null && ctx.o365.reports.teams.user_activity.user.Ad_Hoc_Meetings_Attended_Count != ''
+      on_failure:
+        - remove:
+            field: o365.reports.teams.user_activity.user.Ad_Hoc_Meetings_Attended_Count
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - convert:
+      field: o365.reports.teams.user_activity.user.Scheduled_One_time_Meetings_Organized_Count
+      tag: convert_o365_reports_teams_user_activity_user_Scheduled_One_time_Meetings_Organized_Count
+      target_field: o365.reports.teams.user_activity.user.Scheduled_One_time_Meetings_Organized_Count
+      type: long
+      if: ctx.o365?.reports?.teams?.user_activity?.user?.Scheduled_One_time_Meetings_Organized_Count != null && ctx.o365.reports.teams.user_activity.user.Scheduled_One_time_Meetings_Organized_Count != ''
+      on_failure:
+        - remove:
+            field: o365.reports.teams.user_activity.user.Scheduled_One_time_Meetings_Organized_Count
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - convert:
+      field: o365.reports.teams.user_activity.user.Scheduled_One_time_Meetings_Attended_Count
+      tag: convert_o365_reports_teams_user_activity_user_Scheduled_One_time_Meetings_Attended_Count
+      target_field: o365.reports.teams.user_activity.user.Scheduled_One_time_Meetings_Attended_Count
+      type: long
+      if: ctx.o365?.reports?.teams?.user_activity?.user?.Scheduled_One_time_Meetings_Attended_Count != null && ctx.o365.reports.teams.user_activity.user.Scheduled_One_time_Meetings_Attended_Count != ''
+      on_failure:
+        - remove:
+            field: o365.reports.teams.user_activity.user.Scheduled_One_time_Meetings_Attended_Count
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - convert:
+      field: o365.reports.teams.user_activity.user.Scheduled_Recurring_Meetings_Organized_Count
+      tag: convert_o365_reports_teams_user_activity_user_Scheduled_Recurring_Meetings_Organized_Count
+      target_field: o365.reports.teams.user_activity.user.Scheduled_Recurring_Meetings_Organized_Count
+      type: long
+      if: ctx.o365?.reports?.teams?.user_activity?.user?.Scheduled_Recurring_Meetings_Organized_Count != null && ctx.o365.reports.teams.user_activity.user.Scheduled_Recurring_Meetings_Organized_Count != ''
+      on_failure:
+        - remove:
+            field: o365.reports.teams.user_activity.user.Scheduled_Recurring_Meetings_Organized_Count
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - convert:
+      field: o365.reports.teams.user_activity.user.Scheduled_Recurring_Meetings_Attended_Count
+      tag: convert_o365_reports_teams_user_activity_user_Scheduled_Recurring_Meetings_Attended_Count
+      target_field: o365.reports.teams.user_activity.user.Scheduled_Recurring_Meetings_Attended_Count
+      type: long
+      if: ctx.o365?.reports?.teams?.user_activity?.user?.Scheduled_Recurring_Meetings_Attended_Count != null && ctx.o365.reports.teams.user_activity.user.Scheduled_Recurring_Meetings_Attended_Count != ''
+      on_failure:
+        - remove:
+            field: o365.reports.teams.user_activity.user.Scheduled_Recurring_Meetings_Attended_Count
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  # Convert _Seconds fields to long
+  - convert:
+      field: o365.reports.teams.user_activity.user.Audio_Duration_In_Seconds
+      tag: convert_o365_reports_teams_user_activity_user_Audio_Duration_In_Seconds
+      target_field: o365.reports.teams.user_activity.user.Audio_Duration_In_Seconds
+      type: long
+      if: ctx.o365?.reports?.teams?.user_activity?.user?.Audio_Duration_In_Seconds != null && ctx.o365.reports.teams.user_activity.user.Audio_Duration_In_Seconds != ''
+      on_failure:
+        - remove:
+            field: o365.reports.teams.user_activity.user.Audio_Duration_In_Seconds
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - convert:
+      field: o365.reports.teams.user_activity.user.Video_Duration_In_Seconds
+      tag: convert_o365_reports_teams_user_activity_user_Video_Duration_In_Seconds
+      target_field: o365.reports.teams.user_activity.user.Video_Duration_In_Seconds
+      type: long
+      if: ctx.o365?.reports?.teams?.user_activity?.user?.Video_Duration_In_Seconds != null && ctx.o365.reports.teams.user_activity.user.Video_Duration_In_Seconds != ''
+      on_failure:
+        - remove:
+            field: o365.reports.teams.user_activity.user.Video_Duration_In_Seconds
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - convert:
+      field: o365.reports.teams.user_activity.user.Screen_Share_Duration_In_Seconds
+      tag: convert_o365_reports_teams_user_activity_user_Screen_Share_Duration_In_Seconds
+      target_field: o365.reports.teams.user_activity.user.Screen_Share_Duration_In_Seconds
+      type: long
+      if: ctx.o365?.reports?.teams?.user_activity?.user?.Screen_Share_Duration_In_Seconds != null && ctx.o365.reports.teams.user_activity.user.Screen_Share_Duration_In_Seconds != ''
+      on_failure:
+        - remove:
+            field: o365.reports.teams.user_activity.user.Screen_Share_Duration_In_Seconds
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  # Convert _Messages fields to long
+  - convert:
+      field: o365.reports.teams.user_activity.user.Urgent_Messages
+      tag: convert_o365_reports_teams_user_activity_user_Urgent_Messages
+      target_field: o365.reports.teams.user_activity.user.Urgent_Messages
+      type: long
+      if: ctx.o365?.reports?.teams?.user_activity?.user?.Urgent_Messages != null && ctx.o365.reports.teams.user_activity.user.Urgent_Messages != ''
+      on_failure:
+        - remove:
+            field: o365.reports.teams.user_activity.user.Urgent_Messages
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - convert:
+      field: o365.reports.teams.user_activity.user.Post_Messages
+      tag: convert_o365_reports_teams_user_activity_user_Post_Messages
+      target_field: o365.reports.teams.user_activity.user.Post_Messages
+      type: long
+      if: ctx.o365?.reports?.teams?.user_activity?.user?.Post_Messages != null && ctx.o365.reports.teams.user_activity.user.Post_Messages != ''
+      on_failure:
+        - remove:
+            field: o365.reports.teams.user_activity.user.Post_Messages
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - convert:
+      field: o365.reports.teams.user_activity.user.Reply_Messages
+      tag: convert_o365_reports_teams_user_activity_user_Reply_Messages
+      target_field: o365.reports.teams.user_activity.user.Reply_Messages
+      type: long
+      if: ctx.o365?.reports?.teams?.user_activity?.user?.Reply_Messages != null && ctx.o365.reports.teams.user_activity.user.Reply_Messages != ''
+      on_failure:
+        - remove:
+            field: o365.reports.teams.user_activity.user.Reply_Messages
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - set:
+      field: o365.reports.teams.user_activity.user.Is_Licensed
+      tag: set_o365_reports_teams_user_activity_user_Is_Licensed_true
+      value: 'true'
+      if: ctx.o365?.reports?.teams?.user_activity?.user?.Is_Licensed != null && ctx.o365.reports.teams.user_activity.user.Is_Licensed.toLowerCase() == 'yes'
+      ignore_empty_value: true
+  - set:
+      field: o365.reports.teams.user_activity.user.Is_Licensed
+      tag: set_o365_reports_teams_user_activity_user_Is_Licensed_false
+      value: 'false'
+      if: ctx.o365?.reports?.teams?.user_activity?.user?.Is_Licensed != null && ctx.o365.reports.teams.user_activity.user.Is_Licensed.toLowerCase() == 'no'
+      ignore_empty_value: true
+  - convert:
+      field: o365.reports.teams.user_activity.user.Is_Licensed
+      tag: convert_o365_reports_teams_user_activity_user_Is_Licensed
+      target_field: o365.reports.teams.user_activity.user.Is_Licensed
+      type: boolean
+      if: ctx.o365?.reports?.teams?.user_activity?.user?.Is_Licensed != null && ctx.o365.reports.teams.user_activity.user.Is_Licensed != ''
+      on_failure:
+        - remove:
+            field: o365.reports.teams.user_activity.user.Is_Licensed
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - remove:
+      tag: remove_duplicate_custom_fields
+      if: ctx.tags == null || !ctx.tags.contains('preserve_duplicate_custom_fields')
+      field:
+        - o365.reports.teams.user_activity.user.User_Id
+        - o365.reports.teams.user_activity.user.User_Principal_Name
+      ignore_missing: true
