@@ -15,7 +15,7 @@ processors:
   - grok:
       field: event.original
       patterns:
-        - '<%{NONNEGINT:log.syslog.priority:int}>%{SYSLOGTIMESTAMP:_temp_.raw_date} %{WORD}  %{NOTSPACE}\:  %{GREEDYDATA:_temp_.full_message}'
+        - '<%{NONNEGINT:log.syslog.priority:int}>%{SYSLOGTIMESTAMP:_temp_.raw_date} %{WORD}  %{NOTSPACE}\:[\s]+%{GREEDYDATA:_temp_.full_message}'
   - script:
       description: Translate log.syslog.priority to log.syslog.severity.code and log.syslog.facility.code
       lang: painless

@@ -1,6 +1,6 @@
 name: google_workspace
 title: Google Workspace
-version: "2.28.0"
+version: "2.29.0"
 source:
   license: Elastic-2.0
 description: Collect logs from Google Workspace with Elastic Agent.
@@ -11,10 +11,14 @@ categories:
   - productivity_security
 conditions:
   kibana:
-    version: "^8.13.0"
+    version: "^8.16.0"
   elastic:
     subscription: basic
 screenshots:
+  - src: /img/google-workspace-chrome-screenshot.png
+    title: Google Workspace Chrome Screenshot
+    size: 600x600
+    type: image/png
   - src: /img/google-workspace-rules-screenshot.png
     title: Google Workspace Rules Screenshot
     size: 600x600
@@ -122,6 +126,67 @@ policy_templates:
             default: https://www.googleapis.com
         title: "Collect access_transparency, admin, alert, context_aware_access, device, drive, gcp, groups, group_enterprise, login, rules, saml, token and user accounts logs (input: httpjson)"
         description: "Collecting access_transparency, admin, alert, context_aware_access, device, drive, gcp, groups, group_enterprise, login, rules, saml, token and user accounts logs (input: httpjson)"
+      - type: cel
+        title: Collect Google Workspace Chrome logs via API
+        description: Collecting Google Workspace Chrome logs via API.
+        vars:
+          - name: jwt_file
+            type: text
+            title: Jwt File
+            description: |
+              Specifies the path to the JWT credentials file.
+              NOTE: Please use either JWT File or JWT JSON parameter.
+            multi: false
+            required: false
+            show_user: true
+          - name: enable_request_tracer
+            type: bool
+            title: Enable request tracing
+            multi: false
+            required: false
+            show_user: false
+            description: The request tracer logs requests and responses to the agent's local file-system for debugging configurations. Enabling this request tracing compromises security and should only be used for debugging. See [documentation](https://www.elastic.co/guide/en/beats/filebeat/current/filebeat-input-httpjson.html#_request_tracer_filename) for details.
+          - name: jwt_json
+            type: password
+            title: Jwt JSON
+            description: |
+              Raw contents of the JWT file. Useful when hosting a file along with the agent is not possible.
+              NOTE: Please use either JWT File or JWT JSON parameter.
+            multi: false
+            required: false
+            show_user: true
+            secret: true
+          - name: delegated_account
+            type: text
+            title: Delegated Account
+            description: Email of the admin user used to access the API.
+            multi: false
+            required: true
+            show_user: true
+          - name: http_client_timeout
+            type: text
+            title: Http Client Timeout
+            description: 'Duration of the time limit on HTTP requests. Supported time units are ns, us, ms, s, m, h.'
+            multi: false
+            required: true
+            show_user: true
+            default: 60s
+          - name: user_key
+            type: text
+            title: User Key
+            description: Specifies the user key to fetch reports from.
+            multi: false
+            required: true
+            show_user: true
+            default: all
+          - name: api_host
+            type: text
+            title: API Host.
+            description: The Google Workspace API Host. The path will be automatically set.
+            multi: false
+            required: true
+            show_user: false
+            default: https://www.googleapis.com
 owner:
   github: elastic/security-service-integrations
   type: elastic
