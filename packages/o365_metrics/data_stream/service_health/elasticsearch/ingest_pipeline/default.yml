@@ -6,7 +6,8 @@ processors:
       value: "8.16.0"
   - json:
       field: service_health
-      target_field: o365.metrics.service.health   
+      target_field: o365.metrics.service.health
+      ignore_failure: true  
   - script:
       lang: painless
       description: Replace spaces and dashes in field names under o365.metrics.service.health.
@@ -25,7 +26,7 @@ processors:
   - remove:
       if: ctx.service_health != null
       field: service_health
-      ignore_missing: true                        
+      ignore_missing: true                  
 
 on_failure:
   - append:
