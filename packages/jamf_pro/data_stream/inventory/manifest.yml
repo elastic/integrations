@@ -1,12 +1,14 @@
-title: "Inventory data"
+title: Inventory data
 type: logs
 streams:
   - input: cel
     template_path: cel.yml.hbs
-    title: inventory_data
+    title: Inventory data
     description: |
-      Inventory requests settings
-      "*NOTE* Many sections enabled may impact the query processing. It is not recommended to enable setions not required"
+      Settings for inventory requests.  
+      *NOTE* Enabling many sections may impact query processing.
+      It is recommended to only enable sections of interest.
+      The General section is always included.
     vars:
       - name: interval
         type: text
@@ -20,7 +22,7 @@ streams:
         required: false
         title: Inventory request page size
         show_user: false
-        description: Set page size for computers-inventory API Call. 100 max, should be adjusted if size of request is growing to reduce parsing time
+        description: Set page size for computers-inventory API Call. Must not exceed 1000.
         default: 100
       - name: preserve_original_event
         type: bool
@@ -46,12 +48,6 @@ streams:
         show_user: false
         default:
           - forwarded
-      - name: enable_section_general
-        type: bool
-        show_user: false
-        default: true
-        title: "General"
-        description: "Enable General Settings for the API responce"
       - name: enable_section_hardware
         type: bool
         show_user: false
@@ -178,7 +174,7 @@ streams:
         default: false
         title: "Extension Attributes"
         description: "Enable block with Extension Attributes"
-      - name: CONTENT_CACHING
+      - name: enable_section_content_caching
         type: bool
         show_user: false
         default: false
