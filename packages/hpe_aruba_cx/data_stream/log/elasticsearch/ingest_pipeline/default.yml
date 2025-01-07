@@ -1350,6 +1350,60 @@ processors:
       patterns:
         - "^IRDP (en|dis)abled on interface %{GREEDYDATA:aruba.interface.id}"
 
+  # Transceiver events (38xx)
+  # https://www.arubanetworks.com/techdocs/AOS-CX/10.15/HTML/elmrg/Content/events/XCVR.htm
+  - dissect:
+      if: "ctx.event?.code == '3803'"
+      tag: xcvr_event_3803
+      field: "message"
+      description: "Event raised to list unsupported transceivers in unsupported transceiver mode"
+      pattern: "allow-unsupported-transceiver feature enabled: Unsupported transceivers found in: %{aruba.xcvr.list}"
+  - grok:
+      if: "['3804','3805'].contains(ctx.event?.code)"
+      tag: xcvr_event_3804_3805
+      field: "message"
+      description: "Event raised to indicate transceiver hotswap insertion | removal"
+      patterns:
+        - "^Transceiver hot-swap (insert|remove) for interface %{GREEDYDATA:aruba.interface.id}"
+  - grok:
+      if: "ctx.event?.code == '3806'"
+      tag: xcvr_event_3806
+      field: "message"
+      description: "Event raised to indicate transceiver link recovery attempts"
+      patterns:
+        - "^Interface %{DATA:aruba.interface.id} transceiver attempted link recovery %{NUMBER:aruba.count:long} times"
+        - "^Throttled %{NUMBER:aruba.throttle_count:long} Messages"
+  - dissect:
+      if: "ctx.event?.code == '3807'"
+      tag: xcvr_event_3807
+      field: "message"
+      description: "Event raised to indicate detection path of unsupported transceivers"
+      pattern: "%{aruba.xcvr.path}"
+  - grok:
+      if: "['3808','3809','3812','3813'].contains(ctx.event?.code)"
+      tag: xcvr_event_3808_3809_3812_3813
+      field: "message"
+      description: "Event raised to indicate status of transceivers that are (not)? allowed to be operational and its reason | indicate status of adapters that are (not)? allowed to be operational and its reason"
+      patterns:
+        - "^(Transceiver|Adapter) %{DATA:aruba.xcvr.desc} inserted in %{DATA:aruba.interface.id} is %{OPTIONAL_SENTENCE:aruba.status}. %{GREEDYDATA:event.reason}"
+      pattern_definitions:
+        OPTIONAL_SENTENCE: "[\\p{L},\":;\\s\\-]*"
+  - grok:
+      if: "['3810','3811','3815'].contains(ctx.event?.code)"
+      tag: xcvr_event_3810_3811_3815
+      field: "message"
+      description: "Event raised to indicate an unknown transceiver was inserted | indicate a transceiver was inserted in a port that is a member of a group configured to operate at a different speed | Logged when a previously disabled transceiver is enabled"
+      patterns:
+        - "^Transceiver in %{DATA:aruba.interface.id} "
+        - "interface %{GREEDYDATA:aruba.interface.id}"
+        - "^Interface %{DATA:aruba.interface.id} "
+  - dissect:
+      if: "ctx.event?.code == '3814'"
+      tag: xcvr_event_3814
+      field: "message"
+      description: "Logged when the transceiver inserted in the interface is disabled"
+      pattern: "Interface %{aruba.interface.id} transceiver disabled - %{event.reason}"
+
   # IPv6 Router Advertisement events (39xx)
   # https://www.arubanetworks.com/techdocs/AOS-CX/10.07/HTML/5200-8214/Content/events/IPV6-RA.htm
   - grok:
@@ -1374,6 +1428,42 @@ processors:
       description: "Event raised when the maximum number of multicast L3 Bridge Control Forwarding entries is reached"
       if: "ctx.event?.code == '4001'"
       pattern: "The Multicast L3 Bridge Control Forwarding entries limit was reached: %{aruba.limit.threshold}"
+
+    # UDLD events (410x)
+    # https://www.arubanetworks.com/techdocs/AOS-CX/10.15/HTML/elmrg/Content/events/UDLD.htm
+  - grok:
+      field: message
+      tag: udld_event_4101_4102
+      description: "Event raised when UDLD is [enabled|disabled]"
+      if: "['4101','4102'].contains(ctx.event?.code)"
+      patterns: 
+        - "^UDLD is (enabled|disabled) on interface: %{GREEDYDATA:aruba.interface.id}"
+  - grok:
+      field: message
+      tag: udld_event_4103_4104_4105
+      description: "Event raised when UDLD sets the interface as unblocked|unblocked|undetermined"
+      if: "['4103','4104','4105'].contains(ctx.event?.code)"
+      patterns: 
+        - "^UDLD interface %{DATA:aruba.interface.id} is (unblocked|blocked|undetermined)"
+  - grok:
+      field: message
+      tag: udld_event_4107_4108
+      description: "Event raised when UDLD link is [enabled|disabled]"
+      if: "['4107','4108'].contains(ctx.event?.code)"
+      patterns: 
+        - "^UDLD link is (enabled|disabled) on interface: %{GREEDYDATA:aruba.interface.id}"
+  - dissect:
+      field: message
+      tag: udld_event_4106
+      description: "Logs a warning when UDLD clamps the interval when operating in RFC5171 mode"
+      if: "ctx.event?.code == '4106'"
+      pattern: "UDLD interface %{aruba.interface.id} interval %{aruba.udld.intvl_a} clamped to %{aruba.udld.intvl_b}"
+  - dissect:
+      field: message
+      tag: udld_event_4109
+      description: "Event raised when UDLD substate of the interface as err_disabled"
+      if: "ctx.event?.code == '4109'"
+      pattern: "UDLD interface %{aruba.interface.id} is error-disabled"
 
     # Proxy ARP events (420x)
     # https://www.arubanetworks.com/techdocs/AOS-CX/10.07/HTML/5200-8214/Content/events/PROXY-ARP.htm
@@ -3623,6 +3713,16 @@ processors:
       if: "['11901'].contains(ctx.event?.code)"
       patterns:
         - "%{DATA:aruba.dns.type} event for VRF %{DATA:aruba.dns.vrf_name}$"
+
+  # UFD events (1200x)
+  # https://www.arubanetworks.com/techdocs/AOS-CX/10.15/HTML/elmrg/Content/events/UFD.htm
+  - grok:
+      field: message
+      tag: ufd_event_12001
+      description: ""
+      if: "['12001','12002'].contains(ctx.event?.code)"
+      patterns:
+        - "^Uplink Failure Detection session-id %{DATA:aruba.instance.id}, state changed from %{DATA:aruba.ufd.from_state} to %{GREEDYDATA:aruba.state}."
 
 # Telnet server events (1290x)
   # https://www.arubanetworks.com/techdocs/AOS-CX/10.15/HTML/elmrg/Content/events/TELNET_SERVER.htm

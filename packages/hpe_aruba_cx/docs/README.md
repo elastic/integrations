@@ -1195,28 +1195,36 @@ Note: Descriptions have not been filled out
 | `<instance_name>`| aruba.instance.id          |
 | `<monitor_name>` | aruba.traffic.monitor_name |
 
-#### [Transceiver events](https://www.arubanetworks.com/techdocs/AOS-CX/10.07/HTML/5200-8214/Content/events/XCVR.htm)
-| Field                          | Description | Type | Common                       |
-|--------------------------------|-------------|------|------------------------------|
-| aruba.transceiver.count        |             |      | aruba.count                  |
-| aruba.transceiver.xcvr_desc    |             |      |                              |
-| aruba.transceiver.adapter_desc |             |      |                              |
-| aruba.transceiver.interface    |             |      |                              |
-| aruba.transceiver.path         |             |      |                              |
-| aruba.transceiver.reason       |             |      | event.reason                 |
-| aruba.transceiver.status       |             |      | aruba.status                 |
-| aruba.transceiver.unsupported  |             |      |                              |
+#### [Transceiver events](https://www.arubanetworks.com/techdocs/AOS-CX/10.15/HTML/elmrg/Content/events/XCVR.htm)
+| Docs Field         | Schema Mapping          |
+|--------------------|-------------------------|
+| `<adapter_desc>`   | aruba.xcvr.desc         |
+| `<count>`          | aruba.count             |
+| `<disabled_reason>`| event.reason            |
+| `<interface>`      | aruba.interface.id      |
+| `<list>`           | aruba.xcvr.list         |
+| `<path>`           | aruba.xcvr.path         |
+| `<reason>`         | event.reason            |
+| `<status>`         | aruba.status            |
+| `<xcvr_desc>`      | aruba.xcvr.desc         |
 
-#### [UDLD events](https://www.arubanetworks.com/techdocs/AOS-CX/10.07/HTML/5200-8214/Content/events/UDLD.htm)
-| Field                | Description | Type | Common                       |
-|----------------------|-------------|------|------------------------------|
-| aruba.udld.intf      |             |      |                              |
-| aruba.udld.intvl_a   |             |      |                              |
-| aruba.udld.intvl_b   |             |      |                              |
+#### [UDLD events](https://www.arubanetworks.com/techdocs/AOS-CX/10.15/HTML/elmrg/Content/events/UDLD.htm)
+| Docs Field | Schema Mapping               |
+|------------|------------------------------|
+| `<intf>`   | aruba.interface.id           |
+| `<intvl_a>`| aruba.udld.intvl_a           |
+| `<intvl_b>`| aruba.udld.intvl_b           |
 
-#### [UDP Broadcast Forwarder events](https://www.arubanetworks.com/techdocs/AOS-CX/10.07/HTML/5200-8214/Content/events/UDPFWD.htm)
-| Field                | Description | Type | Common                       |
-|----------------------|-------------|------|------------------------------|
+#### [UDP Broadcast Forwarder events](https://www.arubanetworks.com/techdocs/AOS-CX/10.15/HTML/elmrg/Content/events/UDPFWD.htm)
+| Docs Field | Schema Mapping               |
+|------------|------------------------------|
+
+#### [UFD events](https://www.arubanetworks.com/techdocs/AOS-CX/10.15/HTML/elmrg/Content/events/UFD.htm)
+| Docs Field   | Schema Mapping        |
+|--------------|-----------------------|
+| `<from_state>` | aruba.ufd.from_state |
+| `<id>`         | aruba.instance.id    |
+| `<to_state>`   | aruba.state          |
 
 #### [User management events](https://www.arubanetworks.com/techdocs/AOS-CX/10.15/HTML/elmrg/Content/events/USER-MGMT.htm)
 | Docs Field      | Schema Mapping          |
@@ -1741,12 +1749,18 @@ The `log` dataset collects the HPE Aruba CX logs.
 | aruba.tunnel.ttl |  | keyword |
 | aruba.tunnel.type |  | keyword |
 | aruba.tunnel.zone |  | keyword |
+| aruba.udld.intvl_a |  | keyword |
+| aruba.udld.intvl_b |  | keyword |
+| aruba.ufd.from_state |  |  |
 | aruba.unit |  | keyword |
 | aruba.user.added_user |  | keyword |
 | aruba.user.deleted_user |  | keyword |
 | aruba.user.role |  | keyword |
 | aruba.vrf.id |  | keyword |
 | aruba.vrf.name |  | keyword |
+| aruba.xcvr.desc |  | keyword |
+| aruba.xcvr.list |  | keyword |
+| aruba.xcvr.path |  | keyword |
 | aruba.zero_touch.central_location |  | keyword |
 | aruba.zero_touch.http_proxy_location |  | keyword |
 | aruba.zero_touch.image_file |  | keyword |
