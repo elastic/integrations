@@ -4,7 +4,7 @@ services:
     volumes:
       - ./sample_logs:/sample_logs:ro
       - ${SERVICE_LOGS_DIR}:/var/log
-    command: /bin/sh -c "cp -v /sample_logs/bbot-v*-logfile*.log /var/log/"
+    command: /bin/sh -c "cp -v /sample_logs/bbot-v*-ndjson*.log /var/log/"
   bbot-all-http:
     image: docker.elastic.co/observability/stream:v0.17.1
     volumes:
@@ -13,7 +13,7 @@ services:
       - STREAM_PROTOCOL=webhook
       - STREAM_ADDR=http://elastic-agent:8381/bbot/ndjson
       - STREAM_WEBHOOK_HEADER=Authorization=abc123
-    command: log --start-signal=SIGHUP --delay=5s /sample_logs/bbot-v*-webhook*.log
+    command: log --start-signal=SIGHUP --delay=5s /sample_logs/bbot-v*-ndjson*.log
   bbot-all-https:
     image: docker.elastic.co/observability/stream:v0.17.1
     volumes:
@@ -23,4 +23,4 @@ services:
       - STREAM_ADDR=https://elastic-agent:8382/bbot/ndjson
       - STREAM_WEBHOOK_HEADER=Authorization=abc123
       - STREAM_INSECURE=true
-    command: log --start-signal=SIGHUP --delay=5s /sample_logs/bbot-v*-webhook*.log
+    command: log --start-signal=SIGHUP --delay=5s /sample_logs/bbot-v*-ndjson*.log
