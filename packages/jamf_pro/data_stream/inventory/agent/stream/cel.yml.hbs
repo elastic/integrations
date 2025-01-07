@@ -37,10 +37,7 @@ program: |-
   		"section": state.sections,
   		"page-size": [string(state.page_size)],
   		"sort": ["general.reportDate:asc"],
-  		?"filter": (has(state.?cursor.last_report_date) && state.?cursor.last_report_date.orValue("") != "") ?
-  			optional.of(["general.reportDate>=\"" + state.cursor.last_report_date + "\""])
-  		:
-  			optional.none(),
+  		?"filter": state.?cursor.last_report_date.optMap(d, ["general.reportDate>=\"" + d + "\""]),
   	}.format_query()
   ).with(
   	{
@@ -67,13 +64,15 @@ program: |-
   						?"event.original": state.?preserve_original_event.orValue(false) ? optional.of(e.encode_json()) : optional.none(),
   					}
   				),
-  				"want_more": body.totalCount > size(body.results),
-  				"cursor": {
-  					"last_report_date": (size(body.results) == 0 || size(body.results) == body.totalCount) ?
-  						state.?cursor.last_report_date.orValue("")
-  					:
-  						string(body.results[size(body.results) - 1].general.reportDate),
-  				},
+  				"want_more": size(body.results) >= state.page_size,
+  				"cursor": state.?cursor.orValue({}).with(
+  					{
+  						?"last_report_date": (size(body.results) > 0) ?
+  							optional.of(body.results[size(body.results) - 1].general.reportDate)
+  						:
+  							optional.none(),
+  					}
+  				),
   			}
   		)
   	)
@@ -82,9 +81,7 @@ state:
   preserve_original_event: {{preserve_original_event}}
   page_size: {{page_size}}
   sections:
-  {{#if enable_section_general }}
     - GENERAL
-  {{/if}}
   {{#if enable_section_hardware }}
     - HARDWARE
   {{/if}}
