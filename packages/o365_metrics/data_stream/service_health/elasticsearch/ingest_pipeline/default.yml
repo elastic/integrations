@@ -15,7 +15,8 @@ processors:
       if: ctx.o365.metrics?.service?.health instanceof Map
       source: |
         String underscore(String s) {
-          return /[ -]/.matcher(s).replaceAll('_').toLowerCase();
+          String result = /[ -]/.matcher(s).replaceAll('_').toLowerCase();
+          return /[\ufeff]/.matcher(result).replaceAll('')
         }
         
         def out = [:];
@@ -26,7 +27,12 @@ processors:
   - remove:
       if: ctx.service_health != null
       field: service_health
-      ignore_missing: true                  
+      ignore_missing: true
+  - remove:
+      field:
+        - o365.metrics.service.health.id
+        - o365.metrics.service.health.service
+      ignore_missing: true                        
 
 on_failure:
   - append:

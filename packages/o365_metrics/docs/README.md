@@ -673,9 +673,7 @@ An example event for `service_health` looks as following:
         "metrics": {
             "service": {
                 "health": {
-                    "service": "Microsoft 365 suite",
-                    "status": "serviceOperational",
-                    "id": "OSDPPlatform"
+                    "status": "serviceOperational"
                 }
             }
         }
@@ -749,6 +747,4 @@ Please refer to the following [document](https://www.elastic.co/guide/en/ecs/cur
 | host.containerized | If the host is a container. | boolean |
 | host.os.build | OS build information. | keyword |
 | host.os.codename | OS codename, if any. | keyword |
-| o365.metrics.service.health.id | The service ID. | keyword |
-| o365.metrics.service.health.service | The service name. | keyword |
 | o365.metrics.service.health.status | Show the overall service health status (Eg. serviceOperational, serviceOperational etc.). | keyword |
