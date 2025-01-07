@@ -23,6 +23,9 @@ state:
   want_more: false
   offset: 0
   batch_size: {{batch_size}}
+{{#if query}}
+  query: {{query}}
+{{/if}}
 redact:
   fields: ~
 program: |
@@ -37,8 +40,13 @@ program: |
         "sort": ["timestamp|asc"],
         "offset": [string(state.offset)],
         "limit": [string(state.batch_size)],
-        ?"filter": filter.hasValue() ?
-          optional.of(['timestamp:>"'+filter.value()+'"'])
+        ?"filter": filter.hasValue() || state.?query.orValue("") != "" ?
+          optional.of([
+            [
+              ?filter.optMap(f, 'timestamp:>"'+f+'"'),
+              ?state.?query.optMap(q, "("+q+")"),
+            ].join("+")
+          ])
         :
           optional.none(),
       }.format_query()

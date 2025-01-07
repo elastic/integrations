@@ -647,24 +647,24 @@ An example event for `threat_response` looks as following:
 {
     "@timestamp": "2023-01-18T10:13:28.000Z",
     "agent": {
-        "ephemeral_id": "1bb8672f-7719-445c-8d9d-867a700f2c18",
-        "id": "7ac2bc6a-9f9b-4289-82db-ee2a0a7e6ef8",
-        "name": "docker-fleet-agent",
+        "ephemeral_id": "b6bc41aa-f31e-4699-b16e-eda428357e2a",
+        "id": "821978e9-8609-487f-8e3f-011a710a7a13",
+        "name": "elastic-agent-20104",
         "type": "filebeat",
-        "version": "8.3.0"
+        "version": "8.13.0"
     },
     "data_stream": {
         "dataset": "tanium.threat_response",
-        "namespace": "ep",
+        "namespace": "41588",
         "type": "logs"
     },
     "ecs": {
         "version": "8.11.0"
     },
     "elastic_agent": {
-        "id": "7ac2bc6a-9f9b-4289-82db-ee2a0a7e6ef8",
+        "id": "821978e9-8609-487f-8e3f-011a710a7a13",
         "snapshot": false,
-        "version": "8.3.0"
+        "version": "8.13.0"
     },
     "event": {
         "agent_id_status": "verified",
@@ -673,7 +673,7 @@ An example event for `threat_response` looks as following:
         ],
         "dataset": "tanium.threat_response",
         "id": "00000000-0000-0000-5389-4a274d06f4ec",
-        "ingested": "2023-02-28T11:58:39Z",
+        "ingested": "2024-12-02T16:57:13Z",
         "kind": [
             "event"
         ],
@@ -686,12 +686,7 @@ An example event for `threat_response` looks as following:
         "hostname": "worker-2"
     },
     "input": {
-        "type": "tcp"
-    },
-    "log": {
-        "source": {
-            "address": "172.20.0.6:60552"
-        }
+        "type": "http_endpoint"
     },
     "os": {
         "platform": "\"Ubuntu",
@@ -730,81 +725,68 @@ An example event for `threat_response` looks as following:
                 "id": "00000000-0000-0000-5389-4a274d06f4ec",
                 "name": "detect.unmatch"
             },
-            "other_parameters": {
-                "log_details": {
-                    "payload": "eyJpbnRlbF9pZCI6MTM1LCJjb25maWdfaWQiOjMsImNvbmZpZ19yZXZfaWQiOjEsImZpbmRpbmciOnsid2hhdHMiOlt7ImludGVsX2ludHJhX2lkcyI6W3siaWQiOjg1MDM5NDU4Mn0seyJpZCI6OTgzOTYyMTkzfSx7ImlkIjoyNjY3MDYyMDA2fSx7ImlkIjozMzk4NDE2ODc4fSx7ImlkIjozOTk5MDE0NDY1fV0sInNvdXJjZV9uYW1lIjoicmVjb3JkZXIiLCJhcnRpZmFjdF9hY3Rpdml0eSI6eyJyZWxldmFudF9hY3Rpb25zIjpbeyJ2ZXJiIjo2LCJ0YXJnZXQiOnsiZmlsZSI6eyJwYXRoIjoiL3Zhci9saWIvZG9ja2VyL292ZXJsYXkyLzJiY2ZmYjdmMGQ2YTNmMzdhNjE5OWNhNjkxNjQ5ZWE0OTM1OGEyYzJlODdmMzkyMDI1NjJlNTBlYjVjZDI4MDUvZGlmZi9ldGMvaG9zdHMiLCJoYXNoIjp7Im1kNSI6IjRkMWYxMjU3Yjg0NmJkYTgyZDAzMzhmYjU0MWU3MzAxIiwic2hhMSI6IjA0M2ViMzI0YTY1MzQ1NmNhYTFhNzNlMmUyZDQ5Zjc3NzkyYmIwYzUiLCJzaGEyNTYiOiJlMzk5OGRiZTAyYjUxZGFkYTMzZGU4N2FlNDNkMThhOTNhYjY5MTViOWUzNGY1YTc1MWJmMmI5YjI1YTU1NDkyIn0sInNpemVfYnl0ZXMiOiI3OSIsIm1vZGlmaWNhdGlvbl90aW1lIjoiMjAyMi0wOS0xMVQyMDowODoyNi4wMDBaIiwiaW5zdGFuY2VfaGFzaF9zYWx0IjoiMzAxNDc2NyIsIm1hZ2ljX251bWJlcl9oZXgiOiIzMTMyMzcyZSJ9LCJpbnN0YW5jZV9oYXNoIjoiOTY2NzAxNzM0NTE1MDk2ODM0MiIsImFydGlmYWN0X2hhc2giOiIxMDUzODAwNDU2MTA2MjQ5MDYifSwidGltZXN0YW1wIjoiMjAyMy0wMS0xOFQxMDozNzoxOC4wMDBaIiwidGFuaXVtX3JlY29yZGVyX2V2ZW50X3RhYmxlX2lkIjoiNDYxMTY4NjAxODQ3NTg1NTY3MiIsInRhbml1bV9yZWNvcmRlcl9jb250ZXh0Ijp7ImZpbGUiOnsidW5pcXVlX2V2ZW50X2lkIjoiNDYxMTY4NjAxODQ3NTg1NTY3MiJ9LCJldmVudCI6eyJ0aW1lc3RhbXBfbXMiOiIxNjc0MDM4MjM4NzgwIiwiZmlsZV9jcmVhdGUiOnsicGF0aCI6Ii92YXIvbGliL2RvY2tlci9vdmVybGF5Mi8yYmNmZmI3ZjBkNmEzZjM3YTYxOTljYTY5MTY0OWVhNDkzNThhMmMyZTg3ZjM5MjAyNTYyZTUwZWI1Y2QyODA1L2RpZmYvZXRjL2hvc3RzIn19fX1dLCJhY3RpbmdfYXJ0aWZhY3QiOnsicHJvY2VzcyI6eyJoYW5kbGVzIjpbXSwicGlkIjo0MzE4MSwiYXJndW1lbnRzIjoiZG9ja2VyLXVudGFyIC8gL3Zhci9saWIvZG9ja2VyL292ZXJsYXkyLzJiY2ZmYjdmMGQ2YTNmMzdhNjE5OWNhNjkxNjQ5ZWE0OTM1OGEyYzJlODdmMzkyMDI1NjJlNTBlYjVjZDI4MDUvZGlmZiIsImZpbGUiOnsiZmlsZSI6eyJwYXRoIjoiL3Byb2Mvc2VsZi9leGUifSwiaW5zdGFuY2VfaGFzaCI6IjEzMTY0NjgzMDA4MzA4NzMzMjM2IiwiYXJ0aWZhY3RfaGFzaCI6IjEzMTY0NjgzMDA4MzA4NzMzMjM2In0sInVzZXIiOnsidXNlciI6eyJuYW1lIjoicm9vdCIsImRvbWFpbiI6InJvb3QiLCJ1c2VyX2lkIjoiMCIsImdyb3VwX2lkIjoiMCJ9fSwicGFyZW50Ijp7InByb2Nlc3MiOnsiaGFuZGxlcyI6W10sInBpZCI6MjA1OCwiYXJndW1lbnRzIjoiL3Vzci9iaW4vZG9ja2VyZCAtSCBmZDovLyAtLWNvbnRhaW5lcmQ9L3J1bi9jb250YWluZXJkL2NvbnRhaW5lcmQuc29jayIsImZpbGUiOnsiZmlsZSI6eyJwYXRoIjoiL3Vzci9iaW4vZG9ja2VyZCJ9LCJpbnN0YW5jZV9oYXNoIjoiMTY3ODgxMjYwMTcwOTA1NzEyOTEiLCJhcnRpZmFjdF9oYXNoIjoiMTY3ODgxMjYwMTcwOTA1NzEyOTEifSwidXNlciI6eyJ1c2VyIjp7Im5hbWUiOiJyb290IiwiZG9tYWluIjoicm9vdCIsInVzZXJfaWQiOiI2MDE4ODI2MzA1ODc2NzIzMjY5In19LCJwYXJlbnQiOnsicHJvY2VzcyI6eyJoYW5kbGVzIjpbXSwicGlkIjoxLCJhcmd1bWVudHMiOiIvc2Jpbi9pbml0IiwiZmlsZSI6eyJmaWxlIjp7InBhdGgiOiIvbGliL3N5c3RlbWQvc3lzdGVtZCIsImhhc2giOnsibWQ1IjoiYWM4YjI3Y2U2NjQxY2JhNGVkMmM1ZTc2MmYwNDE5ODYifX0sImluc3RhbmNlX2hhc2giOiIxMzE4Nzc2NjQ1NjAwNzA3MjAxOSIsImFydGlmYWN0X2hhc2giOiIxMzE4Nzc2NjQ1NjAwNzA3MjAxOSJ9LCJ1c2VyIjp7InVzZXIiOnsibmFtZSI6InJvb3QiLCJkb21haW4iOiJyb290IiwidXNlcl9pZCI6IjYwMTg4MjYzMDU4NzY3MjMyNjkifX0sInN0YXJ0X3RpbWUiOiIyMDIzLTAxLTExVDA4OjQ0OjAyLjAwMFoiLCJ0YW5pdW1fdW5pcXVlX2lkIjoiMTE1MjkyNTY2NDI4MjY3MzE1MjEifSwiaW5zdGFuY2VfaGFzaCI6IjMxOTY5NjQ4NTI4NTE4ODUzOSIsImFydGlmYWN0X2hhc2giOiI0NzE0OTAwMTk0MTgwNTMxODM2In0sInN0YXJ0X3RpbWUiOiIyMDIzLTAxLTExVDA4OjQ2OjI0LjAwMFoiLCJ0YW5pdW1fdW5pcXVlX2lkIjoiMTE1Mjk4NjQzMjkxNTk1MTAwMjYifSwiaW5zdGFuY2VfaGFzaCI6IjE3MTMyMTc2Mjk2OTI2MTcwMDY4IiwiYXJ0aWZhY3RfaGFzaCI6IjExNzE1NTUyOTUwODYxMDU3MTc3In0sInN0YXJ0X3RpbWUiOiIyMDIzLTAxLTE4VDEwOjM3OjE4LjAwMFoiLCJ0YW5pdW1fdW5pcXVlX2lkIjoiMTQxNTYwNDI1NzY5OTM0OTUyMTMifSwiaW5zdGFuY2VfaGFzaCI6IjExODg2MzgxNjYzMjk0ODAzMDg2IiwiYXJ0aWZhY3RfaGFzaCI6IjQwMDE0NTA1MTc3OTQzNzAzMjAiLCJpc19pbnRlbF90YXJnZXQiOnRydWV9fX1dLCJkb21haW4iOiJ0aHJlYXRyZXNwb25zZSIsImludGVsX2lkIjoiMTM1OjE6N2I4OWFjMzUtM2U5My00MGZjLWIxNDItYjE5OTk0ZjI4NDMwIiwiaHVudF9pZCI6IjQiLCJ0aHJlYXRfaWQiOiI4NTAzOTQ1ODIsOTgzOTYyNzY1LDI2NjcwNjIwMDYsMjY2NzA2Mjc2OCwyNjY3MDYyNDM1Iiwic291cmNlX25hbWUiOiJyZWNvcmRlcjEiLCJzeXN0ZW1faW5mbyI6eyJvcyI6IlwiVWJ1bnR1IDE4LjA0LjYgTFRTXCIiLCJiaXRzIjo2NCwicGxhdGZvcm0iOiJMaW51eCJ9LCJmaXJzdF9zZWVuIjoiMjAyMy0wMS0xOFQxMDozNzozNi4wMDBaIiwibGFzdF9zZWVuIjoiMjAyMy0wMS0xOFQxMDozNzozNi4wMDBaIiwiZmluZGluZ19pZCI6IjY3ODc5ODcwMTE1MzE3NTYxNjUiLCJyZXBvcnRpbmdfaWQiOiJyZXBvcnRpbmctaWQtcGxhY2Vob2xkZXIifSwibWF0Y2giOnsidmVyc2lvbiI6MSwidHlwZSI6InByb2Nlc3MiLCJzb3VyY2UiOiJyZWNvcmRlciIsImhhc2giOiI0MDAxNDUwNTE3Nzk0MzcwMzIwIiwicHJvcGVydGllcyI6eyJwaWQiOjQzMTgxLCJhcmdzIjoiZG9ja2VyLXVudGFyIC8gL3Zhci9saWIvZG9ja2VyL292ZXJsYXkyLzJiY2ZmYjdmMGQ2YTNmMzdhNjE5OWNhNjkxNjQ5ZWE0OTM1OGEyYzJlODdmMzkyMDI1NjJlNTBlYjVjZDI4MDUvZGlmZiIsInJlY29yZGVyX3VuaXF1ZV9pZCI6IjE0MTU2MDQyNTc2OTkzNDk1MjEzIiwic3RhcnRfdGltZSI6IjIwMjMtMDEtMThUMTA6Mzc6MTguMDAwWiIsInBwaWQiOjIwNTgsInVzZXIiOiJyb290XFxyb290IiwiZmlsZSI6eyJmdWxscGF0aCI6Ii9wcm9jL3NlbGYvZXhlIn0sIm5hbWUiOiIvcHJvYy9zZWxmL2V4ZSIsInBhcmVudCI6eyJwaWQiOjIwNTgsImFyZ3MiOiIvdXNyL2Jpbi9kb2NrZXJkIC1IIGZkOi8vIC0tY29udGFpbmVyZD0vcnVuL2NvbnRhaW5lcmQvY29udGFpbmVyZC5zb2NrIiwicmVjb3JkZXJfdW5pcXVlX2lkIjoiMTE1Mjk4NjQzMjkxNTk1MTAwMjYiLCJzdGFydF90aW1lIjoiMjAyMy0wMS0xMVQwODo0NjoyNC4wMDBaIiwicHBpZCI6MSwidXNlciI6InJvb3RcXHJvb3QiLCJmaWxlIjp7ImZ1bGxwYXRoIjoiL3Vzci9iaW4vZG9ja2VyZCJ9LCJuYW1lIjoiL3Vzci9iaW4vZG9ja2VyZCIsInBhcmVudCI6eyJwaWQiOjEsImFyZ3MiOiIvc2Jpbi9pbml0IiwicmVjb3JkZXJfdW5pcXVlX2lkIjoiMTE1MjkyNTY2NDI4MjY3MzE1MjEiLCJzdGFydF90aW1lIjoiMjAyMy0wMS0xMVQwODo0NDowMi4wMDBaIiwidXNlciI6InJvb3RcXHJvb3QiLCJmaWxlIjp7Im1kNSI6ImFjOGIyN2NlNjY0MWNiYTRlZDJjNWU3NjJmMDQxOTg2IiwiZnVsbHBhdGgiOiIvbGliL3N5c3RlbWQvc3lzdGVtZCJ9LCJuYW1lIjoiL2xpYi9zeXN0ZW1kL3N5c3RlbWQifX19LCJjb250ZXh0cyI6W3siZmlsZSI6eyJ1bmlxdWVFdmVudElkIjoiNDYxMTY4NjAxODQ3NTg1NTY3MiJ9LCJldmVudCI6eyJ0aW1lc3RhbXBNcyI6IjE2NzQwMzgyMzg3ODAiLCJmaWxlQ3JlYXRlIjp7InBhdGgiOiIvdmFyL2xpYi9kb2NrZXIvb3ZlcmxheTIvMmJjZmZiN2YwZDZhM2YzN2E2MTk5Y2E2OTE2NDllYTQ5MzU4YTJjMmU4N2YzOTIwMjU2MmU1MGViNWNkMjgwNS9kaWZmL2V0Yy9ob3N0cyJ9fX1dfX0=",
-                    "payload_decoded": {
-                        "config_id": "3",
-                        "config_rev_id": "1",
-                        "finding": {
-                            "domain": "threatresponse",
-                            "first_seen": "2023-01-18T10:37:36.000Z",
-                            "hunt_id": "4",
-                            "id": "6787987011531756165",
-                            "intel_id": "135:1:7b89ac35-3e93-40fc-b142-b19994f28430",
-                            "last_seen": "2023-01-18T10:37:36.000Z",
-                            "reporting_id": "reporting-id-placeholder",
-                            "source_name": "recorder1",
-                            "system_info": {
-                                "bits": 64,
-                                "os": {
-                                    "platform": "\"Ubuntu",
-                                    "value": "\"Ubuntu 18.04.6 LTS\"",
-                                    "version": "18.04.6 LTS\""
-                                },
-                                "platform": "linux"
-                            },
-                            "threat_id": "850394582,983962765,2667062006,2667062768,2667062435",
-                            "whats": [
-                                {
-                                    "artifact_activity": {
-                                        "acting_artifact": {
-                                            "artifact_hash": "4001450517794370320",
-                                            "instance_hash": "11886381663294803086",
-                                            "is_intel_target": true,
+            "match_details": {
+                "config_id": 3,
+                "config_rev_id": 1,
+                "finding": {
+                    "domain": "threatresponse",
+                    "first_seen": "2023-01-18T10:37:36.000Z",
+                    "hunt_id": "4",
+                    "id": "6787987011531756165",
+                    "intel_id": "135:1:7b89ac35-3e93-40fc-b142-b19994f28430",
+                    "last_seen": "2023-01-18T10:37:36.000Z",
+                    "reporting_id": "reporting-id-placeholder",
+                    "source_name": "recorder1",
+                    "system_info": {
+                        "bits": 64,
+                        "os": {
+                            "platform": "\"Ubuntu",
+                            "value": "\"Ubuntu 18.04.6 LTS\"",
+                            "version": "18.04.6 LTS\""
+                        },
+                        "platform": "linux"
+                    },
+                    "threat_id": "850394582,983962765,2667062006,2667062768,2667062435",
+                    "whats": [
+                        {
+                            "artifact_activity": {
+                                "acting_artifact": {
+                                    "artifact_hash": "4001450517794370320",
+                                    "instance_hash": "11886381663294803086",
+                                    "is_intel_target": true,
+                                    "process": {
+                                        "arguments": "docker-untar / /var/lib/docker/overlay2/2bcffb7f0d6a3f37a6199ca691649ea49358a2c2e87f39202562e50eb5cd2805/diff",
+                                        "file": {
+                                            "artifact_hash": "13164683008308733236",
+                                            "instance_hash": "13164683008308733236",
+                                            "path": "/proc/self/exe"
+                                        },
+                                        "parent": {
+                                            "artifact_hash": "11715552950861057177",
+                                            "instance_hash": "17132176296926170068",
                                             "process": {
-                                                "arguments": "docker-untar / /var/lib/docker/overlay2/2bcffb7f0d6a3f37a6199ca691649ea49358a2c2e87f39202562e50eb5cd2805/diff",
+                                                "arguments": "/usr/bin/dockerd -H fd:// --containerd=/run/containerd/containerd.sock",
                                                 "file": {
-                                                    "artifact_hash": "13164683008308733236",
-                                                    "instance_hash": "13164683008308733236",
-                                                    "path": "/proc/self/exe"
+                                                    "artifact_hash": "16788126017090571291",
+                                                    "instance_hash": "16788126017090571291",
+                                                    "path": "/usr/bin/dockerd"
                                                 },
                                                 "parent": {
-                                                    "artifact_hash": "11715552950861057177",
-                                                    "instance_hash": "17132176296926170068",
+                                                    "artifact_hash": "4714900194180531836",
+                                                    "instance_hash": "319696485285188539",
                                                     "process": {
-                                                        "arguments": "/usr/bin/dockerd -H fd:// --containerd=/run/containerd/containerd.sock",
+                                                        "arguments": "/sbin/init",
                                                         "file": {
-                                                            "artifact_hash": "16788126017090571291",
-                                                            "instance_hash": "16788126017090571291",
-                                                            "path": "/usr/bin/dockerd"
+                                                            "artifact_hash": "13187766456007072019",
+                                                            "hash": {
+                                                                "md5": "ac8b27ce6641cba4ed2c5e762f041986"
+                                                            },
+                                                            "instance_hash": "13187766456007072019",
+                                                            "path": "/lib/systemd/systemd"
                                                         },
-                                                        "parent": {
-                                                            "artifact_hash": "4714900194180531836",
-                                                            "instance_hash": "319696485285188539",
-                                                            "process": {
-                                                                "arguments": "/sbin/init",
-                                                                "file": {
-                                                                    "artifact_hash": "13187766456007072019",
-                                                                    "hash": {
-                                                                        "md5": "ac8b27ce6641cba4ed2c5e762f041986"
-                                                                    },
-                                                                    "instance_hash": "13187766456007072019",
-                                                                    "path": "/lib/systemd/systemd"
-                                                                },
-                                                                "pid": "1",
-                                                                "start_time": "2023-01-11T08:44:02.000Z",
-                                                                "tanium_unique_id": "11529256642826731521",
-                                                                "user": {
-                                                                    "domain": "root",
-                                                                    "id": "6018826305876723269",
-                                                                    "name": "root"
-                                                                }
-                                                            }
-                                                        },
-                                                        "pid": "2058",
-                                                        "start_time": "2023-01-11T08:46:24.000Z",
-                                                        "tanium_unique_id": "11529864329159510026",
+                                                        "pid": 1,
+                                                        "start_time": "2023-01-11T08:44:02.000Z",
+                                                        "tanium_unique_id": "11529256642826731521",
                                                         "user": {
                                                             "domain": "root",
                                                             "id": "6018826305876723269",
@@ -812,132 +794,139 @@ An example event for `threat_response` looks as following:
                                                         }
                                                     }
                                                 },
-                                                "pid": "43181",
-                                                "start_time": "2023-01-18T10:37:18.000Z",
-                                                "tanium_unique_id": "14156042576993495213",
+                                                "pid": 2058,
+                                                "start_time": "2023-01-11T08:46:24.000Z",
+                                                "tanium_unique_id": "11529864329159510026",
                                                 "user": {
                                                     "domain": "root",
-                                                    "group_id": "0",
-                                                    "id": "0",
+                                                    "id": "6018826305876723269",
                                                     "name": "root"
                                                 }
                                             }
                                         },
-                                        "relevant_actions": [
-                                            {
-                                                "tanium_recorder_context": {
-                                                    "event": {
-                                                        "file_create": {
-                                                            "path": "/var/lib/docker/overlay2/2bcffb7f0d6a3f37a6199ca691649ea49358a2c2e87f39202562e50eb5cd2805/diff/etc/hosts"
-                                                        },
-                                                        "timestamp_ms": "2023-01-18T10:37:18.780Z"
-                                                    },
-                                                    "file": {
-                                                        "unique_event_id": "4611686018475855672"
-                                                    }
-                                                },
-                                                "tanium_recorder_event_table_id": "4611686018475855672",
-                                                "target": {
-                                                    "artifact_hash": "105380045610624906",
-                                                    "file": {
-                                                        "hash": {
-                                                            "md5": "4d1f1257b846bda82d0338fb541e7301",
-                                                            "sha1": "043eb324a653456caa1a73e2e2d49f77792bb0c5",
-                                                            "sha256": "e3998dbe02b51dada33de87ae43d18a93ab6915b9e34f5a751bf2b9b25a55492"
-                                                        },
-                                                        "instance_hash_salt": "3014767",
-                                                        "magic_number_hex": "3132372e",
-                                                        "modification_time": "2022-09-11T20:08:26.000Z",
-                                                        "path": "/var/lib/docker/overlay2/2bcffb7f0d6a3f37a6199ca691649ea49358a2c2e87f39202562e50eb5cd2805/diff/etc/hosts",
-                                                        "size_bytes": 79
-                                                    },
-                                                    "instance_hash": "9667017345150968342"
-                                                },
-                                                "timestamp": "2023-01-18T10:37:18.000Z",
-                                                "verb": 6
-                                            }
-                                        ]
-                                    },
-                                    "intel_intra_ids": [
-                                        {
-                                            "id": 850394582
-                                        },
-                                        {
-                                            "id": 983962193
-                                        },
-                                        {
-                                            "id": 2667062006
-                                        },
-                                        {
-                                            "id": 3398416878
-                                        },
-                                        {
-                                            "id": 3999014465
+                                        "pid": 43181,
+                                        "start_time": "2023-01-18T10:37:18.000Z",
+                                        "tanium_unique_id": "14156042576993495213",
+                                        "user": {
+                                            "domain": "root",
+                                            "group_id": "0",
+                                            "id": "0",
+                                            "name": "root"
                                         }
-                                    ],
-                                    "source_name": "recorder"
-                                }
-                            ]
-                        },
-                        "intel_id": "135",
-                        "match": {
-                            "contexts": [
-                                {
-                                    "event": {
-                                        "file_create": {
-                                            "path": "/var/lib/docker/overlay2/2bcffb7f0d6a3f37a6199ca691649ea49358a2c2e87f39202562e50eb5cd2805/diff/etc/hosts"
-                                        },
-                                        "timestampMs": "2023-01-18T10:37:18.780Z"
-                                    },
-                                    "file": {
-                                        "unique_event_id": "4611686018475855672"
                                     }
+                                },
+                                "relevant_actions": [
+                                    {
+                                        "tanium_recorder_context": {
+                                            "event": {
+                                                "file_create": {
+                                                    "path": "/var/lib/docker/overlay2/2bcffb7f0d6a3f37a6199ca691649ea49358a2c2e87f39202562e50eb5cd2805/diff/etc/hosts"
+                                                },
+                                                "timestamp_ms": "2023-01-18T10:37:18.780Z"
+                                            },
+                                            "file": {
+                                                "unique_event_id": "4611686018475855672"
+                                            }
+                                        },
+                                        "tanium_recorder_event_table_id": "4611686018475855672",
+                                        "target": {
+                                            "artifact_hash": "105380045610624906",
+                                            "file": {
+                                                "hash": {
+                                                    "md5": "4d1f1257b846bda82d0338fb541e7301",
+                                                    "sha1": "043eb324a653456caa1a73e2e2d49f77792bb0c5",
+                                                    "sha256": "e3998dbe02b51dada33de87ae43d18a93ab6915b9e34f5a751bf2b9b25a55492"
+                                                },
+                                                "instance_hash_salt": "3014767",
+                                                "magic_number_hex": "3132372e",
+                                                "modification_time": "2022-09-11T20:08:26.000Z",
+                                                "path": "/var/lib/docker/overlay2/2bcffb7f0d6a3f37a6199ca691649ea49358a2c2e87f39202562e50eb5cd2805/diff/etc/hosts",
+                                                "size_bytes": 79
+                                            },
+                                            "instance_hash": "9667017345150968342"
+                                        },
+                                        "timestamp": "2023-01-18T10:37:18.000Z",
+                                        "verb": 6
+                                    }
+                                ]
+                            },
+                            "intel_intra_ids": [
+                                {
+                                    "id": 850394582
+                                },
+                                {
+                                    "id": 983962193
+                                },
+                                {
+                                    "id": 2667062006
+                                },
+                                {
+                                    "id": 3398416878
+                                },
+                                {
+                                    "id": 3999014465
                                 }
                             ],
-                            "hash": "4001450517794370320",
-                            "properties": {
-                                "args": "docker-untar / /var/lib/docker/overlay2/2bcffb7f0d6a3f37a6199ca691649ea49358a2c2e87f39202562e50eb5cd2805/diff",
+                            "source_name": "recorder"
+                        }
+                    ]
+                },
+                "intel_id": 135,
+                "match": {
+                    "contexts": [
+                        {
+                            "event": {
+                                "file_create": {
+                                    "path": "/var/lib/docker/overlay2/2bcffb7f0d6a3f37a6199ca691649ea49358a2c2e87f39202562e50eb5cd2805/diff/etc/hosts"
+                                },
+                                "timestampMs": "2023-01-18T10:37:18.780Z"
+                            },
+                            "file": {
+                                "unique_event_id": "4611686018475855672"
+                            }
+                        }
+                    ],
+                    "hash": "4001450517794370320",
+                    "properties": {
+                        "args": "docker-untar / /var/lib/docker/overlay2/2bcffb7f0d6a3f37a6199ca691649ea49358a2c2e87f39202562e50eb5cd2805/diff",
+                        "file": {
+                            "full_path": "/proc/self/exe"
+                        },
+                        "name": "/proc/self/exe",
+                        "parent": {
+                            "args": "/usr/bin/dockerd -H fd:// --containerd=/run/containerd/containerd.sock",
+                            "file": {
+                                "full_path": "/usr/bin/dockerd"
+                            },
+                            "name": "/usr/bin/dockerd",
+                            "parent": {
+                                "args": "/sbin/init",
                                 "file": {
-                                    "full_path": "/proc/self/exe"
+                                    "full_path": "/lib/systemd/systemd",
+                                    "md5": "ac8b27ce6641cba4ed2c5e762f041986"
                                 },
-                                "name": "/proc/self/exe",
-                                "parent": {
-                                    "args": "/usr/bin/dockerd -H fd:// --containerd=/run/containerd/containerd.sock",
-                                    "file": {
-                                        "full_path": "/usr/bin/dockerd"
-                                    },
-                                    "name": "/usr/bin/dockerd",
-                                    "parent": {
-                                        "args": "/sbin/init",
-                                        "file": {
-                                            "full_path": "/lib/systemd/systemd",
-                                            "md5": "ac8b27ce6641cba4ed2c5e762f041986"
-                                        },
-                                        "name": "/lib/systemd/systemd",
-                                        "pid": "1",
-                                        "recorder_unique_id": "11529256642826731521",
-                                        "start_time": "2023-01-11T08:44:02.000Z",
-                                        "user": "root\\root"
-                                    },
-                                    "pid": "2058",
-                                    "ppid": "1",
-                                    "recorder_unique_id": "11529864329159510026",
-                                    "start_time": "2023-01-11T08:46:24.000Z",
-                                    "user": "root\\root"
-                                },
-                                "pid": "43181",
-                                "ppid": "2058",
-                                "recorder_unique_id": "14156042576993495213",
-                                "start_time": "2023-01-18T10:37:18.000Z",
+                                "name": "/lib/systemd/systemd",
+                                "pid": 1,
+                                "recorder_unique_id": "11529256642826731521",
+                                "start_time": "2023-01-11T08:44:02.000Z",
                                 "user": "root\\root"
                             },
-                            "source": "recorder",
-                            "type": "process",
-                            "version": 1
-                        }
-                    }
-                },
-                "original": "payload=eyJpbnRlbF9pZCI6MTM1LCJjb25maWdfaWQiOjMsImNvbmZpZ19yZXZfaWQiOjEsImZpbmRpbmciOnsid2hhdHMiOlt7ImludGVsX2ludHJhX2lkcyI6W3siaWQiOjg1MDM5NDU4Mn0seyJpZCI6OTgzOTYyMTkzfSx7ImlkIjoyNjY3MDYyMDA2fSx7ImlkIjozMzk4NDE2ODc4fSx7ImlkIjozOTk5MDE0NDY1fV0sInNvdXJjZV9uYW1lIjoicmVjb3JkZXIiLCJhcnRpZmFjdF9hY3Rpdml0eSI6eyJyZWxldmFudF9hY3Rpb25zIjpbeyJ2ZXJiIjo2LCJ0YXJnZXQiOnsiZmlsZSI6eyJwYXRoIjoiL3Zhci9saWIvZG9ja2VyL292ZXJsYXkyLzJiY2ZmYjdmMGQ2YTNmMzdhNjE5OWNhNjkxNjQ5ZWE0OTM1OGEyYzJlODdmMzkyMDI1NjJlNTBlYjVjZDI4MDUvZGlmZi9ldGMvaG9zdHMiLCJoYXNoIjp7Im1kNSI6IjRkMWYxMjU3Yjg0NmJkYTgyZDAzMzhmYjU0MWU3MzAxIiwic2hhMSI6IjA0M2ViMzI0YTY1MzQ1NmNhYTFhNzNlMmUyZDQ5Zjc3NzkyYmIwYzUiLCJzaGEyNTYiOiJlMzk5OGRiZTAyYjUxZGFkYTMzZGU4N2FlNDNkMThhOTNhYjY5MTViOWUzNGY1YTc1MWJmMmI5YjI1YTU1NDkyIn0sInNpemVfYnl0ZXMiOiI3OSIsIm1vZGlmaWNhdGlvbl90aW1lIjoiMjAyMi0wOS0xMVQyMDowODoyNi4wMDBaIiwiaW5zdGFuY2VfaGFzaF9zYWx0IjoiMzAxNDc2NyIsIm1hZ2ljX251bWJlcl9oZXgiOiIzMTMyMzcyZSJ9LCJpbnN0YW5jZV9oYXNoIjoiOTY2NzAxNzM0NTE1MDk2ODM0MiIsImFydGlmYWN0X2hhc2giOiIxMDUzODAwNDU2MTA2MjQ5MDYifSwidGltZXN0YW1wIjoiMjAyMy0wMS0xOFQxMDozNzoxOC4wMDBaIiwidGFuaXVtX3JlY29yZGVyX2V2ZW50X3RhYmxlX2lkIjoiNDYxMTY4NjAxODQ3NTg1NTY3MiIsInRhbml1bV9yZWNvcmRlcl9jb250ZXh0Ijp7ImZpbGUiOnsidW5pcXVlX2V2ZW50X2lkIjoiNDYxMTY4NjAxODQ3NTg1NTY3MiJ9LCJldmVudCI6eyJ0aW1lc3RhbXBfbXMiOiIxNjc0MDM4MjM4NzgwIiwiZmlsZV9jcmVhdGUiOnsicGF0aCI6Ii92YXIvbGliL2RvY2tlci9vdmVybGF5Mi8yYmNmZmI3ZjBkNmEzZjM3YTYxOTljYTY5MTY0OWVhNDkzNThhMmMyZTg3ZjM5MjAyNTYyZTUwZWI1Y2QyODA1L2RpZmYvZXRjL2hvc3RzIn19fX1dLCJhY3RpbmdfYXJ0aWZhY3QiOnsicHJvY2VzcyI6eyJoYW5kbGVzIjpbXSwicGlkIjo0MzE4MSwiYXJndW1lbnRzIjoiZG9ja2VyLXVudGFyIC8gL3Zhci9saWIvZG9ja2VyL292ZXJsYXkyLzJiY2ZmYjdmMGQ2YTNmMzdhNjE5OWNhNjkxNjQ5ZWE0OTM1OGEyYzJlODdmMzkyMDI1NjJlNTBlYjVjZDI4MDUvZGlmZiIsImZpbGUiOnsiZmlsZSI6eyJwYXRoIjoiL3Byb2Mvc2VsZi9leGUifSwiaW5zdGFuY2VfaGFzaCI6IjEzMTY0NjgzMDA4MzA4NzMzMjM2IiwiYXJ0aWZhY3RfaGFzaCI6IjEzMTY0NjgzMDA4MzA4NzMzMjM2In0sInVzZXIiOnsidXNlciI6eyJuYW1lIjoicm9vdCIsImRvbWFpbiI6InJvb3QiLCJ1c2VyX2lkIjoiMCIsImdyb3VwX2lkIjoiMCJ9fSwicGFyZW50Ijp7InByb2Nlc3MiOnsiaGFuZGxlcyI6W10sInBpZCI6MjA1OCwiYXJndW1lbnRzIjoiL3Vzci9iaW4vZG9ja2VyZCAtSCBmZDovLyAtLWNvbnRhaW5lcmQ9L3J1bi9jb250YWluZXJkL2NvbnRhaW5lcmQuc29jayIsImZpbGUiOnsiZmlsZSI6eyJwYXRoIjoiL3Vzci9iaW4vZG9ja2VyZCJ9LCJpbnN0YW5jZV9oYXNoIjoiMTY3ODgxMjYwMTcwOTA1NzEyOTEiLCJhcnRpZmFjdF9oYXNoIjoiMTY3ODgxMjYwMTcwOTA1NzEyOTEifSwidXNlciI6eyJ1c2VyIjp7Im5hbWUiOiJyb290IiwiZG9tYWluIjoicm9vdCIsInVzZXJfaWQiOiI2MDE4ODI2MzA1ODc2NzIzMjY5In19LCJwYXJlbnQiOnsicHJvY2VzcyI6eyJoYW5kbGVzIjpbXSwicGlkIjoxLCJhcmd1bWVudHMiOiIvc2Jpbi9pbml0IiwiZmlsZSI6eyJmaWxlIjp7InBhdGgiOiIvbGliL3N5c3RlbWQvc3lzdGVtZCIsImhhc2giOnsibWQ1IjoiYWM4YjI3Y2U2NjQxY2JhNGVkMmM1ZTc2MmYwNDE5ODYifX0sImluc3RhbmNlX2hhc2giOiIxMzE4Nzc2NjQ1NjAwNzA3MjAxOSIsImFydGlmYWN0X2hhc2giOiIxMzE4Nzc2NjQ1NjAwNzA3MjAxOSJ9LCJ1c2VyIjp7InVzZXIiOnsibmFtZSI6InJvb3QiLCJkb21haW4iOiJyb290IiwidXNlcl9pZCI6IjYwMTg4MjYzMDU4NzY3MjMyNjkifX0sInN0YXJ0X3RpbWUiOiIyMDIzLTAxLTExVDA4OjQ0OjAyLjAwMFoiLCJ0YW5pdW1fdW5pcXVlX2lkIjoiMTE1MjkyNTY2NDI4MjY3MzE1MjEifSwiaW5zdGFuY2VfaGFzaCI6IjMxOTY5NjQ4NTI4NTE4ODUzOSIsImFydGlmYWN0X2hhc2giOiI0NzE0OTAwMTk0MTgwNTMxODM2In0sInN0YXJ0X3RpbWUiOiIyMDIzLTAxLTExVDA4OjQ2OjI0LjAwMFoiLCJ0YW5pdW1fdW5pcXVlX2lkIjoiMTE1Mjk4NjQzMjkxNTk1MTAwMjYifSwiaW5zdGFuY2VfaGFzaCI6IjE3MTMyMTc2Mjk2OTI2MTcwMDY4IiwiYXJ0aWZhY3RfaGFzaCI6IjExNzE1NTUyOTUwODYxMDU3MTc3In0sInN0YXJ0X3RpbWUiOiIyMDIzLTAxLTE4VDEwOjM3OjE4LjAwMFoiLCJ0YW5pdW1fdW5pcXVlX2lkIjoiMTQxNTYwNDI1NzY5OTM0OTUyMTMifSwiaW5zdGFuY2VfaGFzaCI6IjExODg2MzgxNjYzMjk0ODAzMDg2IiwiYXJ0aWZhY3RfaGFzaCI6IjQwMDE0NTA1MTc3OTQzNzAzMjAiLCJpc19pbnRlbF90YXJnZXQiOnRydWV9fX1dLCJkb21haW4iOiJ0aHJlYXRyZXNwb25zZSIsImludGVsX2lkIjoiMTM1OjE6N2I4OWFjMzUtM2U5My00MGZjLWIxNDItYjE5OTk0ZjI4NDMwIiwiaHVudF9pZCI6IjQiLCJ0aHJlYXRfaWQiOiI4NTAzOTQ1ODIsOTgzOTYyNzY1LDI2NjcwNjIwMDYsMjY2NzA2Mjc2OCwyNjY3MDYyNDM1Iiwic291cmNlX25hbWUiOiJyZWNvcmRlcjEiLCJzeXN0ZW1faW5mbyI6eyJvcyI6IlwiVWJ1bnR1IDE4LjA0LjYgTFRTXCIiLCJiaXRzIjo2NCwicGxhdGZvcm0iOiJMaW51eCJ9LCJmaXJzdF9zZWVuIjoiMjAyMy0wMS0xOFQxMDozNzozNi4wMDBaIiwibGFzdF9zZWVuIjoiMjAyMy0wMS0xOFQxMDozNzozNi4wMDBaIiwiZmluZGluZ19pZCI6IjY3ODc5ODcwMTE1MzE3NTYxNjUiLCJyZXBvcnRpbmdfaWQiOiJyZXBvcnRpbmctaWQtcGxhY2Vob2xkZXIifSwibWF0Y2giOnsidmVyc2lvbiI6MSwidHlwZSI6InByb2Nlc3MiLCJzb3VyY2UiOiJyZWNvcmRlciIsImhhc2giOiI0MDAxNDUwNTE3Nzk0MzcwMzIwIiwicHJvcGVydGllcyI6eyJwaWQiOjQzMTgxLCJhcmdzIjoiZG9ja2VyLXVudGFyIC8gL3Zhci9saWIvZG9ja2VyL292ZXJsYXkyLzJiY2ZmYjdmMGQ2YTNmMzdhNjE5OWNhNjkxNjQ5ZWE0OTM1OGEyYzJlODdmMzkyMDI1NjJlNTBlYjVjZDI4MDUvZGlmZiIsInJlY29yZGVyX3VuaXF1ZV9pZCI6IjE0MTU2MDQyNTc2OTkzNDk1MjEzIiwic3RhcnRfdGltZSI6IjIwMjMtMDEtMThUMTA6Mzc6MTguMDAwWiIsInBwaWQiOjIwNTgsInVzZXIiOiJyb290XFxyb290IiwiZmlsZSI6eyJmdWxscGF0aCI6Ii9wcm9jL3NlbGYvZXhlIn0sIm5hbWUiOiIvcHJvYy9zZWxmL2V4ZSIsInBhcmVudCI6eyJwaWQiOjIwNTgsImFyZ3MiOiIvdXNyL2Jpbi9kb2NrZXJkIC1IIGZkOi8vIC0tY29udGFpbmVyZD0vcnVuL2NvbnRhaW5lcmQvY29udGFpbmVyZC5zb2NrIiwicmVjb3JkZXJfdW5pcXVlX2lkIjoiMTE1Mjk4NjQzMjkxNTk1MTAwMjYiLCJzdGFydF90aW1lIjoiMjAyMy0wMS0xMVQwODo0NjoyNC4wMDBaIiwicHBpZCI6MSwidXNlciI6InJvb3RcXHJvb3QiLCJmaWxlIjp7ImZ1bGxwYXRoIjoiL3Vzci9iaW4vZG9ja2VyZCJ9LCJuYW1lIjoiL3Vzci9iaW4vZG9ja2VyZCIsInBhcmVudCI6eyJwaWQiOjEsImFyZ3MiOiIvc2Jpbi9pbml0IiwicmVjb3JkZXJfdW5pcXVlX2lkIjoiMTE1MjkyNTY2NDI4MjY3MzE1MjEiLCJzdGFydF90aW1lIjoiMjAyMy0wMS0xMVQwODo0NDowMi4wMDBaIiwidXNlciI6InJvb3RcXHJvb3QiLCJmaWxlIjp7Im1kNSI6ImFjOGIyN2NlNjY0MWNiYTRlZDJjNWU3NjJmMDQxOTg2IiwiZnVsbHBhdGgiOiIvbGliL3N5c3RlbWQvc3lzdGVtZCJ9LCJuYW1lIjoiL2xpYi9zeXN0ZW1kL3N5c3RlbWQifX19LCJjb250ZXh0cyI6W3siZmlsZSI6eyJ1bmlxdWVFdmVudElkIjoiNDYxMTY4NjAxODQ3NTg1NTY3MiJ9LCJldmVudCI6eyJ0aW1lc3RhbXBNcyI6IjE2NzQwMzgyMzg3ODAiLCJmaWxlQ3JlYXRlIjp7InBhdGgiOiIvdmFyL2xpYi9kb2NrZXIvb3ZlcmxheTIvMmJjZmZiN2YwZDZhM2YzN2E2MTk5Y2E2OTE2NDllYTQ5MzU4YTJjMmU4N2YzOTIwMjU2MmU1MGViNWNkMjgwNS9kaWZmL2V0Yy9ob3N0cyJ9fX1dfX0="
+                            "pid": 2058,
+                            "ppid": 1,
+                            "recorder_unique_id": "11529864329159510026",
+                            "start_time": "2023-01-11T08:46:24.000Z",
+                            "user": "root\\root"
+                        },
+                        "pid": 43181,
+                        "ppid": 2058,
+                        "recorder_unique_id": "14156042576993495213",
+                        "start_time": "2023-01-18T10:37:18.000Z",
+                        "user": "root\\root"
+                    },
+                    "source": "recorder",
+                    "type": "process",
+                    "version": 1
+                }
             },
             "priority": "high",
             "severity": "info",
@@ -967,144 +956,252 @@ An example event for `threat_response` looks as following:
 | log.offset | Log offset. | long |
 | log.source.address | Source address from which the log event was read / sent from. | keyword |
 | tanium.threat_response.action | Action for the threat response. | keyword |
+| tanium.threat_response.alert_id | Alert ID | keyword |
 | tanium.threat_response.computer.ip | Computer ip of the threat response. | ip |
 | tanium.threat_response.computer.name | Computer name of the threat response. | keyword |
 | tanium.threat_response.created_at | Create time for the threat response. | date |
 | tanium.threat_response.event.id | Event id of the threat response.. | keyword |
 | tanium.threat_response.event.name | Event name of the threat response. | keyword |
 | tanium.threat_response.id | Threat response id. | keyword |
-| tanium.threat_response.other_parameters.log_details.name | Name of threat. | keyword |
-| tanium.threat_response.other_parameters.log_details.payload | Decoded payload data. | match_only_text |
-| tanium.threat_response.other_parameters.log_details.payload_decoded.config_id | Config id. | keyword |
-| tanium.threat_response.other_parameters.log_details.payload_decoded.config_rev_id | Config rev.iD. | keyword |
-| tanium.threat_response.other_parameters.log_details.payload_decoded.finding.domain | Finding domain. | keyword |
-| tanium.threat_response.other_parameters.log_details.payload_decoded.finding.first_seen | First seen. | date |
-| tanium.threat_response.other_parameters.log_details.payload_decoded.finding.hunt_id | Hunt id. | keyword |
-| tanium.threat_response.other_parameters.log_details.payload_decoded.finding.id | Finding id. | keyword |
-| tanium.threat_response.other_parameters.log_details.payload_decoded.finding.intel_id | Finding intel id. | keyword |
-| tanium.threat_response.other_parameters.log_details.payload_decoded.finding.last_seen | Last seen. | date |
-| tanium.threat_response.other_parameters.log_details.payload_decoded.finding.reporting_id | Finding reporting id. | keyword |
-| tanium.threat_response.other_parameters.log_details.payload_decoded.finding.source_name | Source name. | keyword |
-| tanium.threat_response.other_parameters.log_details.payload_decoded.finding.system_info.bits | Bits. | long |
-| tanium.threat_response.other_parameters.log_details.payload_decoded.finding.system_info.os.platform | OS platform. | keyword |
-| tanium.threat_response.other_parameters.log_details.payload_decoded.finding.system_info.os.value | OS value. | keyword |
-| tanium.threat_response.other_parameters.log_details.payload_decoded.finding.system_info.os.version | OS version. | version |
-| tanium.threat_response.other_parameters.log_details.payload_decoded.finding.system_info.platform | OS type. | keyword |
-| tanium.threat_response.other_parameters.log_details.payload_decoded.finding.threat_id | Threat id. | keyword |
-| tanium.threat_response.other_parameters.log_details.payload_decoded.finding.whats |  | nested |
-| tanium.threat_response.other_parameters.log_details.payload_decoded.finding.whats.artifact_activity.acting_artifact.artifact_hash | Artifact hash of activity. | keyword |
-| tanium.threat_response.other_parameters.log_details.payload_decoded.finding.whats.artifact_activity.acting_artifact.instance_hash | Instance hash of activity. | keyword |
-| tanium.threat_response.other_parameters.log_details.payload_decoded.finding.whats.artifact_activity.acting_artifact.is_intel_target | Intel target or not. | boolean |
-| tanium.threat_response.other_parameters.log_details.payload_decoded.finding.whats.artifact_activity.acting_artifact.process.arguments | Process arguments. | keyword |
-| tanium.threat_response.other_parameters.log_details.payload_decoded.finding.whats.artifact_activity.acting_artifact.process.file.artifact_hash | Artifact hash of file. | keyword |
-| tanium.threat_response.other_parameters.log_details.payload_decoded.finding.whats.artifact_activity.acting_artifact.process.file.instance_hash | Instance hash of file. | keyword |
-| tanium.threat_response.other_parameters.log_details.payload_decoded.finding.whats.artifact_activity.acting_artifact.process.file.path | Path of file. | keyword |
-| tanium.threat_response.other_parameters.log_details.payload_decoded.finding.whats.artifact_activity.acting_artifact.process.handles | Process handles. | keyword |
-| tanium.threat_response.other_parameters.log_details.payload_decoded.finding.whats.artifact_activity.acting_artifact.process.parent.artifact_hash | Artifact hash. | keyword |
-| tanium.threat_response.other_parameters.log_details.payload_decoded.finding.whats.artifact_activity.acting_artifact.process.parent.instance_hash | Instance hash. | keyword |
-| tanium.threat_response.other_parameters.log_details.payload_decoded.finding.whats.artifact_activity.acting_artifact.process.parent.process.arguments | Process arguments. | keyword |
-| tanium.threat_response.other_parameters.log_details.payload_decoded.finding.whats.artifact_activity.acting_artifact.process.parent.process.file.artifact_hash | Artifact hash of file. | keyword |
-| tanium.threat_response.other_parameters.log_details.payload_decoded.finding.whats.artifact_activity.acting_artifact.process.parent.process.file.instance_hash | Instance hash of file. | keyword |
-| tanium.threat_response.other_parameters.log_details.payload_decoded.finding.whats.artifact_activity.acting_artifact.process.parent.process.file.path | Path of file. | keyword |
-| tanium.threat_response.other_parameters.log_details.payload_decoded.finding.whats.artifact_activity.acting_artifact.process.parent.process.handles | Process handles. | keyword |
-| tanium.threat_response.other_parameters.log_details.payload_decoded.finding.whats.artifact_activity.acting_artifact.process.parent.process.parent.artifact_hash | Artifact hash. | keyword |
-| tanium.threat_response.other_parameters.log_details.payload_decoded.finding.whats.artifact_activity.acting_artifact.process.parent.process.parent.instance_hash | Instance hash. | keyword |
-| tanium.threat_response.other_parameters.log_details.payload_decoded.finding.whats.artifact_activity.acting_artifact.process.parent.process.parent.process.arguments | Process arguments. | keyword |
-| tanium.threat_response.other_parameters.log_details.payload_decoded.finding.whats.artifact_activity.acting_artifact.process.parent.process.parent.process.file.artifact_hash | Artifact hash of file. | keyword |
-| tanium.threat_response.other_parameters.log_details.payload_decoded.finding.whats.artifact_activity.acting_artifact.process.parent.process.parent.process.file.hash.md5 | MD5 hash. | keyword |
-| tanium.threat_response.other_parameters.log_details.payload_decoded.finding.whats.artifact_activity.acting_artifact.process.parent.process.parent.process.file.instance_hash | Instance hash of file. | keyword |
-| tanium.threat_response.other_parameters.log_details.payload_decoded.finding.whats.artifact_activity.acting_artifact.process.parent.process.parent.process.file.path | Path of file. | keyword |
-| tanium.threat_response.other_parameters.log_details.payload_decoded.finding.whats.artifact_activity.acting_artifact.process.parent.process.parent.process.handles | Process handles. | keyword |
-| tanium.threat_response.other_parameters.log_details.payload_decoded.finding.whats.artifact_activity.acting_artifact.process.parent.process.parent.process.md5 | MD5 keyword. | keyword |
-| tanium.threat_response.other_parameters.log_details.payload_decoded.finding.whats.artifact_activity.acting_artifact.process.parent.process.parent.process.pid | Process id. | keyword |
-| tanium.threat_response.other_parameters.log_details.payload_decoded.finding.whats.artifact_activity.acting_artifact.process.parent.process.parent.process.start_time | Start time. | date |
-| tanium.threat_response.other_parameters.log_details.payload_decoded.finding.whats.artifact_activity.acting_artifact.process.parent.process.parent.process.tanium_unique_id | Tanium unique id. | keyword |
-| tanium.threat_response.other_parameters.log_details.payload_decoded.finding.whats.artifact_activity.acting_artifact.process.parent.process.parent.process.user.domain | User domain. | keyword |
-| tanium.threat_response.other_parameters.log_details.payload_decoded.finding.whats.artifact_activity.acting_artifact.process.parent.process.parent.process.user.id | User id. | keyword |
-| tanium.threat_response.other_parameters.log_details.payload_decoded.finding.whats.artifact_activity.acting_artifact.process.parent.process.parent.process.user.name | User name. | keyword |
-| tanium.threat_response.other_parameters.log_details.payload_decoded.finding.whats.artifact_activity.acting_artifact.process.parent.process.pid | Process id. | keyword |
-| tanium.threat_response.other_parameters.log_details.payload_decoded.finding.whats.artifact_activity.acting_artifact.process.parent.process.start_time | Start time. | date |
-| tanium.threat_response.other_parameters.log_details.payload_decoded.finding.whats.artifact_activity.acting_artifact.process.parent.process.tanium_unique_id | Tanium unique id. | keyword |
-| tanium.threat_response.other_parameters.log_details.payload_decoded.finding.whats.artifact_activity.acting_artifact.process.parent.process.user.domain | User domain. | keyword |
-| tanium.threat_response.other_parameters.log_details.payload_decoded.finding.whats.artifact_activity.acting_artifact.process.parent.process.user.group_id | User group id. | keyword |
-| tanium.threat_response.other_parameters.log_details.payload_decoded.finding.whats.artifact_activity.acting_artifact.process.parent.process.user.id | User id. | keyword |
-| tanium.threat_response.other_parameters.log_details.payload_decoded.finding.whats.artifact_activity.acting_artifact.process.parent.process.user.name | User name. | keyword |
-| tanium.threat_response.other_parameters.log_details.payload_decoded.finding.whats.artifact_activity.acting_artifact.process.pid | Parent id. | keyword |
-| tanium.threat_response.other_parameters.log_details.payload_decoded.finding.whats.artifact_activity.acting_artifact.process.start_time | Start time. | date |
-| tanium.threat_response.other_parameters.log_details.payload_decoded.finding.whats.artifact_activity.acting_artifact.process.tanium_unique_id | Tanium unique id. | keyword |
-| tanium.threat_response.other_parameters.log_details.payload_decoded.finding.whats.artifact_activity.acting_artifact.process.user.domain | User domain. | keyword |
-| tanium.threat_response.other_parameters.log_details.payload_decoded.finding.whats.artifact_activity.acting_artifact.process.user.group_id | User group id. | keyword |
-| tanium.threat_response.other_parameters.log_details.payload_decoded.finding.whats.artifact_activity.acting_artifact.process.user.id | User id. | keyword |
-| tanium.threat_response.other_parameters.log_details.payload_decoded.finding.whats.artifact_activity.acting_artifact.process.user.name | User name. | keyword |
-| tanium.threat_response.other_parameters.log_details.payload_decoded.finding.whats.artifact_activity.relevant_actions |  | nested |
-| tanium.threat_response.other_parameters.log_details.payload_decoded.finding.whats.artifact_activity.relevant_actions.tanium_recorder_context.event.file_create.path | Path of file. | keyword |
-| tanium.threat_response.other_parameters.log_details.payload_decoded.finding.whats.artifact_activity.relevant_actions.tanium_recorder_context.event.timestamp_ms | Timestamp in milliseconds. | date |
-| tanium.threat_response.other_parameters.log_details.payload_decoded.finding.whats.artifact_activity.relevant_actions.tanium_recorder_context.file.unique_event_id | Unique event id. | keyword |
-| tanium.threat_response.other_parameters.log_details.payload_decoded.finding.whats.artifact_activity.relevant_actions.tanium_recorder_event_table_id | Tanium recorder event table id. | keyword |
-| tanium.threat_response.other_parameters.log_details.payload_decoded.finding.whats.artifact_activity.relevant_actions.target.artifact_hash | Artifact hash of file. | keyword |
-| tanium.threat_response.other_parameters.log_details.payload_decoded.finding.whats.artifact_activity.relevant_actions.target.file.hash.md5 | MD5 hash. | keyword |
-| tanium.threat_response.other_parameters.log_details.payload_decoded.finding.whats.artifact_activity.relevant_actions.target.file.hash.sha1 | MD5 sha1. | keyword |
-| tanium.threat_response.other_parameters.log_details.payload_decoded.finding.whats.artifact_activity.relevant_actions.target.file.hash.sha256 | MD5 sha256. | keyword |
-| tanium.threat_response.other_parameters.log_details.payload_decoded.finding.whats.artifact_activity.relevant_actions.target.file.instance_hash | Instance hash. | keyword |
-| tanium.threat_response.other_parameters.log_details.payload_decoded.finding.whats.artifact_activity.relevant_actions.target.file.instance_hash_salt | Instance hash salt. | keyword |
-| tanium.threat_response.other_parameters.log_details.payload_decoded.finding.whats.artifact_activity.relevant_actions.target.file.magic_number_hex | Magic number. | keyword |
-| tanium.threat_response.other_parameters.log_details.payload_decoded.finding.whats.artifact_activity.relevant_actions.target.file.modification_time | Modification time of file. | date |
-| tanium.threat_response.other_parameters.log_details.payload_decoded.finding.whats.artifact_activity.relevant_actions.target.file.path | Path of file. | keyword |
-| tanium.threat_response.other_parameters.log_details.payload_decoded.finding.whats.artifact_activity.relevant_actions.target.file.size_bytes | File size in bytes. | long |
-| tanium.threat_response.other_parameters.log_details.payload_decoded.finding.whats.artifact_activity.relevant_actions.target.instance_hash | Instance hash. | keyword |
-| tanium.threat_response.other_parameters.log_details.payload_decoded.finding.whats.artifact_activity.relevant_actions.timestamp | Timestamp. | date |
-| tanium.threat_response.other_parameters.log_details.payload_decoded.finding.whats.artifact_activity.relevant_actions.verb | Verb. | long |
-| tanium.threat_response.other_parameters.log_details.payload_decoded.finding.whats.intel_intra_ids |  | nested |
-| tanium.threat_response.other_parameters.log_details.payload_decoded.finding.whats.intel_intra_ids.id | Array of intel intra id. | keyword |
-| tanium.threat_response.other_parameters.log_details.payload_decoded.finding.whats.source_name | Source name. | keyword |
-| tanium.threat_response.other_parameters.log_details.payload_decoded.intel_id | Intel id. | keyword |
-| tanium.threat_response.other_parameters.log_details.payload_decoded.match.contexts |  | nested |
-| tanium.threat_response.other_parameters.log_details.payload_decoded.match.contexts.event.file_create.path | Path of file. | keyword |
-| tanium.threat_response.other_parameters.log_details.payload_decoded.match.contexts.event.timestampMs | Timestamp in milliseconds. | date |
-| tanium.threat_response.other_parameters.log_details.payload_decoded.match.contexts.file.unique_event_id | Unique event id of file. | keyword |
-| tanium.threat_response.other_parameters.log_details.payload_decoded.match.hash | Hash value. | keyword |
-| tanium.threat_response.other_parameters.log_details.payload_decoded.match.properties.args | Property arguments. | keyword |
-| tanium.threat_response.other_parameters.log_details.payload_decoded.match.properties.file.full_path | Full path of file. | keyword |
-| tanium.threat_response.other_parameters.log_details.payload_decoded.match.properties.name | Property name. | keyword |
-| tanium.threat_response.other_parameters.log_details.payload_decoded.match.properties.parent.args | Parent arguments. | keyword |
-| tanium.threat_response.other_parameters.log_details.payload_decoded.match.properties.parent.file.full_path | Full path of file. | keyword |
-| tanium.threat_response.other_parameters.log_details.payload_decoded.match.properties.parent.name | Parent name. | keyword |
-| tanium.threat_response.other_parameters.log_details.payload_decoded.match.properties.parent.parent.args | Parent arguments. | keyword |
-| tanium.threat_response.other_parameters.log_details.payload_decoded.match.properties.parent.parent.file.full_path | Full path of file. | keyword |
-| tanium.threat_response.other_parameters.log_details.payload_decoded.match.properties.parent.parent.file.md5 | MD5. | keyword |
-| tanium.threat_response.other_parameters.log_details.payload_decoded.match.properties.parent.parent.name | Parent name. | keyword |
-| tanium.threat_response.other_parameters.log_details.payload_decoded.match.properties.parent.parent.pid | Parent id. | keyword |
-| tanium.threat_response.other_parameters.log_details.payload_decoded.match.properties.parent.parent.recorder_unique_id | Recorder unique id. | keyword |
-| tanium.threat_response.other_parameters.log_details.payload_decoded.match.properties.parent.parent.start_time | Start time. | date |
-| tanium.threat_response.other_parameters.log_details.payload_decoded.match.properties.parent.parent.user | User. | keyword |
-| tanium.threat_response.other_parameters.log_details.payload_decoded.match.properties.parent.pid | Process id. | keyword |
-| tanium.threat_response.other_parameters.log_details.payload_decoded.match.properties.parent.ppid | Parent process id. | keyword |
-| tanium.threat_response.other_parameters.log_details.payload_decoded.match.properties.parent.recorder_unique_id | Recorder unique id. | keyword |
-| tanium.threat_response.other_parameters.log_details.payload_decoded.match.properties.parent.start_time | Start time. | date |
-| tanium.threat_response.other_parameters.log_details.payload_decoded.match.properties.parent.user | User. | keyword |
-| tanium.threat_response.other_parameters.log_details.payload_decoded.match.properties.pid | Process id. | keyword |
-| tanium.threat_response.other_parameters.log_details.payload_decoded.match.properties.ppid | Parent process id. | keyword |
-| tanium.threat_response.other_parameters.log_details.payload_decoded.match.properties.recorder_unique_id | Recorder unique id. | keyword |
-| tanium.threat_response.other_parameters.log_details.payload_decoded.match.properties.start_time | Start time. | date |
-| tanium.threat_response.other_parameters.log_details.payload_decoded.match.properties.user | User. | keyword |
-| tanium.threat_response.other_parameters.log_details.payload_decoded.match.source | Finding source. | keyword |
-| tanium.threat_response.other_parameters.log_details.payload_decoded.match.type | Finding type. | keyword |
-| tanium.threat_response.other_parameters.log_details.payload_decoded.match.version | Finding version. | version |
-| tanium.threat_response.other_parameters.log_details.source | Source of threat. | keyword |
-| tanium.threat_response.other_parameters.log_details.type | Type of threat. | keyword |
-| tanium.threat_response.other_parameters.original |  | match_only_text |
+| tanium.threat_response.impact_score | Impact score | integer |
+| tanium.threat_response.intel_id | Intelligence ID | keyword |
+| tanium.threat_response.intel_name | Intelligence name | keyword |
+| tanium.threat_response.intel_type | Intelligence type | keyword |
+| tanium.threat_response.link | Link | keyword |
+| tanium.threat_response.match_details.config_id | Config id. | keyword |
+| tanium.threat_response.match_details.config_rev_id | Config rev.iD. | keyword |
+| tanium.threat_response.match_details.finding.domain | Finding domain. | keyword |
+| tanium.threat_response.match_details.finding.first_seen | First seen. | date |
+| tanium.threat_response.match_details.finding.hunt_id | Hunt id. | keyword |
+| tanium.threat_response.match_details.finding.id | Finding id. | keyword |
+| tanium.threat_response.match_details.finding.intel_id | Finding intel id. | keyword |
+| tanium.threat_response.match_details.finding.last_seen | Last seen. | date |
+| tanium.threat_response.match_details.finding.reporting_id | Finding reporting id. | keyword |
+| tanium.threat_response.match_details.finding.source_name | Source name. | keyword |
+| tanium.threat_response.match_details.finding.system_info.bits | Bits. | long |
+| tanium.threat_response.match_details.finding.system_info.build_number | Build number. | keyword |
+| tanium.threat_response.match_details.finding.system_info.os.platform | OS platform. | keyword |
+| tanium.threat_response.match_details.finding.system_info.os.value | OS value. | keyword |
+| tanium.threat_response.match_details.finding.system_info.os.version | OS version. | version |
+| tanium.threat_response.match_details.finding.system_info.patch_level | Patch level. | keyword |
+| tanium.threat_response.match_details.finding.system_info.platform | OS type. | keyword |
+| tanium.threat_response.match_details.finding.threat_id | Threat id. | keyword |
+| tanium.threat_response.match_details.finding.whats |  | nested |
+| tanium.threat_response.match_details.finding.whats.artifact_activity.acting_artifact.artifact_hash | Artifact hash of activity. | keyword |
+| tanium.threat_response.match_details.finding.whats.artifact_activity.acting_artifact.instance_hash | Instance hash of activity. | keyword |
+| tanium.threat_response.match_details.finding.whats.artifact_activity.acting_artifact.is_intel_target | Intel target or not. | boolean |
+| tanium.threat_response.match_details.finding.whats.artifact_activity.acting_artifact.process.arguments | Process arguments. | keyword |
+| tanium.threat_response.match_details.finding.whats.artifact_activity.acting_artifact.process.file.artifact_hash | Artifact hash of file. | keyword |
+| tanium.threat_response.match_details.finding.whats.artifact_activity.acting_artifact.process.file.instance_hash | Instance hash of file. | keyword |
+| tanium.threat_response.match_details.finding.whats.artifact_activity.acting_artifact.process.file.path | Path of file. | keyword |
+| tanium.threat_response.match_details.finding.whats.artifact_activity.acting_artifact.process.handles | Process handles. | keyword |
+| tanium.threat_response.match_details.finding.whats.artifact_activity.acting_artifact.process.parent.artifact_hash | Artifact hash. | keyword |
+| tanium.threat_response.match_details.finding.whats.artifact_activity.acting_artifact.process.parent.instance_hash | Instance hash. | keyword |
+| tanium.threat_response.match_details.finding.whats.artifact_activity.acting_artifact.process.parent.process.arguments | Process arguments. | keyword |
+| tanium.threat_response.match_details.finding.whats.artifact_activity.acting_artifact.process.parent.process.file.artifact_hash | Artifact hash of file. | keyword |
+| tanium.threat_response.match_details.finding.whats.artifact_activity.acting_artifact.process.parent.process.file.instance_hash | Instance hash of file. | keyword |
+| tanium.threat_response.match_details.finding.whats.artifact_activity.acting_artifact.process.parent.process.file.path | Path of file. | keyword |
+| tanium.threat_response.match_details.finding.whats.artifact_activity.acting_artifact.process.parent.process.handles | Process handles. | keyword |
+| tanium.threat_response.match_details.finding.whats.artifact_activity.acting_artifact.process.parent.process.parent.artifact_hash | Artifact hash. | keyword |
+| tanium.threat_response.match_details.finding.whats.artifact_activity.acting_artifact.process.parent.process.parent.instance_hash | Instance hash. | keyword |
+| tanium.threat_response.match_details.finding.whats.artifact_activity.acting_artifact.process.parent.process.parent.process.arguments | Process arguments. | keyword |
+| tanium.threat_response.match_details.finding.whats.artifact_activity.acting_artifact.process.parent.process.parent.process.file.artifact_hash | Artifact hash of file. | keyword |
+| tanium.threat_response.match_details.finding.whats.artifact_activity.acting_artifact.process.parent.process.parent.process.file.hash.md5 | MD5 hash. | keyword |
+| tanium.threat_response.match_details.finding.whats.artifact_activity.acting_artifact.process.parent.process.parent.process.file.instance_hash | Instance hash of file. | keyword |
+| tanium.threat_response.match_details.finding.whats.artifact_activity.acting_artifact.process.parent.process.parent.process.file.path | Path of file. | keyword |
+| tanium.threat_response.match_details.finding.whats.artifact_activity.acting_artifact.process.parent.process.parent.process.handles | Process handles. | keyword |
+| tanium.threat_response.match_details.finding.whats.artifact_activity.acting_artifact.process.parent.process.parent.process.md5 | MD5 keyword. | keyword |
+| tanium.threat_response.match_details.finding.whats.artifact_activity.acting_artifact.process.parent.process.parent.process.pid | Process id. | long |
+| tanium.threat_response.match_details.finding.whats.artifact_activity.acting_artifact.process.parent.process.parent.process.start_time | Start time. | date |
+| tanium.threat_response.match_details.finding.whats.artifact_activity.acting_artifact.process.parent.process.parent.process.tanium_unique_id | Tanium unique id. | keyword |
+| tanium.threat_response.match_details.finding.whats.artifact_activity.acting_artifact.process.parent.process.parent.process.user.domain | User domain. | keyword |
+| tanium.threat_response.match_details.finding.whats.artifact_activity.acting_artifact.process.parent.process.parent.process.user.id | User id. | keyword |
+| tanium.threat_response.match_details.finding.whats.artifact_activity.acting_artifact.process.parent.process.parent.process.user.name | User name. | keyword |
+| tanium.threat_response.match_details.finding.whats.artifact_activity.acting_artifact.process.parent.process.pid | Process id. | long |
+| tanium.threat_response.match_details.finding.whats.artifact_activity.acting_artifact.process.parent.process.start_time | Start time. | date |
+| tanium.threat_response.match_details.finding.whats.artifact_activity.acting_artifact.process.parent.process.tanium_unique_id | Tanium unique id. | keyword |
+| tanium.threat_response.match_details.finding.whats.artifact_activity.acting_artifact.process.parent.process.user.domain | User domain. | keyword |
+| tanium.threat_response.match_details.finding.whats.artifact_activity.acting_artifact.process.parent.process.user.group_id | User group id. | keyword |
+| tanium.threat_response.match_details.finding.whats.artifact_activity.acting_artifact.process.parent.process.user.id | User id. | keyword |
+| tanium.threat_response.match_details.finding.whats.artifact_activity.acting_artifact.process.parent.process.user.name | User name. | keyword |
+| tanium.threat_response.match_details.finding.whats.artifact_activity.acting_artifact.process.pid | Parent id. | long |
+| tanium.threat_response.match_details.finding.whats.artifact_activity.acting_artifact.process.start_time | Start time. | date |
+| tanium.threat_response.match_details.finding.whats.artifact_activity.acting_artifact.process.tanium_unique_id | Tanium unique id. | keyword |
+| tanium.threat_response.match_details.finding.whats.artifact_activity.acting_artifact.process.user.domain | User domain. | keyword |
+| tanium.threat_response.match_details.finding.whats.artifact_activity.acting_artifact.process.user.group_id | User group id. | keyword |
+| tanium.threat_response.match_details.finding.whats.artifact_activity.acting_artifact.process.user.id | User id. | keyword |
+| tanium.threat_response.match_details.finding.whats.artifact_activity.acting_artifact.process.user.name | User name. | keyword |
+| tanium.threat_response.match_details.finding.whats.artifact_activity.relevant_actions |  | nested |
+| tanium.threat_response.match_details.finding.whats.artifact_activity.relevant_actions.tanium_recorder_context.event.file_create.path | Path of file. | keyword |
+| tanium.threat_response.match_details.finding.whats.artifact_activity.relevant_actions.tanium_recorder_context.event.timestamp_ms | Timestamp in milliseconds. | date |
+| tanium.threat_response.match_details.finding.whats.artifact_activity.relevant_actions.tanium_recorder_context.file.unique_event_id | Unique event id. | keyword |
+| tanium.threat_response.match_details.finding.whats.artifact_activity.relevant_actions.tanium_recorder_event_table_id | Tanium recorder event table id. | keyword |
+| tanium.threat_response.match_details.finding.whats.artifact_activity.relevant_actions.target.artifact_hash | Artifact hash of file. | keyword |
+| tanium.threat_response.match_details.finding.whats.artifact_activity.relevant_actions.target.file.hash.md5 | MD5 hash. | keyword |
+| tanium.threat_response.match_details.finding.whats.artifact_activity.relevant_actions.target.file.hash.sha1 | SHA1 hash. | keyword |
+| tanium.threat_response.match_details.finding.whats.artifact_activity.relevant_actions.target.file.hash.sha256 | SHA256 hash. | keyword |
+| tanium.threat_response.match_details.finding.whats.artifact_activity.relevant_actions.target.file.instance_hash | Instance hash. | keyword |
+| tanium.threat_response.match_details.finding.whats.artifact_activity.relevant_actions.target.file.instance_hash_salt | Instance hash salt. | keyword |
+| tanium.threat_response.match_details.finding.whats.artifact_activity.relevant_actions.target.file.magic_number_hex | Magic number. | keyword |
+| tanium.threat_response.match_details.finding.whats.artifact_activity.relevant_actions.target.file.modification_time | Modification time of file. | date |
+| tanium.threat_response.match_details.finding.whats.artifact_activity.relevant_actions.target.file.path | Path of file. | keyword |
+| tanium.threat_response.match_details.finding.whats.artifact_activity.relevant_actions.target.file.size_bytes | File size in bytes. | long |
+| tanium.threat_response.match_details.finding.whats.artifact_activity.relevant_actions.target.instance_hash | Instance hash. | keyword |
+| tanium.threat_response.match_details.finding.whats.artifact_activity.relevant_actions.target.is_intel_target | Is an intel target. | boolean |
+| tanium.threat_response.match_details.finding.whats.artifact_activity.relevant_actions.target.port.connection_time | Connection time. | date |
+| tanium.threat_response.match_details.finding.whats.artifact_activity.relevant_actions.target.port.local_ip | Local IP. | ip |
+| tanium.threat_response.match_details.finding.whats.artifact_activity.relevant_actions.target.port.local_port | Local port. | long |
+| tanium.threat_response.match_details.finding.whats.artifact_activity.relevant_actions.target.port.process.artifact_hash | Artifact hash. | keyword |
+| tanium.threat_response.match_details.finding.whats.artifact_activity.relevant_actions.target.port.process.instance_hash | Instance hash. | keyword |
+| tanium.threat_response.match_details.finding.whats.artifact_activity.relevant_actions.target.port.process.process.arguments | Process arguments. | keyword |
+| tanium.threat_response.match_details.finding.whats.artifact_activity.relevant_actions.target.port.process.process.file.artifact_hash | Artifact hash of file. | keyword |
+| tanium.threat_response.match_details.finding.whats.artifact_activity.relevant_actions.target.port.process.process.file.file.path | Path of file. | keyword |
+| tanium.threat_response.match_details.finding.whats.artifact_activity.relevant_actions.target.port.process.process.file.file.signature_data.issuer | Signature issuer. | keyword |
+| tanium.threat_response.match_details.finding.whats.artifact_activity.relevant_actions.target.port.process.process.file.file.signature_data.status | Signature status. | long |
+| tanium.threat_response.match_details.finding.whats.artifact_activity.relevant_actions.target.port.process.process.file.file.signature_data.subject | Signature subject. | keyword |
+| tanium.threat_response.match_details.finding.whats.artifact_activity.relevant_actions.target.port.process.process.file.instance_hash | Instance hash of file. | keyword |
+| tanium.threat_response.match_details.finding.whats.artifact_activity.relevant_actions.target.port.process.process.name | Name. | keyword |
+| tanium.threat_response.match_details.finding.whats.artifact_activity.relevant_actions.target.port.process.process.parent.artifact_hash | Artifact hash. | keyword |
+| tanium.threat_response.match_details.finding.whats.artifact_activity.relevant_actions.target.port.process.process.parent.instance_hash | Instance hash. | keyword |
+| tanium.threat_response.match_details.finding.whats.artifact_activity.relevant_actions.target.port.process.process.parent.process.arguments | Process arguments. | keyword |
+| tanium.threat_response.match_details.finding.whats.artifact_activity.relevant_actions.target.port.process.process.parent.process.file.artifact_hash | Artifact hash of file. | keyword |
+| tanium.threat_response.match_details.finding.whats.artifact_activity.relevant_actions.target.port.process.process.parent.process.file.file.path | Path of file. | keyword |
+| tanium.threat_response.match_details.finding.whats.artifact_activity.relevant_actions.target.port.process.process.parent.process.file.file.signature_data.issuer | Signature issuer. | keyword |
+| tanium.threat_response.match_details.finding.whats.artifact_activity.relevant_actions.target.port.process.process.parent.process.file.file.signature_data.status | Signature status. | long |
+| tanium.threat_response.match_details.finding.whats.artifact_activity.relevant_actions.target.port.process.process.parent.process.file.file.signature_data.subject | Signature subject. | keyword |
+| tanium.threat_response.match_details.finding.whats.artifact_activity.relevant_actions.target.port.process.process.parent.process.file.instance_hash | Instance hash of file. | keyword |
+| tanium.threat_response.match_details.finding.whats.artifact_activity.relevant_actions.target.port.process.process.parent.process.name | Name. | keyword |
+| tanium.threat_response.match_details.finding.whats.artifact_activity.relevant_actions.target.port.process.process.parent.process.parent.artifact_hash | Artifact hash. | keyword |
+| tanium.threat_response.match_details.finding.whats.artifact_activity.relevant_actions.target.port.process.process.parent.process.parent.instance_hash | Instance hash. | keyword |
+| tanium.threat_response.match_details.finding.whats.artifact_activity.relevant_actions.target.port.process.process.parent.process.parent.process.arguments | Process arguments. | keyword |
+| tanium.threat_response.match_details.finding.whats.artifact_activity.relevant_actions.target.port.process.process.parent.process.parent.process.file.artifact_hash | Artifact hash of file. | keyword |
+| tanium.threat_response.match_details.finding.whats.artifact_activity.relevant_actions.target.port.process.process.parent.process.parent.process.file.file.path | Path of file. | keyword |
+| tanium.threat_response.match_details.finding.whats.artifact_activity.relevant_actions.target.port.process.process.parent.process.parent.process.file.file.signature_data.issuer | Signature issuer. | keyword |
+| tanium.threat_response.match_details.finding.whats.artifact_activity.relevant_actions.target.port.process.process.parent.process.parent.process.file.file.signature_data.status | Signature status. | long |
+| tanium.threat_response.match_details.finding.whats.artifact_activity.relevant_actions.target.port.process.process.parent.process.parent.process.file.file.signature_data.subject | Signature subject. | keyword |
+| tanium.threat_response.match_details.finding.whats.artifact_activity.relevant_actions.target.port.process.process.parent.process.parent.process.file.instance_hash | Instance hash of file. | keyword |
+| tanium.threat_response.match_details.finding.whats.artifact_activity.relevant_actions.target.port.process.process.parent.process.parent.process.name | Name. | keyword |
+| tanium.threat_response.match_details.finding.whats.artifact_activity.relevant_actions.target.port.process.process.parent.process.parent.process.parent.artifact_hash | Artifact hash. | keyword |
+| tanium.threat_response.match_details.finding.whats.artifact_activity.relevant_actions.target.port.process.process.parent.process.parent.process.parent.instance_hash | Instance hash. | keyword |
+| tanium.threat_response.match_details.finding.whats.artifact_activity.relevant_actions.target.port.process.process.parent.process.parent.process.parent.process.arguments | Process arguments. | keyword |
+| tanium.threat_response.match_details.finding.whats.artifact_activity.relevant_actions.target.port.process.process.parent.process.parent.process.parent.process.file.artifact_hash | Artifact hash of file. | keyword |
+| tanium.threat_response.match_details.finding.whats.artifact_activity.relevant_actions.target.port.process.process.parent.process.parent.process.parent.process.file.file.path | Path of file. | keyword |
+| tanium.threat_response.match_details.finding.whats.artifact_activity.relevant_actions.target.port.process.process.parent.process.parent.process.parent.process.file.instance_hash | Instance hash of file. | keyword |
+| tanium.threat_response.match_details.finding.whats.artifact_activity.relevant_actions.target.port.process.process.parent.process.parent.process.parent.process.name | Name. | keyword |
+| tanium.threat_response.match_details.finding.whats.artifact_activity.relevant_actions.target.port.process.process.parent.process.parent.process.parent.process.parent.artifact_hash | Artifact hash. | keyword |
+| tanium.threat_response.match_details.finding.whats.artifact_activity.relevant_actions.target.port.process.process.parent.process.parent.process.parent.process.parent.instance_hash | Instance hash. | keyword |
+| tanium.threat_response.match_details.finding.whats.artifact_activity.relevant_actions.target.port.process.process.parent.process.parent.process.parent.process.parent.process.tanium_recorder_table_id | Tanium recorder table id. | keyword |
+| tanium.threat_response.match_details.finding.whats.artifact_activity.relevant_actions.target.port.process.process.parent.process.parent.process.parent.process.pid | Process id. | long |
+| tanium.threat_response.match_details.finding.whats.artifact_activity.relevant_actions.target.port.process.process.parent.process.parent.process.parent.process.start_time | Start time. | date |
+| tanium.threat_response.match_details.finding.whats.artifact_activity.relevant_actions.target.port.process.process.parent.process.parent.process.parent.process.tanium_recorder_table_id | Tanium recorder table id. | keyword |
+| tanium.threat_response.match_details.finding.whats.artifact_activity.relevant_actions.target.port.process.process.parent.process.parent.process.parent.process.user.user.domain | User domain. | keyword |
+| tanium.threat_response.match_details.finding.whats.artifact_activity.relevant_actions.target.port.process.process.parent.process.parent.process.parent.process.user.user.name | User name. | keyword |
+| tanium.threat_response.match_details.finding.whats.artifact_activity.relevant_actions.target.port.process.process.parent.process.parent.process.parent.process.user.user.user_id | User id. | keyword |
+| tanium.threat_response.match_details.finding.whats.artifact_activity.relevant_actions.target.port.process.process.parent.process.parent.process.pid | Process id. | long |
+| tanium.threat_response.match_details.finding.whats.artifact_activity.relevant_actions.target.port.process.process.parent.process.parent.process.start_time | Start time. | date |
+| tanium.threat_response.match_details.finding.whats.artifact_activity.relevant_actions.target.port.process.process.parent.process.parent.process.tanium_recorder_table_id | Tanium recorder table id. | keyword |
+| tanium.threat_response.match_details.finding.whats.artifact_activity.relevant_actions.target.port.process.process.parent.process.parent.process.user.user.domain | User domain. | keyword |
+| tanium.threat_response.match_details.finding.whats.artifact_activity.relevant_actions.target.port.process.process.parent.process.parent.process.user.user.name | User name. | keyword |
+| tanium.threat_response.match_details.finding.whats.artifact_activity.relevant_actions.target.port.process.process.parent.process.parent.process.user.user.user_id | User id. | keyword |
+| tanium.threat_response.match_details.finding.whats.artifact_activity.relevant_actions.target.port.process.process.parent.process.pid | Process id. | long |
+| tanium.threat_response.match_details.finding.whats.artifact_activity.relevant_actions.target.port.process.process.parent.process.start_time | Start time. | date |
+| tanium.threat_response.match_details.finding.whats.artifact_activity.relevant_actions.target.port.process.process.parent.process.tanium_recorder_table_id | Tanium recorder table id. | keyword |
+| tanium.threat_response.match_details.finding.whats.artifact_activity.relevant_actions.target.port.process.process.parent.process.user.user.domain | User domain. | keyword |
+| tanium.threat_response.match_details.finding.whats.artifact_activity.relevant_actions.target.port.process.process.parent.process.user.user.name | User name. | keyword |
+| tanium.threat_response.match_details.finding.whats.artifact_activity.relevant_actions.target.port.process.process.parent.process.user.user.user_id | User id. | keyword |
+| tanium.threat_response.match_details.finding.whats.artifact_activity.relevant_actions.target.port.process.process.pid | Process id. | long |
+| tanium.threat_response.match_details.finding.whats.artifact_activity.relevant_actions.target.port.process.process.start_time | Start time. | date |
+| tanium.threat_response.match_details.finding.whats.artifact_activity.relevant_actions.target.port.process.process.tanium_recorder_table_id | Tanium recorder table id. | keyword |
+| tanium.threat_response.match_details.finding.whats.artifact_activity.relevant_actions.target.port.process.process.user.user.domain | User domain. | keyword |
+| tanium.threat_response.match_details.finding.whats.artifact_activity.relevant_actions.target.port.process.process.user.user.name | User name. | keyword |
+| tanium.threat_response.match_details.finding.whats.artifact_activity.relevant_actions.target.port.process.process.user.user.user_id | User id. | keyword |
+| tanium.threat_response.match_details.finding.whats.artifact_activity.relevant_actions.target.port.remote_ip | Remote IP. | ip |
+| tanium.threat_response.match_details.finding.whats.artifact_activity.relevant_actions.target.port.remote_port | Remote port. | long |
+| tanium.threat_response.match_details.finding.whats.artifact_activity.relevant_actions.timestamp | Timestamp. | date |
+| tanium.threat_response.match_details.finding.whats.artifact_activity.relevant_actions.verb | Verb. | long |
+| tanium.threat_response.match_details.finding.whats.intel_intra_ids |  | nested |
+| tanium.threat_response.match_details.finding.whats.intel_intra_ids.id | Array of intel intra ids. | keyword |
+| tanium.threat_response.match_details.finding.whats.intel_intra_ids.id_v2 | Array of v2 intel intra ids. | keyword |
+| tanium.threat_response.match_details.finding.whats.source_name | Source name. | keyword |
+| tanium.threat_response.match_details.intel_id | Intel id. | keyword |
+| tanium.threat_response.match_details.match.contexts |  | nested |
+| tanium.threat_response.match_details.match.contexts.event.file_create.path | Path of file. | keyword |
+| tanium.threat_response.match_details.match.contexts.event.timestampMs | Timestamp in milliseconds. | date |
+| tanium.threat_response.match_details.match.contexts.file.unique_event_id | Unique event id of file. | keyword |
+| tanium.threat_response.match_details.match.hash | Hash value. | keyword |
+| tanium.threat_response.match_details.match.properties.args | Property arguments. | keyword |
+| tanium.threat_response.match_details.match.properties.file.full_path | Full path of file. | keyword |
+| tanium.threat_response.match_details.match.properties.fullpath | Full path. | keyword |
+| tanium.threat_response.match_details.match.properties.local_ip | Local IP. | ip |
+| tanium.threat_response.match_details.match.properties.local_port | Local port. | long |
+| tanium.threat_response.match_details.match.properties.md5 | MD5 hash. | keyword |
+| tanium.threat_response.match_details.match.properties.name | Property name. | keyword |
+| tanium.threat_response.match_details.match.properties.parent.args | Parent arguments. | keyword |
+| tanium.threat_response.match_details.match.properties.parent.file.full_path | Full path of file. | keyword |
+| tanium.threat_response.match_details.match.properties.parent.name | Parent name. | keyword |
+| tanium.threat_response.match_details.match.properties.parent.parent.args | Parent arguments. | keyword |
+| tanium.threat_response.match_details.match.properties.parent.parent.file.full_path | Full path of file. | keyword |
+| tanium.threat_response.match_details.match.properties.parent.parent.file.md5 | MD5. | keyword |
+| tanium.threat_response.match_details.match.properties.parent.parent.name | Parent name. | keyword |
+| tanium.threat_response.match_details.match.properties.parent.parent.pid | Parent id. | long |
+| tanium.threat_response.match_details.match.properties.parent.parent.recorder_unique_id | Recorder unique id. | keyword |
+| tanium.threat_response.match_details.match.properties.parent.parent.start_time | Start time. | date |
+| tanium.threat_response.match_details.match.properties.parent.parent.user | User. | keyword |
+| tanium.threat_response.match_details.match.properties.parent.pid | Process id. | long |
+| tanium.threat_response.match_details.match.properties.parent.ppid | Parent process id. | long |
+| tanium.threat_response.match_details.match.properties.parent.recorder_unique_id | Recorder unique id. | keyword |
+| tanium.threat_response.match_details.match.properties.parent.start_time | Start time. | date |
+| tanium.threat_response.match_details.match.properties.parent.user | User. | keyword |
+| tanium.threat_response.match_details.match.properties.pid | Process id. | long |
+| tanium.threat_response.match_details.match.properties.ppid | Parent process id. | long |
+| tanium.threat_response.match_details.match.properties.process.args | Process arguments. | keyword |
+| tanium.threat_response.match_details.match.properties.process.file.fullpath | Full path. | keyword |
+| tanium.threat_response.match_details.match.properties.process.name | Name. | keyword |
+| tanium.threat_response.match_details.match.properties.process.pid | Process id. | long |
+| tanium.threat_response.match_details.match.properties.process.ppid | Parent process id. | long |
+| tanium.threat_response.match_details.match.properties.process.recorder_table_id | Tanium recorder table id. | keyword |
+| tanium.threat_response.match_details.match.properties.process.start_time | Start time. | date |
+| tanium.threat_response.match_details.match.properties.process.user | User. | keyword |
+| tanium.threat_response.match_details.match.properties.recorder_unique_id | Recorder unique id. | keyword |
+| tanium.threat_response.match_details.match.properties.remote_ip | Remote IP. | ip |
+| tanium.threat_response.match_details.match.properties.remote_port | Remote port. | long |
+| tanium.threat_response.match_details.match.properties.sha1 | SHA1 hash. | keyword |
+| tanium.threat_response.match_details.match.properties.sha256 | SHA256 hash. | keyword |
+| tanium.threat_response.match_details.match.properties.size | Size. | keyword |
+| tanium.threat_response.match_details.match.properties.start_time | Start time. | date |
+| tanium.threat_response.match_details.match.properties.user | User. | keyword |
+| tanium.threat_response.match_details.match.source | Finding source. | keyword |
+| tanium.threat_response.match_details.match.type | Finding type. | keyword |
+| tanium.threat_response.match_details.match.version | Finding version. | version |
+| tanium.threat_response.other_parameters.name | Name of threat. | keyword |
+| tanium.threat_response.other_parameters.source | Source of threat. | keyword |
+| tanium.threat_response.other_parameters.type | Type of threat. | keyword |
 | tanium.threat_response.priority | Priority of the threat response. | keyword |
 | tanium.threat_response.revision | Revision of the threat response. | keyword |
 | tanium.threat_response.row_id | Row id for the threat response. | keyword |
 | tanium.threat_response.severity | Severity of the threat response. | keyword |
+| tanium.threat_response.state.action_expiration | Action expiration. | date |
+| tanium.threat_response.state.action_id_unix | UNIX action ID. | integer |
+| tanium.threat_response.state.action_id_windows | Windows action ID. | integer |
+| tanium.threat_response.state.computer_group_id | Computer group ID. | integer |
+| tanium.threat_response.state.computer_ip_address | Computer IP address. | integer |
+| tanium.threat_response.state.computer_name | Computer name. | keyword |
 | tanium.threat_response.state.connection_id | Connection id of the threat response state. | keyword |
+| tanium.threat_response.state.created_at | Creation time. | date |
+| tanium.threat_response.state.id | ID. | integer |
+| tanium.threat_response.state.intel_id | Intel ID. | integer |
+| tanium.threat_response.state.legacy_type | Legacy type. | keyword |
+| tanium.threat_response.state.service_id | Service ID. | keyword |
 | tanium.threat_response.state.session_id | Session id of the threat response state. | keyword |
 | tanium.threat_response.state.target.eid | Target eid of the threat response state. | keyword |
 | tanium.threat_response.state.target.hostname | Target hostname of the threat response state. | keyword |
+| tanium.threat_response.state.updated_at | Update time. | date |
+| tanium.threat_response.state.user_id | User ID. | integer |
 | tanium.threat_response.table | Table for the threat response. | keyword |
 | tanium.threat_response.timestamp | Timestamp of the event. | date |
 | tanium.threat_response.updated_at | Threat response update time. | date |
 | tanium.threat_response.user.domain | User domain of the threat response. | keyword |
 | tanium.threat_response.user.id | User id for the threat response. | keyword |
 | tanium.threat_response.user.name | User name for the threat response. | keyword |
+| tanium.truncations | JSON paths that were removed to avoid excessive depth. | keyword |
 

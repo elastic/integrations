@@ -38,6 +38,8 @@ processors:
       if: ctx.json?.response != null && ctx.json.response.isEmpty()
   - fingerprint:
       fields:
+        - json.Event.timestamp
+        - json.Event.Attribute.first_seen
         - json.Event.Attribute.uuid
         - json.Event.Object.Attribute.uuid
       target_field: "_id"
@@ -437,11 +439,6 @@ processors:
         handleMap(ctx);
   # Removing fields not needed anymore, either because its copied somewhere else, or is not relevant to this event
   - remove:
-      field: event.original
-      if: "ctx.tags == null || !(ctx.tags.contains('preserve_original_event'))"
-      ignore_failure: true
-      ignore_missing: true
-  - remove:
       field:
         - misp.attribute.value
       ignore_missing: true
@@ -461,6 +458,10 @@ on_failure:
   - set:
       field: event.kind
       value: pipeline_error
+  - append:
+      field: tags
+      value: preserve_original_event
+      allow_duplicates: false
   - append:
       field: error.message
       value: '{{{ _ingest.on_failure_message }}}'

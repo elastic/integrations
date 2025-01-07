@@ -13,7 +13,8 @@ processors:
       field: event.original
       ecs_compatibility: v1
       patterns:
-        - "^(?:%{SYSLOG5424PRI} *)?%{GREEDYDATA:syslog5424_sd}$"
+        - "^(?:%{SYSLOG5424PRI}%{NONNEGINT} )+(?:%{TIMESTAMP_ISO8601}|-) +(?:%{HOSTNAME:syslog5424_host}|-) +(-|%{SYSLOG5424PRINTASCII}) +(-|%{SYSLOG5424PRINTASCII}) +(-|%{SYSLOG5424PRINTASCII}) +(-|%{SYSLOG5424PRINTASCII}) +(?:%{GREEDYDATA:syslog5424_msg}|-|)"
+        - "^(?:%{SYSLOG5424PRI} *)?%{GREEDYDATA:syslog5424_msg}$"
   - script:
       lang: painless
       source: |
@@ -26,14 +27,14 @@ processors:
           ctx.log.syslog['facility'] = facility;
         }
   - gsub:
-      field: syslog5424_sd
+      field: syslog5424_msg
       pattern: "[\u0000-\u001F\u007F]"
       replacement: ""
   - script:
       lang: painless
-      if: ctx.syslog5424_sd != null
+      if: ctx.syslog5424_msg != null
       description: |
-        Splits syslog5424_sd KV list by space and then each by "=" taking into account quoted values.
+        Splits syslog5424_msg KV list by space and then each by "=" taking into account quoted values.
       source: |
         def splitUnquoted(String input, String sep) {
           def tokens = [];
@@ -60,7 +61,7 @@ processors:
           return tokens;
         }
 
-        def arr = splitUnquoted(ctx.syslog5424_sd, " ");
+        def arr = splitUnquoted(ctx.syslog5424_msg, " ");
 
         Map map = new HashMap();
         Pattern pattern = /^\"|\"$/;
@@ -175,6 +176,16 @@ processors:
   - rename:
       field: fortinet.firewall.devname
       target_field: observer.name
+      ignore_missing: true
+  - rename:
+      field: syslog5424_host
+      target_field: observer.name
+      if: ctx.observer?.name == null && ctx.syslog5424_host !== null
+      ignore_missing: true
+  - remove:
+      field:
+        - syslog5424_host
+        - syslog5424_msg
       ignore_missing: true
   - script:
       lang: painless
@@ -655,7 +666,6 @@ processors:
   - remove:
       field:
         - _temp
-        - syslog5424_sd
         - fortinet.firewall.tz
         - fortinet.firewall.date
         - fortinet.firewall.devid

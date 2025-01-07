@@ -70,7 +70,7 @@ config:
 
 `/home/<user>/.bbot/scans/*/output.json`
 
-BBOT Scanning [Documentation](https://www.blacklanternsecurity.com/bbot/scanning/).
+BBOT Scanning [Documentation](https://www.blacklanternsecurity.com/bbot/Stable/scanning/).
 
 ## Data streams
 
