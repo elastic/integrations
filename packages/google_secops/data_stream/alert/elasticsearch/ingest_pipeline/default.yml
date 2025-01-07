@@ -1,0 +1,1577 @@
+---
+description: Pipeline for processing alert logs.
+processors:
+  - set:
+      field: ecs.version
+      tag: set_ecs_version
+      value: 8.11.0
+  - fail:
+      tag: data_collection_error
+      if: ctx.error?.message != null && ctx.message == null && ctx.event?.original == null
+      message: error message set and no data to process.
+  - rename:
+      field: message
+      tag: rename_message_to_event_original
+      target_field: event.original
+      ignore_missing: true
+      description: Renames the original `message` field to `event.original` to store a copy of the original message. The `event.original` field is not touched if the document already has one; it may happen when Logstash sends the document.
+      if: ctx.event?.original == null
+  - remove:
+      field: message
+      tag: remove_message
+      ignore_missing: true
+      description: The `message` field is no longer required if the document has an `event.original` field.
+      if: ctx.event?.original != null
+  - json:
+      field: event.original
+      tag: json_event_original
+      target_field: json
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - fingerprint:
+      fields:
+        - json.name
+        - json.udm.metadata.eventTimestamp
+        - json.udm.metadata.id
+        - json.udm.metadata.ingestedTimestamp
+      tag: fingerprint_google_secops_alert
+      target_field: _id
+      ignore_missing: true 
+  - set:
+      field: event.kind
+      tag: set_event_kind_to_alert
+      value: alert
+  - rename:
+      field: json
+      tag: rename_json
+      target_field: google_secops.alert
+      ignore_missing: true
+  - set:
+      field: event.id
+      tag: set_event_id_from_alert_name
+      copy_from: google_secops.alert.name
+      ignore_empty_value: true
+  - foreach:
+      field: google_secops.alert.udm.extensions.vulns.vulnerabilities
+      if: ctx.google_secops?.alert?.udm?.extensions?.vulns?.vulnerabilities instanceof List
+      processor:
+        append:
+          field: vulnerability.id
+          tag: append_udm_extensions_vulns_vulnerabilities_cveId_into_vulnerability_id
+          value: '{{{_ingest._value.cveId}}}'
+          allow_duplicates: false
+  - foreach:
+      field: google_secops.alert.udm.extensions.vulns.vulnerabilities
+      if: ctx.google_secops?.alert?.udm?.extensions?.vulns?.vulnerabilities instanceof List
+      processor:
+        convert:
+          field: _ingest._value.cvssBaseScore
+          tag: convert_udm_extensions_vulns_vulnerabilities_cvssBaseScore_to_double
+          type: double
+          ignore_missing: true
+          on_failure:
+            - remove:
+                field: _ingest._value.cvssBaseScore
+                ignore_missing: true
+            - append:
+                field: error.message
+                value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - foreach:
+      field: google_secops.alert.udm.extensions.vulns.vulnerabilities
+      if: ctx.google_secops?.alert?.udm?.extensions?.vulns?.vulnerabilities instanceof List 
+      processor:
+        append:
+          field: vulnerability.score.base
+          tag: append_udm_extensions_vulns_vulnerabilities_cvssBaseScore_into_vulnerability_score_base
+          value: '{{{_ingest._value.cvssBaseScore}}}'
+          allow_duplicates: false
+  - foreach:
+      field: vulnerability.score.base
+      if: ctx.vulnerability?.score?.base instanceof List
+      processor:
+        convert:
+          field: _ingest._value
+          tag: convert_vulnerability_score_base_to_double
+          type: double
+          ignore_missing: true
+          on_failure:
+            - remove:
+                field: _ingest._value
+                ignore_missing: true
+            - append:
+                field: error.message
+                value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - foreach:
+      field: google_secops.alert.udm.intermediary
+      if: ctx.google_secops?.alert?.udm?.intermediary instanceof List
+      processor:
+        foreach:
+          field: _ingest._value.ip
+          ignore_failure: true
+          processor:
+            convert:
+              field: _ingest._value
+              tag: convert_udm_intermediary_ip_to_ip
+              type: ip
+              ignore_missing: true
+              on_failure:
+                - remove:
+                    field: _ingest._value
+                    ignore_missing: true
+                - append:
+                    field: error.message
+                    value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - foreach:
+      field: google_secops.alert.udm.intermediary
+      if: ctx.google_secops?.alert?.udm?.intermediary instanceof List
+      processor:
+        convert:
+          field: _ingest._value.location.regionCoordinates.longitude
+          tag: convert_udm_intermediary_location_regionCoordinates_longitude_to_double
+          type: double
+          ignore_missing: true
+          on_failure:
+            - remove:
+                field: _ingest._value.location.regionCoordinates.longitude
+                ignore_missing: true
+            - append:
+                field: error.message
+                value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - foreach:
+      field: google_secops.alert.udm.intermediary
+      if: ctx.google_secops?.alert?.udm?.intermediary instanceof List
+      processor:
+        convert:
+          field: _ingest._value.location.regionCoordinates.latitude
+          tag: convert_udm_intermediary_location_regionCoordinates_latitude_to_double
+          type: double
+          ignore_missing: true
+          on_failure:
+            - remove:
+                field: _ingest._value.location.regionCoordinates.latitude
+                ignore_missing: true
+            - append:
+                field: error.message
+                value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - foreach:
+      field: google_secops.alert.udm.intermediary
+      if: ctx.google_secops?.alert?.udm?.intermediary instanceof List
+      processor:
+        convert:
+          field: _ingest._value.network.receivedBytes
+          tag: convert_udm_intermediary_network_receivedBytes_to_long
+          type: long
+          ignore_missing: true
+          on_failure:
+            - remove:
+                field: _ingest._value.network.receivedBytes
+                ignore_missing: true
+            - append:
+                field: error.message
+                value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - foreach:
+      field: google_secops.alert.udm.intermediary
+      if: ctx.google_secops?.alert?.udm?.intermediary instanceof List
+      processor:
+        convert:
+          field: _ingest._value.network.sentBytes
+          tag: convert_udm_intermediary_network_sentBytes_to_long
+          type: long
+          ignore_missing: true
+          on_failure:
+            - remove:
+                field: _ingest._value.network.sentBytes
+                ignore_missing: true
+            - append:
+                field: error.message
+                value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - foreach:
+      field: google_secops.alert.udm.intermediary
+      if: ctx.google_secops?.alert?.udm?.intermediary instanceof List
+      processor:
+        convert:
+          field: _ingest._value.port
+          tag: convert_udm_intermediary_port_to_long
+          type: long
+          ignore_missing: true
+          on_failure:
+            - remove:
+                field: _ingest._value.port
+                ignore_missing: true
+            - append:
+                field: error.message
+                value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - convert:
+      field: google_secops.alert.udm.metadata.baseLabels.allowScopedAccess
+      tag: convert_udm_metadata_baseLabels_allowScopedAccess_to_boolean
+      type: boolean
+      ignore_missing: true
+      on_failure:
+        - remove:
+            field: google_secops.alert.udm.metadata.baseLabels.allowScopedAccess
+            ignore_missing: true
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - date:
+      field: google_secops.alert.udm.metadata.collectedTimestamp
+      tag: date_udm_metadata_collectedTimestamp
+      target_field: google_secops.alert.udm.metadata.collectedTimestamp
+      formats:
+        - ISO8601
+      if: ctx.google_secops?.alert?.udm?.metadata?.collectedTimestamp != null && ctx.google_secops.alert.udm.metadata.collectedTimestamp != ''
+      on_failure:
+        - remove:
+            field: google_secops.alert.udm.metadata.collectedTimestamp
+            ignore_missing: true
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - convert:
+      field: google_secops.alert.udm.metadata.enrichmentLabels.allowScopedAccess
+      tag: convert_udm_metadata_enrichmentLabels_allowScopedAccess_to_boolean
+      type: boolean
+      ignore_missing: true
+      on_failure:
+        - remove:
+            field: google_secops.alert.udm.metadata.enrichmentLabels.allowScopedAccess
+            ignore_missing: true
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - date:
+      field: google_secops.alert.udm.metadata.eventTimestamp
+      tag: date_udm_metadata_eventTimestamp
+      target_field: google_secops.alert.udm.metadata.eventTimestamp
+      formats:
+        - ISO8601
+      if: ctx.google_secops?.alert?.udm?.metadata?.eventTimestamp != null && ctx.google_secops.alert.udm.metadata.eventTimestamp != ''
+      on_failure:
+        - remove:
+            field: google_secops.alert.udm.metadata.eventTimestamp
+            ignore_missing: true
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - set:
+      field: '@timestamp'
+      tag: set_@timestamp_from_alert_udm_metadata_eventTimestamp
+      copy_from: google_secops.alert.udm.metadata.eventTimestamp
+      ignore_empty_value: true
+  - date:
+      field: google_secops.alert.udm.metadata.ingestedTimestamp
+      tag: date_udm_metadata_ingestedTimestamp
+      target_field: google_secops.alert.udm.metadata.ingestedTimestamp
+      formats:
+        - ISO8601
+      if: ctx.google_secops?.alert?.udm?.metadata?.ingestedTimestamp != null && ctx.google_secops.alert.udm.metadata.ingestedTimestamp != ''
+      on_failure:
+        - remove:
+            field: google_secops.alert.udm.metadata.ingestedTimestamp
+            ignore_missing: true
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - set:
+      field: observer.product
+      tag: set_observer_product_from_alert_udm_metadata_productName
+      copy_from: google_secops.alert.udm.metadata.productName
+      ignore_empty_value: true
+  - set:
+      field: observer.version
+      tag: set_observer_version_from_alert_udm_metadata_productVersion
+      copy_from: google_secops.alert.udm.metadata.productVersion
+      ignore_empty_value: true
+  - set:
+      field: observer.vendor
+      tag: set_observer_vendor_from_alert_udm_metadata_vendorName
+      copy_from: google_secops.alert.udm.metadata.vendorName
+      ignore_empty_value: true
+  - append:
+      field: email.from.address
+      tag: append_google_secops_alert_udm_network_email_from_into_email_from_address
+      value: '{{{google_secops.alert.udm.network.email.from}}}'
+      allow_duplicates: false
+      if: ctx.google_secops?.alert?.udm?.network?.email?.from != null
+  - append:
+      field: email.message_id
+      tag: append_google_secops_alert_udm_network_email_mailId_into_email_from_address
+      value: '{{{google_secops.alert.udm.network.email.mailId}}}'
+      allow_duplicates: false
+      if: ctx.google_secops?.alert?.udm?.network?.email?.mailId != null
+  - foreach:
+      field: google_secops.alert.udm.network.email.subject
+      if: ctx.google_secops?.alert?.udm?.network?.email?.subject instanceof List
+      processor:
+        append:
+          field: email.subject
+          tag: append_udm_network_email_subject_into_email_subject
+          value: '{{{_ingest._value}}}'
+          allow_duplicates: false
+  - foreach:
+      field: google_secops.alert.udm.network.email.to
+      if: ctx.google_secops?.alert?.udm?.network?.email?.to instanceof List
+      processor:
+        append:
+          field: email.to.address
+          tag: append_udm_network_email_to_into_email_to_address
+          value: '{{{_ingest._value}}}'
+          allow_duplicates: false
+  - set:
+      field: user_agent.original
+      tag: set_user_agent_original_from_alert_udm_network_http_userAgent
+      copy_from: google_secops.alert.udm.network.http.userAgent
+      ignore_empty_value: true
+  - user_agent:
+      field: user_agent.original
+      tag: user_agent_original
+      if: ctx.user_agent?.original != null
+      ignore_missing: true
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - set:
+      field: network.transport
+      tag: set_network_transport_from_alert_udm_network_ipProtocol
+      copy_from: google_secops.alert.udm.network.ipProtocol
+      ignore_empty_value: true
+  - lowercase:
+      field: network.transport
+      tag: lowercase_network_transport
+      ignore_missing: true
+  - convert:
+      field: google_secops.alert.udm.network.receivedBytes
+      tag: convert_udm_network_receivedBytes_to_long
+      type: long
+      ignore_missing: true
+      on_failure:
+        - remove:
+            field: google_secops.alert.udm.network.receivedBytes
+            ignore_missing: true
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - set:
+      field: destination.bytes
+      tag: set_destination_bytes_from_alert_udm_network_receivedBytes
+      copy_from: google_secops.alert.udm.network.receivedBytes
+      ignore_empty_value: true
+  - convert:
+      field: google_secops.alert.udm.network.sentBytes
+      tag: convert_udm_network_sentBytes_to_long
+      type: long
+      ignore_missing: true
+      on_failure:
+        - remove:
+            field: google_secops.alert.udm.network.sentBytes
+            ignore_missing: true
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - set:
+      field: source.bytes
+      tag: set_source_bytes_from_alert_udm_network_sentBytes
+      copy_from: google_secops.alert.udm.network.sentBytes
+      ignore_empty_value: true
+  - set:
+      field: tls.cipher
+      tag: set_tls_cipher_from_alert_udm_network_tls_cipher
+      copy_from: google_secops.alert.udm.network.tls.cipher
+      ignore_empty_value: true
+  - dissect:
+      field: google_secops.alert.udm.network.tls.version
+      tag: dissect_tls_version_protocol_and_tls_version
+      pattern: '%{tls.version_protocol}v%{tls.version}'
+      ignore_failure: true
+  - lowercase:
+      field: tls.version_protocol
+      tag: lowercase_tls_version_protocol
+      ignore_missing: true
+  - date:
+      field: google_secops.alert.udm.principal.asset.attribute.creationTime
+      tag: date_udm_principal_asset_attribute_creationTime
+      target_field: google_secops.alert.udm.principal.asset.attribute.creationTime
+      formats:
+        - ISO8601
+      if: ctx.google_secops?.alert?.udm?.principal?.asset?.attribute?.creationTime != null && ctx.google_secops.alert.udm.principal.asset.attribute.creationTime != ''
+      on_failure:
+        - remove:
+            field: google_secops.alert.udm.principal.asset.attribute.creationTime
+            ignore_missing: true
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - convert:
+      field: google_secops.alert.udm.principal.asset.ip
+      tag: convert_udm_principal_asset_ip_to_ip
+      type: ip
+      ignore_missing: true
+      if: ctx.google_secops?.alert?.udm?.principal?.asset?.ip != null && ctx.google_secops.alert.udm.principal.asset.ip != ''
+      on_failure:
+        - remove:
+            field: google_secops.alert.udm.principal.asset.ip
+            ignore_missing: true
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - date:
+      field: google_secops.alert.udm.principal.asset.lastBootTime
+      tag: date_udm_principal_asset_lastBootTime
+      target_field: google_secops.alert.udm.principal.asset.lastBootTime
+      formats:
+        - ISO8601
+      if: ctx.google_secops?.alert?.udm?.principal?.asset?.lastBootTime != null && ctx.google_secops.alert.udm.principal.asset.lastBootTime != ''
+      on_failure:
+        - remove:
+            field: google_secops.alert.udm.principal.asset.lastBootTime
+            ignore_missing: true
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - foreach:
+      field: google_secops.alert.udm.principal.asset.natIp
+      if: ctx.google_secops?.alert?.udm?.principal?.asset?.natIp instanceof List
+      processor:
+        convert:
+          field: _ingest._value
+          tag: convert_udm_principal_asset_natIp_to_ip
+          type: ip
+          ignore_missing: true
+          on_failure:
+            - remove:
+                field: _ingest._value
+                ignore_missing: true
+            - append:
+                field: error.message
+                value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - set:
+      field: host.hostname
+      tag: set_host_hostname_from_alert_udm_principal_hostname
+      copy_from: google_secops.alert.udm.principal.hostname
+      ignore_empty_value: true
+  - foreach:
+      field: google_secops.alert.udm.principal.ipGeoArtifact
+      if: ctx.google_secops?.alert?.udm?.principal?.ipGeoArtifact instanceof List
+      processor:
+        convert:
+          field: _ingest._value.ip
+          tag: convert_udm_principal_ipGeoArtifact_ip_to_ip
+          type: ip
+          ignore_missing: true
+          on_failure:
+            - remove:
+                field: _ingest._value.ip
+                ignore_missing: true
+            - append:
+                field: error.message
+                value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - foreach:
+      field: google_secops.alert.udm.principal.ipGeoArtifact
+      if: ctx.google_secops?.alert?.udm?.principal?.ipGeoArtifact instanceof List
+      processor:
+        append:
+          field: host.ip
+          tag: append_udm_principal_ipGeoArtifact_ip_into_host_ip
+          value: '{{{_ingest._value.ip}}}'
+          allow_duplicates: false
+  - foreach:
+      field: google_secops.alert.udm.principal.ipGeoArtifact
+      if: ctx.google_secops?.alert?.udm?.principal?.ipGeoArtifact instanceof List
+      processor:
+        convert:
+          field: _ingest._value.location.regionCoordinates.longitude
+          tag: convert_udm_principal_ipGeoArtifact_location_regionCoordinates_longitude_to_double
+          target_field: _ingest._value.location.regionCoordinates.lon
+          type: double
+          ignore_missing: true
+          on_failure:
+            - remove:
+                field: _ingest._value.location.regionCoordinates.longitude
+                ignore_missing: true
+            - append:
+                field: error.message
+                value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - foreach:
+      field: google_secops.alert.udm.principal.ipGeoArtifact
+      if: ctx.google_secops?.alert?.udm?.principal?.ipGeoArtifact instanceof List
+      processor:
+        convert:
+          field: _ingest._value.location.regionCoordinates.latitude
+          tag: convert_udm_principal_ipGeoArtifact_location_regionCoordinates_latitude_to_double
+          target_field: _ingest._value.location.regionCoordinates.lat
+          type: double
+          ignore_missing: true
+          on_failure:
+            - remove:
+                field: _ingest._value.location.regionCoordinates.latitude
+                ignore_missing: true
+            - append:
+                field: error.message
+                value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - foreach:
+      field: google_secops.alert.udm.principal.ipGeoArtifact
+      if: ctx.google_secops?.alert?.udm?.principal?.ipGeoArtifact instanceof List
+      processor:
+        remove:
+          field:
+            - _ingest._value.location.regionCoordinates.longitude
+            - _ingest._value.location.regionCoordinates.latitude
+          tag: remove_udm_principal_ipGeoArtifact_location_regionCoordinates
+          ignore_missing: true
+  - script:
+      description: Map host.geo.location field.
+      tag: map_host_geo_location
+      lang: painless
+      source: |-
+        def locationList = new ArrayList();
+        if (ctx.google_secops?.alert?.udm?.principal?.ipGeoArtifact instanceof List) {
+          for (list in ctx.google_secops.alert.udm.principal.ipGeoArtifact) {
+            locationList.add(list.location.regionCoordinates);
+          }
+        }
+        if (!(ctx.host instanceof HashMap)) {
+          ctx.host = new HashMap();
+        }
+        if (!(ctx.host.geo instanceof HashMap)) {
+          ctx.host.geo = new HashMap();
+        }
+        ctx.host.geo.location = locationList;
+      ignore_failure: true
+  - foreach:
+      field: google_secops.alert.udm.principal.ipGeoArtifact
+      if: ctx.google_secops?.alert?.udm?.principal?.ipGeoArtifact instanceof List
+      processor:
+        append:
+          field: host.geo.country_name
+          tag: append_udm_principal_ipGeoArtifact_location_countryOrRegion_into_host_geo_country_name
+          value: '{{{_ingest._value.location.countryOrRegion}}}'
+          allow_duplicates: false
+  - foreach:
+      field: google_secops.alert.udm.principal.ipGeoArtifact
+      if: ctx.google_secops?.alert?.udm?.principal?.ipGeoArtifact instanceof List
+      processor:
+        append:
+          field: host.geo.region_name
+          tag: append_udm_principal_ipGeoArtifact_location_state_into_host_geo_region_name
+          value: '{{{_ingest._value.location.state}}}'
+          allow_duplicates: false
+  - foreach:
+      field: google_secops.alert.udm.principal.ipGeoArtifact
+      if: ctx.google_secops?.alert?.udm?.principal?.ipGeoArtifact instanceof List
+      processor:
+        convert:
+          field: _ingest._value.network.asn
+          tag: convert_udm_principal_ipGeoArtifact_network_asn_to_long
+          type: long
+          ignore_missing: true
+          on_failure:
+            - remove:
+                field: _ingest._value.network.asn
+                ignore_missing: true
+            - append:
+                field: error.message
+                value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - foreach:
+      field: google_secops.alert.udm.principal.ipGeoArtifact
+      if: ctx.google_secops?.alert?.udm?.principal?.ipGeoArtifact instanceof List
+      processor:
+        append:
+          field: host.as.number
+          tag: append_udm_principal_ipGeoArtifact_network_asn_into_host_as_number
+          value: '{{{_ingest._value.network.asn}}}'
+          allow_duplicates: false
+  - foreach:
+      field: host.as.number
+      if: ctx.host?.as?.number instanceof List
+      processor:
+        convert:
+          field: _ingest._value
+          tag: convert_host_as_number_to_long
+          type: long
+          ignore_missing: true
+          on_failure:
+            - remove:
+                field: _ingest._value
+                ignore_missing: true
+            - append:
+                field: error.message
+                value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - foreach:
+      field: google_secops.alert.udm.principal.ipGeoArtifact
+      if: ctx.google_secops?.alert?.udm?.principal?.ipGeoArtifact instanceof List
+      processor:
+        append:
+          field: host.as.organization.name
+          tag: append_udm_principal_ipGeoArtifact_network_organizationName_into_host_as_number
+          value: '{{{_ingest._value.network.organizationName}}}'
+          allow_duplicates: false
+  - convert:
+      field: google_secops.alert.udm.principal.location.regionCoordinates.latitude
+      tag: convert_udm_principal_location_regionCoordinates_latitude_to_double
+      type: double
+      ignore_missing: true
+      on_failure:
+        - remove:
+            field: google_secops.alert.udm.principal.location.regionCoordinates.latitude
+            ignore_missing: true
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - convert:
+      field: google_secops.alert.udm.principal.location.regionCoordinates.longitude
+      tag: convert_udm_principal_location_regionCoordinates_longitude_to_double
+      type: double
+      ignore_missing: true
+      on_failure:
+        - remove:
+            field: google_secops.alert.udm.principal.location.regionCoordinates.longitude
+            ignore_missing: true
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - convert:
+      field: google_secops.alert.udm.principal.location.regionLatitude
+      tag: convert_udm_principal_location_regionLatitude_to_double
+      type: double
+      ignore_missing: true
+      on_failure:
+        - remove:
+            field: google_secops.alert.udm.principal.location.regionLatitude
+            ignore_missing: true
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - convert:
+      field: google_secops.alert.udm.principal.location.regionLongitude
+      tag: convert_udm_principal_location_regionLongitude_to_double
+      type: double
+      ignore_missing: true
+      on_failure:
+        - remove:
+            field: google_secops.alert.udm.principal.location.regionLongitude
+            ignore_missing: true
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - foreach:
+      field: google_secops.alert.udm.principal.ip
+      if: ctx.google_secops?.alert?.udm?.principal?.ip instanceof List
+      processor:
+        convert:
+          field: _ingest._value
+          tag: convert_udm_principal_ip_to_ip
+          type: ip
+          ignore_missing: true
+          on_failure:
+            - remove:
+                field: _ingest._value
+                ignore_missing: true
+            - append:
+                field: error.message
+                value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - foreach:
+      field: google_secops.alert.udm.principal.ip
+      if: ctx.google_secops?.alert?.udm?.principal?.ip instanceof List
+      processor:
+        append:
+          field: host.ip
+          tag: append_udm_principal_ip_into_host_ip
+          value: '{{{_ingest._value}}}'
+          allow_duplicates: false
+  - foreach:
+      field: google_secops.alert.udm.principal.natIp
+      if: ctx.google_secops?.alert?.udm?.principal?.natIp instanceof List
+      processor:
+        convert:
+          field: _ingest._value
+          tag: convert_udm_principal_natIp_to_ip
+          type: ip
+          ignore_missing: true
+          on_failure:
+            - remove:
+                field: _ingest._value
+                ignore_missing: true
+            - append:
+                field: error.message
+                value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - convert:
+      field: google_secops.alert.udm.principal.network.receivedBytes
+      tag: convert_udm_principal_network_receivedBytes_to_long
+      type: long
+      ignore_missing: true
+      on_failure:
+        - remove:
+            field: google_secops.alert.udm.principal.network.receivedBytes
+            ignore_missing: true
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - convert:
+      field: google_secops.alert.udm.principal.network.sentBytes
+      tag: convert_udm_principal_network_sentBytes_to_long
+      type: long
+      ignore_missing: true
+      on_failure:
+        - remove:
+            field: google_secops.alert.udm.principal.network.sentBytes
+            ignore_missing: true
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - convert:
+      field: google_secops.alert.udm.principal.port
+      tag: convert_udm_principal_port_to_long
+      type: long
+      ignore_missing: true
+      on_failure:
+        - remove:
+            field: google_secops.alert.udm.principal.port
+            ignore_missing: true
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - set:
+      field: process.command_line
+      tag: set_process_command_line_from_alert_udm_principal_process_commandLine
+      copy_from: google_secops.alert.udm.principal.process.commandLine
+      ignore_empty_value: true
+  - set:
+      field: file.path
+      tag: set_file_path_from_alert_udm_principal_process_file_fullPath
+      copy_from: google_secops.alert.udm.principal.process.file.fullPath
+      ignore_empty_value: true
+  - set:
+      field: file.hash.md5
+      tag: set_file_hash_md5_from_alert_udm_principal_process_file_md5
+      copy_from: google_secops.alert.udm.principal.process.file.md5
+      ignore_empty_value: true
+  - set:
+      field: file.hash.sha1
+      tag: set_file_hash_sha1_from_alert_udm_principal_process_file_sha1
+      copy_from: google_secops.alert.udm.principal.process.file.sha1
+      ignore_empty_value: true
+  - set:
+      field: file.hash.sha256
+      tag: set_file_hash_sha256_from_alert_udm_principal_process_file_sha256
+      copy_from: google_secops.alert.udm.principal.process.file.sha256
+      ignore_empty_value: true
+  - convert:
+      field: google_secops.alert.udm.principal.process.parentProcess.pid
+      tag: convert_udm_principal_process_parentProcess_pid_to_long
+      type: long
+      ignore_missing: true
+      on_failure:
+        - remove:
+            field: google_secops.alert.udm.principal.process.parentProcess.pid
+            ignore_missing: true
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - set:
+      field: process.parent.pid
+      tag: set_process_parent_pid_from_alert_udm_principal_process_parentProcess_pid
+      copy_from: google_secops.alert.udm.principal.process.parentProcess.pid
+      ignore_empty_value: true
+  - set:
+      field: process.parent.executable
+      tag: set_process_parent_pid_from_alert_udm_principal_process_parentProcess_file_fullPath
+      copy_from: google_secops.alert.udm.principal.process.parentProcess.file.fullPath
+      ignore_empty_value: true
+  - convert:
+      field: google_secops.alert.udm.principal.process.pid
+      tag: convert_udm_principal_process_pid_to_long
+      type: long
+      ignore_missing: true
+      on_failure:
+        - remove:
+            field: google_secops.alert.udm.principal.process.pid
+            ignore_missing: true
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - set:
+      field: process.pid
+      tag: set_process_pid_from_alert_udm_principal_process_pid
+      copy_from: google_secops.alert.udm.principal.process.pid
+      ignore_empty_value: true
+  - foreach:
+      field: google_secops.alert.udm.principal.processAncestors
+      if: ctx.google_secops?.alert?.udm?.principal?.processAncestors instanceof List
+      processor:
+        convert:
+          field: _ingest._value.pid
+          tag: convert_udm_principal_processAncestors_pid_to_long
+          type: long
+          ignore_missing: true
+          on_failure:
+            - remove:
+                field: _ingest._value.pid
+                ignore_missing: true
+            - append:
+                field: error.message
+                value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - date:
+      field: google_secops.alert.udm.principal.user.attribute.creationTime
+      tag: date_udm_principal_user_attribute_creationTime
+      target_field: google_secops.alert.udm.principal.user.attribute.creationTime
+      formats:
+        - ISO8601
+      if: ctx.google_secops?.alert?.udm?.principal?.user?.attribute?.creationTime != null && ctx.google_secops.alert.udm.principal.user.attribute.creationTime != ''
+      on_failure:
+        - remove:
+            field: google_secops.alert.udm.principal.user.attribute.creationTime
+            ignore_missing: true
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - foreach:
+      field: google_secops.alert.udm.principal.user.attribute.roles
+      if: ctx.google_secops?.alert?.udm?.principal?.user?.attribute?.roles instanceof List
+      processor:
+        append:
+          field: user.roles
+          tag: append_udm_principal_user_attribute_roles_name_into_user_roles
+          value: '{{{_ingest._value.name}}}'
+          allow_duplicates: false
+  - foreach:
+      field: google_secops.alert.udm.principal.user.emailAddresses
+      if: ctx.google_secops?.alert?.udm?.principal?.user?.emailAddresses instanceof List
+      processor:
+        append:
+          field: user.email
+          tag: append_udm_principal_user_emailAddresses_into_user_email
+          value: '{{{_ingest._value}}}'
+          allow_duplicates: false
+  - foreach:
+      field: google_secops.alert.udm.principal.user.groupIdentifiers
+      if: ctx.google_secops?.alert?.udm?.principal?.user?.groupIdentifiers instanceof List
+      processor:
+        append:
+          field: user.group.id
+          tag: append_udm_principal_user_groupIdentifiers_into_user_group_id
+          value: '{{{_ingest._value}}}'
+          allow_duplicates: false
+  - set:
+      field: user.name
+      tag: set_user_name_from_alert_udm_principal_user_userDisplayName
+      copy_from: google_secops.alert.udm.principal.user.userDisplayName
+      ignore_empty_value: true
+  - set:
+      field: user.id
+      tag: set_user_id_from_alert_udm_principal_user_userid
+      copy_from: google_secops.alert.udm.principal.user.userid
+      ignore_empty_value: true
+  - foreach:
+      field: google_secops.alert.udm.src.ip
+      if: ctx.google_secops?.alert?.udm?.src?.ip instanceof List
+      processor:
+        convert:
+          field: _ingest._value
+          tag: convert_udm_src_ip_to_ip
+          type: ip
+          ignore_missing: true
+          on_failure:
+            - remove:
+                field: _ingest._value
+                ignore_missing: true
+            - append:
+                field: error.message
+                value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - foreach:
+      field: google_secops.alert.udm.src.ip
+      if: ctx.google_secops?.alert?.udm?.src?.ip instanceof List
+      processor:
+        append:
+          field: source.ip
+          tag: append_udm_src_ip_into_source_ip
+          value: '{{{_ingest._value}}}'
+          allow_duplicates: false
+  - convert:
+      field: google_secops.alert.udm.src.port
+      tag: convert_udm_src_port_to_long
+      type: long
+      ignore_missing: true
+      on_failure:
+        - remove:
+            field: google_secops.alert.udm.src.port
+            ignore_missing: true
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - set:
+      field: source.port
+      tag: set_source_port_from_alert_udm_src_port
+      copy_from: google_secops.alert.udm.src.port
+      ignore_empty_value: true
+  - set:
+      field: destination.domain
+      tag: set_destination_domain_from_alert_udm_target_hostname
+      copy_from: google_secops.alert.udm.target.hostname
+      ignore_empty_value: true
+  - foreach:
+      field: google_secops.alert.udm.target.ipGeoArtifact
+      if: ctx.google_secops?.alert?.udm?.target?.ipGeoArtifact instanceof List
+      processor:
+        convert:
+          field: _ingest._value.ip
+          tag: convert_udm_target_ipGeoArtifact_ip_to_ip
+          type: ip
+          ignore_missing: true
+          on_failure:
+            - remove:
+                field: _ingest._value.ip
+                ignore_missing: true
+            - append:
+                field: error.message
+                value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - foreach:
+      field: google_secops.alert.udm.target.ipGeoArtifact
+      if: ctx.google_secops?.alert?.udm?.target?.ipGeoArtifact instanceof List
+      processor:
+        append:
+          field: destination.ip
+          tag: append_udm_target_ipGeoArtifact_ip_into_destination_ip
+          value: '{{{_ingest._value.ip}}}'
+          allow_duplicates: false
+  - foreach:
+      field: google_secops.alert.udm.target.ipGeoArtifact
+      if: ctx.google_secops?.alert?.udm?.target?.ipGeoArtifact instanceof List
+      processor:
+        append:
+          field: destination.geo.country_name
+          tag: append_udm_target_ipGeoArtifact_location_countryOrRegion_into_destination_geo_country_name
+          value: '{{{_ingest._value.location.countryOrRegion}}}'
+          allow_duplicates: false
+  - foreach:
+      field: google_secops.alert.udm.target.ipGeoArtifact
+      if: ctx.google_secops?.alert?.udm?.target?.ipGeoArtifact instanceof List
+      processor:
+        convert:
+          field: _ingest._value.location.regionCoordinates.longitude
+          tag: convert_udm_target_ipGeoArtifact_location_regionCoordinates_longitude_to_double
+          target_field: _ingest._value.location.regionCoordinates.lon
+          type: double
+          ignore_missing: true
+          on_failure:
+            - remove:
+                field: _ingest._value.location.regionCoordinates.longitude
+                ignore_missing: true
+            - append:
+                field: error.message
+                value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - foreach:
+      field: google_secops.alert.udm.target.ipGeoArtifact
+      if: ctx.google_secops?.alert?.udm?.target?.ipGeoArtifact instanceof List
+      processor:
+        convert:
+          field: _ingest._value.location.regionCoordinates.latitude
+          tag: convert_udm_target_ipGeoArtifact_location_regionCoordinates_latitude_to_double
+          target_field: _ingest._value.location.regionCoordinates.lat
+          type: double
+          ignore_missing: true
+          on_failure:
+            - remove:
+                field: _ingest._value.location.regionCoordinates.latitude
+                ignore_missing: true
+            - append:
+                field: error.message
+                value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - foreach:
+      field: google_secops.alert.udm.target.ipGeoArtifact
+      if: ctx.google_secops?.alert?.udm?.target?.ipGeoArtifact instanceof List
+      processor:
+        remove:
+          field:
+            - _ingest._value.location.regionCoordinates.longitude
+            - _ingest._value.location.regionCoordinates.latitude
+          tag: remove_udm_target_ipGeoArtifact_location_regionCoordinates
+          ignore_missing: true
+  - script:
+      description: Map destination.geo.location field.
+      tag: map_destination_geo_location
+      lang: painless
+      source: |-
+        def locationList = new ArrayList();
+        if (ctx.google_secops?.alert?.udm?.target?.ipGeoArtifact instanceof List) {
+          for (list in ctx.google_secops.alert.udm.target.ipGeoArtifact) {
+            locationList.add(list.location.regionCoordinates);
+          }
+        }
+        if (!(ctx.destination instanceof HashMap)) {
+          ctx.destination = new HashMap();
+        }
+        if (!(ctx.destination.geo instanceof HashMap)) {
+          ctx.destination.geo = new HashMap();
+        }
+        ctx.destination.geo.location = locationList;
+      ignore_failure: true
+  - foreach:
+      field: google_secops.alert.udm.target.ipGeoArtifact
+      if: ctx.google_secops?.alert?.udm?.target?.ipGeoArtifact instanceof List
+      processor:
+        append:
+          field: destination.geo.region_name
+          tag: append_udm_target_ipGeoArtifact_location_state_into_destination_geo_region_name
+          value: '{{{_ingest._value.location.state}}}'
+          allow_duplicates: false
+  - foreach:
+      field: google_secops.alert.udm.target.ipGeoArtifact
+      if: ctx.google_secops?.alert?.udm?.target?.ipGeoArtifact instanceof List
+      processor:
+        convert:
+          field: _ingest._value.network.asn
+          tag: convert_udm_target_ipGeoArtifact_network_asn_to_long
+          type: long
+          ignore_missing: true
+          on_failure:
+            - remove:
+                field: _ingest._value.network.asn
+                ignore_missing: true
+            - append:
+                field: error.message
+                value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - foreach:
+      field: google_secops.alert.udm.target.ipGeoArtifact
+      if: ctx.google_secops?.alert?.udm?.target?.ipGeoArtifact instanceof List
+      processor:
+        append:
+          field: destination.as.number
+          tag: append_udm_target_ipGeoArtifact_network_asn_into_destination_as_number
+          value: '{{{_ingest._value.network.asn}}}'
+          allow_duplicates: false
+  - foreach:
+      field: destination.as.number
+      if: ctx.destination?.as?.number instanceof List
+      processor:
+        convert:
+          field: _ingest._value
+          tag: convert_destination_as_number_to_long
+          type: long
+          ignore_missing: true
+          on_failure:
+            - remove:
+                field: _ingest._value
+                ignore_missing: true
+            - append:
+                field: error.message
+                value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - foreach:
+      field: google_secops.alert.udm.target.ipGeoArtifact
+      if: ctx.google_secops?.alert?.udm?.target?.ipGeoArtifact instanceof List
+      processor:
+        append:
+          field: destination.as.organization.name
+          tag: append_udm_target_ipGeoArtifact_network_organizationName_into_destination_as_organization_name
+          value: '{{{_ingest._value.network.organizationName}}}'
+          allow_duplicates: false
+  - foreach:
+      field: google_secops.alert.udm.target.ip
+      if: ctx.google_secops?.alert?.udm?.target?.ip instanceof List
+      processor:
+        convert:
+          field: _ingest._value
+          tag: convert_udm_target_ip_to_ip
+          type: ip
+          ignore_missing: true
+          on_failure:
+            - remove:
+                field: _ingest._value
+                ignore_missing: true
+            - append:
+                field: error.message
+                value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - foreach:
+      field: google_secops.alert.udm.target.ip
+      if: ctx.google_secops?.alert?.udm?.target?.ip instanceof List
+      processor:
+        append:
+          field: destination.ip
+          tag: append_udm_target_ip_into_destination_ip
+          value: '{{{_ingest._value}}}'
+          allow_duplicates: false
+  - convert:
+      field: google_secops.alert.udm.target.location.regionCoordinates.latitude
+      tag: convert_udm_target_location_regionCoordinates_latitude_to_double
+      type: double
+      ignore_missing: true
+      on_failure:
+        - remove:
+            field: google_secops.alert.udm.target.location.regionCoordinates.latitude
+            ignore_missing: true
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - convert:
+      field: google_secops.alert.udm.target.location.regionCoordinates.longitude
+      tag: convert_udm_target_location_regionCoordinates_longitude_to_double
+      type: double
+      ignore_missing: true
+      on_failure:
+        - remove:
+            field: google_secops.alert.udm.target.location.regionCoordinates.longitude
+            ignore_missing: true
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - convert:
+      field: google_secops.alert.udm.target.location.regionLatitude
+      tag: convert_udm_target_location_regionLatitude_to_double
+      type: double
+      ignore_missing: true
+      on_failure:
+        - remove:
+            field: google_secops.alert.udm.target.location.regionLatitude
+            ignore_missing: true
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - convert:
+      field: google_secops.alert.udm.target.location.regionLongitude
+      tag: convert_udm_target_location_regionLongitude_to_double
+      type: double
+      ignore_missing: true
+      on_failure:
+        - remove:
+            field: google_secops.alert.udm.target.location.regionLongitude
+            ignore_missing: true
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - convert:
+      field: google_secops.alert.udm.target.network.sentBytes
+      tag: convert_udm_target_network_sentBytes_to_long
+      type: long
+      ignore_missing: true
+      on_failure:
+        - remove:
+            field: google_secops.alert.udm.target.network.sentBytes
+            ignore_missing: true
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - convert:
+      field: google_secops.alert.udm.target.port
+      tag: convert_udm_target_port_to_long
+      type: long
+      ignore_missing: true
+      on_failure:
+        - remove:
+            field: google_secops.alert.udm.target.port
+            ignore_missing: true
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - set:
+      field: destination.port
+      tag: set_destination_port_from_alert_udm_target_port
+      copy_from: google_secops.alert.udm.target.port
+      ignore_empty_value: true
+  - foreach:
+      field: google_secops.alert.udm.target.user.emailAddresses
+      if: ctx.google_secops?.alert?.udm?.target?.user?.emailAddresses instanceof List
+      processor:
+        append:
+          field: destination.user.email
+          tag: append_udm_target_user_emailAddresses_into_destination_user_email
+          value: '{{{_ingest._value}}}'
+          allow_duplicates: false
+  - foreach:
+      field: google_secops.alert.udm.target.user.groupIdentifiers
+      if: ctx.google_secops?.alert?.udm?.target?.user?.groupIdentifiers instanceof List
+      processor:
+        append:
+          field: destination.user.group.id
+          tag: append_udm_target_user_groupIdentifiers_into_destination_user_group_id
+          value: '{{{_ingest._value}}}'
+          allow_duplicates: false
+  - set:
+      field: destination.user.name
+      tag: set_destination_user_name_from_alert_udm_target_user_userDisplayName
+      copy_from: google_secops.alert.udm.target.user.userDisplayName
+      ignore_empty_value: true
+  - set:
+      field: destination.user.id
+      tag: set_destination_user_id_from_alert_udm_target_user_userid
+      copy_from: google_secops.alert.udm.target.user.userid
+      ignore_empty_value: true
+  - script:
+      lang: painless
+      source: 'ctx.network.bytes = ctx.source.bytes + ctx.destination.bytes'
+      if: ctx.source?.bytes != null && ctx.destination?.bytes != null
+      tag: script_to_set_network_bytes_from_source_and_destination_bytes
+      ignore_failure: true
+  - foreach:
+      field: google_secops.alert.udm.about
+      if: ctx.google_secops?.alert?.udm?.about instanceof List
+      processor:
+        append:
+          field: related.hash
+          tag: append_udm_about_file_sha256_into_related_hash
+          value: '{{{_ingest._value.file.sha256}}}'
+          allow_duplicates: false
+  - foreach:
+      field: google_secops.alert.udm.about
+      if: ctx.google_secops?.alert?.udm?.about instanceof List
+      processor:
+        append:
+          field: related.user
+          tag: append_udm_about_user_userid_into_related_user
+          value: '{{{_ingest._value.user.userid}}}'
+          allow_duplicates: false
+  - foreach:
+      field: google_secops.alert.udm.about
+      if: ctx.google_secops?.alert?.udm?.about instanceof List
+      processor:
+        append:
+          field: related.user
+          tag: append_udm_about_user_userDisplayName_into_related_user
+          value: '{{{_ingest._value.user.userDisplayName}}}'
+          allow_duplicates: false
+  - foreach:
+      field: google_secops.alert.udm.about
+      if: ctx.google_secops?.alert?.udm?.about instanceof List
+      processor:
+        foreach:
+          field: _ingest._value.user.emailAddresses
+          ignore_failure: true
+          processor:
+            append:
+              field: related.user
+              tag: append_udm_about_user_emailAddresses_into_related_user
+              value: '{{{_ingest._value}}}'
+              allow_duplicates: false
+  - foreach:
+      field: google_secops.alert.udm.intermediary
+      if: ctx.google_secops?.alert?.udm?.intermediary instanceof List
+      processor:
+        append:
+          field: related.hosts
+          tag: append_udm_intermediary_hostname_into_related_hosts
+          value: '{{{_ingest._value.hostname}}}'
+          allow_duplicates: false
+  - foreach:
+      field: google_secops.alert.udm.intermediary
+      if: ctx.google_secops?.alert?.udm?.intermediary instanceof List
+      processor:
+        foreach:
+          field: _ingest._value.ip
+          ignore_failure: true
+          processor:
+            append:
+              field: related.ip
+              tag: append_udm_intermediary_ip_into_related_ip
+              value: '{{{_ingest._value}}}'
+              allow_duplicates: false
+  - append:
+      field: related.hosts
+      tag: append_google_secops_alert_udm_principal_asset_hostname_into_related_hosts
+      value: '{{{google_secops.alert.udm.principal.asset.hostname}}}'
+      allow_duplicates: false
+      if: ctx.google_secops?.alert?.udm?.principal?.asset?.hostname != null
+  - append:
+      field: related.ip
+      tag: append_google_secops_alert_udm_principal_asset_ip_into_related_ip
+      value: '{{{google_secops.alert.udm.principal.asset.ip}}}'
+      allow_duplicates: false
+      if: ctx.google_secops?.alert?.udm?.principal?.asset?.ip != null
+  - foreach:
+      field: google_secops.alert.udm.principal.asset.natIp
+      if: ctx.google_secops?.alert?.udm?.principal?.asset?.natIp instanceof List
+      processor:
+        append:
+          field: related.ip
+          tag: append_udm_principal_asset_natIp_into_related_ip
+          value: '{{{_ingest._value}}}'
+          allow_duplicates: false
+  - append:
+      field: related.hosts
+      tag: append_host_hostname_into_related_hosts
+      value: '{{{host.hostname}}}'
+      allow_duplicates: false
+      if: ctx.host?.hostname != null
+  - foreach:
+      field: host.ip
+      if: ctx.host?.ip instanceof List
+      processor:
+        append:
+          field: related.ip
+          tag: append_host_ip_into_related_ip
+          value: '{{{_ingest._value}}}'
+          allow_duplicates: false
+  - foreach:
+      field: google_secops.alert.udm.principal.ipGeoArtifact
+      if: ctx.google_secops?.alert?.udm?.principal?.ipGeoArtifact instanceof List
+      processor:
+        append:
+          field: related.hosts
+          tag: append_udm_principal_ipGeoArtifact_network_dnsDomain_into_related_hosts
+          value: '{{{_ingest._value.network.dnsDomain}}}'
+          allow_duplicates: false
+  - foreach:
+      field: google_secops.alert.udm.principal.natIp
+      if: ctx.google_secops?.alert?.udm?.principal?.natIp instanceof List
+      processor:
+        append:
+          field: related.ip
+          tag: append_udm_principal_natIp_into_related_ip
+          value: '{{{_ingest._value}}}'
+          allow_duplicates: false
+  - append:
+      field: related.hash
+      tag: append_file_hash_md5_into_related_hash
+      value: '{{{file.hash.md5}}}'
+      allow_duplicates: false
+      if: ctx.file?.hash?.md5 != null
+  - append:
+      field: related.hash
+      tag: append_file_hash_sha1_into_related_hash
+      value: '{{{file.hash.sha1}}}'
+      allow_duplicates: false
+      if: ctx.file?.hash?.sha1 != null
+  - append:
+      field: related.hash
+      tag: append_file_hash_sha256_into_related_hash
+      value: '{{{file.hash.sha256}}}'
+      allow_duplicates: false
+      if: ctx.file?.hash?.sha256 != null
+  - foreach:
+      field: user.email
+      if: ctx.user?.email instanceof List
+      processor:
+        append:
+          field: related.user
+          tag: append_user_email_into_related_user
+          value: '{{{_ingest._value}}}'
+          allow_duplicates: false
+  - append:
+      field: related.user
+      tag: append_user_id_into_related_user
+      value: '{{{user.id}}}'
+      allow_duplicates: false
+      if: ctx.user?.id != null
+  - append:
+      field: related.user
+      tag: append_user_name_into_related_user
+      value: '{{{user.name}}}'
+      allow_duplicates: false
+      if: ctx.user?.name != null
+  - foreach:
+      field: google_secops.alert.udm.securityResult
+      if: ctx.google_secops?.alert?.udm?.securityResult instanceof List
+      processor:
+        foreach:
+          field: _ingest._value.about.user.emailAddresses
+          ignore_failure: true
+          processor:
+            append:
+              field: related.user
+              tag: append_udm_securityResult_about_user_emailAddresses_into_related_user
+              value: '{{{_ingest._value}}}'
+              allow_duplicates: false
+  - foreach:
+      field: source.ip
+      if: ctx.source?.ip instanceof List
+      processor:
+        append:
+          field: related.ip
+          tag: append_source_ip_into_related_ip
+          value: '{{{_ingest._value}}}'
+          allow_duplicates: false
+  - append:
+      field: related.hosts
+      tag: append_google_secops_alert_udm_target_administrativeDomain_into_related_hosts
+      value: '{{{google_secops.alert.udm.target.administrativeDomain}}}'
+      allow_duplicates: false
+      if: ctx.google_secops?.alert?.udm?.target?.administrativeDomain != null
+  - append:
+      field: related.hosts
+      tag: append_google_secops_alert_udm_target_asset_hostname_into_related_hosts
+      value: '{{{google_secops.alert.udm.target.asset.hostname}}}'
+      allow_duplicates: false
+      if: ctx.google_secops?.alert?.udm?.target?.asset?.hostname != null
+  - append:
+      field: related.hash
+      tag: append_google_secops_alert_udm_target_file_sha256_into_related_hash
+      value: '{{{google_secops.alert.udm.target.file.sha256}}}'
+      allow_duplicates: false
+      if: ctx.google_secops?.alert?.udm?.target?.file?.sha256 != null
+  - append:
+      field: related.hosts
+      tag: append_destination_domain_into_related_hosts
+      value: '{{{destination.domain}}}'
+      allow_duplicates: false
+      if: ctx.destination?.domain != null
+  - foreach:
+      field: destination.ip
+      if: ctx.destination?.ip instanceof List
+      processor:
+        append:
+          field: related.ip
+          tag: append_destination_ip_into_related_ip
+          value: '{{{_ingest._value}}}'
+          allow_duplicates: false
+  - foreach:
+      field: google_secops.alert.udm.target.ipGeoArtifact
+      if: ctx.google_secops?.alert?.udm?.target?.ipGeoArtifact instanceof List
+      processor:
+        append:
+          field: related.hosts
+          tag: append_udm_target_ipGeoArtifact_network_dnsDomain_into_related_hosts
+          value: '{{{_ingest._value.network.dnsDomain}}}'
+          allow_duplicates: false
+  - foreach:
+      field: destination.user.email
+      if: ctx.destination?.user?.email instanceof List
+      processor:
+        append:
+          field: related.user
+          tag: append_destination_user_email_into_related_user
+          value: '{{{_ingest._value}}}'
+          allow_duplicates: false
+  - append:
+      field: related.user
+      tag: append_destination_user_id_into_related_user
+      value: '{{{destination.user.id}}}'
+      allow_duplicates: false
+      if: ctx.destination?.user?.id != null
+  - append:
+      field: related.user
+      tag: append_destination_user_name_into_related_user
+      value: '{{{destination.user.name}}}'
+      allow_duplicates: false
+      if: ctx.destination?.user?.name != null
+  - foreach:
+      field: google_secops.alert.udm.extensions.vulns.vulnerabilities
+      if: ctx.google_secops?.alert?.udm?.extensions?.vulns?.vulnerabilities instanceof List
+      processor:
+        remove:
+          field:
+            - _ingest._value.cveId
+            - _ingest._value.cvssBaseScore
+          tag: remove_custom_duplicate_fields_from_google_secops_alert_udm_extensions_vulns_vulnerabilities
+          ignore_missing: true
+          if: ctx.tags == null || !(ctx.tags.contains('preserve_duplicate_custom_fields'))
+  - foreach:
+      field: google_secops.alert.udm.principal.ipGeoArtifact
+      if: ctx.google_secops?.alert?.udm?.principal?.ipGeoArtifact instanceof List
+      processor:
+        remove:
+          field:
+            - _ingest._value.ip
+            - _ingest._value.location.countryOrRegion
+            - _ingest._value.location.regionCoordinates
+            - _ingest._value.location.state
+            - _ingest._value.network.asn
+            - _ingest._value.network.organizationName
+          tag: remove_custom_duplicate_fields_from_google_secops_alert_udm_principal_ipGeoArtifact
+          ignore_missing: true
+          if: ctx.tags == null || !(ctx.tags.contains('preserve_duplicate_custom_fields'))
+  - foreach:
+      field: google_secops.alert.udm.principal.user.attribute.roles
+      if: ctx.google_secops?.alert?.udm?.principal?.user?.attribute?.roles instanceof List
+      processor:
+        remove:
+          field: _ingest._value.name
+          tag: remove_custom_duplicate_fields_from_google_secops_alert_udm_principal_user_attribute_roles
+          ignore_missing: true
+          if: ctx.tags == null || !(ctx.tags.contains('preserve_duplicate_custom_fields'))
+  - foreach:
+      field: google_secops.alert.udm.target.ipGeoArtifact
+      if: ctx.google_secops?.alert?.udm?.target?.ipGeoArtifact instanceof List
+      processor:
+        remove:
+          field:
+            - _ingest._value.ip
+            - _ingest._value.location.countryOrRegion
+            - _ingest._value.location.regionCoordinates
+            - _ingest._value.location.state
+            - _ingest._value.network.asn
+            - _ingest._value.network.organizationName
+          tag: remove_custom_duplicate_fields_from_google_secops_alert_udm_target_ipGeoArtifact
+          ignore_missing: true
+          if: ctx.tags == null || !(ctx.tags.contains('preserve_duplicate_custom_fields'))
+  - remove:
+      field:
+        - google_secops.alert.name
+        - google_secops.alert.udm.metadata.eventTimestamp
+        - google_secops.alert.udm.metadata.productName
+        - google_secops.alert.udm.metadata.productVersion
+        - google_secops.alert.udm.metadata.vendorName
+        - google_secops.alert.udm.network.email.from
+        - google_secops.alert.udm.network.http.userAgent
+        - google_secops.alert.udm.network.ipProtocol
+        - google_secops.alert.udm.network.receivedBytes
+        - google_secops.alert.udm.network.sentBytes
+        - google_secops.alert.udm.network.tls.cipher
+        - google_secops.alert.udm.principal.hostname
+        - google_secops.alert.udm.principal.process.commandLine
+        - google_secops.alert.udm.principal.process.file.fullPath
+        - google_secops.alert.udm.principal.process.file.md5
+        - google_secops.alert.udm.principal.process.file.sha1
+        - google_secops.alert.udm.principal.process.file.sha256
+        - google_secops.alert.udm.principal.process.parentProcess.pid
+        - google_secops.alert.udm.principal.process.pid
+        - google_secops.alert.udm.principal.user.userDisplayName
+        - google_secops.alert.udm.principal.user.userid
+        - google_secops.alert.udm.src.port
+        - google_secops.alert.udm.target.hostname
+        - google_secops.alert.udm.target.port
+        - google_secops.alert.udm.target.user.userDisplayName
+        - google_secops.alert.udm.target.user.userid
+        - google_secops.alert.udm.target.ip
+        - google_secops.alert.udm.target.user.emailAddresses
+        - google_secops.alert.udm.target.user.groupIdentifiers
+        - google_secops.alert.udm.network.email.mailId
+        - google_secops.alert.udm.network.email.subject
+        - google_secops.alert.udm.network.email.to
+        - google_secops.alert.udm.principal.ip
+        - google_secops.alert.udm.principal.process.parentProcess.file.fullPath
+        - google_secops.alert.udm.src.ip
+        - google_secops.alert.udm.principal.user.emailAddresses
+        - google_secops.alert.udm.principal.user.groupIdentifiers
+      tag: remove_custom_duplicate_fields
+      ignore_missing: true
+      if: ctx.tags == null || !(ctx.tags.contains('preserve_duplicate_custom_fields'))
+  - script:
+      tag: script_to_drop_null_values
+      lang: painless
+      description: Drops null/empty values recursively.
+      source: |-
+        boolean drop(Object object) {
+          if (object == null || object == '') {
+            return true;
+          } else if (object instanceof Map) {
+            ((Map) object).values().removeIf(v -> drop(v));
+            return (((Map) object).size() == 0);
+          } else if (object instanceof List) {
+            ((List) object).removeIf(v -> drop(v));
+            return (((List) object).length == 0);
+          }
+          return false;
+        }
+        drop(ctx);
+  - append:
+      field: event.kind
+      value: pipeline_error
+      allow_duplicates: false
+      if: ctx.error?.message != null
+  - append:
+      field: tags
+      value: preserve_original_event
+      allow_duplicates: false
+      if: ctx.error?.message != null
+on_failure:
+  - append:
+      field: error.message
+      value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - set:
+      field: event.kind
+      tag: set_pipeline_error_to_event_kind
+      value: pipeline_error
+  - append:
+      field: tags
+      value: preserve_original_event
+      allow_duplicates: false
