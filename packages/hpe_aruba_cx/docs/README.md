@@ -1218,30 +1218,35 @@ Note: Descriptions have not been filled out
 | Field                | Description | Type | Common                       |
 |----------------------|-------------|------|------------------------------|
 
-#### [User management events](https://www.arubanetworks.com/techdocs/AOS-CX/10.07/HTML/5200-8214/Content/events/USER-MGMT.htm)
-| Field                | Description | Type | Common                       |
-|----------------------|-------------|------|------------------------------|
-| aruba.user.added_user|             |      |                              |
-| aruba.user.deleted_user|           |      |                              |
-| aruba.user.user      |             |      | user.name                    |
-| aruba.user.user_role |             |      | user.roles                   |
-| aruba.user.username  |             |      | user.name                    |
+#### [User management events](https://www.arubanetworks.com/techdocs/AOS-CX/10.15/HTML/elmrg/Content/events/USER-MGMT.htm)
+| Docs Field      | Schema Mapping          |
+|-----------------|-------------------------|
+| `<added_user>`  | aruba.user.added_user   |
+| `<deleted_user>`| aruba.user.deleted_user |
+| `<user>`        | user.name               |
+| `<user_role>`   | aruba.user.role         |
+| `<username>`    | user.name               |
 
-#### [User-based tunnels events](https://www.arubanetworks.com/techdocs/AOS-CX/10.07/HTML/5200-8214/Content/events/USER_BASED_TUNNEL.htm)
-| Field                   | Description | Type | Common                       |
-|-------------------------|-------------|------|------------------------------|
-| aruba.tunnel.client_mac |             |      | client.mac                   |
-| aruba.tunnel.dst_ip     |             |      | destination.ip               |
-| aruba.tunnel.ecmp_id    |             |      |                              |
-| aruba.tunnel.gre_key    |             |      |                              |
-| aruba.tunnel.nfd_id     |             |      |                              |
-| aruba.tunnel.port       |             |      | server.port                  |
-| aruba.tunnel.sac_ip     |             |      | server.ip                    |
-| aruba.tunnel.src_ip     |             |      | source.ip                    |
-| aruba.tunnel.state      |             |      | aruba.status                 |
-| aruba.tunnel.tunnel_id  |             |      | aruba.instance.id            |
-| aruba.tunnel.vlan_id    |             |      | network.vlan.id              |
-| aruba.tunnel.vrf        |             |      | aruba.vrf.id                 |
+#### [User-based tunnels events](https://www.arubanetworks.com/techdocs/AOS-CX/10.15/HTML/elmrg/Content/events/USER_BASED_TUNNEL.htm)
+| Docs Field     | Schema Mapping             |
+|----------------|----------------------------|
+| `<client_mac>` | client.mac                 |
+| `<dst_ip>`     | destination.ip             |
+| `<ecmp_id>`    | aruba.tunnel.ecmp_id       |
+| `<gre_key>`    | aruba.tunnel.gre_key       |
+| `<mac_addr>`   | client.mac                 |
+| `<nfd_id>`     | aruba.tunnel.nfd_id        |
+| `<port>`       | aruba.port                 |
+| `<reason>`     | event.reason               |
+| `<sac_ip>`     | server.ip                  |
+| `<src_ip>`     | source.ip                  |
+| `<state>`      | aruba.state                |
+| `<tunnel_id>`  | aruba.instance.id          |
+| `<uac_ip>`     | client.ip                  |
+| `<version>`    | service.version            |
+| `<vlan_id>`    | network.vlan.id            |
+| `<vrf>`        | aruba.vrf.id               |
+| `<zone>`       | aruba.tunnel.zone          |
 
 #### [Virtual Switching Extension (VSX) events](https://www.arubanetworks.com/techdocs/AOS-CX/10.07/HTML/5200-8214/Content/events/VSX.htm)
 | Field                       | Description | Type | Common                       |
@@ -1729,10 +1734,17 @@ The `log` dataset collects the HPE Aruba CX logs.
 | aruba.timeout |  | long |
 | aruba.tpm.reboot_num |  | keyword |
 | aruba.traffic.monitor_name |  | keyword |
+| aruba.tunnel.ecmp_id |  | keyword |
+| aruba.tunnel.gre_key |  | keyword |
 | aruba.tunnel.name |  | keyword |
+| aruba.tunnel.nfd_id |  | keyword |
 | aruba.tunnel.ttl |  | keyword |
 | aruba.tunnel.type |  | keyword |
+| aruba.tunnel.zone |  | keyword |
 | aruba.unit |  | keyword |
+| aruba.user.added_user |  | keyword |
+| aruba.user.deleted_user |  | keyword |
+| aruba.user.role |  | keyword |
 | aruba.vrf.id |  | keyword |
 | aruba.vrf.name |  | keyword |
 | aruba.zero_touch.central_location |  | keyword |

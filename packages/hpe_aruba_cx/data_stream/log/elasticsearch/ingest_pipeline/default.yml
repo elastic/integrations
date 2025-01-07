@@ -1619,6 +1619,27 @@ processors:
         - "^REST server is (enabled|disabled) on VRF %{GREEDYDATA:aruba.vrf.name}"
         - "^User %{DATA:user.name} login from %{IP:client.ip} for REST session has failed since the user is trying to login through an interface which is not allowed. Allowed interfaces are: %{GREEDYDATA:aruba.interface.id}"
 
+    # User management events (470x)
+    # https://www.arubanetworks.com/techdocs/AOS-CX/10.15/HTML/elmrg/Content/events/USER-MGMT.htm
+  - dissect:
+      field: message
+      tag: user_mgmt_event_4701
+      description: "Logs a message when a new user is added to the switch"
+      if: "ctx.event?.code == '4701'"
+      pattern: "User %{user.name} added %{aruba.user.added_user} with role %{aruba.user.role}"
+  - dissect:
+      field: message
+      tag: user_mgmt_event_4702
+      description: "Logs a message when a user is deleted from the switch"
+      if: "ctx.event?.code == '4702'"
+      pattern: "User %{user.name} deleted %{aruba.user.deleted_user} with role %{aruba.user.role}"
+  - grok:
+      field: message
+      tag: user_mgmt_event_4703_4704_4705_4706
+      description: "Logs a message when a user changes his/her password (failed)? | user sets export password | user restores default export password"
+      if: "['4703','4704','4705','4706'].contains(ctx.event?.code)"
+      patterns:
+        - "^User %{DATA:user.name} "
 
     # MAC Learning events (480x)
     # https://www.arubanetworks.com/techdocs/AOS-CX/10.07/HTML/5200-8214/Content/events/MAC-LEARN.htm
@@ -3179,7 +3200,7 @@ processors:
   # https://www.arubanetworks.com/techdocs/AOS-CX/10.07/HTML/5200-8214/Content/events/IP_TUNNEL.htm
   - grok:
       if: "['9601', '9602', '9603', '9604', '9605', '9606', '9607', '9608', '9609', '9610', '9611', '9612', '9613', '9614', '9615', '9616'].contains(ctx.event?.code)"
-      tag: storage_event_9601_9602_9603_9604_9605_9606_9607_9608_9609_9610_9611_9612_9613_9614_9615_9616
+      tag: ip_tunnels_event_9601_9602_9603_9604_9605_9606_9607_9608_9609_9610_9611_9612_9613_9614_9615_9616
       field: "message"
       description: "Event raised when tunnel events"
       patterns:
@@ -3194,6 +3215,141 @@ processors:
         TUNNEL_VFR: "VRF \\(%{DATA:aruba.vrf.id}\\)"
         TUNNEL_LOCAL_IP: "Local IP \\(%{IP:source.ip}\\)"
         TUNNEL_REMOTE_IP: "Remote IP \\(%{IP:destination.ip}\\)"
+
+  # User-based tunnels events (97xx)
+  # https://www.arubanetworks.com/techdocs/AOS-CX/10.15/HTML/elmrg/Content/events/USER_BASED_TUNNEL.htm
+
+  - dissect:
+      if: "ctx.event?.code == '9701'"
+      tag: user_tunnel_event_9701
+      field: "message"
+      description: "Event raised when controller is selected as Active/Standby"
+      pattern: 'Tunnel Node Server SAC (%{server.ip}) is selected as (%{aruba.state})'
+  - grok:
+      if: "['9702','9704'].contains(ctx.event?.code)"
+      tag: user_tunnel_event_9702_9704
+      field: "message"
+      description: "Event raised when heartbeat not received from a SAC | Event raised when SAC bootstapping to a SAC is re-initialized"
+      patterns:
+        - "^Tunnel Node Server (Heartbeat|SAC bootstrapping) has (failed for SAC|reinitialized to) \\(%{IP:server.ip}\\)"
+  - grok:
+      if: "['9703','9706'].contains(ctx.event?.code)"
+      tag: user_tunnel_event_9703_9706
+      field: "message"
+      description: "Event raised when keepalive not received from a UAC | Event raised when UAC node is down"
+      patterns:
+        - "^Tunnel Node Server keepalive has failed for UAC \\(%{IP:client.ip}\\)"
+        - "^Tunnel Node Server UAC node is down \\(%{IP:client.ip}\\)"
+  - grok:
+      if: "['9707','9708','9711','9712'].contains(ctx.event?.code)"
+      tag: user_tunnel_event_9707_9708_9711_9712
+      field: "message"
+      description: "Event raised when user based tunnel is created | user based tunnel creation fails | user based tunnel state is [up|down]"
+      patterns:
+        - "Gre Key \\(%{DATA:aruba.tunnel.gre_key}\\) VRF \\(%{DATA:aruba.vrf.id}\\) Source IP \\(%{IP:source.ip}\\) Destination IP \\(%{IP:destination.ip}\\)"
+        - "Tunnel Id \\(%{DATA:aruba.instance.id}\\) Gre Key \\(%{DATA:aruba.tunnel.gre_key}\\) Source IP \\(%{IP:source.ip}\\) Destination IP \\(%{IP:destination.ip}\\)"
+  - grok:
+      if: "['9709','9710'].contains(ctx.event?.code)"
+      tag: user_tunnel_event_9709_9710
+      field: "message"
+      description: "Event raised when user based tunnel is deleted | user based tunnel deletion fails"
+      patterns:
+        - "Tunnel Id \\(%{DATA:aruba.instance.id}\\)"
+  - grok:
+      if: "['9713','9714','9715','9716'].contains(ctx.event?.code)"
+      tag: user_tunnel_event_9713_9714_9715_9716
+      field: "message"
+      description: "Event raised when user is gets binded to tunnel (failed)? | user is gets binded to tunnel | user unbind to tunnel id failed"
+      patterns:
+        - "^Client \\(%{MAC:client.mac}\\) (is bound|binding|unbinding) to tunnel id \\(%{DATA:aruba.instance.id}\\)"
+        - "^Client \\(%{MAC:client.mac}\\) is removed from tunnel"
+  - grok:
+      if: "ctx.event?.code == '9717'"
+      tag: user_tunnel_event_9717
+      field: "message"
+      description: "Event raised when already binded user to a tunnel gets modified"
+      patterns:
+        - "^Client \\(%{MAC:client.mac}\\) is getting modified to bind to tunnel id \\(%{DATA:aruba.instance.id}\\)"
+        - "^Throttled %{NUMBER:aruba.throttle_count:long} Messages"
+  - grok:
+      if: "ctx.event?.code == '9718'"
+      tag: user_tunnel_event_9718
+      field: "message"
+      description: "Event raised when modification of already binded user to a tunnel fails"
+      patterns:
+        - "^Modification of Client \\(%{MAC:client.mac}\\) binded to \\(%{DATA:aruba.instance.id}\\) has failed"
+        - "^Throttled %{NUMBER:aruba.throttle_count:long} Messages"
+  - grok:
+      if: "['9719','9720'].contains(ctx.event?.code)"
+      tag: user_tunnel_event_9719_9720
+      field: "message"
+      description: "Event raised on NFD port creation | failure"
+      patterns:
+        - "^NFD port \\(%{DATA:aruba.tunnel.nfd_id}\\) (is created|creation) for client \\(%{MAC:client.mac}\\) vlan id \\(%{DATA:network.vlan.id}\\) port \\(%{DATA:aruba.port}\\) ecmp id \\(%{DATA:aruba.tunnel.ecmp_id}\\)"
+  - grok:
+      if: "['9721','9722'].contains(ctx.event?.code)"
+      tag: user_tunnel_event_9721_9722
+      field: "message"
+      description: "Event raised on NFD port deletion | fails"
+      patterns:
+        - "^NFD port \\(%{DATA:aruba.tunnel.nfd_id}\\) (is deleted|deletion) for ecmp id\\s?\\(%{DATA:aruba.tunnel.ecmp_id}\\)"
+  - grok:
+      if: "['9723','9724','9725','9726'].contains(ctx.event?.code)"
+      tag: user_tunnel_event_9723_9724_9725_9726
+      field: "message"
+      description: "Event raised on ECMP group creation | group creation failure | group deletion | group deletion fails"
+      patterns:
+        - "^ECMP group is (created|deleted) for ecmp id \\(%{DATA:aruba.tunnel.ecmp_id}\\)"
+        - "^ECMP group (creation|deletion) for ecmp id\\s?\\(%{DATA:aruba.tunnel.ecmp_id}\\) has failed"
+  - grok:
+      if: "['9727','9728'].contains(ctx.event?.code)"
+      tag: user_tunnel_event_9727_9728
+      field: "message"
+      description: "Event raised when mdest rx user based tunnel is created | tunnel creation fails"
+      patterns:
+        - "Gre Key \\(%{DATA:aruba.tunnel.gre_key}\\) VLAN \\(%{DATA:network.vlan.id}\\) VRF \\(%{DATA:aruba.vrf.id}\\) Source IP \\(%{IP:source.ip}\\) Destination IP \\(%{IP:destination.ip}\\)"
+  - grok:
+      if: "['9729','9730'].contains(ctx.event?.code)"
+      tag: user_tunnel_event_9729_9730
+      field: "message"
+      description: "Event raised when mdest rx user based tunnel is deleted | tunnel deletion fails"
+      patterns:
+        - "Tunnel Id \\(%{DATA:aruba.instance.id}\\)"
+  - grok:
+      if: "['9731','9732'].contains(ctx.event?.code)"
+      tag: user_tunnel_event_9731_9732
+      field: "message"
+      description: "Event raised when mdest rx user based tunnel state is [up|down]"
+      patterns:
+        - "Tunnel Id \\(%{DATA:aruba.instance.id}\\) Gre Key \\(%{DATA:aruba.tunnel.gre_key}\\) Source IP \\(%{IP:source.ip}\\) Destination IP \\(%{IP:destination.ip}\\)"
+  - grok:
+      if: "ctx.event?.code == '9733'"
+      tag: user_tunnel_event_9733
+      field: "message"
+      description: "Event raised when user bootstrap is failed"
+      patterns:
+        - "^User bootstrap is failed for client \\(%{MAC:client.mac}\\) on port \\(%{DATA:aruba.port}\\) due to %{GREEDYDATA:event.reason}."
+  - grok:
+      if: "['9734','9735'].contains(ctx.event?.code)"
+      tag: user_tunnel_event_9734_9735
+      field: "message"
+      description: "Event raised when zone operational state is up | down"
+      patterns:
+        - "^Operational state of %{DATA:aruba.tunnel.zone} zone is UP."
+        - "^Operational state of %{DATA:aruba.tunnel.zone} zone is DOWN due to %{GREEDYDATA:event.reason}."
+  - dissect:
+      if: "ctx.event?.code == '9736'"
+      tag: user_tunnel_event_9736
+      field: "message"
+      description: "Event raised when WoL VLAN bootstrap response received from controller (Active/Standby)"
+      pattern: "Tunnel Node Server WoL VLAN bootstrap %{aruba.state} with controller %{server.ip}"
+  - dissect:
+      if: "ctx.event?.code == '9737'"
+      tag: user_tunnel_event_9737
+      field: "message"
+      description: "Event raised when controller version does not support WoL VLAN bootstrap"
+      pattern: 'Tunnel Node Server WoL VLAN bootstrap failed due to incompatible controller (%{server.ip}) version %{service.version}'
+
 
   # IP source lockdown events (980x)
   # https://www.arubanetworks.com/techdocs/AOS-CX/10.07/HTML/5200-8214/Content/events/IP_SOURCE_LOCKDOWN.htm
