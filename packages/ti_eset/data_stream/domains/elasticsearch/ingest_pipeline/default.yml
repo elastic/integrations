@@ -114,11 +114,6 @@ processors:
       field:
         - eti
       ignore_missing: true
-  - remove:
-      field: event.original
-      if: "ctx.tags == null || !(ctx.tags.contains('preserve_original_event'))"
-      ignore_failure: true
-      ignore_missing: true
   - script:
       tag: script_to_drop_null_values
       lang: painless
@@ -140,6 +135,11 @@ processors:
   - append:
       field: event.kind
       value: pipeline_error
+      allow_duplicates: false
+      if: ctx.error?.message != null
+  - append:
+      field: tags
+      value: preserve_original_event
       allow_duplicates: false
       if: ctx.error?.message != null
 on_failure:

@@ -7,7 +7,7 @@ Currently, it accepts logs in syslog format or from a file for the following dev
 - `utm` dataset: supports [Unified Threat Management](https://www.sophos.com/en-us/support/documentation/sophos-utm) (formerly known as Astaro Security Gateway) logs.
 - `xg` dataset: supports [Sophos XG SFOS logs](https://docs.sophos.com/nsg/sophos-firewall/17.5/Help/en-us/webhelp/onlinehelp/nsg/sfos/concepts/Logs.html).
 
-To configure a remote syslog destination, please reference the [SophosXG/SFOS Documentation](https://community.sophos.com/kb/en-us/123184).
+To configure a remote syslog destination, please reference the [SophosXG/SFOS Documentation](https://support.sophos.com/support/s/?language=en_US#t=AllTab&sort=relevancy).
 
 The syslog format chosen should be `Default`.
 

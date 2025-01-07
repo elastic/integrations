@@ -706,10 +706,6 @@ processors:
         - tenable_io.asset.operating_systems
         - tenable_io.asset.network.name
       ignore_missing: true
-  - remove:
-      field: event.original
-      if: ctx.tags == null || !(ctx.tags.contains('preserve_original_event'))
-      ignore_missing: true
   - script:
       description: Drops null/empty values recursively.
       lang: painless
@@ -730,6 +726,11 @@ processors:
   - set:
       field: event.kind
       value: pipeline_error
+      if: ctx.error?.message != null
+  - append:
+      field: tags
+      value: preserve_original_event
+      allow_duplicates: false
       if: ctx.error?.message != null
 on_failure:
   - append:
