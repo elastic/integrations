@@ -1,5 +1,5 @@
 ---
-description: Pipeline for renaming object
+description: Pipeline for processing o365 yammer device usage metrics.
 processors:
   - set:
       field: ecs.version
@@ -7,6 +7,11 @@ processors:
   - json:
       field: yammerdeviceusage
       target_field: o365.metrics.yammer.device.usage
+      tag: json_decoding
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - script:
       lang: painless
       description: Replace spaces and dashes in field names under o365.metrics.yammer.device.usage.
@@ -23,12 +28,10 @@ processors:
           out[underscore(item.getKey())] = item.getValue();
         }
         ctx.o365.metrics.yammer.device.usage = out;
-            
   - remove:
       if: ctx.yammerdeviceusage != null
       field: yammerdeviceusage
       ignore_missing: true                               
-
   - rename:
       field: o365.metrics.yammer.device.usage.android_phone
       target_field: o365.metrics.yammer.device.usage.android_phone.count
@@ -49,12 +52,10 @@ processors:
       field: o365.metrics.yammer.device.usage.web
       target_field: o365.metrics.yammer.device.usage.web.count
       ignore_missing: true
-
   - rename:
       field: o365.metrics.yammer.device.usage.other
       target_field: o365.metrics.yammer.device.usage.other.count
       ignore_missing: true
-
   - rename:
       field: o365.metrics.yammer.device.usage.report_period
       target_field: o365.metrics.yammer.device.usage.report.period.day
@@ -67,11 +68,14 @@ processors:
       field: o365.metrics.yammer.device.usage.report_date
       target_field: o365.metrics.yammer.device.usage.report.date
       ignore_missing: true
-
 on_failure:
   - set:
       field: error.message
       value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - append:
+      field: tags
+      value: preserve_original_event
+      allow_duplicates: false
   - append:
       field: event.kind
       value: pipeline_error

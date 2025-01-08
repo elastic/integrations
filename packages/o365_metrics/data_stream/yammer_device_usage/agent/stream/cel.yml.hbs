@@ -51,33 +51,34 @@ redact:
   fields:
     - base.tenant_id
 
-program: |
-    state.with(
-      request(
-        "GET",
-        state.url + "/reports/getYammerDeviceUsageUserCounts(period='" + state.base.period + "')"
-      ).do_request().as(resp,
-        resp.StatusCode == 200
-        ?
-          bytes(resp.Body).mime("text/csv; header=present").as(events, {
-                                     "events": events.map(e, {"yammerdeviceusage": e.encode_json()}),                     
-        
-          })
-        :
-          {
-            "events": {
-              "error": {
-                "code": string(resp.StatusCode),
-                "id": string(resp.Status),
-                "message": "GET:"+(
-                  size(resp.Body) != 0 ?
-                    string(resp.Body)
-                  :
-                    string(resp.Status) + ' (' + string(resp.StatusCode) + ')'
-                ),
-              },
-            },
-            "want_more": false,
-          }
-      )
-    )
+program: |-
+  state.with(
+        request(
+                "GET",
+                state.url + "/reports/getYammerDeviceUsageUserCounts(period='" + state.base.period + "')"
+        ).do_request().as(resp,
+                (resp.StatusCode == 200) ?
+                        bytes(resp.Body).mime("text/csv; header=present").as(body,
+                                {
+                                        "events": body.map(e, {"yammerdeviceusage": e.encode_json()}),
+                                }
+                        )
+                :
+                        {
+                                "events": {
+                                        "error": {
+                                                "code": string(resp.StatusCode),
+                                                "id": string(resp.Status),
+                                                "message": "GET:" + 
+                                                (
+                                                        (size(resp.Body) != 0) ?
+                                                                string(resp.Body)
+                                                        :
+                                                                string(resp.Status) + " (" + string(resp.StatusCode) + ")"
+                                                ),
+                                        },
+                                },
+                                "want_more": false,
+                        }
+        )
+  )
