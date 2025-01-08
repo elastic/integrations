@@ -26,16 +26,24 @@ processors:
       field: event.original
       target_field: json
   - rename:
-      field: json.data.powerStatus
+      field: json.id
+      target_field: rubrik.virtualmachines.id
+      ignore_missing: true
+  - rename:
+      field: json.name
+      target_field: rubrik.virtualmachines.name
+      ignore_missing: true
+  - rename:
+      field: json.cluster.name
+      target_field: rubrik.virtualmachines.cluster_name
+      ignore_missing: true
+  - rename:
+      field: json.powerStatus
       target_field: rubrik.virtualmachines.power_status
       ignore_missing: true
   - rename:
-      field: json.data.agentStatus.agentStatus
+      field: json.agentStatus.agentStatus
       target_field: rubrik.virtualmachines.agent_status
-      ignore_missing: true
-  - rename:
-      field: json.data.isReplicationEnabled
-      target_field: rubrik.virtualmachines.replication_enabled
       ignore_missing: true
   - script:
       description: Drops null/empty values recursively
@@ -56,7 +64,7 @@ processors:
         }
         drop(ctx);
   - remove:
-      field: response
+      field: json
       ignore_missing: true
 on_failure:
   - set:
