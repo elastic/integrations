@@ -1256,50 +1256,56 @@ Note: Descriptions have not been filled out
 | `<vrf>`        | aruba.vrf.id               |
 | `<zone>`       | aruba.tunnel.zone          |
 
-#### [Virtual Switching Extension (VSX) events](https://www.arubanetworks.com/techdocs/AOS-CX/10.07/HTML/5200-8214/Content/events/VSX.htm)
-| Field                       | Description | Type | Common                       |
-|-----------------------------|-------------|------|------------------------------|
-| aruba.vsx.bank_name         |             |      |                              |
-| aruba.vsx.ifname            |             |      | observer.ingress.interface.name |
-| aruba.vsx.ip_address        |             |      | source.ip                    |
-| aruba.vsx.local_device_type |             |      |                              |
-| aruba.vsx.local_sw_ver      |             |      |                              |
-| aruba.vsx.local_vsx_role    |             |      |                              |
-| aruba.vsx.peer_device_type  |             |      |                              |
-| aruba.vsx.peer_sw_ver       |             |      |                              |
-| aruba.vsx.peer_vsx_role     |             |      |                              |
-| aruba.vsx.port              |             |      | server.port                  |
-| aruba.vsx.prev_state        |             |      |                              |
-| aruba.vsx.primary_version   |             |      |                              |
-| aruba.vsx.reason            |             |      | event.reason                 |
-| aruba.vsx.secondary_version |             |      |                              |
-| aruba.vsx.state             |             |      | service.state                |
-| aruba.vsx.sub_state         |             |      |                              |
-| aruba.vsx.vsx_id            |             |      | aruba.instance.id            |
-| aruba.vsx.vsx_role          |             |      | aruba.role                   |
+#### [Virtual Switching Extension (VSX) events](https://www.arubanetworks.com/techdocs/AOS-CX/10.15/HTML/elmrg/Content/events/VSX.htm)
+| Docs Field            | Schema Mapping                       |
+|-----------------------|--------------------------------------|
+| `<bank_name>`         | aruba.vsx.bank_name                  |
+| `<ifname>`            | aruba.interface.name                 |
+| `<local_device_type>` | aruba.vsx.local_device_type          |
+| `<local_sw_ver>`      | aruba.vsx.local_sw_ver               |
+| `<local_vsx_role>`    | aruba.vsx.local_vsx_role             |
+| `<peer_device_type>`  | aruba.vsx.peer_device_type           |
+| `<peer_sw_ver>`       | aruba.vsx.peer_sw_ver                |
+| `<peer_vsx_role>`     | aruba.vsx.peer_vsx_role              |
+| `<port>`              | aruba.port                           |
+| `<prev_state>`        | aruba.vsx.prev_state                 |
+| `<primary_version>`   | aruba.vsx.primary_version            |
+| `<reason>`            | event.reason                         |
+| `<secondary_version>` | aruba.vsx.secondary_version          |
+| `<state>`             | aruba.state                          |
+| `<sub_state>`         | aruba.vsx.sub_state                  |
+| `<value>`             | server.ip                            |
+| `<vsx_id>`            | aruba.instance.id                    |
+| `<vsx_role>`          | aruba.role                           |
 
-#### [Virtual Switching Framework (VSF) events](https://www.arubanetworks.com/techdocs/AOS-CX/10.07/HTML/5200-8214/Content/events/VSF.htm)
-| Field                       | Description | Type | Common                          |
-|-----------------------------|-------------|------|---------------------------------|
-| aruba.vsf.link              |             |      | observer.ingress.interface.name |
-| aruba.vsf.link_id           |             |      | observer.ingress.interface.id   |
-| aruba.vsf.mac_add           |             |      | client.mac                      |
-| aruba.vsf.mac_addr1         |             |      |                                 |
-| aruba.vsf.mac_addr2         |             |      |                                 |
-| aruba.vsf.mac_address       |             |      | client.mac                      |
-| aruba.vsf.mbr_id            |             |      | aruba.instance.id               |
-| aruba.vsf.member_id         |             |      | aruba.instance.id               |
-| aruba.vsf.new_standby_id    |             |      |                                 |
-| aruba.vsf.old_standby_id    |             |      |                                 |
-| aruba.vsf.port              |             |      | server.port                     |
-| aruba.vsf.port_id           |             |      | server.port                     |
-| aruba.vsf.product_id        |             |      |                                 |
-| aruba.vsf.product_type      |             |      |                                 |
-| aruba.vsf.reason            |             |      | event.reason                    |
-| aruba.vsf.status            |             |      | aruba.status                    |
-| aruba.vsf.topo_type         |             |      |                                 |
-| aruba.vsf.new_standby_id    |             |      |                                 |
-| aruba.vsf.old_standby_id    |             |      |                                 |
+#### [Virtual Switching Framework (VSF) events](https://www.arubanetworks.com/techdocs/AOS-CX/10.15/HTML/elmrg/Content/events/VSF.htm)
+| Docs Field           | Schema Mapping                            |
+|----------------------|-------------------------------------------|
+| `<id>`               | aruba.instance.id                         |
+| `<if_name>`          | aruba.interface.name                      |
+| `<link>`             | aruba.vsf.link                            |
+| `<link_id>`          | aruba.vsf.link                            |
+| `<lowest_speed>`     | aruba.vsf.lowest_speed                    |
+| `<mac_add>`          | aruba.vsf.mac_addr1 / aruba.vsf.mac_addr2 |
+| `<mac_addr>`         | aruba.vsf.mac_addr1 / aruba.vsf.mac_addr2 |
+| `<mac_addr1>`        | aruba.vsf.mac_addr1                       |
+| `<mac_addr2>`        | aruba.vsf.mac_addr2                       |
+| `<mac_address>`      | aruba.vsf.mac_addr1 / aruba.vsf.mac_addr2 |
+| `<mbr_id>`           | aruba.vsf.mbr_id                          |
+| `<member_id>`        | aruba.vsf.member_id                       |
+| `<new_standby_id>`   | aruba.vsf.new_standby_id                  |
+| `<old_standby_id>`   | aruba.vsf.old_standby_id                  |
+| `<operation>`        | aruba.vsf.operation                       |
+| `<port>`             | aruba.port                                |
+| `<port_id>`          | aruba.port                                |
+| `<port_id>`          | aruba.vsf.port2                           |
+| `<product_id>`       | aruba.vsf.product_id                      |
+| `<prod_type>`        | aruba.vsf.product_type                    |
+| `<product_type>`     | aruba.vsf.product_type                    |
+| `<reason>`           | event.reason                              |
+| `<status>`           | aruba.status                              |
+| `<topo_type>`        | aruba.vsf.topo_type                       |
+| `<type>`             | aruba.vsf.product_type                    |
 
 #### [VLAN events](https://www.arubanetworks.com/techdocs/AOS-CX/10.07/HTML/5200-8214/Content/events/VLAN.htm)
 | Field                | Description | Type | Common                       |
