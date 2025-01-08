@@ -20,29 +20,46 @@ auth.oauth2:
 
 request.body:
   query: |
-    query GetActivitySeriesCounts {
-      archiveJobs: activitySeriesConnection(filters: {lastActivityType: [ARCHIVE]}) {
-        count
-      }
-      backupJobs: activitySeriesConnection(filters: {lastActivityType: [BACKUP]}) {
-        count
-      }
-      conversionJobs: activitySeriesConnection(filters: {lastActivityType: [CONVERSION]}) {
-        count
-      }
-      logBackupJobs: activitySeriesConnection(filters: {lastActivityType: [LOG_BACKUP]}) {
-        count
-      }
-      recoveryJobs: activitySeriesConnection(filters: {lastActivityType: [RECOVERY]}) {
-        count
-      }
-      replicationJobs: activitySeriesConnection(filters: {lastActivityType: [REPLICATION]}) {
-        count
+    query GetMonitoringJobs {
+      allClusterConnection {
+        nodes {
+          name
+          id
+          archiveJobs: activitySeriesConnection(filters: {lastActivityType: [ARCHIVE]}) {
+            count
+          }
+          backupJobs: activitySeriesConnection(filters: {lastActivityType: [BACKUP]}) {
+            count
+          }
+          conversionJobs: activitySeriesConnection(filters: {lastActivityType: [CONVERSION]}) {
+            count
+          }
+          logBackupJobs: activitySeriesConnection(filters: {lastActivityType: [LOG_BACKUP]}) {
+            count
+          }
+          recoveryJobs: activitySeriesConnection(filters: {lastActivityType: [RECOVERY]}) {
+            count
+          }
+          replicationJobs: activitySeriesConnection(filters: {lastActivityType: [REPLICATION]}) {
+            count
+          }
+        }
       }
       allJobs: activitySeriesConnection {
         count
       }
     }
+
+response.split:
+  target: body.data.allClusterConnection.nodes
+  type: array
+  keep_parent: false
+  ignore_empty_value: true
+  transforms:
+    - set:
+        target: body.allJobs
+        value: '[[.last_response.body.data.allJobs.count]]'
+        value_type: json
       
 {{#if tags.length}}
 tags:

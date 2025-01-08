@@ -78,8 +78,10 @@ Please refer to the following [document](https://www.elastic.co/guide/en/ecs/cur
 | rubrik.monitoring_jobs.all_jobs.count | The total count of all jobs. | long | gauge |
 | rubrik.monitoring_jobs.archive_jobs.count | The total count of all archive jobs. | long | gauge |
 | rubrik.monitoring_jobs.backup_jobs.count | The total count of all backup jobs. | long | gauge |
+| rubrik.monitoring_jobs.cluster_id | The ID of the Cluster associated with the jobs. | keyword |  |
+| rubrik.monitoring_jobs.cluster_name | The name of the Cluster associated with the jobs. | keyword |  |
 | rubrik.monitoring_jobs.conversion_jobs.count | The total count of all conversion jobs. | long | gauge |
-| rubrik.monitoring_jobs.log_backup_jobs.count | The total count of all log backup jobs | long | gauge |
+| rubrik.monitoring_jobs.log_backup_jobs.count | The total count of all log backup jobs. | long | gauge |
 | rubrik.monitoring_jobs.recovery_jobs.count | The total count of all recovery jobs. | long | gauge |
 | rubrik.monitoring_jobs.replication_jobs.count | The total count of all replication jobs. | long | gauge |
 
