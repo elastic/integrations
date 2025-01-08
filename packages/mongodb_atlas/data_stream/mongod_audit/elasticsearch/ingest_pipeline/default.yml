@@ -1,6 +1,9 @@
 ---
 description: Pipeline for processing MongoDB Atlas Mongod Audit logs.
 processors:
+  - drop:
+      if: ctx.message == "No data for given time period or host is unreachable"
+      tag: drop_empty_events
   - set:
       field: ecs.version
       value: 8.11.0
