@@ -141,7 +141,7 @@ Amazon Bedrock runtime metrics include `Invocations`, `InvocationLatency`,
 
 ### Guardrails Metrics
 
-AWS Guardrail metrics include `Invocations`, `InvocationLatency`, `InvocationClientErrors`, `InvocationServerErrors`, `InvocationThrottles`, `TextUnitCount`, and `InvocationsIntervened`. These metrics enable several use cases, such as:
+Amazon Bedrock guardrail metrics include `Invocations`, `InvocationLatency`, `InvocationClientErrors`, `InvocationServerErrors`, `InvocationThrottles`, `TextUnitCount`, and `InvocationsIntervened`. These metrics enable several use cases, such as:
 
 - Monitoring the latency of guardrail invocations
 - Tracking the number of text units consumed by guardrail policies
