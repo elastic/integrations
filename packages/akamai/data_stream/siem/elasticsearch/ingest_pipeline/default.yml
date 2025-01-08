@@ -210,7 +210,8 @@ processors:
       target_field: source.as.number
       type: long
       ignore_missing: true
-      if: ctx.source?.as?.number == null
+      if: ctx.json.geo?.asn != '' && ctx.source?.as?.number == null
+      tag: convert_source_as_number
   - rename:
       field: source.as.organization_name
       target_field: source.as.organization.name
@@ -388,6 +389,8 @@ processors:
       target_field: akamai.siem.slow_post_rate
       type: long
       ignore_missing: true
+      if: ctx.json.attackData?.slowPostRate != ''
+      tag: convert_slow_post_rate
   - rename:
       field: json.attackData.clientReputation
       target_field: akamai.siem.client_reputation
@@ -402,11 +405,15 @@ processors:
       target_field: akamai.siem.bot.score
       type: long
       ignore_missing: true
+      if: ctx.json.botData?.botScore != ''
+      tag: convert_bot_score
   - convert:
       field: json.botData.responseSegment
       target_field: akamai.siem.bot.response_segment
       type: long
       ignore_missing: true
+      if: ctx.json.botData?.responseSegment != ''
+      tag: convert_bot_response_segment
   ## Client Data
   - rename:
       field: json.clientData.appBundleId
@@ -421,6 +428,8 @@ processors:
       target_field: akamai.siem.client_data.telemetry_type
       type: long
       ignore_missing: true
+      if: ctx.json.clientData?.telemetryType != ''
+      tag: convert_telemetry_type
   - rename:
       field: json.clientData.sdkVersion
       target_field: akamai.siem.client_data.sdk_version
@@ -435,17 +444,22 @@ processors:
       target_field: akamai.siem.user_risk.status
       type: long
       ignore_missing: true
+      if: ctx.json.userRiskData?.status != ''
+      tag: convert_user_risk_status
   - convert:
       field: json.userRiskData.score
       target_field: akamai.siem.user_risk.score
       type: long
-      if: ctx.json.userRiskData?.score != null && ctx.json.userRiskData.score != ''
       ignore_missing: true
+      if: ctx.json.userRiskData?.score != ''
+      tag: convert_user_risk_score
   - convert:
       field: json.userRiskData.allow
       target_field: akamai.siem.user_risk.allow
       type: long
       ignore_missing: true
+      if: ctx.json.userRiskData?.allow != ''
+      tag: convert_user_risk_allow
   - kv:
       if: ctx.json.userRiskData?.risk != ""
       tag: kv_userRiskData_risk
