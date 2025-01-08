@@ -1,9 +1,6 @@
 ---
 description: Pipeline for processing MongoDB Atlas Mongod Database logs.
 processors:
-  - drop:
-      if: ctx.message == "No data for given time period or host is unreachable"
-      tag: drop_empty_events
   - set:
       field: ecs.version
       value: 8.11.0
@@ -32,6 +29,7 @@ processors:
       field: event.original
       target_field: json
       tag: json_decoding
+      allow_duplicate_keys: true
       on_failure:
         - append:
             field: error.message
