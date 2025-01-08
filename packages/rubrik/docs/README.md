@@ -57,3 +57,25 @@ Please refer to the following [document](https://www.elastic.co/guide/en/ecs/cur
 | rubrik.managed_volumes.used_size.bytes | Used capacity for the volume across all the channels, in bytes. | long | byte | gauge |
 | rubrik.managed_volumes.volume_size.bytes | Maximum capacity for the volume across all the channels, in bytes. | long | byte | gauge |
 
+
+### Virtual Machines
+
+The `virtualmachines` dataset provides metrics related to the state of the virtual machines.
+
+**ECS Field Reference**
+
+Please refer to the following [document](https://www.elastic.co/guide/en/ecs/current/ecs-field-reference.html) for detailed information on ECS fields.
+
+**Exported fields**
+
+| Field | Description | Type |
+|---|---|---|
+| @timestamp | Event timestamp. | date |
+| data_stream.dataset | Data stream dataset. | constant_keyword |
+| data_stream.namespace | Data stream namespace. | constant_keyword |
+| data_stream.type | Data stream type. | constant_keyword |
+| rubrik.virtualmachines.agent_status | The status of the Rubrik Backup Service agent for virtual machines. Supported in v5.0+. | keyword |
+| rubrik.virtualmachines.cluster_name | The Rubrik cluster name where this object originated. | keyword |
+| rubrik.virtualmachines.id | The object ID. | keyword |
+| rubrik.virtualmachines.name | The name of the hierarchy object. | keyword |
+| rubrik.virtualmachines.power_status | The power status of VM (ON,OFF,SLEEP etc.). Supported in v5.0+. | keyword |

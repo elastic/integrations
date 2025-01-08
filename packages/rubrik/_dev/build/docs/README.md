@@ -41,3 +41,13 @@ The `managed_volumes` dataset provides metrics related to the health and status 
 Please refer to the following [document](https://www.elastic.co/guide/en/ecs/current/ecs-field-reference.html) for detailed information on ECS fields.
 
 {{fields "managed_volumes"}}
+
+### Virtual Machines
+
+The `virtualmachines` dataset provides metrics related to the state of the virtual machines.
+
+**ECS Field Reference**
+
+Please refer to the following [document](https://www.elastic.co/guide/en/ecs/current/ecs-field-reference.html) for detailed information on ECS fields.
+
+{{fields "virtualmachines"}}
