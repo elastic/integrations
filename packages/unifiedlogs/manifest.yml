@@ -1,0 +1,147 @@
+format_version: "3.4.0"
+name: unifiedlogs
+title: Custom macOS Unified Logs
+description: Collect and parse logs from macOS unified logs with Elastic Agent.
+type: input
+version: "0.1.0"
+conditions:
+  kibana:
+    version: '^8.18.0'
+  elastic:
+    subscription: "basic"
+categories:
+  - custom
+  - os_system
+policy_templates:
+  - name: unifiedlogs
+    type: logs
+    title: Custom macOS unified logs
+    description: Collect your custom macOS logs.
+    input: unifiedlogs
+    template_path: unifiedlogs.yml.hbs
+    vars:
+      - name: predicate
+        type: text
+        title: Predicate
+        description: |
+          Filters messages using the provided predicate based on NSPredicate.
+          A compound predicate or multiple predicates can be provided as a list.
+
+          For detailed information on the use of predicate based filtering,
+          please refer to the https://developer.apple.com/library/mac/documentation/Cocoa/Conceptual/Predicates/Articles/pSyntax.html[Predicate Programming Guide].
+        multi: true
+        show_user: true
+      - name: start
+        type: text
+        title: Start date
+        description: |
+          Shows content starting from the provided date.
+          The following date/time formats are accepted:
+          `YYYY-MM-DD`, `YYYY-MM-DD HH:MM:SS`, `YYYY-MM-DD HH:MM:SSZZZZZ`.
+        show_user: true
+      - name: end
+        type: text
+        title: End date
+        description: |
+          Shows content up to the provided date.
+          The following date/time formats are accepted:
+          `YYYY-MM-DD`, `YYYY-MM-DD HH:MM:SS`, `YYYY-MM-DD HH:MM:SSZZZZZ`.
+        show_user: true
+      - name: process
+        type: text
+        title: Process
+        description: |
+          A list of the processes on which to operate. It accepts a PID or process name.
+        multi: true
+        show_user: true
+      - name: source
+        type: bool
+        title: Include source
+        description: |
+         Include symbol names and source line numbers for messages, if available.
+        show_user: true
+      - name: info
+        type: bool
+        title: Include info
+        description: |
+         Disable or enable info level messages.
+        show_user: true
+      - name: debug
+        type: bool
+        title: Include debug
+        description: |
+         Disable or enable debug level messages.
+        show_user: true
+      - name: backtrace
+        type: bool
+        title: Include backtrace
+        description: |
+         Disable or enable backtrace level messages.
+        show_user: true
+      - name: signpost
+        type: bool
+        title: Include signpost
+        description: |
+         Disable or enable signpost level messages.
+        show_user: true
+      - name: unreliable
+        type: bool
+        title: Annotate unreliable
+        description: |
+         Annotate events with whether the log was emitted unreliably.
+        show_user: true
+      - name: mach_continuous_time
+        type: bool
+        title: Use mach continuous time
+        description: |
+         Use mach continuous time timestamps rather than walltime.
+        show_user: true
+      - name: backfill
+        type: bool
+        title: Must backfill
+        description: |
+         If set to true the input will process all available logs since the beginning
+         of time the first time it starts.
+        show_user: true
+      - name: archive_file
+        type: text
+        title: Archive file
+        description: |
+          Display events stored in the given archive.
+          The archive must be a valid log archive bundle with the suffix `.logarchive`.
+        show_user: false
+      - name: trace_file
+        type: text
+        title: Trace file
+        description: |
+          Display events stored in the given `.tracev3` file.
+          In order to be decoded, the file must be contained within a valid `.logarchive`
+        show_user: false
+      - name: pipeline
+        type: text
+        show_user: true
+        title: Ingest Pipeline
+        description: |
+          The Ingest Node pipeline ID to be used by the integration.
+      - name: tags
+        type: text
+        title: Tags
+        description: Tags to include in the published event
+        multi: true
+        show_user: false
+      - name: custom
+        type: yaml
+        title: Custom Configurations
+        description: >-
+          YAML configuration options for the input. Be careful, this may break the integration.
+        show_user: false
+        default: |-
+          #processors:
+          #  - drop_event.when.not.or:
+          #    - equals.event_id: '903'
+icons:
+  - src: "/img/logo_macos.svg"
+    type: "image/svg+xml"
+owner:
+  github: elastic/sec-windows-platform
+  type: elastic
