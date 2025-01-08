@@ -1,0 +1,118 @@
+format_version: 3.3.0
+name: cyberark_epm
+title: CyberArk EPM
+version: 0.1.0
+description: Collect logs from CyberArk EPM with Elastic Agent.
+type: integration
+categories:
+  - security
+conditions:
+  kibana:
+    version: ^8.16.0
+  elastic:
+    subscription: basic
+screenshots:
+  - src: /img/cyberark_epm-event_overview.png
+    title: Event Overview Dashboard
+    size: 600x600
+    type: image/png
+  - src: /img/cyberark_epm-policy_audit_overview.png
+    title: Policy Audit Overview Dashboard
+    size: 600x600
+    type: image/png
+  - src: /img/cyberark_epm-admin_audit_overview.png
+    title: Admin Audit Overview Dashboard
+    size: 600x600
+    type: image/png
+icons:
+  - src: /img/cyberark-logo.svg
+    title: CyberArk logo
+    size: 32x32
+    type: image/svg+xml
+policy_templates:
+  - name: cyberark_epm
+    title: CyberArk EPM logs
+    description: Collect CyberArk EPM logs.
+    inputs:
+      - type: cel
+        title: Collect CyberArk EPM logs via API
+        description: Collecting CyberArk EPM logs via API.
+        vars:
+          - name: url
+            type: url
+            title: URL
+            default: https://login.epm.cyberark.com
+            description: CyberArk EPM dispatcher server URL varies by region. To determine the correct URL for your region, refer to the [documentation](https://docs.cyberark.com/epm/latest/en/content/webservices/webservicesintro.htm#dispatc).
+            multi: false
+            required: true
+            show_user: false
+          - name: username
+            type: text
+            title: Username
+            description: The username to authenticate into EPM.
+            multi: false
+            required: true
+            show_user: true
+          - name: password
+            type: password
+            title: Password
+            description: The password to authenticate into EPM.
+            multi: false
+            required: true
+            show_user: true
+            secret: true
+          - name: api_version
+            type: text
+            title: API Version
+            description: The CyberArk EPM API version to use.
+            multi: false
+            required: true
+            show_user: false
+            default: 24.12.0.4372
+          - name: session_timeout
+            type: text
+            title: Session Timeout
+            multi: false
+            required: true
+            show_user: true
+            default: 30m
+            description: The session timeout for APIs. It is defined by the `Timeout for inactive session` parameter in `Administration > Account Configuration`. Supported units for this parameter are h/m/s.
+          - name: proxy_url
+            type: text
+            title: Proxy URL
+            multi: false
+            required: false
+            show_user: false
+            description: URL to proxy connections in the form of http[s]://<user>:<password>@<server name/ip>:<port>. Please ensure your username and password are in URL encoded format.
+          - name: ssl
+            type: yaml
+            title: SSL Configuration
+            description: i.e. certificate_authorities, supported_protocols, verification_mode etc.
+            multi: false
+            required: false
+            show_user: false
+            default: |
+              #certificate_authorities:
+              #  - |
+              #    -----BEGIN CERTIFICATE-----
+              #    MIIDCjCCAfKgAwIBAgITJ706Mu2wJlKckpIvkWxEHvEyijANBgkqhkiG9w0BAQsF
+              #    ADAUMRIwEAYDVQQDDAlsb2NhbGhvc3QwIBcNMTkwNzIyMTkyOTA0WhgPMjExOTA2
+              #    MjgxOTI5MDRaMBQxEjAQBgNVBAMMCWxvY2FsaG9zdDCCASIwDQYJKoZIhvcNAQEB
+              #    BQADggEPADCCAQoCggEBANce58Y/JykI58iyOXpxGfw0/gMvF0hUQAcUrSMxEO6n
+              #    fZRA49b4OV4SwWmA3395uL2eB2NB8y8qdQ9muXUdPBWE4l9rMZ6gmfu90N5B5uEl
+              #    94NcfBfYOKi1fJQ9i7WKhTjlRkMCgBkWPkUokvBZFRt8RtF7zI77BSEorHGQCk9t
+              #    /D7BS0GJyfVEhftbWcFEAG3VRcoMhF7kUzYwp+qESoriFRYLeDWv68ZOvG7eoWnP
+              #    PsvZStEVEimjvK5NSESEQa9xWyJOmlOKXhkdymtcUd/nXnx6UTCFgnkgzSdTWV41
+              #    CI6B6aJ9svCTI2QuoIq2HxX/ix7OvW1huVmcyHVxyUECAwEAAaNTMFEwHQYDVR0O
+              #    BBYEFPwN1OceFGm9v6ux8G+DZ3TUDYxqMB8GA1UdIwQYMBaAFPwN1OceFGm9v6ux
+              #    8G+DZ3TUDYxqMA8GA1UdEwEB/wQFMAMBAf8wDQYJKoZIhvcNAQELBQADggEBAG5D
+              #    874A4YI7YUwOVsVAdbWtgp1d0zKcPRR+r2OdSbTAV5/gcS3jgBJ3i1BN34JuDVFw
+              #    3DeJSYT3nxy2Y56lLnxDeF8CUTUtVQx3CuGkRg1ouGAHpO/6OqOhwLLorEmxi7tA
+              #    H2O8mtT0poX5AnOAhzVy7QW0D/k4WaoLyckM5hUa6RtvgvLxOwA0U+VGurCDoctu
+              #    8F4QOgTAWyh8EZIwaKCliFRSynDpv3JTUwtfZkxo6K6nce1RhCWFAsMvDZL8Dgc0
+              #    yvgJ38BRsFOtkRuAGSf6ZUwTO8JJRRIFnpUzXflAnGivK9M13D5GEQMmIl6U9Pvk
+              #    sxSmbIUfc2SGJGCJD4I=
+              #    -----END CERTIFICATE-----
+owner:
+  github: elastic/security-service-integrations
+  type: elastic
