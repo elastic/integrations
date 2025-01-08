@@ -6,7 +6,7 @@ toolchain go1.23.4
 
 require (
 	github.com/blang/semver v3.5.1+incompatible
-	github.com/cli/go-gh/v2 v2.11.1
+	github.com/cli/go-gh/v2 v2.11.2
 	github.com/elastic/elastic-package v0.108.0
 	github.com/elastic/go-licenser v0.4.2
 	github.com/elastic/package-registry v1.26.0
@@ -195,7 +195,7 @@ require (
 	go.uber.org/zap v1.27.0 // indirect
 	golang.org/x/crypto v0.31.0 // indirect
 	golang.org/x/mod v0.22.0 // indirect
-	golang.org/x/net v0.32.0 // indirect
+	golang.org/x/net v0.33.0 // indirect
 	golang.org/x/oauth2 v0.23.0 // indirect
 	golang.org/x/sync v0.10.0 // indirect
 	golang.org/x/sys v0.28.0 // indirect
