@@ -793,6 +793,17 @@ processors:
       if: "ctx.event?.code == '1513'"
       pattern: "Failed to retrieve CoPP statistics from slot %{aruba.slot} class %{aruba.copp.class}"
 
+    # VLAN Interface events (160X)
+    # https://www.arubanetworks.com/techdocs/AOS-CX/10.15/HTML/elmrg/Content/events/VLANINTERFACE.htm
+  - grok:
+      field: message
+      tag: vlan_interface_event_1601_1602
+      description: "logs errors while creating vlaninterface | logs to create vlan interface "
+      if: "['1601','1602'].contains(ctx.event?.code)"
+      patterns:
+        - "^Vlaninterface vlan%{DATA:network.vlan.id}, failed to create an l3 interface, error: %{GREEDYDATA:event.reason}"
+        - "^Vlan Interface %{DATA:aruba.interface.id}, created"
+
     # Layer 3 Interface events (17xx)
     # https://www.arubanetworks.com/techdocs/AOS-CX/10.07/HTML/5200-8214/Content/events/L3INTERFACE.htm
   - grok:
@@ -967,6 +978,97 @@ processors:
       description: "the spanning tree mode is changed"
       if: "['2019'].contains(ctx.event?.code)"
       pattern: "spanning tree mode changed from %{aruba.mstp.old_mode} to %{aruba.mstp.new_mode}, it will trigger the reconvergence"
+
+  # VLAN events (21xx)
+  # https://www.arubanetworks.com/techdocs/AOS-CX/10.15/HTML/elmrg/Content/events/VLAN.htm
+  - grok:
+      if: "['2101','2102','2103','2104'].contains(ctx.event?.code)"
+      tag: vlan_event_2101_2102_2103_2104
+      field: "message"
+      description: "This log event informs the user that VLAN is (not)? created in Hardware | VLAN is (not)? removed from Hardware"
+      patterns:
+        - "VLAN %{DATA:network.vlan.id} "
+  - grok:
+      if: "['2105','2106'].contains(ctx.event?.code)"
+      tag: vlan_event_2105_2106
+      field: "message"
+      description: "This log event informs that internal VLAN is allocated to port | This log event informs that internal VLAN is not allocated"
+      patterns:
+        - "^Internal VLAN %{DATA:network.vlan.id} is allocated to port %{GREEDYDATA:aruba.port}"
+        - "^Failed to allocate internal VLAN to port %{GREEDYDATA:aruba.port}"
+  - dissect:
+      if: "ctx.event?.code == '2107'"
+      tag: vlan_event_2107
+      field: "message"
+      description: "This log event informs that the port mode has changed from one of the trunk types to access or vice versa"
+      pattern: "The mode for port %{aruba.port} changed from %{aruba.vlan.from} to %{aruba.vlan.to} on VLAN %{network.vlan.id}"
+  - grok:
+      if: "['2108','2112'].contains(ctx.event?.code)"
+      tag: vlan_event_2108_2112
+      field: "message"
+      description: "This log event informs the user that Mac based VLAN is created in Hardware | This log event informs the user that MAC based VLAN is updated in Hardware"
+      patterns: 
+        - "^(Created|Updated) (Mac|MAC) based VLAN entry. VLAN %{DATA:network.vlan.id} is mapped to client %{MAC:server.mac} on port %{GREEDYDATA:aruba.port}"
+  - grok:
+      if: "['2109','2110','2111','2113'].contains(ctx.event?.code)"
+      tag: vlan_event_2109_2110_2111_2113
+      field: "message"
+      description: "This log event informs the user that Mac based VLAN is not created in Hardware | is removed from Hardware | is not removed from Hardware | is not updated in Hardware"
+      patterns:
+        - "based VLAN entry for %{MAC:server.mac} with VLAN %{DATA:network.vlan.id} on port %{GREEDYDATA:aruba.port}"
+  - dissect:
+      if: "ctx.event?.code == '2114'"
+      tag: vlan_event_2114
+      field: "message"
+      description: "This log event informs that internal VLAN range is changed"
+      pattern: "Internal VLAN changed to %{network.vlan.id}"
+  - grok:
+      if: "['2115','2116'].contains(ctx.event?.code)"
+      tag: vlan_event_2115_2116
+      field: "message"
+      description: "This log event informs the user that VLAN is down due to pvlan misconfig | This log event informs the user that VLAN is recovered from pvlan misconfig"
+      patterns:
+        - "^VLAN %{DATA:network.vlan.id} is down due to pvlan misconfig reason %{GREEDYDATA:event.reason}"
+        - "^VLAN %{DATA:network.vlan.id} is recovered from pvlan misconfig"
+  - grok:
+      if: "['2117','2118'].contains(ctx.event?.code)"
+      tag: vlan_event_2117_2118
+      field: "message"
+      description: "This log event informs the user that remote node [add|remove] for a vlan failed | "
+      patterns:
+        - "^Remote node %{DATA:aruba.vlan.remote_node} (add|remove) for VLAN %{DATA:network.vlan.id} on node %{DATA:aruba.vlan.local_node} failed"
+  - dissect:
+      if: "ctx.event?.code == '2119'"
+      tag: vlan_event_2119
+      field: "message"
+      description: "Logs a message when vlan translation rule addition failed in hardware"
+      pattern: "VLAN translation rule addition failed for port:%{aruba.port}, in_vlan:%{aruba.vlan.orig_vlan}, out_vlan:%{aruba.vlan.trans_vlan}, reason=%{event.reason}"
+  - grok:
+      if: "['2120','2121','2122'].contains(ctx.event?.code)"
+      tag: vlan_event_2120_2121_2122
+      field: "message"
+      description: "Interface is now an SVLAN customer-network interface | Logs a message when port is part for QinQ provider-network | Logs a message when port is no longer part for QinQ' event_description_template"
+      patterns:
+        - "^%{DATA:aruba.interface.name} is"
+  - dissect:
+      if: "ctx.event?.code == '2123'"
+      tag: vlan_event_2123
+      field: "message"
+      description: "This log event informs the user that secondary VLAN is associated to a primary VLAN"
+      pattern: "Secondary VLAN %{aruba.vlan.sec_vid} of type %{aruba.vlan.sec_type} is associated to primary VLAN %{aruba.vlan.prim_vid}"
+  - dissect:
+      if: "ctx.event?.code == '2124'"
+      tag: vlan_event_2124
+      field: "message"
+      description: "This log event informs the user that secondary VLAN admin state is ignored"
+      pattern: 'Secondary VLAN %{aruba.vlan.sec_vid} admin state %{aruba.vlan.sec_admin} is ignored. Primary VLAN %{aruba.vlan.prim_vid} admin state (%{aruba.vlan.prim_admin}) will be applied'
+  - grok:
+      if: "['2125','2126'].contains(ctx.event?.code)"
+      tag: vlan_event_2125_2126
+      field: "message"
+      description: "This log event informs the user that UUFB has been [enabled|disabled] on a physical port"
+      patterns:
+        - "^UUFB %{DATA:aruba.port} (enabled|disabled) in hardware"
 
   # Redundant Management events (220x)
   # https://www.arubanetworks.com/techdocs/AOS-CX/10.07/HTML/5200-8214/Content/events/REDUNDANT_MANAGEMENT.htm
@@ -1349,6 +1451,88 @@ processors:
       description: "This command [enables|disable] the IRDP (ICMP Router Discovery Protocol) feature on interface."
       patterns:
         - "^IRDP (en|dis)abled on interface %{GREEDYDATA:aruba.interface.id}"
+
+  # VRRP events (370x)
+  # https://www.arubanetworks.com/techdocs/AOS-CX/10.15/HTML/elmrg/Content/events/VRRP.htm
+  - grok:
+      if: "['3703','3704','3705'].contains(ctx.event?.code)"
+      tag: vrrp_event_3703_3704_3705
+      field: "message"
+      description: "Logs virtual router has taken control of [owner|standby] IP | virtual router has lost control of standby IP"
+      patterns:
+        - "^%{DATA:aruba.vrrp.inet_type} virtual router %{DATA:aruba.instance.id} on interface %{DATA:aruba.interface.id} "
+  - grok:
+      if: "['3706','3707'].contains(ctx.event?.code)"
+      tag: vrrp_event_3706_3707
+      field: "message"
+      description: "Logs creation of virtual router on interface | Logs deletion of virtual router from interface"
+      patterns:
+        - "^%{DATA:aruba.vrrp.inet_type} virtual router %{DATA:aruba.instance.id} (created on|deleted from) interface %{GREEDYDATA:aruba.interface.id}"
+  - grok:
+      if: "['3708','3709'].contains(ctx.event?.code)"
+      tag: vrrp_event_
+      field: "message"
+      description: "Logs [addition|deletion] of IP address to virtual router"
+      patterns:
+        - "^%{DATA:aruba.vrrp.type} address %{DATA:service.address} is (added to|deleted from) virtual router %{DATA:aruba.instance.id} on interface %{GREEDYDATA:aruba.interface.id}"
+  - grok:
+      if: "['3710','3711','3712','3713'].contains(ctx.event?.code)"
+      tag: vrrp_event_3710_3711_3712_3713
+      field: "message"
+      description: "Logs version change for virtual router | advertisement timer has changed for virtual router | preempt delay timer has changed for virtual router | state has changed for virtual router on interface"
+      patterns:
+        - "%{START_PATTERN} version changed to %{DATA:service.version} %{TAIL_PATTERN}"
+        - "%{START_PATTERN} advertisement interval has changed to %{NUMBER:aruba.vrrp.interval:long} milliseconds %{TAIL_PATTERN}"
+        - "%{START_PATTERN} preempt delay time has changed to %{NUMBER:aruba.vrrp.delay:long} seconds %{TAIL_PATTERN}"
+        - "%{START_PATTERN} state change from %{DATA:aruba.vrrp.old_state} to %{DATA:aruba.state} %{TAIL_PATTERN}"
+      pattern_definitions:
+        START_PATTERN: "^%{DATA:aruba.vrrp.inet_type} virtual router %{DATA:aruba.instance.id}"
+        TAIL_PATTERN: "on interface %{GREEDYDATA:aruba.interface.id}"
+  - grok:
+      if: "['3714','3715','3717','3718'].contains(ctx.event?.code)"
+      tag: vrrp_event_3714_3715_3717_3718
+      field: "message"
+      description: "preempt option has been enabled | virtual IP ping has been enabled | preempt option has been disabled for virtual router | virtual IP ping has been disabled for virtual router"
+      patterns:
+        - "for %{DATA:aruba.vrrp.inet_type} virtual router %{DATA:aruba.instance.id} on interface %{GREEDYDATA:aruba.interface.id}"
+  - grok:
+      if: "['3716','3719'].contains(ctx.event?.code)"
+      tag: vrrp_event_3716_3719
+      field: "message"
+      description: "virtual router has been [disabled|enabled] on interface"
+      patterns:
+        - "(Enabled|Disabled) %{DATA:aruba.vrrp.inet_type} virtual router %{DATA:aruba.instance.id} on interface %{GREEDYDATA:aruba.interface.id}"
+  - grok:
+      if: "['3720','3721'].contains(ctx.event?.code)"
+      tag: vrrp_event_3720_3721
+      field: "message"
+      description: "Logs priority has been changed for virtual router | virtual router mode has been changed"
+      patterns:
+        - "^%{DATA:aruba.vrrp.inet_type} virtual router %{DATA:aruba.instance.id} (priority changed to %{DATA:aruba.priority}|mode changed to %{DATA:aruba.vrrp.mode}) on interface %{GREEDYDATA:aruba.interface.id}"
+  - grok:
+      if: "['3722','3723','3724','3725','3726','3727'].contains(ctx.event?.code)"
+      tag: vrrp_event_3722_3723_3724_3725_3726_3727
+      field: "message"
+      description: "track object has been (de-associated|associated) with virtual router | track object has been [created|deleted] | track object state change | track object association with interface"
+      patterns:
+        - "^Track object %{DATA:aruba.vrrp.track} is (associated with|de-associated from) %{DATA:aruba.vrrp.inet_type} virtual router %{GREEDYDATA:aruba.instance.id}"
+        - "^Track object %{DATA:aruba.vrrp.track} is (created|deleted)"
+        - "^Track object %{DATA:aruba.vrrp.track} state changed %{DATA:aruba.vrrp.old_state} to %{GREEDYDATA:aruba.state}"
+        - "^Track object %{DATA:aruba.vrrp.track} associated with interface %{GREEDYDATA:aruba.interface.id}"
+  - grok:
+      if: "['3728','3729'].contains(ctx.event?.code)"
+      tag: vrrp_event_3728_3729
+      field: "message"
+      description: "Logs authentication failures on virtual router"
+      patterns:
+        - "^%{DATA:aruba.vrrp.inet_type} virtual router %{DATA:aruba.instance.id} (recieved|received) packet with authentication (type|key) mismatch on interface %{GREEDYDATA:aruba.interface.id}"
+  - grok:
+      if: "['3730','3731'].contains(ctx.event?.code)"
+      tag: vrrp_event_3730_3731
+      field: "message"
+      description: "vrrpv3 checksum has been [enabled|disabled] for virtual router"
+      patterns:
+        - "^(Enabled|Disabled) vrrpv3 checksum for %{DATA:aruba.vrrp.inet_type} virtual router %{DATA:aruba.instance.id} on interface %{GREEDYDATA:aruba.interface.id}"
 
   # Transceiver events (38xx)
   # https://www.arubanetworks.com/techdocs/AOS-CX/10.15/HTML/elmrg/Content/events/XCVR.htm
@@ -2088,6 +2272,17 @@ processors:
       patterns:
         - "^SFTP file transfer from %{DATA:source.address} to %{DATA:destination.address} (completed|failed - %{GREEDYDATA:aruba.status})."
 
+  # VRF Manager events (540x)
+  # https://www.arubanetworks.com/techdocs/AOS-CX/10.15/HTML/elmrg/Content/events/VRF_MGR.htm
+  - grok:
+      if: "['5401','5402','5403'].contains(ctx.event?.code)"
+      tag: vrf_mgr_event_5401_5402_5403
+      field: "message"
+      description: "Created | deleted | created field vrf entity"
+      patterns:
+        - "^(Created|Deleted) a vrf entity %{GREEDYDATA:aruba.vrf.name}"
+        - "^vrf entity creation failed %{GREEDYDATA:aruba.vrf.name}"
+
   # HTTPS Server events (560x)
   # https://www.arubanetworks.com/techdocs/AOS-CX/10.07/HTML/5200-8214/Content/events/HTTPS_SERVER.htm
   - grok:
@@ -2152,7 +2347,6 @@ processors:
       field: "message"
       description: "Warning PFC priority sharing a queue"
       pattern: "Port: %{aruba.port} PFC priority %{aruba.priority} using queue %{aruba.qos.queue} should not be sharing the queue with other local-priorities"
-
 
   # NAE events (60xx)
   # https://www.arubanetworks.com/techdocs/AOS-CX/10.07/HTML/5200-8214/Content/events/TSDBD.htm
@@ -2300,6 +2494,16 @@ processors:
         - "^Excessive write to %{DATA:aruba.sysmon.partition_name} partition in module %{DATA:aruba.sysmon.module_name} observed. %{NUMBER:aruba.sysmon.mem_usage:long}GB written over past %{NUMBER:aruba.sysmon.unit_count:long} %{GREEDYDATA:aruba.sysmon.unit}"
         - "^Excessive write to swap in module %{DATA:aruba.sysmon.module_name} observed. %{NUMBER:aruba.sysmon.mem_usage:long}GB written over past %{NUMBER:aruba.sysmon.unit_count:long} %{GREEDYDATA:aruba.sysmon.unit}"
   
+  # VRF events (640x)
+  # https://www.arubanetworks.com/techdocs/AOS-CX/10.15/HTML/elmrg/Content/events/VRF.htm
+  - grok:
+      if: "['6401','6402','6403','6404'].contains(ctx.event?.code)"
+      tag: vrf_event_6401_6402_6403_6404
+      field: "message"
+      description: "Logs a message when VRF is configured (failed)? in the switch | when VRF is deleted (failed)? from the switch"
+      patterns: 
+        - "VRF with vrf name %{DATA:aruba.vrf.name} "
+
   # Credential Manager events (65xx)
   # https://www.arubanetworks.com/techdocs/AOS-CX/10.07/HTML/5200-8214/Content/events/CREDMGR.htm
   #
