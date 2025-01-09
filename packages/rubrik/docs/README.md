@@ -58,6 +58,7 @@ Please refer to the following [document](https://www.elastic.co/guide/en/ecs/cur
 | rubrik.managed_volumes.used_size.bytes | Used capacity for the volume across all the channels, in bytes. | long | byte | gauge |
 | rubrik.managed_volumes.volume_size.bytes | Maximum capacity for the volume across all the channels, in bytes. | long | byte | gauge |
 
+
 ### Monitoring Jobs
 
 The `monitoring_jobs` dataset provides metrics related to the series of activities on either the RSC or a Rubrik cluster.
@@ -83,6 +84,7 @@ Please refer to the following [document](https://www.elastic.co/guide/en/ecs/cur
 | rubrik.monitoring_jobs.log_backup_jobs.count | The total count of all log backup jobs. | long | gauge |
 | rubrik.monitoring_jobs.recovery_jobs.count | The total count of all recovery jobs. | long | gauge |
 | rubrik.monitoring_jobs.replication_jobs.count | The total count of all replication jobs. | long | gauge |
+
 
 ### Virtual Machines
 
