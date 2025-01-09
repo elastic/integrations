@@ -37,8 +37,8 @@ state:
   index: 0
   queries:
     - |
-      query LinuxPhysicalHosts {
-        physicalHosts(hostRoot: LINUX_HOST_ROOT) {
+      query LinuxPhysicalHosts($first: Int, $after: String, $sortBy: HierarchySortByField, $sortOrder: SortOrder, $filter: [Filter!]) {
+        physicalHosts(first: $first, after: $after, sortBy: $sortBy, sortOrder: $sortOrder, filter: $filter, hostRoot: LINUX_HOST_ROOT) {
           edges {
             node {
               id
@@ -56,8 +56,8 @@ state:
         }
       }
     - |
-      query WindowsPhysicalHosts {
-        physicalHosts(hostRoot: WINDOWS_HOST_ROOT) {
+      query WindowsPhysicalHosts($first: Int, $after: String, $sortBy: HierarchySortByField, $sortOrder: SortOrder, $filter: [Filter!]) {
+        physicalHosts(first: $first, after: $after, sortBy: $sortBy, sortOrder: $sortOrder, filter: $filter, hostRoot: WINDOWS_HOST_ROOT) {
           edges {
             node {
               id
@@ -84,6 +84,30 @@ program: |-
         },
         "Body": {
           "query": state.queries[state.index],
+          "variables": {
+              {{#if first}}
+              "first": {{first}},
+              {{/if}}
+              {{#if after}}
+              "after": "{{after}}",
+              {{/if}}
+              {{#if sort_by}}
+              "sortBy": "{{sort_by}}",
+              {{/if}}
+              {{#if sort_order}}
+              "sortOrder": "{{sort_order}}",
+              {{/if}}
+              "filter": [
+                {{#if filters}}
+                  {{#each filters}}
+                    {
+                      "field": "{{field}}",
+                      "texts": [{{#each values}}"{{this}}"{{#unless @last}}, {{/unless}}{{/each}}]
+                    }{{#unless @last}},{{/unless}}
+                  {{/each}}
+                {{/if}}
+              ]
+            }
         }.encode_json(),
       }
     ).do_request().as(resp, (resp.StatusCode == 200) ?
