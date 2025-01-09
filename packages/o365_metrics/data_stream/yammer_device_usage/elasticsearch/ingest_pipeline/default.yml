@@ -4,6 +4,11 @@ processors:
   - set:
       field: ecs.version
       value: "8.16.0"
+  - set:
+      copy_from: yammerdeviceusage
+      field: event.original
+      ignore_empty_value: true
+      if: ctx.event?.original == null && (ctx.tags != null && (ctx.tags.contains('preserve_original_event')))      
   - json:
       field: yammerdeviceusage
       target_field: o365.metrics.yammer.device.usage
