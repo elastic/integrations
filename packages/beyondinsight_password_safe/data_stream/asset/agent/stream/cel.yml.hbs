@@ -74,7 +74,6 @@ program: |-
   							"events": [
   								{
   									"message": "Workgroups fetched successfully",
-  									"statuscode": "204",
   								},
   							],
   							"want_more": true,
@@ -107,20 +106,10 @@ program: |-
   					},
   				}
   			).do_request().as(assetResp,
-  				(assetResp.StatusCode == 401) ?
+  				(assetResp.StatusCode != 200) ?
   					state.with(
   						{
-  							"events": {"error": {"message": "User not authenticated", "statuscode": string(assetResp.StatusCode)}},
-  							"want_more": true,
-  							"cursor": {
-  								"auth_cookie": null,
-  							},
-  						}
-  					)
-  				: (assetResp.StatusCode == 404) ?
-  					state.with(
-  						{
-  							"events": {"error": {"message": "Workgroup not found", "statuscode": string(assetResp.StatusCode)}},
+  							"events": {"error": {"message": "Error in fetching assets", "statuscode": string(assetResp.StatusCode)}},
   							"want_more": int(size(r.rest_workgroups)) > 0,
   							"cursor": {
   								"auth_cookie": auth_cookie,
