@@ -126,8 +126,22 @@ Collect logs for HTTP requests made to the GitLab API. Check out the [GitLab API
 | gitlab.api.meta.remote_ip |  | ip |
 | gitlab.api.meta.user |  | keyword |
 | gitlab.api.meta.user_id |  | long |
-| gitlab.api.params.key |  | keyword |
-| gitlab.api.params.value |  | keyword |
+| gitlab.api.params.info.architecture |  | keyword |
+| gitlab.api.params.info.executor |  | keyword |
+| gitlab.api.params.info.features.raw_variables |  | keyword |
+| gitlab.api.params.info.features.service_variables |  | keyword |
+| gitlab.api.params.info.features.trace_checksum |  | keyword |
+| gitlab.api.params.info.features.trace_reset |  | keyword |
+| gitlab.api.params.info.features.variables |  | keyword |
+| gitlab.api.params.info.features.vault_secrets |  | keyword |
+| gitlab.api.params.info.name |  | keyword |
+| gitlab.api.params.info.platform |  | keyword |
+| gitlab.api.params.info.revision |  | keyword |
+| gitlab.api.params.info.version |  | keyword |
+| gitlab.api.params.last_update |  | keyword |
+| gitlab.api.params.private_token |  | keyword |
+| gitlab.api.params.system_id |  | keyword |
+| gitlab.api.params.token |  | keyword |
 | gitlab.api.queue_duration_s |  | float |
 | gitlab.api.redis_allowed_cross_slot_calls |  | long |
 | gitlab.api.redis_cache_calls |  | long |
@@ -174,24 +188,24 @@ An example event for `api` looks as following:
 {
     "@timestamp": "2024-04-29T17:06:12.231Z",
     "agent": {
-        "ephemeral_id": "9406e649-a731-4600-9b22-d80d322f078a",
-        "id": "863c90df-5d95-44cd-a115-8c0972e2cb87",
-        "name": "docker-fleet-agent",
+        "ephemeral_id": "e279f9af-ad7f-4140-916a-58f3099ead13",
+        "id": "749cb5c7-92da-4fdb-b7a3-cd42a609f83f",
+        "name": "elastic-agent-53772",
         "type": "filebeat",
-        "version": "8.13.2"
+        "version": "8.16.0"
     },
     "data_stream": {
         "dataset": "gitlab.api",
-        "namespace": "ep",
+        "namespace": "30980",
         "type": "logs"
     },
     "ecs": {
         "version": "8.11.0"
     },
     "elastic_agent": {
-        "id": "863c90df-5d95-44cd-a115-8c0972e2cb87",
+        "id": "749cb5c7-92da-4fdb-b7a3-cd42a609f83f",
         "snapshot": false,
-        "version": "8.13.2"
+        "version": "8.16.0"
     },
     "event": {
         "agent_id_status": "verified",
@@ -200,8 +214,8 @@ An example event for `api` looks as following:
         ],
         "dataset": "gitlab.api",
         "duration": 19690,
+        "ingested": "2025-01-09T13:37:49Z",
         "kind": "event",
-        "ingested": "2024-05-21T18:17:53Z",
         "original": "{\"time\":\"2024-04-29T17:06:12.231Z\",\"severity\":\"INFO\",\"duration_s\":0.01969,\"db_duration_s\":0.0,\"view_duration_s\":0.01969,\"status\":200,\"method\":\"GET\",\"path\":\"/api/v4/geo/proxy\",\"params\":[],\"host\":\"localhost\",\"remote_ip\":\"127.0.0.1\",\"ua\":\"Go-http-client/1.1\",\"route\":\"/api/:version/geo/proxy\",\"db_count\":0,\"db_write_count\":0,\"db_cached_count\":0,\"db_txn_count\":0,\"db_replica_txn_count\":0,\"db_primary_txn_count\":0,\"db_main_txn_count\":0,\"db_ci_txn_count\":0,\"db_main_replica_txn_count\":0,\"db_ci_replica_txn_count\":0,\"db_replica_count\":0,\"db_primary_count\":0,\"db_main_count\":0,\"db_ci_count\":0,\"db_main_replica_count\":0,\"db_ci_replica_count\":0,\"db_replica_cached_count\":0,\"db_primary_cached_count\":0,\"db_main_cached_count\":0,\"db_ci_cached_count\":0,\"db_main_replica_cached_count\":0,\"db_ci_replica_cached_count\":0,\"db_replica_wal_count\":0,\"db_primary_wal_count\":0,\"db_main_wal_count\":0,\"db_ci_wal_count\":0,\"db_main_replica_wal_count\":0,\"db_ci_replica_wal_count\":0,\"db_replica_wal_cached_count\":0,\"db_primary_wal_cached_count\":0,\"db_main_wal_cached_count\":0,\"db_ci_wal_cached_count\":0,\"db_main_replica_wal_cached_count\":0,\"db_ci_replica_wal_cached_count\":0,\"db_replica_txn_duration_s\":0.0,\"db_primary_txn_duration_s\":0.0,\"db_main_txn_duration_s\":0.0,\"db_ci_txn_duration_s\":0.0,\"db_main_replica_txn_duration_s\":0.0,\"db_ci_replica_txn_duration_s\":0.0,\"db_replica_duration_s\":0.0,\"db_primary_duration_s\":0.0,\"db_main_duration_s\":0.0,\"db_ci_duration_s\":0.0,\"db_main_replica_duration_s\":0.0,\"db_ci_replica_duration_s\":0.0,\"cpu_s\":0.063617,\"mem_objects\":13367,\"mem_bytes\":1633512,\"mem_mallocs\":7711,\"mem_total_bytes\":2168192,\"pid\":1067,\"worker_id\":\"puma_4\",\"rate_limiting_gates\":[],\"correlation_id\":\"7ff5f562-f16f-4a93-b2ac-f771c81b0495\",\"meta.caller_id\":\"GET /api/:version/geo/proxy\",\"meta.remote_ip\":\"127.0.0.1\",\"meta.feature_category\":\"geo_replication\",\"meta.client_id\":\"ip/127.0.0.1\",\"request_urgency\":\"low\",\"target_duration_s\":5}",
         "provider": "GET /api/:version/geo/proxy",
         "type": [
@@ -290,8 +304,8 @@ An example event for `api` looks as following:
     },
     "log": {
         "file": {
-            "device_id": "35",
-            "inode": "5815",
+            "device_id": "32",
+            "inode": "1636288",
             "path": "/tmp/service_logs/test-gitlab-api.log"
         },
         "level": "INFO",
