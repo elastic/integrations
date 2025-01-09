@@ -52,3 +52,15 @@ The `monitoring_jobs` dataset provides metrics related to the series of activiti
 Please refer to the following [document](https://www.elastic.co/guide/en/ecs/current/ecs-field-reference.html) for detailed information on ECS fields.
 
 {{fields "monitoring_jobs"}}
+
+### Virtual Machines
+
+The `virtualmachines` dataset provides metrics related to the state of the virtual machines.
+
+**ECS Field Reference**
+
+Please refer to the following [document](https://www.elastic.co/guide/en/ecs/current/ecs-field-reference.html) for detailed information on ECS fields.
+
+{{fields "virtualmachines"}}
+
+{{event "virtualmachines"}}
