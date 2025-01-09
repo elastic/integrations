@@ -17,6 +17,7 @@ You can use our hosted Elasticsearch Service on Elastic Cloud, which is recommen
 
 To configure this integration in Elastic, you need the following information:
 
+- Hostname
 - Client ID
 - Client Secret
 - Token URL
@@ -56,3 +57,31 @@ Please refer to the following [document](https://www.elastic.co/guide/en/ecs/cur
 | rubrik.managed_volumes.total_snapshots.count | The total number of snapshots present for the workload. | long |  | gauge |
 | rubrik.managed_volumes.used_size.bytes | Used capacity for the volume across all the channels, in bytes. | long | byte | gauge |
 | rubrik.managed_volumes.volume_size.bytes | Maximum capacity for the volume across all the channels, in bytes. | long | byte | gauge |
+
+
+### Monitoring Jobs
+
+The `monitoring_jobs` dataset provides metrics related to the series of activities on either the RSC or a Rubrik cluster.
+
+**ECS Field Reference**
+
+Please refer to the following [document](https://www.elastic.co/guide/en/ecs/current/ecs-field-reference.html) for detailed information on ECS fields.
+
+**Exported fields**
+
+| Field | Description | Type | Metric Type |
+|---|---|---|---|
+| @timestamp | Event timestamp. | date |  |
+| data_stream.dataset | Data stream dataset. | constant_keyword |  |
+| data_stream.namespace | Data stream namespace. | constant_keyword |  |
+| data_stream.type | Data stream type. | constant_keyword |  |
+| rubrik.monitoring_jobs.all_jobs.count | The total count of all jobs. | long | gauge |
+| rubrik.monitoring_jobs.archive_jobs.count | The total count of all archive jobs. | long | gauge |
+| rubrik.monitoring_jobs.backup_jobs.count | The total count of all backup jobs. | long | gauge |
+| rubrik.monitoring_jobs.cluster_id | The ID of the Cluster associated with the jobs. | keyword |  |
+| rubrik.monitoring_jobs.cluster_name | The name of the Cluster associated with the jobs. | keyword |  |
+| rubrik.monitoring_jobs.conversion_jobs.count | The total count of all conversion jobs. | long | gauge |
+| rubrik.monitoring_jobs.log_backup_jobs.count | The total count of all log backup jobs. | long | gauge |
+| rubrik.monitoring_jobs.recovery_jobs.count | The total count of all recovery jobs. | long | gauge |
+| rubrik.monitoring_jobs.replication_jobs.count | The total count of all replication jobs. | long | gauge |
+
