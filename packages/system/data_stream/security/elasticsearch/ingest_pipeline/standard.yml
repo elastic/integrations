@@ -837,8 +837,13 @@ processors:
         if (ctx.event?.code == null || params.get(ctx.event.code) == null) {
           return;
         }
-        def hm = new HashMap(params.get(ctx.event.code));
-        hm.forEach((k, v) -> ctx.event[k] = v);
+        params.get(ctx.event.code).forEach((k, v) -> {
+          if (v instanceof List) {
+            ctx.event[k] = new ArrayList(v);
+          } else {
+            ctx.event[k] = v;
+          }
+        });
   - script:
       lang: painless
       ignore_failure: false
