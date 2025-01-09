@@ -117,6 +117,17 @@ program: |-
   							},
   						}
   					)
+  				: (assetResp.StatusCode == 404) ?
+  					state.with(
+  						{
+  							"events": {"error": {"message": "Workgroup not found", "statuscode": string(assetResp.StatusCode)}},
+  							"want_more": int(size(r.rest_workgroups)) > 0,
+  							"cursor": {
+  								"auth_cookie": auth_cookie,
+  								"asset_reqs": r.rest_workgroups,
+  							},
+  						}
+  					)
   				:
   					bytes(assetResp.Body).decode_json().as(assetBody,
   						(int(size(assetBody.Data)) + int(r.offset) < int(assetBody.TotalCount)) ?
