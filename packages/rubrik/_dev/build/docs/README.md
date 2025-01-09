@@ -62,3 +62,5 @@ The `virtualmachines` dataset provides metrics related to the state of the virtu
 Please refer to the following [document](https://www.elastic.co/guide/en/ecs/current/ecs-field-reference.html) for detailed information on ECS fields.
 
 {{fields "virtualmachines"}}
+
+{{event "virtualmachines"}}

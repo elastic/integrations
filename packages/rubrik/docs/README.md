@@ -102,8 +102,72 @@ Please refer to the following [document](https://www.elastic.co/guide/en/ecs/cur
 | data_stream.dataset | Data stream dataset. | constant_keyword |
 | data_stream.namespace | Data stream namespace. | constant_keyword |
 | data_stream.type | Data stream type. | constant_keyword |
-| rubrik.virtualmachines.agent_status | The status of the Rubrik Backup Service agent for virtual machines. Supported in v5.0+. | keyword |
-| rubrik.virtualmachines.cluster_name | The Rubrik cluster name where this object originated. | keyword |
-| rubrik.virtualmachines.id | The object ID. | keyword |
-| rubrik.virtualmachines.name | The name of the hierarchy object. | keyword |
-| rubrik.virtualmachines.power_status | The power status of VM (ON,OFF,SLEEP etc.). Supported in v5.0+. | keyword |
+| rubrik.virtualmachine.agent_status | The status of the Rubrik Backup Service agent for virtual machines. Supported in v5.0+. | keyword |
+| rubrik.virtualmachine.cluster_name | The Rubrik cluster name where this object originated. | keyword |
+| rubrik.virtualmachine.id | The object ID. | keyword |
+| rubrik.virtualmachine.name | The name of the hierarchy object. | keyword |
+| rubrik.virtualmachine.power_status | The power status of VM (ON,OFF,SLEEP etc.). Supported in v5.0+. | keyword |
+
+
+An example event for `virtualmachines` looks as following:
+
+```json
+{
+    "agent": {
+        "name": "docker-fleet-agent",
+        "id": "e74cda94-80b2-42d7-a508-21885a2614b5",
+        "type": "filebeat",
+        "ephemeral_id": "091ede6d-809e-4d2e-9f21-33187c53b7d4",
+        "version": "8.16.0"
+    },
+    "rubrik": {
+        "virtualmachines": {
+            "agent_status": "UNREGISTERED",
+            "cluster_name": "100-rubrik",
+            "power_status": "POWERED_OFF",
+            "name": "dashboard01",
+            "id": "25842075-fd83-4c75-8709-310166ef792d"
+        }
+    },
+    "@timestamp": "2025-01-08T13:08:18.698Z",
+    "ecs": {
+        "version": "8.16.0"
+    },
+    "data_stream": {
+        "namespace": "default",
+        "type": "metrics",
+        "dataset": "rubrik.virtualmachines"
+    },
+    "elastic_agent": {
+        "id": "e74cda94-80b2-42d7-a508-21885a2614b5",
+        "version": "8.16.0",
+        "snapshot": false
+    },
+    "host": {
+        "hostname": "docker-fleet-agent",
+        "os": {
+            "kernel": "6.8.0-51-generic",
+            "name": "Wolfi",
+            "type": "linux",
+            "version": "20230201",
+            "platform": "wolfi"
+        },
+        "containerized": false,
+        "ip": [
+            "172.18.0.7"
+        ],
+        "name": "docker-fleet-agent",
+        "mac": [
+            "02-42-AC-12-00-07"
+        ],
+        "architecture": "x86_64"
+    },
+    "event": {
+        "agent_id_status": "verified",
+        "ingested": "2025-01-08T13:08:19Z",
+        "created": "2025-01-08T13:08:18.698Z",
+        "kind": "metric",
+        "dataset": "rubrik.virtualmachines"
+    }
+}
+```
