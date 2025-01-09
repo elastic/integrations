@@ -51,7 +51,7 @@ processors:
   - script:
       description: Appends any relevant entity to `related.entity` for all events
       lang: painless
-      on_failure: 
+      on_failure:
         - set:
             description: Add error reason
             field: error.message
@@ -97,7 +97,7 @@ processors:
           "json.userIdentity.sessionContext.webIdFederationData.federatedProvider",
           "json.userIdentity.userName"
         });
-        
+
         field("json.resources").get(new ArrayList()).stream().forEach(f -> addValue(entities, f.ARN));
 
         String eventSource = field("json.eventSource").get(null);
@@ -147,7 +147,7 @@ processors:
             "json.responseElements.snapshotId",
             "json.responseElements.volumeId"
           });
-          
+
           field("json.responseElements.securityGroupRuleSet.items").get(new ArrayList()).stream().forEach(i -> {
             addValues(entities, new String[]{
               i.groupId,
@@ -192,14 +192,14 @@ processors:
 
           field("json.requestParameters.revokedSecurityGroupRuleSet.items").get(new ArrayList()).stream().forEach(i -> {
             addValues(entities, new String[]{
-              i.securityGroupRuleId, 
+              i.securityGroupRuleId,
               i.groupId
             });
           });
 
         } else if (eventSource == "s3.amazonaws.com") {
           addField(entities, "json.requestParameters.bucketName");
-        
+
         } else if (eventSource == "cloudtrail.amazonaws.com") {
           addFields(entities, new String[]{
             "json.requestParameters.name",
@@ -211,7 +211,7 @@ processors:
             "json.responseElements.trailARN",
             "json.responseElements.name"
           });
-        
+
         } else if (eventSource == "kms.amazonaws.com") {
           addFields(entities, new String[]{
             "json.requestParameters.keyId",
@@ -219,10 +219,10 @@ processors:
             "json.responseElements.keyMetadata.arn",
             "json.responseElements.keyMetadata.keyId"
           });
-        
+
         } else if (eventSource == "config.amazonaws.com") {
           addField(entities, "json.requestParameters.configurationRecorderName");
-        
+
         } else if (eventSource == "lambda.amazonaws.com") {
           addFields(entities, new String[]{
             "json.requestParameters.functionName",
@@ -251,9 +251,9 @@ processors:
             addValue(entities, i.vpcSecurityGroupId);
           });
         }
-        
+
         field("related.entity").set(entities);
-        
+
   - rename:
       field: json.eventVersion
       target_field: aws.cloudtrail.event_version
@@ -447,7 +447,7 @@ processors:
       source: >
         if (ctx.json?.resources instanceof List) {
               def resources = ctx.json.resources;
-              
+
               Map uniqueResources = new HashMap();
               for (def originalResource : resources) {
                 if (originalResource instanceof Map) {
@@ -968,7 +968,11 @@ processors:
       field: aws.cloudtrail.insight_details
       target_field: aws.cloudtrail.flattened.insight_details
       ignore_missing: true
+  - remove:
+      field: json.tlsDetails
+      if: "ctx?.json?.tlsDetails?.tlsVersion == 'tlsVersion'"
   - dissect:
+      tag: dissect_tls_version
       field: json.tlsDetails.tlsVersion
       pattern: "%{tls.version_protocol}v%{tls.version}"
       ignore_missing: true
