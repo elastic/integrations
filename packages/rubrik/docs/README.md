@@ -121,7 +121,7 @@ An example event for `virtualmachines` looks as following:
         "version": "8.16.0"
     },
     "rubrik": {
-        "virtualmachines": {
+        "virtualmachine": {
             "agent_status": "UNREGISTERED",
             "cluster_name": "100-rubrik",
             "power_status": "POWERED_OFF",
