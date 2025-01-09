@@ -2390,6 +2390,82 @@ processors:
       description: "Action has been triggered by an NAE agent"
       pattern: "An action has been triggered by the NAE agent %{aruba.nae.name}"
 
+  # Virtual Switching Extension (70xx)
+  # https://www.arubanetworks.com/techdocs/AOS-CX/10.15/HTML/elmrg/Content/events/VSX.htm
+  - grok:
+      if: "['7001','7002','7003','7004'].contains(ctx.event?.code)"
+      tag: vsx_event_7001_7002_7003_7004
+      field: "message"
+      description: "VSX ISL link is [down|up] | VSX ISL is [In-Sync|Out-Of-Sync] with the peer"
+      patterns:
+        - "^VSX ISL port %{DATA:aruba.port} is (down|up|In-Sync)"
+        - "^VSX ISL port %{DATA:aruba.port} is Out-Of-Sync with the peer: %{GREEDYDATA:event.reason}"
+  - dissect:
+      if: "ctx.event?.code == '7009'"
+      tag: vsx_event_7009
+      field: "message"
+      description: "VSX Software version mismatch: peer sw version is not same as local sw version"
+      pattern: "VSX Software version mismatch: peer version %{aruba.vsx.peer_sw_ver}, local version %{aruba.vsx.local_sw_ver}"
+  - dissect:
+      if: "ctx.event?.code == '7010'"
+      tag: vsx_event_7010
+      field: "message"
+      description: "VSX Device type mismatch: peer device type is not same as local device type"
+      pattern: "VSX Device mismatch: peer device %{aruba.vsx.peer_device_type}, local device %{aruba.vsx.local_device_type}"
+  - grok:
+      if: "['7011','7012','7013','7014'].contains(ctx.event?.code)"
+      tag: vsx_event_7011_7012_7013_7014
+      field: "message"
+      description: "VSX local up remote down | local down remote up | local up remote up | local down remote down"
+      patterns:
+        - "^VSX %{DATA:aruba.instance.id} state local"
+  - dissect:
+      if: "ctx.event?.code == '7017'"
+      tag: vsx_event_7017
+      field: "message"
+      description: "Switch reboot due to VSX software update"
+      pattern: "Rebooting the VSX %{aruba.role} device with newly updated %{aruba.vsx.bank_name} image."
+  - grok:
+      if: "ctx.event?.code == '7018'"
+      tag: vsx_event_7018
+      field: "message"
+      description: "VSX inter-switch-link protocol version mismatch after secondary reboot"
+      patterns:
+        - "^VSX primary ISL version %{DATA:aruba.vsx.primary_version} (dose|does) not match with VSX secondary ISL version %{DATA:aruba.vsx.secondary_version}. Performing a non-hitless image update."
+  - grok:
+      if: "['7019','7024'].contains(ctx.event?.code)"
+      tag: vsx_event_7019_7024
+      field: "message"
+      description: "VSX image update failed | software update state change "
+      patterns:
+        - "^VSX %{DATA:aruba.role} image update failed due to %{GREEDYDATA:event.reason}."
+        - "^VSX %{DATA:aruba.role} state changed from %{DATA:aruba.vsx.prev_state} to %{GREEDYDATA:aruba.state}."
+
+  # There is an oddity with 7029 and 7036 event ID, it maps to two messages with a duplicate fir 7936, assuming this is NOT a documentation error, handling both messages
+  - grok:
+      if: "['7029','7036'].contains(ctx.event?.code)"
+      tag: vsx_event_7029_7036
+      field: "message"
+      description: "VSX device roles are said to be consistent only if one VSX device is configured as primary and other VSX device is configured as secondary | VSX software update sub-state change "
+      patterns:
+        - "^VSX %{DATA:aruba.role} state changed to %{DATA:aruba.state}-%{GREEDYDATA:aruba.vsx.sub_state}."
+        - "^VSX device roles are inconsistent: local VSX device role %{DATA:aruba.vsx.local_vsx_role}, peer VSX device role %{GREEDYDATA:aruba.vsx.peer_vsx_role}"
+  - grok:
+      if: "['7032','7033'].contains(ctx.event?.code)"
+      tag: vsx_event_7032_7033
+      field: "message"
+      description: "Failed to program active-forwarding | active-gateway"
+      patterns:
+        - "^Active-(gateway|forwarding) is enabled on %{DATA:aruba.port}. Cannot program Active-(forwarding|gateway)"
+  - grok:
+      if: "['7034','7035'].contains(ctx.event?.code)"
+      tag: vsx_event_7034_7035
+      field: "message"
+      description: "programmed active-gateway [IP4|IP6] address successfully"
+      patterns:
+        - "^Netdev %{DATA:aruba.interface.name} configured with (ipv4|ipv6) address %{IP:server.ip}"
+
+
   # SNMP events (71xx)
   # https://www.arubanetworks.com/techdocs/AOS-CX/10.15/HTML/elmrg/Content/events/SNMP.htm
   - grok:
@@ -3453,6 +3529,190 @@ processors:
         - "^IP_SOURCE_LOCKDOWN resource utilization has exceeded maximum supported limit of %{DATA:aruba.limit.threshold} on the system. IP source-lockdown functionality will not work for new entries"
         - "^(IPV4_SOURCE_LOCKDOWN|IPV6_SOURCE_LOCKDOWN) is (enabled|disabled) on interface %{GREEDYDATA:aruba.interface.id}"
 
+  # Virtual Switching Framework (VSF) events (99xx)
+  # https://www.arubanetworks.com/techdocs/AOS-CX/10.15/HTML/elmrg/Content/events/VSF.htm
+  - grok:
+      if: "['9901','9902','9903','9905','9906','9910'].contains(ctx.event?.code)"
+      tag: vsf_event_9901_9902_9903_9905_9906_9910
+      field: "message"
+      description: "log event for [standby|member|Conductor] boot complete | Event log indicates that member is reseting | Event log for Failed processing Hello packet because of member number conflict | indicates the member has been removed due to user request"
+      patterns:
+        - "^(Member|Standby|Conductor) %{DATA:aruba.vsf.member_id} boot complete"
+        - "^Resetting member %{GREEDYDATA:aruba.vsf.member_id}"
+        - "^Member %{DATA:aruba.vsf.member_id} conflict detected on link %{GREEDYDATA:aruba.vsf.link}"
+        - "^Member %{DATA:aruba.vsf.member_id} removed"
+  - dissect:
+      if: "ctx.event?.code == '9908'"
+      tag: vsf_event_9908
+      field: "message"
+      description: "Event log indicates the current topology"
+      pattern: "Topology is %{aruba.vsf.topo_type}"
+  - grok:
+      if: "ctx.event?.code == '9911'"
+      tag: vsf_event_9911
+      field: "message"
+      description: "Event log indicates that we would exceed the MAX switches if we add this new switch"
+      patterns:
+        - "^Maximum number of switches in the stack has reached. Cannot add MAC %{MAC:aruba.vsf.mac_addr1} product type %{GREEDYDATA:aruba.vsf.product_type}"
+  - grok:
+      if: "ctx.event?.code == '9912'"
+      tag: vsf_event_9912
+      field: "message"
+      description: "log event for stack state active"
+      patterns:
+        - "^Stack state is no-split with conductor id %{GREEDYDATA:aruba.vsf.member_id}"
+        - "^Throttled %{NUMBER:aruba.throttle_count:long} Messages"
+  - grok:
+      if: "['9913','9915','9916'].contains(ctx.event?.code)"
+      tag: vsf_event_9913_9915_9916
+      field: "message"
+      description: "Event log for lost member | log event for the switch won as [conductor|standby] "
+      patterns:
+        - "^Lost member %{DATA:aruba.vsf.member_id} with %{GREEDYDATA:event.reason}"
+        - "^Member %{DATA:aruba.vsf.member_id} elected as (conductor|standby) reason-%{GREEDYDATA:event.reason}"
+  - grok:
+      if: "['9914','9917','9919'].contains(ctx.event?.code)"
+      tag: vsf_event_9914_9917_9919
+      field: "message"
+      description: "Event log for status of a reboot request | log event for the member was not allowed to join due to a mismatched product-id | log event for switch running on a different platform and trying to join the stack"
+      patterns:
+        - "^Reboot of MAC %{MAC:aruba.vsf.mac_addr1} status-%{GREEDYDATA:aruba.status}"
+        - "^Switch with MAC %{MAC:aruba.vsf.mac_addr1} cannot join stack due to incorrect product id %{GREEDYDATA:aruba.vsf.product_id}"
+        - "^Found Unsupported switch with MAC %{MAC:aruba.vsf.mac_addr1} and Product type %{DATA:aruba.vsf.product_type}, connected to switch with MAC %{MAC:aruba.vsf.mac_addr2} on stack port %{GREEDYDATA:aruba.port}"
+  - grok:
+      if: "['9920','9921','9922'].contains(ctx.event?.code)"
+      tag: vsf_event_9920_9921_9922
+      field: "message"
+      description: "log event for heart beat lost | log event when os_version_mismatch happened on standby and member | log event when member attempt to connect to a different stack"
+      patterns:
+        - "for member %{GREEDYDATA:aruba.vsf.member_id}"
+        - "^Attempt to connect member %{DATA:aruba.vsf.member_id} from a different stack"
+  - grok:
+      if: "['9923','9924'].contains(ctx.event?.code)"
+      tag: vsf_event_9923_9924
+      field: "message"
+      description: "log event when vsf link is up|down"
+      patterns:
+        - "^VSF link %{DATA:aruba.vsf.link} "
+  - grok:
+      if: "ctx.event?.code == '9925'"
+      tag: vsf_event_9925
+      field: "message"
+      description: "log event when different MAC address on the same link"
+      patterns:
+        - "^Invalid MAC %{MAC:aruba.vsf.mac_addr1} detected on link %{DATA:aruba.vsf.link} with peer MAC %{MAC:aruba.vsf.mac_addr2}"
+  - grok:
+      if: "['9927','9928','9930'].contains(ctx.event?.code)"
+      tag: vsf_event_9927_9928_9930
+      field: "message"
+      description: "log event for [inactive|active] fragment | log event for standby configuration"
+      patterns:
+        - "^Fragment with conductor %{DATA:aruba.vsf.member_id} is (Active|Inactive)"
+        - "^Throttled %{NUMBER:aruba.throttle_count:long} Messages"
+        - "^Member %{DATA:aruba.vsf.member_id} is configured as Secondary"
+  - grok:
+      if: "ctx.event?.code == '9932'"
+      tag: vsf_event_9932
+      field: "message"
+      description: "log event when Mater SKU device joins the stack"
+      patterns:
+        - "^Attempt to connect a member with MAC %{MAC:aruba.vsf.mac_addr1} and product type %{DATA:aruba.vsf.product_id} having different airflows"
+  - grok:
+      if: "['9933','9934'].contains(ctx.event?.code)"
+      tag: vsf_event_9933_9934
+      field: "message"
+      description: "log event for peer time out as it did not receive any packet | log event for loop detection in link"
+      patterns:
+        - "on interface %{GREEDYDATA:aruba.port}"
+  - grok:
+      if: "['9935','9936','9937'].contains(ctx.event?.code)"
+      tag: vsf_event_9935_9936_9937
+      field: "message"
+      description: "log event when peer switch is in different VSF handshake version | when interface [added|removed] to a particular link"
+      patterns:
+        - "^Interface %{DATA:aruba.port} detected a peer with a different VSF handshake version"
+        - "^Interface %{DATA:aruba.port} (added to|removed from) VSF link %{GREEDYDATA:aruba.vsf.link}"
+  - grok:
+      if: "['9938','9939','9943'].contains(ctx.event?.code)"
+      tag: vsf_event_9938_9939_9943
+      field: "message"
+      description: "log event when the switch is not able to autojoin as it is connected with a non default VSF interface | there is an inconsistency detected between conductors provisioned VSF link configuration and the interface on which switch is attempting to autojoin | when two different switches are attempting to autojoin by connecting to the same VSF link on the peer"
+      patterns:
+        - "^%{BEGINNING_PATTERN} not able to autojoin as it is connected (on|to) interface %{DATA:aruba.port} which is (a non default autojoin VSF interface|not provisioned on the conductor for member %{DATA:aruba.vsf.member_id})"
+        - "^%{BEGINNING_PATTERN} failed to autojoin on link %{DATA:aruba.vsf.link}, port %{GREEDYDATA:aruba.port}"
+        - "^%{BEGINNING_PATTERN} failed to autojoin. Connect the device %{MAC:aruba.vsf.mac_addr2} to member %{DATA:aruba.vsf.mbr_id} link %{DATA:aruba.vsf.link} to proceed"
+      pattern_definitions:
+        BEGINNING_PATTERN: "^Switch with (mac|MAC) %{MAC:aruba.vsf.mac_addr1}"
+  - grok:
+      if: "['9940','9941','9942'].contains(ctx.event?.code)"
+      tag: vsf_event_9940_9941_9942
+      field: "message"
+      description: "log event when peer switch is not autojoin eligible | when there is more than one interface physically connected to same switch VSF link for autojoin | when switch is not allowed to autojoin because of insufficient resources"
+      patterns:
+        - "^Switch with MAC %{MAC:aruba.vsf.mac_addr1} "
+  - grok:
+      if: "ctx.event?.code == '9947'"
+      tag: vsf_event_9947
+      field: "message"
+      description: "log event when member connected to an unsupported interface"
+      patterns: 
+        - "^Switch with MAC %{MAC:aruba.vsf.mac_addr1} failed to autojoin. Connect the device %{MAC:aruba.vsf.mac_addr2} to member %{DATA:aruba.vsf.mbr_id} link %{DATA:aruba.vsf.link} to proceed"
+  - dissect:
+      if: "ctx.event?.code == '9948'"
+      tag: vsf_event_9948
+      field: "message"
+      description: "log event when interface is in inconsistent link configuration error"
+      pattern: "Interface %{aruba.port} in VSF link %{aruba.vsf.link} detected a peer with inconsistent VSF link configuration"
+  - dissect:
+      if: "ctx.event?.code == '9949'"
+      tag: vsf_event_9949
+      field: "message"
+      description: "log event when existing secondary changes to new specified secondary member"
+      pattern: "Secondary member changed from %{aruba.vsf.old_standby_id} to %{aruba.vsf.new_standby_id}"
+  - grok:
+      if: "ctx.event?.code == '9950'"
+      tag: vsf_event_9950
+      field: "message"
+      description: "log event when a VSF interface is connected to another interface with MACsec configuration"
+      patterns: 
+        - "^Switch with MAC %{MAC:aruba.vsf.mac_addr1} failed to autojoin as it is connected on interface %{DATA:aruba.port} which has MACsec configuration"
+  - dissect:
+      if: "ctx.event?.code == '9951'"
+      tag: vsf_event_9951
+      field: "message"
+      description: "Log event when an interface with MACsec configuration is added to VSF link"
+      pattern: "Bringing down MACsec configured interface %{aruba.port} as it is added to a VSF link. VSF link and MACsec configurations needs to be removed from the interface %{aruba.vsf.port2} and VSF link needs to be reconfigured for it to take into effect"
+  - grok:
+      if: "['9953','9954','9956'].contains(ctx.event?.code)"
+      tag: vsf_event_9953_9954_9956
+      field: "message"
+      description: "VSF_Member issu_state failed in conductor | when standby/member goes out of the stack | when ISSU timer expires before ISSU is complete"
+      patterns:
+        - "(member|switch) %{DATA:aruba.instance.id} during ISSU operation: \"%{DATA:aruba.vsf.operation}\""
+        - "^VSF member %{DATA:aruba.instance.id} going out of stack during ISSU operation: \"%{DATA:aruba.vsf.operation}\", rebooting the stack"
+  - grok:
+      if: "['9952','9955'].contains(ctx.event?.code)"
+      tag: vsf_event_9952_9955
+      field: "message"
+      description: "Log event when ISSU switchover is detected | when unintentional failover occurs during issu in_progress"
+      patterns:
+        - "detected during ISSU operation: \"%{DATA:aruba.vsf.operation}\""
+  - grok:
+      if: "ctx.event?.code == '9957'"
+      tag: vsf_event_9957
+      field: "message"
+      description: "Log event when member attempt to connect to incompatible peer jtypes"
+      patterns:
+        - "^Member %{DATA:aruba.vsf.member_id} interface %{DATA:aruba.port} in VSF link %{DATA:aruba.vsf.link} detected a peer %{MAC:aruba.vsf.mac_addr1} with incompatible product type %{GREEDYDATA:aruba.vsf.product_type}"
+  - grok:
+      if: "['9958','9959','9960'].contains(ctx.event?.code)"
+      tag: vsf_event_9958_9959_9960
+      field: "message"
+      description: "Log event when port shape is updated with uniform speed | capture the QOS applied failures"
+      patterns:
+        - "^Egress port shape rate %{DATA:aruba.vsf.lowest_speed}( will be)? applied for all VSF interfaces"
+        - "^Egress port shape rate %{DATA:aruba.vsf.lowest_speed} update is failed to apply for interface %{GREEDYDATA:aruba.interface.name}"
+
   # ACLs events (100xx)
   # https://www.arubanetworks.com/techdocs/AOS-CX/10.07/HTML/5200-8214/Content/events/ACL.htm
   - grok:
@@ -3867,6 +4127,22 @@ processors:
       ignore_missing: true
   - gsub:
       field: aruba.rpvst.old_mac
+      pattern: "[:.]"
+      replacement: "-"
+      ignore_missing: true
+  - uppercase:
+      field: aruba.vsf.mac_addr1
+      ignore_missing: true
+  - gsub:
+      field: aruba.vsf.mac_addr1
+      pattern: "[:.]"
+      replacement: "-"
+      ignore_missing: true
+  - uppercase:
+      field: aruba.vsf.mac_addr2
+      ignore_missing: true
+  - gsub:
+      field: aruba.vsf.mac_addr2
       pattern: "[:.]"
       replacement: "-"
       ignore_missing: true
