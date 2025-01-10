@@ -19,7 +19,7 @@ processors:
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - script:
       lang: painless
-      description: Replace spaces and dashes in field names under o365.metrics.yammer.device.usage.
+      description: Replace spaces, dashes and bom character in field names under o365.metrics.yammer.device.usage.
       tag: painless_purge_spaces_and_dashes
       if: ctx.o365.metrics?.yammer.device.usage instanceof Map
       source: |
@@ -85,3 +85,7 @@ on_failure:
       field: event.kind
       value: pipeline_error
       allow_duplicates: false
+  - append:
+      field: event.type
+      value: error
+      if: ctx.error?.message != null
