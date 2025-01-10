@@ -46,9 +46,7 @@ program: |-
   	:
   		state.cursor.auth_cookie
   ).as(auth_cookie,
-  	// Check if there are no asset requests left to fetch
   	(size(state.?cursor.asset_reqs.orValue([])) == 0) ?
-  		// Fetching all workgroups because no assets are left to fetch
   		request("GET", state.url.trim_suffix("/") + "/Workgroups").with(
   			{
   				"Header": {
@@ -86,7 +84,6 @@ program: |-
   				)
   		)
   	:
-  		// Fetching assets for the first workgroup in the list
   		{
   			"workgroup_id": state.cursor.asset_reqs[0][0],
   			"offset": state.cursor.asset_reqs[0][1],
@@ -119,7 +116,7 @@ program: |-
   					)
   				:
   					bytes(assetResp.Body).decode_json().as(assetBody,
-  						(size(assetBody.Data) + int(r.offset) < assetBody.TotalCount) ?
+  						(size(assetBody.Data) + int(r.offset) < int(assetBody.TotalCount)) ?
   							state.with(
   								{
   									"events": assetBody.Data.map(e,
