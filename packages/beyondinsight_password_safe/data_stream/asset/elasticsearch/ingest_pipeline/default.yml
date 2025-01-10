@@ -4,6 +4,9 @@ processors:
   - drop:
       if: ctx.error?.statuscode != null && ctx.error.statuscode != 200
 
+  - drop:
+      if: ctx.process_event != null && !ctx.process_event
+
   - rename:
       field: message
       target_field: beyondinsight_password_safe.asset
@@ -11,7 +14,6 @@ processors:
   - fingerprint:
       fields:
         - beyondinsight_password_safe.asset.AssetID
-        - beyondinsight_password_safe.asset.WorkgroupID
       target_field: "_id"
 
 ####################
