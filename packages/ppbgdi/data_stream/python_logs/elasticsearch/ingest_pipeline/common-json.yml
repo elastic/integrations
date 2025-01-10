@@ -9,6 +9,16 @@ processors:
       field: event.original
       target_field: temp
   - foreach:
+      field: temp.error
+      ignore_missing: true
+      processor:
+        set:
+          field: "error.{{ _ingest._key }}"
+          value: "{{ _ingest._value }}"
+  - remove:
+      field: temp.error
+      ignore_missing: true
+  - foreach:
       field: temp.event
       ignore_missing: true
       processor:
