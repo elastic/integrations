@@ -1,0 +1,168 @@
+config_version: 2
+interval: {{interval}}
+{{#if enable_request_tracer}}
+resource.tracer.filename: "../../logs/cel/http-request-trace-*.ndjson"
+request.tracer.maxbackups: 5
+{{/if}}
+{{#if proxy_url}}
+resource.proxy_url: {{proxy_url}}
+{{/if}}
+{{#if ssl}}
+resource.ssl: {{ssl}}
+{{/if}}
+{{#if http_client_timeout}}
+resource.timeout: {{http_client_timeout}}
+{{/if}}
+resource.ssl.renegotiation: "freely"
+resource.ssl.verification_mode: "certificate"
+resource.url: {{url}}
+state:
+  limit: {{limit}}
+  apikeytoken: {{apikeytoken}}
+  password: {{password}}
+  username: {{username}}
+redact:
+  fields:
+    - apikey
+program: |-
+  
+  (
+  	(state.?cursor.auth_cookie.orValue(null) == null) ?
+  		// Authenticating using API to retrieve auth Cookie
+  		request("POST", state.url.trim_suffix("/") + "/Auth/SignAppin").with(
+  			{
+  				"Header": {
+  					"Authorization": [
+  						"PS-Auth key=" + state.apikeytoken + ";runas=" + state.username + ";pwd=[" + state.password + "];",
+  					],
+  					"Content-Type": ["application/json"],
+  				},
+  			}
+  		).do_request().as(resp,
+  			resp.Header["Set-Cookie"].filter(e, e.contains("ASP.NET_SessionId")).as(auth_cookie,
+  				auth_cookie[0]
+  			)
+  		)
+  	:
+  		state.cursor.auth_cookie
+  ).as(auth_cookie,
+  	(size(state.?cursor.asset_reqs.orValue([])) == 0) ?
+  		request("GET", state.url.trim_suffix("/") + "/Workgroups").with(
+  			{
+  				"Header": {
+  					"Content-Type": ["application/json"],
+  					"Cookie": [auth_cookie],
+  				},
+  			}
+  		).do_request().as(resp,
+  			(resp.StatusCode == 401) ?
+  				state.with(
+  					{
+  						"events": {"error": {"message": "User not authenticated", "statuscode": string(resp.StatusCode)}},
+  						"want_more": true,
+  						"cursor": {
+  							"auth_cookie": null,
+  						},
+  					}
+  				)
+  			:
+  				bytes(resp.Body).decode_json().as(workgroups,
+  					state.with(
+  						{
+  							"events": [
+  								{
+  									"process_event": false,
+  								},
+  							],
+  							"want_more": true,
+  							"cursor": {
+  								"auth_cookie": auth_cookie,
+  								"asset_reqs": workgroups.map(wg, [string(wg.ID), 0]),
+  							},
+  						}
+  					)
+  				)
+  		)
+  	:
+  		{
+  			"workgroup_id": state.cursor.asset_reqs[0][0],
+  			"offset": state.cursor.asset_reqs[0][1],
+  			"rest_workgroups": tail(state.cursor.asset_reqs),
+  		}.as(r,
+  			request(
+  				"GET",
+  				state.url.trim_suffix("/") + "/Workgroups/" + r.workgroup_id + "/Assets?" + {
+  					"limit": [string(state.limit)],
+  					"offset": [string(r.offset)],
+  				}.format_query()
+  			).with(
+  				{
+  					"Header": {
+  						"Content-Type": ["application/json"],
+  						"Cookie": [auth_cookie],
+  					},
+  				}
+  			).do_request().as(assetResp,
+  				(assetResp.StatusCode != 200) ?
+  					state.with(
+  						{
+  							"events": {"error": {"message": "Error in fetching assets", "statuscode": string(assetResp.StatusCode)}},
+  							"want_more": size(r.rest_workgroups) > 0,
+  							"cursor": {
+  								"auth_cookie": null,
+  								"asset_reqs": r.rest_workgroups,
+  							},
+  						}
+  					)
+  				:
+  					bytes(assetResp.Body).decode_json().as(assetBody,
+  						(size(assetBody.Data) + int(r.offset) < int(assetBody.TotalCount)) ?
+  							state.with(
+  								{
+  									"events": assetBody.Data.map(e,
+  										{
+  											"message": e,
+  											?"event.original": state.?preserve_original_event.orValue(false) ? optional.of(e.encode_json()) : optional.none(),
+  										}
+  									),
+  									"want_more": true,
+  									"cursor": {
+  										"auth_cookie": auth_cookie,
+  										"asset_reqs": [[r.workgroup_id, int(r.offset) + size(assetBody.Data)]] + r.rest_workgroups,
+  									},
+  								}
+  							)
+  						:
+  							state.with(
+  								{
+  									"events": assetBody.Data.map(e,
+  										{
+  											"message": e,
+  											?"event.original": state.?preserve_original_event.orValue(false) ? optional.of(e.encode_json()) : optional.none(),
+  										}
+  									),
+  									"want_more": size(r.rest_workgroups) > 0,
+  									"cursor": {
+  										"auth_cookie": auth_cookie,
+  										"asset_reqs": r.rest_workgroups,
+  									},
+  								}
+  							)
+  					)
+  			)
+  		)
+  )
+tags:
+{{#if preserve_original_event}}
+  - preserve_original_event
+{{/if}}
+{{#each tags as |tag|}}
+  - {{tag}}
+{{/each}}
+{{#contains "forwarded" tags}}
+publisher_pipeline.disable_host: true
+{{/contains}}
+{{#if processors}}
+processors:
+{{processors}}
+{{/if}}
