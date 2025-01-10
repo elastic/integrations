@@ -7,7 +7,7 @@ For more detailed information refer to the following blog:
 - [Identifying beaconing malware using Elastic](https://www.elastic.co/security-labs/identifying-beaconing-malware-using-elastic)
 
 ## Installation
-1. **Add the Integration Package**: Install the package via **Management > Integrations > Network Beaconing Identification**. Configure the integration name and agent policy. Click Save and Continue.
+1. **Add the Integration Package**: Install the package via **Management > Integrations > Network Beaconing Identification**. Configure the integration name and agent policy. Click Save and Continue. (Note that this integration does not rely on an agent, and can be assigned to a policy without an agent.)
 1. **Check the health of the transform**: The transform is scheduled to run every hour. This transform creates the index `ml_beaconing-<VERSION>`. To check the health of the transform go to Management > Stack Management > Data > Transforms under `logs-beaconing.pivot_transform-default-<VERSION>`.
 1. **Data view configuration for Dashboards**: For the dashboards to work as expected, the following settings need to be configured in Kibana:
     - Ensure the pivot transform is installed and running.
