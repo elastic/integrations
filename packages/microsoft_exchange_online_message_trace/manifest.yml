@@ -123,20 +123,27 @@ policy_templates:
             type: text
             title: Initial Interval
             description: How far back to pull the initial log from Exchange Online. Supported units for this parameter are h/m/s.
-            default: 48h
+            default: 1h
             multi: false
             required: true
             show_user: true
-          - name: end_interval
+          - name: min_age
             type: text
-            title: End Interval
+            title: Minimum Age
             description: |
-              The time window starting from the initial interval up to when the logs would be pulled. This value should be always lesser than the interval.
+              Logs will not be requested until they are at least this old. This value should be always lesser in value than the initial_interval.
               Supported units for this parameter are h/m/s.
-            default: 24h
+            default: 1m
             multi: false
             required: true
             show_user: true
+          - name: drop_status
+            type: text
+            title: Drop Logs With Status
+            description: Logs having the status string defined here will be dropped in the ingest pipeline.
+            multi: false
+            required: false
+            show_user: false
           - name: additional_look_back
             type: text
             title: Additional Look-back Time

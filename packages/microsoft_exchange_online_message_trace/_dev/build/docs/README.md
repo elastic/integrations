@@ -45,11 +45,11 @@ In order to continue using the Microsoft Exchange Online Message Trace you will 
 - For configuring `Local Domains` you can check your [Microsoft Admin Exchange Center](https://admin.exchange.microsoft.com/) for the domains
 available in your organization. They are usually under the sections [Accepted Domains](https://admin.exchange.microsoft.com/#/accepteddomains) and [Remote Domains](https://admin.exchange.microsoft.com/#/remotedomains).
 
-- The default `Polling Interval` is configured to `1h` and `Initial Interval` to `48h`, you can however change these to your required values. The look-back 
+- The default `Interval` is configured to `1h` and `Initial Interval` to `48h`, you can however change these to your required values. The look-back 
   value of `Initial Interval` should not exceed `200 hours` as this might cause unexpected errors with the API.
 
-- The default `End Interval` is configured to `24h`, you can however change these to your required values. The `End Interval` was introduced to allow a sliding 
-  window to exist in combination with the `Initial Interval`. If you do not require a sliding window you can set this to `0s` which will cause the `End Interval` to 
+- The default `Minimum Age` is configured to `1h`, you can however change these to your required values. The `Minimum Age` was introduced to allow a sliding 
+  window to exist in combination with the `Initial Interval`. If you do not require a sliding window you can set this to `0s` which will cause the `Minimum Age` to 
   always default to the `current time (now)`.
 
 - The default `Additional Look-back Time` value is configured for `1h`. 
