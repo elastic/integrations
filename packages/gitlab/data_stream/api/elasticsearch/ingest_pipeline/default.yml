@@ -43,6 +43,18 @@ processors:
         ctx.event.duration = ctx.gitlab.api.duration_s * 1000000;
       }
     ignore_failure: true
+- script:
+    tag: kv_params
+    lang: painless
+    source: |
+      def keyValuePairs = [];
+      for (item in ctx.gitlab.api.params) {
+        def key = item.key;
+        def value = item.value;
+        def keyValueObject = [key: value];
+        keyValuePairs.add(keyValueObject)
+      }
+      ctx.gitlab.api.params = keyValuePairs;
 - rename:
     field: gitlab.api.status
     target_field: http.response.status_code
