@@ -661,3 +661,166 @@ Please refer to the following [document](https://www.elastic.co/guide/en/ecs/cur
 | o365.metrics.active.users.teams.inactive.count | Number of Teams inactive users. | integer |
 | o365.metrics.active.users.yammer.active.count | Number of Yammer active users. | integer |
 | o365.metrics.active.users.yammer.inactive.count | Number of Yammer inactive users. | integer |
+
+
+### Subscriptions
+
+An example event for `subscriptions` looks as following:
+
+```json
+{
+    "o365": {
+        "metrics": {
+            "subscriptions": {
+                "value": [
+                    {
+                        "accountId": "f97aeefc-af85-414d-8ae4-b457f90efc40",
+                        "accountName": "Sample account One",
+                        "appliesTo": "User",
+                        "capabilityStatus": "Enabled",
+                        "consumedUnits": 14,
+                        "id": "48a80680-7326-48cd-9935-b556b81d3a4e_c7df2760-2c81-4ef7-b578-5b5392b571df",
+                        "prepaidUnits": {
+                            "enabled": 25,
+                            "lockedOut": 0,
+                            "suspended": 0,
+                            "warning": 0
+                        },
+                        "servicePlans": [
+                            {
+                                "appliesTo": "Company",
+                                "provisioningStatus": "Success",
+                                "servicePlanId": "8c098270-9dd4-4350-9b30-ba4703f3b36b",
+                                "servicePlanName": "ADALLOM_S_O365"
+                            }
+                        ],
+                        "skuId": "c7df2760-2c81-4ef7-b578-5b5392b571df",
+                        "skuPartNumber": "ENTERPRISEPREMIUM",
+                        "subscriptionIds": [
+                            "43d26afe-cb98-48b9-acc4-ae3ef2ac6c51"
+                        ]
+                    },
+                    {
+                        "accountId": "ee045480-0260-4c1e-b946-55842502229c",
+                        "accountName": "Sample account Two",
+                        "appliesTo": "User",
+                        "capabilityStatus": "Suspended",
+                        "consumedUnits": 14,
+                        "id": "48a80680-7326-48cd-9935-b556b81d3a4e_d17b27af-3f49-4822-99f9-56a661538792",
+                        "prepaidUnits": {
+                            "enabled": 0,
+                            "lockedOut": 0,
+                            "suspended": 25,
+                            "warning": 0
+                        },
+                        "servicePlans": [
+                            {
+                                "appliesTo": "User",
+                                "provisioningStatus": "Disabled",
+                                "servicePlanId": "f9646fb2-e3b2-4309-95de-dc4833737456",
+                                "servicePlanName": "CRMSTANDARD"
+                            }
+                        ],
+                        "skuId": "d17b27af-3f49-4822-99f9-56a661538792",
+                        "skuPartNumber": "CRMSTANDARD",
+                        "subscriptionIds": [
+                            "15c301e0-c769-4f12-bab1-1e8519a7a6f1"
+                        ]
+                    }
+                ],
+                "report": {
+                    "period": {
+                        "day": "7"
+                    },
+                    "refresh_date": "2025-01-08"
+                }
+            }
+        }
+    },
+    "agent": {
+        "name": "docker-fleet-agent",
+        "id": "abf38fab-f7b6-4e1c-a3b3-a70a64f9e5db",
+        "ephemeral_id": "08417a8d-9698-4c62-b7dc-e1b048647626",
+        "type": "filebeat",
+        "version": "8.16.0"
+    },
+    "@timestamp": "2025-01-08T09:39:43.406Z",
+    "ecs": {
+        "version": "8.16.0"
+    },
+    "data_stream": {
+        "namespace": "default",
+        "type": "metrics",
+        "dataset": "o365_metrics.subscriptions"
+    },
+    "host": {
+        "hostname": "docker-fleet-agent",
+        "os": {
+            "kernel": "5.10.104-linuxkit",
+            "name": "Wolfi",
+            "family": "",
+            "type": "linux",
+            "version": "20230201",
+            "platform": "wolfi"
+        },
+        "ip": [
+            "192.168.48.7"
+        ],
+        "containerized": false,
+        "name": "docker-fleet-agent",
+        "mac": [
+            "02-42-C0-A8-30-07"
+        ],
+        "architecture": "aarch64"
+    },
+    "elastic_agent": {
+        "id": "abf38fab-f7b6-4e1c-a3b3-a70a64f9e5db",
+        "version": "8.16.0",
+        "snapshot": false
+    },
+    "event": {
+        "agent_id_status": "verified",
+        "ingested": "2025-01-08T09:39:44Z",
+        "dataset": "o365_metrics.subscriptions"
+    },
+    "tags": [
+        "o365metrics-subscriptions"
+    ]
+}
+  
+```
+
+**ECS Field Reference**
+
+Please refer to the following [document](https://www.elastic.co/guide/en/ecs/current/ecs-field-reference.html) for detailed information on ECS fields.
+
+**Exported fields**
+
+| Field | Description | Type |
+|---|---|---|
+| @timestamp | Event timestamp. | date |
+| cloud.image.id | Image ID for the cloud instance. | keyword |
+| data_stream.dataset | Data stream dataset. | constant_keyword |
+| data_stream.namespace | Data stream namespace. | constant_keyword |
+| data_stream.type | Data stream type. | constant_keyword |
+| host.containerized | If the host is a container. | boolean |
+| host.os.build | OS build information. | keyword |
+| host.os.codename | OS codename, if any. | keyword |
+| o365.metrics.subscriptions.value.accountId | Unique identifier for the account | keyword |
+| o365.metrics.subscriptions.value.accountName | Name of the account | text |
+| o365.metrics.subscriptions.value.appliesTo | Type of entity the subscription applies to (e.g., User or Company) | keyword |
+| o365.metrics.subscriptions.value.capabilityStatus | Status of the capability (e.g., Enabled, Suspended) | keyword |
+| o365.metrics.subscriptions.value.consumedUnits | Number of consumed units | integer |
+| o365.metrics.subscriptions.value.id | Unique identifier for the subscription entry | keyword |
+| o365.metrics.subscriptions.value.prepaidUnits.enabled | Number of enabled prepaid units | integer |
+| o365.metrics.subscriptions.value.prepaidUnits.lockedOut | Number of locked-out prepaid units | integer |
+| o365.metrics.subscriptions.value.prepaidUnits.suspended | Number of suspended prepaid units | integer |
+| o365.metrics.subscriptions.value.prepaidUnits.warning | Number of prepaid units in warning state | integer |
+| o365.metrics.subscriptions.value.servicePlans.appliesTo | Type of entity the service plan applies to | keyword |
+| o365.metrics.subscriptions.value.servicePlans.provisioningStatus | Status of the service plan provisioning | keyword |
+| o365.metrics.subscriptions.value.servicePlans.servicePlanId | Unique identifier for the service plan | keyword |
+| o365.metrics.subscriptions.value.servicePlans.servicePlanName | Name of the service plan | text |
+| o365.metrics.subscriptions.value.skuId | Unique identifier for the SKU | keyword |
+| o365.metrics.subscriptions.value.skuPartNumber | SKU part number | keyword |
+| o365.metrics.subscriptions.value.subscriptionIds | Array of subscription IDs | keyword |
+

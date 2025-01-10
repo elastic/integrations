@@ -1,0 +1,38 @@
+---
+description: Pipeline for renaming object
+processors:
+  - set:
+      field: ecs.version
+      value: "8.16.0"
+  - json:
+      field: subscriptions
+      target_field: o365.metrics.subscriptions 
+  - script:
+      lang: painless
+      description: Replace spaces and dashes in field names under o365.metrics.subscriptions.
+      tag: painless_purge_spaces_and_dashes
+      if: ctx.o365.metrics?.subscriptions instanceof Map 
+      source: |
+        String underscore(String s) {
+          String result = /[ -]/.matcher(s).replaceAll('_').toLowerCase();
+          return /[\ufeff]/.matcher(result).replaceAll('')
+        }
+        
+        def out = [:];
+        for (def item : ctx.o365.metrics.subscriptions.entrySet()) {
+          out[underscore(item.getKey())] = item.getValue();
+        }
+        ctx.o365.metrics.subscriptions = out;
+  - remove:
+      if: ctx.subscriptions != null
+      field: subscriptions
+      ignore_missing: true                        
+
+on_failure:
+  - append:
+      field: error.message
+      value: "{{{_ingest.on_failure_message}}}"
+  - append:
+      field: event.kind
+      value: pipeline_error
+      allow_duplicates: false
