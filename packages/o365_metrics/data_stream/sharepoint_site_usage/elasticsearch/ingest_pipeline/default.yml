@@ -1,15 +1,24 @@
 ---
-description: Pipeline for renaming object
+description: Pipeline for processing o365 share point site usage metrics.
 processors:
   - set:
       field: ecs.version
       value: "8.16.0"
 
-# SharePoint Site Usage Storage            
+# SharePoint Site Usage Storage         
+  - set:
+      copy_from: sharepoint_site_usage_storage
+      field: event.original
+      ignore_empty_value: true
+      if: ctx.event?.original == null && (ctx.tags != null && (ctx.tags.contains('preserve_original_event')))   
   - json:
-      field: sharepoint_site_usage_storage
-      target_field: o365metrics.sharepoint.site.usage.storage
-      ignore_failure: true 
+      field: sharepoint_site_usage_detail
+      target_field: o365metrics.sharepoint.site.usage.detail
+      tag: json_decoding
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - script:
       lang: painless
       description: Replace spaces and dashes in field names under o365metrics.sharepoint.site.usage.storage.
@@ -53,10 +62,19 @@ processors:
       ignore_missing: true
 
 # SharePoint Site Usage Details
+  - set:
+      copy_from: sharepoint_site_usage_detail
+      field: event.original
+      ignore_empty_value: true
+      if: ctx.event?.original == null && (ctx.tags != null && (ctx.tags.contains('preserve_original_event')))  
   - json:
       field: sharepoint_site_usage_detail
       target_field: o365metrics.sharepoint.site.usage.detail
-      ignore_failure: true 
+      tag: json_decoding
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - script:
       lang: painless
       description: Replace spaces and dashes in field names under o365metrics.sharepoint.site.usage.detail.
@@ -130,10 +148,17 @@ processors:
       ignore_missing: true
 
 on_failure:
-  - append:
+  - set:
       field: error.message
-      value: "{{{_ingest.on_failure_message}}}"
+      value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - append:
       field: event.kind
       value: pipeline_error
+      allow_duplicates: false
+  - append:
+      field: event.type
+      value: error
+  - append:
+      field: tags
+      value: preserve_original_event
       allow_duplicates: false
