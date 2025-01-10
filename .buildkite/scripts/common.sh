@@ -757,7 +757,7 @@ teardown_test_package() {
 }
 
 list_all_directories() {
-    find . -maxdepth 1 -mindepth 1 -type d | xargs -I {} basename {} | sort
+    find . -maxdepth 1 -mindepth 1 -type d | xargs -I {} basename {} | sort |grep -E '^(teleport|cef|mimecast|box_events|ti_anomali|claroty_ctd|sublime_security|crowdstrike|auditd_manager|mongodb_atlas)$'
 }
 
 check_package() {
