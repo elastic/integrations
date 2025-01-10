@@ -1,9 +1,6 @@
 ---
 description: Pipeline for processing MongoDB Atlas Organization logs
 processors:
-  - drop:
-      if: ctx.response == "The application encountered an error while retrieving the current page"
-      tag: drop_retry_page_events
   - fingerprint:
       fields: 
         - response.id
@@ -27,6 +24,9 @@ processors:
   - set:
       field: event.type
       value: ["info","access","change"]
+  - fail:
+      if: ctx.error?.message != null && ctx.message == null && ctx.event?.original == null
+      message: error message set and no data to process.
   - set:
       copy_from: response
       field: event.original
