@@ -10,11 +10,13 @@ processors:
       copy_from: sharepoint_site_usage_storage
       field: event.original
       ignore_empty_value: true
+      ignore_failure: true
       if: ctx.event?.original == null && (ctx.tags != null && (ctx.tags.contains('preserve_original_event')))   
   - json:
-      field: sharepoint_site_usage_detail
-      target_field: o365metrics.sharepoint.site.usage.detail
+      field: sharepoint_site_usage_storage
+      target_field: o365metrics.sharepoint.site.usage.storage
       tag: json_decoding
+      ignore_failure: true
       on_failure:
         - append:
             field: error.message
@@ -66,11 +68,13 @@ processors:
       copy_from: sharepoint_site_usage_detail
       field: event.original
       ignore_empty_value: true
+      ignore_failure: true
       if: ctx.event?.original == null && (ctx.tags != null && (ctx.tags.contains('preserve_original_event')))  
   - json:
       field: sharepoint_site_usage_detail
       target_field: o365metrics.sharepoint.site.usage.detail
       tag: json_decoding
+      ignore_failure: true
       on_failure:
         - append:
             field: error.message
