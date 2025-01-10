@@ -137,71 +137,51 @@ An example event for `user` looks as following:
 
 ```json
 {
-    "@timestamp": "2023-08-11T07:01:21.235Z",
+    "@timestamp": "2024-12-31T12:11:21.622Z",
     "agent": {
-        "ephemeral_id": "dbb88a7d-16aa-44e4-8bef-c707be5ac5e2",
-        "id": "28086f58-96fe-486b-9ef2-4ca0bd13a4e5",
-        "name": "docker-fleet-agent",
+        "ephemeral_id": "c29e9e17-ba86-4877-8c1f-477c825c77ab",
+        "id": "32153630-b5af-4d10-8d44-6168dfbff6b9",
+        "name": "elastic-agent-21762",
         "type": "filebeat",
-        "version": "8.9.0"
+        "version": "8.15.0"
     },
     "asset": {
         "category": "entity",
-        "create_date": "2013-06-24T16:39:18.000Z",
-        "id": "00ub0oNGTSWTBKOLGLNR",
-        "last_seen": "2013-06-24T17:39:19.000Z",
-        "last_status_change_date": "2013-06-24T16:39:19.000Z",
-        "last_updated": "2013-07-02T21:36:25.344Z",
-        "status": "ACTIVE",
-        "type": "okta_user",
-        "vendor": "OKTA"
+        "type": "okta_user"
     },
     "data_stream": {
         "dataset": "entityanalytics_okta.user",
-        "namespace": "ep",
+        "namespace": "89318",
         "type": "logs"
     },
     "ecs": {
         "version": "8.11.0"
     },
     "elastic_agent": {
-        "id": "28086f58-96fe-486b-9ef2-4ca0bd13a4e5",
+        "id": "32153630-b5af-4d10-8d44-6168dfbff6b9",
         "snapshot": false,
-        "version": "8.9.0"
+        "version": "8.15.0"
     },
     "entityanalytics_okta": {
         "user": {
-            "activated": "2013-06-24T16:39:19.000Z",
-            "created": "2013-06-24T16:39:18.000Z",
             "credentials": {
-                "provider": {
-                    "name": "OKTA",
-                    "type": "OKTA"
+                "recovery_question": {
+                    "is_set": false
                 }
-            },
-            "id": "00ub0oNGTSWTBKOLGLNR",
-            "last_login": "2013-06-24T17:39:19.000Z",
-            "last_updated": "2013-07-02T21:36:25.344Z",
-            "password_changed": "2013-07-02T21:36:25.344Z",
-            "profile": {
-                "email": "isaac.brock@example.com",
-                "first_name": "Isaac",
-                "last_name": "Brock",
-                "login": "isaac.brock@example.com",
-                "mobile_phone": "555-415-1337"
-            },
-            "status": "ACTIVE",
-            "status_changed": "2013-06-24T16:39:19.000Z"
+            }
         }
     },
     "event": {
+        "action": "started",
         "agent_id_status": "verified",
         "category": [
             "iam"
         ],
         "dataset": "entityanalytics_okta.user",
-        "ingested": "2023-08-11T07:01:22Z",
+        "ingested": "2024-12-31T12:11:23Z",
         "kind": "asset",
+        "original": "{\"input\":{\"type\":\"entity-analytics\"},\"agent\":{\"name\":\"elastic-agent-21762\",\"id\":\"32153630-b5af-4d10-8d44-6168dfbff6b9\",\"type\":\"filebeat\",\"ephemeral_id\":\"c29e9e17-ba86-4877-8c1f-477c825c77ab\",\"version\":\"8.15.0\"},\"@timestamp\":\"2024-12-31T12:11:21.622Z\",\"ecs\":{\"version\":\"8.11.0\"},\"data_stream\":{\"namespace\":\"89318\",\"type\":\"logs\",\"dataset\":\"entityanalytics_okta.user\"},\"elastic_agent\":{\"id\":\"32153630-b5af-4d10-8d44-6168dfbff6b9\",\"version\":\"8.15.0\",\"snapshot\":false},\"event\":{\"start\":\"2024-12-31T12:11:21.622Z\",\"action\":\"started\",\"dataset\":\"entityanalytics_okta.user\"},\"tags\":[\"preserve_original_event\",\"preserve_duplicate_custom_fields\",\"forwarded\",\"entityanalytics_okta-user\"],\"labels\":{\"identity_source\":\"entity-analytics-entityanalytics_okta.user-2b35adb3-ef6b-4c4c-b0ae-6d53979a7e1e\"},\"_version_type\":\"internal\",\"_index\":\"logs-entityanalytics_okta.user-89318\",\"_id\":null,\"_version\":-4}",
+        "start": "2024-12-31T12:11:21.622Z",
         "type": [
             "user",
             "info"
@@ -211,45 +191,14 @@ An example event for `user` looks as following:
         "type": "entity-analytics"
     },
     "labels": {
-        "identity_source": "entity-analytics-entityanalytics_okta.user-418d01f7-61b7-4df5-8d71-9e0ce541334e"
-    },
-    "related": {
-        "user": [
-            "00ub0oNGTSWTBKOLGLNR",
-            "isaac.brock@example.com",
-            "Isaac",
-            "Brock"
-        ]
+        "identity_source": "entity-analytics-entityanalytics_okta.user-2b35adb3-ef6b-4c4c-b0ae-6d53979a7e1e"
     },
     "tags": [
+        "preserve_original_event",
         "preserve_duplicate_custom_fields",
         "forwarded",
         "entityanalytics_okta-user"
-    ],
-    "user": {
-        "account": {
-            "activated_date": "2013-06-24T16:39:19.000Z",
-            "change_date": "2013-06-24T16:39:19.000Z",
-            "create_date": "2013-06-24T16:39:18.000Z",
-            "password_change_date": "2013-07-02T21:36:25.344Z",
-            "status": {
-                "deprovisioned": false,
-                "locked_out": false,
-                "password_expired": false,
-                "recovery": false,
-                "suspended": false
-            }
-        },
-        "email": "isaac.brock@example.com",
-        "id": "00ub0oNGTSWTBKOLGLNR",
-        "name": "isaac.brock@example.com",
-        "profile": {
-            "first_name": "Isaac",
-            "last_name": "Brock",
-            "mobile_phone": "555-415-1337",
-            "status": "ACTIVE"
-        }
-    }
+    ]
 }
 ```
 

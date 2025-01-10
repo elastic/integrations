@@ -774,7 +774,6 @@ processors:
       target_field: event.original
       ignore_missing: true
       ignore_failure: true
-      if: ctx.tags?.contains('preserve_original_event') == true
   - remove:
       tag: remove_json
       field:
@@ -817,10 +816,37 @@ processors:
         - append:
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - script:
+      tag: script_to_truncate_long_fields
+      lang: painless
+      description: Truncate fields that are over length.
+      source: |-
+        def filterMassive(def src) {
+          if (src instanceof Map) {
+            for (def entry: src.entrySet()) {
+              entry.setValue(filterMassive(entry.getValue()));
+            }
+            return src;
+          } else if (src instanceof List) {
+            for (int i = 0; i < src.length; i++) {
+              src[i] = filterMassive(src[i]);
+            }
+            return src;
+          } else if (src instanceof String && src.length() > 32766) {
+            return src.substring(0, 32700)+' (truncated)';
+          }
+          return src;
+        }
+        filterMassive(ctx);
   - set:
       field: event.kind
       tag: set_event_kind_2
       value: pipeline_error
+      if: ctx.error?.message != null
+  - append:
+      field: tags
+      value: preserve_original_event
+      allow_duplicates: false
       if: ctx.error?.message != null
 on_failure:
   - append:
@@ -829,3 +855,7 @@ on_failure:
   - set:
       field: event.kind
       value: pipeline_error
+  - append:
+      field: tags
+      value: preserve_original_event
+      allow_duplicates: false
