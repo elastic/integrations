@@ -1307,49 +1307,62 @@ Note: Descriptions have not been filled out
 | `<topo_type>`        | aruba.vsf.topo_type                       |
 | `<type>`             | aruba.vsf.product_type                    |
 
-#### [VLAN events](https://www.arubanetworks.com/techdocs/AOS-CX/10.07/HTML/5200-8214/Content/events/VLAN.htm)
-| Field                | Description | Type | Common                       |
-|----------------------|-------------|------|------------------------------|
-| aruba.vlan.mac       |             |      | server.mac                   |
-| aruba.vlan.mode_from |             |      |                              |
-| aruba.vlan.mode_to   |             |      |                              |
-| aruba.vlan.port      |             |      | server.port                  |
-| aruba.vlan.vlan      |             |      | network.vlan.id              |
-| aruba.vlan.vid       |             |      | network.vlan.id              |
+#### [VLAN events](https://www.arubanetworks.com/techdocs/AOS-CX/10.15/HTML/elmrg/Content/events/VLAN.htm)
+| Docs Field     | Schema Mapping               |
+|----------------|------------------------------|
+| `<from>`       | aruba.vlan.from              |
+| `<intf_name>`  | aruba.interface.name         |
+| `<local_node>` | aruba.vlan.local_node        |
+| `<mac>`        | server.mac                   |
+| `<orig_vlan>`  | aruba.vlan.orig_vlan         |
+| `<port>`       | aruba.port                   |
+| `<port_name>`  | aruba.port                   |
+| `<prim_admin>` | aruba.vlan.prim_admin        |
+| `<prim_vid>`   | aruba.vlan.prim_vid          |
+| `<reason>`     | event.reason                 |
+| `<rst>`        | event.reason                 |
+| `<remote_node>`| aruba.vlan.remote_node       |
+| `<sec_admin>`  | aruba.vlan.sec_admin         |
+| `<sec_type>`   | aruba.vlan.sec_type          |
+| `<sec_vid>`    | aruba.vlan.sec_vid           |
+| `<to>`         | aruba.vlan.to                |
+| `<trans_vlan>` | aruba.vlan.trans_vlan        |
+| `<vlan>`       | network.vlan.id              |
+| `<vid>`        | network.vlan.id              |
 
-#### [VLAN Interface events](https://www.arubanetworks.com/techdocs/AOS-CX/10.07/HTML/5200-8214/Content/events/VLANINTERFACE.htm)
-| Field                | Description | Type | Common                       |
-|----------------------|-------------|------|------------------------------|
-| aruba.vlan.error     |             |      | error.message                |
-| aruba.vlan.interface |             |      | observer.ingress.interface.name |
-| aruba.vlan.vlan      |             |      | network.vlan.id              |
+#### [VLAN Interface events](https://www.arubanetworks.com/techdocs/AOS-CX/10.15/HTML/elmrg/Content/events/VLANINTERFACE.htm)
+| Docs Field    | Schema Mapping               |
+|---------------|------------------------------|
+| `<error>`     | event.reason                 |
+| `<interface>` | aruba.interface.id           |
+| `<vlan>`      | network.vlan.id              |
 
-#### [VRF events](https://www.arubanetworks.com/techdocs/AOS-CX/10.07/HTML/5200-8214/Content/events/VRF.htm)
-| Field                | Description | Type | Common                       |
-|----------------------|-------------|------|------------------------------|
-| aruba.vrf.vrf_name   |             |      | aruba.vrf.name               |
+#### [VRF events](https://www.arubanetworks.com/techdocs/AOS-CX/10.15/HTML/elmrg/Content/events/VRF.htm)
+| Docs Field   | Schema Mapping       |
+|--------------|----------------------|
+| `<vrf_name>` | aruba.vrf.name       |
 
-#### [VRF Manager events](https://www.arubanetworks.com/techdocs/AOS-CX/10.07/HTML/5200-8214/Content/events/VRF_MGR.htm)
-| Field                | Description | Type | Common                       |
-|----------------------|-------------|------|------------------------------|
-| aruba.vrf.vrf_entity |             |      | aruba.vrf.id                 |
+#### [VRF Manager events](https://www.arubanetworks.com/techdocs/AOS-CX/10.15/HTML/elmrg/Content/events/VRF_MGR.htm)
+| Docs Field     | Schema Mapping       |
+|----------------|----------------------|
+| `<vrf_entity>` | aruba.vrf.name       |
 
 #### [VRRP events](https://www.arubanetworks.com/techdocs/AOS-CX/10.07/HTML/5200-8214/Content/events/VRRP.htm)
-| Field                     | Description | Type | Common                       |
-|---------------------------|-------------|------|------------------------------|
-| aruba.vrrp.address        |             |      | service.address              |
-| aruba.vrrp.address_type   |             |      | service.type                 |
-| aruba.vrrp.delay_value    |             |      |                              |
-| aruba.vrrp.interface      |             |      | observer.ingress.interface.name |
-| aruba.vrrp.inet_type      |             |      |                              |
-| aruba.vrrp.interval_value |             |      |                              |
-| aruba.vrrp.mode_value     |             |      | event.action                 |
-| aruba.vrrp.new_state      |             |      | service.state                |
-| aruba.vrrp.old_state      |             |      |                              |
-| aruba.vrrp.priority_value |             |      | aruba.priority               |
-| aruba.vrrp.track          |             |      |                              |
-| aruba.vrrp.version_value  |             |      |                              |
-| aruba.vrrp.vrid           |             |      | aruba.instance.id            |
+| Docs Field        | Schema Mapping              |
+|-------------------|-----------------------------|
+| `<address>`       | service.address             |
+| `<interface>`     | aruba.interface.id          |
+| `<inet_type>`     | aruba.vrrp.inet_type        |
+| `<new_state>`     | aruba.state                 |
+| `<old_state>`     | aruba.vrrp.old_state        |
+| `<track>`         | aruba.vrrp.track            |
+| `<type>`          | aruba.vrrp.type             |
+| `<value>`         | service.version             |
+| `<value>`         | aruba.vrrp.delay            |
+| `<value>`         | aruba.vrrp.interval         |
+| `<value>`         | aruba.priority              |
+| `<value>`         | aruba.vrrp.mode             |
+| `<vrid>`          | aruba.instance.id           |
 
 
 #### [VSX Sync events](https://www.arubanetworks.com/techdocs/AOS-CX/10.07/HTML/5200-8214/Content/events/VSX_SYNC.htm)
