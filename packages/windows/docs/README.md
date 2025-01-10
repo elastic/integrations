@@ -34,7 +34,7 @@ to be fetched and which may vary across operating systems.
 ## Setup
 
 For step-by-step instructions on how to set up an integration,
-see the [Getting started](https://www.elastic.co/guide/en/welcome-to-elastic/current/getting-started-observability.html) guide.
+see the [Getting started](https://www.elastic.co/guide/en/starting-with-the-elasticsearch-platform-and-its-solutions/current/getting-started-observability.html) guide.
 
 Note: Because the Windows integration always applies to the local server, the `hosts` config option is not needed.
 
@@ -44,7 +44,7 @@ This integration allows you to seamlessly ingest data from a Splunk Enterprise i
 The integration uses the [`httpjson` input](https://www.elastic.co/guide/en/beats/filebeat/current/filebeat-input-httpjson.html) in Elastic Agent to run a Splunk search via the Splunk REST API and then extract the raw event from the results.
 The raw event is then processed via the Elastic Agent.
 You can customize both the Splunk search query and the interval between searches.
-For more information see [Ingest data from Splunk](https://www.elastic.co/guide/en/observability/current/ingest-splunk.html).
+For more information see [Ingest data from Splunk](https://www.elastic.co/guide/en/observability/current/splunk-get-started.html).
 
 Note: This integration requires Windows Events from Splunk to be in XML format.
 To achieve this, `renderXml` needs to be set to `1` in your [`inputs.conf`](https://docs.splunk.com/Documentation/Splunk/latest/Admin/Inputsconf) file.
