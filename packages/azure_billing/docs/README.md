@@ -136,7 +136,7 @@ If you want to learn more about this process, you can read these two general gui
 
 Add the Azure Billing Metrics integration in Kibana and specify settings.
 
-If you're new to integrations, you can find  step-by-step instructions on how to set up an integration in the [Getting started](https://www.elastic.co/guide/en/welcome-to-elastic/current/getting-started-observability.html) guide.
+If you're new to integrations, you can find  step-by-step instructions on how to set up an integration in the [Getting started](https://www.elastic.co/guide/en/starting-with-the-elasticsearch-platform-and-its-solutions/current/getting-started-observability.html) guide.
 
 #### Main options
 
