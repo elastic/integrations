@@ -46,9 +46,7 @@ program: |-
   	:
   		state.cursor.auth_cookie
   ).as(auth_cookie,
-  	// Check if there are no asset requests left to fetch
-  	(int(size(state.?cursor.asset_reqs.orValue([]))) == 0) ?
-  		// Fetching all workgroups because no assets are left to fetch
+  	(size(state.?cursor.asset_reqs.orValue([])) == 0) ?
   		request("GET", state.url.trim_suffix("/") + "/Workgroups").with(
   			{
   				"Header": {
@@ -86,7 +84,6 @@ program: |-
   				)
   		)
   	:
-  		// Fetching assets for the first workgroup in the list
   		{
   			"workgroup_id": state.cursor.asset_reqs[0][0],
   			"offset": state.cursor.asset_reqs[0][1],
@@ -110,7 +107,7 @@ program: |-
   					state.with(
   						{
   							"events": {"error": {"message": "Error in fetching assets", "statuscode": string(assetResp.StatusCode)}},
-  							"want_more": int(size(r.rest_workgroups)) > 0,
+  							"want_more": size(r.rest_workgroups) > 0,
   							"cursor": {
   								"auth_cookie": auth_cookie,
   								"asset_reqs": r.rest_workgroups,
@@ -119,7 +116,7 @@ program: |-
   					)
   				:
   					bytes(assetResp.Body).decode_json().as(assetBody,
-  						(int(size(assetBody.Data)) + int(r.offset) < int(assetBody.TotalCount)) ?
+  						(size(assetBody.Data) + int(r.offset) < int(assetBody.TotalCount)) ?
   							state.with(
   								{
   									"events": assetBody.Data.map(e,
@@ -131,7 +128,7 @@ program: |-
   									"want_more": true,
   									"cursor": {
   										"auth_cookie": auth_cookie,
-  										"asset_reqs": [[r.workgroup_id, int(r.offset) + int(size(assetBody.Data))]] + r.rest_workgroups,
+  										"asset_reqs": [[r.workgroup_id, int(r.offset) + size(assetBody.Data)]] + r.rest_workgroups,
   									},
   								}
   							)
@@ -144,7 +141,7 @@ program: |-
   											?"event.original": state.?preserve_original_event.orValue(false) ? optional.of(e.encode_json()) : optional.none(),
   										}
   									),
-  									"want_more": int(size(r.rest_workgroups)) > 0,
+  									"want_more": size(r.rest_workgroups) > 0,
   									"cursor": {
   										"auth_cookie": auth_cookie,
   										"asset_reqs": r.rest_workgroups,
