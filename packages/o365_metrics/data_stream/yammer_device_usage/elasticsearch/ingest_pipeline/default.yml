@@ -1,0 +1,91 @@
+---
+description: Pipeline for processing o365 yammer device usage metrics.
+processors:
+  - set:
+      field: ecs.version
+      value: "8.16.0"
+  - set:
+      copy_from: yammerdeviceusage
+      field: event.original
+      ignore_empty_value: true
+      if: ctx.event?.original == null && (ctx.tags != null && (ctx.tags.contains('preserve_original_event')))      
+  - json:
+      field: yammerdeviceusage
+      target_field: o365.metrics.yammer.device.usage
+      tag: json_decoding
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - script:
+      lang: painless
+      description: Replace spaces, dashes and bom character in field names under o365.metrics.yammer.device.usage.
+      tag: painless_purge_spaces_and_dashes
+      if: ctx.o365.metrics?.yammer.device.usage instanceof Map
+      source: |
+        String underscore(String s) {
+          String result = /[ -]/.matcher(s).replaceAll('_').toLowerCase();
+          return /[\ufeff]/.matcher(result).replaceAll('')
+        }
+        
+        def out = [:];
+        for (def item : ctx.o365.metrics.yammer.device.usage.entrySet()) {
+          out[underscore(item.getKey())] = item.getValue();
+        }
+        ctx.o365.metrics.yammer.device.usage = out;
+  - remove:
+      if: ctx.yammerdeviceusage != null
+      field: yammerdeviceusage
+      ignore_missing: true                               
+  - rename:
+      field: o365.metrics.yammer.device.usage.android_phone
+      target_field: o365.metrics.yammer.device.usage.android_phone.count
+      ignore_missing: true
+  - rename:
+      field: o365.metrics.yammer.device.usage.iphone
+      target_field: o365.metrics.yammer.device.usage.iphone.count
+      ignore_missing: true
+  - rename:
+      field: o365.metrics.yammer.device.usage.ipad
+      target_field: o365.metrics.yammer.device.usage.ipad.count
+      ignore_missing: true
+  - rename:
+      field: o365.metrics.yammer.device.usage.windows_phone
+      target_field: o365.metrics.yammer.device.usage.windows_phone.count
+      ignore_missing: true
+  - rename:
+      field: o365.metrics.yammer.device.usage.web
+      target_field: o365.metrics.yammer.device.usage.web.count
+      ignore_missing: true
+  - rename:
+      field: o365.metrics.yammer.device.usage.other
+      target_field: o365.metrics.yammer.device.usage.other.count
+      ignore_missing: true
+  - rename:
+      field: o365.metrics.yammer.device.usage.report_period
+      target_field: o365.metrics.yammer.device.usage.report.period.day
+      ignore_missing: true
+  - rename:
+      field: o365.metrics.yammer.device.usage.report_refresh_date
+      target_field: o365.metrics.yammer.device.usage.report.refresh_date
+      ignore_missing: true
+  - rename:
+      field: o365.metrics.yammer.device.usage.report_date
+      target_field: o365.metrics.yammer.device.usage.report.date
+      ignore_missing: true
+on_failure:
+  - set:
+      field: error.message
+      value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - append:
+      field: tags
+      value: preserve_original_event
+      allow_duplicates: false
+  - append:
+      field: event.kind
+      value: pipeline_error
+      allow_duplicates: false
+  - append:
+      field: event.type
+      value: error
+      if: ctx.error?.message != null
