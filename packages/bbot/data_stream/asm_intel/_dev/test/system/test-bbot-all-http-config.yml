@@ -1,0 +1,18 @@
+service: bbot-all-http
+service_notify_signal: SIGHUP
+input: http_endpoint
+policy_template: bbot
+data_stream:
+  vars:
+    listen_address: 0.0.0.0
+    listen_port: 8381
+    url: /bbot/ndjson
+    secret_header: Authorization
+    secret_value: abc123
+    preserve_original_event: true
+    preserve_duplicate_custom_fields: true
+    tags:
+      - forwarded
+      - bbot
+assert:
+  hit_count: 72
