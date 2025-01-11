@@ -665,7 +665,7 @@ Please refer to the following [document](https://www.elastic.co/guide/en/ecs/cur
 
 ### Viva Engage Groups Activity
 
-An example event for `viva_engage_groups_activity` looks as following:
+An example event for `viva_engage_groups_activity_group_detail` looks as following:
 
 ```json
 {

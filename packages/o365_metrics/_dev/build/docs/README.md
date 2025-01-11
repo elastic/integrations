@@ -86,10 +86,10 @@ Please refer to the following [document](https://www.elastic.co/guide/en/ecs/cur
 
 ### Viva Engage Groups Activity
 
-{{event "viva_engage_groups_activity"}}
+{{event "viva_engage_groups_activity_group_detail"}}
 
 **ECS Field Reference**
 
 Please refer to the following [document](https://www.elastic.co/guide/en/ecs/current/ecs-field-reference.html) for detailed information on ECS fields.
 
-{{fields "viva_engage_groups_activity"}}
+{{fields "viva_engage_groups_activity_group_detail"}}
