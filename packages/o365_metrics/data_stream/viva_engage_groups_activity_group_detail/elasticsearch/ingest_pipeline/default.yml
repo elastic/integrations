@@ -56,26 +56,8 @@ processors:
       field: json
       target_field: o365.metrics.viva_engage.groups_activity.group_detail
       ignore_missing: true
-  - fingerprint:
-      fields:
-        - o365.metrics.viva_engage.groups_activity.group_detail.report_refresh_date
-        - o365.metrics.viva_engage.groups_activity.group_detail.group_display_name
-        - o365.metrics.viva_engage.groups_activity.group_detail.last_activity_date
-      target_field: _id
-  - set:
-      field: group.name
-      tag: set_group_name
-      copy_from: o365.metrics.viva_engage.groups_activity.group_detail.group_display_name
-      if: ctx.o365.metrics.viva_engage?.groups_activity?.group_detail?.group_display_name != null
-      ignore_empty_value: true
-  - set:
-      field: user.group.name
-      tag: set_user_group_name
-      copy_from: group.name
-      ignore_empty_value: true
   - date:
       field: o365.metrics.viva_engage.groups_activity.group_detail.report_refresh_date
-      target_field: o365.metrics.viva_engage.groups_activity.group_detail.report_refresh_date
       tag: date_o365_metrics_viva_engage_groups_activity_group_detail_report_refresh_date
       if: ctx.o365.metrics.viva_engage?.groups_activity?.group_detail?.report_refresh_date != null && ctx.o365.metrics.viva_engage.groups_activity.group_detail.report_refresh_date != ''
       timezone: UTC
@@ -87,10 +69,14 @@ processors:
         - append:
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - rename:
+      field: o365.metrics.viva_engage.groups_activity.group_detail.report_refresh_date
+      target_field: o365.metrics.viva_engage.groups_activity.group_detail.report.refresh_date
+      ignore_missing: true
   - set:
       field: '@timestamp'
       tag: set_timestamp_from_report_refresh_date
-      copy_from: o365.metrics.viva_engage.groups_activity.group_detail.report_refresh_date
+      copy_from: o365.metrics.viva_engage.groups_activity.group_detail.report.refresh_date
       ignore_empty_value: true
   - date:
       field: o365.metrics.viva_engage.groups_activity.group_detail.last_activity_date
@@ -122,12 +108,32 @@ processors:
         - append:
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - rename:
+      field: o365.metrics.viva_engage.groups_activity.group_detail.report_period
+      target_field: o365.metrics.viva_engage.groups_activity.group_detail.report.period.day
+      ignore_missing: true
+  - set:
+      field: group.name
+      tag: set_group_name
+      copy_from: o365.metrics.viva_engage.groups_activity.group_detail.group_display_name
+      if: ctx.o365.metrics.viva_engage?.groups_activity?.group_detail?.group_display_name != null
+      ignore_empty_value: true
+  - set:
+      field: user.group.name
+      tag: set_user_group_name
+      copy_from: group.name
+      ignore_empty_value: true
+  - fingerprint:
+      fields:
+        - o365.metrics.viva_engage.groups_activity.group_detail.report.refresh_date
+        - group.name
+        - o365.metrics.viva_engage.groups_activity.group_detail.last_activity_date
+      target_field: _id
 
   # Convert _Count fields to long
   - convert:
       field: o365.metrics.viva_engage.groups_activity.group_detail.member_count
       tag: convert_o365_metrics_viva_engage_groups_activity_group_detail_member_count
-      target_field: o365.metrics.viva_engage.groups_activity.group_detail.member_count
       type: long
       if: ctx.o365.metrics.viva_engage?.groups_activity?.group_detail?.member_count != null && ctx.o365.metrics.viva_engage.groups_activity.group_detail.member_count != ''
       on_failure:
@@ -136,10 +142,13 @@ processors:
         - append:
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - rename:
+      field: o365.metrics.viva_engage.groups_activity.group_detail.member_count
+      target_field: o365.metrics.viva_engage.groups_activity.group_detail.member.count
+      ignore_missing: true
   - convert:
       field: o365.metrics.viva_engage.groups_activity.group_detail.liked_count
       tag: convert_o365_metrics_viva_engage_groups_activity_group_detail_liked_count
-      target_field: o365.metrics.viva_engage.groups_activity.group_detail.liked_count
       type: long
       if: ctx.o365.metrics.viva_engage?.groups_activity?.group_detail?.liked_count != null && ctx.o365.metrics.viva_engage.groups_activity.group_detail.liked_count != ''
       on_failure:
@@ -148,10 +157,13 @@ processors:
         - append:
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - rename:
+      field: o365.metrics.viva_engage.groups_activity.group_detail.liked_count
+      target_field: o365.metrics.viva_engage.groups_activity.group_detail.liked.count
+      ignore_missing: true
   - convert:
       field: o365.metrics.viva_engage.groups_activity.group_detail.posted_count
       tag: convert_o365_metrics_viva_engage_groups_activity_group_detail_posted_count
-      target_field: o365.metrics.viva_engage.groups_activity.group_detail.posted_count
       type: long
       if: ctx.o365.metrics.viva_engage?.groups_activity?.group_detail?.posted_count != null && ctx.o365.metrics.viva_engage.groups_activity.group_detail.posted_count != ''
       on_failure:
@@ -160,10 +172,13 @@ processors:
         - append:
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - rename:
+      field: o365.metrics.viva_engage.groups_activity.group_detail.posted_count
+      target_field: o365.metrics.viva_engage.groups_activity.group_detail.posted.count
+      ignore_missing: true
   - convert:
       field: o365.metrics.viva_engage.groups_activity.group_detail.read_count
       tag: convert_o365_metrics_viva_engage_groups_activity_group_detail_read_count
-      target_field: o365.metrics.viva_engage.groups_activity.group_detail.read_count
       type: long
       if: ctx.o365.metrics.viva_engage?.groups_activity?.group_detail?.read_count != null && ctx.o365.metrics.viva_engage.groups_activity.group_detail.read_count != ''
       on_failure:
@@ -172,29 +187,10 @@ processors:
         - append:
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
-
-  # Rename _count to .count
-  - rename:
-      field: o365.metrics.viva_engage.groups_activity.group_detail.member_count
-      target_field: o365.metrics.viva_engage.groups_activity.group_detail.member.count
-      tag: rename_o365_metrics_viva_engage_groups_activity_group_detail_member_count
-      ignore_missing: true
-  - rename:
-      field: o365.metrics.viva_engage.groups_activity.group_detail.liked_count
-      target_field: o365.metrics.viva_engage.groups_activity.group_detail.liked.count
-      tag: rename_o365_metrics_viva_engage_groups_activity_group_detail_liked_count
-      ignore_missing: true
-  - rename:
-      field: o365.metrics.viva_engage.groups_activity.group_detail.posted_count
-      target_field: o365.metrics.viva_engage.groups_activity.group_detail.posted.count
-      tag: rename_o365_metrics_viva_engage_groups_activity_group_detail_posted_count
-      ignore_missing: true
   - rename:
       field: o365.metrics.viva_engage.groups_activity.group_detail.read_count
       target_field: o365.metrics.viva_engage.groups_activity.group_detail.read.count
-      tag: rename_o365_metrics_viva_engage_groups_activity_group_detail_read_count
       ignore_missing: true
-
   - set:
       field: o365.metrics.viva_engage.groups_activity.group_detail.office_365_connected
       tag: set_o365_metrics_viva_engage_groups_activity_group_detail_office_365_connected_true
