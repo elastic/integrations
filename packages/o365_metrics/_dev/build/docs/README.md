@@ -84,7 +84,37 @@ Please refer to the following [document](https://www.elastic.co/guide/en/ecs/cur
 
 {{fields "active_users"}}
 
-### Viva Engage Groups Activity
+### Office365 Groups Activity Group Detail
+
+{{event "groups_activity_group_detail"}}
+
+**ECS Field Reference**
+
+Please refer to the following [document](https://www.elastic.co/guide/en/ecs/current/ecs-field-reference.html) for detailed information on ECS fields.
+
+{{fields "groups_activity_group_detail"}}
+
+### OneDrive Usage Account Detail
+
+{{event "onedrive_usage_account_detail"}}
+
+**ECS Field Reference**
+
+Please refer to the following [document](https://www.elastic.co/guide/en/ecs/current/ecs-field-reference.html) for detailed information on ECS fields.
+
+{{fields "onedrive_usage_account_detail"}}
+
+### Teams User Activity User Detail
+
+{{event "teams_user_activity_user_detail"}}
+
+**ECS Field Reference**
+
+Please refer to the following [document](https://www.elastic.co/guide/en/ecs/current/ecs-field-reference.html) for detailed information on ECS fields.
+
+{{fields "teams_user_activity_user_detail"}}
+
+### Viva Engage Groups Activity Group Detail
 
 {{event "viva_engage_groups_activity_group_detail"}}
 

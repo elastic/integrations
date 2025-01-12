@@ -54,69 +54,69 @@ processors:
         ctx.json = out;
   - rename:
       field: json
-      target_field: o365.metrics.viva_engage.groups_activity.group_detail
+      target_field: o365.metrics.viva_engage.groups.activity.group.detail
       ignore_missing: true
   - date:
-      field: o365.metrics.viva_engage.groups_activity.group_detail.report_refresh_date
+      field: o365.metrics.viva_engage.groups.activity.group.detail.report_refresh_date
       tag: date_o365_metrics_viva_engage_groups_activity_group_detail_report_refresh_date
-      if: ctx.o365.metrics.viva_engage?.groups_activity?.group_detail?.report_refresh_date != null && ctx.o365.metrics.viva_engage.groups_activity.group_detail.report_refresh_date != ''
+      if: ctx.o365.metrics.viva_engage?.groups?.activity?.group?.detail?.report_refresh_date != null && ctx.o365.metrics.viva_engage.groups.activity.group.detail.report_refresh_date != ''
       timezone: UTC
       formats:
         - yyyy-MM-dd
       on_failure:
         - remove:
-            field: o365.metrics.viva_engage.groups_activity.group_detail.report_refresh_date
+            field: o365.metrics.viva_engage.groups.activity.group.detail.report_refresh_date
         - append:
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - rename:
-      field: o365.metrics.viva_engage.groups_activity.group_detail.report_refresh_date
-      target_field: o365.metrics.viva_engage.groups_activity.group_detail.report.refresh_date
+      field: o365.metrics.viva_engage.groups.activity.group.detail.report_refresh_date
+      target_field: o365.metrics.viva_engage.groups.activity.group.detail.report.refresh_date
       ignore_missing: true
   - set:
       field: '@timestamp'
       tag: set_timestamp_from_report_refresh_date
-      copy_from: o365.metrics.viva_engage.groups_activity.group_detail.report.refresh_date
+      copy_from: o365.metrics.viva_engage.groups.activity.group.detail.report.refresh_date
       ignore_empty_value: true
   - date:
-      field: o365.metrics.viva_engage.groups_activity.group_detail.last_activity_date
-      target_field: o365.metrics.viva_engage.groups_activity.group_detail.last_activity_date
+      field: o365.metrics.viva_engage.groups.activity.group.detail.last_activity_date
+      target_field: o365.metrics.viva_engage.groups.activity.group.detail.last_activity_date
       tag: date_o365_metrics_viva_engage_groups_activity_group_detail_last_activity_date
-      if: ctx.o365.metrics.viva_engage?.groups_activity?.group_detail?.last_activity_date != null && ctx.o365.metrics.viva_engage.groups_activity.group_detail.last_activity_date != ''
+      if: ctx.o365.metrics.viva_engage?.groups?.activity?.group?.detail?.last_activity_date != null && ctx.o365.metrics.viva_engage.groups.activity.group.detail.last_activity_date != ''
       timezone: UTC
       formats:
         - yyyy-MM-dd
       on_failure:
         - remove:
-            field: o365.metrics.viva_engage.groups_activity.group_detail.last_activity_date
+            field: o365.metrics.viva_engage.groups.activity.group.detail.last_activity_date
         - append:
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - lowercase:
-      field: o365.metrics.viva_engage.groups_activity.group_detail.is_deleted
+      field: o365.metrics.viva_engage.groups.activity.group.detail.is_deleted
       tag: lowercase_o365_metrics_viva_engage_groups_activity_group_detail_is_deleted
-      if: ctx.o365.metrics.viva_engage?.groups_activity?.group_detail?.is_deleted != null && ctx.o365.metrics.viva_engage.groups_activity.group_detail.is_deleted != ''
+      if: ctx.o365.metrics.viva_engage?.groups?.activity?.group?.detail?.is_deleted != null && ctx.o365.metrics.viva_engage.groups.activity.group.detail.is_deleted != ''
   - convert:
-      field: o365.metrics.viva_engage.groups_activity.group_detail.is_deleted
+      field: o365.metrics.viva_engage.groups.activity.group.detail.is_deleted
       tag: convert_o365_metrics_viva_engage_groups_activity_group_detail_is_deleted
-      target_field: o365.metrics.viva_engage.groups_activity.group_detail.is_deleted
+      target_field: o365.metrics.viva_engage.groups.activity.group.detail.is_deleted
       type: boolean
-      if: ctx.o365.metrics.viva_engage?.groups_activity?.group_detail?.is_deleted != null && ctx.o365.metrics.viva_engage.groups_activity.group_detail.is_deleted != ''
+      if: ctx.o365.metrics.viva_engage?.groups?.activity?.group?.detail?.is_deleted != null && ctx.o365.metrics.viva_engage.groups.activity.group.detail.is_deleted != ''
       on_failure:
         - remove:
-            field: o365.metrics.viva_engage.groups_activity.group_detail.is_deleted
+            field: o365.metrics.viva_engage.groups.activity.group.detail.is_deleted
         - append:
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - rename:
-      field: o365.metrics.viva_engage.groups_activity.group_detail.report_period
-      target_field: o365.metrics.viva_engage.groups_activity.group_detail.report.period.day
+      field: o365.metrics.viva_engage.groups.activity.group.detail.report_period
+      target_field: o365.metrics.viva_engage.groups.activity.group.detail.report.period.day
       ignore_missing: true
   - set:
       field: group.name
       tag: set_group_name
-      copy_from: o365.metrics.viva_engage.groups_activity.group_detail.group_display_name
-      if: ctx.o365.metrics.viva_engage?.groups_activity?.group_detail?.group_display_name != null
+      copy_from: o365.metrics.viva_engage.groups.activity.group.detail.group_display_name
+      if: ctx.o365.metrics.viva_engage?.groups?.activity?.group?.detail?.group_display_name != null
       ignore_empty_value: true
   - set:
       field: user.group.name
@@ -125,102 +125,96 @@ processors:
       ignore_empty_value: true
   - fingerprint:
       fields:
-        - o365.metrics.viva_engage.groups_activity.group_detail.report.refresh_date
-        - group.name
-        - o365.metrics.viva_engage.groups_activity.group_detail.last_activity_date
+        - o365.metrics.viva_engage.groups.activity.group.detail.report.refresh_date
+        - o365.metrics.viva_engage.groups.activity.group.detail.group_display_name
+        - o365.metrics.viva_engage.groups.activity.group.detail.last_activity_date
       target_field: _id
 
   # Convert _Count fields to long
   - convert:
-      field: o365.metrics.viva_engage.groups_activity.group_detail.member_count
+      field: o365.metrics.viva_engage.groups.activity.group.detail.member_count
       tag: convert_o365_metrics_viva_engage_groups_activity_group_detail_member_count
       type: long
-      if: ctx.o365.metrics.viva_engage?.groups_activity?.group_detail?.member_count != null && ctx.o365.metrics.viva_engage.groups_activity.group_detail.member_count != ''
+      if: ctx.o365.metrics.viva_engage?.groups?.activity?.group?.detail?.member_count != null && ctx.o365.metrics.viva_engage.groups.activity.group.detail.member_count != ''
       on_failure:
         - remove:
-            field: o365.metrics.viva_engage.groups_activity.group_detail.member_count
+            field: o365.metrics.viva_engage.groups.activity.group.detail.member_count
         - append:
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - rename:
-      field: o365.metrics.viva_engage.groups_activity.group_detail.member_count
-      target_field: o365.metrics.viva_engage.groups_activity.group_detail.member.count
+      field: o365.metrics.viva_engage.groups.activity.group.detail.member_count
+      target_field: o365.metrics.viva_engage.groups.activity.group.detail.member.count
       ignore_missing: true
   - convert:
-      field: o365.metrics.viva_engage.groups_activity.group_detail.liked_count
+      field: o365.metrics.viva_engage.groups.activity.group.detail.liked_count
       tag: convert_o365_metrics_viva_engage_groups_activity_group_detail_liked_count
       type: long
-      if: ctx.o365.metrics.viva_engage?.groups_activity?.group_detail?.liked_count != null && ctx.o365.metrics.viva_engage.groups_activity.group_detail.liked_count != ''
+      if: ctx.o365.metrics.viva_engage?.groups?.activity?.group?.detail?.liked_count != null && ctx.o365.metrics.viva_engage.groups.activity.group.detail.liked_count != ''
       on_failure:
         - remove:
-            field: o365.metrics.viva_engage.groups_activity.group_detail.liked_count
+            field: o365.metrics.viva_engage.groups.activity.group.detail.liked_count
         - append:
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - rename:
-      field: o365.metrics.viva_engage.groups_activity.group_detail.liked_count
-      target_field: o365.metrics.viva_engage.groups_activity.group_detail.liked.count
+      field: o365.metrics.viva_engage.groups.activity.group.detail.liked_count
+      target_field: o365.metrics.viva_engage.groups.activity.group.detail.liked.count
       ignore_missing: true
   - convert:
-      field: o365.metrics.viva_engage.groups_activity.group_detail.posted_count
+      field: o365.metrics.viva_engage.groups.activity.group.detail.posted_count
       tag: convert_o365_metrics_viva_engage_groups_activity_group_detail_posted_count
       type: long
-      if: ctx.o365.metrics.viva_engage?.groups_activity?.group_detail?.posted_count != null && ctx.o365.metrics.viva_engage.groups_activity.group_detail.posted_count != ''
+      if: ctx.o365.metrics.viva_engage?.groups?.activity?.group?.detail?.posted_count != null && ctx.o365.metrics.viva_engage.groups.activity.group.detail.posted_count != ''
       on_failure:
         - remove:
-            field: o365.metrics.viva_engage.groups_activity.group_detail.posted_count
+            field: o365.metrics.viva_engage.groups.activity.group.detail.posted_count
         - append:
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - rename:
-      field: o365.metrics.viva_engage.groups_activity.group_detail.posted_count
-      target_field: o365.metrics.viva_engage.groups_activity.group_detail.posted.count
+      field: o365.metrics.viva_engage.groups.activity.group.detail.posted_count
+      target_field: o365.metrics.viva_engage.groups.activity.group.detail.posted.count
       ignore_missing: true
   - convert:
-      field: o365.metrics.viva_engage.groups_activity.group_detail.read_count
+      field: o365.metrics.viva_engage.groups.activity.group.detail.read_count
       tag: convert_o365_metrics_viva_engage_groups_activity_group_detail_read_count
       type: long
-      if: ctx.o365.metrics.viva_engage?.groups_activity?.group_detail?.read_count != null && ctx.o365.metrics.viva_engage.groups_activity.group_detail.read_count != ''
+      if: ctx.o365.metrics.viva_engage?.groups?.activity?.group?.detail?.read_count != null && ctx.o365.metrics.viva_engage.groups.activity.group.detail.read_count != ''
       on_failure:
         - remove:
-            field: o365.metrics.viva_engage.groups_activity.group_detail.read_count
+            field: o365.metrics.viva_engage.groups.activity.group.detail.read_count
         - append:
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - rename:
-      field: o365.metrics.viva_engage.groups_activity.group_detail.read_count
-      target_field: o365.metrics.viva_engage.groups_activity.group_detail.read.count
+      field: o365.metrics.viva_engage.groups.activity.group.detail.read_count
+      target_field: o365.metrics.viva_engage.groups.activity.group.detail.read.count
       ignore_missing: true
   - set:
-      field: o365.metrics.viva_engage.groups_activity.group_detail.office_365_connected
+      field: o365.metrics.viva_engage.groups.activity.group.detail.office_365_connected
       tag: set_o365_metrics_viva_engage_groups_activity_group_detail_office_365_connected_true
       value: 'true'
-      if: ctx.o365.metrics.viva_engage?.groups_activity?.group_detail?.office_365_connected != null && ctx.o365.metrics.viva_engage.groups_activity.group_detail.office_365_connected.toLowerCase() == 'yes'
+      if: ctx.o365.metrics.viva_engage?.groups?.activity?.group?.detail?.office_365_connected != null && ctx.o365.metrics.viva_engage.groups.activity.group.detail.office_365_connected.toLowerCase() == 'yes'
       ignore_empty_value: true
   - set:
-      field: o365.metrics.viva_engage.groups_activity.group_detail.office_365_connected
+      field: o365.metrics.viva_engage.groups.activity.group.detail.office_365_connected
       tag: set_o365_metrics_viva_engage_groups_activity_group_detail_office_365_connected_false
       value: 'false'
-      if: ctx.o365.metrics.viva_engage?.groups_activity?.group_detail?.office_365_connected != null && ctx.o365.metrics.viva_engage.groups_activity.group_detail.office_365_connected.toLowerCase() == 'no'
+      if: ctx.o365.metrics.viva_engage?.groups?.activity?.group?.detail?.office_365_connected != null && ctx.o365.metrics.viva_engage.groups.activity.group.detail.office_365_connected.toLowerCase() == 'no'
       ignore_empty_value: true
   - convert:
-      field: o365.metrics.viva_engage.groups_activity.group_detail.office_365_connected
+      field: o365.metrics.viva_engage.groups.activity.group.detail.office_365_connected
       tag: convert_o365_metrics_viva_engage_groups_activity_group_detail_office_365_connected
-      target_field: o365.metrics.viva_engage.groups_activity.group_detail.office_365_connected
+      target_field: o365.metrics.viva_engage.groups.activity.group.detail.office_365_connected
       type: boolean
-      if: ctx.o365.metrics.viva_engage?.groups_activity?.group_detail?.office_365_connected != null && ctx.o365.metrics.viva_engage.groups_activity.group_detail.office_365_connected != ''
+      if: ctx.o365.metrics.viva_engage?.groups?.activity?.group?.detail?.office_365_connected != null && ctx.o365.metrics.viva_engage.groups.activity.group.detail.office_365_connected != ''
       on_failure:
         - remove:
-            field: o365.metrics.viva_engage.groups_activity.group_detail.office_365_connected
+            field: o365.metrics.viva_engage.groups.activity.group.detail.office_365_connected
         - append:
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
-  - remove:
-      tag: remove_duplicate_custom_fields
-      if: ctx.tags == null || !ctx.tags.contains('preserve_duplicate_custom_fields')
-      field:
-        - o365.metrics.viva_engage.groups_activity.group_detail.group_display_name
-      ignore_missing: true
 
   # Cleanup
   - remove:

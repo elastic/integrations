@@ -148,7 +148,7 @@ processors:
       fields:
         - o365.metrics.onedrive.usage.account.detail.report.refresh_date
         - o365.metrics.onedrive.usage.account.detail.owner_display_name
-        - user.name
+        - o365.metrics.onedrive.usage.account.detail.owner_principal_name
         - o365.metrics.onedrive.usage.account.detail.last_activity_date
       target_field: _id
 
@@ -219,12 +219,6 @@ processors:
       field:
         - json
       tag: remove_temporary_fields
-      ignore_missing: true
-  - remove:
-      tag: remove_duplicate_custom_fields
-      if: ctx.tags == null || !ctx.tags.contains('preserve_duplicate_custom_fields')
-      field:
-        - o365.metrics.onedrive.usage.account.detail.owner_principal_name
       ignore_missing: true
   - script:
       lang: painless

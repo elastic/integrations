@@ -54,88 +54,88 @@ processors:
         ctx.json = out;
   - rename:
       field: json
-      target_field: o365.metrics.teams.user_activity.user_detail
+      target_field: o365.metrics.teams.user.activity.user.detail
       ignore_missing: true
   - rename:
-      field: o365.metrics.teams.user_activity.user_detail.report_period
-      target_field: o365.metrics.teams.user_activity.user_detail.report.period.day
+      field: o365.metrics.teams.user.activity.user.detail.report_period
+      target_field: o365.metrics.teams.user.activity.user.detail.report.period.day
       ignore_missing: true
   - date:
-      field: o365.metrics.teams.user_activity.user_detail.report_refresh_date
+      field: o365.metrics.teams.user.activity.user.detail.report_refresh_date
       tag: date_o365.metrics_teams_user_activity_user_detail_report_refresh_date
-      if: ctx.o365.metrics?.teams?.user_activity?.user_detail?.report_refresh_date != null && ctx.o365.metrics.teams.user_activity.user_detail.report_refresh_date != ''
+      if: ctx.o365.metrics?.teams?.user?.activity?.user?.detail?.report_refresh_date != null && ctx.o365.metrics.teams.user.activity.user.detail.report_refresh_date != ''
       timezone: UTC
       formats:
         - yyyy-MM-dd
       on_failure:
         - remove:
-            field: o365.metrics.teams.user_activity.user_detail.report_refresh_date
+            field: o365.metrics.teams.user.activity.user.detail.report_refresh_date
         - append:
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - rename:
-      field: o365.metrics.teams.user_activity.user_detail.report_refresh_date
-      target_field: o365.metrics.teams.user_activity.user_detail.report.refresh_date
+      field: o365.metrics.teams.user.activity.user.detail.report_refresh_date
+      target_field: o365.metrics.teams.user.activity.user.detail.report.refresh_date
       ignore_missing: true
   - set:
       field: '@timestamp'
       tag: set_timestamp_from_report_refresh_date
-      copy_from: o365.metrics.teams.user_activity.user_detail.report.refresh_date
+      copy_from: o365.metrics.teams.user.activity.user.detail.report.refresh_date
       ignore_empty_value: true
   - date:
-      field: o365.metrics.teams.user_activity.user_detail.last_activity_date
-      target_field: o365.metrics.teams.user_activity.user_detail.last_activity_date
+      field: o365.metrics.teams.user.activity.user.detail.last_activity_date
+      target_field: o365.metrics.teams.user.activity.user.detail.last_activity_date
       tag: date_o365.metrics_teams_user_activity_user_detail_last_activity_date
-      if: ctx.o365.metrics?.teams?.user_activity?.user_detail?.last_activity_date != null && ctx.o365.metrics.teams.user_activity.user_detail.last_activity_date != ''
+      if: ctx.o365.metrics?.teams?.user?.activity?.user?.detail?.last_activity_date != null && ctx.o365.metrics.teams.user.activity.user.detail.last_activity_date != ''
       timezone: UTC
       formats:
         - yyyy-MM-dd
       on_failure:
         - remove:
-            field: o365.metrics.teams.user_activity.user_detail.last_activity_date
+            field: o365.metrics.teams.user.activity.user.detail.last_activity_date
         - append:
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - lowercase:
-      field: o365.metrics.teams.user_activity.user_detail.is_deleted
+      field: o365.metrics.teams.user.activity.user.detail.is_deleted
       tag: lowercase_o365.metrics_teams_user_activity_user_detail_is_deleted
-      if: ctx.o365.metrics?.teams?.user_activity?.user_detail?.is_deleted != null && ctx.o365.metrics.teams.user_activity.user_detail.is_deleted != ''
+      if: ctx.o365.metrics?.teams?.user?.activity?.user?.detail?.is_deleted != null && ctx.o365.metrics.teams.user.activity.user.detail.is_deleted != ''
   - convert:
-      field: o365.metrics.teams.user_activity.user_detail.is_deleted
+      field: o365.metrics.teams.user.activity.user.detail.is_deleted
       tag: convert_o365.metrics_teams_user_activity_user_detail_is_deleted
-      target_field: o365.metrics.teams.user_activity.user_detail.is_deleted
+      target_field: o365.metrics.teams.user.activity.user.detail.is_deleted
       type: boolean
-      if: ctx.o365.metrics?.teams?.user_activity?.user_detail?.is_deleted != null && ctx.o365.metrics.teams.user_activity.user_detail.is_deleted != ''
+      if: ctx.o365.metrics?.teams?.user?.activity?.user?.detail?.is_deleted != null && ctx.o365.metrics.teams.user.activity.user.detail.is_deleted != ''
       on_failure:
         - remove:
-            field: o365.metrics.teams.user_activity.user_detail.is_deleted
+            field: o365.metrics.teams.user.activity.user.detail.is_deleted
         - append:
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - date:
-      field: o365.metrics.teams.user_activity.user_detail.deleted_date
-      target_field: o365.metrics.teams.user_activity.user_detail.deleted_date
+      field: o365.metrics.teams.user.activity.user.detail.deleted_date
+      target_field: o365.metrics.teams.user.activity.user.detail.deleted_date
       tag: date_o365.metrics_teams_user_activity_user_detail_deleted_date
-      if: ctx.o365.metrics?.teams?.user_activity?.user_detail?.deleted_date != null && ctx.o365.metrics.teams.user_activity.user_detail.deleted_date != ''
+      if: ctx.o365.metrics?.teams?.user?.activity?.user?.detail?.deleted_date != null && ctx.o365.metrics.teams.user.activity.user.detail.deleted_date != ''
       timezone: UTC
       formats:
         - yyyy-MM-dd
       on_failure:
         - remove:
-            field: o365.metrics.teams.user_activity.user_detail.deleted_date
+            field: o365.metrics.teams.user.activity.user.detail.deleted_date
         - append:
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - set:
       field: user.id
       tag: set_user_id
-      copy_from: o365.metrics.teams.user_activity.user_detail.user_id
+      copy_from: o365.metrics.teams.user.activity.user.detail.user_id
       ignore_empty_value: true
   - set:
       field: user.name
       tag: set_user_name
-      copy_from: o365.metrics.teams.user_activity.user_detail.user_principal_name
-      if: ctx.o365.metrics?.teams?.user_activity?.user_detail?.user_principal_name != null
+      copy_from: o365.metrics.teams.user.activity.user.detail.user_principal_name
+      if: ctx.o365.metrics?.teams?.user?.activity?.user?.detail?.user_principal_name != null
       ignore_empty_value: true
   - set:
       field: user.email
@@ -163,318 +163,318 @@ processors:
       if: ctx.user?.email != null
   - fingerprint:
       fields:
-        - o365.metrics.teams.user_activity.user_detail.report.refresh_date
-        - user.id
-        - user.name
-        - o365.metrics.teams.user_activity.user_detail.last_activity_date
+        - o365.metrics.teams.user.activity.user.detail.report.refresh_date
+        - o365.metrics.teams.user.activity.user.detail.user_id
+        - o365.metrics.teams.user.activity.user.detail.user_principal_name
+        - o365.metrics.teams.user.activity.user.detail.last_activity_date
       target_field: _id
 
   # Convert _Count fields to long
   - convert:
-      field: o365.metrics.teams.user_activity.user_detail.team_chat_message_count
+      field: o365.metrics.teams.user.activity.user.detail.team_chat_message_count
       tag: convert_o365.metrics_teams_user_activity_user_detail_team_chat_message_count
       type: long
-      if: ctx.o365.metrics?.teams?.user_activity?.user_detail?.team_chat_message_count != null && ctx.o365.metrics.teams.user_activity.user_detail.team_chat_message_count != ''
+      if: ctx.o365.metrics?.teams?.user?.activity?.user?.detail?.team_chat_message_count != null && ctx.o365.metrics.teams.user.activity.user.detail.team_chat_message_count != ''
       on_failure:
         - remove:
-            field: o365.metrics.teams.user_activity.user_detail.team_chat_message_count
+            field: o365.metrics.teams.user.activity.user.detail.team_chat_message_count
         - append:
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - rename:
-      field: o365.metrics.teams.user_activity.user_detail.team_chat_message_count
-      target_field: o365.metrics.teams.user_activity.user_detail.team_chat_message.count
+      field: o365.metrics.teams.user.activity.user.detail.team_chat_message_count
+      target_field: o365.metrics.teams.user.activity.user.detail.team_chat_message.count
       ignore_missing: true
   - convert:
-      field: o365.metrics.teams.user_activity.user_detail.private_chat_message_count
+      field: o365.metrics.teams.user.activity.user.detail.private_chat_message_count
       tag: convert_o365.metrics_teams_user_activity_user_detail_private_chat_message_count
       type: long
-      if: ctx.o365.metrics?.teams?.user_activity?.user_detail?.private_chat_message_count != null && ctx.o365.metrics.teams.user_activity.user_detail.private_chat_message_count != ''
+      if: ctx.o365.metrics?.teams?.user?.activity?.user?.detail?.private_chat_message_count != null && ctx.o365.metrics.teams.user.activity.user.detail.private_chat_message_count != ''
       on_failure:
         - remove:
-            field: o365.metrics.teams.user_activity.user_detail.private_chat_message_count
+            field: o365.metrics.teams.user.activity.user.detail.private_chat_message_count
         - append:
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - rename:
-      field: o365.metrics.teams.user_activity.user_detail.private_chat_message_count
-      target_field: o365.metrics.teams.user_activity.user_detail.private_chat_message.count
+      field: o365.metrics.teams.user.activity.user.detail.private_chat_message_count
+      target_field: o365.metrics.teams.user.activity.user.detail.private_chat_message.count
       ignore_missing: true
   - convert:
-      field: o365.metrics.teams.user_activity.user_detail.call_count
+      field: o365.metrics.teams.user.activity.user.detail.call_count
       tag: convert_o365.metrics_teams_user_activity_user_detail_call_count
       type: long
-      if: ctx.o365.metrics?.teams?.user_activity?.user_detail?.call_count != null && ctx.o365.metrics.teams.user_activity.user_detail.call_count != ''
+      if: ctx.o365.metrics?.teams?.user?.activity?.user?.detail?.call_count != null && ctx.o365.metrics.teams.user.activity.user.detail.call_count != ''
       on_failure:
         - remove:
-            field: o365.metrics.teams.user_activity.user_detail.call_count
+            field: o365.metrics.teams.user.activity.user.detail.call_count
         - append:
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - rename:
-      field: o365.metrics.teams.user_activity.user_detail.call_count
-      target_field: o365.metrics.teams.user_activity.user_detail.call.count
+      field: o365.metrics.teams.user.activity.user.detail.call_count
+      target_field: o365.metrics.teams.user.activity.user.detail.call.count
       ignore_missing: true
   - convert:
-      field: o365.metrics.teams.user_activity.user_detail.meeting_count
+      field: o365.metrics.teams.user.activity.user.detail.meeting_count
       tag: convert_o365.metrics_teams_user_activity_user_detail_meeting_count
       type: long
-      if: ctx.o365.metrics?.teams?.user_activity?.user_detail?.meeting_count != null && ctx.o365.metrics.teams.user_activity.user_detail.meeting_count != ''
+      if: ctx.o365.metrics?.teams?.user?.activity?.user?.detail?.meeting_count != null && ctx.o365.metrics.teams.user.activity.user.detail.meeting_count != ''
       on_failure:
         - remove:
-            field: o365.metrics.teams.user_activity.user_detail.meeting_count
+            field: o365.metrics.teams.user.activity.user.detail.meeting_count
         - append:
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - rename:
-      field: o365.metrics.teams.user_activity.user_detail.meeting_count
-      target_field: o365.metrics.teams.user_activity.user_detail.meeting.count
+      field: o365.metrics.teams.user.activity.user.detail.meeting_count
+      target_field: o365.metrics.teams.user.activity.user.detail.meeting.count
       ignore_missing: true
   - convert:
-      field: o365.metrics.teams.user_activity.user_detail.meetings_organized_count
+      field: o365.metrics.teams.user.activity.user.detail.meetings_organized_count
       tag: convert_o365.metrics_teams_user_activity_user_detail_meetings_organized_count
       type: long
-      if: ctx.o365.metrics?.teams?.user_activity?.user_detail?.meetings_organized_count != null && ctx.o365.metrics.teams.user_activity.user_detail.meetings_organized_count != ''
+      if: ctx.o365.metrics?.teams?.user?.activity?.user?.detail?.meetings_organized_count != null && ctx.o365.metrics.teams.user.activity.user.detail.meetings_organized_count != ''
       on_failure:
         - remove:
-            field: o365.metrics.teams.user_activity.user_detail.meetings_organized_count
+            field: o365.metrics.teams.user.activity.user.detail.meetings_organized_count
         - append:
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - rename:
-      field: o365.metrics.teams.user_activity.user_detail.meetings_organized_count
-      target_field: o365.metrics.teams.user_activity.user_detail.meetings_organized.count
+      field: o365.metrics.teams.user.activity.user.detail.meetings_organized_count
+      target_field: o365.metrics.teams.user.activity.user.detail.meetings_organized.count
       ignore_missing: true
   - convert:
-      field: o365.metrics.teams.user_activity.user_detail.meetings_attended_count
+      field: o365.metrics.teams.user.activity.user.detail.meetings_attended_count
       tag: convert_o365.metrics_teams_user_activity_user_detail_meetings_attended_count
       type: long
-      if: ctx.o365.metrics?.teams?.user_activity?.user_detail?.meetings_attended_count != null && ctx.o365.metrics.teams.user_activity.user_detail.meetings_attended_count != ''
+      if: ctx.o365.metrics?.teams?.user?.activity?.user?.detail?.meetings_attended_count != null && ctx.o365.metrics.teams.user.activity.user.detail.meetings_attended_count != ''
       on_failure:
         - remove:
-            field: o365.metrics.teams.user_activity.user_detail.meetings_attended_count
+            field: o365.metrics.teams.user.activity.user.detail.meetings_attended_count
         - append:
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - rename:
-      field: o365.metrics.teams.user_activity.user_detail.meetings_attended_count
-      target_field: o365.metrics.teams.user_activity.user_detail.meetings_attended.count
+      field: o365.metrics.teams.user.activity.user.detail.meetings_attended_count
+      target_field: o365.metrics.teams.user.activity.user.detail.meetings_attended.count
       ignore_missing: true
   - convert:
-      field: o365.metrics.teams.user_activity.user_detail.ad_hoc_meetings_organized_count
+      field: o365.metrics.teams.user.activity.user.detail.ad_hoc_meetings_organized_count
       tag: convert_o365.metrics_teams_user_activity_user_detail_ad_hoc_meetings_organized_count
       type: long
-      if: ctx.o365.metrics?.teams?.user_activity?.user_detail?.ad_hoc_meetings_organized_count != null && ctx.o365.metrics.teams.user_activity.user_detail.ad_hoc_meetings_organized_count != ''
+      if: ctx.o365.metrics?.teams?.user?.activity?.user?.detail?.ad_hoc_meetings_organized_count != null && ctx.o365.metrics.teams.user.activity.user.detail.ad_hoc_meetings_organized_count != ''
       on_failure:
         - remove:
-            field: o365.metrics.teams.user_activity.user_detail.ad_hoc_meetings_organized_count
+            field: o365.metrics.teams.user.activity.user.detail.ad_hoc_meetings_organized_count
         - append:
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - rename:
-      field: o365.metrics.teams.user_activity.user_detail.ad_hoc_meetings_organized_count
-      target_field: o365.metrics.teams.user_activity.user_detail.ad_hoc_meetings_organized.count
+      field: o365.metrics.teams.user.activity.user.detail.ad_hoc_meetings_organized_count
+      target_field: o365.metrics.teams.user.activity.user.detail.ad_hoc_meetings_organized.count
       ignore_missing: true
   - convert:
-      field: o365.metrics.teams.user_activity.user_detail.ad_hoc_meetings_attended_count
+      field: o365.metrics.teams.user.activity.user.detail.ad_hoc_meetings_attended_count
       tag: convert_o365.metrics_teams_user_activity_user_detail_ad_hoc_meetings_attended_count
       type: long
-      if: ctx.o365.metrics?.teams?.user_activity?.user_detail?.ad_hoc_meetings_attended_count != null && ctx.o365.metrics.teams.user_activity.user_detail.ad_hoc_meetings_attended_count != ''
+      if: ctx.o365.metrics?.teams?.user?.activity?.user?.detail?.ad_hoc_meetings_attended_count != null && ctx.o365.metrics.teams.user.activity.user.detail.ad_hoc_meetings_attended_count != ''
       on_failure:
         - remove:
-            field: o365.metrics.teams.user_activity.user_detail.ad_hoc_meetings_attended_count
+            field: o365.metrics.teams.user.activity.user.detail.ad_hoc_meetings_attended_count
         - append:
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - rename:
-      field: o365.metrics.teams.user_activity.user_detail.ad_hoc_meetings_attended_count
-      target_field: o365.metrics.teams.user_activity.user_detail.ad_hoc_meetings_attended.count
+      field: o365.metrics.teams.user.activity.user.detail.ad_hoc_meetings_attended_count
+      target_field: o365.metrics.teams.user.activity.user.detail.ad_hoc_meetings_attended.count
       ignore_missing: true
   - convert:
-      field: o365.metrics.teams.user_activity.user_detail.scheduled_one_time_meetings_organized_count
+      field: o365.metrics.teams.user.activity.user.detail.scheduled_one_time_meetings_organized_count
       tag: convert_o365.metrics_teams_user_activity_user_detail_scheduled_one_time_meetings_organized_count
       type: long
-      if: ctx.o365.metrics?.teams?.user_activity?.user_detail?.scheduled_one_time_meetings_organized_count != null && ctx.o365.metrics.teams.user_activity.user_detail.scheduled_one_time_meetings_organized_count != ''
+      if: ctx.o365.metrics?.teams?.user?.activity?.user?.detail?.scheduled_one_time_meetings_organized_count != null && ctx.o365.metrics.teams.user.activity.user.detail.scheduled_one_time_meetings_organized_count != ''
       on_failure:
         - remove:
-            field: o365.metrics.teams.user_activity.user_detail.scheduled_one_time_meetings_organized_count
+            field: o365.metrics.teams.user.activity.user.detail.scheduled_one_time_meetings_organized_count
         - append:
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - rename:
-      field: o365.metrics.teams.user_activity.user_detail.scheduled_one_time_meetings_organized_count
-      target_field: o365.metrics.teams.user_activity.user_detail.scheduled_one_time_meetings_organized.count
+      field: o365.metrics.teams.user.activity.user.detail.scheduled_one_time_meetings_organized_count
+      target_field: o365.metrics.teams.user.activity.user.detail.scheduled_one_time_meetings_organized.count
       ignore_missing: true
   - convert:
-      field: o365.metrics.teams.user_activity.user_detail.scheduled_one_time_meetings_attended_count
+      field: o365.metrics.teams.user.activity.user.detail.scheduled_one_time_meetings_attended_count
       tag: convert_o365.metrics_teams_user_activity_user_detail_scheduled_one_time_meetings_attended_count
       type: long
-      if: ctx.o365.metrics?.teams?.user_activity?.user_detail?.scheduled_one_time_meetings_attended_count != null && ctx.o365.metrics.teams.user_activity.user_detail.scheduled_one_time_meetings_attended_count != ''
+      if: ctx.o365.metrics?.teams?.user?.activity?.user?.detail?.scheduled_one_time_meetings_attended_count != null && ctx.o365.metrics.teams.user.activity.user.detail.scheduled_one_time_meetings_attended_count != ''
       on_failure:
         - remove:
-            field: o365.metrics.teams.user_activity.user_detail.scheduled_one_time_meetings_attended_count
+            field: o365.metrics.teams.user.activity.user.detail.scheduled_one_time_meetings_attended_count
         - append:
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - rename:
-      field: o365.metrics.teams.user_activity.user_detail.scheduled_one_time_meetings_attended_count
-      target_field: o365.metrics.teams.user_activity.user_detail.scheduled_one_time_meetings_attended.count
+      field: o365.metrics.teams.user.activity.user.detail.scheduled_one_time_meetings_attended_count
+      target_field: o365.metrics.teams.user.activity.user.detail.scheduled_one_time_meetings_attended.count
       ignore_missing: true
   - convert:
-      field: o365.metrics.teams.user_activity.user_detail.scheduled_recurring_meetings_organized_count
+      field: o365.metrics.teams.user.activity.user.detail.scheduled_recurring_meetings_organized_count
       tag: convert_o365.metrics_teams_user_activity_user_detail_scheduled_recurring_meetings_organized_count
       type: long
-      if: ctx.o365.metrics?.teams?.user_activity?.user_detail?.scheduled_recurring_meetings_organized_count != null && ctx.o365.metrics.teams.user_activity.user_detail.scheduled_recurring_meetings_organized_count != ''
+      if: ctx.o365.metrics?.teams?.user?.activity?.user?.detail?.scheduled_recurring_meetings_organized_count != null && ctx.o365.metrics.teams.user.activity.user.detail.scheduled_recurring_meetings_organized_count != ''
       on_failure:
         - remove:
-            field: o365.metrics.teams.user_activity.user_detail.scheduled_recurring_meetings_organized_count
+            field: o365.metrics.teams.user.activity.user.detail.scheduled_recurring_meetings_organized_count
         - append:
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - rename:
-      field: o365.metrics.teams.user_activity.user_detail.scheduled_recurring_meetings_organized_count
-      target_field: o365.metrics.teams.user_activity.user_detail.scheduled_recurring_meetings_organized.count
+      field: o365.metrics.teams.user.activity.user.detail.scheduled_recurring_meetings_organized_count
+      target_field: o365.metrics.teams.user.activity.user.detail.scheduled_recurring_meetings_organized.count
       ignore_missing: true
   - convert:
-      field: o365.metrics.teams.user_activity.user_detail.scheduled_recurring_meetings_attended_count
+      field: o365.metrics.teams.user.activity.user.detail.scheduled_recurring_meetings_attended_count
       tag: convert_o365.metrics_teams_user_activity_user_detail_scheduled_recurring_meetings_attended_count
       type: long
-      if: ctx.o365.metrics?.teams?.user_activity?.user_detail?.scheduled_recurring_meetings_attended_count != null && ctx.o365.metrics.teams.user_activity.user_detail.scheduled_recurring_meetings_attended_count != ''
+      if: ctx.o365.metrics?.teams?.user?.activity?.user?.detail?.scheduled_recurring_meetings_attended_count != null && ctx.o365.metrics.teams.user.activity.user.detail.scheduled_recurring_meetings_attended_count != ''
       on_failure:
         - remove:
-            field: o365.metrics.teams.user_activity.user_detail.scheduled_recurring_meetings_attended_count
+            field: o365.metrics.teams.user.activity.user.detail.scheduled_recurring_meetings_attended_count
         - append:
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - rename:
-      field: o365.metrics.teams.user_activity.user_detail.scheduled_recurring_meetings_attended_count
-      target_field: o365.metrics.teams.user_activity.user_detail.scheduled_recurring_meetings_attended.count
+      field: o365.metrics.teams.user.activity.user.detail.scheduled_recurring_meetings_attended_count
+      target_field: o365.metrics.teams.user.activity.user.detail.scheduled_recurring_meetings_attended.count
       ignore_missing: true
 
   # Convert _Seconds fields to long
   - rename:
-      field: o365.metrics.teams.user_activity.user_detail.audio_duration
-      target_field: o365.metrics.teams.user_activity.user_detail.audio_duration.formatted
+      field: o365.metrics.teams.user.activity.user.detail.audio_duration
+      target_field: o365.metrics.teams.user.activity.user.detail.audio_duration.formatted
       ignore_missing: true
   - rename:
-      field: o365.metrics.teams.user_activity.user_detail.video_duration
-      target_field: o365.metrics.teams.user_activity.user_detail.video_duration.formatted
+      field: o365.metrics.teams.user.activity.user.detail.video_duration
+      target_field: o365.metrics.teams.user.activity.user.detail.video_duration.formatted
       ignore_missing: true
   - rename:
-      field: o365.metrics.teams.user_activity.user_detail.screen_share_duration
-      target_field: o365.metrics.teams.user_activity.user_detail.screen_share_duration.formatted
+      field: o365.metrics.teams.user.activity.user.detail.screen_share_duration
+      target_field: o365.metrics.teams.user.activity.user.detail.screen_share_duration.formatted
       ignore_missing: true
   - convert:
-      field: o365.metrics.teams.user_activity.user_detail.audio_duration_in_seconds
+      field: o365.metrics.teams.user.activity.user.detail.audio_duration_in_seconds
       tag: convert_o365.metrics_teams_user_activity_user_detail_audio_duration_in_seconds
       type: long
-      if: ctx.o365.metrics?.teams?.user_activity?.user_detail?.audio_duration_in_seconds != null && ctx.o365.metrics.teams.user_activity.user_detail.audio_duration_in_seconds != ''
+      if: ctx.o365.metrics?.teams?.user?.activity?.user?.detail?.audio_duration_in_seconds != null && ctx.o365.metrics.teams.user.activity.user.detail.audio_duration_in_seconds != ''
       on_failure:
         - remove:
-            field: o365.metrics.teams.user_activity.user_detail.audio_duration_in_seconds
+            field: o365.metrics.teams.user.activity.user.detail.audio_duration_in_seconds
         - append:
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - rename:
-      field: o365.metrics.teams.user_activity.user_detail.audio_duration_in_seconds
-      target_field: o365.metrics.teams.user_activity.user_detail.audio_duration.seconds
+      field: o365.metrics.teams.user.activity.user.detail.audio_duration_in_seconds
+      target_field: o365.metrics.teams.user.activity.user.detail.audio_duration.seconds
       ignore_missing: true
   - convert:
-      field: o365.metrics.teams.user_activity.user_detail.video_duration_in_seconds
+      field: o365.metrics.teams.user.activity.user.detail.video_duration_in_seconds
       tag: convert_o365.metrics_teams_user_activity_user_detail_video_duration_in_seconds
       type: long
-      if: ctx.o365.metrics?.teams?.user_activity?.user_detail?.video_duration_in_seconds != null && ctx.o365.metrics.teams.user_activity.user_detail.video_duration_in_seconds != ''
+      if: ctx.o365.metrics?.teams?.user?.activity?.user?.detail?.video_duration_in_seconds != null && ctx.o365.metrics.teams.user.activity.user.detail.video_duration_in_seconds != ''
       on_failure:
         - remove:
-            field: o365.metrics.teams.user_activity.user_detail.video_duration_in_seconds
+            field: o365.metrics.teams.user.activity.user.detail.video_duration_in_seconds
         - append:
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - rename:
-      field: o365.metrics.teams.user_activity.user_detail.video_duration_in_seconds
-      target_field: o365.metrics.teams.user_activity.user_detail.video_duration.seconds
+      field: o365.metrics.teams.user.activity.user.detail.video_duration_in_seconds
+      target_field: o365.metrics.teams.user.activity.user.detail.video_duration.seconds
       ignore_missing: true
   - convert:
-      field: o365.metrics.teams.user_activity.user_detail.screen_share_duration_in_seconds
+      field: o365.metrics.teams.user.activity.user.detail.screen_share_duration_in_seconds
       tag: convert_o365.metrics_teams_user_activity_user_detail_screen_share_duration_in_seconds
       type: long
-      if: ctx.o365.metrics?.teams?.user_activity?.user_detail?.screen_share_duration_in_seconds != null && ctx.o365.metrics.teams.user_activity.user_detail.screen_share_duration_in_seconds != ''
+      if: ctx.o365.metrics?.teams?.user?.activity?.user?.detail?.screen_share_duration_in_seconds != null && ctx.o365.metrics.teams.user.activity.user.detail.screen_share_duration_in_seconds != ''
       on_failure:
         - remove:
-            field: o365.metrics.teams.user_activity.user_detail.screen_share_duration_in_seconds
+            field: o365.metrics.teams.user.activity.user.detail.screen_share_duration_in_seconds
         - append:
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - rename:
-      field: o365.metrics.teams.user_activity.user_detail.screen_share_duration_in_seconds
-      target_field: o365.metrics.teams.user_activity.user_detail.screen_share_duration.seconds
+      field: o365.metrics.teams.user.activity.user.detail.screen_share_duration_in_seconds
+      target_field: o365.metrics.teams.user.activity.user.detail.screen_share_duration.seconds
       ignore_missing: true
   # Convert _Messages fields to long
   - convert:
-      field: o365.metrics.teams.user_activity.user_detail.urgent_messages
+      field: o365.metrics.teams.user.activity.user.detail.urgent_messages
       tag: convert_o365.metrics_teams_user_activity_user_detail_urgent_messages
       type: long
-      if: ctx.o365.metrics?.teams?.user_activity?.user_detail?.urgent_messages != null && ctx.o365.metrics.teams.user_activity.user_detail.urgent_messages != ''
+      if: ctx.o365.metrics?.teams?.user?.activity?.user?.detail?.urgent_messages != null && ctx.o365.metrics.teams.user.activity.user.detail.urgent_messages != ''
       on_failure:
         - remove:
-            field: o365.metrics.teams.user_activity.user_detail.urgent_messages
+            field: o365.metrics.teams.user.activity.user.detail.urgent_messages
         - append:
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - rename:
-      field: o365.metrics.teams.user_activity.user_detail.urgent_messages
-      target_field: o365.metrics.teams.user_activity.user_detail.urgent_messages.count
+      field: o365.metrics.teams.user.activity.user.detail.urgent_messages
+      target_field: o365.metrics.teams.user.activity.user.detail.urgent_messages.count
       ignore_missing: true
   - convert:
-      field: o365.metrics.teams.user_activity.user_detail.post_messages
+      field: o365.metrics.teams.user.activity.user.detail.post_messages
       tag: convert_o365.metrics_teams_user_activity_user_detail_post_messages
       type: long
-      if: ctx.o365.metrics?.teams?.user_activity?.user_detail?.post_messages != null && ctx.o365.metrics.teams.user_activity.user_detail.post_messages != ''
+      if: ctx.o365.metrics?.teams?.user?.activity?.user?.detail?.post_messages != null && ctx.o365.metrics.teams.user.activity.user.detail.post_messages != ''
       on_failure:
         - remove:
-            field: o365.metrics.teams.user_activity.user_detail.post_messages
+            field: o365.metrics.teams.user.activity.user.detail.post_messages
         - append:
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - rename:
-      field: o365.metrics.teams.user_activity.user_detail.post_messages
-      target_field: o365.metrics.teams.user_activity.user_detail.post_messages.count
+      field: o365.metrics.teams.user.activity.user.detail.post_messages
+      target_field: o365.metrics.teams.user.activity.user.detail.post_messages.count
       ignore_missing: true
   - convert:
-      field: o365.metrics.teams.user_activity.user_detail.reply_messages
+      field: o365.metrics.teams.user.activity.user.detail.reply_messages
       tag: convert_o365.metrics_teams_user_activity_user_detail_reply_messages
       type: long
-      if: ctx.o365.metrics?.teams?.user_activity?.user_detail?.reply_messages != null && ctx.o365.metrics.teams.user_activity.user_detail.reply_messages != ''
+      if: ctx.o365.metrics?.teams?.user?.activity?.user?.detail?.reply_messages != null && ctx.o365.metrics.teams.user.activity.user.detail.reply_messages != ''
       on_failure:
         - remove:
-            field: o365.metrics.teams.user_activity.user_detail.reply_messages
+            field: o365.metrics.teams.user.activity.user.detail.reply_messages
         - append:
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - rename:
-      field: o365.metrics.teams.user_activity.user_detail.reply_messages
-      target_field: o365.metrics.teams.user_activity.user_detail.reply_messages.count
+      field: o365.metrics.teams.user.activity.user.detail.reply_messages
+      target_field: o365.metrics.teams.user.activity.user.detail.reply_messages.count
       ignore_missing: true
   - set:
-      field: o365.metrics.teams.user_activity.user_detail.is_licensed
+      field: o365.metrics.teams.user.activity.user.detail.is_licensed
       tag: set_o365.metrics_teams_user_activity_user_detail_is_licensed_true
       value: 'true'
-      if: ctx.o365.metrics?.teams?.user_activity?.user_detail?.is_licensed != null && ctx.o365.metrics.teams.user_activity.user_detail.is_licensed.toLowerCase() == 'yes'
+      if: ctx.o365.metrics?.teams?.user?.activity?.user?.detail?.is_licensed != null && ctx.o365.metrics.teams.user.activity.user.detail.is_licensed.toLowerCase() == 'yes'
       ignore_empty_value: true
   - set:
-      field: o365.metrics.teams.user_activity.user_detail.is_licensed
+      field: o365.metrics.teams.user.activity.user.detail.is_licensed
       tag: set_o365.metrics_teams_user_activity_user_detail_is_licensed_false
       value: 'false'
-      if: ctx.o365.metrics?.teams?.user_activity?.user_detail?.is_licensed != null && ctx.o365.metrics.teams.user_activity.user_detail.is_licensed.toLowerCase() == 'no'
+      if: ctx.o365.metrics?.teams?.user?.activity?.user?.detail?.is_licensed != null && ctx.o365.metrics.teams.user.activity.user.detail.is_licensed.toLowerCase() == 'no'
       ignore_empty_value: true
   - convert:
-      field: o365.metrics.teams.user_activity.user_detail.is_licensed
+      field: o365.metrics.teams.user.activity.user.detail.is_licensed
       tag: convert_o365.metrics_teams_user_activity_user_detail_is_licensed
       type: boolean
-      if: ctx.o365.metrics?.teams?.user_activity?.user_detail?.is_licensed != null && ctx.o365.metrics.teams.user_activity.user_detail.is_licensed != ''
+      if: ctx.o365.metrics?.teams?.user?.activity?.user?.detail?.is_licensed != null && ctx.o365.metrics.teams.user.activity.user.detail.is_licensed != ''
       on_failure:
         - remove:
-            field: o365.metrics.teams.user_activity.user_detail.is_licensed
+            field: o365.metrics.teams.user.activity.user.detail.is_licensed
         - append:
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
@@ -484,13 +484,6 @@ processors:
       field:
         - json
       tag: remove_temporary_fields
-      ignore_missing: true
-  - remove:
-      tag: remove_duplicate_custom_fields
-      if: ctx.tags == null || !ctx.tags.contains('preserve_duplicate_custom_fields')
-      field:
-        - o365.metrics.teams.user_activity.user_detail.user_id
-        - o365.metrics.teams.user_activity.user_detail.user_principal_name
       ignore_missing: true
   - script:
       lang: painless

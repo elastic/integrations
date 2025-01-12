@@ -1,4 +1,4 @@
-# Transform name cannot be longer than 64 characters. It is shortened.
+# Transform name is shortened to less than 64 characters.
 # Use of "*" to use all namespaces defined.
 source:
   index:
@@ -9,7 +9,7 @@ source:
         - exists:
             field: o365.metrics.report.name
         - term:
-            o365.metrics.report.name: 'Microsoft Teams User Activity User Detail'
+            o365.metrics.report.name: 'Teams User Activity User Detail'
 # The version suffix on the dest.index should be incremented if a breaking
 # change is made to the index mapping. You must also bump the
 # fleet_transform_version for any change to this transform configuration to
@@ -24,12 +24,12 @@ dest:
       move_on_creation: true
 latest:
   unique_key:
-    - o365.metrics.teams.user_activity.user_detail.report.refresh_date
-    - user.id
-    - user.name
+    - o365.metrics.teams.user.activity.user.detail.report.refresh_date
+    - o365.metrics.teams.user.activity.user.detail.user_id
+    - o365.metrics.teams.user.activity.user.detail.user_principal_name
   sort: "event.ingested"
 description: Latest report data from Microsoft Teams User Activity by User Detail report.
-frequency: 1m
+frequency: 1h
 settings:
   # This is required to prevent the transform from clobbering the Fleet-managed mappings.
   deduce_mappings: false
