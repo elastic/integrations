@@ -1,0 +1,78 @@
+title: "OpenAI API Usage Metrics"
+type: metrics
+streams:
+  - input: openai/metrics
+    title: OpenAI API Usage
+    enabled: true
+    description: Collect OpenAI usage metrics.
+    template_path: usage.yml.hbs
+    vars:
+      - name: api_key
+        type: password
+        title: OpenAI API key
+        description: OpenAI API key for authentication.
+        required: true
+        show_user: true
+        secret: true
+      - name: period
+        type: text
+        required: false
+        title: Period
+        description: |
+          Time period for collecting usage metrics. Defaults to `24h`.
+        default: 24h
+        show_user: true
+      - name: api_url
+        type: url
+        title: OpenAI usage API endpoint
+        default: "https://api.openai.com/v1/usage"
+        description: |
+          OpenAI usage API endpoint. Defaults to https://api.openai.com/v1/usage.
+        show_user: false
+        required: false
+      - name: headers
+        type: text
+        title: Custom headers
+        description: |
+          Custom headers for API requests in "key: value" format (e.g., Host: api.openai.com). It will not overrride the default headers.
+        multi: true
+        show_user: false
+        required: false
+      - name: rate_limit.limit
+        type: integer
+        default: 12
+        title: Rate limit (limit)
+        description: |
+          Duration in seconds between API requests.
+        show_user: false
+        required: false
+      - name: rate_limit.burst
+        type: integer
+        title: Rate limit (burst)
+        default: 1
+        description: |
+          Maximum number of concurrent API requests.
+        show_user: false
+        required: false
+      - name: timeout
+        type: text
+        title: Request timeout
+        default: 30s
+        description: API request timeout duration.
+        show_user: false
+        required: false
+      - name: collection.lookback_days
+        type: integer
+        title: Lookback days
+        default: 30
+        description: Number of days to retrieve historical usage data.
+        show_user: true
+        required: true
+      - name: collection.realtime
+        type: bool
+        title: Realtime data collection
+        default: false
+        description: |
+          Controls realtime data collection. It is recommended to keep this disabled to avoid inconsistent data because of the behavior of the OpenAI API.
+        show_user: false
+        required: false
