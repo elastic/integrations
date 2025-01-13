@@ -2826,6 +2826,16 @@ processors:
       if: "ctx.event?.code == '7502'"
       pattern: "Cannot create kernel filter on unit %{aruba.instance.id} for %{aruba.cpu_rx.filter_description}. All filters are in use. Configuring fewer per-port features can help with this issue."
 
+  # VSX Sync events (760x)
+  # https://www.arubanetworks.com/techdocs/AOS-CX/10.15/HTML/elmrg/Content/events/VSX_SYNC.htm
+  - grok:
+      field: message
+      tag: vsx_sync_event_7601_7602_7603
+      description: "Logs event when error in synchronizing config between two VSX peers | when there is an update for config sync | when config is copied to startup-config on any of the VSX peer"
+      if: "['7601','7602','7603'].contains(ctx.event?.code)"
+      patterns: 
+        - "(error|update|persistence): %{GREEDYDATA:aruba.instance.id}"
+
   # Certificate management events (77xx)
   # https://www.arubanetworks.com/techdocs/AOS-CX/10.07/HTML/5200-8214/Content/events/CERTMGR.htm
   - grok:
@@ -3035,7 +3045,6 @@ processors:
       field: "message"
       description: "Powered device requested power down on interface."
       pattern: "Powered device requested power down on interface %{aruba.interface.name} %{aruba.poe.duration}"
-        
 
   # Bluetooth Management events (80xx)
   # https://www.arubanetworks.com/techdocs/AOS-CX/10.07/HTML/5200-8214/Content/events/BLUETOOTH_MGMT.htm
@@ -3053,6 +3062,63 @@ processors:
       description: "Event raised when btd receives signal for Bluetooth device event"
       patterns:
         - "^Bluetooth device %{DATA:event.action}: %{MAC:client.mac}"
+
+  # VXLAN events (81xx)
+  # https://www.arubanetworks.com/techdocs/AOS-CX/10.15/HTML/elmrg/Content/events/VXLAN.htm
+  - grok:
+      if: "['8101','8102','8103','8104'].contains(ctx.event?.code)"
+      tag: vxlan_event_8101_8102_8103_8104
+      field: "message"
+      description: "Event raised when VNI creation fails | when VNI created | when VNI deletion fails | when VNI is deleted"
+      patterns:
+        - "^VNI id %{DATA:aruba.vxlan.vni_id} "
+  - grok:
+      if: "['8105','8106','8107'].contains(ctx.event?.code)"
+      tag: vxlan_event_8105_8106_8107
+      field: "message"
+      description: "Event raised when Vtep-Peer is created | has been deleted | deletion fails"
+      patterns:
+        - "^Vtep-Peer %{DATA:aruba.vxlan.vtep_peer} "
+  - grok:
+      if: "['8108','8109'].contains(ctx.event?.code)"
+      tag: vxlan_event_8108_8109
+      field: "message"
+      description: "Event raised when Access-Port has been created | has been deleted"
+      patterns:
+        - "^Access-Port with vlan %{DATA:network.vlan.id} and port %{DATA:aruba.port} has been created"
+        - "^Access-Port with port %{DATA:aruba.port} and vlan %{DATA:network.vlan.id} has been deleted"
+  - grok:
+      if: "['8110','8111','8112','8113'].contains(ctx.event?.code)"
+      tag: vxlan_event_8110_8111_8112_8113
+      field: "message"
+      description: "Event raised when Vtep-Peer status is changed to operational | to configuration error | to no hardware resources | to activating"
+      patterns:
+        - "^Vtep-Peer %{DATA:aruba.vxlan.vtep} state is"
+  - grok:
+      if: "['8114','8115','8116','8117'].contains(ctx.event?.code)"
+      tag: vxlan_event_8114_8115_8116_8117
+      field: "message"
+      description: "Event raised when a VxLAN tunnel is deleted from hardware | has its deletion deferred by L3PD | has its deferred deletion canceled"
+      patterns:
+        - "^Tunnel %{IP:client.ip} (added|deleted|delete|deferred)"
+  - dissect:
+      if: "ctx.event?.code == '8119'"
+      tag: vxlan_event_8119
+      field: "message"
+      description: "Event raised when nexthop operation add/delete/modify is triggered on a vtep-peer"
+      pattern: "Nexthop %{event.action} received for tunnel %{aruba.vxlan.vtep_peer}"
+  - dissect:
+      if: "ctx.event?.code == '8120'"
+      tag: vxlan_event_8120
+      field: "message"
+      description: "Event raised when Vtep-Peer forwarding_state is changed"
+      pattern: "Tunnel %{aruba.vxlan.vtep_peer} forwarding_state is %{aruba.state}"
+  - dissect:
+      if: "ctx.event?.code == '8121'"
+      tag: vxlan_event_8121
+      field: "message"
+      description: "Event raised when unsupported underlay port configured as tunnel nexthop"
+      pattern: "Unsupported underlay port %{aruba.port} configured for tunnel %{aruba.vxlan.vtep_peer}"
 
   # DHCPv4 Snooping events (82xx)
   # https://www.arubanetworks.com/techdocs/AOS-CX/10.07/HTML/5200-8214/Content/events/DHCPv4-SNOOPING.htm
@@ -3367,6 +3433,54 @@ processors:
         - "^Start %{DATA:aruba.msdp.tcp_entity} role for MSDP peer %{IP:client.ip}"
         - "^Finish packet was received on MSDP Peer %{IP:client.ip}"
         - "^Failed to add SA Cache entry: S=%{IP:source.ip}, G=%{IP:aruba.msdp.grp_ip}, R=%{IP:aruba.msdp.rp_ip} for Peer %{IP:client.ip} as MSDP SA Cache Limit is reached"
+
+    # Zero touch provisioning events (87xx)
+    # https://www.arubanetworks.com/techdocs/AOS-CX/10.15/HTML/elmrg/Content/events/ZTPD.htm
+  - dissect:
+      field: message
+      tag: ztp_event_8718
+      description: "Logs related to ztp configurations - TFTP IP received"
+      if: "ctx.event?.code == '8718'"
+      pattern: "ZTP: Received TFTP server %{server.ip} from dhcp server"
+  - dissect:
+      field: message
+      tag: ztp_event_8719
+      description: "Logs related to ztp configurations - TFTP IP received"
+      if: "ctx.event?.code == '8719'"
+      pattern: "ZTP: Received image file %{file.name} from dhcp server"
+  - dissect:
+      field: message
+      tag: ztp_event_8720
+      description: "Logs related to ztp configurations - Config filename received"
+      if: "ctx.event?.code == '8720'"
+      pattern: "ZTP: Received config file %{file.name} from dhcp server"
+  - dissect:
+      field: message
+      tag: ztp_event_8721
+      description: "Logs related to ztp configurations - HPE Aruba Networking Central FQDN or IPv4 received"
+      if: "ctx.event?.code == '8721'"
+      pattern: "ZTP: Received HPE Aruba Networking Central location %{aruba.ztp.central_location} from DHCP server"
+  - dissect:
+      field: message
+      tag: ztp_event_8724
+      description: "Logs related to ztp configurations - Aruba HTTP proxy FQDN or IPv4 received"
+      if: "ctx.event?.code == '8724'"
+      pattern: "ZTP: Received HTTP proxy location %{aruba.ztp.http_proxy_location} from DHCP server."
+  - grok:
+      field: message
+      tag: ztp_event_8727_8728_8730
+      description: "Log event when ZTP fails because of unexpected error in config/image file download | because of config/image file download error | because of unexpected error in config file download"
+      if: "['8727','8728','8730'].contains(ctx.event?.code)"
+      patterns:
+        - "^ZTP service status changed to failed because %{DATA:file.name} file download encountered unexpected error.( Reason: %{GREEDYDATA:event.reasonreason})?"
+        - "^ZTP service status changed to failed because %{DATA:file.name} file did not get downloaded."
+  - dissect:
+      field: message
+      tag: ztp_event_8731
+      description: "Log event when ZTP receives the Alternative HPE Aruba Networking Central location."
+      if: "ctx.event?.code == '8731'"
+      pattern: "Received Alternative HPE Aruba Networking Central location %{aruba.ztp.alt_aruba_central_loc} from dhcp server."
+
 
   # Hardware switch controller sync events (88xx)
   # https://www.arubanetworks.com/techdocs/AOS-CX/10.07/HTML/5200-8214/Content/events/HSC-SYNCD.htm
@@ -4187,6 +4301,17 @@ processors:
       if: "['12001','12002'].contains(ctx.event?.code)"
       patterns:
         - "^Uplink Failure Detection session-id %{DATA:aruba.instance.id}, state changed from %{DATA:aruba.ufd.from_state} to %{GREEDYDATA:aruba.state}."
+
+  # VXLAN agent events (1250x)
+  # https://www.arubanetworks.com/techdocs/AOS-CX/10.15/HTML/elmrg/Content/events/VXLAN_AGENT.htm
+  - grok:
+      field: message
+      tag: vxlan_event_12501_12502
+      description: "Event raised when netvp add fails in agent | Event raised when tunnel add fails in agent"
+      if: "['12501','12502'].contains(ctx.event?.code)"
+      patterns:
+        - "^Netvp add failed for vni_id: %{DATA:aruba.vxlan.vni_id}, tunnel_id: %{DATA:aruba.vxlan.tunnel_id}, vlan: %{GREEDYDATA:network.vlan.id}."
+        - "^Tunnel add failed for tunnel_id: %{DATA:aruba.vxlan.tunnel_id}, ecmp_id: %{GREEDYDATA:aruba.vxlan.ecmp_id}."
 
 # Telnet server events (1290x)
   # https://www.arubanetworks.com/techdocs/AOS-CX/10.15/HTML/elmrg/Content/events/TELNET_SERVER.htm
