@@ -68,7 +68,11 @@ program: |-
   				"cursor": state.?cursor.orValue({}).with(
   					{
   						?"last_report_date": (size(body.results) > 0) ?
-  							optional.of(body.results[size(body.results) - 1].general.reportDate)
+  							optional.of(
+  								body.results[size(body.results) - 1].general.reportDate.as(d,
+  									d.parse_time(time_layout.RFC3339).format("2006-01-02T15:04:05.000Z")
+  								)
+  							)
   						:
   							optional.none(),
   					}
