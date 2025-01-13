@@ -1364,32 +1364,43 @@ Note: Descriptions have not been filled out
 | `<value>`         | aruba.vrrp.mode             |
 | `<vrid>`          | aruba.instance.id           |
 
+#### [VSX Sync events](https://www.arubanetworks.com/techdocs/AOS-CX/10.15/HTML/elmrg/Content/events/VSX_SYNC.htm)
+| Docs Field | Schema Mapping               |
+|------------|------------------------------|
+| `<id>`     | aruba.instance.id            |
 
-#### [VSX Sync events](https://www.arubanetworks.com/techdocs/AOS-CX/10.07/HTML/5200-8214/Content/events/VSX_SYNC.htm)
-| Field                     | Description | Type | Common                       |
-|---------------------------|-------------|------|------------------------------|
-| aruba.vsx.id              |             |      | aruba.instance.id            |
+#### [VXLAN agent events](https://www.arubanetworks.com/techdocs/AOS-CX/10.15/HTML/elmrg/Content/events/VXLAN_AGENT.htm)
+| Docs Field  | Schema Mapping               |
+|-------------|------------------------------|
+| `<ecmp_id>`   | aruba.vxlan.ecmp_id          |
+| `<tunnel_id>` | aruba.vxlan.tunnel_id        |
+| `<vlan>`      | network.vlan.id              |
+| `<vni_id>`    | aruba.vxlan.vni_id           |
 
+#### [VXLAN events](https://www.arubanetworks.com/techdocs/AOS-CX/10.15/HTML/elmrg/Content/events/VXLAN.htm)
+| Docs Field    | Schema Mapping         |
+|---------------|------------------------|
+| `<action>`    | event.action           |
+| `<port>`      | aruba.port             |
+| `<port_name>` | aruba.port             |
+| `<remote_ip>` | client.ip              |
+| `<state>`     | aruba.state            |
+| `<vlan_id>`   | network.vlan.id        |
+| `<vni_id>`    | aruba.vxlan.vni_id     |
+| `<vtep>`      | aruba.vxlan.vtep       |
+| `<vtep_peer>` | aruba.vxlan.vtep_peer  |
 
-#### [VXLAN events](https://www.arubanetworks.com/techdocs/AOS-CX/10.07/HTML/5200-8214/Content/events/VXLAN.htm)
-| Field                     | Description | Type | Common                       |
-|---------------------------|-------------|------|------------------------------|
-| aruba.vxlan.port_name     |             |      | server.port                  |
-| aruba.vxlan.remote_ip     |             |      | destination.ip               |
-| aruba.vxlan.vlan_id       |             |      | network.vlan.id              |
-| aruba.vxlan.vni_id        |             |      |                              |
-| aruba.vxlan.vtep          |             |      |                              |
-| aruba.vxlan.vtep_peer     |             |      |                              |
-
-#### [Zero touch provisioning events](https://www.arubanetworks.com/techdocs/AOS-CX/10.07/HTML/5200-8214/Content/events/ZTPD.htm)
-| Field                              | Description | Type | Common                       |
-|------------------------------------|-------------|------|------------------------------|
-| aruba.zero_touch.central_location  |             |      | server.address               |
-| aruba.zero_touch.config_file       |             |      | file.name                    |
-| aruba.zero_touch.filename          |             |      | file.name                    |
-| aruba.zero_touch.http_proxy_location |           |      | server.address               |
-| aruba.zero_touch.image_file        |             |      | file.name                    |
-| aruba.zero_touch.tftp_ip           |             |      | destination.ip               |
+#### [Zero touch provisioning events](https://www.arubanetworks.com/techdocs/AOS-CX/10.15/HTML/elmrg/Content/events/ZTPD.htm)
+| Docs Field                | Schema Mapping                   |
+|---------------------------|----------------------------------|
+| `<alt_aruba_central_loc>` | aruba.ztp.alt_aruba_central_loc  |
+| `<central_location>`      | aruba.ztp.central_location       |
+| `<config_file>`           | file.name                        |
+| `<filename>`              | file.name                        |
+| `<http_proxy_location>`   | aruba.ztp.http_proxy_location    |
+| `<image_file>`            | file.name                        |
+| `<reason>`                | event.reason                     |
+| `<tftp_ip>`               | server.ip                        |
 
 ## Generated Logs
 
