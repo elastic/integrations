@@ -4,16 +4,16 @@
 
 [ServiceNow](https://www.servicenow.com/?state=seamless) is a cloud-based platform that helps organizations improve their workflows and business processes, mainly in IT service management. It offers features like workflow automation, a self-service portal for users, integration with other systems, and helpful reporting tools.
 
-ServiceNow uses tables to store data, making it easy to manage and retrieve information. A key part of the platform is the [Configuration Management Database](https://www.servicenow.com/products/servicenow-platform/configuration-management-database.html) (CMDB), which keeps track of IT assets and how they are connected. This helps organizations monitor changes, manage configurations, and ensure reliable services. Overall, ServiceNow boosts efficiency, visibility, and user satisfaction, making it a popular choice for various industries.
+ServiceNow uses tables to store data, making it easy to manage and retrieve information. A key part of the platform is the [Configuration Management Database](https://www.servicenow.com/products/servicenow-platform/configuration-management-database.html) (CMDB), which keeps track of IT assets and how they are connected.
 
 The ServiceNow integration can be used in three different modes to collect logs:
-- AWS S3 polling mode: ServiceNow writes data to S3, and Elastic Agent polls the S3 bucket by listing its contents and reading new files. Refer to the [ServiceNow documentation](https://www.servicenow.com/community/now-platform-forum/aws-s3-integration-with-servicenow/td-p/1121852) for how to integrate AWS S3 with ServiceNow for retrieving logs into an S3 bucket.
-- AWS S3 SQS mode: ServiceNow writes data to S3; S3 sends a notification of a new object to SQS; the Elastic Agent receives the notification from SQS and then reads the S3 object. Multiple agents can be used in this mode.
-- REST API mode: ServiceNow offers table APIs to retrieve data from its tables; the Elastic Agent polls these APIs to list their contents and read any new data. Visit this [page](https://developer.servicenow.com/dev.do#!/reference/api/washingtondc/rest/c_TableAPI#table-GET) for additional information about REST APIs.
+- **AWS S3 polling mode**: ServiceNow writes data to S3, and Elastic Agent polls the S3 bucket by listing its contents and reading new files. Refer to the [ServiceNow documentation](https://www.servicenow.com/community/now-platform-forum/aws-s3-integration-with-servicenow/td-p/1121852) for how to integrate AWS S3 with ServiceNow for retrieving logs into an S3 bucket.
+- **AWS S3 SQS mode**: ServiceNow writes data to S3; S3 sends a notification of a new object to SQS; the Elastic Agent receives the notification from SQS and then reads the S3 object. Multiple agents can be used in this mode.
+- **REST API mode**: ServiceNow offers table APIs to retrieve data from its tables; the Elastic Agent polls these APIs to list their contents and read any new data. Visit this [page](https://developer.servicenow.com/dev.do#!/reference/api/washingtondc/rest/c_TableAPI#table-GET) for additional information about REST APIs.
 
 ## Compatibility
 
-This module has been tested against the latest (updated Aug 1, 2024) ServiceNow API.
+This module has been tested with the latest(updated as of August 1, 2024) version of Xanadu on ServiceNow.
 
 ## Data streams
 
@@ -55,7 +55,7 @@ Below is a list of the default ones.
 **Note**:
 
 1. This integration currently supports ECS mapping for default ServiceNow tables listed above. For custom tables created by users, ECS mapping is not automatically provided. If you want to add mappings for custom tables, please refer to this [tutorial guide](https://www.elastic.co/guide/en/fleet/current/data-streams-pipeline-tutorial.html).
-2. For each table, a tag will be added based on the name of the table from which data is fetched.
+2. A tag will be added to each table based on its name. For example, if logs are ingested from the `alm_hardware` table, users can view them in Discover by using the query `tags: "alm_hardware"`.
 
 ## Requirements
 
@@ -101,7 +101,7 @@ There are some minimum requirements for running Elastic Agent. For more informat
    - While creating `event notification` select the event type as s3:ObjectCreated:*, destination type SQS Queue, and select the queue name created in Step 2.
 
 ### Time Zone Selection:
-- In the Data Collection section, use the `Timezone of ServiceNow Instance` dropdown to select your preferred timezone. The `.value` field for date data will always be in UTC, while the `.display_value` field can reflect your instance's selected timezone. The system default is set to America/Los_Angeles, but you can change this in your ServiceNow profile settings.
+- In the Data Collection section, use the `Time Zone Offset` field to set your preferred timezone. The `.value` field for date data will always be in UTC, while the `.display_value` field can reflect your instance's selected timezone. The system default is set to America/Los_Angeles, but you can change this in your ServiceNow profile settings.
 - Steps to See/Update the timezone in ServiceNow Instance:
   1. Click the user icon in the top-right corner of the ServiceNow interface.
   2. Select Profile from the dropdown menu.
@@ -114,27 +114,34 @@ There are some minimum requirements for running Elastic Agent. For more informat
 3. Click on the "ServiceNow" integration from the search results.
 4. Click on the "Add ServiceNow" button to add the integration.
 5. While adding the integration, if you want to collect logs via REST API, then you have to put the following details:
+   - collect logs via REST API toggled on
    - API URL
    - username
    - password
    - table name
-   - timezone
-   - collect logs via REST API toggled on
+   - timestamp field
+   - timezone offset
 
    or if you want to collect logs via AWS S3, then you have to put the following details:
+   - collect logs via S3 Bucket toggled on
    - access key id
    - secret access key
    - bucket arn
-   - timezone
-   - collect logs via S3 Bucket toggled on
+   - table name
+   - timestamp field
+   - timezone offset
 
    or if you want to collect logs via AWS SQS, then you have to put the following details:
+   - collect logs via S3 Bucket toggled off
    - access key id
    - secret access key
    - queue url
-   - timezone
-   - collect logs via S3 Bucket toggled off
+   - table name
+   - timestamp field
+   - timezone offset
 6. Click on "Save and Continue" to save the integration.
+
+**Note**: To fetch parquet file data, enable the toggle, `Parquet Codec`
 
 ## Logs Reference
 

@@ -176,6 +176,7 @@ list log events from the specified log group.
 | gen_ai.compliance.response_triggered | Lists compliance-related filters that were triggered during the processing of the response, such as data privacy filters or regulatory compliance checks. | keyword |
 | gen_ai.compliance.violation_code | Code identifying the specific compliance rule that was violated. | keyword |
 | gen_ai.compliance.violation_detected | Indicates if any compliance violation was detected during the interaction. | boolean |
+| gen_ai.guardrail_id | Guardrail ID if a guardrail was executed. | keyword |
 | gen_ai.owasp.description | Description of the OWASP risk triggered. | text |
 | gen_ai.owasp.id | Identifier for the OWASP risk addressed. | keyword |
 | gen_ai.performance.request_size | Size of the request payload in bytes. | long |
@@ -185,6 +186,8 @@ list log events from the specified log group.
 | gen_ai.policy.action | Action taken due to a policy violation, such as blocking, alerting, or modifying the content. | keyword |
 | gen_ai.policy.confidence | Confidence level in the policy match that triggered the action, quantifying how closely the identified content matched the policy criteria. | keyword |
 | gen_ai.policy.match_detail.\* |  | object |
+| gen_ai.policy.match_detail.score |  | float |
+| gen_ai.policy.match_detail.threshold |  | float |
 | gen_ai.policy.name | Name of the specific policy that was triggered. | keyword |
 | gen_ai.policy.violation | Specifies if a security policy was violated. | boolean |
 | gen_ai.prompt | The full text of the user's request to the gen_ai. | text |
@@ -408,4 +411,124 @@ An example event for `runtime` looks as following:
 | data_stream.namespace | Data stream namespace. | constant_keyword |  |  |
 | data_stream.type | Data stream type. | constant_keyword |  |  |
 | event.module | Name of the module this data is coming from. If your monitoring agent supports the concept of modules or plugins to process events of a given source (e.g. Apache logs), `event.module` should contain the name of this module. | constant_keyword |  |  |
+
+
+### Guardrails Metrics
+
+Amazon Bedrock guardrail metrics include `Invocations`, `InvocationLatency`, `InvocationClientErrors`, `InvocationServerErrors`, `InvocationThrottles`, `TextUnitCount`, and `InvocationsIntervened`. These metrics enable several use cases, such as:
+
+- Monitoring the latency of guardrail invocations
+- Tracking the number of text units consumed by guardrail policies
+- Detecting invocations where guardrails intervened
+
+An example event for `guardrails` looks as following:
+
+```json
+{
+    "@timestamp": "2025-01-08T08:35:00.000Z",
+    "agent": {
+        "ephemeral_id": "457aa99d-9fdf-4494-9d06-31961a43f33a",
+        "id": "9cdf7072-cfc1-4ad5-b68d-b51f0cd9afa8",
+        "name": "elastic-agent-21656",
+        "type": "metricbeat",
+        "version": "8.16.2"
+    },
+    "aws": {
+        "cloudwatch": {
+            "namespace": "AWS/Bedrock/Guardrails"
+        }
+    },
+    "aws_bedrock": {
+        "guardrails": {
+            "invocation_latency": 207,
+            "invocations": 6,
+            "invocations_intervened": 3,
+            "operation": "ApplyGuardrail",
+            "text_unit_count": 21
+        }
+    },
+    "cloud": {
+        "account": {
+            "id": "11111111111111111",
+            "name": "MonitoringAccount"
+        },
+        "provider": "aws",
+        "region": "ap-south-1"
+    },
+    "data_stream": {
+        "dataset": "aws_bedrock.guardrails",
+        "namespace": "63909",
+        "type": "metrics"
+    },
+    "ecs": {
+        "version": "8.0.0"
+    },
+    "elastic_agent": {
+        "id": "9cdf7072-cfc1-4ad5-b68d-b51f0cd9afa8",
+        "snapshot": false,
+        "version": "8.16.2"
+    },
+    "event": {
+        "agent_id_status": "verified",
+        "dataset": "aws_bedrock.guardrails",
+        "duration": 100053062,
+        "ingested": "2025-01-08T08:43:11Z",
+        "module": "aws"
+    },
+    "host": {
+        "architecture": "x86_64",
+        "containerized": true,
+        "hostname": "elastic-agent-21656",
+        "ip": [
+            "172.26.0.5",
+            "172.29.0.2"
+        ],
+        "mac": [
+            "02-42-AC-1A-00-05",
+            "02-42-AC-1D-00-02"
+        ],
+        "name": "elastic-agent-21656",
+        "os": {
+            "family": "",
+            "kernel": "5.4.0-1106-gcp",
+            "name": "Wolfi",
+            "platform": "wolfi",
+            "type": "linux",
+            "version": "20230201"
+        }
+    },
+    "metricset": {
+        "name": "cloudwatch",
+        "period": 300000
+    },
+    "service": {
+        "type": "aws"
+    }
+}
+```
+**Exported fields**
+
+| Field | Description | Type | Unit | Metric Type |
+|---|---|---|---|---|
+| @timestamp | Event timestamp. | date |  |  |
+| agent.id | Unique identifier of this agent (if one exists). Example: For Beats this would be beat.id. | keyword |  |  |
+| aws.cloudwatch.namespace | The namespace specified when query cloudwatch api. | keyword |  |  |
+| aws.metrics_names_fingerprint | Autogenerated ID representing the fingerprint of the list of metrics names. | keyword |  |  |
+| aws_bedrock.guardrails.guardrail_arn |  | keyword |  |  |
+| aws_bedrock.guardrails.guardrail_content_source |  | keyword |  |  |
+| aws_bedrock.guardrails.guardrail_policy_type |  | keyword |  |  |
+| aws_bedrock.guardrails.guardrail_version |  | keyword |  |  |
+| aws_bedrock.guardrails.invocation_client_errors | The number of invocations that result in AWS client-side errors. | long |  | gauge |
+| aws_bedrock.guardrails.invocation_latency | The latency of the invocations. | long | ms | gauge |
+| aws_bedrock.guardrails.invocation_server_errors | The number of invocations that result in AWS server-side errors. | long |  | gauge |
+| aws_bedrock.guardrails.invocation_throttles | The number of invocations that the system throttled. | long |  | gauge |
+| aws_bedrock.guardrails.invocations | The number of requests to the `ApplyGuardrail` API operation. | long |  | gauge |
+| aws_bedrock.guardrails.invocations_intervened | The number of invocations where the guardrails intervened. | long |  | gauge |
+| aws_bedrock.guardrails.operation |  | keyword |  |  |
+| aws_bedrock.guardrails.text_unit_count | The number of text units consumed by the guardrails policies. | long |  | gauge |
+| cloud.account.id | The cloud account or organization id used to identify different entities in a multi-tenant environment. Examples: AWS account id, Google Cloud ORG Id, or other unique identifier. | keyword |  |  |
+| cloud.region | Region in which this host, resource, or service is located. | keyword |  |  |
+| data_stream.dataset | Data stream dataset. | constant_keyword |  |  |
+| data_stream.namespace | Data stream namespace. | constant_keyword |  |  |
+| data_stream.type | Data stream type. | constant_keyword |  |  |
 

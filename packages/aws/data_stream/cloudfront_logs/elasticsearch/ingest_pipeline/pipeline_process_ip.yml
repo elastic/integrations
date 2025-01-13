@@ -1,0 +1,33 @@
+---
+description: Pipeline for triggering the grok processor and helper scripts to effectively parse and append individual ipv6/v4 addresses.
+
+processors:
+  - grok:
+      field: _ingest._value
+      tag: grok_parse_x_forwarded_for_ipv4_and_ipv6_addresses
+      ignore_missing: true
+      ignore_failure: true
+      patterns:
+        - "^%{IPV4:_tmp.valid_ip}$"
+        - "^%{IPV6:_tmp.valid_ip}$"
+        - "^%{IPV6NOCOMPRESS:_tmp.valid_ip}$"
+        - "^\\[%{IPV6:_tmp.valid_ip}\\]$"
+      pattern_definitions:
+        IPV6NOCOMPRESS: '([0-9A-Fa-f]{1,4}:){7}[0-9A-Fa-f]{1,4}'
+      on_failure:
+        - set:
+            field: _tmp.invalid_ip
+            value: "{{_ingest._value}}"
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - append:
+      field: network.forwarded_ip
+      value: "{{_tmp.valid_ip}}"
+      if: ctx._tmp.valid_ip != null && ctx._tmp.valid_ip != ""
+      allow_duplicates: false
+  - append:
+      field: _tmp.invalid_ips
+      value: "{{_tmp.invalid_ip}}"
+      if: ctx._tmp.invalid_ip != null && ctx._tmp.invalid_ip != ""
+      allow_duplicates: false

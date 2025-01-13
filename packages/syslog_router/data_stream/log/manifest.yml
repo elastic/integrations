@@ -1,0 +1,867 @@
+title: "Route logs to Elastic integrations."
+type: logs
+dataset: syslog_router.log
+streams:
+  - input: tcp
+    template_path: tcp.yml.hbs
+    title: Syslog events (TCP)
+    description: Collect Syslog events using the TCP input.
+    vars:
+      - name: listen_address
+        type: text
+        title: Listen Address
+        description: The bind address to listen for TCP connections. Set to `0.0.0.0` to bind to all available interfaces.
+        multi: false
+        required: true
+        show_user: true
+        default: localhost
+      - name: listen_port
+        type: integer
+        title: Listen Port
+        description: The TCP port number to listen on.
+        multi: false
+        required: true
+        show_user: true
+        default: 9514
+      - name: tags
+        type: text
+        title: Tags
+        multi: true
+        required: true
+        show_user: false
+        default:
+          - forwarded
+      - name: preserve_original_event
+        required: true
+        show_user: true
+        title: Preserve original event
+        description: Preserves a raw copy of the original event, added to the field `event.original`
+        type: bool
+        multi: false
+        default: false
+      - name: reroute_config
+        type: yaml
+        title: Reroute configuration
+        required: true
+        show_user: true
+        description: List of configurations for rerouting logs. See [configuration](https://www.elastic.co/docs/current/integrations/syslog_router#configuration) for details.
+        default: |-
+          - if:
+              and:
+                - not.has_fields: _conf.dataset
+                - regexp.message: "class com\\.untangle\\."
+            then:
+              - add_fields:
+                  target: ''
+                  fields:
+                    _conf.dataset: "arista_ngfw.log"
+          - if:
+              and:
+                - not.has_fields: _conf.dataset
+                - regexp.message: " CheckPoint [0-9]+ - "
+            then:
+              - add_fields:
+                  target: ''
+                  fields:
+                    _conf.dataset: "checkpoint.firewall"
+                    _conf.tz_offset: "UTC"
+                    _temp_.internal_zones: ['trust']
+                    _temp_.external_zones: ['untrust']
+          - if:
+              and:
+                - not.has_fields: _conf.dataset
+                - regexp.message: "%ASA-"
+            then:
+              - add_fields:
+                  target: ''
+                  fields:
+                    _conf.dataset: "cisco_asa.log"
+                    _conf.tz_offset: "UTC"
+                    _temp_.internal_zones: ['trust']
+                    _temp_.external_zones: ['untrust']
+          - if:
+              and:
+                - not.has_fields: _conf.dataset
+                - regexp.message: "%FTD-"
+            then:
+              - add_fields:
+                  target: ''
+                  fields:
+                    _conf.dataset: "cisco_ftd.log"
+                    _conf.tz_offset: "UTC"
+                    _temp_.internal_zones: ['trust']
+                    _temp_.external_zones: ['untrust']
+          - if:
+              and:
+                - not.has_fields: _conf.dataset
+                - regexp.message: "CISE_+"
+            then:
+              - add_fields:
+                  target: ''
+                  fields:
+                    _conf.dataset: "cisco_ise.log"
+          - if:
+              and:
+                - not.has_fields: _conf.dataset
+                - regexp.message: "(?:(?:amp|antispam|antivirus|consolidated_event|content_scanner|error_logs|gui_logs|mail_logs|status|system):\\s+(?:CEF|Critical|Info|Warning):)"
+            then:
+              - add_fields:
+                  target: ''
+                  fields:
+                    _conf.dataset: "cisco_secure_email_gateway.log"
+                    _conf.tz_offset: "UTC"
+          - if:
+              and:
+                - not.has_fields: _conf.dataset
+                - regexp.message: "CEF:0\\|Citrix\\|NetScaler"
+            then:
+              - add_fields:
+                  target: ''
+                  fields:
+                    _conf.dataset: "citrix_waf.log"
+                    _conf.tz_offset: "UTC"
+          - if:
+              and:
+                - not.has_fields: _conf.dataset
+                - regexp.message: " enSilo "
+            then:
+              - add_fields:
+                  target: ''
+                  fields:
+                    _conf.dataset: "fortinet_fortiedr.log"
+          - if:
+              and:
+                - not.has_fields: _conf.dataset
+                - regexp.message: "devid=\"?FG"
+            then:
+              - add_fields:
+                  target: ''
+                  fields:
+                    _conf.dataset: "fortinet_fortigate.log"
+                    _temp_.internal_networks: ['private']
+                    _temp_.internal_interfaces: []
+                    _temp_.external_interfaces: []
+          - if:
+              and:
+                - not.has_fields: _conf.dataset
+                - regexp.message: "device_id=\"?FMG"
+            then:
+              - add_fields:
+                  target: ''
+                  fields:
+                    _conf.dataset: "fortinet_fortimanager.log"
+          - if:
+              and:
+                - not.has_fields: _conf.dataset
+                - regexp.message: "device_id=\"?FE"
+            then:
+              - add_fields:
+                  target: ''
+                  fields:
+                    _conf.dataset: "fortinet_fortimail.log"
+                    _conf.tz_offset: "UTC"
+          - if:
+              and:
+                - not.has_fields: _conf.dataset
+                - regexp.message: "devid=\"?FPX"
+            then:
+              - add_fields:
+                  target: ''
+                  fields:
+                    _conf.dataset: "fortinet_fortiproxy.log"
+          - if:
+              and:
+                - not.has_fields: _conf.dataset
+                - regexp.message: "IN="
+            then:
+              - add_fields:
+                  target: ''
+                  fields:
+                    _conf.dataset: "iptables.log"
+          - if:
+              and:
+                - not.has_fields: _conf.dataset
+                - or:
+                  - regexp.message: "RT_UTM - "
+                  - regexp.message: "RT_FLOW - "
+            then:
+              - add_fields:
+                  target: ''
+                  fields:
+                    _conf.dataset: "juniper_srx.log"
+          - if:
+              and:
+                - not.has_fields: _conf.dataset
+                - regexp.message: "\\[[0-9]:[0-9]+:[0-9]\\]"
+            then:
+              - add_fields:
+                  target: ''
+                  fields:
+                    _conf.dataset: "snort.log"
+                    _tmp.tz_offset: UTC
+                    _tmp.internal_networks: ['private']
+          - if:
+              and:
+                - not.has_fields: _conf.dataset
+                - regexp.message: "qulogd\\[[0-9]+\\]:"
+            then:
+              - add_fields:
+                  target: ''
+                  fields:
+                    _conf.dataset: "qnap_nas.log"
+                    _tmp.tz_offset: UTC
+          - if:
+              and:
+                - not.has_fields: _conf.dataset
+                - regexp.message: "<[0-9]+>  id=firewall sn=[0-9a-zA-Z]+"
+            then:
+              - add_fields:
+                  target: ''
+                  fields:
+                    _conf.dataset: "sonicwall_firewall.log"
+                    _tmp.tz_offset: UTC
+          - if:
+              and:
+                - not.has_fields: _conf.dataset
+                - regexp.message: "CEF:0\\|Imperva Inc.\\|SecureSphere"
+            then:
+              - add_fields:
+                  target: ''
+                  fields:
+                    _conf.dataset: "imperva.securesphere"
+              - decode_cef:
+                  field: message
+          - if:
+              and:
+                - not.has_fields: _conf.dataset
+                - regexp.message: "1,[0-9]{4}/[0-9]{2}/[0-9]{2}"
+            then:
+              - add_fields:
+                  target: ''
+                  fields:
+                    _conf.dataset: "panw.panos"
+                    _conf.tz_offset: Local
+                    _conf.internal_zones: ['trust']
+                    _conf.external_zones: ['untrust']
+              - copy_fields:
+                  fields:
+                    - from: '@timestamp'
+                      to: event.created
+              - syslog:
+                  field: message
+                  format: auto
+          - if:
+              and:
+                - not.has_fields: _conf.dataset
+                - regexp.message: 'device="SFW"'
+            then:
+              - add_fields:
+                  target: ''
+                  fields:
+                    _conf.dataset: "sophos.xg"
+                    _conf.tz_offset: UTC
+                    _conf.default: firewall.localgroup.local
+                    _conf.mappings:
+                      - hostname: my_fancy_host
+                        serial_number: "1234567890123456"
+                      - hostname: some_other_host.local
+                        serial_number: "1234567890123457"
+          - if:
+              and:
+                - not.has_fields: _conf.dataset
+                - regexp.message: 'id=firewall time="'
+            then:
+              - add_fields:
+                  target: ''
+                  fields:
+                    _conf.dataset: "stormshield.log"
+              - syslog:
+                  field: message
+                  format: rfc5424
+      - name: ssl
+        type: yaml
+        title: SSL Configuration
+        description: i.e. certificate, keys, supported_protocols, verification_mode etc. See [SSL](https://www.elastic.co/guide/en/beats/filebeat/current/configuration-ssl.html#ssl-server-config) for details.
+        multi: false
+        required: false
+        show_user: false
+        default: |-
+          #certificate: "/etc/server/cert.pem"
+          #key: "/etc/server/key.pem"
+      - name: tcp_options
+        type: yaml
+        title: Custom TCP Options
+        multi: false
+        required: false
+        show_user: false
+        default: |-
+          # framing: delimiter
+          # max_message_size: 50KiB
+          # max_connections: 1
+        description: Specify custom configuration options for the TCP input. See [TCP input](https://www.elastic.co/guide/en/beats/filebeat/current/filebeat-input-tcp.html) for details.
+  - input: udp
+    template_path: udp.yml.hbs
+    title: Syslog events (UDP)
+    description: Collect Syslog events using the UDP input.
+    vars:
+      - name: listen_host
+        type: text
+        title: Listen Address
+        description: The bind address to listen for UDP connections. Set to `0.0.0.0` to bind to all available interfaces.
+        multi: false
+        required: true
+        show_user: true
+        default: localhost
+      - name: listen_port
+        type: integer
+        title: Listen Port
+        description: The UDP port number to listen on.
+        multi: false
+        required: true
+        show_user: true
+        default: 9514
+      - name: tags
+        type: text
+        title: Tags
+        multi: true
+        required: true
+        show_user: false
+        default:
+          - forwarded
+      - name: preserve_original_event
+        required: true
+        show_user: true
+        title: Preserve original event
+        description: Preserves a raw copy of the original event, added to the field `event.original`
+        type: bool
+        multi: false
+        default: false
+      - name: reroute_config
+        type: yaml
+        title: Reroute configuration
+        required: true
+        show_user: true
+        description: List of configurations for rerouting logs. See [configuration](https://www.elastic.co/docs/current/integrations/syslog_router#configuration) for details.
+        default: |-
+          - if:
+              and:
+                - not.has_fields: _conf.dataset
+                - regexp.message: "class com\\.untangle\\."
+            then:
+              - add_fields:
+                  target: ''
+                  fields:
+                    _conf.dataset: "arista_ngfw.log"
+          - if:
+              and:
+                - not.has_fields: _conf.dataset
+                - regexp.message: " CheckPoint [0-9]+ - "
+            then:
+              - add_fields:
+                  target: ''
+                  fields:
+                    _conf.dataset: "checkpoint.firewall"
+                    _conf.tz_offset: "UTC"
+                    _temp_.internal_zones: ['trust']
+                    _temp_.external_zones: ['untrust']
+          - if:
+              and:
+                - not.has_fields: _conf.dataset
+                - regexp.message: "%ASA-"
+            then:
+              - add_fields:
+                  target: ''
+                  fields:
+                    _conf.dataset: "cisco_asa.log"
+                    _conf.tz_offset: "UTC"
+                    _temp_.internal_zones: ['trust']
+                    _temp_.external_zones: ['untrust']
+          - if:
+              and:
+                - not.has_fields: _conf.dataset
+                - regexp.message: "%FTD-"
+            then:
+              - add_fields:
+                  target: ''
+                  fields:
+                    _conf.dataset: "cisco_ftd.log"
+                    _conf.tz_offset: "UTC"
+                    _temp_.internal_zones: ['trust']
+                    _temp_.external_zones: ['untrust']
+          - if:
+              and:
+                - not.has_fields: _conf.dataset
+                - regexp.message: "CISE_+"
+            then:
+              - add_fields:
+                  target: ''
+                  fields:
+                    _conf.dataset: "cisco_ise.log"
+          - if:
+              and:
+                - not.has_fields: _conf.dataset
+                - regexp.message: "(?:(?:amp|antispam|antivirus|consolidated_event|content_scanner|error_logs|gui_logs|mail_logs|status|system):\\s+(?:CEF|Critical|Info|Warning):)"
+            then:
+              - add_fields:
+                  target: ''
+                  fields:
+                    _conf.dataset: "cisco_secure_email_gateway.log"
+                    _conf.tz_offset: "UTC"
+          - if:
+              and:
+                - not.has_fields: _conf.dataset
+                - regexp.message: "CEF:0\\|Citrix\\|NetScaler"
+            then:
+              - add_fields:
+                  target: ''
+                  fields:
+                    _conf.dataset: "citrix_waf.log"
+                    _conf.tz_offset: "UTC"
+          - if:
+              and:
+                - not.has_fields: _conf.dataset
+                - regexp.message: " enSilo "
+            then:
+              - add_fields:
+                  target: ''
+                  fields:
+                    _conf.dataset: "fortinet_fortiedr.log"
+          - if:
+              and:
+                - not.has_fields: _conf.dataset
+                - regexp.message: "devid=\"?FG"
+            then:
+              - add_fields:
+                  target: ''
+                  fields:
+                    _conf.dataset: "fortinet_fortigate.log"
+                    _temp_.internal_networks: ['private']
+                    _temp_.internal_interfaces: []
+                    _temp_.external_interfaces: []
+          - if:
+              and:
+                - not.has_fields: _conf.dataset
+                - regexp.message: "device_id=\"?FMG"
+            then:
+              - add_fields:
+                  target: ''
+                  fields:
+                    _conf.dataset: "fortinet_fortimanager.log"
+          - if:
+              and:
+                - not.has_fields: _conf.dataset
+                - regexp.message: "device_id=\"?FE"
+            then:
+              - add_fields:
+                  target: ''
+                  fields:
+                    _conf.dataset: "fortinet_fortimail.log"
+                    _conf.tz_offset: "UTC"
+          - if:
+              and:
+                - not.has_fields: _conf.dataset
+                - regexp.message: "devid=\"?FPX"
+            then:
+              - add_fields:
+                  target: ''
+                  fields:
+                    _conf.dataset: "fortinet_fortiproxy.log"
+          - if:
+              and:
+                - not.has_fields: _conf.dataset
+                - regexp.message: "IN="
+            then:
+              - add_fields:
+                  target: ''
+                  fields:
+                    _conf.dataset: "iptables.log"
+          - if:
+              and:
+                - not.has_fields: _conf.dataset
+                - or:
+                  - regexp.message: "RT_UTM - "
+                  - regexp.message: "RT_FLOW - "
+            then:
+              - add_fields:
+                  target: ''
+                  fields:
+                    _conf.dataset: "juniper_srx.log"
+          - if:
+              and:
+                - not.has_fields: _conf.dataset
+                - regexp.message: "\\[[0-9]:[0-9]+:[0-9]\\]"
+            then:
+              - add_fields:
+                  target: ''
+                  fields:
+                    _conf.dataset: "snort.log"
+                    _tmp.tz_offset: UTC
+                    _tmp.internal_networks: ['private']
+          - if:
+              and:
+                - not.has_fields: _conf.dataset
+                - regexp.message: "qulogd\\[[0-9]+\\]:"
+            then:
+              - add_fields:
+                  target: ''
+                  fields:
+                    _conf.dataset: "qnap_nas.log"
+                    _tmp.tz_offset: UTC
+          - if:
+              and:
+                - not.has_fields: _conf.dataset
+                - regexp.message: "<[0-9]+>  id=firewall sn=[0-9a-zA-Z]+"
+            then:
+              - add_fields:
+                  target: ''
+                  fields:
+                    _conf.dataset: "sonicwall_firewall.log"
+                    _tmp.tz_offset: UTC
+          - if:
+              and:
+                - not.has_fields: _conf.dataset
+                - regexp.message: "CEF:0\\|Imperva Inc.\\|SecureSphere"
+            then:
+              - add_fields:
+                  target: ''
+                  fields:
+                    _conf.dataset: "imperva.securesphere"
+              - decode_cef:
+                  field: message
+          - if:
+              and:
+                - not.has_fields: _conf.dataset
+                - regexp.message: "1,[0-9]{4}/[0-9]{2}/[0-9]{2}"
+            then:
+              - add_fields:
+                  target: ''
+                  fields:
+                    _conf.dataset: "panw.panos"
+                    _conf.tz_offset: Local
+                    _conf.internal_zones: ['trust']
+                    _conf.external_zones: ['untrust']
+              - copy_fields:
+                  fields:
+                    - from: '@timestamp'
+                      to: event.created
+              - syslog:
+                  field: message
+                  format: auto
+          - if:
+              and:
+                - not.has_fields: _conf.dataset
+                - regexp.message: 'device="SFW"'
+            then:
+              - add_fields:
+                  target: ''
+                  fields:
+                    _conf.dataset: "sophos.xg"
+                    _conf.tz_offset: UTC
+                    _conf.default: firewall.localgroup.local
+                    _conf.mappings:
+                      - hostname: my_fancy_host
+                        serial_number: "1234567890123456"
+                      - hostname: some_other_host.local
+                        serial_number: "1234567890123457"
+          - if:
+              and:
+                - not.has_fields: _conf.dataset
+                - regexp.message: 'id=firewall time="'
+            then:
+              - add_fields:
+                  target: ''
+                  fields:
+                    _conf.dataset: "stormshield.log"
+              - syslog:
+                  field: message
+                  format: rfc5424
+      - name: udp_options
+        type: yaml
+        title: Custom UDP Options
+        multi: false
+        required: false
+        show_user: false
+        default: |
+          #read_buffer: 100MiB
+          #max_message_size: 50KiB
+          #timeout: 300s
+        description: Specify custom configuration options for the UDP input. See [UDP input](https://www.elastic.co/guide/en/beats/filebeat/current/filebeat-input-udp.html) for details.
+  - input: filestream
+    template_path: filestream.yml.hbs
+    title: Syslog events (Filestream)
+    description: Collect Syslog events using the Filestream input.
+    enabled: false
+    vars:
+      - name: paths
+        type: text
+        title: Paths
+        multi: true
+        required: false
+        show_user: true
+        default:
+          - /var/log/syslog.log
+      - name: tags
+        type: text
+        title: Tags
+        multi: true
+        required: true
+        show_user: false
+        default:
+          - forwarded
+      - name: preserve_original_event
+        required: true
+        show_user: true
+        title: Preserve original event
+        description: Preserves a raw copy of the original event, added to the field `event.original`
+        type: bool
+        multi: false
+        default: false
+      - name: filestream_options
+        type: yaml
+        title: Custom Filestream Options
+        multi: false
+        required: false
+        show_user: false
+        description: Specify custom configuration options for the Filestream input. See [filestream input](https://www.elastic.co/guide/en/beats/filebeat/current/filebeat-input-filestream.html) for details.
+      - name: reroute_config
+        type: yaml
+        title: Reroute configuration
+        required: true
+        show_user: true
+        description: List of configurations for rerouting logs. See [configuration](https://www.elastic.co/docs/current/integrations/syslog_router#configuration) for details.
+        default: |-
+          - if:
+              and:
+                - not.has_fields: _conf.dataset
+                - regexp.message: "class com\\.untangle\\."
+            then:
+              - add_fields:
+                  target: ''
+                  fields:
+                    _conf.dataset: "arista_ngfw.log"
+          - if:
+              and:
+                - not.has_fields: _conf.dataset
+                - regexp.message: " CheckPoint [0-9]+ - "
+            then:
+              - add_fields:
+                  target: ''
+                  fields:
+                    _conf.dataset: "checkpoint.firewall"
+                    _conf.tz_offset: "UTC"
+                    _temp_.internal_zones: ['trust']
+                    _temp_.external_zones: ['untrust']
+          - if:
+              and:
+                - not.has_fields: _conf.dataset
+                - regexp.message: "%ASA-"
+            then:
+              - add_fields:
+                  target: ''
+                  fields:
+                    _conf.dataset: "cisco_asa.log"
+                    _conf.tz_offset: "UTC"
+                    _temp_.internal_zones: ['trust']
+                    _temp_.external_zones: ['untrust']
+          - if:
+              and:
+                - not.has_fields: _conf.dataset
+                - regexp.message: "%FTD-"
+            then:
+              - add_fields:
+                  target: ''
+                  fields:
+                    _conf.dataset: "cisco_ftd.log"
+                    _conf.tz_offset: "UTC"
+                    _temp_.internal_zones: ['trust']
+                    _temp_.external_zones: ['untrust']
+          - if:
+              and:
+                - not.has_fields: _conf.dataset
+                - regexp.message: "CISE_+"
+            then:
+              - add_fields:
+                  target: ''
+                  fields:
+                    _conf.dataset: "cisco_ise.log"
+          - if:
+              and:
+                - not.has_fields: _conf.dataset
+                - regexp.message: "(?:(?:amp|antispam|antivirus|consolidated_event|content_scanner|error_logs|gui_logs|mail_logs|status|system):\\s+(?:CEF|Critical|Info|Warning):)"
+            then:
+              - add_fields:
+                  target: ''
+                  fields:
+                    _conf.dataset: "cisco_secure_email_gateway.log"
+                    _conf.tz_offset: "UTC"
+          - if:
+              and:
+                - not.has_fields: _conf.dataset
+                - regexp.message: "CEF:0\\|Citrix\\|NetScaler"
+            then:
+              - add_fields:
+                  target: ''
+                  fields:
+                    _conf.dataset: "citrix_waf.log"
+                    _conf.tz_offset: "UTC"
+          - if:
+              and:
+                - not.has_fields: _conf.dataset
+                - regexp.message: " enSilo "
+            then:
+              - add_fields:
+                  target: ''
+                  fields:
+                    _conf.dataset: "fortinet_fortiedr.log"
+          - if:
+              and:
+                - not.has_fields: _conf.dataset
+                - regexp.message: "devid=\"?FG"
+            then:
+              - add_fields:
+                  target: ''
+                  fields:
+                    _conf.dataset: "fortinet_fortigate.log"
+                    _temp_.internal_networks: ['private']
+                    _temp_.internal_interfaces: []
+                    _temp_.external_interfaces: []
+          - if:
+              and:
+                - not.has_fields: _conf.dataset
+                - regexp.message: "device_id=\"?FMG"
+            then:
+              - add_fields:
+                  target: ''
+                  fields:
+                    _conf.dataset: "fortinet_fortimanager.log"
+          - if:
+              and:
+                - not.has_fields: _conf.dataset
+                - regexp.message: "device_id=\"?FE"
+            then:
+              - add_fields:
+                  target: ''
+                  fields:
+                    _conf.dataset: "fortinet_fortimail.log"
+                    _conf.tz_offset: "UTC"
+          - if:
+              and:
+                - not.has_fields: _conf.dataset
+                - regexp.message: "devid=\"?FPX"
+            then:
+              - add_fields:
+                  target: ''
+                  fields:
+                    _conf.dataset: "fortinet_fortiproxy.log"
+          - if:
+              and:
+                - not.has_fields: _conf.dataset
+                - regexp.message: "IN="
+            then:
+              - add_fields:
+                  target: ''
+                  fields:
+                    _conf.dataset: "iptables.log"
+          - if:
+              and:
+                - not.has_fields: _conf.dataset
+                - or:
+                  - regexp.message: "RT_UTM - "
+                  - regexp.message: "RT_FLOW - "
+            then:
+              - add_fields:
+                  target: ''
+                  fields:
+                    _conf.dataset: "juniper_srx.log"
+          - if:
+              and:
+                - not.has_fields: _conf.dataset
+                - regexp.message: "\\[[0-9]:[0-9]+:[0-9]\\]"
+            then:
+              - add_fields:
+                  target: ''
+                  fields:
+                    _conf.dataset: "snort.log"
+                    _tmp.tz_offset: UTC
+                    _tmp.internal_networks: ['private']
+          - if:
+              and:
+                - not.has_fields: _conf.dataset
+                - regexp.message: "qulogd\\[[0-9]+\\]:"
+            then:
+              - add_fields:
+                  target: ''
+                  fields:
+                    _conf.dataset: "qnap_nas.log"
+                    _tmp.tz_offset: UTC
+          - if:
+              and:
+                - not.has_fields: _conf.dataset
+                - regexp.message: "<[0-9]+>  id=firewall sn=[0-9a-zA-Z]+"
+            then:
+              - add_fields:
+                  target: ''
+                  fields:
+                    _conf.dataset: "sonicwall_firewall.log"
+                    _tmp.tz_offset: UTC
+          - if:
+              and:
+                - not.has_fields: _conf.dataset
+                - regexp.message: "CEF:0\\|Imperva Inc.\\|SecureSphere"
+            then:
+              - add_fields:
+                  target: ''
+                  fields:
+                    _conf.dataset: "imperva.securesphere"
+              - decode_cef:
+                  field: message
+          - if:
+              and:
+                - not.has_fields: _conf.dataset
+                - regexp.message: "1,[0-9]{4}/[0-9]{2}/[0-9]{2}"
+            then:
+              - add_fields:
+                  target: ''
+                  fields:
+                    _conf.dataset: "panw.panos"
+                    _conf.tz_offset: Local
+                    _conf.internal_zones: ['trust']
+                    _conf.external_zones: ['untrust']
+              - copy_fields:
+                  fields:
+                    - from: '@timestamp'
+                      to: event.created
+              - syslog:
+                  field: message
+                  format: auto
+          - if:
+              and:
+                - not.has_fields: _conf.dataset
+                - regexp.message: 'device="SFW"'
+            then:
+              - add_fields:
+                  target: ''
+                  fields:
+                    _conf.dataset: "sophos.xg"
+                    _conf.tz_offset: UTC
+                    _conf.default: firewall.localgroup.local
+                    _conf.mappings:
+                      - hostname: my_fancy_host
+                        serial_number: "1234567890123456"
+                      - hostname: some_other_host.local
+                        serial_number: "1234567890123457"
+          - if:
+              and:
+                - not.has_fields: _conf.dataset
+                - regexp.message: 'id=firewall time="'
+            then:
+              - add_fields:
+                  target: ''
+                  fields:
+                    _conf.dataset: "stormshield.log"
+              - syslog:
+                  field: message
+                  format: rfc5424
+elasticsearch:
+  dynamic_dataset: true
+  dynamic_namespace: true

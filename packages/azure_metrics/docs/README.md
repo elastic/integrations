@@ -58,7 +58,7 @@ Elastic Agent needs an App Registration to access Azure on your behalf to collec
 To use this integration you will need:
 
 * **Azure App Registration**: You need to set up an Azure App Registration to allow the Agent to access the Azure APIs. See more details in the [Setup section](#setup).
-* **Elasticsearch and Kibana**: You need Elasticsearch to store and search your data and Kibana to visualize and manage it. You can use our hosted Elasticsearch Service on Elastic Cloud, which is recommended, the [Native Azure Integration](https://azuremarketplace.microsoft.com/en-us/marketplace/apps/elastic.elasticsearch?tab=Overview), or self-manage the Elastic Stack on your hardware.
+* **Elasticsearch and Kibana**: You need Elasticsearch to store and search your data and Kibana to visualize and manage it. You can use our hosted Elasticsearch Service on Elastic Cloud, which is recommended, the [Native Azure Integration](https://azuremarketplace.microsoft.com/en/marketplace/apps/elastic.ec-azure-pp?tab=overview), or self-manage the Elastic Stack on your hardware.
 
 ### Authentication and costs
 
@@ -149,7 +149,7 @@ Your App Registration is now ready for the Elastic Agent.
 
 Add the Azure Resource Metrics integration in Kibana and specify settings.
 
-If you're new to integrations, you can find step-by-step instructions on how to set up an integration in the [Getting started](https://www.elastic.co/guide/en/welcome-to-elastic/current/getting-started-observability.html) guide.
+If you're new to integrations, you can find step-by-step instructions on how to set up an integration in the [Getting started](https://www.elastic.co/guide/en/starting-with-the-elasticsearch-platform-and-its-solutions/current/getting-started-observability.html) guide.
 
 The settings' main section contains all the options needed to access the Azure APIs and collect the monitoring data. You will now use all the values from [App registration](#app-registration) including:
 

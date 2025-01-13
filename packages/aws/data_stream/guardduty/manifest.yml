@@ -136,7 +136,14 @@ streams:
         multi: false
         required: false
         show_user: true
-        description: It is a required parameter for collecting logs via the AWS S3 Bucket.
+        description: Mandatory if the "Collect logs via S3 Bucket" switch is on. It is a required parameter for collecting logs via the AWS S3 Bucket unless you set an Access Point ARN. In case both configurations are added, this one takes precedence.
+      - name: access_point_arn
+        type: text
+        title: "[S3] Access Point ARN"
+        multi: false
+        required: false
+        show_user: true
+        description: Mandatory if the "Collect logs via S3 Bucket" switch is on. It is a required parameter for collecting logs via the AWS S3 Bucket unless you set a Bucket ARN.
       - name: bucket_list_prefix
         type: text
         title: "[S3] Bucket Prefix"
@@ -190,12 +197,8 @@ streams:
         show_user: true
         default: 5
         description: >
-          The maximum number of SQS messages that can be inflight at any time. Defaults to 5. When processing large
-          amount of large size S3 objects and each object has large amount of events, if this parameter sets too high,
-          it can cause the input to process too many messages concurrently, overload the agent and cause ingest failure.
-          We recommend to keep the default value 5 and use the [preset](https://www.elastic.co/guide/en/fleet/current/es-output-settings.html#es-output-settings-performance-tuning-settings)
-          option to tune your Elastic Agent performance. You can optimize for throughput, scale, latency, or you can
-          choose a balanced (the default) set of performance specifications.
+          The maximum number of SQS messages that can be inflight at any time. Defaults to 5. When processing large amount of large size S3 objects and each object has large amount of events, if this parameter sets too high, it can cause the input to process too many messages concurrently, overload the agent and cause ingest failure. We recommend to keep the default value 5 and use the [preset](https://www.elastic.co/guide/en/fleet/current/es-output-settings.html#es-output-settings-performance-tuning-settings) option to tune your Elastic Agent performance. You can optimize for throughput, scale, latency, or you can choose a balanced (the default) set of performance specifications.
+
       - name: file_selectors
         type: yaml
         title: "[SQS] File Selectors"

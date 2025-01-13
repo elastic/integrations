@@ -1,7 +1,7 @@
 format_version: "3.0.2"
 name: microsoft_exchange_online_message_trace
 title: "Microsoft Exchange Online Message Trace"
-version: "1.23.0"
+version: "1.25.1"
 description: "Microsoft Exchange Online Message Trace Integration"
 type: integration
 categories:
@@ -123,10 +123,27 @@ policy_templates:
             type: text
             title: Initial Interval
             description: How far back to pull the initial log from Exchange Online. Supported units for this parameter are h/m/s.
+            default: 48h
+            multi: false
+            required: true
+            show_user: true
+          - name: min_age
+            type: text
+            title: Minimum Age
+            description: |
+              Logs will not be requested until they are at least this old. This value should be always lesser in value than the initial_interval.
+              Supported units for this parameter are h/m/s.
             default: 1h
             multi: false
             required: true
             show_user: true
+          - name: drop_status
+            type: text
+            title: Drop Logs With Status
+            description: Logs having the status string defined here will be dropped in the ingest pipeline.
+            multi: false
+            required: false
+            show_user: false
           - name: additional_look_back
             type: text
             title: Additional Look-back Time
