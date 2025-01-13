@@ -34,6 +34,14 @@ processors:
   - json:
       field: event.original
       target_field: misp.attribute
+  - fingerprint:
+      fields:
+        - misp.attribute.first_seen
+        - misp.attribute.timestamp
+        - misp.attribute.uuid
+        - misp.attribute.Event.uuid
+      target_field: "_id"
+      ignore_missing: true
   - set:
       field: threat.indicator.provider
       value: misp
@@ -524,12 +532,6 @@ processors:
         handleMap(ctx);
   # Removing fields not needed anymore, either because its copied somewhere else, or is not relevant to this event
   - remove:
-      field: event.original
-      if: "ctx.tags == null || !(ctx.tags.contains('preserve_original_event'))"
-      ignore_failure: true
-      ignore_missing: true
-
-  - remove:
       field:
         - misp.attribute.value
       ignore_missing: true
@@ -550,6 +552,10 @@ on_failure:
   - set:
       field: event.kind
       value: pipeline_error
+  - append:
+      field: tags
+      value: preserve_original_event
+      allow_duplicates: false
   - append:
       field: error.message
       value: '{{{ _ingest.on_failure_message }}}'

@@ -377,6 +377,10 @@ processors:
     field: event.category
     value: network
 - append:
+    field: event.category
+    value: authentication
+    if: ctx.juniper?.srx?.tag == "SSHD_LOGIN_FAILED"
+- append:
     field: event.type
     value: allowed
     if: ctx.juniper?.srx?.firewall?.filter_action == 'A'
@@ -410,6 +414,10 @@ processors:
     field: event.outcome
     value: success
     if: ctx.juniper?.srx?.ping_test != null
+- set:
+    field: event.outcome
+    value: failure
+    if: ctx.juniper?.srx?.tag == "SSHD_LOGIN_FAILED"
 
 ####################################
 ## ECS Server/Destination Mapping ##
@@ -754,6 +762,11 @@ processors:
     target_field: observer.name
     ignore_missing: true
     if: "ctx.syslog_hostname != null && ctx.observer?.name == null"
+- set:
+    copy_from: observer.name
+    field: host.name
+    ignore_empty_value: true
+
 ######################
 ## ECS Rule Mapping ##
 ######################

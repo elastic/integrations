@@ -1,0 +1,74 @@
+---
+description: Pipeline for Amazon Bedrock guardrail metrics
+processors:
+- dot_expander:
+    field: "*"
+    ignore_failure: true
+- set:
+    field: cloud.account.name
+    copy_from: cloud.account.id
+    override: false
+    ignore_empty_value: true
+- rename:   
+    field: aws.guardrails.metrics
+    target_field: aws_bedrock.guardrails
+    ignore_missing: true
+- rename: 
+    field: aws_bedrock.guardrails.Invocations.sum
+    target_field: aws_bedrock.guardrails.invocations
+    ignore_missing: true
+- rename: 
+    field: aws_bedrock.guardrails.InvocationClientErrors.sum
+    target_field: aws_bedrock.guardrails.invocation_client_errors
+    ignore_missing: true
+- rename: 
+    field: aws_bedrock.guardrails.InvocationServerErrors.sum
+    target_field: aws_bedrock.guardrails.invocation_server_errors
+    ignore_missing: true
+- rename: 
+    field: aws_bedrock.guardrails.InvocationThrottles.sum
+    target_field: aws_bedrock.guardrails.invocation_throttles
+    ignore_missing: true
+- rename: 
+    field: aws_bedrock.guardrails.TextUnitCount.sum
+    target_field: aws_bedrock.guardrails.text_unit_count
+    ignore_missing: true
+- rename: 
+    field: aws_bedrock.guardrails.InvocationsIntervened.sum
+    target_field: aws_bedrock.guardrails.invocations_intervened
+    ignore_missing: true
+- rename: 
+    field: aws_bedrock.guardrails.InvocationLatency.avg
+    target_field: aws_bedrock.guardrails.invocation_latency
+    ignore_missing: true
+- rename:
+    field: aws.dimensions.Operation
+    target_field: aws_bedrock.guardrails.operation
+    ignore_missing: true
+- rename:
+    field: aws.dimensions.GuardrailContentSource
+    target_field: aws_bedrock.guardrails.guardrail_content_source
+    ignore_missing: true
+- rename:
+    field: aws.dimensions.GuardrailPolicyType
+    target_field: aws_bedrock.guardrails.guardrail_policy_type
+    ignore_missing: true
+- rename:
+    field: aws.dimensions.GuardrailArn
+    target_field: aws_bedrock.guardrails.guardrail_arn
+    ignore_missing: true
+- rename:
+    field: aws.dimensions.GuardrailVersion
+    target_field: aws_bedrock.guardrails.guardrail_version
+    ignore_missing: true
+on_failure:
+- set:
+    field: event.kind
+    value: pipeline_error
+- append:
+    field: tags
+    value: preserve_original_event
+    allow_duplicates: false
+- set:
+    field: error.message
+    value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'

@@ -22,7 +22,7 @@ You will have to configure the path for the output file within the integration s
 /home/<user>/.bbot/scans/*/output.ndjson
 ```
 
-BBOT Scanning [Documentation](https://www.blacklanternsecurity.com/bbot/scanning/).
+BBOT Scanning [Documentation](https://www.blacklanternsecurity.com/bbot/Stable/scanning/).
 
 ## Data streams
 

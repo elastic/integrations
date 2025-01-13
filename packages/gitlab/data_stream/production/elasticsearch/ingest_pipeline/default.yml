@@ -108,7 +108,7 @@ processors:
     description: Convert event.duration from seconds to nanoseconds.
     if: ctx.event?.duration != null
     lang: painless
-    source:
+    source: |
       ctx.event['duration'] = ctx.event.duration * 1e9;
 - convert:
     target_field: source.ip
@@ -247,12 +247,6 @@ processors:
     - database
     allow_duplicates: false
     if: ctx.url?.path == '/dashboard/groups'
-- remove:
-    field: event.original
-    tag: remove_original_event
-    if: ctx?.tags == null || !(ctx.tags.contains("preserve_original_event"))
-    ignore_failure: true
-    ignore_missing: true
 - script:
     description: Drops null/empty values recursively.
     lang: painless
@@ -278,3 +272,7 @@ on_failure:
 - set:
     field: event.kind
     value: pipeline_error
+- append:
+    field: tags
+    value: preserve_original_event
+    allow_duplicates: false

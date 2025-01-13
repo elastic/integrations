@@ -6,13 +6,27 @@ The GitHub integration collects events from the [GitHub API](https://docs.github
 
 ### Audit
 
-The GitHub audit log records all events related to the GitHub organization. See [Audit log actions](https://docs.github.com/en/organizations/keeping-your-organization-secure/reviewing-the-audit-log-for-your-organization#audit-log-actions) for more details.
+The GitHub audit log records all events related to the GitHub organization/enterprise. See [Organization audit log actions](https://docs.github.com/en/organizations/keeping-your-organization-secure/reviewing-the-audit-log-for-your-organization#audit-log-actions) and [Enterprise audit log actions](https://docs.github.com/en/enterprise-cloud@latest/admin/monitoring-activity-in-your-enterprise/reviewing-audit-logs-for-your-enterprise/about-the-audit-log-for-your-enterprise) for more details.
 
 To use this integration, the following prerequisites must be met:
- - You must be an organization owner.
- - You must be using GitHub Enterprise Cloud.
- - You must use a Personal Access Token with `read:audit_log` scope.
 
+For GitHub Enterprise Cloud:
+  - You must be an enterprise owner.
+  - Your enterprise account must be on a GitHub Enterprise Cloud plan that includes audit log access.
+
+For GitHub Enterprise Server:
+  - You need to be a site administrator to access the audit log for the entire instance.
+  - The audit log is part of the server deployment. Ensure audit logging is enabled in the server configuration.
+
+For Organizations:
+  - You must be an organization owner.
+  - You must be using GitHub Enterprise Cloud.
+  - The organization must be part of an enterprise plan that includes audit log functionality.
+
+Required scopes:
+ - You must use a Personal Access Token with `read:audit_log` scope. This applies to both organization and enterprise admins.
+ - If you're an enterprise admin, ensure your token also includes `admin:enterprise` to access enterprise-wide logs.
+ 
 *This integration is not compatible with GitHub Enterprise server.*
 
 **Exported fields**
