@@ -46,18 +46,62 @@ processors:
       description: Convert servicenow.event.* scalar values to a .value field in an object if necessary.
       lang: painless
       if: ctx.servicenow?.event instanceof Map
+      params:
+        escalation:
+          'Normal': 0
+        install_status:
+          'In use': 1
+          'In stock': 6
+          'Retired': 7
+          'Missing': 8
+          'In transit': 9
+        priority:
+          '1 - Critical': 1
+          '2 - High': 2
+          '3 - Moderate': 3
+          '4 - Low': 4
+        problem_state:
+          'Open': 1
+          'Known Error': 2
+          'Pending Change': 3
+          'Closed/Resolved': 4
       source: |
         for (def entry: ctx.servicenow.event.entrySet()) {
-          if (entry.getKey() == 'table_name') {
+          def k = entry.getKey();
+          if (k == 'table_name') {
             continue;
           }
           def v = entry.getValue();
           if (v instanceof Map) {
             continue;
           }
-          Map n = [:];
-          n.value = v;
-          entry.setValue(n);
+          if (v != null) {
+            String v_san = /[,\$]/.matcher(v).replaceAll('');
+            Map n = [:];
+            try {
+              long pl = Long.parseLong(v_san);
+              n.value = pl;
+            }
+            catch (NumberFormatException nfel) {
+              try {
+                double pd = Double.parseDouble(v_san);
+                n.value = pd;
+              }
+              catch (NumberFormatException nfed) {
+                // Unparsable string, set to display_value.
+                n.display_value = v;
+
+                // Make effort to derive .value from .display_value using params mappings.
+                if (params[k] != null && params[k][v] != null) {
+                  n.value = params[k][v];
+                }
+
+                // Copy raw value into .value if unable to derive. This is required to avoid few processor failures that rely on .value.
+                n.value = v;
+              }
+            }
+            entry.setValue(n);
+          }
         }
   - rename:
       field: _conf.table_name
