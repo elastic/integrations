@@ -53,7 +53,7 @@ In order to ingest data from MySQL:
 
 ## Setup
 
-For step-by-step instructions on how to set up an integration, see the [Getting started](https://www.elastic.co/guide/en/welcome-to-elastic/current/getting-started-observability.html) guide.
+For step-by-step instructions on how to set up an integration, see the [Getting started](https://www.elastic.co/guide/en/starting-with-the-elasticsearch-platform-and-its-solutions/current/getting-started-observability.html) guide.
 
 ## Validation
 
@@ -69,6 +69,8 @@ For MySQL, MariaDB and Percona the query to check replica status varies dependin
 
 The `error` dataset collects the MySQL error logs.
 
+{{event "error"}}
+
 **ECS Field Reference**
 
 Please refer to the following [document](https://www.elastic.co/guide/en/ecs/current/ecs-field-reference.html) for detailed information on ECS fields.
@@ -78,6 +80,8 @@ Please refer to the following [document](https://www.elastic.co/guide/en/ecs/cur
 ### Slow Log
 
 The `slowlog` dataset collects the MySQL slow logs.
+
+{{event "slowlog"}}
 
 **ECS Field Reference**
 

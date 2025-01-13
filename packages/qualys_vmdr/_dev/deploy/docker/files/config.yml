@@ -4,7 +4,17 @@ rules:
     query_params:
       action: list
       truncation_limit: 1000
-      id_min: 5641289 # Pagination request.
+      id_min: 77777777 # Pagination request 2. Should returns 0 events.
+    responses:
+      - status_code: 200
+        body: |- # handling empty XML response
+
+  - path: /api/2.0/fo/asset/host/vm/detection/
+    methods: ['GET']
+    query_params:
+      action: list
+      truncation_limit: 1000
+      id_min: 5641289 # Pagination request 1.
     responses:
       - status_code: 200
         body: |-
@@ -112,6 +122,11 @@ rules:
                   </DETECTION_LIST>
                 </HOST>
               </HOST_LIST>
+              <WARNING>
+                <CODE>1980</CODE>
+                <TEXT>1000 record limit exceeded. Use URL to get next batch of results.</TEXT>
+                <URL><![CDATA[http://{{ env "SERVER_ADDRESS" }}/api/2.0/fo/asset/host/vm/detection/?action=list&truncation_limit=1000&id_min=77777777]]></URL>
+              </WARNING>
             </RESPONSE>
           </HOST_LIST_VM_DETECTION_OUTPUT>
   - path: /api/2.0/fo/asset/host/vm/detection/
@@ -230,7 +245,7 @@ rules:
                 <CODE>1980</CODE>
                 <TEXT>1000 record limit exceeded. Use URL to get next batch of results.</TEXT>
                 <URL><![CDATA[http://{{ env "SERVER_ADDRESS" }}/api/2.0/fo/asset/host/vm/detection/?action=list&truncation_limit=1000&id_min=5641289]]></URL>
-                </WARNING>
+              </WARNING>
             </RESPONSE>
           </HOST_LIST_VM_DETECTION_OUTPUT>
   - path: /api/2.0/fo/knowledge_base/vuln/
