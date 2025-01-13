@@ -69,6 +69,10 @@ processors:
       field: onepassword.user.name
       target_field: user.full_name
       ignore_missing: true
+  - set:
+      field: user.name
+      copy_from: user.full_name
+      ignore_empty_value: true
   - rename:
       field: onepassword.user.email
       target_field: user.email
@@ -130,6 +134,10 @@ on_failure:
   - set:
       field: event.kind
       value: pipeline_error
+  - append:
+      field: tags
+      value: preserve_original_event
+      allow_duplicates: false
   - append:
       field: error.message
       value: '{{{ _ingest.on_failure_message }}}'

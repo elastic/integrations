@@ -240,6 +240,21 @@ processors:
       tag: set_user_name_from_username
       copy_from: citrix_adc.log.username
       ignore_empty_value: true
+  - set:
+      field: event.kind
+      value: event
+  - set:
+      field: event.outcome
+      value: success
+      if: ctx?.event?.outcome == null && ctx?.event?.category == "authentication" && ctx?.citrix_adc?.log?.access == "Allowed"
+  - set:
+      field: event.outcome
+      value: failure
+      if: ctx?.event?.outcome == null && ctx?.event?.category == "authentication" && ctx?.citrix_adc?.log?.access != "Allowed"
+  - set:
+      field: observer.hostname
+      copy_from: citrix.host
+      ignore_empty_value: true
   - convert:
       field: citrix_adc.log.reputation
       tag: convert_reputation_to_long
@@ -411,7 +426,8 @@ processors:
 on_failure:
   - append:
       field: error.message
-      value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+      value: |-
+        Processor "{{{ _ingest.on_failure_processor_type }}}" with tag "{{{ _ingest.on_failure_processor_tag }}}" in pipeline "{{{ _ingest.on_failure_pipeline }}}" failed with message "{{{ _ingest.on_failure_message }}}"
   - set:
       field: event.kind
       tag: set_pipeline_error_to_event_kind

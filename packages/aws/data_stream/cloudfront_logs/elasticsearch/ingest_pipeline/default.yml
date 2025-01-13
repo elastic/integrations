@@ -209,48 +209,48 @@ processors:
       source: >-
         ctx.event.duration = (Long)(Float.parseFloat(ctx._tmp.time_taken) * params.S_TO_NS);
   # x-forwarded-for
+  - split:
+      field: _tmp.x_forwarded_for
+      separator: ","
+      target_field: _tmp.split_x_forwarded_for
+      if: ctx._tmp?.x_forwarded_for != null && ctx._tmp.x_forwarded_for != '-'
   - script:
       lang: painless
-      description: Parse x-forwarded-for ip-addresses. Add invalid values to an error string without failing.
-      if: ctx._tmp?.x_forwarded_for != null && ctx._tmp.x_forwarded_for != '-'
+      description: trim leading and trailing whitespace from the split IPs 
+      if: ctx._tmp?.split_x_forwarded_for != null
       source: |
-        ArrayList ips = new ArrayList();
-        ArrayList bad_ips = new ArrayList();
-        def raw_ips = ctx._tmp?.x_forwarded_for.splitOnToken(',');
-
-        // Patterns used for ip validation, inspired by logstash. Used as a workaround due to lack of a simpler method.
-        Pattern ipv4 = /^(?<![0-9])(?:(?:[0-1]?[0-9]{1,2}|2[0-4][0-9]|25[0-5])[.](?:[0-1]?[0-9]{1,2}|2[0-4][0-9]|25[0-5])[.](?:[0-1]?[0-9]{1,2}|2[0-4][0-9]|25[0-5])[.](?:[0-1]?[0-9]{1,2}|2[0-4][0-9]|25[0-5]))(?![0-9])$/;
-        Pattern ipv6 = /^((([0-9A-Fa-f]{1,4}:){7}([0-9A-Fa-f]{1,4}|:))|(([0-9A-Fa-f]{1,4}:){6}(:[0-9A-Fa-f]{1,4}|((25[0-5]|2[0-4]\d|1\d\d|[1-9]?\d)(\.(25[0-5]|2[0-4]\d|1\d\d|[1-9]?\d)){3})|:))|(([0-9A-Fa-f]{1,4}:){5}(((:[0-9A-Fa-f]{1,4}){1,2})|:((25[0-5]|2[0-4]\d|1\d\d|[1-9]?\d)(\.(25[0-5]|2[0-4]\d|1\d\d|[1-9]?\d)){3})|:))|(([0-9A-Fa-f]{1,4}:){4}(((:[0-9A-Fa-f]{1,4}){1,3})|((:[0-9A-Fa-f]{1,4})?:((25[0-5]|2[0-4]\d|1\d\d|[1-9]?\d)(\.(25[0-5]|2[0-4]\d|1\d\d|[1-9]?\d)){3}))|:))|(([0-9A-Fa-f]{1,4}:){3}(((:[0-9A-Fa-f]{1,4}){1,4})|((:[0-9A-Fa-f]{1,4}){0,2}:((25[0-5]|2[0-4]\d|1\d\d|[1-9]?\d)(\.(25[0-5]|2[0-4]\d|1\d\d|[1-9]?\d)){3}))|:))|(([0-9A-Fa-f]{1,4}:){2}(((:[0-9A-Fa-f]{1,4}){1,5})|((:[0-9A-Fa-f]{1,4}){0,3}:((25[0-5]|2[0-4]\d|1\d\d|[1-9]?\d)(\.(25[0-5]|2[0-4]\d|1\d\d|[1-9]?\d)){3}))|:))|(([0-9A-Fa-f]{1,4}:){1}(((:[0-9A-Fa-f]{1,4}){1,6})|((:[0-9A-Fa-f]{1,4}){0,4}:((25[0-5]|2[0-4]\d|1\d\d|[1-9]?\d)(\.(25[0-5]|2[0-4]\d|1\d\d|[1-9]?\d)){3}))|:))|(:(((:[0-9A-Fa-f]{1,4}){1,7})|((:[0-9A-Fa-f]{1,4}){0,5}:((25[0-5]|2[0-4]\d|1\d\d|[1-9]?\d)(\.(25[0-5]|2[0-4]\d|1\d\d|[1-9]?\d)){3}))|:)))(%.+)??$/;
-
-        // Sanitize all ip strings
-        for (String raw_item : raw_ips ) {
-          String item = raw_item.trim();
-
-          if (ipv4.matcher(item).matches() || ipv6.matcher(item).matches()) {
-            ips.add(item);
-          }
-          // Edge case observed in the wild. E.g. 'localhost:8081'
-          else if (item.startsWith('localhost')) {
-            ips.add('127.0.0.1')
-          }
-          else {
-            bad_ips.add(item);
-          }
+        for (int i = 0; i < ctx._tmp.split_x_forwarded_for.length; i++) {
+          ctx._tmp.split_x_forwarded_for[i] = ctx._tmp.split_x_forwarded_for[i].trim();
         }
-
-        // Workaround due to lack of support of dotted fields
-        if (ctx.get('network') == null) {
-          ctx['network'] = new HashMap();
-        }
-        ctx['network']['forwarded_ip'] = ips;
-
-        if (bad_ips.length > 0 ) {
-          ctx['_tmp']['error_message'] = "Invalid ip addresses: " + bad_ips.join(',');
-        }
+  - foreach:
+      field: _tmp.split_x_forwarded_for
+      if: ctx._tmp.split_x_forwarded_for instanceof List
+      processor:
+        pipeline:
+          name: '{{ IngestPipeline "pipeline_process_ip" }}'
+          tag: pipeline_process_ip
+          ignore_missing_pipeline: true
   - append:
       field: error.message
-      value: "{{{ _tmp.error_message }}}"
-      if: ctx._tmp?.error_message != null
+      value: "Invalid IP addresses: {{_tmp.invalid_ips}}"
+      if: ctx._tmp.invalid_ips != null
+  - script:
+      lang: painless
+      description: Handle 'localhost' edge case, currently not handled via grok
+      if: ctx._tmp?.split_x_forwarded_for != null && ctx._tmp.split_x_forwarded_for != '-'
+      source: |
+          if (ctx.get('network') == null) {
+              ctx['network'] = new HashMap();
+            }
+          for (String item : ctx._tmp.split_x_forwarded_for ) {
+            // edge case observed in the wild. e.g. 'localhost:8081'
+            if (item.startsWith('localhost')) {
+            if (ctx.network.forwarded_ip == null) {
+              ctx['network']['forwarded_ip'] = new ArrayList();
+            }
+              ctx['network']['forwarded_ip'].add('127.0.0.1');
+            }
+          }
   - foreach:
       field: network.forwarded_ip
       processor:

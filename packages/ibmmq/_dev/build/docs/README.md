@@ -28,7 +28,7 @@ Note:
 
 ## Compatibility
 
-This integration has been tested against `IBM MQ v9.1` and `IBM MQ v9.2`. The ibmmq `qmgr` data stream is compatible with a containerized distribution of IBM MQ (since version 9.1.0).
+This integration has been tested against IBM MQ v9.1 and IBM MQ v9.2. Currently, the `ibmmq qmgr` data stream is only compatible with the containerized versions of IBM MQ, such as those available from [IBM Cloud Container Registry](https://icr.io/) or [Docker Hub](https://hub.docker.com/r/ibmcom/mq). 
 
 ## Prerequisites
 
@@ -41,7 +41,7 @@ In order to ingest data from IBM MQ:
 
 ## Setup
 
-For step-by-step instructions on how to set up an integration, see the [Getting started](https://www.elastic.co/guide/en/welcome-to-elastic/current/getting-started-observability.html) guide.
+For step-by-step instructions on how to set up an integration, see the [Getting started](https://www.elastic.co/guide/en/starting-with-the-elasticsearch-platform-and-its-solutions/current/getting-started-observability.html) guide.
 
 ## Steps to setup Prometheus
 

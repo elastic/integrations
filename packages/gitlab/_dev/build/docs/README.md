@@ -10,7 +10,11 @@ This integration is for ingesting logs from [GitLab](https://about.gitlab.com/).
 
 - **auth**: Collect logs for protected paths abusive requests or requests over the Rate Limit.
 
+- **pages**: Collect logs for Pages.
+
 - **production**: Collect logs for Rails controller requests received from GitLab.
+
+- **sidekiq**: Collect logs from [sidekiq](https://sidekiq.org/) for jobs background jobs that take a long time.
 
 See the GitLab [Log system docs](https://docs.gitlab.com/ee/administration/logs/) for more information.
 
@@ -79,6 +83,14 @@ Collect logs for abusive protect paths requests or requests over the Rate Limit.
 
 {{event "auth"}}
 
+### pages
+
+Collect logs for Pages. Check out the [GitLab Pages log docs](https://docs.gitlab.com/ee/administration/logs/#pages-logs) for more information.
+
+{{fields "pages"}}
+
+{{event "pages"}}
+
 ### production
 
 Collect logs for Rails controller requests received from GitLab. Check out the [GitLab production log docs](https://docs.gitlab.com/ee/administration/logs/#production_jsonlog) for more information.
@@ -86,3 +98,11 @@ Collect logs for Rails controller requests received from GitLab. Check out the [
 {{fields "production"}}
 
 {{event "production"}}
+
+### sidekiq
+
+Collect logs from sidekiq for jobs background jobs that take a long time. Check out the [GitLab sidekiq log docs](https://docs.gitlab.com/ee/administration/logs/#sidekiq-logs) for more information.
+
+{{fields "sidekiq"}}
+
+{{event "sidekiq"}}

@@ -44,7 +44,29 @@ You can run Elastic Agent inside a container, either with Fleet Server or standa
 
 There are some minimum requirements for running Elastic Agent and for more information, refer to the link [here](https://www.elastic.co/guide/en/fleet/current/elastic-agent-installation.html).
 
-The minimum **kibana.version** required is **8.9.0**.
+### Permissions
+
+#### Asset Host Detection
+
+| Role                    | Permission                                     |
+|-------------------------|------------------------------------------------|
+| _Managers_              | All VM scanned hosts in subscription           |
+| _Unit Managers_         | VM scanned hosts in user’s business unit       |
+| _Scanners_              | VM scanned hosts in user’s account             |
+| _Readers_               | VM scanned hosts in user’s account             |
+
+#### Knowledge Base
+
+_Managers_, _Unit Managers_, _Scanners_, _Readers_ have permission to download vulnerability data from the KnowledgeBase.
+
+#### User Activity Log
+
+| Role                    | Permission                                     |
+|-------------------------|------------------------------------------------|
+| _Managers_              | All actions taken by all users                 |
+| _Unit Managers_         | Actions taken by users in their business unit  |
+| _Scanners_              | Own actions only                               |
+| _Readers_               | Own actions only                               |
 
 ## Setup
 
@@ -96,24 +118,24 @@ An example event for `asset_host_detection` looks as following:
 
 ```json
 {
-    "@timestamp": "2024-09-25T21:44:26.325Z",
+    "@timestamp": "2024-12-05T11:02:04.225Z",
     "agent": {
-        "ephemeral_id": "f8145b5b-4d53-444a-bd44-2f296cf357e6",
-        "id": "efcbf604-6e25-41db-a21e-22c8227e0663",
-        "name": "elastic-agent-93250",
+        "ephemeral_id": "9c04104d-1da0-4c98-b133-0aedefdc2680",
+        "id": "dccf1148-df50-4c35-a3d7-633418e936ff",
+        "name": "elastic-agent-88337",
         "type": "filebeat",
         "version": "8.13.0"
     },
     "data_stream": {
         "dataset": "qualys_vmdr.asset_host_detection",
-        "namespace": "88572",
+        "namespace": "85068",
         "type": "logs"
     },
     "ecs": {
         "version": "8.11.0"
     },
     "elastic_agent": {
-        "id": "efcbf604-6e25-41db-a21e-22c8227e0663",
+        "id": "dccf1148-df50-4c35-a3d7-633418e936ff",
         "snapshot": false,
         "version": "8.13.0"
     },
@@ -123,7 +145,7 @@ An example event for `asset_host_detection` looks as following:
             "host"
         ],
         "dataset": "qualys_vmdr.asset_host_detection",
-        "ingested": "2024-09-25T21:44:29Z",
+        "ingested": "2024-12-05T11:02:07Z",
         "kind": "alert",
         "original": "{\"DETECTION_LIST\":{\"AFFECT_RUNNING_KERNEL\":\"0\",\"FIRST_FOUND_DATETIME\":\"2021-02-05T04:50:45Z\",\"IS_DISABLED\":\"0\",\"IS_IGNORED\":\"0\",\"LAST_FIXED_DATETIME\":\"2022-12-14T06:52:57Z\",\"LAST_FOUND_DATETIME\":\"2024-03-08T20:15:41Z\",\"LAST_PROCESSED_DATETIME\":\"2024-03-08T20:15:41Z\",\"LAST_TEST_DATETIME\":\"2024-03-08T20:15:41Z\",\"LAST_UPDATE_DATETIME\":\"2024-03-08T20:15:41Z\",\"QDS\":{\"#text\":\"35\",\"severity\":\"LOW\"},\"QDS_FACTORS\":{\"QDS_FACTOR\":[{\"#text\":\"7.7\",\"name\":\"CVSS\"},{\"#text\":\"v3.x\",\"name\":\"CVSS_version\"},{\"#text\":\"0.00232\",\"name\":\"epss\"},{\"#text\":\"AV:N/AC:L/PR:L/UI:N/S:C/C:N/I:N/A:H\",\"name\":\"CVSS_vector\"}]},\"QID\":\"197595\",\"RESULTS\":\"Package Installed Version Required Version\\nlinux-cloud-tools-4.4.0 1074-aws_4.4.0-1074.84  1092\\nlinux-aws-tools-4.4.0 1074_4.4.0-1074.84  1092\\nlinux-aws-headers-4.4.0 1074_4.15.0-1126.135  1092\\nlinux-tools-4.4.0 1074-aws_4.4.0-1074.84  1092\\nlinux-aws-cloud-tools-4.4.0 1074_4.4.0-1074.84  1092\",\"SEVERITY\":\"3\",\"SSL\":\"0\",\"STATUS\":\"Active\",\"TIMES_FOUND\":\"5393\",\"TYPE\":\"Confirmed\",\"UNIQUE_VULN_ID\":\"5555555555\"},\"DNS\":\"\",\"DNS_DATA\":{\"DOMAIN\":\"\",\"FQDN\":\"\",\"HOSTNAME\":\"\"},\"ID\":\"12048633\",\"IP\":\"10.50.2.111\",\"LAST_PC_SCANNED_DATE\":\"2023-06-28T09:58:12Z\",\"LAST_SCAN_DATETIME\":\"2023-07-03T06:25:17Z\",\"LAST_VM_SCANNED_DATE\":\"2023-07-03T06:23:47Z\",\"LAST_VM_SCANNED_DURATION\":\"1113\",\"NETBIOS\":\"\",\"OS\":\"\",\"TRACKING_METHOD\":\"IP\"}",
         "type": [
@@ -473,8 +495,8 @@ An example event for `knowledge_base` looks as following:
 | qualys_vmdr.knowledge_base.cvss_v3.vector_string |  | keyword |
 | qualys_vmdr.knowledge_base.cvss_v3.version |  | keyword |
 | qualys_vmdr.knowledge_base.detection_info |  | keyword |
-| qualys_vmdr.knowledge_base.diagnosis.comment |  | keyword |
-| qualys_vmdr.knowledge_base.diagnosis.value |  | keyword |
+| qualys_vmdr.knowledge_base.diagnosis.comment |  | match_only_text |
+| qualys_vmdr.knowledge_base.diagnosis.value |  | match_only_text |
 | qualys_vmdr.knowledge_base.discovery.additional_info |  | keyword |
 | qualys_vmdr.knowledge_base.discovery.auth_type_list.value |  | keyword |
 | qualys_vmdr.knowledge_base.discovery.remote |  | long |
@@ -493,8 +515,8 @@ An example event for `knowledge_base` looks as following:
 | qualys_vmdr.knowledge_base.severity_level |  | keyword |
 | qualys_vmdr.knowledge_base.software_list.product |  | keyword |
 | qualys_vmdr.knowledge_base.software_list.vendor |  | keyword |
-| qualys_vmdr.knowledge_base.solution.comment |  | keyword |
-| qualys_vmdr.knowledge_base.solution.value |  | keyword |
+| qualys_vmdr.knowledge_base.solution.comment |  | match_only_text |
+| qualys_vmdr.knowledge_base.solution.value |  | match_only_text |
 | qualys_vmdr.knowledge_base.supported_modules |  | keyword |
 | qualys_vmdr.knowledge_base.threat_intelligence.intel.id |  | keyword |
 | qualys_vmdr.knowledge_base.threat_intelligence.intel.text |  | keyword |

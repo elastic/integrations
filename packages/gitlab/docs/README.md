@@ -10,7 +10,11 @@ This integration is for ingesting logs from [GitLab](https://about.gitlab.com/).
 
 - **auth**: Collect logs for protected paths abusive requests or requests over the Rate Limit.
 
+- **pages**: Collect logs for Pages.
+
 - **production**: Collect logs for Rails controller requests received from GitLab.
+
+- **sidekiq**: Collect logs from [sidekiq](https://sidekiq.org/) for jobs background jobs that take a long time.
 
 See the GitLab [Log system docs](https://docs.gitlab.com/ee/administration/logs/) for more information.
 
@@ -1001,6 +1005,99 @@ An example event for `auth` looks as following:
 }
 ```
 
+### pages
+
+Collect logs for Pages. Check out the [GitLab Pages log docs](https://docs.gitlab.com/ee/administration/logs/#pages-logs) for more information.
+
+**Exported fields**
+
+| Field | Description | Type |
+|---|---|---|
+| @timestamp | Event timestamp. | date |
+| cloud.image.id | Image ID for the cloud instance. | keyword |
+| data_stream.dataset | Data stream dataset name. | constant_keyword |
+| data_stream.namespace | Data stream namespace. | constant_keyword |
+| data_stream.type | Data stream type. | constant_keyword |
+| event.dataset | Event dataset | constant_keyword |
+| event.module | Event module | constant_keyword |
+| gitlab.pages.in_place |  | boolean |
+| gitlab.pages.revision |  | keyword |
+| gitlab.pages.version |  | keyword |
+| host.containerized | If the host is a container. | boolean |
+| host.os.build | OS build information. | keyword |
+| host.os.codename | OS codename, if any. | keyword |
+| input.type | Type of Filebeat input. | keyword |
+| log.file.device_id | ID of the device containing the filesystem where the file resides. | keyword |
+| log.file.inode | Inode number of the log file. | keyword |
+| log.flags | Flags for the log file. | keyword |
+| log.offset | Offset of the entry in the log file. | long |
+
+
+An example event for `pages` looks as following:
+
+```json
+{
+    "@timestamp": "2020-04-22T17:53:12.000Z",
+    "agent": {
+        "ephemeral_id": "9c660d07-7fab-4b63-baad-3d850d847ec1",
+        "id": "20a743fb-5e21-4498-ba58-6ebb10053f90",
+        "name": "elastic-agent-63322",
+        "type": "filebeat",
+        "version": "8.15.0"
+    },
+    "data_stream": {
+        "dataset": "gitlab.pages",
+        "namespace": "81772",
+        "type": "logs"
+    },
+    "ecs": {
+        "version": "8.11.0"
+    },
+    "elastic_agent": {
+        "id": "20a743fb-5e21-4498-ba58-6ebb10053f90",
+        "snapshot": false,
+        "version": "8.15.0"
+    },
+    "event": {
+        "agent_id_status": "verified",
+        "category": [
+            "web"
+        ],
+        "dataset": "gitlab.pages",
+        "ingested": "2024-09-23T20:44:09Z",
+        "kind": "event",
+        "level": 6,
+        "original": "{\"level\": \"info\",\"msg\": \"GitLab Pages Daemon\",\"revision\": \"52b2899\",\"time\": \"2020-04-22T17:53:12Z\",\"version\": \"1.17.0\"}",
+        "type": [
+            "info"
+        ]
+    },
+    "gitlab": {
+        "pages": {
+            "revision": "52b2899",
+            "version": "1.17.0"
+        }
+    },
+    "input": {
+        "type": "filestream"
+    },
+    "log": {
+        "file": {
+            "device_id": "30",
+            "inode": "163",
+            "path": "/tmp/service_logs/test-gitlab-pages.log"
+        },
+        "offset": 0
+    },
+    "message": "GitLab Pages Daemon",
+    "tags": [
+        "preserve_original_event",
+        "forwarded",
+        "gitlab-pages"
+    ]
+}
+```
+
 ### production
 
 Collect logs for Rails controller requests received from GitLab. Check out the [GitLab production log docs](https://docs.gitlab.com/ee/administration/logs/#production_jsonlog) for more information.
@@ -1296,5 +1393,128 @@ An example event for `production` looks as following:
         "full": "http://example.org/users/sign_in",
         "path": "/"
     }
+}
+```
+
+### sidekiq
+
+Collect logs from sidekiq for jobs background jobs that take a long time. Check out the [GitLab sidekiq log docs](https://docs.gitlab.com/ee/administration/logs/#sidekiq-logs) for more information.
+
+**Exported fields**
+
+| Field | Description | Type |
+|---|---|---|
+| @timestamp | Event timestamp. | date |
+| cloud.image.id | Image ID for the cloud instance. | keyword |
+| data_stream.dataset | Data stream dataset name. | constant_keyword |
+| data_stream.namespace | Data stream namespace. | constant_keyword |
+| data_stream.type | Data stream type. | constant_keyword |
+| event.dataset | Event dataset | constant_keyword |
+| event.module | Event module | constant_keyword |
+| gitlab.gitaly.calls |  | long |
+| gitlab.gitaly.duration |  | long |
+| gitlab.sidekiq.args |  | keyword |
+| gitlab.sidekiq.class |  | keyword |
+| gitlab.sidekiq.db.duration_m |  | float |
+| gitlab.sidekiq.db.duration_s |  | float |
+| gitlab.sidekiq.enqueued_at |  | date |
+| gitlab.sidekiq.jid |  | keyword |
+| gitlab.sidekiq.job_status |  | keyword |
+| gitlab.sidekiq.queue |  | keyword |
+| gitlab.sidekiq.queue_namespace |  | keyword |
+| gitlab.sidekiq.retry |  | boolean |
+| gitlab.sidekiq.worker_id |  | keyword |
+| host.containerized | If the host is a container. | boolean |
+| host.os.build | OS build information. | keyword |
+| host.os.codename | OS codename, if any. | keyword |
+| input.type | Type of Filebeat input. | keyword |
+| log.file.device_id | ID of the device containing the filesystem where the file resides. | keyword |
+| log.file.inode | Inode number of the log file. | keyword |
+| log.flags | Flags for the log file. | keyword |
+| log.offset | Offset of the entry in the log file. | long |
+
+
+An example event for `sidekiq` looks as following:
+
+```json
+{
+    "@timestamp": "2018-04-03T22:57:22.071Z",
+    "agent": {
+        "ephemeral_id": "cc5ea64a-1be7-4bf7-ac2e-a934734ba7d0",
+        "id": "d0298772-a948-4edb-95bf-6b9152967f34",
+        "name": "elastic-agent-16126",
+        "type": "filebeat",
+        "version": "8.15.0"
+    },
+    "data_stream": {
+        "dataset": "gitlab.sidekiq",
+        "namespace": "99205",
+        "type": "logs"
+    },
+    "ecs": {
+        "version": "8.11.0"
+    },
+    "elastic_agent": {
+        "id": "d0298772-a948-4edb-95bf-6b9152967f34",
+        "snapshot": false,
+        "version": "8.15.0"
+    },
+    "event": {
+        "agent_id_status": "verified",
+        "category": [
+            "web"
+        ],
+        "dataset": "gitlab.sidekiq",
+        "duration": 0.139,
+        "end": "2018-04-03T22:57:22.071Z",
+        "ingested": "2024-09-23T21:03:08Z",
+        "kind": "event",
+        "original": "{\"severity\": \"INFO\",\"time\": \"2018-04-03T22:57:22.071Z\",\"queue\": \"cronjob:update_all_mirrors\",\"args\": [],\"class\": \"UpdateAllMirrorsWorker\",\"retry\": false,\"queue_namespace\": \"cronjob\",\"jid\": \"06aeaa3b0aadacf9981f368e\",\"created_at\": \"2018-04-03T22:57:21.930Z\",\"enqueued_at\": \"2018-04-03T22:57:21.931Z\",\"pid\": 10077,\"worker_id\": \"sidekiq_0\",\"message\": \"UpdateAllMirrorsWorker JID-06aeaa3b0aadacf9981f368e: done: 0.139 sec\",\"job_status\": \"done\",\"duration\": 0.139,\"completed_at\": \"2018-04-03T22:57:22.071Z\",\"db_duration\": 0.05,\"db_duration_s\": 0.0005,\"gitaly_duration\": 0,\"gitaly_calls\": 0}",
+        "severity": 6,
+        "start": "2018-04-03T22:57:21.930Z",
+        "type": [
+            "info"
+        ]
+    },
+    "gitlab": {
+        "gitaly": {
+            "calls": 0,
+            "duration": 0
+        },
+        "sidekiq": {
+            "class": "UpdateAllMirrorsWorker",
+            "db": {
+                "duration_m": 0.05,
+                "duration_s": 0.0005
+            },
+            "enqueued_at": "2018-04-03T22:57:21.931Z",
+            "jid": "06aeaa3b0aadacf9981f368e",
+            "job_status": "done",
+            "queue": "cronjob:update_all_mirrors",
+            "queue_namespace": "cronjob",
+            "retry": false,
+            "worker_id": "sidekiq_0"
+        }
+    },
+    "input": {
+        "type": "filestream"
+    },
+    "log": {
+        "file": {
+            "device_id": "30",
+            "inode": "215",
+            "path": "/tmp/service_logs/test-gitlab-sidekiq.log"
+        },
+        "offset": 0
+    },
+    "message": "UpdateAllMirrorsWorker JID-06aeaa3b0aadacf9981f368e: done: 0.139 sec",
+    "process": {
+        "pid": 10077
+    },
+    "tags": [
+        "preserve_original_event",
+        "forwarded",
+        "gitlab-sidekiq"
+    ]
 }
 ```
