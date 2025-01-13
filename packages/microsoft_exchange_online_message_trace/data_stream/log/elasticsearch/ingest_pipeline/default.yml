@@ -17,6 +17,8 @@ processors:
   # Drop "null" event
   - drop:
       if: ctx.microsoft?.online_message_trace?.value instanceof List && ctx.microsoft.online_message_trace.value.length == 0 
+  - drop:
+      if: ctx.microsoft?.online_message_trace?.Status?.equalsIgnoreCase(ctx._conf?.Status) == true
   - set:
       field: event.outcome
       value: success
