@@ -250,20 +250,20 @@ The following non-ECS fields are used in session documents:
 | Field | Description | Type |
 |---|---|---|
 | @timestamp | Event timestamp. | date |
-| beyondinsight_password_safe.session.archive_status |  | keyword |
-| beyondinsight_password_safe.session.asset_name |  | keyword |
-| beyondinsight_password_safe.session.duration |  | integer |
-| beyondinsight_password_safe.session.end_time |  | date |
-| beyondinsight_password_safe.session.managed_account_id |  | integer |
-| beyondinsight_password_safe.session.managed_account_name |  | keyword |
-| beyondinsight_password_safe.session.managed_system_id |  | integer |
-| beyondinsight_password_safe.session.node_id |  | keyword |
-| beyondinsight_password_safe.session.protocol |  | keyword |
-| beyondinsight_password_safe.session.record_key |  | keyword |
-| beyondinsight_password_safe.session.session_id |  | keyword |
-| beyondinsight_password_safe.session.start_time |  | date |
-| beyondinsight_password_safe.session.status |  | keyword |
-| beyondinsight_password_safe.session.user_id |  | keyword |
+| beyondinsight_password_safe.session.archive_status | Session archive status (applicable only when Session Archiving is enabled and configured) | keyword |
+| beyondinsight_password_safe.session.asset_name | Name of the asset | keyword |
+| beyondinsight_password_safe.session.duration | Duration of the session in seconds | integer |
+| beyondinsight_password_safe.session.end_time | End date/time of the session | date |
+| beyondinsight_password_safe.session.managed_account_id | ID of the target managed account | integer |
+| beyondinsight_password_safe.session.managed_account_name | Name of the target managed account | keyword |
+| beyondinsight_password_safe.session.managed_system_id | ID of the target managed system | integer |
+| beyondinsight_password_safe.session.node_id | ID of the session node | keyword |
+| beyondinsight_password_safe.session.protocol | Protocol used for the session | keyword |
+| beyondinsight_password_safe.session.record_key | Record key use for the session replay | keyword |
+| beyondinsight_password_safe.session.session_id | ID of the session | keyword |
+| beyondinsight_password_safe.session.start_time | Start date/time of the session | date |
+| beyondinsight_password_safe.session.status | Status of the session | keyword |
+| beyondinsight_password_safe.session.user_id | ID of the user | keyword |
 | data_stream.dataset | Data stream dataset. | constant_keyword |
 | data_stream.namespace | Data stream namespace. | constant_keyword |
 | data_stream.type | Data stream type. | constant_keyword |
@@ -383,51 +383,51 @@ The following non-ECS fields are used in managedsystem documents:
 | Field | Description | Type |
 |---|---|---|
 | @timestamp | Event timestamp. | date |
-| beyondinsight_password_safe.managedsystem.access_url |  | keyword |
-| beyondinsight_password_safe.managedsystem.account_name_format |  | integer |
-| beyondinsight_password_safe.managedsystem.application_host_id |  | integer |
-| beyondinsight_password_safe.managedsystem.asset_id |  | integer |
-| beyondinsight_password_safe.managedsystem.auto_management_flag |  | boolean |
-| beyondinsight_password_safe.managedsystem.change_frequency_days |  | integer |
-| beyondinsight_password_safe.managedsystem.change_frequency_type |  | keyword |
-| beyondinsight_password_safe.managedsystem.change_password_after_any_release_flag |  | boolean |
-| beyondinsight_password_safe.managedsystem.change_time |  | keyword |
-| beyondinsight_password_safe.managedsystem.check_password_flag |  | boolean |
-| beyondinsight_password_safe.managedsystem.cloud_id |  | integer |
-| beyondinsight_password_safe.managedsystem.contact_email |  | keyword |
-| beyondinsight_password_safe.managedsystem.database_id |  | integer |
-| beyondinsight_password_safe.managedsystem.description |  | keyword |
-| beyondinsight_password_safe.managedsystem.directory_id |  | integer |
-| beyondinsight_password_safe.managedsystem.dns_name |  | keyword |
-| beyondinsight_password_safe.managedsystem.dsskey_rule_id |  | integer |
-| beyondinsight_password_safe.managedsystem.elevation_command |  | keyword |
-| beyondinsight_password_safe.managedsystem.entity_type_id |  | integer |
-| beyondinsight_password_safe.managedsystem.forest_name |  | keyword |
-| beyondinsight_password_safe.managedsystem.functional_account_id |  | integer |
-| beyondinsight_password_safe.managedsystem.host_name |  | keyword |
-| beyondinsight_password_safe.managedsystem.instance_name |  | keyword |
-| beyondinsight_password_safe.managedsystem.ipaddress |  | ip |
-| beyondinsight_password_safe.managedsystem.is_application_host |  | boolean |
-| beyondinsight_password_safe.managedsystem.is_default_instance |  | boolean |
-| beyondinsight_password_safe.managedsystem.isarelease_duration |  | integer |
-| beyondinsight_password_safe.managedsystem.login_account_id |  | integer |
-| beyondinsight_password_safe.managedsystem.managed_system_id |  | integer |
-| beyondinsight_password_safe.managedsystem.max_release_duration |  | integer |
-| beyondinsight_password_safe.managedsystem.net_bios_name |  | keyword |
-| beyondinsight_password_safe.managedsystem.oracle_internet_directory_id |  | integer |
-| beyondinsight_password_safe.managedsystem.oracle_internet_directory_service_name |  | keyword |
-| beyondinsight_password_safe.managedsystem.password_rule_id |  | integer |
-| beyondinsight_password_safe.managedsystem.platform_id |  | integer |
-| beyondinsight_password_safe.managedsystem.port |  | integer |
-| beyondinsight_password_safe.managedsystem.release_duration |  | integer |
-| beyondinsight_password_safe.managedsystem.remote_client_type |  | keyword |
-| beyondinsight_password_safe.managedsystem.reset_password_on_mismatch_flag |  | boolean |
-| beyondinsight_password_safe.managedsystem.ssh_key_enforcement_mode |  | integer |
-| beyondinsight_password_safe.managedsystem.system_name |  | keyword |
-| beyondinsight_password_safe.managedsystem.template |  | keyword |
-| beyondinsight_password_safe.managedsystem.timeout |  | integer |
-| beyondinsight_password_safe.managedsystem.use_ssl |  | boolean |
-| beyondinsight_password_safe.managedsystem.workgroup_id |  | integer |
+| beyondinsight_password_safe.managedsystem.access_url | URL used for cloud access. | keyword |
+| beyondinsight_password_safe.managedsystem.account_name_format | Format of the account name. | integer |
+| beyondinsight_password_safe.managedsystem.application_host_id | Managed system ID of the target application host. | integer |
+| beyondinsight_password_safe.managedsystem.asset_id | Asset ID; set if the managed system is an asset or a database. | integer |
+| beyondinsight_password_safe.managedsystem.auto_management_flag | True if password auto-management is enabled, otherwise false. | boolean |
+| beyondinsight_password_safe.managedsystem.change_frequency_days | Number of days for scheduled password changes when ChangeFrequencyType is xdays. | integer |
+| beyondinsight_password_safe.managedsystem.change_frequency_type | The change frequency for scheduled password changes. | keyword |
+| beyondinsight_password_safe.managedsystem.change_password_after_any_release_flag | True to change passwords on release of a request, otherwise false. | boolean |
+| beyondinsight_password_safe.managedsystem.change_time | UTC time of day for scheduled password changes in 24hr format. | keyword |
+| beyondinsight_password_safe.managedsystem.check_password_flag | True to enable password testing, otherwise false. | boolean |
+| beyondinsight_password_safe.managedsystem.cloud_id | Cloud system ID; set if the managed system is a cloud system. | integer |
+| beyondinsight_password_safe.managedsystem.contact_email | Contact email for the managed system. | keyword |
+| beyondinsight_password_safe.managedsystem.database_id | Database ID; set if the managed system is a database. | integer |
+| beyondinsight_password_safe.managedsystem.description | Description of the managed system. | keyword |
+| beyondinsight_password_safe.managedsystem.directory_id | Directory ID; set if the managed system is a directory. | integer |
+| beyondinsight_password_safe.managedsystem.dns_name | DNS name of the managed system. | keyword |
+| beyondinsight_password_safe.managedsystem.dsskey_rule_id | ID of the default DSS key rule assigned to managed accounts. | integer |
+| beyondinsight_password_safe.managedsystem.elevation_command | Elevation command to use (sudo, pbrun, pmrun). | keyword |
+| beyondinsight_password_safe.managedsystem.entity_type_id | ID of the entity type. | integer |
+| beyondinsight_password_safe.managedsystem.forest_name | Forest name of the managed system. | keyword |
+| beyondinsight_password_safe.managedsystem.functional_account_id | ID of the functional account used for local managed account password changes. | integer |
+| beyondinsight_password_safe.managedsystem.host_name | Host name of the managed system. | keyword |
+| beyondinsight_password_safe.managedsystem.instance_name | Instance name of the managed system. | keyword |
+| beyondinsight_password_safe.managedsystem.ipaddress | IP address of the managed system. | ip |
+| beyondinsight_password_safe.managedsystem.is_application_host | True if the managed system can be used as an application host, otherwise false. | boolean |
+| beyondinsight_password_safe.managedsystem.is_default_instance | True if this is the default instance, otherwise false. | boolean |
+| beyondinsight_password_safe.managedsystem.isarelease_duration | Default Information Systems Administrator (ISA) release duration in minutes. | integer |
+| beyondinsight_password_safe.managedsystem.login_account_id | ID of the functional account used for SSH session logins. | integer |
+| beyondinsight_password_safe.managedsystem.managed_system_id | ID of the managed system. | integer |
+| beyondinsight_password_safe.managedsystem.max_release_duration | Default maximum release duration in minutes. | integer |
+| beyondinsight_password_safe.managedsystem.net_bios_name | Domain NetBIOS name for managed domains. | keyword |
+| beyondinsight_password_safe.managedsystem.oracle_internet_directory_id | ID of the Oracle Internet Directory. | integer |
+| beyondinsight_password_safe.managedsystem.oracle_internet_directory_service_name | Service name of the Oracle Internet Directory. | keyword |
+| beyondinsight_password_safe.managedsystem.password_rule_id | ID of the default password rule assigned to managed accounts. | integer |
+| beyondinsight_password_safe.managedsystem.platform_id | ID of the managed system platform. | integer |
+| beyondinsight_password_safe.managedsystem.port | Port used to connect to the host. | integer |
+| beyondinsight_password_safe.managedsystem.release_duration | Default release duration in minutes. | integer |
+| beyondinsight_password_safe.managedsystem.remote_client_type | Type of remote client to use. | keyword |
+| beyondinsight_password_safe.managedsystem.reset_password_on_mismatch_flag | True to queue a password change when scheduled password test fails, otherwise false. | boolean |
+| beyondinsight_password_safe.managedsystem.ssh_key_enforcement_mode | Enforcement mode for SSH host keys. | integer |
+| beyondinsight_password_safe.managedsystem.system_name | Name of the related entity (asset, directory, database, or cloud). | keyword |
+| beyondinsight_password_safe.managedsystem.template | Template used for the managed system. | keyword |
+| beyondinsight_password_safe.managedsystem.timeout | Connection timeout in seconds. | integer |
+| beyondinsight_password_safe.managedsystem.use_ssl | True if SSL is used, otherwise false. | boolean |
+| beyondinsight_password_safe.managedsystem.workgroup_id | ID of the workgroup. | integer |
 | data_stream.dataset | Data stream dataset. | constant_keyword |
 | data_stream.namespace | Data stream namespace. | constant_keyword |
 | data_stream.type | Data stream type. | constant_keyword |
@@ -550,24 +550,24 @@ The following non-ECS fields are used in managedaccount documents:
 | Field | Description | Type |
 |---|---|---|
 | @timestamp | Event timestamp. | date |
-| beyondinsight_password_safe.managedaccount.account_id |  | keyword |
-| beyondinsight_password_safe.managedaccount.account_name |  | keyword |
-| beyondinsight_password_safe.managedaccount.application_display_name |  | keyword |
-| beyondinsight_password_safe.managedaccount.application_id |  | keyword |
-| beyondinsight_password_safe.managedaccount.change_state |  | integer |
-| beyondinsight_password_safe.managedaccount.default_release_duration |  | integer |
-| beyondinsight_password_safe.managedaccount.domain_name |  | keyword |
-| beyondinsight_password_safe.managedaccount.instance_name |  | keyword |
-| beyondinsight_password_safe.managedaccount.is_changing |  | boolean |
-| beyondinsight_password_safe.managedaccount.is_isaaccess |  | boolean |
-| beyondinsight_password_safe.managedaccount.last_change_date |  | date |
-| beyondinsight_password_safe.managedaccount.maximum_release_duration |  | integer |
-| beyondinsight_password_safe.managedaccount.next_change_date |  | date |
-| beyondinsight_password_safe.managedaccount.platform_id |  | keyword |
-| beyondinsight_password_safe.managedaccount.preferred_node_id |  | keyword |
-| beyondinsight_password_safe.managedaccount.system_id |  | keyword |
-| beyondinsight_password_safe.managedaccount.system_name |  | keyword |
-| beyondinsight_password_safe.managedaccount.user_principal_name |  | keyword |
+| beyondinsight_password_safe.managedaccount.account_id | ID of the managed account. | keyword |
+| beyondinsight_password_safe.managedaccount.account_name | Name of the managed account. | keyword |
+| beyondinsight_password_safe.managedaccount.application_display_name | Display name of the application for application-based access. | keyword |
+| beyondinsight_password_safe.managedaccount.application_id | ID of the application for application-based access. | keyword |
+| beyondinsight_password_safe.managedaccount.change_state | The change state of the account credentials. | integer |
+| beyondinsight_password_safe.managedaccount.default_release_duration | Default release duration (minutes). | integer |
+| beyondinsight_password_safe.managedaccount.domain_name | The domain name for a domain-type account. | keyword |
+| beyondinsight_password_safe.managedaccount.instance_name | Database instance name of a database-type managed system, or empty for the default instance. | keyword |
+| beyondinsight_password_safe.managedaccount.is_changing | True if the account credentials are in the process of changing, otherwise false. | boolean |
+| beyondinsight_password_safe.managedaccount.is_isaaccess | True if the account is for Information Systems Administrator (ISA) access, otherwise false. | boolean |
+| beyondinsight_password_safe.managedaccount.last_change_date | The date and time of the last password change. | date |
+| beyondinsight_password_safe.managedaccount.maximum_release_duration | Maximum release duration (minutes). | integer |
+| beyondinsight_password_safe.managedaccount.next_change_date | The date and time of the next password change. | date |
+| beyondinsight_password_safe.managedaccount.platform_id | ID of the managed system platform. | keyword |
+| beyondinsight_password_safe.managedaccount.preferred_node_id | ID of the node that is preferred for establishing sessions. If no node is preferred, returns the local node ID. | keyword |
+| beyondinsight_password_safe.managedaccount.system_id | ID of the managed system. | keyword |
+| beyondinsight_password_safe.managedaccount.system_name | Name of the managed system. | keyword |
+| beyondinsight_password_safe.managedaccount.user_principal_name | User Principal Name of the managed account. | keyword |
 | data_stream.dataset | Data stream dataset. | constant_keyword |
 | data_stream.namespace | Data stream namespace. | constant_keyword |
 | data_stream.type | Data stream type. | constant_keyword |
@@ -670,17 +670,17 @@ The following non-ECS fields are used in asset documents:
 | Field | Description | Type |
 |---|---|---|
 | @timestamp | Event timestamp. | date |
-| beyondinsight_password_safe.asset.asset_id |  | keyword |
-| beyondinsight_password_safe.asset.asset_name |  | keyword |
-| beyondinsight_password_safe.asset.asset_type |  | keyword |
-| beyondinsight_password_safe.asset.create_date |  | date |
-| beyondinsight_password_safe.asset.dns_name |  | keyword |
-| beyondinsight_password_safe.asset.domain_name |  | keyword |
-| beyondinsight_password_safe.asset.ipaddress |  | ip |
-| beyondinsight_password_safe.asset.last_update_date |  | boolean |
-| beyondinsight_password_safe.asset.mac_address |  | keyword |
-| beyondinsight_password_safe.asset.operating_system |  | keyword |
-| beyondinsight_password_safe.asset.workgroup_id |  | keyword |
+| beyondinsight_password_safe.asset.asset_id | Unique identifier for the asset | keyword |
+| beyondinsight_password_safe.asset.asset_name | Name of the asset | keyword |
+| beyondinsight_password_safe.asset.asset_type | Type of the asset | keyword |
+| beyondinsight_password_safe.asset.create_date | Date the asset was created | date |
+| beyondinsight_password_safe.asset.dns_name | DNS name of the asset | keyword |
+| beyondinsight_password_safe.asset.domain_name | Domain name of the asset | keyword |
+| beyondinsight_password_safe.asset.ipaddress | IP address of the asset | ip |
+| beyondinsight_password_safe.asset.last_update_date | Date the asset was last updated | boolean |
+| beyondinsight_password_safe.asset.mac_address | MAC address of the asset | keyword |
+| beyondinsight_password_safe.asset.operating_system | Operating system of the asset | keyword |
+| beyondinsight_password_safe.asset.workgroup_id | Unique identifier for the workgroup | keyword |
 | data_stream.dataset | Data stream dataset. | constant_keyword |
 | data_stream.namespace | Data stream namespace. | constant_keyword |
 | data_stream.type | Data stream type. | constant_keyword |
