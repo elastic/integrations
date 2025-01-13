@@ -1,36 +1,36 @@
-### BeyondInsight integration
+# BeyondInsight and Password Safe integration
 
-BeyondInsight enables real-time monitoring of privileged account access, session recordings, and password checkout patterns to help security teams maintain compliance and quickly identify potential privilege abuse.
+BeyondInsight and Password Safe  enables real-time monitoring of privileged account access, session recordings, and password checkout patterns to help security teams maintain compliance and quickly identify potential privilege abuse.
 
 
 ## Data streams
 
 - **`useraudit`** Provides audit data for users that includes user actions like login, logout, pwd change etc on a machine
-This data stream utilizes the BeyondInsight API's `/v3/UserAudits` endpoint.
+This data stream utilizes the BeyondInsight and Password Safe  API's `/v3/UserAudits` endpoint.
 
 - **`session`** Provides details on active sessions and its status with duration for an asset. 
-This data stream utilizes the BeyondInsight API's `/v3/Sessions` endpoint.
+This data stream utilizes the BeyondInsight and Password Safe  API's `/v3/Sessions` endpoint.
 
 - **`managedsystem`** Provides a list of managed systems.  
-This data stream utilizes the BeyondInsight API's `/v3/ManagedSystems` endpoint.
+This data stream utilizes the BeyondInsight and Password Safe  API's `/v3/ManagedSystems` endpoint.
 
 - **`managedaccount`** Provides a list of managed accounts.  
-This data stream utilizes the BeyondInsight API's `/v3/ManagedAccounts` endpoint.
+This data stream utilizes the BeyondInsight and Password Safe  API's `/v3/ManagedAccounts` endpoint.
 
 - **`asset`** Provides a list of assets.  
-This data stream utilizes the BeyondInsight API's `/v3/assets` endpoint.
+This data stream utilizes the BeyondInsight and Password Safe  API's `/v3/assets` endpoint.
 
 
 ## Requirements
 
 ### Configure API registration ###
-API registrations allow you to integrate part of the BeyondInsight and Password Safe functionality into your applications, which allows you to expand your application's overall functionality and provide enhanced security and access management. Administrators can configure API key based API registration in BeyondInsight.
+API registrations allow you to integrate part of the BeyondInsight and Password Safe functionality into your applications, which allows you to expand your application's overall functionality and provide enhanced security and access management. Administrators can configure API key based API registration in BeyondInsight and Password Safe .
 
 #### Add an API key policy API registration ####
 Please check the [document](https://www.beyondtrust.com/docs/beyondinsight-password-safe/ps/admin/configure-api-registration.htm) for more details on API key registration.
 
 **User Password Required**: When enabled, an additional Authorization header value containing the RunAs user password is required with the web request. If not enabled, this header value does not need to be present and is ignored if provided.
-On succussfull Api key registration, BeyondInsight generates a unique identifier (API key) that the calling application provides in the Authorization header of the web request. 
+On succussfull Api key registration, BeyondInsight and Password Safe  generates a unique identifier (API key) that the calling application provides in the Authorization header of the web request. 
 For example, the Authorization header might look like: 
 Authorization=PS-Auth key=c479a66f…c9484d; runas=doe-main\johndoe; pwd=[un1qu3];
 
@@ -41,9 +41,9 @@ Any language with a Representational State Transfer (REST) compliant interface c
 **Authorization header**
 Use the web request authorization header to communicate the API application key, the RunAs username, and the user password:
 
-**key**: The API key configured in BeyondInsight for your application.
+**key**: The API key configured in BeyondInsight and Password Safe  for your application.
 
-**runas**: The username of a BeyondInsight user that has been granted permission to use the API key.
+**runas**: The username of a BeyondInsight and Password Safe  user that has been granted permission to use the API key.
 
 **pwd**: The RunAs user password surrounded by square brackets (optional; required only if the User Password is required on the
 application API registration).
@@ -62,8 +62,6 @@ Please refer to the following [document](https://www.elastic.co/guide/en/ecs/cur
 
 The following non-ECS fields are used in useraudit documents:
 
-**Exported fields**
-
 {{fields "useraudit"}}
 
 
@@ -80,7 +78,6 @@ Please refer to the following [document](https://www.elastic.co/guide/en/ecs/cur
 
 The following non-ECS fields are used in session documents:
 
-**Exported fields**
 
 {{fields "session"}}
 
@@ -97,7 +94,6 @@ Please refer to the following [document](https://www.elastic.co/guide/en/ecs/cur
 
 The following non-ECS fields are used in managedsystem documents:
 
-**Exported fields**
 
 {{fields "managedsystem"}}
 
@@ -117,7 +113,6 @@ Please refer to the following [document](https://www.elastic.co/guide/en/ecs/cur
 
 The following non-ECS fields are used in managedaccount documents:
 
-**Exported fields**
 
 {{fields "managedaccount"}}
 
@@ -133,7 +128,5 @@ Asset documents can be found using the API model by setting the filter `event.da
 Please refer to the following [document](https://www.elastic.co/guide/en/ecs/current/ecs-field-reference.html) for detailed information on ECS fields.
 
 The following non-ECS fields are used in asset documents:
-
-**Exported fields**
 
 {{fields "asset"}}

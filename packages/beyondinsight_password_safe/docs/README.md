@@ -1,36 +1,36 @@
-### BeyondInsight integration
+# BeyondInsight and Password Safe integration
 
-BeyondInsight enables real-time monitoring of privileged account access, session recordings, and password checkout patterns to help security teams maintain compliance and quickly identify potential privilege abuse.
+BeyondInsight and Password Safe  enables real-time monitoring of privileged account access, session recordings, and password checkout patterns to help security teams maintain compliance and quickly identify potential privilege abuse.
 
 
 ## Data streams
 
 - **`useraudit`** Provides audit data for users that includes user actions like login, logout, pwd change etc on a machine
-This data stream utilizes the BeyondInsight API's `/v3/UserAudits` endpoint.
+This data stream utilizes the BeyondInsight and Password Safe  API's `/v3/UserAudits` endpoint.
 
 - **`session`** Provides details on active sessions and its status with duration for an asset. 
-This data stream utilizes the BeyondInsight API's `/v3/Sessions` endpoint.
+This data stream utilizes the BeyondInsight and Password Safe  API's `/v3/Sessions` endpoint.
 
 - **`managedsystem`** Provides a list of managed systems.  
-This data stream utilizes the BeyondInsight API's `/v3/ManagedSystems` endpoint.
+This data stream utilizes the BeyondInsight and Password Safe  API's `/v3/ManagedSystems` endpoint.
 
 - **`managedaccount`** Provides a list of managed accounts.  
-This data stream utilizes the BeyondInsight API's `/v3/ManagedAccounts` endpoint.
+This data stream utilizes the BeyondInsight and Password Safe  API's `/v3/ManagedAccounts` endpoint.
 
 - **`asset`** Provides a list of assets.  
-This data stream utilizes the BeyondInsight API's `/v3/assets` endpoint.
+This data stream utilizes the BeyondInsight and Password Safe  API's `/v3/assets` endpoint.
 
 
 ## Requirements
 
 ### Configure API registration ###
-API registrations allow you to integrate part of the BeyondInsight and Password Safe functionality into your applications, which allows you to expand your application's overall functionality and provide enhanced security and access management. Administrators can configure API key based API registration in BeyondInsight.
+API registrations allow you to integrate part of the BeyondInsight and Password Safe functionality into your applications, which allows you to expand your application's overall functionality and provide enhanced security and access management. Administrators can configure API key based API registration in BeyondInsight and Password Safe .
 
 #### Add an API key policy API registration ####
 Please check the [document](https://www.beyondtrust.com/docs/beyondinsight-password-safe/ps/admin/configure-api-registration.htm) for more details on API key registration.
 
 **User Password Required**: When enabled, an additional Authorization header value containing the RunAs user password is required with the web request. If not enabled, this header value does not need to be present and is ignored if provided.
-On succussfull Api key registration, BeyondInsight generates a unique identifier (API key) that the calling application provides in the Authorization header of the web request. 
+On succussfull Api key registration, BeyondInsight and Password Safe  generates a unique identifier (API key) that the calling application provides in the Authorization header of the web request. 
 For example, the Authorization header might look like: 
 Authorization=PS-Auth key=c479a66f…c9484d; runas=doe-main\johndoe; pwd=[un1qu3];
 
@@ -41,9 +41,9 @@ Any language with a Representational State Transfer (REST) compliant interface c
 **Authorization header**
 Use the web request authorization header to communicate the API application key, the RunAs username, and the user password:
 
-**key**: The API key configured in BeyondInsight for your application.
+**key**: The API key configured in BeyondInsight and Password Safe  for your application.
 
-**runas**: The username of a BeyondInsight user that has been granted permission to use the API key.
+**runas**: The username of a BeyondInsight and Password Safe  user that has been granted permission to use the API key.
 
 **pwd**: The RunAs user password surrounded by square brackets (optional; required only if the User Password is required on the
 application API registration).
@@ -60,11 +60,11 @@ An example event for `useraudit` looks as following:
 {
     "@timestamp": "2024-12-09T10:24:26.323Z",
     "agent": {
-        "ephemeral_id": "a31d6198-a560-4701-87fe-d7ab735c60d1",
-        "id": "bd22062b-0607-4aad-a645-44becbd40c3c",
-        "name": "elastic-agent-83570",
+        "ephemeral_id": "48de15fd-994c-4e08-8d35-cf635e91ae81",
+        "id": "0fb26469-edd2-4f29-8e58-9b534bf1c1ff",
+        "name": "elastic-agent-28118",
         "type": "filebeat",
-        "version": "8.12.2"
+        "version": "8.15.3"
     },
     "beyondinsight_password_safe": {
         "useraudit": {
@@ -79,16 +79,16 @@ An example event for `useraudit` looks as following:
     },
     "data_stream": {
         "dataset": "beyondinsight_password_safe.useraudit",
-        "namespace": "11579",
+        "namespace": "11225",
         "type": "logs"
     },
     "ecs": {
         "version": "8.11.0"
     },
     "elastic_agent": {
-        "id": "bd22062b-0607-4aad-a645-44becbd40c3c",
+        "id": "0fb26469-edd2-4f29-8e58-9b534bf1c1ff",
         "snapshot": false,
-        "version": "8.12.2"
+        "version": "8.15.3"
     },
     "event": {
         "agent_id_status": "verified",
@@ -97,7 +97,7 @@ An example event for `useraudit` looks as following:
         ],
         "dataset": "beyondinsight_password_safe.useraudit",
         "id": "1",
-        "ingested": "2024-12-18T19:39:46Z",
+        "ingested": "2025-01-10T17:34:49Z",
         "kind": "event",
         "module": "beyondinsight_password_safe",
         "type": [
@@ -152,8 +152,6 @@ The following non-ECS fields are used in useraudit documents:
 
 **Exported fields**
 
-**Exported fields**
-
 | Field | Description | Type |
 |---|---|---|
 | @timestamp | Event timestamp. | date |
@@ -180,13 +178,13 @@ An example event for `session` looks as following:
 
 ```json
 {
-    "@timestamp": "2024-12-18T19:38:50.390Z",
+    "@timestamp": "2025-01-10T17:33:17.043Z",
     "agent": {
-        "ephemeral_id": "c1eeb50e-182f-4530-8557-8e1df0c789e5",
-        "id": "3da0989d-2c6d-41ed-aaf2-0b1b09e11b93",
-        "name": "elastic-agent-21615",
+        "ephemeral_id": "f996807b-e519-44cd-96e4-f7cf39f2e3f7",
+        "id": "79915fa5-d015-407a-9aec-a46b4aa1176d",
+        "name": "elastic-agent-76890",
         "type": "filebeat",
-        "version": "8.12.2"
+        "version": "8.15.3"
     },
     "beyondinsight_password_safe": {
         "session": {
@@ -205,16 +203,16 @@ An example event for `session` looks as following:
     },
     "data_stream": {
         "dataset": "beyondinsight_password_safe.session",
-        "namespace": "59868",
+        "namespace": "32330",
         "type": "logs"
     },
     "ecs": {
         "version": "8.11.0"
     },
     "elastic_agent": {
-        "id": "3da0989d-2c6d-41ed-aaf2-0b1b09e11b93",
+        "id": "79915fa5-d015-407a-9aec-a46b4aa1176d",
         "snapshot": false,
-        "version": "8.12.2"
+        "version": "8.15.3"
     },
     "event": {
         "agent_id_status": "verified",
@@ -224,7 +222,7 @@ An example event for `session` looks as following:
         "dataset": "beyondinsight_password_safe.session",
         "duration": 0,
         "id": "1",
-        "ingested": "2024-12-18T19:38:53Z",
+        "ingested": "2025-01-10T17:33:20Z",
         "kind": "event",
         "module": "beyondinsight_password_safe",
         "type": [
@@ -246,7 +244,6 @@ Please refer to the following [document](https://www.elastic.co/guide/en/ecs/cur
 
 The following non-ECS fields are used in session documents:
 
-**Exported fields**
 
 **Exported fields**
 
@@ -284,13 +281,13 @@ An example event for `managedsystem` looks as following:
 
 ```json
 {
-    "@timestamp": "2024-12-18T19:37:50.250Z",
+    "@timestamp": "2025-01-10T17:31:54.183Z",
     "agent": {
-        "ephemeral_id": "cbdf770d-1ca0-4831-9816-2601a8d9608a",
-        "id": "f26b25b3-e4e6-46d2-8730-04e561be5ad3",
-        "name": "elastic-agent-14320",
+        "ephemeral_id": "63cb4f19-5ee5-4c5a-85dd-2f67a84a43b3",
+        "id": "6334669c-2f0b-4a9b-beda-d7b578d53ac6",
+        "name": "elastic-agent-93061",
         "type": "filebeat",
-        "version": "8.12.2"
+        "version": "8.15.3"
     },
     "beyondinsight_password_safe": {
         "managedsystem": {
@@ -317,7 +314,7 @@ An example event for `managedsystem` looks as following:
             "release_duration": 120,
             "remote_client_type": "None",
             "reset_password_on_mismatch_flag": false,
-            "ssh_key_enforcement_mode": 0,
+            "ssh_key_enforcement_mode": "None",
             "system_name": "AardvarkAgreement",
             "timeout": 30,
             "workgroup_id": 1
@@ -325,16 +322,16 @@ An example event for `managedsystem` looks as following:
     },
     "data_stream": {
         "dataset": "beyondinsight_password_safe.managedsystem",
-        "namespace": "85192",
+        "namespace": "43969",
         "type": "logs"
     },
     "ecs": {
         "version": "8.11.0"
     },
     "elastic_agent": {
-        "id": "f26b25b3-e4e6-46d2-8730-04e561be5ad3",
+        "id": "6334669c-2f0b-4a9b-beda-d7b578d53ac6",
         "snapshot": false,
-        "version": "8.12.2"
+        "version": "8.15.3"
     },
     "event": {
         "agent_id_status": "verified",
@@ -342,18 +339,34 @@ An example event for `managedsystem` looks as following:
             "iam"
         ],
         "dataset": "beyondinsight_password_safe.managedsystem",
-        "ingested": "2024-12-18T19:37:53Z",
+        "ingested": "2025-01-10T17:31:56Z",
         "kind": "asset",
         "module": "beyondinsight_password_safe",
         "type": [
             "info"
         ]
     },
+    "host": {
+        "domain": "AardvarkAgreement.example.com",
+        "ip": [
+            "172.16.152.110",
+            "172.16.152.110"
+        ],
+        "name": "AardvarkAgreement"
+    },
     "input": {
         "type": "cel"
     },
+    "related": {
+        "hosts": [
+            "AardvarkAgreement",
+            "172.16.152.110",
+            "AardvarkAgreement.example.com"
+        ]
+    },
     "tags": [
-        "forwarded"
+        "forwarded",
+        "managedsystem"
     ]
 }
 ```
@@ -364,7 +377,6 @@ Please refer to the following [document](https://www.elastic.co/guide/en/ecs/cur
 
 The following non-ECS fields are used in managedsystem documents:
 
-**Exported fields**
 
 **Exported fields**
 
@@ -434,17 +446,17 @@ An example event for `managedaccount` looks as following:
 
 ```json
 {
-    "@timestamp": "2024-12-18T19:36:50.174Z",
+    "@timestamp": "2025-01-10T17:30:25.266Z",
     "agent": {
-        "ephemeral_id": "e7252dce-9131-450f-ac4d-d9c0cb68019a",
-        "id": "69b1bd2e-5f9e-4f41-8957-f15b3b609ec7",
-        "name": "elastic-agent-90910",
+        "ephemeral_id": "e7120f70-af54-41cc-812a-eedbcd000c93",
+        "id": "130fdc88-8d6e-48ed-ade5-5dfcd2a6d703",
+        "name": "elastic-agent-87697",
         "type": "filebeat",
-        "version": "8.12.2"
+        "version": "8.15.3"
     },
     "beyondinsight_password_safe": {
         "managedaccount": {
-            "account_id": 5,
+            "account_id": "5",
             "account_name": "MacdonaldP.Irene",
             "application_display_name": "AccountingApp",
             "application_id": 123,
@@ -459,23 +471,23 @@ An example event for `managedaccount` looks as following:
             "next_change_date": "2024-12-12T00:00:00.000Z",
             "platform_id": 4,
             "preferred_node_id": "2ca45774-d4e0-4b8f-9b52-3f52b78ae2ca",
-            "system_id": 5,
+            "system_id": "5",
             "system_name": "KittenGrowth",
             "user_principal_name": "irene@example.com"
         }
     },
     "data_stream": {
         "dataset": "beyondinsight_password_safe.managedaccount",
-        "namespace": "37163",
+        "namespace": "43599",
         "type": "logs"
     },
     "ecs": {
         "version": "8.11.0"
     },
     "elastic_agent": {
-        "id": "69b1bd2e-5f9e-4f41-8957-f15b3b609ec7",
+        "id": "130fdc88-8d6e-48ed-ade5-5dfcd2a6d703",
         "snapshot": false,
-        "version": "8.12.2"
+        "version": "8.15.3"
     },
     "event": {
         "agent_id_status": "verified",
@@ -483,19 +495,44 @@ An example event for `managedaccount` looks as following:
             "iam"
         ],
         "dataset": "beyondinsight_password_safe.managedaccount",
-        "ingested": "2024-12-18T19:36:53Z",
+        "ingested": "2025-01-10T17:30:27Z",
         "kind": "event",
         "module": "beyondinsight_password_safe",
         "type": [
             "info"
         ]
     },
+    "host": {
+        "domain": "example.com",
+        "hostname": [
+            "KittenGrowth"
+        ],
+        "id": "5"
+    },
     "input": {
         "type": "cel"
     },
+    "related": {
+        "hosts": [
+            "KittenGrowth",
+            "5",
+            "example.com"
+        ],
+        "user": [
+            "5",
+            "MacdonaldP.Irene",
+            "irene@example.com"
+        ]
+    },
     "tags": [
-        "forwarded"
-    ]
+        "forwarded",
+        "managedaccount"
+    ],
+    "user": {
+        "email": "irene@example.com",
+        "id": "5",
+        "name": "MacdonaldP.Irene"
+    }
 }
 ```
 
@@ -507,7 +544,6 @@ Please refer to the following [document](https://www.elastic.co/guide/en/ecs/cur
 
 The following non-ECS fields are used in managedaccount documents:
 
-**Exported fields**
 
 **Exported fields**
 
@@ -548,81 +584,77 @@ An example event for `asset` looks as following:
 
 ```json
 {
-    "@timestamp": "2024-12-17T11:01:02.360Z",
+    "@timestamp": "2025-01-10T17:28:57.168Z",
     "agent": {
-        "name": "docker-fleet-agent",
-        "id": "a447c2bb-3c3f-4aa0-a636-cb93aaeab324",
-        "ephemeral_id": "a5cec388-f06a-4cd8-9a13-1b4c1339993c",
+        "ephemeral_id": "28da3009-f712-45c6-8cc3-c4ece92152ab",
+        "id": "57cf6db5-ad20-496f-ad07-c31f43d068a4",
+        "name": "elastic-agent-64679",
         "type": "filebeat",
-        "version": "8.12.2"
+        "version": "8.15.3"
     },
     "beyondinsight_password_safe": {
         "asset": {
-            "ipaddress": "172.16.201.219",
-            "domain_name": "example.com",
-            "asset_name": "InteractionMynahBird",
-            "workgroup_id": 1,
-            "asset_type": "UNKNOWN",
-            "operating_system": "ExampleOS",
-            "asset_id": 23,
-            "create_date": "2024-12-10T09:14:28.653Z",
-            "dns_name": "InteractionMynahBird.example.com",
-            "last_update_date": "2024-12-10T09:14:28.653Z"
+            "asset_id": 2,
+            "asset_name": "EPINHYDW002A",
+            "asset_type": "WorkStation",
+            "create_date": "2024-11-20T06:12:21.047Z",
+            "dns_name": "EPINHYDW002A",
+            "domain_name": "Unknown",
+            "ipaddress": "192.168.29.50",
+            "last_update_date": "2024-11-20T06:35:49.927Z",
+            "operating_system": "Windows 11 Enterprise",
+            "workgroup_id": 1
         }
     },
     "data_stream": {
-        "dataset": "beyondinsight_password_safe.assets",
-        "namespace": "70520",
+        "dataset": "beyondinsight_password_safe.asset",
+        "namespace": "94865",
         "type": "logs"
     },
     "ecs": {
         "version": "8.11.0"
     },
     "elastic_agent": {
-        "id": "24d8f479-9397-47ca-9fae-5f1fe550b1ff",
+        "id": "57cf6db5-ad20-496f-ad07-c31f43d068a4",
         "snapshot": false,
-        "version": "8.12.2"
+        "version": "8.15.3"
     },
     "event": {
         "agent_id_status": "verified",
-        "ingested": "2024-12-17T07:40:24Z",
-        "kind": "asset",
-        "module": "beyondinsight_password_safe",
         "category": [
             "host"
         ],
+        "dataset": "beyondinsight_password_safe.asset",
+        "ingested": "2025-01-10T17:28:58Z",
+        "kind": "asset",
+        "module": "beyondinsight_password_safe",
         "type": [
             "info"
-        ],
-        "dataset": "beyondinsight_password_safe.assets"
+        ]
     },
     "host": {
-        "architecture": "aarch64",
-        "containerized": false,
-        "hostname": "elastic-agent-76157",
-        "id": "29b44b57f32c4ff282841a8a4406ef95",
+        "domain": "Unknown",
         "ip": [
-            "172.27.0.2",
-            "172.24.0.4"
-        ],
-        "mac": [
-            "02-42-AC-18-00-04",
-            "02-42-AC-1B-00-02"
-        ],
-        "name": "elastic-agent-76157",
-        "os": {
-            "codename": "focal",
-            "family": "debian",
-            "kernel": "6.6.51-0-virt",
-            "name": "Ubuntu",
-            "platform": "ubuntu",
-            "type": "linux",
-            "version": "20.04.6 LTS (Focal Fossa)"
-        }
+            "192.168.29.50",
+            "192.168.29.50"
+        ]
     },
     "input": {
         "type": "cel"
-    }
+    },
+    "os": {
+        "name": "Windows 11 Enterprise"
+    },
+    "related": {
+        "hosts": [
+            "192.168.29.50",
+            "Unknown"
+        ]
+    },
+    "tags": [
+        "forwarded",
+        "asset"
+    ]
 }
 ```
 
@@ -632,8 +664,6 @@ An example event for `asset` looks as following:
 Please refer to the following [document](https://www.elastic.co/guide/en/ecs/current/ecs-field-reference.html) for detailed information on ECS fields.
 
 The following non-ECS fields are used in asset documents:
-
-**Exported fields**
 
 **Exported fields**
 
