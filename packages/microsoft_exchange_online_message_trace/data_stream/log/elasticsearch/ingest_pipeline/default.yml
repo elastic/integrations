@@ -39,6 +39,7 @@ processors:
       field: event.type
       value: [info]
   - set:
+      if: ctx.microsoft?.online_message_trace?.SenderAddress != "<>"
       field: _temp_.email.from.address
       copy_from: microsoft.online_message_trace.SenderAddress
       ignore_empty_value: true
@@ -48,11 +49,11 @@ processors:
       if: ctx._temp_?.email?.from?.address != null
   - set:
       field: source.user.id
-      copy_from: microsoft.online_message_trace.SenderAddress
+      copy_from: _temp_.email.from.address
       ignore_empty_value: true
   - set:
       field: source.user.email
-      copy_from: microsoft.online_message_trace.SenderAddress
+      copy_from: _temp_.email.from.address
       ignore_empty_value: true
   - set:
       field: email.local_id
@@ -162,12 +163,14 @@ processors:
       ignore_missing: true
   # Extraction of domain
   - grok:
+      tag: grok_from_source_domain
       field: _temp_.email.from.address
       patterns:
         - "^%{DATA}@%{DATA:source.domain}$"
       ignore_failure: false
       ignore_missing: true
   - grok:
+      tag: grok_to_destination_domain
       field: _temp_.email.to.address
       patterns:
         - "^%{DATA}@%{DATA:destination.domain}$"
@@ -337,4 +340,7 @@ on_failure:
       allow_duplicates: false
   - append:
       field: error.message
-      value: '{{{ _ingest.on_failure_message }}}'
+      value: >-
+        Processor '{{{ _ingest.on_failure_processor_type }}}'
+        {{#_ingest.on_failure_processor_tag}}with tag '{{{ _ingest.on_failure_processor_tag }}}'
+        {{/_ingest.on_failure_processor_tag}}failed with message '{{{ _ingest.on_failure_message }}}'
