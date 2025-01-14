@@ -40,9 +40,9 @@ require (
 	github.com/PaesslerAG/gval v1.2.2 // indirect
 	github.com/PaesslerAG/jsonpath v0.1.1 // indirect
 	github.com/Pallinder/go-randomdata v1.2.0 // indirect
-	github.com/ProtonMail/go-crypto v1.1.3 // indirect
+	github.com/ProtonMail/go-crypto v1.1.4 // indirect
 	github.com/ProtonMail/go-mime v0.0.0-20230322103455-7d82a3887f2f // indirect
-	github.com/ProtonMail/gopenpgp/v2 v2.8.1 // indirect
+	github.com/ProtonMail/gopenpgp/v2 v2.8.2 // indirect
 	github.com/andybalholm/brotli v1.1.0 // indirect
 	github.com/armon/go-radix v1.0.0 // indirect
 	github.com/asaskevich/govalidator v0.0.0-20230301143203-a9d515a09cc2 // indirect
@@ -231,4 +231,4 @@ require (
 	sigs.k8s.io/yaml v1.4.0 // indirect
 )
 
-replace github.com/elastic/elastic-package => github.com/mrodm/elastic-package v0.53.1-0.20250109151916-dbca4feac02c
+replace github.com/elastic/elastic-package => github.com/mrodm/elastic-package v0.53.1-0.20250114172511-8fce0ec825ba
