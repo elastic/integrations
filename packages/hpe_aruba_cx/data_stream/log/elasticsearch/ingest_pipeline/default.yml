@@ -11,10 +11,10 @@ processors:
   - redact:
       field: "event.original"
       tag: redact_passkey
-      description: "Reacting passkey updates"
-      prefix: "passkey update:   -> "
+      description: "Redacting passkey updates"
+      prefix: "tacacs_passkey update:   -> "
       patterns:
-        - "passkey %{GREEDYDATA:reacted}"
+        - "tacacs_passkey %{GREEDYDATA:redact}"
   - set:
       field: ecs.version
       value: "8.11.0"
@@ -1101,7 +1101,7 @@ processors:
         - "^%{DATA:aruba.redundant.mgmt_module} is (waiting for filesync|starting ISSU operation)"
 
   # AAA events (23xx)
-  # https://www.arubanetworks.com/techdocs/AOS-CX/10.07/HTML/5200-8214/Content/events/AAA.htm
+  # https://www.arubanetworks.com/techdocs/AOS-CX/10.15/HTML/elmrg/Content/events/AAA.htm
   - grok:
       if: "ctx.event.code == '2301'"
       tag: aaa_event_2301
@@ -1135,6 +1135,19 @@ processors:
       field: "message"
       description: "Logs changes in TACACS server reachability status"
       pattern: "TACACS server host %{server.address} port %{aruba.port} vrf %{aruba.vrf.id} %{aruba.status}"
+  - dissect:
+      if: "ctx.event.code == '2306'"
+      tag: aaa_event_2306
+      field: "message"
+      description: "Logs changes in RADIUS server route reachability status"
+      pattern: 'RADIUS Server route with Address:%{server.address}, VRF_ID:%{aruba.vrf.id} is "%{aruba.status}"'
+  - grok:
+      if: "ctx.event.code == '2307'"
+      tag: aaa_event_2307
+      field: "message"
+      description: "Decrypted TACACS server key length exceeded the maximum length allowed"
+      patterns: 
+        - "^Decrypted TACACS passkey length %{NUMBER:aruba.len:long} exceeded the maximum allowed plaintext key length %{GREEDYDATA:aruba.limit.threshold}"
 
     # OSPFv2 events (2401)
     # https://www.arubanetworks.com/techdocs/AOS-CX/10.07/HTML/5200-8214/Content/events/OSPFv2.htm
@@ -4032,14 +4045,17 @@ processors:
         - "^Egress port shape rate %{DATA:aruba.vsf.lowest_speed} update is failed to apply for interface %{GREEDYDATA:aruba.interface.name}"
 
   # ACLs events (100xx)
-  # https://www.arubanetworks.com/techdocs/AOS-CX/10.07/HTML/5200-8214/Content/events/ACL.htm
+  # https://www.arubanetworks.com/techdocs/AOS-CX/10.15/HTML/elmrg/Content/events/ACL.htm
   - grok:
       if: "ctx.event.code == '10002'"
       tag: acl_event_10002
       field: "message"
       description: "ACL log statistics"
       patterns:
+        # OS 10.7
         - "^%{DATA:aruba.acl.name} on %{DATA:aruba.interface.name} \\(%{DATA:aruba.acl.direction}\\): %{NUMBER:aruba.acl.hit_delta:long} %{GREEDYDATA:aruba.acl.ace_string}"
+        # OS 10.15
+        - "^ACL %{DATA:aruba.acl.name} \\(%{DATA:aruba.acl.type}\\) %{DATA:aruba.interface.name} \\(%{DATA:aruba.acl.direction}\\): %{NUMBER:aruba.acl.hit_delta:long} %{GREEDYDATA:aruba.acl.ace_string}"
   - dissect:
       if: "ctx.event.code == '10003'"
       tag: acl_event_10003
@@ -4274,6 +4290,42 @@ processors:
       if: "ctx.event?.code == '11602'"
       pattern: "Connection restored for Maintenance Endpoint %{aruba.cfm.id} on %{aruba.cfm.interface}."
 
+  # Alarm events (117xx)
+  # https://www.arubanetworks.com/techdocs/AOS-CX/10.15/HTML/elmrg/Content/events/ALARM.htm
+  - dissect:
+      field: message
+      tag: alarm_event_11701
+      if: "ctx.event?.code == '11701'"
+      description: "Event reported when there is a change in input alarm configuration."
+      pattern: "Input alarm %{aruba.instance.id} config change: name: %{aruba.alarm.name}, relay: %{aruba.alarm.relay}, log_and_trap: %{aruba.alarm.log_and_trap}, trigger: %{aruba.alarm.trigger}"
+  - dissect:
+      field: message
+      tag: alarm_event_11702
+      if: "ctx.event?.code == '11702'"
+      description: "Event reported when there is a change in system alarm configuration."
+      pattern: 'System alarm (%{aruba.alarm.type}) config change: relay: %{aruba.alarm.relay}, log_and_trap: %{aruba.alarm.log_and_trap}'
+  - grok:
+      field: message
+      tag: alarm_event_11703_11704
+      if: "['11703','11704'].contains(ctx.event?.code)"
+      description: "Event reported when system alarm has activated | when input alarm has activated"
+      patterns:
+        - "^(System|Input) alarm %{DATA:aruba.alarm.name} has activated through log-and-trap(, triggered at %{GREEDYDATA:aruba.alarm.trigger})?"
+  - grok:
+      field: message
+      tag: alarm_event_11705_11708
+      if: "['11705','11708'].contains(ctx.event?.code)"
+      description: "Event reported when alarm snooze timer has activated | Event reported when alarm snooze timer repeats"
+      patterns:
+        - "^Snooze alarm (activated|repeats), disabling relay function for %{NUMBER:aruba.len:long} min"
+  - grok:
+      field: message
+      tag: alarm_event_11709_11710
+      if: "['11709','11710'].contains(ctx.event?.code)"
+      description: "Event reported when system alarm has activated through relay | when input alarm has activated through relay"
+      patterns:
+        - "^(System|Input) alarm %{DATA:aruba.alarm.name} has activated through relay(, triggered at %{GREEDYDATA:aruba.alarm.trigger})?"
+
   # Container Manager Events (118xx)
   # https://www.arubanetworks.com/techdocs/AOS-CX/10.07/HTML/5200-8214/Content/events/CONTAINER.htm
   - dissect:
@@ -4341,6 +4393,16 @@ processors:
         - "^TELNET session from User %{DATA:user.name} is closed because maximum number of sessions per user is reached."
         - "^User %{DATA:user.name} login from %{IP:client.ip} for TELNET session has failed since the user is trying to login through an interface which is not allowed. Allowed interfaces are: %{GREEDYDATA:aruba.interface.id}."
 
+  # Accounting events (1310x)
+  # https://www.arubanetworks.com/techdocs/AOS-CX/10.15/HTML/elmrg/Content/events/ACCOUNTING.htm
+  - grok:
+      field: message
+      tag: accounting_event_13101_13102_13103
+      description: "Logs a message when a SSH session timed out due to the session being idle | when a TELNET session timed out due to the session being idle | when a CONSOLE session timed out due to the session being idle"
+      if: "['13101','13102','13103'].contains(ctx.event?.code)"
+      patterns:
+        - "^(SSH|TELNET|CONSOLE) session from %{IP:client.ip} (for|with) (U|u)ser %{DATA:user.name} "
+
   # TPM events (1360x)
   # https://www.arubanetworks.com/techdocs/AOS-CX/10.15/HTML/elmrg/Content/events/TPMD.htm
   - dissect:
@@ -4393,7 +4455,37 @@ processors:
       patterns:
         - "^Ignoring the flow for monitor %{DATA:aruba.traffic.monitor_name} instance %{DATA:aruba.instance.id}, maximum application flow cache limit reached"
         - "^DNS Average Latency statistics cache cleared for the monitor %{DATA:aruba.traffic.monitor_name} and instance %{GREEDYDATA:aruba.instance.id}"
-  
+
+  # ARC events (141xx)
+  # https://www.arubanetworks.com/techdocs/AOS-CX/10.15/HTML/elmrg/Content/events/ARC.htm
+  - dissect:
+      field: message
+      tag: arc_event_14101
+      description: "Log event that indicates global configuration for App Recognition feature"
+      if: "ctx.event?.code == '14101'"
+      pattern: "%{aruba.arc.log}App Recognition feature has been %{aruba.status} - event_name: ARCD_LC_STATUS_CHANGE"
+  - grok:
+      field: message
+      tag: arc_event_14102_14106
+      description: "linecard up event | flush timer start/expire status"
+      if: "['14102','14106'].contains(ctx.event?.code)"
+      patterns: 
+        - "(Linecard|LC) %{DATA:aruba.instance.id} is %{DATA:aruba.status}(.| )- event_name:"
+  - grok:
+      field: message
+      tag: arc_event_14103_14107_14108
+      description: "Bulk sync event received | IP Flow table utilization reached high threshold on a LC | IP Flow table utilization back to lower threshold on a LC"
+      if: "['14103','14107','14108'].contains(ctx.event?.code)"
+      patterns: 
+        - "linecard %{DATA:aruba.instance.id} - "
+  - grok:
+      field: message
+      tag: arc_event_14105_14109
+      description: "ARCD Publisher status | Log event that indicates global configuration for App Recognition feature"
+      if: "['14105','14109'].contains(ctx.event?.code)"
+      patterns: 
+        - "(is|been) %{DATA:aruba.status} - event_name"
+
   # Cleanup MAC addresses for different fields
   - uppercase:
       field: client.mac

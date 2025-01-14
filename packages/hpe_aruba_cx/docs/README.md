@@ -43,11 +43,13 @@ To Be Removed
 Note: Field types are defined within `fields.yml`
 Note: Descriptions have not been filled out
 
-#### [AAA events (Aruba Docs)](https://www.arubanetworks.com/techdocs/AOS-CX/10.07/HTML/5200-8214/Content/events/AAA.htm)
+#### [AAA events](https://www.arubanetworks.com/techdocs/AOS-CX/10.15/HTML/elmrg/Content/events/AAA.htm)
 | Doc Fields           | Schema Mapping               |
 |----------------------|------------------------------|
 | `<aaa_config_type>`  | aruba.aaa.config_event       |
 | `<aaa_config_event>` | aruba.aaa.config_type        |
+| `<key_length>`       | aruba.len                    |
+| `<max_key_length>`   | aruba.limit.threshold        |
 | `<tacacs_action>`    | aruba.aaa.radius_action      |
 | `<radius_event>`     | aruba.aaa.radius_event       |
 | `<server_address>`   | server.address               |
@@ -62,7 +64,13 @@ Note: Descriptions have not been filled out
 | `<server_vrfid>`     | aruba.vrf.id                 |
 | `<tacacs_type>`      | aruba.aaa.tacacs_type        |
 
-#### [ACLs events](https://www.arubanetworks.com/techdocs/AOS-CX/10.07/HTML/5200-8214/Content/events/ACL.htm)
+#### [Accounting events](https://www.arubanetworks.com/techdocs/AOS-CX/10.15/HTML/elmrg/Content/events/ACCOUNTING.htm)
+| Doc Fields           | Schema Mapping               |
+|----------------------|------------------------------|
+| `<ip_address>`       | client.ip                    |
+| `<user_name>`        | user.name                    |
+
+#### [ACLs events](https://www.arubanetworks.com/techdocs/AOS-CX/10.15/HTML/elmrg/Content/events/ACL.htm)
 | Doc Fields          | Schema Mapping         |
 |---------------------|------------------------|
 | `<log>`             | message                |
@@ -73,6 +81,24 @@ Note: Descriptions have not been filled out
 | `<hit_delta>`       | aruba.acl.hit_delta    |
 | `<interface_name>`  | aruba.interface.name   |
 | `<name>`            | aruba.acl.name         |
+
+#### [Alarm events](https://www.arubanetworks.com/techdocs/AOS-CX/10.15/HTML/elmrg/Content/events/ALARM.htm)
+| Doc Fields       | Schema Mapping           |
+|------------------|--------------------------|
+| `<id>`           | aruba.instance.id        |
+| `<length>`       | aruba.len                |
+| `<log_and_trap>` | aruba.alarm.log_and_trap |
+| `<name>`         | aruba.alarm.name         |
+| `<relay>`        | aruba.alarm.relay        |
+| `<trigger>`      | aruba.alarm.trigger      |
+| `<type>`         | aruba.alarm.type         |
+
+#### [ARC events](https://www.arubanetworks.com/techdocs/AOS-CX/10.15/HTML/elmrg/Content/events/ARC.htm)
+| Doc Fields       | Schema Mapping           |
+|------------------|--------------------------|
+| `<log>`          | aruba.arc.log            |
+| `<node_id>`      | aruba.instance.id        |
+| `<status>`       | aruba.status             |
 
 #### [ARP security events](https://www.arubanetworks.com/techdocs/AOS-CX/10.07/HTML/5200-8214/Content/events/ARP-SECURITY.htm)
 | Doc Fields    | Schema Mapping  |
@@ -1426,6 +1452,12 @@ The `log` dataset collects the HPE Aruba CX logs.
 | aruba.acl.hit_delta |  | long |
 | aruba.acl.name |  | keyword |
 | aruba.acl.type |  | keyword |
+| aruba.alarm.log_and_trap |  | keyword |
+| aruba.alarm.name |  | keyword |
+| aruba.alarm.relay |  | keyword |
+| aruba.alarm.trigger |  | keyword |
+| aruba.alarm.type |  | keyword |
+| aruba.arc.log |  | keyword |
 | aruba.bfd.applied_interval |  | long |
 | aruba.bfd.direction |  | keyword |
 | aruba.bfd.from |  | keyword |
