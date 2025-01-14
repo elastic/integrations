@@ -82,7 +82,7 @@ Note: Descriptions have not been filled out
 | `<interface_name>`  | aruba.interface.name   |
 | `<name>`            | aruba.acl.name         |
 
-#### [Alarm events](https://www.arubanetworks.com/techdocs/AOS-CX/10.15/HTML/elmrg/Content/events/ACL.htm)
+#### [Alarm events](https://www.arubanetworks.com/techdocs/AOS-CX/10.15/HTML/elmrg/Content/events/ALARM.htm)
 | Doc Fields       | Schema Mapping           |
 |------------------|--------------------------|
 | `<id>`           | aruba.instance.id        |
@@ -96,7 +96,7 @@ Note: Descriptions have not been filled out
 #### [ARC events](https://www.arubanetworks.com/techdocs/AOS-CX/10.15/HTML/elmrg/Content/events/ARC.htm)
 | Doc Fields       | Schema Mapping           |
 |------------------|--------------------------|
-| `<log>`          | aruba.arc.lob            |
+| `<log>`          | aruba.arc.log            |
 | `<node_id>`      | aruba.instance.id        |
 | `<status>`       | aruba.status             |
 
