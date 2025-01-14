@@ -4,4 +4,4 @@ A connector is a type of Elastic integration that syncs data from an original da
 
 Connectors extract the original files, records, or objects; and transforms them into Elasticsearch documents.
 
-To learn more about the available elastic-managed connectors, refer to [Elastic Connectors](https://www.elastic.co/guide/en/elasticsearch/reference/current/es-connectors.html)
+To learn more about the available Elastic-managed connectors, refer to [Elastic Connectors](https://www.elastic.co/guide/en/elasticsearch/reference/current/es-connectors.html)
