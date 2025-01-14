@@ -100,16 +100,18 @@ Note: Descriptions have not been filled out
 | `<node_id>`      | aruba.instance.id        |
 | `<status>`       | aruba.status             |
 
-#### [ARP security events](https://www.arubanetworks.com/techdocs/AOS-CX/10.07/HTML/5200-8214/Content/events/ARP-SECURITY.htm)
+#### [ARP security events](https://www.arubanetworks.com/techdocs/AOS-CX/10.15/HTML/elmrg/Content/events/ARP-SECURITY.htm)
 | Doc Fields    | Schema Mapping  |
 |---------------|-----------------|
 | `<port_name>` | aruba.port      |
 | `<status>`    | aruba.status    |
 | `<vlan_id>`   | network.vlan.id |
-
-#### [ASIC table full error for L3PD events](https://www.arubanetworks.com/techdocs/AOS-CX/10.07/HTML/5200-8214/Content/events/L3_ASIC_RESOURCE.htm)
-| Doc Fields | Schema Mapping |
-|------------|----------------|
+#### [ASIC table full error for L3PD events](https://www.arubanetworks.com/techdocs/AOS-CX/10.15/HTML/elmrg/Content/events/L3_ASIC_RESOURCE.htm)
+| Doc Fields       | Schema Mapping         |
+|------------------|------------------------|
+| `<mac>`          | client.mac             |
+| `<prefix_list>`  | aruba.asic.prefix_list |
+| `<route_prefix>` | aruba.asic.route_prefix|
 
 
 #### [BFD events](https://www.arubanetworks.com/techdocs/AOS-CX/10.07/HTML/5200-8214/Content/events/BFD.htm)
