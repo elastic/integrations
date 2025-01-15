@@ -1,6 +1,6 @@
 # BeyondInsight and Password Safe Integration
 
-BeyondInsight and Password Safe enable real-time monitoring of privileged account access, session recordings, and password checkout patterns to help security teams maintain compliance and quickly identify potential privilege abuse.
+ [BeyondInsight and Password Safe](https://www.beyondtrust.com/products/password-safe)   enable real-time monitoring of privileged account access, session recordings, and password checkout patterns to help security teams maintain compliance and quickly identify potential privilege abuse.
 
 ## Data Streams
 
@@ -31,10 +31,10 @@ Please check the [document](https://www.beyondtrust.com/docs/beyondinsight-passw
 **User Password Required**: When enabled, an additional Authorization header value containing the RunAs user password is required with the web request. If not enabled, this header value does not need to be present and is ignored if provided.
 On successful API key registration, BeyondInsight and Password Safe generate a unique identifier (API key) that the calling application provides in the Authorization header of the web request. 
 For example, the Authorization header might look like: 
-Authorization=PS-Auth key=c479a66f…c9484d; runas=doe-main\johndoe; pwd=[un1qu3];
+`Authorization=PS-Auth key=c479a66f…c9484d; runas=doe-main\johndoe; pwd=[un1qu3];`
 
 ### API Key-Based Authentication
-All the connectors utilize the API key from Beyondtrust and use it with the /SignAppIn endpoint passing the key as an authorization header.
+All the connectors utilize the API key from Beyondtrust and use it with the`/SignAppIn` endpoint passing the key as an authorization header.
 Any language with a Representational State Transfer (REST) compliant interface can access the API with the API key and RunAs in the authorization header.
 
 **Authorization Header**
@@ -44,7 +44,7 @@ Use the web request authorization header to communicate the API application key,
 
 **runas**: The username of a BeyondInsight and Password Safe user that has been granted permission to use the API key.
 
-**pwd**: The RunAs user password surrounded by square brackets (optional; required only if the User Password is required on the application API registration).
+**pwd**: The RunAs user password surrounded by square brackets `(optional; required only if the User Password is required on the application API registration).`
 
 ## Logs
 
@@ -56,7 +56,7 @@ UserAudit documents can be found using the API model by setting the filter `even
 
 **ECS Field Reference**
 
-Please refer to the following [document](https://www.elastic.co/guide/en/ecs/current/ecs-field-reference.html) for detailed information on ECS fields.
+Please refer to the following [document](https://www.elastic.co/guide/en/ecs/current/ecs-field-reference.html) for detailed information on [ECS](https://www.elastic.co/guide/en/ecs/current/ecs-field-reference.html) fields.
 
 The following non-ECS fields are used in useraudit documents:
 
@@ -70,7 +70,7 @@ Session documents can be found using the API model by setting the filter `event.
 
 **ECS Field Reference**
 
-Please refer to the following [document](https://www.elastic.co/guide/en/ecs/current/ecs-field-reference.html) for detailed information on ECS fields.
+Please refer to the following [document](https://www.elastic.co/guide/en/ecs/current/ecs-field-reference.html) for detailed information on [ECS](https://www.elastic.co/guide/en/ecs/current/ecs-field-reference.html) fields.
 
 The following non-ECS fields are used in session documents:
 
@@ -84,7 +84,7 @@ ManagedSystem documents can be found using the API model by setting the filter `
 
 **ECS Field Reference**
 
-Please refer to the following [document](https://www.elastic.co/guide/en/ecs/current/ecs-field-reference.html) for detailed information on ECS fields.
+Please refer to the following [document](https://www.elastic.co/guide/en/ecs/current/ecs-field-reference.html) for detailed information on [ECS](https://www.elastic.co/guide/en/ecs/current/ecs-field-reference.html) fields.
 
 The following non-ECS fields are used in managedsystem documents:
 
@@ -98,7 +98,7 @@ ManagedAccount documents can be found using the API model by setting the filter 
 
 **ECS Field Reference**
 
-Please refer to the following [document](https://www.elastic.co/guide/en/ecs/current/ecs-field-reference.html) for detailed information on ECS fields.
+Please refer to the following [document](https://www.elastic.co/guide/en/ecs/current/ecs-field-reference.html) for detailed information on [ECS](https://www.elastic.co/guide/en/ecs/current/ecs-field-reference.html) fields.
 
 The following non-ECS fields are used in managedaccount documents:
 
@@ -112,7 +112,7 @@ Asset documents can be found using the API model by setting the filter `event.da
 
 **ECS Field Reference**
 
-Please refer to the following [document](https://www.elastic.co/guide/en/ecs/current/ecs-field-reference.html) for detailed information on ECS fields.
+Please refer to the following [document](https://www.elastic.co/guide/en/ecs/current/ecs-field-reference.html) for detailed information on [ECS](https://www.elastic.co/guide/en/ecs/current/ecs-field-reference.html) fields.
 
 The following non-ECS fields are used in asset documents:
 
