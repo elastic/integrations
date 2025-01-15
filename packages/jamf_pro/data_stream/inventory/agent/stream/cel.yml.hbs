@@ -48,12 +48,10 @@ program: |-
   ).do_request().as(resp,
   	bytes(resp.Body).decode_json().as(body, (resp.StatusCode != 200) ?
   		{
-  			"events": [
-  				{
-  					"error": {"message": "response: " + string(resp.StatusCode)},
-  					"event": {"original": resp.Body},
-  				},
-  			],
+  			"events": {
+  				"error": {"message": "HTTP response code: " + string(resp.StatusCode)},
+  				"event": {"original": resp.Body},
+  			},
   		}
   	:
   		state.with(
@@ -68,7 +66,11 @@ program: |-
   				"cursor": state.?cursor.orValue({}).with(
   					{
   						?"last_report_date": (size(body.results) > 0) ?
-  							optional.of(body.results[size(body.results) - 1].general.reportDate)
+  							optional.of(
+  								body.results[size(body.results) - 1].general.reportDate.as(d,
+  									d.parse_time(time_layout.RFC3339).format("2006-01-02T15:04:05.000Z")
+  								)
+  							)
   						:
   							optional.none(),
   					}
