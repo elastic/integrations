@@ -101,6 +101,7 @@ Note: Descriptions have not been filled out
 | `<port_name>` | aruba.port      |
 | `<status>`    | aruba.status    |
 | `<vlan_id>`   | network.vlan.id |
+
 #### [ASIC table full error for L3PD events](https://www.arubanetworks.com/techdocs/AOS-CX/10.15/HTML/elmrg/Content/events/L3_ASIC_RESOURCE.htm)
 | Doc Fields       | Schema Mapping         |
 |------------------|------------------------|
@@ -108,8 +109,7 @@ Note: Descriptions have not been filled out
 | `<prefix_list>`  | aruba.asic.prefix_list |
 | `<route_prefix>` | aruba.asic.route_prefix|
 
-
-#### [BFD events](https://www.arubanetworks.com/techdocs/AOS-CX/10.07/HTML/5200-8214/Content/events/BFD.htm)
+#### [BFD events](https://www.arubanetworks.com/techdocs/AOS-CX/10.15/HTML/elmrg/Content/events/BFD.htm)
 | Doc Fields             | Schema Mapping               |
 |------------------------|------------------------------|
 | `<applied_interval>`   | aruba.bfd.applied_interval   |
@@ -122,7 +122,6 @@ Note: Descriptions have not been filled out
 | `<local_diag>`         | aruba.bfd.local_diag         |
 | `<local_state>`        | aruba.bfd.local_state        |
 | `<op_mode>`            | aruba.bfd.op_mode            |
-| `<peer-grp>`           | aruba.bfd.peer_grp           |
 | `<port_name>`          | aruba.port                   |
 | `<remote_addr>`        | client.address               |
 | `<remote_diag>`        | aruba.bfd.remote_diag        |
@@ -142,6 +141,7 @@ Note: Descriptions have not been filled out
 | `<error-subcode>`   | aruba.bgp.error_subcode   |
 | `<local_as>`        | client.as.number          |
 | `<pg_name>`         | aruba.bgp.pg_name         |
+| `<peer-grp>`        | aruba.bgp.peer_grp        |
 | `<remote-addr>`     | destination.address       |
 | `<remote_as>`       | destination.as.number     |
 | `<src_ipaddr>`      | source.ip                 |
