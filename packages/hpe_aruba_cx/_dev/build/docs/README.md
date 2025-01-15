@@ -112,12 +112,12 @@ Note: Descriptions have not been filled out
 #### [BFD events](https://www.arubanetworks.com/techdocs/AOS-CX/10.15/HTML/elmrg/Content/events/BFD.htm)
 | Doc Fields             | Schema Mapping               |
 |------------------------|------------------------------|
+| `<addr>`               | aruba.bfd.invalid_ip         |
 | `<applied_interval>`   | aruba.bfd.applied_interval   |
 | `<dest_ip>`            | destination.ip               |
 | `<direction>`          | network.direction            |
 | `<from>`               | aruba.bfd.from               |
 | `<intf>`               | aruba.interface.id           |
-| `<invalid_ip>`         | aruba.bfd.invalid_ip         |
 | `<ip_version>`         | aruba.bfd.ip_version         |
 | `<local_diag>`         | aruba.bfd.local_diag         |
 | `<local_state>`        | aruba.bfd.local_state        |
