@@ -64,3 +64,15 @@ Please refer to the following [document](https://www.elastic.co/guide/en/ecs/cur
 {{fields "virtualmachines"}}
 
 {{event "virtualmachines"}}
+
+### MSSQL Databases
+
+The `mssql_databases` dataset provides metrics related to the state of the MSSQL databases.
+
+**ECS Field Reference**
+
+Please refer to the following [document](https://www.elastic.co/guide/en/ecs/current/ecs-field-reference.html) for detailed information on ECS fields.
+
+{{fields "mssql_databases"}}
+
+{{event "mssql_databases"}}
