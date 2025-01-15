@@ -62,14 +62,14 @@ Given timestamps `t0`, `t1`, `t2`, ... `tn` in ascending order:
 ```
 usage_metrics_1: *
 ```
-new entry `usage_metrics_1` added to the empty log.
+New entry `usage_metrics_1` added to the empty log.
 
 * At `t1` (continuous collection):
 ```
 usage_metrics_1: *
 usage_metrics_2: *
 ```
-new entry `usage_metrics_2` appended to the end of the log.
+New entry `usage_metrics_2` appended to the end of the log.
 
 * At `tn` (continuous collection):
 ```
@@ -79,8 +79,7 @@ usage_metrics_3: *
 ...
 usage_metrics_n: *
 ```
-
-new entries `usage_metrics_{3,...,n}` appended to the end of the log.
+New entries `usage_metrics_{3,...,n}` appended to the end of the log.
 
 This append-only pattern means new usage metrics are continuously added throughout the day. Setting `collection.realtime: true` with frequent collection periods would result in duplicate data points, as each collection would gather the entire day's accumulated log.
 
@@ -89,6 +88,8 @@ The optimal collection strategy is to use `current time (in UTC) - 24h`, which p
 With these settings, each collection gathers exactly one day's worth of data, creating clean, non-overlapping data points ideal for analytics and storage efficiency. The 24-hour delay in data availability enables complete and accurate daily usage metrics.
 
 There's also an internal cursor that tracks the last collected timestamp. This cursor is updated after each collection to ensure that the next collection starts from the next day's data.
+
+Also, OpenAI aggregates usage data in 5-minute intervals. For example, multiple model invocations of a particular model within the same 5-minute window are consolidated into a single aggregate entry. This is undocumented behavior and is subject to change.
 
 ## Metrics reference
 
@@ -163,10 +164,10 @@ An example event for `usage` looks as following:
                 "context_tokens_total": 25,
                 "generated_tokens_total": 33,
                 "operation": "completion",
-                "request_type": "",
-                "requests_total": 1,
-                "snapshot_id": "gpt-4o-mini-2024-07-18"
+                "request_type": ""
             },
+            "requests_total": 1,
+            "model_id": "gpt-4o-mini-2024-07-18",
             "organization_id": "org-dummy",
             "organization_name": "Personal"
         }
@@ -195,30 +196,24 @@ Please refer to the following [document](https://www.elastic.co/guide/en/ecs/cur
 | openai.usage.api_key_type | Type of API key | keyword |
 | openai.usage.assistant_code_interpreter.original | Raw assistant code interpreter data | object |
 | openai.usage.dalle.image_size | Size of generated images | keyword |
-| openai.usage.dalle.model_id | Model identifier | keyword |
 | openai.usage.dalle.num_images | Number of images generated | long |
 | openai.usage.dalle.operation | Operation type | keyword |
-| openai.usage.dalle.requests_total | Number of requests | long |
 | openai.usage.dalle.user_id | User identifier | keyword |
-| openai.usage.data.cached_context_tokens_total | Total number of cached input tokens | long |
-| openai.usage.data.context_tokens_total | Total number of input tokens used | long |
+| openai.usage.data.cached_context_tokens_total | Total number of cached tokens used as context | long |
+| openai.usage.data.context_tokens_total | Total number of tokens used as context | long |
 | openai.usage.data.email | User email | keyword |
-| openai.usage.data.generated_tokens_total | Total number of output tokens | long |
+| openai.usage.data.generated_tokens_total | Total number of tokens generated as part of the response | long |
 | openai.usage.data.operation | Operation type | keyword |
 | openai.usage.data.request_type | Type of request | keyword |
-| openai.usage.data.requests_total | Number of requests made | long |
-| openai.usage.data.snapshot_id | Snapshot identifier | keyword |
 | openai.usage.ft_data.original | Raw fine-tuning data | object |
+| openai.usage.model_id | Model identifier | keyword |
 | openai.usage.organization_id | Organization identifier | keyword |
 | openai.usage.organization_name | Organization name | keyword |
 | openai.usage.project_id | Project identifier | keyword |
 | openai.usage.project_name | Project name | keyword |
+| openai.usage.requests_total | Number of requests made | long |
 | openai.usage.retrieval_storage.original | Raw retrieval storage data | object |
-| openai.usage.tts.model_id | Model identifier | keyword |
 | openai.usage.tts.num_characters | Number of characters processed | long |
-| openai.usage.tts.requests_total | Number of requests | long |
 | openai.usage.tts.user_id | User identifier | keyword |
-| openai.usage.whisper.model_id | Model identifier | keyword |
 | openai.usage.whisper.num_seconds | Number of seconds processed | long |
-| openai.usage.whisper.requests_total | Number of requests | long |
 | openai.usage.whisper.user_id | User identifier | keyword |

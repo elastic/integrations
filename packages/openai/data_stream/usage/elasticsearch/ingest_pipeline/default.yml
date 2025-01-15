@@ -4,7 +4,68 @@ processors:
   - set:
       field: ecs.version
       value: "8.16.0"
+  # Rename all openai.usage.*.{snapshot_id,model_id} -> openai.usage.model_id
+  - rename:
+      field: openai.usage.data.snapshot_id
+      target_field: openai.usage.model_id
+      ignore_missing: true
+      ignore_failure: true
+  - rename:
+      field: openai.usage.dalle.model_id
+      target_field: openai.usage.model_id
+      ignore_missing: true
+      ignore_failure: true
+  - rename:
+      field: openai.usage.whisper.model_id
+      target_field: openai.usage.model_id
+      ignore_missing: true
+      ignore_failure: true
+  - rename:
+      field: openai.usage.tts.model_id
+      target_field: openai.usage.model_id
+      ignore_missing: true
+      ignore_failure: true
+  # Rename all openai.usage.*.requests_total -> openai.usage.requests_total
+  - rename:
+      field: openai.usage.data.requests_total
+      target_field: openai.usage.requests_total
+      ignore_missing: true
+      ignore_failure: true
+  - rename:
+      field: openai.usage.dalle.requests_total
+      target_field: openai.usage.requests_total
+      ignore_missing: true
+      ignore_failure: true
+  - rename:
+      field: openai.usage.whisper.requests_total
+      target_field: openai.usage.requests_total
+      ignore_missing: true
+      ignore_failure: true
+  - rename:
+      field: openai.usage.tts.requests_total
+      target_field: openai.usage.requests_total
+      ignore_missing: true
+      ignore_failure: true
+
+
+###################
+# Failure handler #
+###################
+
 on_failure:
-  - set:
+  - append:
+      tag: append_error_message
       field: error.message
-      value: "{{ _ingest.on_failure_message }}"
+      value: >
+        Processor "{{{ _ingest.on_failure_processor_type }}}"
+        with tag "{{{ _ingest.on_failure_processor_tag }}}"
+        in pipeline "{{{ _ingest.on_failure_pipeline }}}"
+        failed with message "{{{ _ingest.on_failure_message }}}"
+  - set:
+      tag: set_event_kind
+      field: event.kind
+      value: pipeline_error
+  - append:
+      field: tags
+      value: preserve_original_event
+      allow_duplicates: false

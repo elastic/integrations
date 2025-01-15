@@ -62,14 +62,14 @@ Given timestamps `t0`, `t1`, `t2`, ... `tn` in ascending order:
 ```
 usage_metrics_1: *
 ```
-new entry `usage_metrics_1` added to the empty log.
+New entry `usage_metrics_1` added to the empty log.
 
 * At `t1` (continuous collection):
 ```
 usage_metrics_1: *
 usage_metrics_2: *
 ```
-new entry `usage_metrics_2` appended to the end of the log.
+New entry `usage_metrics_2` appended to the end of the log.
 
 * At `tn` (continuous collection):
 ```
@@ -79,8 +79,7 @@ usage_metrics_3: *
 ...
 usage_metrics_n: *
 ```
-
-new entries `usage_metrics_{3,...,n}` appended to the end of the log.
+New entries `usage_metrics_{3,...,n}` appended to the end of the log.
 
 This append-only pattern means new usage metrics are continuously added throughout the day. Setting `collection.realtime: true` with frequent collection periods would result in duplicate data points, as each collection would gather the entire day's accumulated log.
 
@@ -89,6 +88,8 @@ The optimal collection strategy is to use `current time (in UTC) - 24h`, which p
 With these settings, each collection gathers exactly one day's worth of data, creating clean, non-overlapping data points ideal for analytics and storage efficiency. The 24-hour delay in data availability enables complete and accurate daily usage metrics.
 
 There's also an internal cursor that tracks the last collected timestamp. This cursor is updated after each collection to ensure that the next collection starts from the next day's data.
+
+Also, OpenAI aggregates usage data in 5-minute intervals. For example, multiple model invocations of a particular model within the same 5-minute window are consolidated into a single aggregate entry. This is undocumented behavior and is subject to change.
 
 ## Metrics reference
 
