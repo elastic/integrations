@@ -758,29 +758,28 @@ Please refer to the following [document](https://www.elastic.co/guide/en/ecs/cur
 | data_stream.type | An overarching type for the data stream. Currently allowed values are "logs" and "metrics". We expect to also add "traces" and "synthetics" in the near future. | constant_keyword |  |
 | event.dataset | Name of the dataset. If an event source publishes more than one type of log or events (e.g. access log, error log), the dataset is used to specify which one the event comes from. It's recommended but not required to start the dataset name with the module name, followed by a dot, then the dataset name. | constant_keyword |  |
 | event.module | Name of the module this data is coming from. If your monitoring agent supports the concept of modules or plugins to process events of a given source (e.g. Apache logs), `event.module` should contain the name of this module. | constant_keyword |  |
-| input.type | Type of filebeat input. | keyword |  |
 | labels.is_transform_source | Distinguishes between documents that are a source for a transform and documents that are an output of a transform, to facilitate easier filtering. | constant_keyword |  |
-| o365.metrics.groups.activity.group.detail.exchange_mailbox_storage_used.byte |  | long |  |
-| o365.metrics.groups.activity.group.detail.exchange_mailbox_total_item.count |  | long |  |
-| o365.metrics.groups.activity.group.detail.exchange_received_email.count |  | long |  |
-| o365.metrics.groups.activity.group.detail.external_member.count |  | long |  |
-| o365.metrics.groups.activity.group.detail.group_display_name |  | keyword |  |
-| o365.metrics.groups.activity.group.detail.group_id |  | keyword |  |
-| o365.metrics.groups.activity.group.detail.group_type |  | keyword |  |
-| o365.metrics.groups.activity.group.detail.is_deleted |  | boolean |  |
-| o365.metrics.groups.activity.group.detail.last_activity_date |  | date |  |
-| o365.metrics.groups.activity.group.detail.member.count |  | long |  |
-| o365.metrics.groups.activity.group.detail.owner_principal_name |  | keyword |  |
+| o365.metrics.groups.activity.group.detail.exchange_mailbox_storage_used.byte | The storage used by the group's mailbox. | long |  |
+| o365.metrics.groups.activity.group.detail.exchange_mailbox_total_item.count | The total number of items in the group's mailbox. | long |  |
+| o365.metrics.groups.activity.group.detail.exchange_received_email.count | The number of messages received by the group. | long |  |
+| o365.metrics.groups.activity.group.detail.external_member.count | The number of external users in the group. | long |  |
+| o365.metrics.groups.activity.group.detail.group_display_name | The name of the group. | keyword |  |
+| o365.metrics.groups.activity.group.detail.group_id | The id of the group. | keyword |  |
+| o365.metrics.groups.activity.group.detail.group_type | The type of group. This can be private or public group. | keyword |  |
+| o365.metrics.groups.activity.group.detail.is_deleted | If the group is deleted, but had activity in the reporting period it will show up in the grid with this flag set to true. | boolean |  |
+| o365.metrics.groups.activity.group.detail.last_activity_date | The latest date a message was received by the group. This is the latest date an activity happened in an email conversation, Viva Engage, or the Site. | date |  |
+| o365.metrics.groups.activity.group.detail.member.count | The number of members in the group. | long |  |
+| o365.metrics.groups.activity.group.detail.owner_principal_name | The name of the group owner. | keyword |  |
 | o365.metrics.groups.activity.group.detail.report.period.day | The reporting period over which the data is aggregated (in days). | integer | d |
 | o365.metrics.groups.activity.group.detail.report.refresh_date | The date when the report data was last updated. | date |  |
-| o365.metrics.groups.activity.group.detail.sharepoint_active_file.count |  | long |  |
-| o365.metrics.groups.activity.group.detail.sharepoint_site_storage_used.byte |  | long |  |
-| o365.metrics.groups.activity.group.detail.sharepoint_total_file.count |  | long |  |
-| o365.metrics.groups.activity.group.detail.yammer_liked_message.count |  | long |  |
-| o365.metrics.groups.activity.group.detail.yammer_posted_message.count |  | long |  |
-| o365.metrics.groups.activity.group.detail.yammer_read_message.count |  | long |  |
-| o365.metrics.report.api_path |  | keyword |  |
-| o365.metrics.report.name |  | keyword |  |
+| o365.metrics.groups.activity.group.detail.sharepoint_active_file.count | The number of files in the SharePoint group site that were acted on (viewed or modified, synched, shared internally or externally) during the reporting period. | long |  |
+| o365.metrics.groups.activity.group.detail.sharepoint_site_storage_used.byte | The amount of storage in MB used during the reporting period. | long |  |
+| o365.metrics.groups.activity.group.detail.sharepoint_total_file.count | The number of files stored in SharePoint group sites. | long |  |
+| o365.metrics.groups.activity.group.detail.yammer_liked_message.count | The number of messages liked in the Viva Engage group over the reporting period. | long |  |
+| o365.metrics.groups.activity.group.detail.yammer_posted_message.count | The number of messages posted in the Viva Engage group over the reporting period. | long |  |
+| o365.metrics.groups.activity.group.detail.yammer_read_message.count | The number of conversations read in the Viva Engage group over the reporting period. | long |  |
+| o365.metrics.report.api_path | Microsoft Graph API path used to pull the report. | keyword |  |
+| o365.metrics.report.name | Name of the report. | keyword |  |
 
 
 ### OneDrive Usage Account Detail
@@ -865,22 +864,21 @@ Please refer to the following [document](https://www.elastic.co/guide/en/ecs/cur
 | data_stream.type | An overarching type for the data stream. Currently allowed values are "logs" and "metrics". We expect to also add "traces" and "synthetics" in the near future. | constant_keyword |  |
 | event.dataset | Name of the dataset. If an event source publishes more than one type of log or events (e.g. access log, error log), the dataset is used to specify which one the event comes from. It's recommended but not required to start the dataset name with the module name, followed by a dot, then the dataset name. | constant_keyword |  |
 | event.module | Name of the module this data is coming from. If your monitoring agent supports the concept of modules or plugins to process events of a given source (e.g. Apache logs), `event.module` should contain the name of this module. | constant_keyword |  |
-| input.type | Type of filebeat input. | keyword |  |
 | labels.is_transform_source | Distinguishes between documents that are a source for a transform and documents that are an output of a transform, to facilitate easier filtering. | constant_keyword |  |
-| o365.metrics.onedrive.usage.account.detail.active_file.count |  | long |  |
-| o365.metrics.onedrive.usage.account.detail.file.count |  | long |  |
-| o365.metrics.onedrive.usage.account.detail.is_deleted |  | boolean |  |
-| o365.metrics.onedrive.usage.account.detail.last_activity_date |  | date |  |
-| o365.metrics.onedrive.usage.account.detail.owner_display_name |  | keyword |  |
-| o365.metrics.onedrive.usage.account.detail.owner_principal_name |  | keyword |  |
+| o365.metrics.onedrive.usage.account.detail.active_file.count | The number of active files within the time period. | long |  |
+| o365.metrics.onedrive.usage.account.detail.file.count | The number of files in the OneDrive. | long |  |
+| o365.metrics.onedrive.usage.account.detail.is_deleted | The deletion status of the OneDrive. It takes at least seven days for accounts to be marked as deleted. | boolean |  |
+| o365.metrics.onedrive.usage.account.detail.last_activity_date | The latest date a file activity was performed in the OneDrive. If the OneDrive has had no file activity, the value will be blank. | date |  |
+| o365.metrics.onedrive.usage.account.detail.owner_display_name | The username of the primary administrator of the OneDrive. | keyword |  |
+| o365.metrics.onedrive.usage.account.detail.owner_principal_name | The email address of the owner of the OneDrive. | keyword |  |
 | o365.metrics.onedrive.usage.account.detail.report.period.day | The reporting period over which the data is aggregated (in days). | integer | d |
 | o365.metrics.onedrive.usage.account.detail.report.refresh_date | The date when the report data was last updated. | date |  |
-| o365.metrics.onedrive.usage.account.detail.site_id |  | keyword |  |
-| o365.metrics.onedrive.usage.account.detail.site_uRL |  | keyword |  |
-| o365.metrics.onedrive.usage.account.detail.storage_allocated.byte |  | long |  |
-| o365.metrics.onedrive.usage.account.detail.storage_used.byte |  | long |  |
-| o365.metrics.report.api_path |  | keyword |  |
-| o365.metrics.report.name |  | keyword |  |
+| o365.metrics.onedrive.usage.account.detail.site_id | The site ID of the site. | keyword |  |
+| o365.metrics.onedrive.usage.account.detail.site_url | The web address for the user's OneDrive. Note: URL will be empty temporarily. | keyword |  |
+| o365.metrics.onedrive.usage.account.detail.storage_allocated.byte | The amount of storage the OneDrive is allocated. | long |  |
+| o365.metrics.onedrive.usage.account.detail.storage_used.byte | The amount of storage the OneDrive uses. | long |  |
+| o365.metrics.report.api_path | Microsoft Graph API path used to pull the report. | keyword |  |
+| o365.metrics.report.name | Name of the report. | keyword |  |
 
 
 ### Teams User Activity User Detail
@@ -1017,43 +1015,42 @@ Please refer to the following [document](https://www.elastic.co/guide/en/ecs/cur
 | data_stream.type | An overarching type for the data stream. Currently allowed values are "logs" and "metrics". We expect to also add "traces" and "synthetics" in the near future. | constant_keyword |  |
 | event.dataset | Name of the dataset. If an event source publishes more than one type of log or events (e.g. access log, error log), the dataset is used to specify which one the event comes from. It's recommended but not required to start the dataset name with the module name, followed by a dot, then the dataset name. | constant_keyword |  |
 | event.module | Name of the module this data is coming from. If your monitoring agent supports the concept of modules or plugins to process events of a given source (e.g. Apache logs), `event.module` should contain the name of this module. | constant_keyword |  |
-| input.type | Type of filebeat input. | keyword |  |
 | labels.is_transform_source | Distinguishes between documents that are a source for a transform and documents that are an output of a transform, to facilitate easier filtering. | constant_keyword |  |
-| o365.metrics.report.api_path |  | keyword |  |
-| o365.metrics.report.name |  | keyword |  |
-| o365.metrics.teams.user.activity.user.detail.ad_hoc_meetings_attended.count |  | long |  |
-| o365.metrics.teams.user.activity.user.detail.ad_hoc_meetings_organized.count |  | long |  |
-| o365.metrics.teams.user.activity.user.detail.assigned_products |  | keyword |  |
-| o365.metrics.teams.user.activity.user.detail.audio_duration.formatted |  | keyword |  |
-| o365.metrics.teams.user.activity.user.detail.audio_duration.seconds |  | long |  |
-| o365.metrics.teams.user.activity.user.detail.call.count |  | long |  |
-| o365.metrics.teams.user.activity.user.detail.deleted_date |  | date |  |
-| o365.metrics.teams.user.activity.user.detail.has_other_action |  | keyword |  |
-| o365.metrics.teams.user.activity.user.detail.is_deleted |  | boolean |  |
-| o365.metrics.teams.user.activity.user.detail.is_licensed |  | boolean |  |
-| o365.metrics.teams.user.activity.user.detail.last_activity_date |  | date |  |
-| o365.metrics.teams.user.activity.user.detail.meeting.count |  | long |  |
-| o365.metrics.teams.user.activity.user.detail.meetings_attended.count |  | long |  |
-| o365.metrics.teams.user.activity.user.detail.meetings_organized.count |  | long |  |
-| o365.metrics.teams.user.activity.user.detail.post_messages.count |  | long |  |
-| o365.metrics.teams.user.activity.user.detail.private_chat_message.count |  | long |  |
-| o365.metrics.teams.user.activity.user.detail.reply_messages.count |  | long |  |
+| o365.metrics.report.api_path | Microsoft Graph API path used to pull the report. | keyword |  |
+| o365.metrics.report.name | Name of the report. | keyword |  |
+| o365.metrics.teams.user.activity.user.detail.ad_hoc_meetings_attended.count | The number of ad hoc meetings a user participated in during the specified time period. | long |  |
+| o365.metrics.teams.user.activity.user.detail.ad_hoc_meetings_organized.count | The number of ad hoc meetings a user organized during the specified time period. | long |  |
+| o365.metrics.teams.user.activity.user.detail.assigned_products | Microsoft products the user is assigned to. | keyword |  |
+| o365.metrics.teams.user.activity.user.detail.audio_duration.formatted | The sum of the audio duration of a user used during the specified time period and formatted by ISO 8601. | keyword |  |
+| o365.metrics.teams.user.activity.user.detail.audio_duration.seconds | The sum of the audio duration of a user used during the specified time period. | long |  |
+| o365.metrics.teams.user.activity.user.detail.call.count | The number of 1:1 calls that the user participated in during the specified time period. | long |  |
+| o365.metrics.teams.user.activity.user.detail.deleted_date | The deleted date of the user. | date |  |
+| o365.metrics.teams.user.activity.user.detail.has_other_action | The User is active but has performed other activities than exposed action types offered in the report. | keyword |  |
+| o365.metrics.teams.user.activity.user.detail.is_deleted | The deletion status of the user. | boolean |  |
+| o365.metrics.teams.user.activity.user.detail.is_licensed | Selected if the user is licensed to use Teams. | boolean |  |
+| o365.metrics.teams.user.activity.user.detail.last_activity_date | The last date that the user participated in a Microsoft Teams activity. | date |  |
+| o365.metrics.teams.user.activity.user.detail.meeting.count | Refer to the 'meetings_attended.count' metric as defined below, as the current metric and 'meetings_attended.count' share the same definition. Microsoft intends to gradually phase out the current metric with 'meetings_attended.count'. | long |  |
+| o365.metrics.teams.user.activity.user.detail.meetings_attended.count | The sum of the one-time scheduled, recurring, ad hoc and unclassified meetings a user participated in during the specified time period. | long |  |
+| o365.metrics.teams.user.activity.user.detail.meetings_organized.count | The sum of one-time scheduled, Recurring, ad hoc and unclassified meetings a user organized during the specified time period. | long |  |
+| o365.metrics.teams.user.activity.user.detail.post_messages.count | The number of post messages in all channels during the specified time period. A post is the original message in a teams chat. | long |  |
+| o365.metrics.teams.user.activity.user.detail.private_chat_message.count | The number of unique messages that the user posted in a private chat during the specified time period. | long |  |
+| o365.metrics.teams.user.activity.user.detail.reply_messages.count | The number of replied messages in all channels during the specified time period. | long |  |
 | o365.metrics.teams.user.activity.user.detail.report.period.day | The reporting period over which the data is aggregated (in days). | integer | d |
 | o365.metrics.teams.user.activity.user.detail.report.refresh_date | The date when the report data was last updated. | date |  |
-| o365.metrics.teams.user.activity.user.detail.scheduled_one_time_meetings_attended.count |  | long |  |
-| o365.metrics.teams.user.activity.user.detail.scheduled_one_time_meetings_organized.count |  | long |  |
-| o365.metrics.teams.user.activity.user.detail.scheduled_recurring_meetings_attended.count |  | long |  |
-| o365.metrics.teams.user.activity.user.detail.scheduled_recurring_meetings_organized.count |  | long |  |
-| o365.metrics.teams.user.activity.user.detail.screen_share_duration.formatted |  | keyword |  |
-| o365.metrics.teams.user.activity.user.detail.screen_share_duration.seconds |  | long |  |
-| o365.metrics.teams.user.activity.user.detail.shared_channel_tenant_display_names |  | keyword |  |
-| o365.metrics.teams.user.activity.user.detail.team_chat_message.count |  | long |  |
-| o365.metrics.teams.user.activity.user.detail.tenant_display_name |  | keyword |  |
-| o365.metrics.teams.user.activity.user.detail.urgent_messages.count |  | long |  |
-| o365.metrics.teams.user.activity.user.detail.user_id |  | keyword |  |
-| o365.metrics.teams.user.activity.user.detail.user_principal_name |  | keyword |  |
-| o365.metrics.teams.user.activity.user.detail.video_duration.formatted |  | keyword |  |
-| o365.metrics.teams.user.activity.user.detail.video_duration.seconds |  | long |  |
+| o365.metrics.teams.user.activity.user.detail.scheduled_one_time_meetings_attended.count | The number of the one-time scheduled meetings a user participated in during the specified time period. | long |  |
+| o365.metrics.teams.user.activity.user.detail.scheduled_one_time_meetings_organized.count | The number of one-time scheduled meetings a user organized during the specified time period. | long |  |
+| o365.metrics.teams.user.activity.user.detail.scheduled_recurring_meetings_attended.count | The number of the recurring meetings a user participated in during the specified time period. | long |  |
+| o365.metrics.teams.user.activity.user.detail.scheduled_recurring_meetings_organized.count | The number of recurring meetings a user organized during the specified time period. | long |  |
+| o365.metrics.teams.user.activity.user.detail.screen_share_duration.formatted | The sum of the screen share duration of a user used during the specified time period and formatted by ISO 8601. | keyword |  |
+| o365.metrics.teams.user.activity.user.detail.screen_share_duration.seconds | The sum of the screen share duration of a user used during the specified time period. | long |  |
+| o365.metrics.teams.user.activity.user.detail.shared_channel_tenant_display_names | The names of internal or external tenants of shared channels where the user participated. | keyword |  |
+| o365.metrics.teams.user.activity.user.detail.team_chat_message.count | The number of unique messages that the user posted in a team chat during the specified time period. This includes original posts and replies. | long |  |
+| o365.metrics.teams.user.activity.user.detail.tenant_display_name | The name of an internal or external tenant where a user belongs. | keyword |  |
+| o365.metrics.teams.user.activity.user.detail.urgent_messages.count | The number of urgent messages during the specified time period. | long |  |
+| o365.metrics.teams.user.activity.user.detail.user_id | The ID of the user. | keyword |  |
+| o365.metrics.teams.user.activity.user.detail.user_principal_name | The email address of the user. You can display the actual email address or make this field anonymous. See https://learn.microsoft.com/en-us/microsoft-365/admin/activity-reports/microsoft-teams-user-activity-preview?view=o365-worldwide#make-the-user-specific-data-anonymous for more details. | keyword |  |
+| o365.metrics.teams.user.activity.user.detail.video_duration.formatted | The sum of the video duration of a user used during the specified time period and formatted by ISO 8601. | keyword |  |
+| o365.metrics.teams.user.activity.user.detail.video_duration.seconds | The sum of the video duration of a user used during the specified time period. | long |  |
 
 
 ### Viva Engage Groups Activity Group Detail
@@ -1133,20 +1130,19 @@ Please refer to the following [document](https://www.elastic.co/guide/en/ecs/cur
 | data_stream.type | An overarching type for the data stream. Currently allowed values are "logs" and "metrics". We expect to also add "traces" and "synthetics" in the near future. | constant_keyword |  |
 | event.dataset | Name of the dataset. If an event source publishes more than one type of log or events (e.g. access log, error log), the dataset is used to specify which one the event comes from. It's recommended but not required to start the dataset name with the module name, followed by a dot, then the dataset name. | constant_keyword |  |
 | event.module | Name of the module this data is coming from. If your monitoring agent supports the concept of modules or plugins to process events of a given source (e.g. Apache logs), `event.module` should contain the name of this module. | constant_keyword |  |
-| input.type | Type of filebeat input. | keyword |  |
 | labels.is_transform_source | Distinguishes between documents that are a source for a transform and documents that are an output of a transform, to facilitate easier filtering. | constant_keyword |  |
-| o365.metrics.report.api_path |  | keyword |  |
-| o365.metrics.report.name |  | keyword |  |
-| o365.metrics.viva_engage.groups.activity.group.detail.group_display_name |  | keyword |  |
-| o365.metrics.viva_engage.groups.activity.group.detail.group_type |  | keyword |  |
-| o365.metrics.viva_engage.groups.activity.group.detail.is_deleted |  | boolean |  |
-| o365.metrics.viva_engage.groups.activity.group.detail.last_activity_date |  | date |  |
-| o365.metrics.viva_engage.groups.activity.group.detail.liked.count |  | long |  |
-| o365.metrics.viva_engage.groups.activity.group.detail.member.count |  | long |  |
-| o365.metrics.viva_engage.groups.activity.group.detail.office_365_connected |  | boolean |  |
-| o365.metrics.viva_engage.groups.activity.group.detail.owner_principal_name |  | keyword |  |
-| o365.metrics.viva_engage.groups.activity.group.detail.posted.count |  | long |  |
-| o365.metrics.viva_engage.groups.activity.group.detail.read.count |  | long |  |
+| o365.metrics.report.api_path | Microsoft Graph API path used to pull the report. | keyword |  |
+| o365.metrics.report.name | Name of the report. | keyword |  |
+| o365.metrics.viva_engage.groups.activity.group.detail.group_display_name | The name of the group. | keyword |  |
+| o365.metrics.viva_engage.groups.activity.group.detail.group_type | The type of group, public or private. | keyword |  |
+| o365.metrics.viva_engage.groups.activity.group.detail.is_deleted | If the group is deleted, but had activity in the reporting period it will show up in the grid with this flag set to true. | boolean |  |
+| o365.metrics.viva_engage.groups.activity.group.detail.last_activity_date | The latest date a message was read, posted or liked by the group. | date |  |
+| o365.metrics.viva_engage.groups.activity.group.detail.liked.count | The number of messages liked in the Viva Engage group over the reporting period. | long |  |
+| o365.metrics.viva_engage.groups.activity.group.detail.member.count | The number of members in the group. | long |  |
+| o365.metrics.viva_engage.groups.activity.group.detail.office_365_connected | Indicates whether the Viva Engage group is also a Microsoft 365 group. | boolean |  |
+| o365.metrics.viva_engage.groups.activity.group.detail.owner_principal_name | The name of the group administrator, or owner. | keyword |  |
+| o365.metrics.viva_engage.groups.activity.group.detail.posted.count | The number of messages posted in the Viva Engage group over the reporting period. | long |  |
+| o365.metrics.viva_engage.groups.activity.group.detail.read.count | The number of conversations read in the Viva Engage group over the reporting period. | long |  |
 | o365.metrics.viva_engage.groups.activity.group.detail.report.period.day | The reporting period over which the data is aggregated (in days). | integer | d |
 | o365.metrics.viva_engage.groups.activity.group.detail.report.refresh_date | The date when the report data was last updated. | date |  |
 
