@@ -7,7 +7,7 @@ Use the HPE Aruba integration and follow the setup steps listed below to forward
 
 ## Compatibility
 
-This package follows the [5200-8214 specification](https://www.arubanetworks.com/techdocs/AOS-CX/10.07/PDF/5200-8214.pdf) and has been tested from sample logs captured from the HPE Aruba Networking CX Switches: **6000, 6300 and 8360** on the 10.07 version of the specification. As new appliances and OSes are released, they are expected to be compatible with the integration but Elastic does not guarantee compatibility with new/old version of the product line.
+This package follows the [AOS-CX 10.15 Event Log Message Reference Guide](https://www.arubanetworks.com/techdocs/AOS-CX/10.15/HTML/elmrg/Content/fir-int.htm) and has been tested from sample logs captured from the HPE Aruba Networking CX Switches: **6000, 6300 and 8360** on the 10.15 version of the specification. As new appliances and OSes are released, they are expected to be compatible with the integration but Elastic does not guarantee compatibility with new/old version of the product line.
 The integration ONLY supports logs in ENGLISH, internationalization of logs to other languages are NOT supported.
 
 
@@ -27,11 +27,6 @@ We recommend using our hosted Elasticsearch Service on Elastic Cloud, or self-ma
 
 For step-by-step instructions on how to set up an integration, see the
 [Getting started](https://www.elastic.co/guide/en/welcome-to-elastic/current/getting-started-observability.html) guide.
-
-### Additional Set Up Instructions
-
-Follow the support documentation offered by HPE Aruba AOS-CX CLI to setup forwarding of logs to a self-managed or managed Beat: 
-[Enables syslog forwarding to a remote syslog server](https://www.arubanetworks.com/techdocs/AOS-CX/AOSCX-CLI-Bank/cli_4100i/Content/Chp_RSyslog/RSyslog_cmds/log-10.htm)
 
 
 ## Logs
@@ -100,40 +95,44 @@ Note: Descriptions have not been filled out
 | `<node_id>`      | aruba.instance.id        |
 | `<status>`       | aruba.status             |
 
-#### [ARP security events](https://www.arubanetworks.com/techdocs/AOS-CX/10.07/HTML/5200-8214/Content/events/ARP-SECURITY.htm)
+#### [ARP security events](https://www.arubanetworks.com/techdocs/AOS-CX/10.15/HTML/elmrg/Content/events/ARP-SECURITY.htm)
 | Doc Fields    | Schema Mapping  |
 |---------------|-----------------|
 | `<port_name>` | aruba.port      |
 | `<status>`    | aruba.status    |
 | `<vlan_id>`   | network.vlan.id |
 
-#### [ASIC table full error for L3PD events](https://www.arubanetworks.com/techdocs/AOS-CX/10.07/HTML/5200-8214/Content/events/L3_ASIC_RESOURCE.htm)
-| Doc Fields | Schema Mapping |
-|------------|----------------|
+#### [ASIC table full error for L3PD events](https://www.arubanetworks.com/techdocs/AOS-CX/10.15/HTML/elmrg/Content/events/L3_ASIC_RESOURCE.htm)
+| Doc Fields       | Schema Mapping         |
+|------------------|------------------------|
+| `<mac>`          | client.mac             |
+| `<prefix_list>`  | aruba.asic.prefix_list |
+| `<route_prefix>` | aruba.asic.route_prefix|
 
-
-#### [BFD events](https://www.arubanetworks.com/techdocs/AOS-CX/10.07/HTML/5200-8214/Content/events/BFD.htm)
+#### [BFD events](https://www.arubanetworks.com/techdocs/AOS-CX/10.15/HTML/elmrg/Content/events/BFD.htm)
 | Doc Fields             | Schema Mapping               |
 |------------------------|------------------------------|
+| `<addr>`               | aruba.bfd.invalid_ip         |
 | `<applied_interval>`   | aruba.bfd.applied_interval   |
 | `<dest_ip>`            | destination.ip               |
 | `<direction>`          | network.direction            |
 | `<from>`               | aruba.bfd.from               |
 | `<intf>`               | aruba.interface.id           |
-| `<invalid_ip>`         | aruba.bfd.invalid_ip         |
 | `<ip_version>`         | aruba.bfd.ip_version         |
 | `<local_diag>`         | aruba.bfd.local_diag         |
 | `<local_state>`        | aruba.bfd.local_state        |
 | `<op_mode>`            | aruba.bfd.op_mode            |
 | `<port_name>`          | aruba.port                   |
+| `<remote_addr>`        | client.address               |
 | `<remote_diag>`        | aruba.bfd.remote_diag        |
 | `<remote_state>`       | aruba.bfd.remote_state       |
 | `<requested_interval>` | aruba.bfd.requested_interval |
 | `<session_id>`         | aruba.session.id             |
 | `<src_port>`           | aruba.port                   |
 | `<vrf>`                | aruba.vrf.id                 |
+| `<vrf>`                | aruba.vrf.name               |
 
-#### [BGP events](https://www.arubanetworks.com/techdocs/AOS-CX/10.07/HTML/5200-8214/Content/events/BGP.htm)
+#### [BGP events](https://www.arubanetworks.com/techdocs/AOS-CX/10.15/HTML/elmrg/Content/events/BGP.htm)
 | Doc Fields          | Schema Mapping            |
 |---------------------|---------------------------|
 | `<as_number>`       | aruba.bgp.as_number       |
@@ -142,13 +141,24 @@ Note: Descriptions have not been filled out
 | `<error-subcode>`   | aruba.bgp.error_subcode   |
 | `<local_as>`        | client.as.number          |
 | `<pg_name>`         | aruba.bgp.pg_name         |
+| `<peer-grp>`        | aruba.bgp.peer_grp        |
 | `<remote-addr>`     | destination.address       |
 | `<remote_as>`       | destination.as.number     |
 | `<src_ipaddr>`      | source.ip                 |
 | `<threshold_limit>` | aruba.limit.threshold     |
 | `<vrf-name>`        | aruba.vrf.name            |
 
-#### [Bluetooth Management events](https://www.arubanetworks.com/techdocs/AOS-CX/10.07/HTML/5200-8214/Content/events/BLUETOOTH_MGMT.htm)
+#### [Bidirectional PIM (PIM-BIDI) events](https://www.arubanetworks.com/techdocs/AOS-CX/10.15/HTML/elmrg/Content/events/PIM-BIDI.htm)
+| Doc Fields     | Schema Mapping       |
+|----------------|----------------------|
+| `<if_index>`   | aruba.interface.id   |
+| `<if_name>`    | aruba.interface.name |
+| `<ip_address>` | client.ip            |
+| `<reason>`     | event.reason         |
+| `<status>`     | aruba.status         |
+| `<vrf_name>`   | aruba.vrf.name       |
+
+#### [Bluetooth Management events](https://www.arubanetworks.com/techdocs/AOS-CX/10.15/HTML/elmrg/Content/events/BLUETOOTH_MGMT.htm)
 | Doc Fields                 | Schema Mapping               |
 |----------------------------|------------------------------|
 | `<connected_disconnected>` | event.action                 |
@@ -156,11 +166,20 @@ Note: Descriptions have not been filled out
 | `<inserted_removed>`       | event.action                 |
 | `<mac>`                    | client.mac                   |
 
-#### [CDP events](https://www.arubanetworks.com/techdocs/AOS-CX/10.07/HTML/5200-8214/Content/events/CDP.htm)
+#### [CDP events](https://www.arubanetworks.com/techdocs/AOS-CX/10.15/HTML/elmrg/Content/events/CDP.htm)
 | Doc Fields    | Schema Mapping       |
 |---------------|----------------------|
 | `<interface>` | aruba.interface.name |
 | `<mac>`       | source.mac           |
+
+#### [Central Source events](https://www.arubanetworks.com/techdocs/AOS-CX/10.15/HTML/elmrg/Content/events/CENTRAL_SOURCE.htm)
+| Doc Fields          | Schema Mapping               |
+|---------------------|------------------------------|
+| `<activate_address>`| aruba.rest.activate_address  |
+| `<central_location>`| aruba.rest.central_location  |
+| `<central_source>`  | aruba.rest.central_source    |
+| `<cert_length>`     | aruba.len                    |
+| `<vrf>`             | aruba.vrf.id                 |
 
 #### [Certificate management events](https://www.arubanetworks.com/techdocs/AOS-CX/10.07/HTML/5200-8214/Content/events/CERTMGR.htm)
 | Doc Fields       | Schema Mapping        |
@@ -1022,7 +1041,6 @@ Note: Descriptions have not been filled out
 | Docs Field           | Schema Mapping             |
 |----------------------|----------------------------|
 | `<action>`           | event.action               |
-| `<activate_address>` | aruba.rest.activate_address|
 | `<added_user>`       | aruba.rest.added_user      |
 | `<added_user_role>`  | aruba.role                 |
 | `<autztype>`         | aruba.rest.autztype        |
