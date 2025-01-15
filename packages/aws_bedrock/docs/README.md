@@ -150,6 +150,7 @@ list log events from the specified log group.
 | aws_bedrock.invocation.input.input_body_s3_path |  | keyword |
 | aws_bedrock.invocation.input.input_content_type |  | keyword |
 | aws_bedrock.invocation.input.input_token_count | The number of tokens used in the GenAI input. | long |
+| aws_bedrock.invocation.input.messages_content_kinds | The different content formats related to the input messages/prompts. | keyword |
 | aws_bedrock.invocation.model_id |  | keyword |
 | aws_bedrock.invocation.output.completion_text | The formatted LLM text model responses. Only a limited number of LLM text models are supported. | text |
 | aws_bedrock.invocation.output.output_body_json |  | flattened |
