@@ -285,6 +285,38 @@ processors:
       copy_from: aws_bedrock.invocation.output.output_body_json.id
       ignore_failure: true
   - script:
+      tag: "append_input_message_content_kinds"
+      if: "ctx.aws_bedrock?.invocation?.input?.input_body_json?.messages != null && ctx.aws_bedrock.invocation.input.input_body_json.messages instanceof List"
+      lang: "painless"
+      source: |
+        if (ctx.aws_bedrock.invocation.input.messages_content_kinds == null) {
+            ctx.aws_bedrock.invocation.input.messages_content_kinds = [];
+        }
+        // using a Set to avoid duplicates
+        def content_kinds_set = new HashSet(ctx.aws_bedrock.invocation.input.messages_content_kinds);
+        for (def message : ctx.aws_bedrock.invocation.input.input_body_json.messages) {
+            if (message instanceof Map && message.containsKey('content') && message['content'] instanceof List) {
+                for (def content_item : message['content']) {
+                    if (content_item instanceof Map) {
+                        def content_type = '';
+                        if (content_item.containsKey('text')) {
+                            content_type = 'text';
+                        } else if (content_item.containsKey('document')) {
+                            content_type = 'document';
+                            if (content_item['document'] instanceof Map && content_item['document'].containsKey('format')) {
+                                content_type += '/' + content_item['document']['format'];
+                            }
+                        }
+                        if (content_type != '') {
+                            content_kinds_set.add(content_type); // Add to the Set
+                        }
+                    }
+                }
+            }
+        }
+        // convert the Set back to a List
+        ctx.aws_bedrock.invocation.input.messages_content_kinds = new ArrayList(content_kinds_set);
+  - script:
       tag: get_response_id_and_role_from_list
       if: ctx.aws_bedrock?.invocation?.output?.output_body_json instanceof List
       lang: painless
