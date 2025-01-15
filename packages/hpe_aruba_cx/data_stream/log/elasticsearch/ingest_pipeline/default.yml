@@ -1251,7 +1251,7 @@ processors:
         - "^Ports TX %{DATA:aruba.loop.tx_port} and RX %{DATA:aruba.loop.rx_port} are involved during TX port disabling"
 
   # BGP events (29xx)
-  # https://www.arubanetworks.com/techdocs/AOS-CX/10.07/HTML/5200-8214/Content/events/BGP.htm
+  # https://www.arubanetworks.com/techdocs/AOS-CX/10.15/HTML/elmrg/Content/events/BGP.htm
   - dissect:
       if: "ctx.event.code == '2901'"
       tag: bgp_event_2901
@@ -1355,7 +1355,7 @@ processors:
       field: "message"
       description: "Trap when the rib size reaches the threshold value."
       patterns:
-        - "^The BGP RIB has reached the threshold limit of %{DATA:aruba.limit.threshold} for VRF %{DATA:aruba.vrf.name}': yes"
+        - "^The BGP RIB has reached the threshold limit of %{DATA:aruba.limit.threshold} for VRF %{GREEDYDATA:aruba.vrf.name}"
   - grok:
       if: "ctx.event.code == '2920'"
       tag: bgp_event_2920
@@ -1363,6 +1363,14 @@ processors:
       description: "BGP peer local-as change event."
       patterns:
         - "^%{DATA:aruba.bgp.pg_name}: Peer-group configured with remote-as %{NUMBER:destination.as.number:long}. vrf-name: %{GREEDYDATA:aruba.vrf.name}"
+  - grok:
+      if: "['2921','2922','2923'].contains(ctx.event.code)"
+      tag: bgp_event_2921_2922_2923
+      field: "message"
+      description: "Logs configuration of peer ignore-leading-as | neighbor addition to peer group | neighbor deletion from peer group"
+      patterns:
+        - "^%{DATA:client.address}: Peer ignore-leading-as configuration changed. vrf-name: %{GREEDYDATA:aruba.vrf.name}"
+        - "^%{DATA:client.address}: Neighbor (added to|deleted from) Peer group %{DATA:aruba.bgp.peer_grp} vrf-name: %{GREEDYDATA:aruba.vrf.name}"
 
   # Hardware Health Monitor events (30xx)
   # https://www.arubanetworks.com/techdocs/AOS-CX/10.07/HTML/5200-8214/Content/events/HW-HEALTH-MONITOR.htm
@@ -2747,16 +2755,16 @@ processors:
       pattern: "Failed to write-protect %{aruba.system.devicespec} (pass %{aruba.system.pass})"
 
   # BFD events (73xx)
-  # https://www.arubanetworks.com/techdocs/AOS-CX/10.07/HTML/5200-8214/Content/events/BFD.htm
+  # https://www.arubanetworks.com/techdocs/AOS-CX/10.15/HTML/elmrg/Content/events/BFD.htm
   - grok:
-      if: "['7305', '7306'].contains(ctx.event?.code)"
+      if: "['7305','7306'].contains(ctx.event?.code)"
       tag: bfd_event_7305_7306
       field: "message"
       description: "Event raised when BFD echo is enabled/disable on an interface"
       patterns:
         - "^BFD echo was (en|dis)abled on interface %{GREEDYDATA:aruba.interface.id}"
   - grok:
-      if: "['7307', '7308', '7309', '7315'].contains(ctx.event?.code)"
+      if: "['7307','7308','7309','7315'].contains(ctx.event?.code)"
       tag: bfd_event_7307_7308_7309_7315
       field: "message"
       description: "Event raised when BFD echo is enabled/disable on an interface | administratively down | becomes unidirectional"
@@ -3059,8 +3067,8 @@ processors:
       description: "Powered device requested power down on interface."
       pattern: "Powered device requested power down on interface %{aruba.interface.name} %{aruba.poe.duration}"
 
-  # Bluetooth Management events (80xx)
-  # https://www.arubanetworks.com/techdocs/AOS-CX/10.07/HTML/5200-8214/Content/events/BLUETOOTH_MGMT.htm
+  # Bluetooth Management events (800x)
+  # https://www.arubanetworks.com/techdocs/AOS-CX/10.15/HTML/elmrg/Content/events/BLUETOOTH_MGMT.htm
   - grok:
       if: "['8001', '8003'].contains(ctx.event?.code)"
       tag: btm_event_8001
@@ -3534,14 +3542,15 @@ processors:
         - "^Tunnel %{IP:server.ip} is removed from Hardware VTEP DB"
 
   # CDP events (89xx)
-  # https://www.arubanetworks.com/techdocs/AOS-CX/10.07/HTML/5200-8214/Content/events/CDP.htm
+  # https://www.arubanetworks.com/techdocs/AOS-CX/10.15/HTML/elmrg/Content/events/CDP.htm
   - grok:
-      if: "['8903', '8904', '8905'].contains(ctx.event?.code)"
+      if: "['8903','8904','8905'].contains(ctx.event?.code)"
       tag: cdp_event_8903_8904_8905
       field: "message"
       description: "Log to indicate CDP neighbor addition/modification/deletion"
       patterns:
         - "^CDP neighbor %{MAC:source.mac} is (added|updated|deleted) on %{GREEDYDATA:aruba.interface.name}"
+        - "^Throttled %{NUMBER:aruba.throttle_count:long} Messages"
 
   # SSH client events (900x)
   # https://www.arubanetworks.com/techdocs/AOS-CX/10.15/HTML/elmrg/Content/events/SSH_CLIENT.htm
@@ -4096,9 +4105,9 @@ processors:
         - "^Failed to %{DATA:aruba.status} local authorization"
 
   # ARP security events (104xx)
-  # https://www.arubanetworks.com/techdocs/AOS-CX/10.07/HTML/5200-8214/Content/events/ARP-SECURITY.htm
+  # https://www.arubanetworks.com/techdocs/AOS-CX/10.15/HTML/elmrg/Content/events/ARP-SECURITY.htm
   - grok:
-      if: "['10401', '10402'].contains(ctx.event?.code)"
+      if: "['10401','10402'].contains(ctx.event?.code)"
       tag: arp_event_10401_10402
       field: "message"
       description: "ARP inspection configuration on VLAN | ARP inspection port mode configuration"
@@ -4157,6 +4166,30 @@ processors:
         - "^Out of L3 resources critical for neighbor and route forwarding. %{L3_ENCAP_COMMON}"
       pattern_definitions:
         L3_ENCAP_COMMON: "Used: %{DATA:aruba.l3.encaps_allocated}, Available: %{GREEDYDATA:aruba.l3.encaps_free}"
+
+  # ASIC table full error for L3PD events (108xx)
+  # https://www.arubanetworks.com/techdocs/AOS-CX/10.15/HTML/elmrg/Content/events/L3_ASIC_RESOURCE.htm
+  - grok:
+      field: message
+      tag: asic_event_10804
+      description: "Router MAC limit exceeded, MAC cannot be programmed"
+      if: "ctx.event?.code == '10804'"
+      patterns:
+        - "^Router MAC limit exceeded. Failed to program MAC: %{MAC:client.mac}"
+  - grok:
+      field: message
+      tag: asic_event_10807_10808
+      description: "Log configured [ip|ipv6] prefix-priority list"
+      if: "['10807','10808'].contains(ctx.event?.code)"
+      patterns:
+        - "^Using configured (IPv4|IPv6) prefix-priority list %{GREEDYDATA:aruba.asic.prefix_list}."
+  - grok:
+      field: message
+      tag: asic_event_10809_10810
+      description: "Logs failure while configuring hardware for [ipv4|ipv6] prefix-priority"
+      if: "['10809','10810'].contains(ctx.event?.code)"
+      patterns:
+        - "^HW programming failed for (IPv4|IPv6) prefix-priority %{GREEDYDATA:aruba.asic.route_prefix}"
 
   # DPSE Events (109xx)
   # https://www.arubanetworks.com/techdocs/AOS-CX/10.07/HTML/5200-8214/Content/events/DPSE.htm
@@ -4485,6 +4518,53 @@ processors:
       if: "['14105','14109'].contains(ctx.event?.code)"
       patterns: 
         - "(is|been) %{DATA:aruba.status} - event_name"
+
+  # Central Source events (1460x)
+  # https://www.arubanetworks.com/techdocs/AOS-CX/10.15/HTML/elmrg/Content/events/CENTRAL_SOURCE.htm
+  - grok:
+      field: message
+      tag: central_source_event_14601_14602_14603_14604_14605
+      description: ""
+      if: "['14601','14602','14603','14604','14605'].contains(ctx.event?.code)"
+      patterns: 
+        - "^Activate server %{DATA:aruba.rest.activate_address} is reachable via VRF %{GREEDYDATA:aruba.vrf.id}."
+        - "^Received certificate from Activate server, processing with certificate manager. Certificate length: %{NUMBER:aruba.len:long}."
+        - "Central location %{DATA:aruba.rest.central_location}( successfully fetched)? from %{DATA:aruba.rest.central_source} via VRF %{GREEDYDATA:aruba.vrf.id}."
+        - "^Switch time is synced with Activate Server %{GREEDYDATA:aruba.rest.activate_address}"
+
+  # Bidirectional PIM (PIM-BIDI) events (1530x)
+  # https://www.arubanetworks.com/techdocs/AOS-CX/10.15/HTML/elmrg/Content/events/PIM-BIDI.htm
+  - dissect:
+      field: message
+      tag: pim_event_15301
+      description: "This log event informs about router PIM status of a VRF"
+      if: "ctx.event?.code == '15301'"
+      pattern: "Router pim %{aruba.status} on vrf %{aruba.vrf.name}"
+  - dissect:
+      field: message
+      tag: pim_event_15302
+      description: "This log event informs about interface status"
+      if: "ctx.event?.code == '15302'"
+      pattern: "Interface %{aruba.interface.name} state %{aruba.state}"
+  - dissect:
+      field: message
+      tag: pim_event_15303
+      description: "This log event informs about dropping packet"
+      if: "ctx.event?.code == '15303'"
+      pattern: "Dropping Packet on interface %{aruba.interface.id}, Due to %{event.reason}"
+  - dissect:
+      field: message
+      tag: pim_event_15304
+      description: "This log event informs about interface status"
+      if: "ctx.event?.code == '15304'"
+      pattern: "PIM Bidi %{aruba.state} on Interface %{aruba.interface.name}"
+  - grok:
+      field: message
+      tag: pim_event_15305_15306
+      description: "This log event informs about the creation and deletion of a PIM Bidi Neighbor | This log event informs about Non Bidir PIM Neighbor"
+      if: "['15305','15306'].contains(ctx.event?.code)"
+      patterns:
+        - "^PIM Bidi Neighbor %{IP:client.ip} is %{DATA:aruba.state} on Interface %{GREEDYDATA:aruba.interface.name}"
 
   # Cleanup MAC addresses for different fields
   - uppercase:
