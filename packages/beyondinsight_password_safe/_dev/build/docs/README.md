@@ -56,7 +56,7 @@ UserAudit documents can be found using the API model by setting the filter `even
 
 **ECS Field Reference**
 
-Please refer to the following [document](https://www.elastic.co/guide/en/ecs/current/ecs-field-reference.html) for detailed information on [ECS](https://www.elastic.co/guide/en/ecs/current/ecs-field-reference.html) fields.
+Please refer to the following [document](https://www.elastic.co/guide/en/ecs/current/ecs-field-reference.html) for detailed information on ECS fields.
 
 The following non-ECS fields are used in useraudit documents:
 
@@ -70,7 +70,7 @@ Session documents can be found using the API model by setting the filter `event.
 
 **ECS Field Reference**
 
-Please refer to the following [document](https://www.elastic.co/guide/en/ecs/current/ecs-field-reference.html) for detailed information on [ECS](https://www.elastic.co/guide/en/ecs/current/ecs-field-reference.html) fields.
+Please refer to the following [document](https://www.elastic.co/guide/en/ecs/current/ecs-field-reference.html) for detailed information on ECS fields.
 
 The following non-ECS fields are used in session documents:
 
@@ -84,7 +84,7 @@ ManagedSystem documents can be found using the API model by setting the filter `
 
 **ECS Field Reference**
 
-Please refer to the following [document](https://www.elastic.co/guide/en/ecs/current/ecs-field-reference.html) for detailed information on [ECS](https://www.elastic.co/guide/en/ecs/current/ecs-field-reference.html) fields.
+Please refer to the following [document](https://www.elastic.co/guide/en/ecs/current/ecs-field-reference.html) for detailed information on ECS fields.
 
 The following non-ECS fields are used in managedsystem documents:
 
@@ -98,7 +98,7 @@ ManagedAccount documents can be found using the API model by setting the filter 
 
 **ECS Field Reference**
 
-Please refer to the following [document](https://www.elastic.co/guide/en/ecs/current/ecs-field-reference.html) for detailed information on [ECS](https://www.elastic.co/guide/en/ecs/current/ecs-field-reference.html) fields.
+Please refer to the following [document](https://www.elastic.co/guide/en/ecs/current/ecs-field-reference.html) for detailed information on ECS fields.
 
 The following non-ECS fields are used in managedaccount documents:
 
@@ -112,7 +112,7 @@ Asset documents can be found using the API model by setting the filter `event.da
 
 **ECS Field Reference**
 
-Please refer to the following [document](https://www.elastic.co/guide/en/ecs/current/ecs-field-reference.html) for detailed information on [ECS](https://www.elastic.co/guide/en/ecs/current/ecs-field-reference.html) fields.
+Please refer to the following [document](https://www.elastic.co/guide/en/ecs/current/ecs-field-reference.html) for detailed information on ECS fields.
 
 The following non-ECS fields are used in asset documents:
 

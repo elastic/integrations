@@ -144,7 +144,7 @@ An example event for `useraudit` looks as following:
 
 **ECS Field Reference**
 
-Please refer to the following [document](https://www.elastic.co/guide/en/ecs/current/ecs-field-reference.html) for detailed information on [ECS](https://www.elastic.co/guide/en/ecs/current/ecs-field-reference.html) fields.
+Please refer to the following [document](https://www.elastic.co/guide/en/ecs/current/ecs-field-reference.html) for detailed information on ECS fields.
 
 The following non-ECS fields are used in useraudit documents:
 
@@ -236,7 +236,7 @@ An example event for `session` looks as following:
 
 **ECS Field Reference**
 
-Please refer to the following [document](https://www.elastic.co/guide/en/ecs/current/ecs-field-reference.html) for detailed information on [ECS](https://www.elastic.co/guide/en/ecs/current/ecs-field-reference.html) fields.
+Please refer to the following [document](https://www.elastic.co/guide/en/ecs/current/ecs-field-reference.html) for detailed information on ECS fields.
 
 The following non-ECS fields are used in session documents:
 
@@ -367,7 +367,7 @@ An example event for `managedsystem` looks as following:
 
 **ECS Field Reference**
 
-Please refer to the following [document](https://www.elastic.co/guide/en/ecs/current/ecs-field-reference.html) for detailed information on [ECS](https://www.elastic.co/guide/en/ecs/current/ecs-field-reference.html) fields.
+Please refer to the following [document](https://www.elastic.co/guide/en/ecs/current/ecs-field-reference.html) for detailed information on ECS fields.
 
 The following non-ECS fields are used in managedsystem documents:
 
@@ -529,7 +529,7 @@ An example event for `managedaccount` looks as following:
 
 **ECS Field Reference**
 
-Please refer to the following [document](https://www.elastic.co/guide/en/ecs/current/ecs-field-reference.html) for detailed information on [ECS](https://www.elastic.co/guide/en/ecs/current/ecs-field-reference.html) fields.
+Please refer to the following [document](https://www.elastic.co/guide/en/ecs/current/ecs-field-reference.html) for detailed information on ECS fields.
 
 The following non-ECS fields are used in managedaccount documents:
 
@@ -648,7 +648,7 @@ An example event for `asset` looks as following:
 
 **ECS Field Reference**
 
-Please refer to the following [document](https://www.elastic.co/guide/en/ecs/current/ecs-field-reference.html) for detailed information on [ECS](https://www.elastic.co/guide/en/ecs/current/ecs-field-reference.html) fields.
+Please refer to the following [document](https://www.elastic.co/guide/en/ecs/current/ecs-field-reference.html) for detailed information on ECS fields.
 
 The following non-ECS fields are used in asset documents:
 
