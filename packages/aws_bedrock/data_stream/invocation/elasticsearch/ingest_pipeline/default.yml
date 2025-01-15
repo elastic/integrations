@@ -286,16 +286,13 @@ processors:
       ignore_failure: true
   - script:
       tag: append_input_message_content_kinds
-      if: ctx.aws_bedrock?.invocation?.input?.input_body_json?.messages != null && ctx.aws_bedrock.invocation.input.input_body_json.messages instanceof List
+      if: ctx.aws_bedrock?.invocation?.input?.input_body_json?.messages instanceof List
       lang: painless
       source: |
-        if (ctx.aws_bedrock.invocation.input.messages_content_kinds == null) {
-            ctx.aws_bedrock.invocation.input.messages_content_kinds = [];
-        }
         // using a Set to avoid duplicates
-        def content_kinds_set = new HashSet(ctx.aws_bedrock.invocation.input.messages_content_kinds);
+        def content_kinds_set = new HashSet(ctx.aws_bedrock.invocation.input?.messages_content_kinds ?: []);
         for (def message : ctx.aws_bedrock.invocation.input.input_body_json.messages) {
-            if (message instanceof Map && message.containsKey('content') && message['content'] instanceof List) {
+            if (message?.content instanceof List) {
                 for (def content_item : message['content']) {
                     if (content_item instanceof Map) {
                         def content_type = '';
@@ -308,7 +305,7 @@ processors:
                             }
                         }
                         if (content_type != '') {
-                            content_kinds_set.add(content_type); // Add to the Set
+                            content_kinds_set.add(content_type);
                         }
                     }
                 }
