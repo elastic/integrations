@@ -1,9 +1,9 @@
 ---
-description: Pipeline to parse rubrik.fileset workload data
+description: Pipeline to parse rubrik.fileset data
 processors:
   - set:
       field: ecs.version
-      value: 8.11.0
+      value: 8.16.0
       ignore_failure: true
       ignore_empty_value: true
   - set:
@@ -31,44 +31,36 @@ processors:
             value: 'Received invalid JSON. Unable to parse the source log message'
             ignore_failure: true
   - rename:
-      field: response.name
+      field: response.filesetName
       target_field: rubrik.fileset.name
       ignore_missing: true
-      if: 'ctx.response?.name != null'
   - rename:
       field: response.osType
       target_field: rubrik.fileset.host.os_type
       ignore_missing: true
-      if: 'ctx.response?.osType != null'
   - rename:
       field: response.complianceStatus
       target_field: rubrik.fileset.compliance_status
       ignore_missing: true
-      if: 'ctx.response?.complianceStatus != null'
   - rename:
       field: response.archiveSnapshots
       target_field: rubrik.fileset.archive_snapshots
       ignore_missing: true
-      if: 'ctx.response?.archiveSnapshots != null'
   - rename:
       field: response.archiveStorage
       target_field: rubrik.fileset.archive_storage
       ignore_missing: true
-      if: 'ctx.response?.archiveStorage != null'
   - rename:
       field: response.localStorage
       target_field: rubrik.fileset.local_storage
       ignore_missing: true
-      if: 'ctx.response?.localStorage != null'
   - rename:
       field: response.totalSnapshots
       target_field: rubrik.fileset.total_snapshots
       ignore_missing: true
-      if: 'ctx.response?.totalSnapshots != null'
   - remove:
       field: response
       ignore_missing: true
-      if: 'ctx.rubrik.fileset != null'
   - script:
       description: Removes null/empty values under rubrik fileset.
       lang: painless

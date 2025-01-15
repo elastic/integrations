@@ -108,71 +108,71 @@ state:
           }
         }
 
-  program: |-
-    state.with(
-      request("POST", state.url).with(
-        {
-          "Header": {
-            "Content-Type": ["application/json"]
-          },
-          "Body": {
-            "query": state.queries[state.index]
-            "variables": {
-              {{#if first}}
-              "first": {{first}},
+program: |-
+  state.with(
+    request("POST", state.url).with(
+      {
+        "Header": {
+          "Content-Type": ["application/json"]
+        },
+        "Body": {
+          "query": state.queries[state.index],
+          "variables": {
+            {{#if first}}
+            "first": {{first}},
+            {{/if}}
+            "filter": [
+              {{#if filters}}
+                {{#each filters}}
+                  {
+                    "field": "{{field}}",
+                    "texts": [{{#each values}}"{{this}}"{{#unless @last}}, {{/unless}}{{/each}}]
+                  }{{#unless @last}},{{/unless}}
+                {{/each}}
               {{/if}}
-              "filter": [
-                {{#if filters}}
-                  {{#each filters}}
-                    {
-                      "field": "{{field}}",
-                      "texts": [{{#each values}}"{{this}}"{{#unless @last}}, {{/unless}}{{/each}}]
-                    }{{#unless @last}},{{/unless}}
-                  {{/each}}
-                {{/if}}
-              ]
-            }
-          }.encode_json()
-        }
-      ).do_request().as(resp, (resp.StatusCode == 200) ?
-        bytes(resp.Body).decode_json().as(body,
-          {
-            "events": body.data.filesetTemplates.nodes.map(filesetNode,
-              filesetNode.physicalChildConnection.nodes.map(childNode,
-                {
-                  "filesetName": filesetNode.name,
-                  "osType": childNode.host.osType,
-                  "complianceStatus": childNode.reportWorkload != null ? childNode.reportWorkload.complianceStatus : null,
-                  "archiveStorage": childNode.reportWorkload != null ? childNode.reportWorkload.archiveStorage : null,
-                  "localStorage": childNode.reportWorkload != null ? childNode.reportWorkload.localStorage : null,
-                  "totalSnapshots": childNode.reportWorkload != null ? childNode.reportWorkload.totalSnapshots : null,
-                  "archiveSnapshots": childNode.reportWorkload != null ? childNode.reportWorkload.archiveSnapshots : null
-                }
-              )
-            ).flatten(),
-            "want_more": int(state.index) < (size(state.queries) - 1),
-            "queries": state.queries,
-            "index": (int(state.index) + 1) % size(state.queries)
+            ]
           }
-        )
-        :
+        }.encode_json(),
+      }
+    ).do_request().as(resp, (resp.StatusCode == 200) ?
+      bytes(resp.Body).decode_json().as(body,
         {
-          "events": [
-            {
-              "error": {
-                "code": string(resp.StatusCode),
-                "id": string(resp.Status),
-                "message": "POST:" +
-                (
-                  (size(resp.Body) != 0) ?
-                    string(resp.Body)
-                  :
-                    string(resp.Status) + " (" + string(resp.StatusCode) + ")"
-                )
+          "events": body.data.filesetTemplates.nodes.map(filesetNode,
+            filesetNode.physicalChildConnection.nodes.map(childNode,
+              {
+                "filesetName": filesetNode.name,
+                "osType": childNode.host.osType,
+                "complianceStatus": childNode.reportWorkload != null ? childNode.reportWorkload.complianceStatus : null,
+                "archiveStorage": childNode.reportWorkload != null ? childNode.reportWorkload.archiveStorage : null,
+                "localStorage": childNode.reportWorkload != null ? childNode.reportWorkload.localStorage : null,
+                "totalSnapshots": childNode.reportWorkload != null ? childNode.reportWorkload.totalSnapshots : null,
+                "archiveSnapshots": childNode.reportWorkload != null ? childNode.reportWorkload.archiveSnapshots : null
               }
-            }
-          ],
-          "want_more": false
+            )
+          ).flatten().map(event, { "message": event.encode_json() }),
+          "want_more": int(state.index) < (size(state.queries) - 1),
+          "queries": state.queries,
+          "index": (int(state.index) + 1) % size(state.queries)
         }
       )
+      :
+      {
+        "events": [
+          {
+            "error": {
+              "code": string(resp.StatusCode),
+              "id": string(resp.Status),
+              "message": "POST:" +
+              (
+                (size(resp.Body) != 0) ?
+                  string(resp.Body)
+                :
+                  string(resp.Status) + " (" + string(resp.StatusCode) + ")"
+              )
+            }
+          }
+        ],
+        "want_more": false
+      }
     )
+  )
