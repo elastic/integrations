@@ -21,10 +21,11 @@ processors:
         AVC_PREFIX: 'avc:%{SPACE}%{WORD:auditd.log.avc.action}%{SPACE}{%{SPACE}%{WORD:auditd.log.avc.request}%{SPACE}}%{SPACE}for%{SPACE}'
         MESSAGE: "(?:'(?:%{AVC_PREFIX}|[^=]*\\s)?%{ANY:auditd.log.sub_kv}'|\"([^=]*\\s)?%{ANY:auditd.log.sub_kv}\")"
         GS: '\x1d'
+        ENRICHED_FIELDS: '((?:%{GS})%{AUDIT_KEY_VALUES:auditd.log.sub_kv_enriched})?'
         ANY: ".*"
       patterns:
         - '%{AUDIT_PREFIX} %{AUDIT_KEY_VALUES:auditd.log.kv} old auid=%{NUMBER:auditd.log.old_auid} new auid=%{NUMBER:auditd.log.new_auid} old ses=%{NUMBER:auditd.log.old_ses} new ses=%{NUMBER:auditd.log.new_ses}'
-        - '%{AUDIT_PREFIX} %{AUDIT_KEY_VALUES:auditd.log.kv} msg=%{MESSAGE}'
+        - '%{AUDIT_PREFIX} %{AUDIT_KEY_VALUES:auditd.log.kv} msg=%{MESSAGE}%{ENRICHED_FIELDS}'
         - '%{AUDIT_PREFIX} %{AUDIT_KEY_VALUES:auditd.log.kv}%{GS}%{WORD:auditd.log.original_field}={ %{AUDIT_KEY_VALUES:auditd.log.sub_kv} }'
         - '%{AUDIT_PREFIX} %{AVC_PREFIX}?%{AUDIT_KEY_VALUES:auditd.log.kv}'
         - '%{AUDIT_PREFIX}'
@@ -36,6 +37,12 @@ processors:
       target_field: auditd.log
   - kv:
       field: auditd.log.sub_kv
+      field_split: '\s+(?=[^\s]+=)'
+      value_split: '='
+      target_field: auditd.log
+      ignore_missing: true
+  - kv:
+      field: auditd.log.sub_kv_enriched
       field_split: '\s+(?=[^\s]+=)'
       value_split: '='
       target_field: auditd.log
@@ -2314,6 +2321,7 @@ processors:
       field:
         - auditd.log.kv
         - auditd.log.sub_kv
+        - auditd.log.sub_kv_enriched
         - auditd.log.epoch
         - auditd.log.copy
         - auditd.log.arch
