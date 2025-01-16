@@ -336,6 +336,15 @@ streams:
         default: America/Los_Angeles
         description: >-
           By default, datetimes in the logs without a time zone will be interpreted as relative to the time zone configured in the host where the agent is running. If ingesting logs from a different time zone, use this field to set the time zone offset so that datetimes are correctly parsed. Acceptable time zone formats are: a canonical ID (e.g. "Europe/Amsterdam"), or an HH:mm differential (e.g. "-05:00") from UTC.
+      - name: data_has_display_values
+        type: bool
+        title: Data Has Only Display Values
+        description: >-
+          By default, the data stored in S3 buckets should be either matching with API response schema, or scalar `value`s. But, if the data stored in S3 buckets contain scalars with human-readable `display_value`s, enable this option to parse the data accurately. For example, if this option is enabled, the raw data `"install_status":"Installed"` is converted to `"install_status":{"display_value":"Installed"}` by the pipeline. This option ensures field mappings and pipeline works as expected. This option should be only enabled if data in S3 cannot be matched with API's expected response. See integration's Troubleshooting section for more details.
+        multi: false
+        required: false
+        show_user: false
+        default: false
       - name: shared_credential_file
         type: text
         title: Shared Credential File
