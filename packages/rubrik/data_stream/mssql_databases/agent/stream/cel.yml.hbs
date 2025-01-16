@@ -6,9 +6,9 @@ auth.oauth2:
   token_url: {{token_url}}
 
 resource.url: https://{{hostname}}.my.rubrik.com/api/graphql
-{{#if resource_ssl}}
+{{#if ssl}}
 resource.ssl: 
-  {{resource_ssl}}
+  {{ssl}}
 {{/if}}
 {{#if resource_timeout}}
 resource.timeout: {{resource_timeout}}
@@ -74,9 +74,7 @@ program: |-
               {{#if first}}
               "first": {{first}},
               {{/if}}
-              {{#if after}}
-              "after": "{{after}}",
-              {{/if}}
+              "after": has(state.cursor) ? state.cursor.after : null,
               "filter": [
                 {{#if filters}}
                   {{#each filters}}
@@ -98,9 +96,12 @@ program: |-
               "message": e.encode_json(),
             }
           ),
-          "want_more": int(state.index) < (size(state.queries) - 1),
+          "want_more": body.data.mssqlDatabases.pageInfo.hasNextPage || int(state.index) < (size(state.queries) - 1),
           "queries": state.queries,
-          "index": (int(state.index) + 1) % size(state.queries),
+          "index": body.data.mssqlDatabases.pageInfo.hasNextPage ? int(state.index) : (int(state.index) + 1) % size(state.queries),
+          "cursor": {
+            "after": body.data.mssqlDatabases.pageInfo.hasNextPage ? body.data.mssqlDatabases.pageInfo.endCursor : null
+          }
         }
       )
     :
@@ -119,6 +120,7 @@ program: |-
           },
         },
         "want_more": false,
+        "cursor": null
       }
     )
   )
