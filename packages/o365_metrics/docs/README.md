@@ -835,7 +835,7 @@ An example event for `teams_user_activity_user_counts` looks as following:
     "data_stream": {
         "namespace": "default",
         "type": "metrics",
-        "dataset": "o365_metrics.teams_user_activity"
+        "dataset": "o365_metrics.teams_user_activity_user_counts"
     },
     "elastic_agent": {
         "id": "912ee420-1a2f-468d-bd26-72e08cfa9db6",
@@ -865,7 +865,7 @@ An example event for `teams_user_activity_user_counts` looks as following:
     "event": {
         "agent_id_status": "verified",
         "ingested": "2025-01-02T08:13:17Z",
-        "dataset": "o365_metrics.teams_user_activity"
+        "dataset": "o365_metrics.teams_user_activity_user_counts"
     },
     "tags": [
         "o365.metrics.outlook.activity"
