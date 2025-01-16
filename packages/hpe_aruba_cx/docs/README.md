@@ -363,9 +363,9 @@ Note: Descriptions have not been filled out
 | `<volume_name>`       | aruba.dhcp.volume_name        |
 
 #### [Discovery and Capability Exchange (DCBx) events](https://www.arubanetworks.com/techdocs/AOS-CX/10.15/HTML/elmrg/Content/events/DCBX.htm)
-| Doc Fields            | Schema Mapping                |
-|-----------------------|-------------------------------|
-| `<intf_name>` | aruba.interface.name |
+| Doc Fields   | Schema Mapping         |
+|--------------|------------------------|
+| `<intf_name>`| aruba.interface.name   |
 
 #### [DNS client events](https://www.arubanetworks.com/techdocs/AOS-CX/10.07/HTML/5200-8214/Content/events/DNS_CLIENT.htm)
 | Field            | Description | Type | Common           |
