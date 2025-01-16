@@ -21,51 +21,70 @@ icons:
     title: Rubrik logo
     size: 32x32
     type: image/svg+xml
+vars:
+  - name: hostname
+    type: text
+    title: Hostname
+    description: Name of the host
+    multi: false
+    required: true
+    show_user: true
+  - name: client_id
+    type: text
+    title: Client ID
+    description: Client ID of Rubrik
+    multi: false
+    required: true
+    show_user: true
+  - name: client_secret
+    type: password
+    title: Client Secret
+    description: Client secret of Rubrik
+    multi: false
+    required: true
+    show_user: true
+    secret: true
+  - name: token_url
+    type: text
+    title: Token URL
+    description: Token URL of Rubrik.
+    multi: false
+    required: true
+    show_user: true
+  - name: enable_request_tracer
+    type: bool
+    title: Enable request tracing
+    multi: false
+    required: false
+    show_user: false
+    description: The request tracer logs requests and responses to the agent's local file-system for debugging configurations. Enabling this request tracing compromises security and should only be used for debugging. See [documentation](https://www.elastic.co/guide/en/beats/filebeat/current/filebeat-input-httpjson.html#_request_tracer_filename) for details.
+  - name: ssl
+    type: yaml
+    title: Resource SSL Configuration
+    description: i.e. certificate_authorities, supported_protocols, verification_mode etc, more examples found in the [documentation](https://www.elastic.co/guide/en/beats/filebeat/current/configuration-ssl.html#ssl-common-config)
+    multi: false
+    required: false
+    show_user: false
 policy_templates:
   - name: rubrik
     title: Rubrik Security Cloud Metrics
     description: Collect metrics from Rubrik Security Cloud
     inputs:
+      - type: cel
+        title: "Collect Rubrik metrics via API using CEL Input"
+        description: "Collect metrics from Rubrik RSC via GraphQL API using CEL Input"
+        vars:
+          - name: resource_timeout
+            type: text
+            title: Resource Timeout
+            description: Duration before declaring that the HTTP client connection has timed out. Valid time units are ns, us, ms, s, m, h. Default is "30"s.
+            show_user: false
+            multi: false
+            required: false
+            default: 60s
       - type: httpjson
         title: "Collect Rubrik metrics via API"
         description: "Collect metrics from Rubrik RSC via GraphQL API"
-        vars:
-          - name: hostname
-            type: text
-            title: Hostname
-            description: Name of the host
-            multi: false
-            required: true
-            show_user: true
-          - name: client_id
-            type: text
-            title: Client ID
-            description: Client ID of Rubrik
-            multi: false
-            required: true
-            show_user: true
-          - name: client_secret
-            type: password
-            title: Client Secret
-            description: Client secret of Rubrik
-            multi: false
-            required: true
-            show_user: true
-            secret: true
-          - name: token_url
-            type: text
-            title: Token URL
-            description: Token URL of Rubrik.
-            multi: false
-            required: true
-            show_user: true
-          - name: enable_request_tracer
-            type: bool
-            title: Enable request tracing
-            multi: false
-            required: false
-            show_user: false
-            description: The request tracer logs requests and responses to the agent's local file-system for debugging configurations. Enabling this request tracing compromises security and should only be used for debugging. See [documentation](https://www.elastic.co/guide/en/beats/filebeat/current/filebeat-input-httpjson.html#_request_tracer_filename) for details.
 owner:
   github: elastic/obs-infraobs-integrations
   type: elastic
