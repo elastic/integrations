@@ -84,17 +84,6 @@ Please refer to the following [document](https://www.elastic.co/guide/en/ecs/cur
 
 {{fields "active_users"}}
 
-
-### Teams User Activity
-
-{{event "teams_user_activity"}}
-
-**ECS Field Reference**
-
-Please refer to the following [document](https://www.elastic.co/guide/en/ecs/current/ecs-field-reference.html) for detailed information on ECS fields.
-
-{{fields "teams_user_activity"}}
-
 ### Yammer Device Usage
 
 {{event "yammer_device_usage"}}
@@ -105,5 +94,13 @@ Please refer to the following [document](https://www.elastic.co/guide/en/ecs/cur
 
 {{fields "yammer_device_usage"}}
 
+### Teams User Activity User Counts
 
+{{event "teams_user_activity_user_counts"}}
+
+**ECS Field Reference**
+
+Please refer to the following [document](https://www.elastic.co/guide/en/ecs/current/ecs-field-reference.html) for detailed information on ECS fields.
+
+{{fields "teams_user_activity_user_counts"}}
 
