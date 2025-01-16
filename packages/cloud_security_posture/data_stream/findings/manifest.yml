@@ -88,35 +88,34 @@ streams:
     template_path: aws.yml.hbs
     enabled: false
     required_vars:
-      conditions:
-        - aws.credentials.type
-          aws.credentials.type
-          access_key_id
-          secret_access_key
-
-        - aws.credentials.type
-          aws.credentials.type
-          access_key_id
-          secret_access_key
-          session_token
-
-        - aws.credentials.type
-          aws.credentials.type
-          shared_credential_file
-          credential_profile_name
-
-        - cloud_formation_template
-          cloud_formation_credentials_template
-          cloud_formation_cloud_connectors_template
-
-        - aws.credentials.type
-          aws.credentials.type
-          role_arn
-      unless:
+      assume_role:
+        - name: aws.credentials.type
+          value: assume_role
+        - name: role_arn
+        - name: aws.account_type
+      direct_access_keys:
+        - name: aws.credentials.type
+          value: direct_access_keys
+        - name: access_key_id
+        - name: secret_access_key
+        - name: aws.account_type
+      temporary_session:
+        - name: aws.credentials.type
+          value: temporary_keys
+        - name: access_key_id
+        - name: secret_access_key
+        - name: session_token
+        - name: aws.account_type
+      shared_credentials:
+        - name: aws.credentials.type
+          value: shared_credentials
+        - name: shared_credential_file
+        - name: credential_profile_name
+        - name: aws.account_type
+      cloud_formation:
         - name: aws.credentials.type
           value: cloud_formation
         - name: aws.account_type
-          value: organization-account
     vars:
       - name: condition
         title: Condition
