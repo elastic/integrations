@@ -44,10 +44,12 @@ state:
             filter: $filter
           ) {
             nodes {
-              id
-              name
               physicalChildConnection {
                 nodes {
+                  cluster {
+                    id
+                    name
+                  }
                   ... on LinuxFileset {
                     name
                     host {
@@ -59,6 +61,10 @@ state:
                       localStorage
                       totalSnapshots
                       archiveSnapshots
+                    }
+                    effectiveSlaDomain {
+                      name
+                      id
                     }
                   }
                 }
@@ -78,10 +84,12 @@ state:
             filter: $filter
           ) {
             nodes {
-              id
-              name
               physicalChildConnection {
                 nodes {
+                  cluster {
+                    id
+                    name
+                  }
                   ... on WindowsFileset {
                     name
                     host {
@@ -93,6 +101,10 @@ state:
                       localStorage
                       totalSnapshots
                       archiveSnapshots
+                    }
+                    effectiveSlaDomain {
+                      name
+                      id
                     }
                   }
                 }
@@ -136,13 +148,17 @@ program: |-
           "events": body.data.filesetTemplates.nodes.map(filesetNode,
             filesetNode.physicalChildConnection.nodes.map(childNode,
               {
-                "filesetName": filesetNode.name,
+                "filesetName": childNode.name,
                 "osType": childNode.host.osType,
                 "complianceStatus": childNode.reportWorkload != null ? childNode.reportWorkload.complianceStatus : null,
                 "archiveStorage": childNode.reportWorkload != null ? childNode.reportWorkload.archiveStorage : null,
                 "localStorage": childNode.reportWorkload != null ? childNode.reportWorkload.localStorage : null,
                 "totalSnapshots": childNode.reportWorkload != null ? childNode.reportWorkload.totalSnapshots : null,
-                "archiveSnapshots": childNode.reportWorkload != null ? childNode.reportWorkload.archiveSnapshots : null
+                "archiveSnapshots": childNode.reportWorkload != null ? childNode.reportWorkload.archiveSnapshots : null,
+                "clusterName": childNode.cluster != null ? childNode.cluster.name : null,
+                "clusterID": childNode.cluster != null ? childNode.cluster.id : null,
+                "effectiveSlaDomainID": childNode.effectiveSlaDomain != null ? childNode.effectiveSlaDomain.id : null,
+                "effectiveSlaDomainName": childNode.effectiveSlaDomain != null ? childNode.effectiveSlaDomain.name : null
               }
             )
           ).flatten().map(event, { "message": event.encode_json() }),

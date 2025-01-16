@@ -184,8 +184,12 @@ An example event for `virtualmachines` looks as following:
 | data_stream.type | Data stream type. | constant_keyword |  |  |
 | rubrik.fileset.archive_snapshots.count | The number of snapshots that have been archived. | long |  | gauge |
 | rubrik.fileset.archive_storage.bytes | The amount of storage used by archived snapshots. | long | byte | gauge |
+| rubrik.fileset.cluster.id | The Rubrik cluster ID where this object originated. | keyword |  |  |
+| rubrik.fileset.cluster.name | The Rubrik cluster name where this object originated. | keyword |  |  |
 | rubrik.fileset.compliance_status | The current compliance status of the workload. | keyword |  |  |
-| rubrik.fileset.host.os_type | The operating system type of the host. | keyword |  |  |
+| rubrik.fileset.effective_sla_domain.id | The ID of the SLA domain. | keyword |  |  |
+| rubrik.fileset.effective_sla_domain.name | The name of the SLA domain. | keyword |  |  |
+| rubrik.fileset.host_os_type | The operating system type of the host. | keyword |  |  |
 | rubrik.fileset.local_storage.bytes | The local storage size in bytes. | long | byte | gauge |
 | rubrik.fileset.name | The name of the Fileset. | keyword |  |  |
 | rubrik.fileset.total_snapshots.count | The total number of snapshots present for the workload. | long |  | gauge |
@@ -204,14 +208,30 @@ An example event for `filesets` looks as following:
     },
     "rubrik": {
         "fileset": {
-            "archive_snapshots": 0,
-            "total_snapshots": 6,
-            "local_storage": 1286184885,
-            "name": "Linux",
-            "host": {
-                "os_type": "LINUX"
+            "cluster": {
+                "name": "401-rubrik",
+                "id": "7f4f96b3-e777-4bde-ba08-47a40ecaa416"
             },
-            "archive_storage": 0,
+            "archive_snapshots": {
+                "count": 0
+            },
+            "total_snapshots": {
+                "count": 2
+            },
+            "local_storage": {
+                "bytes": 384155
+            },
+            "name": "Aksh",
+            "host": {
+                "os_type": "WINDOWS"
+            },
+            "archive_storage": {
+                "bytes": 0
+            },
+            "effective_sla_domain": {
+                "name": "Bronze",
+                "id": "8f983b74-a50f-5ffa-b73d-359462c06f4b"
+            },
             "compliance_status": "OUT_OF_COMPLIANCE"
         }
     },
