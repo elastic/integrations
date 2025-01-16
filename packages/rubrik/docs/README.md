@@ -387,11 +387,10 @@ Please refer to the following [document](https://www.elastic.co/guide/en/ecs/cur
 | data_stream.type | Data stream type. | constant_keyword |
 | rubrik.mssql_databases.cluster.id | The Rubrik cluster id where this object originated. | keyword |
 | rubrik.mssql_databases.cluster.name | The Rubrik cluster name where this object originated. | keyword |
-| rubrik.mssql_databases.id | FID of the hierarchy object. | keyword |
+| rubrik.mssql_databases.id | ID of the database. | keyword |
 | rubrik.mssql_databases.is_online | Specifies if the SQL Server database is online. | boolean |
 | rubrik.mssql_databases.missed_snapshots.count | Number of missed snapshots. | long |
-| rubrik.mssql_databases.name | The name of the hierarchy object. | keyword |
-| rubrik.mssql_databases.object_type | Type of this object. | keyword |
+| rubrik.mssql_databases.name | Name of the database. | keyword |
 
 
 An example event for `mssql_databases` looks as following:
@@ -411,7 +410,6 @@ An example event for `mssql_databases` looks as following:
                 "name": "cluster-1",
                 "id": "f5ce5ffc-42d4-47bc-a64f-d928030892d5"
             },
-            "object_type": "Mssql",
             "name": "name-1",
             "id": "2abed6ca-bbf7-42df-a402-2166a7abebd0",
             "is_online": true
