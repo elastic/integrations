@@ -267,7 +267,7 @@ Note: Descriptions have not been filled out
 | `<mgmt_intf>`  | aruba.interface.id    |
 | `<user_name>`  | user.name             |
 
-#### [Container manager events](https://www.arubanetworks.com/techdocs/AOS-CX/10.07/HTML/5200-8214/Content/events/CONTAINER.htm)
+#### [Container manager events](https://www.arubanetworks.com/techdocs/AOS-CX/10.15/HTML/elmrg/Content/events/CONTAINER.htm)
 | Doc Fields   | Schema Mapping          |
 |--------------|-------------------------|
 | `<name>`     | container.name          |
