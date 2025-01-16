@@ -222,9 +222,7 @@ An example event for `filesets` looks as following:
                 "bytes": 384155
             },
             "name": "Aksh",
-            "host": {
-                "os_type": "WINDOWS"
-            },
+            "host_os_type": "WINDOWS",
             "archive_storage": {
                 "bytes": 0
             },
