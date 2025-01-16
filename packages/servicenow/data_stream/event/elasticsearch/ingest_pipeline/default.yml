@@ -43,7 +43,7 @@ processors:
         }
   - script:
       tag: script_promote_to_object
-      description: Convert servicenow.event.* scalar values to a .value field in an object if necessary.
+      description: Convert servicenow.event.* scalar values to a .value or .display_value field in an object if necessary.
       lang: painless
       if: ctx.servicenow?.event instanceof Map
       source: |
@@ -56,7 +56,11 @@ processors:
             continue;
           }
           Map n = [:];
-          n.value = v;
+          if (ctx._conf.data_has_display_values == "true") {
+            n.display_value = v;
+          } else {
+            n.value = v;
+          }
           entry.setValue(n);
         }
   - rename:
@@ -71,6 +75,17 @@ processors:
         - servicenow.event.timestamp_field.value
         - servicenow.event.table_name
       target_field: _id
+      if: ctx._conf?.data_has_display_values == "false"
+      tag: fingerprint_from_value
+      ignore_missing: true
+  - fingerprint:
+      fields:
+        - servicenow.event.sys_id.display_value
+        - servicenow.event.timestamp_field.display_value
+        - servicenow.event.table_name
+      target_field: _id
+      tag: fingerprint_from_display_value
+      if: ctx._conf?.data_has_display_values == "true"
       ignore_missing: true
   - script:
       tag: script_to_drop_undefined_values
@@ -2898,6 +2913,11 @@ processors:
       tag: set_@timestamp_from_event_timestamp_field_value
       copy_from: servicenow.event.timestamp_field.value
       ignore_empty_value: true
+  - set:
+      field: '@timestamp'
+      tag: set_@timestamp_from_event_timestamp_field_display_value
+      copy_from: servicenow.event.timestamp_field.display_value
+      ignore_empty_value: true
   - convert:
       field: servicenow.event.port.value
       tag: convert_port_value_to_long
@@ -3282,6 +3302,7 @@ processors:
   - remove:
       field:
         - _conf.timestamp_field
+        - _conf.data_has_display_values
         - servicenow.event.timestamp_field
       tag: remove_non_required_fields
       ignore_missing: true
