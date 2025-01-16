@@ -1529,6 +1529,11 @@ processors:
       copy_from: host.hostname
       ignore_empty_value: true
       ignore_failure: true
+  - rename:
+      field: crowdstrike.info.host
+      target_field: crowdstrike.info.host.ComputerName
+      ignore_missing: true
+      if: ctx.crowdstrike?.info?.host != null && ctx.crowdstrike.info.host instanceof String
   - append:
       field: related.hosts
       value: "{{{crowdstrike.info.host.ComputerName}}}"
