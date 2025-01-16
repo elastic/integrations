@@ -190,3 +190,92 @@ An example event for `virtualmachines` looks as following:
 | rubrik.fileset.name | The name of the Fileset. | keyword |  |  |
 | rubrik.fileset.total_snapshots.count | The total number of snapshots present for the workload. | long |  | gauge |
 
+
+An example event for `filesets` looks as following:
+
+```json
+{
+    "agent": {
+        "name": "ip-172-31-39-96.eu-north-1.compute.internal",
+        "id": "7c37e065-93e1-4e86-a2c9-ee166c4eccbb",
+        "type": "filebeat",
+        "ephemeral_id": "e897b559-c04a-471f-ba91-b2e6b84a5a3c",
+        "version": "8.13.2"
+    },
+    "rubrik": {
+        "fileset": {
+            "archive_snapshots": 0,
+            "total_snapshots": 6,
+            "local_storage": 1286184885,
+            "name": "Linux",
+            "host": {
+                "os_type": "LINUX"
+            },
+            "archive_storage": 0,
+            "compliance_status": "OUT_OF_COMPLIANCE"
+        }
+    },
+    "@timestamp": "2025-01-16T07:23:59.158Z",
+    "ecs": {
+        "version": "8.16.0"
+    },
+    "data_stream": {
+        "namespace": "default",
+        "type": "metrics",
+        "dataset": "rubrik.filesets"
+    },
+    "elastic_agent": {
+        "id": "7c37e065-93e1-4e86-a2c9-ee166c4eccbb",
+        "version": "8.13.2",
+        "snapshot": false
+    },
+    "host": {
+        "hostname": "ip-172-31-39-96.eu-north-1.compute.internal",
+        "os": {
+            "kernel": "6.1.82-99.168.amzn2023.x86_64",
+            "codename": "Amazon Linux",
+            "name": "Amazon Linux",
+            "type": "linux",
+            "family": "redhat",
+            "version": "2023",
+            "platform": "amzn"
+        },
+        "containerized": false,
+        "ip": [
+            "172.31.39.96",
+            "fe80::88f:89ff:fea6:2561",
+            "172.17.0.1",
+            "fe80::42:77ff:fe00:bad7",
+            "172.18.0.1",
+            "fe80::42:ff:fe6c:4aef",
+            "fe80::1803:deff:fef6:6cf3",
+            "172.19.0.1",
+            "fe80::42:dff:fed2:b9a9",
+            "fe80::54a9:a8ff:feb8:2d8d"
+        ],
+        "name": "ip-172-31-39-96.eu-north-1.compute.internal",
+        "id": "ec2130e5d5c423ed85ac1c1a0b96beeb",
+        "mac": [
+            "02-42-00-6C-4A-EF",
+            "02-42-0D-D2-B9-A9",
+            "02-42-77-00-BA-D7",
+            "0A-8F-89-A6-25-61",
+            "1A-03-DE-F6-6C-F3",
+            "56-A9-A8-B8-2D-8D"
+        ],
+        "architecture": "x86_64"
+    },
+    "event": {
+        "agent_id_status": "verified",
+        "ingested": "2025-01-16T07:24:09Z",
+        "original": "{\"archiveSnapshots\":0,\"archiveStorage\":0,\"complianceStatus\":\"OUT_OF_COMPLIANCE\",\"filesetName\":\"Linux\",\"localStorage\":1286184885,\"osType\":\"LINUX\",\"totalSnapshots\":6}",
+        "kind": "metric",
+        "dataset": "rubrik.filesets"
+    },
+    "tags": [
+        "preserve_original_event",
+        "rubrik.filesets"
+    ]
+}
+
+```

@@ -68,3 +68,5 @@ Please refer to the following [document](https://www.elastic.co/guide/en/ecs/cur
 ### Filesets
 
 {{ fields "filesets" }}
+
+{{event "filesets" }}
