@@ -45,11 +45,8 @@ func NewPackageError(options PackageErrorOptions) (*PackageError, error) {
 		testCase:          options.TestCase,
 	}
 
-	values := strings.Split(p.testCase.ClassName, ".")
-	p.PackageName = values[0]
-	if len(values) == 2 {
-		p.DataStream = values[1]
-	}
+	p.PackageName = p.testCase.PackageName()
+	p.DataStream = p.testCase.DataStream()
 
 	owners, err := codeowners.PackageOwners(p.PackageName, p.DataStream, options.CodeownersPath)
 	if err != nil {
