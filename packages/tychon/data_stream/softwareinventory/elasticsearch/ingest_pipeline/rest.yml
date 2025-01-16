@@ -1,0 +1,123 @@
+---
+description: Pipeline for Software Inventory
+processors:
+
+  - rename:
+      tag: rename_tychon_edition
+      field: tychon.edition
+      target_field: tychon.package.edition
+      ignore_missing: true
+  - rename:
+      tag: rename_tychon_comment
+      field: tychon.comment
+      target_field: tychon.package.description
+      ignore_missing: true
+  - script:
+      tag: script_convert_tychon_package_installed_from_boolean_to_date
+      description: Convert tychon.package.installed from boolean to date
+      lang: painless
+      source: |
+        if (['installed', 'true'].contains(ctx.tychon.package.installed)) {
+          ctx.tychon.package.installed = '1970-01-01T00:00:01Z';
+        } else {
+          ctx.tychon.package.remove('installed');
+        }
+      if: ctx.tychon.package?.installed != null
+  - gsub:
+      tag: gsub_tychon_package_size
+      field: tychon.package.size
+      pattern: '[^0-9]'
+      replacement: ''
+  - set:
+      tag: set_tychon_package_size
+      field: tychon.package.size
+      value: 0
+      if: ctx.tychon?.package?.size == null
+  - convert:
+      tag: convert_tychon_package_size
+      field: tychon.package.size
+      type: long
+      ignore_missing: true
+  - gsub:
+      tag: gsub_tychon_package_version_build
+      field: tychon.package.version_build
+      pattern: '[^0-9]'
+      replacement: ''
+      ignore_missing: true
+  - gsub:
+      tag: gsub_tychon_package_version_major
+      field: tychon.package.version_major
+      pattern: '[^0-9]'
+      replacement: ''
+      ignore_missing: true
+  - gsub:
+      tag: gsub_tychon_package_version_minor
+      field: tychon.package.version_minor
+      pattern: '[^0-9]'
+      replacement: ''
+      ignore_missing: true
+  - gsub:
+      tag: gsub_tychon_package_version_release
+      field: tychon.package.version_release
+      pattern: '[^0-9]'
+      replacement: ''
+      ignore_missing: true
+  - set:
+      tag: set_tychon_package_type
+      field: tychon.package.type
+      value: rpm
+      if: ctx.tychon.package.type == null
+  - script:
+      tag: script
+      source: ctx.tychon.package.cpe = "cpe:/a:" + ctx.tychon.package.name + ":" + ctx.tychon.package.version
+      if: ctx.tychon.package?.cpe == '' && ctx.tychon.package.name != null && ctx.tychon.package.version != null
+
+  # ECS fields
+
+  - set:
+      tag: set_event_category
+      field: event.category
+      value: [package]
+
+  # ECS fields from the tychon fieldset
+
+  - set:
+      tag: set_package_architecture
+      field: package.architecture
+      copy_from: tychon.package.architecture
+      ignore_empty_value: true
+  - set:
+      tag: set_package_description
+      field: package.description
+      copy_from: tychon.package.description
+      ignore_empty_value: true
+  - set:
+      tag: set_package_installed
+      field: package.installed
+      copy_from: tychon.package.installed
+      ignore_empty_value: true
+  - set:
+      tag: set_package_name
+      field: package.name
+      copy_from: tychon.package.name
+      ignore_empty_value: true
+  - set:
+      tag: set_package_path
+      field: package.path
+      copy_from: tychon.package.path
+      ignore_empty_value: true
+  - set:
+      tag: set_package_size
+      field: package.size
+      copy_from: tychon.package.size
+      ignore_empty_value: true
+  - set:
+      tag: set_package_type
+      field: package.type
+      copy_from: tychon.package.type
+      ignore_empty_value: true
+  - set:
+      tag: set_package_version
+      field: package.version
+      copy_from: tychon.package.version
+      ignore_empty_value: true

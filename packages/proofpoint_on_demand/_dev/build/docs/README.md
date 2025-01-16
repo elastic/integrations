@@ -8,19 +8,17 @@ The Proofpoint On Demand integration collects data for Audit, Mail, and Message 
 
 The Proofpoint On Demand integration collects data for the following three events:
 
-| Event Type                    |
-|-------------------------------|
-| Audit                         |
-| Mail                          |
-| Message                       |
+- **Audit**  
+- **Mail**  
+- **Message**
 
 ## Requirements
 
-Elastic Agent must be installed. For more information, refer to the link [here](https://www.elastic.co/guide/en/fleet/current/elastic-agent-installation.html).
+Elastic Agent must be installed. For more details and installation instructions, please refer to the [Elastic Agent Installation Guide](https://www.elastic.co/guide/en/fleet/current/elastic-agent-installation.html).
 
 ### Installing and managing an Elastic Agent:
 
-You have a few options for installing and managing an Elastic Agent:
+There are several options for installing and managing Elastic Agent:
 
 ### Install a Fleet-managed Elastic Agent (recommended):
 
@@ -34,7 +32,7 @@ With this approach, you install Elastic Agent and manually configure the agent l
 
 You can run Elastic Agent inside a container, either with Fleet Server or standalone. Docker images for all versions of Elastic Agent are available from the Elastic Docker registry, and we provide deployment manifests for running on Kubernetes.
 
-There are some minimum requirements for running Elastic Agent and for more information, refer to the link [here](https://www.elastic.co/guide/en/fleet/current/elastic-agent-installation.html#_minimum_requirements).
+Please note, there are minimum requirements for running Elastic Agent. For more information, refer to the  [Elastic Agent Minimum Requirements](https://www.elastic.co/guide/en/fleet/current/elastic-agent-installation.html#elastic-agent-installation-minimum-requirements).
 
 ## Setup
 
@@ -46,10 +44,10 @@ The **Cluster ID** is displayed in the upper-right corner of the management inte
 
 ### Enabling the integration in Elastic:
 
-1. In Kibana go to Management > Integrations.
-2. In "Search for integrations" search bar, type Proofpoint On Demand.
-3. Click on the "Proofpoint On Demand" integration from the search results.
-4. Click on the "Add Proofpoint On Demand" button to add the integration.
+1. In Kibana navigate to Management > Integrations.
+2. In "Search for integrations" top bar, search for `Proofpoint On Demand`.
+3. Select the "Proofpoint On Demand" integration from the search results.
+4. Select "Add Proofpoint On Demand" to add the integration.
 5. Add all the required integration configuration parameters, including Cluster ID and Access Token, to enable data collection.
 6. Click on "Save and continue" to save the integration.
 

@@ -238,7 +238,6 @@ An example event for `audit` looks as following:
         "name": "example@gmail.com"
     }
 }
-
 ```
 
 **Exported fields**

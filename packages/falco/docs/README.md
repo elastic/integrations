@@ -2,9 +2,10 @@
 This integration allows for the shipping of [Falco](https://falco.org/) alerts to Elastic for observability and organizational awareness. Alerts can then be analyzed by using either the dashboard included with the integration or via the creation of a custom dashboard within Kibana.
 
 ## Data Streams
-The Falco integration collects one type of data stream: logs.
+The Falco integration collects one type of data stream: 
 
-**Logs** The Logs data stream collected by the Falco integration is comprised of Falco Alerts. See more details about Falco Alerts in [Falco's Outputs Documentation](https://falco.org/docs/outputs/). A complete list of potential fields used by this integration can be found in the [Logs reference](#logs-reference)
+
+- **Logs** The Logs data stream collected by the Falco integration is comprised of Falco Alerts. See more details about Falco Alerts in [Falco's Outputs Documentation](https://falco.org/docs/outputs/). A complete list of potential fields used by this integration can be found in the [Logs reference](#logs-reference)
 
 ## Requirements
 
@@ -17,7 +18,7 @@ This integration is compatible with Falco version 0.37 and above, and should not
 
 ## Setup
 
-For step-by-step instructions on how to set up an integration, see the [Getting started](https://www.elastic.co/guide/en/welcome-to-elastic/current/getting-started-observability.html) guide.
+For step-by-step instructions on how to set up an integration, see the [Getting started](https://www.elastic.co/guide/en/starting-with-the-elasticsearch-platform-and-its-solutions/current/getting-started-observability.html) guide.
 
 In order to capture alerts from Falco you **must** configure Falco to output Alerts as JSON to one of the supported channels: [Logfile](#logfile-input) or [TCP Syslog](#tcp-syslog-input).
 
@@ -52,6 +53,7 @@ Falco alerts can contain a multitude of various fields pertaining to the type of
 | data_stream.type | Data stream type. | constant_keyword |  |
 | event.dataset | Data stream / event dataset. | constant_keyword |  |
 | event.module | The module the event belongs to. | constant_keyword |  |
+| falco.container.mounts | List of mount information. | nested |  |
 | falco.container.mounts.dest |  | keyword |  |
 | falco.container.mounts.mode |  | keyword |  |
 | falco.container.mounts.propagation |  | keyword |  |

@@ -290,22 +290,29 @@ processors:
   - script:
       lang: "painless"
       description: "Extract sAMAccountName, userPrincipleName, userName from log"
+      tag: script_extract_sAMAccountName_userPrincipleName_userName
       source: >
-        def log = ctx.event.original;
-
-        def sAMAccountNameMatch = /sAMAccountName=([^\\)]+)/.matcher(log);
-        if (sAMAccountNameMatch.find()) {
-          ctx.f5_bigip.log.sam_account_name = sAMAccountNameMatch.group(1);
+        def log;
+        if (ctx.event?.original != null) {
+          log = ctx.event.original;
+        } else if (ctx.json?.originalRawData != null) {
+          log = ctx.json.originalRawData;
         }
+        if (log != null) {
+          def sAMAccountNameMatch = /sAMAccountName=([^\\)]+)/.matcher(log);
+          if (sAMAccountNameMatch.find()) {
+            ctx.f5_bigip.log.sam_account_name = sAMAccountNameMatch.group(1);
+          }
 
-        def userPrincipleNameMatch = /UserPrincipleName=([^\\)]+)/.matcher(log);
-        if (userPrincipleNameMatch.find()) {
-          ctx.f5_bigip.log.user_principle_name = userPrincipleNameMatch.group(1);
-        }
+          def userPrincipleNameMatch = /UserPrincipleName=([^\\)]+)/.matcher(log);
+          if (userPrincipleNameMatch.find()) {
+            ctx.f5_bigip.log.user_principle_name = userPrincipleNameMatch.group(1);
+          }
 
-        def userNameMatch = /User_Name=([^\\)]+)/.matcher(log);
-        if (userNameMatch.find()) {
-          ctx.f5_bigip.log.user_name = userNameMatch.group(1);
+          def userNameMatch = /User_Name=([^\\)]+)/.matcher(log);
+          if (userNameMatch.find()) {
+            ctx.f5_bigip.log.user_name = userNameMatch.group(1);
+          }
         }
   - rename:
       field: json.query_string
@@ -357,6 +364,15 @@ processors:
       field: related.hosts
       tag: lowercase_related_hosts
       ignore_missing: true
+  - gsub:
+      field: f5_bigip.log.request.user_agent
+      pattern: '(\([^)]*)\+(https?://)'
+      replacement: '$1%2b$2'
+      ignore_missing: true
+  - urldecode:
+      field: f5_bigip.log.request.user_agent
+      ignore_missing: true
+      ignore_failure: true
   - user_agent:
       field: f5_bigip.log.request.user_agent
       ignore_missing: true

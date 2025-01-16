@@ -78,10 +78,6 @@ This module has been tested against `Alerts API (v7) [Beta]`, `Alerts API (v6)`,
 | Asset Vulnerability Summary | Custom vulnerabilityAssessment.data (Read) |
 
 
-## Note
-
-- The alert data stream has a 15-minute delay to ensure that no occurrences are missed.
-
 ## Logs
 
 ### Audit
@@ -825,7 +821,6 @@ An example event for `endpoint_event` looks as following:
         "carbon_black_cloud-endpoint-event"
     ]
 }
-
 ```
 
 **Exported fields**
@@ -1041,7 +1036,6 @@ An example event for `watchlist_hit` looks as following:
         "carbon_black_cloud-watchlist-hit"
     ]
 }
-
 ```
 
 **Exported fields**

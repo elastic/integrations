@@ -197,7 +197,6 @@ An example event for `logs` looks as following:
         "version": "0.6."
     }
 }
-
 ```
 
 The following fields may be used by the package:

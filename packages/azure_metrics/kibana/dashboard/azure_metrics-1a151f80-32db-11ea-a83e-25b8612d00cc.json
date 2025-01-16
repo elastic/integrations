@@ -9,7 +9,30 @@
         "description": "This dashboard shows metrics for different storage types in Azure.",
         "kibanaSavedObjectMeta": {
             "searchSourceJSON": {
-                "filter": [],
+                "filter": [
+                    {
+                        "$state": {
+                            "store": "appState"
+                        },
+                        "meta": {
+                            "alias": "storage_account",
+                            "disabled": false,
+                            "field": "data_stream.dataset",
+                            "indexRefName": "kibanaSavedObjectMeta.searchSourceJSON.filter[0].meta.index",
+                            "key": "data_stream.dataset",
+                            "negate": false,
+                            "params": {
+                                "query": "azure.storage_account"
+                            },
+                            "type": "phrase"
+                        },
+                        "query": {
+                            "match_phrase": {
+                                "data_stream.dataset": "azure.storage_account"
+                            }
+                        }
+                    }
+                ],
                 "query": {
                     "language": "kuery",
                     "query": ""
@@ -42,10 +65,10 @@
                         "description": "",
                         "params": {
                             "fontSize": 10,
-                            "markdown": "### Azure Storage\n\n[**Overview**](#/dashboard/azure_metrics-1a151f80-32db-11ea-a83e-25b8612d00cc) | [Blob](#/dashboard/azure_metrics-b165ef60-32f7-11ea-a83e-25b8612d00cc) | [File](#/dashboard/azure_metrics-dff7a080-32f7-11ea-a83e-25b8612d00cc) | [Table](#/dashboard/azure_metrics-ff2fe020-32f7-11ea-a83e-25b8612d00cc) | [Queue](#/dashboard/azure_metrics-10efa340-32f8-11ea-a83e-25b8612d00cc) ",
+                            "markdown": "[**Overview**](#/dashboard/azure_metrics-1a151f80-32db-11ea-a83e-25b8612d00cc) | [Blob](#/dashboard/azure_metrics-b165ef60-32f7-11ea-a83e-25b8612d00cc) | [File](#/dashboard/azure_metrics-dff7a080-32f7-11ea-a83e-25b8612d00cc) | [Table](#/dashboard/azure_metrics-ff2fe020-32f7-11ea-a83e-25b8612d00cc) | [Queue](#/dashboard/azure_metrics-10efa340-32f8-11ea-a83e-25b8612d00cc) ",
                             "openLinksInNewTab": false
                         },
-                        "title": "Navigation Storage Overview",
+                        "title": "Azure Storage — Overview",
                         "type": "markdown",
                         "uiState": {}
                     }
@@ -58,7 +81,7 @@
                     "y": 0
                 },
                 "panelIndex": "3e05fed8-0edd-4973-a640-3499c62b141d",
-                "title": "Navigation Storage Overview",
+                "title": "Azure Storage — Overview",
                 "type": "visualization",
                 "version": "8.7.0"
             },
@@ -96,7 +119,7 @@
                                                     "dataType": "number",
                                                     "filter": {
                                                         "language": "kuery",
-                                                        "query": ""
+                                                        "query": "azure.storage_account.used_capacity.avg: *"
                                                     },
                                                     "isBucketed": false,
                                                     "label": "Used Capacity",
@@ -1785,6 +1808,11 @@
         "dashboard": "8.7.0"
     },
     "references": [
+        {
+            "id": "metrics-*",
+            "name": "kibanaSavedObjectMeta.searchSourceJSON.filter[0].meta.index",
+            "type": "index-pattern"
+        },        
         {
             "id": "metrics-*",
             "name": "controlGroup_4d6088e2-f470-4c13-b08f-cf6b06b13c6a:optionsListDataView",

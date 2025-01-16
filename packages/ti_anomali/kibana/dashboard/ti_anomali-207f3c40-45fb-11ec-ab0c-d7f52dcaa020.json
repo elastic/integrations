@@ -1,7 +1,6 @@
 {
     "attributes": {
         "description": "Dashboard providing statistics about file type indicators from the Anomali integration",
-        "hits": 0,
         "kibanaSavedObjectMeta": {
             "searchSourceJSON": {
                 "filter": [
@@ -37,8 +36,8 @@
                             "key": "data_stream.dataset",
                             "negate": false,
                             "params": [
-                                "ti_anomali.limo",
-                                "ti_anomali.threatstream"
+                                "ti_anomali.threatstream",
+                                "ti_anomali.intelligence"
                             ],
                             "type": "phrases"
                         },
@@ -48,15 +47,37 @@
                                 "should": [
                                     {
                                         "match_phrase": {
-                                            "data_stream.dataset": "ti_anomali.limo"
+                                            "data_stream.dataset": "ti_anomali.threatstream"
                                         }
                                     },
                                     {
                                         "match_phrase": {
-                                            "data_stream.dataset": "ti_anomali.threatstream"
+                                            "data_stream.dataset": "ti_anomali.intelligence"
                                         }
                                     }
                                 ]
+                            }
+                        }
+                    },
+                    {
+                        "$state": {
+                            "store": "appState"
+                        },
+                        "meta": {
+                            "alias": null,
+                            "disabled": false,
+                            "field": "labels.is_ioc_transform_source",
+                            "indexRefName": "kibanaSavedObjectMeta.searchSourceJSON.filter[2].meta.index",
+                            "key": "labels.is_ioc_transform_source",
+                            "negate": true,
+                            "params": {
+                                "query": "true"
+                            },
+                            "type": "phrase"
+                        },
+                        "query": {
+                            "match_phrase": {
+                                "labels.is_ioc_transform_source": "true"
                             }
                         }
                     }
@@ -70,6 +91,8 @@
         "optionsJSON": {
             "hidePanelTitles": false,
             "syncColors": false,
+            "syncCursor": true,
+            "syncTooltips": false,
             "useMargins": true
         },
         "panelsJSON": [
@@ -97,8 +120,7 @@
                         "title": "",
                         "type": "markdown",
                         "uiState": {}
-                    },
-                    "type": "visualization"
+                    }
                 },
                 "gridData": {
                     "h": 33,
@@ -108,8 +130,7 @@
                     "y": 0
                 },
                 "panelIndex": "1bd7687a-adf0-44f3-8901-c6b12861d90d",
-                "type": "visualization",
-                "version": "8.7.0"
+                "type": "visualization"
             },
             {
                 "embeddableConfig": {
@@ -173,8 +194,7 @@
                         "visualizationType": "lnsLegacyMetric"
                     },
                     "enhancements": {},
-                    "hidePanelTitles": false,
-                    "type": "lens"
+                    "hidePanelTitles": false
                 },
                 "gridData": {
                     "h": 8,
@@ -185,8 +205,7 @@
                 },
                 "panelIndex": "6d74f2e2-daf7-4179-9f87-0543253de626",
                 "title": "Active Files [Logs Anomali]",
-                "type": "lens",
-                "version": "8.7.0"
+                "type": "lens"
             },
             {
                 "embeddableConfig": {
@@ -250,8 +269,7 @@
                         "visualizationType": "lnsLegacyMetric"
                     },
                     "enhancements": {},
-                    "hidePanelTitles": false,
-                    "type": "lens"
+                    "hidePanelTitles": false
                 },
                 "gridData": {
                     "h": 8,
@@ -262,8 +280,7 @@
                 },
                 "panelIndex": "e20ccd15-7449-492d-be61-a474d10cfabb",
                 "title": "Inactive Files [Logs Anomali]",
-                "type": "lens",
-                "version": "8.7.0"
+                "type": "lens"
             },
             {
                 "embeddableConfig": {
@@ -323,8 +340,7 @@
                         "visualizationType": "lnsLegacyMetric"
                     },
                     "enhancements": {},
-                    "hidePanelTitles": false,
-                    "type": "lens"
+                    "hidePanelTitles": false
                 },
                 "gridData": {
                     "h": 8,
@@ -335,8 +351,7 @@
                 },
                 "panelIndex": "bc2edce5-01f9-4e47-9b52-1a1dad6958c0",
                 "title": "Unique SHA256 [Logs Anomali]",
-                "type": "lens",
-                "version": "8.7.0"
+                "type": "lens"
             },
             {
                 "embeddableConfig": {
@@ -396,8 +411,7 @@
                         "visualizationType": "lnsLegacyMetric"
                     },
                     "enhancements": {},
-                    "hidePanelTitles": false,
-                    "type": "lens"
+                    "hidePanelTitles": false
                 },
                 "gridData": {
                     "h": 8,
@@ -408,8 +422,7 @@
                 },
                 "panelIndex": "07ba9d35-2423-4793-9eed-997e86d1d1ac",
                 "title": "Unique SHA512 [Logs Anomali]",
-                "type": "lens",
-                "version": "8.7.0"
+                "type": "lens"
             },
             {
                 "embeddableConfig": {
@@ -469,8 +482,7 @@
                         "visualizationType": "lnsLegacyMetric"
                     },
                     "enhancements": {},
-                    "hidePanelTitles": false,
-                    "type": "lens"
+                    "hidePanelTitles": false
                 },
                 "gridData": {
                     "h": 8,
@@ -481,8 +493,7 @@
                 },
                 "panelIndex": "c3e37351-081e-4e18-b134-2e51bae9b53a",
                 "title": "Unique MD5 [Logs Anomali]",
-                "type": "lens",
-                "version": "8.7.0"
+                "type": "lens"
             },
             {
                 "embeddableConfig": {
@@ -542,8 +553,7 @@
                         "visualizationType": "lnsLegacyMetric"
                     },
                     "enhancements": {},
-                    "hidePanelTitles": false,
-                    "type": "lens"
+                    "hidePanelTitles": false
                 },
                 "gridData": {
                     "h": 8,
@@ -554,8 +564,7 @@
                 },
                 "panelIndex": "848432ac-28c9-4b18-b504-ac2cdbaa20c9",
                 "title": "Unique SHA1 [Logs Anomali]",
-                "type": "lens",
-                "version": "8.7.0"
+                "type": "lens"
             },
             {
                 "embeddableConfig": {
@@ -645,8 +654,7 @@
                         "visualizationType": "lnsPie"
                     },
                     "enhancements": {},
-                    "hidePanelTitles": false,
-                    "type": "lens"
+                    "hidePanelTitles": false
                 },
                 "gridData": {
                     "h": 25,
@@ -657,8 +665,7 @@
                 },
                 "panelIndex": "664c2738-9f69-401c-af55-42f50aabb9c5",
                 "title": "Confidence Levels [Logs Anomali]",
-                "type": "lens",
-                "version": "8.7.0"
+                "type": "lens"
             },
             {
                 "embeddableConfig": {
@@ -796,8 +803,7 @@
                         "visualizationType": "lnsXY"
                     },
                     "enhancements": {},
-                    "hidePanelTitles": false,
-                    "type": "lens"
+                    "hidePanelTitles": false
                 },
                 "gridData": {
                     "h": 25,
@@ -808,20 +814,17 @@
                 },
                 "panelIndex": "c9a937ea-517a-40b0-aba5-75d2611ae760",
                 "title": "Indicators First and Last Seen [Logs Anomali]",
-                "type": "lens",
-                "version": "8.7.0"
+                "type": "lens"
             }
         ],
         "timeRestore": false,
         "title": "[Logs Anomali] Files",
         "version": 1
     },
-    "coreMigrationVersion": "8.7.0",
-    "created_at": "2023-04-20T13:27:57.912Z",
+    "coreMigrationVersion": "8.8.0",
+    "created_at": "2024-10-02T18:36:14.525Z",
     "id": "ti_anomali-207f3c40-45fb-11ec-ab0c-d7f52dcaa020",
-    "migrationVersion": {
-        "dashboard": "8.7.0"
-    },
+    "managed": false,
     "references": [
         {
             "id": "logs-*",
@@ -831,6 +834,11 @@
         {
             "id": "logs-*",
             "name": "kibanaSavedObjectMeta.searchSourceJSON.filter[1].meta.index",
+            "type": "index-pattern"
+        },
+        {
+            "id": "logs-*",
+            "name": "kibanaSavedObjectMeta.searchSourceJSON.filter[2].meta.index",
             "type": "index-pattern"
         },
         {
@@ -917,22 +925,8 @@
             "id": "logs-*",
             "name": "c9a937ea-517a-40b0-aba5-75d2611ae760:indexpattern-datasource-layer-014a03d0-3a35-4aad-bd2d-d8380365070b",
             "type": "index-pattern"
-        },
-        {
-            "id": "ti_anomali-94419670-4261-11ec-b7be-d3026acdf1cf",
-            "name": "tag-ref-ti_anomali-94419670-4261-11ec-b7be-d3026acdf1cf",
-            "type": "tag"
-        },
-        {
-            "id": "ti_anomali-fleet-managed-default",
-            "name": "tag-ref-fleet-managed-default",
-            "type": "tag"
-        },
-        {
-            "id": "ti_anomali-fleet-pkg-ti_anomali-default",
-            "name": "tag-ref-fleet-pkg-ti_anomali-default",
-            "type": "tag"
         }
     ],
-    "type": "dashboard"
+    "type": "dashboard",
+    "typeMigrationVersion": "8.9.0"
 }

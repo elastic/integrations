@@ -81,9 +81,8 @@ Users can also use this in case of a Hybrid Cloud model, where one may define th
 | azure.frontdoor.access.pop | The edge pop, which responded to the user request. | keyword |
 | azure.frontdoor.access.routing_rule_name | The name of the route that the request matched. | keyword |
 | azure.frontdoor.access.rules_engine_match_names | The names of the rules that were processed. | keyword |
-| azure.frontdoor.access.time | The date and time when the AFD edge delivered requested contents to client (in UTC). | keyword |
-| azure.frontdoor.access.time_taken | The length of time from the time AFD edge server receives a client's request to the time that AFD sends the last byte of response to client, in milliseconds. This field doesn't take into account network latency and TCP buffering. | keyword |
-| azure.frontdoor.access.time_to_first_byte | The length of time in milliseconds from AFD receives the request to the time the first byte gets sent to client, as measured on Azure Front Door. This property doesn't measure the client data. | keyword |
+| azure.frontdoor.access.time_taken | The length of time from the time AFD edge server receives a client's request to the time that AFD sends the last byte of response to client, in milliseconds. This field doesn't take into account network latency and TCP buffering. | double |
+| azure.frontdoor.access.time_to_first_byte | The length of time in milliseconds from AFD receives the request to the time the first byte gets sent to client, as measured on Azure Front Door. This property doesn't measure the client data. | double |
 | azure.frontdoor.category | Azure frontdoor category name. | keyword |
 | azure.frontdoor.operation_name | Azure operation name. | keyword |
 | azure.frontdoor.resource_id | Azure Resource ID. | keyword |
@@ -129,7 +128,6 @@ Users can also use this in case of a Hybrid Cloud model, where one may define th
 | azure.frontdoor.waf.identity_name | identity name | keyword |
 | azure.frontdoor.waf.policy | WAF policy name. | keyword |
 | azure.frontdoor.waf.policy_mode | WAF policy mode. | keyword |
-| azure.frontdoor.waf.time | The date and time when the AFD edge delivered requested contents to client (in UTC). | keyword |
 | cloud.image.id | Image ID for the cloud instance. | keyword |
 | data_stream.dataset | Data stream dataset. | constant_keyword |
 | data_stream.namespace | Data stream namespace. | constant_keyword |

@@ -1,0 +1,47 @@
+---
+description: Pipeline for TYCHON External Device Protection Tables
+processors:
+
+  - rename:
+      tag: rename_tychon_log_event_data_device_id
+      field: tychon.log.event_data.device_id
+      target_field: tychon.log.user_data.device_id
+      ignore_missing: true
+  - date:
+      tag: date_tychon_winlog_time_created
+      field: tychon.winlog.time_created
+      formats:
+        - epoch_second
+      ignore_failure: true
+  - set:
+      tag: set_tychon_log_event_data_device_description
+      field: tychon.log.event_data.device_description
+      value: "Unknown"
+      if: ctx.tychon.log?.event_data?.device_description == null
+  - split:
+      tag: split_tychon_policy_whitelist_previous_value
+      field: tychon.policy.whitelist.previous_value
+      separator: ','
+      ignore_missing: true
+  - split:
+      tag: split_tychon_policy_whitelist_current_value
+      field: tychon.policy.whitelist.current_value
+      separator: ','
+      ignore_missing: true
+  - convert:
+      tag: convert_tychon_log_event_id
+      field: tychon.log.event_id
+      type: long
+      ignore_missing: true
+  - convert:
+      tag: convert_tychon_log_record_id
+      field: tychon.log.record_id
+      type: long
+      ignore_missing: true
+
+  # ECS fields
+
+  - set:
+      tag: set_event_category
+      field: event.category
+      value: [configuration]

@@ -123,7 +123,6 @@ An example event for `event` looks as following:
         "preserve_original_event"
     ]
 }
-
 ```
 
 **Exported fields**

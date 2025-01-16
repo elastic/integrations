@@ -446,6 +446,13 @@ An example event for `event` looks as following:
 | input.type | Type of filebeat input. | keyword |
 | log.offset | Log offset. | long |
 | powershell.file.script_block_text | Text of the executed script block. | text |
+| process.Ext.token.integrity_level_name |  | alias |
+| process.executable | Absolute path to the process executable. | keyword |
+| process.executable.caseless | Multi-field of `process.executable`. | keyword |
+| process.executable.text | Multi-field of `process.executable`. | match_only_text |
+| process.name | Process name. Sometimes called program name or similar. | keyword |
+| process.name.caseless | Multi-field of `process.name`. | keyword |
+| process.name.text | Multi-field of `process.name`. | match_only_text |
 | sentinel_one_cloud_funnel.event.account_id | SentinelOne Account ID. | keyword |
 | sentinel_one_cloud_funnel.event.agent.uuid | Agent Unique ID. | keyword |
 | sentinel_one_cloud_funnel.event.agent.version | Version of SentinelOne Agent. | keyword |

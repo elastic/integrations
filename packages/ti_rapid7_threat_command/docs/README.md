@@ -52,7 +52,7 @@ The minimum **kibana.version** required is **8.12.0**.
 
 Check the prerequisites for [Transforms](https://www.elastic.co/guide/en/elasticsearch/reference/current/transform-setup.html#transform-setup).
 
-Check the prerequisites for [Actions and Connectors](https://www.elastic.co/guide/en/kibana/current/create-connector-api.html#_prerequisites_16).
+Check the prerequisites for [Actions and Connectors](https://www.elastic.co/guide/en/kibana/current/action-types.html).
 
 ## Setup
 
@@ -345,7 +345,7 @@ An example event for `ioc` looks as following:
 | host.os.build | OS build information. | keyword |
 | host.os.codename | OS codename, if any. | keyword |
 | input.type | Input type | keyword |
-| labels.is_ioc_transform_source | Field indicating if its the transform source for supporting IOC expiration. This field is dropped from destination indices to facilitate easier filtering of indicators. | constant_keyword |
+| labels.is_ioc_transform_source | Indicates whether an IOC is in the raw source data stream, or the in latest destination index. | constant_keyword |
 | log.offset | Log offset | long |
 | rapid7.tc.ioc.deleted_at | The timestamp when indicator is (or will be) expired. | date |
 | rapid7.tc.ioc.expiration_duration | The configured expiration duration. | keyword |

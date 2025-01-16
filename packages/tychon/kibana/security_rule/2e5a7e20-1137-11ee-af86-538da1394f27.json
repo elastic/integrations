@@ -1,0 +1,64 @@
+{
+    "id": "2e5a7e20-1137-11ee-af86-538da1394f27",
+    "type": "security-rule",
+    "attributes": {
+        "name": "Windows Defender Feature Reported as Disabled",
+        "tags": [
+            "TYCHON",
+            "EPP",
+            "CCRI"
+        ],
+        "interval": "5m",
+        "enabled": true,
+        "revision": 0,
+        "description": "A Feature in Windows Defender has been set to disabled in the latest report from the TYCHON Agentless Module",
+        "risk_score": 60,
+        "severity": "medium",
+        "note": "Analysts should look into the history of this endpoint to figure out when the feature was disabled and work to re-enable the feature.",
+        "license": "",
+        "output_index": "",
+        "author": [
+            "TYCHON"
+        ],
+        "false_positives": [],
+        "from": "now-360s",
+        "rule_id": "2e5a7e20-1137-11ee-af86-538da1394f27",
+        "max_signals": 100,
+        "risk_score_mapping": [],
+        "severity_mapping": [],
+        "threat": [
+            {
+                "framework": "MITRE ATT&CK",
+                "tactic": {
+                    "id": "TA0005",
+                    "name": "Defense Evasion",
+                    "reference": "https://attack.mitre.org/tactics/TA0005"
+                },
+                "technique": [
+                    {
+                        "id": "T1089",
+                        "name": "Disabling Security Tools",
+                        "reference": "https://attack.mitre.org/techniques/T1089",
+                        "subtechnique": []
+                    }
+                ]
+            }
+        ],
+        "to": "now",
+        "references": [],
+        "version": 1,
+        "exceptions_list": [],
+        "immutable": true,
+        "related_integrations": [],
+        "required_fields": [],
+        "setup": "",
+        "type": "query",
+        "language": "kuery",
+        "index": [
+            "logs-tychon_latest.epp"
+        ],
+        "query": "tychon.windows_defender.service.antimalware.status : \"Disabled\" or tychon.windows_defender.service.antispyware.status :\"Disabled\" or windows_defender.service.antivirus.status : \"Disabled\" or windows_defender.service.behavior_monitor.status : \"Disabled\"  or windows_defender.service.ioav_protection.status : \"Disabled\" or windows_defender.service.nis.status : \"Disabled\"  or windows_defender.service.on_access_protection.status : \"Disabled\"  or windows_defender.service.real_time_protection.status : \"Disabled\" ",
+        "filters": [],
+        "actions": []
+    }
+}

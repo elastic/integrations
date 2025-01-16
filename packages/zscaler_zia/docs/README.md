@@ -958,70 +958,57 @@ An example event for `firewall` looks as following:
 
 ```json
 {
-    "@timestamp": "2021-12-17T07:27:54.000Z",
+    "@timestamp": "2022-12-31T02:22:22.000Z",
     "agent": {
-        "ephemeral_id": "4bb89723-7b9f-4ceb-9f00-cf2c4b142e7d",
-        "id": "7a8d18bc-b73c-424e-a30b-120ddeb66eeb",
-        "name": "docker-fleet-agent",
+        "ephemeral_id": "e9bfb284-65f1-4d68-8a50-004b259d481f",
+        "id": "c484a04a-ca60-4ebd-a941-425901026a2c",
+        "name": "elastic-agent-76313",
         "type": "filebeat",
         "version": "8.13.0"
     },
     "data_stream": {
         "dataset": "zscaler_zia.firewall",
-        "namespace": "ep",
+        "namespace": "35906",
         "type": "logs"
     },
     "destination": {
-        "bytes": 1734,
-        "geo": {
-            "country_iso_code": "Ireland"
-        },
-        "ip": [
-            "0.0.0.0"
-        ],
+        "bytes": 0,
+        "ip": "0.0.0.0",
         "port": [
-            443
+            120,
+            0
         ]
     },
     "ecs": {
         "version": "8.11.0"
     },
     "elastic_agent": {
-        "id": "7a8d18bc-b73c-424e-a30b-120ddeb66eeb",
+        "id": "c484a04a-ca60-4ebd-a941-425901026a2c",
         "snapshot": false,
         "version": "8.13.0"
     },
     "event": {
-        "action": "drop",
+        "action": "outofrange",
         "agent_id_status": "verified",
         "category": [
             "network"
         ],
         "dataset": "zscaler_zia.firewall",
-        "duration": 486000000,
-        "ingested": "2024-07-04T12:07:31Z",
+        "duration": 0,
+        "ingested": "2024-11-01T08:59:18Z",
         "kind": "event",
         "timezone": "UTC",
         "type": [
             "info"
         ]
     },
-    "host": {
-        "name": "machine9000"
-    },
     "input": {
-        "type": "tcp"
-    },
-    "log": {
-        "source": {
-            "address": "192.168.243.6:42432"
-        }
+        "type": "http_endpoint"
     },
     "network": {
-        "application": "http",
-        "bytes": 20786,
-        "protocol": "https",
-        "transport": "tcp"
+        "application": "notavailable",
+        "bytes": 0,
+        "transport": "ip"
     },
     "observer": {
         "product": "ZIA",
@@ -1029,30 +1016,17 @@ An example event for `firewall` looks as following:
         "vendor": "Zscaler"
     },
     "related": {
-        "hosts": [
-            "machine9000"
-        ],
         "ip": [
             "0.0.0.0"
-        ],
-        "user": [
-            "admin77",
-            "some_user",
-            "some_user@example.com"
-        ]
-    },
-    "rule": {
-        "name": [
-            "Access Blocked"
         ]
     },
     "source": {
-        "bytes": 19052,
-        "ip": [
-            "0.0.0.0"
-        ],
+        "bytes": 0,
+        "ip": "0.0.0.0",
+        "nat": {
+            "ip": "0.0.0.0"
+        },
         "port": [
-            55018,
             0
         ]
     },
@@ -1060,11 +1034,6 @@ An example event for `firewall` looks as following:
         "forwarded",
         "zscaler_zia-firewall"
     ],
-    "user": {
-        "domain": "example.com",
-        "email": "some_user@example.com",
-        "name": "some_user"
-    },
     "zscaler_zia": {
         "firewall": {
             "aggregate": "No",
@@ -1077,15 +1046,12 @@ An example event for `firewall` looks as following:
                 }
             },
             "department": "Unknown",
-            "device": {
-                "owner": "admin77"
-            },
             "duration": {
-                "average_duration": 486,
+                "average_duration": 0,
                 "seconds": 0
             },
-            "ip_category": "Test Name",
-            "location_name": "TestLoc DB",
+            "ip_category": "Other",
+            "location_name": "Unknown",
             "nat": "No",
             "server": {
                 "destination": {
@@ -1101,7 +1067,7 @@ An example event for `firewall` looks as following:
             "stateful": "Yes",
             "tunnel": {
                 "ip": "0.0.0.0",
-                "type": "ZscalerClientConnector"
+                "type": "OutOfRange"
             }
         }
     }

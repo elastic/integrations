@@ -107,7 +107,6 @@ An example event for `event` looks as following:
         "fim-event"
     ]
 }
-
 ```
 
 **Exported fields**

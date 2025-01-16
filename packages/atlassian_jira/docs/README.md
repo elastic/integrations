@@ -162,5 +162,4 @@ An example event for `audit` looks as following:
         "name": "Anonymous"
     }
 }
-
 ```

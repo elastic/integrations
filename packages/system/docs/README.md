@@ -41,7 +41,7 @@ Details on the permissions needed for each data stream are available in the [Met
 ## Setup
 
 For step-by-step instructions on how to set up an integration, see the
-[Getting started](https://www.elastic.co/guide/en/welcome-to-elastic/current/getting-started-observability.html) guide.
+[Getting started](https://www.elastic.co/guide/en/starting-with-the-elasticsearch-platform-and-its-solutions/current/getting-started-observability.html) guide.
 
 ## Troubleshooting
 
@@ -824,7 +824,11 @@ Please refer to the following [document](https://www.elastic.co/guide/en/ecs/cur
 
 ### Auth
 
-The `auth` data stream provides auth logs.
+The `auth` data stream provides auth logs. It can collect logs
+from traditional log files (e.g: `/var/log/syslog*`) or from
+journald. Both inputs can be enabled at the same time and
+[Conditions](https://www.elastic.co/guide/en/fleet/current/dynamic-input-configuration.html#conditions)
+can be used to select in which OSes/hosts that input should run.
 
 #### Supported operating systems
 
@@ -868,7 +872,11 @@ Please refer to the following [document](https://www.elastic.co/guide/en/ecs/cur
 
 ### syslog
 
-The `syslog` data stream provides system logs.
+The `syslog` data stream provides system logs. It can collect logs
+from traditional log files (e.g: `/var/log/syslog*`) or from
+journald. Both inputs can be enabled at the same time and
+[Conditions](https://www.elastic.co/guide/en/fleet/current/dynamic-input-configuration.html#conditions)
+can be used to select in which OSes/hosts that input should run.
 
 #### Supported operating systems
 
@@ -1399,6 +1407,7 @@ Please refer to the following [document](https://www.elastic.co/guide/en/ecs/cur
 | host.name | Name of the host. It can contain what hostname returns on Unix systems, the fully qualified domain name (FQDN), or a name specified by the user. The recommended value is the lowercase FQDN of the host. | keyword |  |  |
 | host.os.build | OS build information. | keyword |  |  |
 | host.os.codename | OS codename, if any. | keyword |  |  |
+| host.os.version | Operating system version as a raw string. | keyword |  |  |
 | process.cpu.pct | The percentage of CPU time spent by the process since the last event. This value is normalized by the number of CPU cores and it ranges from 0 to 1. | scaled_float |  |  |
 | process.cpu.start_time | The time when the process was started. | date |  |  |
 | process.memory.pct | The percentage of memory the process occupied in main memory (RAM). | scaled_float |  |  |

@@ -20,7 +20,7 @@ processors:
       value: event
   - set:
       field: event.timezone
-      value: "{{_tmp.tz_offset}}"
+      value: "{{{_tmp.tz_offset}}}"
       if: ctx._tmp?.tz_offset != null && ctx._tmp?.tz_offset != 'local'
   - grok:
       description: Parse syslog header
@@ -54,7 +54,7 @@ processors:
         - MMM  d HH:mm:ss
         - MMM d HH:mm:ss
         - MMM dd HH:mm:ss
-      timezone: '{{ event.timezone }}'
+      timezone: '{{{ event.timezone }}}'
   - grok:
       description: Set Event Provider
       field: process.name
@@ -86,8 +86,11 @@ processors:
   - pipeline:
       name: '{{ IngestPipeline "squid" }}'
       if: ctx.event.provider == 'squid'
+  - pipeline:
+      name: '{{ IngestPipeline "snort" }}'
+      if: ctx.event.provider == 'snort'
   - drop:
-      if: '!["filterlog", "openvpn", "charon", "dhcpd", "dhclient", "dhcp6c", "unbound", "haproxy", "php-fpm", "squid"].contains(ctx.event?.provider)'
+      if: '!["filterlog", "openvpn", "charon", "dhcpd", "dhclient", "dhcp6c", "unbound", "haproxy", "php-fpm", "squid", "snort"].contains(ctx.event?.provider)'
   - append:
       field: event.category
       value: network
@@ -167,30 +170,30 @@ processors:
       ignore_empty_value: true
   - append:
       field: related.ip
-      value: "{{destination.ip}}"
+      value: "{{{destination.ip}}}"
       allow_duplicates: false
       if: ctx.destination?.ip != null
   - append:
       field: related.ip
-      value: "{{source.ip}}"
+      value: "{{{source.ip}}}"
       allow_duplicates: false
       if: ctx.source?.ip != null
   - append:
       field: related.ip
-      value: "{{source.nat.ip}}"
+      value: "{{{source.nat.ip}}}"
       allow_duplicates: false
       if: ctx.source?.nat?.ip != null
   - append:
       field: related.hosts
-      value: "{{destination.domain}}"
+      value: "{{{destination.domain}}}"
       if: "ctx.destination?.domain != null"
   - append:
       field: related.user
-      value: "{{user.name}}"
+      value: "{{{user.name}}}"
       if: "ctx.user?.name != null"
   - set:
       field: network.direction
-      value: "{{network.direction}}bound"
+      value: "{{{network.direction}}}bound"
       if: ctx.network?.direction != null && ctx.network?.direction =~ /^(in|out)$/
   - remove:
       field:

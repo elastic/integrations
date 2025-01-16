@@ -89,9 +89,12 @@ processors:
         if (ctx.json?.audit?.action == null || params.get(ctx.json.audit.action.toLowerCase()) == null) {
           return;
         }
-        def hm = new HashMap(params.get(ctx.json.audit.action.toLowerCase()));
-        hm.forEach((k, v) -> {
-          ctx.event[k] = v
+        params.get(ctx.json.audit.action.toLowerCase()).forEach((k, v) -> {
+          if (v instanceof List) {
+            ctx.event[k] = new ArrayList(v);
+          } else {
+            ctx.event[k] = v;
+          }
         });
   - set:
       field: observer.vendor
@@ -462,6 +465,11 @@ processors:
       tag: set_pipeline_error_to_event_kind
       value: pipeline_error
       if: ctx.error?.message != null
+  - append:
+      field: tags
+      value: preserve_original_event
+      allow_duplicates: false
+      if: ctx.error?.message != null
 on_failure:
   - append:
       field: error.message
@@ -470,3 +478,7 @@ on_failure:
       field: event.kind
       tag: set_pipeline_error_to_event_kind
       value: pipeline_error
+  - append:
+      field: tags
+      value: preserve_original_event
+      allow_duplicates: false

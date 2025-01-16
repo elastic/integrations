@@ -137,6 +137,15 @@ processors:
       tag: rename_http_user_agent
       target_field: f5_bigip.log.http.user_agent
       ignore_missing: true
+  - gsub:
+      field: f5_bigip.log.http.user_agent
+      pattern: '(\([^)]*)\+(https?://)'
+      replacement: '$1%2b$2'
+      ignore_missing: true
+  - urldecode:
+      field: f5_bigip.log.http.user_agent
+      ignore_missing: true
+      ignore_failure: true
   - user_agent:
       field: f5_bigip.log.http.user_agent
       tag: user_agent_on_http_user_agent

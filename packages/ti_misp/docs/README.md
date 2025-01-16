@@ -217,7 +217,6 @@ An example event for `threat` looks as following:
         }
     }
 }
-
 ```
 
 ### Threat Attributes
@@ -249,7 +248,7 @@ To facilitate IOC expiration, source datastream-backed indices `.ds-logs-ti_misp
 | host.os.build | OS build information. | keyword |
 | host.os.codename | OS codename, if any. | keyword |
 | input.type | Type of Filebeat input. | keyword |
-| labels.is_ioc_transform_source | Field indicating if the document is a source for the transform. This field is not added to destination indices to facilitate easier filtering of indicators for indicator match rules. | constant_keyword |
+| labels.is_ioc_transform_source | Indicates whether an IOC is in the raw source data stream, or the in latest destination index. | constant_keyword |
 | log.flags | Flags for the log file. | keyword |
 | log.offset | Offset of the entry in the log file. | long |
 | misp.attribute.category | The category of the attribute. For example "Network Activity". | keyword |

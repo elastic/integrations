@@ -71,21 +71,21 @@ This module has been tested against **Cloudflare version v4**.
 
   | Data Stream Name           | Bucket List Prefix     |
   | -------------------------- | ---------------------- |
-  | Access Request             | access_request         |
+  | Access Request             | access_request         |
   | Audit Logs                 | audit_logs             |
-  | CASB findings              | casb                   |
-  | Device Posture Results     | device_posture         |
+  | CASB findings              | casb                   |
+  | Device Posture Results     | device_posture         |
   | DNS                        | dns                    |
   | DNS Firewall               | dns_firewall           |
   | Firewall Event             | firewall_event         |
-  | Gateway DNS                | gateway_dns            |
-  | Gateway HTTP               | gateway_http           |
+  | Gateway DNS                | gateway_dns            |
+  | Gateway HTTP               | gateway_http           |
   | Gateway Network            | gateway_network        |
   | HTTP Request               | http_request           |
   | Magic IDS                  | magic_ids              |
   | NEL Report                 | nel_report             |
   | Network Analytics          | network_analytics_logs |
-  | Zero Trust Network Session | network_session        |
+  | Zero Trust Network Session | network_session        |
   | Sinkhole HTTP              | sinkhole_http          |
   | Spectrum Event             | spectrum_event         |
   | Workers Trace Events       | workers_trace          |
@@ -108,17 +108,17 @@ This module has been tested against **Cloudflare version v4**.
   - Credentials for the above AWS S3 and SQS input types should be configured using the [link](https://www.elastic.co/guide/en/beats/filebeat/current/filebeat-input-aws-s3.html#aws-credentials-config).
   - Data collection via AWS S3 Bucket and AWS SQS are mutually exclusive in this case.
 
-### To collect data from Cloudflare R2 Buckets, follow the below steps:
+### To collect data from S3-Compatible Cloudflare R2 Buckets, follow the below steps:
 - Configure the [Data Forwarder](https://developers.cloudflare.com/logs/get-started/enable-destinations/r2/) to push logs to Cloudflare R2.
 
 **Note**:
 - When creating the API token, make sure it has [Admin permissions](https://developers.cloudflare.com/r2/api/s3/tokens/#permissions). This is needed to list buckets and view bucket configuration.
 
-When configuring the integration to read from R2 Buckets, the following steps are required:
+When configuring the integration to read from S3-Compatible Buckets such as Cloudflare R2, the following steps are required:
 - Enable the toggle `Collect logs via S3 Bucket`.
 - Make sure that the Bucket Name is set.
 - Although you have to create an API token, that token should not be used for authentication with the S3 API. You just have to set the Access Key ID and Secret Access Key.
-- Set the endpoint URL which can be found in Bucket Details. Endpoint should be a full URI, typically in the form of `https(s)://<accountid>.r2.cloudflarestorage.com`, that will be used as the API endpoint of the service.
+- Set the endpoint URL which can be found in Bucket Details. Endpoint should be a full URI that will be used as the API endpoint of the service. For Cloudflare R2 buckets, the URI is typically in the form of `https(s)://<accountid>.r2.cloudflarestorage.com`.
 - Bucket Prefix is optional for each data stream.
 
 **Note**:
@@ -156,6 +156,7 @@ curl --location --request POST 'https://api.cloudflare.com/client/v4/zones/<ZONE
 - The destination_conf parameter inside the request data should set the Content-Type header to `application/json`. This is the content type that the HTTP endpoint expects for incoming events.
 - Default port for the HTTP Endpoint is _9560_.
 - When using the same port for more than one dataset, be sure to specify different dataset paths.
+- To enable request ACKing, add a `wait_for_completion_timeout` request query with the timeout for an ACK. See the [HTTP Endpoint documentation](https://www.elastic.co/guide/en/beats/filebeat/current/filebeat-input-http_endpoint.html) for details.
 
 ### Enabling the integration in Elastic
 1. In Kibana, go to Management > Integrations
@@ -292,7 +293,6 @@ An example event for `access_request` looks as following:
         "id": "166befbb-00e3-5e20-bd6e-27245333949f"
     }
 }
-
 ```
 
 **Exported fields**
@@ -439,7 +439,6 @@ An example event for `audit` looks as following:
         "id": "enl3j9du8rnx2swwd9l32qots7l54t9s"
     }
 }
-
 ```
 
 **Exported fields**
@@ -610,7 +609,6 @@ An example event for `casb` looks as following:
         "scheme": "https"
     }
 }
-
 ```
 
 **Exported fields**
@@ -770,7 +768,6 @@ An example event for `device_posture` looks as following:
         "version": "2023.3.258"
     }
 }
-
 ```
 
 **Exported fields**
@@ -900,7 +897,6 @@ An example event for `dns` looks as following:
         "cloudflare_logpush-dns"
     ]
 }
-
 ```
 
 **Exported fields**
@@ -1050,7 +1046,6 @@ An example event for `dns_firewall` looks as following:
         "cloudflare_logpush-dns_firewall"
     ]
 }
-
 ```
 
 **Exported fields**
@@ -1258,7 +1253,6 @@ An example event for `firewall_event` looks as following:
         "version": "2.1"
     }
 }
-
 ```
 
 **Exported fields**
@@ -1295,6 +1289,7 @@ An example event for `firewall_event` looks as following:
 | cloudflare_logpush.firewall_event.rule.id | The Cloudflare security product-specific RuleID triggered by this request. | keyword |
 | cloudflare_logpush.firewall_event.source | The Cloudflare security product triggered by this request. | keyword |
 | cloudflare_logpush.firewall_event.timestamp | The date and time the event occurred at the edge. | date |
+| cloudflare_logpush.firewall_event.zone.name | The human-readable name of the zone. | keyword |
 | data_stream.dataset | Data stream dataset. | constant_keyword |
 | data_stream.namespace | Data stream namespace. | constant_keyword |
 | data_stream.type | Data stream type. | constant_keyword |
@@ -1540,7 +1535,6 @@ An example event for `gateway_dns` looks as following:
         "id": "166befbb-00e3-5e20-bd6e-27245000000"
     }
 }
-
 ```
 
 **Exported fields**
@@ -1797,7 +1791,6 @@ An example event for `gateway_http` looks as following:
         "original": "Mozilla/5.0 (X11; Ubuntu; Linux x86_64) Firefox/112.0"
     }
 }
-
 ```
 
 **Exported fields**
@@ -2013,7 +2006,6 @@ An example event for `gateway_network` looks as following:
         "id": "166befbb-00e3-5e20-bd6e-27245723949f"
     }
 }
-
 ```
 
 **Exported fields**
@@ -2405,6 +2397,8 @@ An example event for `http_request` looks as following:
 | cloudflare_logpush.http_request.firewall.matches.rule_id | Array of RuleIDs of the firewall product that has matched the request. | keyword |
 | cloudflare_logpush.http_request.firewall.matches.sources | The firewall products that matched the request. | keyword |
 | cloudflare_logpush.http_request.ja3_hash | The MD5 hash of the JA3 fingerprint used to profile SSL/TLS clients. | keyword |
+| cloudflare_logpush.http_request.ja4 | The JA4 fingerprint used to profile SSL/TLS clients. Available only for Bot Management customers. | keyword |
+| cloudflare_logpush.http_request.ja4_signals | Inter-request statistics computed for this JA4 fingerprint. JA4Signals field is organized in key:value pairs, where values are numbers. Available only for Bot Management customers. | flattened |
 | cloudflare_logpush.http_request.origin.dns_response_time.ms | Time taken to receive a DNS response for an origin name. | long |
 | cloudflare_logpush.http_request.origin.ip | IP of the origin server. | ip |
 | cloudflare_logpush.http_request.origin.request_header_send_duration.ms | Time taken to send request headers to origin after establishing a connection. | long |
@@ -2583,7 +2577,6 @@ An example event for `magic_ids` looks as following:
         "cloudflare_logpush-magic_ids"
     ]
 }
-
 ```
 
 **Exported fields**
@@ -2697,7 +2690,6 @@ An example event for `nel_report` looks as following:
         "cloudflare_logpush-nel_report"
     ]
 }
-
 ```
 
 **Exported fields**
@@ -2968,7 +2960,6 @@ An example event for `network_analytics` looks as following:
         "cloudflare_logpush-network_analytics"
     ]
 }
-
 ```
 
 **Exported fields**
@@ -3279,7 +3270,6 @@ An example event for `network_session` looks as following:
         "id": "166befbb-00e3-5e20-bd6e-27245723949f"
     }
 }
-
 ```
 
 **Exported fields**
@@ -3507,7 +3497,6 @@ An example event for `sinkhole_http` looks as following:
         "original": "Mozilla/5.0"
     }
 }
-
 ```
 
 **Exported fields**
@@ -3686,7 +3675,6 @@ An example event for `spectrum_event` looks as following:
         "cloudflare_logpush-spectrum_event"
     ]
 }
-
 ```
 
 **Exported fields**
@@ -3852,7 +3840,6 @@ An example event for `workers_trace` looks as following:
         "scheme": "http"
     }
 }
-
 ```
 
 **Exported fields**

@@ -126,8 +126,6 @@ with_mage() {
 
     local install_packages=(
             "github.com/magefile/mage"
-            "github.com/elastic/go-licenser"
-            "golang.org/x/tools/cmd/goimports"
             "github.com/jstemmer/go-junit-report"
             "gotest.tools/gotestsum"
     )
@@ -464,12 +462,19 @@ is_supported_stack() {
     if [ "${kibana_version}" == "null" ]; then
         return 0
     fi
-    if [[ ! "${kibana_version}" =~ \^7\. && "${STACK_VERSION}" =~ ^7\. ]]; then
+    if [[ ( ! "${kibana_version}" =~ \^7\. ) && "${STACK_VERSION}" =~ ^7\. ]]; then
         return 1
     fi
-    if [[ ! "${kibana_version}" =~ \^8\. && "${STACK_VERSION}" =~ ^8\. ]]; then
+    if [[ ( ! "${kibana_version}" =~ \^8\. ) && "${STACK_VERSION}" =~ ^8\. ]]; then
         return 1
     fi
+
+    # TODO: Allowed temporarily to test packages with stack version 9.0 if they have as constraint ^8.0 defined too.
+    # This workaround should be removed once packages have been updated their constraints for 9.0 stack.
+    if [[ ( ! ( "${kibana_version}" =~ \^9\. || "${kibana_version}" =~ \^8\. ) ) && "${STACK_VERSION}" =~ ^9\. ]]; then
+        return 1
+    fi
+
     return 0
 }
 
