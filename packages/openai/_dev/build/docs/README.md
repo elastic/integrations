@@ -26,7 +26,7 @@ Metric data streams collected by the OpenAI integration include `usage` data str
 You need Elasticsearch for storing and searching your data and Kibana for visualizing and managing it.
 You can use our hosted Elasticsearch Service on Elastic Cloud, which is recommended, or self-manage the Elastic Stack on your own hardware.
 
-You need an OpenAI account to access the API with a valid API key.
+You need an OpenAI account to access the API with a [valid API key](https://platform.openai.com/api-keys).
 
 ## Configuration
 
