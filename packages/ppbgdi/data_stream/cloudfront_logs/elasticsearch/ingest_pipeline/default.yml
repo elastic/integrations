@@ -2,21 +2,6 @@
 description: "Default Pipeline for CloudFront access logs"
 
 processors:
-  - set:
-      field: ecs.version
-      value: '8.11.0'
-  - set:
-      field: event.kind
-      value: event
-  - set:
-      field: event.category
-      value: ["web"]
-  - append:
-      field: event.type
-      value: ["access"]
-  - set:
-      field: cloud.provider
-      value: aws
   - dot_expander:
       description: Expand all dotted fields, like aws firehose, kinesis etc.
       field: '*'
@@ -52,44 +37,8 @@ processors:
   - remove:
       field:
         - first_char
+
   ### Common processors
-  # url
-  - script:
-      lang: painless
-      description: This script builds the `url.full` field out of the available `url.*` parts.
-      source: |
-        def full = "";
-        if(ctx.network?.protocol != null && ctx.network?.protocol != "") {
-            full += ctx.network.protocol+"://";
-        }
-        if(ctx.destination?.domain != null && ctx.destination?.domain != "") {
-            full += ctx.destination.domain;
-        }
-        if(ctx.url?.path != null && ctx.url?.path != "") {
-            full += ctx.url.path;
-        }
-        if(ctx.url?.query != null && ctx.url?.query != "") {
-            full += "?"+ctx.url.query;
-        }
-        if (ctx._tmp == null) {
-          ctx._tmp = new HashMap();
-        }
-        if(full != "") {
-            ctx._tmp.url_full = full
-        }
-  - uri_parts:
-      field: _tmp.url_full
-      target_field: url
-      keep_original: false
-      ignore_missing: true
-  - rename:
-      field: _tmp.url_full
-      target_field: url.full
-      ignore_missing: true
-  - registered_domain:
-      field: url.domain
-      target_field: url
-      ignore_missing: true
 
   # IP Geolocation Lookup
   - geoip:
