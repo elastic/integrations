@@ -111,7 +111,7 @@ func (g *ghCli) Exists(ctx context.Context, issue *githubIssue, open bool) (bool
 
 	for _, i := range list {
 		if i.Title == issue.title {
-			issueGot := newGithubIssue(GithubIssueOptions{
+			issueGot := newGithubIssue(githubIssueOptions{
 				Number:      i.Number,
 				Title:       i.Title,
 				Description: i.Body,

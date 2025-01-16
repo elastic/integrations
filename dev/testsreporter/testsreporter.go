@@ -65,7 +65,7 @@ func Check(resultsPath string, options CheckOptions) error {
 		fmt.Println("----")
 		fmt.Println()
 
-		ghIssue := newGithubIssue(GithubIssueOptions{
+		ghIssue := newGithubIssue(githubIssueOptions{
 			Title:       r.Title(),
 			Description: r.Description(),
 			Labels:      []string{"flaky-test", "automation"},

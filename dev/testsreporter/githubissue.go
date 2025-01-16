@@ -26,7 +26,7 @@ func (i *githubIssue) URL() string {
 	return i.url
 }
 
-type GithubIssueOptions struct {
+type githubIssueOptions struct {
 	Repository  string
 	Title       string
 	Description string
@@ -36,7 +36,7 @@ type GithubIssueOptions struct {
 	URL         string
 }
 
-func newGithubIssue(options GithubIssueOptions) *githubIssue {
+func newGithubIssue(options githubIssueOptions) *githubIssue {
 	issue := githubIssue{
 		title:       options.Title,
 		description: options.Description,

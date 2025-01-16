@@ -37,7 +37,7 @@ func TestCreateIssue(t *testing.T) {
 	}{
 		{
 			title: "issue without labels",
-			issue: newGithubIssue(GithubIssueOptions{
+			issue: newGithubIssue(githubIssueOptions{
 				Title:       "my issue",
 				Description: "This is my issue",
 				Repository:  "myorg/repo",
@@ -55,7 +55,7 @@ func TestCreateIssue(t *testing.T) {
 		},
 		{
 			title: "issue with labels",
-			issue: newGithubIssue(GithubIssueOptions{
+			issue: newGithubIssue(githubIssueOptions{
 				Title:       "my issue labels",
 				Description: "This is my issue",
 				Repository:  "myorg/repo",
@@ -116,7 +116,7 @@ func TestGithubIssueExists(t *testing.T) {
 			  }
 			]
 			`,
-			issue: newGithubIssue(GithubIssueOptions{
+			issue: newGithubIssue(githubIssueOptions{
 				Title:      "my issue",
 				Repository: "myorg/repo",
 			}),
@@ -143,7 +143,7 @@ func TestGithubIssueExists(t *testing.T) {
 			  }
 			]
 			`,
-			issue: newGithubIssue(GithubIssueOptions{
+			issue: newGithubIssue(githubIssueOptions{
 				Title:      "my issue",
 				Repository: "myorg/repo",
 			}),
@@ -165,7 +165,7 @@ func TestGithubIssueExists(t *testing.T) {
 			  }
 			]
 			`,
-			issue: newGithubIssue(GithubIssueOptions{
+			issue: newGithubIssue(githubIssueOptions{
 				Title:      "my issue",
 				Repository: "myorg/repo",
 				Number:     42,
@@ -208,7 +208,7 @@ func TestUpdateIssue(t *testing.T) {
 	}{
 		{
 			title: "issue",
-			issue: newGithubIssue(GithubIssueOptions{
+			issue: newGithubIssue(githubIssueOptions{
 				Title:       "my issue",
 				Description: "This is my new issue",
 				Repository:  "myorg/repo",
