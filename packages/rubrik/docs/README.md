@@ -296,8 +296,8 @@ Please refer to the following [document](https://www.elastic.co/guide/en/ecs/cur
 | rubrik.physical_hosts.cluster.id | The cluster uuid. | keyword |
 | rubrik.physical_hosts.cluster.name | The cluster name. | keyword |
 | rubrik.physical_hosts.connectivity_status | Connectivity status of host. | keyword |
-| rubrik.physical_hosts.id | FID of the hierarchy object. | keyword |
-| rubrik.physical_hosts.name | Name of the hierarchy object. | keyword |
+| rubrik.physical_hosts.id | ID of the physical host. | keyword |
+| rubrik.physical_hosts.name | Name of the physical host. | keyword |
 | rubrik.physical_hosts.os_type | The operating system type of the physical host. | keyword |
 
 
