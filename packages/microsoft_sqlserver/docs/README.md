@@ -612,6 +612,6 @@ Please refer to the following [document](https://www.elastic.co/guide/en/ecs/cur
 | mssql.metrics.total_log_size_bytes | Total transaction log size in bytes. | long | byte | counter |
 | mssql.metrics.used_log_space_bytes | The occupied size of the log in bytes. | long | byte | gauge |
 | mssql.metrics.used_log_space_pct | A percentage of the occupied size of the log as a percent of the total log size. | float | percent | gauge |
-| mssql.query | Input query. | keyword |  |  |
+| mssql.query | The SQL queries executed. | keyword |  |  |
 | service.address | Address where data about this service was collected from. This should be a URI, network address (ipv4:port or [ipv6]:port) or a resource path (sockets). | keyword |  |  |
 
