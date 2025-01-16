@@ -1,0 +1,272 @@
+---
+description: Pipeline for processing envoy metrics
+processors:
+- set:
+    field: ecs.version
+    value: 8.11.0
+- set:
+    field: event.kind
+    value: metric
+- rename:
+    field: statsd
+    target_field: envoy
+    ignore_missing: true
+- script:
+    lang: painless
+    description: This script processor iterates over the whole document to map fields correctly and remove some
+    params:
+      special_cases:
+        - thread_local_cluster_manager
+        - cluster_manager
+        - tls_inspector
+    source: |-
+      for (entry in ctx.envoy.entrySet()) {
+          def k = entry.getKey();
+          def v = entry.getValue();
+          if (k.startsWith('envoy_')) {
+              def parts = k.splitOnToken('_');
+              def newKey = '';
+ 
+              def matchFound = false;
+              for (specialCase in params.special_cases) {
+                  def prefix = 'envoy_' + specialCase;
+                  if (k.startsWith(prefix)) {
+                      def suffix = k.substring(prefix.length());
+                      if (suffix.startsWith('_')) {
+                          suffix = suffix.substring(1);
+                      }
+                      newKey = specialCase + (suffix.length() > 0 ? '.' + suffix : '');
+                      matchFound = true;
+                      break;
+                  }
+              }
+              if (!matchFound && parts.length >= 2) {
+                  def remaining = '';
+                  for (int i = 2; i < parts.length; i++) {
+                      remaining += parts[i];
+                      if (i < parts.length - 1) remaining += '_';
+                  }
+                  newKey = parts[1] + '.' + remaining;
+              }
+              if (newKey.length() > 0) {
+                  ctx.envoy.remove(k);
+                  ctx.envoy[newKey] = v;
+              }
+          }
+          if (!(v instanceof String)) {
+              v.keySet().stream().filter(s -> s.startsWith('1m_rate') || s.startsWith('5m_rate') ||s.startsWith('15m_rate') || s.startsWith('p99_9') || s.startsWith('p75') || s.startsWith('p99') || s.startsWith('p95'))
+              .collect(Collectors.toList()).forEach(m -> v.remove(m))
+          }
+      }
+- dot_expander:
+    field: "*"
+    path: labels
+- rename:
+    field: labels.envoy.cluster_name
+    target_field: envoy.cluster.name
+    ignore_missing: true
+- rename:
+    field: labels.envoy.listener_address
+    target_field: envoy.listener.address
+    ignore_missing: true
+- rename:
+    field: labels.envoy.http_conn_manager_prefix
+    target_field: envoy.http.conn_manager_prefix
+    ignore_missing: true
+- rename:
+    field: labels.envoy.http_user_agent
+    target_field: envoy.http.user_agent
+    ignore_missing: true
+- rename:
+    field: labels.envoy.ssl_cipher
+    target_field: envoy.listener.ssl.cipher
+    ignore_missing: true
+- rename:
+    field: labels.envoy.ssl_curve
+    target_field: envoy.listener.ssl.curve
+    ignore_missing: true
+- rename:
+    field: labels.envoy.ssl_sigalg
+    target_field: envoy.listener.ssl.sigalg
+    ignore_missing: true
+- rename:
+    field: labels.envoy.ssl_version
+    target_field: envoy.listener.ssl.version
+    ignore_missing: true
+- rename:
+    field: labels.envoy.cipher_suite
+    target_field: envoy.listener.ssl.cipher_suite
+    ignore_missing: true
+- rename:
+    field: labels.envoy.clientssl_prefix
+    target_field: envoy.listener.ssl.clientssl_prefix
+    ignore_missing: true
+- rename:
+    field: labels.envoy.mongo_prefix
+    target_field: envoy.mongo.prefix
+    ignore_missing: true
+- rename:
+    field: labels.envoy.mongo_cmd
+    target_field: envoy.mongo.cmd
+    ignore_missing: true
+- rename:
+    field: labels.envoy.mongo_collection
+    target_field: envoy.mongo.collection
+    ignore_missing: true
+- rename:
+    field: labels.envoy.mongo_callsite
+    target_field: envoy.mongo.callsite
+    ignore_missing: true
+- rename:
+    field: labels.envoy.ratelimit_prefix
+    target_field: envoy.cluster.ratelimit.prefix
+    ignore_missing: true
+- rename:
+    field: labels.envoy.local_http_ratelimit_prefix
+    target_field: envoy.local_http_ratelimit.prefix
+    ignore_missing: true
+- rename:
+    field: labels.envoy.local_network_ratelimit_prefix
+    target_field: envoy.local_network_ratelimit.prefix
+    ignore_missing: true
+- rename:
+    field: labels.envoy.local_listener_ratelimit_prefix
+    target_field: envoy.local_listener_ratelimit.prefix
+    ignore_missing: true
+- rename:
+    field: labels.envoy.dns_filter_prefix
+    target_field: envoy.dns_filter.prefix
+    ignore_missing: true
+- rename:
+    field: labels.envoy.connection_limit_prefix
+    target_field: envoy.connection_limit.prefix
+    ignore_missing: true
+- rename:
+    field: labels.envoy.rbac_prefix
+    target_field: envoy.http.rbac.prefix
+    ignore_missing: true
+- rename:
+    field: labels.envoy.rbac_http_prefix
+    target_field: envoy.http.rbac.http_prefix
+    ignore_missing: true
+- rename:
+    field: labels.envoy.rbac_policy_name
+    target_field: envoy.http.rbac.policy_name
+    ignore_missing: true
+- rename:
+    field: labels.envoy.tcp_prefix
+    target_field: envoy.tcp.prefix
+    ignore_missing: true
+- rename:
+    field: labels.envoy.udp_prefix
+    target_field: envoy.udp.prefix
+    ignore_missing: true
+- rename:
+    field: labels.envoy.fault_downstream_cluster
+    target_field: envoy.http.fault_downstream_cluster
+    ignore_missing: true
+- rename:
+    field: labels.envoy.dynamo_operation
+    target_field: envoy.http.dynamodb.operation
+    ignore_missing: true
+- rename:
+    field: labels.envoy.dynamo_table
+    target_field: envoy.http.dynamodb.table
+    ignore_missing: true
+- rename:
+    field: labels.envoy.dynamo_partition_id
+    target_field: envoy.http.dynamodb.partition_id
+    ignore_missing: true
+- rename:
+    field: labels.envoy.grpc_bridge_service
+    target_field: envoy.cluster.grpc.bridge_service
+    ignore_missing: true
+- rename:
+    field: labels.envoy.grpc_bridge_method
+    target_field: envoy.cluster.grpc.bridge_method
+    ignore_missing: true
+- rename:
+    field: labels.envoy.virtual_host
+    target_field: envoy.vhost.host
+    ignore_missing: true
+- rename:
+    field: labels.envoy.virtual_cluster
+    target_field: envoy.vhost.cluster
+    ignore_missing: true
+- rename:
+    field: labels.envoy.response_code
+    target_field: envoy.cluster.response_code
+    ignore_missing: true
+- rename:
+    field: labels.envoy.response_code_class
+    target_field: envoy.http.response_code_class
+    ignore_missing: true
+- rename:
+    field: labels.envoy.rds_route_config
+    target_field: envoy.http.rds.route_config
+    ignore_missing: true
+- rename:
+    field: labels.envoy.scoped_rds_config
+    target_field: envoy.http.rds.scoped_config
+    ignore_missing: true
+- rename:
+    field: labels.envoy.route
+    target_field: envoy.route
+    ignore_missing: true
+- rename:
+    field: labels.envoy.ext_authz_prefix
+    target_field: envoy.cluster.ext_authz.prefix
+    ignore_missing: true
+- rename:
+    field: labels.envoy.worker_id
+    target_field: envoy.listener.worker_id
+    ignore_missing: true
+- rename:
+    field: labels.envoy.thrift_prefix
+    target_field: envoy.thrift.prefix
+    ignore_missing: true
+- rename:
+    field: labels.envoy.redis_prefix
+    target_field: envoy.redis.prefix
+    ignore_missing: true
+- rename:
+    field: labels.envoy.proxy_protocol_version
+    target_field: envoy.proxy_proto.version
+    ignore_missing: true
+- rename:
+    field: labels.envoy.proxy_protocol_prefix
+    target_field: envoy.proxy_proto.prefix
+    ignore_missing: true
+- remove:
+    field: metricset.name
+    ignore_missing: true
+- script:
+    tag: script_to_drop_null_values
+    lang: painless
+    description: Drops null/empty values recursively.
+    source: |-
+      boolean drop(Object o) {
+        if (o == null || o == '') {
+          return true;
+        } else if (o instanceof Map) {
+          ((Map) o).values().removeIf(v -> drop(v));
+          return (((Map) o).size() == 0);
+        } else if (o instanceof List) {
+          ((List) o).removeIf(v -> drop(v));
+          return (((List) o).length == 0);
+        }
+        return false;
+      }
+      drop(ctx);
+- append:
+    field: event.kind
+    value: pipeline_error
+    allow_duplicates: false
+    if: ctx.error?.message != null
+on_failure:
+  - set:
+      field: event.kind
+      value: pipeline_error
+  - append:
+      field: error.message
+      value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'

@@ -393,7 +393,6 @@ An example event for `flow` looks as following:
     },
     "type": "flow"
 }
-
 ```
 
 ## Protocols
@@ -759,7 +758,6 @@ An example event for `amqp` looks as following:
     "status": "OK",
     "type": "amqp"
 }
-
 ```
 
 ### Cassandra
@@ -1203,7 +1201,6 @@ An example event for `cassandra` looks as following:
     "status": "OK",
     "type": "cassandra"
 }
-
 ```
 
 ### DHCP
@@ -1531,7 +1528,6 @@ An example event for `dhcpv4` looks as following:
     "status": "OK",
     "type": "dhcpv4"
 }
-
 ```
 
 ### DNS
@@ -1919,7 +1915,6 @@ An example event for `dns` looks as following:
     "status": "OK",
     "type": "dns"
 }
-
 ```
 
 ### HTTP
@@ -2360,7 +2355,6 @@ An example event for `http` looks as following:
         "original": "curl/7.37.1"
     }
 }
-
 ```
 
 ### ICMP
@@ -2636,7 +2630,6 @@ An example event for `icmp` looks as following:
     "status": "OK",
     "type": "icmp"
 }
-
 ```
 
 ### Memcached
@@ -3019,7 +3012,6 @@ An example event for `memcached` looks as following:
     "status": "OK",
     "type": "memcache"
 }
-
 ```
 
 ### MongoDB
@@ -3322,7 +3314,6 @@ An example event for `mongodb` looks as following:
     "status": "OK",
     "type": "mongodb"
 }
-
 ```
 
 ### MySQL
@@ -3607,7 +3598,6 @@ An example event for `mysql` looks as following:
     "status": "OK",
     "type": "mysql"
 }
-
 ```
 
 ### NFS
@@ -3911,7 +3901,6 @@ An example event for `nfs` looks as following:
     "type": "nfs",
     "user.id": 48
 }
-
 ```
 
 ### PostgreSQL
@@ -4183,7 +4172,6 @@ An example event for `pgsql` looks as following:
     "status": "OK",
     "type": "pgsql"
 }
-
 ```
 
 ### Redis
@@ -4451,7 +4439,6 @@ An example event for `redis` looks as following:
     "status": "OK",
     "type": "redis"
 }
-
 ```
 
 ### SIP
@@ -5303,7 +5290,6 @@ An example event for `thrift` looks as following:
     },
     "type": "thrift"
 }
-
 ```
 
 ### TLS
@@ -5886,7 +5872,6 @@ An example event for `tls` looks as following:
     },
     "type": "tls"
 }
-
 ```
 
 ## Licensing for Windows Systems

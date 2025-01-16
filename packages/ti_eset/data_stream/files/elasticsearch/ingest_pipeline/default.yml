@@ -66,7 +66,7 @@ processors:
       processor:
         append:
           field: eset.labels
-          value: "{{_ingest._value}}"
+          value: "{{{_ingest._value}}}"
       ignore_missing: true
       ignore_failure: true
       if: ctx.eti?.labels != null
@@ -111,11 +111,6 @@ processors:
       field:
         - eti
       ignore_missing: true
-  - remove:
-      field: event.original
-      if: "ctx.tags == null || !(ctx.tags.contains('preserve_original_event'))"
-      ignore_failure: true
-      ignore_missing: true
   - script:
       tag: script_to_drop_null_values
       lang: painless
@@ -139,11 +134,20 @@ processors:
       value: pipeline_error
       allow_duplicates: false
       if: ctx.error?.message != null
+  - append:
+      field: tags
+      value: preserve_original_event
+      allow_duplicates: false
+      if: ctx.error?.message != null
 on_failure:
   - set:
       field: error.message
-      value: '{{ _ingest.on_failure_message }}'
+      value: '{{{ _ingest.on_failure_message }}}'
   - set:
       field: event.kind
       tag: set_pipeline_error_to_event_kind
       value: pipeline_error
+  - append:
+      field: tags
+      value: preserve_original_event
+      allow_duplicates: false

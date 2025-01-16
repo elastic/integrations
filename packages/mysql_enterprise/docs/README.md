@@ -236,5 +236,4 @@ An example event for `audit` looks as following:
         "mysql_enterprise-audit"
     ]
 }
-
 ```

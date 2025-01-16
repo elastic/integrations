@@ -2,6 +2,24 @@
 description: Pipeline for PanOS Threat Logs.
 # API Docs: https://docs.paloaltonetworks.com/pan-os/10-2/pan-os-admin/monitoring/use-syslog-for-monitoring/syslog-field-descriptions/threat-log-fields
 processors:
+  - script:
+      lang: painless
+      if: ctx.panw?.panos?.sub_type == 'url'
+      source: |
+        def fixHttpHeadersEscaping(String input) {
+          // Find a CSV fragment like `,Some-Header:"eg1.com, eg2.com";`
+          //     and correct it to be `,"Some-Header:""eg1.com, eg2.com"";"`
+          Matcher matcher = /,(([A-Za-z0-9\-_]+: *\"[^\"]*\"; *)+)/.matcher(input);
+          if (matcher.find()) {
+            String match = matcher.group(0);
+            String value = matcher.group(1);
+            String fixed = ',"' + value.replace('"', '""') + '"';
+            return input.replace(match, fixed);
+          } else {
+            return input;
+          }
+        }
+        ctx.message = fixHttpHeadersEscaping(ctx.message);
   - csv:
       field: message
       target_fields:
@@ -289,6 +307,22 @@ processors:
       tag: set_virus_url
       field: url.original
       copy_from: panw.panos.misc
+  - set:
+      if: 'ctx.panw?.panos?.sub_type == "vulnerability" && ctx.panw?.panos?.misc instanceof String && ctx.panw.panos.misc.contains("/")'
+      tag: set_vulnerability_url
+      field: url.original
+      copy_from: panw.panos.misc
+  # It's been observed that URL is in future_use3 field when sub_type == 'file', but theres' no documentation on this usage
+  - set:
+      if: 'ctx.panw?.panos?.sub_type == "file" && ctx._temp_?.future_use3 instanceof String && ctx._temp_.future_use3.contains("/")'
+      tag: set_url_from_file
+      field: url.original
+      copy_from: _temp_.future_use3
+  - set:
+      if: 'ctx.panw?.panos?.threat_category == "domain-edl" && ctx.panw?.panos?.misc instanceof String'
+      tag: set_domain_edl_url
+      field: url.original
+      copy_from: panw.panos.misc
   # Crude implementation of `uri_parts` as its not working well due to lack of scheme.
   # When the scheme of the URL is absent, this script parses the URL in `ctx.panw.panos.misc` into components namely 
   # `url.original`, `url.domain`, `url.port`, `url.path`, `url.query`, `url.extension`
@@ -356,9 +390,16 @@ processors:
         }
         ctx.file["name"] = ctx.file.path.substring(idx+1);
   - set:
-      if: '["file", "virus"].contains(ctx.panw?.panos?.sub_type) && (ctx.panw?.panos?.misc instanceof String) && !(ctx.panw.panos.misc.contains("/") || ctx.panw.panos.misc.contains("\\"))'
+      if: '["file", "virus", "vulnerability", "wildfire", "wildfire-virus"].contains(ctx.panw?.panos?.sub_type) && (ctx.panw?.panos?.misc instanceof String) && !(ctx.panw.panos.misc.contains("/") || ctx.panw.panos.misc.contains("\\"))'
       field: file.name
       copy_from: panw.panos.misc
+      ignore_failure: true
+
+  # vulnerability can be either file or url. If it's a file, remove all url fields it was parsed into
+  - remove:
+      if: '"vulnerability" == ctx.panw?.panos?.sub_type && ctx.file?.name != null'
+      tag: remove_url
+      field: url
       ignore_failure: true
   - set:
       field: panw.panos.user_agent

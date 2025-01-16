@@ -195,7 +195,7 @@ The documentation for ECS fields can be found at:
 | data_stream.type | Data stream type. | constant_keyword |
 | event.module | Event module | constant_keyword |
 | input.type | Input type. | keyword |
-| labels.is_ioc_transform_source | Field indicating if the document is a source for the transform. This field is not added to destination indices to facilitate easier filtering of indicators for indicator match rules. | constant_keyword |
+| labels.is_ioc_transform_source | Indicates whether an IOC is in the raw source data stream, or the in latest destination index. | constant_keyword |
 | opencti.indicator.creator_identity_class | The type of the creator of this indicator (e.g. "organization"). | keyword |
 | opencti.indicator.detection | Whether the indicator has been detected. | boolean |
 | opencti.indicator.external_reference.description | A description for a related record in an external system. | keyword |

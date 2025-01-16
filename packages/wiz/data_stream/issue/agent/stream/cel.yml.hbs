@@ -1,9 +1,9 @@
 config_version: 2
 interval: {{interval}}
-{{#if enable_request_tracer}}
-resource.tracer.filename: "../../logs/cel/http-request-trace-*.ndjson"
-resource.tracer.maxbackups: 5
-{{/if}}
+resource.tracer:
+  enabled: {{enable_request_tracer}}
+  filename: "../../logs/cel/http-request-trace-*.ndjson"
+  maxbackups: 5
 {{#if proxy_url}}
 resource.proxy_url: {{proxy_url}}
 {{/if}}
@@ -143,7 +143,7 @@ program: |
         }
       }.encode_json()
     ).do_request().as(resp, resp.StatusCode == 200 ?
-        bytes(resp.Body).decode_json().as(body, has(body.?data.issues.nodes) ?
+        bytes(resp.Body).decode_json().as(body, body.?data.issues.nodes.orValue(null) != null ?
           {
             "events": body.data.issues.nodes.map(e, {
               "message": e.encode_json(),

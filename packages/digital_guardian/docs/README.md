@@ -8,15 +8,15 @@ The integration allows collection of events and alerts from [Digital Guardian An
 
 The Digital Guardian integration collects events to populate following data-streams:
 
-- `digital_guardian.arc`: Collects all events and alerts from `Digital Guardian Analytics & Reporting Cloud (ARC)` via the REST API.
+- **digital_guardian.arc**: Collects all events and alerts from `Digital Guardian Analytics & Reporting Cloud (ARC)` via the REST API.
 
 ## Requirements
 
-Elastic Agent must be installed. For more information, refer to the link [here](https://www.elastic.co/guide/en/fleet/current/elastic-agent-installation.html).
+Elastic Agent must be installed. For more details and installation instructions, please refer to the [Elastic Agent Installation Guide](https://www.elastic.co/guide/en/fleet/current/elastic-agent-installation.html).
 
 ### Installing and managing an Elastic Agent:
 
-You have a few options for installing and managing an Elastic Agent:
+There are several options for installing and managing Elastic Agent:
 
 ### Install a Fleet-managed Elastic Agent (recommended):
 
@@ -30,7 +30,7 @@ With this approach, you install Elastic Agent and manually configure the agent l
 
 You can run Elastic Agent inside a container, either with Fleet Server or standalone. Docker images for all versions of Elastic Agent are available from the Elastic Docker registry, and we provide deployment manifests for running on Kubernetes.
 
-There are some minimum requirements for running Elastic Agent and for more information, refer to the link [here](https://www.elastic.co/guide/en/fleet/current/elastic-agent-installation.html).
+Please note, there are minimum requirements for running Elastic Agent. For more information, refer to the  [Elastic Agent Minimum Requirements](https://www.elastic.co/guide/en/fleet/current/elastic-agent-installation.html#elastic-agent-installation-minimum-requirements).
 
 ## Setup
 
@@ -48,10 +48,10 @@ There are some minimum requirements for running Elastic Agent and for more infor
 
 #### Enabling the Digital Guardian integration in Elastic with ARC dataset:
 
-1. In Kibana go to Management > Integrations.
-2. In "Search for integrations" search bar, type Digital Guardian.
-3. Click on the "Digital Guardian" integration from the search results.
-4. Click on the "Add Digital Guardian" button to add the integration.
+1. In Kibana navigate to Management > Integrations.
+2. In "Search for integrations" top bar, search for `Digital Guardian`.
+3. Select the "Digital Guardian" integration from the search results.
+4. Select "Add Digital Guardian" to add the integration.
 5. Configure all required integration parameters. 
     - ARC data requires following parameters:
         - `Client ID`
@@ -66,6 +66,12 @@ There are some minimum requirements for running Elastic Agent and for more infor
 ### arc
 
 This is the `arc` dataset.
+
+The `@timestamp` field will be assigned one of several values, in the following order of precedence:
+1. `digital_guardian.arc.dg_time`
+2. `digital_guardian.arc.dg_processed_time`
+3. `digital_guardian.arc.inc_mtime`
+4. The time received by the pipeline (if none of the above are available).
 
 #### Example
 
@@ -151,11 +157,29 @@ An example event for `arc` looks as following:
 | data_stream.dataset | Data stream dataset. | constant_keyword |
 | data_stream.namespace | Data stream namespace. | constant_keyword |
 | data_stream.type | Data stream type. | constant_keyword |
+| digital_guardian.arc.dg_alert.alert_did | Alert DID | keyword |
+| digital_guardian.arc.dg_alert.alert_wb | Alert WB | integer |
+| digital_guardian.arc.dg_alert.dg_category_name | Alert Category Name | keyword |
+| digital_guardian.arc.dg_alert.dg_policy.dg_name | Alert Policy Name | keyword |
+| digital_guardian.arc.dg_attachments.dg_file_size | File Size | keyword |
+| digital_guardian.arc.dg_attachments.dg_file_size_bytes | File Size in Bytes | long |
 | digital_guardian.arc.dg_comment | Comment | keyword |
 | digital_guardian.arc.dg_description | Description | keyword |
+| digital_guardian.arc.dg_display | Event Display Name | keyword |
+| digital_guardian.arc.dg_file_path | File Path | keyword |
+| digital_guardian.arc.dg_file_size | File Size | keyword |
+| digital_guardian.arc.dg_file_size_bytes | File Size in Bytes | long |
 | digital_guardian.arc.dg_guid | Unique ID | keyword |
+| digital_guardian.arc.dg_local_timestamp | Local Time | date |
+| digital_guardian.arc.dg_mac_address | MAC Address | keyword |
+| digital_guardian.arc.dg_machine_name | Computer Name | keyword |
+| digital_guardian.arc.dg_machine_type | Machine Type | integer |
 | digital_guardian.arc.dg_name | Name. | keyword |
+| digital_guardian.arc.dg_processed_time | Server Process Time | date |
+| digital_guardian.arc.dg_src_file_ext | Source File Extension | keyword |
+| digital_guardian.arc.dg_src_file_name | Source File Name | keyword |
 | digital_guardian.arc.dg_tenant | Tenant ID | keyword |
+| digital_guardian.arc.dg_time | Event Time | date |
 | digital_guardian.arc.dg_utype | Operation Type | keyword |
 | digital_guardian.arc.inc_assign | Incident Assignee | keyword |
 | digital_guardian.arc.inc_creator | Incident Creator | keyword |
@@ -163,6 +187,13 @@ An example event for `arc` looks as following:
 | digital_guardian.arc.inc_mtime | Incident Modified Time | date |
 | digital_guardian.arc.inc_sev | Incident Severity | keyword |
 | digital_guardian.arc.inc_state | Incident State | keyword |
+| digital_guardian.arc.pi_fal | Time | date |
+| digital_guardian.arc.pi_fcl | Time | date |
+| digital_guardian.arc.pi_fml | Time | date |
+| digital_guardian.arc.ua_sci | Scan Instance | integer |
+| digital_guardian.arc.ua_scn | Appliance Scan Name | keyword |
+| digital_guardian.arc.ua_sn | Scan Server Name | keyword |
+| digital_guardian.arc.uad_sp | Source File Path | keyword |
 | event.dataset | Event dataset. | constant_keyword |
 | event.module | Event module. | constant_keyword |
 | input.type | Type of Filebeat input. | keyword |

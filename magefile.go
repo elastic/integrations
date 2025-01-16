@@ -190,6 +190,5 @@ func ReportFailedTests(testResultsFolder string) error {
 		MaxPreviousLinks:  defaultPreviousLinksNumber,
 		MaxTestsReported:  maxIssues,
 	}
-	mg.Deps(mg.F(testsreporter.Check, testResultsFolder, options))
-	return nil
+	return testsreporter.Check(testResultsFolder, options)
 }

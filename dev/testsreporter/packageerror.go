@@ -51,13 +51,7 @@ func NewPackageError(options PackageErrorOptions) (*PackageError, error) {
 		p.DataStream = values[1]
 	}
 
-	var owners []string
-	var err error
-	if options.CodeownersPath != "" {
-		owners, err = codeowners.PackageOwnersCustomCodeowners(p.PackageName, p.DataStream, options.CodeownersPath)
-	} else {
-		owners, err = codeowners.PackageOwners(p.PackageName, p.DataStream)
-	}
+	owners, err := codeowners.PackageOwners(p.PackageName, p.DataStream, options.CodeownersPath)
 	if err != nil {
 		return nil, fmt.Errorf("failed to find owners for package %s: %w", p.PackageName, err)
 	}

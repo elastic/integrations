@@ -125,7 +125,6 @@ An example event for `alerts` looks as following:
         "panw_cortex_xdr"
     ]
 }
-
 ```
 
 **Exported fields**
@@ -364,7 +363,6 @@ An example event for `incidents` looks as following:
         }
     }
 }
-
 ```
 
 **Exported fields**

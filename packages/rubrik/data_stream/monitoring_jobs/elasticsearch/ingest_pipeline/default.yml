@@ -1,0 +1,74 @@
+---
+description: Pipeline to parse Rubrik Monitoring Jobs workload data
+processors:
+  - set:
+      field: ecs.version
+      value: 8.16.0
+  - set:
+      field: event.kind
+      value: metric
+  - rename:
+      field: message
+      target_field: event.original
+      ignore_missing: true
+      if: "ctx.event?.original == null"
+      description: 'Renames the original `message` field to `event.original` to store a copy of the original message. The `event.original` field is not touched if the document already has one; it may happen when Logstash sends the document.'
+  - remove:
+      field: message
+      ignore_missing: true
+      if: "ctx.event?.original != null"
+      description: 'The `message` field is no longer required if the document has an `event.original` field.'
+  - json:
+      field: event.original
+      target_field: response
+      on_failure:
+        - set:
+            field: error.message
+            value: 'Received invalid JSON. Unable to parse the source log message'
+            ignore_failure: true
+  - rename:
+      field: response.archiveJobs.count
+      target_field: rubrik.monitoring_jobs.archive_jobs.count
+      ignore_missing: true
+  - rename:
+      field: response.backupJobs.count
+      target_field: rubrik.monitoring_jobs.backup_jobs.count
+      ignore_missing: true
+  - rename:
+      field: response.conversionJobs.count
+      target_field: rubrik.monitoring_jobs.conversion_jobs.count
+      ignore_missing: true
+  - rename:
+      field: response.logBackupJobs.count
+      target_field: rubrik.monitoring_jobs.log_backup_jobs.count
+      ignore_missing: true
+  - rename:
+      field: response.recoveryJobs.count
+      target_field: rubrik.monitoring_jobs.recovery_jobs.count
+      ignore_missing: true
+  - rename:
+      field: response.replicationJobs.count
+      target_field: rubrik.monitoring_jobs.replication_jobs.count
+      ignore_missing: true
+  - rename:
+      field: response.name
+      target_field: rubrik.monitoring_jobs.cluster_name
+      ignore_missing: true
+  - rename:
+      field: response.id
+      target_field: rubrik.monitoring_jobs.cluster_id
+      ignore_missing: true
+  - rename:
+      field: response.allJobs
+      target_field: rubrik.monitoring_jobs.all_jobs.count
+      ignore_missing: true
+  - remove:
+      field: response
+      ignore_missing: true
+on_failure:
+  - set:
+      field: event.kind
+      value: pipeline_error
+  - set:
+      field: error.message
+      value: "{{{_ingest.on_failure_message}}}"

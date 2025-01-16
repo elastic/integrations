@@ -1,0 +1,86 @@
+name: o365_metrics
+title: Microsoft Office 365 Metrics
+version: "0.1.2"
+description: Collect metrics from Microsoft Office 365 with Elastic Agent.(This integration is currently in development and not yet ready for general use)
+type: integration
+format_version: "3.0.2"
+categories: [observability]
+conditions:
+  kibana:
+    version: "^8.16.0"
+icons:
+  - src: /img/logo-integrations-microsoft-365.svg
+    title: Microsoft Office 365 Metrics
+    size: 216x216
+    type: image/svg+xml
+policy_templates:
+  - name: o365
+    title: Office 365 metrics
+    description: Collect metrics from Office 365
+    inputs:
+      - type: cel
+        title: "Collect Office 365 metrics via Microsoft Graph API using CEL Input"
+        description: "Collect Office 365 metrics via Microsoft Graph API using CEL Input"
+        vars:
+          - name: url
+            type: text
+            title: Base URL of Office Graph API
+            show_user: true
+            required: false
+            default: https://graph.microsoft.com/v1.0
+          - name: azure_tenant_id
+            type: text
+            title: Directory (tenant) ID
+            description: Directory (tenant) ID
+            show_user: true
+            multi: false
+            required: true
+          - name: client_id
+            type: text
+            title: Application (client) ID
+            description: Client ID used for Oauth2 authentication
+            show_user: true
+            required: true
+          - name: client_secret
+            type: password
+            title: Client Secret
+            description: Client secret used for Oauth2 authentication
+            show_user: true
+            required: true
+            secret: true
+          - name: token_url
+            type: text
+            title: Oauth2 Token URL
+            description: The Base URL endpoint that will be used to generate the tokens during the oauth2 flow. If not provided, above `Azure Tenant ID` will be used for oauth2 token generation. Default value - `https://login.microsoftonline.com`
+            show_user: true
+            required: false
+            default: https://login.microsoftonline.com
+            secret: false
+          - name: token_scopes
+            type: text
+            title: Token Scopes
+            multi: true
+            default:
+              - "https://graph.microsoft.com/.default"
+            description: Scopes for OAuth2 token.
+            required: true
+            show_user: false
+            secret: false
+          - name: resource_ssl
+            type: yaml
+            title: Resource SSL Configuration
+            description: i.e. certificate_authorities, supported_protocols, verification_mode etc, more examples found in the [documentation](https://www.elastic.co/guide/en/beats/filebeat/current/configuration-ssl.html#ssl-common-config)
+            multi: false
+            required: false
+            show_user: false
+          - name: resource_timeout
+            type: text
+            title: Resource Timeout
+            description: Duration before declaring that the HTTP client connection has timed out. Valid time units are ns, us, ms, s, m, h. Default is "30"s.
+            show_user: false
+            multi: false
+            required: false
+            default: 60s
+owner:
+  github: elastic/obs-infraobs-integrations
+  type: elastic

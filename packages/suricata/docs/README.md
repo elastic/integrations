@@ -1,6 +1,6 @@
 # Suricata Integration
 
-This integration is for [Suricata](https://suricata-ids.org/). It reads the EVE
+This integration is for [Suricata](https://suricata.io/). It reads the EVE
 JSON output file. The EVE output writes alerts, anomalies, metadata, file info
 and protocol specific records as JSON.
 
@@ -101,7 +101,6 @@ An example event for `eve` looks as following:
         "suricata-eve"
     ]
 }
-
 ```
 
 **Exported fields**

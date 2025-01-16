@@ -95,11 +95,11 @@ processors:
 # ------------------------------------------------------------------------------
 # Date and Time.
 
-  - rename:
-      tag: rename_timezone
-      target_field: event.timezone
-      field: _fields_.tz
-      ignore_missing: true
+  - set:
+      tag: set_timezone
+      field: event.timezone
+      copy_from: _fields_.tz
+      ignore_empty_value: true
   - set:
       tag: set_temp_timestamp_with_tz
       field: '_temp_.timestamp'
@@ -120,6 +120,7 @@ processors:
       field:
         - _fields_.date
         - _fields_.time
+        - _fields_.tz
         - message
 
 # ------------------------------------------------------------------------------

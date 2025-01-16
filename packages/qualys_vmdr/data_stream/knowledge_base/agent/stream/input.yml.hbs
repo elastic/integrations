@@ -44,7 +44,6 @@ program: |
             has(body.doc.KNOWLEDGE_BASE_VULN_LIST_OUTPUT.RESPONSE.VULN_LIST)
             ?
               body.doc.KNOWLEDGE_BASE_VULN_LIST_OUTPUT.RESPONSE.VULN_LIST.VULN.map(e, {
-                ?"xml":    state.keep_xml ? optional.of(string(xml)) : optional.none(),
                 "message": e.with({
                   "CVE_LIST": e.?CVE_LIST.CVE.orValue([]).map(c, c.ID),
                 }).encode_json()

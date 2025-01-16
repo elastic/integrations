@@ -9,6 +9,9 @@ processors:
   - set:
       field: ecs.version
       value: "8.11.0"
+  - set:
+      field: event.kind
+      value: event
   - grok:
       field: event.original
       patterns:
@@ -73,11 +76,6 @@ processors:
       value: "{{{user.name}}}@{{{user.domain}}}"
       if: ctx.user?.name != null && ctx.user?.domain != null
   - remove:
-      field: event.original
-      if: ctx.tags == null || !(ctx.tags.contains('preserve_original_event'))
-      ignore_failure: true
-      ignore_missing: true
-  - remove:
       field:
         - _conf
         - _tmp
@@ -90,3 +88,7 @@ on_failure:
   - set:
       field: event.kind
       value: pipeline_error
+  - append:
+      field: tags
+      value: preserve_original_event
+      allow_duplicates: false

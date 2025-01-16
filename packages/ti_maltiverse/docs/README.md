@@ -30,7 +30,7 @@ Both, the data_stream and the _latest index have applied expiration through ILM 
 | event.dataset | Event dataset | constant_keyword |
 | event.module | Event module | constant_keyword |
 | input.type | Input type. | keyword |
-| labels.is_ioc_transform_source | Field indicating if its the transform source for supporting IOC expiration. This field is dropped from destination indices to facilitate easier filtering of indicators. | constant_keyword |
+| labels.is_ioc_transform_source | Indicates whether an IOC is in the raw source data stream, or the in latest destination index. | constant_keyword |
 | maltiverse.address | registered address | keyword |
 | maltiverse.address.address | Multi-field of `maltiverse.address`. | match_only_text |
 | maltiverse.as_name | AS registered name | keyword |

@@ -20,7 +20,7 @@ You can use our hosted Elasticsearch Service on Elastic Cloud, which is recommen
 
 ## Setup
 
-The official vendor documentation regarding how to configure Secret Server to send syslog is here [Secure Syslog/CEF Logging](https://docs.thycotic.com/secrets/current/events-and-alerts/secure-syslog-cef)
+The official vendor documentation regarding how to configure Secret Server to send syslog is here [Secure Syslog/CEF Logging](https://docs.delinea.com/online-help/secret-server/alerts-events/logs/secure-syslog-cef/index.htm?Highlight=secure-syslog-cef)
 
 
 [This PDF](https://updates.thycotic.net/secretserver/documents/SS_SyslogIntegrationGuide.pdf) is also useful as a reference for how Thycotic Secret Server generates logs in CEF format.
@@ -176,7 +176,6 @@ An example event for `logs` looks as following:
         "name": "U.Admin"
     }
 }
-
 ```
 
 The following fields may be used by the package:

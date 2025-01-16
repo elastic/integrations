@@ -147,6 +147,7 @@ Please refer to the following [document](https://www.elastic.co/guide/en/ecs/cur
 | gcp.billing.service_id | The ID of the service that the usage is associated with. | keyword |
 | gcp.billing.sku_description | A description of the resource type used by the service. For example, a resource type for Cloud Storage is Standard Storage US. | keyword |
 | gcp.billing.sku_id | The ID of the resource used by the service. | keyword |
+| gcp.billing.tags | A collection of key-value pairs that provide additional metadata. | nested |
 | gcp.billing.tags.key |  | keyword |
 | gcp.billing.tags.value |  | keyword |
 | gcp.billing.total | Total billing amount. | float |

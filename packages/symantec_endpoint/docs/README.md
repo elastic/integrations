@@ -125,6 +125,7 @@ See vendor documentation: [External Logging settings and log event severity leve
 | data_stream.namespace | Data stream namespace. | constant_keyword |
 | data_stream.type | Data stream type. | constant_keyword |
 | event.dataset | Name of the dataset. | constant_keyword |
+| event.duration | Duration of the event in nanoseconds. If `event.start` and `event.end` are known this value should be the difference between the end and start time. | long |
 | event.module | Name of the module this data is coming from. | constant_keyword |
 | host.containerized | If the host is a container. | boolean |
 | host.os.build | OS build information. | keyword |
@@ -343,5 +344,4 @@ An example event for `log` looks as following:
         "name": "exampleUser"
     }
 }
-
 ```

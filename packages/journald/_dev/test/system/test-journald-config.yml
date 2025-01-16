@@ -5,4 +5,18 @@ vars:
     - "/run/service_logs/test.journal"
   tags: [forwarded]
 agent:
-  base_image: complete # Related issue: https://github.com/elastic/integrations/issues/10998
+  base_image: systemd # Related issue: https://github.com/elastic/integrations/issues/10998
+  runtime: docker
+  provisioning_script:
+    language: "sh"
+    contents: |
+      set -eu
+      if grep fedora /etc/os-release > /dev/null ; then
+        microdnf update
+        microdnf install -y systemd
+        microdnf clean all
+      else
+        apt-get update
+        DEBIAN_FRONTEND=noninteractive apt-get install --no-install-recommends --yes systemd
+        apt-get clean all
+      fi
