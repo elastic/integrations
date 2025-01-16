@@ -299,3 +299,294 @@ An example event for `filesets` looks as following:
 }
 
 ```
+### Drives
+
+The `drives` dataset provides metrics related to the state of the drives.
+
+**ECS Field Reference**
+
+Please refer to the following [document](https://www.elastic.co/guide/en/ecs/current/ecs-field-reference.html) for detailed information on ECS fields.
+
+**Exported fields**
+
+| Field | Description | Type |
+|---|---|---|
+| @timestamp | Event timestamp. | date |
+| data_stream.dataset | Data stream dataset. | constant_keyword |
+| data_stream.namespace | Data stream namespace. | constant_keyword |
+| data_stream.type | Data stream type. | constant_keyword |
+| rubrik.drives.capacity.bytes | Disk capacity, in bytes. | long |
+| rubrik.drives.cluster.id | The cluster UUID. | keyword |
+| rubrik.drives.cluster.name | The cluster name. | keyword |
+| rubrik.drives.id | ID of the Rubrik cluster disk type. | keyword |
+| rubrik.drives.is_encrypted | Specifies if the disk is encrypted. | boolean |
+| rubrik.drives.node_id | ID of the Rubrik cluster node. | keyword |
+| rubrik.drives.path | Disk path. | keyword |
+| rubrik.drives.status | Represents cluster's knowledge of a disk state. | keyword |
+| rubrik.drives.type | Disk type. | keyword |
+| rubrik.drives.unallocated.bytes | Disk unallocated bytes. | long |
+| rubrik.drives.usable.bytes | Disk usable bytes. | long |
+
+
+An example event for `drives` looks as following:
+
+```json
+{
+    "agent": {
+        "name": "docker-fleet-agent",
+        "id": "a35969d5-ae9b-49a1-87f2-cbc521f2989a",
+        "type": "filebeat",
+        "ephemeral_id": "e77b39f7-c984-4d5a-ae7e-dba3567aab2f",
+        "version": "8.16.0"
+    },
+    "rubrik": {
+        "drives": {
+            "cluster": {
+                "name": "cluster-1",
+                "id": "acbd69a0-64d3-4a34-a83e-c4ecddcd34b8"
+            },
+            "path": "/mnt/wwn-0x4123a4004a3612c7",
+            "usable": {
+                "bytes": 1452177072128
+            },
+            "unallocated": {
+                "bytes": 1492201697280
+            },
+            "is_encrypted": false,
+            "id": "sdd",
+            "type": "HDD",
+            "status": "ACTIVE",
+            "capacity": {
+                "bytes": 3834792386560
+            }
+        }
+    },
+    "@timestamp": "2025-01-15T17:26:20.012Z",
+    "ecs": {
+        "version": "8.16.0"
+    },
+    "data_stream": {
+        "namespace": "default",
+        "type": "metrics",
+        "dataset": "rubrik.drives"
+    },
+    "elastic_agent": {
+        "id": "a35969d5-ae9b-49a1-87f2-cbc521f2989a",
+        "version": "8.16.0",
+        "snapshot": false
+    },
+    "host": {
+        "hostname": "docker-fleet-agent",
+        "os": {
+            "kernel": "6.8.0-51-generic",
+            "name": "Wolfi",
+            "type": "linux",
+            "version": "20230201",
+            "platform": "wolfi"
+        },
+        "containerized": false,
+        "ip": [
+            "172.18.0.7"
+        ],
+        "name": "docker-fleet-agent",
+        "mac": [
+            "02-42-AC-12-00-07"
+        ],
+        "architecture": "x86_64"
+    },
+    "event": {
+        "agent_id_status": "verified",
+        "ingested": "2025-01-15T17:26:21Z",
+        "created": "2025-01-15T17:26:20.012Z",
+        "kind": "metric",
+        "dataset": "rubrik.drives"
+    }
+}
+```
+
+### Physical Hosts
+
+The `physical_hosts` dataset provides metrics related to the state of the physical hosts.
+
+**ECS Field Reference**
+
+Please refer to the following [document](https://www.elastic.co/guide/en/ecs/current/ecs-field-reference.html) for detailed information on ECS fields.
+
+**Exported fields**
+
+| Field | Description | Type |
+|---|---|---|
+| @timestamp | Event timestamp. | date |
+| data_stream.dataset | Data stream dataset. | constant_keyword |
+| data_stream.namespace | Data stream namespace. | constant_keyword |
+| data_stream.type | Data stream type. | constant_keyword |
+| rubrik.physical_hosts.cluster.id | The cluster uuid. | keyword |
+| rubrik.physical_hosts.cluster.name | The cluster name. | keyword |
+| rubrik.physical_hosts.connectivity_status | Connectivity status of host. | keyword |
+| rubrik.physical_hosts.id | ID of the physical host. | keyword |
+| rubrik.physical_hosts.name | Name of the physical host. | keyword |
+| rubrik.physical_hosts.os_type | The operating system type of the physical host. | keyword |
+
+
+An example event for `physical_hosts` looks as following:
+
+```json
+{
+    "agent": {
+        "name": "docker-fleet-agent",
+        "id": "0aae3c7e-885b-4e49-9419-379e87197012",
+        "ephemeral_id": "3a87f3c5-7e6f-412c-8b8b-ec856a732f8a",
+        "type": "filebeat",
+        "version": "8.16.0"
+    },
+    "rubrik": {
+        "physical_hosts": {
+            "cluster": {
+                "name": "cluster-1",
+                "id": "7562f3f9-f7ff-4828-af2c-87df3bf4f54c"
+            },
+            "connectivity_status": "DISCONNECTED",
+            "os_type": "WINDOWS",
+            "name": "0.0.0.0",
+            "id": "aed47d37-4267-4b15-9a4c-be41c215cb52"
+        }
+    },
+    "@timestamp": "2025-01-09T18:54:45.445Z",
+    "ecs": {
+        "version": "8.16.0"
+    },
+    "data_stream": {
+        "namespace": "default",
+        "type": "metrics",
+        "dataset": "rubrik.physical_hosts"
+    },
+    "elastic_agent": {
+        "id": "0aae3c7e-885b-4e49-9419-379e87197012",
+        "version": "8.16.0",
+        "snapshot": false
+    },
+    "host": {
+        "hostname": "docker-fleet-agent",
+        "os": {
+            "kernel": "6.8.0-51-generic",
+            "name": "Wolfi",
+            "type": "linux",
+            "version": "20230201",
+            "platform": "wolfi"
+        },
+        "ip": [
+            "172.18.0.7"
+        ],
+        "containerized": false,
+        "name": "docker-fleet-agent",
+        "mac": [
+            "02-42-AC-12-00-07"
+        ],
+        "architecture": "x86_64"
+    },
+    "event": {
+        "agent_id_status": "verified",
+        "ingested": "2025-01-09T18:54:46Z",
+        "kind": "metric",
+        "dataset": "rubrik.physical_hosts"
+    },
+    "tags": [
+        "rubrik.physical_hosts"
+    ]
+}
+```
+
+### MSSQL Databases
+
+The `mssql_databases` dataset provides metrics related to the state of the MSSQL databases.
+
+**ECS Field Reference**
+
+Please refer to the following [document](https://www.elastic.co/guide/en/ecs/current/ecs-field-reference.html) for detailed information on ECS fields.
+
+**Exported fields**
+
+| Field | Description | Type |
+|---|---|---|
+| @timestamp | Event timestamp. | date |
+| data_stream.dataset | Data stream dataset. | constant_keyword |
+| data_stream.namespace | Data stream namespace. | constant_keyword |
+| data_stream.type | Data stream type. | constant_keyword |
+| rubrik.mssql_databases.cluster.id | The Rubrik cluster id where this object originated. | keyword |
+| rubrik.mssql_databases.cluster.name | The Rubrik cluster name where this object originated. | keyword |
+| rubrik.mssql_databases.effective_sla_domain.id | The ID of the SLA domain. | keyword |
+| rubrik.mssql_databases.effective_sla_domain.name | The name of the SLA domain. | keyword |
+| rubrik.mssql_databases.id | ID of the database. | keyword |
+| rubrik.mssql_databases.is_online | Specifies if the SQL Server database is online. | boolean |
+| rubrik.mssql_databases.missed_snapshots.count | Number of missed snapshots. | long |
+| rubrik.mssql_databases.name | Name of the database. | keyword |
+
+
+An example event for `mssql_databases` looks as following:
+
+```json
+{
+    "agent": {
+        "name": "docker-fleet-agent",
+        "id": "19728c71-8995-495f-acbd-ab53d6a60f02",
+        "type": "filebeat",
+        "ephemeral_id": "f7b08e7b-5b53-4ee4-b651-ebee08783840",
+        "version": "8.16.0"
+    },
+    "rubrik": {
+        "mssql_databases": {
+            "cluster": {
+                "name": "cluster-1",
+                "id": "f5ce5ffc-42d4-47bc-a64f-d928030892d5"
+            },
+            "effective_sla_domain": {
+                "id": "4031c11d-078e-4f14-8566-717cfffaf359",
+                "name": "sla-domain-1"
+            },
+            "name": "name-1",
+            "id": "2abed6ca-bbf7-42df-a402-2166a7abebd0",
+            "is_online": true
+        }
+    },
+    "@timestamp": "2025-01-15T13:32:41.191Z",
+    "ecs": {
+        "version": "8.16.0"
+    },
+    "data_stream": {
+        "namespace": "default",
+        "type": "metrics",
+        "dataset": "rubrik.mssql_databases"
+    },
+    "elastic_agent": {
+        "id": "19728c71-8995-495f-acbd-ab53d6a60f02",
+        "version": "8.16.0",
+        "snapshot": false
+    },
+    "host": {
+        "hostname": "docker-fleet-agent",
+        "os": {
+            "kernel": "6.8.0-51-generic",
+            "name": "Wolfi",
+            "type": "linux",
+            "version": "20230201",
+            "platform": "wolfi"
+        },
+        "ip": [
+            "172.18.0.7"
+        ],
+        "containerized": false,
+        "name": "docker-fleet-agent",
+        "mac": [
+            "02-42-AC-12-00-07"
+        ],
+        "architecture": "x86_64"
+    },
+    "event": {
+        "agent_id_status": "verified",
+        "ingested": "2025-01-15T13:32:42Z",
+        "created": "2025-01-15T13:32:41.191Z",
+        "kind": "metric",
+        "dataset": "rubrik.mssql_databases"
+    }
+}
+```
