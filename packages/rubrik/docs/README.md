@@ -200,7 +200,7 @@ An example event for `filesets` looks as following:
 ```json
 {
     "agent": {
-        "name": "ip-172-31-39-96.eu-north-1.compute.internal",
+        "name": "ip-172-31-39-96",
         "id": "7c37e065-93e1-4e86-a2c9-ee166c4eccbb",
         "type": "filebeat",
         "ephemeral_id": "e897b559-c04a-471f-ba91-b2e6b84a5a3c",
@@ -216,19 +216,19 @@ An example event for `filesets` looks as following:
                 "count": 0
             },
             "total_snapshots": {
-                "count": 2
+                "count": 6
             },
             "local_storage": {
-                "bytes": 384155
+                "bytes": 1286184885
             },
-            "name": "Aksh",
-            "host_os_type": "WINDOWS",
+            "name": "Linux",
+            "host_os_type": "LINUX",
             "archive_storage": {
                 "bytes": 0
             },
             "effective_sla_domain": {
-                "name": "Bronze",
-                "id": "8f983b74-a50f-5ffa-b73d-359462c06f4b"
+                "name": "2 day",
+                "id": "1efe5fa8-d97f-5067-afcc-e02525ad0a4e"
             },
             "compliance_status": "OUT_OF_COMPLIANCE"
         }
@@ -248,7 +248,7 @@ An example event for `filesets` looks as following:
         "snapshot": false
     },
     "host": {
-        "hostname": "ip-172-31-39-96.eu-north-1.compute.internal",
+        "hostname": "ip-172-31-39-96",
         "os": {
             "kernel": "6.1.82-99.168.amzn2023.x86_64",
             "codename": "Amazon Linux",
@@ -271,7 +271,7 @@ An example event for `filesets` looks as following:
             "fe80::42:dff:fed2:b9a9",
             "fe80::54a9:a8ff:feb8:2d8d"
         ],
-        "name": "ip-172-31-39-96.eu-north-1.compute.internal",
+        "name": "ip-172-31-39-96",
         "id": "ec2130e5d5c423ed85ac1c1a0b96beeb",
         "mac": [
             "02-42-00-6C-4A-EF",
@@ -285,8 +285,8 @@ An example event for `filesets` looks as following:
     },
     "event": {
         "agent_id_status": "verified",
-        "ingested": "2025-01-16T07:24:09Z",
-        "original": "{\"archiveSnapshots\":0,\"archiveStorage\":0,\"complianceStatus\":\"OUT_OF_COMPLIANCE\",\"filesetName\":\"Linux\",\"localStorage\":1286184885,\"osType\":\"LINUX\",\"totalSnapshots\":6}",
+        "ingested": "2025-01-16T21:07:16Z",
+        "original": "{\"archiveSnapshots\":0,\"archiveStorage\":0,\"clusterID\":\"7f4f96b3-e777-4bde-ba08-47a40ecaa416\",\"clusterName\":\"401-rubrik\",\"complianceStatus\":\"OUT_OF_COMPLIANCE\",\"effectiveSlaDomainID\":\"1efe5fa8-d97f-5067-afcc-e02525ad0a4e\",\"effectiveSlaDomainName\":\"2 day\",\"filesetName\":\"Linux\",\"localStorage\":1286184885,\"osType\":\"LINUX\",\"totalSnapshots\":6}",
         "kind": "metric",
         "dataset": "rubrik.filesets"
     },
