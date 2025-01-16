@@ -43,6 +43,8 @@ Please refer to the following [document](https://www.elastic.co/guide/en/ecs/cur
 
 {{fields "managed_volumes"}}
 
+{{event "managed_volumes"}}
+
 ### Monitoring Jobs
 
 The `monitoring_jobs` dataset provides metrics related to the series of activities on either the RSC or a Rubrik cluster.
@@ -52,6 +54,8 @@ The `monitoring_jobs` dataset provides metrics related to the series of activiti
 Please refer to the following [document](https://www.elastic.co/guide/en/ecs/current/ecs-field-reference.html) for detailed information on ECS fields.
 
 {{fields "monitoring_jobs"}}
+
+{{event "monitoring_jobs"}}
 
 ### Virtual Machines
 

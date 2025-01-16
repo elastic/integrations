@@ -49,6 +49,10 @@ Please refer to the following [document](https://www.elastic.co/guide/en/ecs/cur
 | data_stream.dataset | Data stream dataset. | constant_keyword |  |  |
 | data_stream.namespace | Data stream namespace. | constant_keyword |  |  |
 | data_stream.type | Data stream type. | constant_keyword |  |  |
+| rubrik.managed_volumes.cluster.id | The cluster UUID. | keyword |  |  |
+| rubrik.managed_volumes.cluster.name | The cluster name. | keyword |  |  |
+| rubrik.managed_volumes.effective_sla_domain.id | The ID of the SLA domain. | keyword |  |  |
+| rubrik.managed_volumes.effective_sla_domain.name | The name of the SLA domain. | keyword |  |  |
 | rubrik.managed_volumes.free_size.bytes | Free capacity for the volume across all the channels, in bytes. | long | byte | gauge |
 | rubrik.managed_volumes.name | The name of the Managed Volume. | keyword |  |  |
 | rubrik.managed_volumes.num_channels.count | Number of channels to divide the volume into. Each channel provides a unique share to write to. | long |  | gauge |
@@ -58,6 +62,95 @@ Please refer to the following [document](https://www.elastic.co/guide/en/ecs/cur
 | rubrik.managed_volumes.used_size.bytes | Used capacity for the volume across all the channels, in bytes. | long | byte | gauge |
 | rubrik.managed_volumes.volume_size.bytes | Maximum capacity for the volume across all the channels, in bytes. | long | byte | gauge |
 
+
+An example event for `managed_volumes` looks as following:
+
+```json
+{
+    "agent": {
+        "name": "docker-fleet-agent",
+        "id": "9f7dc10d-9fe5-4bc8-98ce-d4cb4661e04c",
+        "ephemeral_id": "bc7df02b-35f9-477e-94c6-0e09c44c0b9c",
+        "type": "filebeat",
+        "version": "8.16.0"
+    },
+    "rubrik": {
+        "managed_volumes": {
+            "cluster": {
+                "name": "cluster-1",
+                "id": "7562f3f9-f7ff-4828-af2c-87df3bf4f54c"
+            },
+            "effective_sla_domain": {
+                "id": "4031c11d-078e-4f14-8566-717cfffaf359",
+                "name": "sla-domain-1"
+            },
+            "num_channels": {
+                "count": 1
+            },
+            "total_snapshots": {
+                "count": 0
+            },
+            "name": "volume-1",
+            "pending_snapshots": {
+                "count": 0
+            },
+            "volume_size": {
+                "bytes": 1073741824
+            },
+            "state": "MANAGED_VOLUME_STATE_EXPORTED",
+            "used_size": {
+                "bytes": 24576
+            },
+            "free_size": {
+                "bytes": 1073717248
+            }
+        }
+    },
+    "@timestamp": "2025-01-16T20:40:02.299Z",
+    "ecs": {
+        "version": "8.16.0"
+    },
+    "data_stream": {
+        "namespace": "default",
+        "type": "logs",
+        "dataset": "rubrik.managed_volumes"
+    },
+    "host": {
+        "hostname": "docker-fleet-agent",
+        "os": {
+            "kernel": "6.8.0-51-generic",
+            "name": "Wolfi",
+            "family": "",
+            "type": "linux",
+            "version": "20230201",
+            "platform": "wolfi"
+        },
+        "ip": [
+            "172.18.0.4"
+        ],
+        "containerized": false,
+        "name": "docker-fleet-agent",
+        "mac": [
+            "02-42-AC-12-00-04"
+        ],
+        "architecture": "x86_64"
+    },
+    "elastic_agent": {
+        "id": "9f7dc10d-9fe5-4bc8-98ce-d4cb4661e04c",
+        "version": "8.16.0",
+        "snapshot": false
+    },
+    "event": {
+        "agent_id_status": "verified",
+        "ingested": "2025-01-16T20:40:03Z",
+        "kind": "metric",
+        "dataset": "rubrik.managed_volumes"
+    },
+    "tags": [
+        "rubrik.managed_volumes"
+    ]
+}
+```
 
 ### Monitoring Jobs
 
@@ -78,13 +171,117 @@ Please refer to the following [document](https://www.elastic.co/guide/en/ecs/cur
 | rubrik.monitoring_jobs.all_jobs.count | The total count of all jobs. | long | gauge |
 | rubrik.monitoring_jobs.archive_jobs.count | The total count of all archive jobs. | long | gauge |
 | rubrik.monitoring_jobs.backup_jobs.count | The total count of all backup jobs. | long | gauge |
-| rubrik.monitoring_jobs.cluster_id | The ID of the Cluster associated with the jobs. | keyword |  |
-| rubrik.monitoring_jobs.cluster_name | The name of the Cluster associated with the jobs. | keyword |  |
+| rubrik.monitoring_jobs.cluster.id | The name of the Cluster associated with the jobs. | keyword |  |
+| rubrik.monitoring_jobs.cluster.name | The ID of the Cluster associated with the jobs. | keyword |  |
 | rubrik.monitoring_jobs.conversion_jobs.count | The total count of all conversion jobs. | long | gauge |
 | rubrik.monitoring_jobs.log_backup_jobs.count | The total count of all log backup jobs. | long | gauge |
 | rubrik.monitoring_jobs.recovery_jobs.count | The total count of all recovery jobs. | long | gauge |
 | rubrik.monitoring_jobs.replication_jobs.count | The total count of all replication jobs. | long | gauge |
 
+
+An example event for `monitoring_jobs` looks as following:
+
+```json
+{
+    "agent": {
+        "name": "ip-172-31-39-96.eu-north-1.compute.internal",
+        "id": "7c37e065-93e1-4e86-a2c9-ee166c4eccbb",
+        "type": "filebeat",
+        "ephemeral_id": "7a656a0d-e5cc-4f70-9528-8d1338cfe3b8",
+        "version": "8.13.2"
+    },
+    "rubrik": {
+        "monitoring_jobs": {
+            "log_backup_jobs": {
+                "count": 0
+            },
+            "replication_jobs": {
+                "count": 6
+            },
+            "cluster": {
+                "id": "52688802-aefd-4dee-9992-1e0c0623b54f",
+                "name": "cluster-1"
+            },
+            "recovery_jobs": {
+                "count": 39
+            },
+            "archive_jobs": {
+                "count": 8
+            },
+            "backup_jobs": {
+                "count": 36092
+            },
+            "conversion_jobs": {
+                "count": 0
+            },
+            "all_jobs": {
+                "count": 668241
+            }
+        }
+    },
+    "@timestamp": "2025-01-07T17:22:42.912Z",
+    "ecs": {
+        "version": "8.16.0"
+    },
+    "data_stream": {
+        "namespace": "default",
+        "type": "metrics",
+        "dataset": "rubrik.monitoring_jobs"
+    },
+    "elastic_agent": {
+        "id": "7c37e065-93e1-4e86-a2c9-ee166c4eccbb",
+        "version": "8.13.2",
+        "snapshot": false
+    },
+    "host": {
+        "hostname": "ip-172-31-39-96.eu-north-1.compute.internal",
+        "os": {
+            "kernel": "6.1.82-99.168.amzn2023.x86_64",
+            "codename": "Amazon Linux",
+            "name": "Amazon Linux",
+            "type": "linux",
+            "family": "redhat",
+            "version": "2023",
+            "platform": "amzn"
+        },
+        "containerized": false,
+        "ip": [
+            "172.31.39.96",
+            "fe80::88f:89ff:fea6:2561",
+            "172.17.0.1",
+            "fe80::42:77ff:fe00:bad7",
+            "172.18.0.1",
+            "fe80::42:ff:fe6c:4aef",
+            "fe80::1803:deff:fef6:6cf3",
+            "172.19.0.1",
+            "fe80::42:dff:fed2:b9a9",
+            "fe80::54a9:a8ff:feb8:2d8d"
+        ],
+        "name": "ip-172-31-39-96.eu-north-1.compute.internal",
+        "id": "ec2130e5d5c423ed85ac1c1a0b96beeb",
+        "mac": [
+            "02-42-00-6C-4A-EF",
+            "02-42-0D-D2-B9-A9",
+            "02-42-77-00-BA-D7",
+            "0A-8F-89-A6-25-61",
+            "1A-03-DE-F6-6C-F3",
+            "56-A9-A8-B8-2D-8D"
+        ],
+        "architecture": "x86_64"
+    },
+    "event": {
+        "agent_id_status": "verified",
+        "ingested": "2025-01-07T17:22:53Z",
+        "original": "{\"allJobs\":668241,\"archiveJobs\":{\"count\":8},\"backupJobs\":{\"count\":36092},\"conversionJobs\":{\"count\":0},\"id\":\"7f4f96b3-e777-4bde-ba08-47a40ecaa416\",\"logBackupJobs\":{\"count\":0},\"name\":\"401-rubrik\",\"recoveryJobs\":{\"count\":39},\"replicationJobs\":{\"count\":6}}",
+        "created": "2025-01-07T17:22:42.912Z",
+        "kind": "metric",
+        "dataset": "rubrik.monitoring_jobs"
+    },
+    "tags": [
+        "preserve_original_event"
+    ]
+}
+```
 
 ### Virtual Machines
 
@@ -103,7 +300,10 @@ Please refer to the following [document](https://www.elastic.co/guide/en/ecs/cur
 | data_stream.namespace | Data stream namespace. | constant_keyword |
 | data_stream.type | Data stream type. | constant_keyword |
 | rubrik.virtualmachine.agent_status | The status of the Rubrik Backup Service agent for virtual machines. Supported in v5.0+. | keyword |
-| rubrik.virtualmachine.cluster_name | The Rubrik cluster name where this object originated. | keyword |
+| rubrik.virtualmachine.cluster.id | The cluster uuid. | keyword |
+| rubrik.virtualmachine.cluster.name | The cluster name. | keyword |
+| rubrik.virtualmachine.effective_sla_domain.id | The ID of the SLA domain. | keyword |
+| rubrik.virtualmachine.effective_sla_domain.name | The name of the SLA domain. | keyword |
 | rubrik.virtualmachine.id | The object ID. | keyword |
 | rubrik.virtualmachine.name | The name of the hierarchy object. | keyword |
 | rubrik.virtualmachine.power_status | The power status of VM (ON,OFF,SLEEP etc.). Supported in v5.0+. | keyword |
@@ -122,8 +322,15 @@ An example event for `virtualmachines` looks as following:
     },
     "rubrik": {
         "virtualmachine": {
+            "cluster": {
+                "name": "cluster-1",
+                "id": "7562f3f9-f7ff-4828-af2c-87df3bf4f54c"
+            },
+            "effective_sla_domain": {
+                "id": "4031c11d-078e-4f14-8566-717cfffaf359",
+                "name": "sla-domain-1"
+            },
             "agent_status": "UNREGISTERED",
-            "cluster_name": "100-rubrik",
             "power_status": "POWERED_OFF",
             "name": "dashboard01",
             "id": "25842075-fd83-4c75-8709-310166ef792d"
@@ -182,23 +389,23 @@ Please refer to the following [document](https://www.elastic.co/guide/en/ecs/cur
 
 **Exported fields**
 
-| Field | Description | Type |
-|---|---|---|
-| @timestamp | Event timestamp. | date |
-| data_stream.dataset | Data stream dataset. | constant_keyword |
-| data_stream.namespace | Data stream namespace. | constant_keyword |
-| data_stream.type | Data stream type. | constant_keyword |
-| rubrik.drives.capacity.bytes | Disk capacity, in bytes. | long |
-| rubrik.drives.cluster.id | The cluster UUID. | keyword |
-| rubrik.drives.cluster.name | The cluster name. | keyword |
-| rubrik.drives.id | ID of the Rubrik cluster disk type. | keyword |
-| rubrik.drives.is_encrypted | Specifies if the disk is encrypted. | boolean |
-| rubrik.drives.node_id | ID of the Rubrik cluster node. | keyword |
-| rubrik.drives.path | Disk path. | keyword |
-| rubrik.drives.status | Represents cluster's knowledge of a disk state. | keyword |
-| rubrik.drives.type | Disk type. | keyword |
-| rubrik.drives.unallocated.bytes | Disk unallocated bytes. | long |
-| rubrik.drives.usable.bytes | Disk usable bytes. | long |
+| Field | Description | Type | Unit | Metric Type |
+|---|---|---|---|---|
+| @timestamp | Event timestamp. | date |  |  |
+| data_stream.dataset | Data stream dataset. | constant_keyword |  |  |
+| data_stream.namespace | Data stream namespace. | constant_keyword |  |  |
+| data_stream.type | Data stream type. | constant_keyword |  |  |
+| rubrik.drives.capacity.bytes | Disk capacity, in bytes. | long | byte | gauge |
+| rubrik.drives.cluster.id | The cluster UUID. | keyword |  |  |
+| rubrik.drives.cluster.name | The cluster name. | keyword |  |  |
+| rubrik.drives.id | ID of the Rubrik cluster disk type. | keyword |  |  |
+| rubrik.drives.is_encrypted | Specifies if the disk is encrypted. | boolean |  |  |
+| rubrik.drives.node_id | ID of the Rubrik cluster node. | keyword |  |  |
+| rubrik.drives.path | Disk path. | keyword |  |  |
+| rubrik.drives.status | Represents cluster's knowledge of a disk state. | keyword |  |  |
+| rubrik.drives.type | Disk type. | keyword |  |  |
+| rubrik.drives.unallocated.bytes | Disk unallocated bytes. | long | byte | gauge |
+| rubrik.drives.usable.bytes | Disk usable bytes. | long | byte | gauge |
 
 
 An example event for `drives` looks as following:
@@ -227,6 +434,7 @@ An example event for `drives` looks as following:
             },
             "is_encrypted": false,
             "id": "sdd",
+            "node_id": "1f7c2a2a-8631-416d-abfb-0ab97c2e0fd0",
             "type": "HDD",
             "status": "ACTIVE",
             "capacity": {
@@ -296,6 +504,8 @@ Please refer to the following [document](https://www.elastic.co/guide/en/ecs/cur
 | rubrik.physical_hosts.cluster.id | The cluster uuid. | keyword |
 | rubrik.physical_hosts.cluster.name | The cluster name. | keyword |
 | rubrik.physical_hosts.connectivity_status | Connectivity status of host. | keyword |
+| rubrik.physical_hosts.effective_sla_domain.id | The ID of the SLA domain. | keyword |
+| rubrik.physical_hosts.effective_sla_domain.name | The name of the SLA domain. | keyword |
 | rubrik.physical_hosts.id | ID of the physical host. | keyword |
 | rubrik.physical_hosts.name | Name of the physical host. | keyword |
 | rubrik.physical_hosts.os_type | The operating system type of the physical host. | keyword |
@@ -317,6 +527,10 @@ An example event for `physical_hosts` looks as following:
             "cluster": {
                 "name": "cluster-1",
                 "id": "7562f3f9-f7ff-4828-af2c-87df3bf4f54c"
+            },
+            "effective_sla_domain": {
+                "id": "4031c11d-078e-4f14-8566-717cfffaf359",
+                "name": "sla-domain-1"
             },
             "connectivity_status": "DISCONNECTED",
             "os_type": "WINDOWS",
