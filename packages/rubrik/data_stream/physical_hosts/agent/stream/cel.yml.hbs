@@ -39,38 +39,46 @@ state:
     - |
       query LinuxPhysicalHosts($first: Int, $after: String, $sortBy: HierarchySortByField, $sortOrder: SortOrder, $filter: [Filter!]) {
         physicalHosts(first: $first, after: $after, sortBy: $sortBy, sortOrder: $sortOrder, filter: $filter, hostRoot: LINUX_HOST_ROOT) {
-          edges {
-            node {
+          pageInfo {
+            startCursor
+            endCursor
+            hasPreviousPage
+            hasNextPage
+          }
+          nodes {
+            id
+            name
+            connectionStatus {
+              connectivity
+            }
+            cluster {
               id
               name
-              connectionStatus {
-                connectivity
-              }
-              cluster {
-                id
-                name
-              }
-              osType
             }
+            osType
           }
         }
       }
     - |
       query WindowsPhysicalHosts($first: Int, $after: String, $sortBy: HierarchySortByField, $sortOrder: SortOrder, $filter: [Filter!]) {
         physicalHosts(first: $first, after: $after, sortBy: $sortBy, sortOrder: $sortOrder, filter: $filter, hostRoot: WINDOWS_HOST_ROOT) {
-          edges {
-            node {
+          pageInfo {
+            startCursor
+            endCursor
+            hasPreviousPage
+            hasNextPage
+          }
+          nodes {
+            id
+            name
+            connectionStatus {
+              connectivity
+            }
+            cluster {
               id
               name
-              connectionStatus {
-                connectivity
-              }
-              cluster {
-                id
-                name
-              }
-              osType
             }
+            osType
           }
         }
       }
@@ -91,12 +99,6 @@ program: |-
               {{#if after}}
               "after": "{{after}}",
               {{/if}}
-              {{#if sort_by}}
-              "sortBy": "{{sort_by}}",
-              {{/if}}
-              {{#if sort_order}}
-              "sortOrder": "{{sort_order}}",
-              {{/if}}
               "filter": [
                 {{#if filters}}
                   {{#each filters}}
@@ -113,7 +115,7 @@ program: |-
     ).do_request().as(resp, (resp.StatusCode == 200) ?
       bytes(resp.Body).decode_json().as(body,
         {
-          "events": body.data.physicalHosts.edges.map(e,
+          "events": body.data.physicalHosts.nodes.map(e,
             {
               "message": e.encode_json(),
             }
