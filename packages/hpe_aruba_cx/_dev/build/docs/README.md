@@ -181,7 +181,54 @@ Note: Descriptions have not been filled out
 | `<cert_length>`     | aruba.len                    |
 | `<vrf>`             | aruba.vrf.id                 |
 
-#### [Certificate management events](https://www.arubanetworks.com/techdocs/AOS-CX/10.07/HTML/5200-8214/Content/events/CERTMGR.htm)
+#### [Client insight events](https://www.arubanetworks.com/techdocs/AOS-CX/10.15/HTML/elmrg/Content/events/CLIENT_INSIGHT.htm)
+| Doc Fields                    | Schema Mapping                |
+|-------------------------------|-------------------------------|
+| `<arp_end_ts>`                | aruba.insight.arp_end_ts      |
+| `<assigned-role>`             | aruba.role                    |
+| `<assigned-role-type>`        | aruba.insight.role_type       |
+| `<auth-latency>`              | aruba.insight.auth_latency    |
+| `<auth-status>`               | aruba.status                  |
+| `<auth-type>`                 | aruba.insight.auth_type       |
+| `<client-number>`             | aruba.limit.threshold         |
+| `<dot1x-auth-failure-reason>` | aruba.insight.dot1x_auth_failure_reason |
+| `<dhcpv4-client>`             | aruba.insight.dhcp_client     |
+| `<dhcpv4-failure-reason>`     | event.reason                  |
+| `<dhcpv4-latency>`            | aruba.insight.dhcp_latency    |
+| `<dhcpv4-server>`             | aruba.insight.dhcp_server     |
+| `<dhcpv4-status>`             | aruba.status                  |
+| `<dhcpv6-client>`             | aruba.insight.dhcp_client     |
+| `<dhcpv6-failure-reason>`     | event.reason                  |
+| `<dhcpv6-latency>`            | aruba.insight.dhcp_latency    |
+| `<dhcpv6-server>`             | aruba.insight.dhcp_server     |
+| `<dhcpv6-status>`             | aruba.status                  |
+| `<dns_end_ts>`                | aruba.insight.dns_end_ts      |
+| `<dns_failure_reason>`        | event.reason                  |
+| `<dns-failure-reason>`        | event.reason                  |
+| `<dns-latency>`               | aruba.insight.dns_latency     |
+| `<dns_server_ip>`             | server.ip                     |
+| `<dns-server>`                | aruba.insight.dns_server      |
+| `<dns_status>`                | aruba.status                  |
+| `<dns-status>`                | aruba.status                  |
+| `<failed_vlans>`              | aruba.insight.failed_vlans    |
+| `<failure_phase_id>`          | aruba.insight.failure_phase_id|
+| `<failure_reason>`            | event.reason                  |
+| `<l2_end_ts>`                 | aruba.insight.l2_end_ts       |
+| `<l2_failure_reason>`         | aruba.insight.l2_failure_reason |
+| `<l2_ob_state>`               | aruba.insight.l2_ob_state     |
+| `<l3_end_ts>`                 | aruba.insight.l3_end_ts       |
+| `<l3_failure_reason>`         | aruba.insight.l3_failure_reason |
+| `<l3_ob_state>`               | aruba.insight.l3_ob_state     |
+| `<mac>`                       | client.mac                    |
+| `<mac-auth-failure-reason>`   | aruba.insight.mac_auth_failure_reason |
+| `<port>`                      | aruba.port                    |
+| `<ob_start_ts>`               | aruba.insight.ob_start_ts     |
+| `<onboarding_status>`         | aruba.status                  |
+| `<radius-server>`             | aruba.insight.radius_server   |
+| `<successfulvlan>`            | aruba.insight.successfulvlan  |
+| `<vlans>`                     | network.vlan.id               |
+
+#### [Certificate management events](https://www.arubanetworks.com/techdocs/AOS-CX/10.15/HTML/elmrg/Content/events/CERTMGR.htm)
 | Doc Fields       | Schema Mapping        |
 |------------------|-----------------------|
 | `<cert_name>`    | aruba.cm.cert_name    |
@@ -191,7 +238,7 @@ Note: Descriptions have not been filled out
 | `<profile_name>` | aruba.cm.profile_name |
 | `<status>`       | aruba.status          |
 
-#### [Config Management events](https://www.arubanetworks.com/techdocs/AOS-CX/10.07/HTML/5200-8214/Content/events/CONFIG_MGMT.htm)
+#### [Config Management events](https://www.arubanetworks.com/techdocs/AOS-CX/10.15/HTML/elmrg/Content/events/CONFIG_MGMT.htm)
 | Doc Fields     | Schema Mapping       |
 |----------------|----------------------|
 | `<error>`      | event.reason         |
@@ -201,41 +248,65 @@ Note: Descriptions have not been filled out
 | `<type>`       | aruba.config.type    |
 | `<value>`      | aruba.config.value   |
 
-#### [Connectivity Fault Management (CFM) events](https://www.arubanetworks.com/techdocs/AOS-CX/10.07/HTML/5200-8214/Content/events/ETH_OAM_CFM.htm)
+#### [Config validator events](https://www.arubanetworks.com/techdocs/AOS-CX/10.15/HTML/elmrg/Content/events/CONFIG-VALIDATOR.htm)
+| Doc Fields     | Schema Mapping       |
+|----------------|----------------------|
+| `<name>`       | aruba.config.name    |
+| `<reason>`     | event.reason         |
+
+#### [Connectivity Fault Management (CFM) events](https://www.arubanetworks.com/techdocs/AOS-CX/10.15/HTML/elmrg/Content/events/ETH_OAM_CFM.htm)
 | Doc Fields    | Schema Mapping      |
 |---------------|---------------------|
-| `<id>`        | aruba.cfm.id        |
-| `<interface>` | aruba.cfm.interfact |
+| `<id>`        | aruba.instance.id   |
+| `<interface>` | aruba.interface.id  |
+
+#### [Console events](https://www.arubanetworks.com/techdocs/AOS-CX/10.15/HTML/elmrg/Content/events/CONSOLE.htm)
+| Doc Fields    | Schema Mapping      |
+|---------------|---------------------|
+| `<ip_address>`        | client.ip   |
+| `<mgmt_intf>`        | aruba.interface.id   |
+| `<user_name>` | user.name  |
 
 #### [Container manager events](https://www.arubanetworks.com/techdocs/AOS-CX/10.07/HTML/5200-8214/Content/events/CONTAINER.htm)
-| Doc Fields   | Schema Mapping   |
-|--------------|------------------|
-| `<name>`     | container.name   |
+| Doc Fields   | Schema Mapping          |
+|--------------|-------------------------|
+| `<name>`     | container.name          |
+| `<params>`   | aruba.container.params  |
 
-#### [CoPP events](https://www.arubanetworks.com/techdocs/AOS-CX/10.07/HTML/5200-8214/Content/events/COPP.htm)
+#### [CoPP events](https://www.arubanetworks.com/techdocs/AOS-CX/10.15/HTML/elmrg/Content/events/COPP.htm)
 | Doc Field                      | Schema Mapping      |
 |--------------------------------|---------------------|
 | `<class>`                      | aruba.copp.class    |
 | `<slot>`                       | aruba.slot          |
 
-#### [CPU_RX events](https://www.arubanetworks.com/techdocs/AOS-CX/10.07/HTML/5200-8214/Content/events/CPU_RX.htm)
+#### [CPU_RX events](https://www.arubanetworks.com/techdocs/AOS-CX/10.15/HTML/elmrg/Content/events/CPU_RX.htm)
 | Doc Field                      | Schema Mapping                  |
 |--------------------------------|---------------------------------|
 | `<action>`                     | event.action                    |
 | `<filter_description>`         | aruba.cpu_rx.filter_description |
 | `<unit>`                       | aruba.instance.id               |
 
-#### [Credential Manager events DHCP Relay events](https://www.arubanetworks.com/techdocs/AOS-CX/10.07/HTML/5200-8214/Content/events/CREDMGR.htm)
+#### [Credential Manager events DHCP Relay events](https://www.arubanetworks.com/techdocs/AOS-CX/10.15/HTML/elmrg/Content/events/CREDMGR.htm)
 | Doc Field   | Schema Mapping |
 |-------------|----------------|
 | `<key-id>`  | user.id        |
 | `<user>`    | user.name      |
 
-#### [DHCP Relay events](https://www.arubanetworks.com/techdocs/AOS-CX/10.07/HTML/5200-8214/Content/events/DHCP-RELAY.htm)
+#### [CX LMS events](https://www.arubanetworks.com/techdocs/AOS-CX/10.15/HTML/elmrg/Content/events/CX_LMS.htm)
 | Doc Field | Schema Mapping |
 |-----------|----------------|
 
-#### [DHCP Server events](https://www.arubanetworks.com/techdocs/AOS-CX/10.07/HTML/5200-8214/Content/events/DHCP-SERVER.htm)
+#### [Device fingerprinting events](https://www.arubanetworks.com/techdocs/AOS-CX/10.15/HTML/elmrg/Content/events/DFP.htm)
+| Doc Field        | Schema Mapping        |
+|------------------|-----------------------|
+| `<client_limit>` | aruba.limit.threshold |
+| `<interface>`    | aruba.interface.id    |
+
+#### [DHCP Relay events](https://www.arubanetworks.com/techdocs/AOS-CX/10.15/HTML/elmrg/Content/events/DHCP-RELAY.htm)
+| Doc Field | Schema Mapping |
+|-----------|----------------|
+
+#### [DHCP Server events](https://www.arubanetworks.com/techdocs/AOS-CX/10.15/HTML/elmrg/Content/events/DHCP-SERVER.htm)
 | Doc Field       | Schema Mapping    |
 |-----------------|-------------------|
 | `<client_id>`   | user.id           |
@@ -247,45 +318,54 @@ Note: Descriptions have not been filled out
 | `<vfr>`         | aruba.vrf.id      |
 | `<vfr_name>`    | aruba.vrf.name    |
 
-#### [DHCPv4 Snooping events](https://www.arubanetworks.com/techdocs/AOS-CX/10.07/HTML/5200-8214/Content/events/DHCPv4-SNOOPING.htm)
-| Doc Field             | Schema Mapping      |
-|-----------------------|---------------------|
-| `<client_mac>`        | client.mac          |
-| `<existing_port>`     | server.port         |
-| `<filename>`          | file.name           |
-| `<ip_address>`        | client.ip           |
-| `<lease_ip_address>`  | client.ip           |
-| `<mac>`               | client.mac          |
-| `<new_port>`          | aruba.dhcp.new_port |
-| `<port>`              | aruba.port          |
-| `<server_ip_address>` | server.ip           |
-| `<source_mac>`        | client.mac          |
-| `<vid>`               | network.vlan.id     |
-| `<volume_name>`       | aruba.volume_name   |
+#### [DHCPv4 Snooping events](https://www.arubanetworks.com/techdocs/AOS-CX/10.15/HTML/elmrg/Content/events/DHCPv4-SNOOPING.htm)
+| Doc Field             | Schema Mapping                |
+|-----------------------|-------------------------------|
+| `<bindings_imported>` | client.dhcp.bindings_imported |
+| `<client_mac>`        | client.mac                    |
+| `<existing_port>`     | server.port                   |
+| `<filename>`          | file.name                     |
+| `<file_path>`         | file.path                     |
+| `<gateway_ip>`        | aruba.dhcp.gateway_ip         |
+| `<ip_address>`        | client.ip                     |
+| `<lease>`             | aruba.dhcp.lease              |
+| `<lease_ip_address>`  | client.ip                     |
+| `<mac>`               | client.mac                    |
+| `<message_type>`      | aruba.dhcp.message_type       |
+| `<nameserver_ip>`     | client.mac                    |
+| `<new_port>`          | aruba.dhcp.new_port           |
+| `<port>`              | aruba.port                    |
+| `<server_ip_address>` | server.ip                     |
+| `<source_mac>`        | client.mac                    |
+| `<vid>`               | network.vlan.id               |
+| `<volume_name>`       | aruba.volume_name             |
 
-#### [DHCPv6 Relay events](https://www.arubanetworks.com/techdocs/AOS-CX/10.07/HTML/5200-8214/Content/events/DHCPv6-RELAY.htm)
-| Field | Description | Type | Common |
-|-------|-------------|------|--------|
+#### [DHCPv6 Relay events](https://www.arubanetworks.com/techdocs/AOS-CX/10.15/HTML/elmrg/Content/events/DHCPv6-RELAY.htm)
+| Doc Field       | Schema Mapping    |
+|-----------------|-------------------|
 
+#### [DHCPv6 snooping events](https://www.arubanetworks.com/techdocs/AOS-CX/10.15/HTML/elmrg/Content/events/DHCPv6-SNOOPING.htm)
+| Doc Fields            | Schema Mapping                |
+|-----------------------|-------------------------------|
+| `<bindings_imported>` | client.dhcp.bindings_imported |
+| `<existing_port>`     | aruba.port                    |
+| `<file_name>`         | file.name                     |
+| `<file_path>`         | file.path                     |
+| `<ip>`                | client.ip                     |
+| `<ipv6_address>`      | client.ip, server.ip          |
+| `<lease>`             | aruba.dhcp.lease              |
+| `<mac>`               | client.mac                    |
+| `<message_type>`      | aruba.dhcp.message_type       |
+| `<nameserver_ip>`     | client.mac                    |
+| `<new_port>`          | aruba.dhcp.new_port           |
+| `<port>`              | aruba.port                    |
+| `<vid>`               | network.vlan.id               |
+| `<volume_name>`       | aruba.dhcp.volume_name        |
 
-#### [DHCPv6 snooping events](https://www.arubanetworks.com/techdocs/AOS-CX/10.07/HTML/5200-8214/Content/events/DHCPv6-SNOOPING.htm)
-
-| Doc Fields                       | Schema Mapping         |
-|----------------------------------|------------------------|
-| `<ipv6_address>`                 | client.ip, server.ip   |
-| `<port>`                         | aruba.port             |
-| `<mac>`                          | client.mac             |
-| `<existing_port>`                | aruba.port             |
-| `<new_port>`                     | aruba.dhcp.new_port    |
-| `<ip>`                           | client.ip              |
-| `<vid>`                          | network.vlan.id        |
-| `<volume_name>`                  | aruba.dhcp.volume_name |
-| `<file_name>`                    | file.name              |
-
-#### [Discovery and Capability Exchange (DCBx) events](https://www.arubanetworks.com/techdocs/AOS-CX/10.07/HTML/5200-8214/Content/events/DCBX.htm)
-| Field                | Description | Type | Common                          |
-|----------------------|-------------|------|---------------------------------|
-| aruba.dcbx.intf_name | Interface name as reported by the system | keyword | |
+#### [Discovery and Capability Exchange (DCBx) events](https://www.arubanetworks.com/techdocs/AOS-CX/10.15/HTML/elmrg/Content/events/DCBX.htm)
+| Doc Fields            | Schema Mapping                |
+|-----------------------|-------------------------------|
+| `<intf_name>` | aruba.interface.name |
 
 #### [DNS client events](https://www.arubanetworks.com/techdocs/AOS-CX/10.07/HTML/5200-8214/Content/events/DNS_CLIENT.htm)
 | Field            | Description | Type | Common           |
