@@ -2,6 +2,24 @@
 
 This integration uses the [Microsoft Graph API](https://learn.microsoft.com/en-us/graph/overview) to collect essential metrics from Microsoft Office 365, offering detailed insights into user activity, application usage, and overall system performance.
 
+## Data streams
+
+Following Microsoft 365 Graph Reports can be collected by Microsoft Office 365 Metrics integration.
+
+| Report          | API | Data-stream | Aggregation Level |
+|-----------------|-----|-------------|-------------------|
+| [Microsoft 365 Groups Activity Group Detail](https://learn.microsoft.com/en-us/microsoft-365/admin/activity-reports/office-365-groups-ww?view=o365-worldwide)      |    [reportRoot: getOffice365GroupsActivityDetail](https://learn.microsoft.com/en-us/graph/api/reportroot-getoffice365groupsactivitydetail?view=graph-rest-1.0&tabs=http)    |   Microsoft 365 Groups Activity Group Detail   |   `Day`-based   |
+| [Microsoft 365 Active Users Service User Counts](https://learn.microsoft.com/en-us/microsoft-365/admin/activity-reports/active-users-ww?view=o365-worldwide)      |    [reportRoot: getOffice365ServicesUserCounts](https://learn.microsoft.com/en-us/graph/api/reportroot-getoffice365servicesusercounts?view=graph-rest-1.0&tabs=http)    |   Office 365 Active Users metrics   |   `Period`-based   |
+| [OneDrive Usage Account Detail](https://learn.microsoft.com/en-us/microsoft-365/admin/activity-reports/onedrive-for-business-usage-ww?view=o365-worldwide)      |    [reportRoot: getOneDriveUsageAccountDetail](https://learn.microsoft.com/en-us/graph/api/reportroot-getonedriveusageaccountdetail?view=graph-rest-1.0&tabs=http)    |   Microsoft 365 OneDrive Usage Account Detail   |   `Day`-based   |
+| [OneDrive Usage Account Counts](https://learn.microsoft.com/en-us/microsoft-365/admin/activity-reports/onedrive-for-business-usage-ww?view=o365-worldwide)      |    [reportRoot: getOneDriveUsageAccountCounts](https://learn.microsoft.com/en-us/graph/api/reportroot-getonedriveusageaccountcounts?view=graph-rest-1.0&tabs=http)    |   Office 365 One Drive Usage metrics   |   `Period`-based   |
+| [OneDrive Usage File Counts](https://learn.microsoft.com/en-us/microsoft-365/admin/activity-reports/onedrive-for-business-usage-ww?view=o365-worldwide)      |    [reportRoot: getOneDriveUsageFileCounts](https://learn.microsoft.com/en-us/graph/api/reportroot-getonedriveusagefilecounts?view=graph-rest-1.0&tabs=http)    |   Office 365 One Drive Usage metrics   |   `Period`-based   |
+| [OneDrive Usage Storage](https://learn.microsoft.com/en-us/microsoft-365/admin/activity-reports/onedrive-for-business-usage-ww?view=o365-worldwide)      |    [reportRoot: getOneDriveUsageStorage](https://learn.microsoft.com/en-us/graph/api/reportroot-getonedriveusagestorage?view=graph-rest-1.0&tabs=http)    |   Office 365 One Drive Usage metrics   |   `Period`-based   |
+| [Outlook Activity Counts](https://learn.microsoft.com/en-us/microsoft-365/admin/activity-reports/email-activity-ww?view=o365-worldwide)      |    [reportRoot: getEmailActivityCounts](https://learn.microsoft.com/en-us/graph/api/reportroot-getemailactivitycounts?view=graph-rest-1.0&tabs=http)    |   Office 365 Outlook Activity metrics   |   `Period`-based   |
+| [Outlook App Usage Version User Counts](https://learn.microsoft.com/en-us/microsoft-365/admin/activity-reports/email-apps-usage-ww?view=o365-worldwide)      |    [reportRoot: getEmailAppUsageVersionsUserCounts](https://learn.microsoft.com/en-us/graph/api/reportroot-getemailappusageversionsusercounts?view=graph-rest-1.0&tabs=http)    |   Office 365 Outlook App Usage metrics   |   `Period`-based   |
+| [Outlook Mailbox Usage Quota Status Mailbox Counts](https://learn.microsoft.com/en-us/microsoft-365/admin/activity-reports/mailbox-usage?view=o365-worldwide)      |    [reportRoot: getMailboxUsageQuotaStatusMailboxCounts](https://learn.microsoft.com/en-us/graph/api/reportroot-getmailboxusagequotastatusmailboxcounts?view=graph-rest-1.0&tabs=http)    |   O365 mailbox quota status and mailbox usage detail metrics   |   `Period`-based   |
+| [Outlook Mailbox Usage Mailbox Detail](https://learn.microsoft.com/en-us/microsoft-365/admin/activity-reports/mailbox-usage?view=o365-worldwide)      |    [reportRoot: getMailboxUsageDetail](https://learn.microsoft.com/en-us/graph/api/reportroot-getmailboxusagedetail?view=graph-rest-1.0&tabs=http)    |   O365 mailbox quota status and mailbox usage detail metrics   |   `Period`-based   |
+| [Teams User Activity User Detail](https://learn.microsoft.com/en-us/microsoft-365/admin/activity-reports/microsoft-teams-user-activity-preview?view=o365-worldwide)      |    [reportRoot: getTeamsUserActivityUserDetail](https://learn.microsoft.com/en-us/graph/api/reportroot-getteamsuseractivityuserdetail?view=graph-rest-1.0&tabs=http)    |   Microsoft 365 Teams User Activity User Detail   |    `Day`-based   |
+| [Viva Engage Groups Activity Group Detail](https://learn.microsoft.com/en-us/microsoft-365/admin/activity-reports/viva-engage-groups-activity-report-ww?view=o365-worldwide)      |    [reportRoot: getYammerGroupsActivityDetail](https://learn.microsoft.com/en-us/graph/api/reportroot-getyammergroupsactivitydetail?view=graph-rest-1.0&tabs=http)    |   Microsoft 365 Viva Engage Groups Activity   |   `Day`-based   |
 
 ## Setup
 
@@ -663,7 +681,9 @@ Please refer to the following [document](https://www.elastic.co/guide/en/ecs/cur
 | o365.metrics.active.users.yammer.inactive.count | Number of Yammer inactive users. | integer |
 
 
-### Office365 Groups Activity Group Detail
+### Microsoft 365 Groups Activity Group Detail
+
+Get details about Microsoft 365 groups activity by group from [Microsoft Graph API](https://learn.microsoft.com/en-us/graph/api/reportroot-getoffice365groupsactivitydetail?view=graph-rest-1.0&tabs=http).
 
 An example event for `groups_activity_group_detail` looks as following:
 
@@ -674,7 +694,7 @@ An example event for `groups_activity_group_detail` looks as following:
         "version": "8.16.0"
     },
     "event": {
-        "original": "{\"Exchange Mailbox Storage Used (Byte)\":\"698640\",\"Exchange Mailbox Total Item Count\":\"9\",\"Exchange Received Email Count\":\"\",\"External Member Count\":\"0\",\"Group Display Name\":\"delete-1\",\"Group Id\":\"faa1ff4a-4677-4d4c-842a-dc63eb8b2ae3\",\"Group Type\":\"Private\",\"Is Deleted\":\"False\",\"Last Activity Date\":\"\",\"Member Count\":\"2\",\"Owner Principal Name\":\"AV@abc.onmicrosoft.com\",\"Report Period\":\"1\",\"SharePoint Active File Count\":\"\",\"SharePoint Site Storage Used (Byte)\":\"2029128\",\"SharePoint Total File Count\":\"6\",\"Yammer Liked Message Count\":\"\",\"Yammer Posted Message Count\":\"\",\"Yammer Read Message Count\":\"\",\"report\":{\"api_path\":\"/reports/getOffice365GroupsActivityDetail\",\"name\":\"Office365 Groups Activity Group Detail\"},\"﻿Report Refresh Date\":\"2024-12-24\"}"
+        "original": "{\"Exchange Mailbox Storage Used (Byte)\":\"698640\",\"Exchange Mailbox Total Item Count\":\"9\",\"Exchange Received Email Count\":\"\",\"External Member Count\":\"0\",\"Group Display Name\":\"delete-1\",\"Group Id\":\"faa1ff4a-4677-4d4c-842a-dc63eb8b2ae3\",\"Group Type\":\"Private\",\"Is Deleted\":\"False\",\"Last Activity Date\":\"\",\"Member Count\":\"2\",\"Owner Principal Name\":\"AV@abc.onmicrosoft.com\",\"Report Period\":\"1\",\"SharePoint Active File Count\":\"\",\"SharePoint Site Storage Used (Byte)\":\"2029128\",\"SharePoint Total File Count\":\"6\",\"Yammer Liked Message Count\":\"\",\"Yammer Posted Message Count\":\"\",\"Yammer Read Message Count\":\"\",\"report\":{\"api_path\":\"/reports/getOffice365GroupsActivityDetail\",\"name\":\"Microsoft 365 Groups Activity Group Detail\"},\"﻿Report Refresh Date\":\"2024-12-24\"}"
     },
     "group": {
         "id": "faa1ff4a-4677-4d4c-842a-dc63eb8b2ae3",
@@ -721,7 +741,7 @@ An example event for `groups_activity_group_detail` looks as following:
             },
             "report": {
                 "api_path": "/reports/getOffice365GroupsActivityDetail",
-                "name": "Office365 Groups Activity Group Detail"
+                "name": "Microsoft 365 Groups Activity Group Detail"
             }
         }
     },
@@ -783,6 +803,8 @@ Please refer to the following [document](https://www.elastic.co/guide/en/ecs/cur
 
 
 ### OneDrive Usage Account Detail
+
+Get details about OneDrive usage by account from [Microsoft Graph API](https://learn.microsoft.com/en-us/graph/api/reportroot-getonedriveusageaccountdetail?view=graph-rest-1.0&tabs=http).
 
 An example event for `onedrive_usage_account_detail` looks as following:
 
@@ -882,6 +904,8 @@ Please refer to the following [document](https://www.elastic.co/guide/en/ecs/cur
 
 
 ### Teams User Activity User Detail
+
+Get details about Microsoft Teams user activity by user from [Microsoft Graph API](https://learn.microsoft.com/en-us/graph/api/reportroot-getteamsuseractivityuserdetail?view=graph-rest-1.0&tabs=http).
 
 An example event for `teams_user_activity_user_detail` looks as following:
 
@@ -1054,6 +1078,8 @@ Please refer to the following [document](https://www.elastic.co/guide/en/ecs/cur
 
 
 ### Viva Engage Groups Activity Group Detail
+
+Get details about Yammer groups activity by group from [Microsoft Graph API](https://learn.microsoft.com/en-us/graph/api/reportroot-getyammergroupsactivitydetail?view=graph-rest-1.0&tabs=http).
 
 An example event for `viva_engage_groups_activity_group_detail` looks as following:
 
