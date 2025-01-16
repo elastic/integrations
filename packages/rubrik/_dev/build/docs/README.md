@@ -65,6 +65,18 @@ Please refer to the following [document](https://www.elastic.co/guide/en/ecs/cur
 
 {{event "virtualmachines"}}
 
+### Drives
+
+The `drives` dataset provides metrics related to the state of the drives.
+
+**ECS Field Reference**
+
+Please refer to the following [document](https://www.elastic.co/guide/en/ecs/current/ecs-field-reference.html) for detailed information on ECS fields.
+
+{{fields "drives"}}
+
+{{event "drives"}}
+
 ### MSSQL Databases
 
 The `mssql_databases` dataset provides metrics related to the state of the MSSQL databases.
