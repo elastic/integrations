@@ -296,6 +296,8 @@ Please refer to the following [document](https://www.elastic.co/guide/en/ecs/cur
 | rubrik.physical_hosts.cluster.id | The cluster uuid. | keyword |
 | rubrik.physical_hosts.cluster.name | The cluster name. | keyword |
 | rubrik.physical_hosts.connectivity_status | Connectivity status of host. | keyword |
+| rubrik.physical_hosts.effective_sla_domain.id | The ID of the SLA domain. | keyword |
+| rubrik.physical_hosts.effective_sla_domain.name | The name of the SLA domain. | keyword |
 | rubrik.physical_hosts.id | ID of the physical host. | keyword |
 | rubrik.physical_hosts.name | Name of the physical host. | keyword |
 | rubrik.physical_hosts.os_type | The operating system type of the physical host. | keyword |
@@ -317,6 +319,10 @@ An example event for `physical_hosts` looks as following:
             "cluster": {
                 "name": "cluster-1",
                 "id": "7562f3f9-f7ff-4828-af2c-87df3bf4f54c"
+            },
+            "effective_sla_domain": {
+                "id": "4031c11d-078e-4f14-8566-717cfffaf359",
+                "name": "sla-domain-1"
             },
             "connectivity_status": "DISCONNECTED",
             "os_type": "WINDOWS",
