@@ -11,7 +11,7 @@ import (
 	"github.com/elastic/integrations/dev/codeowners"
 )
 
-type PackageError struct {
+type packageError struct {
 	testCase
 	Serverless        bool
 	ServerlessProject string
@@ -25,7 +25,7 @@ type PackageError struct {
 	ClosedIssueURL    string
 }
 
-type PackageErrorOptions struct {
+type packageErrorOptions struct {
 	Serverless        bool
 	ServerlessProject string
 	LogsDB            bool
@@ -35,8 +35,8 @@ type PackageErrorOptions struct {
 	CodeownersPath    string
 }
 
-func NewPackageError(options PackageErrorOptions) (*PackageError, error) {
-	p := PackageError{
+func newPackageError(options packageErrorOptions) (*packageError, error) {
+	p := packageError{
 		Serverless:        options.Serverless,
 		ServerlessProject: options.ServerlessProject,
 		LogsDB:            options.LogsDB,
@@ -57,7 +57,7 @@ func NewPackageError(options PackageErrorOptions) (*PackageError, error) {
 	return &p, nil
 }
 
-func (p PackageError) String() string {
+func (p packageError) String() string {
 	var sb strings.Builder
 
 	if p.LogsDB {
@@ -80,18 +80,18 @@ func (p PackageError) String() string {
 	return sb.String()
 }
 
-func (p *PackageError) SetClosedURL(url string) {
+func (p *packageError) SetClosedURL(url string) {
 	p.ClosedIssueURL = url
 }
 
-func (p *PackageError) SetPreviousLinks(builds []string) {
+func (p *packageError) SetPreviousLinks(builds []string) {
 	p.PreviousBuilds = builds
 }
 
-func (p *PackageError) SetFirstBuild(url string) {
+func (p *packageError) SetFirstBuild(url string) {
 	p.BuildURL = url
 }
 
-func (p *PackageError) SetClosedIssue(url string) {
+func (p *packageError) SetClosedIssue(url string) {
 	p.ClosedIssueURL = url
 }

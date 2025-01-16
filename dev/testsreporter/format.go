@@ -19,20 +19,20 @@ var descriptionTmpl string
 
 const defaultMaxLengthMessages = 1000
 
-type ResultsFormatter struct {
-	result           PackageError
+type resultsFormatter struct {
+	result           packageError
 	maxPreviousLinks int
 }
 
-func (r ResultsFormatter) Title() string {
+func (r resultsFormatter) Title() string {
 	return r.result.String()
 }
 
-func (r ResultsFormatter) Owners() []string {
+func (r resultsFormatter) Owners() []string {
 	return r.result.Teams
 }
 
-func (r ResultsFormatter) Summary() string {
+func (r resultsFormatter) Summary() string {
 	var rendered bytes.Buffer
 	templ := template.Must(template.New("summary").Parse(summaryTmpl))
 	templ.Execute(&rendered, map[string]interface{}{
@@ -49,7 +49,7 @@ func (r ResultsFormatter) Summary() string {
 	return rendered.String()
 }
 
-func (r ResultsFormatter) Description() string {
+func (r resultsFormatter) Description() string {
 	var rendered bytes.Buffer
 	templ := template.Must(template.New("description").Parse(descriptionTmpl))
 	templ.Execute(&rendered, map[string]interface{}{

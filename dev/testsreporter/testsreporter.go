@@ -38,7 +38,7 @@ func Check(resultsPath string, options CheckOptions) error {
 	if err != nil {
 		return err
 	}
-	ghCli := NewGhCli(GithubOptions{
+	ghCli := newGhCli(githubOptions{
 		DryRun: false,
 	})
 
@@ -55,7 +55,7 @@ func Check(resultsPath string, options CheckOptions) error {
 	var multiErr error
 	for _, pError := range packageErrors {
 		ctx := context.TODO()
-		r := ResultsFormatter{
+		r := resultsFormatter{
 			result:           pError,
 			maxPreviousLinks: options.MaxPreviousLinks,
 		}
@@ -67,7 +67,7 @@ func Check(resultsPath string, options CheckOptions) error {
 		fmt.Println("----")
 		fmt.Println()
 
-		ghIssue := NewGithubIssue(GithubIssueOptions{
+		ghIssue := newGithubIssue(GithubIssueOptions{
 			Title:       r.Title(),
 			Description: r.Description(),
 			Labels:      []string{"flaky-test", "automation"},
@@ -81,8 +81,8 @@ func Check(resultsPath string, options CheckOptions) error {
 	return multiErr
 }
 
-func errorsFromTests(resultsPath string, options CheckOptions) ([]PackageError, error) {
-	var packageErrors []PackageError
+func errorsFromTests(resultsPath string, options CheckOptions) ([]packageError, error) {
+	var packageErrors []packageError
 	err := filepath.Walk(resultsPath, func(path string, info os.FileInfo, err error) error {
 		if err != nil {
 			return err
@@ -99,7 +99,7 @@ func errorsFromTests(resultsPath string, options CheckOptions) ([]PackageError, 
 		}
 
 		for _, c := range cases {
-			packageError, err := NewPackageError(PackageErrorOptions{
+			packageError, err := newPackageError(packageErrorOptions{
 				Serverless:        options.Serverless,
 				ServerlessProject: options.ServerlessProject,
 				LogsDB:            options.LogsDB,

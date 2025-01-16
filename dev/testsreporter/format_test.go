@@ -13,12 +13,12 @@ import (
 func TestSummary(t *testing.T) {
 	cases := []struct {
 		title        string
-		packageError PackageError
+		packageError packageError
 		expected     string
 	}{
 		{
 			title: "summary stack version with data stream",
-			packageError: PackageError{
+			packageError: packageError{
 				StackVersion: "8.14",
 				PackageName:  "foo",
 				DataStream:   "data",
@@ -34,7 +34,7 @@ func TestSummary(t *testing.T) {
 		},
 		{
 			title: "summary stack version with owners wihtout data stream",
-			packageError: PackageError{
+			packageError: packageError{
 				StackVersion: "8.14",
 				PackageName:  "foo",
 				testCase: testCase{
@@ -52,7 +52,7 @@ func TestSummary(t *testing.T) {
 		},
 		{
 			title: "summary stack version with data stream and owners",
-			packageError: PackageError{
+			packageError: packageError{
 				StackVersion: "8.14",
 				PackageName:  "foo",
 				DataStream:   "data",
@@ -72,7 +72,7 @@ func TestSummary(t *testing.T) {
 		},
 		{
 			title: "summary serverless with data stream and owners",
-			packageError: PackageError{
+			packageError: packageError{
 				Serverless:        true,
 				ServerlessProject: "observability",
 				PackageName:       "foo",
@@ -93,7 +93,7 @@ func TestSummary(t *testing.T) {
 		},
 		{
 			title: "summary serverless with owners without data stream",
-			packageError: PackageError{
+			packageError: packageError{
 				Serverless:        true,
 				ServerlessProject: "observability",
 				PackageName:       "foo",
@@ -112,7 +112,7 @@ func TestSummary(t *testing.T) {
 		},
 		{
 			title: "summary logsdb",
-			packageError: PackageError{
+			packageError: packageError{
 				LogsDB:      true,
 				PackageName: "foo",
 				testCase: testCase{
@@ -132,7 +132,7 @@ func TestSummary(t *testing.T) {
 
 	for _, c := range cases {
 		t.Run(c.title, func(t *testing.T) {
-			formatter := ResultsFormatter{
+			formatter := resultsFormatter{
 				result: c.packageError,
 			}
 			summary := formatter.Summary()
@@ -146,14 +146,14 @@ func TestDescription(t *testing.T) {
 	cases := []struct {
 		title        string
 		summary      string
-		packageError PackageError
+		packageError packageError
 		maxLinks     int
 		expected     string
 	}{
 		{
 			title:   "description error all fields",
 			summary: "summary",
-			packageError: PackageError{
+			packageError: packageError{
 				StackVersion:   "8.14",
 				BuildURL:       "http://link/1",
 				ClosedIssueURL: "http://link/old",
@@ -188,7 +188,7 @@ Latest failed builds:
 		{
 			title:   "description failure all fields",
 			summary: "summary",
-			packageError: PackageError{
+			packageError: packageError{
 				StackVersion:   "8.14",
 				BuildURL:       "http://link/1",
 				ClosedIssueURL: "http://link/old",
@@ -223,7 +223,7 @@ Latest failed builds:
 		{
 			title:   "description no closed issue",
 			summary: "summary",
-			packageError: PackageError{
+			packageError: packageError{
 				StackVersion: "8.14",
 				BuildURL:     "http://link/1",
 				PackageName:  "foo",
@@ -256,7 +256,7 @@ Latest failed builds:
 			title:    "description max links",
 			summary:  "summary",
 			maxLinks: 2,
-			packageError: PackageError{
+			packageError: packageError{
 				StackVersion: "8.14",
 				BuildURL:     "http://link/1",
 				PackageName:  "foo",
@@ -289,7 +289,7 @@ Latest 2 failed builds:
 
 	for _, c := range cases {
 		t.Run(c.title, func(t *testing.T) {
-			formatter := ResultsFormatter{
+			formatter := resultsFormatter{
 				result:           c.packageError,
 				maxPreviousLinks: c.maxLinks,
 			}

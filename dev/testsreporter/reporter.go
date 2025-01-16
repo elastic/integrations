@@ -11,11 +11,11 @@ import (
 )
 
 type reporter struct {
-	ghCli            *GhCli
+	ghCli            *ghCli
 	maxPreviousLinks int
 }
 
-func (r reporter) Report(ctx context.Context, issue *GithubIssue, packageError PackageError) error {
+func (r reporter) Report(ctx context.Context, issue *githubIssue, packageError packageError) error {
 	found, prevIssue, err := r.ghCli.Exists(ctx, issue, true)
 	if err != nil {
 		return fmt.Errorf("failed to check if issue already exists: %w", err)
@@ -54,7 +54,7 @@ func (r reporter) Report(ctx context.Context, issue *GithubIssue, packageError P
 	return nil
 }
 
-func (r reporter) closedIssueURL(ctx context.Context, issue *GithubIssue) (string, error) {
+func (r reporter) closedIssueURL(ctx context.Context, issue *githubIssue) (string, error) {
 	found, closedIssue, err := r.ghCli.Exists(ctx, issue, false)
 	if err != nil {
 		return "", fmt.Errorf("failed to check if there is a closed issue: %w", err)
@@ -65,8 +65,8 @@ func (r reporter) closedIssueURL(ctx context.Context, issue *GithubIssue) (strin
 	return "", nil
 }
 
-func (r reporter) updateDescriptionClosedIssueURL(issue *GithubIssue, packageError PackageError) *GithubIssue {
-	formatter := ResultsFormatter{
+func (r reporter) updateDescriptionClosedIssueURL(issue *githubIssue, packageError packageError) *githubIssue {
+	formatter := resultsFormatter{
 		result:           packageError,
 		maxPreviousLinks: r.maxPreviousLinks,
 	}
@@ -76,7 +76,7 @@ func (r reporter) updateDescriptionClosedIssueURL(issue *GithubIssue, packageErr
 	return issue
 }
 
-func (r reporter) updateIssueLatestBuildLinks(ctx context.Context, issue *GithubIssue, packageError PackageError) error {
+func (r reporter) updateIssueLatestBuildLinks(ctx context.Context, issue *githubIssue, packageError packageError) error {
 	currentBuild := packageError.BuildURL
 
 	// Retrieve information from the Issue description (first build, closed issue, previous links)
@@ -111,7 +111,7 @@ func (r reporter) updateIssueLatestBuildLinks(ctx context.Context, issue *Github
 		packageError.SetClosedIssue(closedIssueURL)
 	}
 
-	formatter := ResultsFormatter{
+	formatter := resultsFormatter{
 		result:           packageError,
 		maxPreviousLinks: r.maxPreviousLinks,
 	}
@@ -136,7 +136,7 @@ func updatePreviousLinks(previousLinks []string, currentBuild string, maxPreviou
 	return newLinks
 }
 
-func firstBuildLinkFromDescription(issue *GithubIssue) (string, error) {
+func firstBuildLinkFromDescription(issue *githubIssue) (string, error) {
 	description := issue.description
 	re := regexp.MustCompile(`First build failed: (?P<url>https://buildkite\.com/elastic/integrations(-serverless)?/builds/\d+)`)
 
@@ -156,7 +156,7 @@ func firstBuildLinkFromDescription(issue *GithubIssue) (string, error) {
 	return links[0], nil
 }
 
-func closedIssueFromDescription(issue *GithubIssue) (string, error) {
+func closedIssueFromDescription(issue *githubIssue) (string, error) {
 	description := issue.description
 	re := regexp.MustCompile(`Latest issue closed for the same test: (?P<url>https://github\.com/elastic/integrations/issues/\d+)`)
 
@@ -179,7 +179,7 @@ func closedIssueFromDescription(issue *GithubIssue) (string, error) {
 	return links[0], nil
 }
 
-func previousBuildLinksFromDescription(issue *GithubIssue) ([]string, error) {
+func previousBuildLinksFromDescription(issue *githubIssue) ([]string, error) {
 	description := issue.description
 	re := regexp.MustCompile(`- (?P<url>https://buildkite\.com/elastic/integrations(-serverless)?/builds/\d+)`)
 

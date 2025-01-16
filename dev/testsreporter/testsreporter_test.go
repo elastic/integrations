@@ -15,12 +15,12 @@ func TestErrorsFromTest(t *testing.T) {
 	cases := []struct {
 		title     string
 		xmlFolder string
-		expected  []PackageError
+		expected  []packageError
 	}{
 		{
 			title:     "read XML files",
 			xmlFolder: "testdata",
-			expected: []PackageError{
+			expected: []packageError{
 				{
 					testCase: testCase{
 						Name:          "system test: default",
@@ -226,7 +226,7 @@ Test description
 
 	for _, c := range cases {
 		t.Run(c.title, func(t *testing.T) {
-			links, err := previousBuildLinksFromDescription(&GithubIssue{description: c.description})
+			links, err := previousBuildLinksFromDescription(&githubIssue{description: c.description})
 			require.NoError(t, err)
 
 			assert.Len(t, links, len(c.expected))
@@ -276,7 +276,7 @@ First build failed: https://buildkite.com/elastic/integrations/builds/12
 
 	for _, c := range cases {
 		t.Run(c.title, func(t *testing.T) {
-			link, err := firstBuildLinkFromDescription(&GithubIssue{description: c.description})
+			link, err := firstBuildLinkFromDescription(&githubIssue{description: c.description})
 			if c.expectedError {
 				assert.Error(t, err)
 				return
