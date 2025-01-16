@@ -182,11 +182,11 @@ An example event for `virtualmachines` looks as following:
 | data_stream.dataset | Data stream dataset. | constant_keyword |  |  |
 | data_stream.namespace | Data stream namespace. | constant_keyword |  |  |
 | data_stream.type | Data stream type. | constant_keyword |  |  |
-| rubrik.fileset.archive_snapshots | The number of snapshots that have been archived. | long |  | gauge |
-| rubrik.fileset.archive_storage | The amount of storage used by archived snapshots. | long | byte | gauge |
+| rubrik.fileset.archive_snapshots.count | The number of snapshots that have been archived. | long |  | gauge |
+| rubrik.fileset.archive_storage.bytes | The amount of storage used by archived snapshots. | long | byte | gauge |
 | rubrik.fileset.compliance_status | The current compliance status of the workload. | keyword |  |  |
 | rubrik.fileset.host.os_type | The operating system type of the host. | keyword |  |  |
-| rubrik.fileset.local_storage | The local storage size in bytes. | long | byte | gauge |
+| rubrik.fileset.local_storage.bytes | The local storage size in bytes. | long | byte | gauge |
 | rubrik.fileset.name | The name of the Fileset. | keyword |  |  |
-| rubrik.fileset.total_snapshots | The total number of snapshots present for the workload. | long |  | gauge |
+| rubrik.fileset.total_snapshots.count | The total number of snapshots present for the workload. | long |  | gauge |
 
