@@ -38,19 +38,17 @@ func Check(resultsPath string, options CheckOptions) error {
 	if err != nil {
 		return err
 	}
-	ghCli := newGhCli(githubOptions{
-		DryRun: false,
-	})
-
-	aReporter := reporter{
-		ghCli:            ghCli,
-		maxPreviousLinks: options.MaxPreviousLinks,
-	}
 
 	if len(packageErrors) > options.MaxTestsReported {
 		fmt.Printf("Skip creating GitHub issues, hit the maximum number (%d) of tests to be reported. Total failing tests: %d.\n", options.MaxTestsReported, len(packageErrors))
 		return nil
 	}
+
+	ghCli := newGhCli(githubOptions{
+		DryRun: false,
+	})
+
+	aReporter := newReporter(ghCli, options.MaxPreviousLinks)
 
 	var multiErr error
 	for _, pError := range packageErrors {

@@ -15,6 +15,13 @@ type reporter struct {
 	maxPreviousLinks int
 }
 
+func newReporter(ghCli *ghCli, maxPreviousLinks int) reporter {
+	return reporter{
+		ghCli:            ghCli,
+		maxPreviousLinks: maxPreviousLinks,
+	}
+}
+
 func (r reporter) Report(ctx context.Context, issue *githubIssue, packageError packageError) error {
 	found, prevIssue, err := r.ghCli.Exists(ctx, issue, true)
 	if err != nil {
