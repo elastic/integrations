@@ -1,6 +1,6 @@
 # Azure OpenAI Integration
 
-The Azure OpenAI service provides flexibility to build your own copilot and AI applications. The Azure OpenAI integration collects metrics and logs through [azure-monitor](https://learn.microsoft.com/en-us/azure/azure-monitor/reference/supported-metrics/metrics-index) and Azure [event hub](https://learn.microsoft.com/en-us/azure/azure-monitor/essentials/stream-monitoring-data-event-hubs) respectively.
+The Azure OpenAI service provides flexibility to build your own copilot and AI applications. The Azure OpenAI integration collects metrics and logs through [azure-monitor](https://learn.microsoft.com/en-us/azure/azure-monitor/reference/supported-metrics/metrics-index) and the Azure [event hub](https://learn.microsoft.com/en-us/azure/azure-monitor/essentials/stream-monitoring-data-event-hubs) respectively.
 
 To fully populate the Azure OpenAI dashboard lenses, you have to enable both logs and metrics data streams and set up the Azure Billing integration in advance.
 
@@ -25,15 +25,15 @@ Refer to the [Azure Logs](https://docs.elastic.co/integrations/azure) page for m
 
 #### Default Logging
 
-The Azure OpenAI provides native logging and monitoring with which you can track the telemetry of the service. The Audit and RequestResponse log categories come under the native logging. However, the default logging doesn't log the inputs and outputs of the service. This is useful to ensure that the services operates as expected.
+The Azure OpenAI provides native logging and monitoring to track the telemetry of the service. The Audit and RequestResponse log categories come under the native logging. However, the default logging doesn't log the inputs and outputs of the service. This is useful to ensure that the services operates as expected.
 
 The logs collected using the default cognitive services are listed on the [Monitor OpenAI models](https://learn.microsoft.com/en-us/azure/architecture/ai-ml/openai/architecture/log-monitor-azure-openai#:~:text=Metric-,Default%20Azure%20OpenAI%20logging,-This%20solution) page.
 
 #### Advance Logging
 
-The API Management services provide the advance logging capabilities. The `ApiManagementGatewayLogs` category comes under the advance logging. This is not directly available in the Azure OpenAI service itself. You have to set up the API Management services in the Azure to access the Azure OpenAI. When the setup is complete, add the diagnostic setting for the API Management service.
+The API Management services provide the advanced logging capabilities. The `ApiManagementGatewayLogs` category comes under the advanced logging. This is not directly available in the Azure OpenAI service itself. You have to set up the API Management services in Azure to access the Azure OpenAI. When the setup is complete, add the diagnostic setting for the API Management service.
 
-For more information on how to implement the comprehensive solution using API Management services to monitor the Azure OpenAI services, check the [Monitor OpenAI models](https://learn.microsoft.com/en-us/azure/architecture/ai-ml/openai/architecture/log-monitor-azure-openai) page. 
+For more information on how to implement the comprehensive solution using API Management services to monitor the Azure OpenAI services, check the [Monitor OpenAI models](https://learn.microsoft.com/en-us/azure/architecture/ai-ml/openai/architecture/log-monitor-azure-openai) page.
 
 **Diagnostic settings**
 
