@@ -297,7 +297,6 @@ An example event for `filesets` looks as following:
         "rubrik.filesets"
     ]
 }
-
 ```
 ### Drives
 
