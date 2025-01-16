@@ -25,26 +25,22 @@ redact:
   fields:
     - apikey
 program: |-
-  
-  (
-  	(state.?cursor.auth_cookie.orValue(null) == null) ?
-  		// Authenticating using API to retrieve auth Cookie
-  		request("POST", state.url.trim_suffix("/") + "/Auth/SignAppin").with(
-  			{
-  				"Header": {
-  					"Authorization": [
-  						"PS-Auth key=" + state.apikeytoken + ";runas=" + state.username + ";pwd=[" + state.password + "];",
-  					],
-  					"Content-Type": ["application/json"],
-  				},
-  			}
-  		).do_request().as(resp,
-  			resp.Header["Set-Cookie"].filter(e, e.contains("ASP.NET_SessionId")).as(auth_cookie,
-  				auth_cookie[0]
-  			)
+  state.?cursor.auth_cookie.orValue(
+  	// Authenticating using API to retrieve auth Cookie
+  	request("POST", state.url.trim_suffix("/") + "/Auth/SignAppin").with(
+  		{
+  			"Header": {
+  				"Authorization": [
+  					"PS-Auth key=" + state.apikeytoken + ";runas=" + state.username + ";pwd=[" + state.password + "];",
+  				],
+  				"Content-Type": ["application/json"],
+  			},
+  		}
+  	).do_request().as(resp,
+  		resp.Header["Set-Cookie"].filter(e, e.contains("ASP.NET_SessionId")).as(auth_cookie,
+  			auth_cookie[0]
   		)
-  	:
-  		state.cursor.auth_cookie
+  	)
   ).as(auth_cookie,
   	(
   		(size(state.?cursor.asset_reqs.orValue([])) == 0) ?
