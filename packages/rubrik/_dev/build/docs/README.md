@@ -65,6 +65,11 @@ Please refer to the following [document](https://www.elastic.co/guide/en/ecs/cur
 
 {{event "virtualmachines"}}
 
+### Filesets
+
+{{ fields "filesets" }}
+
+{{event "filesets" }}
 ### Drives
 
 The `drives` dataset provides metrics related to the state of the drives.
