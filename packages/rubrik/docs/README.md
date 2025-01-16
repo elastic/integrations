@@ -368,3 +368,98 @@ An example event for `physical_hosts` looks as following:
     ]
 }
 ```
+
+### MSSQL Databases
+
+The `mssql_databases` dataset provides metrics related to the state of the MSSQL databases.
+
+**ECS Field Reference**
+
+Please refer to the following [document](https://www.elastic.co/guide/en/ecs/current/ecs-field-reference.html) for detailed information on ECS fields.
+
+**Exported fields**
+
+| Field | Description | Type |
+|---|---|---|
+| @timestamp | Event timestamp. | date |
+| data_stream.dataset | Data stream dataset. | constant_keyword |
+| data_stream.namespace | Data stream namespace. | constant_keyword |
+| data_stream.type | Data stream type. | constant_keyword |
+| rubrik.mssql_databases.cluster.id | The Rubrik cluster id where this object originated. | keyword |
+| rubrik.mssql_databases.cluster.name | The Rubrik cluster name where this object originated. | keyword |
+| rubrik.mssql_databases.effective_sla_domain.id | The ID of the SLA domain. | keyword |
+| rubrik.mssql_databases.effective_sla_domain.name | The name of the SLA domain. | keyword |
+| rubrik.mssql_databases.id | ID of the database. | keyword |
+| rubrik.mssql_databases.is_online | Specifies if the SQL Server database is online. | boolean |
+| rubrik.mssql_databases.missed_snapshots.count | Number of missed snapshots. | long |
+| rubrik.mssql_databases.name | Name of the database. | keyword |
+
+
+An example event for `mssql_databases` looks as following:
+
+```json
+{
+    "agent": {
+        "name": "docker-fleet-agent",
+        "id": "19728c71-8995-495f-acbd-ab53d6a60f02",
+        "type": "filebeat",
+        "ephemeral_id": "f7b08e7b-5b53-4ee4-b651-ebee08783840",
+        "version": "8.16.0"
+    },
+    "rubrik": {
+        "mssql_databases": {
+            "cluster": {
+                "name": "cluster-1",
+                "id": "f5ce5ffc-42d4-47bc-a64f-d928030892d5"
+            },
+            "effective_sla_domain": {
+                "id": "4031c11d-078e-4f14-8566-717cfffaf359",
+                "name": "sla-domain-1"
+            },
+            "name": "name-1",
+            "id": "2abed6ca-bbf7-42df-a402-2166a7abebd0",
+            "is_online": true
+        }
+    },
+    "@timestamp": "2025-01-15T13:32:41.191Z",
+    "ecs": {
+        "version": "8.16.0"
+    },
+    "data_stream": {
+        "namespace": "default",
+        "type": "metrics",
+        "dataset": "rubrik.mssql_databases"
+    },
+    "elastic_agent": {
+        "id": "19728c71-8995-495f-acbd-ab53d6a60f02",
+        "version": "8.16.0",
+        "snapshot": false
+    },
+    "host": {
+        "hostname": "docker-fleet-agent",
+        "os": {
+            "kernel": "6.8.0-51-generic",
+            "name": "Wolfi",
+            "type": "linux",
+            "version": "20230201",
+            "platform": "wolfi"
+        },
+        "ip": [
+            "172.18.0.7"
+        ],
+        "containerized": false,
+        "name": "docker-fleet-agent",
+        "mac": [
+            "02-42-AC-12-00-07"
+        ],
+        "architecture": "x86_64"
+    },
+    "event": {
+        "agent_id_status": "verified",
+        "ingested": "2025-01-15T13:32:42Z",
+        "created": "2025-01-15T13:32:41.191Z",
+        "kind": "metric",
+        "dataset": "rubrik.mssql_databases"
+    }
+}
+```
