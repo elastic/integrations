@@ -663,9 +663,15 @@ Please refer to the following [document](https://www.elastic.co/guide/en/ecs/cur
 | o365.metrics.active.users.yammer.inactive.count | Number of Yammer inactive users. | integer |
 
 
+
 ### Teams User Activity
 
 An example event for `teams_user_activity` looks as following:
+
+### Yammer Device Usage
+
+An example event for `yammer_device_usage` looks as following:
+
 
 ```json
 {
@@ -695,6 +701,35 @@ An example event for `teams_user_activity` looks as following:
                         },
                         "team_chat_messages": {
                             "count": "0"
+
+            "yammer": {
+                "device": {
+                    "usage": {
+                        "other": {
+                            "count": "1"
+                        },
+                        "windows_phone": {
+                            "count": "2"
+                        },
+                        "web": {
+                            "count": "3"
+                        },
+                        "report": {
+                            "date": "2024-12-18",
+                            "period": {
+                                "day": "7"
+                            },
+                            "refresh_date": "2024-12-24"
+                        },
+                        "ipad": {
+                            "count": "5"
+                        },
+                        "android_phone": {
+                            "count": "3"
+                        },
+                        "iphone": {
+                            "count": "1"
+
                         }
                     }
                 }
@@ -703,22 +738,38 @@ An example event for `teams_user_activity` looks as following:
     },
     "agent": {
         "name": "docker-fleet-agent",
+
         "id": "912ee420-1a2f-468d-bd26-72e08cfa9db6",
         "ephemeral_id": "47368821-c491-41df-bcdc-81be28c08ee3",
         "type": "filebeat",
         "version": "8.16.0"
     },
     "@timestamp": "2025-01-02T08:13:16.780Z",
+
+        "id": "2f0e797b-2ccc-4639-b6f4-f1d3647cf01d",
+        "type": "filebeat",
+        "ephemeral_id": "131c1ad1-8f88-4dff-b6f9-d1bd298cb934",
+        "version": "8.16.0"
+    },
+    "@timestamp": "2024-12-26T12:42:17.877Z",
+
     "ecs": {
         "version": "8.16.0"
     },
     "data_stream": {
         "namespace": "default",
         "type": "metrics",
+
         "dataset": "o365_metrics.teams_user_activity"
     },
     "elastic_agent": {
         "id": "912ee420-1a2f-468d-bd26-72e08cfa9db6",
+
+        "dataset": "o365_metrics.yammer_device_usage"
+    },
+    "elastic_agent": {
+        "id": "2f0e797b-2ccc-4639-b6f4-f1d3647cf01d",
+
         "version": "8.16.0",
         "snapshot": false
     },
@@ -739,6 +790,13 @@ An example event for `teams_user_activity` looks as following:
         "name": "docker-fleet-agent",
         "mac": [
             "02-42-C0-A8-B0-07"
+        "ip": [
+            "192.168.144.7"
+        ],
+        "containerized": false,
+        "name": "docker-fleet-agent",
+        "mac": [
+            "02-42-C0-A8-90-07"
         ],
         "architecture": "aarch64"
     },
@@ -749,6 +807,11 @@ An example event for `teams_user_activity` looks as following:
     },
     "tags": [
         "o365.metrics.outlook.activity"
+        "ingested": "2024-12-26T12:42:18Z",
+        "dataset": "o365_metrics.yammer_device_usage"
+    },
+    "tags": [
+        "o365metrics-yammer_device_usage"
     ]
 }
 ```
@@ -777,3 +840,12 @@ Please refer to the following [document](https://www.elastic.co/guide/en/ecs/cur
 | o365.metrics.teams.user.activity.report.period.day | The duration (e.g., 7 days) over which the report data is aggregated. | integer | d |
 | o365.metrics.teams.user.activity.report.refresh_date | The date when the report data was last updated. | date |  |
 | o365.metrics.teams.user.activity.team_chat_messages.count | The number of messages sent in Teams channels. | integer |  |
+| o365.metrics.yammer.device.usage.android_phone.count | The count of users accessing Yammer on Android phones. | integer |  |
+| o365.metrics.yammer.device.usage.ipad.count | The count of users accessing Yammer on iPads. | integer |  |
+| o365.metrics.yammer.device.usage.iphone.count | The count of users accessing Yammer on iPhones. | integer |  |
+| o365.metrics.yammer.device.usage.other.count | The count of users accessing Yammer on devices not listed. | integer |  |
+| o365.metrics.yammer.device.usage.report.date | The specific date for which the report data applies. | date |  |
+| o365.metrics.yammer.device.usage.report.period.day | The duration (e.g., 7 days) over which the quota status data is aggregated. | integer | d |
+| o365.metrics.yammer.device.usage.report.refresh_date | The date when the report data was last updated. | date |  |
+| o365.metrics.yammer.device.usage.web.count | The count of users accessing Yammer via web browsers. | integer |  |
+| o365.metrics.yammer.device.usage.windows_phone.count | The count of users accessing Yammer on Windows Phone devices. | integer |  |

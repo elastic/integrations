@@ -844,6 +844,9 @@ An example event for `index` looks as following:
         "index": {
             "hidden": true,
             "name": ".ml-state-000001",
+            "tier_preference": "data_content",
+            "creation_date": 1731657995821,
+            "version": "8503000",
             "primaries": {
                 "docs": {
                     "count": 0
@@ -974,6 +977,7 @@ An example event for `index` looks as following:
 | elasticsearch.cluster.id | Elasticsearch cluster id. | keyword |  |
 | elasticsearch.cluster.name | Elasticsearch cluster name. | keyword |  |
 | elasticsearch.cluster.state.id | Elasticsearch state id. | keyword |  |
+| elasticsearch.index.creation_date |  | date |  |
 | elasticsearch.index.hidden |  | boolean |  |
 | elasticsearch.index.name | Index name. | keyword |  |
 | elasticsearch.index.primaries.docs.count |  | long | gauge |
@@ -1009,6 +1013,7 @@ An example event for `index` looks as following:
 | elasticsearch.index.shards.primaries |  | long |  |
 | elasticsearch.index.shards.total |  | long |  |
 | elasticsearch.index.status |  | keyword |  |
+| elasticsearch.index.tier_preference |  | keyword |  |
 | elasticsearch.index.total.bulk.avg_size_in_bytes |  | long | gauge |
 | elasticsearch.index.total.bulk.avg_time_in_millis |  | long | gauge |
 | elasticsearch.index.total.bulk.total_operations |  | long | counter |
@@ -1049,6 +1054,7 @@ An example event for `index` looks as following:
 | elasticsearch.index.total.store.size.bytes |  | long | gauge |
 | elasticsearch.index.total.store.size_in_bytes | Total size of the index in bytes. | long | gauge |
 | elasticsearch.index.uuid |  | keyword |  |
+| elasticsearch.index.version |  | keyword |  |
 | elasticsearch.node.id | Node ID | keyword |  |
 | elasticsearch.node.master | Is the node the master node? | boolean |  |
 | elasticsearch.node.mlockall | Is mlockall enabled on the node? | boolean |  |
@@ -2647,4 +2653,40 @@ An example event for `shard` looks as following:
 | source_node.name |  | alias |
 | source_node.uuid |  | alias |
 | timestamp |  | alias |
+
+
+### Indices and data streams usage analysis
+
+_Technical preview: please report any issue [here](https://github.com/elastic/integrations/issues), and specify the "elasticsearch" integration_
+
+For version 8.17.1+ of the module and collected data, the integration also installs a transform job called `logs-elasticsearch.index_pivot-default-{VERSION}`. This transform **isn't started by default** (Stack management > Transforms), but will perform the following once activated:
+
+* Read the data from the `index` dataset, produced by this very same integration.
+* Aggregate the index-level stats in data-stream-centric insights, such as query count, query time or overall data volume.
+* This aggregated data is then processed through an additional, integration-installed, ingest pipeline (`{VERSION}-monitoring_indices`) before being shipped to a `monitoring-indices` index.
+
+You can then visualize the resulting data in the `[Elasticsearch] Indices & data streams usage` dashboard.
+
+![Indices & data streams usage](../img/indices_datastream_view.png)
+
+Apart from some high-level statistics, such as total query count, total query time and total addressable data, the dashboard surfaces usage information centered on two dimensions:
+
+* The [data tier](https://www.elastic.co/guide/en/elasticsearch/reference/current/data-tiers.html).
+* The data stream (see note below for details about how this is computed).
+
+#### Tier usage
+
+As data ages, it commonly reduces in relative importance and is commonly stored on less efficient and more cost-effective hardware. Usage count and query time should also proportionally diminish. Various visualizations in the dashboard allow you to verify this assumption on your data, and ensure your ILM policy (and therefore data tier transitions) are aligned with how the data is actually being used.
+
+#### Indices and data streams usage
+
+Other visualizations in the dashboard allow you to compare the relative footprint of each data stream, from a storage, querying and indexing perspective. This can help you identify anomalies, stemming from faulty configuration or poor user behavior.
+
+Both approaches can be used in conjunction, allowing you to fine-tune ILM on a data stream basis (if required) to closely match usage patterns.
+
+⚠️ Important notes:
+
+* The transform job will process all compatible historical data, which has two implications: 1. if you have pre-8.17.1 data, this will not get picked up by the job and 2. it might take time for "live" data to be available, as the transform job works its way through all documents. You can modify the transform job as you please if need be.
+* The target index `monitoring-indices` is not controlled by ILM. In case you work on a setup with a high count of indices or with a high retention, you may need to tune the transform job, or [activate ILM on the target index](https://www.elastic.co/guide/en/elasticsearch/reference/current/getting-started-index-lifecycle-management.html#manage-time-series-data-without-data-streams). Per our testing on a cluster with 5000 indices, we generated around 1GB of primary data for each week (your mileage may vary).
+* The identification of the data stream is based on the following grok pattern: `^(?:partial-)?(?:restored-)?(?:shrink-.{4}-)?(?:\\.ds-)?(?<elasticsearch.index.datastream>[a-z_0-9\\-\\.]+?)(-(?:\\d{4}\\.\\d{2}(\\.\\d{2})?))?(?:-\\d+)?$`. This should cover all "out of the box" names, but you can modify this to your liking in the `{VERSION}-monitoring_indices` ingest pipeline (though a copy is advised), if you are using non-standard names or would like to aggregate data differently.
 
