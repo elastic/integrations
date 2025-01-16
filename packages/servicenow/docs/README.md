@@ -143,6 +143,15 @@ There are some minimum requirements for running Elastic Agent. For more informat
 
 **Note**: To fetch parquet file data, enable the toggle, `Parquet Codec`
 
+## Troubleshooting
+
+### Data Kind in S3
+
+- By default, the integration expects the data in S3 to match with [ServiceNow REST API](https://developer.servicenow.com/dev.do#!/reference/api/washingtondc/rest/c_TableAPI#table-GET), i.e., each field as an object containing a `.value` and `.display_value` keys with their corresponding values. For more examples on sample events format, see [here](https://github.com/elastic/integrations/blob/main/packages/servicenow/data_stream/event/_dev/test/pipeline/test-event.log).
+- If users are unable to store such key-value pairs of `.value` and `.display_value` inside S3 buckets, and the fields inside S3 buckets are scalars containing only `Display Values` of the fields, users can choose to enable the integration option `Data Has Only Display Values` under `Advanced options`. Instead, if the S3 buckets contain scalar fields with `Values` from each fields, users can disable this option. By default, the option is disabled.
+- When the option `Data Has Only Display Values` is enabled, the ingest pipeline converts each scalar field to object by adding `.display_value`. For example, if this option is enabled, the S3 data `"install_status":"Installed"` is converted to `"install_status":{"display_value":"Installed"}` by the ingest pipeline. When this option is disabled, a similar S3 scalar form `"install_status":"Installed"` is converted to `"install_status":{"value":"Installed"}` by the ingest pipeline.
+- This ensures proper parsing of ingest pipeline without causing mapping conflicts or processor failures.
+
 ## Logs Reference
 
 ### Event
