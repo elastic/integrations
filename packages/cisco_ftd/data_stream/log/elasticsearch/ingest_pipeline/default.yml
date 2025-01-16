@@ -200,6 +200,15 @@ processors:
       if: 'ctx._temp_.cisco.message_id != ""'
       field: "event.action"
       value: "firewall-rule"
+  - script:
+      tag: "script_preserve_message"
+      if: 'ctx._temp_.cisco.message_id != ""'
+      lang: painless
+      source: |-
+        def messageID = Long.parseLong(ctx._temp_.cisco.message_id);
+        if (messageID >= 101001 && messageID <= 105052) {
+         ctx.event["reason"] = ctx.message;
+        }
   - dissect:
       if: "ctx._temp_.cisco.message_id == '106001'"
       field: "message"
