@@ -28,8 +28,6 @@ You can use our hosted Elasticsearch Service on Elastic Cloud, which is recommen
 
 You need an OpenAI account to access the API with a valid API key.
 
->**Note**: OpenAI's "project" system enables customers to organize their work through multiple projects, each supporting multiple API keys. For this integration, you must use the API key from the "Default" project. When using the Default project's API key, the API endpoint provides comprehensive usage metrics across all projects within your organization. While this functionality effectively delivers organization-wide metrics, it's important to understand that it relies on an undocumented API feature. As with any undocumented API usage, this functionality may be subject to changes in future OpenAI updates.
-
 ## Configuration
 
 The configuration parameters serve specific purposes:
@@ -49,6 +47,10 @@ The period parameter defaults to `24h` (24 hours) to align with OpenAI's usage d
 The rate limiting parameters (**limit: 12**, **burst: 1**) are calibrated to respect OpenAI's standard rate limits of **5 requests per minute**. The integration spaces requests **every 12 seconds with a single concurrent request** allowed.
 
 The lookback days parameter determines how much historical data to fetch on initial setup. The default 30-day lookback provides a comprehensive view of recent usage patterns while maintaining reasonable data volumes.
+
+## Compatibility
+
+OpenAI's "project" enables customers to organize their work through multiple projects, each supporting multiple API keys. For this integration, you must use the API key from the "Default" project. When using the Default project's API key, the API endpoint provides comprehensive usage metrics across all projects within your organization. While this functionality effectively delivers organization-wide metrics, it's important to understand that it relies on an undocumented API feature. As with any undocumented API usage, this functionality may be subject to changes in future OpenAI updates.
 
 ### Collection behavior
 
