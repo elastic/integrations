@@ -171,3 +171,108 @@ An example event for `virtualmachines` looks as following:
     }
 }
 ```
+
+### Drives
+
+The `drives` dataset provides metrics related to the state of the drives.
+
+**ECS Field Reference**
+
+Please refer to the following [document](https://www.elastic.co/guide/en/ecs/current/ecs-field-reference.html) for detailed information on ECS fields.
+
+**Exported fields**
+
+| Field | Description | Type |
+|---|---|---|
+| @timestamp | Event timestamp. | date |
+| data_stream.dataset | Data stream dataset. | constant_keyword |
+| data_stream.namespace | Data stream namespace. | constant_keyword |
+| data_stream.type | Data stream type. | constant_keyword |
+| rubrik.drives.capacity.bytes | Disk capacity, in bytes. | long |
+| rubrik.drives.cluster.id | The cluster UUID. | keyword |
+| rubrik.drives.cluster.name | The cluster name. | keyword |
+| rubrik.drives.id | ID of the Rubrik cluster disk type. | keyword |
+| rubrik.drives.is_encrypted | Specifies if the disk is encrypted. | boolean |
+| rubrik.drives.node_id | ID of the Rubrik cluster node. | keyword |
+| rubrik.drives.path | Disk path. | keyword |
+| rubrik.drives.status | Represents cluster's knowledge of a disk state. | keyword |
+| rubrik.drives.type | Disk type. | keyword |
+| rubrik.drives.unallocated.bytes | Disk unallocated bytes. | long |
+| rubrik.drives.usable.bytes | Disk usable bytes. | long |
+
+
+An example event for `drives` looks as following:
+
+```json
+{
+    "agent": {
+        "name": "docker-fleet-agent",
+        "id": "a35969d5-ae9b-49a1-87f2-cbc521f2989a",
+        "type": "filebeat",
+        "ephemeral_id": "e77b39f7-c984-4d5a-ae7e-dba3567aab2f",
+        "version": "8.16.0"
+    },
+    "rubrik": {
+        "drives": {
+            "cluster": {
+                "name": "cluster-1",
+                "id": "acbd69a0-64d3-4a34-a83e-c4ecddcd34b8"
+            },
+            "path": "/mnt/wwn-0x4123a4004a3612c7",
+            "usable": {
+                "bytes": 1452177072128
+            },
+            "unallocated": {
+                "bytes": 1492201697280
+            },
+            "is_encrypted": false,
+            "id": "sdd",
+            "type": "HDD",
+            "status": "ACTIVE",
+            "capacity": {
+                "bytes": 3834792386560
+            }
+        }
+    },
+    "@timestamp": "2025-01-15T17:26:20.012Z",
+    "ecs": {
+        "version": "8.16.0"
+    },
+    "data_stream": {
+        "namespace": "default",
+        "type": "metrics",
+        "dataset": "rubrik.drives"
+    },
+    "elastic_agent": {
+        "id": "a35969d5-ae9b-49a1-87f2-cbc521f2989a",
+        "version": "8.16.0",
+        "snapshot": false
+    },
+    "host": {
+        "hostname": "docker-fleet-agent",
+        "os": {
+            "kernel": "6.8.0-51-generic",
+            "name": "Wolfi",
+            "type": "linux",
+            "version": "20230201",
+            "platform": "wolfi"
+        },
+        "containerized": false,
+        "ip": [
+            "172.18.0.7"
+        ],
+        "name": "docker-fleet-agent",
+        "mac": [
+            "02-42-AC-12-00-07"
+        ],
+        "architecture": "x86_64"
+    },
+    "event": {
+        "agent_id_status": "verified",
+        "ingested": "2025-01-15T17:26:21Z",
+        "created": "2025-01-15T17:26:20.012Z",
+        "kind": "metric",
+        "dataset": "rubrik.drives"
+    }
+}
+```
