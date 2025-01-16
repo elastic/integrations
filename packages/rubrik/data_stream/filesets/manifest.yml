@@ -1,16 +1,16 @@
 type: metrics
-title: Rubrik Backups MSSQL Databases Metrics
+title: Rubrik Fileset Metrics
 streams:
   - input: cel
-    title: Rubrik Backups MSSQL Databases
-    description: Collect Rubrik Backups MSSQL databases data via the RSC GraphQL API
+    title: Rubrik Fileset Metrics
+    description: Collect Rubrik Fileset data via the RSC GraphQL API
     enabled: true
     template_path: cel.yml.hbs
     vars:
       - name: resource_timeout
         type: text
         title: Resource Timeout
-        description: Duration before declaring that the HTTP client connection has timed out. Valid time units are ns, us, ms, s, m, h. Default is "30"s.
+        description: Duration before declaring that the HTTP client connection has timed out. Valid time units are ns, us, ms, s, m, h. Default is 60s.
         show_user: false
         multi: false
         required: false
@@ -30,6 +30,7 @@ streams:
         show_user: false
         description: >
           Processors are used to reduce the number of fields in the exported event or to enhance the event with metadata. This executes in the agent before the logs are parsed. See [Processors](https://www.elastic.co/guide/en/fleet/current/elastic-agent-processor-configuration.html) for details.
+
       - name: tags
         type: text
         title: Tags
@@ -37,7 +38,7 @@ streams:
         required: false
         show_user: false
         default:
-          - rubrik.physical_hosts
+          - rubrik.filesets
       - name: preserve_original_event
         required: true
         show_user: true
@@ -52,7 +53,7 @@ streams:
         multi: false
         required: false
         show_user: false
-        description: Returns the first n elements from the list.
+        description: Specifies the maximum number of items to retrieve from the dataset.
       - name: filters
         type: yaml
         title: Filters
