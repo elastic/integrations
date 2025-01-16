@@ -76,3 +76,15 @@ Please refer to the following [document](https://www.elastic.co/guide/en/ecs/cur
 {{fields "drives"}}
 
 {{event "drives"}}
+
+### Physical Hosts
+
+The `physical_hosts` dataset provides metrics related to the state of the physical hosts.
+
+**ECS Field Reference**
+
+Please refer to the following [document](https://www.elastic.co/guide/en/ecs/current/ecs-field-reference.html) for detailed information on ECS fields.
+
+{{fields "physical_hosts"}}
+
+{{event "physical_hosts"}}
