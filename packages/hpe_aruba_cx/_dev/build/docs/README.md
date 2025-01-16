@@ -261,11 +261,11 @@ Note: Descriptions have not been filled out
 | `<interface>` | aruba.interface.id  |
 
 #### [Console events](https://www.arubanetworks.com/techdocs/AOS-CX/10.15/HTML/elmrg/Content/events/CONSOLE.htm)
-| Doc Fields    | Schema Mapping      |
-|---------------|---------------------|
-| `<ip_address>`        | client.ip   |
-| `<mgmt_intf>`        | aruba.interface.id   |
-| `<user_name>` | user.name  |
+| Doc Fields     | Schema Mapping        |
+|----------------|-----------------------|
+| `<ip_address>` | client.ip             |
+| `<mgmt_intf>`  | aruba.interface.id    |
+| `<user_name>`  | user.name             |
 
 #### [Container manager events](https://www.arubanetworks.com/techdocs/AOS-CX/10.07/HTML/5200-8214/Content/events/CONTAINER.htm)
 | Doc Fields   | Schema Mapping          |
