@@ -157,16 +157,20 @@ processors:
       field: azure.graphactivitylogs.level
       ignore_missing: true
       tag: remove-level
-  - rename:
+  - convert:
       field: azure.graphactivitylogs.duration_ms
       target_field: event.duration
+      type: long
       if: ctx.azure?.graphactivitylogs?.duration_ms != null
-      tag: rename-duration_ms
-  - rename:
+      tag: convert-duration_ms
+      ignore_failure: true
+  - convert:
       field: azure.graphactivitylogs.properties.duration_ms
       target_field: event.duration
-      if: ctx.azure?.graphactivitylogs?.properties?.durationMs != null && ctx.event?.duration == null
-      tag: rename-properties-durationMs
+      type: long
+      if: ctx.azure?.graphactivitylogs?.properties?.duration_ms != null && ctx.event?.duration == null
+      tag: convert-properties-duration_ms
+      ignore_failure: true
   - script:
       lang: painless
       source: |

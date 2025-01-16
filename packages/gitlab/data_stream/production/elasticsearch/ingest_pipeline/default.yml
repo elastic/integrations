@@ -137,21 +137,18 @@ processors:
     target_field: user_agent.original
     ignore_missing: true
 - script:
+    tag: kv_params
     lang: painless
-    description: Move the object `params.value` to `params.value_json` to avoid conflicts with the string `params.value`.
+    description: Move the objects in `params.value` to their own key value pairs
     source: |
-        List paramList = new ArrayList();
-        for (param in ctx.gitlab.production.params) {
-            if (param.value instanceof String) {
-                paramList.add(param);
-            } else {
-                Map objParam = new HashMap();
-                objParam.put("key",param.key);
-                objParam.put("value_json",param.value);
-                paramList.add(objParam);
-            }
-        }
-        ctx.gitlab.production.params = paramList;
+      def keyValuePairs = [];
+      for (item in ctx.gitlab.production.params) {
+        def key = item.key;
+        def value = item.value;
+        def keyValueObject = [key: value];
+        keyValuePairs.add(keyValueObject)
+      }
+      ctx.gitlab.production.params = keyValuePairs;
 - geoip:
     field: source.ip
     tag: geoip_source_ip

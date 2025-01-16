@@ -1,0 +1,135 @@
+source:
+  index: "metrics-elasticsearch.stack_monitoring.index*,.monitoring-es-8*,metricbeat-*"
+  query:
+    bool:
+      filter:
+        - bool:
+            filter:
+              # This filters only the documents that have the required fields (ie post 1.16 for the integration)
+              - exists:
+                  field: "elasticsearch.index.creation_date"
+              - exists:
+                  field: "elasticsearch.index.tier_preference"
+            should:
+              - term:
+                  event.dataset: "elasticsearch.index"
+              - term:
+                  event.dataset: "elasticsearch.stack_monitoring.index"
+        # Exclude system indices
+        - bool:
+            should:
+              - bool:
+                  must_not:
+                    - prefix:
+                        elasticsearch.index.name: "."
+              - bool:
+                  filter:
+                    - prefix:
+                        elasticsearch.index.name: ".ds-"
+                  must_not:
+                    - prefix:
+                        elasticsearch.index.name: ".ds-."
+                    - prefix:
+                        elasticsearch.index.name: ".ds-ilm-history"
+
+pivot:
+  group_by:
+    '@timestamp':
+      date_histogram:
+        field: "timestamp"
+        fixed_interval: "10m"
+    elasticsearch.cluster.name:
+      terms:
+        field: "elasticsearch.cluster.name"
+    elasticsearch.index.name:
+      terms:
+        field: "elasticsearch.index.name"
+  aggregations:
+    # Metrics at the start of the interval
+    start:
+      top_metrics:
+        metrics:
+          - field: "elasticsearch.index.primaries.docs.count"
+          - field: "elasticsearch.index.primaries.store.total_data_set_size_in_bytes"
+          - field: "elasticsearch.index.total.store.size_in_bytes"
+          - field: "elasticsearch.index.total.search.query_total"
+          - field: "elasticsearch.index.total.search.query_time_in_millis"
+          - field: "elasticsearch.index.total.indexing.index_total"
+          - field: "elasticsearch.index.total.indexing.index_time_in_millis"
+        sort:
+          "@timestamp": "asc"
+    # Metrics at the end of the interval
+    end:
+      top_metrics:
+        metrics:
+          # We will need to activate this once it is exposed, the rest will work directly
+          - field: "elasticsearch.index.tier_preference"
+          - field: "elasticsearch.index.creation_date"
+          - field: "elasticsearch.index.primaries.docs.count"
+          - field: "elasticsearch.index.primaries.store.total_data_set_size_in_bytes"
+          - field: "elasticsearch.index.total.store.size_in_bytes"
+          - field: "elasticsearch.index.total.search.query_total"
+          - field: "elasticsearch.index.total.search.query_time_in_millis"
+          - field: "elasticsearch.index.total.indexing.index_total"
+          - field: "elasticsearch.index.total.indexing.index_time_in_millis"
+        sort:
+          "@timestamp": "desc"
+    # For each gathered metric, calculate the delta
+    elasticsearch.index.primaries.docs.count_delta:
+      bucket_script:
+        buckets_path:
+          start: "start[elasticsearch.index.primaries.docs.count]"
+          end: "end[elasticsearch.index.primaries.docs.count]"
+        script: "Math.max(0, params.end-params.start)"
+    elasticsearch.index.primaries.store.total_data_set_size_in_bytes_delta:
+      bucket_script:
+        buckets_path:
+          start: "start[elasticsearch.index.primaries.store.total_data_set_size_in_bytes]"
+          end: "end[elasticsearch.index.primaries.store.total_data_set_size_in_bytes]"
+        script: "Math.max(0, params.end-params.start)"
+    elasticsearch.index.total.store.size_in_bytes_delta:
+      bucket_script:
+        buckets_path:
+          start: "start[elasticsearch.index.total.store.size_in_bytes]"
+          end: "end[elasticsearch.index.total.store.size_in_bytes]"
+        script: "Math.max(0, params.end-params.start)"
+    elasticsearch.index.total.search.query_total_delta:
+      bucket_script:
+        buckets_path:
+          start: "start[elasticsearch.index.total.search.query_total]"
+          end: "end[elasticsearch.index.total.search.query_total]"
+        script: "Math.max(0, params.end-params.start)"
+    elasticsearch.index.total.search.query_time_in_millis_delta:
+      bucket_script:
+        buckets_path:
+          start: "start[elasticsearch.index.total.search.query_time_in_millis]"
+          end: "end[elasticsearch.index.total.search.query_time_in_millis]"
+        script: "Math.max(0, params.end-params.start)"
+    elasticsearch.index.total.indexing.index_total_delta:
+      bucket_script:
+        buckets_path:
+          start: "start[elasticsearch.index.total.indexing.index_total]"
+          end: "end[elasticsearch.index.total.indexing.index_total]"
+        script: "Math.max(0, params.end-params.start)"
+    elasticsearch.index.total.indexing.index_time_in_millis_delta:
+      bucket_script:
+        buckets_path:
+          start: "start[elasticsearch.index.total.indexing.index_time_in_millis]"
+          end: "end[elasticsearch.index.total.indexing.index_time_in_millis]"
+        script: "Math.max(0, params.end-params.start)"
+dest:
+  index: "monitoring-indices"
+  pipeline: "1.16.0-monitoring_indices"
+description: This transform runs every 10 minutes to compute extra metrics for the Elasticsearch indices.
+frequency: 10m
+settings:
+  # This is required to prevent the transform from clobbering the Fleet-managed mappings.
+  deduce_mappings: false
+  unattended: true
+sync:
+  time:
+    delay: 60s
+    field: '@timestamp'
+_meta:
+  fleet_transform_version: 0.1.0
+  run_as_kibana_system: false
