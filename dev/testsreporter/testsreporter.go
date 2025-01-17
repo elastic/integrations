@@ -36,6 +36,10 @@ func Check(resultsPath string, options CheckOptions) error {
 		options.CodeownersPath = codeowners.DefaultCodeownersPath
 	}
 
+	if options.DryRun {
+		fmt.Println("DRY_RUN mode enabled")
+	}
+
 	fmt.Println("path: ", resultsPath)
 	packageErrors, err := errorsFromTests(resultsPath, options)
 	if err != nil {
