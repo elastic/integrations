@@ -8,13 +8,13 @@ You can find additional information about monitoring Logstash with the Logstash 
 
 The `logstash` package works with Logstash 8.5.0 and later
 
-## Technical Preview note
+## Agent based monitoring
 
-This Logstash package also includes a technical preview of Logstash data collection and dashboards
-native to elastic agent. The technical preview includes enhanced data collection, and a number of dashboards, which include additional insight into running pipelines.
+This Logstash package includes Logstash data collection and dashboards native to elastic agent. 
+The is the preferred method of monitoring Logstash as it includes enhanced data collection and dashboards, providing insight into pipelines and plugins.
 
 Note that this feature is not intended for use with the Stack Monitoring UI inside Kibana,
-and is included as a technical preview. Existing implementations wishing to continue using the Stack Monitoring UI should uncheck the technical preview option, and continue to use `Metrics (Stack Monitoring)`. Those users who wish to use the technical preview should uncheck `Metrics (Stack Monitoring)` and check `Metrics (Technical Preview)`
+Existing implementations wishing to continue using the Stack Monitoring UI should uncheck `Metrics (Elastic Agent)`, and continue to use `Metrics (Stack Monitoring)`. Those users who wish to use Agent based moniroting should uncheck `Metrics (Stack Monitoring)` and check `Metrics (Elastic Agent)`
 
 
 ## Logs
