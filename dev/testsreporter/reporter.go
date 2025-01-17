@@ -41,7 +41,7 @@ func (r reporter) Report(ctx context.Context, issue *githubIssue, resultError fa
 	}
 	nextIssue.SetDescription(description)
 
-	// TEST - TO REMOVE
+	// TODO: TEST - TO REMOVE
 	fmt.Printf("Description of the issue:\n%s", description)
 
 	return r.createOrUpdateIssue(ctx, nextIssue)

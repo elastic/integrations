@@ -19,9 +19,6 @@ type buildError struct {
 	stackVersion      string
 	teams             []string
 	packages          []string
-	buildURL          string
-	previousBuilds    []string
-	closedIssueURL    string
 }
 
 type buildErrorOptions struct {
@@ -44,9 +41,11 @@ func newBuildError(options buildErrorOptions) (*buildError, error) {
 		stackVersion:      options.StackVersion,
 		packages:          options.Packages,
 		teams:             []string{reportingTeam},
-		buildURL:          options.BuildURL,
-		closedIssueURL:    options.ClosedIssueURL,
-		previousBuilds:    options.PreviousBuilds,
+		errorLinks: errorLinks{
+			firstBuild:     options.BuildURL,
+			closedIssueURL: options.ClosedIssueURL,
+			previousBuilds: options.PreviousBuilds,
+		},
 	}
 
 	return &b, nil
@@ -96,8 +95,8 @@ func (p *buildError) SummaryData() map[string]any {
 
 func (p *buildError) DescriptionData() map[string]any {
 	return map[string]any{
-		"firstBuild":     p.buildURL,
-		"closedIssueURL": p.closedIssueURL,
-		"previousBuilds": p.previousBuilds,
+		"firstBuild":     p.errorLinks.firstBuild,
+		"closedIssueURL": p.errorLinks.closedIssueURL,
+		"previousBuilds": p.errorLinks.previousBuilds,
 	}
 }
