@@ -46,9 +46,24 @@ program: |
         "events": (
           has(body.events) && body.events != null
           ?
-            body.events.map(e, {
-              "message": e.encode_json(),
-            })
+            body.events.map(e, e.udm.securityResult.map(result, {
+                "message": {
+                    ?"name": e.?name,
+                    "udm": {
+                      ?"metadata": e.?udm.?metadata,
+                      ?"target": e.?udm.?target,
+                      "securityResult": result,
+                      ?"about": e.?udm.?about,
+                      ?"additional": e.?udm.?additional,
+                      ?"extensions": e.?udm.?extensions,
+                      ?"intermediary": e.?udm.?intermediary,
+                      ?"network": e.?udm.?network,
+                      ?"observer": e.?udm.?observer,
+                      ?"principal": e.?udm.?principal,
+                      ?"src": e.?udm.?src,
+                    }
+                  }.encode_json()
+            })).flatten()
           :
             []
           ),

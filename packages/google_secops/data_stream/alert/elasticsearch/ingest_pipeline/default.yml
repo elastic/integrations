@@ -30,15 +30,6 @@ processors:
         - append:
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
-  - fingerprint:
-      fields:
-        - json.name
-        - json.udm.metadata.eventTimestamp
-        - json.udm.metadata.id
-        - json.udm.metadata.ingestedTimestamp
-      tag: fingerprint_google_secops_alert
-      target_field: _id
-      ignore_missing: true 
   - set:
       field: event.kind
       tag: set_event_kind_to_alert
@@ -80,7 +71,7 @@ processors:
                 value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - foreach:
       field: google_secops.alert.udm.extensions.vulns.vulnerabilities
-      if: ctx.google_secops?.alert?.udm?.extensions?.vulns?.vulnerabilities instanceof List 
+      if: ctx.google_secops?.alert?.udm?.extensions?.vulns?.vulnerabilities instanceof List
       processor:
         append:
           field: vulnerability.score.base
@@ -1359,18 +1350,59 @@ processors:
       allow_duplicates: false
       if: ctx.user?.name != null
   - foreach:
-      field: google_secops.alert.udm.securityResult
-      if: ctx.google_secops?.alert?.udm?.securityResult instanceof List
+      field: google_secops.alert.udm.securityResult.about.user.emailAddresses
+      if: ctx.google_secops?.alert?.udm?.securityResult?.about?.user?.emailAddresses instanceof List
       processor:
-        foreach:
-          field: _ingest._value.about.user.emailAddresses
-          ignore_failure: true
-          processor:
-            append:
-              field: related.user
-              tag: append_udm_securityResult_about_user_emailAddresses_into_related_user
-              value: '{{{_ingest._value}}}'
-              allow_duplicates: false
+        append:
+          field: related.user
+          tag: append_udm_securityResult_about_user_emailAddresses_into_related_user
+          value: '{{{_ingest._value}}}'
+          allow_duplicates: false
+  - foreach:
+      field: google_secops.alert.udm.securityResult.action
+      if: ctx.google_secops?.alert?.udm?.securityResult?.action instanceof List
+      processor:
+        append:
+          field: event.action
+          tag: append_udm_securityResult_action_into_event_action
+          value: '{{{_ingest._value}}}'
+          allow_duplicates: false
+  - lowercase:
+      field: event.action
+      tag: lowercase_event_action
+      ignore_missing: true
+  - set:
+      field: message
+      copy_from: google_secops.alert.udm.securityResult.description
+      ignore_empty_value: true
+  - set:
+      field: rule.name
+      copy_from: google_secops.alert.udm.securityResult.ruleName
+      ignore_empty_value: true
+  - script:
+      tag: script_to_set_event_severity
+      lang: painless
+      description: Script to set event severity.
+      if: ctx.google_secops?.alert?.udm?.securityResult?.severity != null
+      source: |-
+        if (ctx.google_secops.alert.udm.securityResult.severity.toUpperCase() == 'CRITICAL') {
+          ctx.event.severity = 500
+        } else if (ctx.google_secops.alert.udm.securityResult.severity.toUpperCase() == 'ERROR') {
+          ctx.event.severity = 150
+        } else if (ctx.google_secops.alert.udm.securityResult.severity.toUpperCase() == 'HIGH') {
+          ctx.event.severity = 400
+        } else if (ctx.google_secops.alert.udm.securityResult.severity.toUpperCase() == 'INFORMATIONAL') {
+          ctx.event.severity = 100
+        }  else if (ctx.google_secops.alert.udm.securityResult.severity.toUpperCase() == 'LOW') {
+          ctx.event.severity = 200
+        } else if (ctx.google_secops.alert.udm.securityResult.severity.toUpperCase() == 'MEDIUM') {
+          ctx.event.severity = 300
+        } else if (ctx.google_secops.alert.udm.securityResult.severity.toUpperCase() == 'NONE') {
+          ctx.event.severity = 101
+        } else if (ctx.google_secops.alert.udm.securityResult.severity.toUpperCase() == 'UNKNOWN_SEVERITY') {
+          ctx.event.severity = 0
+        }
+      ignore_failure: true
   - foreach:
       field: source.ip
       if: ctx.source?.ip instanceof List
@@ -1532,6 +1564,8 @@ processors:
         - google_secops.alert.udm.src.ip
         - google_secops.alert.udm.principal.user.emailAddresses
         - google_secops.alert.udm.principal.user.groupIdentifiers
+        - google_secops.alert.udm.securityResult.description
+        - google_secops.alert.udm.securityResult.ruleName
       tag: remove_custom_duplicate_fields
       ignore_missing: true
       if: ctx.tags == null || !(ctx.tags.contains('preserve_duplicate_custom_fields'))
