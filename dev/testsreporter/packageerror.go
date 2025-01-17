@@ -25,12 +25,9 @@ type packageError struct {
 	serverlessProject string
 	logsDB            bool
 	stackVersion      string
-	buildURL          string
 	teams             []string
 	packageName       string
 	dataStream        string
-	previousBuilds    []string
-	closedIssueURL    string
 }
 
 type packageErrorOptions struct {
@@ -52,11 +49,14 @@ func newPackageError(options packageErrorOptions) (*packageError, error) {
 		serverlessProject: options.ServerlessProject,
 		logsDB:            options.LogsDB,
 		stackVersion:      options.StackVersion,
-		buildURL:          options.BuildURL,
 		testCase:          options.TestCase,
-		closedIssueURL:    options.ClosedIssueURL,
-		previousBuilds:    options.PreviousBuilds,
 		teams:             options.Teams,
+
+		errorLinks: errorLinks{
+			firstBuild:     options.BuildURL,
+			closedIssueURL: options.ClosedIssueURL,
+			previousBuilds: options.PreviousBuilds,
+		},
 	}
 
 	p.packageName = p.testCase.PackageName()
@@ -125,8 +125,8 @@ func (p *packageError) DescriptionData() map[string]any {
 	return map[string]any{
 		"failure":        truncateText(p.Failure, defaultMaxLengthMessages),
 		"error":          truncateText(p.Error, defaultMaxLengthMessages),
-		"firstBuild":     p.buildURL,
-		"closedIssueURL": p.closedIssueURL,
-		"previousBuilds": p.previousBuilds,
+		"firstBuild":     p.errorLinks.firstBuild,
+		"closedIssueURL": p.errorLinks.closedIssueURL,
+		"previousBuilds": p.errorLinks.previousBuilds,
 	}
 }

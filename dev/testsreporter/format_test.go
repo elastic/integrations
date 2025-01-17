@@ -154,17 +154,19 @@ func TestDescription(t *testing.T) {
 			title:   "description error all fields",
 			summary: "summary",
 			packageError: packageError{
-				stackVersion:   "8.14",
-				buildURL:       "http://link/1",
-				closedIssueURL: "http://link/old",
-				packageName:    "foo",
-				previousBuilds: []string{
-					"http://link/2",
-					"http://link/3",
-				},
+				stackVersion: "8.14",
+				packageName:  "foo",
 				testCase: testCase{
 					Name:  "mytest",
 					Error: "myerror",
+				},
+				errorLinks: errorLinks{
+					firstBuild:     "http://link/1",
+					closedIssueURL: "http://link/old",
+					previousBuilds: []string{
+						"http://link/2",
+						"http://link/3",
+					},
 				},
 			},
 			expected: `- Stack version: 8.14
@@ -189,17 +191,19 @@ Latest failed builds:
 			title:   "description failure all fields",
 			summary: "summary",
 			packageError: packageError{
-				stackVersion:   "8.14",
-				buildURL:       "http://link/1",
-				closedIssueURL: "http://link/old",
-				packageName:    "foo",
-				previousBuilds: []string{
-					"http://link/2",
-					"http://link/3",
-				},
+				stackVersion: "8.14",
+				packageName:  "foo",
 				testCase: testCase{
 					Name:    "mytest",
 					Failure: "myfailure",
+				},
+				errorLinks: errorLinks{
+					firstBuild:     "http://link/1",
+					closedIssueURL: "http://link/old",
+					previousBuilds: []string{
+						"http://link/2",
+						"http://link/3",
+					},
 				},
 			},
 			expected: `- Stack version: 8.14
@@ -225,15 +229,17 @@ Latest failed builds:
 			summary: "summary",
 			packageError: packageError{
 				stackVersion: "8.14",
-				buildURL:     "http://link/1",
 				packageName:  "foo",
-				previousBuilds: []string{
-					"http://link/2",
-					"http://link/3",
-				},
 				testCase: testCase{
 					Name:  "mytest",
 					Error: "myerror",
+				},
+				errorLinks: errorLinks{
+					firstBuild: "http://link/1",
+					previousBuilds: []string{
+						"http://link/2",
+						"http://link/3",
+					},
 				},
 			},
 			expected: `- Stack version: 8.14
@@ -258,15 +264,17 @@ Latest failed builds:
 			maxLinks: 2,
 			packageError: packageError{
 				stackVersion: "8.14",
-				buildURL:     "http://link/1",
 				packageName:  "foo",
-				previousBuilds: []string{
-					"http://link/2",
-					"http://link/3",
-				},
 				testCase: testCase{
 					Name:  "mytest",
 					Error: "myerror",
+				},
+				errorLinks: errorLinks{
+					firstBuild: "http://link/1",
+					previousBuilds: []string{
+						"http://link/2",
+						"http://link/3",
+					},
 				},
 			},
 			expected: `- Stack version: 8.14

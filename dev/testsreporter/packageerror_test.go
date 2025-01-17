@@ -44,10 +44,12 @@ func TestNewPackageError(t *testing.T) {
 				serverlessProject: "observability",
 				logsDB:            false,
 				stackVersion:      "8.16.0-SNAPSHOT",
-				buildURL:          "https://buildkite.com/elastic/integrations/build/1",
 				packageName:       "elastic_package_registry",
 				dataStream:        "datastream",
 				teams:             []string{"@elastic/ecosystem"},
+				errorLinks: errorLinks{
+					firstBuild: "https://buildkite.com/elastic/integrations/build/1",
+				},
 			},
 		},
 		{
@@ -76,10 +78,12 @@ func TestNewPackageError(t *testing.T) {
 				serverlessProject: "observability",
 				logsDB:            false,
 				stackVersion:      "8.16.0-SNAPSHOT",
-				buildURL:          "https://buildkite.com/elastic/integrations/build/1",
 				packageName:       "elastic_package_registry",
 				dataStream:        "",
 				teams:             []string{"@elastic/ecosystem"},
+				errorLinks: errorLinks{
+					firstBuild: "https://buildkite.com/elastic/integrations/build/1",
+				},
 			},
 		},
 		{
