@@ -33,6 +33,9 @@ type packageErrorOptions struct {
 	BuildURL          string
 	TestCase          testCase
 	CodeownersPath    string
+	ClosedIssueURL    string
+	PreviousBuilds    []string
+	Teams             []string
 }
 
 func newPackageError(options packageErrorOptions) (*packageError, error) {
@@ -43,16 +46,21 @@ func newPackageError(options packageErrorOptions) (*packageError, error) {
 		StackVersion:      options.StackVersion,
 		BuildURL:          options.BuildURL,
 		testCase:          options.TestCase,
+		ClosedIssueURL:    options.ClosedIssueURL,
+		PreviousBuilds:    options.PreviousBuilds,
+		Teams:             options.Teams,
 	}
 
 	p.PackageName = p.testCase.PackageName()
 	p.DataStream = p.testCase.DataStream()
 
-	owners, err := codeowners.PackageOwners(p.PackageName, p.DataStream, options.CodeownersPath)
-	if err != nil {
-		return nil, fmt.Errorf("failed to find owners for package %s: %w", p.PackageName, err)
+	if len(options.Teams) == 0 {
+		owners, err := codeowners.PackageOwners(p.PackageName, p.DataStream, options.CodeownersPath)
+		if err != nil {
+			return nil, fmt.Errorf("failed to find owners for package %s: %w", p.PackageName, err)
+		}
+		p.Teams = owners
 	}
-	p.Teams = owners
 
 	return &p, nil
 }
