@@ -1,30 +1,43 @@
-type: logs
+type: metrics
 title: Rubrik Storage Unmanaged Objects Metrics
 streams:
-  - input: httpjson
+  - input: cel
+    title: Rubrik Storage Unmanaged Objects
+    description: Collect Rubrik Storage unmanaged objects data via the RSC GraphQL API
+    enabled: true
+    template_path: cel.yml.hbs
     vars:
-      - name: http_client_timeout
+      - name: resource_timeout
         type: text
-        title: HTTP Client Timeout
-        description: Duration before declaring that the HTTP client connection has timed out. Valid time units are ns, us, ms, s, m, h.
+        title: Resource Timeout
+        description: Duration before declaring that the HTTP client connection has timed out. Valid time units are ns, us, ms, s, m, h. Default is "30"s.
+        show_user: false
         multi: false
         required: false
-        show_user: true
         default: 60s
       - name: interval
         type: text
         title: Interval
-        multi: false
-        required: true
+        description: The interval at which the API is polled, supported in seconds, minutes, and hours.
         show_user: true
-        description: Interval at which the alerts will be pulled. The value must be between 2m and 1h. Supported units for this parameter are h/m/s.
-        default: 10m
+        required: true
+        default: 5m
+      - name: processors
+        type: yaml
+        title: Processors
+        multi: false
+        required: false
+        show_user: false
+        description: >
+          Processors are used to reduce the number of fields in the exported event or to enhance the event with metadata. This executes in the agent before the logs are parsed. See [Processors](https://www.elastic.co/guide/en/fleet/current/elastic-agent-processor-configuration.html) for details.
       - name: tags
         type: text
         title: Tags
         multi: true
         required: false
-        show_user: true
+        show_user: false
+        default:
+          - rubrik.physical_hosts
       - name: preserve_original_event
         required: true
         show_user: true
@@ -33,14 +46,6 @@ streams:
         type: bool
         multi: false
         default: false
-      - name: processors
-        type: yaml
-        title: Processors
-        multi: false
-        required: false
-        show_user: false
-        description: >
-          Processors are used to reduce the number of fields in the exported event or to enhance the event with metadata.  This executes in the agent before the logs are parsed.  See [Processors](https://www.elastic.co/guide/en/beats/filebeat/current/filtering-and-enhancing-data.html) for details.
       - name: first
         type: integer
         title: First
@@ -48,27 +53,6 @@ streams:
         required: false
         show_user: false
         description: Returns the first n elements from the list.
-      - name: after
-        type: text
-        title: After
-        multi: false
-        required: false
-        show_user: false
-        description: Returns the elements in the list that occur after the specified cursor.
-      - name: last
-        type: integer
-        title: Last
-        multi: false
-        required: false
-        show_user: false
-        description: Returns the last n elements from the list.
-      - name: before
-        type: text
-        title: Before
-        multi: false
-        required: false
-        show_user: false
-        description: Returns the elements in the list that occur before the specified cursor.
       - name: cluster_uuid
         type: text
         title: Cluster UUID
@@ -94,10 +78,6 @@ streams:
         type: text
         title: Retention SLA Domain IDs
         multi: true
-        required: true
+        required: false
         show_user: true
         description: Retention SLAs to filter.
-
-    template_path: httpjson.yml.hbs
-    title: Rubrik Storage Unmanaged Objects
-    description: Collect Rubrik Storage unmanaged objects data via the RSC GraphQL API

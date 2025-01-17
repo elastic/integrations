@@ -4,13 +4,9 @@ processors:
   - set:
       field: ecs.version
       value: 8.16.0
-      ignore_failure: true
-      ignore_empty_value: true
   - set:
       field: event.kind
       value: metric
-      ignore_failure: true
-      ignore_empty_value: true
   - rename:
       field: message
       target_field: event.original
@@ -26,20 +22,36 @@ processors:
       field: event.original
       target_field: json
   - rename:
-      field: json.data.archiveStorage
+      field: json.archiveStorage
       target_field: rubrik.unmanaged_objects.archive_storage.bytes
       ignore_missing: true
   - rename:
-      field: json.data.localStorage
+      field: json.localStorage
       target_field: rubrik.unmanaged_objects.local_storage.bytes
       ignore_missing: true
   - rename:
-      field: json.data.snapshotCount
+      field: json.snapshotCount
       target_field: rubrik.unmanaged_objects.snapshot.count
       ignore_missing: true
   - rename:
-      field: json.data.unmanagedStatus
+      field: json.unmanagedStatus
       target_field: rubrik.unmanaged_objects.unmanaged_status
+      ignore_missing: true
+  - rename:
+      field: json.cluster.id
+      target_field: rubrik.unmanaged_objects.cluster.id
+      ignore_missing: true
+  - rename:
+      field: json.cluster.name
+      target_field: rubrik.unmanaged_objects.cluster.name
+      ignore_missing: true
+  - rename:
+      field: json.effectiveSlaDomain.id
+      target_field: rubrik.unmanaged_objects.effective_sla_domain.id
+      ignore_missing: true
+  - rename:
+      field: json.effectiveSlaDomain.name
+      target_field: rubrik.unmanaged_objects.effective_sla_domain.name
       ignore_missing: true
   - script:
       description: Drops null/empty values recursively
