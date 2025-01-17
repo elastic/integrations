@@ -15,12 +15,12 @@ func TestErrorsFromTest(t *testing.T) {
 	cases := []struct {
 		title     string
 		xmlFolder string
-		expected  []packageError
+		expected  []*packageError
 	}{
 		{
 			title:     "read XML files",
 			xmlFolder: "testdata",
-			expected: []packageError{
+			expected: []*packageError{
 				{
 					testCase: testCase{
 						Name:          "system test: default",

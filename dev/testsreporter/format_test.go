@@ -8,6 +8,7 @@ import (
 	"testing"
 
 	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
 )
 
 func TestSummary(t *testing.T) {
@@ -135,7 +136,8 @@ func TestSummary(t *testing.T) {
 			formatter := resultsFormatter{
 				result: &c.packageError,
 			}
-			summary := formatter.Summary()
+			summary, err := formatter.Summary()
+			require.NoError(t, err)
 
 			assert.Equal(t, c.expected, summary)
 		})
@@ -301,7 +303,8 @@ Latest 2 failed builds:
 				result:           &c.packageError,
 				maxPreviousLinks: c.maxLinks,
 			}
-			description := formatter.Description()
+			description, err := formatter.Description()
+			require.NoError(t, err)
 
 			assert.Equal(t, c.expected, description)
 		})

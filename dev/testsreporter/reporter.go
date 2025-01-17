@@ -22,23 +22,27 @@ func newReporter(ghCli *ghCli, maxPreviousLinks int) reporter {
 	}
 }
 
-func (r reporter) Report(ctx context.Context, issue *githubIssue, packageError failureObserver) error {
-	links, nextIssue, err := r.updateLinks(ctx, issue, packageError.FirstBuild())
+func (r reporter) Report(ctx context.Context, issue *githubIssue, resultError failureObserver) error {
+	links, nextIssue, err := r.updateLinks(ctx, issue, resultError.FirstBuild())
 	if err != nil {
 		return fmt.Errorf("failed to update links from the error: %w", err)
 	}
 
-	packageError.UpdateLinks(*links)
+	resultError.UpdateLinks(*links)
 
 	formatter := resultsFormatter{
-		result:           packageError,
+		result:           resultError,
 		maxPreviousLinks: r.maxPreviousLinks,
 	}
 
-	nextIssue.SetDescription(formatter.Description())
+	description, err := formatter.Description()
+	if err != nil {
+		return err
+	}
+	nextIssue.SetDescription(description)
 
 	// TEST - TO REMOVE
-	fmt.Printf("Description of the issue:\n%s", formatter.Description())
+	fmt.Printf("Description of the issue:\n%s", description)
 
 	return r.createOrUpdateIssue(ctx, nextIssue)
 }
