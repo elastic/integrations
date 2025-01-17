@@ -51,11 +51,9 @@ func Check(resultsPath string, options CheckOptions) error {
 		return nil
 	}
 
-	log.Fatalf("DRY_RUN method: %t", options.DryRun)
 	ghCli := newGhCli(githubOptions{
 		DryRun: options.DryRun,
 	})
-	return nil
 
 	aReporter := newReporter(ghCli, options.MaxPreviousLinks)
 
