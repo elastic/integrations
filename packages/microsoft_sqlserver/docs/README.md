@@ -506,54 +506,56 @@ An example event for `transaction_log` looks as following:
 
 ```json
 {
-    "@timestamp": "2022-12-20T07:34:29.687Z",
+    "@timestamp": "2025-01-01T06:34:46.685Z",
     "agent": {
-        "ephemeral_id": "8d528ff8-5e90-4572-89f6-61fb3a6c96f1",
-        "id": "d44a1c4a-95bf-47e9-afb0-453a2ef43c00",
-        "name": "192.168.1.2",
+        "ephemeral_id": "a4c1f457-cd5c-4b62-aa68-1f5d32acb43b",
+        "id": "7a86be58-ca0e-433a-bd57-44f2cb3ee3a1",
+        "name": "elastic-agent-78750",
         "type": "metricbeat",
-        "version": "8.5.3"
+        "version": "8.13.0"
     },
     "data_stream": {
         "dataset": "microsoft_sqlserver.transaction_log",
-        "namespace": "default",
+        "namespace": "69278",
         "type": "metrics"
     },
     "ecs": {
-        "version": "8.11.0"
+        "version": "8.0.0"
     },
     "elastic_agent": {
-        "id": "d44a1c4a-95bf-47e9-afb0-453a2ef43c00",
+        "id": "7a86be58-ca0e-433a-bd57-44f2cb3ee3a1",
         "snapshot": false,
-        "version": "8.5.3"
+        "version": "8.13.0"
     },
     "event": {
         "agent_id_status": "verified",
         "dataset": "microsoft_sqlserver.transaction_log",
-        "duration": 2147044750,
-        "ingested": "2022-12-20T07:34:32Z",
+        "duration": 2065982241,
+        "ingested": "2025-01-01T06:34:49Z",
         "module": "sql"
     },
     "host": {
         "architecture": "x86_64",
-        "containerized": false,
-        "hostname": "192.168.1.2",
-        "id": "627E8AE5-E918-5073-A58E-8A2D9ED96875",
+        "containerized": true,
+        "hostname": "elastic-agent-78750",
+        "id": "8259e024976a406e8a54cdbffeb84fec",
         "ip": [
-            "192.168.1.2"
+            "192.168.241.5",
+            "192.168.253.2"
         ],
         "mac": [
-            "36-F7-DC-28-23-80"
+            "02-42-C0-A8-F1-05",
+            "02-42-C0-A8-FD-02"
         ],
-        "name": "192.168.1.2",
+        "name": "elastic-agent-78750",
         "os": {
-            "build": "21D62",
-            "family": "darwin",
-            "kernel": "21.3.0",
-            "name": "macOS",
-            "platform": "darwin",
-            "type": "macos",
-            "version": "12.2.1"
+            "codename": "focal",
+            "family": "debian",
+            "kernel": "3.10.0-1160.92.1.el7.x86_64",
+            "name": "Ubuntu",
+            "platform": "ubuntu",
+            "type": "linux",
+            "version": "20.04.6 LTS (Focal Fossa)"
         }
     },
     "metricset": {
@@ -562,20 +564,21 @@ An example event for `transaction_log` looks as following:
     },
     "mssql": {
         "metrics": {
-            "database_id": 1,
-            "database_name": "master",
+            "database_id": 4,
+            "database_name": "msdb",
             "instance_name": "MSSQLSERVER",
-            "log_space_in_bytes_since_last_backup": 602112,
-            "server_name": "obs-int-mssql20",
-            "total_log_size_bytes": 2088960,
-            "used_log_space_bytes": 1024000,
-            "used_log_space_pct": 49.01960754394531
-        }
+            "query_id": "JZwfIFXvA3yOOL15q7PFZK5UE+Y=",
+            "server_name": "7e672355554d"
+        },
+        "query": "SELECT @@servername AS server_name, @@servicename AS instance_name, name As 'database_name', database_id FROM sys.databases WHERE name='msdb';"
     },
     "service": {
-        "address": "20.228.135.242",
+        "address": "svc-microsoft_sqlserver",
         "type": "sql"
-    }
+    },
+    "tags": [
+        "preserve_sql_queries"
+    ]
 }
 ```
 
@@ -618,5 +621,6 @@ Please refer to the following [document](https://www.elastic.co/guide/en/ecs/cur
 | mssql.metrics.total_log_size_bytes | Total transaction log size in bytes. | long | byte | counter |
 | mssql.metrics.used_log_space_bytes | The occupied size of the log in bytes. | long | byte | gauge |
 | mssql.metrics.used_log_space_pct | A percentage of the occupied size of the log as a percent of the total log size. | float | percent | gauge |
+| mssql.query | The SQL queries executed. | keyword |  |  |
 | service.address | Address where data about this service was collected from. This should be a URI, network address (ipv4:port or [ipv6]:port) or a resource path (sockets). | keyword |  |  |
 
