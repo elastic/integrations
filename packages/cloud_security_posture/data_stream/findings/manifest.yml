@@ -116,6 +116,7 @@ streams:
         - name: aws.credentials.type
           value: cloud_formation
         - name: aws.account_type
+          value: organization-account
     vars:
       - name: condition
         title: Condition
@@ -197,8 +198,35 @@ streams:
     template_path: gcp.yml.hbs
     enabled: false
     required_vars:
-      - [gcp.organization_id, gcp.project_id, gcp.credentials.json]
-      - [gcp.organization_id, gcp.project_id, gcp.credentials.file]
+      organization_account_cloud_shell:
+        - name: gcp.account_type
+          value: organization-account
+        - name: gcp.credentials.type
+          value: credentials-none
+        - name: setup_access
+          value: google_cloud_shell
+        - name: gcp.organization_id
+        - name: gcp.project_id
+      organization_account_manual-file:
+        - name: gcp.account_type
+          value: organization-account
+        - name: gcp.credentials.type
+          value: credentials-file
+        - name: setup_access
+          value: manual
+        - name: gcp.organization_id
+        - name: gcp.project_id
+        - name: gcp.credentials.file
+      organization_account_manual-json:
+        - name: gcp.account_type
+          value: organization-account
+        - name: gcp.credentials.type
+          value: credentials-json
+        - name: setup_access
+          value: manual
+        - name: gcp.organization_id
+        - name: gcp.project_id
+        - name: gcp.credentials.json
     vars:
       - name: condition
         title: Condition
