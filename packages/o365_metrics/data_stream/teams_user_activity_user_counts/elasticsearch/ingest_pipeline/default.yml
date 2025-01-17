@@ -44,11 +44,34 @@ processors:
       field: o365.metrics.teams.user.activity.user.counts.report_period
       target_field: o365.metrics.teams.user.activity.user.counts.report.period.day
       ignore_missing: true
+  - date:
+      field: o365.metrics.teams.user.activity.user.counts.report_refresh_date
+      tag: date_o365.metrics.teams.user.activity.user.counts.report_refresh_date
+      if: ctx.o365.metrics?.teams?.user?.activity?.user?.counts?.report_refresh_date != null && ctx.o365.metrics?.teams?.user?.activity?.user?.counts?.report_refresh_date != ''
+      timezone: UTC
+      formats:
+        - yyyy-MM-dd
+      on_failure:
+        - remove:
+            field: o365.metrics.teams.user.activity.user.counts.report_refresh_date
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - rename:
       field: o365.metrics.teams.user.activity.user.counts.report_refresh_date
       target_field: o365.metrics.teams.user.activity.user.counts.report.refresh_date
       ignore_missing: true
+  - set:
+      field: '@timestamp'
+      tag: set_timestamp_from_report_refresh_date
+      copy_from: o365.metrics.teams.user.activity.user.counts.report.refresh_date
+      ignore_empty_value: true
 
+  - fingerprint:
+      fields:
+        - o365.metrics.teams.user.activity.user.counts.report.refresh_date
+        - o365.metrics.teams.user.activity.user.counts.report.date
+      target_field: _id
   # Convert _Count fields to long
   - convert:
       field: o365.metrics.teams.user.activity.user.counts.calls
