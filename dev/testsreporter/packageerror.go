@@ -47,7 +47,6 @@ type packageErrorOptions struct {
 }
 
 func newPackageError(options packageErrorOptions) (*packageError, error) {
-
 	p := packageError{
 		serverless:        options.Serverless,
 		serverlessProject: options.ServerlessProject,
@@ -83,7 +82,7 @@ func (p *packageError) UpdateLinks(links errorLinks) {
 }
 
 func (p *packageError) Teams() []string {
-	return p.Teams()
+	return p.teams
 }
 
 func (p *packageError) String() string {
