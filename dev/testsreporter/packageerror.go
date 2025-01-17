@@ -21,16 +21,16 @@ type errorLinks struct {
 type packageError struct {
 	testCase
 	errorLinks
-	Serverless        bool
-	ServerlessProject string
-	LogsDB            bool
-	StackVersion      string
-	BuildURL          string
-	Teams             []string
-	PackageName       string
-	DataStream        string
-	PreviousBuilds    []string
-	ClosedIssueURL    string
+	serverless        bool
+	serverlessProject string
+	logsDB            bool
+	stackVersion      string
+	buildURL          string
+	teams             []string
+	packageName       string
+	dataStream        string
+	previousBuilds    []string
+	closedIssueURL    string
 }
 
 type packageErrorOptions struct {
@@ -49,32 +49,32 @@ type packageErrorOptions struct {
 func newPackageError(options packageErrorOptions) (*packageError, error) {
 
 	p := packageError{
-		Serverless:        options.Serverless,
-		ServerlessProject: options.ServerlessProject,
-		LogsDB:            options.LogsDB,
-		StackVersion:      options.StackVersion,
-		BuildURL:          options.BuildURL,
+		serverless:        options.Serverless,
+		serverlessProject: options.ServerlessProject,
+		logsDB:            options.LogsDB,
+		stackVersion:      options.StackVersion,
+		buildURL:          options.BuildURL,
 		testCase:          options.TestCase,
-		ClosedIssueURL:    options.ClosedIssueURL,
-		PreviousBuilds:    options.PreviousBuilds,
-		Teams:             options.Teams,
+		closedIssueURL:    options.ClosedIssueURL,
+		previousBuilds:    options.PreviousBuilds,
+		teams:             options.Teams,
 	}
 
-	p.PackageName = p.testCase.PackageName()
-	p.DataStream = p.testCase.DataStream()
+	p.packageName = p.testCase.PackageName()
+	p.dataStream = p.testCase.DataStream()
 
 	if len(options.Teams) == 0 {
-		owners, err := codeowners.PackageOwners(p.PackageName, p.DataStream, options.CodeownersPath)
+		owners, err := codeowners.PackageOwners(p.packageName, p.dataStream, options.CodeownersPath)
 		if err != nil {
-			return nil, fmt.Errorf("failed to find owners for package %s: %w", p.PackageName, err)
+			return nil, fmt.Errorf("failed to find owners for package %s: %w", p.packageName, err)
 		}
-		p.Teams = owners
+		p.teams = owners
 	}
 
 	return &p, nil
 }
 
-func (p packageError) FirstBuild() string {
+func (p *packageError) FirstBuild() string {
 	return p.errorLinks.firstBuild
 }
 
@@ -82,25 +82,52 @@ func (p *packageError) UpdateLinks(links errorLinks) {
 	p.errorLinks = links
 }
 
-func (p packageError) String() string {
+func (p *packageError) Teams() []string {
+	return p.Teams()
+}
+
+func (p *packageError) String() string {
 	var sb strings.Builder
 
-	if p.LogsDB {
+	if p.logsDB {
 		sb.WriteString("[LogsDB] ")
 	}
-	if p.Serverless {
-		sb.WriteString(fmt.Sprintf("[Serverless %s] ", p.ServerlessProject))
+	if p.serverless {
+		sb.WriteString(fmt.Sprintf("[Serverless %s] ", p.serverlessProject))
 	}
-	if p.StackVersion != "" {
+	if p.stackVersion != "" {
 		sb.WriteString("[Stack ")
-		sb.WriteString(p.StackVersion)
+		sb.WriteString(p.stackVersion)
 		sb.WriteString("] ")
 	}
 	sb.WriteString("[")
-	sb.WriteString(p.PackageName)
+	sb.WriteString(p.packageName)
 	sb.WriteString("] ")
 	sb.WriteString("Failing test daily: ")
 	sb.WriteString(p.testCase.String())
 
 	return sb.String()
+}
+
+func (p *packageError) SummaryData() map[string]any {
+	return map[string]any{
+		"stackVersion":      p.stackVersion,
+		"serverless":        p.serverless,
+		"serverlessProject": p.serverlessProject,
+		"logsDB":            p.logsDB,
+		"packageName":       p.packageName,
+		"testName":          p.Name,
+		"dataStream":        p.dataStream,
+		"owners":            p.teams,
+	}
+}
+
+func (p *packageError) DescriptionData() map[string]any {
+	return map[string]any{
+		"failure":        truncateText(p.Failure, defaultMaxLengthMessages),
+		"error":          truncateText(p.Error, defaultMaxLengthMessages),
+		"firstBuild":     p.buildURL,
+		"closedIssueURL": p.closedIssueURL,
+		"previousBuilds": p.previousBuilds,
+	}
 }

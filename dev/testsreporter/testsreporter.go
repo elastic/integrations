@@ -54,7 +54,7 @@ func Check(resultsPath string, options CheckOptions) error {
 	for _, pError := range packageErrors {
 		ctx := context.TODO()
 		r := resultsFormatter{
-			result:           pError,
+			result:           &pError,
 			maxPreviousLinks: options.MaxPreviousLinks,
 		}
 		fmt.Println()
@@ -72,7 +72,7 @@ func Check(resultsPath string, options CheckOptions) error {
 			Repository:  "elastic/integrations",
 		})
 
-		if err := aReporter.Report(ctx, ghIssue, pError); err != nil {
+		if err := aReporter.Report(ctx, ghIssue, &pError); err != nil {
 			multiErr = errors.Join(multiErr, err)
 		}
 	}

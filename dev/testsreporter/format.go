@@ -20,7 +20,7 @@ var descriptionTmpl string
 const defaultMaxLengthMessages = 1000
 
 type resultsFormatter struct {
-	result           packageError
+	result           erroer
 	maxPreviousLinks int
 }
 
@@ -29,22 +29,13 @@ func (r resultsFormatter) Title() string {
 }
 
 func (r resultsFormatter) Owners() []string {
-	return r.result.Teams
+	return r.result.Teams()
 }
 
 func (r resultsFormatter) Summary() string {
 	var rendered bytes.Buffer
 	templ := template.Must(template.New("summary").Parse(summaryTmpl))
-	templ.Execute(&rendered, map[string]interface{}{
-		"stackVersion":      r.result.StackVersion,
-		"serverless":        r.result.Serverless,
-		"serverlessProject": r.result.ServerlessProject,
-		"logsDB":            r.result.LogsDB,
-		"packageName":       r.result.PackageName,
-		"testName":          r.result.Name,
-		"dataStream":        r.result.DataStream,
-		"owners":            r.Owners(),
-	})
+	templ.Execute(&rendered, r.result.SummaryData())
 
 	return rendered.String()
 }
@@ -52,15 +43,12 @@ func (r resultsFormatter) Summary() string {
 func (r resultsFormatter) Description() string {
 	var rendered bytes.Buffer
 	templ := template.Must(template.New("description").Parse(descriptionTmpl))
-	templ.Execute(&rendered, map[string]interface{}{
-		"summary":          r.Summary(),
-		"failure":          truncateText(r.result.Failure, defaultMaxLengthMessages),
-		"error":            truncateText(r.result.Error, defaultMaxLengthMessages),
-		"firstBuild":       r.result.BuildURL,
-		"closedIssueURL":   r.result.ClosedIssueURL,
-		"previousBuilds":   r.result.PreviousBuilds,
-		"maxPreviousLinks": r.maxPreviousLinks,
-	})
+
+	data := r.result.DescriptionData()
+	data["summary"] = r.Summary()
+	data["maxPreviousLinks"] = r.maxPreviousLinks
+
+	templ.Execute(&rendered, data)
 
 	return rendered.String()
 }
