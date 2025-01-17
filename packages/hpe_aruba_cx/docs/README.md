@@ -324,7 +324,7 @@ Note: Descriptions have not been filled out
 | `<bindings_imported>` | client.dhcp.bindings_imported |
 | `<client_mac>`        | client.mac                    |
 | `<existing_port>`     | server.port                   |
-| `<filename>`          | file.name                     |
+| `<file_name>`         | file.name                     |
 | `<file_path>`         | file.path                     |
 | `<gateway_ip>`        | aruba.dhcp.gateway_ip         |
 | `<ip_address>`        | client.ip                     |
@@ -335,6 +335,7 @@ Note: Descriptions have not been filled out
 | `<nameserver_ip>`     | client.mac                    |
 | `<new_port>`          | aruba.dhcp.new_port           |
 | `<port>`              | aruba.port                    |
+| `<server_ip>`         | server.ip                     |
 | `<server_ip_address>` | server.ip                     |
 | `<source_mac>`        | client.mac                    |
 | `<vid>`               | network.vlan.id               |
@@ -367,51 +368,78 @@ Note: Descriptions have not been filled out
 |--------------|------------------------|
 | `<intf_name>`| aruba.interface.name   |
 
-#### [DNS client events](https://www.arubanetworks.com/techdocs/AOS-CX/10.07/HTML/5200-8214/Content/events/DNS_CLIENT.htm)
-| Field            | Description | Type | Common           |
-|------------------|-------------|------|------------------|
-| aruba.dns.type   | DNS event type | keyword | event.type       |
-| aruba.dns.vrf_name | Virtual Routing and Forwarding name | keyword | aruba.vrf.name   |
+#### [Distributed services events](https://www.arubanetworks.com/techdocs/AOS-CX/10.15/HTML/elmrg/Content/events/DIST-SERV.htm)
+| Doc Fields                | Schema Mapping                           |
+|---------------------------|------------------------------------------|
+| `<active_coordinates>`    | aruba.distributed.active_coordinates     |
+| `<configured_coordinates>`| aruba.distributed.configured_coordinates |
+| `<reason>`                | event.reason                             |
 
-#### [DPSE events](https://www.arubanetworks.com/techdocs/AOS-CX/10.07/HTML/5200-8214/Content/events/DPSE.htm)
-| Field                    | Description | Type | Common                          |
-|--------------------------|-------------|------|---------------------------------|
-| aruba.dpse.linecard_name |             |      |                                 |
+#### [DNS client events](https://www.arubanetworks.com/techdocs/AOS-CX/10.15/HTML/elmrg/Content/events/DNS_CLIENT.htm)
+| Docs Field   | Schema Mapping       |
+|--------------|----------------------|
+| `<type>`     | aruba.dns.type       |
+| `<vrf_name>` | aruba.vrf.name       |
 
-#### [ECMP events](https://www.arubanetworks.com/techdocs/AOS-CX/10.07/HTML/5200-8214/Content/events/ECMP.htm)
-| Field               | Schema Mapping  |
-|---------------------|-----------------|
-| aruba.ecmp.egressid |                 |
-| aruba.ecmp.err      |                 |
-| aruba.ecmp.route    |                 |
+#### [Dot1x supplicant events](https://www.arubanetworks.com/techdocs/AOS-CX/10.15/HTML/elmrg/Content/events/DOT1X_SUPPLICANT.htm)
+| Docs Field | Schema Mapping         |
+|------------|------------------------|
+| `<ifname>` | aruba.interface.name   |
+| `<policy>` | aruba.dot1x.policy     |
+| `<port>`   | aruba.port             |
 
-#### [ERPS events](https://www.arubanetworks.com/techdocs/AOS-CX/10.07/HTML/5200-8214/Content/events/ERPS.htm)
+#### [Download events](https://www.arubanetworks.com/techdocs/AOS-CX/10.15/HTML/elmrg/Content/events/DOWNLOAD.htm)
+| Docs Field | Schema Mapping             |
+|------------|----------------------------|
+| `<desc>`   | aruba.error.description    |
+| `<error>`  | error.code                 |
+| `<url>`    | aruba.port                 |
+
+#### [DPSE daemon events](https://www.arubanetworks.com/techdocs/AOS-CX/10.15/HTML/elmrg/Content/events/DPSE.htm)
+| Docs Field        | Schema Mapping             |
+|-------------------|----------------------------|
+| `<linecard_name>` | aruba.dpse.linecard_name   |
+| `<operation_name>`| aruba.dpse.operation_name  |
+| `<plugin_name>`   | aruba.dpse.plugin_name     |
+
+#### [ECMP events](https://www.arubanetworks.com/techdocs/AOS-CX/10.15/HTML/elmrg/Content/events/ECMP.htm)
+| Field       | Schema Mapping       |
+|-------------|----------------------|
+| `<egressid>`| aruba.ecmp.egressid  |
+| `<err>`     | aruba.ecmp.err       |
+| `<route>`   | aruba.ecmp.route     |
+
+#### [ERPS events](https://www.arubanetworks.com/techdocs/AOS-CX/10.15/HTML/elmrg/Content/events/ERPS.htm)
 | Field                  | Description | Type | Common                       |
 |------------------------|-------------|------|------------------------------|
 | `<ccvlan>`             |             |      | network.vlan.id              |
 | `<dataVlan>`           |             |      | network.vlan.id              |
-| `<ifID>`               |             |      | observer.ingress.interface.id|
+| `<ifID>`               |             |      | aruba.interface.id           |
 | `<instanceID>`         |             |      | aruba.instance.id            |
-| `<interfaceName>`      |             |      | observer.ingress.interface.name|
+| `<interfaceName>`      |             |      | aruba.interface.name         |
 | `<node>`               |             |      | client.mac                   |
-| `<portName>`           |             |      | aruba.erps.port_name         |
+| `<portName>`           |             |      | aruba.port                   |
 | `<reason>`             |             |      | event.reason                 |
 | `<ringID>`             |             |      | aruba.erps.ring_id           |
 | `<state>`              |             |      | aruba.status                 |
 | `<vlandID>`            |             |      | network.vlan.id              |
 
-#### [EVPN events](https://www.arubanetworks.com/techdocs/AOS-CX/10.07/HTML/5200-8214/Content/events/EVPN.htm)
-| Doc Field   |  Schema Mapping   |
-|-------------|-------------------|
-| `<action>`  |  event.action     |
-| `<evi>`     |  network.vlan.id  |
-| `<ip_addr>` |  client.ip        |
-| `<mac_addr>`|  client.mac       |
-| `<rd>`      |  aruba.evpn.rd    |
-| `<rt>`      |  aruba.evpn.rt    |
-| `<vni>`     |  aruba.evpn.vni   |
-| `<vrf>`     |  aruba.vrf.id     |
-| `<vtep_ip>` |  aruba.evpn.vtep_ip|
+#### [EVPN events](https://www.arubanetworks.com/techdocs/AOS-CX/10.15/HTML/elmrg/Content/events/EVPN.htm)
+| Doc Field       | Schema Mapping     |
+|-----------------|--------------------|
+| `<action>`      | event.action       |
+| `<bundle_name>` | package.name       |
+| `<esi>`         | aruba.evpn.esi     |
+| `<eth_tag>`     | aruba.evpn.eth_tag |
+| `<evi>`         | network.vlan.id    |
+| `<ip_addr>`     | client.ip          |
+| `<mac_addr>`    | client.mac         |
+| `<rd>`          | aruba.evpn.rd      |
+| `<rt>`          | aruba.evpn.rt      |
+| `<rtt>`         | aruba.evpn.rtt     |
+| `<vni>`         | aruba.evpn.vni     |
+| `<vrf>`         | aruba.vrf.id       |
+| `<vtep_ip>`     | aruba.evpn.vtep_ip |
 
 #### [External Storage events](https://www.arubanetworks.com/techdocs/AOS-CX/10.07/HTML/5200-8214/Content/events/EXTERNAL-STORAGE.htm)
 | Doc Field   | Schema Mapping              |
@@ -1602,19 +1630,26 @@ The `log` dataset collects the HPE Aruba CX logs.
 | aruba.dhcp.server_ip_address |  | ip |
 | aruba.dhcp.source_mac |  | keyword |
 | aruba.dhcp.volume_name |  | keyword |
+| aruba.distributed.active_coordinates |  | keyword |
+| aruba.distributed.configured_coordinates |  | keyword |
 | aruba.dns.type |  | keyword |
 | aruba.dns.vrf_name |  | keyword |
+| aruba.dot1x.policy |  | keyword |
 | aruba.dpse.linecard_name |  | keyword |
+| aruba.dpse.operation_name |  | keyword |
+| aruba.dpse.plugin_name |  | keyword |
 | aruba.ecmp.egressid |  | keyword |
 | aruba.ecmp.err |  | keyword |
 | aruba.ecmp.route |  | keyword |
-| aruba.erps.port_name |  | keyword |
 | aruba.erps.ring_id |  | keyword |
 | aruba.error.count |  | long |
 | aruba.error.description |  | keyword |
 | aruba.event_type |  | keyword |
+| aruba.evpn.esi |  | keyword |
+| aruba.evpn.eth_tag |  | keyword |
 | aruba.evpn.rd |  | keyword |
 | aruba.evpn.rt |  | keyword |
+| aruba.evpn.rtt |  | keyword |
 | aruba.evpn.vni |  | keyword |
 | aruba.evpn.vtep_ip |  | ip |
 | aruba.fan.air_flow_direction |  | keyword |
@@ -2053,6 +2088,7 @@ The `log` dataset collects the HPE Aruba CX logs.
 | observer.ingress.interface.id | Interface ID as reported by an observer (typically SNMP interface ID). | keyword |
 | observer.ingress.interface.name | Interface name as reported by the system. | keyword |
 | package.installed | Time when package was installed. | date |
+| package.name | Package name | keyword |
 | package.version | Package version | keyword |
 | process.end | The time the process ended. | date |
 | process.name | Process name. Sometimes called program name or similar. | keyword |
