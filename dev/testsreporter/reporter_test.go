@@ -36,14 +36,14 @@ func (t *testReporterRunner) Exec(ctx context.Context, args ...string) (stdout, 
 	return *bytes.NewBufferString(response), bytes.Buffer{}, nil
 }
 
-func TestReporterUpdatePackageError(t *testing.T) {
+func TestReporterUpdateLinks(t *testing.T) {
 	cases := []struct {
-		title    string
-		issue    *githubIssue
-		response map[string]string
-		found    bool
-		options  packageErrorOptions
-		expected packageError
+		title         string
+		issue         *githubIssue
+		firstBuild    string
+		response      map[string]string
+		expectedLinks errorLinks
+		expectedIssue *githubIssue
 	}{
 		{
 			title: "no previous issue",
@@ -51,36 +51,19 @@ func TestReporterUpdatePackageError(t *testing.T) {
 				"open":   `[]`,
 				"closed": `[]`,
 			},
-			options: packageErrorOptions{
-				Serverless:     false,
-				LogsDB:         false,
-				StackVersion:   "9.0.0",
-				BuildURL:       "https://buildkite.com/elastic/integrations/builds/100",
-				ClosedIssueURL: "",
-				PreviousBuilds: []string{},
-				CodeownersPath: "./testdata/CODEOWNERS-default-tests",
-				TestCase: testCase{
-					ClassName: "elastic_package_registry.metrics",
-				},
-			},
+			firstBuild: "https://buildkite.com/elastic/integrations/builds/100",
 			issue: newGithubIssue(githubIssueOptions{
 				Title:      "my issue",
 				Repository: "myorg/repo",
 			}),
-			found: false,
-			expected: packageError{
-				Serverless:     false,
-				LogsDB:         false,
-				StackVersion:   "9.0.0",
-				BuildURL:       "https://buildkite.com/elastic/integrations/builds/100",
-				Teams:          []string{"@elastic/ecosystem"},
-				ClosedIssueURL: "",
-				PreviousBuilds: []string{},
-				testCase: testCase{
-					ClassName: "elastic_package_registry.metrics",
-				},
-				PackageName: "elastic_package_registry",
-				DataStream:  "metrics",
+			expectedLinks: errorLinks{
+				firstBuild:     "https://buildkite.com/elastic/integrations/builds/100",
+				closedIssueURL: "",
+				previousBuilds: []string{},
+			},
+			expectedIssue: &githubIssue{
+				title:      "my issue",
+				repository: "myorg/repo",
 			},
 		},
 		{
@@ -91,7 +74,7 @@ func TestReporterUpdatePackageError(t *testing.T) {
 			  {
 			     "createdAt": "2024-06-24T15:04:05Z",
 				 "title": "my issue",
-				 "body": "First build failed: https://buildkite.com/elastic/integrations/builds/1\nLatest issue closed for the same test: https://github.com/elastic/integrations/issues/42\nPrevious builds:\n- https://buildkite.com/elastic/integrations/builds/11",
+				 "body": "First build failed: https://buildkite.com/elastic/integrations/builds/1\nLatest issue closed for the same test: https://github.com/elastic/integrations/issues/5\nPrevious builds:\n- https://buildkite.com/elastic/integrations/builds/11",
 				 "number": 42,
 				 "state": "OPEN",
 				 "url": "https://github.com/elastic/integrations/issues/42"
@@ -99,39 +82,27 @@ func TestReporterUpdatePackageError(t *testing.T) {
 			]`,
 				"closed": `[]`,
 			},
-			options: packageErrorOptions{
-				Serverless:     false,
-				LogsDB:         false,
-				StackVersion:   "9.0.0",
-				BuildURL:       "https://buildkite.com/elastic/integrations/builds/100",
-				ClosedIssueURL: "",
-				PreviousBuilds: []string{},
-				CodeownersPath: "./testdata/CODEOWNERS-default-tests",
-				TestCase: testCase{
-					ClassName: "elastic_package_registry.metrics",
-				},
-			},
+			firstBuild: "https://buildkite.com/elastic/integrations/builds/100",
 			issue: newGithubIssue(githubIssueOptions{
 				Title:      "my issue",
 				Repository: "myorg/repo",
 			}),
-			found: true,
-			expected: packageError{
-				Serverless:     false,
-				LogsDB:         false,
-				StackVersion:   "9.0.0",
-				BuildURL:       "https://buildkite.com/elastic/integrations/builds/1",
-				Teams:          []string{"@elastic/ecosystem"},
-				ClosedIssueURL: "https://github.com/elastic/integrations/issues/42",
-				PreviousBuilds: []string{
+			expectedLinks: errorLinks{
+				currentIssueURL: "https://github.com/elastic/integrations/issues/42",
+				firstBuild:      "https://buildkite.com/elastic/integrations/builds/1",
+				closedIssueURL:  "https://github.com/elastic/integrations/issues/5",
+				previousBuilds: []string{
 					"https://buildkite.com/elastic/integrations/builds/11",
 					"https://buildkite.com/elastic/integrations/builds/100",
 				},
-				testCase: testCase{
-					ClassName: "elastic_package_registry.metrics",
-				},
-				PackageName: "elastic_package_registry",
-				DataStream:  "metrics",
+			},
+			expectedIssue: &githubIssue{
+				title:       "my issue",
+				repository:  "myorg/repo",
+				number:      42,
+				state:       "OPEN",
+				description: "First build failed: https://buildkite.com/elastic/integrations/builds/1\nLatest issue closed for the same test: https://github.com/elastic/integrations/issues/5\nPrevious builds:\n- https://buildkite.com/elastic/integrations/builds/11",
+				url:         "https://github.com/elastic/integrations/issues/42",
 			},
 		},
 		{
@@ -142,7 +113,7 @@ func TestReporterUpdatePackageError(t *testing.T) {
 			  {
 			     "createdAt": "2024-06-24T15:04:05Z",
 				 "title": "my issue",
-				 "body": "First build failed: https://buildkite.com/elastic/integrations/builds/1\nLatest issue closed for the same test: https://github.com/elastic/integrations/issues/42",
+				 "body": "First build failed: https://buildkite.com/elastic/integrations/builds/1\nLatest issue closed for the same test: https://github.com/elastic/integrations/issues/5",
 				 "number": 42,
 				 "state": "OPEN",
 				 "url": "https://github.com/elastic/integrations/issues/42"
@@ -160,38 +131,26 @@ func TestReporterUpdatePackageError(t *testing.T) {
 			  }
 			]`,
 			},
-			options: packageErrorOptions{
-				Serverless:     false,
-				LogsDB:         false,
-				StackVersion:   "9.0.0",
-				BuildURL:       "https://buildkite.com/elastic/integrations/builds/100",
-				ClosedIssueURL: "",
-				PreviousBuilds: []string{},
-				CodeownersPath: "./testdata/CODEOWNERS-default-tests",
-				TestCase: testCase{
-					ClassName: "elastic_package_registry.metrics",
-				},
-			},
+			firstBuild: "https://buildkite.com/elastic/integrations/builds/100",
 			issue: newGithubIssue(githubIssueOptions{
 				Title:      "my issue",
 				Repository: "myorg/repo",
 			}),
-			found: true,
-			expected: packageError{
-				Serverless:     false,
-				LogsDB:         false,
-				StackVersion:   "9.0.0",
-				BuildURL:       "https://buildkite.com/elastic/integrations/builds/1",
-				Teams:          []string{"@elastic/ecosystem"},
-				ClosedIssueURL: "https://github.com/elastic/integrations/issues/42",
-				PreviousBuilds: []string{
+			expectedLinks: errorLinks{
+				currentIssueURL: "https://github.com/elastic/integrations/issues/42",
+				firstBuild:      "https://buildkite.com/elastic/integrations/builds/1",
+				closedIssueURL:  "https://github.com/elastic/integrations/issues/5",
+				previousBuilds: []string{
 					"https://buildkite.com/elastic/integrations/builds/100",
 				},
-				testCase: testCase{
-					ClassName: "elastic_package_registry.metrics",
-				},
-				PackageName: "elastic_package_registry",
-				DataStream:  "metrics",
+			},
+			expectedIssue: &githubIssue{
+				title:       "my issue",
+				repository:  "myorg/repo",
+				number:      42,
+				state:       "OPEN",
+				description: "First build failed: https://buildkite.com/elastic/integrations/builds/1\nLatest issue closed for the same test: https://github.com/elastic/integrations/issues/5",
+				url:         "https://github.com/elastic/integrations/issues/42",
 			},
 		},
 		{
@@ -203,43 +162,31 @@ func TestReporterUpdatePackageError(t *testing.T) {
 			  {
 			     "createdAt": "2024-06-24T15:04:05Z",
 				 "title": "my issue",
-				 "body": "First build failed: https://buildkite.com/elastic/integrations/builds/1\nLatest issue closed for the same test: https://github.com/elastic/integrations/issues/42",
+				 "body": "First build failed: https://buildkite.com/elastic/integrations/builds/1\nLatest issue closed for the same test: https://github.com/elastic/integrations/issues/2",
 				 "number": 21,
 				 "state": "CLOSED",
 				 "url": "https://github.com/elastic/integrations/issues/21"
 			  }
 			]`,
 			},
-			options: packageErrorOptions{
-				Serverless:     false,
-				LogsDB:         false,
-				StackVersion:   "9.0.0",
-				BuildURL:       "https://buildkite.com/elastic/integrations/builds/100",
-				ClosedIssueURL: "",
-				PreviousBuilds: []string{},
-				CodeownersPath: "./testdata/CODEOWNERS-default-tests",
-				TestCase: testCase{
-					ClassName: "elastic_package_registry.metrics",
-				},
-			},
+			firstBuild: "https://buildkite.com/elastic/integrations/builds/100",
 			issue: newGithubIssue(githubIssueOptions{
 				Title:      "my issue",
 				Repository: "myorg/repo",
 			}),
-			found: false,
-			expected: packageError{
-				Serverless:     false,
-				LogsDB:         false,
-				StackVersion:   "9.0.0",
-				BuildURL:       "https://buildkite.com/elastic/integrations/builds/100",
-				Teams:          []string{"@elastic/ecosystem"},
-				ClosedIssueURL: "https://github.com/elastic/integrations/issues/21",
-				PreviousBuilds: []string{},
-				testCase: testCase{
-					ClassName: "elastic_package_registry.metrics",
-				},
-				PackageName: "elastic_package_registry",
-				DataStream:  "metrics",
+			expectedLinks: errorLinks{
+				currentIssueURL: "",
+				firstBuild:      "https://buildkite.com/elastic/integrations/builds/100",
+				closedIssueURL:  "https://github.com/elastic/integrations/issues/21",
+				previousBuilds:  []string{},
+			},
+			expectedIssue: &githubIssue{
+				title:       "my issue",
+				repository:  "myorg/repo",
+				number:      0,
+				state:       "",
+				description: "",
+				url:         "",
 			},
 		},
 	}
@@ -256,13 +203,10 @@ func TestReporterUpdatePackageError(t *testing.T) {
 
 			reporter := newReporter(ghCli, 5)
 
-			pError, err := newPackageError(c.options)
+			links, newIssue, err := reporter.updateLinks(context.Background(), c.issue, c.firstBuild)
 			require.NoError(t, err)
-
-			newPError, existingIssue, err := reporter.updatePackageError(context.Background(), c.issue, *pError)
-			require.NoError(t, err)
-			assert.Equal(t, c.found, existingIssue)
-			assert.Equal(t, c.expected, *newPError)
+			assert.Equal(t, c.expectedLinks, *links)
+			assert.Equal(t, c.expectedIssue, newIssue)
 		})
 	}
 }

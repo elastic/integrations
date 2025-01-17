@@ -23,12 +23,25 @@ func newReporter(ghCli *ghCli, maxPreviousLinks int) reporter {
 }
 
 func (r reporter) Report(ctx context.Context, issue *githubIssue, packageError packageError) error {
-	pTestError, existingIssue, err := r.updatePackageError(ctx, issue, packageError)
+	links, nextIssue, err := r.updateLinks(ctx, issue, packageError.FirstBuild())
 	if err != nil {
-		return fmt.Errorf("found error updating issue information: %w", err)
+		return fmt.Errorf("failed to update links from the error: %w", err)
 	}
 
-	if !existingIssue {
+	packageError.UpdateLinks(*links)
+
+	formatter := resultsFormatter{
+		result:           packageError,
+		maxPreviousLinks: r.maxPreviousLinks,
+	}
+
+	nextIssue.SetDescription(formatter.Description())
+
+	return r.createOrUpdateIssue(ctx, nextIssue)
+}
+
+func (r reporter) createOrUpdateIssue(ctx context.Context, issue *githubIssue) error {
+	if issue.number == 0 {
 		fmt.Println("Issue not found, creating a new one...")
 		if err := r.ghCli.Create(ctx, issue); err != nil {
 			return fmt.Errorf("failed to create issue (title: %s): %w", issue.title, err)
@@ -37,75 +50,71 @@ func (r reporter) Report(ctx context.Context, issue *githubIssue, packageError p
 	}
 
 	fmt.Printf("Updating issue %s...\n", issue.url)
-	if err := r.updateIssueLatestData(ctx, issue, *pTestError); err != nil {
-		return fmt.Errorf("failed to update previous links in issue (title: %s): %w", issue.title, err)
+	if err := r.ghCli.Update(ctx, issue); err != nil {
+		return fmt.Errorf("failed to update issue (title: %s): %w", issue.title, err)
 	}
-
 	return nil
 }
 
-func (r reporter) updatePackageError(ctx context.Context, issue *githubIssue, packageTestError packageError) (*packageError, bool, error) {
-	pErrorOptions := packageErrorOptions{
-		Serverless:        packageTestError.Serverless,
-		ServerlessProject: packageTestError.ServerlessProject,
-		LogsDB:            packageTestError.LogsDB,
-		StackVersion:      packageTestError.StackVersion,
-		TestCase:          packageTestError.testCase,
-		BuildURL:          packageTestError.BuildURL,
-		Teams:             packageTestError.Teams,
-		PreviousBuilds:    []string{},
+// updateLinks returns the links to buildkite and Github updated depending on whether or not
+// it existed a previous Github issue
+func (r reporter) updateLinks(ctx context.Context, issue *githubIssue, currentBuild string) (*errorLinks, *githubIssue, error) {
+	nextIssue := issue
+	links := errorLinks{
+		currentIssueURL: "",
+		firstBuild:      currentBuild,
+		previousBuilds:  []string{},
+		closedIssueURL:  "",
 	}
 	// Look for an existing issue
 	found, prevIssue, err := r.ghCli.Exists(ctx, issue, true)
 	if err != nil {
-		return nil, false, fmt.Errorf("failed to check if issue already exists: %w", err)
+		return nil, nil, fmt.Errorf("failed to check if issue already exists: %w", err)
 	}
 
 	if found {
-		fmt.Println("Found existing open issue", prevIssue.URL())
+		nextIssue = prevIssue
 
-		// update links
+		fmt.Printf("Found existing open issue: %s\n", prevIssue.URL())
+		links.currentIssueURL = prevIssue.URL()
+
 		// Retrieve information from the Issue description (first build, closed issue, previous links)
 		firstBuild, err := firstBuildLinkFromDescription(prevIssue)
 		if err != nil {
-			return nil, false, fmt.Errorf("failed to read first link from issue (title: %s): %w", issue.title, err)
+			return nil, nil, fmt.Errorf("failed to read first link from issue (title: %s): %w", issue.title, err)
 		}
 		fmt.Printf("First build found: %s\n", firstBuild)
-		pErrorOptions.BuildURL = firstBuild
+		links.firstBuild = firstBuild
 
 		closedIssueURL, err := closedIssueFromDescription(prevIssue)
 		if err != nil {
-			return nil, false, fmt.Errorf("failed to read closed issue from issue (title: %s): %w", issue.title, err)
+			return nil, nil, fmt.Errorf("failed to read closed issue from issue (title: %s): %w", issue.title, err)
 		}
-		pErrorOptions.ClosedIssueURL = closedIssueURL
+		links.closedIssueURL = closedIssueURL
 
-		if firstBuild == packageTestError.BuildURL {
+		if firstBuild == currentBuild {
 			fmt.Println("First time failing, no need to update previous build links.")
 		} else {
 			previousLinks, err := previousBuildLinksFromDescription(prevIssue)
 			if err != nil {
-				return nil, false, fmt.Errorf("failed to read previous links from issue (title: %s): %w", issue.title, err)
+				return nil, nil, fmt.Errorf("failed to read previous links from issue (title: %s): %w", issue.title, err)
 			}
-			previousLinks = updatePreviousLinks(previousLinks, packageTestError.BuildURL, r.maxPreviousLinks)
+			previousLinks = updatePreviousLinks(previousLinks, currentBuild, r.maxPreviousLinks)
 
-			pErrorOptions.PreviousBuilds = previousLinks
+			links.previousBuilds = previousLinks
 		}
 	} else {
+		fmt.Println("Not found any open issue for this error.")
 		// is there any closed issue
 		closedIssueURL, err := r.closedIssueURL(ctx, issue)
 		if err != nil {
-			return nil, false, fmt.Errorf("failed to check if there is a closed issue: %w", err)
+			return nil, nil, fmt.Errorf("failed to check if there is a closed issue: %w", err)
 		}
 
-		pErrorOptions.ClosedIssueURL = closedIssueURL
+		links.closedIssueURL = closedIssueURL
 	}
 
-	pTestError, err := newPackageError(pErrorOptions)
-	if err != nil {
-		return nil, false, fmt.Errorf("failed to create package error with links updated: %w", err)
-	}
-
-	return pTestError, found, nil
+	return &links, nextIssue, nil
 }
 
 func (r reporter) closedIssueURL(ctx context.Context, issue *githubIssue) (string, error) {
@@ -117,19 +126,6 @@ func (r reporter) closedIssueURL(ctx context.Context, issue *githubIssue) (strin
 		return closedIssue.URL(), nil
 	}
 	return "", nil
-}
-
-func (r reporter) updateIssueLatestData(ctx context.Context, issue *githubIssue, packageError packageError) error {
-	formatter := resultsFormatter{
-		result:           packageError,
-		maxPreviousLinks: r.maxPreviousLinks,
-	}
-	issue.SetDescription(formatter.Description())
-
-	if err := r.ghCli.Update(ctx, issue); err != nil {
-		return fmt.Errorf("failed to update issue (title: %s): %w", issue.title, err)
-	}
-	return nil
 }
 
 func updatePreviousLinks(previousLinks []string, currentBuild string, maxPreviousLinks int) []string {

@@ -11,8 +11,16 @@ import (
 	"github.com/elastic/integrations/dev/codeowners"
 )
 
+type errorLinks struct {
+	currentIssueURL string
+	firstBuild      string
+	previousBuilds  []string
+	closedIssueURL  string
+}
+
 type packageError struct {
 	testCase
+	errorLinks
 	Serverless        bool
 	ServerlessProject string
 	LogsDB            bool
@@ -39,6 +47,7 @@ type packageErrorOptions struct {
 }
 
 func newPackageError(options packageErrorOptions) (*packageError, error) {
+
 	p := packageError{
 		Serverless:        options.Serverless,
 		ServerlessProject: options.ServerlessProject,
@@ -63,6 +72,14 @@ func newPackageError(options packageErrorOptions) (*packageError, error) {
 	}
 
 	return &p, nil
+}
+
+func (p packageError) FirstBuild() string {
+	return p.errorLinks.firstBuild
+}
+
+func (p *packageError) UpdateLinks(links errorLinks) {
+	p.errorLinks = links
 }
 
 func (p packageError) String() string {
