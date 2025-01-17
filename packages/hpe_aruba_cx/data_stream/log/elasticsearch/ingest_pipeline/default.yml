@@ -737,13 +737,7 @@ processors:
         UNIT: "unit %{DATA:aruba.unit}"
 
     # CoPP Events (15xx)
-    # https://www.arubanetworks.com/techdocs/AOS-CX/10.07/HTML/5200-8214/Content/events/COPP.htm
-    # The following Event IDs do not need further processing
-    # * 1501
-    # * 1502
-    # * 1503
-    # * 1504
-    # * 1505
+    # https://www.arubanetworks.com/techdocs/AOS-CX/10.15/HTML/elmrg/Content/events/COPP.htm
   - dissect:
       field: message
       tag: copp_event_1506
@@ -866,7 +860,7 @@ processors:
         INTERFACE: "(I|i)nterface %{DATA:aruba.interface.id}"
 
   # ECMP Events (18xx)
-  # https://www.arubanetworks.com/techdocs/AOS-CX/10.07/HTML/5200-8214/Content/events/ECMP.htm
+  # https://www.arubanetworks.com/techdocs/AOS-CX/10.15/HTML/elmrg/Content/events/ECMP.htm
   - grok:
       field: message
       tag: ecmp_event_1801
@@ -903,12 +897,12 @@ processors:
         - "ECMP error: %{DATA:aruba.ecmp.err}$"
 
   # DHCP Server events (19xx)
-  # https://www.arubanetworks.com/techdocs/AOS-CX/10.07/HTML/5200-8214/Content/events/DHCP-SERVER.htm
+  # https://www.arubanetworks.com/techdocs/AOS-CX/10.15/HTML/elmrg/Content/events/DHCP-SERVER.htm
   - grok:
       field: message
-      tag: dhcp_server_event_1901_through_1906
+      tag: dhcp_server_event_1901_1902_1903_1904_1905_1906
       description: "Logs DHCP lease addition, deletion, or update"
-      if: "['1901', '1902', '1903', '1904', '1905', '1906'].contains(ctx.event?.code)"
+      if: "['1901','1902','1903','1904','1905','1906'].contains(ctx.event?.code)"
       patterns:
         - "^DHCP Lease (added|addition|deleted|deletion|update|updated)( failed)? %{DHCP_EXPIRE_TIME_FMT:event.end} %{MAC:host.mac} %{IP:host.ip} %{HOSTNAME:host.name} %{DATA:user.id}$"
       pattern_definitions:
@@ -917,7 +911,7 @@ processors:
       field: message
       tag: dhcp_server_event_1907_1908
       description: "Logs enable or disable of DHCP server on a VRF"
-      if: "['1907', '1908'].contains(ctx.event?.code)"
+      if: "['1907','1908'].contains(ctx.event?.code)"
       patterns:
         - "^DHCP server (en|dis)abled on VRF %{DATA:aruba.vrf.name}$"
   - dissect:
@@ -930,7 +924,7 @@ processors:
       field: message
       tag: dhcp_server_event_1910_1911
       description: "Event raised when DHCP or DHCPv6 Server Lease on the VRF is cleared"
-      if: "['1910', '1911'].contains(ctx.event?.code)"
+      if: "['1910','1911'].contains(ctx.event?.code)"
       patterns:
         - "^(DHCP|DHCPv6) Server Lease cleared on vrf %{DATA:aruba.vrf.name}\\.$"
 
@@ -2526,13 +2520,7 @@ processors:
         - "VRF with vrf name %{DATA:aruba.vrf.name} "
 
   # Credential Manager events (65xx)
-  # https://www.arubanetworks.com/techdocs/AOS-CX/10.07/HTML/5200-8214/Content/events/CREDMGR.htm
-  #
-  # The following event IDs do not need further processing:
-  # * 6501
-  # * 6502
-  # * 6504
-  # * 6505
+  # https://www.arubanetworks.com/techdocs/AOS-CX/10.15/HTML/elmrg/Content/events/CREDMGR.htm
   - dissect:
       if: "ctx.event.code == '6506'"
       tag: credmgr_event_6506
@@ -2580,7 +2568,7 @@ processors:
         - "session %{GREEDYDATA:aruba.session.id}"
 
   # Config Management events (68xx)
-  # https://www.arubanetworks.com/techdocs/AOS-CX/10.07/HTML/5200-8214/Content/events/CONFIG_MGMT.htm
+  # https://www.arubanetworks.com/techdocs/AOS-CX/10.15/HTML/elmrg/Content/events/CONFIG_MGMT.htm
   - dissect:
       if: "ctx.event.code == '6801'"
       tag: config_event_6801
@@ -2833,7 +2821,7 @@ processors:
         IP_SLA_SESSION_NAME: "IP-SLA (session:)?%{DATA:aruba.ip_sla.name}"
 
   # CPU_RX Events (75xx)
-  # https://www.arubanetworks.com/techdocs/AOS-CX/10.07/HTML/5200-8214/Content/events/CPU_RX.htm
+  # https://www.arubanetworks.com/techdocs/AOS-CX/10.15/HTML/elmrg/Content/events/CPU_RX.htm
   - dissect:
       field: message
       tag: cpu_rx_event_7501
@@ -2858,7 +2846,7 @@ processors:
         - "(error|update|persistence): %{GREEDYDATA:aruba.instance.id}"
 
   # Certificate management events (77xx)
-  # https://www.arubanetworks.com/techdocs/AOS-CX/10.07/HTML/5200-8214/Content/events/CERTMGR.htm
+  # https://www.arubanetworks.com/techdocs/AOS-CX/10.15/HTML/elmrg/Content/events/CERTMGR.htm
   - grok:
       if: "['7701', '7702', '7703', '7704'].contains(ctx.event?.code)"
       tag: cm_event_7701_7702_7703_7704
@@ -2882,12 +2870,15 @@ processors:
         - "^Certificate %{DATA:aruba.cm.cert_name} has not yet reached its start date"
         - "^Certificate %{DATA:aruba.cm.cert_name} has expired and can no longer be used"
         - "^Certificate %{DATA:aruba.cm.cert_name} verified and accepted"
-  - dissect:
+        - "^Throttled %{NUMBER:aruba.throttle_count:long} Messages"
+  - grok:
       if: "ctx.event.code == '7709'"
       tag: cm_event_7709
       field: "message"
       description: "Event raised when a certificate chain is rejected"
-      pattern: "Certificate %{aruba.cm.cert_name} rejected due to verification failure (%{event.reason})"
+      patterns: 
+        - "^Certificate %{DATA:aruba.cm.cert_name} rejected due to verification failure \\(%{GREEDYDATA:event.reason}\\)"
+        - "^Throttled %{NUMBER:aruba.throttle_count:long} Messages"
   - grok:
       if: "['7710', '7711', '7712'].contains(ctx.event?.code)"
       tag: cm_event_7710_7711_7712
@@ -2896,12 +2887,14 @@ processors:
       patterns:
         - "^(Certificate signing request|Self-signed certificate) %{DATA:aruba.cm.cert_name} created"
         - "^Application association with the %{DATA:aruba.cm.cert_name} certificate is not permitted"
-  - dissect:
+  - grok:
       if: "ctx.event.code == '7713'"
       tag: cm_event_7713
       field: "message"
       description: "Event raised when a certificate is verified due to optional OCSP enforcement"
-      pattern: "Certificate %{aruba.cm.cert_name} failed OCSP verification (%{aruba.status}), but was accepted because OCSP enforcement is set to optional."
+      patterns: 
+        - "^Certificate %{DATA:aruba.cm.cert_name} failed OCSP verification \\(%{DATA:aruba.status}\\), but was accepted because OCSP enforcement is set to optional."
+        - "^Throttled %{NUMBER:aruba.throttle_count:long} Messages"
   - grok:
       if: "['7714', '7715'].contains(ctx.event?.code)"
       tag: cm_event_7714_7715
@@ -3142,11 +3135,7 @@ processors:
       pattern: "Unsupported underlay port %{aruba.port} configured for tunnel %{aruba.vxlan.vtep_peer}"
 
   # DHCPv4 Snooping events (82xx)
-  # https://www.arubanetworks.com/techdocs/AOS-CX/10.07/HTML/5200-8214/Content/events/DHCPv4-SNOOPING.htm
-  #
-  # The following event ID does not need further processing:
-  # * 8212
-  #
+  # https://www.arubanetworks.com/techdocs/AOS-CX/10.15/HTML/elmrg/Content/events/DHCPv4-SNOOPING.htm
   - grok:
       field: message
       tag: dhcpv4_snoop_event_8201
@@ -3252,13 +3241,38 @@ processors:
       if: "ctx.event?.code == '8216'"
       patterns:
         - "^Failed to import dynamic ip binding entries from external storage. volume: %{DATA:aruba.dhcp.volume_name}, filename: %{DATA:file.name}.$"
+  - dissect:
+      field: message
+      tag: dhcpv4_snoop_event_8217
+      description: "Log event when failed to import dynamic ip binding entries from local storage."
+      if: "ctx.event?.code == '8217'"
+      pattern: "Failed to import dynamic ip binding entries from local storage. filepath: %{file.path}."
+  - grok:
+      field: message
+      tag: dhcpv4_snoop_event_8219_8220
+      description: "Log event when dynamic ip binding entries from external storage are successfully imported | from local storage are successfully imported"
+      if: "['8219','8220'].contains(ctx.event?.code)"
+      patterns:
+        - "^Successfully imported %{DATA:aruba.dhcp.bindings_imported} dynamic ip binding entries from (external|local) storage.( volume: %{DATA:aruba.dhcp.volume_name}, filename: %{GREEDYDATA:file.name}.)?"
+  - grok:
+      field: message
+      tag: dhcpv4_snoop_event_8221_8222_8223_8224
+      description: "Log event when a client receives IP from DHCP server along with static attributes. | when a client releases | when a client's lease period expires | when a client's static attributes are updated"
+      if: "['8221','8222','8223','8224'].contains(ctx.event?.code)"
+      patterns:
+        - "^Client %{MAC:client.mac} on vlan %{DATA:network.vlan.id}, port %{DATA:aruba.port} received %{IP:client.ip} from server %{IP:server.ip} with lease %{DATA:aruba.dhcp.lease}. Nameserver:%{IP:aruba.dhcp.nameserver_ip}, Gateway:%{IP:aruba.dhcp.gateway_ip}."
+        - "^Client %{MAC:client.mac} on vlan %{DATA:network.vlan.id}, port %{DATA:aruba.port} (released|lease period expired for|with) %{IP:client.ip}.( Client attributes updated: Gateway %{IP:aruba.dhcp.gateway_ip}, Nameserver %{IP:aruba.dhcp.nameserver_ip}, Lease period %{GREEDYDATA:aruba.dhcp.lease}.)?"
+  - grok:
+      field: message
+      tag: dhcpv4_snoop_event_8225_8226
+      description: "DHCP server packet received on an untrusted port | An unauthorized server detected on a trusted port"
+      if: "['8225','8226'].contains(ctx.event?.code)"
+      patterns:
+        - "^DHCPv4-Snooping dropped DHCP %{DATA:aruba.dhcp.message_type} packet received on untrusted port %{DATA:aruba.port} from %{IP:server.ip}"
+        - "^DHCPv4-Snooping dropped DHCP %{DATA:aruba.dhcp.message_type} packet received from unauthorized server %{IP:server.ip} on trusted port %{GREEDYDATA:aruba.port}"
 
   # DHCPv6 snooping events (83xx)
-  # https://www.arubanetworks.com/techdocs/AOS-CX/10.07/HTML/5200-8214/Content/events/DHCPV6_SNOOPING.htm
-  #
-  # The following event ID does not need further processing:
-  # * 8309
-  #
+  # https://www.arubanetworks.com/techdocs/AOS-CX/10.15/HTML/elmrg/Content/events/DHCPv6-SNOOPING.htm
   - grok:
       field: message
       tag: dhcpv6_snooping_event_8301
@@ -3343,6 +3357,35 @@ processors:
       if: "ctx.event?.code == '8313'"
       patterns:
         - "^Failed to import dynamic ip binding entries from external storage. volume: %{DATA:aruba.dhcp.volume_name}, filename: %{DATA:file.name}.$"
+  - dissect:
+      field: message
+      tag: dhcpv6_snooping_event_8314
+      description: "Log event when import of dynamic binding entries from local storage is failed."
+      if: "ctx.event?.code == '8314'"
+      pattern: "Failed to import dynamic ip binding entries from local storage. filepath: %{file.path}."
+  - grok:
+      field: message
+      tag: dhcpv6_snoop_event_8316_8317
+      description: "Log event when dynamic ip binding entries from external storage are successfully imported | from local storage are successfully imported"
+      if: "['8316','8317'].contains(ctx.event?.code)"
+      patterns:
+        - "^Successfully imported %{DATA:aruba.dhcp.bindings_imported} dynamic ip binding entries from (external|local) storage.( volume: %{DATA:aruba.dhcp.volume_name}, filename: %{GREEDYDATA:file.name}.)?"
+  - grok:
+      field: message
+      tag: dhcpv6_snoop_event_8318_8319_8320_8321
+      description: "Log event when a client receives IPv6 address from DHCP server along with static attributes | when a client releases IPv6 address | when a client's lease period expires | when a client's static attributes are updated"
+      if: "['8318','8319','8320','8321'].contains(ctx.event?.code)"
+      patterns:
+        - "^Client %{MAC:client.mac} on vlan %{DATA:network.vlan.id}, port %{DATA:aruba.port} received %{IP:client.ip} from server %{IP:server.ip} with lease %{DATA:aruba.dhcp.lease}. Nameserver:%{IP:aruba.dhcp.nameserver_ip}."
+        - "^Client %{MAC:client.mac} on vlan %{DATA:network.vlan.id}, port %{DATA:aruba.port} (released|lease period expired for|with) %{IP:client.ip}.( Client attributes updated: Gateway %{IP:aruba.dhcp.gateway_ip}, Nameserver %{IP:aruba.dhcp.nameserver_ip}, Lease period %{GREEDYDATA:aruba.dhcp.lease}.)?"
+  - grok:
+      field: message
+      tag: dhcpv6_snoop_event_8322_8323
+      description: "Packet dropped on an untrusted port | An unauthorized server detected on port"
+      if: "['8322','8323'].contains(ctx.event?.code)"
+      patterns:
+        - "^DHCPv6-Snooping dropped DHCP %{DATA:aruba.dhcp.message_type} packet received on untrusted port %{DATA:aruba.port} from %{IP:server.ip}"
+        - "^DHCPv6-Snooping dropped DHCP %{DATA:aruba.dhcp.message_type} packet received from unauthorized server %{IP:server.ip} on trusted port %{GREEDYDATA:aruba.port}"
 
   # ND snooping events (840x)
   # https://www.arubanetworks.com/techdocs/AOS-CX/10.07/HTML/5200-8214/Content/events/ND-SNOOPING.htm
@@ -3357,13 +3400,13 @@ processors:
         - "^ND packet of type=%{DATA:aruba.nd.type} received on port:%{DATA:aruba.port} vlan:%{DATA:network.vlan.id} with src_mac:%{MAC:source.mac} is %{DATA:aruba.status}. count=%{NUMBER:aruba.count:long}"
 
   # ERPS Events (85xx)
-  # https://www.arubanetworks.com/techdocs/AOS-CX/10.07/HTML/5200-8214/Content/events/ERPS.htm
+  # https://www.arubanetworks.com/techdocs/AOS-CX/10.15/HTML/elmrg/Content/events/ERPS.htm
   - dissect:
       field: message
       tag: erps_event_8501
       description: "Log event when RAPS messages are not received for a certain time interval"
       if: "ctx.event?.code == '8501'"
-      pattern: "Expected R-APS packets not received on %{observer.ingress.interface.id} in ring %{aruba.erps.ring_id} with control VLAN %{network.vlan.id}"
+      pattern: "Expected R-APS packets not received on %{aruba.interface.id} in ring %{aruba.erps.ring_id} with control VLAN %{network.vlan.id}"
   - grok:
       field: message
       tag: erps_event_8502
@@ -3382,13 +3425,13 @@ processors:
       tag: erps_event_8504
       description: "Log event when ring is configured with a non-L2 port"
       if: "ctx.event?.code == '8504'"
-      pattern: "%{observer.ingress.interface.name} is not an L2 port"
+      pattern: "%{aruba.interface.name} is not an L2 port"
   - dissect:
       field: message
       tag: erps_event_8505
       description: "Log event when an interface which is already associated to a ring port is getting mapped to other ring port as well"
       if: "ctx.event?.code == '8505'"
-      pattern: "%{observer.ingress.interface.name} is already associated with %{aruba.erps.port_name} of ERPS ring %{aruba.erps.ring_id}"
+      pattern: "%{aruba.interface.name} is already associated with %{aruba.port} of ERPS ring %{aruba.erps.ring_id}"
   - dissect:
       field: message
       tag: erps_event_8506
@@ -3424,13 +3467,13 @@ processors:
       tag: erps_event_8512
       description: "Log event if the same ring port is configured as RPL port for more than one instance"
       if: "ctx.event?.code == '8512'"
-      pattern: "%{aruba.erps.port_name} is already configured as RPL port for instance %{aruba.instance.id}"
+      pattern: "%{aruba.port} is already configured as RPL port for instance %{aruba.instance.id}"
   - dissect:
       field: message
       tag: erps_event_8513
       description: "Log event if ring port which is also an ISL is being configured as RPL"
       if: "ctx.event?.code == '8513'"
-      pattern: "RPL configuration is not allowed on ISL port %{observer.ingress.interface.name}"
+      pattern: "RPL configuration is not allowed on ISL port %{aruba.interface.name}"
   - dissect:
       field: message
       tag: erps_event_8515
@@ -3574,32 +3617,36 @@ processors:
         - "^Failed to report storage %{DATA:aruba.storage.name} details for module %{NUMBER:aruba.slot:long}. Error: %{GREEDYDATA:event.reason}"
         - "^Storage %{DATA:aruba.storage.name} (health alert. E|e)ndurance utilization at %{NUMBER:aruba.storage.usage:long}\\% in module %{NUMBER:aruba.slot:long}(. Failure is imminent. Please backup data)?"
 
-  # DCBX Events (92xx)
-  # https://www.arubanetworks.com/techdocs/AOS-CX/10.07/HTML/5200-8214/Content/events/DCBX.htm
+  # Discovery and Capability Exchange (DCBx) events (92xx)
+  # https://www.arubanetworks.com/techdocs/AOS-CX/10.15/HTML/elmrg/Content/events/DCBX.htm
   - grok:
       field: message
       tag: dcbx_event_9203_9204
-      if: "['9203', '9204'].contains(ctx.event?.code)"
+      if: "['9203','9204'].contains(ctx.event?.code)"
+      description: "Log event when DCBX is enabled on the interface | when DCBX is disabled on the interface"
       patterns:
-        - "^DCBX is (dis|en)abled on interface %{DATA:aruba.dcbx.intf_name}$"
+        - "^DCBX is (dis|en)abled on interface %{DATA:aruba.interface.name}$"
   - grok:
       field: message
       tag: dcbx_event_9205_9206
-      if: "['9205', '9206'].contains(ctx.event?.code)"
+      if: "['9205','9206'].contains(ctx.event?.code)"
+      description: "Log event when DCBX oper status is active on an interface | when DCBX oper status is inactive on an interface"
       patterns:
-        - "^DCBX status (in)?active on interface %{DATA:aruba.dcbx.intf_name}$"
+        - "^DCBX status (in)?active on interface %{DATA:aruba.interface.name}$"
   - grok:
       field: message
       tag: dcbx_event_9207_9208
-      if: "['9207', '9208'].contains(ctx.event?.code)"
+      if: "['9207','9208'].contains(ctx.event?.code)"
+      description: "Log event when PFC TLVs are active on an interface | when PFC TLVs are inactive on an interface"
       patterns:
-        - "^PFC TLV status (in)?active on interface %{DATA:aruba.dcbx.intf_name}$"
+        - "^PFC TLV status (in)?active on interface %{DATA:aruba.interface.name}$"
   - grok:
       field: message
       tag: dcbx_event_9209
-      if: "['9209'].contains(ctx.event?.code)"
+      if: "ctx.event?.code == '9209'"
+      description: "Log event when there is PFC TLV priority mismatch on an interface"
       patterns:
-        - "^PFC TLV status priority mismatch on interface %{DATA:aruba.dcbx.intf_name}$"
+        - "^PFC TLV status priority mismatch on interface %{DATA:aruba.interface.name}$"
 
   # Port access roles events (930x)
   # https://www.arubanetworks.com/techdocs/AOS-CX/10.07/HTML/5200-8214/Content/events/ROLE.htm
@@ -3626,12 +3673,12 @@ processors:
         - "^Port security sticky client move violation triggered on port %{DATA:aruba.port} for client with MAC address %{MAC:client.mac}"
 
   # EVPN Events (95xx)
-  # https://www.arubanetworks.com/techdocs/AOS-CX/10.07/HTML/5200-8214/Content/events/EVPN.htm
+  # https://www.arubanetworks.com/techdocs/AOS-CX/10.15/HTML/elmrg/Content/events/EVPN.htm
   - grok:
       field: message
       tag: evpn_event_9501_9502
       description: "Logs EVPN EVI create|delete event."
-      if: "['9501', '9502'].contains(ctx.event?.code)"
+      if: "['9501','9502'].contains(ctx.event?.code)"
       patterns:
           - "^EVPN EVI: %{DATA:network.vlan.id} (created|deleted)"
   - dissect:
@@ -3650,14 +3697,14 @@ processors:
       field: message
       tag: evpn_event_9505_9506_9507
       description: "Logs EVPN RT create|delete|update event for an EVI."
-      if: "['9505', '9506', '9507'].contains(ctx.event?.code)"
+      if: "['9505','9506','9507'].contains(ctx.event?.code)"
       patterns:
           - "^EVPN RT: %{DATA:aruba.evpn.rt} (created|deleted|updated) for EVI: %{DATA:network.vlan.id}$"
   - grok:
       field: message
       tag: evpn_event_9508_9509
       description: "Logs EVPN VTEP VNI add|delete event."
-      if: "['9508', '9509'].contains(ctx.event?.code)"
+      if: "['9508','9509'].contains(ctx.event?.code)"
       patterns:
           - "^VNI: %{DATA:aruba.evpn.vni} is (added|deleted) for EVPN Peer VTEP: %{DATA:aruba.evpn.vtep_ip}$"
   - grok:
@@ -3685,7 +3732,7 @@ processors:
       field: message
       tag: evpn_event_9513_9514
       description: "Logs EVPN VRF create|delete event."
-      if: "['9513', '9514'].contains(ctx.event?.code)"
+      if: "['9513','9514'].contains(ctx.event?.code)"
       patterns:
           - "^EVPN VRF: %{DATA:aruba.vrf.id} (created|deleted)"
   - dissect:
@@ -3698,9 +3745,41 @@ processors:
       field: message
       tag: evpn_event_9516_9517_9518
       description: "Logs EVPN VRF RT create|delete|update event."
-      if: "['9516', '9517', '9518'].contains(ctx.event?.code)"
+      if: "['9516','9517','9518'].contains(ctx.event?.code)"
       patterns:
           - "^EVPN RT: %{DATA:aruba.evpn.rt} (created|deleted|updated) for VRF: %{DATA:aruba.vrf.id}$"
+  - grok:
+      field: message
+      tag: evpn_event_9521_9522_9523_9524
+      description: "Log event when EVPN VLAN Aware bundle created | bundle deleted | bundle disabled | bundle enabled"
+      if: "['9521','9522','9523','9524'].contains(ctx.event?.code)"
+      patterns:
+        - "^EVPN VLAN Aware Bundle : %{DATA:package.name} (created|deleted|disable|enabled)"
+  - dissect:
+      field: message
+      tag: evpn_event_9525
+      description: "Log event when VLAN ethernet-tag is updated"
+      if: "ctx.event?.code == '9525'"
+      pattern: "EVPN EVI : %{network.vlan.id} updated with ethernet-tag : %{aruba.evpn.eth_tag}."
+  - dissect:
+      field: message
+      tag: evpn_event_9526
+      description: "Logs EVPN duplicate IP dampening event"
+      if: "ctx.event?.code == '9526'"
+      pattern: "EVPN duplicate IP dampening %{event.action}, MAC: %{client.mac}, IP address: %{client.ip}, VTEP: %{aruba.evpn.vtep_ip}"
+  - dissect:
+      field: message
+      tag: evpn_event_9527
+      description: "Logs EVPN RT update event for an EVI"
+      if: "ctx.event?.code == '9527'"
+      pattern: "EVPN EVI: RT %{aruba.evpn.rtt} %{aruba.evpn.rt} updated for EVI: %{network.vlan.id}"
+  - grok:
+      field: message
+      tag: evpn_event_9529_9530
+      description: "Log event when EVPN Ethernet Segment created | deleted"
+      if: "['9529','9530'].contains(ctx.event?.code)"
+      patterns:
+        - "^EVPN Ethernet Segment with ESI %{DATA:aruba.evpn.esi} is (created|deleted)"
 
   # IP tunnels events (96xx)
   # https://www.arubanetworks.com/techdocs/AOS-CX/10.07/HTML/5200-8214/Content/events/IP_TUNNEL.htm
@@ -4191,8 +4270,8 @@ processors:
       patterns:
         - "^HW programming failed for (IPv4|IPv6) prefix-priority %{GREEDYDATA:aruba.asic.route_prefix}"
 
-  # DPSE Events (109xx)
-  # https://www.arubanetworks.com/techdocs/AOS-CX/10.07/HTML/5200-8214/Content/events/DPSE.htm
+  # DPSE daemon events (109xx)
+  # https://www.arubanetworks.com/techdocs/AOS-CX/10.15/HTML/elmrg/Content/events/DPSE.htm
   - dissect:
       field: message
       tag: dpse_event_10901
@@ -4205,6 +4284,12 @@ processors:
       description: "The system completed backplane sequence recovery triggered by line card error"
       if: "ctx.event?.code == '10904'"
       pattern: "Line card module %{aruba.dpse.linecard_name} completed backplane sequence recovery"
+  - dissect:
+      field: message
+      tag: dpse_event_10906
+      description: "An ops-switchd plugin failed executing an operation"
+      if: "ctx.event?.code == '10906'"
+      pattern: 'Control Plane (%{aruba.dpse.operation_name}) failure during (%{aruba.dpse.plugin_name}) configuration'
 
   # MAC Address mode configuration events (1100x)
   # https://www.arubanetworks.com/techdocs/AOS-CX/10.07/HTML/5200-8214/Content/events/FAULT_MONITOR.htm
@@ -4310,18 +4395,18 @@ processors:
       if: "ctx.event?.code == '11501'"
       pattern: "IPv6 route prefix %{aruba.prefix} is not supported on this platform"
 
-  # CFM Events (116xx)
-  # https://www.arubanetworks.com/techdocs/AOS-CX/10.07/HTML/5200-8214/Content/events/ETH_OAM_CFM.htm
+  # Connectivity Fault Management (CFM) events (1160x)
+  # https://www.arubanetworks.com/techdocs/AOS-CX/10.15/HTML/elmrg/Content/events/ETH_OAM_CFM.htm
   - dissect:
       field: message
       tag: cfm_event_11601
       if: "ctx.event?.code == '11601'"
-      pattern: "Connection lost for Maintenance Endpoint %{aruba.cfm.id} on %{aruba.cfm.interface}."
+      pattern: "Connection lost for Maintenance Endpoint %{aruba.instance.id} on %{aruba.interface.id}."
   - dissect:
       field: message
       tag: cfm_event_11602
       if: "ctx.event?.code == '11602'"
-      pattern: "Connection restored for Maintenance Endpoint %{aruba.cfm.id} on %{aruba.cfm.interface}."
+      pattern: "Connection restored for Maintenance Endpoint %{aruba.instance.id} on %{aruba.interface.id}."
 
   # Alarm events (117xx)
   # https://www.arubanetworks.com/techdocs/AOS-CX/10.15/HTML/elmrg/Content/events/ALARM.htm
@@ -4360,32 +4445,61 @@ processors:
         - "^(System|Input) alarm %{DATA:aruba.alarm.name} has activated through relay(, triggered at %{GREEDYDATA:aruba.alarm.trigger})?"
 
   # Container Manager Events (118xx)
-  # https://www.arubanetworks.com/techdocs/AOS-CX/10.07/HTML/5200-8214/Content/events/CONTAINER.htm
+  # https://www.arubanetworks.com/techdocs/AOS-CX/10.15/HTML/elmrg/Content/events/CONTAINER.htm
   - dissect:
       field: message
       tag: container_manager_event_11801_11802_11803
-      if: "['11801', '11802', '11803'].contains(ctx.event?.code)"
+      if: "['11801','11802','11803'].contains(ctx.event?.code)"
       pattern: "Container %{container.name} is %{?ignore_action}"
+  - grok:
+      field: message
+      tag: container_manager_event_11804_11805_11806_11807_11808_11809_11810_11811
+      if: "['11804','11805','11806','11807','11808','11809','11810','11811'].contains(ctx.event?.code)"
+      patterns:
+        - "^Endpoint has been executed for container %{DATA:container.name} (with parameters: %{GREEDYDATA:aruba.container.params}|with no parameters.)"
+        - "^Endpoint has been executed for container %{DATA:container.name} with no parameters."
+        - "^Container %{DATA:container.name} (stopped|image)"
 
   # DNS Client Events (119xx)
-  # https://www.arubanetworks.com/techdocs/AOS-CX/10.07/HTML/5200-8214/Content/events/DNS_CLIENT.htm
+  # https://www.arubanetworks.com/techdocs/AOS-CX/10.15/HTML/elmrg/Content/events/DNS_CLIENT.htm
   - grok:
       field: message
       tag: dns_client_event_11901
       description: "Event reported when DNS event triggered"
-      if: "['11901'].contains(ctx.event?.code)"
+      if: "ctx.event?.code == '11901'"
       patterns:
-        - "%{DATA:aruba.dns.type} event for VRF %{DATA:aruba.dns.vrf_name}$"
+        - "%{DATA:aruba.dns.type} event for VRF %{DATA:aruba.vrf.name}$"
 
   # UFD events (1200x)
   # https://www.arubanetworks.com/techdocs/AOS-CX/10.15/HTML/elmrg/Content/events/UFD.htm
   - grok:
       field: message
-      tag: ufd_event_12001
-      description: ""
+      tag: ufd_event_12001_12002
+      description: "Event reported when Links-to-Disable go down | Event reported when Links-to-Disable ports are restored"
       if: "['12001','12002'].contains(ctx.event?.code)"
       patterns:
         - "^Uplink Failure Detection session-id %{DATA:aruba.instance.id}, state changed from %{DATA:aruba.ufd.from_state} to %{GREEDYDATA:aruba.state}."
+
+  # Dot1x supplicant events (1230x)
+  # https://www.arubanetworks.com/techdocs/AOS-CX/10.15/HTML/elmrg/Content/events/DOT1X_SUPPLICANT.htm
+  - grok:
+      field: message
+      tag: dot1x_event_12301_12302_12303_12304
+      description: ""
+      if: "['12301','12302','12303','12304'].contains(ctx.event?.code)"
+      patterns:
+        - "^802.1X supplicant has (blocked|unblocked) the interface %{GREEDYDATA:aruba.interface.id}."
+        - "^802.1X supplicant PAE restarted on interface %{GREEDYDATA:aruba.interface.id} due to change in policy %{GREEDYDATA:aruba.dot1x.policy}."
+        - "^802.1X supplicant is not supported on the port %{GREEDYDATA:aruba.port}."
+
+  # Device fingerprinting events (1240x)
+  # https://www.arubanetworks.com/techdocs/AOS-CX/10.15/HTML/elmrg/Content/events/DFP.htm
+  - dissect:
+      field: message
+      tag: device_fingerprinting_event_12402
+      description: "Log the event when the per port clients limit for device fingerprinting is reached."
+      if: "ctx.event?.code == '12402'"
+      pattern: "Reached the maximum clients limit of %{aruba.limit.threshold} on the interface %{aruba.interface.id} for device fingerprinting"
 
   # VXLAN agent events (1250x)
   # https://www.arubanetworks.com/techdocs/AOS-CX/10.15/HTML/elmrg/Content/events/VXLAN_AGENT.htm
@@ -4418,13 +4532,42 @@ processors:
         - "^TELNET session from %{IP:client.ip} is rejected because maximum number of TELNET sessions is reached."
   - grok:
       field: message
-      tag: telnet_server_event_
+      tag: telnet_server_event_12908_12909
       description: ""
       # Possible documentation error with duplicate definition of 12908, will parse 12908 and 12909 together in the same grok
       if: "['12908','12909'].contains(ctx.event?.code)"
       patterns:
         - "^TELNET session from User %{DATA:user.name} is closed because maximum number of sessions per user is reached."
         - "^User %{DATA:user.name} login from %{IP:client.ip} for TELNET session has failed since the user is trying to login through an interface which is not allowed. Allowed interfaces are: %{GREEDYDATA:aruba.interface.id}."
+
+  # Console events (1300x)
+  # https://www.arubanetworks.com/techdocs/AOS-CX/10.15/HTML/elmrg/Content/events/CONSOLE.htm
+  - grok:
+      field: message
+      tag: console_event_13001_13002
+      description: "Logs a message when a user login is successful | Logs a message when a user login fails"
+      if: "['13001','13002'].contains(ctx.event?.code)"
+      patterns:
+        - "^User %{DATA:user.name} (logged in|login) from %{IP:client.ip} (through|for) CONSOLE"
+  - grok:
+      field: message
+      tag: console_event_13003
+      description: "Logs a message when a user logs out of a session"
+      if: "ctx.event?.code == '13003'"
+      patterns: 
+        - "^User %{DATA:user.name} logged out of CONSOLE session from %{IP:client.ip}."
+  - dissect:
+      field: message
+      tag: console_event_13004
+      description: "Logs a message when a user tries to login while maximum number of sessions per user are reached."
+      if: "ctx.event?.code == '13004'"
+      pattern: "CONSOLE session from User %{user.name} is closed because maximum number of sessions per user is reached."
+  - dissect:
+      field: message
+      tag: console_event_13005
+      description: "Logs a message when a user login fails since the access through this management interface is not allowed"
+      if: "ctx.event?.code == '13005'"
+      pattern: "User %{user.name} login from %{client.ip} for CONSOLE session has failed since the user is trying to login through an interface which is not allowed. Allowed interfaces are: %{aruba.interface.id}"
 
   # Accounting events (1310x)
   # https://www.arubanetworks.com/techdocs/AOS-CX/10.15/HTML/elmrg/Content/events/ACCOUNTING.htm
@@ -4435,6 +4578,15 @@ processors:
       if: "['13101','13102','13103'].contains(ctx.event?.code)"
       patterns:
         - "^(SSH|TELNET|CONSOLE) session from %{IP:client.ip} (for|with) (U|u)ser %{DATA:user.name} "
+
+  # Config validator events (1340x)
+  # https://www.arubanetworks.com/techdocs/AOS-CX/10.15/HTML/elmrg/Content/events/CONFIG-VALIDATOR.htm
+  - dissect:
+      field: message
+      tag: config_validator_13401
+      description: "The following are the events related to configuration validation."
+      if: "ctx.event?.code == '13401'"
+      pattern: "Config %{aruba.config.name} failed to validate. Reason %{event.reason}"
 
   # TPM events (1360x)
   # https://www.arubanetworks.com/techdocs/AOS-CX/10.15/HTML/elmrg/Content/events/TPMD.htm
@@ -4456,6 +4608,27 @@ processors:
       description: "Indicates the system was rebooted some number of time to recovery from a TPM selftest error"
       if: "ctx.event?.code == '13604'"
       pattern: "Rebooted %{aruba.tpm.reboot_num} times to retry TPM selftests"
+
+  # Distributed services events (1390X)
+  # https://www.arubanetworks.com/techdocs/AOS-CX/10.15/HTML/elmrg/Content/events/DIST-SERV.htm
+  - dissect:
+      field: message
+      tag: dist_service_event_13901
+      description: "Log event that indicates the chassis requires a reboot."
+      if: "ctx.event?.code == '13901'"
+      pattern: "Chassis Reboot Requested: %{event.reason}"
+  - dissect:
+      field: message
+      tag: dist_service_event_13902
+      description: "Log event that indicates admission to PSM was rejected.' event_description_template"
+      if: "ctx.event?.code == '13902'"
+      pattern: "Distributed Services Admission Rejected. Reason: %{event.reason}"
+  - dissect:
+      field: message
+      tag: dist_service_event_13903
+      description: "Log event that indicates mismatch of PSM coordinates."
+      if: "ctx.event?.code == '13903'"
+      pattern: "PSM coordinates mismatch. Active coordinates: %{aruba.distributed.active_coordinates}, Configured coordinates: %{aruba.distributed.configured_coordinates}."      
 
   # Traffic Insight events (1400x)
   # https://www.arubanetworks.com/techdocs/AOS-CX/10.15/HTML/elmrg/Content/events/TRAFFIC_INSIGHT.htm
@@ -4518,6 +4691,94 @@ processors:
       if: "['14105','14109'].contains(ctx.event?.code)"
       patterns: 
         - "(is|been) %{DATA:aruba.status} - event_name"
+
+  # Client insight events (143xx)
+  # https://www.arubanetworks.com/techdocs/AOS-CX/10.15/HTML/elmrg/Content/events/CLIENT_INSIGHT.htm
+  - dissect:
+      field: message
+      tag: insight_event_14301
+      description: "Client on-boarding successful"
+      if: "ctx.event?.code == '14301'"
+      pattern: "Client %{client.mac} successfully on-boarded on VLAN %{network.vlan.id}. Client on-boarding started at %{aruba.insight.ob_start_ts}; L2 complete at %{aruba.insight.l2_end_ts}; L3 complete at %{aruba.insight.l3_end_ts} is_security_log : no"
+  - dissect:
+      field: message
+      tag: insight_event_14302
+      description: "Client on-boarding partially success"
+      if: "ctx.event?.code == '14302'"
+      pattern: "Client %{client.mac} partial success while on-boarding on VLAN %{network.vlan.id}. L2 status:%{aruba.insight.l2_ob_state} L3 status:%{aruba.insight.l3_ob_state}. Client on-boarding started at %{aruba.insight.ob_start_ts};L2 complete at %{aruba.insight.l2_end_ts}; L3 complete at %{aruba.insight.l3_end_ts}. is_security_log : no"
+  - dissect:
+      field: message
+      tag: insight_event_14303
+      description: "Client on-boarding failed"
+      if: "ctx.event?.code == '14303'"
+      pattern: "Client %{client.mac} failed to on-board with status: %{aruba.status} reason_code: %{aruba.insight.failure_phase_id} is_security_log : no"
+  - dissect:
+      field: message
+      tag: insight_event_14304
+      description: "Maximum system wide client limit reached"
+      if: "ctx.event?.code == '14304'"
+      pattern: "Maximum system wide client limit %{aruba.limit.threshold} reached. throttle_time : 15 throttle_count : 1 is_security_log: no"
+  - dissect:
+      field: message
+      tag: insight_event_14305
+      description: "Client on-boarding successful"
+      if: "ctx.event?.code == '14305'"
+      pattern: "Client %{client.mac} successfully on-boarded on VLAN %{network.vlan.id}; Client on-boarding started at %{aruba.insight.ob_start_ts}; L2 complete at %{aruba.insight.l2_end_ts}; L3 complete at %{aruba.insight.l3_end_ts}; ARP to GW response received at %{aruba.insight.arp_end_ts}; DNS on-boarding to %{server.ip} completed at %{aruba.insight.dns_end_ts} is_security_log : no"
+  - dissect:
+      field: message
+      tag: insight_event_14306
+      description: "Client on-boarding partially success"
+      if: "ctx.event?.code == '14306'"
+      pattern: "Client %{client.mac} on-boarded on VLANs %{network.vlan.id} and failed on VLANs %{aruba.insight.failed_vlans}; Client on-boarding started at %{aruba.insight.ob_start_ts}; L2 complete at %{aruba.insight.l2_end_ts}; L3 complete at %{aruba.insight.l3_end_ts}; ARP to GW response received at %{aruba.insight.arp_end_ts}; DNS on-boarding to %{server.ip} completed at %{aruba.insight.dns_end_ts}; L2 status %{aruba.insight.l2_ob_state} failure_reason_code - %{aruba.insight.l2_failure_reason}; L3 status %{aruba.insight.l3_ob_state} failure_reason_code - %{aruba.insight.l3_failure_reason}; DNS on-boarding status %{aruba.status} failure_reason_code - %{event.reason}"
+  - dissect:
+      field: message
+      tag: insight_event_14307
+      description: "Client on-boarding failed"
+      if: "ctx.event?.code == '14307'"
+      pattern: "Client %{client.mac} failed to on-board with status: %{aruba.status} in failure phase: %{aruba.insight.failure_phase_id} with reason: %{event.reason} is_security_log : no"
+  - dissect:
+      field: message
+      tag: insight_event_14308
+      description: "Client L2 on-boarding details"
+      if: "ctx.event?.code == '14308'"
+      pattern: "Client %{client.mac} on-boarded on VLAN %{network.vlan.id} and failed on VLANs %{aruba.insight.failed_vlans} Port %{aruba.port} auth-status %{aruba.status} auth-type %{aruba.insight.auth_type} auth-latency %{aruba.insight.auth_latency} dot1x-auth-failure-reason %{aruba.insight.dot1x_auth_failure_reason} mac-auth-failure-reason %{aruba.insight.mac_auth_failure_reason} radius-server %{aruba.insight.radius_server} assigned-role %{aruba.role} assigned-role-type %{aruba.insight.role_type}"
+  - grok:
+      field: message
+      tag: insight_event_14309_14310
+      description: "Client DHCPV4 on-boarding details | Client DHCPV6 on-boarding details"
+      if: "['14309','14310'].contains(ctx.event?.code)"
+      patterns:
+        - "^Client %{MAC:client.mac} on-boarded on VLAN %{DATA:aruba.insight.successfulvlan} Port %{DATA:aruba.port} (dhcpv4|dhcpv6)-status %{DATA:aruba.status} (dhcpv4|dhcpv6)-failure-reason %{DATA:event.reason} (dhcpv4|dhcpv6)-server%{DATA:aruba.insight.dhcp_server} (dhcpv4|dhcpv6)-client %{DATA:aruba.insight.dhcp_client} (dhcpv4|dhcpv6)-latency %{GREEDYDATA:aruba.insight.dhcp_latency}"
+  - dissect:
+      field: message
+      tag: insight_event_14311
+      description: "Client DNS on-boarding details"
+      if: "ctx.event?.code == '14311'"
+      pattern: "Client %{client.mac} on-boarded on Port %{aruba.port} dns-status %{aruba.status} dns-failure-reason %{event.reason} dns-server %{aruba.insight.dns_server} dns-latency %{aruba.insight.dns_latency}"
+
+  # Download events (145xx)
+  # https://www.arubanetworks.com/techdocs/AOS-CX/10.15/HTML/elmrg/Content/events/DOWNLOAD.htm
+  - grok:
+      field: message
+      tag: download_event_14501_14502_14503_14509_14510
+      description: "Indicates that a file download has been started | file has been successfully downloaded | file download has been aborted | file download has been retried | file upload has been retried"
+      if: "['14501','14502','14503','14509','14510'].contains(ctx.event?.code)"
+      patterns:
+        - "from %{GREEDYDATA:url.original}"
+  - grok:
+      field: message
+      tag: download_event_14505_14506_14507
+      description: "Indicates that a file upload has been started | file has been successfully uploaded | file upload has been aborted"
+      if: "['14505','14506','14507'].contains(ctx.event?.code)"
+      patterns:
+        - "to %{GREEDYDATA:url.original}"
+  - grok:
+      field: message
+      tag: download_event_14504_14508
+      description: "Indicates that a file download has been retried | file upload has been retried"
+      if: "['14504','14508'].contains(ctx.event?.code)"
+      patterns:
+        - "^File (upload|download) failed (to|from) %{DATA:url.original} with error code: %{DATA:error.code}, %{GREEDYDATA:aruba.error.description}"
 
   # Central Source events (1460x)
   # https://www.arubanetworks.com/techdocs/AOS-CX/10.15/HTML/elmrg/Content/events/CENTRAL_SOURCE.htm
