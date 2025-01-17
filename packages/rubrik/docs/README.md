@@ -629,7 +629,7 @@ An example event for `tasks` looks as following:
                 "name": "name-1",
                 "id": "4755b8b8-116b-4466-affb-c683f9339b10"
             },
-            "suceeded_tasks": {
+            "succeeded_tasks": {
                 "count": 7
             }
         }
