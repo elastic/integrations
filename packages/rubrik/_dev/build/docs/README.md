@@ -106,3 +106,14 @@ Please refer to the following [document](https://www.elastic.co/guide/en/ecs/cur
 
 {{event "mssql_databases"}}
 
+### Unmanaged Objects
+
+The `unmanaged_objects` dataset provides metrics related to the state of the unmanaged objects.
+
+**ECS Field Reference**
+
+Please refer to the following [document](https://www.elastic.co/guide/en/ecs/current/ecs-field-reference.html) for detailed information on ECS fields.
+
+{{fields "unmanaged_objects"}}
+
+{{event "unmanaged_objects"}}

@@ -588,3 +588,103 @@ An example event for `mssql_databases` looks as following:
 }
 ```
 
+### Unmanaged Objects
+
+The `unmanaged_objects` dataset provides metrics related to the state of the unmanaged objects.
+
+**ECS Field Reference**
+
+Please refer to the following [document](https://www.elastic.co/guide/en/ecs/current/ecs-field-reference.html) for detailed information on ECS fields.
+
+**Exported fields**
+
+| Field | Description | Type | Unit | Metric Type |
+|---|---|---|---|---|
+| @timestamp | Event timestamp. | date |  |  |
+| data_stream.dataset | Data stream dataset. | constant_keyword |  |  |
+| data_stream.namespace | Data stream namespace. | constant_keyword |  |  |
+| data_stream.type | Data stream type. | constant_keyword |  |  |
+| rubrik.unmanaged_objects.archive_storage.bytes | The amount of storage on the archival location used by unmanaged snapshots, in bytes. | long | byte | gauge |
+| rubrik.unmanaged_objects.cluster.id | The Rubrik cluster id where this object originated. | keyword |  |  |
+| rubrik.unmanaged_objects.cluster.name | The Rubrik cluster name where this object originated. | keyword |  |  |
+| rubrik.unmanaged_objects.effective_sla_domain.id | The ID of the SLA domain. | keyword |  |  |
+| rubrik.unmanaged_objects.effective_sla_domain.name | The name of the SLA domain. | keyword |  |  |
+| rubrik.unmanaged_objects.local_storage.bytes | The amount of storage on the local cluster used by unmanaged snapshots, in bytes. | long | byte | gauge |
+| rubrik.unmanaged_objects.snapshot.count | Total number of snapshots to for the specified object. | long |  | gauge |
+| rubrik.unmanaged_objects.unmanaged_status | Unmanaged status for the specified object. | keyword |  |  |
+
+
+An example event for `unmanaged_objects` looks as following:
+
+```json
+{
+    "agent": {
+        "name": "docker-fleet-agent",
+        "id": "e886e1df-fd76-40cf-ada7-844cf0cf5087",
+        "type": "filebeat",
+        "ephemeral_id": "d37c0441-d74d-45e3-97d5-6e87a03b830f",
+        "version": "8.16.0"
+    },
+    "rubrik": {
+        "unmanaged_objects": {
+            "cluster": {
+                "name": "cluster-1",
+                "id": "15279140-7ca4-4ccc-810a-2a7e71c23d3b"
+            },
+            "local_storage": {
+                "bytes": 37832423922
+            },
+            "unmanaged_status": "PROTECTED",
+            "archive_storage": {
+                "bytes": 0
+            },
+            "effective_sla_domain": {
+                "name": "sla-domain-1",
+                "id": "f7c8c38e-002b-4f12-bd81-999fb11121d7"
+            },
+            "snapshot": {
+                "count": 16
+            }
+        }
+    },
+    "@timestamp": "2025-01-17T21:40:03.827Z",
+    "ecs": {
+        "version": "8.16.0"
+    },
+    "data_stream": {
+        "namespace": "default",
+        "type": "metrics",
+        "dataset": "rubrik.unmanaged_objects"
+    },
+    "elastic_agent": {
+        "id": "e886e1df-fd76-40cf-ada7-844cf0cf5087",
+        "version": "8.16.0",
+        "snapshot": false
+    },
+    "host": {
+        "hostname": "docker-fleet-agent",
+        "os": {
+            "kernel": "6.8.0-51-generic",
+            "name": "Wolfi",
+            "type": "linux",
+            "version": "20230201",
+            "platform": "wolfi"
+        },
+        "containerized": false,
+        "ip": [
+            "172.18.0.7"
+        ],
+        "name": "docker-fleet-agent",
+        "mac": [
+            "02-42-AC-12-00-07"
+        ],
+        "architecture": "x86_64"
+    },
+    "event": {
+        "agent_id_status": "verified",
+        "ingested": "2025-01-17T21:40:04Z",
+        "kind": "metric",
+        "dataset": "rubrik.unmanaged_objects"
+    }
+}
+```
