@@ -25,6 +25,8 @@ type CheckOptions struct {
 
 	MaxPreviousLinks int
 	MaxTestsReported int
+
+	DryRun bool
 }
 
 func Check(resultsPath string, options CheckOptions) error {
@@ -45,7 +47,7 @@ func Check(resultsPath string, options CheckOptions) error {
 	}
 
 	ghCli := newGhCli(githubOptions{
-		DryRun: false,
+		DryRun: options.DryRun,
 	})
 
 	aReporter := newReporter(ghCli, options.MaxPreviousLinks)
