@@ -104,19 +104,3 @@ func (p packageError) String() string {
 
 	return sb.String()
 }
-
-func (p *packageError) SetClosedURL(url string) {
-	p.ClosedIssueURL = url
-}
-
-func (p *packageError) SetPreviousLinks(builds []string) {
-	p.PreviousBuilds = builds
-}
-
-func (p *packageError) SetFirstBuild(url string) {
-	p.BuildURL = url
-}
-
-func (p *packageError) SetClosedIssue(url string) {
-	p.ClosedIssueURL = url
-}
