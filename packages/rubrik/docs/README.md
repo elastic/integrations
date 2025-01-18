@@ -381,6 +381,12 @@ An example event for `virtualmachines` looks as following:
 
 ### Filesets
 
+The `filesets` dataset provides metrics related to the state of the filesets.
+
+**ECS Field Reference**
+
+Please refer to the following [document](https://www.elastic.co/guide/en/ecs/current/ecs-field-reference.html) for detailed information on ECS fields.
+
 **Exported fields**
 
 | Field | Description | Type | Unit | Metric Type |
@@ -503,6 +509,7 @@ An example event for `filesets` looks as following:
     ]
 }
 ```
+
 ### Drives
 
 The `drives` dataset provides metrics related to the state of the drives.
