@@ -514,7 +514,7 @@ prepare_stack() {
 
     if [[ "${STACK_VERSION}" =~ ^7\.17 ]]; then
         # Required starting with STACK_VERSION 7.17.21
-        export ELASTIC_AGENT_IMAGE_REF_OVERRIDE="docker.elastic.co/beats/elastic-agent-complete:${EXPECTED_VERSION}-amd64"
+        export ELASTIC_AGENT_IMAGE_REF_OVERRIDE="docker.elastic.co/beats/elastic-agent-complete:${STACK_VERSION}-amd64"
         echo "Override elastic-agent docker image: ${ELASTIC_AGENT_IMAGE_REF_OVERRIDE}"
     fi
 
