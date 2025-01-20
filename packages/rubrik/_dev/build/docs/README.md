@@ -64,3 +64,44 @@ Please refer to the following [document](https://www.elastic.co/guide/en/ecs/cur
 {{fields "virtualmachines"}}
 
 {{event "virtualmachines"}}
+
+### Filesets
+
+{{ fields "filesets" }}
+
+{{event "filesets" }}
+### Drives
+
+The `drives` dataset provides metrics related to the state of the drives.
+
+**ECS Field Reference**
+
+Please refer to the following [document](https://www.elastic.co/guide/en/ecs/current/ecs-field-reference.html) for detailed information on ECS fields.
+
+{{fields "drives"}}
+
+{{event "drives"}}
+
+### Physical Hosts
+
+The `physical_hosts` dataset provides metrics related to the state of the physical hosts.
+
+**ECS Field Reference**
+
+Please refer to the following [document](https://www.elastic.co/guide/en/ecs/current/ecs-field-reference.html) for detailed information on ECS fields.
+
+{{fields "physical_hosts"}}
+
+{{event "physical_hosts"}}
+
+### MSSQL Databases
+
+The `mssql_databases` dataset provides metrics related to the state of the MSSQL databases.
+
+**ECS Field Reference**
+
+Please refer to the following [document](https://www.elastic.co/guide/en/ecs/current/ecs-field-reference.html) for detailed information on ECS fields.
+
+{{fields "mssql_databases"}}
+
+{{event "mssql_databases"}}
