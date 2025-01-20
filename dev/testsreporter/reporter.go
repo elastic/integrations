@@ -107,7 +107,7 @@ func (r reporter) updateLinks(ctx context.Context, issue *githubIssue, currentBu
 			links.previousBuilds = previousLinks
 		}
 	} else {
-		fmt.Println("Not found any open issue for this error.")
+		fmt.Println("No open issue found for this error.")
 		// is there any closed issue
 		closedIssueURL, err := r.closedIssueURL(ctx, issue)
 		if err != nil {
