@@ -441,20 +441,21 @@ Note: Descriptions have not been filled out
 | `<vrf>`         | aruba.vrf.id       |
 | `<vtep_ip>`     | aruba.evpn.vtep_ip |
 
-#### [External Storage events](https://www.arubanetworks.com/techdocs/AOS-CX/10.07/HTML/5200-8214/Content/events/EXTERNAL-STORAGE.htm)
+#### [External Storage events](https://www.arubanetworks.com/techdocs/AOS-CX/10.15/HTML/elmrg/Content/events/EXTERNAL-STORAGE.htm)
 | Doc Field   | Schema Mapping              |
 |-------------|-----------------------------|
 | `<name>`    | aruba.storage.name |
 | `<status>`  | aruba.status                |
 
-#### [Fan events](https://www.arubanetworks.com/techdocs/AOS-CX/10.07/HTML/5200-8214/Content/events/FAN.htm)
+#### [Fan events](https://www.arubanetworks.com/techdocs/AOS-CX/10.15/HTML/elmrg/Content/events/FAN.htm)
 | Doc Field                  | Schema Mapping               |
 |----------------------------|------------------------------|
 | `<count>`                  | aruba.fan.count              |
 | `<subsystem>`              | aruba.subsystem              |
 | `<speedval>`               | aruba.fan.speedval           |
 | `<value>`                  | aruba.fan.value              |
-| `<FT_Num>`                 | aruba.fan.ft_num             |
+| `<FT_Num>`                 | aruba.fan.ft_name            |
+| `<FT_Name>`                | aruba.fan.ft_name            |
 | `<FMod_Num>`               | aruba.fan.fmod_num           |
 | `<num_of_failure>`         | aruba.error.count            |
 | `<failure_type>`           | error.type                   |
@@ -466,22 +467,22 @@ Note: Descriptions have not been filled out
 | `<tray_index>`             | aruba.fan.tray_idx           |
 | `<fan_index>`              | aruba.fan.index              |
 | `<FanName>`                | aruba.fan.name               |
-| `<FanStatus>`              | aruba.fan.status             |
+| `<FanStatus>`              | aruba.status                 |
 | `<FanModuleIdx>`           | aruba.fan.module_idx         |
 | `<FanTrayIdx>`             | aruba.fan.tray_idx           |
 | `<OldStatus>`              | aruba.fan.old_status         |
-| `<NewStatus>`              | aruba.fan.status             |
+| `<NewStatus>`              | aruba.status                 |
 | `<FanCount>`               | aruba.fan.count              |
 | `<FanMinimum>`             | aruba.fan.minimum            |
 | `<ZoneIdx>`                | aruba.fan.zone_idx           |
-| `<FanSpdIdxStatus>`        | aruba.fan.speed_idx_status   |
-| `<Status>`                 | aruba.fan.status             |
+| `<FanSpdIdxStatus>`        | aruba.status                 |
+| `<Status>`                 | aruba.status                 |
 | `<FT_Dir>`                 | aruba.fan.ft_dir             |
 | `<FT_air_curr>`            | aruba.fan.ft_air_curr        |
 | `<FT_air_req>`             | aruba.fan.ft_air_req         |
-| `<En_Dis>`                 | aruba.fan.status             |
+| `<En_Dis>`                 | aruba.status                 |
 
-#### [Fault monitor events](https://www.arubanetworks.com/techdocs/AOS-CX/10.07/HTML/5200-8214/Content/events/FAULT_MONITOR.htm)
+#### [Fault monitor events](https://www.arubanetworks.com/techdocs/AOS-CX/10.15/HTML/elmrg/Content/events/FAULT_MONITOR.htm)
 | Doc Fields                | Schema Mapping                   |
 |---------------------------|----------------------------------|
 | `<fault>`                 | aruba.fault.type                 |
@@ -490,42 +491,80 @@ Note: Descriptions have not been filled out
 | `<sa_diff_count>`         | aruba.fault.sa_diff_count        |
 | `<da_diff_count>`         | aruba.fault.da_diff_count        |
 
-#### [Firmware Update events](https://www.arubanetworks.com/techdocs/AOS-CX/10.07/HTML/5200-8214/Content/events/UPDATE.htm)
+#### [Feature Pack events](https://www.arubanetworks.com/techdocs/AOS-CX/10.15/HTML/elmrg/Content/events/FEATURE_PACK.htm)
+| Doc Fields                | Schema Mapping                            |
+|---------------------------|-------------------------------------------|
+| `<connection_state>`      | aruba.state                               |
+| `<device_parameter>`      | aruba.feature_pack.device_parameter       |
+| `<device_serial>`         | aruba.feature_pack.device_serial          |
+| `<expiry_date>`           | aruba.feature_pack.expiry_date            |
+| `<feature_name>`          | aruba.feature_pack.feature_name           |
+| `<feature_pack_mode>`     | aruba.feature_pack.mode                   |
+| `<feature_pack_name>`     | aruba.feature_pack.name                   |
+| `<feature_pack_type>`     | aruba.feature_pack.type                   |
+| `<parameter_type>`        | aruba.feature_pack.parameter_type         |
+| `<parameter_type>`        | aruba.feature_pack.parameter_type_mismatch|
+| `<subscription_parameter>`| aruba.feature_pack.subscription_parameter |
+
+#### [Firmware Update events](https://www.arubanetworks.com/techdocs/AOS-CX/10.15/HTML/elmrg/Content/events/UPDATE.htm)
 | Doc Fields        | Schema Mapping               |
 |-------------------|------------------------------|
-| `<user>`          | user.name                    |
-| `<image_profile>` | aruba.firmware.image_profile |
+| `<after>`         | aruba.firmware.after         |
+| `<before>`        | aruba.firmware.before        |
 | `<dnld_type>`     | aruba.firmware.dnld_type     |
 | `<host>`          | source.address               |
-| `<before>`        | aruba.firmware.before        |
-| `<after>`         | aruba.firmware.after         |
+| `<hotpatch_name>` | aruba.firmware.hotpatch_name |
+| `<image_profile>` | aruba.firmware.image_profile |
+| `<user>`          | user.name                    |
 
-#### [Hardware Health Monitor events](https://www.arubanetworks.com/techdocs/AOS-CX/10.07/HTML/5200-8214/Content/events/HW-HEALTH-MONITOR.htm)
-| Doc Fields     | Schema Mapping           |
-|----------------|--------------------------|
-| `<addr>`       | aruba.hardware.addr      |
-| `<bus>`        | aruba.hardware.bus       |
-| `<cap>`        | aruba.hardware.cap       |
-| `<cecount>`    | aruba.hardware.cecount   |
-| `<channel>`    | aruba.hardware.channel   |
-| `<cpus>`       | aruba.hardware.cpus      |
-| `<device>`     | aruba.hardware.device    |
-| `<error_code>` | error.code               |
-| `<function>`   | aruba.hardware.function  |
-| `<level>`      | aruba.hardware.level     |
-| `<location>`   | aruba.hardware.location  |
-| `<mcgstatus>`  | aruba.hardware.mcgstatus |
-| `<misc>`       | aruba.hardware.misc      |
-| `<offlined>`   | aruba.hardware.offlined  |
-| `<origin>`     | aruba.hardware.origin    |
-| `<page>`       | aruba.hardware.page      |
-| `<seg>`        | aruba.hardware.seg       |
-| `<slot>`       | aruba.slot               |
-| `<socket>`     | aruba.hardware.socket    |
-| `<status>`     | aruba.status             |
-| `<test_name>`  | aruba.hardware.test_name |
-| `<threshold>`  | aruba.limit.threshold    |
-| `<type>`       | aruba.hardware.type      |
+#### [Forwarding and Queuing for Time-Sensitive Streams (FQTSS) events](https://www.arubanetworks.com/techdocs/AOS-CX/10.15/HTML/elmrg/Content/events/FQTSS.htm)
+| Doc Fields                           | Schema Mapping                            |
+|--------------------------------------|-------------------------------------------|
+| `<classA_ded>`                       | aruba.fqtss.classA_ded                    |
+| `<classA_max>`                       | aruba.fqtss.classA_max                    |
+| `<classB_ded>`                       | aruba.fqtss.classB_ded                    |
+| `<classB_max>`                       | aruba.fqtss.classB_max                    |
+| `<dedicate_mem_status>`              | aruba.fqtss.dedicate_mem_status           |
+| `<individual_status_of_all>`         | aruba.status                              |
+| `<per_port_consolidate_status>`      | aruba.fqtss.per_port_consolidate_status   |
+| `<per_port_per_stream_consolidate_status>` | aruba.fqtss.per_port_per_stream_consolidate_status |
+| `<per_port_status>`                  | aruba.fqtss.per_port_status               |
+| `<per_stream_consolidate_status>`    | aruba.fqtss.per_stream_consolidate_status |
+| `<per_stream_status>`                | aruba.fqtss.per_stream_status             |
+| `<port_name>`                        | aruba.port                                |
+| `<req_type>`                         | aruba.fqtss.request_type                  |
+| `<request_type>`                     | aruba.fqtss.request_type                  |
+| `<stream_hw_status>`                 | aruba.fqtss.stream_hw_status              |
+| `<stream_meter_id>`                  | aruba.fqtss.stream_meter_id               |
+| `<streamid>`                         | aruba.instance.id                         |
+
+#### [Hardware Health Monitor events](https://www.arubanetworks.com/techdocs/AOS-CX/10.15/HTML/elmrg/Content/events/HW-HEALTH-MONITOR.htm)
+| Doc Fields           | Schema Mapping               |
+|----------------------|------------------------------|
+| `<addr>`             | aruba.hardware.addr          |
+| `<bus>`              | aruba.hardware.bus           |
+| `<cap>`              | aruba.hardware.cap           |
+| `<cecount>`          | aruba.hardware.cecount       |
+| `<channel>`          | aruba.hardware.channel       |
+| `<cpus>`             | aruba.hardware.cpus          |
+| `<device>`           | aruba.hardware.device        |
+| `<error_code>`       | error.code                   |
+| `<function>`         | aruba.hardware.function      |
+| `<impact_statement>` | aruba.hardware.impact_statement |
+| `<level>`            | aruba.hardware.level         |
+| `<location>`         | aruba.hardware.location      |
+| `<mcgstatus>`        | aruba.hardware.mcgstatus     |
+| `<misc>`             | aruba.hardware.misc          |
+| `<offlined>`         | aruba.hardware.offlined      |
+| `<origin>`           | aruba.hardware.origin        |
+| `<page>`             | aruba.hardware.page          |
+| `<seg>`              | aruba.hardware.seg           |
+| `<slot>`             | aruba.slot                   |
+| `<socket>`           | aruba.hardware.socket        |
+| `<status>`           | aruba.status                 |
+| `<test_name>`        | aruba.hardware.test_name     |
+| `<threshold>`        | aruba.limit.threshold        |
+| `<type>`             | aruba.hardware.type          |
 
 #### [Hardware Switch controller sync events](https://www.arubanetworks.com/techdocs/AOS-CX/10.07/HTML/5200-8214/Content/events/HSC-SYNCD.htm)
 | Doc Fields   | Schema Mapping   |

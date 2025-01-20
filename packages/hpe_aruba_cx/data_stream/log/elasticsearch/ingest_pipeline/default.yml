@@ -64,8 +64,7 @@ processors:
         MANAGEMENT_IP: "Management IP %{IP:server.ip}"
   
   # Fan Events (2xx)
-  # https://www.arubanetworks.com/techdocs/AOS-CX/10.07/HTML/5200-8214/Content/events/FAN.htm
-  # * 212 is not included as it does not require further processing.
+  # https://www.arubanetworks.com/techdocs/AOS-CX/10.15/HTML/elmrg/Content/events/FAN.htm
   - grok:
       field: message
       tag: fan_event_201
@@ -95,23 +94,23 @@ processors:
       field: message
       tag: fan_event_204_205
       description: "log event when a fan tray is removed|inserted from|into the chassis"
-      if: "['204', '205'].contains(ctx.event?.code)"
+      if: "['204','205'].contains(ctx.event?.code)"
       patterns:
-        - "^Fan tray %{DATA:aruba.fan.ft_num} was (removed|inserted)"
+        - "^Fan tray %{DATA:aruba.fan.ft_name} was (removed|inserted)"
   - grok:
       field: message
       tag: fan_event_206_207
       description: "log event when a fan module is removed|inserted from|into a fan tray"
-      if: "['206', '207'].contains(ctx.event?.code)"
+      if: "['206','207'].contains(ctx.event?.code)"
       patterns:
-        - "^Fan module %{DATA:aruba.fan.fmod_num}( in fan tray %{DATA:aruba.fan.ft_num})? was (removed|inserted)"
+        - "^Fan module %{DATA:aruba.fan.fmod_num}( in fan tray %{DATA:aruba.fan.ft_name})? was (removed|inserted)"
   - grok:
       field: message
       tag: fan_event_208
       description: "Log event when an unsupported fan tray is inserted"
       if: "ctx.event?.code == '208'"
       patterns:
-        - "^Unsupported fan tray %{DATA:aruba.fan.ft_num} detected. Please insert a standard fan tray"
+        - "^Unsupported fan tray %{DATA:aruba.fan.ft_name} detected. Please insert a standard fan tray"
   - grok:
       field: message
       tag: fan_event_209
@@ -139,7 +138,10 @@ processors:
       description: "List out the faulty or missing fan names"
       if: "ctx.event?.code == '214'"
       patterns:
+        # OS 10.7
         - "^%{DATA:aruba.fan.function}: Fan fault in tray %{DATA:aruba.fan.tray_idx:long}, module %{NUMBER:aruba.fan.index:long}, reason: %{EVENT_REASON:event.reason}"
+        # OS 10.15
+        - "^%{DATA:aruba.fan.function}: Fan %{DATA:aruba.fan.name} faulted, reason: %{EVENT_REASON:event.reason}"
       pattern_definitions:
         EVENT_REASON: "[-_0-9a-zA-Z]+"
   - grok:
@@ -148,7 +150,7 @@ processors:
       description: "Log the fan status"
       if: "ctx.event?.code == '215'"
       patterns:
-        - "^%{DATA:aruba.fan.name} fan is %{FAN_STATUS:aruba.fan.status}"
+        - "^%{DATA:aruba.fan.name} fan is %{FAN_STATUS:aruba.status}"
       pattern_definitions:
         FAN_STATUS: "[-_0-9a-zA-Z]+"
   - grok:
@@ -157,7 +159,10 @@ processors:
       description: "Log the change in fan status"
       if: "ctx.event?.code == '216'"
       patterns:
-        - "^Status of fan %{NUMBER:aruba.fan.module_idx:long} in tray %{NUMBER:aruba.fan.tray_idx:long} has changed from %{DATA:aruba.fan.old_status} to %{FAN_STATUS:aruba.fan.status}"
+        # OS 10.7
+        - "^Status of fan %{NUMBER:aruba.fan.module_idx:long} in tray %{NUMBER:aruba.fan.tray_idx:long} has changed from %{DATA:aruba.fan.old_status} to %{FAN_STATUS:aruba.status}"
+        # OS 10.15
+        - "^Status of fan %{DATA:aruba.fan.name} has changed from %{DATA:aruba.fan.old_status} to %{FAN_STATUS:aruba.status}"
       pattern_definitions:
         FAN_STATUS: "[-_0-9a-zA-Z]+"
   - grok:
@@ -173,7 +178,7 @@ processors:
       description: "Log when the fan speed index changes to and from the maximum for each thermal zone"
       if: "ctx.event?.code == '218'"
       patterns:
-        - "^Fan speed index for thermal zone %{NUMBER:aruba.fan.zone_idx:long} is %{SPEED_STATUS:aruba.fan.speed_idx_status}"
+        - "^Fan speed index for thermal zone %{NUMBER:aruba.fan.zone_idx:long} is %{SPEED_STATUS:aruba.status}"
       pattern_definitions:
         SPEED_STATUS: "[-_0-9a-zA-Z]+"
   - grok:
@@ -182,7 +187,7 @@ processors:
       description: "Log event when a fan tray is powered on or off"
       if: "ctx.event?.code == '219'"
       patterns:
-        - "^Fan tray %{DATA:aruba.fan.ft_num} powered %{FAN_STATUS:aruba.fan.status}"
+        - "^Fan tray %{DATA:aruba.fan.ft_name} powered %{FAN_STATUS:aruba.status}"
       pattern_definitions:
         FAN_STATUS: "[-_0-9a-zA-Z]+"
   - grok:
@@ -191,7 +196,7 @@ processors:
       description: "Log event when a fan tray is inserted specifying its airflow direction"
       if: "ctx.event?.code == '220'"
       patterns:
-        - "^Fan tray %{DATA:aruba.fan.ft_num} airflow is %{FAN_DIRECTION:aruba.fan.ft_dir}"
+        - "^Fan tray %{DATA:aruba.fan.ft_name} airflow is %{FAN_DIRECTION:aruba.fan.ft_dir}"
       pattern_definitions:
         FAN_DIRECTION: "[-_0-9a-zA-Z]+"
   - dissect:
@@ -199,7 +204,7 @@ processors:
       tag: fan_event_221
       description: "Log event when a fan tray airflow is not matching with system airflow"
       if: "ctx.event?.code == '221'"
-      pattern: "%{aruba.fan.ft_air_curr} airflow fan tray %{aruba.fan.ft_num} unsupported; this system requires %{aruba.fan.ft_air_req} airflow"
+      pattern: "%{aruba.fan.ft_air_curr} airflow fan tray %{aruba.fan.ft_name} unsupported; this system requires %{aruba.fan.ft_air_req} airflow"
   - grok:
       field: message
       tag: fan_event_222
@@ -212,20 +217,20 @@ processors:
       tag: fan_event_223
       description: "Log when fan tray SKU ID in FRU is mismatched"
       if: "ctx.event?.code == '223'"
-      pattern: "Fan tray %{aruba.fan.ft_num} FRU EPPROM is incorrectly programmed"
+      pattern: "Fan tray %{aruba.fan.ft_name} FRU EPPROM is incorrectly programmed"
   - dissect:
       field: message
       tag: fan_event_224
       description: "Log event when a fan tray airflow is not matching with system airflow and is disabled"
       if: "ctx.event?.code == '224'"
-      pattern: "%{aruba.fan.ft_air_curr} airflow fan tray %{aruba.fan.ft_num} disabled; this system requires %{aruba.fan.ft_air_req} airflow"
+      pattern: "%{aruba.fan.ft_air_curr} airflow fan tray %{aruba.fan.ft_name} disabled; this system requires %{aruba.fan.ft_air_req} airflow"
   - grok:
       field: message
       tag: fan_event_225
       description: "Log event when a misconfigured fan tray is enabled or disabled"
       if: "ctx.event?.code == '225'"
       patterns:
-        - "^Fan tray %{DATA:aruba.fan.ft_num} misconfigured; this fan tray has been %{FAN_STATUS:aruba.fan.status}"
+        - "^Fan tray %{DATA:aruba.fan.ft_name} misconfigured; this fan tray has been %{FAN_STATUS:aruba.status}"
       pattern_definitions:
         FAN_STATUS: "[-_0-9a-zA-Z]+"
 
@@ -1367,9 +1372,9 @@ processors:
         - "^%{DATA:client.address}: Neighbor (added to|deleted from) Peer group %{DATA:aruba.bgp.peer_grp} vrf-name: %{GREEDYDATA:aruba.vrf.name}"
 
   # Hardware Health Monitor events (30xx)
-  # https://www.arubanetworks.com/techdocs/AOS-CX/10.07/HTML/5200-8214/Content/events/HW-HEALTH-MONITOR.htm
+  # https://www.arubanetworks.com/techdocs/AOS-CX/10.15/HTML/elmrg/Content/events/HW-HEALTH-MONITOR.htm
   - grok:
-      if: "['3001', '3002', '3003', '3004', '3005'].contains(ctx.event?.code)"
+      if: "['3001','3002','3003','3004','3005'].contains(ctx.event?.code)"
       tag: hwhm_event_3001_3002_3003_3004_3005
       field: "message"
       description: "Event raised when hardware diagnostics detects error in management module | line card | fabric card | fan tray | rear display card"
@@ -1388,7 +1393,7 @@ processors:
       description: "Logs MCE BUS error"
       pattern: 'There are %{aruba.hardware.origin} happening on %{aruba.hardware.location}'
   - grok:
-      if: "['3008', '3009'].contains(ctx.event?.code)"
+      if: "['3008','3009'].contains(ctx.event?.code)"
       tag: hwhm_event_3008_3009
       field: "message"
       description: "Logs MCE [IO | unknown] error "
@@ -1406,7 +1411,7 @@ processors:
       patterns:
         - "^CPUs %{NUMBER:aruba.hardware.cpus:long} L%{DATA:aruba.hardware.level} %{DATA:aruba.hardware.type} cache error detected. CPUs %{NUMBER:aruba.hardware.offlined:long} offlined"
   - grok:
-      if: "['3011', '3012', '3013'].contains(ctx.event?.code)"
+      if: "['3011','3012','3013'].contains(ctx.event?.code)"
       tag: hwhm_event_3011_3012_3013
       field: "message"
       description: "Log when [socket | module | page] correctable memory error count is exceeded threshold"
@@ -1417,6 +1422,20 @@ processors:
       pattern_definitions:
         3011_3012_3013_COMMON: "correctable memory error count %{NUMBER:aruba.hardware.cecount:long} exceeded threshold %{NUMBER:aruba.limit.threshold}(?:%{3011_3012_3013_OPTIONAL})?"
         3011_3012_3013_OPTIONAL: " and %{NUMBER:aruba.hardware.offlined:long}"
+  - grok:
+      if: "['3014','3015','3016','3017','3018','3019','3020','3021','3022','3023','3024'].contains(ctx.event?.code)"
+      tag: hwhm_event_3014_3015_3016_3017_3018_3019_3020_3021_3022_3023_3024
+      field: "message"
+      description: "detects error in management module and report as [info|warning] | in fabric card and report as [info|warning] | in line card and report as [info|warning] | in fan tray and report as [info|warning|error]  | in chassis and report as [info|warning]"
+      patterns:
+        - "^Diagnostic %{DATA:aruba.hardware.test_name} failed with error code %{DATA:error.code} on (management module|fabric card|line card|fan tray|chassis) %{NUMBER:aruba.slot:long}"
+  - grok:
+      if: "['13801','13802'].contains(ctx.event?.code)"
+      tag: hwhm_event_13801_13802
+      field: "message"
+      description: "Event raised when hardware diagnostics detects error in Chassis | when hardware diagnostics error detected in the system"
+      patterns:
+        - "^HW Fault \\(Error %{DATA:error.code}\\) detected on the switch. %{DATA:aruba.hardware.impact_statement}. Contact support for assistance"
 
     # MVRP events (310x)
     # https://www.arubanetworks.com/techdocs/AOS-CX/10.07/HTML/5200-8214/Content/events/MVRP.htm
@@ -1712,25 +1731,30 @@ processors:
       target_field: aruba.mgmt.config_crit
 
   # Firmware Update events (44xx)
-  # https://www.arubanetworks.com/techdocs/AOS-CX/10.07/HTML/5200-8214/Content/events/FIRMWARE_UPDATE.htm
-  # Following events do not need further processing
-  #   * 4405
-  #   * 4406
-  #   * 4407
+  # https://www.arubanetworks.com/techdocs/AOS-CX/10.15/HTML/elmrg/Content/events/UPDATE.htm
   - grok:
-      if: "['4401', '4402'].contains(ctx.event?.code)"
+      if: "['4401','4402'].contains(ctx.event?.code)"
       tag: firmware_update_event_4401_4402
       field: "message"
       description: "Indicates that the switch firmware was successfully updated from a remote or local source"
       patterns:
         - "^User %{DATA:user.name}: %{DATA:aruba.firmware.image_profile} image updated via %{DATA:aruba.firmware.dnld_type}( from %{HOSTNAME:source.address})?. Firmware version, Before Update: %{DATA:aruba.firmware.before} After Update: %{DATA:aruba.firmware.after}$"
   - grok:
-      if: "['4403', '4404'].contains(ctx.event?.code)"
+      if: "['4403','4404'].contains(ctx.event?.code)"
       tag: firmware_update_event_4403_4404
       field: "message"
       description: "Indicates that a switch firmware update failed from a remote or local source"
       patterns:
         - "^User %{DATA:user.name}: %{DATA:aruba.firmware.image_profile} image update failed via %{DATA:aruba.firmware.dnld_type}( from %{HOSTNAME:source.address})?$"
+  - grok:
+      if: "['4408','4409','4410','4411'].contains(ctx.event?.code)"
+      tag: firmware_update_event_4408_4409_4410_4411
+      field: "message"
+      description: "Indicates that a hot-patch image was downloaded succesfully from a remote sour | image was downloaded succesfully from a local source | download failed from a remote source | download failed from a local source"
+      patterns:
+        - "^User %{DATA:user.name}: hot-patch \"%{DATA:aruba.firmware.hotpatch_name}\" (downloaded|download failed) via (%{DATA:aruba.firmware.dnld_type} from %{GREEDYDATA:source.address}|%{OPTIONAL_SENTENCE:aruba.firmware.dnld_type}(\\.)?)"
+      pattern_definitions:
+        OPTIONAL_SENTENCE: "[\\p{L},\":;\\s\\-]*"
 
   # Self Test events (450x)
   # https://www.arubanetworks.com/techdocs/AOS-CX/10.15/HTML/elmrg/Content/events/SELFTEST.htm
@@ -2919,19 +2943,19 @@ processors:
         - "^Certificate %{DATA:aruba.cm.cert_name} is (not set for signing purpose|invalid or malformed)"
 
   # External Storage events (78xx)
-  # https://www.arubanetworks.com/techdocs/AOS-CX/10.07/HTML/5200-8214/Content/events/EXTERNAL-STORAGE.htm
+  # https://www.arubanetworks.com/techdocs/AOS-CX/10.15/HTML/elmrg/Content/events/EXTERNAL-STORAGE.htm
   - grok:
       field: message
       tag: external_storage_event_7801_7802
       description: "Event raised when a share fails to mount | dismount"
-      if: "['7801', '7802'].contains(ctx.event?.code)"
+      if: "['7801','7802'].contains(ctx.event?.code)"
       patterns:
         - "^Share %{DATA:aruba.storage.name} (dis)?mount failure"
   - grok:
       field: message
       tag: external_storage_event_7803_7804
       description: "Event raised when a share mounts | dismounts"
-      if: "['7803', '7804'].contains(ctx.event?.code)"
+      if: "['7803','7804'].contains(ctx.event?.code)"
       patterns:
         - "^Share %{DATA:aruba.storage.name} is (dis)?mounted"
   - dissect:
@@ -4303,7 +4327,7 @@ processors:
         - "^Station MAC add failure due to hardware full, mac=%{MAC:server.mac} vlan=%{GREEDYDATA:network.vlan.id}"
 
   # Fault Monitor Events (111xx)
-  # https://www.arubanetworks.com/techdocs/AOS-CX/10.07/HTML/5200-8214/Content/events/FAULT_MONITOR.htm
+  # https://www.arubanetworks.com/techdocs/AOS-CX/10.15/HTML/elmrg/Content/events/FAULT_MONITOR.htm
   - grok:
       field: message
       tag: fault_monitor_event_11101_11102
@@ -4347,21 +4371,30 @@ processors:
       description: "Logs event when a packet drop is detected for MAC Lockout MAC as source address."
       if: "ctx.event?.code == '11107'"
       patterns:
+          # OS 10.07
           - "^MAC Lockout packet drop detected for %{MAC:client.mac} as source address: %{NUMBER:aruba.fault.sa_diff_count:long}"
+          # OS 10.15
+          - "^MAC Lockout packet drop detected for %{MAC:client.mac} as destination address with packet count: %{NUMBER:aruba.fault.da_diff_count:long}"
   - grok:
       field: message
       tag: fault_monitor_event_11108
       description: "Logs event when a packet drop is detected for MAC Lockout MAC as destination address."
       if: "ctx.event?.code == '11108'"
       patterns:
+          # OS 10.07
           - "^MAC Lockout packet drop detected for %{MAC:client.mac} as destination address: %{NUMBER:aruba.fault.da_diff_count:long}"
+          # OS 10.15
+          - "^MAC Lockout packet drop detected for %{MAC:client.mac} as destination address with packet count: %{NUMBER:aruba.fault.da_diff_count:long}"
   - grok:
       field: message
       tag: fault_monitor_event_11109
       description: "Logs event when a packet drop is detected for MAC Lockout."
       if: "ctx.event?.code == '11109'"
       patterns:
+          # OS 10.07
           - "^MAC Lockout packet drop detected for %{MAC:client.mac} as source: %{NUMBER:aruba.fault.sa_diff_count:long} and destination: %{NUMBER:aruba.fault.da_diff_count:long} address"
+          # OS 10.15
+          - "^MAC Lockout packet drop detected for %{MAC:client.mac} as source & destination address with source packet count: %{NUMBER:aruba.fault.sa_diff_count:long} and destination packet count: %{NUMBER:aruba.fault.da_diff_count:long}"
 
     # MACsec events (1120x)
     # https://www.arubanetworks.com/techdocs/AOS-CX/10.07/HTML/5200-8214/Content/events/MACSEC.htm
@@ -4617,18 +4650,45 @@ processors:
       description: "Log event that indicates the chassis requires a reboot."
       if: "ctx.event?.code == '13901'"
       pattern: "Chassis Reboot Requested: %{event.reason}"
-  - dissect:
+  # Event ID 13902 already defined in FQTSS events, handling both event categories in the same grok
+  - grok:
       field: message
-      tag: dist_service_event_13902
-      description: "Log event that indicates admission to PSM was rejected.' event_description_template"
+      tag: dist_service_and_fqtss_event_13902
+      description: "Log event that indicates admission to PSM was rejected.' event_description_template | Event reported when FQTSS received alloc request"
       if: "ctx.event?.code == '13902'"
-      pattern: "Distributed Services Admission Rejected. Reason: %{event.reason}"
+      patterns: 
+        - "^Distributed Services Admission Rejected. Reason: %{GREEDYDATA:event.reason}"
+        - "^FQTSS alloc requested"
+# Event ID 13903 already defined in FQTSS events, handling both event categories in the same grok
+  - grok:
+      field: message
+      tag: dist_service_and_fqtss_event_13903
+      description: "Log event that indicates mismatch of PSM coordinates | Event reported when FQTSS received dealloc request"
+      if: "ctx.event?.code == '13903'"
+      patterns: 
+        - "^PSM coordinates mismatch. Active coordinates: %{DATA:aruba.distributed.active_coordinates}, Configured coordinates: %{GREEDYDATA:aruba.distributed.configured_coordinates}."
+        - "^Event reported when FQTSS received dealloc request"
+
+  # Forwarding and Queuing for Time-Sensitive Streams (FQTSS) events (1390x)
+  # https://www.arubanetworks.com/techdocs/AOS-CX/10.15/HTML/elmrg/Content/events/FQTSS.htm
   - dissect:
       field: message
-      tag: dist_service_event_13903
-      description: "Log event that indicates mismatch of PSM coordinates."
-      if: "ctx.event?.code == '13903'"
-      pattern: "PSM coordinates mismatch. Active coordinates: %{aruba.distributed.active_coordinates}, Configured coordinates: %{aruba.distributed.configured_coordinates}."      
+      tag: fqtss_event_13904
+      description: "Event reported when stream is requesting for hardware resource"
+      if: "ctx.event?.code == '13904'"
+      pattern: "Resource %{aruba.fqtss.request_type} requested: %{aruba.instance.id} stream_meter %{aruba.fqtss.stream_meter_id} port_name %{aruba.port} classA_ded %{aruba.fqtss.classA_ded} classB_ded %{aruba.fqtss.classB_ded} classA_max %{aruba.fqtss.classA_max} classB_max %{aruba.fqtss.classB_max}"
+  - dissect:
+      field: message
+      tag: fqtss_event_13905
+      description: "Event reported when stream received a response from the hardware"
+      if: "ctx.event?.code == '13905'"
+      pattern: "Stream %{aruba.instance.id} port %{aruba.port} request_type %{aruba.fqtss.request_type} response stream_status %{aruba.fqtss.per_stream_status} port_status %{aruba.fqtss.per_port_status} memory_status %{aruba.fqtss.dedicate_mem_status}"
+  - dissect:
+      field: message
+      tag: fqtss_event_13906
+      description: "Event reported when all the hardware status updates are received"
+      if: "ctx.event?.code == '13906'"
+      pattern: "consolidated status for stream %{aruba.instance.id} port %{aruba.port} is %{aruba.fqtss.stream_hw_status}, per_stream_consolidate_status %{aruba.fqtss.per_stream_consolidate_status}, per_port_consolidate_status %{aruba.fqtss.per_port_consolidate_status},per_port_per_stream_consolidate_status %{aruba.fqtss.per_port_per_stream_consolidate_status}, status_code %{aruba.status}"
 
   # Traffic Insight events (1400x)
   # https://www.arubanetworks.com/techdocs/AOS-CX/10.15/HTML/elmrg/Content/events/TRAFFIC_INSIGHT.htm
@@ -4755,6 +4815,58 @@ processors:
       description: "Client DNS on-boarding details"
       if: "ctx.event?.code == '14311'"
       pattern: "Client %{client.mac} on-boarded on Port %{aruba.port} dns-status %{aruba.status} dns-failure-reason %{event.reason} dns-server %{aruba.insight.dns_server} dns-latency %{aruba.insight.dns_latency}"
+
+  # Feature Pack events (144xx)
+  # https://www.arubanetworks.com/techdocs/AOS-CX/10.15/HTML/elmrg/Content/events/FEATURE_PACK.htm
+  - grok:
+      field: message
+      tag: feature_pack_event_14401_14402_14403
+      description: "Event raised when a feature pack is installed | when a feature pack is erased | when a feature pack expires"
+      if: "['14401','14402','14403'].contains(ctx.event?.code)"
+      patterns: 
+        - "^%{DATA:aruba.feature_pack.name} (installed|erased|expired on %{GREEDYDATA:aruba.feature_pack.expiry_date}.)"
+  - dissect:
+      field: message
+      tag: feature_pack_event_14404
+      description: "Event raised when a feature pack serial number or MAC address does not match that of the device"
+      if: "ctx.event?.code == '14404'"
+      pattern: "Feature pack %{aruba.feature_pack.parameter_type} %{aruba.feature_pack.subscription_parameter} does not match device %{aruba.feature_pack.parameter_type_mismatch} %{aruba.feature_pack.device_parameter}"
+  - dissect:
+      field: message
+      tag: feature_pack_event_14407
+      description: "Event raised when a feature pack subscription through HPE Aruba Networking Central becomes connected or disconnected"
+      if: "ctx.event?.code == '14407'"
+      pattern: "Feature pack subscription through HPE Aruba Networking Central is %{aruba.state}"
+  - dissect:
+      field: message
+      tag: feature_pack_event_14408
+      description: "Event raised when a VSF member is not subscribed as part of the installed feature pack"
+      if: "ctx.event?.code == '14408'"
+      pattern: "VSF member serial number %{aruba.feature_pack.device_serial} not subscribed as part of installed feature pack"
+  - dissect:
+      field: message
+      tag: feature_pack_event_14409
+      description: "Periodic event raised to indicate that a feature is operating in honor mode"
+      if: "ctx.event?.code == '14409'"
+      pattern: "Feature %{aruba.feature_pack.name} is operating in honor mode without a valid feature pack."
+  - dissect:
+      field: message
+      tag: feature_pack_event_14410
+      description: "Event raised when a connection to the feature pack server has been lost and the feature pack subscription cannot be validated"
+      if: "ctx.event?.code == '14410'"
+      pattern: "Connection to feature pack server lost and subscription for %{aruba.feature_pack.name} cannot be validated. Subscribed features will continue to operate in honor mode."
+  - dissect:
+      field: message
+      tag: feature_pack_event_14413
+      description: "Event raised when a feature pack is revoked by the feature pack server"
+      if: "ctx.event?.code == '14413'"
+      pattern: "Software feature pack %{aruba.feature_pack.name} revoked by the server."
+  - dissect:
+      field: message
+      tag: feature_pack_event_14414
+      description: "Event raised when the feature pack mode configured does not match the feature pack type installed on the device."
+      if: "ctx.event?.code == '14414'"
+      pattern: "Feature pack mode %{aruba.feature_pack.mode} does not match installed feature pack type %{aruba.feature_pack.type}."
 
   # Download events (145xx)
   # https://www.arubanetworks.com/techdocs/AOS-CX/10.15/HTML/elmrg/Content/events/DOWNLOAD.htm
