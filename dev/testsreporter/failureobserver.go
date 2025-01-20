@@ -4,7 +4,7 @@
 
 package testsreporter
 
-type erroer interface {
+type failureObserver interface {
 	FirstBuild() string
 	UpdateLinks(errorLinks)
 	Teams() []string

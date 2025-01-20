@@ -20,7 +20,7 @@ var descriptionTmpl string
 const defaultMaxLengthMessages = 1000
 
 type resultsFormatter struct {
-	result           erroer
+	result           failureObserver
 	maxPreviousLinks int
 }
 

@@ -22,7 +22,7 @@ func newReporter(ghCli *ghCli, maxPreviousLinks int) reporter {
 	}
 }
 
-func (r reporter) Report(ctx context.Context, issue *githubIssue, packageError erroer) error {
+func (r reporter) Report(ctx context.Context, issue *githubIssue, packageError failureObserver) error {
 	links, nextIssue, err := r.updateLinks(ctx, issue, packageError.FirstBuild())
 	if err != nil {
 		return fmt.Errorf("failed to update links from the error: %w", err)
