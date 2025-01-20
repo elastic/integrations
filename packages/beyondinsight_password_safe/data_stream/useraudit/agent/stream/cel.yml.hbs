@@ -7,19 +7,18 @@ request.tracer.maxbackups: 5
 {{#if proxy_url}}
 resource.proxy_url: {{proxy_url}}
 {{/if}}
-{{#if ssl}}
-resource.ssl: {{ssl}}
-{{/if}}
 {{#if http_client_timeout}}
 resource.timeout: {{http_client_timeout}}
 {{/if}}
-resource.ssl.renegotiation: "freely"
-resource.ssl.verification_mode: "certificate"
+resource.ssl.renegotiation: freely
 resource.url: {{url}}
+{{#if ssl}}
+resource.ssl: {{ssl}}
+{{/if}}
 state:
   initial_interval: {{initial_interval}}
   limit: {{limit}}
-  apikeytoken: {{apikeytoken}}
+  apikey: {{apikey}}
   password: {{password}}
   username: {{username}}
   preserve_original_event: true
@@ -33,7 +32,7 @@ program: |-
   		{
   			"Header": {
   				"Authorization": [
-  					"PS-Auth key=" + state.apikeytoken + ";runas=" + state.username + ";pwd=[" + state.password + "];",
+  					"PS-Auth key=" + state.apikey + ";runas=" + state.username + ((state.password != "") ? (";pwd=[" + state.password + "];") : ""),
   				],
   				"Content-Type": ["application/json"],
   			},
@@ -46,7 +45,7 @@ program: |-
   ).as(auth_cookie,
   	{
   		"limit": [string(state.limit)],
-  		"startdate": [string(state.?cursor.startdate.orValue((now - duration(string(int(int(state.initial_interval)) / 24) + "h")).format(time_layout.RFC3339)))],
+  		"startdate": [string(state.?cursor.startdate.orValue((now - duration(state.initial_interval)).format("2006-01-02 15:04:05")))],
   		"enddate": [string(state.?cursor.enddate.orValue(""))],
   	}.as(params,
   		request(

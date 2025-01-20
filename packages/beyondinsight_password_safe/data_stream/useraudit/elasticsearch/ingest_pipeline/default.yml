@@ -64,7 +64,9 @@ processors:
         if (ctx.beyondinsight_password_safe.useraudit != null) {
           ctx.beyondinsight_password_safe.useraudit = keysToSnakeCase(ctx.beyondinsight_password_safe.useraudit);
         }
-
+  - remove:
+      field: beyondinsight_password_safe.useraudit.user_id
+      if: ctx.beyondinsight_password_safe.useraudit?.user_id == -1
 ##################### ECS Fields #####################
   - set:
       field: ecs.version
@@ -92,17 +94,19 @@ processors:
 
   - set:
       field: event.id
-      value: "{{{beyondinsight_password_safe.useraudit.audit_id}}}"
+      copy_from: ctx.beyondinsight_password_safe.useraudit.audit_id
       ignore_empty_value: true
 
   - set:
       field: user.id
       value: "{{{beyondinsight_password_safe.useraudit.user_id}}}"
+      if: ctx.beyondinsight_password_safe.useraudit?.user_id != -1
       ignore_empty_value: true
 
   - append:
       field: related.user
       value: "{{{beyondinsight_password_safe.useraudit.user_id}}}"
+      if: ctx.beyondinsight_password_safe.useraudit?.user_id == -1
       allow_duplicates: false
 
   - set:
@@ -120,16 +124,16 @@ processors:
       value: "{{{beyondinsight_password_safe.useraudit.ipaddress}}}"
       allow_duplicates: false
  #################### Override host.ip ######################
-  - script:
-      lang: painless
-      source: |
-         def ipstring = ctx.beyondinsight_password_safe.useraudit.ipaddress.toString().splitOnToken(".");
-         def ip = String.valueOf(Integer.parseInt(ipstring[0]))+"."+String.valueOf(Integer.parseInt(ipstring[1]))+"."+String.valueOf(Integer.parseInt(ipstring[2]))+"."+String.valueOf(Integer.parseInt(ipstring[3]));
-         ctx.beyondinsight_password_safe.useraudit.ipaddress = ip;
-
+  - gsub:
+      field: "beyondinsight_password_safe.useraudit.ipaddress"
+      pattern: "\\b0+"
+      replacement: ""
+  - gsub:
+      field: "related.hosts"
+      pattern: "\\b0+"
+      replacement: ""
   - convert:
       field: beyondinsight_password_safe.useraudit.ipaddress
-      target_field: beyondinsight_password_safe.useraudit.ipaddress
       type: ip
       if: ctx.beyondinsight_password_safe.useraudit?.ipaddress != null && ctx.beyondinsight_password_safe.useraudit.ipaddress != ''
       ignore_failure: true 
@@ -145,10 +149,10 @@ processors:
       ignore_missing: true
       ignore_failure: true
 ################### Set @timestamp ##########################
-  - date:
-     field: "beyondinsight_password_safe.useraudit.create_date"
-     target_field: "@timestamp"
-     formats: ["ISO8601"]
+  - set:
+     field: "@timestamp"
+     copy_from: ctx.beyondinsight_password_safe.useraudit.create_date
+     ignore_empty_value: true
  ################### User Audit Log fields ###################
   - rename:
       field: "beyondinsight_password_safe.useraudit.user"

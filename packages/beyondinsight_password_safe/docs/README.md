@@ -1,6 +1,6 @@
 # BeyondInsight and Password Safe Integration
 
- [BeyondInsight and Password Safe](https://www.beyondtrust.com/products/password-safe)   enable real-time monitoring of privileged account access, session recordings, and password checkout patterns to help security teams maintain compliance and quickly identify potential privilege abuse.
+ [BeyondInsight](https://www.beyondtrust.com/beyondinsight) and [Password Safe](https://www.beyondtrust.com/products/password-safe)   enable real-time monitoring of privileged account access, session recordings, and password checkout patterns to help security teams maintain compliance and quickly identify potential privilege abuse.
 
 ## Data Streams
 
@@ -664,7 +664,7 @@ The following non-ECS fields are used in asset documents:
 | beyondinsight_password_safe.asset.dns_name | DNS name of the asset | keyword |
 | beyondinsight_password_safe.asset.domain_name | Domain name of the asset | keyword |
 | beyondinsight_password_safe.asset.ipaddress | IP address of the asset | ip |
-| beyondinsight_password_safe.asset.last_update_date | Date the asset was last updated | boolean |
+| beyondinsight_password_safe.asset.last_update_date | Date the asset was last updated | date |
 | beyondinsight_password_safe.asset.mac_address | MAC address of the asset | keyword |
 | beyondinsight_password_safe.asset.operating_system | Operating system of the asset | keyword |
 | beyondinsight_password_safe.asset.workgroup_id | Unique identifier for the workgroup | keyword |

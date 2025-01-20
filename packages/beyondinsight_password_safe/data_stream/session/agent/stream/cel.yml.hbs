@@ -7,17 +7,16 @@ request.tracer.maxbackups: 5
 {{#if proxy_url}}
 resource.proxy_url: {{proxy_url}}
 {{/if}}
-{{#if ssl}}
-resource.ssl: {{ssl}}
-{{/if}}
 {{#if http_client_timeout}}
 resource.timeout: {{http_client_timeout}}
 {{/if}}
-resource.ssl.renegotiation: "freely"
-resource.ssl.verification_mode: "certificate"
+resource.ssl.renegotiation: freely
 resource.url: {{url}}
+{{#if ssl}}
+resource.ssl: {{ssl}}
+{{/if}}
 state:
-  apikeytoken: {{apikeytoken}}
+  apikey: {{apikey}}
   password: {{password}}
   username: {{username}}
 redact:
@@ -31,7 +30,7 @@ program: |-
   		{
   			"Header": {
   				"Authorization": [
-  					"PS-Auth key=" + state.apikeytoken + ";runas=" + state.username + ";pwd=[" + state.password + "];",
+  					"PS-Auth key=" + state.apikey + ";runas=" + state.username + ((state.password != "") ? (";pwd=[" + state.password + "];") : ""),
   				],
   				"Content-Type": ["application/json"],
   			},
