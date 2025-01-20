@@ -701,13 +701,13 @@ Note: Descriptions have not been filled out
 | `<wait_time>`                | aruba.issu.wait_time               |
 
 #### [Job scheduler events](https://www.arubanetworks.com/techdocs/AOS-CX/10.15/HTML/elmrg/Content/events/SCHEDULE.htm)
-| Docs Field         | Schema Mapping         |
-|--------------------|------------------------|
-| `<job_name>`                | aruba.issu.condition   |
-| `<name>`                    | aruba.issu.active_bank |
-| `<schedule_name>`           | aruba.issu.condition   |
-| `<start_datetime><details>` | aruba.issu.condition   |
-| `<trigger_count>`           | aruba.issu.condition   |
+| Docs Field                  | Schema Mapping                   |
+|-----------------------------|----------------------------------|
+| `<job_name>`                | aruba.scheduler.job_name         |
+| `<name>`                    | aruba.scheduler.name             |
+| `<schedule_name>`           | aruba.scheduler.name             |
+| `<start_datetime><details>` | aruba.scheduler.datetime_details |
+| `<trigger_count>`           | aruba.count                      |
 
 #### [L3 Encap capacity events](https://www.arubanetworks.com/techdocs/AOS-CX/10.07/HTML/5200-8214/Content/events/L3_ENCAP.htm)
 | Docs Field            | Schema Mapping               |
