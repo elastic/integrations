@@ -380,6 +380,14 @@ Please refer to the following [document](https://www.elastic.co/guide/en/ecs/cur
 | mongodb.collstats.queries.time.us | Time running queries in microseconds. | long | counter |
 | mongodb.collstats.remove.count | Number of document delete events. | long | counter |
 | mongodb.collstats.remove.time.us | Time deleting documents in microseconds. | long | counter |
+| mongodb.collstats.stats.stats.avgObjSize | The average size of an object in the collection (in bytes). | long |  |
+| mongodb.collstats.stats.stats.count | The number of objects or documents in this collection. | long |  |
+| mongodb.collstats.stats.stats.max | Shows the maximum number of documents that may be present in a capped collection. | long |  |
+| mongodb.collstats.stats.stats.nindexes | The number of indexes on the collection. All collections have at least one index on the _id field. | long |  |
+| mongodb.collstats.stats.stats.size | The total uncompressed size in memory of all records in a collection. | long |  |
+| mongodb.collstats.stats.stats.storageSize | The total amount of storage allocated to this collection for document storage (in bytes). | long |  |
+| mongodb.collstats.stats.stats.totalIndexSize | The total size of all indexes (in bytes). | long |  |
+| mongodb.collstats.stats.stats.totalSize | The sum of the storageSize and totalIndexSize (in bytes). | long |  |
 | mongodb.collstats.total.count | Total number of lock wait events. | long | counter |
 | mongodb.collstats.total.time.us | Total waiting time for locks in microseconds. | long | counter |
 | mongodb.collstats.update.count | Number of document update events. | long | counter |
