@@ -649,7 +649,7 @@ An example event for `pod` looks as following:
 | kubernetes.node.name | Kubernetes node name | keyword |  |  |
 | kubernetes.node.uid | Kubernetes node UID | keyword |  |  |
 | kubernetes.pod.cpu.usage.limit.pct | CPU usage as a percentage of the defined limit for the pod containers (or total node CPU if one or more containers of the pod are unlimited) | scaled_float | percent | gauge |
-| kubernetes.pod.cpu.usage.nanocores | CPU used nanocores | long | byte | gauge |
+| kubernetes.pod.cpu.usage.nanocores | CPU used nanocores | long |  | gauge |
 | kubernetes.pod.cpu.usage.node.pct | CPU usage as a percentage of the total node CPU | scaled_float | percent | gauge |
 | kubernetes.pod.ip | Kubernetes pod IP | ip |  |  |
 | kubernetes.pod.memory.available.bytes | Total memory available | long |  | gauge |
