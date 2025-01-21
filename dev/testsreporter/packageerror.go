@@ -43,6 +43,9 @@ type packageErrorOptions struct {
 	Teams             []string
 }
 
+// Ensures that packageError implements failureObserver interface
+var _ failureObserver = new(packageError)
+
 func newPackageError(options packageErrorOptions) (*packageError, error) {
 	p := packageError{
 		serverless:        options.Serverless,

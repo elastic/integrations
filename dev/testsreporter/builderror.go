@@ -26,12 +26,14 @@ type buildErrorOptions struct {
 	ServerlessProject string
 	LogsDB            bool
 	StackVersion      string
-	Teams             []string
 	Packages          []string
 	BuildURL          string
 	PreviousBuilds    []string
 	ClosedIssueURL    string
 }
+
+// Ensures that buildError implements failureObserver interface
+var _ failureObserver = new(buildError)
 
 func newBuildError(options buildErrorOptions) (*buildError, error) {
 	b := buildError{
