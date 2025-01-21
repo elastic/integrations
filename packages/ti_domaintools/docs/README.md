@@ -34,6 +34,7 @@ For step-by-step instructions on how to set up an integration, see the Getting s
 ### Newly Observed Domains (NOD) Feed 
 
 The `nod_feed` data stream provides events from [DomainTools Newly Observed Domains Feed](https://www.domaintools.com/products/threat-intelligence-feeds/).
+This data is collected via the [DomainTools Real Time Feeds API](https://docs.domaintools.com/feeds/realtime/).
 
 **Exported fields**
 
@@ -55,175 +56,61 @@ An example event for `nod_feed` looks as following:
 
 ```json
 {
-  "_index": ".ds-logs-domaintools.nod_feed-default-2024.12.02-000001",
-  "_id": "dfFSjZMBwzELzoTu7QqQ",
-  "_version": 1,
-  "_score": 0,
-  "_source": {
-    "input": {
-      "type": "httpjson"
-    },
-    "agent": {
-      "name": "docker-fleet-agent",
-      "id": "c6ba320f-f527-4328-b052-af726240a90d",
-      "type": "filebeat",
-      "ephemeral_id": "df14ede3-b6ef-4212-8f3b-8bc2ef01f2ec",
-      "version": "8.12.2"
-    },
-    "@timestamp": "2024-12-03T16:20:41.407Z",
-    "ecs": {
-      "version": "8.0.0"
-    },
-    "data_stream": {
-      "namespace": "default",
-      "type": "logs",
-      "dataset": "domaintools.nod_feed"
-    },
-    "host": {
-      "hostname": "docker-fleet-agent",
-      "os": {
-        "kernel": "6.10.11-linuxkit",
-        "codename": "focal",
-        "name": "Ubuntu",
-        "type": "linux",
-        "family": "debian",
-        "version": "20.04.6 LTS (Focal Fossa)",
-        "platform": "ubuntu"
-      },
-      "containerized": false,
-      "ip": [
-        "172.19.0.7"
-      ],
-      "name": "docker-fleet-agent",
-      "id": "29b44b57f32c4ff282841a8a4406ef95",
-      "mac": [
-        "02-42-AC-13-00-07"
-      ],
-      "architecture": "aarch64"
-    },
-    "elastic_agent": {
-      "id": "c6ba320f-f527-4328-b052-af726240a90d",
-      "version": "8.12.2",
-      "snapshot": false
-    },
-    "domaintools": {
-      "domain": "fortworthvirtualrealitytherapy.info",
-      "timestamp": "2024-12-03T16:20:34Z"
-    },
-    "event": {
-      "agent_id_status": "verified",
-      "ingested": "2024-12-03T16:20:42Z",
-      "created": "2024-12-03T16:20:41.407Z",
-      "dataset": "domaintools.nod_feed"
-    },
-    "message": "{\"domain\":\"fortworthvirtualrealitytherapy.info\",\"timestamp\":\"2024-12-03T16:20:34Z\"}"
+  "input": {
+    "type": "cel"
   },
-  "fields": {
-    "domaintools.domain": [
-      "fortworthvirtualrealitytherapy.info"
-    ],
-    "elastic_agent.version": [
-      "8.12.2"
-    ],
-    "host.hostname": [
-      "docker-fleet-agent"
-    ],
-    "host.mac": [
-      "02-42-AC-13-00-07"
-    ],
-    "host.ip": [
+  "agent": {
+    "name": "docker-fleet-agent",
+    "id": "91c524fd-b26c-4a73-b695-9f1093a4c12b",
+    "type": "filebeat",
+    "ephemeral_id": "6b7f3b7e-44a3-42be-9642-09ff131169e8",
+    "version": "8.15.3"
+  },
+  "@timestamp": "2025-01-14T00:11:37.307Z",
+  "ecs": {
+    "version": "8.0.0"
+  },
+  "data_stream": {
+    "namespace": "default",
+    "type": "logs",
+    "dataset": "domaintools.nod_feed"
+  },
+  "host": {
+    "hostname": "docker-fleet-agent",
+    "os": {
+      "kernel": "6.10.11-linuxkit",
+      "codename": "focal",
+      "name": "Ubuntu",
+      "type": "linux",
+      "family": "debian",
+      "version": "20.04.6 LTS (Focal Fossa)",
+      "platform": "ubuntu"
+    },
+    "containerized": false,
+    "ip": [
       "172.19.0.7"
     ],
-    "agent.type": [
-      "filebeat"
+    "name": "docker-fleet-agent",
+    "id": "cfae1e7244ae479b9b0968259c91b13a",
+    "mac": [
+      "02-42-AC-13-00-07"
     ],
-    "host.os.version": [
-      "20.04.6 LTS (Focal Fossa)"
-    ],
-    "host.os.kernel": [
-      "6.10.11-linuxkit"
-    ],
-    "domaintools.timestamp": [
-      "2024-12-03T16:20:34Z"
-    ],
-    "host.os.name": [
-      "Ubuntu"
-    ],
-    "agent.name": [
-      "docker-fleet-agent"
-    ],
-    "elastic_agent.snapshot": [
-      false
-    ],
-    "host.name": [
-      "docker-fleet-agent"
-    ],
-    "event.agent_id_status": [
-      "verified"
-    ],
-    "host.id": [
-      "29b44b57f32c4ff282841a8a4406ef95"
-    ],
-    "host.os.type": [
-      "linux"
-    ],
-    "elastic_agent.id": [
-      "c6ba320f-f527-4328-b052-af726240a90d"
-    ],
-    "data_stream.namespace": [
-      "default"
-    ],
-    "host.os.codename": [
-      "focal"
-    ],
-    "input.type": [
-      "httpjson"
-    ],
-    "message": [
-      "{\"domain\":\"fortworthvirtualrealitytherapy.info\",\"timestamp\":\"2024-12-03T16:20:34Z\"}"
-    ],
-    "data_stream.type": [
-      "logs"
-    ],
-    "host.architecture": [
-      "aarch64"
-    ],
-    "event.ingested": [
-      "2024-12-03T16:20:42.000Z"
-    ],
-    "@timestamp": [
-      "2024-12-03T16:20:41.407Z"
-    ],
-    "agent.id": [
-      "c6ba320f-f527-4328-b052-af726240a90d"
-    ],
-    "ecs.version": [
-      "8.0.0"
-    ],
-    "host.containerized": [
-      false
-    ],
-    "host.os.platform": [
-      "ubuntu"
-    ],
-    "data_stream.dataset": [
-      "domaintools.nod_feed"
-    ],
-    "event.created": [
-      "2024-12-03T16:20:41.407Z"
-    ],
-    "agent.ephemeral_id": [
-      "df14ede3-b6ef-4212-8f3b-8bc2ef01f2ec"
-    ],
-    "agent.version": [
-      "8.12.2"
-    ],
-    "host.os.family": [
-      "debian"
-    ],
-    "event.dataset": [
-      "domaintools.nod_feed"
-    ]
+    "architecture": "aarch64"
+  },
+  "elastic_agent": {
+    "id": "91c524fd-b26c-4a73-b695-9f1093a4c12b",
+    "version": "8.15.3",
+    "snapshot": false
+  },
+  "domaintools": {
+    "domain": "bioalchemyglobal.com",
+    "timestamp": "2025-01-14T00:11:33Z"
+  },
+  "message": "{\"timestamp\":\"2025-01-14T00:11:33Z\",\"domain\":\"bioalchemyglobal.com\"}",
+  "event": {
+    "agent_id_status": "verified",
+    "ingested": "2025-01-14T00:11:38Z",
+    "dataset": "domaintools.nod_feed"
   }
 }
 ```
