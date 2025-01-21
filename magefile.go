@@ -151,6 +151,7 @@ func ModTidy() error {
 func ReportFailedTests(testResultsFolder string) error {
 	stackVersion := os.Getenv("STACK_VERSION")
 	serverlessEnv := os.Getenv("SERVERLESS")
+	dryRunEnv := os.Getenv("DRY_RUN")
 	serverlessProjectEnv := os.Getenv("SERVERLESS_PROJECT")
 	buildURL := os.Getenv("BUILDKITE_BUILD_URL")
 
@@ -181,6 +182,15 @@ func ReportFailedTests(testResultsFolder string) error {
 		}
 	}
 
+	dryRun := false
+	if dryRunEnv != "" {
+		var err error
+		dryRun, err = strconv.ParseBool(dryRunEnv)
+		if err != err {
+			return fmt.Errorf("failed to parse DRY_RUN value: %w", err)
+		}
+	}
+
 	options := testsreporter.CheckOptions{
 		Serverless:        serverless,
 		ServerlessProject: serverlessProjectEnv,
@@ -189,6 +199,7 @@ func ReportFailedTests(testResultsFolder string) error {
 		BuildURL:          buildURL,
 		MaxPreviousLinks:  defaultPreviousLinksNumber,
 		MaxTestsReported:  maxIssues,
+		DryRun:            dryRun,
 	}
 	return testsreporter.Check(testResultsFolder, options)
 }

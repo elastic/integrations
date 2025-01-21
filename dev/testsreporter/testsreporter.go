@@ -25,6 +25,8 @@ type CheckOptions struct {
 
 	MaxPreviousLinks int
 	MaxTestsReported int
+
+	DryRun bool
 }
 
 func Check(resultsPath string, options CheckOptions) error {
@@ -33,18 +35,14 @@ func Check(resultsPath string, options CheckOptions) error {
 		options.CodeownersPath = codeowners.DefaultCodeownersPath
 	}
 
+	if options.DryRun {
+		fmt.Println("DRY_RUN mode enabled")
+	}
+
 	fmt.Println("path: ", resultsPath)
 	packageErrors, err := errorsFromTests(resultsPath, options)
 	if err != nil {
 		return err
-	}
-	ghCli := NewGhCli(GithubOptions{
-		DryRun: false,
-	})
-
-	aReporter := reporter{
-		ghCli:            ghCli,
-		maxPreviousLinks: options.MaxPreviousLinks,
 	}
 
 	if len(packageErrors) > options.MaxTestsReported {
@@ -52,11 +50,17 @@ func Check(resultsPath string, options CheckOptions) error {
 		return nil
 	}
 
+	ghCli := newGhCli(githubOptions{
+		DryRun: options.DryRun,
+	})
+
+	aReporter := newReporter(ghCli, options.MaxPreviousLinks)
+
 	var multiErr error
 	for _, pError := range packageErrors {
 		ctx := context.TODO()
-		r := ResultsFormatter{
-			result:           pError,
+		r := resultsFormatter{
+			result:           &pError,
 			maxPreviousLinks: options.MaxPreviousLinks,
 		}
 		fmt.Println()
@@ -67,22 +71,22 @@ func Check(resultsPath string, options CheckOptions) error {
 		fmt.Println("----")
 		fmt.Println()
 
-		ghIssue := NewGithubIssue(GithubIssueOptions{
+		ghIssue := newGithubIssue(githubIssueOptions{
 			Title:       r.Title(),
 			Description: r.Description(),
 			Labels:      []string{"flaky-test", "automation"},
 			Repository:  "elastic/integrations",
 		})
 
-		if err := aReporter.Report(ctx, ghIssue, pError); err != nil {
+		if err := aReporter.Report(ctx, ghIssue, &pError); err != nil {
 			multiErr = errors.Join(multiErr, err)
 		}
 	}
 	return multiErr
 }
 
-func errorsFromTests(resultsPath string, options CheckOptions) ([]PackageError, error) {
-	var packageErrors []PackageError
+func errorsFromTests(resultsPath string, options CheckOptions) ([]packageError, error) {
+	var packageErrors []packageError
 	err := filepath.Walk(resultsPath, func(path string, info os.FileInfo, err error) error {
 		if err != nil {
 			return err
@@ -99,7 +103,7 @@ func errorsFromTests(resultsPath string, options CheckOptions) ([]PackageError, 
 		}
 
 		for _, c := range cases {
-			packageError, err := NewPackageError(PackageErrorOptions{
+			packageError, err := newPackageError(packageErrorOptions{
 				Serverless:        options.Serverless,
 				ServerlessProject: options.ServerlessProject,
 				LogsDB:            options.LogsDB,
