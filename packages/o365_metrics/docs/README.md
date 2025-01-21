@@ -901,27 +901,31 @@ An example event for `teams_user_activity_user_counts` looks as following:
             "teams": {
                 "user": {
                     "activity": {
-                        "other_actions": {
-                            "count": "0"
-                        },
-                        "calls": {
-                            "count": "0"
-                        },
-                        "private_chat_messages": {
-                            "count": "0"
-                        },
-                        "report": {
-                            "date": "2024-12-25",
-                            "period": {
-                                "day": "7"
-                            },
-                            "refresh_date": "2024-12-31"
-                        },
-                        "meetings": {
-                            "count": "0"
-                        },
-                        "team_chat_messages": {
-                            "count": "0"
+                        "user": {
+                            "counts": {
+                                "other_actions": {
+                                    "count": 0
+                                },
+                                "calls": {
+                                    "count": 0
+                                },
+                                "private_chat_messages": {
+                                    "count": 0
+                                },
+                                "report": {
+                                    "date": "2025-01-13",
+                                    "period": {
+                                        "day": "7"
+                                    },
+                                    "refresh_date": "2025-01-19"
+                                },
+                                "meetings": {
+                                    "count": 0
+                                },
+                                "team_chat_messages": {
+                                    "count": 0
+                                }
+                            }
                         }
                     }
                 }
@@ -930,12 +934,12 @@ An example event for `teams_user_activity_user_counts` looks as following:
     },
     "agent": {
         "name": "docker-fleet-agent",
-        "id": "912ee420-1a2f-468d-bd26-72e08cfa9db6",
-        "ephemeral_id": "47368821-c491-41df-bcdc-81be28c08ee3",
+        "id": "584e4497-cd3a-4e6f-b4b7-91889923e4e2",
         "type": "filebeat",
+        "ephemeral_id": "9beddad6-b97a-43a4-8bd0-ac371e54deb9",
         "version": "8.16.0"
     },
-    "@timestamp": "2025-01-02T08:13:16.780Z",
+    "@timestamp": "2025-01-13",
     "ecs": {
         "version": "8.16.0"
     },
@@ -945,7 +949,7 @@ An example event for `teams_user_activity_user_counts` looks as following:
         "dataset": "o365_metrics.teams_user_activity_user_counts"
     },
     "elastic_agent": {
-        "id": "912ee420-1a2f-468d-bd26-72e08cfa9db6",
+        "id": "584e4497-cd3a-4e6f-b4b7-91889923e4e2",
         "version": "8.16.0",
         "snapshot": false
     },
@@ -954,28 +958,28 @@ An example event for `teams_user_activity_user_counts` looks as following:
         "os": {
             "kernel": "5.10.104-linuxkit",
             "name": "Wolfi",
-            "type": "linux",
             "family": "",
+            "type": "linux",
             "version": "20230201",
             "platform": "wolfi"
         },
         "containerized": false,
         "ip": [
-            "192.168.176.7"
+            "172.27.0.7"
         ],
         "name": "docker-fleet-agent",
         "mac": [
-            "02-42-C0-A8-B0-07"
+            "02-42-AC-1B-00-07"
         ],
         "architecture": "aarch64"
     },
     "event": {
         "agent_id_status": "verified",
-        "ingested": "2025-01-02T08:13:17Z",
+        "ingested": "2025-01-21T12:25:43Z",
         "dataset": "o365_metrics.teams_user_activity_user_counts"
     },
     "tags": [
-        "o365.metrics.outlook.activity"
+        "o365.metrics.teams.user.activity.user.counts"
     ]
 }
 ```
