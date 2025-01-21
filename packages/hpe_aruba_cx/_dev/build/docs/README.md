@@ -629,8 +629,6 @@ Note: Descriptions have not been filled out
 #### [IP Flow Information Export events](https://www.arubanetworks.com/techdocs/AOS-CX/10.15/HTML/elmrg/Content/events/IPFIX.htm)
 | Doc Fields | Schema Mapping    |
 |------------|-------------------|
-| `<node_id>`| aruba.instance.id |
-| `<status>` | aruba.status      |
 
 #### [IP Flow Monitoring Advertisement events](https://www.arubanetworks.com/techdocs/AOS-CX/10.15/HTML/elmrg/Content/events/IPFM.htm)
 | Doc Fields | Schema Mapping    |
