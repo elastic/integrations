@@ -128,16 +128,15 @@ processors:
       field: "beyondinsight_password_safe.useraudit.ipaddress"
       pattern: "\\b0+"
       replacement: ""
-  - gsub:
-      field: "related.hosts"
-      pattern: "\\b0+"
-      replacement: ""
   - convert:
       field: beyondinsight_password_safe.useraudit.ipaddress
       type: ip
       if: ctx.beyondinsight_password_safe.useraudit?.ipaddress != null && ctx.beyondinsight_password_safe.useraudit.ipaddress != ''
-      ignore_failure: true 
       ignore_missing: true
+  - append:
+      field: related.hosts
+      value: "{{{beyondinsight_password_safe.useraudit.ipaddress}}}"
+      allow_duplicates: false
 
   - append:
       field: host.ip
