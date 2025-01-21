@@ -32,14 +32,14 @@ Having an admin account with beyondtrust, [create an API registration](https://d
 
 ##### Create an API key policy API registration:
 
-Login in to application and go to Configuration > General > API Registrations.
-Click Create API Registration.
-Add Authentication Options and Rules on the API Registration Details page.
-Select API Key Policy from the dropdown list. The Details screen is displayed. Fill out the new API registration details, as detailed below:
+Login in to application and go to `Configuration > General > API Registrations`.
+Click `Create API Registration`.
+Add `Authentication Options` and `Rules` on the API Registration Details page.
+Select `API Key Policy` from the dropdown list. The Details screen is displayed. Fill out the new API registration details, as detailed below:
 
 If checked User Password Required option - an additional Authorization header value containing the RunAs user password is required with the web request. If not enabled, this header value does not need to be present and is ignored if provided.
 
-Square brackets surround the password in the header. For example, the Authorization header might look like:Authorization=PS-Auth key=c479a66f…c9484d; runas=doe-main\johndoe; pwd=[un1qu3];
+Square brackets surround the password in the header. For example, the Authorization header might look like:`Authorization=PS-Auth key=c479a66f…c9484d; runas=doe-main\johndoe; pwd=[un1qu3];`
 
 Use API key with usernanme and password (if password option is opted while registration) to access the APIs. We donot use oAuth method in this integration.
 

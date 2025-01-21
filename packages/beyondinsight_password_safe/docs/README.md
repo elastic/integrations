@@ -23,28 +23,25 @@ This data stream utilizes the BeyondInsight and Password Safe API's `/v3/assets`
 
 ### Configure API Registration
 
-API registrations allow you to integrate part of the BeyondInsight and Password Safe functionality into your applications, which allows you to expand your application's overall functionality and provide enhanced security and access management. Administrators can configure API key-based API registration in BeyondInsight and Password Safe.
+Administrators can configure API key-based API registration in BeyondInsight and Password Safe.
+To configure the BeyondInsight and Password Safe integration, a BeyondInsight administrator needs to create an API registration and provide an API key, a username and (depending on configuration) the user's password. In order to create the registration, the administrator may need to know the IP address of the Elastic Agent that will run the integration.
 
 #### Add an API Key Policy API Registration
-Please check the [document](https://www.beyondtrust.com/docs/beyondinsight-password-safe/ps/admin/configure-api-registration.htm) for more details on API key registration.
 
-**User Password Required**: When enabled, an additional Authorization header value containing the RunAs user password is required with the web request. If not enabled, this header value does not need to be present and is ignored if provided.
-On successful API key registration, BeyondInsight and Password Safe generate a unique identifier (API key) that the calling application provides in the Authorization header of the web request. 
-For example, the Authorization header might look like: 
-`Authorization=PS-Auth key=c479a66f…c9484d; runas=doe-main\johndoe; pwd=[un1qu3];`
+Having an admin account with beyondtrust, [create an API registration](https://docs.beyondtrust.com/bips/docs/configure-api) as mentioned below
 
-### API Key-Based Authentication
-All the connectors utilize the API key from Beyondtrust and use it with the`/SignAppIn` endpoint passing the key as an authorization header.
-Any language with a Representational State Transfer (REST) compliant interface can access the API with the API key and RunAs in the authorization header.
+##### Create an API key policy API registration:
 
-**Authorization Header**
-Use the web request authorization header to communicate the API application key, the RunAs username, and the user password:
+Login in to application and go to `Configuration > General > API Registrations`.
+Click `Create API Registration`.
+Add `Authentication Options` and `Rules` on the API Registration Details page.
+Select `API Key Policy` from the dropdown list. The Details screen is displayed. Fill out the new API registration details, as detailed below:
 
-**key**: The API key configured in BeyondInsight and Password Safe for your application.
+If checked User Password Required option - an additional Authorization header value containing the RunAs user password is required with the web request. If not enabled, this header value does not need to be present and is ignored if provided.
 
-**runas**: The username of a BeyondInsight and Password Safe user that has been granted permission to use the API key.
+Square brackets surround the password in the header. For example, the Authorization header might look like:`Authorization=PS-Auth key=c479a66f…c9484d; runas=doe-main\johndoe; pwd=[un1qu3];`
 
-**pwd**: The RunAs user password surrounded by square brackets `(optional; required only if the User Password is required on the application API registration).`
+Use API key with usernanme and password (if password option is opted while registration) to access the APIs. We donot use oAuth method in this integration.
 
 ## Logs
 
@@ -674,3 +671,4 @@ The following non-ECS fields are used in asset documents:
 | event.dataset |  | constant_keyword |
 | event.module |  | constant_keyword |
 | input.type | Input type | keyword |
+
