@@ -52,6 +52,16 @@ Once the secret is created and permissions are granted by admin, setup Elastic A
 
 Uses the Office 365 Graph API to retrieve metrics from Office 365.
 
+### Active Users
+
+{{event "active_users"}}
+
+**ECS Field Reference**
+
+Please refer to the following [document](https://www.elastic.co/guide/en/ecs/current/ecs-field-reference.html) for detailed information on ECS fields.
+
+{{fields "active_users"}}
+
 ### Mailbox Usage
 
 {{event "mailbox_usage"}}
@@ -62,6 +72,18 @@ Please refer to the following [document](https://www.elastic.co/guide/en/ecs/cur
 
 {{fields "mailbox_usage"}}
 
+### Microsoft 365 Groups Activity Group Detail
+
+Get details about Microsoft 365 groups activity by group from [Microsoft Graph API](https://learn.microsoft.com/en-us/graph/api/reportroot-getoffice365groupsactivitydetail?view=graph-rest-1.0&tabs=http).
+
+{{event "groups_activity_group_detail"}}
+
+**ECS Field Reference**
+
+Please refer to the following [document](https://www.elastic.co/guide/en/ecs/current/ecs-field-reference.html) for detailed information on ECS fields.
+
+{{fields "groups_activity_group_detail"}}
+
 ### One Drive Usage
 
 {{event "onedrive_usage"}}
@@ -71,6 +93,18 @@ Please refer to the following [document](https://www.elastic.co/guide/en/ecs/cur
 Please refer to the following [document](https://www.elastic.co/guide/en/ecs/current/ecs-field-reference.html) for detailed information on ECS fields.
 
 {{fields "onedrive_usage"}}
+
+### OneDrive Usage Account Detail
+
+Get details about OneDrive usage by account from [Microsoft Graph API](https://learn.microsoft.com/en-us/graph/api/reportroot-getonedriveusageaccountdetail?view=graph-rest-1.0&tabs=http).
+
+{{event "onedrive_usage_account_detail"}}
+
+**ECS Field Reference**
+
+Please refer to the following [document](https://www.elastic.co/guide/en/ecs/current/ecs-field-reference.html) for detailed information on ECS fields.
+
+{{fields "onedrive_usage_account_detail"}}
 
 ### Outlook Activity
 
@@ -92,39 +126,25 @@ Please refer to the following [document](https://www.elastic.co/guide/en/ecs/cur
 
 {{fields "outlook_app_usage"}}
 
-### Active Users
+### SharePoint Site Usage
 
-{{event "active_users"}}
-
-**ECS Field Reference**
-
-Please refer to the following [document](https://www.elastic.co/guide/en/ecs/current/ecs-field-reference.html) for detailed information on ECS fields.
-
-{{fields "active_users"}}
-
-### Microsoft 365 Groups Activity Group Detail
-
-Get details about Microsoft 365 groups activity by group from [Microsoft Graph API](https://learn.microsoft.com/en-us/graph/api/reportroot-getoffice365groupsactivitydetail?view=graph-rest-1.0&tabs=http).
-
-{{event "groups_activity_group_detail"}}
+{{event "sharepoint_site_usage"}}
 
 **ECS Field Reference**
 
 Please refer to the following [document](https://www.elastic.co/guide/en/ecs/current/ecs-field-reference.html) for detailed information on ECS fields.
 
-{{fields "groups_activity_group_detail"}}
+{{fields "sharepoint_site_usage"}}
 
-### OneDrive Usage Account Detail
+### Teams User Activity User Counts
 
-Get details about OneDrive usage by account from [Microsoft Graph API](https://learn.microsoft.com/en-us/graph/api/reportroot-getonedriveusageaccountdetail?view=graph-rest-1.0&tabs=http).
-
-{{event "onedrive_usage_account_detail"}}
+{{event "teams_user_activity_user_counts"}}
 
 **ECS Field Reference**
 
 Please refer to the following [document](https://www.elastic.co/guide/en/ecs/current/ecs-field-reference.html) for detailed information on ECS fields.
 
-{{fields "onedrive_usage_account_detail"}}
+{{fields "teams_user_activity_user_counts"}}
 
 ### Teams User Activity User Detail
 
@@ -149,3 +169,13 @@ Get details about Yammer groups activity by group from [Microsoft Graph API](htt
 Please refer to the following [document](https://www.elastic.co/guide/en/ecs/current/ecs-field-reference.html) for detailed information on ECS fields.
 
 {{fields "viva_engage_groups_activity_group_detail"}}
+
+### Yammer Device Usage
+
+{{event "yammer_device_usage"}}
+
+**ECS Field Reference**
+
+Please refer to the following [document](https://www.elastic.co/guide/en/ecs/current/ecs-field-reference.html) for detailed information on ECS fields.
+
+{{fields "yammer_device_usage"}}

@@ -52,6 +52,159 @@ Once the secret is created and permissions are granted by admin, setup Elastic A
 
 Uses the Office 365 Graph API to retrieve metrics from Office 365.
 
+### Active Users
+
+An example event for `active_users` looks as following:
+
+```json
+{
+    "o365": {
+        "metrics": {
+            "active": {
+                "users": {
+                    "teams": {
+                        "inactive": {
+                            "count": "20"
+                        },
+                        "active": {
+                            "count": "0"
+                        }
+                    },
+                    "sharepoint": {
+                        "inactive": {
+                            "count": "20"
+                        },
+                        "active": {
+                            "count": "0"
+                        }
+                    },
+                    "yammer": {
+                        "inactive": {
+                            "count": "25"
+                        },
+                        "active": {
+                            "count": "0"
+                        }
+                    },
+                    "office365": {
+                        "inactive": {
+                            "count": "25"
+                        },
+                        "active": {
+                            "count": "0"
+                        }
+                    },
+                    "report": {
+                        "period": {
+                            "day": "7"
+                        },
+                        "refresh_date": "2024-11-29"
+                    },
+                    "exchange": {
+                        "inactive": {
+                            "count": "20"
+                        },
+                        "active": {
+                            "count": "0"
+                        }
+                    },
+                    "onedrive": {
+                        "inactive": {
+                            "count": "20"
+                        },
+                        "active": {
+                            "count": "0"
+                        }
+                    }
+                }
+            }
+        }
+    },
+    "agent": {
+        "name": "docker-fleet-agent",
+        "id": "1bd16076-38b3-44b9-980b-eab55ebe95b9",
+        "ephemeral_id": "b21b52df-710e-4014-bb1c-d9e60091e1e7",
+        "type": "filebeat",
+        "version": "8.16.0"
+    },
+    "@timestamp": "2024-12-24T10:36:47.702Z",
+    "ecs": {
+        "version": "8.16.0"
+    },
+    "data_stream": {
+        "namespace": "default",
+        "type": "metrics",
+        "dataset": "o365_metrics.active_users"
+    },
+    "elastic_agent": {
+        "id": "1bd16076-38b3-44b9-980b-eab55ebe95b9",
+        "version": "8.16.0",
+        "snapshot": false
+    },
+    "host": {
+        "hostname": "docker-fleet-agent",
+        "os": {
+            "kernel": "5.15.153.1-microsoft-standard-WSL2",
+            "codename": "noble",
+            "name": "Ubuntu",
+            "type": "linux",
+            "family": "debian",
+            "version": "24.04.1 LTS (Noble Numbat)",
+            "platform": "ubuntu"
+        },
+        "containerized": true,
+        "ip": [
+            "172.18.0.7"
+        ],
+        "name": "docker-fleet-agent",
+        "mac": [
+            "02-42-AC-12-00-07"
+        ],
+        "architecture": "x86_64"
+    },
+    "event": {
+        "agent_id_status": "verified",
+        "ingested": "2024-12-24T10:36:57Z",
+        "dataset": "o365_metrics.active_users"
+    },
+    "tags": [
+        "o365.metrics.active.users"
+    ]
+}
+```
+
+**ECS Field Reference**
+
+Please refer to the following [document](https://www.elastic.co/guide/en/ecs/current/ecs-field-reference.html) for detailed information on ECS fields.
+
+**Exported fields**
+
+| Field | Description | Type |
+|---|---|---|
+| @timestamp | Event timestamp. | date |
+| cloud.image.id | Image ID for the cloud instance. | keyword |
+| data_stream.dataset | Data stream dataset. | constant_keyword |
+| data_stream.namespace | Data stream namespace. | constant_keyword |
+| data_stream.type | Data stream type. | constant_keyword |
+| host.containerized | If the host is a container. | boolean |
+| host.os.build | OS build information. | keyword |
+| host.os.codename | OS codename, if any. | keyword |
+| o365.metrics.active.users.exchange.active.count | Number of Exchange active users. | integer |
+| o365.metrics.active.users.exchange.inactive.count | Number of Exchange inactive users. | integer |
+| o365.metrics.active.users.office365.active.count | Number of Office 365 active users. | integer |
+| o365.metrics.active.users.office365.inactive.count | Number of Office 365 inactive users. | integer |
+| o365.metrics.active.users.onedrive.active.count | Number of OneDrive active users. | integer |
+| o365.metrics.active.users.onedrive.inactive.count | Number of OneDrive inactive users. | integer |
+| o365.metrics.active.users.report.period.day | Report period in days. | integer |
+| o365.metrics.active.users.report.refresh_date | Date when the report was refreshed. | date |
+| o365.metrics.active.users.sharepoint.active.count | Number of SharePoint active users. | integer |
+| o365.metrics.active.users.sharepoint.inactive.count | Number of SharePoint inactive users. | integer |
+| o365.metrics.active.users.teams.active.count | Number of Teams active users. | integer |
+| o365.metrics.active.users.teams.inactive.count | Number of Teams inactive users. | integer |
+| o365.metrics.active.users.yammer.active.count | Number of Yammer active users. | integer |
+| o365.metrics.active.users.yammer.inactive.count | Number of Yammer inactive users. | integer |
+
+
 ### Mailbox Usage
 
 An example event for `mailbox_usage` looks as following:
@@ -186,6 +339,127 @@ Please refer to the following [document](https://www.elastic.co/guide/en/ecs/cur
 | o365.metrics.mailbox.usage.detail.storage_used.byte | The total storage used in the mailbox (in bytes). | integer |  |
 
 
+### Microsoft 365 Groups Activity Group Detail
+
+Get details about Microsoft 365 groups activity by group from [Microsoft Graph API](https://learn.microsoft.com/en-us/graph/api/reportroot-getoffice365groupsactivitydetail?view=graph-rest-1.0&tabs=http).
+
+An example event for `groups_activity_group_detail` looks as following:
+
+```json
+{
+    "@timestamp": "2024-12-24",
+    "ecs": {
+        "version": "8.16.0"
+    },
+    "event": {
+        "original": "{\"Exchange Mailbox Storage Used (Byte)\":\"698640\",\"Exchange Mailbox Total Item Count\":\"9\",\"Exchange Received Email Count\":\"\",\"External Member Count\":\"0\",\"Group Display Name\":\"delete-1\",\"Group Id\":\"faa1ff4a-4677-4d4c-842a-dc63eb8b2ae3\",\"Group Type\":\"Private\",\"Is Deleted\":\"False\",\"Last Activity Date\":\"\",\"Member Count\":\"2\",\"Owner Principal Name\":\"AV@abc.onmicrosoft.com\",\"Report Period\":\"1\",\"SharePoint Active File Count\":\"\",\"SharePoint Site Storage Used (Byte)\":\"2029128\",\"SharePoint Total File Count\":\"6\",\"Yammer Liked Message Count\":\"\",\"Yammer Posted Message Count\":\"\",\"Yammer Read Message Count\":\"\",\"report\":{\"api_path\":\"/reports/getOffice365GroupsActivityDetail\",\"name\":\"Microsoft 365 Groups Activity Group Detail\"},\"﻿Report Refresh Date\":\"2024-12-24\"}"
+    },
+    "group": {
+        "id": "faa1ff4a-4677-4d4c-842a-dc63eb8b2ae3",
+        "name": "delete-1"
+    },
+    "o365": {
+        "metrics": {
+            "groups": {
+                "activity": {
+                    "group": {
+                        "detail": {
+                            "exchange_mailbox_storage_used": {
+                                "byte": 698640
+                            },
+                            "exchange_mailbox_total_item": {
+                                "count": 9
+                            },
+                            "external_member": {
+                                "count": 0
+                            },
+                            "group_display_name": "delete-1",
+                            "group_id": "faa1ff4a-4677-4d4c-842a-dc63eb8b2ae3",
+                            "group_type": "Private",
+                            "is_deleted": false,
+                            "member": {
+                                "count": 2
+                            },
+                            "owner_principal_name": "AV@abc.onmicrosoft.com",
+                            "report": {
+                                "period": {
+                                    "day": "1"
+                                },
+                                "refresh_date": "2024-12-24"
+                            },
+                            "sharepoint_site_storage_used": {
+                                "byte": 2029128
+                            },
+                            "sharepoint_total_file": {
+                                "count": 6
+                            }
+                        }
+                    }
+                }
+            },
+            "report": {
+                "api_path": "/reports/getOffice365GroupsActivityDetail",
+                "name": "Microsoft 365 Groups Activity Group Detail"
+            }
+        }
+    },
+    "related": {
+        "user": [
+            "AV@abc.onmicrosoft.com"
+        ]
+    },
+    "tags": [
+        "preserve_duplicate_custom_fields",
+        "preserve_original_event"
+    ],
+    "user": {
+        "group": {
+            "id": "faa1ff4a-4677-4d4c-842a-dc63eb8b2ae3",
+            "name": "delete-1"
+        },
+        "name": "AV@abc.onmicrosoft.com"
+    }
+}
+```
+
+**ECS Field Reference**
+
+Please refer to the following [document](https://www.elastic.co/guide/en/ecs/current/ecs-field-reference.html) for detailed information on ECS fields.
+
+**Exported fields**
+
+| Field | Description | Type | Unit |
+|---|---|---|---|
+| @timestamp | Date/time when the event originated. This is the date/time extracted from the event, typically representing when the event was generated by the source. If the event source has no original timestamp, this value is typically populated by the first time the event was received by the pipeline. Required field for all events. | date |  |
+| data_stream.dataset | The field can contain anything that makes sense to signify the source of the data. Examples include `nginx.access`, `prometheus`, `endpoint` etc. For data streams that otherwise fit, but that do not have dataset set we use the value "generic" for the dataset value. `event.dataset` should have the same value as `data_stream.dataset`. Beyond the Elasticsearch data stream naming criteria noted above, the `dataset` value has additional restrictions:   \* Must not contain `-`   \* No longer than 100 characters | constant_keyword |  |
+| data_stream.namespace | A user defined namespace. Namespaces are useful to allow grouping of data. Many users already organize their indices this way, and the data stream naming scheme now provides this best practice as a default. Many users will populate this field with `default`. If no value is used, it falls back to `default`. Beyond the Elasticsearch index naming criteria noted above, `namespace` value has the additional restrictions:   \* Must not contain `-`   \* No longer than 100 characters | constant_keyword |  |
+| data_stream.type | An overarching type for the data stream. Currently allowed values are "logs" and "metrics". We expect to also add "traces" and "synthetics" in the near future. | constant_keyword |  |
+| event.dataset | Name of the dataset. If an event source publishes more than one type of log or events (e.g. access log, error log), the dataset is used to specify which one the event comes from. It's recommended but not required to start the dataset name with the module name, followed by a dot, then the dataset name. | constant_keyword |  |
+| event.module | Name of the module this data is coming from. If your monitoring agent supports the concept of modules or plugins to process events of a given source (e.g. Apache logs), `event.module` should contain the name of this module. | constant_keyword |  |
+| labels.is_transform_source | Distinguishes between documents that are a source for a transform and documents that are an output of a transform, to facilitate easier filtering. | constant_keyword |  |
+| o365.metrics.groups.activity.group.detail.exchange_mailbox_storage_used.byte | The storage used by the group's mailbox. | long |  |
+| o365.metrics.groups.activity.group.detail.exchange_mailbox_total_item.count | The total number of items in the group's mailbox. | long |  |
+| o365.metrics.groups.activity.group.detail.exchange_received_email.count | The number of messages received by the group. | long |  |
+| o365.metrics.groups.activity.group.detail.external_member.count | The number of external users in the group. | long |  |
+| o365.metrics.groups.activity.group.detail.group_display_name | The name of the group. | keyword |  |
+| o365.metrics.groups.activity.group.detail.group_id | The id of the group. | keyword |  |
+| o365.metrics.groups.activity.group.detail.group_type | The type of group. This can be private or public group. | keyword |  |
+| o365.metrics.groups.activity.group.detail.is_deleted | If the group is deleted, but had activity in the reporting period it will show up in the grid with this flag set to true. | boolean |  |
+| o365.metrics.groups.activity.group.detail.last_activity_date | The latest date a message was received by the group. This is the latest date an activity happened in an email conversation, Viva Engage, or the Site. | date |  |
+| o365.metrics.groups.activity.group.detail.member.count | The number of members in the group. | long |  |
+| o365.metrics.groups.activity.group.detail.owner_principal_name | The name of the group owner. | keyword |  |
+| o365.metrics.groups.activity.group.detail.report.period.day | The reporting period over which the data is aggregated (in days). | integer | d |
+| o365.metrics.groups.activity.group.detail.report.refresh_date | The date when the report data was last updated. | date |  |
+| o365.metrics.groups.activity.group.detail.sharepoint_active_file.count | The number of files in the SharePoint group site that were acted on (viewed or modified, synched, shared internally or externally) during the reporting period. | long |  |
+| o365.metrics.groups.activity.group.detail.sharepoint_site_storage_used.byte | The amount of storage in MB used during the reporting period. | long |  |
+| o365.metrics.groups.activity.group.detail.sharepoint_total_file.count | The number of files stored in SharePoint group sites. | long |  |
+| o365.metrics.groups.activity.group.detail.yammer_liked_message.count | The number of messages liked in the Viva Engage group over the reporting period. | long |  |
+| o365.metrics.groups.activity.group.detail.yammer_posted_message.count | The number of messages posted in the Viva Engage group over the reporting period. | long |  |
+| o365.metrics.groups.activity.group.detail.yammer_read_message.count | The number of conversations read in the Viva Engage group over the reporting period. | long |  |
+| o365.metrics.report.api_path | Microsoft Graph API path used to pull the report. | keyword |  |
+| o365.metrics.report.name | Name of the report. | keyword |  |
+
+
 ### One Drive Usage
 
 An example event for `onedrive_usage` looks as following:
@@ -290,6 +564,107 @@ Please refer to the following [document](https://www.elastic.co/guide/en/ecs/cur
 | o365.metrics.onedrive.usage.storage.report.period | The duration of the reporting period, in days. | integer |
 | o365.metrics.onedrive.usage.storage.report.refresh_date | The date when the data in the report was last refreshed. | date |
 | o365.metrics.onedrive.usage.storage.used_byte | The total storage used across OneDrive accounts during the reporting period, in bytes. | integer |
+
+
+### OneDrive Usage Account Detail
+
+Get details about OneDrive usage by account from [Microsoft Graph API](https://learn.microsoft.com/en-us/graph/api/reportroot-getonedriveusageaccountdetail?view=graph-rest-1.0&tabs=http).
+
+An example event for `onedrive_usage_account_detail` looks as following:
+
+```json
+{
+    "@timestamp": "2024-12-23",
+    "ecs": {
+        "version": "8.16.0"
+    },
+    "event": {
+        "original": "{\"Active File Count\":\"1\",\"File Count\":\"7\",\"Is Deleted\":\"False\",\"Last Activity Date\":\"2024-12-23\",\"Owner Display Name\":\"ABC\",\"Owner Principal Name\":\"KR@abc.onmicrosoft.com\",\"Report Period\":\"1\",\"Site Id\":\"e1f0f31e-ba42-46a1-9f41-ef4849978cd8\",\"Site URL\":\"\",\"Storage Allocated (Byte)\":\"1099511627776\",\"Storage Used (Byte)\":\"1305970\",\"report\":{\"api_path\":\"/reports/getOneDriveUsageAccountDetail\",\"name\":\"OneDrive Usage Account Detail\"},\"﻿Report Refresh Date\":\"2024-12-23\"}"
+    },
+    "o365": {
+        "metrics": {
+            "onedrive": {
+                "usage": {
+                    "account": {
+                        "detail": {
+                            "active_file": {
+                                "count": 1
+                            },
+                            "file": {
+                                "count": 7
+                            },
+                            "is_deleted": false,
+                            "last_activity_date": "2024-12-23T00:00:00.000Z",
+                            "owner_display_name": "ABC",
+                            "owner_principal_name": "KR@abc.onmicrosoft.com",
+                            "report": {
+                                "period": {
+                                    "day": "1"
+                                },
+                                "refresh_date": "2024-12-23"
+                            },
+                            "site_id": "e1f0f31e-ba42-46a1-9f41-ef4849978cd8",
+                            "storage_allocated": {
+                                "byte": 1099511627776
+                            },
+                            "storage_used": {
+                                "byte": 1305970
+                            }
+                        }
+                    }
+                }
+            },
+            "report": {
+                "api_path": "/reports/getOneDriveUsageAccountDetail",
+                "name": "OneDrive Usage Account Detail"
+            }
+        }
+    },
+    "related": {
+        "user": [
+            "KR@abc.onmicrosoft.com"
+        ]
+    },
+    "tags": [
+        "preserve_duplicate_custom_fields",
+        "preserve_original_event"
+    ],
+    "user": {
+        "email": "KR@abc.onmicrosoft.com",
+        "name": "KR@abc.onmicrosoft.com"
+    }
+}
+```
+
+**ECS Field Reference**
+
+Please refer to the following [document](https://www.elastic.co/guide/en/ecs/current/ecs-field-reference.html) for detailed information on ECS fields.
+
+**Exported fields**
+
+| Field | Description | Type | Unit |
+|---|---|---|---|
+| @timestamp | Date/time when the event originated. This is the date/time extracted from the event, typically representing when the event was generated by the source. If the event source has no original timestamp, this value is typically populated by the first time the event was received by the pipeline. Required field for all events. | date |  |
+| data_stream.dataset | The field can contain anything that makes sense to signify the source of the data. Examples include `nginx.access`, `prometheus`, `endpoint` etc. For data streams that otherwise fit, but that do not have dataset set we use the value "generic" for the dataset value. `event.dataset` should have the same value as `data_stream.dataset`. Beyond the Elasticsearch data stream naming criteria noted above, the `dataset` value has additional restrictions:   \* Must not contain `-`   \* No longer than 100 characters | constant_keyword |  |
+| data_stream.namespace | A user defined namespace. Namespaces are useful to allow grouping of data. Many users already organize their indices this way, and the data stream naming scheme now provides this best practice as a default. Many users will populate this field with `default`. If no value is used, it falls back to `default`. Beyond the Elasticsearch index naming criteria noted above, `namespace` value has the additional restrictions:   \* Must not contain `-`   \* No longer than 100 characters | constant_keyword |  |
+| data_stream.type | An overarching type for the data stream. Currently allowed values are "logs" and "metrics". We expect to also add "traces" and "synthetics" in the near future. | constant_keyword |  |
+| event.dataset | Name of the dataset. If an event source publishes more than one type of log or events (e.g. access log, error log), the dataset is used to specify which one the event comes from. It's recommended but not required to start the dataset name with the module name, followed by a dot, then the dataset name. | constant_keyword |  |
+| event.module | Name of the module this data is coming from. If your monitoring agent supports the concept of modules or plugins to process events of a given source (e.g. Apache logs), `event.module` should contain the name of this module. | constant_keyword |  |
+| labels.is_transform_source | Distinguishes between documents that are a source for a transform and documents that are an output of a transform, to facilitate easier filtering. | constant_keyword |  |
+| o365.metrics.onedrive.usage.account.detail.active_file.count | The number of active files within the time period. | long |  |
+| o365.metrics.onedrive.usage.account.detail.file.count | The number of files in the OneDrive. | long |  |
+| o365.metrics.onedrive.usage.account.detail.is_deleted | The deletion status of the OneDrive. It takes at least seven days for accounts to be marked as deleted. | boolean |  |
+| o365.metrics.onedrive.usage.account.detail.last_activity_date | The latest date a file activity was performed in the OneDrive. If the OneDrive has had no file activity, the value will be blank. | date |  |
+| o365.metrics.onedrive.usage.account.detail.owner_display_name | The username of the primary administrator of the OneDrive. | keyword |  |
+| o365.metrics.onedrive.usage.account.detail.owner_principal_name | The email address of the owner of the OneDrive. | keyword |  |
+| o365.metrics.onedrive.usage.account.detail.report.period.day | The reporting period over which the data is aggregated (in days). | integer | d |
+| o365.metrics.onedrive.usage.account.detail.report.refresh_date | The date when the report data was last updated. | date |  |
+| o365.metrics.onedrive.usage.account.detail.site_id | The site ID of the site. | keyword |  |
+| o365.metrics.onedrive.usage.account.detail.site_url | The web address for the user's OneDrive. Note: URL will be empty temporarily. | keyword |  |
+| o365.metrics.onedrive.usage.account.detail.storage_allocated.byte | The amount of storage the OneDrive is allocated. | long |  |
+| o365.metrics.onedrive.usage.account.detail.storage_used.byte | The amount of storage the OneDrive uses. | long |  |
+| o365.metrics.report.api_path | Microsoft Graph API path used to pull the report. | keyword |  |
+| o365.metrics.report.name | Name of the report. | keyword |  |
 
 
 ### Outlook Activity
@@ -528,68 +903,24 @@ Please refer to the following [document](https://www.elastic.co/guide/en/ecs/cur
 | o365.metrics.outlook.app.usage.undetermined.count | The count of unique users whose Outlook version could not be identified. | integer |  |
 
 
-### Active Users
+### SharePoint Site Usage
 
-An example event for `active_users` looks as following:
+An example event for `sharepoint_site_usage` looks as following:
 
 ```json
 {
-    "o365": {
-        "metrics": {
-            "active": {
-                "users": {
-                    "teams": {
-                        "inactive": {
-                            "count": "20"
+    "o365metrics": {
+        "sharepoint": {
+            "site": {
+                "usage": {
+                    "storage": {
+                        "report": {
+                            "date": "2024-12-25",
+                            "period": "7",
+                            "refresh_date": "2024-12-25"
                         },
-                        "active": {
-                            "count": "0"
-                        }
-                    },
-                    "sharepoint": {
-                        "inactive": {
-                            "count": "20"
-                        },
-                        "active": {
-                            "count": "0"
-                        }
-                    },
-                    "yammer": {
-                        "inactive": {
-                            "count": "25"
-                        },
-                        "active": {
-                            "count": "0"
-                        }
-                    },
-                    "office365": {
-                        "inactive": {
-                            "count": "25"
-                        },
-                        "active": {
-                            "count": "0"
-                        }
-                    },
-                    "report": {
-                        "period": {
-                            "day": "7"
-                        },
-                        "refresh_date": "2024-11-29"
-                    },
-                    "exchange": {
-                        "inactive": {
-                            "count": "20"
-                        },
-                        "active": {
-                            "count": "0"
-                        }
-                    },
-                    "onedrive": {
-                        "inactive": {
-                            "count": "20"
-                        },
-                        "active": {
-                            "count": "0"
+                        "storage_used": {
+                            "byte": "1942032506"
                         }
                     }
                 }
@@ -598,24 +929,19 @@ An example event for `active_users` looks as following:
     },
     "agent": {
         "name": "docker-fleet-agent",
-        "id": "1bd16076-38b3-44b9-980b-eab55ebe95b9",
-        "ephemeral_id": "b21b52df-710e-4014-bb1c-d9e60091e1e7",
+        "id": "027b7b81-b3c6-49b9-8f61-1a5e892e7bfe",
+        "ephemeral_id": "f4133cae-978e-44e1-83e0-cab27e682a99",
         "type": "filebeat",
         "version": "8.16.0"
     },
-    "@timestamp": "2024-12-24T10:36:47.702Z",
+    "@timestamp": "2024-12-26T23:18:42.620Z",
     "ecs": {
         "version": "8.16.0"
     },
     "data_stream": {
         "namespace": "default",
         "type": "metrics",
-        "dataset": "o365_metrics.active_users"
-    },
-    "elastic_agent": {
-        "id": "1bd16076-38b3-44b9-980b-eab55ebe95b9",
-        "version": "8.16.0",
-        "snapshot": false
+        "dataset": "o365_metrics.sharepoint_site_usage"
     },
     "host": {
         "hostname": "docker-fleet-agent",
@@ -638,13 +964,18 @@ An example event for `active_users` looks as following:
         ],
         "architecture": "x86_64"
     },
+    "elastic_agent": {
+        "id": "027b7b81-b3c6-49b9-8f61-1a5e892e7bfe",
+        "version": "8.16.0",
+        "snapshot": false
+    },
     "event": {
         "agent_id_status": "verified",
-        "ingested": "2024-12-24T10:36:57Z",
-        "dataset": "o365_metrics.active_users"
+        "ingested": "2024-12-26T23:18:52Z",
+        "dataset": "o365_metrics.sharepoint_site_usage"
     },
     "tags": [
-        "o365.metrics.active.users"
+        "o365.metrics.sharepoint_site_usage"
     ]
 }
 ```
@@ -665,210 +996,111 @@ Please refer to the following [document](https://www.elastic.co/guide/en/ecs/cur
 | host.containerized | If the host is a container. | boolean |
 | host.os.build | OS build information. | keyword |
 | host.os.codename | OS codename, if any. | keyword |
-| o365.metrics.active.users.exchange.active.count | Number of Exchange active users. | integer |
-| o365.metrics.active.users.exchange.inactive.count | Number of Exchange inactive users. | integer |
-| o365.metrics.active.users.office365.active.count | Number of Office 365 active users. | integer |
-| o365.metrics.active.users.office365.inactive.count | Number of Office 365 inactive users. | integer |
-| o365.metrics.active.users.onedrive.active.count | Number of OneDrive active users. | integer |
-| o365.metrics.active.users.onedrive.inactive.count | Number of OneDrive inactive users. | integer |
-| o365.metrics.active.users.report.period.day | Report period in days. | integer |
-| o365.metrics.active.users.report.refresh_date | Date when the report was refreshed. | date |
-| o365.metrics.active.users.sharepoint.active.count | Number of SharePoint active users. | integer |
-| o365.metrics.active.users.sharepoint.inactive.count | Number of SharePoint inactive users. | integer |
-| o365.metrics.active.users.teams.active.count | Number of Teams active users. | integer |
-| o365.metrics.active.users.teams.inactive.count | Number of Teams inactive users. | integer |
-| o365.metrics.active.users.yammer.active.count | Number of Yammer active users. | integer |
-| o365.metrics.active.users.yammer.inactive.count | Number of Yammer inactive users. | integer |
+| o365metrics.sharepoint.site.usage.detail.active_file.count | The number of active files in the SharePoint site during the reporting period. | integer |
+| o365metrics.sharepoint.site.usage.detail.file.count | The total number of files in the SharePoint site. | integer |
+| o365metrics.sharepoint.site.usage.detail.page_view.count | The number of page views in the SharePoint site during the reporting period. | integer |
+| o365metrics.sharepoint.site.usage.detail.report.period | The duration of the reporting period for SharePoint site usage, in days. | integer |
+| o365metrics.sharepoint.site.usage.detail.report.refresh_date | The date when the SharePoint site usage data was last refreshed. | date |
+| o365metrics.sharepoint.site.usage.detail.storage_allocated.byte | The amount of storage allocated to the SharePoint site, in bytes. | integer |
+| o365metrics.sharepoint.site.usage.detail.storage_used.byte | The amount of storage used in the SharePoint site, in bytes. | integer |
+| o365metrics.sharepoint.site.usage.detail.visited_page.count | The number of visited pages in the SharePoint site during the reporting period. | integer |
+| o365metrics.sharepoint.site.usage.storage.report.date | The date the SharePoint site storage usage report was generated. | date |
+| o365metrics.sharepoint.site.usage.storage.report.period | The duration of the reporting period for SharePoint site storage usage, in days. | integer |
+| o365metrics.sharepoint.site.usage.storage.report.refresh_date | The date when the SharePoint site storage usage data was last refreshed. | date |
+| o365metrics.sharepoint.site.usage.storage.storage_used.byte | The total storage used across SharePoint sites during the reporting period, in bytes. | integer |
 
 
-### Microsoft 365 Groups Activity Group Detail
+### Teams User Activity User Counts
 
-Get details about Microsoft 365 groups activity by group from [Microsoft Graph API](https://learn.microsoft.com/en-us/graph/api/reportroot-getoffice365groupsactivitydetail?view=graph-rest-1.0&tabs=http).
-
-An example event for `groups_activity_group_detail` looks as following:
+An example event for `teams_user_activity_user_counts` looks as following:
 
 ```json
 {
-    "@timestamp": "2024-12-24",
-    "ecs": {
-        "version": "8.16.0"
-    },
-    "event": {
-        "original": "{\"Exchange Mailbox Storage Used (Byte)\":\"698640\",\"Exchange Mailbox Total Item Count\":\"9\",\"Exchange Received Email Count\":\"\",\"External Member Count\":\"0\",\"Group Display Name\":\"delete-1\",\"Group Id\":\"faa1ff4a-4677-4d4c-842a-dc63eb8b2ae3\",\"Group Type\":\"Private\",\"Is Deleted\":\"False\",\"Last Activity Date\":\"\",\"Member Count\":\"2\",\"Owner Principal Name\":\"AV@abc.onmicrosoft.com\",\"Report Period\":\"1\",\"SharePoint Active File Count\":\"\",\"SharePoint Site Storage Used (Byte)\":\"2029128\",\"SharePoint Total File Count\":\"6\",\"Yammer Liked Message Count\":\"\",\"Yammer Posted Message Count\":\"\",\"Yammer Read Message Count\":\"\",\"report\":{\"api_path\":\"/reports/getOffice365GroupsActivityDetail\",\"name\":\"Microsoft 365 Groups Activity Group Detail\"},\"﻿Report Refresh Date\":\"2024-12-24\"}"
-    },
-    "group": {
-        "id": "faa1ff4a-4677-4d4c-842a-dc63eb8b2ae3",
-        "name": "delete-1"
-    },
     "o365": {
         "metrics": {
-            "groups": {
-                "activity": {
-                    "group": {
-                        "detail": {
-                            "exchange_mailbox_storage_used": {
-                                "byte": 698640
-                            },
-                            "exchange_mailbox_total_item": {
-                                "count": 9
-                            },
-                            "external_member": {
-                                "count": 0
-                            },
-                            "group_display_name": "delete-1",
-                            "group_id": "faa1ff4a-4677-4d4c-842a-dc63eb8b2ae3",
-                            "group_type": "Private",
-                            "is_deleted": false,
-                            "member": {
-                                "count": 2
-                            },
-                            "owner_principal_name": "AV@abc.onmicrosoft.com",
-                            "report": {
-                                "period": {
-                                    "day": "1"
+            "teams": {
+                "user": {
+                    "activity": {
+                        "user": {
+                            "counts": {
+                                "other_actions": {
+                                    "count": 0
                                 },
-                                "refresh_date": "2024-12-24"
-                            },
-                            "sharepoint_site_storage_used": {
-                                "byte": 2029128
-                            },
-                            "sharepoint_total_file": {
-                                "count": 6
+                                "calls": {
+                                    "count": 0
+                                },
+                                "private_chat_messages": {
+                                    "count": 0
+                                },
+                                "report": {
+                                    "date": "2025-01-13",
+                                    "period": {
+                                        "day": "7"
+                                    },
+                                    "refresh_date": "2025-01-19"
+                                },
+                                "meetings": {
+                                    "count": 0
+                                },
+                                "team_chat_messages": {
+                                    "count": 0
+                                }
                             }
                         }
                     }
                 }
-            },
-            "report": {
-                "api_path": "/reports/getOffice365GroupsActivityDetail",
-                "name": "Microsoft 365 Groups Activity Group Detail"
             }
         }
     },
-    "related": {
-        "user": [
-            "AV@abc.onmicrosoft.com"
-        ]
+    "agent": {
+        "name": "docker-fleet-agent",
+        "id": "584e4497-cd3a-4e6f-b4b7-91889923e4e2",
+        "type": "filebeat",
+        "ephemeral_id": "9beddad6-b97a-43a4-8bd0-ac371e54deb9",
+        "version": "8.16.0"
     },
-    "tags": [
-        "preserve_duplicate_custom_fields",
-        "preserve_original_event"
-    ],
-    "user": {
-        "group": {
-            "id": "faa1ff4a-4677-4d4c-842a-dc63eb8b2ae3",
-            "name": "delete-1"
+    "@timestamp": "2025-01-13",
+    "ecs": {
+        "version": "8.16.0"
+    },
+    "data_stream": {
+        "namespace": "default",
+        "type": "metrics",
+        "dataset": "o365_metrics.teams_user_activity_user_counts"
+    },
+    "elastic_agent": {
+        "id": "584e4497-cd3a-4e6f-b4b7-91889923e4e2",
+        "version": "8.16.0",
+        "snapshot": false
+    },
+    "host": {
+        "hostname": "docker-fleet-agent",
+        "os": {
+            "kernel": "5.10.104-linuxkit",
+            "name": "Wolfi",
+            "family": "",
+            "type": "linux",
+            "version": "20230201",
+            "platform": "wolfi"
         },
-        "name": "AV@abc.onmicrosoft.com"
-    }
-}
-```
-
-**ECS Field Reference**
-
-Please refer to the following [document](https://www.elastic.co/guide/en/ecs/current/ecs-field-reference.html) for detailed information on ECS fields.
-
-**Exported fields**
-
-| Field | Description | Type | Unit |
-|---|---|---|---|
-| @timestamp | Date/time when the event originated. This is the date/time extracted from the event, typically representing when the event was generated by the source. If the event source has no original timestamp, this value is typically populated by the first time the event was received by the pipeline. Required field for all events. | date |  |
-| data_stream.dataset | The field can contain anything that makes sense to signify the source of the data. Examples include `nginx.access`, `prometheus`, `endpoint` etc. For data streams that otherwise fit, but that do not have dataset set we use the value "generic" for the dataset value. `event.dataset` should have the same value as `data_stream.dataset`. Beyond the Elasticsearch data stream naming criteria noted above, the `dataset` value has additional restrictions:   \* Must not contain `-`   \* No longer than 100 characters | constant_keyword |  |
-| data_stream.namespace | A user defined namespace. Namespaces are useful to allow grouping of data. Many users already organize their indices this way, and the data stream naming scheme now provides this best practice as a default. Many users will populate this field with `default`. If no value is used, it falls back to `default`. Beyond the Elasticsearch index naming criteria noted above, `namespace` value has the additional restrictions:   \* Must not contain `-`   \* No longer than 100 characters | constant_keyword |  |
-| data_stream.type | An overarching type for the data stream. Currently allowed values are "logs" and "metrics". We expect to also add "traces" and "synthetics" in the near future. | constant_keyword |  |
-| event.dataset | Name of the dataset. If an event source publishes more than one type of log or events (e.g. access log, error log), the dataset is used to specify which one the event comes from. It's recommended but not required to start the dataset name with the module name, followed by a dot, then the dataset name. | constant_keyword |  |
-| event.module | Name of the module this data is coming from. If your monitoring agent supports the concept of modules or plugins to process events of a given source (e.g. Apache logs), `event.module` should contain the name of this module. | constant_keyword |  |
-| labels.is_transform_source | Distinguishes between documents that are a source for a transform and documents that are an output of a transform, to facilitate easier filtering. | constant_keyword |  |
-| o365.metrics.groups.activity.group.detail.exchange_mailbox_storage_used.byte | The storage used by the group's mailbox. | long |  |
-| o365.metrics.groups.activity.group.detail.exchange_mailbox_total_item.count | The total number of items in the group's mailbox. | long |  |
-| o365.metrics.groups.activity.group.detail.exchange_received_email.count | The number of messages received by the group. | long |  |
-| o365.metrics.groups.activity.group.detail.external_member.count | The number of external users in the group. | long |  |
-| o365.metrics.groups.activity.group.detail.group_display_name | The name of the group. | keyword |  |
-| o365.metrics.groups.activity.group.detail.group_id | The id of the group. | keyword |  |
-| o365.metrics.groups.activity.group.detail.group_type | The type of group. This can be private or public group. | keyword |  |
-| o365.metrics.groups.activity.group.detail.is_deleted | If the group is deleted, but had activity in the reporting period it will show up in the grid with this flag set to true. | boolean |  |
-| o365.metrics.groups.activity.group.detail.last_activity_date | The latest date a message was received by the group. This is the latest date an activity happened in an email conversation, Viva Engage, or the Site. | date |  |
-| o365.metrics.groups.activity.group.detail.member.count | The number of members in the group. | long |  |
-| o365.metrics.groups.activity.group.detail.owner_principal_name | The name of the group owner. | keyword |  |
-| o365.metrics.groups.activity.group.detail.report.period.day | The reporting period over which the data is aggregated (in days). | integer | d |
-| o365.metrics.groups.activity.group.detail.report.refresh_date | The date when the report data was last updated. | date |  |
-| o365.metrics.groups.activity.group.detail.sharepoint_active_file.count | The number of files in the SharePoint group site that were acted on (viewed or modified, synched, shared internally or externally) during the reporting period. | long |  |
-| o365.metrics.groups.activity.group.detail.sharepoint_site_storage_used.byte | The amount of storage in MB used during the reporting period. | long |  |
-| o365.metrics.groups.activity.group.detail.sharepoint_total_file.count | The number of files stored in SharePoint group sites. | long |  |
-| o365.metrics.groups.activity.group.detail.yammer_liked_message.count | The number of messages liked in the Viva Engage group over the reporting period. | long |  |
-| o365.metrics.groups.activity.group.detail.yammer_posted_message.count | The number of messages posted in the Viva Engage group over the reporting period. | long |  |
-| o365.metrics.groups.activity.group.detail.yammer_read_message.count | The number of conversations read in the Viva Engage group over the reporting period. | long |  |
-| o365.metrics.report.api_path | Microsoft Graph API path used to pull the report. | keyword |  |
-| o365.metrics.report.name | Name of the report. | keyword |  |
-
-
-### OneDrive Usage Account Detail
-
-Get details about OneDrive usage by account from [Microsoft Graph API](https://learn.microsoft.com/en-us/graph/api/reportroot-getonedriveusageaccountdetail?view=graph-rest-1.0&tabs=http).
-
-An example event for `onedrive_usage_account_detail` looks as following:
-
-```json
-{
-    "@timestamp": "2024-12-23",
-    "ecs": {
-        "version": "8.16.0"
+        "containerized": false,
+        "ip": [
+            "172.27.0.7"
+        ],
+        "name": "docker-fleet-agent",
+        "mac": [
+            "02-42-AC-1B-00-07"
+        ],
+        "architecture": "aarch64"
     },
     "event": {
-        "original": "{\"Active File Count\":\"1\",\"File Count\":\"7\",\"Is Deleted\":\"False\",\"Last Activity Date\":\"2024-12-23\",\"Owner Display Name\":\"ABC\",\"Owner Principal Name\":\"KR@abc.onmicrosoft.com\",\"Report Period\":\"1\",\"Site Id\":\"e1f0f31e-ba42-46a1-9f41-ef4849978cd8\",\"Site URL\":\"\",\"Storage Allocated (Byte)\":\"1099511627776\",\"Storage Used (Byte)\":\"1305970\",\"report\":{\"api_path\":\"/reports/getOneDriveUsageAccountDetail\",\"name\":\"OneDrive Usage Account Detail\"},\"﻿Report Refresh Date\":\"2024-12-23\"}"
-    },
-    "o365": {
-        "metrics": {
-            "onedrive": {
-                "usage": {
-                    "account": {
-                        "detail": {
-                            "active_file": {
-                                "count": 1
-                            },
-                            "file": {
-                                "count": 7
-                            },
-                            "is_deleted": false,
-                            "last_activity_date": "2024-12-23T00:00:00.000Z",
-                            "owner_display_name": "ABC",
-                            "owner_principal_name": "KR@abc.onmicrosoft.com",
-                            "report": {
-                                "period": {
-                                    "day": "1"
-                                },
-                                "refresh_date": "2024-12-23"
-                            },
-                            "site_id": "e1f0f31e-ba42-46a1-9f41-ef4849978cd8",
-                            "storage_allocated": {
-                                "byte": 1099511627776
-                            },
-                            "storage_used": {
-                                "byte": 1305970
-                            }
-                        }
-                    }
-                }
-            },
-            "report": {
-                "api_path": "/reports/getOneDriveUsageAccountDetail",
-                "name": "OneDrive Usage Account Detail"
-            }
-        }
-    },
-    "related": {
-        "user": [
-            "KR@abc.onmicrosoft.com"
-        ]
+        "agent_id_status": "verified",
+        "ingested": "2025-01-21T12:25:43Z",
+        "dataset": "o365_metrics.teams_user_activity_user_counts"
     },
     "tags": [
-        "preserve_duplicate_custom_fields",
-        "preserve_original_event"
-    ],
-    "user": {
-        "email": "KR@abc.onmicrosoft.com",
-        "name": "KR@abc.onmicrosoft.com"
-    }
+        "o365.metrics.teams.user.activity.user.counts"
+    ]
 }
 ```
 
@@ -880,27 +1112,22 @@ Please refer to the following [document](https://www.elastic.co/guide/en/ecs/cur
 
 | Field | Description | Type | Unit |
 |---|---|---|---|
-| @timestamp | Date/time when the event originated. This is the date/time extracted from the event, typically representing when the event was generated by the source. If the event source has no original timestamp, this value is typically populated by the first time the event was received by the pipeline. Required field for all events. | date |  |
-| data_stream.dataset | The field can contain anything that makes sense to signify the source of the data. Examples include `nginx.access`, `prometheus`, `endpoint` etc. For data streams that otherwise fit, but that do not have dataset set we use the value "generic" for the dataset value. `event.dataset` should have the same value as `data_stream.dataset`. Beyond the Elasticsearch data stream naming criteria noted above, the `dataset` value has additional restrictions:   \* Must not contain `-`   \* No longer than 100 characters | constant_keyword |  |
-| data_stream.namespace | A user defined namespace. Namespaces are useful to allow grouping of data. Many users already organize their indices this way, and the data stream naming scheme now provides this best practice as a default. Many users will populate this field with `default`. If no value is used, it falls back to `default`. Beyond the Elasticsearch index naming criteria noted above, `namespace` value has the additional restrictions:   \* Must not contain `-`   \* No longer than 100 characters | constant_keyword |  |
-| data_stream.type | An overarching type for the data stream. Currently allowed values are "logs" and "metrics". We expect to also add "traces" and "synthetics" in the near future. | constant_keyword |  |
-| event.dataset | Name of the dataset. If an event source publishes more than one type of log or events (e.g. access log, error log), the dataset is used to specify which one the event comes from. It's recommended but not required to start the dataset name with the module name, followed by a dot, then the dataset name. | constant_keyword |  |
-| event.module | Name of the module this data is coming from. If your monitoring agent supports the concept of modules or plugins to process events of a given source (e.g. Apache logs), `event.module` should contain the name of this module. | constant_keyword |  |
-| labels.is_transform_source | Distinguishes between documents that are a source for a transform and documents that are an output of a transform, to facilitate easier filtering. | constant_keyword |  |
-| o365.metrics.onedrive.usage.account.detail.active_file.count | The number of active files within the time period. | long |  |
-| o365.metrics.onedrive.usage.account.detail.file.count | The number of files in the OneDrive. | long |  |
-| o365.metrics.onedrive.usage.account.detail.is_deleted | The deletion status of the OneDrive. It takes at least seven days for accounts to be marked as deleted. | boolean |  |
-| o365.metrics.onedrive.usage.account.detail.last_activity_date | The latest date a file activity was performed in the OneDrive. If the OneDrive has had no file activity, the value will be blank. | date |  |
-| o365.metrics.onedrive.usage.account.detail.owner_display_name | The username of the primary administrator of the OneDrive. | keyword |  |
-| o365.metrics.onedrive.usage.account.detail.owner_principal_name | The email address of the owner of the OneDrive. | keyword |  |
-| o365.metrics.onedrive.usage.account.detail.report.period.day | The reporting period over which the data is aggregated (in days). | integer | d |
-| o365.metrics.onedrive.usage.account.detail.report.refresh_date | The date when the report data was last updated. | date |  |
-| o365.metrics.onedrive.usage.account.detail.site_id | The site ID of the site. | keyword |  |
-| o365.metrics.onedrive.usage.account.detail.site_url | The web address for the user's OneDrive. Note: URL will be empty temporarily. | keyword |  |
-| o365.metrics.onedrive.usage.account.detail.storage_allocated.byte | The amount of storage the OneDrive is allocated. | long |  |
-| o365.metrics.onedrive.usage.account.detail.storage_used.byte | The amount of storage the OneDrive uses. | long |  |
-| o365.metrics.report.api_path | Microsoft Graph API path used to pull the report. | keyword |  |
-| o365.metrics.report.name | Name of the report. | keyword |  |
+| @timestamp | Event timestamp. | date |  |
+| cloud.image.id | Image ID for the cloud instance. | keyword |  |
+| data_stream.dataset | Data stream dataset. | constant_keyword |  |
+| data_stream.namespace | Data stream namespace. | constant_keyword |  |
+| data_stream.type | Data stream type. | constant_keyword |  |
+| host.containerized | If the host is a container. | boolean |  |
+| host.os.build | OS build information. | keyword |  |
+| host.os.codename | OS codename, if any. | keyword |  |
+| o365.metrics.teams.user.activity.user.counts.calls.count | The number of calls made by Teams users. | long |  |
+| o365.metrics.teams.user.activity.user.counts.meetings.count | The number of meetings attended or organized by Teams users. | long |  |
+| o365.metrics.teams.user.activity.user.counts.other_actions.count | The count of other user actions within Teams. | long |  |
+| o365.metrics.teams.user.activity.user.counts.private_chat_messages.count | The number of messages sent in private 1:1 or group chats. | long |  |
+| o365.metrics.teams.user.activity.user.counts.report.date | The specific date for which the report data applies. | date |  |
+| o365.metrics.teams.user.activity.user.counts.report.period.day | The duration (e.g., 7 days) over which the report data is aggregated. | integer | d |
+| o365.metrics.teams.user.activity.user.counts.report.refresh_date | The date when the report data was last updated. | date |  |
+| o365.metrics.teams.user.activity.user.counts.team_chat_messages.count | The number of messages sent in Teams channels. | long |  |
 
 
 ### Teams User Activity User Detail
@@ -1171,4 +1398,124 @@ Please refer to the following [document](https://www.elastic.co/guide/en/ecs/cur
 | o365.metrics.viva_engage.groups.activity.group.detail.read.count | The number of conversations read in the Viva Engage group over the reporting period. | long |  |
 | o365.metrics.viva_engage.groups.activity.group.detail.report.period.day | The reporting period over which the data is aggregated (in days). | integer | d |
 | o365.metrics.viva_engage.groups.activity.group.detail.report.refresh_date | The date when the report data was last updated. | date |  |
+
+
+### Yammer Device Usage
+
+An example event for `yammer_device_usage` looks as following:
+
+```json
+{
+    "o365": {
+        "metrics": {
+            "yammer": {
+                "device": {
+                    "usage": {
+                        "other": {
+                            "count": "1"
+                        },
+                        "windows_phone": {
+                            "count": "2"
+                        },
+                        "web": {
+                            "count": "3"
+                        },
+                        "report": {
+                            "date": "2024-12-18",
+                            "period": {
+                                "day": "7"
+                            },
+                            "refresh_date": "2024-12-24"
+                        },
+                        "ipad": {
+                            "count": "5"
+                        },
+                        "android_phone": {
+                            "count": "3"
+                        },
+                        "iphone": {
+                            "count": "1"
+                        }
+                    }
+                }
+            }
+        }
+    },
+    "agent": {
+        "name": "docker-fleet-agent",
+        "id": "2f0e797b-2ccc-4639-b6f4-f1d3647cf01d",
+        "type": "filebeat",
+        "ephemeral_id": "131c1ad1-8f88-4dff-b6f9-d1bd298cb934",
+        "version": "8.16.0"
+    },
+    "@timestamp": "2024-12-26T12:42:17.877Z",
+    "ecs": {
+        "version": "8.16.0"
+    },
+    "data_stream": {
+        "namespace": "default",
+        "type": "metrics",
+        "dataset": "o365_metrics.yammer_device_usage"
+    },
+    "elastic_agent": {
+        "id": "2f0e797b-2ccc-4639-b6f4-f1d3647cf01d",
+        "version": "8.16.0",
+        "snapshot": false
+    },
+    "host": {
+        "hostname": "docker-fleet-agent",
+        "os": {
+            "kernel": "5.10.104-linuxkit",
+            "name": "Wolfi",
+            "type": "linux",
+            "family": "",
+            "version": "20230201",
+            "platform": "wolfi"
+        },
+        "ip": [
+            "192.168.144.7"
+        ],
+        "containerized": false,
+        "name": "docker-fleet-agent",
+        "mac": [
+            "02-42-C0-A8-90-07"
+        ],
+        "architecture": "aarch64"
+    },
+    "event": {
+        "agent_id_status": "verified",
+        "ingested": "2024-12-26T12:42:18Z",
+        "dataset": "o365_metrics.yammer_device_usage"
+    },
+    "tags": [
+        "o365metrics-yammer_device_usage"
+    ]
+}
+```
+
+**ECS Field Reference**
+
+Please refer to the following [document](https://www.elastic.co/guide/en/ecs/current/ecs-field-reference.html) for detailed information on ECS fields.
+
+**Exported fields**
+
+| Field | Description | Type | Unit |
+|---|---|---|---|
+| @timestamp | Event timestamp. | date |  |
+| cloud.image.id | Image ID for the cloud instance. | keyword |  |
+| data_stream.dataset | Data stream dataset. | constant_keyword |  |
+| data_stream.namespace | Data stream namespace. | constant_keyword |  |
+| data_stream.type | Data stream type. | constant_keyword |  |
+| host.containerized | If the host is a container. | boolean |  |
+| host.os.build | OS build information. | keyword |  |
+| host.os.codename | OS codename, if any. | keyword |  |
+| o365.metrics.yammer.device.usage.android_phone.count | The count of users accessing Yammer on Android phones. | integer |  |
+| o365.metrics.yammer.device.usage.ipad.count | The count of users accessing Yammer on iPads. | integer |  |
+| o365.metrics.yammer.device.usage.iphone.count | The count of users accessing Yammer on iPhones. | integer |  |
+| o365.metrics.yammer.device.usage.other.count | The count of users accessing Yammer on devices not listed. | integer |  |
+| o365.metrics.yammer.device.usage.report.date | The specific date for which the report data applies. | date |  |
+| o365.metrics.yammer.device.usage.report.period.day | The duration (e.g., 7 days) over which the quota status data is aggregated. | integer | d |
+| o365.metrics.yammer.device.usage.report.refresh_date | The date when the report data was last updated. | date |  |
+| o365.metrics.yammer.device.usage.web.count | The count of users accessing Yammer via web browsers. | integer |  |
+| o365.metrics.yammer.device.usage.windows_phone.count | The count of users accessing Yammer on Windows Phone devices. | integer |  |
 
