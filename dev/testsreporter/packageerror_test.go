@@ -14,13 +14,13 @@ import (
 func TestNewPackageError(t *testing.T) {
 	cases := []struct {
 		title         string
-		options       PackageErrorOptions
+		options       packageErrorOptions
 		expectedError bool
-		expected      PackageError
+		expected      packageError
 	}{
 		{
 			title: "Sample package error",
-			options: PackageErrorOptions{
+			options: packageErrorOptions{
 				Serverless:        true,
 				ServerlessProject: "observability",
 				LogsDB:            false,
@@ -34,25 +34,27 @@ func TestNewPackageError(t *testing.T) {
 				CodeownersPath: "./testdata/CODEOWNERS-default-tests",
 			},
 			expectedError: false,
-			expected: PackageError{
+			expected: packageError{
 				testCase: testCase{
 					Name:      "failing test",
 					ClassName: "elastic_package_registry.datastream",
 					Error:     "could not find hits",
 				},
-				Serverless:        true,
-				ServerlessProject: "observability",
-				LogsDB:            false,
-				StackVersion:      "8.16.0-SNAPSHOT",
-				BuildURL:          "https://buildkite.com/elastic/integrations/build/1",
-				PackageName:       "elastic_package_registry",
-				DataStream:        "datastream",
-				Teams:             []string{"@elastic/ecosystem"},
+				serverless:        true,
+				serverlessProject: "observability",
+				logsDB:            false,
+				stackVersion:      "8.16.0-SNAPSHOT",
+				packageName:       "elastic_package_registry",
+				dataStream:        "datastream",
+				teams:             []string{"@elastic/ecosystem"},
+				errorLinks: errorLinks{
+					firstBuild: "https://buildkite.com/elastic/integrations/build/1",
+				},
 			},
 		},
 		{
 			title: "Sample package error no datastream",
-			options: PackageErrorOptions{
+			options: packageErrorOptions{
 				Serverless:        true,
 				ServerlessProject: "observability",
 				LogsDB:            false,
@@ -66,25 +68,27 @@ func TestNewPackageError(t *testing.T) {
 				CodeownersPath: "./testdata/CODEOWNERS-default-tests",
 			},
 			expectedError: false,
-			expected: PackageError{
+			expected: packageError{
 				testCase: testCase{
 					Name:      "failing test",
 					ClassName: "elastic_package_registry",
 					Error:     "could not find hits",
 				},
-				Serverless:        true,
-				ServerlessProject: "observability",
-				LogsDB:            false,
-				StackVersion:      "8.16.0-SNAPSHOT",
-				BuildURL:          "https://buildkite.com/elastic/integrations/build/1",
-				PackageName:       "elastic_package_registry",
-				DataStream:        "",
-				Teams:             []string{"@elastic/ecosystem"},
+				serverless:        true,
+				serverlessProject: "observability",
+				logsDB:            false,
+				stackVersion:      "8.16.0-SNAPSHOT",
+				packageName:       "elastic_package_registry",
+				dataStream:        "",
+				teams:             []string{"@elastic/ecosystem"},
+				errorLinks: errorLinks{
+					firstBuild: "https://buildkite.com/elastic/integrations/build/1",
+				},
 			},
 		},
 		{
 			title: "Not found package",
-			options: PackageErrorOptions{
+			options: packageErrorOptions{
 				Serverless:        true,
 				ServerlessProject: "observability",
 				LogsDB:            false,
@@ -102,7 +106,7 @@ func TestNewPackageError(t *testing.T) {
 	}
 	for _, c := range cases {
 		t.Run(c.title, func(t *testing.T) {
-			packageError, err := NewPackageError(c.options)
+			packageError, err := newPackageError(c.options)
 			if c.expectedError {
 				require.Error(t, err)
 				return

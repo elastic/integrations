@@ -11,21 +11,26 @@ import (
 	"github.com/elastic/integrations/dev/codeowners"
 )
 
-type PackageError struct {
-	testCase
-	Serverless        bool
-	ServerlessProject string
-	LogsDB            bool
-	StackVersion      string
-	BuildURL          string
-	Teams             []string
-	PackageName       string
-	DataStream        string
-	PreviousBuilds    []string
-	ClosedIssueURL    string
+type errorLinks struct {
+	currentIssueURL string
+	firstBuild      string
+	previousBuilds  []string
+	closedIssueURL  string
 }
 
-type PackageErrorOptions struct {
+type packageError struct {
+	testCase
+	errorLinks
+	serverless        bool
+	serverlessProject string
+	logsDB            bool
+	stackVersion      string
+	teams             []string
+	packageName       string
+	dataStream        string
+}
+
+type packageErrorOptions struct {
 	Serverless        bool
 	ServerlessProject string
 	LogsDB            bool
@@ -33,49 +38,69 @@ type PackageErrorOptions struct {
 	BuildURL          string
 	TestCase          testCase
 	CodeownersPath    string
+	ClosedIssueURL    string
+	PreviousBuilds    []string
+	Teams             []string
 }
 
-func NewPackageError(options PackageErrorOptions) (*PackageError, error) {
-	p := PackageError{
-		Serverless:        options.Serverless,
-		ServerlessProject: options.ServerlessProject,
-		LogsDB:            options.LogsDB,
-		StackVersion:      options.StackVersion,
-		BuildURL:          options.BuildURL,
+func newPackageError(options packageErrorOptions) (*packageError, error) {
+	p := packageError{
+		serverless:        options.Serverless,
+		serverlessProject: options.ServerlessProject,
+		logsDB:            options.LogsDB,
+		stackVersion:      options.StackVersion,
 		testCase:          options.TestCase,
+		teams:             options.Teams,
+
+		errorLinks: errorLinks{
+			firstBuild:     options.BuildURL,
+			closedIssueURL: options.ClosedIssueURL,
+			previousBuilds: options.PreviousBuilds,
+		},
 	}
 
-	values := strings.Split(p.testCase.ClassName, ".")
-	p.PackageName = values[0]
-	if len(values) == 2 {
-		p.DataStream = values[1]
-	}
+	p.packageName = p.testCase.PackageName()
+	p.dataStream = p.testCase.DataStream()
 
-	owners, err := codeowners.PackageOwners(p.PackageName, p.DataStream, options.CodeownersPath)
-	if err != nil {
-		return nil, fmt.Errorf("failed to find owners for package %s: %w", p.PackageName, err)
+	if len(options.Teams) == 0 {
+		owners, err := codeowners.PackageOwners(p.packageName, p.dataStream, options.CodeownersPath)
+		if err != nil {
+			return nil, fmt.Errorf("failed to find owners for package %s: %w", p.packageName, err)
+		}
+		p.teams = owners
 	}
-	p.Teams = owners
 
 	return &p, nil
 }
 
-func (p PackageError) String() string {
+func (p *packageError) FirstBuild() string {
+	return p.errorLinks.firstBuild
+}
+
+func (p *packageError) UpdateLinks(links errorLinks) {
+	p.errorLinks = links
+}
+
+func (p *packageError) Teams() []string {
+	return p.teams
+}
+
+func (p *packageError) String() string {
 	var sb strings.Builder
 
-	if p.LogsDB {
+	if p.logsDB {
 		sb.WriteString("[LogsDB] ")
 	}
-	if p.Serverless {
-		sb.WriteString(fmt.Sprintf("[Serverless %s] ", p.ServerlessProject))
+	if p.serverless {
+		sb.WriteString(fmt.Sprintf("[Serverless %s] ", p.serverlessProject))
 	}
-	if p.StackVersion != "" {
+	if p.stackVersion != "" {
 		sb.WriteString("[Stack ")
-		sb.WriteString(p.StackVersion)
+		sb.WriteString(p.stackVersion)
 		sb.WriteString("] ")
 	}
 	sb.WriteString("[")
-	sb.WriteString(p.PackageName)
+	sb.WriteString(p.packageName)
 	sb.WriteString("] ")
 	sb.WriteString("Failing test daily: ")
 	sb.WriteString(p.testCase.String())
@@ -83,18 +108,25 @@ func (p PackageError) String() string {
 	return sb.String()
 }
 
-func (p *PackageError) SetClosedURL(url string) {
-	p.ClosedIssueURL = url
+func (p *packageError) SummaryData() map[string]any {
+	return map[string]any{
+		"stackVersion":      p.stackVersion,
+		"serverless":        p.serverless,
+		"serverlessProject": p.serverlessProject,
+		"logsDB":            p.logsDB,
+		"packageName":       p.packageName,
+		"testName":          p.Name,
+		"dataStream":        p.dataStream,
+		"owners":            p.teams,
+	}
 }
 
-func (p *PackageError) SetPreviousLinks(builds []string) {
-	p.PreviousBuilds = builds
-}
-
-func (p *PackageError) SetFirstBuild(url string) {
-	p.BuildURL = url
-}
-
-func (p *PackageError) SetClosedIssue(url string) {
-	p.ClosedIssueURL = url
+func (p *packageError) DescriptionData() map[string]any {
+	return map[string]any{
+		"failure":        truncateText(p.Failure, defaultMaxLengthMessages),
+		"error":          truncateText(p.Error, defaultMaxLengthMessages),
+		"firstBuild":     p.errorLinks.firstBuild,
+		"closedIssueURL": p.errorLinks.closedIssueURL,
+		"previousBuilds": p.errorLinks.previousBuilds,
+	}
 }

@@ -4,7 +4,7 @@
 
 package testsreporter
 
-type GithubIssue struct {
+type githubIssue struct {
 	repository  string
 	number      int
 	title       string
@@ -14,19 +14,19 @@ type GithubIssue struct {
 	url         string
 }
 
-func (i *GithubIssue) Number() int {
+func (i *githubIssue) Number() int {
 	return i.number
 }
 
-func (i *GithubIssue) Open() bool {
+func (i *githubIssue) Open() bool {
 	return i.state == "OPEN"
 }
 
-func (i *GithubIssue) URL() string {
+func (i *githubIssue) URL() string {
 	return i.url
 }
 
-type GithubIssueOptions struct {
+type githubIssueOptions struct {
 	Repository  string
 	Title       string
 	Description string
@@ -36,8 +36,8 @@ type GithubIssueOptions struct {
 	URL         string
 }
 
-func NewGithubIssue(options GithubIssueOptions) *GithubIssue {
-	issue := GithubIssue{
+func newGithubIssue(options githubIssueOptions) *githubIssue {
+	issue := githubIssue{
 		title:       options.Title,
 		description: options.Description,
 		repository:  options.Repository,
@@ -50,6 +50,6 @@ func NewGithubIssue(options GithubIssueOptions) *GithubIssue {
 	return &issue
 }
 
-func (i *GithubIssue) SetDescription(description string) {
+func (i *githubIssue) SetDescription(description string) {
 	i.description = description
 }
