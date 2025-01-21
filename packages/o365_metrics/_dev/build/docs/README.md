@@ -103,3 +103,13 @@ Please refer to the following [document](https://www.elastic.co/guide/en/ecs/cur
 Please refer to the following [document](https://www.elastic.co/guide/en/ecs/current/ecs-field-reference.html) for detailed information on ECS fields.
 
 {{fields "sharepoint_site_usage"}}
+
+### Teams User Activity User Counts
+
+{{event "teams_user_activity_user_counts"}}
+
+**ECS Field Reference**
+
+Please refer to the following [document](https://www.elastic.co/guide/en/ecs/current/ecs-field-reference.html) for detailed information on ECS fields.
+
+{{fields "teams_user_activity_user_counts"}}
