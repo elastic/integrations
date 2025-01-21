@@ -701,10 +701,11 @@ Note: Descriptions have not been filled out
 #### [Job scheduler events](https://www.arubanetworks.com/techdocs/AOS-CX/10.15/HTML/elmrg/Content/events/SCHEDULE.htm)
 | Docs Field                  | Schema Mapping                   |
 |-----------------------------|----------------------------------|
+| `<details>`                 | aruba.scheduler.details          |
 | `<job_name>`                | aruba.scheduler.job_name         |
 | `<name>`                    | aruba.scheduler.name             |
 | `<schedule_name>`           | aruba.scheduler.name             |
-| `<start_datetime><details>` | aruba.scheduler.datetime_details |
+| `<start_datetime>`          | aruba.scheduler.datetime         |
 | `<trigger_count>`           | aruba.count                      |
 
 #### [L3 Encap capacity events](https://www.arubanetworks.com/techdocs/AOS-CX/10.07/HTML/5200-8214/Content/events/L3_ENCAP.htm)

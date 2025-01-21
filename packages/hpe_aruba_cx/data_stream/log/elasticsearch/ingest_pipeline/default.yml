@@ -4537,7 +4537,8 @@ processors:
       tag: job_scheduler_event_12201
       description: "Event reported when a schedule is created"
       if: "ctx.event?.code == '12201'"
-      pattern: "Creating schedule %{aruba.scheduler.name}, trigger time(s): %{aruba.scheduler.datetime_details}"
+      # Unable to get real logs to parse <start_datetime><details>, stuffing both fields into aruba.scheduler.details
+      pattern: "Creating schedule %{aruba.scheduler.name}, trigger time(s): %{aruba.scheduler.details}"
   - grok:
       field: message
       tag: job_scheduler_event_12202
@@ -4550,7 +4551,8 @@ processors:
       tag: job_scheduler_event_12203
       description: "Event reported when the schedules are recreated due to timezone change."
       if: "ctx.event?.code == '12203'"
-      pattern: "Timezone changed. Re-creating schedule %{aruba.scheduler.name}, trigger time(s): %{aruba.scheduler.datetime_details}"
+      # Unable to get real logs to parse <start_datetime><details>, stuffing both fields into aruba.scheduler.details
+      pattern: "Timezone changed. Re-creating schedule %{aruba.scheduler.name}, trigger time(s): %{aruba.scheduler.details}"
   - dissect:
       field: message
       tag: job_scheduler_event_13701
