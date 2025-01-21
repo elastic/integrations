@@ -512,6 +512,12 @@ prepare_stack() {
         args="${args} -U stack.logsdb_enabled=true"
     fi
 
+    if [[ "${STACK_VERSION}" =~ ^7\.17 ]]; then
+        # Required starting with STACK_VERSION 7.17.21
+        export ELASTIC_AGENT_IMAGE_REF_OVERRIDE="docker.elastic.co/beats/elastic-agent-complete:${STACK_VERSION}-amd64"
+        echo "Override elastic-agent docker image: ${ELASTIC_AGENT_IMAGE_REF_OVERRIDE}"
+    fi
+
     echo "Boot up the Elastic stack"
     if ! ${ELASTIC_PACKAGE_BIN} stack up -d ${args} ; then
         return 1
