@@ -604,12 +604,12 @@ Please refer to the following [document](https://www.elastic.co/guide/en/ecs/cur
 | data_stream.dataset | Data stream dataset. | constant_keyword |  |
 | data_stream.namespace | Data stream namespace. | constant_keyword |  |
 | data_stream.type | Data stream type. | constant_keyword |  |
-| rubrik.tasks.canceled_tasks.count | The number of tasks that have been canceled. | long | gauge |
-| rubrik.tasks.failed_tasks.count | The number of tasks that have failed. | long | gauge |
-| rubrik.tasks.missed_tasks.count | The number of tasks that have missed. | long | gauge |
+| rubrik.tasks.canceled.count | The number of tasks that have been canceled. | long | gauge |
+| rubrik.tasks.failed.count | The number of tasks that have failed. | long | gauge |
+| rubrik.tasks.missed.count | The number of tasks that have missed. | long | gauge |
 | rubrik.tasks.sla_domain.id | The Rubrik cluster id where this object originated. | keyword |  |
 | rubrik.tasks.sla_domain.name | The Rubrik cluster name where this object originated. | keyword |  |
-| rubrik.tasks.succeeded_tasks.count | The number of tasks that have succeeded. | long | gauge |
+| rubrik.tasks.succeeded.count | The number of tasks that have succeeded. | long | gauge |
 
 
 An example event for `tasks` looks as following:
@@ -629,7 +629,7 @@ An example event for `tasks` looks as following:
                 "name": "name-1",
                 "id": "4755b8b8-116b-4466-affb-c683f9339b10"
             },
-            "succeeded_tasks": {
+            "succeeded": {
                 "count": 7
             }
         }
