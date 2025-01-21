@@ -57,10 +57,22 @@ processors:
       copy_from: http.request.id
       ignore_empty_value: true
   - fingerprint:
+      description: >
+        Fingerprint the event.original value in attempt to prevent the same
+        event from being indexed more than once under connection failures or
+        other agent related issues.
+      if: ctx.event?.original != null
       fields:
-        - http.request.id
-      target_field: "_id"
-      ignore_missing: true
+        - event.original
+      target_field: _id
+  - set:
+      description: >
+        Prefix the _id with the start time because identifiers that generally
+        increase over time based on sorting order generally result in better
+        indexing performance than completely random identifiers.
+      if: ctx.json?.httpMessage?.start != null && ctx._id != null
+      field: _id
+      value: '{{{json.httpMessage.start}}}-{{{_id}}}'
   - rename:
       field: json.httpMessage.method
       target_field: http.request.method
