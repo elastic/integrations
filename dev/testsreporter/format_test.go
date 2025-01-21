@@ -13,15 +13,15 @@ import (
 func TestSummary(t *testing.T) {
 	cases := []struct {
 		title        string
-		packageError PackageError
+		packageError packageError
 		expected     string
 	}{
 		{
 			title: "summary stack version with data stream",
-			packageError: PackageError{
-				StackVersion: "8.14",
-				PackageName:  "foo",
-				DataStream:   "data",
+			packageError: packageError{
+				stackVersion: "8.14",
+				packageName:  "foo",
+				dataStream:   "data",
 				testCase: testCase{
 					Name: "mytest",
 				},
@@ -34,13 +34,13 @@ func TestSummary(t *testing.T) {
 		},
 		{
 			title: "summary stack version with owners wihtout data stream",
-			packageError: PackageError{
-				StackVersion: "8.14",
-				PackageName:  "foo",
+			packageError: packageError{
+				stackVersion: "8.14",
+				packageName:  "foo",
 				testCase: testCase{
 					Name: "mytest",
 				},
-				Teams: []string{"team1", "team2"},
+				teams: []string{"team1", "team2"},
 			},
 			expected: `- Stack version: 8.14
 - Package: foo
@@ -52,14 +52,14 @@ func TestSummary(t *testing.T) {
 		},
 		{
 			title: "summary stack version with data stream and owners",
-			packageError: PackageError{
-				StackVersion: "8.14",
-				PackageName:  "foo",
-				DataStream:   "data",
+			packageError: packageError{
+				stackVersion: "8.14",
+				packageName:  "foo",
+				dataStream:   "data",
 				testCase: testCase{
 					Name: "mytest",
 				},
-				Teams: []string{"team1", "team2"},
+				teams: []string{"team1", "team2"},
 			},
 			expected: `- Stack version: 8.14
 - Package: foo
@@ -72,15 +72,15 @@ func TestSummary(t *testing.T) {
 		},
 		{
 			title: "summary serverless with data stream and owners",
-			packageError: PackageError{
-				Serverless:        true,
-				ServerlessProject: "observability",
-				PackageName:       "foo",
-				DataStream:        "data",
+			packageError: packageError{
+				serverless:        true,
+				serverlessProject: "observability",
+				packageName:       "foo",
+				dataStream:        "data",
 				testCase: testCase{
 					Name: "mytest",
 				},
-				Teams: []string{"team1", "team2"},
+				teams: []string{"team1", "team2"},
 			},
 			expected: `- Serverless: observability
 - Package: foo
@@ -93,14 +93,14 @@ func TestSummary(t *testing.T) {
 		},
 		{
 			title: "summary serverless with owners without data stream",
-			packageError: PackageError{
-				Serverless:        true,
-				ServerlessProject: "observability",
-				PackageName:       "foo",
+			packageError: packageError{
+				serverless:        true,
+				serverlessProject: "observability",
+				packageName:       "foo",
 				testCase: testCase{
 					Name: "mytest",
 				},
-				Teams: []string{"team1", "team2"},
+				teams: []string{"team1", "team2"},
 			},
 			expected: `- Serverless: observability
 - Package: foo
@@ -112,13 +112,13 @@ func TestSummary(t *testing.T) {
 		},
 		{
 			title: "summary logsdb",
-			packageError: PackageError{
-				LogsDB:      true,
-				PackageName: "foo",
+			packageError: packageError{
+				logsDB:      true,
+				packageName: "foo",
 				testCase: testCase{
 					Name: "mytest",
 				},
-				Teams: []string{"team1", "team2"},
+				teams: []string{"team1", "team2"},
 			},
 			expected: `- LogsDB: enabled
 - Package: foo
@@ -132,8 +132,8 @@ func TestSummary(t *testing.T) {
 
 	for _, c := range cases {
 		t.Run(c.title, func(t *testing.T) {
-			formatter := ResultsFormatter{
-				result: c.packageError,
+			formatter := resultsFormatter{
+				result: &c.packageError,
 			}
 			summary := formatter.Summary()
 
@@ -146,25 +146,27 @@ func TestDescription(t *testing.T) {
 	cases := []struct {
 		title        string
 		summary      string
-		packageError PackageError
+		packageError packageError
 		maxLinks     int
 		expected     string
 	}{
 		{
 			title:   "description error all fields",
 			summary: "summary",
-			packageError: PackageError{
-				StackVersion:   "8.14",
-				BuildURL:       "http://link/1",
-				ClosedIssueURL: "http://link/old",
-				PackageName:    "foo",
-				PreviousBuilds: []string{
-					"http://link/2",
-					"http://link/3",
-				},
+			packageError: packageError{
+				stackVersion: "8.14",
+				packageName:  "foo",
 				testCase: testCase{
 					Name:  "mytest",
 					Error: "myerror",
+				},
+				errorLinks: errorLinks{
+					firstBuild:     "http://link/1",
+					closedIssueURL: "http://link/old",
+					previousBuilds: []string{
+						"http://link/2",
+						"http://link/3",
+					},
 				},
 			},
 			expected: `- Stack version: 8.14
@@ -188,18 +190,20 @@ Latest failed builds:
 		{
 			title:   "description failure all fields",
 			summary: "summary",
-			packageError: PackageError{
-				StackVersion:   "8.14",
-				BuildURL:       "http://link/1",
-				ClosedIssueURL: "http://link/old",
-				PackageName:    "foo",
-				PreviousBuilds: []string{
-					"http://link/2",
-					"http://link/3",
-				},
+			packageError: packageError{
+				stackVersion: "8.14",
+				packageName:  "foo",
 				testCase: testCase{
 					Name:    "mytest",
 					Failure: "myfailure",
+				},
+				errorLinks: errorLinks{
+					firstBuild:     "http://link/1",
+					closedIssueURL: "http://link/old",
+					previousBuilds: []string{
+						"http://link/2",
+						"http://link/3",
+					},
 				},
 			},
 			expected: `- Stack version: 8.14
@@ -223,17 +227,19 @@ Latest failed builds:
 		{
 			title:   "description no closed issue",
 			summary: "summary",
-			packageError: PackageError{
-				StackVersion: "8.14",
-				BuildURL:     "http://link/1",
-				PackageName:  "foo",
-				PreviousBuilds: []string{
-					"http://link/2",
-					"http://link/3",
-				},
+			packageError: packageError{
+				stackVersion: "8.14",
+				packageName:  "foo",
 				testCase: testCase{
 					Name:  "mytest",
 					Error: "myerror",
+				},
+				errorLinks: errorLinks{
+					firstBuild: "http://link/1",
+					previousBuilds: []string{
+						"http://link/2",
+						"http://link/3",
+					},
 				},
 			},
 			expected: `- Stack version: 8.14
@@ -256,17 +262,19 @@ Latest failed builds:
 			title:    "description max links",
 			summary:  "summary",
 			maxLinks: 2,
-			packageError: PackageError{
-				StackVersion: "8.14",
-				BuildURL:     "http://link/1",
-				PackageName:  "foo",
-				PreviousBuilds: []string{
-					"http://link/2",
-					"http://link/3",
-				},
+			packageError: packageError{
+				stackVersion: "8.14",
+				packageName:  "foo",
 				testCase: testCase{
 					Name:  "mytest",
 					Error: "myerror",
+				},
+				errorLinks: errorLinks{
+					firstBuild: "http://link/1",
+					previousBuilds: []string{
+						"http://link/2",
+						"http://link/3",
+					},
 				},
 			},
 			expected: `- Stack version: 8.14
@@ -289,8 +297,8 @@ Latest 2 failed builds:
 
 	for _, c := range cases {
 		t.Run(c.title, func(t *testing.T) {
-			formatter := ResultsFormatter{
-				result:           c.packageError,
+			formatter := resultsFormatter{
+				result:           &c.packageError,
 				maxPreviousLinks: c.maxLinks,
 			}
 			description := formatter.Description()
