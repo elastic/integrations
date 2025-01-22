@@ -96,28 +96,33 @@ processors:
       field: event.module
       value: beyondinsight_password_safe
 
-  - convert:
+  - gsub:
       field: beyondinsight_password_safe.asset.ipaddress
-      type: ip
-      if: ctx.beyondinsight_password_safe.asset?.ipaddress != null && ctx.beyondinsight_password_safe.asset.ipaddress != ''
-      ignore_failure: true
-
-  - geoip:
-      field: host.ip
-      target_field: host.geo
-      ignore_missing: true
-      ignore_failure: true
-
-  - append:
-      field: host.ip
-      value: '{{{beyondinsight_password_safe.asset.ipaddress}}}'
-      allow_duplicates: false
+      pattern: "\\b0+"
+      replacement: ""
 
   - append:
       field: related.hosts
       value: '{{{beyondinsight_password_safe.asset.ipaddress}}}'
       allow_duplicates: false
       if: ctx.beyondinsight_password_safe.asset.ipaddress != null
+
+  - append:
+      field: host.ip
+      value: '{{{beyondinsight_password_safe.asset.ipaddress}}}'
+      allow_duplicates: false
+
+  - convert:
+      field: beyondinsight_password_safe.asset.ipaddress
+      type: ip
+      if: ctx.beyondinsight_password_safe.asset?.ipaddress != null && ctx.beyondinsight_password_safe.asset.ipaddress != ''
+      ignore_missing: true
+
+  - geoip:
+      field: host.ip
+      target_field: host.geo
+      ignore_missing: true
+      ignore_failure: true
 
   - append:
       if: ctx.beyondinsight_password_safe.asset?.mac_address != null && ctx.beyondinsight_password_safe.asset.mac_address != ''
@@ -147,6 +152,7 @@ processors:
       if: ctx.beyondinsight_password_safe.asset.domain_name != null
 
  #################### Override host.ip ######################
+
   - script:
       lang: painless
       source: |
