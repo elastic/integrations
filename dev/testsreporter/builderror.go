@@ -70,7 +70,7 @@ func (b *buildError) String() string {
 		sb.WriteString(b.stackVersion)
 		sb.WriteString("] ")
 	}
-	sb.WriteString("Many packages failing in daily job")
+	sb.WriteString("Too many packages failing in daily job")
 
 	return sb.String()
 }
