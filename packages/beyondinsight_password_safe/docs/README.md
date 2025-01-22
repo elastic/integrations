@@ -53,19 +53,19 @@ An example event for `useraudit` looks as following:
 
 ```json
 {
-    "@timestamp": "2024-12-09T10:24:26.323Z",
+    "@timestamp": "2025-01-22T15:53:08.433Z",
     "agent": {
-        "ephemeral_id": "48de15fd-994c-4e08-8d35-cf635e91ae81",
-        "id": "0fb26469-edd2-4f29-8e58-9b534bf1c1ff",
-        "name": "elastic-agent-28118",
+        "ephemeral_id": "227a7870-f92d-44de-a828-974be65935b8",
+        "id": "3ed0f94e-6005-42d2-865b-5cfdf0ecc83a",
+        "name": "elastic-agent-43922",
         "type": "filebeat",
-        "version": "8.15.3"
+        "version": "8.15.0"
     },
     "beyondinsight_password_safe": {
         "useraudit": {
             "action_type": "Login",
-            "audit_id": 1,
-            "create_date": "2024-12-09T10:24:26.323Z",
+            "audit_id": 8,
+            "create_date": "2024-12-16T10:24:26.323Z",
             "ipaddress": "216.160.83.56",
             "section": "PMM API SignAppIn",
             "user_id": 6,
@@ -74,16 +74,16 @@ An example event for `useraudit` looks as following:
     },
     "data_stream": {
         "dataset": "beyondinsight_password_safe.useraudit",
-        "namespace": "11225",
+        "namespace": "32170",
         "type": "logs"
     },
     "ecs": {
         "version": "8.11.0"
     },
     "elastic_agent": {
-        "id": "0fb26469-edd2-4f29-8e58-9b534bf1c1ff",
+        "id": "3ed0f94e-6005-42d2-865b-5cfdf0ecc83a",
         "snapshot": false,
-        "version": "8.15.3"
+        "version": "8.15.0"
     },
     "event": {
         "agent_id_status": "verified",
@@ -91,15 +91,14 @@ An example event for `useraudit` looks as following:
             "iam"
         ],
         "dataset": "beyondinsight_password_safe.useraudit",
-        "id": "1",
-        "ingested": "2025-01-10T17:34:49Z",
+        "ingested": "2025-01-22T15:53:11Z",
         "kind": "event",
         "module": "beyondinsight_password_safe",
         "type": [
             "info"
         ]
     },
-    "event.original": "{\"ActionType\":\"Login\",\"AuditID\":1,\"CreateDate\":\"2024-12-09T10:24:26.323Z\",\"IPAddress\":\"216.160.83.56\",\"Section\":\"PMM API SignAppIn\",\"UserID\":6,\"UserName\":\"test.user@example.com\"}",
+    "event.original": "{\"ActionType\":\"Login\",\"AuditID\":8,\"CreateDate\":\"2024-12-16T10:24:26.323Z\",\"IPAddress\":\"216.160.83.56\",\"Section\":\"PMM API SignAppIn\",\"UserID\":6,\"UserName\":\"test.user@example.com\"}",
     "host": {
         "geo": {
             "city_name": "Milton",
@@ -125,12 +124,12 @@ An example event for `useraudit` looks as following:
             "216.160.83.56"
         ],
         "user": [
-            "6",
             "test.user@example.com"
         ]
     },
     "tags": [
-        "forwarded"
+        "forwarded",
+        "beyondinsight_password_safe.useraudit"
     ],
     "user": {
         "id": "6",
@@ -171,13 +170,13 @@ An example event for `session` looks as following:
 
 ```json
 {
-    "@timestamp": "2025-01-10T17:33:17.043Z",
+    "@timestamp": "2025-01-22T15:50:41.012Z",
     "agent": {
-        "ephemeral_id": "f996807b-e519-44cd-96e4-f7cf39f2e3f7",
-        "id": "79915fa5-d015-407a-9aec-a46b4aa1176d",
-        "name": "elastic-agent-76890",
+        "ephemeral_id": "51e650a3-90d5-45fe-9c7c-f9d84f3e569e",
+        "id": "ad6c2e2f-a4d5-410d-81cb-3f1036aff243",
+        "name": "elastic-agent-70254",
         "type": "filebeat",
-        "version": "8.15.3"
+        "version": "8.15.0"
     },
     "beyondinsight_password_safe": {
         "session": {
@@ -189,23 +188,23 @@ An example event for `session` looks as following:
             "node_id": "a5c29153-b351-41f1-a12b-0c4da9408d79",
             "protocol": "rdp",
             "record_key": "3958d725d16119a95e64af424a7f8dfsf13f1fgffbe4a6cd34earwr324454bcecce70ee37cbaed",
-            "session_id": "1",
+            "session_id": 1,
             "status": "not_started",
-            "user_id": "6"
+            "user_id": 6
         }
     },
     "data_stream": {
         "dataset": "beyondinsight_password_safe.session",
-        "namespace": "32330",
+        "namespace": "79578",
         "type": "logs"
     },
     "ecs": {
         "version": "8.11.0"
     },
     "elastic_agent": {
-        "id": "79915fa5-d015-407a-9aec-a46b4aa1176d",
+        "id": "ad6c2e2f-a4d5-410d-81cb-3f1036aff243",
         "snapshot": false,
-        "version": "8.15.3"
+        "version": "8.15.0"
     },
     "event": {
         "agent_id_status": "verified",
@@ -215,7 +214,7 @@ An example event for `session` looks as following:
         "dataset": "beyondinsight_password_safe.session",
         "duration": 0,
         "id": "1",
-        "ingested": "2025-01-10T17:33:20Z",
+        "ingested": "2025-01-22T15:50:43Z",
         "kind": "event",
         "module": "beyondinsight_password_safe",
         "type": [
@@ -226,7 +225,8 @@ An example event for `session` looks as following:
         "type": "cel"
     },
     "tags": [
-        "forwarded"
+        "forwarded",
+        "beyondinsight_password_safe.session"
     ]
 }
 ```
@@ -272,13 +272,13 @@ An example event for `managedsystem` looks as following:
 
 ```json
 {
-    "@timestamp": "2025-01-10T17:31:54.183Z",
+    "@timestamp": "2025-01-22T15:49:41.840Z",
     "agent": {
-        "ephemeral_id": "63cb4f19-5ee5-4c5a-85dd-2f67a84a43b3",
-        "id": "6334669c-2f0b-4a9b-beda-d7b578d53ac6",
-        "name": "elastic-agent-93061",
+        "ephemeral_id": "7e0dfb55-466e-46e3-9e71-7a4795e090c0",
+        "id": "e655de3d-fd7b-4d3d-a45c-345d2af423f9",
+        "name": "elastic-agent-92943",
         "type": "filebeat",
-        "version": "8.15.3"
+        "version": "8.15.0"
     },
     "beyondinsight_password_safe": {
         "managedsystem": {
@@ -313,16 +313,16 @@ An example event for `managedsystem` looks as following:
     },
     "data_stream": {
         "dataset": "beyondinsight_password_safe.managedsystem",
-        "namespace": "43969",
+        "namespace": "58943",
         "type": "logs"
     },
     "ecs": {
         "version": "8.11.0"
     },
     "elastic_agent": {
-        "id": "6334669c-2f0b-4a9b-beda-d7b578d53ac6",
+        "id": "e655de3d-fd7b-4d3d-a45c-345d2af423f9",
         "snapshot": false,
-        "version": "8.15.3"
+        "version": "8.15.0"
     },
     "event": {
         "agent_id_status": "verified",
@@ -330,7 +330,7 @@ An example event for `managedsystem` looks as following:
             "iam"
         ],
         "dataset": "beyondinsight_password_safe.managedsystem",
-        "ingested": "2025-01-10T17:31:56Z",
+        "ingested": "2025-01-22T15:49:44Z",
         "kind": "asset",
         "module": "beyondinsight_password_safe",
         "type": [
@@ -351,13 +351,13 @@ An example event for `managedsystem` looks as following:
     "related": {
         "hosts": [
             "AardvarkAgreement",
-            "172.16.152.110",
-            "AardvarkAgreement.example.com"
+            "AardvarkAgreement.example.com",
+            "172.16.152.110"
         ]
     },
     "tags": [
         "forwarded",
-        "managedsystem"
+        "beyondinsight_password_safe.managedsystem"
     ]
 }
 ```
@@ -434,13 +434,13 @@ An example event for `managedaccount` looks as following:
 
 ```json
 {
-    "@timestamp": "2025-01-10T17:30:25.266Z",
+    "@timestamp": "2025-01-22T15:47:07.350Z",
     "agent": {
-        "ephemeral_id": "e7120f70-af54-41cc-812a-eedbcd000c93",
-        "id": "130fdc88-8d6e-48ed-ade5-5dfcd2a6d703",
-        "name": "elastic-agent-87697",
+        "ephemeral_id": "8e90d693-2bf1-4497-aa44-b16c1aaa7922",
+        "id": "0d069a70-4ddf-49b5-a799-1f87aeb898a6",
+        "name": "elastic-agent-76169",
         "type": "filebeat",
-        "version": "8.15.3"
+        "version": "8.15.0"
     },
     "beyondinsight_password_safe": {
         "managedaccount": {
@@ -466,16 +466,16 @@ An example event for `managedaccount` looks as following:
     },
     "data_stream": {
         "dataset": "beyondinsight_password_safe.managedaccount",
-        "namespace": "43599",
+        "namespace": "66946",
         "type": "logs"
     },
     "ecs": {
         "version": "8.11.0"
     },
     "elastic_agent": {
-        "id": "130fdc88-8d6e-48ed-ade5-5dfcd2a6d703",
+        "id": "0d069a70-4ddf-49b5-a799-1f87aeb898a6",
         "snapshot": false,
-        "version": "8.15.3"
+        "version": "8.15.0"
     },
     "event": {
         "agent_id_status": "verified",
@@ -483,7 +483,7 @@ An example event for `managedaccount` looks as following:
             "iam"
         ],
         "dataset": "beyondinsight_password_safe.managedaccount",
-        "ingested": "2025-01-10T17:30:27Z",
+        "ingested": "2025-01-22T15:47:10Z",
         "kind": "event",
         "module": "beyondinsight_password_safe",
         "type": [
@@ -514,7 +514,7 @@ An example event for `managedaccount` looks as following:
     },
     "tags": [
         "forwarded",
-        "managedaccount"
+        "beyondinsight_password_safe.managedaccount"
     ],
     "user": {
         "email": "irene@example.com",
@@ -569,13 +569,13 @@ An example event for `asset` looks as following:
 
 ```json
 {
-    "@timestamp": "2025-01-10T17:28:57.168Z",
+    "@timestamp": "2025-01-22T15:46:10.060Z",
     "agent": {
-        "ephemeral_id": "28da3009-f712-45c6-8cc3-c4ece92152ab",
-        "id": "57cf6db5-ad20-496f-ad07-c31f43d068a4",
-        "name": "elastic-agent-64679",
+        "ephemeral_id": "16e44f14-478e-454b-8b9e-4d792b3fbb08",
+        "id": "3280a73e-6568-47b3-940d-bbdf9c563215",
+        "name": "elastic-agent-86648",
         "type": "filebeat",
-        "version": "8.15.3"
+        "version": "8.15.0"
     },
     "beyondinsight_password_safe": {
         "asset": {
@@ -593,16 +593,16 @@ An example event for `asset` looks as following:
     },
     "data_stream": {
         "dataset": "beyondinsight_password_safe.asset",
-        "namespace": "94865",
+        "namespace": "51781",
         "type": "logs"
     },
     "ecs": {
         "version": "8.11.0"
     },
     "elastic_agent": {
-        "id": "57cf6db5-ad20-496f-ad07-c31f43d068a4",
+        "id": "3280a73e-6568-47b3-940d-bbdf9c563215",
         "snapshot": false,
-        "version": "8.15.3"
+        "version": "8.15.0"
     },
     "event": {
         "agent_id_status": "verified",
@@ -610,7 +610,7 @@ An example event for `asset` looks as following:
             "host"
         ],
         "dataset": "beyondinsight_password_safe.asset",
-        "ingested": "2025-01-10T17:28:58Z",
+        "ingested": "2025-01-22T15:46:13Z",
         "kind": "asset",
         "module": "beyondinsight_password_safe",
         "type": [
@@ -632,13 +632,13 @@ An example event for `asset` looks as following:
     },
     "related": {
         "hosts": [
-            "192.168.29.50",
-            "Unknown"
+            "Unknown",
+            "192.168.29.50"
         ]
     },
     "tags": [
         "forwarded",
-        "asset"
+        "beyondinsight_password_safe.asset"
     ]
 }
 ```
