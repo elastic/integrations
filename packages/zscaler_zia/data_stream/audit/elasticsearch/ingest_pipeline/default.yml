@@ -51,7 +51,7 @@ processors:
       lang: painless
       source: |-
         boolean dropEmptyFields(Object object) {
-          if (object == null || object == '' || object == 'NA' || object == 'None') {
+          if (object == null || object == '' || object == 'NA' || object == 'None' || object == 'Unknown') {
             return true;
           } else if (object instanceof Map) {
             ((Map) object).values().removeIf(value -> dropEmptyFields(value));
@@ -288,8 +288,13 @@ processors:
         if (ctx.json?.category == null || params.get(ctx.json.category) == null) {
           return;
         }
-        def hm = new HashMap(params.get(ctx.json.category));
-        hm.forEach((k, v) -> ctx.event[k] = v);
+        params.get(ctx.json.category).forEach((k, v) -> {
+          if (v instanceof List) {
+            ctx.event[k] = new ArrayList(v);
+          } else {
+            ctx.event[k] = v;
+          }
+        });
       on_failure:
         - append:
             field: error.message

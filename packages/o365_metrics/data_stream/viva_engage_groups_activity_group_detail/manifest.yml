@@ -1,0 +1,88 @@
+title: Microsoft 365 Viva Engage Groups Activity
+type: metrics
+ilm_policy: metrics-o365_metrics.viva_engage_groups_activity_group_detail-default_policy
+streams:
+  - input: cel
+    title: Microsoft 365 Viva Engage Groups Activity
+    description: Collect Microsot Viva Engage Groups Activity metrics via Microsoft Graph API using CEL Input.
+    template_path: cel.yml.hbs
+    enabled: false
+    vars:
+      - name: report_types
+        title: Report Types
+        description: Select the types of report to ingest data. See [Report Types](https://www.elastic.co/guide/en/integrations/current/o365.metrics.viva_engage.html#groups_activity-reports-available) for allowed values.
+        type: text
+        multi: true
+        required: true
+        show_user: true
+        default:
+          - 'Viva Engage Groups Activity Group Detail'
+      - name: interval
+        type: text
+        title: Interval
+        description: >-
+          Interval of API polling. Interval supported in seconds, minutes and hours.
+        default: 24h
+        multi: false
+        required: true
+        show_user: true
+      - name: initial_interval
+        type: integer
+        title: Initial Interval
+        multi: false
+        required: true
+        show_user: true
+        default: 10
+        description: How far back (in number of days) to pull the Microsoft Viva Engage Groups Activity data via Microsoft Graph API. This is an integer value indicating the number of days in the past. Only values between 1-28 are allowed.
+      - name: sync_days
+        type: integer
+        title: Sync Days in the past
+        description: >
+          Specifies the number of days in the past to sync per request. As Microsoft reports are not real-time, and can take upto 48h or more to be available, this value allows to fetch the data from *N* days in the past. This re-fetching of data helps in filling any gaps between Elastic and Microsoft reports. Only values between 1-28 are allowed.
+
+        show_user: true
+        required: true
+        default: 3
+      - name: tags
+        type: text
+        title: Tags
+        multi: true
+        required: true
+        show_user: false
+        default:
+          - forwarded
+          - o365.metrics.viva_engage.groups_activity
+      - name: preserve_duplicate_custom_fields
+        required: true
+        show_user: false
+        title: Preserve duplicate custom fields
+        description: Preserve o365.metrics.viva_engage.groups_activity fields that were copied to Elastic Common Schema (ECS) fields.
+        type: bool
+        multi: false
+        default: false
+      - name: preserve_original_event
+        required: true
+        show_user: false
+        title: Preserve original event
+        description: Preserves a raw copy of the original event, added to the field `event.original`.
+        type: bool
+        multi: false
+        default: false
+      - name: processors
+        type: yaml
+        title: Processors
+        multi: false
+        required: false
+        show_user: false
+        description: >-
+          Processors are used to reduce the number of fields in the exported event or to enhance the event with metadata. This executes in the agent before the data is parsed. See [Processors](https://www.elastic.co/guide/en/fleet/current/elastic-agent-processor-configuration.html) for detail.
+      - name: enable_request_tracer
+        type: bool
+        title: Enable request tracing
+        multi: false
+        required: false
+        show_user: false
+        default: false
+        description: >
+          The request tracer logs HTTP requests and responses to the agent's local file-system for debugging configurations. Enabling this request tracing compromises security and should only be used for debugging. See [documentation](https://www.elastic.co/guide/en/beats/filebeat/current/filebeat-input-cel.html#_resource_tracer_filename) for detail.
+
