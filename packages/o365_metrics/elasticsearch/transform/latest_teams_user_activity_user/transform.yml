@@ -1,0 +1,48 @@
+# Transform name is shortened to less than 64 characters.
+# Use of "*" to use all namespaces defined.
+source:
+  index:
+    - "metrics-o365_metrics.teams_user_activity_user_detail-*"
+  query:
+    bool:
+      filter:
+        - exists:
+            field: o365.metrics.report.name
+        - term:
+            o365.metrics.report.name: 'Teams User Activity User Detail'
+# The version suffix on the dest.index should be incremented if a breaking
+# change is made to the index mapping. You must also bump the
+# fleet_transform_version for any change to this transform configuration to
+# take effect. The old destination index is not automatically removed. We are
+# dependent on https://github.com/elastic/package-spec/issues/523 to give us
+# that ability in order to prevent having duplicate data and prevent query
+# time field type conflicts.
+dest:
+  index: "metrics-o365_metrics.teams_user_activity_user_detail_latest-1"
+  aliases:
+    - alias: "metrics-o365_metrics.teams_user_activity_user_detail_latest"
+      move_on_creation: true
+latest:
+  unique_key:
+    - o365.metrics.teams.user.activity.user.detail.report.refresh_date
+    - o365.metrics.teams.user.activity.user.detail.user_id
+    - o365.metrics.teams.user.activity.user.detail.user_principal_name
+  sort: "event.ingested"
+description: Latest report data from Microsoft Teams User Activity by User Detail report.
+frequency: 1h
+settings:
+  # This is required to prevent the transform from clobbering the Fleet-managed mappings.
+  deduce_mappings: false
+  unattended: true
+sync:
+  time:
+    field: "event.ingested"
+    # Updated to 120s because of refresh delay in Serverless. With default 60s,
+    # sometimes transform wouldn't process all documents.
+    delay: 120s
+_meta:
+  managed: false
+  # Bump this version to delete, reinstall, and restart the transform during
+  # package installation.
+  fleet_transform_version: 1.0.0
+  run_as_kibana_system: false
