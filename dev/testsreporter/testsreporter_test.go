@@ -15,12 +15,12 @@ func TestErrorsFromTest(t *testing.T) {
 	cases := []struct {
 		title     string
 		xmlFolder string
-		expected  []PackageError
+		expected  []packageError
 	}{
 		{
 			title:     "read XML files",
 			xmlFolder: "testdata",
-			expected: []PackageError{
+			expected: []packageError{
 				{
 					testCase: testCase{
 						Name:          "system test: default",
@@ -28,10 +28,10 @@ func TestErrorsFromTest(t *testing.T) {
 						TimeInSeconds: 1368.349501429,
 						Failure:       "could not find hits in logs-cisco_umbrella.log-ep data stream",
 					},
-					Teams:       []string{"@elastic/security-service-integrations"},
-					DataStream:  "log",
-					PackageName: "cisco_umbrella",
-					Serverless:  false,
+					teams:       []string{"@elastic/security-service-integrations"},
+					dataStream:  "log",
+					packageName: "cisco_umbrella",
+					serverless:  false,
 				},
 				{
 					testCase: testCase{
@@ -40,10 +40,10 @@ func TestErrorsFromTest(t *testing.T) {
 						TimeInSeconds: 1368.349501429,
 						Error:         "could not find hits in logs-elastic_package_registry.metrics-ep data stream",
 					},
-					Teams:       []string{"@elastic/ecosystem"},
-					DataStream:  "metrics",
-					PackageName: "elastic_package_registry",
-					Serverless:  false,
+					teams:       []string{"@elastic/ecosystem"},
+					dataStream:  "metrics",
+					packageName: "elastic_package_registry",
+					serverless:  false,
 				},
 				{
 					testCase: testCase{
@@ -62,10 +62,10 @@ func TestErrorsFromTest(t *testing.T) {
              }
 `,
 					},
-					PackageName: "fortinet_fortigate",
-					DataStream:  "log",
-					Teams:       []string{"@elastic/sec-deployment-and-devices"},
-					Serverless:  false,
+					packageName: "fortinet_fortigate",
+					dataStream:  "log",
+					teams:       []string{"@elastic/sec-deployment-and-devices"},
+					serverless:  false,
 				},
 				{
 					testCase: testCase{
@@ -74,10 +74,10 @@ func TestErrorsFromTest(t *testing.T) {
 						TimeInSeconds: 34.296986222,
 						Failure:       "one or more errors found in documents stored in metrics-sql.sql-12466 data stream: [0] found error.message in event: cannot open connection: testing connection: mssql: login error: Login failed for user 'SA'.",
 					},
-					PackageName: "sql_input",
-					DataStream:  "",
-					Teams:       []string{"@elastic/obs-infraobs-integrations"},
-					Serverless:  false,
+					packageName: "sql_input",
+					dataStream:  "",
+					teams:       []string{"@elastic/obs-infraobs-integrations"},
+					serverless:  false,
 				},
 				{
 					testCase: testCase{
@@ -86,10 +86,10 @@ func TestErrorsFromTest(t *testing.T) {
 						TimeInSeconds: 34.25843055,
 						Failure:       "one or more errors found in documents stored in metrics-sql.sql-98584 data stream: [0] found error.message in event: cannot open connection: testing connection: dial tcp 172.21.0.6:3306: connect: connection refused",
 					},
-					PackageName: "sql_input",
-					DataStream:  "",
-					Teams:       []string{"@elastic/obs-infraobs-integrations"},
-					Serverless:  false,
+					packageName: "sql_input",
+					dataStream:  "",
+					teams:       []string{"@elastic/obs-infraobs-integrations"},
+					serverless:  false,
 				},
 			},
 		},
@@ -145,7 +145,7 @@ func TestErrorDataStream(t *testing.T) {
 
 			dataStreams := []string{}
 			for _, e := range errors {
-				dataStreams = append(dataStreams, e.DataStream)
+				dataStreams = append(dataStreams, e.dataStream)
 			}
 			assert.Equal(t, c.expected, dataStreams)
 		})
@@ -185,7 +185,7 @@ func TestErrorPackageName(t *testing.T) {
 
 			packages := []string{}
 			for _, e := range errors {
-				packages = append(packages, e.PackageName)
+				packages = append(packages, e.packageName)
 			}
 			assert.Equal(t, c.expected, packages)
 		})
@@ -226,7 +226,7 @@ Test description
 
 	for _, c := range cases {
 		t.Run(c.title, func(t *testing.T) {
-			links, err := previousBuildLinksFromDescription(&GithubIssue{description: c.description})
+			links, err := previousBuildLinksFromDescription(&githubIssue{description: c.description})
 			require.NoError(t, err)
 
 			assert.Len(t, links, len(c.expected))
@@ -276,7 +276,7 @@ First build failed: https://buildkite.com/elastic/integrations/builds/12
 
 	for _, c := range cases {
 		t.Run(c.title, func(t *testing.T) {
-			link, err := firstBuildLinkFromDescription(&GithubIssue{description: c.description})
+			link, err := firstBuildLinkFromDescription(&githubIssue{description: c.description})
 			if c.expectedError {
 				assert.Error(t, err)
 				return
