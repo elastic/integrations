@@ -134,23 +134,28 @@ processors:
       value: '{{{beyondinsight_password_safe.managedsystem.access_url}}}'
       if: ctx.beyondinsight_password_safe.managedsystem.access_url != null
 
+  - convert:
+      field: beyondinsight_password_safe.managedsystem.ssh_key_enforcement_mode
+      type: string
+
   - script:
       description: Convert ssh_key_enforcement_mode to their text meaning
       lang: painless
+      params:
+        descriptions:
+          "0": "None"
+          "1": "Auto"
+          "2": "Strict"
+      if: ctx.beyondinsight_password_safe?.session?.ssh_key_enforcement_mode != null
       source: |
-        if (ctx.beyondinsight_password_safe?.managedsystem?.ssh_key_enforcement_mode != null) {
-          int enforcementmode = ctx.beyondinsight_password_safe.managedsystem.ssh_key_enforcement_mode;
-          if (enforcementmode == 0) {
-            ctx.beyondinsight_password_safe.managedsystem.ssh_key_enforcement_mode = "None";
-          } else if (enforcementmode == 1) {
-            ctx.beyondinsight_password_safe.managedsystem.ssh_key_enforcement_mode = "Auto";
-          } else if (enforcementmode == 2) {
-            ctx.beyondinsight_password_safe.managedsystem.ssh_key_enforcement_mode = "Strict";
-          } 
-        }      
+        ctx.beyondinsight_password_safe.session.ssh_key_enforcement_mode = params.descriptions.getOrDefault(
+          ctx.beyondinsight_password_safe.session.ssh_key_enforcement_mode,
+          "unknown"
+        );
+
  #################### Override host.ip ######################
   - gsub:
-      field: "beyondinsight_password_safe.managedsystem.ipaddress"
+      field: beyondinsight_password_safe.managedsystem.ipaddress
       pattern: "\\b0+(\\d)"
       replacement: "$1"
   - convert:
