@@ -884,12 +884,6 @@ processors:
       tag: rename_srcipcountry
       target_field: zscaler_zia.firewall.source_ip_country
       ignore_missing: true
-  - set:
-      field: source.geo.country_name
-      tag: set_source_geo_country_name_from_firewall_source_ip_country
-      copy_from: zscaler_zia.firewall.source_ip_country
-      if: ctx.source?.geo?.country_name == null
-      ignore_empty_value: true
   - rename:
       field: json.stateful
       tag: rename_stateful
@@ -976,6 +970,13 @@ processors:
       tag: set_source_nat_ip_from_zscaler_zia_firewall_tunnel_ip
       copy_from: zscaler_zia.firewall.tunnel.ip
       ignore_empty_value: true
+  - geoip:
+      field: source.nat.ip
+      target_field: source.geo
+      tag: geoip_source_nat_ip
+      if: ctx.source?.geo == null
+      description: If source.ip fails to populate geo fields.
+      ignore_missing: true
   - append:
       field: related.ip
       value: '{{{zscaler_zia.firewall.tunnel.ip}}}'
@@ -1071,7 +1072,6 @@ processors:
         - zscaler_zia.firewall.rule_label
         - zscaler_zia.firewall.server.destination.port
         - zscaler_zia.firewall.server.source.port
-        - zscaler_zia.firewall.source_ip_country
         - zscaler_zia.firewall.time
         - zscaler_zia.firewall.user
       tag: remove_custom_duplicate_fields

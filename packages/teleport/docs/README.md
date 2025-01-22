@@ -48,7 +48,7 @@ Please note, there are minimum requirements for running Elastic Agent. For more 
 Check out [the guide on configuring Teleport's Event Handler plugin](https://goteleport.com/docs/management/export-audit-events/)
 to make it send audit logs to the Elasticsearch instance.
 
-See the [Getting started guide](https://www.elastic.co/guide/en/welcome-to-elastic/current/getting-started-observability.html) for instructions on setting up the Elastic Stack.
+See the [Getting started guide](https://www.elastic.co/guide/en/starting-with-the-elasticsearch-platform-and-its-solutions/current/getting-started-observability.html) for instructions on setting up the Elastic Stack.
 
 ### Enabling the integration in Elastic:
 
