@@ -64,17 +64,12 @@ program: |-
   					{
   						"events": {"error": {"message": "User not authenticated", "statuscode": string(resp.StatusCode)}},
   						"want_more": true,
-  						"cursor": {
-  							"auth_cookie": null,
-  							"enddate": state.?cursor.enddate.orValue(params.enddate[0]),
-  							"startdate": state.?cursor.startdate.orValue(params.startdate[0]),
-  							"tempStartDate": state.?cursor.tempStartDate.orValue(""),
-  						},
+  						"cursor": state.?cursor.orValue({}).with({"auth_cookie": null}),
   					}
   				)
   			:
   				bytes(resp.Body).decode_json().as(body,
-  					bool(size(body.Data) > 0 && state.?cursor.enddate.orValue(params.enddate[0]) != body.?Data[size(body.Data) - 1].CreateDate.orValue("")).as(wantMore,
+  					(size(body.Data) > 0 && params.enddate[0] != body.Data[size(body.Data) - 1].CreateDate).as(wantMore,
   						string(wantMore ? body.Data[size(body.Data) - 1].CreateDate : "").as(newEnddate,
   							state.with(
   								{
@@ -88,8 +83,8 @@ program: |-
   									"cursor": {
   										"auth_cookie": auth_cookie,
   										"enddate": newEnddate,
-  										"startdate": wantMore ? state.?cursor.startdate.orValue(params.startdate[0]) : state.?cursor.tempStartDate.orValue(""),
-  										"tempStartDate": (newEnddate == "") ? string(body.Data[0].CreateDate) : state.?cursor.tempStartDate.orValue(""),
+  										"startdate": wantMore ? (params.startdate[0]) : state.?cursor.nextStartDate.orValue(""),
+  										"nextStartDate": (newEnddate == "") ? string(body.Data[0].CreateDate) : state.?cursor.nextStartDate.orValue(""),
   									},
   								}
   							)

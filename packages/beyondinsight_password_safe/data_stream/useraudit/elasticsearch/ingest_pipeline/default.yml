@@ -7,7 +7,7 @@ processors:
 
   - fingerprint:
       fields:
-        - beyondinsight_password_safe.useraudit.AuditID
+        - beyondinsight_password_safe.useraudit
       target_field: "_id"
 
   - drop:
@@ -119,24 +119,20 @@ processors:
       value: "{{{beyondinsight_password_safe.useraudit.user_name}}}"  
       allow_duplicates: false
 
-  - append:
-      field: related.hosts
-      value: "{{{beyondinsight_password_safe.useraudit.ipaddress}}}"
-      allow_duplicates: false
  #################### Override host.ip ######################
   - gsub:
       field: "beyondinsight_password_safe.useraudit.ipaddress"
       pattern: "\\b0+"
       replacement: ""
+  - append:
+      field: related.hosts
+      value: "{{{beyondinsight_password_safe.useraudit.ipaddress}}}"
+      allow_duplicates: false    
   - convert:
       field: beyondinsight_password_safe.useraudit.ipaddress
       type: ip
       if: ctx.beyondinsight_password_safe.useraudit?.ipaddress != null && ctx.beyondinsight_password_safe.useraudit.ipaddress != ''
       ignore_missing: true
-  - append:
-      field: related.hosts
-      value: "{{{beyondinsight_password_safe.useraudit.ipaddress}}}"
-      allow_duplicates: false
 
   - append:
       field: host.ip
