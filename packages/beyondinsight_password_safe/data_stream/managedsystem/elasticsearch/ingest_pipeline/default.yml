@@ -107,21 +107,6 @@ processors:
       allow_duplicates: false
       if: ctx.beyondinsight_password_safe.managedsystem.host_name != null
 
-  - convert:
-      field: beyondinsight_password_safe.managedsystem.ipaddress
-      type: ip
-      if: ctx.beyondinsight_password_safe.managedsystem?.ipaddress != null && ctx.beyondinsight_password_safe.managedsystem.ipaddress != ''
-
-  - append:
-      field: host.ip
-      value: "{{{beyondinsight_password_safe.managedsystem.ipaddress}}}"
-
-  - append:
-      field: related.hosts
-      value: '{{{beyondinsight_password_safe.managedsystem.ipaddress}}}'
-      allow_duplicates: false
-      if: ctx.beyondinsight_password_safe.managedsystem.ipaddress != null
-
   - set:
       field: host.domain
       copy_from: beyondinsight_password_safe.managedsystem.dns_name
@@ -164,19 +149,28 @@ processors:
           } 
         }      
  #################### Override host.ip ######################
-  - script:
-      lang: painless
-      source: |
-         def ipstring = ctx.beyondinsight_password_safe.managedsystem.ipaddress.toString().splitOnToken(".");
-         def ip = String.valueOf(Integer.parseInt(ipstring[0]))+"."+String.valueOf(Integer.parseInt(ipstring[1]))+"."+String.valueOf(Integer.parseInt(ipstring[2]))+"."+String.valueOf(Integer.parseInt(ipstring[3]));
-         ctx.beyondinsight_password_safe.managedsystem.ipaddress = ip;
+  - gsub:
+      field: "beyondinsight_password_safe.managedsystem.ipaddress"
+      pattern: "\\b0+"
+      replacement: ""
+  - convert:
+      field: beyondinsight_password_safe.managedsystem.ipaddress
+      type: ip
+      if: ctx.beyondinsight_password_safe.managedsystem?.ipaddress != null && ctx.beyondinsight_password_safe.managedsystem.ipaddress != ''
+
+  - append:
+      field: host.ip
+      value: "{{{beyondinsight_password_safe.managedsystem.ipaddress}}}"     
+  - append:
+      field: related.hosts
+      value: '{{{beyondinsight_password_safe.managedsystem.ipaddress}}}'
+      allow_duplicates: false
 
   - convert:
       field: beyondinsight_password_safe.managedsystem.ipaddress
       target_field: beyondinsight_password_safe.managedsystem.ipaddress
       type: ip
       if: ctx.beyondinsight_password_safe.managedsystem?.ipaddress != null && ctx.beyondinsight_password_safe.managedsystem.ipaddress != ''
-      ignore_failure: true 
       ignore_missing: true
 
   - append:
