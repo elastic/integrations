@@ -24,9 +24,8 @@ redact:
     - apikey
     - password
 program: |-
-  
-  state.?cursor.auth_cooke.orValue(
-  	// Authenticating using API to retrieve auth Cookie
+  state.?cursor.cookies.orValue(
+  	// Authenticating using API to retrieve Cookie
   	request("POST", state.url.trim_suffix("/") + "/Auth/SignAppin").with(
   		{
   			"Header": {
@@ -37,11 +36,9 @@ program: |-
   			},
   		}
   	).do_request().as(resp,
-  		resp.Header["Set-Cookie"].filter(e, e.contains("ASP.NET_SessionId")).as(auth_cookie,
-  			auth_cookie[0]
-  		)
+  		resp.Header["Set-Cookie"]
   	)
-  ).as(auth_cookie,
+  ).as(cookies,
   	request(
   		"GET",
   		state.url.trim_suffix("/") + "/Sessions"
@@ -49,7 +46,7 @@ program: |-
   		{
   			"Header": {
   				"Content-Type": ["application/json"],
-  				"Cookie": [auth_cookie],
+  				"Cookie": cookies,
   			},
   		}
   	).do_request().as(resp,
@@ -59,7 +56,7 @@ program: |-
   					"events": {"error": {"message": "User not authenticated", "statuscode": string(resp.StatusCode)}},
   					"want_more": true,
   					"cursor": {
-  						"auth_cookie": null,
+  						"cookies": null,
   					},
   				}
   			)
@@ -75,7 +72,7 @@ program: |-
   						),
   						"want_more": false,
   						"cursor": {
-  							"auth_cookie": auth_cookie,
+  							"cookies": cookies,
   						},
   					}
   				)

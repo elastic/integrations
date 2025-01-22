@@ -26,8 +26,8 @@ redact:
   fields:
     - apikey
 program: |-
-  state.?cursor.auth_cookie.orValue(
-  	// Authenticating using API to retrieve auth Cookie
+  state.?cursor.cookies.orValue(
+  	// Authenticating using API to retrieve Cookie
   	request("POST", state.url.trim_suffix("/") + "/Auth/SignAppin").with(
   		{
   			"Header": {
@@ -38,11 +38,9 @@ program: |-
   			},
   		}
   	).do_request().as(resp,
-  		resp.Header["Set-Cookie"].filter(e, e.contains("ASP.NET_SessionId")).as(auth_cookie,
-  			auth_cookie[0]
-  		)
+  		resp.Header["Set-Cookie"]
   	)
-  ).as(auth_cookie,
+  ).as(cookies,
   	{
   		"limit": [string(state.limit)],
   		"startdate": [string(state.?cursor.startdate.orValue((now - duration(state.initial_interval)).format("2006-01-02 15:04:05")))],
@@ -55,7 +53,7 @@ program: |-
   			{
   				"Header": {
   					"Content-Type": ["application/json"],
-  					"Cookie": [auth_cookie],
+  					"Cookie": cookies,
   				},
   			}
   		).do_request().as(resp,
@@ -64,7 +62,7 @@ program: |-
   					{
   						"events": {"error": {"message": "User not authenticated", "statuscode": string(resp.StatusCode)}},
   						"want_more": true,
-  						"cursor": state.?cursor.orValue({}).with({"auth_cookie": null}),
+  						"cursor": state.?cursor.orValue({}).with({"cookies": null}),
   					}
   				)
   			:
@@ -81,7 +79,7 @@ program: |-
   									),
   									"want_more": wantMore,
   									"cursor": {
-  										"auth_cookie": auth_cookie,
+  										"cookies": cookies,
   										"enddate": newEnddate,
   										"startdate": wantMore ? (params.startdate[0]) : state.?cursor.nextStartDate.orValue(""),
   										"nextStartDate": (newEnddate == "") ? string(body.Data[0].CreateDate) : state.?cursor.nextStartDate.orValue(""),
