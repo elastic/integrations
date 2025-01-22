@@ -23,32 +23,41 @@ program: |
   get(state.url)
   .as(resp, bytes(resp.Body)
   .decode_json().as(body,
-    {   
-        "node": {
+    [   
+        [{"logstash.node": {
             "name":body.name,
             "address":body.http_address,
             "uuid":body.id,
             "version":body.version,
             "status":body.status,
             "description":body.symptom,
-            "timestamp":now()
+            "timestamp":now(),
+            "pipelines": size(body.indicators.pipelines)
             },
-        "pipelines": 
-            body.indicators.pipelines.indicators.as(pipelines, // pipelines = body.indicators.pipelines.indicators
+        }],
+        body.indicators.pipelines.indicators.as(pipelines, // pipelines = body.indicators.pipelines.indicators
               pipelines.map(pipeline_name, pipelines[pipeline_name].as(pipeline, { // pipeline = pipelines[pipeline_name]
-                  "pipeline_id":pipeline_name,
-                  "status":pipeline.status,
-                  "symptom":pipeline.symptom,
-                  "state":pipeline.details.status.state,
-                  "flow": pipeline.details.flow,
-                  "diagnosis": has(pipeline.diagnosis) ? pipeline.diagnosis[0] : {},
-                  "impacts": has(pipeline.impacts) ? pipeline.impacts[0] : {},
+                    "logstash": {
+                        "node": {
+                            "host": body.name,
+                            "version": body.version,
+                            "address": body.http_address
+                        },
+                        "pipeline": {
+                            "id":pipeline_name,
+                            "status":pipeline.status,
+                            "symptom":pipeline.symptom,
+                            "state":pipeline.details.status.state,
+                            "flow": pipeline.details.flow,
+                            "diagnosis": has(pipeline.diagnosis) ? pipeline.diagnosis[0] : {},
+                            "impacts": has(pipeline.impacts) ? pipeline.impacts[0] : {},
+                        }
+                    }
                 }
-              ))
-            )
-    }).as(entries, {
-        "events": entries.map(entry, {"logstash":
-        {entry:entries[entry]}})
-    }
-  )
+            ))
+        )
+    ].as(entries, {
+        "events": entries.flatten()
+    })
+)
 )
