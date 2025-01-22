@@ -29,8 +29,8 @@ request.transforms:
   - set:
       # Warning: Modification of the `$filter` param format can break the `last_execution_datetime` cursor
       target: url.params.$filter
-      value: StartDate eq datetime'[[(formatDate ((parseDate .cursor.last_execution_datetime "RFC3339").Add (parseDuration "-{{additional_look_back}}")) "RFC3339")]]' and EndDate eq datetime'[[(formatDate (now) "RFC3339")]]'
-      default: StartDate eq datetime'[[(formatDate (now (parseDuration "-{{initial_interval}}")) "RFC3339")]]' and EndDate eq datetime'[[(formatDate (now) "RFC3339")]]'
+      value: StartDate eq datetime'[[(formatDate ((parseDate .cursor.last_execution_datetime "RFC3339").Add (parseDuration "-{{additional_look_back}}")) "RFC3339")]]' and EndDate eq datetime'[[(formatDate (now (parseDuration "-{{min_age}}")) "RFC3339")]]'
+      default: StartDate eq datetime'[[(formatDate (now (parseDuration "-{{initial_interval}}")) "RFC3339")]]' and EndDate eq datetime'[[(formatDate (now (parseDuration "-{{min_age}}")) "RFC3339")]]'
   - set:
       target: url.params.$top
       value: {{batch_size}}
@@ -38,14 +38,17 @@ request.transforms:
       target: url.params.$skiptoken
       value: 0
 fields_under_root: true
-{{#if local_domains}}
 fields:
   _conf:
+  {{#if local_domains}}
     local_domains:
     {{#each local_domains as |local_domain i|}}
       - {{local_domain}}
     {{/each}}
-{{/if}}
+  {{/if}}
+  {{#if drop_status}}
+    drop_status: {{drop_status}}
+  {{/if}}
 tags:
 {{#if preserve_original_event}}
   - preserve_original_event
