@@ -1093,13 +1093,13 @@ processors:
   - convert:
       tag: convert_event_duration_to_integer
       field: event.duration
-      type: integer
+      type: long
       ignore_missing: true
   - script:
       tag: event_duration_conversion_to_long
       lang: painless
       source: ctx.event.duration = ctx.event.duration * 1000000000L
-      if: ctx?.event?.duration != null
+      if: ctx.event?.duration != null
   - rename:
       field: checkpoint.message
       target_field: message
