@@ -1390,6 +1390,15 @@ processors:
       target_field: event.original
       ignore_missing: true
       ignore_failure: true
+  - fingerprint:
+      tag: fingerprint_event_original
+      description: >
+        Fingerprint the event.original value in attempt to prevent the same
+        event from being indexed more than once.
+      if: ctx.event?.original != null
+      fields: 
+        - event.original
+      target_field: _id
   - remove:
       tag: remove_json
       field:
