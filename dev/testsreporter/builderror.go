@@ -9,7 +9,10 @@ import (
 	"strings"
 )
 
-const reportingTeam = "@elastic/ecosystem"
+const (
+	buildReportingTeam      = "@elastic/ecosystem"
+	buildReportingTeamLabel = "Team:Ecosystem"
+)
 
 type buildError struct {
 	errorLinks
@@ -42,7 +45,7 @@ func newBuildError(options buildErrorOptions) (*buildError, error) {
 		logsDB:            options.LogsDB,
 		stackVersion:      options.StackVersion,
 		packages:          options.Packages,
-		teams:             []string{reportingTeam},
+		teams:             []string{buildReportingTeam},
 		errorLinks: errorLinks{
 			firstBuild:     options.BuildURL,
 			closedIssueURL: options.ClosedIssueURL,
@@ -101,4 +104,8 @@ func (p *buildError) DescriptionData() map[string]any {
 		"closedIssueURL": p.errorLinks.closedIssueURL,
 		"previousBuilds": p.errorLinks.previousBuilds,
 	}
+}
+
+func (p *buildError) Labels() []string {
+	return []string{buildReportingTeamLabel}
 }

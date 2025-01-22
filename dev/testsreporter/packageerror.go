@@ -133,3 +133,7 @@ func (p *packageError) DescriptionData() map[string]any {
 		"previousBuilds": p.errorLinks.previousBuilds,
 	}
 }
+
+func (p *packageError) Labels() []string {
+	return nil
+}

@@ -8,6 +8,7 @@ import (
 	"context"
 	"fmt"
 	"regexp"
+	"strings"
 )
 
 type reporter struct {
@@ -40,6 +41,9 @@ func (r reporter) Report(ctx context.Context, issue *githubIssue, resultError fa
 		return err
 	}
 	nextIssue.SetDescription(description)
+
+	nextIssue.AddLabels(resultError.Labels())
+	fmt.Printf("Labels to set for this issue: %s\n", strings.Join(nextIssue.Labels(), ","))
 
 	// TODO: TEST - TO REMOVE
 	fmt.Printf("Description of the issue:\n%s", description)
