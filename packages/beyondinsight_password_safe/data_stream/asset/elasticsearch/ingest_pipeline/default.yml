@@ -96,27 +96,7 @@ processors:
       field: event.module
       value: beyondinsight_password_safe
 
-  - gsub:
-      field: beyondinsight_password_safe.asset.ipaddress
-      pattern: "\\b0+"
-      replacement: ""
 
-  - append:
-      field: related.hosts
-      value: '{{{beyondinsight_password_safe.asset.ipaddress}}}'
-      allow_duplicates: false
-      if: ctx.beyondinsight_password_safe.asset.ipaddress != null
-
-  - append:
-      field: host.ip
-      value: '{{{beyondinsight_password_safe.asset.ipaddress}}}'
-      allow_duplicates: false
-
-  - convert:
-      field: beyondinsight_password_safe.asset.ipaddress
-      type: ip
-      if: ctx.beyondinsight_password_safe.asset?.ipaddress != null && ctx.beyondinsight_password_safe.asset.ipaddress != ''
-      ignore_missing: true
 
   - geoip:
       field: host.ip
@@ -153,20 +133,28 @@ processors:
 
  #################### Override host.ip ######################
 
-  - script:
-      lang: painless
-      source: |
-         def ipstring = ctx.beyondinsight_password_safe.asset.ipaddress.toString().splitOnToken(".");
-         def ip = String.valueOf(Integer.parseInt(ipstring[0]))+"."+String.valueOf(Integer.parseInt(ipstring[1]))+"."+String.valueOf(Integer.parseInt(ipstring[2]))+"."+String.valueOf(Integer.parseInt(ipstring[3]));
-         ctx.beyondinsight_password_safe.asset.ipaddress = ip;
+  - gsub:
+      field: "beyondinsight_password_safe.asset.ipaddress"
+      pattern: "\\b0+(\\d)"
+      replacement: "$1"
 
   - convert:
       field: beyondinsight_password_safe.asset.ipaddress
       target_field: beyondinsight_password_safe.asset.ipaddress
       type: ip
       if: ctx.beyondinsight_password_safe.asset?.ipaddress != null && ctx.beyondinsight_password_safe.asset.ipaddress != ''
-      ignore_failure: true
       ignore_missing: true
+    
+  - append:
+      field: related.hosts
+      value: '{{{beyondinsight_password_safe.asset.ipaddress}}}'
+      allow_duplicates: false
+      if: ctx.beyondinsight_password_safe.asset.ipaddress != null
+
+  - append:
+      field: host.ip
+      value: '{{{beyondinsight_password_safe.asset.ipaddress}}}'
+      allow_duplicates: false
 
   - append:
       field: host.ip
