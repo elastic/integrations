@@ -708,18 +708,23 @@ Note: Descriptions have not been filled out
 | `<start_datetime>`          | aruba.scheduler.datetime         |
 | `<trigger_count>`           | aruba.count                      |
 
-#### [L3 Encap capacity events](https://www.arubanetworks.com/techdocs/AOS-CX/10.07/HTML/5200-8214/Content/events/L3_ENCAP.htm)
+#### [L3 Encap capacity events](https://www.arubanetworks.com/techdocs/AOS-CX/10.15/HTML/elmrg/Content/events/L3_ENCAP.htm)
 | Docs Field            | Schema Mapping               |
 |-----------------------|------------------------------|
 | `<encaps_allocated>`  | aruba.l3.encaps_allocated    |
 | `<encaps_free>`       | aruba.l3.encaps_free         |
 
-#### [L3 Resource Manager events](https://www.arubanetworks.com/techdocs/AOS-CX/10.07/HTML/5200-8214/Content/events/L3_RESMGR.htm)
-| Docs Field   | Schema Mapping  |
-|--------------|-----------------|
-| `<prefix>`   | aruba.prefix    |
+#### [L3 Resource Manager events](https://www.arubanetworks.com/techdocs/AOS-CX/10.15/HTML/elmrg/Content/events/L3_RESMGR.htm)
+| Docs Field  | Schema Mapping          |
+|-------------|-------------------------|
+| `<nexthop>` | aruba.l3.nexthop        |
+| `<object>`  | aruba.l3.object         |
+| `<percent>` | aruba.l3.percent        |
+| `<prefix>`  | aruba.prefix            |
+| `<resource>`| aruba.l3.resource       |
+| `<vtep>`    | aruba.l3.vtep           |
 
-#### [LACP events](https://www.arubanetworks.com/techdocs/AOS-CX/10.07/HTML/5200-8214/Content/events/LACP.htm)
+#### [LACP events](https://www.arubanetworks.com/techdocs/AOS-CX/10.15/HTML/elmrg/Content/events/LACP.htm)
 | Docs Field                | Schema Mapping             |
 |---------------------------|----------------------------|
 | `<actor_state>`           | aruba.lacp.actor_state     |
@@ -742,7 +747,7 @@ Note: Descriptions have not been filled out
 | `<system_id>`             | aruba.lacp.system_id       |
 | `<system_priority>`       | aruba.lacp.system_priority |
 
-#### [LAG events](https://www.arubanetworks.com/techdocs/AOS-CX/10.07/HTML/5200-8214/Content/events/LAG.htm)
+#### [LAG events](https://www.arubanetworks.com/techdocs/AOS-CX/10.15/HTML/elmrg/Content/events/LAG.htm)
 | Docs Field   | Schema Mapping               |
 |--------------|------------------------------|
 | `<error>`    | event.reason                 |
@@ -757,31 +762,39 @@ Note: Descriptions have not been filled out
 | `<unit>`     | aruba.unit                   |
 | `<vlan>`     | network.vlan.id              |
 
-#### [Layer 3 Interface events](https://www.arubanetworks.com/techdocs/AOS-CX/10.07/HTML/5200-8214/Content/events/L3INTERFACE.htm)
-| Docs Field      | Schema Mapping               |
-|-----------------|-------------------------------|
-| `<addr>`        | server.address                 |
-| `<addr_status>` | aruba.status                   |
-| `<egress_id>`   | observer.egress.interface.id   |
-| `<err>`         | event.reason                   |
-| `<interface>`   | aruba.interface.id             |
-| `<intf>`        | aruba.interface.id             |
-| `<ipaddr>`      | host.ip                        |
-| `<mtu>`         | aruba.mtu                      |
-| `<nexthop>`     | aruba.l3.nexthop               |
-| `<port>`        | aruba.port                     |
-| `<prefix>`      | aruba.prefix                   |
-| `<state>`       | aruba.state                    |
-| `<value>`       | server.ip                      |
-| `<vlanid>`      | network.vlan.id                |
+#### [Launch Daemon (LaunchD) events](https://www.arubanetworks.com/techdocs/AOS-CX/10.15/HTML/elmrg/Content/events/LAUNCHD.htm)
+| Docs Field | Schema Mapping         |
+|------------|------------------------|
+| `<daemon>` | aruba.launchd.daemon   |
 
-#### [LED events](https://www.arubanetworks.com/techdocs/AOS-CX/10.07/HTML/5200-8214/Content/events/LED.htm)
+#### [Layer 3 Interface events](https://arubanetworking.hpe.com/techdocs/AOS-CX/10.15/HTML/elmrg/Content/events/L3INTERFACE.htm)
+| Docs Field           | Schema Mapping                 |
+|----------------------|--------------------------------|
+| `<addr>`             | server.address                 |
+| `<addr_status>`      | aruba.status                   |
+| `<egress_id>`        | observer.egress.interface.id   |
+| `<err>`              | event.reason                   |
+| `<ifname>`           | aruba.interface.name           |
+| `<interface>`        | aruba.interface.id             |
+| `<intf>`             | aruba.interface.id             |
+| `<ip-address>`       | host.ip                        |
+| `<ipaddr>`           | host.ip                        |
+| `<lender_port_name>` | aruba.port                     |
+| `<mtu>`              | aruba.mtu                      |
+| `<nexthop>`          | aruba.l3.nexthop               |
+| `<port>`             | aruba.port                     |
+| `<prefix>`           | aruba.prefix                   |
+| `<state>`            | aruba.state                    |
+| `<value>`            | server.ip                      |
+| `<vlanid>`           | network.vlan.id                |
+
+#### [LED events](https://arubanetworking.hpe.com/techdocs/AOS-CX/10.15/HTML/elmrg/Content/events/LED.htm)
 | Docs Field    | Schema Mapping         |
 |---------------|------------------------|
 | `<count>`     | aruba.count            |
 | `<subsystem>` | aruba.subsystem        |
 
-#### [LLDP events](https://www.arubanetworks.com/techdocs/AOS-CX/10.07/HTML/5200-8214/Content/events/LLDP.htm)
+#### [LLDP events](https://arubanetworking.hpe.com/techdocs/AOS-CX/10.15/HTML/elmrg/Content/events/LLDP.htm)
 | Docs Field     | Schema Mapping               |
 |----------------|------------------------------|
 | `<chassisid>`  | aruba.instance.id            |
@@ -795,14 +808,15 @@ Note: Descriptions have not been filled out
 | `<value>`      | aruba.lldp.tx_timer          |
 | `<value>`      | server.ip                    |
 
-
-#### [Loop Protect events](https://www.arubanetworks.com/techdocs/AOS-CX/10.07/HTML/5200-8214/Content/events/LOOP-PROTECT.htm)
-| Docs Field     | Schema Mapping         |
-|----------------|------------------------|
-| `<portName>`   | aruba.port             |
-| `<rxportName>` | aruba.loop.rx_port     |
-| `<txportName>` | aruba.loop.tx_port     |
-| `<vlan>`       | network.vlan.id        |
+#### [Loop Protect events](https://arubanetworking.hpe.com/techdocs/AOS-CX/10.15/HTML/elmrg/Content/events/LOOP-PROTECT.htm)
+| Docs Field         | Schema Mapping         |
+|--------------------|------------------------|
+| `<currvportCount>` | aruba.limit.read_value |
+| `<portName>`       | aruba.port             |
+| `<rxportName>`     | aruba.loop.rx_port     |
+| `<txportName>`     | aruba.loop.tx_port     |
+| `<vlan>`           | network.vlan.id        |
+| `<vportLimit>`     | aruba.limit.threshold  |
 
 #### [Loopback events](https://www.arubanetworks.com/techdocs/AOS-CX/10.07/HTML/5200-8214/Content/events/LOOPBACK.htm)
 | Docs Field    | Schema Mapping        |
