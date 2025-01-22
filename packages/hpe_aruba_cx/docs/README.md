@@ -566,7 +566,7 @@ Note: Descriptions have not been filled out
 | `<threshold>`        | aruba.limit.threshold        |
 | `<type>`             | aruba.hardware.type          |
 
-#### [Hardware Switch controller sync events](https://www.arubanetworks.com/techdocs/AOS-CX/10.07/HTML/5200-8214/Content/events/HSC-SYNCD.htm)
+#### [Hardware Switch controller sync events](https://www.arubanetworks.com/techdocs/AOS-CX/10.15/HTML/elmrg/Content/events/HSC-SYNCD.htm)
 | Doc Fields   | Schema Mapping   |
 |--------------|------------------|
 | `<ip>`       | server.ip        |
@@ -575,7 +575,14 @@ Note: Descriptions have not been filled out
 | `<port>`     | aruba.port       |
 | `<vni>`      | network.vlan.id  |
 
-#### [HTTPS Server events](https://www.arubanetworks.com/techdocs/AOS-CX/10.07/HTML/5200-8214/Content/events/HTTPS_SERVER.htm)
+#### [Hot Patch events](https://www.arubanetworks.com/techdocs/AOS-CX/10.15/HTML/elmrg/Content/events/HOT_PATCH.htm)
+| Doc Fields           | Schema Mapping    |
+|----------------------|-------------------|
+| `<patch_name>`       | package.name      |
+| `<ss_type_ss_name>`  | aruba.hotpatch.ss |
+| `<status>`           | aruba.status      |
+
+#### [HTTPS Server events](https://www.arubanetworks.com/techdocs/AOS-CX/10.15/HTML/elmrg/Content/events/HTTPS_SERVER.htm)
 | Doc Fields   | Schema Mapping        |
 |--------------|-----------------------|
 | `<mode>`     | aruba.server.mode     |
@@ -585,7 +592,12 @@ Note: Descriptions have not been filled out
 | `<user>`     | server.user.name      |
 | `<vrf>`      | aruba.vrf.id          |
 
-#### [In-System Programming events](https://www.arubanetworks.com/techdocs/AOS-CX/10.07/HTML/5200-8214/Content/events/ISP.htm)
+#### [Injected Views](https://www.arubanetworks.com/techdocs/AOS-CX/10.15/HTML/elmrg/Content/events/INJECTED-VIEWS.htm)
+| Doc Fields   | Schema Mapping           |
+|--------------|--------------------------|
+| `<name>`     | aruba.injected_view.name |
+
+#### [In-System Programming events](https://www.arubanetworks.com/techdocs/AOS-CX/10.15/HTML/elmrg/Content/events/ISP.htm)
 | Doc Fields     | Schema Mapping           |
 |----------------|--------------------------|
 | `<devicespec>` | aruba.system.devicespec  |
@@ -598,14 +610,15 @@ Note: Descriptions have not been filled out
 | `<time>`       | aruba.system.time        |
 | `<tover>`      | service.target.version   |
 
-#### [Interface events](https://www.arubanetworks.com/techdocs/AOS-CX/10.07/HTML/5200-8214/Content/events/INTERFACE.htm)
+#### [Interface events](https://www.arubanetworks.com/techdocs/AOS-CX/10.15/HTML/elmrg/Content/events/INTERFACE.htm)
 | Doc Fields     | Schema Mapping             |
 |----------------|----------------------------|
+| `<count>`      | aruba.count                |
 | `<interface>`  | aruba.interface.id         |
 | `<port_speed>` | aruba.interface.port_speed |
-| `<state>`      | aruba.interface.state      |
+| `<state>`      | aruba.state                |
 
-#### [Internal storage events](https://www.arubanetworks.com/techdocs/AOS-CX/10.07/HTML/5200-8214/Content/events/INTERNAL-STORAGE.htm)
+#### [Internal storage events](https://www.arubanetworks.com/techdocs/AOS-CX/10.15/HTML/elmrg/Content/events/INTERNAL-STORAGE.htm)
 | Doc Fields      | Schema Mapping        |
 |-----------------|-----------------------|
 | `<error>`       | event.reason          |
@@ -613,13 +626,23 @@ Note: Descriptions have not been filled out
 | `<name>`        | aruba.storage.name    |
 | `<usage>`       | aruba.storage.usage   |
 
-#### [IP source lockdown events](https://www.arubanetworks.com/techdocs/AOS-CX/10.07/HTML/5200-8214/Content/events/IP_SOURCE_LOCKDOWN.htm)
-| Field                              | Description | Type | Common                       |
-|------------------------------------|-------------|------|------------------------------|
-| aruba.lockdown.interface           |             |      | observer.ingress.interface.name |
-| aruba.lockdown.max_supported_limit |             |      | aruba.limit.threshold           |
+#### [IP Flow Information Export events](https://www.arubanetworks.com/techdocs/AOS-CX/10.15/HTML/elmrg/Content/events/IPFIX.htm)
+| Doc Fields | Schema Mapping    |
+|------------|-------------------|
 
-#### [IP tunnels events](https://www.arubanetworks.com/techdocs/AOS-CX/10.07/HTML/5200-8214/Content/events/IP_TUNNEL.htm)
+#### [IP Flow Monitoring Advertisement events](https://www.arubanetworks.com/techdocs/AOS-CX/10.15/HTML/elmrg/Content/events/IPFM.htm)
+| Doc Fields | Schema Mapping    |
+|------------|-------------------|
+| `<node_id>`| aruba.instance.id |
+| `<status>` | aruba.status      |
+
+#### [IP source lockdown events](https://www.arubanetworks.com/techdocs/AOS-CX/10.15/HTML/elmrg/Content/events/IP_SOURCE_LOCKDOWN.htm)
+| Docs Field              | Schema Mapping           |
+|-------------------------|--------------------------|
+| `<interface>`           | aruba.interface.id       |
+| `<max_supported_limit>` | aruba.limit.threshold    |
+
+#### [IP tunnels events](https://www.arubanetworks.com/techdocs/AOS-CX/10.15/HTML/elmrg/Content/events/IP_TUNNEL.htm)
 | Doc Fields     | Schema Mapping            |
 |----------------|---------------------------|
 | `<dst_ip>`     | destination.ip            |
@@ -630,27 +653,60 @@ Note: Descriptions have not been filled out
 | `<type>`       | aruba.tunnel.type         |
 | `<vrf>`        | aruba.vrf.id              |
 
-#### [IP-SLA events](https://www.arubanetworks.com/techdocs/AOS-CX/10.07/HTML/5200-8214/Content/events/IPSLA.htm)
+#### [IP-SLA events](https://www.arubanetworks.com/techdocs/AOS-CX/10.15/HTML/elmrg/Content/events/IPSLA.htm)
 | Doc Fields    | Schema Mapping         |
 |---------------|------------------------|
-| `<interface>` | aruba.interface.id    |
-| `<name>`      | aruba.ip_sla.name     |
-| `<operation>` | event.action          |
-| `<reason>`    | event.reason          |
-| `<state>`     | aruba.state           |
+| `<interface>` | aruba.interface.id     |
+| `<name>`      | aruba.ip_sla.name      |
+| `<operation>` | event.action           |
+| `<reason>`    | event.reason           |
+| `<state>`     | aruba.state            |
 
-#### [IPv6 Router Advertisement events](https://www.arubanetworks.com/techdocs/AOS-CX/10.07/HTML/5200-8214/Content/events/IPV6-RA.htm)
+#### [IPSec tunnel offload events](https://www.arubanetworks.com/techdocs/AOS-CX/10.15/HTML/elmrg/Content/events/IPSEC.htm)
+| Doc Fields    | Schema Mapping         |
+|---------------|------------------------|
+| `<tunnel_id>` | aruba.instance.id      |
+
+#### [IPv6 Router Advertisement events](https://www.arubanetworks.com/techdocs/AOS-CX/10.15/HTML/elmrg/Content/events/IPV6-RA.htm)
 | Doc Fields    | Schema Mapping       |
 |---------------|----------------------|
 | `<intf>`      | aruba.interface.id   |
 | `<ipv6_addr>` | server.ip            |
 | `<prefix>`    | aruba.prefix         |
 | `<prefixlen>` | aruba.len            |
+| `<route>`     | aruba.ip_ra.route    |
 
-#### [IRDP events](https://www.arubanetworks.com/techdocs/AOS-CX/10.07/HTML/5200-8214/Content/events/IRDP.htm)
+#### [IRDP events](https://www.arubanetworks.com/techdocs/AOS-CX/10.15/HTML/elmrg/Content/events/IRDP.htm)
 | Docs Field    | Schema Mapping       |
 |---------------|----------------------|
 | `<interface>` | aruba.interface.id   |
+
+#### [ISSU events](https://www.arubanetworks.com/techdocs/AOS-CX/10.15/HTML/elmrg/Content/events/ISSU.htm)
+| Docs Field                   | Schema Mapping                     |
+|------------------------------|------------------------------------|
+| `<action>`                   | event.action                       |
+| `<active_bank>`              | aruba.issu.active_bank             |
+| `<condition>`                | aruba.issu.condition               |
+| `<error_type>`               | error.type                         |
+| `<feature>`                  | aruba.issu.feature                 |
+| `<location>`                 | aruba.issu.location                |
+| `<new_software_version>`     | aruba.issu.new_software_version    |
+| `<not_ready_reason>`         | event.reason                       |
+| `<operation>`                | aruba.issu.operation               |
+| `<previous_software_version>`| aruba.issu.previous_software_version |
+| `<reason_message>`           | event.reason                       |
+| `<version>`                  | host.os.version                    |
+| `<wait_time>`                | aruba.issu.wait_time               |
+
+#### [Job scheduler events](https://www.arubanetworks.com/techdocs/AOS-CX/10.15/HTML/elmrg/Content/events/SCHEDULE.htm)
+| Docs Field                  | Schema Mapping                   |
+|-----------------------------|----------------------------------|
+| `<details>`                 | aruba.scheduler.details          |
+| `<job_name>`                | aruba.scheduler.job_name         |
+| `<name>`                    | aruba.scheduler.name             |
+| `<schedule_name>`           | aruba.scheduler.name             |
+| `<start_datetime>`          | aruba.scheduler.datetime         |
+| `<trigger_count>`           | aruba.count                      |
 
 #### [L3 Encap capacity events](https://www.arubanetworks.com/techdocs/AOS-CX/10.07/HTML/5200-8214/Content/events/L3_ENCAP.htm)
 | Docs Field            | Schema Mapping               |
@@ -752,7 +808,7 @@ Note: Descriptions have not been filled out
 | Docs Field    | Schema Mapping        |
 |---------------|-----------------------|
 | `<interface>` | aruba.interface.id    |
-| `<state>`     | aruba.interface.state |
+| `<state>`     | aruba.state           |
 
 
 #### [MAC Address mode configuration events](https://www.arubanetworks.com/techdocs/AOS-CX/10.07/HTML/5200-8214/Content/events/L3_MAC_ADDRESS_CONFIGURATION.htm)
@@ -1764,6 +1820,8 @@ The `log` dataset collects the HPE Aruba CX logs.
 | aruba.hardware.test_name |  | keyword |
 | aruba.hardware.type |  | keyword |
 | aruba.hardware.vni |  | keyword |
+| aruba.hotpatch.ss |  | keyword |
+| aruba.injected_view.name |  | keyword |
 | aruba.insight.arp_end_ts |  | keyword |
 | aruba.insight.auth_latency |  | keyword |
 | aruba.insight.auth_type |  | keyword |
@@ -1792,8 +1850,16 @@ The `log` dataset collects the HPE Aruba CX logs.
 | aruba.interface.name |  | keyword |
 | aruba.interface.port_speed |  | long |
 | aruba.interface.prev_id |  | keyword |
-| aruba.interface.state |  | keyword |
+| aruba.ip_ra.route |  | keyword |
 | aruba.ip_sla.name |  | keyword |
+| aruba.issu.active_bank |  | keyword |
+| aruba.issu.condition |  | keyword |
+| aruba.issu.feature |  | keyword |
+| aruba.issu.location |  | keyword |
+| aruba.issu.new_software_version |  | keyword |
+| aruba.issu.operation |  | keyword |
+| aruba.issu.previous_software_version |  | keyword |
+| aruba.issu.wait_time |  | long |
 | aruba.l3.encaps_allocated |  | keyword |
 | aruba.l3.encaps_free |  | keyword |
 | aruba.l3.nexthop |  | keyword |
@@ -1966,6 +2032,10 @@ The `log` dataset collects the HPE Aruba CX logs.
 | aruba.rpvst.pkt_type |  | keyword |
 | aruba.rpvst.proto |  | keyword |
 | aruba.rpvst.pvid |  | keyword |
+| aruba.scheduler.datetime |  | keyword |
+| aruba.scheduler.details |  | keyword |
+| aruba.scheduler.job_name |  | keyword |
+| aruba.scheduler.name |  | keyword |
 | aruba.self_test.stack |  | keyword |
 | aruba.sequence |  | keyword |
 | aruba.server.mode |  | keyword |
@@ -2130,6 +2200,7 @@ The `log` dataset collects the HPE Aruba CX logs.
 | host.ip | Host ip addresses. | ip |
 | host.mac | Host MAC addresses. The notation format from RFC 7042 is suggested: Each octet (that is, 8-bit byte) is represented by two [uppercase] hexadecimal digits giving the value of the octet as an unsigned integer. Successive octets are separated by a hyphen. | keyword |
 | host.name | Name of the host. It can contain what hostname returns on Unix systems, the fully qualified domain name (FQDN), or a name specified by the user. The recommended value is the lowercase FQDN of the host. | keyword |
+| host.os.version | Operating system version as a raw string. | keyword |
 | input.type | Input type | keyword |
 | log.file.device_id | Device Id of the log file this event came from. | keyword |
 | log.file.inode | Inode of the log file this event came from. | keyword |
