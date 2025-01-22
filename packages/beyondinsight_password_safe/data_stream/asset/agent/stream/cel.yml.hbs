@@ -40,31 +40,28 @@ program: |-
   		resp.Header["Set-Cookie"]
   	)
   ).as(cookies,
-  	(
-  		(size(state.?cursor.asset_reqs.orValue([])) == 0) ?
-  			request("GET", state.url.trim_suffix("/") + "/Workgroups").with(
-  				{
-  					"Header": {
-  						"Content-Type": ["application/json"],
-  						"Cookie": cookies,
-  					},
-  				}
-  			).do_request().as(resp,
-  				(resp.StatusCode == 200) ?
-  					bytes(resp.Body).decode_json().as(workgroups,
-  						workgroups.map(wg, [string(wg.ID), 0])
-  					)
-  				:
-  					[]
-  			)
-  		:
-  			state.cursor.asset_reqs
+  	state.?cursor.asset_reqs.orValue(
+  		request("GET", state.url.trim_suffix("/") + "/Workgroups").with(
+  			{
+  				"Header": {
+  					"Content-Type": ["application/json"],
+  					"Cookie": cookies,
+  				},
+  			}
+  		).do_request().as(resp,
+  			(resp.StatusCode == 200) ?
+  				bytes(resp.Body).decode_json().as(workgroups,
+  					workgroups.map(wg, [string(wg.ID), 0])
+  				)
+  			:
+  				[]
+  		)
   	).as(asset_reqs,
   		(asset_reqs == []) ?
   			state.with(
   				{
-  					"events": {"process_event": false},
-  					"want_more": true,
+  					"events": [],
+  					"want_more": false,
   					"cursor": {
   						"cookies": null,
   						"asset_reqs": [],
