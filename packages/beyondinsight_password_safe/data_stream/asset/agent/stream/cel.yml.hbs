@@ -25,8 +25,8 @@ redact:
     - apikey
     - password
 program: |-
-  state.?cursor.auth_cookie.orValue(
-  	// Authenticating using API to retrieve auth Cookie
+  state.?cursor.cookies.orValue(
+  	// Authenticating using API to retrieve Cookie
   	request("POST", state.url.trim_suffix("/") + "/Auth/SignAppin").with(
   		{
   			"Header": {
@@ -37,18 +37,16 @@ program: |-
   			},
   		}
   	).do_request().as(resp,
-  		resp.Header["Set-Cookie"].filter(e, e.contains("ASP.NET_SessionId")).as(auth_cookie,
-  			auth_cookie[0]
-  		)
+  		resp.Header["Set-Cookie"]
   	)
-  ).as(auth_cookie,
+  ).as(cookies,
   	(
   		(size(state.?cursor.asset_reqs.orValue([])) == 0) ?
   			request("GET", state.url.trim_suffix("/") + "/Workgroups").with(
   				{
   					"Header": {
   						"Content-Type": ["application/json"],
-  						"Cookie": [auth_cookie],
+  						"Cookie": cookies,
   					},
   				}
   			).do_request().as(resp,
@@ -68,7 +66,7 @@ program: |-
   					"events": {"process_event": false},
   					"want_more": true,
   					"cursor": {
-  						"auth_cookie": null,
+  						"cookies": null,
   						"asset_reqs": [],
   					},
   				}
@@ -89,7 +87,7 @@ program: |-
   					{
   						"Header": {
   							"Content-Type": ["application/json"],
-  							"Cookie": [auth_cookie],
+  							"Cookie": cookies,
   						},
   					}
   				).do_request().as(assetResp,
@@ -99,7 +97,7 @@ program: |-
   								"events": {"error": {"message": "Error in fetching assets", "statuscode": string(assetResp.StatusCode)}},
   								"want_more": size(r.rest_workgroups) > 0,
   								"cursor": {
-  									"auth_cookie": null,
+  									"cookies": null,
   									"asset_reqs": r.rest_workgroups,
   								},
   							}
@@ -117,7 +115,7 @@ program: |-
   										),
   										"want_more": true,
   										"cursor": {
-  											"auth_cookie": auth_cookie,
+  											"cookies": cookies,
   											"asset_reqs": [[r.workgroup_id, int(r.offset) + size(assetBody.Data)]] + r.rest_workgroups,
   										},
   									}
@@ -133,7 +131,7 @@ program: |-
   										),
   										"want_more": size(r.rest_workgroups) > 0,
   										"cursor": {
-  											"auth_cookie": auth_cookie,
+  											"cookies": cookies,
   											"asset_reqs": r.rest_workgroups,
   										},
   									}
