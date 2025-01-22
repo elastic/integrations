@@ -757,8 +757,7 @@ teardown_test_package() {
 }
 
 list_all_directories() {
-    # find . -maxdepth 1 -mindepth 1 -type d | xargs -I {} basename {} | sort | grep -E '^ti_'
-    find . -type f -name transform.yml | awk -F '/' '{print $2}' | sort  | uniq
+    find . -maxdepth 1 -mindepth 1 -type d | xargs -I {} basename {} | sort
 }
 
 check_package() {
