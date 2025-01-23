@@ -41,6 +41,15 @@ processors:
         # exactly match the syntax for firepower management logs
         PROCESS_HOST: "(?:%{PROCESS:process.name}:\\s%{SYSLOGHOST:host.name})"
         HOST_PROCESS: "(?:%{SYSLOGHOST:host.hostname}:?\\s+)?(?:%{PROCESS:process.name}?(?:\\[%{POSINT:process.pid:long}\\])?)?"
+  - grok:
+      field: _temp_.full_message
+      tag: grok_extra_timestamp
+      if: ctx._temp_.full_message != null
+      patterns:
+        - '^%{ASA_DATE:_temp_.raw_date}: %{DATA:_temp_.full_message}$'
+        - '%{GREEDYDATA:_temp_.full_message}'
+      pattern_definitions:
+        ASA_DATE: "(?:%{DAY} )?%{MONTH}  *%{MONTHDAY}(?: %{YEAR})? %{TIME}(?: %{TZ:_temp_.tz})?"
   - script:
       lang: painless
       tag: script_log_syslog
@@ -90,6 +99,18 @@ processors:
       value: 7
       if: "ctx?.event?.severity == null"
 
+  - script:
+      lang: painless
+      tag: script_tz_mapping
+      if: ctx._temp_?.tz != null && ctx._temp_?.tz != '' && ctx._conf?.tz_map != null
+      source: >-
+        for (def item : ctx._conf.tz_map) {
+          if (item.tz_short == ctx._temp_.tz) {
+            ctx._temp_.tz = item.tz_long;
+            break;
+          }
+        }
+
   # Time zone can come from three sources, choose in order: log, config, locale, default to UTC.
   - set:
       field: _temp_.tz
@@ -117,6 +138,7 @@ processors:
   #
   - date:
       if: ctx._temp_?.raw_date != null
+      tag: parse_raw_date
       timezone: "{{{ event.timezone }}}"
       field: "_temp_.raw_date"
       formats:
@@ -135,6 +157,8 @@ processors:
         - "EEE MMM dd yyyy HH:mm:ss"
         - "MMM  d yyyy HH:mm:ss z"
         - "MMM dd yyyy HH:mm:ss z"
+        - "MMM  d yyyy HH:mm:ss.SSS z"
+        - "MMM dd yyyy HH:mm:ss.SSS z"
         - "EEE MMM  d yyyy HH:mm:ss z"
         - "EEE MMM dd yyyy HH:mm:ss z"
       on_failure:
@@ -144,6 +168,7 @@ processors:
             ignore_missing: true
         - date:
             if: ctx._temp_?.raw_date != null
+            tag: "parse_raw_date_fallback"
             field: "_temp_.raw_date"
             formats:
               - "ISO8601"
@@ -161,6 +186,8 @@ processors:
               - "EEE MMM dd yyyy HH:mm:ss"
               - "MMM  d yyyy HH:mm:ss z"
               - "MMM dd yyyy HH:mm:ss z"
+              - "MMM  d yyyy HH:mm:ss.SSS z"
+              - "MMM dd yyyy HH:mm:ss.SSS z"
               - "EEE MMM  d yyyy HH:mm:ss z"
               - "EEE MMM dd yyyy HH:mm:ss z"
 
