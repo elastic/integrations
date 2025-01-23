@@ -1,5 +1,5 @@
 rules:
-  #### UserAudits ####
+  # START: SignAppin
   - path: "/BeyondTrust/api/public/v3/Auth/SignAppin"
     methods: ["POST"]
     request_headers:
@@ -18,160 +18,149 @@ rules:
             "UserName": "testuser",
             "Name": "Test User"
           }
-  - path: "/BeyondTrust/api/public/v3/UserAudits"
-    methods: ["GET"]
-    request_headers:
-      Content-Type: ['application/json']
-      Cookie: ['ASP.NET_SessionId=iijfdzn51fdh01axylh1nnd1']
-    responses:
-      - status_code: 200
-        headers:
-          Content-Type: ['application/json']
-        body: |
-          {
-            "TotalCount": 4,
-            "Data": [
-              {
-                "AuditID": 8,
-                "ActionType": "Login",
-                "Section": "PMM API SignAppIn",
-                "UserID": 6,
-                "UserName": "test.user@example.com",
-                "IPAddress": "216.160.83.56",
-                "CreateDate": "2024-12-16T10:24:26.323Z"
-              },
-              {
-                "AuditID": 7,
-                "ActionType": "Login",
-                "Section": "PMM API SignAppIn",
-                "UserID": 6,
-                "UserName": "test.user@example.com",
-                "IPAddress": "216.160.83.56",
-                "CreateDate": "2024-12-12T10:24:26.323Z"
-              },
-              {
-                "AuditID": 6,
-                "ActionType": "Login",
-                "Section": "PMM API SignAppIn",
-                "UserID": 6,
-                "UserName": "test.user@example.com",
-                "IPAddress": "216.160.83.56",
-                "CreateDate": "2024-12-11T10:24:26.323Z"
-              },
-              {
-                "AuditID": 5,
-                "ActionType": "Login",
-                "Section": "PMM API SignAppIn",
-                "UserID": 6,
-                "UserName": "test.user@example.com",
-                "IPAddress": "216.160.83.56",
-                "CreateDate": "2024-12-09T10:24:26.323Z"
-              }
-            ]
-          }
+  # END: SignAppin
+
+  # START: User Audits
+
+  # Returns latest portion of data
   - path: "/BeyondTrust/api/public/v3/UserAudits"
     methods: ["GET"]
     request_headers:
       Content-Type: ['application/json']
       Cookie: ['ASP.NET_SessionId=iijfdzn51fdh01axylh1nnd1']
     query_params:
-      limit: "3"
-      enddate: "2024-12-18T10:24:26.323Z"
-      startdate: "2024-12-06T10:24:26.323Z"
-      cursor: null  
+      enddate: "2025-01-22T18:21:25.757Z"
     responses:
       - status_code: 200
         headers:
           Content-Type: ['application/json']
         body: |
           {
-            "TotalCount": 4,
-            "Data": [
+           "TotalCount": 1,
+           "Data": [
+              {
+              "AuditID": 1,
+              "ActionType": "Login",
+              "Section": "PMM API SignAppIn",
+              "UserID": 1,
+              "UserName": "Administrator",
+              "IPAddress": "073.054.035.119",
+              "CreateDate": "2025-01-22T18:19:25.637Z"
+            }
+           ]
+          }
+
+  # Returns the second portion of data
+  - path: "/BeyondTrust/api/public/v3/UserAudits"
+    methods: ["GET"]
+    request_headers:
+      Content-Type: ['application/json']
+      Cookie: ['ASP.NET_SessionId=iijfdzn51fdh01axylh1nnd1']
+    query_params:
+      enddate: "2025-01-22T19:30:27.687Z"
+    responses:
+      - status_code: 200
+        headers:
+          Content-Type: ['application/json']
+        body: |
+          {
+           "TotalCount": 5,
+           "Data": [
+              {
+                "AuditID": 5,
+                "ActionType": "Login",
+                "Section": "PMM API SignAppIn",
+                "UserID": 1,
+                "UserName": "Administrator",
+                "IPAddress": "078.054.035.119",
+                "CreateDate": "2025-01-22T18:23:26.55Z"
+              },
               {
                 "AuditID": 4,
                 "ActionType": "Login",
                 "Section": "PMM API SignAppIn",
-                "UserID": 6,
-                "UserName": "test.user@example.com",
-                "IPAddress": "216.160.83.56",
-                "CreateDate": "2024-12-18T10:24:26.323Z"
+                "UserID": 1,
+                "UserName": "Administrator",
+                "IPAddress": "075.054.035.129",
+                "CreateDate": "2025-01-22T18:23:25.557Z"
               },
               {
                 "AuditID": 3,
                 "ActionType": "Login",
                 "Section": "PMM API SignAppIn",
-                "UserID": 6,
-                "UserName": "test.user@example.com",
-                "IPAddress": "216.160.83.56",
-                "CreateDate": "2024-12-07T10:24:26.323Z"
+                "UserID": 1,
+                "UserName": "Administrator",
+                "IPAddress": "078.034.035.019",
+                "CreateDate": "2025-01-22T18:21:26.563Z"
               },
               {
                 "AuditID": 2,
                 "ActionType": "Login",
                 "Section": "PMM API SignAppIn",
-                "UserID": 6,
-                "UserName": "test.user@example.com",
-                "IPAddress": "216.160.83.56",
-                "CreateDate": "2024-12-06T10:24:26.323Z"
-              },
-              {
-                "AuditID": 1,
-                "ActionType": "Login",
-                "Section": "PMM API SignAppIn",
-                "UserID": 6,
-                "UserName": "test.user@example.com",
-                "IPAddress": "216.160.83.56",
-                "CreateDate": "2024-12-06T10:24:26.323Z"
+                "UserID": 1,
+                "UserName": "Administrator",
+                "IPAddress": "078.054.035.129",
+                "CreateDate": "2025-01-22T18:21:25.757Z"
               }
-            ]
-          }  
+           ]
+          }     
+
+  # Initial query, not parameterized
+  # Returns the first part of the data
   - path: "/BeyondTrust/api/public/v3/UserAudits"
     methods: ["GET"]
     request_headers:
       Content-Type: ['application/json']
       Cookie: ['ASP.NET_SessionId=iijfdzn51fdh01axylh1nnd1']
-    query_params:
-      limit: "3"
-      enddate: "2024-12-18T10:24:26.323Z"
-      startdate: "2024-12-06T10:24:26.323Z"
-      cursor: null  
     responses:
       - status_code: 200
         headers:
           Content-Type: ['application/json']
         body: |
-          {
-            "TotalCount": 3,
-            "Data": [
-              {
-                "AuditID": 11,
-                "ActionType": "Login",
-                "Section": "PMM API SignAppIn",
-                "UserID": 6,
-                "UserName": "test.user@example.com",
-                "IPAddress": "216.160.83.56",
-                "CreateDate": "2024-12-07T10:24:26.323Z"
-              },
-              {
-                "AuditID": 10,
-                "ActionType": "Login",
-                "Section": "PMM API SignAppIn",
-                "UserID": 6,
-                "UserName": "test.user@example.com",
-                "IPAddress": "216.160.83.56",
-                "CreateDate": "2024-12-06T10:24:26.323Z"
-              },
-              {
-                "AuditID": 9,
-                "ActionType": "Login",
-                "Section": "PMM API SignAppIn",
-                "UserID": 6,
-                "UserName": "test.user@example.com",
-                "IPAddress": "216.160.83.56",
-                "CreateDate": "2024-12-05T10:24:26.323Z"
-              }
-            ]
-          }                
+         {
+          "TotalCount": 9,
+          "Data": [
+            {
+              "AuditID": 9,
+              "ActionType": "Login",
+              "Section": "PMM API SignAppIn",
+              "UserID": 8,
+              "UserName": "test-app-user",
+              "IPAddress": "085.206.176.104",
+              "CreateDate": "2025-01-23T11:19:00.267Z"
+            },
+            {
+              "AuditID": 8,
+              "ActionType": "Login",
+              "Section": "PMM API SignAppIn",
+              "UserID": 6,
+              "UserName": "test-app-user",
+              "IPAddress": "223.233.086.083",
+              "CreateDate": "2025-01-23T08:29:10.98Z"
+            },
+            {
+              "AuditID": 7,
+              "ActionType": "Login",
+              "Section": "PMM API SignAppIn",
+              "UserID": 6,
+              "UserName": "test-app-user",
+              "IPAddress": "223.233.085.102",
+              "CreateDate": "2025-01-23T07:35:02.943Z"
+            },
+            {
+              "AuditID": 6,
+              "ActionType": "Login",
+              "Section": "PMM API SignAppIn",
+              "UserID": 6,
+              "UserName": "test-app-user",
+              "IPAddress": "223.233.085.101",
+              "CreateDate": "2025-01-22T19:30:27.687Z"
+            }
+          ]
+         }
+  # END: User Audits
+
+  # START: Sessions
   - path: "/BeyondTrust/api/public/v3/Sessions"
     methods: ["GET"]
     request_headers:
@@ -201,6 +190,9 @@ rules:
               "Token": "bcb8c654b827a4465846c96b5d6dd8dsfsdf2935c6ahhgg1f02f067fd0976dfsdf6d7370c22"
             }
           ]
+  # END: Sessions
+
+  # START: ManagedAccounts
   - path: "/BeyondTrust/api/public/v3/ManagedAccounts"
     methods: ["GET"]
     request_headers:
@@ -233,6 +225,9 @@ rules:
                   "PreferredNodeID": "2ca45774-d4e0-4b8f-9b52-3f52b78ae2ca"
               }
           ]
+  # END: ManagedAccounts
+
+  # START: ManagedSystems
   - path: "/BeyondTrust/api/public/v3/ManagedSystems"
     methods: ["GET"]
     request_headers:
@@ -260,6 +255,9 @@ rules:
                "Name": "Default Workgroup"
            }
           ]
+  # END: ManagedSystems
+
+  # END: Assets
   - path: "/BeyondTrust/api/public/v3/Workgroups/1/Assets"
     methods: ["GET"]
     request_headers:
@@ -286,3 +284,4 @@ rules:
                }
           ]
           }
+  # END: Assets

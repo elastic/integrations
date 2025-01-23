@@ -67,7 +67,7 @@ program: |-
   				)
   			:
   				bytes(resp.Body).decode_json().as(body,
-  					(size(body.Data) > 0 && params.enddate[0] != body.Data[size(body.Data) - 1].CreateDate).as(wantMore,
+  					(size(body.Data) > 0 && int(body.TotalCount) > int(state.limit)).as(wantMore,
   						string(wantMore ? body.Data[size(body.Data) - 1].CreateDate : "").as(newEnddate,
   							state.with(
   								{
