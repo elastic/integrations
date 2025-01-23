@@ -1274,7 +1274,7 @@ processors:
     # https://arubanetworking.hpe.com/techdocs/AOS-CX/10.15/HTML/elmrg/Content/events/LOOP-PROTECT.htm
   - grok:
       field: message
-      tag: loop_protect_event_2801_through_2808
+      tag: loop_protect_event_2801_through_2809
       description: "Logs Loop protect events"
       if: "['2801','2802','2803','2804','2805','2806','2807','2808','2809'].contains(ctx.event?.code)"
       patterns:
@@ -1287,16 +1287,16 @@ processors:
   - dissect:
       field: message
       tag: loop_protect_event_2810
-      description: ""
+      description: "Logs TX and RX ports after RX disabled by Loop protect"
       if: "ctx.event?.code == '2810'"
       pattern: "Ports TX %{aruba.loop.tx_port} and RX %{aruba.loop.rx_port} are involved during RX port disabling"
   - grok:
       field: message
       tag: loop_protect_event_2811
-      description: ""
+      description: "Logs max vport limit reached and Current vport count."
       if: "ctx.event?.code == '2811'"
       patterns: 
-        - "Max vport limit %{DATA:aruba.limit.threshold} reached. Current vport %{NUMBER:aruba.limit.read_value:long}"
+        - "^Max vport limit %{DATA:aruba.limit.threshold} reached. Current vport %{NUMBER:aruba.limit.read_value:long}"
 
   # BGP events (29xx)
   # https://www.arubanetworks.com/techdocs/AOS-CX/10.15/HTML/elmrg/Content/events/BGP.htm
