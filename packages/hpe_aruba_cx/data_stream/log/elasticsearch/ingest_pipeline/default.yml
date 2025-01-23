@@ -46,7 +46,7 @@ processors:
       ignore_missing: true
 
     # LLDP events (1xx)
-    # https://www.arubanetworks.com/techdocs/AOS-CX/10.07/HTML/5200-8214/Content/events/LLDP.htm
+    # https://arubanetworking.hpe.com/techdocs/AOS-CX/10.15/HTML/elmrg/Content/events/LLDP.htm
   - grok:
       field: message
       tag: lldp_event_103_through_113
@@ -327,7 +327,7 @@ processors:
         - "^Interface %{DATA:aruba.interface.id}( cannot|: unable)"
 
     # LED events (50x)
-    # https://www.arubanetworks.com/techdocs/AOS-CX/10.07/HTML/5200-8214/Content/events/LED.htm
+    # https://arubanetworking.hpe.com/techdocs/AOS-CX/10.15/HTML/elmrg/Content/events/LED.htm
   - grok:
       field: message
       tag: led_event_501_502
@@ -658,7 +658,7 @@ processors:
       pattern: "Switch boot count is : %{aruba.status}"
 
     # LACP events (13xx)
-    # https://www.arubanetworks.com/techdocs/AOS-CX/10.07/HTML/5200-8214/Content/events/LACP.htm
+    # https://www.arubanetworks.com/techdocs/AOS-CX/10.15/HTML/elmrg/Content/events/LACP.htm
   - grok:
       field: message
       tag: lacp_event_1301_1302_1312_1313
@@ -714,15 +714,24 @@ processors:
         - "^LAG global load balancing mode is set to %{GREEDYDATA:aruba.lacp.mode}"
         - "^%{LAG_ID} State change for interface %{DATA:aruba.interface.id}: %{ACTOR_STATE}, %{PARTNER_STATE}"
         - "^%{INTF_NAME} cannot be part of Lag %{NUMBER:aruba.lacp.lag_number:long}. Speed mismatched \\(Interface speed %{NUMBER:aruba.lacp.port_speed:long}Mbps Lag base speed %{NUMBER:aruba.lacp.lag_speed:long}Mbps\\)."
+        - "^Throttled %{NUMBER:aruba.throttle_count:long} Messages"
       pattern_definitions:
         LAG_ID: "(LAG|lag) %{DATA:aruba.instance.id}"
         INTF_ID: "(I|i)nterface %{DATA:aruba.interface.id}"
         INTF_NAME: "(I|i)nterface %{DATA:aruba.interface.name}"
         ACTOR_STATE: "Actor state: %{DATA:aruba.lacp.actor_state}"
         PARTNER_STATE: "(P|p)artner state %{GREEDYDATA:aruba.lacp.partner_state}"
+  - grok:
+      field: message
+      tag: lacp_event_1326_1327_1328
+      description: "Log when interface is enabled by fallback-static | when interface is disabled by fallback-static | when interface is blocked due to mismatching partner on the vsx interface"
+      if: "['1326','1327','1328'].contains(ctx.event?.code)"
+      patterns:
+        - "^Interface %{DATA:aruba.interface.id} (enabled|disabled) by fallback-static for lag %{GREEDYDATA:aruba.instance.id}"
+        - "^Interface %{DATA:aruba.interface.id} lag %{DATA:aruba.instance.id} blocked as link partners on vsx primary and secondary mismatch"
 
     # LAG events (14xx)
-    # https://www.arubanetworks.com/techdocs/AOS-CX/10.07/HTML/5200-8214/Content/events/LAG.htm
+    # https://www.arubanetworks.com/techdocs/AOS-CX/10.15/HTML/elmrg/Content/events/LAG.htm
   - grok:
       field: message
       tag: lacp_event_1401_through_1414
@@ -811,8 +820,8 @@ processors:
         - "^Vlaninterface vlan%{DATA:network.vlan.id}, failed to create an l3 interface, error: %{GREEDYDATA:event.reason}"
         - "^Vlan Interface %{DATA:aruba.interface.id}, created"
 
-    # Layer 3 Interface events (17xx)
-    # https://www.arubanetworks.com/techdocs/AOS-CX/10.07/HTML/5200-8214/Content/events/L3INTERFACE.htm
+    # Layer 3 Interface events (17xx && 1580x)
+    # https://arubanetworking.hpe.com/techdocs/AOS-CX/10.15/HTML/elmrg/Content/events/L3INTERFACE.htm
   - grok:
       field: message
       tag: l3_event_1701_1702
@@ -871,6 +880,25 @@ processors:
       pattern_definitions:
         SERVER_IP: "(ipv6|ipv4) address( deleted)? %{IP:server.ip}"
         INTERFACE: "(I|i)nterface %{DATA:aruba.interface.id}"
+  - grok:
+      field: message
+      tag: l3_event_1732
+      description: "Logs failure while configuring more than one global ipv6 address on an interface."
+      if: "ctx.event?.code == '1732'"
+      patterns: 
+        - "^IPv6 address %{IP:server.ip} is not applied on interface %{DATA:aruba.interface.id}, as only one global ipv6 address will be in effect"
+  - dissect:
+      field: message
+      tag: l3_event_15804
+      description: "logs for ipv4 unnumbered address update on interface."
+      if: "ctx.event?.code == '15804'"
+      pattern: "Interface %{aruba.interface.name}, configured with ipv4 unnumbered address %{host.ip}, lender interface %{aruba.port}"
+  - dissect:
+      field: message
+      tag: l3_event_15805
+      description: "logs for ipv4 unnumbered address delete from interface."
+      if: "ctx.event?.code == '15805'"
+      pattern: "ipv4 unnumbered address %{host.ip} deleted from interface %{aruba.interface.name}, lender interface %{aruba.port}"
 
   # ECMP Events (18xx)
   # https://www.arubanetworks.com/techdocs/AOS-CX/10.15/HTML/elmrg/Content/events/ECMP.htm
@@ -1243,12 +1271,12 @@ processors:
       pattern: "Multicast L3 Bridge Control Forwarding entry with uuid %{aruba.instance.id} has no reference to a VLAN"
 
     # Loop Protect events (280x)
-    # https://www.arubanetworks.com/techdocs/AOS-CX/10.07/HTML/5200-8214/Content/events/LOOP-PROTECT.htm
+    # https://arubanetworking.hpe.com/techdocs/AOS-CX/10.15/HTML/elmrg/Content/events/LOOP-PROTECT.htm
   - grok:
       field: message
-      tag: loop_protect_event_2801_through_2808
+      tag: loop_protect_event_2801_through_2809
       description: "Logs Loop protect events"
-      if: "['2801','2802','2803','2804','2805','2806','2807','2808'].contains(ctx.event?.code)"
+      if: "['2801','2802','2803','2804','2805','2806','2807','2808','2809'].contains(ctx.event?.code)"
       patterns:
         - "^Ports TX %{DATA:aruba.loop.tx_port} and RX %{DATA:aruba.loop.rx_port} are disabled by Loop-protect after loop detection on VLAN %{GREEDYDATA:network.vlan.id}"
         - "^(Loop detected on port|Port) %{DATA:aruba.port}( is disabled by Loop-protection after loop detection)? on VLAN %{GREEDYDATA:network.vlan.id}"
@@ -1256,6 +1284,19 @@ processors:
         - "^Port %{DATA:aruba.port} (added for|deleted from) loop-protection"
         - "^Loop-Protection stats cleared for port %{GREEDYDATA:aruba.port}"
         - "^Ports TX %{DATA:aruba.loop.tx_port} and RX %{DATA:aruba.loop.rx_port} are involved during TX port disabling"
+  - dissect:
+      field: message
+      tag: loop_protect_event_2810
+      description: "Logs TX and RX ports after RX disabled by Loop protect"
+      if: "ctx.event?.code == '2810'"
+      pattern: "Ports TX %{aruba.loop.tx_port} and RX %{aruba.loop.rx_port} are involved during RX port disabling"
+  - grok:
+      field: message
+      tag: loop_protect_event_2811
+      description: "Logs max vport limit reached and Current vport count."
+      if: "ctx.event?.code == '2811'"
+      patterns: 
+        - "^Max vport limit %{DATA:aruba.limit.threshold} reached. Current vport %{NUMBER:aruba.limit.read_value:long}"
 
   # BGP events (29xx)
   # https://www.arubanetworks.com/techdocs/AOS-CX/10.15/HTML/elmrg/Content/events/BGP.htm
@@ -4275,12 +4316,12 @@ processors:
       pattern: "VLAN conflict detected on port %{aruba.port}"
 
   # L3 Encap capacity events (1060x)
-  # https://www.arubanetworks.com/techdocs/AOS-CX/10.07/HTML/5200-8214/Content/events/L3_ENCAP.htm
+  # https://www.arubanetworks.com/techdocs/AOS-CX/10.15/HTML/elmrg/Content/events/L3_ENCAP.htm
   - grok:
       field: message
       tag: l3_event_10601_10602_10603
       description: "Logs event when a L3 encapsulation is added to a port"
-      if: "['10601', '10602', '10603'].contains(ctx.event?.code)"
+      if: "['10601','10602','10603'].contains(ctx.event?.code)"
       patterns:
         - "^L3 resources critical for neighbor and route forwarding are (at safe levels|low). %{L3_ENCAP_COMMON}"
         - "^Out of L3 resources critical for neighbor and route forwarding. %{L3_ENCAP_COMMON}"
@@ -4438,12 +4479,52 @@ processors:
         - "^(Active|Backup) link of the smartlink group %{DATA:group.id} changed to %{GREEDYDATA:aruba.interface.name}"
 
   # L3 Resource Manager events (1150x)
-  # https://www.arubanetworks.com/techdocs/AOS-CX/10.07/HTML/5200-8214/Content/events/L3_RESMGR.htm
-  - dissect:
+  # https://www.arubanetworks.com/techdocs/AOS-CX/10.15/HTML/elmrg/Content/events/L3_RESMGR.htm
+  - grok:
       field: message
       tag: l3_rsmgr_event_11501
       if: "ctx.event?.code == '11501'"
-      pattern: "IPv6 route prefix %{aruba.prefix} is not supported on this platform"
+      description: "logs warning for route addition attempt."
+      patterns: 
+        # 10.07 OS
+        - "^IPv6 route prefix %{DATA:aruba.prefix} is not supported on this platform"
+        # 10.15 OS
+        - "^IPv6 route prefix %{DATA:aruba.prefix} is recommended for transit network use only. The traffic would be software routed. Routing performance to local destination addresses on this network may be impacted."
+  - grok:
+      field: message
+      tag: l3_rsmgr_event_11502
+      if: "ctx.event?.code == '11502'"
+      description: "logs error for running out of resources."
+      patterns:
+        - "^Exceeded resource '%{DATA:aruba.l3.resource}' capacity adding %{DATA:aruba.l3.object}. Use 'show capacities-status' for more information."
+        - "^Throttled %{NUMBER:aruba.throttle_count:long} Messages"
+  - grok:
+      field: message
+      tag: l3_rsmgr_event_11503
+      if: "ctx.event?.code == '11503'"
+      description: "logs warning for hitting certain capacity limits."
+      patterns:
+        - "^Resource '%{DATA:aruba.l3.resource}' usage is at %{NUMBER:aruba.l3.percent:long}% of capacity. Use 'show capacities-status' for more information."
+        - "^Throttled %{NUMBER:aruba.throttle_count:long} Messages"
+  - dissect:
+      field: message
+      tag: l3_rsmgr_event_11504
+      if: "ctx.event?.code == '11504'"
+      description: "logs warning when overlay ECMP group is programmed as single route."
+      pattern: "Overlay ECMP route %{aruba.prefix} has been programmed as a single route."
+  - dissect:
+      field: message
+      tag: l3_rsmgr_event_11505
+      if: "ctx.event?.code == '11505'"
+      description: "Logs warning that traffic might be routed in software for new route."
+      pattern: "Traffic for IPv6 route prefix %{aruba.prefix} will be software routed and performance impacted if no other matching route prefixes from 0-64 for the same destination exist."
+  - grok:
+      field: message
+      tag: l3_rsmgr_event_11506
+      if: "['11506','11507'].contains(ctx.event?.code)"
+      description: "L3RM received event [removing|adding] resolved nexthop from tunnel."
+      patterns:
+        - "^Tunnel %{DATA:aruba.l3.vtep} resolved nexthop %{DATA:aruba.l3.nexthop} (added|removed)."
 
   # Connectivity Fault Management (CFM) events (1160x)
   # https://www.arubanetworks.com/techdocs/AOS-CX/10.15/HTML/elmrg/Content/events/ETH_OAM_CFM.htm
@@ -5037,6 +5118,16 @@ processors:
       if: "['14801','14802','14803'].contains(ctx.event?.code)"
       patterns: 
         - "- Tunnel( Id)? \\(%{DATA:aruba.instance.id}\\)"
+
+  # Launch Daemon (LaunchD) events (1490x)
+  # https://www.arubanetworks.com/techdocs/AOS-CX/10.15/HTML/elmrg/Content/events/LAUNCHD.htm
+  - grok:
+      field: message
+      tag: launchd_event_14901_14902_14903_14904
+      description: "Event raised when a daemon is started on config availability | when a daemon failed to start on config availability | when a daemon is stopped on config removal | when a daemon failed to stop on config removal"
+      if: "['14901','14902','14903','14904'].contains(ctx.event?.code)"
+      patterns: 
+        - "(start|stop|for) %{DATA:aruba.launchd.daemon} daemon"
 
   # IP Flow Monitoring Advertisement events (1510x)
   # https://www.arubanetworks.com/techdocs/AOS-CX/10.15/HTML/elmrg/Content/events/IPFM.htm
