@@ -43,7 +43,7 @@ These permissions are included in many roles, but these are some of the most com
 
 ## Deployment types in Vertex AI
 
-Vertex AI offers two primary deployment types,
+Vertex AI offers two primary deployment types:
 
 - **Provisioned Throughput:** Suitable for high-usage applications with predictable workloads and a premium on guaranteed performance.
 - **Pay-as-you-go:** Ideal for low-usage applications, batch processing, and applications with unpredictable traffic patterns.
@@ -52,13 +52,13 @@ Now, you can track and monitor different deployment types (provisioned throughpu
 
 ## Configuration
 
-To fetch the metrics, enter the project_id and the credentials file/json.
+To fetch the metrics, enter the `project_id` and the credentials file/json.
 
 Refer to [Google Cloud Platform configuration](https://www.elastic.co/docs/current/integrations/gcp#configure-the-integration-settings) for more information about the configuration.
 
 ## Troubleshooting
 
-Refer to [Google Cloud Platform troubleshooting](https://www.elastic.co/docs/current/integrations/gcp#metrics-collection-configuration:~:text=to%20collect%20metrics.-,Troubleshooting,-If%20you%20don%27t) for more information about troubleshooting the issue.
+Refer to [Google Cloud Platform troubleshooting](https://www.elastic.co/docs/current/integrations/gcp#metrics-collection-configuration:~:text=to%20collect%20metrics.-,Troubleshooting,-If%20you%20don%27t) for more information about troubleshooting.
 
 ## Reference
 
@@ -140,7 +140,7 @@ An example event for `metrics` looks as following:
 
 **ECS Field Reference**
 
-Please refer to the following [document](https://www.elastic.co/guide/en/ecs/current/ecs-field-reference.html) for detailed information on ECS fields.
+Check the [ECS Field Reference](https://www.elastic.co/guide/en/ecs/current/ecs-field-reference.html) for detailed information on ECS fields.
 
 **Exported fields**
 
