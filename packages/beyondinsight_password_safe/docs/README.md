@@ -53,35 +53,35 @@ An example event for `useraudit` looks as following:
 
 ```json
 {
-    "@timestamp": "2025-01-22T15:53:08.433Z",
+    "@timestamp": "2025-01-22T18:19:25.637Z",
     "agent": {
-        "ephemeral_id": "227a7870-f92d-44de-a828-974be65935b8",
-        "id": "3ed0f94e-6005-42d2-865b-5cfdf0ecc83a",
-        "name": "elastic-agent-43922",
+        "ephemeral_id": "f94c5e7a-6c1c-44dd-88a4-9745f5ee5af2",
+        "id": "fd188fac-3736-4ead-b591-2ffe3fedad55",
+        "name": "elastic-agent-49819",
         "type": "filebeat",
         "version": "8.15.0"
     },
     "beyondinsight_password_safe": {
         "useraudit": {
             "action_type": "Login",
-            "audit_id": 8,
-            "create_date": "2024-12-16T10:24:26.323Z",
-            "ipaddress": "216.160.83.56",
+            "audit_id": 1,
+            "create_date": "2025-01-22T18:19:25.637Z",
+            "ipaddress": "81.2.69.142",
             "section": "PMM API SignAppIn",
-            "user_id": 6,
-            "user_name": "test.user@example.com"
+            "user_id": 1,
+            "user_name": "Administrator"
         }
     },
     "data_stream": {
         "dataset": "beyondinsight_password_safe.useraudit",
-        "namespace": "32170",
+        "namespace": "83646",
         "type": "logs"
     },
     "ecs": {
         "version": "8.11.0"
     },
     "elastic_agent": {
-        "id": "3ed0f94e-6005-42d2-865b-5cfdf0ecc83a",
+        "id": "fd188fac-3736-4ead-b591-2ffe3fedad55",
         "snapshot": false,
         "version": "8.15.0"
     },
@@ -91,29 +91,29 @@ An example event for `useraudit` looks as following:
             "iam"
         ],
         "dataset": "beyondinsight_password_safe.useraudit",
-        "ingested": "2025-01-22T15:53:11Z",
+        "ingested": "2025-01-23T19:44:13Z",
         "kind": "event",
         "module": "beyondinsight_password_safe",
         "type": [
             "info"
         ]
     },
-    "event.original": "{\"ActionType\":\"Login\",\"AuditID\":8,\"CreateDate\":\"2024-12-16T10:24:26.323Z\",\"IPAddress\":\"216.160.83.56\",\"Section\":\"PMM API SignAppIn\",\"UserID\":6,\"UserName\":\"test.user@example.com\"}",
+    "event.original": "{\"ActionType\":\"Login\",\"AuditID\":1,\"CreateDate\":\"2025-01-22T18:19:25.637Z\",\"IPAddress\":\"81.2.69.142\",\"Section\":\"PMM API SignAppIn\",\"UserID\":1,\"UserName\":\"Administrator\"}",
     "host": {
         "geo": {
-            "city_name": "Milton",
-            "continent_name": "North America",
-            "country_iso_code": "US",
-            "country_name": "United States",
+            "city_name": "London",
+            "continent_name": "Europe",
+            "country_iso_code": "GB",
+            "country_name": "United Kingdom",
             "location": {
-                "lat": 47.2513,
-                "lon": -122.3149
+                "lat": 51.5142,
+                "lon": -0.0931
             },
-            "region_iso_code": "US-WA",
-            "region_name": "Washington"
+            "region_iso_code": "GB-ENG",
+            "region_name": "England"
         },
         "ip": [
-            "216.160.83.56"
+            "81.2.69.142"
         ]
     },
     "input": {
@@ -121,10 +121,10 @@ An example event for `useraudit` looks as following:
     },
     "related": {
         "hosts": [
-            "216.160.83.56"
+            "81.2.69.142"
         ],
         "user": [
-            "test.user@example.com"
+            "Administrator"
         ]
     },
     "tags": [
@@ -132,8 +132,8 @@ An example event for `useraudit` looks as following:
         "beyondinsight_password_safe.useraudit"
     ],
     "user": {
-        "id": "6",
-        "name": "test.user@example.com"
+        "id": "1",
+        "name": "Administrator"
     }
 }
 ```
@@ -569,11 +569,11 @@ An example event for `asset` looks as following:
 
 ```json
 {
-    "@timestamp": "2025-01-22T15:46:10.060Z",
+    "@timestamp": "2024-11-20T06:35:49.927Z",
     "agent": {
-        "ephemeral_id": "16e44f14-478e-454b-8b9e-4d792b3fbb08",
-        "id": "3280a73e-6568-47b3-940d-bbdf9c563215",
-        "name": "elastic-agent-86648",
+        "ephemeral_id": "126c827b-cdd1-465d-bee6-bb19ee0c64d7",
+        "id": "873af36b-b608-4c45-8a3e-e2799e30ca4e",
+        "name": "elastic-agent-20504",
         "type": "filebeat",
         "version": "8.15.0"
     },
@@ -585,7 +585,7 @@ An example event for `asset` looks as following:
             "create_date": "2024-11-20T06:12:21.047Z",
             "dns_name": "EPINHYDW002A",
             "domain_name": "Unknown",
-            "ipaddress": "192.168.29.50",
+            "ipaddress": "81.2.69.142",
             "last_update_date": "2024-11-20T06:35:49.927Z",
             "operating_system": "Windows 11 Enterprise",
             "workgroup_id": 1
@@ -593,14 +593,14 @@ An example event for `asset` looks as following:
     },
     "data_stream": {
         "dataset": "beyondinsight_password_safe.asset",
-        "namespace": "51781",
+        "namespace": "72801",
         "type": "logs"
     },
     "ecs": {
         "version": "8.11.0"
     },
     "elastic_agent": {
-        "id": "3280a73e-6568-47b3-940d-bbdf9c563215",
+        "id": "873af36b-b608-4c45-8a3e-e2799e30ca4e",
         "snapshot": false,
         "version": "8.15.0"
     },
@@ -610,7 +610,7 @@ An example event for `asset` looks as following:
             "host"
         ],
         "dataset": "beyondinsight_password_safe.asset",
-        "ingested": "2025-01-22T15:46:13Z",
+        "ingested": "2025-01-23T19:45:12Z",
         "kind": "asset",
         "module": "beyondinsight_password_safe",
         "type": [
@@ -619,9 +619,21 @@ An example event for `asset` looks as following:
     },
     "host": {
         "domain": "Unknown",
+        "geo": {
+            "city_name": "London",
+            "continent_name": "Europe",
+            "country_iso_code": "GB",
+            "country_name": "United Kingdom",
+            "location": {
+                "lat": 51.5142,
+                "lon": -0.0931
+            },
+            "region_iso_code": "GB-ENG",
+            "region_name": "England"
+        },
         "ip": [
-            "192.168.29.50",
-            "192.168.29.50"
+            "81.2.69.142",
+            "81.2.69.142"
         ]
     },
     "input": {
@@ -633,7 +645,7 @@ An example event for `asset` looks as following:
     "related": {
         "hosts": [
             "Unknown",
-            "192.168.29.50"
+            "81.2.69.142"
         ]
     },
     "tags": [
