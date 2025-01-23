@@ -221,15 +221,15 @@ Please refer to the following [document](https://www.elastic.co/guide/en/ecs/cur
 {{fields "yammer_device_usage"}}
 
 
-### Teams Device Usage
+### Teams Device Usage User Counts
 
 Get details about Teams device usage from [Microsoft Graph API](https://learn.microsoft.com/en-us/graph/api/reportroot-getteamsdeviceusageusercounts?view=graph-rest-1.0&tabs=http).
 
-{{event "teams_device_usage"}}
+{{event "teams_device_usage_user_counts"}}
 
 **ECS Field Reference**
 
 Please refer to the following [document](https://www.elastic.co/guide/en/ecs/current/ecs-field-reference.html) for detailed information on ECS fields.
 
-{{fields "teams_device_usage"}}
+{{fields "teams_device_usage_user_counts"}}
 

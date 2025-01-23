@@ -1561,11 +1561,11 @@ Please refer to the following [document](https://www.elastic.co/guide/en/ecs/cur
 
 
 
-### Teams Device Usage
+### Teams Device Usage User Counts
 
 Get details about Teams device usage from [Microsoft Graph API](https://learn.microsoft.com/en-us/graph/api/reportroot-getteamsdeviceusageusercounts?view=graph-rest-1.0&tabs=http).
 
-An example event for `teams_device_usage` looks as following:
+An example event for `teams_device_usage_user_counts` looks as following:
 
 ```json
 {
@@ -1574,30 +1574,40 @@ An example event for `teams_device_usage` looks as following:
             "teams": {
                 "device": {
                     "usage": {
-                        "windows_phone": {
-                            "count": "0"
-                        },
-                        "web": {
-                            "count": "0"
-                        },
-                        "report": {
-                            "date": "2024-12-25",
-                            "period": {
-                                "day": "7"
-                            },
-                            "refresh_date": "2024-12-31"
-                        },
-                        "ios": {
-                            "count": "0"
-                        },
-                        "windows": {
-                            "count": "0"
-                        },
-                        "android_phone": {
-                            "count": "0"
-                        },
-                        "mac": {
-                            "count": "0"
+                        "user": {
+                            "counts": {
+                                "windows_phone": {
+                                    "count": 0
+                                },
+                                "web": {
+                                    "count": 1
+                                },
+                                "linux": {
+                                    "count": 0
+                                },
+                                "report": {
+                                    "date": "2025-01-21",
+                                    "period": {
+                                        "day": "7"
+                                    },
+                                    "refresh_date": "2025-01-21"
+                                },
+                                "chrome_os": {
+                                    "count": 0
+                                },
+                                "ios": {
+                                    "count": 0
+                                },
+                                "windows": {
+                                    "count": 0
+                                },
+                                "android_phone": {
+                                    "count": 0
+                                },
+                                "mac": {
+                                    "count": 0
+                                }
+                            }
                         }
                     }
                 }
@@ -1606,19 +1616,24 @@ An example event for `teams_device_usage` looks as following:
     },
     "agent": {
         "name": "docker-fleet-agent",
-        "id": "8eca9f6b-266f-4410-9055-349d6d4e1f58",
+        "id": "dd15c14a-87a8-447a-9664-47ede1fae11a",
+        "ephemeral_id": "cee4f8bf-01b4-425c-8ecb-a2fa49a97348",
         "type": "filebeat",
-        "ephemeral_id": "f69fe39f-6198-40c4-aa5d-489486892dd7",
         "version": "8.16.0"
     },
-    "@timestamp": "2025-01-02T06:25:32.102Z",
+    "@timestamp": "2025-01-21",
     "ecs": {
         "version": "8.16.0"
     },
     "data_stream": {
         "namespace": "default",
         "type": "metrics",
-        "dataset": "o365_metrics.teams_device_usage"
+        "dataset": "o365_metrics.teams_device_usage_user_counts"
+    },
+    "elastic_agent": {
+        "id": "dd15c14a-87a8-447a-9664-47ede1fae11a",
+        "version": "8.16.0",
+        "snapshot": false
     },
     "host": {
         "hostname": "docker-fleet-agent",
@@ -1630,28 +1645,23 @@ An example event for `teams_device_usage` looks as following:
             "version": "20230201",
             "platform": "wolfi"
         },
-        "containerized": false,
         "ip": [
-            "192.168.160.7"
+            "172.19.0.7"
         ],
+        "containerized": false,
         "name": "docker-fleet-agent",
         "mac": [
-            "02-42-C0-A8-A0-07"
+            "02-42-AC-13-00-07"
         ],
         "architecture": "aarch64"
     },
-    "elastic_agent": {
-        "id": "8eca9f6b-266f-4410-9055-349d6d4e1f58",
-        "version": "8.16.0",
-        "snapshot": false
-    },
     "event": {
         "agent_id_status": "verified",
-        "ingested": "2025-01-02T06:25:33Z",
-        "dataset": "o365_metrics.teams_device_usage"
+        "ingested": "2025-01-23T07:00:30Z",
+        "dataset": "o365_metrics.teams_device_usage_user_counts"
     },
     "tags": [
-        "o365.metrics.outlook.activity"
+        "o365.metrics.teams.device.usage.user.counts"
     ]
 }
 ```
@@ -1672,16 +1682,16 @@ Please refer to the following [document](https://www.elastic.co/guide/en/ecs/cur
 | host.containerized | If the host is a container. | boolean |  |
 | host.os.build | OS build information. | keyword |  |
 | host.os.codename | OS codename, if any. | keyword |  |
-| o365.metrics.teams.device.usage.android_phone.count | The number of active Teams users on Android devices. | long |  |
-| o365.metrics.teams.device.usage.chromse_os.count | The number of active Teams users on Chrome OS devices. | long |  |
-| o365.metrics.teams.device.usage.ios.count | The number of active Teams users on iOS devices (iPhone and iPad). | long |  |
-| o365.metrics.teams.device.usage.linux.count | The number of active Teams users on Linux devices. | long |  |
-| o365.metrics.teams.device.usage.mac.count | The number of active Teams users on macOS devices. | long |  |
-| o365.metrics.teams.device.usage.report.date | The specific date for which the report data applies. | date |  |
-| o365.metrics.teams.device.usage.report.period.day | The duration (e.g., 7 days) over which the report data is aggregated. | integer | d |
-| o365.metrics.teams.device.usage.report.refresh_date | The date when the report data was last updated. | date |  |
-| o365.metrics.teams.device.usage.web.count | The number of active Teams users accessing via web browsers. | long |  |
-| o365.metrics.teams.device.usage.windows.count | The number of active Teams users on Windows devices. | long |  |
-| o365.metrics.teams.device.usage.windows_phone.count | The number of active Teams users on Windows Phone devices. | long |  |
+| o365.metrics.teams.device.usage.user.counts.android_phone.count | The number of active Teams users on Android devices. | long |  |
+| o365.metrics.teams.device.usage.user.counts.chrome_os.count | The number of active Teams users on Chrome OS devices. | long |  |
+| o365.metrics.teams.device.usage.user.counts.ios.count | The number of active Teams users on iOS devices (iPhone and iPad). | long |  |
+| o365.metrics.teams.device.usage.user.counts.linux.count | The number of active Teams users on Linux devices. | long |  |
+| o365.metrics.teams.device.usage.user.counts.mac.count | The number of active Teams users on macOS devices. | long |  |
+| o365.metrics.teams.device.usage.user.counts.report.date | The specific date for which the report data applies. | date |  |
+| o365.metrics.teams.device.usage.user.counts.report.period.day | The duration (e.g., 7 days) over which the report data is aggregated. | integer | d |
+| o365.metrics.teams.device.usage.user.counts.report.refresh_date | The date when the report data was last updated. | date |  |
+| o365.metrics.teams.device.usage.user.counts.web.count | The number of active Teams users accessing via web browsers. | long |  |
+| o365.metrics.teams.device.usage.user.counts.windows.count | The number of active Teams users on Windows devices. | long |  |
+| o365.metrics.teams.device.usage.user.counts.windows_phone.count | The number of active Teams users on Windows Phone devices. | long |  |
 
 
