@@ -50,17 +50,17 @@ program: |
                 "message": {
                     ?"name": e.?name,
                     "udm": {
-                      ?"metadata": e.?udm.?metadata,
-                      ?"target": e.?udm.?target,
+                      ?"metadata": e.?udm.metadata,
+                      ?"target": e.?udm.target,
                       "securityResult": result,
-                      ?"about": e.?udm.?about,
-                      ?"additional": e.?udm.?additional,
-                      ?"extensions": e.?udm.?extensions,
-                      ?"intermediary": e.?udm.?intermediary,
-                      ?"network": e.?udm.?network,
-                      ?"observer": e.?udm.?observer,
-                      ?"principal": e.?udm.?principal,
-                      ?"src": e.?udm.?src,
+                      ?"about": e.?udm.about,
+                      ?"additional": e.?udm.additional,
+                      ?"extensions": e.?udm.extensions,
+                      ?"intermediary": e.?udm.intermediary,
+                      ?"network": e.?udm.network,
+                      ?"observer": e.?udm.observer,
+                      ?"principal": e.?udm.principal,
+                      ?"src": e.?udm.src,
                     }
                   }.encode_json()
             })).flatten()
@@ -68,9 +68,9 @@ program: |
             []
           ),
         "cursor": {
-          ?"last_timestamp": has(body.events) && size(body.events) == state.limit ? 
-            state.?cursor.last_timestamp 
-          : 
+          ?"last_timestamp": has(body.events) && size(body.events) == state.limit ?
+            state.?cursor.last_timestamp
+          :
             (
               state.?want_more.orValue(false) ?
                 state.?first_end_time
@@ -79,6 +79,8 @@ program: |
             )
         },
         "start_time": state.start_time,
+        // As the records are received in descending order, we store the end_time from the first pagination call in first_end_time for use in subsequent interval API calls.
+        // During pagination calls, the end_time is continuously updated to represent the minimum value of the udm.metadata.eventTimestamp field.
         "end_time": has(body.events) && body.events != null ? body.events.map(e, e.udm.metadata.eventTimestamp).map(t, timestamp(t)).min() : state.end_time,
         "first_end_time": state.?want_more.orValue(false) ? state.first_end_time : state.end_time,
         "want_more": has(body.events) && size(body.events) == state.limit,

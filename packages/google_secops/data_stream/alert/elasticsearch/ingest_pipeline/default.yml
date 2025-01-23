@@ -94,6 +94,23 @@ processors:
             - append:
                 field: error.message
                 value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - script:
+      lang: painless
+      description: Script to set vulnerability.severity
+      tag: set_vulnerability_severity
+      source: |-
+        def severity_v = "hye";
+        if (ctx.google_secops?.alert?.udm?.extensions?.vulns?.vulnerabilities instanceof List) {
+          def sv = "hello";
+          for (list in ctx.google_secops.alert.udm.extensions.vulns.vulnerabilities) {
+            for (label in list["about"]["labels"]) {
+              if (label["key"] == 'vulnType') {
+                ctx.vulnerability.severity = label["value"];
+              }
+            }
+          }
+        }
+      ignore_failure: true
   - foreach:
       field: google_secops.alert.udm.intermediary
       if: ctx.google_secops?.alert?.udm?.intermediary instanceof List
@@ -565,40 +582,6 @@ processors:
             - append:
                 field: error.message
                 value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
-  - foreach:
-      field: google_secops.alert.udm.principal.ipGeoArtifact
-      if: ctx.google_secops?.alert?.udm?.principal?.ipGeoArtifact instanceof List
-      processor:
-        append:
-          field: host.as.number
-          tag: append_udm_principal_ipGeoArtifact_network_asn_into_host_as_number
-          value: '{{{_ingest._value.network.asn}}}'
-          allow_duplicates: false
-  - foreach:
-      field: host.as.number
-      if: ctx.host?.as?.number instanceof List
-      processor:
-        convert:
-          field: _ingest._value
-          tag: convert_host_as_number_to_long
-          type: long
-          ignore_missing: true
-          on_failure:
-            - remove:
-                field: _ingest._value
-                ignore_missing: true
-            - append:
-                field: error.message
-                value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
-  - foreach:
-      field: google_secops.alert.udm.principal.ipGeoArtifact
-      if: ctx.google_secops?.alert?.udm?.principal?.ipGeoArtifact instanceof List
-      processor:
-        append:
-          field: host.as.organization.name
-          tag: append_udm_principal_ipGeoArtifact_network_organizationName_into_host_as_number
-          value: '{{{_ingest._value.network.organizationName}}}'
-          allow_duplicates: false
   - convert:
       field: google_secops.alert.udm.principal.location.regionCoordinates.latitude
       tag: convert_udm_principal_location_regionCoordinates_latitude_to_double
@@ -735,17 +718,17 @@ processors:
       copy_from: google_secops.alert.udm.principal.process.file.fullPath
       ignore_empty_value: true
   - set:
-      field: file.hash.md5
+      field: process.hash.md5
       tag: set_file_hash_md5_from_alert_udm_principal_process_file_md5
       copy_from: google_secops.alert.udm.principal.process.file.md5
       ignore_empty_value: true
   - set:
-      field: file.hash.sha1
+      field: process.hash.sha1
       tag: set_file_hash_sha1_from_alert_udm_principal_process_file_sha1
       copy_from: google_secops.alert.udm.principal.process.file.sha1
       ignore_empty_value: true
   - set:
-      field: file.hash.sha256
+      field: process.hash.sha256
       tag: set_file_hash_sha256_from_alert_udm_principal_process_file_sha256
       copy_from: google_secops.alert.udm.principal.process.file.sha256
       ignore_empty_value: true
@@ -1313,21 +1296,21 @@ processors:
   - append:
       field: related.hash
       tag: append_file_hash_md5_into_related_hash
-      value: '{{{file.hash.md5}}}'
+      value: '{{{process.hash.md5}}}'
       allow_duplicates: false
-      if: ctx.file?.hash?.md5 != null
+      if: ctx.process?.hash?.md5 != null
   - append:
       field: related.hash
       tag: append_file_hash_sha1_into_related_hash
-      value: '{{{file.hash.sha1}}}'
+      value: '{{{process.hash.sha1}}}'
       allow_duplicates: false
-      if: ctx.file?.hash?.sha1 != null
+      if: ctx.process?.hash?.sha1 != null
   - append:
       field: related.hash
       tag: append_file_hash_sha256_into_related_hash
-      value: '{{{file.hash.sha256}}}'
+      value: '{{{process.hash.sha256}}}'
       allow_duplicates: false
-      if: ctx.file?.hash?.sha256 != null
+      if: ctx.process?.hash?.sha256 != null
   - foreach:
       field: user.email
       if: ctx.user?.email instanceof List
@@ -1496,8 +1479,6 @@ processors:
             - _ingest._value.location.countryOrRegion
             - _ingest._value.location.regionCoordinates
             - _ingest._value.location.state
-            - _ingest._value.network.asn
-            - _ingest._value.network.organizationName
           tag: remove_custom_duplicate_fields_from_google_secops_alert_udm_principal_ipGeoArtifact
           ignore_missing: true
           if: ctx.tags == null || !(ctx.tags.contains('preserve_duplicate_custom_fields'))
