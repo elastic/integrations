@@ -1577,13 +1577,13 @@ An example event for `teams_device_usage_user_counts` looks as following:
                         "user": {
                             "counts": {
                                 "windows_phone": {
-                                    "count": 0
+                                    "count": 2
                                 },
                                 "web": {
                                     "count": 1
                                 },
                                 "linux": {
-                                    "count": 0
+                                    "count": 10
                                 },
                                 "report": {
                                     "date": "2025-01-21",
@@ -1593,19 +1593,19 @@ An example event for `teams_device_usage_user_counts` looks as following:
                                     "refresh_date": "2025-01-21"
                                 },
                                 "chrome_os": {
-                                    "count": 0
+                                    "count": 20
                                 },
                                 "ios": {
-                                    "count": 0
+                                    "count": 7
                                 },
                                 "windows": {
-                                    "count": 0
+                                    "count": 9
                                 },
                                 "android_phone": {
-                                    "count": 0
+                                    "count": 5
                                 },
                                 "mac": {
-                                    "count": 0
+                                    "count": 2
                                 }
                             }
                         }
