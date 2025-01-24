@@ -327,6 +327,7 @@ An example event for `asset` looks as following:
 | tenable_io.asset.operating_systems | The operating systems that scans have associated with the asset record. | keyword |
 | tenable_io.asset.qualys.asset_ids | The Asset ID of the asset in Qualys. | keyword |
 | tenable_io.asset.qualys.host_ids | The Host ID of the asset in Qualys. | keyword |
+| tenable_io.asset.serial_number | The serial number of the Asset. | keyword |
 | tenable_io.asset.servicenow_sysid | The unique record identifier of the asset in ServiceNow. | keyword |
 | tenable_io.asset.sources.first_seen | The ISO timestamp when the source first reported the asset. | date |
 | tenable_io.asset.sources.last_seen | The ISO timestamp when the source last reported the asset. | date |
