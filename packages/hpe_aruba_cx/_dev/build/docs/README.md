@@ -845,7 +845,7 @@ Note: Descriptions have not been filled out
 | `<ckn>`        | aruba.mac.ckn                |
 | `<feature>`    | aruba.mac.feature            |
 | `<ifname>`     | aruba.interface.name         |
-| `<ifname>`     | aruba.instance.id            |
+| `<id>`         | aruba.instance.id            |
 | `<latest_an>`  | aruba.mac.latest_an          |
 | `<latest_kn>`  | aruba.mac.latest_kn          |
 | `<name>`       | aruba.port                   |
