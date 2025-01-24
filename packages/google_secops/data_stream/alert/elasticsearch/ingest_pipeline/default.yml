@@ -99,9 +99,7 @@ processors:
       description: Script to set vulnerability.severity
       tag: set_vulnerability_severity
       source: |-
-        def severity_v = "hye";
         if (ctx.google_secops?.alert?.udm?.extensions?.vulns?.vulnerabilities instanceof List) {
-          def sv = "hello";
           for (list in ctx.google_secops.alert.udm.extensions.vulns.vulnerabilities) {
             for (label in list["about"]["labels"]) {
               if (label["key"] == 'vulnType') {
@@ -110,7 +108,10 @@ processors:
             }
           }
         }
-      ignore_failure: true
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - foreach:
       field: google_secops.alert.udm.intermediary
       if: ctx.google_secops?.alert?.udm?.intermediary instanceof List
@@ -547,7 +548,10 @@ processors:
           ctx.host.geo = new HashMap();
         }
         ctx.host.geo.location = locationList;
-      ignore_failure: true
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - foreach:
       field: google_secops.alert.udm.principal.ipGeoArtifact
       if: ctx.google_secops?.alert?.udm?.principal?.ipGeoArtifact instanceof List
@@ -981,7 +985,10 @@ processors:
           ctx.destination.geo = new HashMap();
         }
         ctx.destination.geo.location = locationList;
-      ignore_failure: true
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - foreach:
       field: google_secops.alert.udm.target.ipGeoArtifact
       if: ctx.google_secops?.alert?.udm?.target?.ipGeoArtifact instanceof List
@@ -1176,7 +1183,10 @@ processors:
       source: 'ctx.network.bytes = ctx.source.bytes + ctx.destination.bytes'
       if: ctx.source?.bytes != null && ctx.destination?.bytes != null
       tag: script_to_set_network_bytes_from_source_and_destination_bytes
-      ignore_failure: true
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - foreach:
       field: google_secops.alert.udm.about
       if: ctx.google_secops?.alert?.udm?.about instanceof List
@@ -1365,7 +1375,7 @@ processors:
   - script:
       tag: script_to_set_event_severity
       lang: painless
-      description: Script to set event severity.
+      description: Script to set event severity. See [documentation](https://cloud.google.com/chronicle/docs/reference/udm-field-list#securityresultproductseverity)
       if: ctx.google_secops?.alert?.udm?.securityResult?.severity != null
       source: |-
         if (ctx.google_secops.alert.udm.securityResult.severity.toUpperCase() == 'CRITICAL') {
@@ -1385,7 +1395,10 @@ processors:
         } else if (ctx.google_secops.alert.udm.securityResult.severity.toUpperCase() == 'UNKNOWN_SEVERITY') {
           ctx.event.severity = 0
         }
-      ignore_failure: true
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - foreach:
       field: source.ip
       if: ctx.source?.ip instanceof List
