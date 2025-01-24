@@ -448,7 +448,7 @@ processors:
         - "^Module %{DATA:aruba.temp.module} shutdown initiated for sensor %{DATA:aruba.temp.name} with low critical temperature, %{NUMBER:aruba.temp.celsius:long} degC"
 
     # Loopback events (90x)
-    # https://www.arubanetworks.com/techdocs/AOS-CX/10.07/HTML/5200-8214/Content/events/LOOPBACK.htm
+    # https://arubanetworking.hpe.com/techdocs/AOS-CX/10.15/HTML/elmrg/Content/events/LOOPBACK.htm
   - grok:
       field: message
       tag: loop_901_902_903
@@ -1226,7 +1226,7 @@ processors:
         - "^OSPF (all|designated) routers field entry added: group_id=%{DATA:group.id} fp_id=%{DATA:aruba.ospf.fp_id} stat_id=%{GREEDYDATA:aruba.ospf.stats_id}"
 
     # MGMD events (26xx)
-    # https://www.arubanetworks.com/techdocs/AOS-CX/10.07/HTML/5200-8214/Content/events/MGMD.htm
+    # https://arubanetworking.hpe.com/techdocs/AOS-CX/10.15/HTML/elmrg/Content/events/MGMD.htm
   - grok:
       field: message
       tag: mgmd_event_2601_through_2622
@@ -1260,6 +1260,14 @@ processors:
       patterns:
         - "^%{DATA:aruba.mgmd.mgmd_type} is not operational on interface %{DATA:aruba.mgmd.l3_port} due to resource unavailability"
         - "^%{DATA:aruba.mgmd.mgmd_type} snooping is %{DATA:aruba.status} on VLAN %{GREEDYDATA:network.vlan.id}."
+  - grok:
+      field: message
+      tag: mgmd_event_2625_2626_2627
+      description: "This log event is used to identify IGMPv2 packet in ssm-range but not in ssm-map | identify MLDv1 packet in ssm-range but not in ssm-map | identify that ssm-map ACL is applied to particular interface"
+      if: "['2625','2626','2627'].contains(ctx.event?.code)"
+      patterns:
+        - "^(IGMPv2|MLDv1) packet received for group address %{IP:client.ip} in SSM range which is not part of SSM map."
+        - "^SSM-map %{DATA:aruba.acl.name} applied to %{DATA:aruba.mgmd.protocol} interface %{GREEDYDATA:aruba.port}"
 
     # Replication Manager events (270x)
     # https://www.arubanetworks.com/techdocs/AOS-CX/10.07/HTML/5200-8214/Content/events/REPLD.htm
@@ -1502,7 +1510,7 @@ processors:
         3105_PATTERN: "%{DATA:aruba.port} ports"
 
     # Module events (32xx)
-    # https://www.arubanetworks.com/techdocs/AOS-CX/10.07/HTML/5200-8214/Content/events/MODULE.htm
+    # https://arubanetworking.hpe.com/techdocs/AOS-CX/10.15/HTML/elmrg/Content/events/MODULE.htm
   - grok:
       field: message
       tag: module_event_3201_through_3240_common
@@ -1524,6 +1532,28 @@ processors:
         - "^%{DATA:aruba.module.type} module %{DATA:aruba.module.name} is requesting to power on with priority %{GREEDYDATA:aruba.priority}"
         - "^%{DATA:aruba.module.name} is starting zeroization"
         - "^%{DATA:aruba.module.name} zeroization (completed|failed)"
+  - grok:
+      field: message
+      tag: module_event_3241_3242_3243
+      description: "Indicates that the module is about to start zeroization and setting enhanced secure mode | module zeroization has completed and enhanced secure modes | module zeroization failed to complete"
+      if: "['3241','3242','3243'].contains(ctx.event?.code)"
+      patterns:
+        - "^%{DATA:aruba.module.name}( is starting)? zeroization"
+  - grok:
+      field: message
+      tag: module_event_3244_3245
+      description: "Indicates that the module front-panel factory-reset configuration has been changed | module does not support front-panel factory-reset with current system recipe"
+      if: "['3244','3245'].contains(ctx.event?.code)"
+      patterns:
+        - "^%{DATA:aruba.module.name} Front-panel factory-reset is (now %{GREEDYDATA:aruba.status}|NOT supported with current system recipe)"
+  - grok:
+      field: message
+      tag: module_event_3246
+      description: "Indicates that config was kept between part number changes"
+      if: "ctx.event?.code == '3246'"
+      patterns: 
+        # Accounting for the spelling error in the documentation for `compatability`
+        - "^Config (compatability|compatibility) allowed between modules %{DATA:aruba.module.old_part} and %{GREEDYDATA:aruba.module.new_part}"
 
   # IRDP events (350x)
   # https://www.arubanetworks.com/techdocs/AOS-CX/10.15/HTML/elmrg/Content/events/IRDP.htm
@@ -1753,7 +1783,7 @@ processors:
         - "^Failed to (enable|disable) local proxy ARP for port %{DATA:aruba.port} on vrf %{GREEDYDATA:aruba.vrf.id}"
 
     # Management events (430x)
-    # https://www.arubanetworks.com/techdocs/AOS-CX/10.07/HTML/5200-8214/Content/events/MGMT.htm
+    # https://arubanetworking.hpe.com/techdocs/AOS-CX/10.15/HTML/elmrg/Content/events/MGMT.htm
   - grok:
       field: message
       tag: mgmt_event_4301
@@ -2012,17 +2042,23 @@ processors:
       patterns:
         - "^User %{DATA:user.name} "
 
-    # MAC Learning events (480x)
-    # https://www.arubanetworks.com/techdocs/AOS-CX/10.07/HTML/5200-8214/Content/events/MAC-LEARN.htm
+    # MAC address management events (480x)
+    # https://arubanetworking.hpe.com/techdocs/AOS-CX/10.15/HTML/elmrg/Content/events/MAC-MGMT.htm
   - grok:
       field: message
-      tag: mac_learn_event_4801_through_4805
-      description: "The following are the events related to MAC learning."
+      tag: mac_address_mgmt_event_4801_4802_4803_4804_4805
+      description: "Event raised when L2 mac move | when L2 MAC table is flushed with [vlan|port] [delete|down|move] event or clear mac-address command from vtysh"
       if: "['4801','4802','4803','4804','4805'].contains(ctx.event?.code)"
       patterns:
         - "^MAC %{MAC:server.mac} moved from port %{DATA:aruba.interface.prev_id} to port %{DATA:aruba.interface.id} on VLAN %{GREEDYDATA:network.vlan.id}"
         - "^All dynamic MAC addresses on VLAN %{DATA:network.vlan.id} were flushed"
         - "^All dynamic MAC addresses on port %{DATA:aruba.interface.id} were flushed"
+  - dissect:
+      field: message
+      tag: mac_address_mgmt_event_4809
+      description: "Logs warning that MAC hit a hash collision in SDK."
+      if: "ctx.event?.code == '4809'"
+      pattern: "MAC hash collision occurred for MAC %{server.mac} on VLAN %{network.vlan.id}"
 
     # OSPFv3 events (490x)
     # https://www.arubanetworks.com/techdocs/AOS-CX/10.07/HTML/5200-8214/Content/events/OSPFv3.htm
@@ -2639,7 +2675,7 @@ processors:
         - "^Failed to create layer 3 (IPv4|IPv6) (RX|TX) statistic for port:%{GREEDYDATA:aruba.port}"
 
     # Mirroring events (670x)
-    # https://www.arubanetworks.com/techdocs/AOS-CX/10.07/HTML/5200-8214/Content/events/MIRRORING.htm
+    # https://arubanetworking.hpe.com/techdocs/AOS-CX/10.15/HTML/elmrg/Content/events/MIRRORING.htm
   - grok:
       field: message
       tag: mirror_event_6701_through_6706
@@ -4374,15 +4410,22 @@ processors:
       pattern: 'Control Plane (%{aruba.dpse.operation_name}) failure during (%{aruba.dpse.plugin_name}) configuration'
 
   # MAC Address mode configuration events (1100x)
-  # https://www.arubanetworks.com/techdocs/AOS-CX/10.07/HTML/5200-8214/Content/events/FAULT_MONITOR.htm
+  # https://arubanetworking.hpe.com/techdocs/AOS-CX/10.15/HTML/elmrg/Content/events/L3_MAC_ADDRESS_CONFIGURATION.htm
   - grok:
       field: message
       tag: mac_event_11001_11002_11003
-      description: "The following are the events related to MAC Address mode configuration"
+      description: "Log event when the MAC Address [configured|operational] mode is changed | event when a local station MAC address cannot be added because the table is full"
       if: "['11001','11002','11003'].contains(ctx.event?.code)"
       patterns:
         - "^The MAC Address (configured|operational) mode changed from %{DATA:aruba.mac.old_mode} to %{GREEDYDATA:aruba.mac.new_mode}"
         - "^Station MAC add failure due to hardware full, mac=%{MAC:server.mac} vlan=%{GREEDYDATA:network.vlan.id}"
+  - grok:
+      field: message
+      tag: mac_event_11004
+      description: "Log event when the MAC Address operational mode is changed due to out of resources"
+      if: "ctx.event?.code == '11004'"
+      patterns:
+        - "^The MAC Address operational mode changed from %{DATA:aruba.mac.old_mode} to %{DATA:aruba.mac.new_mode} due to reaching SVI threshold. Current=%{NUMBER:aruba.limit.read_value:long} Max=%{GREEDYDATA:aruba.limit.threshold}"
 
   # Fault Monitor Events (111xx)
   # https://www.arubanetworks.com/techdocs/AOS-CX/10.15/HTML/elmrg/Content/events/FAULT_MONITOR.htm
@@ -4455,10 +4498,10 @@ processors:
           - "^MAC Lockout packet drop detected for %{MAC:client.mac} as source & destination address with source packet count: %{NUMBER:aruba.fault.sa_diff_count:long} and destination packet count: %{NUMBER:aruba.fault.da_diff_count:long}"
 
     # MACsec events (1120x)
-    # https://www.arubanetworks.com/techdocs/AOS-CX/10.07/HTML/5200-8214/Content/events/MACSEC.htm
+    # https://arubanetworking.hpe.com/techdocs/AOS-CX/10.15/HTML/elmrg/Content/events/MACSEC.htm
   - grok:
       field: message
-      tag: macsec_event_11201_through_11204
+      tag: macsec_event_11201_11202_11203_11204
       description: "The following are the events related to MACsec"
       if: "['11201','11202','11203','11204'].contains(ctx.event?.code)"
       patterns:
@@ -4466,6 +4509,43 @@ processors:
         - "^MKA session secured for Connectivity Association %{DATA:aruba.mac.ckn} on interface %{GREEDYDATA:aruba.interface.name}"
         - "^Secure Association key updated for Connectivity Association %{DATA:aruba.mac.ckn} on interface %{DATA:aruba.interface.name} - Latest AN/KN %{DATA:aruba.mac.latest_an}/%{DATA:aruba.mac.latest_kn}, Old AN/KN %{DATA:aruba.mac.old_an}/%{GREEDYDATA:aruba.mac.old_kn}"
         - "^Possible replay attempt detected on the Secure Channel %{GREEDYDATA:aruba.mac.sci}."
+  - grok:
+      field: message
+      tag: macsec_event_11205_11206_11207
+      description: "The data plane traffic on an interface is (not)? secured by MACsec | selftest failed for the specified interface"
+      if: "['11205','11206','11207'].contains(ctx.event?.code)"
+      patterns:
+        - "^The data traffic on interface %{DATA:aruba.interface.name} is "
+        - "^Interface %{DATA:aruba.interface.name} MACsec selftest failed - %{GREEDYDATA:event.reason}."
+  - dissect:
+      field: message
+      tag: macsec_event_11208
+      description: "Detected a MACsec frame with unknown SCI on an interface with the specified port ID"
+      if: "ctx.event?.code == '11208'"
+      pattern: "MACsec frame with an unknown SCI detected on MACsec entity running on interface %{aruba.interface.name} with port ID %{aruba.instance.id}."
+  - grok:
+      field: message
+      tag: macsec_event_11209_11210
+      description: "Data delay protection is suspended for the specified CKN on interface during ISSU | Data delay protection is resumed for the given CKN post ISSU"
+      if: "['11209','11210'].contains(ctx.event?.code)"
+      patterns:
+        - "^(Suspending|Resuming) data delay protection for Connectivity Association %{DATA:aruba.mac.ckn} on interface %{DATA:aruba.interface.name} (during|post) ISSU"
+  - grok:
+      field: message
+      tag: macsec_event_11211_11212
+      description: "ISSU aborted by MACsec | MACsec daemon blocked an interface due to a configuration error"
+      if: "['11211','11212'].contains(ctx.event?.code)"
+      patterns:
+        - "^ISSU aborted by MACsec. Reason - %{GREEDYDATA:event.reason}."
+        - "^Interface %{DATA:aruba.interface.name} blocked by MACsec due to a misconfiguration. Reason - %{GREEDYDATA:event.reason}."
+  - grok:
+      field: message
+      tag: macsec_event_11213_11214
+      description: "The port will remain blocked for both ingress and egress traffic till a valid license is not installed | MACsec is operational on the port in honor mode"
+      if: "['11213','11214'].contains(ctx.event?.code)"
+      patterns:
+        - "^MACsec is disabled on port %{DATA:aruba.port}. Additional licenses are needed to enable the %{DATA:aruba.mac.feature} functionality on the port."
+        - "^MACsec is operational on port %{DATA:aruba.port} without a valid license for %{GREEDYDATA:aruba.mac.feature}."
 
   # Smartlink events (1130x)
   # https://www.arubanetworks.com/techdocs/AOS-CX/10.15/HTML/elmrg/Content/events/SMARTLINK.htm
@@ -4761,6 +4841,16 @@ processors:
       description: "Status of the Hot-patch attempted to be applied at boot"
       if: "ctx.event?.code == '13226'"
       pattern: 'Attempt to Hot-Patch %{package.name} on %{aruba.hotpatch.ss} at boot: "%{aruba.status}".'
+
+  # MPLS events (1330x)
+  # https://arubanetworking.hpe.com/techdocs/AOS-CX/10.15/HTML/elmrg/Content/events/MPLS.htm
+  - grok:
+      field: message
+      tag: mpls_event_13401_13302
+      description: ""
+      if: "['13301','13302'].contains(ctx.event?.code)"
+      patterns:
+        - "^MPLS LDP session with local identifier %{DATA:aruba.mpls.local_ldp_id} and peer identifier %{DATA:aruba.mpls.peer_ldp_id} has (come up|gone down)"
 
   # Config validator events (1340x)
   # https://www.arubanetworks.com/techdocs/AOS-CX/10.15/HTML/elmrg/Content/events/CONFIG-VALIDATOR.htm
