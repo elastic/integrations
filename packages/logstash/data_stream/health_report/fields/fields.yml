@@ -4,71 +4,84 @@
   - name: node
     type: group
     fields:
-      - name: host
+      - name: name
         type: keyword
       - name: version
         type: keyword
-      - name: ephemeral_id
+      - name: address
         type: keyword
-      - name: http_address
+      - name: symptom
         type: keyword
-      - name: name
-        type: keyword
+        multi_fields:
+        - name: text
+          type: match_only_text
       - name: uuid
         type: keyword
-      - name: health_report
+      - name: status
+        type: keyword
+  - name: pipeline
+    type: group
+    fields:
+      - name: id
+        type: keyword
+      - name: status
+        type: keyword
+      - name: state
+        type: keyword
+      - name: symptom
+        type: keyword
+        multi_fields:
+        - name: text
+          type: match_only_text
+      - name: diagnosis
         type: group
         fields:
-          - name: status
+          - name: id
             type: keyword
-          - name: indicators
+          - name: cause
+            type: keyword
+            multi_fields:
+            - name: text
+              type: match_only_text
+          - name: action
+            type: keyword
+            multi_fields:
+            - name: text
+              type: match_only_text
+          - name: help_url
+            type: keyword
+            multi_fields:
+            - name: text
+              type: match_only_text
+      - name: impacts
+        type: group
+        fields:
+          - name: id
+            type: keyword
+          - name: severity
+            type: short
+          - name: description
+            type: keyword
+            multi_fields:
+            - name: text
+              type: match_only_text
+          - name: impact_areas
+            type: keyword
+      - name: flow
+        type: group
+        fields:
+          - name: worker_utilization
             type: group
             fields:
-              - name: pipelines
-                type: group
-                fields: 
-                - name: pipeline_id
-                  type: keyword 
-                - name: status
-                  type: keyword
-                - name: symptom
-                  type: text
-                - name: details
-                  type: group
-                  fields:
-                    - name: state
-                      type: keyword
-                    - name: flow
-                      type: group
-                      fields:
-                        - name: worker_utilization
-                          type: group
-                          fields:
-                            - name: lifetime
-                              type: long
-                            - name: max
-                              type: long
-                            - name: last_min
-                              type: long
-                    - name: diagnosis
-                      type: group
-                      fields:
-                        - name: id
-                          type: keyword
-                        - name: cause
-                          type: text
-                        - name: action
-                          type: text
-                        - name: help_url
-                          type: text
-                - name: impacts
-                  type: group
-                  fields:
-                    - name: id
-                      type: keyword
-                    - name: severity
-                      type: long
-                    - name: description
-                      type: text
-                    - name: areas
-                      type: keyword
+              - name: current
+                type: float
+              - name: last_1_hour
+                type: float
+              - name: last_5_minutes
+                type: float
+              - name: last_15_minutes
+                type: float
+              - name: lifetime
+                type: float
+              - name: last_1_minute
+                type: float

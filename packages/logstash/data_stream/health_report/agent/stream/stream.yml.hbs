@@ -24,24 +24,25 @@ program: |
   .as(resp, bytes(resp.Body)
   .decode_json().as(body,
     [   
-        [{"logstash.node": {
+        [{"event.dataset": "logstash.node",
+            "logstash.node": {
             "name":body.name,
             "address":body.http_address,
             "uuid":body.id,
             "version":body.version,
             "status":body.status,
-            "description":body.symptom,
-            "timestamp":now(),
-            "pipelines": size(body.indicators.pipelines)
+            "symptom":body.symptom,
             },
         }],
         body.indicators.pipelines.indicators.as(pipelines, // pipelines = body.indicators.pipelines.indicators
               pipelines.map(pipeline_name, pipelines[pipeline_name].as(pipeline, { // pipeline = pipelines[pipeline_name]
+                    "event.dataset": "logstash.pipeline",
                     "logstash": {
                         "node": {
-                            "host": body.name,
+                            "name": body.name,
                             "version": body.version,
-                            "address": body.http_address
+                            "address": body.http_address,
+                            "uuid": body.id
                         },
                         "pipeline": {
                             "id":pipeline_name,
