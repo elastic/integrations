@@ -16,8 +16,8 @@ Following Microsoft 365 Graph Reports can be collected by Microsoft Office 365 M
 | [OneDrive Usage Storage](https://learn.microsoft.com/en-us/microsoft-365/admin/activity-reports/onedrive-for-business-usage-ww?view=o365-worldwide)      |    [reportRoot: getOneDriveUsageStorage](https://learn.microsoft.com/en-us/graph/api/reportroot-getonedriveusagestorage?view=graph-rest-1.0&tabs=http)    |   Office 365 One Drive Usage metrics   |   `Period`-based   |
 | [Outlook Activity Counts](https://learn.microsoft.com/en-us/microsoft-365/admin/activity-reports/email-activity-ww?view=o365-worldwide)      |    [reportRoot: getEmailActivityCounts](https://learn.microsoft.com/en-us/graph/api/reportroot-getemailactivitycounts?view=graph-rest-1.0&tabs=http)    |   Office 365 Outlook Activity metrics   |   `Period`-based   |
 | [Outlook App Usage Version User Counts](https://learn.microsoft.com/en-us/microsoft-365/admin/activity-reports/email-apps-usage-ww?view=o365-worldwide)      |    [reportRoot: getEmailAppUsageVersionsUserCounts](https://learn.microsoft.com/en-us/graph/api/reportroot-getemailappusageversionsusercounts?view=graph-rest-1.0&tabs=http)    |   Office 365 Outlook App Usage metrics   |   `Period`-based   |
-| [Outlook Mailbox Usage Quota Status Mailbox Counts](https://learn.microsoft.com/en-us/microsoft-365/admin/activity-reports/mailbox-usage?view=o365-worldwide)      |    [reportRoot: getMailboxUsageQuotaStatusMailboxCounts](https://learn.microsoft.com/en-us/graph/api/reportroot-getmailboxusagequotastatusmailboxcounts?view=graph-rest-1.0&tabs=http)    |   O365 mailbox quota status and mailbox usage detail metrics   |   `Period`-based   |
-| [Outlook Mailbox Usage Mailbox Detail](https://learn.microsoft.com/en-us/microsoft-365/admin/activity-reports/mailbox-usage?view=o365-worldwide)      |    [reportRoot: getMailboxUsageDetail](https://learn.microsoft.com/en-us/graph/api/reportroot-getmailboxusagedetail?view=graph-rest-1.0&tabs=http)    |   O365 mailbox quota status and mailbox usage detail metrics   |   `Period`-based   |
+| [Outlook Mailbox Usage Quota Status Mailbox Counts](https://learn.microsoft.com/en-us/microsoft-365/admin/activity-reports/mailbox-usage?view=o365-worldwide)      |    [reportRoot: getMailboxUsageQuotaStatusMailboxCounts](https://learn.microsoft.com/en-us/graph/api/reportroot-getmailboxusagequotastatusmailboxcounts?view=graph-rest-1.0&tabs=http)    |  Microsoft 365 mailbox quota status mailbox counts metrics   |   `Period`-based   |
+| [Outlook Mailbox Usage Detail](https://learn.microsoft.com/en-us/microsoft-365/admin/activity-reports/mailbox-usage?view=o365-worldwide)      |    [reportRoot: getMailboxUsageDetail](https://learn.microsoft.com/en-us/graph/api/reportroot-getmailboxusagedetail?view=graph-rest-1.0&tabs=http)    |   Microsoft 365 mailbox usage detail metrics   |   `Period`-based   |
 | [SharePoint Site Usage Storage](https://learn.microsoft.com/en-us/microsoft-365/admin/activity-reports/sharepoint-site-usage-ww?view=o365-worldwide)      |    [reportRoot: getSharePointSiteUsageStorage](https://learn.microsoft.com/en-us/graph/api/reportroot-getsharepointsiteusagestorage?view=graph-rest-1.0&tabs=http)    |   Office 365 Sharepoint Site Usage metrics   |   `Period`-based   |
 | [SharePoint Site Usage Site Detail](https://learn.microsoft.com/en-us/microsoft-365/admin/activity-reports/sharepoint-site-usage-ww?view=o365-worldwide)      |    [reportRoot: getSharePointSiteUsageDetail](https://learn.microsoft.com/en-us/graph/api/reportroot-getsharepointsiteusagedetail?view=graph-rest-1.0&tabs=http)    |   Office 365 Sharepoint Site Usage metrics   |   `Period`-based   |
 | [Teams Device Usage User Counts](https://learn.microsoft.com/en-us/microsoft-365/admin/activity-reports/microsoft-teams-device-usage-preview?view=o365-worldwide)      |    [reportRoot: getTeamsDeviceUsageUserCounts](https://learn.microsoft.com/en-us/graph/api/reportroot-getteamsdeviceusageusercounts?view=graph-rest-1.0&tabs=http)    |   Office 365 Teams Device Usage User Counts metrics   |   `Period`-based   |
@@ -245,97 +245,95 @@ Please refer to the following [document](https://www.elastic.co/guide/en/ecs/cur
 | o365.metrics.active.users.yammer.inactive.count | Number of Yammer inactive users. | integer |
 
 
-### Mailbox Usage
+### Mailbox Usage Quota Status Mailbox Counts
 
-An example event for `mailbox_usage` looks as following:
+Get details about Mailbox Usage Quota Status Mailbox Counts [Microsoft Graph API](https://learn.microsoft.com/en-us/graph/api/reportroot-getmailboxusagequotastatusmailboxcounts?view=graph-rest-1.0&tabs=http).
+
+An example event for `mailbox_usage_quota_status_mailbox_counts` looks as following:
 
 ```json
 {
-    "@timestamp": "2024-12-24T09:24:40.827Z",
+    "o365": {
+        "metrics": {
+            "mailbox": {
+                "quota": {
+                    "status": {
+                        "mailbox": {
+                            "counts": {
+                                "send_receive_prohibited": {
+                                    "count": 10
+                                },
+                                "indeterminate": {
+                                    "count": 2
+                                },
+                                "under_limit": {
+                                    "count": 20
+                                },
+                                "warning_issued": {
+                                    "count": 1
+                                },
+                                "report": {
+                                    "date": "2025-01-17",
+                                    "period": {
+                                        "day": "7"
+                                    },
+                                    "refresh_date": "2025-01-22"
+                                },
+                                "send_prohibited": {
+                                    "count": 7
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    },
     "agent": {
         "name": "docker-fleet-agent",
-        "id": "abf38fab-f7b6-4e1c-a3b3-a70a64f9e5db",
-        "ephemeral_id": "08417a8d-9698-4c62-b7dc-e1b048647626",
+        "id": "73a1ed51-116e-490c-ba16-d06108d88322",
+        "ephemeral_id": "9b1317af-952d-4b7e-b66e-70e0178623ff",
         "type": "filebeat",
+        "version": "8.16.0"
+    },
+    "@timestamp": "2025-01-17",
+    "ecs": {
         "version": "8.16.0"
     },
     "data_stream": {
         "namespace": "default",
         "type": "metrics",
-        "dataset": "o365_metrics.mailbox_usage"
-    },
-    "ecs": {
-        "version": "8.16.0"
+        "dataset": "o365_metrics.mailbox_usage_quota_status_mailbox_counts"
     },
     "elastic_agent": {
-        "id": "abf38fab-f7b6-4e1c-a3b3-a70a64f9e5db",
+        "id": "73a1ed51-116e-490c-ba16-d06108d88322",
         "version": "8.16.0",
         "snapshot": false
-    },
-    "event": {
-        "agent_id_status": "verified",
-        "ingested": "2024-12-24T09:24:41Z",
-        "dataset": "o365_metrics.mailbox_usage"
     },
     "host": {
         "hostname": "docker-fleet-agent",
         "os": {
             "kernel": "5.10.104-linuxkit",
             "name": "Wolfi",
-            "type": "linux",
             "family": "",
+            "type": "linux",
             "version": "20230201",
             "platform": "wolfi"
         },
         "containerized": false,
         "ip": [
-            "192.168.48.7"
+            "172.30.0.7"
         ],
         "name": "docker-fleet-agent",
         "mac": [
-            "02-42-C0-A8-30-07"
+            "02-42-AC-1E-00-07"
         ],
         "architecture": "aarch64"
     },
-    "o365": {
-        "metrics": {
-            "mailbox": {
-                "usage": {
-                    "detail": {
-                        "item": {
-                            "count": "82"
-                        },
-                        "deleted_item_size": {
-                            "byte": "0"
-                        },
-                        "prohibit_send_quota": {
-                            "byte": "106300440576"
-                        },
-                        "deleted_item_quota": {
-                            "byte": "32212254720"
-                        },
-                        "issue_warning_quota": {
-                            "byte": "105226698752"
-                        },
-                        "deleted_item": {
-                            "count": "0"
-                        },
-                        "report": {
-                            "period": {
-                                "day": "7"
-                            },
-                            "refresh_date": "2024-12-22"
-                        },
-                        "prohibit_send_receive_quota": {
-                            "byte": "107374182400"
-                        },
-                        "storage_used": {
-                            "byte": "7986169"
-                        }
-                    }
-                }
-            }
-        }
+    "event": {
+        "agent_id_status": "verified",
+        "ingested": "2025-01-24T11:13:41Z",
+        "dataset": "o365_metrics.mailbox_usage_quota_status_mailbox_counts"
     },
     "tags": [
         "o365.metrics.mailbox.usage"
@@ -359,24 +357,154 @@ Please refer to the following [document](https://www.elastic.co/guide/en/ecs/cur
 | host.containerized | If the host is a container. | boolean |  |
 | host.os.build | OS build information. | keyword |  |
 | host.os.codename | OS codename, if any. | keyword |  |
-| o365.metrics.mailbox.quota.status.indeterminate.count | The number of mailboxes where the quota status could not be determined. | integer |  |
-| o365.metrics.mailbox.quota.status.report.date | The specific date for which the report data applies. | date |  |
-| o365.metrics.mailbox.quota.status.report.period.day | The duration (e.g., 7 days) over which the quota status data is aggregated. | integer | d |
-| o365.metrics.mailbox.quota.status.report.refresh_date | The date when the report data was last updated. | date |  |
-| o365.metrics.mailbox.quota.status.send_prohibited.count | The number of mailboxes restricted from sending emails due to exceeding their send quota during the reporting period. | integer |  |
-| o365.metrics.mailbox.quota.status.send_receive_prohibited.count | The number of mailboxes restricted from both sending and receiving emails due to exceeding their total quota during the reporting period. | integer |  |
-| o365.metrics.mailbox.quota.status.under_limit.count | The number of mailboxes operating within their assigned quota limits during the reporting period. | integer |  |
-| o365.metrics.mailbox.quota.status.warning_issued.count | The number of mailboxes that have exceeded their warning threshold quota during the reporting period. | integer |  |
-| o365.metrics.mailbox.usage.detail.deleted_item.count | The number of items in the deleted items folder. | integer |  |
-| o365.metrics.mailbox.usage.detail.deleted_item_quota.byte | The quota limit for the deleted items folder (in bytes). | integer |  |
-| o365.metrics.mailbox.usage.detail.deleted_item_size.byte | The total size of items in the deleted items folder (in bytes). | integer |  |
-| o365.metrics.mailbox.usage.detail.issue_warning_quota.byte | The mailbox size limit at which a warning is issued (in bytes). | integer |  |
-| o365.metrics.mailbox.usage.detail.item.count | The total number of items in the mailbox. | integer |  |
-| o365.metrics.mailbox.usage.detail.prohibit_send_quota.byte | The mailbox size limit at which sending messages is prohibited (in bytes). | integer |  |
-| o365.metrics.mailbox.usage.detail.prohibit_send_receive_quota.byte | The mailbox size limit at which sending and receiving messages is prohibited (in bytes). | integer |  |
+| o365.metrics.mailbox.quota.status.mailbox.counts.indeterminate.count | The number of mailboxes where the quota status could not be determined. | long |  |
+| o365.metrics.mailbox.quota.status.mailbox.counts.report.date | The specific date for which the report data applies. | date |  |
+| o365.metrics.mailbox.quota.status.mailbox.counts.report.period.day | The duration (e.g., 7 days) over which the quota status data is aggregated. | integer | d |
+| o365.metrics.mailbox.quota.status.mailbox.counts.report.refresh_date | The date when the report data was last updated. | date |  |
+| o365.metrics.mailbox.quota.status.mailbox.counts.send_prohibited.count | The number of mailboxes restricted from sending emails due to exceeding their send quota during the reporting period. | long |  |
+| o365.metrics.mailbox.quota.status.mailbox.counts.send_receive_prohibited.count | The number of mailboxes restricted from both sending and receiving emails due to exceeding their total quota during the reporting period. | long |  |
+| o365.metrics.mailbox.quota.status.mailbox.counts.under_limit.count | The number of mailboxes operating within their assigned quota limits during the reporting period. | long |  |
+| o365.metrics.mailbox.quota.status.mailbox.counts.warning_issued.count | The number of mailboxes that have exceeded their warning threshold quota during the reporting period. | long |  |
+
+
+### Mailbox Usage Detail
+
+Get details about Mailbox Usage Detail [Microsoft Graph API](https://learn.microsoft.com/en-us/graph/api/reportroot-getmailboxusagedetail?view=graph-rest-1.0&tabs=http).
+
+An example event for `mailbox_usage_detail` looks as following:
+
+```json
+{
+    "o365": {
+        "metrics": {
+            "mailbox": {
+                "usage": {
+                    "detail": {
+                        "item": {
+                            "count": 181
+                        },
+                        "deleted_item_size": {
+                            "byte": 440815
+                        },
+                        "prohibit_send_quota": {
+                            "byte": 106300440576
+                        },
+                        "deleted_item_quota": {
+                            "byte": 32212254720
+                        },
+                        "last_activity_date": "2024-10-11",
+                        "display_name": "Dgo Sky",
+                        "has_archive": true,
+                        "issue_warning_quota": {
+                            "byte": 105226698752
+                        },
+                        "deleted_item": {
+                            "count": 66
+                        },
+                        "user_principal_name": "DgoS@OnMicrosoft.com",
+                        "is_deleted": false,
+                        "report": {
+                            "period": {
+                                "day": "7"
+                            },
+                            "refresh_date": "2025-01-22"
+                        },
+                        "prohibit_send_receive_quota": {
+                            "byte": 107374182400
+                        },
+                        "created_date": "2024-10-11",
+                        "storage_used": {
+                            "byte": 6399001
+                        }
+                    }
+                }
+            }
+        }
+    },
+    "agent": {
+        "name": "docker-fleet-agent",
+        "id": "e6f906c1-7164-4902-843f-78493e2b68a4",
+        "ephemeral_id": "d04fab8b-d48e-4df3-83f1-aa2022d19736",
+        "type": "filebeat",
+        "version": "8.16.0"
+    },
+    "@timestamp": "2025-01-22",
+    "ecs": {
+        "version": "8.16.0"
+    },
+    "data_stream": {
+        "namespace": "default",
+        "type": "metrics",
+        "dataset": "o365_metrics.mailbox_usage_detail"
+    },
+    "host": {
+        "hostname": "docker-fleet-agent",
+        "os": {
+            "kernel": "5.10.104-linuxkit",
+            "name": "Wolfi",
+            "type": "linux",
+            "version": "20230201",
+            "platform": "wolfi"
+        },
+        "ip": [
+            "172.24.0.7"
+        ],
+        "containerized": false,
+        "name": "docker-fleet-agent",
+        "mac": [
+            "02-42-AC-18-00-07"
+        ],
+        "architecture": "aarch64"
+    },
+    "elastic_agent": {
+        "id": "e6f906c1-7164-4902-843f-78493e2b68a4",
+        "version": "8.16.0",
+        "snapshot": false
+    },
+    "event": {
+        "agent_id_status": "verified",
+        "ingested": "2025-01-24T09:32:25Z",
+        "dataset": "o365_metrics.mailbox_usage_detail"
+    },
+    "tags": [
+        "o365.metrics.mailbox.usage"
+    ]
+}
+```
+
+**ECS Field Reference**
+
+Please refer to the following [document](https://www.elastic.co/guide/en/ecs/current/ecs-field-reference.html) for detailed information on ECS fields.
+
+**Exported fields**
+
+| Field | Description | Type | Unit |
+|---|---|---|---|
+| @timestamp | Event timestamp. | date |  |
+| cloud.image.id | Image ID for the cloud instance. | keyword |  |
+| data_stream.dataset | Data stream dataset. | constant_keyword |  |
+| data_stream.namespace | Data stream namespace. | constant_keyword |  |
+| data_stream.type | Data stream type. | constant_keyword |  |
+| host.containerized | If the host is a container. | boolean |  |
+| host.os.build | OS build information. | keyword |  |
+| host.os.codename | OS codename, if any. | keyword |  |
+| o365.metrics.mailbox.usage.detail.created_date | The date the mailbox was created. | date |  |
+| o365.metrics.mailbox.usage.detail.deleted_date | The date the mailbox was deleted. | date |  |
+| o365.metrics.mailbox.usage.detail.deleted_item.count | The number of items in the deleted items folder. | long |  |
+| o365.metrics.mailbox.usage.detail.deleted_item_quota.byte | The quota limit for the deleted items folder (in bytes). | long |  |
+| o365.metrics.mailbox.usage.detail.deleted_item_size.byte | The total size of items in the deleted items folder (in bytes). | long |  |
+| o365.metrics.mailbox.usage.detail.display_name | The full name of the user. | keyword |  |
+| o365.metrics.mailbox.usage.detail.has_archive | Indicates if the user has an archive mailbox. | boolean |  |
+| o365.metrics.mailbox.usage.detail.is_deleted | Indicates if the mailbox is deleted. | boolean |  |
+| o365.metrics.mailbox.usage.detail.issue_warning_quota.byte | The mailbox size limit at which a warning is issued (in bytes). | long |  |
+| o365.metrics.mailbox.usage.detail.item.count | The total number of items in the mailbox. | long |  |
+| o365.metrics.mailbox.usage.detail.last_activity_date | The most recent activity date for the mailbox. | date |  |
+| o365.metrics.mailbox.usage.detail.prohibit_send_quota.byte | The mailbox size limit at which sending messages is prohibited (in bytes). | long |  |
+| o365.metrics.mailbox.usage.detail.prohibit_send_receive_quota.byte | The mailbox size limit at which sending and receiving messages is prohibited (in bytes). | long |  |
 | o365.metrics.mailbox.usage.detail.report.period.day | The reporting period over which the data is aggregated (in days). | integer | d |
 | o365.metrics.mailbox.usage.detail.report.refresh_date | The date when the report data was last updated. | date |  |
-| o365.metrics.mailbox.usage.detail.storage_used.byte | The total storage used in the mailbox (in bytes). | integer |  |
+| o365.metrics.mailbox.usage.detail.storage_used.byte | The total storage used in the mailbox (in bytes). | long |  |
+| o365.metrics.mailbox.usage.detail.user_principal_name | The email or principal username of the user. | keyword |  |
 
 
 ### Microsoft 365 Groups Activity Group Detail
