@@ -341,14 +341,19 @@ processors:
       target_field: qualys_vmdr.asset_host_detection.knowledge_base.automatic_pci_fail
       ignore_missing: true
   - set:
+      field: vulnerability.id
+      tag: set_vulnerability_id
+      copy_from: qualys_vmdr.asset_host_detection.knowledge_base.cve_list
+      ignore_empty_value: true
+  - set:
       field: vulnerability.reference
       tag: set_vulnerability_reference
-      if: ctx.qualys_vmdr?.asset_host_detection?.knowledge_base?.cve_list != null && !(ctx.qualys_vmdr.asset_host_detection.knowledge_base.cve_list instanceof List)
-      value: 'https://cve.mitre.org/cgi-bin/cvename.cgi?name={{{ qualys_vmdr.asset_host_detection.knowledge_base.cve_list }}}'
+      if: ctx.vulnerability?.id != null && !(ctx.vulnerability.id instanceof List)
+      value: 'https://cve.mitre.org/cgi-bin/cvename.cgi?name={{{ vulnerability.id }}}'
       ignore_empty_value: true
   - foreach:
-      field: qualys_vmdr.asset_host_detection.knowledge_base.cve_list
-      if: ctx.qualys_vmdr?.asset_host_detection?.knowledge_base?.cve_list instanceof List
+      field: vulnerability.id
+      if: ctx.vulnerability?.id instanceof List
       tag: foreach_vulnerability_id_if_list
       processor:
         append:
@@ -356,6 +361,11 @@ processors:
           tag: append_vulnerability_reference
           value: 'https://cve.mitre.org/cgi-bin/cvename.cgi?name={{{ _ingest._value }}}'
           allow_duplicates: false
+  - set:
+      field: vulnerability.enumeration
+      tag: set_vulnerability_enumeration
+      value: CVE
+      ignore_empty_value: true
   - uri_parts:
       field: vulnerability.reference
       tag: 'uri_parts_to_split_vulnerability_reference'
@@ -818,6 +828,7 @@ processors:
   - remove:
       field:
         - qualys_vmdr.asset_host_detection.knowledge_base.category
+        - qualys_vmdr.asset_host_detection.knowledge_base.cve_list
       tag: remove_preserve_duplicate_custom_fields
       if: ctx.tags == null || !(ctx.tags.contains('preserve_duplicate_custom_fields'))
       ignore_missing: true
