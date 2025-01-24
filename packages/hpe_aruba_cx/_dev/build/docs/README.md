@@ -818,22 +818,13 @@ Note: Descriptions have not been filled out
 | `<vlan>`           | network.vlan.id        |
 | `<vportLimit>`     | aruba.limit.threshold  |
 
-#### [Loopback events](https://www.arubanetworks.com/techdocs/AOS-CX/10.07/HTML/5200-8214/Content/events/LOOPBACK.htm)
+#### [Loopback events](https://arubanetworking.hpe.com/techdocs/AOS-CX/10.15/HTML/elmrg/Content/events/LOOPBACK.htm)
 | Docs Field    | Schema Mapping        |
 |---------------|-----------------------|
 | `<interface>` | aruba.interface.id    |
 | `<state>`     | aruba.state           |
 
-
-#### [MAC Address mode configuration events](https://www.arubanetworks.com/techdocs/AOS-CX/10.07/HTML/5200-8214/Content/events/L3_MAC_ADDRESS_CONFIGURATION.htm)
-| Docs Field   | Schema Mapping       |
-|--------------|----------------------|
-| `<mac>`      | server.mac           |
-| `<new_mode>` | aruba.mac.new_mode   |
-| `<old_mode>` | aruba.mac.old_mode   |
-| `<vlan>`     | network.vlan.id      |
-
-#### [MAC Learning events](https://www.arubanetworks.com/techdocs/AOS-CX/10.07/HTML/5200-8214/Content/events/MAC-LEARN.htm)
+#### [MAC address management events](https://arubanetworking.hpe.com/techdocs/AOS-CX/10.15/HTML/elmrg/Content/events/MAC-MGMT.htm)
 | Docs Field    | Schema Mapping               |
 |---------------|------------------------------|
 | `<from-intf>` | aruba.interface.prev_id      |
@@ -842,40 +833,67 @@ Note: Descriptions have not been filled out
 | `<to-intf>`   | aruba.mac.interface.id       |
 | `<vlan>`      | network.vlan.id              |
 
-#### [MACsec events](https://www.arubanetworks.com/techdocs/AOS-CX/10.07/HTML/5200-8214/Content/events/MACSEC.htm)
+#### [MAC Address mode configuration events](https://arubanetworking.hpe.com/techdocs/AOS-CX/10.15/HTML/elmrg/Content/events/L3_MAC_ADDRESS_CONFIGURATION.htm)
+| Docs Field  | Schema Mapping           |
+|-------------|--------------------------|
+| `<current>` | aruba.limit.read_value   |
+| `<mac>`     | server.mac               |
+| `<max>`     | aruba.limit.threshold    |
+| `<new_mode>`| aruba.mac.new_mode       |
+| `<old_mode>`| aruba.mac.old_mode       |
+| `<vlan>`    | network.vlan.id          |
+
+#### Deprecated for "MAC address management events" in 10.15
+#### [MAC Learning events](https://arubanetworking.hpe.com/techdocs/AOS-CX/10.15/HTML/elmrg/Content/events/MAC-LEARN.htm)
+| Docs Field    | Schema Mapping               |
+|---------------|------------------------------|
+| `<from-intf>` | aruba.interface.prev_id      |
+| `<intf>`      | aruba.interface.id           |
+| `<mac>`       | server.mac                   |
+| `<to-intf>`   | aruba.mac.interface.id       |
+| `<vlan>`      | network.vlan.id              |
+
+#### [MACsec events](https://arubanetworking.hpe.com/techdocs/AOS-CX/10.15/HTML/elmrg/Content/events/MACSEC.htm)
 | Docs Field     | Schema Mapping               |
 |----------------|------------------------------|
 | `<ckn>`        | aruba.mac.ckn                |
+| `<feature>`    | aruba.mac.feature            |
 | `<ifname>`     | aruba.interface.name         |
+| `<id>`         | aruba.instance.id            |
 | `<latest_an>`  | aruba.mac.latest_an          |
 | `<latest_kn>`  | aruba.mac.latest_kn          |
+| `<name>`       | aruba.port                   |
 | `<old_an>`     | aruba.mac.old_an             |
 | `<old_kn>`     | aruba.mac.old_kn             |
+| `<reason>`     | event.reason                 |
 | `<sci>`        | aruba.mac.sci                |
 
-#### [Management events](https://www.arubanetworks.com/techdocs/AOS-CX/10.07/HTML/5200-8214/Content/events/MGMT.htm)
+#### [Management events](https://arubanetworking.hpe.com/techdocs/AOS-CX/10.15/HTML/elmrg/Content/events/MGMT.htm)
 | Docs Field                    | Schema Mapping           |
 |-------------------------------|--------------------------|
 | `<mgmt_intf_config_crit>`     | aruba.mgmt.config_crit   |
 | `<mgmt_intf_config_err>`      | aruba.mgmt.config_err    |
 | `<mgmt_intf_config_param>`    | aruba.mgmt.config_param  |
 
-#### [MDNS events](https://www.arubanetworks.com/techdocs/AOS-CX/10.07/HTML/5200-8214/Content/events/MDNS.htm)
+#### [MDNS events](https://arubanetworking.hpe.com/techdocs/AOS-CX/10.15/HTML/elmrg/Content/events/MDNS.htm)
 | Docs Field                  | Schema Mapping           |
 |-----------------------------|--------------------------|
 
 
-#### [MGMD events](https://www.arubanetworks.com/techdocs/AOS-CX/10.07/HTML/5200-8214/Content/events/MGMD.htm)
+#### [MGMD events](https://arubanetworking.hpe.com/techdocs/AOS-CX/10.15/HTML/elmrg/Content/events/MGMD.htm)
 | Docs Field    | Schema Mapping              |
 |---------------|-----------------------------|
+| `<acl_name>`  | aruba.acl.name              |
 | `<if_name>`   | aruba.interface.name        |
 | `<ip_address>`| client.ip                   |
 | `<l3Port>`    | aruba.mgmd.l3_port          |
 | `<mgmd_type>` | aruba.mgmd.mgmd_type        |
 | `<pkt_type>`  | aruba.mgmd.pkt_type         |
 | `<port>`      | aruba.port                  |
+| `<port_name>` | aruba.port                  |
 | `<port0>`     | aruba.port                  |
 | `<port1>`     | aruba.mgmd.port1            |
+| `<protocol>`  | aruba.mgmd.protocol         |
 | `<ring_id>`   | aruba.mgmd.ring_id          |
 | `<size_value>`| aruba.len                   |
 | `<state>`     | aruba.state                 |
@@ -884,19 +902,27 @@ Note: Descriptions have not been filled out
 | `<type>`      | aruba.mgmd.type             |
 | `<vlan>`      | network.vlan.id             |
 
-#### [Mirroring events](https://www.arubanetworks.com/techdocs/AOS-CX/10.07/HTML/5200-8214/Content/events/MIRRORING.htm)
+#### [Mirroring events](https://arubanetworking.hpe.com/techdocs/AOS-CX/10.15/HTML/elmrg/Content/events/MIRRORING.htm)
 | Docs Field   | Schema Mapping       |
 |--------------|----------------------|
 | `<number>`   | aruba.session.id     |
 
-#### [Module events](https://www.arubanetworks.com/techdocs/AOS-CX/10.07/HTML/5200-8214/Content/events/MODULE.htm)
+#### [Module events](https://arubanetworking.hpe.com/techdocs/AOS-CX/10.15/HTML/elmrg/Content/events/MODULE.htm)
 | Docs Field      | Schema Mapping         |
 |-----------------|------------------------|
 | `<name>`        | aruba.module.name      |
+| `<new_part>`    | aruba.module.new_part  |
+| `<old_part>`    | aruba.module.old_part  |
 | `<part_number>` | aruba.unit             |
 | `<priority>`    | aruba.priority         |
 | `<reason>`      | event.reason           |
 | `<type>`        | aruba.module.type      |
+
+#### [MPLS events](https://arubanetworking.hpe.com/techdocs/AOS-CX/10.15/HTML/elmrg/Content/events/MPLS.htm)
+| Docs Field      | Schema Mapping          |
+|-----------------|-------------------------|
+| `<local_ldp_id>`| aruba.mpls.local_ldp_id |
+| `<peer_ldp_id>` | aruba.mpls.peer_ldp_id  |
 
 #### [MSDP events](https://www.arubanetworks.com/techdocs/AOS-CX/10.07/HTML/5200-8214/Content/events/MSDP.htm)
 | Docs Field    | Schema Mapping               |
