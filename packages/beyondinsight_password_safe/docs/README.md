@@ -571,11 +571,11 @@ An example event for `asset` looks as following:
 {
     "@timestamp": "2024-11-20T06:35:49.927Z",
     "agent": {
-        "ephemeral_id": "126c827b-cdd1-465d-bee6-bb19ee0c64d7",
-        "id": "873af36b-b608-4c45-8a3e-e2799e30ca4e",
-        "name": "elastic-agent-20504",
+        "ephemeral_id": "66700e30-7c4d-4d6b-bbc2-fdc23e5cfe24",
+        "id": "82820775-e5a0-4141-a6bb-9167c6fe2363",
+        "name": "elastic-agent-72142",
         "type": "filebeat",
-        "version": "8.15.0"
+        "version": "8.15.3"
     },
     "beyondinsight_password_safe": {
         "asset": {
@@ -593,16 +593,16 @@ An example event for `asset` looks as following:
     },
     "data_stream": {
         "dataset": "beyondinsight_password_safe.asset",
-        "namespace": "72801",
+        "namespace": "11023",
         "type": "logs"
     },
     "ecs": {
         "version": "8.11.0"
     },
     "elastic_agent": {
-        "id": "873af36b-b608-4c45-8a3e-e2799e30ca4e",
+        "id": "82820775-e5a0-4141-a6bb-9167c6fe2363",
         "snapshot": false,
-        "version": "8.15.0"
+        "version": "8.15.3"
     },
     "event": {
         "agent_id_status": "verified",
@@ -610,7 +610,7 @@ An example event for `asset` looks as following:
             "host"
         ],
         "dataset": "beyondinsight_password_safe.asset",
-        "ingested": "2025-01-23T19:45:12Z",
+        "ingested": "2025-01-24T12:24:00Z",
         "kind": "asset",
         "module": "beyondinsight_password_safe",
         "type": [
