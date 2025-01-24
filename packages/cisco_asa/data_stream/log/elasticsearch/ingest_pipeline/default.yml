@@ -64,6 +64,33 @@ processors:
         }
 
   #
+  # Parse message repeats
+  #
+  # This populates the _temp_.cisco.message_repeats field by looking in _temp_.full_message
+  # for the "message repeated X times" string and extracting the number of repeats.
+  # It then removes the 'message repeated' portion of the log message.
+  - grok:
+      tag: grok_message_repeats
+      field: _temp_.full_message
+      patterns:
+        - "(?<_temp_.message_prefix>.*)message repeated (?<message_repeats>\\d+) times: \\[\\s(?<_temp_.extracted_message>.*)\\]"
+      if: ctx?._temp_?.full_message != null && ctx._temp_.full_message.contains('message repeated')
+  - script:
+      tag: script_message_repeats
+      if: ctx?._temp_?.message_prefix != null && ctx?._temp_?.extracted_message != null
+      source: ctx._temp_.full_message = ctx._temp_.message_prefix + ctx._temp_.extracted_message;
+  - convert:
+      field: message_repeats
+      tag: convert_message_repeats
+      type: integer
+      ignore_missing: true
+  - rename:
+      tag: rename_message_repeats
+      field: message_repeats
+      target_field: _temp_.cisco.message_repeats
+      if: ctx?.message_repeats != null
+
+  #
   # Parse FTD/ASA style message
   #
   # This parses the header of an EMBLEM-style message for FTD and ASA prefixes.
