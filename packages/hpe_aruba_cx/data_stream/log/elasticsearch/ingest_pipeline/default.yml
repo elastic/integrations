@@ -3599,11 +3599,11 @@ processors:
       if: "ctx.event?.code == '8515'"
       pattern: "Operational state of the ring %{aruba.erps.ring_id}, instance %{aruba.instance.id} changed to Initializing with reason %{event.reason}"
 
-    # MSDP events (860x)
-    # https://www.arubanetworks.com/techdocs/AOS-CX/10.07/HTML/5200-8214/Content/events/MSDP.htm
+    # MSDP events (86xx)
+    # https://arubanetworking.hpe.com/techdocs/AOS-CX/10.15/HTML/elmrg/Content/events/MSDP.htm
   - grok:
       field: message
-      tag: msdp_event_8601_through_8609
+      tag: msdp_event_8601_8602_8603_8604_8605_8606_8607_8608_8609
       description: "The following are the events related to MSDP"
       if: "['8601','8602','8603','8604','8605','8606','8607','8608','8609'].contains(ctx.event?.code)"
       patterns:
@@ -3615,6 +3615,12 @@ processors:
         - "^Start %{DATA:aruba.msdp.tcp_entity} role for MSDP peer %{IP:client.ip}"
         - "^Finish packet was received on MSDP Peer %{IP:client.ip}"
         - "^Failed to add SA Cache entry: S=%{IP:source.ip}, G=%{IP:aruba.msdp.grp_ip}, R=%{IP:aruba.msdp.rp_ip} for Peer %{IP:client.ip} as MSDP SA Cache Limit is reached"
+  - dissect:
+      field: message
+      tag: msdp_event_8610
+      description: "Log event when MSDP peer hold timer expired"
+      if: "ctx.event?.code == '8610'"
+      pattern: "Hold timer expired for MSDP peer %{client.ip} on VRF %{aruba.vrf.name}"
 
     # Zero touch provisioning events (87xx)
     # https://www.arubanetworks.com/techdocs/AOS-CX/10.15/HTML/elmrg/Content/events/ZTPD.htm
@@ -5290,15 +5296,142 @@ processors:
       patterns:
         - "^PIM Bidi Neighbor %{IP:client.ip} is %{DATA:aruba.state} on Interface %{GREEDYDATA:aruba.interface.name}"
 
+  # Message Session Relay Protocol events (155xx)
+  # https://arubanetworking.hpe.com/techdocs/AOS-CX/10.15/HTML/elmrg/Content/events/MSRP.htm
+  - grok:
+      field: message
+      tag: msrp_event_15501_15502
+      description: "Event reported when MSRP stream is [created|deleted]"
+      if: "['15501','15502'].contains(ctx.event?.code)"
+      patterns:
+        - "^MSRP stream %{DATA:aruba.instance.id} (created on port %{GREEDYDATA:aruba.port}|deleted)"
+  - grok:
+      field: message
+      tag: msrp_event_15503_15504
+      description: "Event reported when MSRP becomes [active|inactive] on port"
+      if: "['15503','15504'].contains(ctx.event?.code)"
+      patterns:
+        - "^MSRP is active on port %{GREEDYDATA:aruba.port}"
+        - "^MSRP is inactive on port %{DATA:aruba.port} due to %{GREEDYDATA:aruba.status}"
+  - grok:
+      field: message
+      tag: msrp_event_15505_15506
+      description: "Event reported when MSRP [Talker|Listener] leave"
+      if: "['15505','15506'].contains(ctx.event?.code)"
+      patterns:
+        - "^MSRP Stream %{DATA:aruba.instance.id} (Talker has left|Listener connected on port %{DATA:aruba.port} has left)"
+  - dissect:
+      field: message
+      tag: msrp_event_15507
+      description: "Event reported when resource allocation status is updated for an MSRP stream"
+      if: "ctx.event?.code == '15507'"
+      pattern: "Resource allocation status for stream %{aruba.instance.id} on port %{aruba.port} is %{aruba.status}"
+  - grok:
+      field: message
+      tag: msrp_event_15508_15509
+      description: "Event reported when resource de allocated for an MSRP stream | Event reported when resource allocation requested for an MSRP stream"
+      if: "['15508','15509'].contains(ctx.event?.code)"
+      patterns:
+        - "^Resource (de-allocated|allocation requested) for stream %{DATA:aruba.instance.id} on port %{GREEDYDATA:aruba.port}"
+  - dissect:
+      field: message
+      tag: msrp_event_15510
+      description: "Event reported when resource de alloc requested for an MSRP stream"
+      if: "ctx.event?.code == '15510'"
+      pattern: "Resource de-allocation requested for stream %{aruba.instance.id} on port %{aruba.port} due to %{event.reason}"
+  - grok:
+      field: message
+      tag: msrp_event_15511_15512
+      description: "Event reported when listener gets added for an MSRP stream | Event reported when listener declaration-type changes for an MSRP stream"
+      if: "['15511','15512'].contains(ctx.event?.code)"
+      patterns:
+        - "^MSRP Listener (added with declaration-type|declaration-type changed to) %{DATA:aruba.msrp.decl_type} for stream %{DATA:aruba.instance.id} on port %{GREEDYDATA:aruba.port}"
+
   # Injected Views (1580x)
   # https://www.arubanetworks.com/techdocs/AOS-CX/10.15/HTML/elmrg/Content/events/INJECTED-VIEWS.htm
   - grok:
       field: message
-      tag: injected_view_event_15801
-      description: "Event reported when an injected view is loaded|unloaded|in failed state "
+      tag: injected_view_event_15801_15802_15803
+      description: "Event reported when an injected view is loaded|unloaded|in failed state"
       if: "['15801','15802','15803'].contains(ctx.event?.code)"
       patterns:
         - "^Injected view %{DATA:aruba.injected_view.name} "
+
+  # Multicast HelperD events (159xx)
+  # https://arubanetworking.hpe.com/techdocs/AOS-CX/10.15/HTML/elmrg/Content/events/MULTICAST.htm
+  - dissect:
+      field: message
+      tag: multicast_helperd_event_15901
+      description: "Event raised when vxlan replication mode is configured or applied"
+      if: "ctx.event?.code == '15901'"
+      pattern: "%{aruba.multicast.rep_mode} vxlan replication mode is %{aruba.status}"
+  - dissect:
+      field: message
+      tag: multicast_helperd_event_15902
+      description: "Event raised when underlay multicast vxlan replication flood group range is set"
+      if: "ctx.event?.code == '15902'"
+      pattern: "Underlay multicast vxlan replication flood group range is set to %{aruba.multicast.flood_group_range}"
+  - dissect:
+      field: message
+      tag: multicast_helperd_event_15903
+      description: "Event raised when underlay multicast vxlan replication flood group ip is set"
+      if: "ctx.event?.code == '15903'"
+      pattern: "Underlay multicast vxlan replication for vni %{aruba.multicast.vni_id} flood group ip is set to %{aruba.multicast.flood_group_ip} via %{aruba.multicast.ip_assign_method}"
+  - grok:
+      field: message
+      tag: multicast_helperd_event_15904_15907
+      description: "Event raised when underlay multicast vxlan replication tunnel pim bidir state changes | hardware status is updated"
+      if: "['15904','15907'].contains(ctx.event?.code)"
+      patterns:
+        - "^Underlay multicast vxlan replication tunnel %{DATA:aruba.multicast.encap_type} (pim_bidir state|hardware status) for flood group %{IP:aruba.multicast.flood_group_ip} is %{GREEDYDATA:aruba.state}"
+  - dissect:
+      field: message
+      tag: multicast_helperd_event_15905
+      description: "Event raised when underlay multicast vxlan replication tunnel pim bidir underlay l3 port is updated"
+      if: "ctx.event?.code == '15905'"
+      pattern: "Underlay multicast vxlan replication tunnel %{aruba.multicast.encap_type} pim_bidir underlay l3 port for flood group %{aruba.multicast.flood_group_ip} is set to %{aruba.multicast.ulay_l3_port}"
+  - dissect:
+      field: message
+      tag: multicast_helperd_event_15906
+      description: "Event raised when underlay multicast vxlan replication tunnel underlay l2 port is updated"
+      if: "ctx.event?.code == '15906'"
+      pattern: "Underlay multicast vxlan replication tunnel encapsulation underlay l2 port for flood group %{aruba.multicast.flood_group_ip} is set to %{aruba.multicast.ulay_l2_port}"
+  - dissect:
+      field: message
+      tag: multicast_helperd_event_15908
+      description: "Event raised when underlay multicast vxlan replication tunnel encap isl forwarding rule is updated"
+      if: "ctx.event?.code == '15908'"
+      pattern: "Underlay multicast vxlan replication tunnel encapsulation isl forwarding rule for flood group %{aruba.multicast.flood_group_ip} is set to %{aruba.multicast.isl_rule}"
+  - dissect:
+      field: message
+      tag: multicast_helperd_event_15909
+      description: "Event raised when error occurs while changing the vxlan replication mode"
+      if: "ctx.event?.code == '15909'"
+      pattern: "Error while changing the replication mode to %{aruba.multicast.rep_mode}"
+  - dissect:
+      field: message
+      tag: multicast_helperd_event_15910
+      description: "Event raised when given flood group range for unerlay multicast vxlan replication mode is invalid"
+      if: "ctx.event?.code == '15910'"
+      pattern: "Underlay-multicast flood group range given %{aruba.multicast.flood_group_range} is invalid"
+  - dissect:
+      field: message
+      tag: multicast_helperd_event_15911
+      description: "Event raised when given flood group ip for unerlay multicast vxlan replication is invalid"
+      if: "ctx.event?.code == '15911'"
+      pattern: "Underlay-multicast flood group ip %{aruba.multicast.flood_group_ip} is invalid"
+  - dissect:
+      field: message
+      tag: multicast_helperd_event_15912
+      description: "Event raised when underlay multicast vxlan replication tunnel operational state is updated"
+      if: "ctx.event?.code == '15912'"
+      pattern: "Underlay multicast vxlan replication tunnel %{aruba.multicast.encap_type} operational state for flood group %{aruba.multicast.flood_group_ip} is %{aruba.state}"
+  - dissect:
+      field: message
+      tag: multicast_helperd_event_15913
+      description: "Event raised when resource exhausted for underlay multicast vxlan replication"
+      if: "ctx.event?.code == '15913'"
+      pattern: "Resource exhausted for underlay multicast vxlan replication for override group ip %{aruba.multicast.override_group_ip}"
 
   # Cleanup MAC addresses for different fields
   - uppercase:
