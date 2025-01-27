@@ -17,6 +17,7 @@ You can use our hosted Elasticsearch Service on Elastic Cloud, which is recommen
 
 To configure this integration in Elastic, you need the following information:
 
+- Hostname
 - Client ID
 - Client Secret
 - Token URL
@@ -41,3 +42,66 @@ The `managed_volumes` dataset provides metrics related to the health and status 
 Please refer to the following [document](https://www.elastic.co/guide/en/ecs/current/ecs-field-reference.html) for detailed information on ECS fields.
 
 {{fields "managed_volumes"}}
+
+### Monitoring Jobs
+
+The `monitoring_jobs` dataset provides metrics related to the series of activities on either the RSC or a Rubrik cluster.
+
+**ECS Field Reference**
+
+Please refer to the following [document](https://www.elastic.co/guide/en/ecs/current/ecs-field-reference.html) for detailed information on ECS fields.
+
+{{fields "monitoring_jobs"}}
+
+### Virtual Machines
+
+The `virtualmachines` dataset provides metrics related to the state of the virtual machines.
+
+**ECS Field Reference**
+
+Please refer to the following [document](https://www.elastic.co/guide/en/ecs/current/ecs-field-reference.html) for detailed information on ECS fields.
+
+{{fields "virtualmachines"}}
+
+{{event "virtualmachines"}}
+
+### Filesets
+
+{{ fields "filesets" }}
+
+{{event "filesets" }}
+### Drives
+
+The `drives` dataset provides metrics related to the state of the drives.
+
+**ECS Field Reference**
+
+Please refer to the following [document](https://www.elastic.co/guide/en/ecs/current/ecs-field-reference.html) for detailed information on ECS fields.
+
+{{fields "drives"}}
+
+{{event "drives"}}
+
+### Physical Hosts
+
+The `physical_hosts` dataset provides metrics related to the state of the physical hosts.
+
+**ECS Field Reference**
+
+Please refer to the following [document](https://www.elastic.co/guide/en/ecs/current/ecs-field-reference.html) for detailed information on ECS fields.
+
+{{fields "physical_hosts"}}
+
+{{event "physical_hosts"}}
+
+### MSSQL Databases
+
+The `mssql_databases` dataset provides metrics related to the state of the MSSQL databases.
+
+**ECS Field Reference**
+
+Please refer to the following [document](https://www.elastic.co/guide/en/ecs/current/ecs-field-reference.html) for detailed information on ECS fields.
+
+{{fields "mssql_databases"}}
+
+{{event "mssql_databases"}}

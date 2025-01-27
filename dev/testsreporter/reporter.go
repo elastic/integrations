@@ -11,34 +11,40 @@ import (
 )
 
 type reporter struct {
-	ghCli            *GhCli
+	ghCli            *ghCli
 	maxPreviousLinks int
 }
 
-func (r reporter) Report(ctx context.Context, issue *GithubIssue, packageError PackageError) error {
-	found, prevIssue, err := r.ghCli.Exists(ctx, issue, true)
+func newReporter(ghCli *ghCli, maxPreviousLinks int) reporter {
+	return reporter{
+		ghCli:            ghCli,
+		maxPreviousLinks: maxPreviousLinks,
+	}
+}
+
+func (r reporter) Report(ctx context.Context, issue *githubIssue, packageError failureObserver) error {
+	links, nextIssue, err := r.updateLinks(ctx, issue, packageError.FirstBuild())
 	if err != nil {
-		return fmt.Errorf("failed to check if issue already exists: %w", err)
+		return fmt.Errorf("failed to update links from the error: %w", err)
 	}
 
-	if found {
-		fmt.Println("Found existing open issue", prevIssue.URL())
-		issue = prevIssue
+	packageError.UpdateLinks(*links)
+
+	formatter := resultsFormatter{
+		result:           packageError,
+		maxPreviousLinks: r.maxPreviousLinks,
 	}
 
-	if !found {
-		// is there any closed issue
-		closedIssueURL, err := r.closedIssueURL(ctx, issue)
-		if err != nil {
-			return fmt.Errorf("failed to check if there is a closed issue: %w", err)
-		}
-		if closedIssueURL != "" {
-			fmt.Println("Found previous closed issue:", closedIssueURL)
-			packageError.SetClosedURL(closedIssueURL)
+	nextIssue.SetDescription(formatter.Description())
 
-			r.updateDescriptionClosedIssueURL(issue, packageError)
-		}
+	// TEST - TO REMOVE
+	fmt.Printf("Description of the issue:\n%s", formatter.Description())
 
+	return r.createOrUpdateIssue(ctx, nextIssue)
+}
+
+func (r reporter) createOrUpdateIssue(ctx context.Context, issue *githubIssue) error {
+	if issue.number == 0 {
 		fmt.Println("Issue not found, creating a new one...")
 		if err := r.ghCli.Create(ctx, issue); err != nil {
 			return fmt.Errorf("failed to create issue (title: %s): %w", issue.title, err)
@@ -46,15 +52,75 @@ func (r reporter) Report(ctx context.Context, issue *GithubIssue, packageError P
 		return nil
 	}
 
-	fmt.Println("Updating issue...")
-	if err := r.updateIssueLatestBuildLinks(ctx, issue, packageError); err != nil {
-		return fmt.Errorf("failed to update previous links in issue (title: %s): %w", issue.title, err)
+	fmt.Printf("Updating issue %s...\n", issue.url)
+	if err := r.ghCli.Update(ctx, issue); err != nil {
+		return fmt.Errorf("failed to update issue (title: %s): %w", issue.title, err)
 	}
-
 	return nil
 }
 
-func (r reporter) closedIssueURL(ctx context.Context, issue *GithubIssue) (string, error) {
+// updateLinks returns the links to buildkite and Github updated depending on whether or not
+// it existed a previous Github issue
+func (r reporter) updateLinks(ctx context.Context, issue *githubIssue, currentBuild string) (*errorLinks, *githubIssue, error) {
+	nextIssue := issue
+	links := errorLinks{
+		currentIssueURL: "",
+		firstBuild:      currentBuild,
+		previousBuilds:  []string{},
+		closedIssueURL:  "",
+	}
+	// Look for an existing issue
+	found, prevIssue, err := r.ghCli.Exists(ctx, issue, true)
+	if err != nil {
+		return nil, nil, fmt.Errorf("failed to check if issue already exists: %w", err)
+	}
+
+	if found {
+		nextIssue = prevIssue
+
+		fmt.Printf("Found existing open issue: %s\n", prevIssue.URL())
+		links.currentIssueURL = prevIssue.URL()
+
+		// Retrieve information from the Issue description (first build, closed issue, previous links)
+		firstBuild, err := firstBuildLinkFromDescription(prevIssue)
+		if err != nil {
+			return nil, nil, fmt.Errorf("failed to read first link from issue (title: %s): %w", issue.title, err)
+		}
+		fmt.Printf("First build found: %s\n", firstBuild)
+		links.firstBuild = firstBuild
+
+		closedIssueURL, err := closedIssueFromDescription(prevIssue)
+		if err != nil {
+			return nil, nil, fmt.Errorf("failed to read closed issue from issue (title: %s): %w", issue.title, err)
+		}
+		links.closedIssueURL = closedIssueURL
+
+		if firstBuild == currentBuild {
+			fmt.Println("First time failing, no need to update previous build links.")
+		} else {
+			previousLinks, err := previousBuildLinksFromDescription(prevIssue)
+			if err != nil {
+				return nil, nil, fmt.Errorf("failed to read previous links from issue (title: %s): %w", issue.title, err)
+			}
+			previousLinks = updatePreviousLinks(previousLinks, currentBuild, r.maxPreviousLinks)
+
+			links.previousBuilds = previousLinks
+		}
+	} else {
+		fmt.Println("No open issue found for this error.")
+		// is there any closed issue
+		closedIssueURL, err := r.closedIssueURL(ctx, issue)
+		if err != nil {
+			return nil, nil, fmt.Errorf("failed to check if there is a closed issue: %w", err)
+		}
+
+		links.closedIssueURL = closedIssueURL
+	}
+
+	return &links, nextIssue, nil
+}
+
+func (r reporter) closedIssueURL(ctx context.Context, issue *githubIssue) (string, error) {
 	found, closedIssue, err := r.ghCli.Exists(ctx, issue, false)
 	if err != nil {
 		return "", fmt.Errorf("failed to check if there is a closed issue: %w", err)
@@ -65,66 +131,8 @@ func (r reporter) closedIssueURL(ctx context.Context, issue *GithubIssue) (strin
 	return "", nil
 }
 
-func (r reporter) updateDescriptionClosedIssueURL(issue *GithubIssue, packageError PackageError) *GithubIssue {
-	formatter := ResultsFormatter{
-		result:           packageError,
-		maxPreviousLinks: r.maxPreviousLinks,
-	}
-
-	issue.SetDescription(formatter.Description())
-
-	return issue
-}
-
-func (r reporter) updateIssueLatestBuildLinks(ctx context.Context, issue *GithubIssue, packageError PackageError) error {
-	currentBuild := packageError.BuildURL
-
-	// Retrieve information from the Issue description (first build, closed issue, previous links)
-	firstBuild, err := firstBuildLinkFromDescription(issue)
-	if err != nil {
-		return fmt.Errorf("failed to read first link from issue (title: %s): %w", issue.title, err)
-	}
-	fmt.Printf("First build found: %s\n", firstBuild)
-
-	if firstBuild == currentBuild {
-		fmt.Println("First time failing, no need to update the issue.")
-		return nil
-	}
-
-	closedIssueURL, err := closedIssueFromDescription(issue)
-	if err != nil {
-		return fmt.Errorf("failed to read closed issue from issue (title: %s): %w", issue.title, err)
-	}
-
-	previousLinks, err := previousBuildLinksFromDescription(issue)
-	if err != nil {
-		return fmt.Errorf("failed to read previous links from issue (title: %s): %w", issue.title, err)
-	}
-	previousLinks = updatePreviousLinks(previousLinks, currentBuild, r.maxPreviousLinks)
-
-	// Update the package Error with the information retrieved
-	packageError.SetPreviousLinks(previousLinks)
-	// Keep the same links as when the issue was created
-	packageError.SetFirstBuild(firstBuild)
-	if closedIssueURL != "" {
-		fmt.Printf("Closed issue found: %s\n", closedIssueURL)
-		packageError.SetClosedIssue(closedIssueURL)
-	}
-
-	formatter := ResultsFormatter{
-		result:           packageError,
-		maxPreviousLinks: r.maxPreviousLinks,
-	}
-	issue.SetDescription(formatter.Description())
-
-	if err := r.ghCli.Update(ctx, issue); err != nil {
-		return fmt.Errorf("failed to update issue (title: %s): %w", issue.title, err)
-	}
-	return nil
-}
-
 func updatePreviousLinks(previousLinks []string, currentBuild string, maxPreviousLinks int) []string {
-	var newLinks []string
+	newLinks := []string{}
 	newLinks = append(newLinks, previousLinks...)
 	newLinks = append(newLinks, currentBuild)
 
@@ -136,7 +144,7 @@ func updatePreviousLinks(previousLinks []string, currentBuild string, maxPreviou
 	return newLinks
 }
 
-func firstBuildLinkFromDescription(issue *GithubIssue) (string, error) {
+func firstBuildLinkFromDescription(issue *githubIssue) (string, error) {
 	description := issue.description
 	re := regexp.MustCompile(`First build failed: (?P<url>https://buildkite\.com/elastic/integrations(-serverless)?/builds/\d+)`)
 
@@ -156,7 +164,7 @@ func firstBuildLinkFromDescription(issue *GithubIssue) (string, error) {
 	return links[0], nil
 }
 
-func closedIssueFromDescription(issue *GithubIssue) (string, error) {
+func closedIssueFromDescription(issue *githubIssue) (string, error) {
 	description := issue.description
 	re := regexp.MustCompile(`Latest issue closed for the same test: (?P<url>https://github\.com/elastic/integrations/issues/\d+)`)
 
@@ -179,7 +187,7 @@ func closedIssueFromDescription(issue *GithubIssue) (string, error) {
 	return links[0], nil
 }
 
-func previousBuildLinksFromDescription(issue *GithubIssue) ([]string, error) {
+func previousBuildLinksFromDescription(issue *githubIssue) ([]string, error) {
 	description := issue.description
 	re := regexp.MustCompile(`- (?P<url>https://buildkite\.com/elastic/integrations(-serverless)?/builds/\d+)`)
 
