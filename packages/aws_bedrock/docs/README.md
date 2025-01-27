@@ -75,11 +75,11 @@ expensive in terms of performance and costs and should be used only
 when no SQS notification can be attached to the S3 buckets. This input 
 integration also supports S3 notification from SNS to SQS.
 
-To enable the SQS notification method, set the `queue_url` configuration value. To enable the S3 bucket list polling method, configure both the `bucket_arn` and `number_of_workers` values. Note that `queue_url` and `bucket_arn` cannot be set simultaneously, and at least one of these values must be specified.
+To enable the SQS notification method, set the `queue_url` configuration value. To enable the S3 bucket list polling method, configure both the `bucket_arn` and number_of_workers values. Note that `queue_url` and `bucket_arn` cannot be set simultaneously, and at least one of these values must be specified.
 
 ### Collecting Amazon Bedrock model invocation logs from CloudWatch
 
-When CloudWatch log collection is enabled, you can retrieve logs from all log streams within a specified log group. The `filterLogEvents` AWS API is used to list log events from the specified log group.
+When CloudWatch log collection is enabled, you can retrieve logs from all log streams within a specified log group. The filterLogEvents AWS API is used to list log events from the specified log group.
 
 **Exported fields**
 
