@@ -66,7 +66,7 @@ for package in ${PACKAGE_LIST}; do
         - build/elastic-stack-dump/*/logs/*.log
         - build/elastic-stack-dump/*/logs/fleet-server-internal/**/*
     - label: "Check integrations ${package} - validation fields"
-      key: "test-integrations-${package}"
+      key: "test-integrations-${package}-fields"
       command: ".buildkite/scripts/test_one_package.sh ${package} ${from} ${to}"
       timeout_in_minutes: 240
       agents:
