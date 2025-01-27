@@ -1,5 +1,5 @@
 ---
-description: Pipeline for renaming object
+description: Pipeline for processing o365 service health metrics.
 processors:
   - set:
       field: ecs.version
@@ -7,7 +7,11 @@ processors:
   - json:
       field: service_health
       target_field: o365.metrics.service.health
-      ignore_failure: true  
+      tag: json_decoding
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - script:
       lang: painless
       description: Replace spaces and dashes in field names under o365.metrics.service.health.
@@ -27,18 +31,21 @@ processors:
   - remove:
       if: ctx.service_health != null
       field: service_health
-      ignore_missing: true
-  - remove:
-      field:
-        - o365.metrics.service.health.id
-        - o365.metrics.service.health.service
-      ignore_missing: true                        
+      ignore_missing: true                 
 
 on_failure:
-  - append:
+  - set:
       field: error.message
-      value: "{{{_ingest.on_failure_message}}}"
+      value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - append:
       field: event.kind
       value: pipeline_error
+      allow_duplicates: false
+  - append: 
+      field: event.type 
+      value: error 
+      if: ctx.error?.message != null
+  - append:
+      field: tags
+      value: preserve_original_event
       allow_duplicates: false
