@@ -168,11 +168,11 @@ An example event for `session` looks as following:
 
 ```json
 {
-    "@timestamp": "2025-01-24T12:33:30.769Z",
+    "@timestamp": "2025-01-27T17:12:48.443Z",
     "agent": {
-        "ephemeral_id": "fa3d6bef-8afc-4453-9da7-aa89a62dea0f",
-        "id": "f457ace6-4a5d-4d01-a861-ff90d11ed710",
-        "name": "elastic-agent-72565",
+        "ephemeral_id": "916661e9-ed15-4d6f-bfcf-5c5704a5c1ec",
+        "id": "650cd1fc-0c46-4ef4-b269-1112fb37690e",
+        "name": "elastic-agent-17681",
         "type": "filebeat",
         "version": "8.15.0"
     },
@@ -193,14 +193,14 @@ An example event for `session` looks as following:
     },
     "data_stream": {
         "dataset": "beyondinsight_password_safe.session",
-        "namespace": "17389",
+        "namespace": "97390",
         "type": "logs"
     },
     "ecs": {
         "version": "8.11.0"
     },
     "elastic_agent": {
-        "id": "f457ace6-4a5d-4d01-a861-ff90d11ed710",
+        "id": "650cd1fc-0c46-4ef4-b269-1112fb37690e",
         "snapshot": false,
         "version": "8.15.0"
     },
@@ -212,7 +212,7 @@ An example event for `session` looks as following:
         "dataset": "beyondinsight_password_safe.session",
         "duration": 0,
         "id": "1",
-        "ingested": "2025-01-24T12:33:33Z",
+        "ingested": "2025-01-27T17:12:51Z",
         "kind": "event",
         "module": "beyondinsight_password_safe",
         "type": [
@@ -225,6 +225,11 @@ An example event for `session` looks as following:
     "network": {
         "protocol": [
             "rdp"
+        ]
+    },
+    "related": {
+        "user": [
+            "6"
         ]
     },
     "tags": [
