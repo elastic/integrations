@@ -924,7 +924,7 @@ Note: Descriptions have not been filled out
 | `<local_ldp_id>`| aruba.mpls.local_ldp_id |
 | `<peer_ldp_id>` | aruba.mpls.peer_ldp_id  |
 
-#### [MSDP events](https://www.arubanetworks.com/techdocs/AOS-CX/10.07/HTML/5200-8214/Content/events/MSDP.htm)
+#### [MSDP events](https://arubanetworking.hpe.com/techdocs/AOS-CX/10.15/HTML/elmrg/Content/events/MSDP.htm)
 | Docs Field    | Schema Mapping               |
 |---------------|------------------------------|
 | `<grp_ip>`    | aruba.msdp.grp_ip            |
@@ -937,6 +937,34 @@ Note: Descriptions have not been filled out
 | `<status>`    | aruba.status                 |
 | `<tcp_entity>`| aruba.msdp.tcp_entity        |
 | `<vrf_name>`  | aruba.vrf.name               |
+
+#### [Message Session Relay Protocol events](https://arubanetworking.hpe.com/techdocs/AOS-CX/10.15/HTML/elmrg/Content/events/MSRP.htm)
+| Docs Field   | Schema Mapping       |
+|--------------|----------------------|
+| `<decl_type>`| aruba.msrp.decl_type |
+| `<name>`     | aruba.port           |
+| `<port>`     | aruba.port           |
+| `<reason>`   | event.reason         |
+| `<status>`   | aruba.status         |
+| `<streamid>` | aruba.instance.id    |
+
+#### [Multicast HelperD events](https://arubanetworking.hpe.com/techdocs/AOS-CX/10.15/HTML/elmrg/Content/events/MULTICAST.htm)
+| Docs Field            | Schema Mapping                    |
+|-----------------------|-----------------------------------|
+| `<encap_type>`        | aruba.multicast.encap_type        |
+| `<flood_group_ip>`    | aruba.multicast.flood_group_ip    |
+| `<flood_group_range>` | aruba.multicast.flood_group_range |
+| `<hw_status>`         | aruba.state                       |
+| `<ip_assign_method>`  | aruba.multicast.ip_assign_method  |
+| `<isl_rule>`          | aruba.multicast.isl_rule          |
+| `<oper_state>`        | aruba.state                       |
+| `<override_group_ip>` | aruba.multicast.override_group_ip |
+| `<rep_mode>`          | aruba.multicast.rep_mode          |
+| `<state>`             | aruba.state                       |
+| `<status>`            | aruba.status                      |
+| `<ulay_l2_port>`      | aruba.multicast.ulay_l2_port      |
+| `<ulay_l3_port>`      | aruba.multicast.ulay_l3_port      |
+| `<vni_id>`            | aruba.multicast.vni_id            |
 
 #### [Multicast Traffic Manager events](https://www.arubanetworks.com/techdocs/AOS-CX/10.07/HTML/5200-8214/Content/events/MTM.htm)
 | Docs Field   | Schema Mapping |
@@ -1964,6 +1992,7 @@ The `log` dataset collects the HPE Aruba CX logs.
 | aruba.msdp.grp_ip |  | ip |
 | aruba.msdp.rp_ip |  | ip |
 | aruba.msdp.tcp_entity |  | keyword |
+| aruba.msrp.decl_type |  | keyword |
 | aruba.mstp.config_parameter |  | keyword |
 | aruba.mstp.config_value |  | keyword |
 | aruba.mstp.new_mode |  | keyword |
@@ -1976,6 +2005,16 @@ The `log` dataset collects the HPE Aruba CX logs.
 | aruba.mstp.proto |  | keyword |
 | aruba.mstp.reconfig_parameter |  | keyword |
 | aruba.mtu |  | keyword |
+| aruba.multicast.encap_type |  | keyword |
+| aruba.multicast.flood_group_ip |  | ip |
+| aruba.multicast.flood_group_range |  | keyword |
+| aruba.multicast.ip_assign_method |  | keyword |
+| aruba.multicast.isl_rule |  | keyword |
+| aruba.multicast.override_group_ip |  | keyword |
+| aruba.multicast.rep_mode |  | keyword |
+| aruba.multicast.ulay_l2_port |  | keyword |
+| aruba.multicast.ulay_l3_port |  | keyword |
+| aruba.multicast.vni_id |  | keyword |
 | aruba.nae.action_type |  | keyword |
 | aruba.nae.condition |  | keyword |
 | aruba.nae.description |  | keyword |
