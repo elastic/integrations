@@ -28,6 +28,8 @@ Data streams:
  - `runtime`: Collects Amazon Bedrock runtime metrics such as model invocation
    count, invocation latency, input token count, output token count and many
    more.   
+ - `guardrails`: Collects Amazon Bedrock guardrails metrics such as guardrail invocation
+count, guardrail invocation latency, text unit utilisation count, guardrail policy types associated with interventions and many more.
 
 ## Requirements
 
