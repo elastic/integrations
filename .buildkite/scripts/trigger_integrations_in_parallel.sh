@@ -47,7 +47,7 @@ for package in ${PACKAGE_LIST}; do
 
     packages_to_test=$((packages_to_test+1))
     cat << EOF >> ${PIPELINE_FILE}
-    - label: "Check integrations ${package}"
+    - label: "Check integrations ${package} - validation mappings"
       key: "test-integrations-${package}"
       command: ".buildkite/scripts/test_one_package.sh ${package} ${from} ${to}"
       timeout_in_minutes: 240
@@ -59,6 +59,25 @@ for package in ${PACKAGE_LIST}; do
         FORCE_CHECK_ALL: "${FORCE_CHECK_ALL}"
         SERVERLESS: "false"
         UPLOAD_SAFE_LOGS: ${UPLOAD_SAFE_LOGS}
+      artifact_paths:
+        - build/test-results/*.xml
+        - build/test-coverage/*.xml
+        - build/benchmark-results/*.json
+        - build/elastic-stack-dump/*/logs/*.log
+        - build/elastic-stack-dump/*/logs/fleet-server-internal/**/*
+    - label: "Check integrations ${package} - validation fields"
+      key: "test-integrations-${package}"
+      command: ".buildkite/scripts/test_one_package.sh ${package} ${from} ${to}"
+      timeout_in_minutes: 240
+      agents:
+        provider: gcp
+        image: ${IMAGE_UBUNTU_X86_64}
+      env:
+        STACK_VERSION: "${STACK_VERSION}"
+        FORCE_CHECK_ALL: "${FORCE_CHECK_ALL}"
+        SERVERLESS: "false"
+        UPLOAD_SAFE_LOGS: 0
+        ELASTIC_PACKAGE_FIELD_VALIDATION_TEST_METHOD: "fields"
       artifact_paths:
         - build/test-results/*.xml
         - build/test-coverage/*.xml
