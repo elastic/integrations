@@ -1693,33 +1693,33 @@ Please refer to the following [document](https://www.elastic.co/guide/en/ecs/cur
 
 **Exported fields**
 
-| Field | Description | Type |
-|---|---|---|
-| @timestamp | Event timestamp. | date |
-| cloud.image.id | Image ID for the cloud instance. | keyword |
-| data_stream.dataset | Data stream dataset. | constant_keyword |
-| data_stream.namespace | Data stream namespace. | constant_keyword |
-| data_stream.type | Data stream type. | constant_keyword |
-| host.containerized | If the host is a container. | boolean |
-| host.os.build | OS build information. | keyword |
-| host.os.codename | OS codename, if any. | keyword |
-| o365.metrics.subscriptions.value.accountId | Unique identifier for the account. | keyword |
-| o365.metrics.subscriptions.value.accountName | Name of the account. | text |
-| o365.metrics.subscriptions.value.appliesTo | Type of entity the subscription applies to (e.g., User or Company). | keyword |
-| o365.metrics.subscriptions.value.capabilityStatus | Status of the capability (e.g., Enabled, Suspended). | keyword |
-| o365.metrics.subscriptions.value.consumedUnits | Number of consumed units. | integer |
-| o365.metrics.subscriptions.value.id | Unique identifier for the subscription entry. | keyword |
-| o365.metrics.subscriptions.value.prepaidUnits.enabled | Number of enabled prepaid units. | integer |
-| o365.metrics.subscriptions.value.prepaidUnits.lockedOut | Number of locked-out prepaid units. | integer |
-| o365.metrics.subscriptions.value.prepaidUnits.suspended | Number of suspended prepaid units. | integer |
-| o365.metrics.subscriptions.value.prepaidUnits.warning | Number of prepaid units in warning state. | integer |
-| o365.metrics.subscriptions.value.servicePlans.appliesTo | Type of entity the service plan applies to. | keyword |
-| o365.metrics.subscriptions.value.servicePlans.provisioningStatus | Status of the service plan provisioning. | keyword |
-| o365.metrics.subscriptions.value.servicePlans.servicePlanId | Unique identifier for the service plan. | keyword |
-| o365.metrics.subscriptions.value.servicePlans.servicePlanName | Name of the service plan. | text |
-| o365.metrics.subscriptions.value.skuId | Unique identifier for the SKU. | keyword |
-| o365.metrics.subscriptions.value.skuPartNumber | SKU part number. | keyword |
-| o365.metrics.subscriptions.value.subscriptionIds | Array of subscription IDs. | keyword |
+| Field | Description | Type | Metric Type |
+|---|---|---|---|
+| @timestamp | Event timestamp. | date |  |
+| cloud.image.id | Image ID for the cloud instance. | keyword |  |
+| data_stream.dataset | Data stream dataset. | constant_keyword |  |
+| data_stream.namespace | Data stream namespace. | constant_keyword |  |
+| data_stream.type | Data stream type. | constant_keyword |  |
+| host.containerized | If the host is a container. | boolean |  |
+| host.os.build | OS build information. | keyword |  |
+| host.os.codename | OS codename, if any. | keyword |  |
+| o365.metrics.subscriptions.accounts.account_id | Unique identifier for the account. | keyword |  |
+| o365.metrics.subscriptions.accounts.account_name | Name of the account. | text |  |
+| o365.metrics.subscriptions.accounts.applies_to | Type of entity the subscription applies to (e.g. User or Company). | keyword |  |
+| o365.metrics.subscriptions.accounts.capability_status | Status of the capability (e.g. Enabled, Suspended). | keyword |  |
+| o365.metrics.subscriptions.accounts.consumed_units.count | Number of consumed units. | long | gauge |
+| o365.metrics.subscriptions.accounts.id | Unique identifier for the subscription entry. | keyword |  |
+| o365.metrics.subscriptions.accounts.prepaid_units.enabled.count | Number of enabled prepaid units. | long | gauge |
+| o365.metrics.subscriptions.accounts.prepaid_units.locked_out.count | Number of locked-out prepaid units. | long | gauge |
+| o365.metrics.subscriptions.accounts.prepaid_units.suspended.count | Number of suspended prepaid units. | long | gauge |
+| o365.metrics.subscriptions.accounts.prepaid_units.warning.count | Number of prepaid units in warning state. | long | gauge |
+| o365.metrics.subscriptions.accounts.service_plans.applies_to | Type of entity the service plan applies to. | keyword |  |
+| o365.metrics.subscriptions.accounts.service_plans.provisioning_status | Status of the service plan provisioning. | keyword |  |
+| o365.metrics.subscriptions.accounts.service_plans.service_plan_id | Unique identifier for the service plan. | keyword |  |
+| o365.metrics.subscriptions.accounts.service_plans.service_plan_name | Name of the service plan. | keyword |  |
+| o365.metrics.subscriptions.accounts.sku_id | Unique identifier for the SKU. | keyword |  |
+| o365.metrics.subscriptions.accounts.sku_part_number | SKU part number. | keyword |  |
+| o365.metrics.subscriptions.accounts.subscription_ids | Array of subscription IDs. | keyword |  |
 
 
 ### Teams Device Usage User Counts

@@ -1,38 +1,219 @@
 ---
-description: Pipeline for renaming object
+description: Pipeline for processing o365 subscriptions metrics.
 processors:
   - set:
       field: ecs.version
       value: "8.16.0"
   - json:
       field: subscriptions
-      target_field: o365.metrics.subscriptions 
-  - script:
-      lang: painless
-      description: Replace spaces and dashes in field names under o365.metrics.subscriptions.
-      tag: painless_purge_spaces_and_dashes
-      if: ctx.o365.metrics?.subscriptions instanceof Map 
-      source: |
-        String underscore(String s) {
-          String result = /[ -]/.matcher(s).replaceAll('_').toLowerCase();
-          return /[\ufeff]/.matcher(result).replaceAll('')
-        }
-        
-        def out = [:];
-        for (def item : ctx.o365.metrics.subscriptions.entrySet()) {
-          out[underscore(item.getKey())] = item.getValue();
-        }
-        ctx.o365.metrics.subscriptions = out;
+      target_field: o365.metrics.subscriptions
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - remove:
       if: ctx.subscriptions != null
       field: subscriptions
-      ignore_missing: true                        
+      ignore_missing: true
+  - rename:
+      field: o365.metrics.subscriptions.value
+      target_field: o365.metrics.subscriptions.accounts
+      ignore_missing: true
+
+# Rename non-nested fields
+  - foreach:
+      field: o365.metrics.subscriptions.accounts
+      if: ctx.o365?.metrics?.subscriptions?.accounts instanceof List
+      processor:
+        rename:
+          field: _ingest._value.accountId
+          target_field: _ingest._value.account_id
+          ignore_missing: true
+
+  - foreach:
+      field: o365.metrics.subscriptions.accounts
+      if: ctx.o365?.metrics?.subscriptions?.accounts instanceof List
+      processor:
+        rename:
+          field: _ingest._value.accountName
+          target_field: _ingest._value.account_name
+          ignore_missing: true
+
+  - foreach:
+     field: o365.metrics.subscriptions.accounts
+     if: ctx.o365?.metrics?.subscriptions?.accounts instanceof List
+     processor:
+       rename:
+         field: _ingest._value.appliesTo
+         target_field: _ingest._value.applies_to
+         ignore_missing: true
+
+  - foreach:
+     field: o365.metrics.subscriptions.accounts
+     if: ctx.o365?.metrics?.subscriptions?.accounts instanceof List
+     processor:
+       rename:
+         field: _ingest._value.capabilityStatus
+         target_field: _ingest._value.capability_status
+         ignore_missing: true
+
+  - foreach:
+     field: o365.metrics.subscriptions.accounts
+     if: ctx.o365?.metrics?.subscriptions?.accounts instanceof List
+     processor:
+       rename:
+         field: _ingest._value.consumedUnits
+         target_field: _ingest._value.consumed_units.count
+         ignore_missing: true
+
+  - foreach:
+     field: o365.metrics.subscriptions.accounts
+     if: ctx.o365?.metrics?.subscriptions?.accounts instanceof List
+     processor:
+       rename:
+         field: _ingest._value.skuId
+         target_field: _ingest._value.sku_id
+         ignore_missing: true
+
+  - foreach:
+     field: o365.metrics.subscriptions.accounts
+     if: ctx.o365?.metrics?.subscriptions?.accounts instanceof List
+     processor:
+       rename:
+         field: _ingest._value.skuPartNumber
+         target_field: _ingest._value.sku_part_number
+         ignore_missing: true
+
+  - foreach:
+     field: o365.metrics.subscriptions.accounts
+     if: ctx.o365?.metrics?.subscriptions?.accounts instanceof List
+     processor:
+       rename:
+         field: _ingest._value.subscriptionIds
+         target_field: _ingest._value.subscription_ids
+         ignore_missing: true
+
+# Rename fields under prepaidUnits
+  - foreach:
+     field: o365.metrics.subscriptions.accounts
+     if: ctx.o365?.metrics?.subscriptions?.accounts instanceof List
+     processor:
+       rename:
+         field: _ingest._value.prepaidUnits.enabled
+         target_field: _ingest._value.prepaid_units.enabled.count
+         ignore_missing: true
+
+  - foreach:
+     field: o365.metrics.subscriptions.accounts
+     if: ctx.o365?.metrics?.subscriptions?.accounts instanceof List
+     processor:
+       rename:
+         field: _ingest._value.prepaidUnits.lockedOut
+         target_field: _ingest._value.prepaid_units.locked_out.count
+         ignore_missing: true
+
+  - foreach:
+     field: o365.metrics.subscriptions.accounts
+     if: ctx.o365?.metrics?.subscriptions?.accounts instanceof List
+     processor:
+       rename:
+         field: _ingest._value.prepaidUnits.suspended
+         target_field: _ingest._value.prepaid_units.suspended.count
+         ignore_missing: true
+
+  - foreach:
+     field: o365.metrics.subscriptions.accounts
+     if: ctx.o365?.metrics?.subscriptions?.accounts instanceof List
+     processor:
+       rename:
+         field: _ingest._value.prepaidUnits.warning
+         target_field: _ingest._value.prepaid_units.warning.count
+         ignore_missing: true
+
+  - foreach:
+     field: o365.metrics.subscriptions.accounts
+     if: ctx.o365?.metrics?.subscriptions?.accounts instanceof List
+     processor:
+       remove:
+         field: _ingest._value.prepaidUnits
+         ignore_missing: true
+
+
+# Rename fields under servicePlans
+  - foreach:
+     field: o365.metrics.subscriptions.accounts
+     if: ctx.o365?.metrics?.subscriptions?.accounts instanceof List
+     processor:
+       rename:
+         field: _ingest._value.servicePlans
+         target_field: _ingest._value.service_plans
+         ignore_missing: true
+
+  - foreach:
+     field: o365.metrics.subscriptions.accounts
+     if: ctx.o365?.metrics?.subscriptions?.accounts instanceof List
+     processor:
+       foreach:
+         field: _ingest._value.service_plans
+         ignore_failure: true
+         processor:
+           rename:
+             field: _ingest._value.appliesTo
+             target_field: _ingest._value.applies_to
+             ignore_missing: true
+
+  - foreach:
+     field: o365.metrics.subscriptions.accounts
+     if: ctx.o365?.metrics?.subscriptions?.accounts instanceof List
+     processor:
+       foreach:
+         field: _ingest._value.service_plans
+         ignore_failure: true
+         processor:
+           rename:
+             field: _ingest._value.provisioningStatus
+             target_field: _ingest._value.provisioning_status
+             ignore_missing: true
+
+  - foreach:
+     field: o365.metrics.subscriptions.accounts
+     if: ctx.o365?.metrics?.subscriptions?.accounts instanceof List
+     processor:
+       foreach:
+         field: _ingest._value.service_plans
+         ignore_failure: true
+         processor:
+           rename:
+             field: _ingest._value.servicePlanId
+             target_field: _ingest._value.service_plan_id
+             ignore_missing: true
+
+  - foreach:
+     field: o365.metrics.subscriptions.accounts
+     if: ctx.o365?.metrics?.subscriptions?.accounts instanceof List
+     processor:
+       foreach:
+         field: _ingest._value.service_plans
+         ignore_failure: true
+         processor:
+           rename:
+             field: _ingest._value.servicePlanName
+             target_field: _ingest._value.service_plan_name
+             ignore_missing: true
 
 on_failure:
-  - append:
+  - set:
       field: error.message
-      value: "{{{_ingest.on_failure_message}}}"
+      value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - append:
       field: event.kind
       value: pipeline_error
+      allow_duplicates: false
+  - append: 
+      field: event.type 
+      value: error 
+      if: ctx.error?.message != null
+  - append:
+      field: tags
+      value: preserve_original_event
       allow_duplicates: false
