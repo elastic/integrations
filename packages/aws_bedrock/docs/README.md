@@ -79,7 +79,7 @@ To enable the SQS notification method, set the `queue_url` configuration value. 
 
 ### Collecting Amazon Bedrock model invocation logs from CloudWatch
 
-When CloudWatch log collection is enabled, you can retrieve logs from all log streams within a specified log group. The filterLogEvents AWS API is used to list log events from the specified log group.
+When CloudWatch log collection is enabled, you can retrieve logs from all log streams within a specified log group. The `filterLogEvents` AWS API is used to list log events from the specified log group.
 
 **Exported fields**
 
