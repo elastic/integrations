@@ -72,6 +72,7 @@ processors:
         "user.lifecycle.activate","user.lifecycle.create",
         "user.lifecycle.deactivate","user.lifecycle.suspend",
         "user.lifecycle.unsuspend"].contains(ctx?.okta?.event_type)
+      allow_duplicates: false
   - append:
       field: event.category
       value: configuration
@@ -83,42 +84,51 @@ processors:
         "application.lifecycle.create","application.lifecycle.delete",
         "policy.rule.update","application.lifecycle.activate",
         "application.lifecycle.deactivate","application.lifecycle.update"].contains(ctx?.okta?.event_type)
+      allow_duplicates: false
   - append:
       field: event.category
       value: authentication
       if: '["user.session.start","user.session.end","user.authentication.sso","policy.evaluate_sign_on"].contains(ctx?.okta?.event_type)'
+      allow_duplicates: false
   - append:
       field: event.category
       value: session
       if: '["user.session.start","user.session.end"].contains(ctx?.okta?.event_type)'
+      allow_duplicates: false
   - append:
       field: event.type
       value: info
       if: |
         ["system.org.rate_limit.warning","system.org.rate_limit.violation",
         "core.concurrency.org.limit.violation"].contains(ctx?.okta?.event_type)
+      allow_duplicates: false
   - append:
-      field: event.type
+      field: event.category
       value: network
       if: '["security.request.blocked"].contains(ctx?.okta?.event_type)'
+      allow_duplicates: false
   - append:
-      field: event.type
+      field: event.category
       value: network
       if: |
         ["system.org.rate_limit.warning","system.org.rate_limit.violation",
         "core.concurrency.org.limit.violation","security.request.blocked"].contains(ctx?.okta?.event_type)
+      allow_duplicates: false
   - append:
       field: event.type
       value: start
       if: '["user.session.start"].contains(ctx?.okta?.event_type)'
+      allow_duplicates: false
   - append:
       field: event.type
       value: end
       if: '["user.session.end"].contains(ctx?.okta?.event_type)'
+      allow_duplicates: false
   - append:
       field: event.type
       value: group
       if: '["group.user_membership.add","group.user_membership.remove"].contains(ctx?.okta?.event_type)'
+      allow_duplicates: false
   - append:
       field: event.type
       value: info
@@ -128,6 +138,7 @@ processors:
         "user.lifecycle.unsuspend","user.authentication.sso",
         "user.session.start","user.session.end","application.user_membership.add",
         "application.user_membership.remove","application.user_membership.change_username"].contains(ctx?.okta?.event_type)
+      allow_duplicates: false
   - append:
       field: event.type
       value: change
@@ -139,18 +150,22 @@ processors:
         "policy.lifecycle.update","policy.rule.activate","policy.rule.add",
         "policy.rule.deactivate","policy.rule.update","application.user_membership.add",
         "application.user_membership.remove","application.user_membership.change_username"].contains(ctx?.okta?.event_type)
+      allow_duplicates: false
   - append:
       field: event.type
       value: creation
       if: '["user.lifecycle.create","policy.lifecycle.create","application.lifecycle.create"].contains(ctx?.okta?.event_type)'
+      allow_duplicates: false
   - append:
       field: event.type
       value: deletion
       if: '["policy.lifecycle.delete","application.lifecycle.delete"].contains(ctx?.okta?.event_type)'
+      allow_duplicates: false
   - append:
       field: event.type
       value: info
       if: '["policy.evaluate_sign_on"].contains(ctx?.okta?.event_type)'
+      allow_duplicates: false
   - rename:
       field: json.uuid
       target_field: okta.uuid

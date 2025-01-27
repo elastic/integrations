@@ -1,0 +1,175 @@
+interval: {{interval}}
+{{#if enable_request_tracer}}
+resource.tracer.filename: "../../logs/cel/http-request-trace-*.ndjson"
+resource.tracer.maxbackups: 5
+resource.tracer.maxsize: 5
+{{/if}}
+{{#if proxy_url}}
+resource.proxy_url: {{proxy_url}}
+{{/if}}
+{{#if resource_ssl}}
+resource.ssl: 
+  {{resource_ssl}}
+{{/if}}
+{{#if resource_timeout}}
+resource.timeout: {{resource_timeout}}
+{{/if}}
+resource.url: {{url}}
+auth.oauth2:
+  client.id: {{client_id}}
+  client.secret: {{client_secret}}
+  provider: azure
+  scopes:
+{{#each token_scopes as |token_scope|}}
+    - {{token_scope}}
+{{/each}}
+  endpoint_params: 
+    grant_type: client_credentials
+{{#if token_url}}
+  token_url: {{token_url}}/{{azure_tenant_id}}/oauth2/v2.0/token
+{{else if azure_tenant_id}}
+  azure.tenant_id: {{azure_tenant_id}}
+{{/if}}
+state:
+  initial_interval: "{{initial_interval}}"
+  sync_days: "{{sync_days}}"
+  want_more: false
+  types:
+  {{#each report_types as |t|}}
+    - {{t}}
+  {{/each}}
+  {{!-- Map of UI option report_types to corresponding Microsoft Graph API.
+  The keys in this map are also across manifest, ingest pipelines, transforms, and README.
+  Any modifications to the keys should be propagated to corresponding assets. --}}
+  type_to_api_map:
+    'Microsoft 365 Groups Activity Group Detail': '/reports/getOffice365GroupsActivityDetail'
+redact:
+  fields: ~
+program: |
+  state.with(
+    // setup_list stores the state for each report type. It has following job: 
+    // 1. Indicates whether initial pull for this type is done using "setup_done".
+    // 2. Stores "last_request_date" to refill gaps in data.
+    state.?cursor.setup_list.orValue([]).as(setup_list, 
+      size(setup_list) == 0 
+      ?
+        state.types.map(t, {"type": t, "setup_done": false})
+      :
+        setup_list
+    ).as(setup_list,
+      // work_list maintains report types to run during this interval. It is gradually purged and made empty.
+      state.?cursor.work_list.orValue(state.types.map(t, {"type": t})).as(work_list, 
+        size(work_list) == 0 
+        ?
+          state.types.map(t, {"type": t})
+        :
+          work_list
+      ).as(work_list,
+        (
+          has(work_list[0].next_request_date)
+          ?
+            // Ongoing request to fetch data until current day. Fetch the next date from cursor for that report.
+            string(work_list[0].next_request_date)
+          :
+            // New request
+            (
+              size(setup_list.filter(t, t.type == work_list[0].type && t.setup_done == false)) > 0
+              ?
+                // New request during initial setup. Start fetching from `initial_interval` days in the past.
+                (now - duration(string(int(state.initial_interval) * 24) + "h")).format("2006-01-02")
+              :   
+                // New request but initial setup is finished. Start fetching from min(sync_days, cursor.setup_list(type).last_request_date) from the past to help with filling gaps in data.
+                (now - duration(string(int(state.sync_days) * 24) + "h")).as(sync_time, 
+                  setup_list.filter(t, t.type == work_list[0].type).as(s, 
+                    [s[0].last_request_date.parse_time("2006-01-02"), sync_time].min().format("2006-01-02")
+                  )
+                )
+            )
+        ).as(report_date,
+          request("GET",
+            state.url.trim_right("/") + state.type_to_api_map[work_list[0].type] + "(date=" + report_date + ")"
+          ).do_request().as(resp,
+            // Response is 200 success containing CSV. Any redirects are handled within CEL input.
+            resp.StatusCode == 200
+            ?
+              bytes(resp.Body).mime("text/csv; header=present").as(data, {
+                "events": data.map(e, {
+                  "message": e.with({
+                    "report": {
+                      "name": work_list[0].type,
+                      "api_path": state.type_to_api_map[work_list[0].type],
+                    }
+                  }).encode_json(),
+                }),
+                "cursor": {
+                  "setup_list": setup_list.filter(t, t.type != work_list[0].type) + [
+                    setup_list.filter(t, t.type == work_list[0].type).as(s, 
+                      {
+                        "type": work_list[0].type, 
+                        "setup_done": true,
+                        "last_request_date": report_date,
+                      }
+                    )
+                  ],
+                  "work_list": ((
+                    ((report_date.parse_time("2006-01-02") + duration("24h")) < now)?
+                      // Add 24h to existing report_date to prepare for next report date.
+                      [work_list[0].with({
+                        "next_request_date": (report_date.parse_time("2006-01-02") + duration("24h")).format("2006-01-02")
+                      })]
+                    :
+                      []
+                  ) + tail(work_list)),
+                },
+                "want_more": ((report_date.parse_time("2006-01-02") + duration("24h")) < now),
+              }.as(to_publish, to_publish.with({
+                "want_more": to_publish.want_more || size(to_publish.cursor.work_list) != 0,
+              }))
+              ).as(state, 
+                // Check whether we still need to get more, but have
+                // no event for this type. If we do, populate events
+                // with a place-holder to be discarded by the ingest
+                // pipeline.
+                state.want_more && size(state.events) == 0 ?
+                  state.with({"events": [{"message": "want_more"}]})
+                :
+                  state
+              )
+            :
+              {
+                "events": {
+                  "error": {
+                    "code": string(resp.StatusCode),
+                    "id": string(resp.Status),
+                    "message": "GET " + state.path + ": " + (
+                      size(resp.Body) != 0 ?
+                        string(resp.Body)
+                      :
+                        string(resp.Status) + ' (' + string(resp.StatusCode) + ')'
+                    ),
+                  },
+                },
+                "want_more": false,
+              }
+          )
+        )
+      )
+    )
+  )
+tags:
+{{#if preserve_duplicate_custom_fields}}
+  - preserve_duplicate_custom_fields
+{{/if}}
+{{#if preserve_original_event}}
+  - preserve_original_event
+{{/if}}
+{{#each tags as |tag|}}
+  - {{tag}}
+{{/each}}
+{{#contains "forwarded" tags}}
+publisher_pipeline.disable_host: true
+{{/contains}}
+{{#if processors}}
+processors:
+{{processors}}
+{{/if}}
