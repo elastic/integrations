@@ -1413,10 +1413,13 @@ processors:
       field: teleport.audit.instance_id
       target_field: cloud.instance.id
       ignore_missing: true
+      # This was failing due to `cloud.instance.id` already existed
+      override: true # Should it be added an if condition? Should it be added a remove processor?
   - rename:
       field: teleport.audit.exit_code
       target_field: process.exit_code
       ignore_missing: true
+      if: ctx.process != null && !ctx['process'].containsKey('exit_code')
   - set:
       field: event.outcome
       value: 'success'
@@ -1432,9 +1435,16 @@ processors:
       field: teleport.audit.account_id
       target_field: cloud.account.id
       ignore_missing: true
+      # This was failing due to `cloud.account.id` already existed
+      override: true # Should it be added an if condition? Should it be added a remove processor?
   - rename:
       field: teleport.audit.region
       target_field: cloud.region
+      ignore_missing: true
+      ignore_failure: true
+  # in case of previous processor fails
+  - remove:
+      field: teleport.audit.region
       ignore_missing: true
       ignore_failure: true
   - rename:
