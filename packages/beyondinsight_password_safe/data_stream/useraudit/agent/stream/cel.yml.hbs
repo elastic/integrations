@@ -81,8 +81,10 @@ program: |-
   									"cursor": {
   										"cookies": cookies,
   										"enddate": newEnddate,
-  										"startdate": wantMore ? (params.startdate[0]) : state.?cursor.nextStartDate.orValue(""),
-  										"nextStartDate": (newEnddate == "") ? string(body.Data[0].CreateDate) : state.?cursor.nextStartDate.orValue(""),
+  										"nextStartate": wantMore ? state.?cursor.nextStartate.orValue(body.Data[0].CreateDate) : null,
+  										"startdate": wantMore ?
+  											(params.startdate[0])
+  										: (has(state.cursor) && has(state.cursor.nextStartate) && state.cursor.nextStartate != null) ? state.cursor.nextStartate : body.Data[0].CreateDate,
   									},
   								}
   							)
