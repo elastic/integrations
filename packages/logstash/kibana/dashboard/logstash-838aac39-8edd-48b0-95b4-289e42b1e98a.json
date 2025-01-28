@@ -10,34 +10,7 @@
                 "ignoreValidations": false
             },
             "panelsJSON": {
-                "8da778bf-1c21-40b5-910c-f756444ffc92": {
-                    "explicitInput": {
-                        "dataViewId": "metrics-*",
-                        "exclude": null,
-                        "existsSelected": false,
-                        "fieldName": "logstash.pipeline.id",
-                        "hideActionBar": null,
-                        "hideExclude": null,
-                        "hideExists": null,
-                        "hideSort": null,
-                        "id": "8da778bf-1c21-40b5-910c-f756444ffc92",
-                        "placeholder": null,
-                        "runPastTimeout": null,
-                        "searchTechnique": "prefix",
-                        "selectedOptions": [],
-                        "singleSelect": null,
-                        "sort": {
-                            "by": "_count",
-                            "direction": "desc"
-                        },
-                        "title": "Pipeline Id"
-                    },
-                    "grow": true,
-                    "order": 1,
-                    "type": "optionsListControl",
-                    "width": "medium"
-                },
-                "ce83240e-487e-418d-b157-93bd245accb1": {
+                "81153b99-d1a7-4469-bcc2-91d8aa1d09e8": {
                     "explicitInput": {
                         "dataViewId": "metrics-*",
                         "exclude": null,
@@ -47,7 +20,7 @@
                         "hideExclude": null,
                         "hideExists": null,
                         "hideSort": null,
-                        "id": "ce83240e-487e-418d-b157-93bd245accb1",
+                        "id": "81153b99-d1a7-4469-bcc2-91d8aa1d09e8",
                         "placeholder": null,
                         "runPastTimeout": null,
                         "searchTechnique": "prefix",
@@ -61,6 +34,33 @@
                     },
                     "grow": true,
                     "order": 0,
+                    "type": "optionsListControl",
+                    "width": "medium"
+                },
+                "83e0ea4c-c7e1-46d0-916b-6cd10d814d44": {
+                    "explicitInput": {
+                        "dataViewId": "metrics-*",
+                        "exclude": null,
+                        "existsSelected": false,
+                        "fieldName": "logstash.pipeline.id",
+                        "hideActionBar": null,
+                        "hideExclude": null,
+                        "hideExists": null,
+                        "hideSort": null,
+                        "id": "83e0ea4c-c7e1-46d0-916b-6cd10d814d44",
+                        "placeholder": null,
+                        "runPastTimeout": null,
+                        "searchTechnique": "prefix",
+                        "selectedOptions": [],
+                        "singleSelect": null,
+                        "sort": {
+                            "by": "_count",
+                            "direction": "desc"
+                        },
+                        "title": "Pipeline Id"
+                    },
+                    "grow": true,
+                    "order": 1,
                     "type": "optionsListControl",
                     "width": "medium"
                 }
@@ -2104,17 +2104,13 @@
                                 "id": "metrics-*",
                                 "name": "indexpattern-datasource-layer-dce344e8-e3dd-42fc-b474-35a87078a4d2",
                                 "type": "index-pattern"
-                            },
-                            {
-                                "id": "metrics-*",
-                                "name": "c0df066d-5d8b-4d09-84a0-5d309931fef5",
-                                "type": "index-pattern"
                             }
                         ],
                         "state": {
                             "adHocDataViews": {},
                             "datasourceStates": {
                                 "formBased": {
+                                    "currentIndexPatternId": "metrics-*",
                                     "layers": {
                                         "dce344e8-e3dd-42fc-b474-35a87078a4d2": {
                                             "columnOrder": [
@@ -2124,7 +2120,6 @@
                                                 "ce459291-9963-4d78-ae70-13c1ba2e9e4b",
                                                 "25c305b4-4be5-41e6-8500-01ab4a6cbab7",
                                                 "24fd7ec9-9b86-4e0d-936a-da9b0679272b",
-                                                "475b13ee-36cf-4812-a572-f5f1585e9f25",
                                                 "15eb8f95-50aa-4eb4-baef-31da9f64a429",
                                                 "b533b1f6-4554-4e65-b170-cad58455d590X0",
                                                 "b533b1f6-4554-4e65-b170-cad58455d590X1",
@@ -2139,7 +2134,7 @@
                                                         "query": "\"logstash.pipeline.flow.worker_utilization.last_1_hour\": *"
                                                     },
                                                     "isBucketed": false,
-                                                    "label": "Load (1 Hour)",
+                                                    "label": "Utilization (1 Hour)",
                                                     "operationType": "last_value",
                                                     "params": {
                                                         "format": {
@@ -2157,21 +2152,25 @@
                                                 "24fd7ec9-9b86-4e0d-936a-da9b0679272b": {
                                                     "customLabel": true,
                                                     "dataType": "number",
+                                                    "filter": {
+                                                        "language": "kuery",
+                                                        "query": "\"logstash.pipeline.flow.worker_utilization.current\": *"
+                                                    },
                                                     "isBucketed": false,
-                                                    "label": "Load (1 Minute)",
-                                                    "operationType": "median",
+                                                    "label": "Current utilization",
+                                                    "operationType": "last_value",
                                                     "params": {
-                                                        "emptyAsNull": true,
                                                         "format": {
                                                             "id": "number",
                                                             "params": {
                                                                 "decimals": 0,
                                                                 "suffix": "%"
                                                             }
-                                                        }
+                                                        },
+                                                        "sortField": "@timestamp"
                                                     },
                                                     "scale": "ratio",
-                                                    "sourceField": "logstash.pipeline.flow.worker_utilization.last_1_minute"
+                                                    "sourceField": "logstash.pipeline.flow.worker_utilization.current"
                                                 },
                                                 "25c305b4-4be5-41e6-8500-01ab4a6cbab7": {
                                                     "customLabel": true,
@@ -2188,29 +2187,6 @@
                                                     },
                                                     "scale": "ordinal",
                                                     "sourceField": "logstash.pipeline.state"
-                                                },
-                                                "475b13ee-36cf-4812-a572-f5f1585e9f25": {
-                                                    "customLabel": true,
-                                                    "dataType": "number",
-                                                    "filter": {
-                                                        "language": "kuery",
-                                                        "query": "\"logstash.pipeline.flow.worker_utilization.last_15_minutes\": *"
-                                                    },
-                                                    "isBucketed": false,
-                                                    "label": "Load (15 Minutes)",
-                                                    "operationType": "last_value",
-                                                    "params": {
-                                                        "format": {
-                                                            "id": "number",
-                                                            "params": {
-                                                                "decimals": 0,
-                                                                "suffix": "%"
-                                                            }
-                                                        },
-                                                        "sortField": "@timestamp"
-                                                    },
-                                                    "scale": "ratio",
-                                                    "sourceField": "logstash.pipeline.flow.worker_utilization.last_15_minutes"
                                                 },
                                                 "7c2a72b2-4a23-4cc8-bf49-977a4598ba22": {
                                                     "customLabel": true,
@@ -2360,6 +2336,7 @@
                                                 }
                                             },
                                             "incompleteColumns": {},
+                                            "indexPatternId": "metrics-*",
                                             "sampling": 1
                                         }
                                     }
@@ -2432,69 +2409,6 @@
                                         "alignment": "left",
                                         "colorMode": "cell",
                                         "columnId": "24fd7ec9-9b86-4e0d-936a-da9b0679272b",
-                                        "isMetric": true,
-                                        "isTransposed": false,
-                                        "palette": {
-                                            "name": "custom",
-                                            "params": {
-                                                "colorStops": [
-                                                    {
-                                                        "color": "#209280",
-                                                        "stop": 0
-                                                    },
-                                                    {
-                                                        "color": "#54b399",
-                                                        "stop": 25
-                                                    },
-                                                    {
-                                                        "color": "#d6bf57",
-                                                        "stop": 50
-                                                    },
-                                                    {
-                                                        "color": "#e7664c",
-                                                        "stop": 75
-                                                    },
-                                                    {
-                                                        "color": "#cc5642",
-                                                        "stop": 90
-                                                    }
-                                                ],
-                                                "continuity": "above",
-                                                "name": "custom",
-                                                "rangeMax": null,
-                                                "rangeMin": 0,
-                                                "rangeType": "number",
-                                                "reverse": false,
-                                                "steps": 5,
-                                                "stops": [
-                                                    {
-                                                        "color": "#209280",
-                                                        "stop": 25
-                                                    },
-                                                    {
-                                                        "color": "#54b399",
-                                                        "stop": 50
-                                                    },
-                                                    {
-                                                        "color": "#d6bf57",
-                                                        "stop": 75
-                                                    },
-                                                    {
-                                                        "color": "#e7664c",
-                                                        "stop": 90
-                                                    },
-                                                    {
-                                                        "color": "#cc5642",
-                                                        "stop": 91
-                                                    }
-                                                ]
-                                            },
-                                            "type": "palette"
-                                        }
-                                    },
-                                    {
-                                        "colorMode": "cell",
-                                        "columnId": "475b13ee-36cf-4812-a572-f5f1585e9f25",
                                         "isMetric": true,
                                         "isTransposed": false,
                                         "palette": {
@@ -2858,7 +2772,7 @@
             }
         ],
         "timeRestore": false,
-        "title": "[Metrics Logstash] Node Health Report",
+        "title": "[Metrics Logstash] Pipeline Health Report",
         "version": 3
     },
     "coreMigrationVersion": "8.8.0",
@@ -2924,11 +2838,6 @@
         },
         {
             "id": "metrics-*",
-            "name": "b30ba597-df32-43a3-9f10-9d76f0666b80:c0df066d-5d8b-4d09-84a0-5d309931fef5",
-            "type": "index-pattern"
-        },
-        {
-            "id": "metrics-*",
             "name": "0e0170db-cfe9-483c-b076-d1850b1663ed:indexpattern-datasource-layer-dce344e8-e3dd-42fc-b474-35a87078a4d2",
             "type": "index-pattern"
         },
@@ -2944,12 +2853,12 @@
         },
         {
             "id": "metrics-*",
-            "name": "controlGroup_06200a42-736c-4eac-948f-1536e0166e98:optionsListDataView",
+            "name": "controlGroup_ce83240e-487e-418d-b157-93bd245accb1:optionsListDataView",
             "type": "index-pattern"
         },
         {
             "id": "metrics-*",
-            "name": "controlGroup_92ec8858-ab63-41ad-b1ca-4a7d6fb6d237:optionsListDataView",
+            "name": "controlGroup_8da778bf-1c21-40b5-910c-f756444ffc92:optionsListDataView",
             "type": "index-pattern"
         }
     ],
