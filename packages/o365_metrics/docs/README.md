@@ -1697,7 +1697,7 @@ Please refer to the following [document](https://www.elastic.co/guide/en/ecs/cur
 
 ### Service Health
 
-Get details about Teams device usage from [Microsoft Graph API](https://learn.microsoft.com/en-us/graph/api/reportroot-getteamsdeviceusageusercounts?view=graph-rest-1.0&tabs=http).
+Get details about Service Health from [Microsoft Graph API](https://learn.microsoft.com/en-us/graph/api/servicehealth-get?view=graph-rest-1.0&tabs=http).
 
 An example event for `service_health` looks as following:
 
