@@ -69,16 +69,44 @@ program: |
             "maxDate": state.maxDate
           })
           :
-          {
-            "events": [{"response":"The application encountered an error while retrieving the current page"}],
-            "cursor": {
-              "last_timestamp": state.minDate
-            },
-            "want_more": false,
-            "page_num": 1,
-            "org_id": state.org_id,
-            "minDate": state.minDate,
-            "maxDate": state.maxDate
-          }
-        ))
-      
+            bytes(resp.Body).decode_json().as(body, (body != null) ?
+              {
+                "events": [
+                  {
+                    "error": {
+                      "code": body.error,
+                      "message": body.detail,
+                    },
+                  },
+                ],
+                "cursor": {
+                  "last_timestamp": state.minDate
+                },
+                "want_more": false,
+                "page_num": 1,
+                "org_id": state.org_id,
+                "minDate": state.minDate,
+                "maxDate": state.maxDate
+              }
+            : 
+              {
+                "events": [
+                  {
+                    "error": {
+                      "code": resp.StatusCode,
+                      "message": resp.Status,
+                    },
+                  },
+                ],
+                "cursor": {
+                  "last_timestamp": state.minDate
+                },
+                "want_more": false,
+                "page_num": 1,
+                "org_id": state.org_id,
+                "minDate": state.minDate,
+                "maxDate": state.maxDate
+              }
+            )
+          )
+        )
