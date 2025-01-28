@@ -541,13 +541,13 @@ An example event for `node` looks as following:
 ```
 
 
-## Metrics (Technical Preview)
+## Metrics Collection
 
-This Logstash package also includes a technical preview of Logstash data collection and dashboards
-native to elastic agent. The technical preview includes enhanced data collection, and a number of dashboards, which include additional insight into running pipelines.
+Metric collection for the Logstash integration can be done via Elastic Agent (preferred) or with Stack Monitoring. 
+By utilizing Elastic Agent we are able to query additional monitoring APIs and provide additional dashboards, which provide the best view into your Logstash deployment and pipeline execution.
 
-Note that this feature is not intended for use with the Stack Monitoring UI inside Kibana,
-and is included as a technical preview. Existing implementations wishing to continue using the Stack Monitoring UI should uncheck the technical preview option, and continue to use `Metrics (Stack Monitoring)`. Those users who wish to use the technical preview should uncheck `Metrics (Stack Monitoring)` and check `Metrics (Technical Preview)`
+Elastic Agent based metrics collection is not compatible with the Stack Monitoring UI inside Kibana, please only select Metrics (Elastic Agent).
+Users that prefer the Stack Monitoring UI should uncheck `Metrics (Elastic Agent)` and continue to use `Metrics (Stack Monitoring)`. 
 
 ### Fields and Sample Event
 
@@ -683,6 +683,99 @@ This is the `node` dataset, which drives the Node dashboard pages.
 | service.type | The type of the service data is collected from. The type can be used to group and correlate logs and metrics from one service type. Example: If logs or metrics are collected from Elasticsearch, `service.type` would be `elasticsearch`. | keyword |  |
 | service.version | Version of the service the data was collected from. This allows to look at a data set only for a specific version of a service. | keyword |  |
 
+### Health Report
+An example event for 'health_report' looks as following:
+```json
+{
+    "logstash": {
+      "pipeline": {
+        "symptom": "The pipeline is concerning; 1 area is impacted and 1 diagnosis is available",
+        "diagnosis": {
+          "help_url": "https://www.elastic.co/guide/en/logstash/8.17/health-report-pipeline-status.html#finished",
+          "cause": "pipeline has finished running because its inputs have been closed and events have been processed",
+          "action": "if you expect this pipeline to run indefinitely, you will need to configure its inputs to continue receiving or fetching events",
+          "id": "logstash:health:pipeline:status:diagnosis:finished"
+        },
+        "id": "self-closer",
+        "state": "FINISHED",
+        "impacts": {
+          "severity": 10,
+          "impact_areas": [
+            "pipeline_execution"
+          ],
+          "description": "pipeline has finished running",
+          "id": "logstash:health:pipeline:status:impact:not_processing"
+        },
+        "flow": {
+          "worker_utilization": {
+            "current": 0.0009642,
+            "last_24_hours": 0.0009642,
+            "last_5_minutes": 0.0009642,
+            "last_1_hour": 0.0009642,
+            "last_15_minutes": 0.0009642,
+            "lifetime": 0.0009642,
+            "last_1_minute": 0.0009642
+          }
+        },
+        "status": "yellow"
+      },
+      "node": {
+        "address": "0.0.0.0:9600",
+        "name": "87f8aa570fcb",
+        "uuid": "8c2afc7e-a64f-42f3-9ab9-5e16dc95c9bc",
+        "version": "8.17.1"
+      }
+    },
+    "agent": {
+      "name": "a9f1b9c5936b",
+      "id": "af72217c-8c4d-427f-8c92-6b4566e9937f",
+      "type": "filebeat",
+      "ephemeral_id": "40ea6231-3856-4b90-8083-73b30558cfe7",
+      "version": "8.17.1"
+    },
+    "@timestamp": "2025-01-28T18:41:24.669Z",
+    "ecs": {
+      "version": "8.0.0"
+    },
+    "data_stream": {
+      "namespace": "default",
+      "type": "metrics",
+      "dataset": "logstash.health_report"
+    },
+    "host": {
+      "hostname": "a9f1b9c5936b",
+      "os": {
+        "kernel": "6.10.14-linuxkit",
+        "codename": "focal",
+        "name": "Ubuntu",
+        "family": "debian",
+        "type": "linux",
+        "version": "20.04.6 LTS (Focal Fossa)",
+        "platform": "ubuntu"
+      },
+      "containerized": false,
+      "ip": [
+        "172.17.0.3"
+      ],
+      "name": "a9f1b9c5936b",
+      "mac": [
+        "02-42-AC-11-00-03"
+      ],
+      "architecture": "aarch64"
+    },
+    "elastic_agent": {
+      "id": "af72217c-8c4d-427f-8c92-6b4566e9937f",
+      "version": "8.17.1",
+      "snapshot": false
+    },
+    "event": {
+      "agent_id_status": "verified",
+      "ingested": "2025-01-28T18:41:28Z",
+      "dataset": "logstash.health_report"
+    },
+    "event.dataset": "logstash.pipeline"
+}
+```
 
 An example event for `node_cel` looks as following:
 
