@@ -124,16 +124,6 @@ Please refer to the following [document](https://www.elastic.co/guide/en/ecs/cur
 
 {{fields "groups_activity_group_detail"}}
 
-### One Drive Usage
-
-{{event "onedrive_usage"}}
-
-**ECS Field Reference**
-
-Please refer to the following [document](https://www.elastic.co/guide/en/ecs/current/ecs-field-reference.html) for detailed information on ECS fields.
-
-{{fields "onedrive_usage"}}
-
 ### OneDrive Usage Account Detail
 
 Get details about OneDrive usage by account from [Microsoft Graph API](https://learn.microsoft.com/en-us/graph/api/reportroot-getonedriveusageaccountdetail?view=graph-rest-1.0&tabs=http).
@@ -145,6 +135,42 @@ Get details about OneDrive usage by account from [Microsoft Graph API](https://l
 Please refer to the following [document](https://www.elastic.co/guide/en/ecs/current/ecs-field-reference.html) for detailed information on ECS fields.
 
 {{fields "onedrive_usage_account_detail"}}
+
+### OneDrive Usage Account Counts
+
+Get details about OneDrive usage by account counts from [Microsoft Graph API](https://learn.microsoft.com/en-us/graph/api/reportroot-getonedriveusageaccountcounts?view=graph-rest-1.0&tabs=http).
+
+{{event "onedrive_usage_account_counts"}}
+
+**ECS Field Reference**
+
+Please refer to the following [document](https://www.elastic.co/guide/en/ecs/current/ecs-field-reference.html) for detailed information on ECS fields.
+
+{{fields "onedrive_usage_account_counts"}}
+
+### OneDrive Usage File Counts
+
+Get details about OneDrive usage by file counts from [Microsoft Graph API](https://learn.microsoft.com/en-us/graph/api/reportroot-getonedriveusagefilecounts?view=graph-rest-1.0&tabs=http).
+
+{{event "onedrive_usage_file_counts"}}
+
+**ECS Field Reference**
+
+Please refer to the following [document](https://www.elastic.co/guide/en/ecs/current/ecs-field-reference.html) for detailed information on ECS fields.
+
+{{fields "onedrive_usage_file_counts"}}
+
+### OneDrive Usage Storage
+
+Get details about OneDrive usage by storage from [Microsoft Graph API](https://learn.microsoft.com/en-us/graph/api/reportroot-getonedriveusagestorage?view=graph-rest-1.0&tabs=http).
+
+{{event "onedrive_usage_storage"}}
+
+**ECS Field Reference**
+
+Please refer to the following [document](https://www.elastic.co/guide/en/ecs/current/ecs-field-reference.html) for detailed information on ECS fields.
+
+{{fields "onedrive_usage_storage"}}
 
 ### Outlook Activity
 

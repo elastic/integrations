@@ -500,112 +500,6 @@ Please refer to the following [document](https://www.elastic.co/guide/en/ecs/cur
 | o365.metrics.report.name | Name of the report. | keyword |  |
 
 
-### One Drive Usage
-
-An example event for `onedrive_usage` looks as following:
-
-```json
-{
-    "@timestamp": "2024-12-24T09:33:50.076Z",
-    "agent": {
-        "name": "docker-fleet-agent",
-        "id": "abf38fab-f7b6-4e1c-a3b3-a70a64f9e5db",
-        "ephemeral_id": "08417a8d-9698-4c62-b7dc-e1b048647626",
-        "type": "filebeat",
-        "version": "8.16.0"
-    },
-    "data_stream": {
-        "namespace": "default",
-        "type": "metrics",
-        "dataset": "o365_metrics.onedrive_usage"
-    },
-    "ecs": {
-        "version": "8.16.0"
-    },
-    "elastic_agent": {
-        "id": "abf38fab-f7b6-4e1c-a3b3-a70a64f9e5db",
-        "version": "8.16.0",
-        "snapshot": false
-    },
-    "event": {
-        "agent_id_status": "verified",
-        "ingested": "2024-12-24T09:33:51Z",
-        "dataset": "o365_metrics.onedrive_usage"
-    },
-    "host": {
-        "hostname": "docker-fleet-agent",
-        "os": {
-            "kernel": "5.10.104-linuxkit",
-            "name": "Wolfi",
-            "type": "linux",
-            "family": "",
-            "version": "20230201",
-            "platform": "wolfi"
-        },
-        "containerized": false,
-        "ip": [
-            "192.168.48.7"
-        ],
-        "name": "docker-fleet-agent",
-        "mac": [
-            "02-42-C0-A8-30-07"
-        ],
-        "architecture": "aarch64"
-    },
-    "o365": {
-        "metrics": {
-            "onedrive": {
-                "usage": {
-                    "storage": {
-                        "report": {
-                            "date": "2024-12-16",
-                            "period": "7",
-                            "refresh_date": "2024-12-22"
-                        },
-                        "used_byte": "91893426"
-                    }
-                }
-            }
-        }
-    },
-    "tags": [
-        "o365.metrics.onedrive"
-    ]
-}
-```
-
-**ECS Field Reference**
-
-Please refer to the following [document](https://www.elastic.co/guide/en/ecs/current/ecs-field-reference.html) for detailed information on ECS fields.
-
-**Exported fields**
-
-| Field | Description | Type |
-|---|---|---|
-| @timestamp | Event timestamp. | date |
-| cloud.image.id | Image ID for the cloud instance. | keyword |
-| data_stream.dataset | Data stream dataset. | constant_keyword |
-| data_stream.namespace | Data stream namespace. | constant_keyword |
-| data_stream.type | Data stream type. | constant_keyword |
-| host.containerized | If the host is a container. | boolean |
-| host.os.build | OS build information. | keyword |
-| host.os.codename | OS codename, if any. | keyword |
-| o365.metrics.onedrive.usage.account.counts.active.count | The number of OneDrive accounts that were active during the reporting period. | integer |
-| o365.metrics.onedrive.usage.account.counts.report.date | The date the report was generated. | date |
-| o365.metrics.onedrive.usage.account.counts.report.period | The duration of the reporting period, in days. | integer |
-| o365.metrics.onedrive.usage.account.counts.report.refresh_date | The date when the data in the report was last refreshed. | date |
-| o365.metrics.onedrive.usage.account.counts.total.count | The total number of OneDrive accounts evaluated in the report. | integer |
-| o365.metrics.onedrive.usage.file.counts.active.count | The number of OneDrive accounts with active file usage during the reporting period. | integer |
-| o365.metrics.onedrive.usage.file.counts.report.date | The date the report was generated. | date |
-| o365.metrics.onedrive.usage.file.counts.report.period | The duration of the reporting period, in days. | integer |
-| o365.metrics.onedrive.usage.file.counts.report.refresh_date | The date when the data in the report was last refreshed. | date |
-| o365.metrics.onedrive.usage.file.counts.total.count | The total number of OneDrive accounts evaluated in the report. | integer |
-| o365.metrics.onedrive.usage.storage.report.date | The date the report was generated. | date |
-| o365.metrics.onedrive.usage.storage.report.period | The duration of the reporting period, in days. | integer |
-| o365.metrics.onedrive.usage.storage.report.refresh_date | The date when the data in the report was last refreshed. | date |
-| o365.metrics.onedrive.usage.storage.used_byte | The total storage used across OneDrive accounts during the reporting period, in bytes. | integer |
-
-
 ### OneDrive Usage Account Detail
 
 Get details about OneDrive usage by account from [Microsoft Graph API](https://learn.microsoft.com/en-us/graph/api/reportroot-getonedriveusageaccountdetail?view=graph-rest-1.0&tabs=http).
@@ -705,6 +599,316 @@ Please refer to the following [document](https://www.elastic.co/guide/en/ecs/cur
 | o365.metrics.onedrive.usage.account.detail.storage_used.byte | The amount of storage the OneDrive uses. | long |  |
 | o365.metrics.report.api_path | Microsoft Graph API path used to pull the report. | keyword |  |
 | o365.metrics.report.name | Name of the report. | keyword |  |
+
+
+### OneDrive Usage Account Counts
+
+Get details about OneDrive usage by account counts from [Microsoft Graph API](https://learn.microsoft.com/en-us/graph/api/reportroot-getonedriveusageaccountcounts?view=graph-rest-1.0&tabs=http).
+
+An example event for `onedrive_usage_account_counts` looks as following:
+
+```json
+{
+    "@timestamp": "2024-12-24T09:33:50.076Z",
+    "agent": {
+        "name": "docker-fleet-agent",
+        "id": "abf38fab-f7b6-4e1c-a3b3-a70a64f9e5db",
+        "ephemeral_id": "08417a8d-9698-4c62-b7dc-e1b048647626",
+        "type": "filebeat",
+        "version": "8.16.0"
+    },
+    "data_stream": {
+        "namespace": "default",
+        "type": "metrics",
+        "dataset": "o365_metrics.onedrive_usage_account_counts"
+    },
+    "ecs": {
+        "version": "8.16.0"
+    },
+    "elastic_agent": {
+        "id": "abf38fab-f7b6-4e1c-a3b3-a70a64f9e5db",
+        "version": "8.16.0",
+        "snapshot": false
+    },
+    "event": {
+        "agent_id_status": "verified",
+        "ingested": "2024-12-24T09:33:51Z",
+        "dataset": "o365_metrics.onedrive_usage_account_counts"
+    },
+    "host": {
+        "hostname": "docker-fleet-agent",
+        "os": {
+            "kernel": "5.10.104-linuxkit",
+            "name": "Wolfi",
+            "type": "linux",
+            "family": "",
+            "version": "20230201",
+            "platform": "wolfi"
+        },
+        "containerized": false,
+        "ip": [
+            "192.168.48.7"
+        ],
+        "name": "docker-fleet-agent",
+        "mac": [
+            "02-42-C0-A8-30-07"
+        ],
+        "architecture": "aarch64"
+    },
+    "o365": {
+        "metrics": {
+            "onedrive": {
+                "usage": {
+                    "account": {
+                        "counts": {
+                            "active": {
+                                "count": "0"
+                            },
+                            "report": {
+                                "date": "2024-11-23",
+                                "period": "7",
+                                "refresh_date": "2024-11-29"
+                            },
+                            "total": {
+                                "count": "18"
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    },
+    "tags": [
+        "o365.metrics.onedrive_usage_account_counts"
+    ]
+}
+```
+
+**ECS Field Reference**
+
+Please refer to the following [document](https://www.elastic.co/guide/en/ecs/current/ecs-field-reference.html) for detailed information on ECS fields.
+
+**Exported fields**
+
+| Field | Description | Type |
+|---|---|---|
+| @timestamp | Event timestamp. | date |
+| cloud.image.id | Image ID for the cloud instance. | keyword |
+| data_stream.dataset | Data stream dataset. | constant_keyword |
+| data_stream.namespace | Data stream namespace. | constant_keyword |
+| data_stream.type | Data stream type. | constant_keyword |
+| host.containerized | If the host is a container. | boolean |
+| host.os.build | OS build information. | keyword |
+| host.os.codename | OS codename, if any. | keyword |
+| o365.metrics.onedrive.usage.account.counts.active.count | The number of OneDrive accounts that were active during the reporting period. | integer |
+| o365.metrics.onedrive.usage.account.counts.report.date | The date the report was generated. | date |
+| o365.metrics.onedrive.usage.account.counts.report.period | The duration of the reporting period, in days. | integer |
+| o365.metrics.onedrive.usage.account.counts.report.refresh_date | The date when the data in the report was last refreshed. | date |
+| o365.metrics.onedrive.usage.account.counts.total.count | The total number of OneDrive accounts evaluated in the report. | integer |
+
+
+### OneDrive Usage File Counts
+
+Get details about OneDrive usage by file counts from [Microsoft Graph API](https://learn.microsoft.com/en-us/graph/api/reportroot-getonedriveusagefilecounts?view=graph-rest-1.0&tabs=http).
+
+An example event for `onedrive_usage_file_counts` looks as following:
+
+```json
+{
+    "@timestamp": "2024-12-24T09:33:50.076Z",
+    "agent": {
+        "name": "docker-fleet-agent",
+        "id": "abf38fab-f7b6-4e1c-a3b3-a70a64f9e5db",
+        "ephemeral_id": "08417a8d-9698-4c62-b7dc-e1b048647626",
+        "type": "filebeat",
+        "version": "8.16.0"
+    },
+    "data_stream": {
+        "namespace": "default",
+        "type": "metrics",
+        "dataset": "o365_metrics.onedrive_usage_file_counts"
+    },
+    "ecs": {
+        "version": "8.16.0"
+    },
+    "elastic_agent": {
+        "id": "abf38fab-f7b6-4e1c-a3b3-a70a64f9e5db",
+        "version": "8.16.0",
+        "snapshot": false
+    },
+    "event": {
+        "agent_id_status": "verified",
+        "ingested": "2024-12-24T09:33:51Z",
+        "dataset": "o365_metrics.onedrive_usage_file_counts"
+    },
+    "host": {
+        "hostname": "docker-fleet-agent",
+        "os": {
+            "kernel": "5.10.104-linuxkit",
+            "name": "Wolfi",
+            "type": "linux",
+            "family": "",
+            "version": "20230201",
+            "platform": "wolfi"
+        },
+        "containerized": false,
+        "ip": [
+            "192.168.48.7"
+        ],
+        "name": "docker-fleet-agent",
+        "mac": [
+            "02-42-C0-A8-30-07"
+        ],
+        "architecture": "aarch64"
+    },
+    "o365": {
+        "metrics": {
+            "onedrive": {
+                "usage": {
+                    "file": {
+                        "counts": {
+                            "active": {
+                                "count": "0"
+                            },
+                            "report": {
+                                "date": "2024-11-23",
+                                "period": "7",
+                                "refresh_date": "2024-11-29"
+                            },
+                            "total": {
+                                "count": "164"
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    },
+    "tags": [
+        "o365.metrics.onedrive_usage_file_counts"
+    ]
+}
+```
+
+**ECS Field Reference**
+
+Please refer to the following [document](https://www.elastic.co/guide/en/ecs/current/ecs-field-reference.html) for detailed information on ECS fields.
+
+**Exported fields**
+
+| Field | Description | Type |
+|---|---|---|
+| @timestamp | Event timestamp. | date |
+| cloud.image.id | Image ID for the cloud instance. | keyword |
+| data_stream.dataset | Data stream dataset. | constant_keyword |
+| data_stream.namespace | Data stream namespace. | constant_keyword |
+| data_stream.type | Data stream type. | constant_keyword |
+| host.containerized | If the host is a container. | boolean |
+| host.os.build | OS build information. | keyword |
+| host.os.codename | OS codename, if any. | keyword |
+| o365.metrics.onedrive.usage.file.counts.active.count | The number of OneDrive accounts with active file usage during the reporting period. | integer |
+| o365.metrics.onedrive.usage.file.counts.report.date | The date the report was generated. | date |
+| o365.metrics.onedrive.usage.file.counts.report.period | The duration of the reporting period, in days. | integer |
+| o365.metrics.onedrive.usage.file.counts.report.refresh_date | The date when the data in the report was last refreshed. | date |
+| o365.metrics.onedrive.usage.file.counts.total.count | The total number of OneDrive accounts evaluated in the report. | integer |
+
+
+### OneDrive Usage Storage
+
+Get details about OneDrive usage by storage from [Microsoft Graph API](https://learn.microsoft.com/en-us/graph/api/reportroot-getonedriveusagestorage?view=graph-rest-1.0&tabs=http).
+
+An example event for `onedrive_usage_storage` looks as following:
+
+```json
+{
+    "@timestamp": "2024-12-24T09:33:50.076Z",
+    "agent": {
+        "name": "docker-fleet-agent",
+        "id": "abf38fab-f7b6-4e1c-a3b3-a70a64f9e5db",
+        "ephemeral_id": "08417a8d-9698-4c62-b7dc-e1b048647626",
+        "type": "filebeat",
+        "version": "8.16.0"
+    },
+    "data_stream": {
+        "namespace": "default",
+        "type": "metrics",
+        "dataset": "o365_metrics.onedrive_usage_storage"
+    },
+    "ecs": {
+        "version": "8.16.0"
+    },
+    "elastic_agent": {
+        "id": "abf38fab-f7b6-4e1c-a3b3-a70a64f9e5db",
+        "version": "8.16.0",
+        "snapshot": false
+    },
+    "event": {
+        "agent_id_status": "verified",
+        "ingested": "2024-12-24T09:33:51Z",
+        "dataset": "o365_metrics.onedrive_usage_storage"
+    },
+    "host": {
+        "hostname": "docker-fleet-agent",
+        "os": {
+            "kernel": "5.10.104-linuxkit",
+            "name": "Wolfi",
+            "type": "linux",
+            "family": "",
+            "version": "20230201",
+            "platform": "wolfi"
+        },
+        "containerized": false,
+        "ip": [
+            "192.168.48.7"
+        ],
+        "name": "docker-fleet-agent",
+        "mac": [
+            "02-42-C0-A8-30-07"
+        ],
+        "architecture": "aarch64"
+    },
+    "o365": {
+        "metrics": {
+            "onedrive": {
+                "usage": {
+                    "storage": {
+                        "report": {
+                            "date": "2024-12-16",
+                            "period": "7",
+                            "refresh_date": "2024-12-22"
+                        },
+                        "used_byte": "91893426"
+                    }
+                }
+            }
+        }
+    },
+    "tags": [
+        "o365.metrics.onedrive_usage_storage"
+    ]
+}
+```
+
+**ECS Field Reference**
+
+Please refer to the following [document](https://www.elastic.co/guide/en/ecs/current/ecs-field-reference.html) for detailed information on ECS fields.
+
+**Exported fields**
+
+| Field | Description | Type |
+|---|---|---|
+| @timestamp | Event timestamp. | date |
+| cloud.image.id | Image ID for the cloud instance. | keyword |
+| data_stream.dataset | Data stream dataset. | constant_keyword |
+| data_stream.namespace | Data stream namespace. | constant_keyword |
+| data_stream.type | Data stream type. | constant_keyword |
+| host.containerized | If the host is a container. | boolean |
+| host.os.build | OS build information. | keyword |
+| host.os.codename | OS codename, if any. | keyword |
+| o365.metrics.onedrive.usage.storage.report.date | The date the report was generated. | date |
+| o365.metrics.onedrive.usage.storage.report.period | The duration of the reporting period, in days. | integer |
+| o365.metrics.onedrive.usage.storage.report.refresh_date | The date when the data in the report was last refreshed. | date |
+| o365.metrics.onedrive.usage.storage.used_byte | The total storage used across OneDrive accounts during the reporting period, in bytes. | integer |
 
 
 ### Outlook Activity
