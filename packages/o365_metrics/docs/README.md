@@ -2430,4 +2430,3 @@ Please refer to the following [document](https://www.elastic.co/guide/en/ecs/cur
 | o365.metrics.teams.device.usage.user.counts.web.count | The number of active Teams users accessing via web browsers. | long |  |
 | o365.metrics.teams.device.usage.user.counts.windows.count | The number of active Teams users on Windows devices. | long |  |
 | o365.metrics.teams.device.usage.user.counts.windows_phone.count | The number of active Teams users on Windows Phone devices. | long |  |
-
