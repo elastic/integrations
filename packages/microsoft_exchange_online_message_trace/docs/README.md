@@ -45,8 +45,12 @@ In order to continue using the Microsoft Exchange Online Message Trace you will 
 - For configuring `Local Domains` you can check your [Microsoft Admin Exchange Center](https://admin.exchange.microsoft.com/) for the domains
 available in your organization. They are usually under the sections [Accepted Domains](https://admin.exchange.microsoft.com/#/accepteddomains) and [Remote Domains](https://admin.exchange.microsoft.com/#/remotedomains).
 
-- The default `Polling Interval` and `Initial Interval` values are configured to `1h`, you can however change these to your required values. The look-back 
+- The default `Interval` is configured to `1h` and `Initial Interval` to `48h`, you can however change these to your required values. The look-back 
   value of `Initial Interval` should not exceed `200 hours` as this might cause unexpected errors with the API.
+
+- The default `Minimum Age` is configured to `1h`, you can however change these to your required values. The `Minimum Age` was introduced to allow a sliding 
+  window to exist in combination with the `Initial Interval`. If you do not require a sliding window you can set this to `0s` which will cause the `Minimum Age` to 
+  always default to the `current time (now)`.
 
 - The default `Additional Look-back Time` value is configured for `1h`. 
   This is intended to capture events that may not have been initially present due to eventual consistency.
@@ -199,11 +203,9 @@ An example event for `log` looks as following:
         ],
         "created": "2024-11-04T20:39:54.654Z",
         "dataset": "microsoft_exchange_online_message_trace.log",
-        "end": "2022-10-22T09:40:10.000Z",
         "ingested": "2024-11-04T20:39:57Z",
         "original": "{\"EndDate\":\"2022-10-22T09:40:10Z\",\"FromIP\":\"40.107.23.81\",\"Index\":1,\"MessageId\":\"\\u003cGVAP278MB037518E76F4082DFE9B607B3DA2D9@GVAP278MB0375.CHEP278.PROD.OUTLOOK.COM\\u003e\",\"MessageTraceId\":\"a6f62809-5cda-4454-0962-08dab38940d6\",\"Organization\":\"contoso.com\",\"Received\":\"2022-10-21T17:25:30.6006882Z\",\"RecipientAddress\":\"linus@contoso.com\",\"SenderAddress\":\"noreply@azure.microsoft.com\",\"Size\":22704,\"StartDate\":\"2022-10-21T09:40:10Z\",\"Status\":\"Delivered\",\"Subject\":\"testmail 1\",\"ToIP\":null}",
         "outcome": "success",
-        "start": "2022-10-21T09:40:10.000Z",
         "type": [
             "info"
         ]

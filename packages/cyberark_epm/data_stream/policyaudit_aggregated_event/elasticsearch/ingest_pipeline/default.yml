@@ -1,0 +1,572 @@
+---
+description: Pipeline for processing policy audit aggregated events.
+processors:
+  - set:
+      field: ecs.version
+      tag: set_ecs_version
+      value: 8.11.0
+  - fail:
+      tag: data_collection_error
+      if: ctx.error?.message != null && ctx.message == null && ctx.event?.original == null
+      message: error message set and no data to process.
+  - drop:
+      tag: drop_retry_events
+      if: ctx.message != null && ctx.message == 'retry'
+  - rename:
+      field: message
+      tag: rename_message_to_event_original
+      target_field: event.original
+      ignore_missing: true
+      description: Renames the original `message` field to `event.original` to store a copy of the original message. The `event.original` field is not touched if the document already has one; it may happen when Logstash sends the document.
+      if: ctx.event?.original == null
+  - remove:
+      field: message
+      tag: remove_message
+      ignore_missing: true
+      description: The `message` field is no longer required if the document has an `event.original` field.
+      if: ctx.event?.original != null
+  - json:
+      field: event.original
+      tag: json_event_original
+      target_field: json
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - fingerprint:
+      fields:
+        - json.arrivalTime
+        - json.lastEventDate
+        - json.lastEventFileName
+        - json.lastEventId
+        - json.fileQualifier
+        - json.eventType
+        - json.lastEventDisplayName
+        - json.aggregatedBy
+      tag: fingerprint_policyaudit_aggregated_event
+      target_field: _id
+      ignore_missing: true
+  - rename:
+      field: json.eventType
+      tag: rename_eventType
+      target_field: cyberark_epm.policyaudit_aggregated_event.type
+      ignore_missing: true
+  - set:
+      field: event.kind
+      tag: set_event_kind_to_event
+      value: event
+  - append:
+      field: event.category
+      tag: append_package_into_event_category
+      value: package
+      if: >-
+        ctx.cyberark_epm?.policyaudit_aggregated_event?.type != null && (
+          ctx.cyberark_epm.policyaudit_aggregated_event.type.equalsIgnoreCase('Installation')
+        )
+  - append:
+      field: event.category
+      tag: append_process_into_event_category
+      value: process
+      if: >-
+        ctx.cyberark_epm?.policyaudit_aggregated_event?.type != null && (
+          ctx.cyberark_epm.policyaudit_aggregated_event.type.equalsIgnoreCase('Launch')
+        )
+  - append:
+      field: event.category
+      tag: append_iam_into_event_category
+      value: iam
+      if: >-
+        ctx.cyberark_epm?.policyaudit_aggregated_event?.type != null && (
+          ctx.cyberark_epm.policyaudit_aggregated_event.type.equalsIgnoreCase('Trust') ||
+          ctx.cyberark_epm.policyaudit_aggregated_event.type.equalsIgnoreCase('Block') ||
+          ctx.cyberark_epm.policyaudit_aggregated_event.type.equalsIgnoreCase('Access') ||
+          ctx.cyberark_epm.policyaudit_aggregated_event.type.equalsIgnoreCase('StartElevated')
+        )
+  - append:
+      field: event.type
+      tag: append_event_type
+      value: info
+  - set:
+      field: observer.vendor
+      tag: set_observer_vendor
+      value: CyberArk
+  - set:
+      field: observer.product
+      tag: set_observer_product
+      value: Endpoint Privilege Manager
+  - rename:
+      field: json.adminTaskId
+      tag: rename_adminTaskId
+      target_field: cyberark_epm.policyaudit_aggregated_event.admin_task_id
+      ignore_missing: true
+  - convert:
+      field: json.affectedComputers
+      tag: convert_affectedComputers_to_long
+      target_field: cyberark_epm.policyaudit_aggregated_event.affected_computers
+      type: long
+      ignore_missing: true
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - convert:
+      field: json.affectedUsers
+      tag: convert_affectedUsers_to_long
+      target_field: cyberark_epm.policyaudit_aggregated_event.affected_users
+      type: long
+      ignore_missing: true
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - rename:
+      field: json.aggregatedBy
+      tag: rename_aggregatedBy
+      target_field: cyberark_epm.policyaudit_aggregated_event.aggregated_by
+      ignore_missing: true
+  - rename:
+      field: json.appPackageDisplayName
+      tag: rename_appPackageDisplayName
+      target_field: cyberark_epm.policyaudit_aggregated_event.app_package_display_name
+      ignore_missing: true
+  - rename:
+      field: json.applicationType
+      tag: rename_applicationType
+      target_field: cyberark_epm.policyaudit_aggregated_event.application_type
+      ignore_missing: true
+  - date:
+      field: json.arrivalTime
+      tag: date_arrivalTime
+      target_field: cyberark_epm.policyaudit_aggregated_event.arrival_time
+      formats:
+        - ISO8601
+      if: ctx.json?.arrivalTime != null && ctx.json.arrivalTime != ''
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - set:
+      field: '@timestamp'
+      tag: set_@timestamp_from_policyaudit_aggregated_event_arrival_time
+      copy_from: cyberark_epm.policyaudit_aggregated_event.arrival_time
+      ignore_empty_value: true
+  - rename:
+      field: json.authorizationRight
+      tag: rename_authorizationRight
+      target_field: cyberark_epm.policyaudit_aggregated_event.authorization_right
+      ignore_missing: true
+  - rename:
+      field: json.CLSID
+      tag: rename_CLSID
+      target_field: cyberark_epm.policyaudit_aggregated_event.clsid
+      ignore_missing: true
+  - rename:
+      field: json.fileLocation
+      tag: rename_fileLocation
+      target_field: cyberark_epm.policyaudit_aggregated_event.file_location
+      ignore_missing: true
+  - set:
+      field: file.directory
+      tag: set_file_directory_from_policyaudit_aggregated_event_file_location
+      copy_from: cyberark_epm.policyaudit_aggregated_event.file_location
+      ignore_empty_value: true
+  - rename:
+      field: json.fileQualifier
+      tag: rename_fileQualifier
+      target_field: cyberark_epm.policyaudit_aggregated_event.file_qualifier
+      ignore_missing: true
+  - convert:
+      field: json.fileSize
+      tag: convert_fileSize_to_long
+      target_field: cyberark_epm.policyaudit_aggregated_event.file_size
+      type: long
+      ignore_missing: true
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - set:
+      field: file.size
+      tag: set_file_size_from_policyaudit_aggregated_event_file_size
+      copy_from: cyberark_epm.policyaudit_aggregated_event.file_size
+      ignore_empty_value: true
+  - set:
+      field: package.size
+      tag: set_package_size_from_policyaudit_aggregated_event_file_size
+      copy_from: cyberark_epm.policyaudit_aggregated_event.file_size
+      ignore_empty_value: true
+  - rename:
+      field: json.firstEventAgentId
+      tag: rename_firstEventAgentId
+      target_field: cyberark_epm.policyaudit_aggregated_event.first_event_agent_id
+      ignore_missing: true
+  - date:
+      field: json.firstEventDate
+      tag: date_firstEventDate
+      target_field: cyberark_epm.policyaudit_aggregated_event.first_event_date
+      formats:
+        - ISO8601
+      if: ctx.json?.firstEventDate != null && ctx.json.firstEventDate != ''
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - set:
+      field: event.start
+      tag: set_event_start_from_policyaudit_aggregated_event_first_event_date
+      copy_from: cyberark_epm.policyaudit_aggregated_event.first_event_date
+      ignore_empty_value: true
+  - grok:
+      field: json.firstEventUserName
+      tag: grok_parse_first_event_user_name_and_first_event_user_domain
+      patterns:
+        - '^%{DATA:cyberark_epm.policyaudit_aggregated_event.first_event_user_domain}\\%{DATA:cyberark_epm.policyaudit_aggregated_event.first_event_user_name}$'
+        - '^%{DATA:cyberark_epm.policyaudit_aggregated_event.first_event_user_domain}\\\\%{DATA:cyberark_epm.policyaudit_aggregated_event.first_event_user_name}$'
+        - '^%{DATA:cyberark_epm.policyaudit_aggregated_event.first_event_user_name}@%{DATA:cyberark_epm.policyaudit_aggregated_event.first_event_user_domain}$'
+        - '^%{DATA:cyberark_epm.policyaudit_aggregated_event.first_event_user_name}$'
+      ignore_failure: true
+  - append:
+      field: related.user
+      tag: append_first_event_user_name_to_related_user
+      value: '{{{cyberark_epm.policyaudit_aggregated_event.first_event_user_name}}}'
+      allow_duplicates: false
+  - rename:
+      field: json.hash
+      tag: rename_hash
+      target_field: cyberark_epm.policyaudit_aggregated_event.hash
+      ignore_missing: true
+  - script:
+      tag: script_to_map_file_hash_sha1_field
+      lang: painless
+      description: Map file.hash.sha1 field.
+      if: ctx.cyberark_epm?.policyaudit_aggregated_event?.hash != null
+      source: |-
+        def hash = ctx.cyberark_epm.policyaudit_aggregated_event.hash;
+        if (ctx.file == null) {
+          ctx.put('file', new HashMap());
+        }
+        if (ctx.file.hash == null) {
+          ctx.file.put('hash', new HashMap());
+        }
+        if (hash.length() == 40) {
+          ctx.file.hash.sha1 = hash;
+        } else if (hash.startsWith('sha1##') || hash.startsWith('SHA1##')) {
+          ctx.file.hash.sha1 = hash.substring(6);
+        }
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - set:
+      field: package.checksum
+      tag: set_package_checksum_from_file_hash_sha1
+      copy_from: file.hash.sha1
+      ignore_empty_value: true
+  - append:
+      field: related.hash
+      tag: append_file_hash_sha1_to_related_hash
+      value: '{{{file.hash.sha1}}}'
+      allow_duplicates: false
+  - rename:
+      field: json.interpreter
+      tag: rename_interpreter
+      target_field: cyberark_epm.policyaudit_aggregated_event.interpreter
+      ignore_missing: true
+  - rename:
+      field: json.lastEventAccessTarget
+      tag: rename_lastEventAccessTarget
+      target_field: cyberark_epm.policyaudit_aggregated_event.last_event_access_target
+      ignore_missing: true
+  - convert:
+      field: json.lastEventAccessTargetType
+      tag: convert_lastEventAccessTargetType_to_string
+      target_field: cyberark_epm.policyaudit_aggregated_event.last_event_access_target_type
+      type: string
+      ignore_missing: true
+  - rename:
+      field: json.lastEventAgentId
+      tag: rename_lastEventAgentId
+      target_field: cyberark_epm.policyaudit_aggregated_event.last_event_agent_id
+      ignore_missing: true
+  - rename:
+      field: json.lastEventAuthorizationRights
+      tag: rename_lastEventAuthorizationRights
+      target_field: cyberark_epm.policyaudit_aggregated_event.last_event_authorization_rights
+      ignore_missing: true
+  - rename:
+      field: json.lastEventComputerName
+      tag: rename_lastEventComputerName
+      target_field: cyberark_epm.policyaudit_aggregated_event.last_event_computer_name
+      ignore_missing: true
+  - append:
+      field: related.hosts
+      tag: append_policyaudit_aggregated_event_last_event_computer_name_to_related_hosts
+      value: '{{{cyberark_epm.policyaudit_aggregated_event.last_event_computer_name}}}'
+      allow_duplicates: false
+  - date:
+      field: json.lastEventDate
+      tag: date_lastEventDate
+      target_field: cyberark_epm.policyaudit_aggregated_event.last_event_date
+      formats:
+        - ISO8601
+      if: ctx.json?.lastEventDate != null && ctx.json.lastEventDate != ''
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - set:
+      field: event.end
+      tag: set_event_end_from_policyaudit_aggregated_event_last_event_date
+      copy_from: cyberark_epm.policyaudit_aggregated_event.last_event_date
+      ignore_empty_value: true
+  - rename:
+      field: json.lastEventDisplayName
+      tag: rename_lastEventDisplayName
+      target_field: cyberark_epm.policyaudit_aggregated_event.last_event_display_name
+      ignore_missing: true
+  - rename:
+      field: json.lastEventFileName
+      tag: rename_lastEventFileName
+      target_field: cyberark_epm.policyaudit_aggregated_event.last_event_file_name
+      ignore_missing: true
+  - set:
+      field: file.name
+      tag: set_file_name_from_policyaudit_aggregated_event_last_event_file_name
+      copy_from: cyberark_epm.policyaudit_aggregated_event.last_event_file_name
+      ignore_empty_value: true
+  - rename:
+      field: json.lastEventId
+      tag: rename_lastEventId
+      target_field: cyberark_epm.policyaudit_aggregated_event.last_event_id
+      ignore_missing: true
+  - rename:
+      field: json.lastEventJustification
+      tag: rename_lastEventJustification
+      target_field: cyberark_epm.policyaudit_aggregated_event.last_event_justification
+      ignore_missing: true
+  - rename:
+      field: json.lastEventPackageName
+      tag: rename_lastEventPackageName
+      target_field: cyberark_epm.policyaudit_aggregated_event.last_event_package_name
+      ignore_missing: true
+  - set:
+      field: package.name
+      tag: set_package_name_from_policyaudit_aggregated_event_last_event_package_name
+      copy_from: cyberark_epm.policyaudit_aggregated_event.last_event_package_name
+      ignore_empty_value: true
+  - rename:
+      field: json.lastEventSourceName
+      tag: rename_lastEventSourceName
+      target_field: cyberark_epm.policyaudit_aggregated_event.last_event_source_name
+      ignore_missing: true
+  - rename:
+      field: json.lastEventSourceType
+      tag: rename_lastEventSourceType
+      target_field: cyberark_epm.policyaudit_aggregated_event.last_event_source_type
+      ignore_missing: true
+  - rename:
+      field: json.lastEventSymlink
+      tag: rename_lastEventSymlink
+      target_field: cyberark_epm.policyaudit_aggregated_event.last_event_symlink
+      ignore_missing: true
+  - set:
+      field: file.target_path
+      tag: set_file_target_path_from_policyaudit_aggregated_event_last_event_symlink
+      copy_from: cyberark_epm.policyaudit_aggregated_event.last_event_symlink
+      ignore_empty_value: true
+  - grok:
+      field: json.lastEventUserName
+      tag: grok_parse_last_event_user_name_and_last_event_user_domain
+      patterns:
+        - '^%{DATA:cyberark_epm.policyaudit_aggregated_event.last_event_user_domain}\\%{DATA:cyberark_epm.policyaudit_aggregated_event.last_event_user_name}$'
+        - '^%{DATA:cyberark_epm.policyaudit_aggregated_event.last_event_user_domain}\\\\%{DATA:cyberark_epm.policyaudit_aggregated_event.last_event_user_name}$'
+        - '^%{DATA:cyberark_epm.policyaudit_aggregated_event.last_event_user_name}@%{DATA:cyberark_epm.policyaudit_aggregated_event.last_event_user_domain}$'
+        - '^%{DATA:cyberark_epm.policyaudit_aggregated_event.last_event_user_name}$'
+      ignore_failure: true
+  - append:
+      field: related.user
+      tag: append_last_event_user_name_to_related_user
+      value: '{{{cyberark_epm.policyaudit_aggregated_event.last_event_user_name}}}'
+      allow_duplicates: false
+  - rename:
+      field: json.mimeType
+      tag: rename_mimeType
+      target_field: cyberark_epm.policyaudit_aggregated_event.mime_type
+      ignore_missing: true
+  - set:
+      field: file.mime_type
+      tag: set_file_mime_type_from_policyaudit_aggregated_event_mime_type
+      copy_from: cyberark_epm.policyaudit_aggregated_event.mime_type
+      ignore_empty_value: true
+  - rename:
+      field: json.operatingSystemType
+      tag: rename_operatingSystemType
+      target_field: cyberark_epm.policyaudit_aggregated_event.operating_system_type
+      ignore_missing: true
+  - set:
+      field: host.os.type
+      tag: set_host_os_type_from_policyaudit_aggregated_event_operating_system_type
+      copy_from: cyberark_epm.policyaudit_aggregated_event.operating_system_type
+      if: >-
+        ctx.cyberark_epm?.policyaudit_aggregated_event?.operating_system_type != null && (
+          ctx.cyberark_epm.policyaudit_aggregated_event.operating_system_type.equalsIgnoreCase('Windows') ||
+          ctx.cyberark_epm.policyaudit_aggregated_event.operating_system_type.equalsIgnoreCase('macOS') ||
+          ctx.cyberark_epm.policyaudit_aggregated_event.operating_system_type.equalsIgnoreCase('Linux')
+        )
+      ignore_empty_value: true
+  - lowercase:
+      field: host.os.type
+      tag: lowercase_host_os_type
+      ignore_missing: true
+  - rename:
+      field: json.parentProcess
+      tag: rename_parentProcess
+      target_field: cyberark_epm.policyaudit_aggregated_event.parent_process
+      ignore_missing: true
+  - rename:
+      field: json.policyAction
+      tag: rename_policyAction
+      target_field: cyberark_epm.policyaudit_aggregated_event.policy_action
+      ignore_missing: true
+  - convert:
+      field: json.policyId
+      tag: convert_policyId_to_string
+      target_field: cyberark_epm.policyaudit_aggregated_event.policy_id
+      type: string
+      ignore_missing: true
+  - set:
+      field: rule.id
+      tag: set_rule_id_from_policyaudit_aggregated_event_policy_id
+      copy_from: cyberark_epm.policyaudit_aggregated_event.policy_id
+      ignore_empty_value: true
+  - rename:
+      field: json.policyName
+      tag: rename_policyName
+      target_field: cyberark_epm.policyaudit_aggregated_event.policy_name
+      ignore_missing: true
+  - set:
+      field: rule.name
+      tag: set_rule_name_from_policyaudit_aggregated_event_policy_name
+      copy_from: cyberark_epm.policyaudit_aggregated_event.policy_name
+      ignore_empty_value: true
+  - rename:
+      field: json.productCode
+      tag: rename_productCode
+      target_field: cyberark_epm.policyaudit_aggregated_event.product_code
+      ignore_missing: true
+  - rename:
+      field: json.productVersion
+      tag: rename_productVersion
+      target_field: cyberark_epm.policyaudit_aggregated_event.product_version
+      ignore_missing: true
+  - rename:
+      field: json.publisher
+      tag: rename_publisher
+      target_field: cyberark_epm.policyaudit_aggregated_event.publisher
+      ignore_missing: true
+  - convert:
+      field: json.skipped
+      tag: convert_skipped_to_boolean
+      target_field: cyberark_epm.policyaudit_aggregated_event.skipped
+      type: boolean
+      ignore_missing: true
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - convert:
+      field: json.skippedCount
+      tag: convert_skippedCount_to_long
+      target_field: cyberark_epm.policyaudit_aggregated_event.skipped_count
+      type: long
+      ignore_missing: true
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - convert:
+      field: json.totalEvents
+      tag: convert_totalEvents_to_long
+      target_field: cyberark_epm.policyaudit_aggregated_event.total_events
+      type: long
+      ignore_missing: true
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - rename:
+      field: json.upgradeCode
+      tag: rename_upgradeCode
+      target_field: cyberark_epm.policyaudit_aggregated_event.upgrade_code
+      ignore_missing: true
+  - rename:
+      field: json.url
+      tag: rename_url
+      target_field: cyberark_epm.policyaudit_aggregated_event.url
+      ignore_missing: true
+  - set:
+      field: event.url
+      tag: set_event_url_from_policyaudit_aggregated_event_url
+      copy_from: cyberark_epm.policyaudit_aggregated_event.url
+      ignore_empty_value: true
+  - remove:
+      field:
+        - cyberark_epm.policyaudit_aggregated_event.arrival_time
+        - cyberark_epm.policyaudit_aggregated_event.file_location
+        - cyberark_epm.policyaudit_aggregated_event.file_size
+        - cyberark_epm.policyaudit_aggregated_event.first_event_date
+        - cyberark_epm.policyaudit_aggregated_event.last_event_date
+        - cyberark_epm.policyaudit_aggregated_event.last_event_file_name
+        - cyberark_epm.policyaudit_aggregated_event.last_event_package_name
+        - cyberark_epm.policyaudit_aggregated_event.last_event_symlink
+        - cyberark_epm.policyaudit_aggregated_event.mime_type
+        - cyberark_epm.policyaudit_aggregated_event.policy_id
+        - cyberark_epm.policyaudit_aggregated_event.policy_name
+        - cyberark_epm.policyaudit_aggregated_event.url
+      tag: remove_custom_duplicate_fields
+      ignore_missing: true
+      if: ctx.tags == null || !ctx.tags.contains('preserve_duplicate_custom_fields')
+  - remove:
+      field: json
+      tag: remove_json
+      ignore_missing: true
+  - script:
+      tag: script_to_drop_null_values
+      lang: painless
+      description: Drops null/empty values recursively.
+      source: |-
+        boolean drop(Object object) {
+          if (object == null || object == '') {
+            return true;
+          } else if (object instanceof Map) {
+            ((Map) object).values().removeIf(v -> drop(v));
+            return (((Map) object).size() == 0);
+          } else if (object instanceof List) {
+            ((List) object).removeIf(v -> drop(v));
+            return (((List) object).length == 0);
+          }
+          return false;
+        }
+        drop(ctx);
+  - set:
+      field: event.kind
+      tag: set_pipeline_error_into_event_kind
+      value: pipeline_error
+      if: ctx.error?.message != null
+  - append:
+      field: tags
+      value: preserve_original_event
+      allow_duplicates: false
+      if: ctx.error?.message != null
+on_failure:
+  - append:
+      field: error.message
+      value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - set:
+      field: event.kind
+      tag: set_pipeline_error_to_event_kind
+      value: pipeline_error
+  - append:
+      field: tags
+      value: preserve_original_event
+      allow_duplicates: false
