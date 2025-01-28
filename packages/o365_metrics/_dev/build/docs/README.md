@@ -220,15 +220,6 @@ Please refer to the following [document](https://www.elastic.co/guide/en/ecs/cur
 
 {{fields "yammer_device_usage"}}
 
-### Subscriptions
-
-{{event "subscriptions"}}
-
-**ECS Field Reference**
-
-Please refer to the following [document](https://www.elastic.co/guide/en/ecs/current/ecs-field-reference.html) for detailed information on ECS fields.
-
-{{fields "subscriptions"}}
 
 ### Teams Device Usage User Counts
 
@@ -242,3 +233,14 @@ Please refer to the following [document](https://www.elastic.co/guide/en/ecs/cur
 
 {{fields "teams_device_usage_user_counts"}}
 
+### Subscriptions
+
+Get details about Service Health from [Microsoft Graph API](https://learn.microsoft.com/en-us/graph/api/subscribedsku-list?view=graph-rest-1.0&tabs=http).
+
+{{event "subscriptions"}}
+
+**ECS Field Reference**
+
+Please refer to the following [document](https://www.elastic.co/guide/en/ecs/current/ecs-field-reference.html) for detailed information on ECS fields.
+
+{{fields "subscriptions"}}
