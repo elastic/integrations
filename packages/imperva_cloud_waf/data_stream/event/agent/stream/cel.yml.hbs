@@ -45,7 +45,7 @@ program: |
           "Authorization": ["Basic "+string(base64(state.user + ":" + state.password))],
         }
       }).do_request().as(resp, bytes(resp.Body).as(body, {
-        "events": string(body).split("|==|")[1].split("\n").filter(x,x!="").map(x,{"message":x}),
+        "events": (string(body)+"|==|").split("|==|")[1].split("\n").filter(x,x!="").map(x,{"message":x}),
         "cursor": {
           "log_file": (
             has(state.cursor) && has(state.cursor.log_file) && state.cursor.log_file != null
