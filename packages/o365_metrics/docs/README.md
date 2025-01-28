@@ -1720,7 +1720,7 @@ An example event for `subscriptions` looks as following:
                             "enabled": {
                                 "count": 14
                             },
-                            "lockedOut": {
+                            "locked_out": {
                                 "count": 15
                             },
                             "suspended": {
@@ -1757,7 +1757,7 @@ An example event for `subscriptions` looks as following:
                             "enabled": {
                                 "count": 12
                             },
-                            "lockedOut": {
+                            "locked_out": {
                                 "count": 11
                             },
                             "suspended": {
