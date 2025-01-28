@@ -846,7 +846,7 @@ An example event for `outlook_activity` looks as following:
             "outlook": {
                 "activity": {
                     "meeting_interacted": {
-                        "count": ""
+                        "count": 6
                     },
                     "meeting_created": {
                         "count": 0
@@ -1613,7 +1613,7 @@ An example event for `viva_engage_device_usage_user_counts` looks as following:
                                         "count": 6
                                     },
                                     "iphone": {
-                                        "count": ""
+                                        "count": 4
                                     }
                                 }
                             }
@@ -1622,9 +1622,6 @@ An example event for `viva_engage_device_usage_user_counts` looks as following:
                 }
             }
         }
-    },
-    "input": {
-        "type": "cel"
     },
     "agent": {
         "name": "docker-fleet-agent",
