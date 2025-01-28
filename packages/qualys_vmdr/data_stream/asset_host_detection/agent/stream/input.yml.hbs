@@ -20,6 +20,7 @@ state:
   password: {{password}}
   batch_size: {{batch_size}}
   params: {{input_parameters}}
+  show_igs: {{show_igs}}
   keep_xml: {{preserve_original_event}}
 redact:
   fields:
@@ -33,6 +34,7 @@ program: |
         state.url.trim_right("/") + "/api/2.0/fo/asset/host/vm/detection/?" +
         state.?params.orValue("").parse_query().with({
           "action": ["list"],
+          "show_igs": [(state.show_igs? "1" : "0")],
           "truncation_limit": [string(state.batch_size)],
         }).format_query()
     ).with({
@@ -109,6 +111,11 @@ program: |
         }
     )
   )
+
+fields_under_root: true
+fields:
+  _conf:
+    enable_deduplication: {{enable_deduplication}}
 tags:
 {{#if preserve_original_event}}
   - preserve_original_event
