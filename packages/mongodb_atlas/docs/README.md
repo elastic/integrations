@@ -914,7 +914,7 @@ Please refer to the following [document](https://www.elastic.co/guide/en/ecs/cur
 | data_stream.namespace | Data stream namespace. | constant_keyword |
 | data_stream.type | Data stream type. | constant_keyword |
 | input.type | Type of Filebeat input. | keyword |
-| mongodb_atlas.project.additional_info.\* | Additional meta information about the event. Only present when includeRaw query parameter is true. | object |
+| mongodb_atlas.project.additional_info | Additional meta information about the event. Only present when includeRaw query parameter is true. | flattened |
 | mongodb_atlas.project.additional_info.hidden |  | boolean |
 | mongodb_atlas.project.additional_info.is_mms_admin |  | boolean |
 | mongodb_atlas.project.alert.config.id | Unique identifier for the alert configuration associated with the alertId. | keyword |
