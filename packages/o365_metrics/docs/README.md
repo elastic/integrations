@@ -15,7 +15,7 @@ Following Microsoft 365 Graph Reports can be collected by Microsoft Office 365 M
 | [OneDrive Usage File Counts](https://learn.microsoft.com/en-us/microsoft-365/admin/activity-reports/onedrive-for-business-usage-ww?view=o365-worldwide)      |    [reportRoot: getOneDriveUsageFileCounts](https://learn.microsoft.com/en-us/graph/api/reportroot-getonedriveusagefilecounts?view=graph-rest-1.0&tabs=http)    |   Office 365 One Drive Usage metrics   |   `Period`-based   |
 | [OneDrive Usage Storage](https://learn.microsoft.com/en-us/microsoft-365/admin/activity-reports/onedrive-for-business-usage-ww?view=o365-worldwide)      |    [reportRoot: getOneDriveUsageStorage](https://learn.microsoft.com/en-us/graph/api/reportroot-getonedriveusagestorage?view=graph-rest-1.0&tabs=http)    |   Office 365 One Drive Usage metrics   |   `Period`-based   |
 | [Outlook Activity Counts](https://learn.microsoft.com/en-us/microsoft-365/admin/activity-reports/email-activity-ww?view=o365-worldwide)      |    [reportRoot: getEmailActivityCounts](https://learn.microsoft.com/en-us/graph/api/reportroot-getemailactivitycounts?view=graph-rest-1.0&tabs=http)    |   Office 365 Outlook Activity metrics   |   `Period`-based   |
-| [Outlook App Usage Version User Counts](https://learn.microsoft.com/en-us/microsoft-365/admin/activity-reports/email-apps-usage-ww?view=o365-worldwide)      |    [reportRoot: getEmailAppUsageVersionsUserCounts](https://learn.microsoft.com/en-us/graph/api/reportroot-getemailappusageversionsusercounts?view=graph-rest-1.0&tabs=http)    |   Office 365 Outlook App Usage metrics   |   `Period`-based   |
+| [Outlook App Usage Version Counts](https://learn.microsoft.com/en-us/microsoft-365/admin/activity-reports/email-apps-usage-ww?view=o365-worldwide)      |    [reportRoot: getEmailAppUsageVersionsUserCounts](https://learn.microsoft.com/en-us/graph/api/reportroot-getemailappusageversionsusercounts?view=graph-rest-1.0&tabs=http)    |   Microsoft 365 Outlook App Usage Version Counts metrics   |   `Period`-based   |
 | [Outlook Mailbox Usage Quota Status Mailbox Counts](https://learn.microsoft.com/en-us/microsoft-365/admin/activity-reports/mailbox-usage?view=o365-worldwide)      |    [reportRoot: getMailboxUsageQuotaStatusMailboxCounts](https://learn.microsoft.com/en-us/graph/api/reportroot-getmailboxusagequotastatusmailboxcounts?view=graph-rest-1.0&tabs=http)    |  Microsoft 365 mailbox quota status mailbox counts metrics   |   `Period`-based   |
 | [Outlook Mailbox Usage Detail](https://learn.microsoft.com/en-us/microsoft-365/admin/activity-reports/mailbox-usage?view=o365-worldwide)      |    [reportRoot: getMailboxUsageDetail](https://learn.microsoft.com/en-us/graph/api/reportroot-getmailboxusagedetail?view=graph-rest-1.0&tabs=http)    |   Microsoft 365 mailbox usage detail metrics   |   `Period`-based   |
 | [SharePoint Site Usage Storage](https://learn.microsoft.com/en-us/microsoft-365/admin/activity-reports/sharepoint-site-usage-ww?view=o365-worldwide)      |    [reportRoot: getSharePointSiteUsageStorage](https://learn.microsoft.com/en-us/graph/api/reportroot-getsharepointsiteusagestorage?view=graph-rest-1.0&tabs=http)    |   Office 365 Sharepoint Site Usage metrics   |   `Period`-based   |
@@ -949,9 +949,11 @@ Please refer to the following [document](https://www.elastic.co/guide/en/ecs/cur
 | o365.metrics.outlook.activity.report.refresh_date | The date when the report data was last updated. | date |  |
 
 
-### Outlook App Usage
+### Outlook App Usage Version Counts
 
-An example event for `outlook_app_usage` looks as following:
+Get details about Microsoft Outlook App Usage Version Counts from [Microsoft Graph API](https://learn.microsoft.com/en-us/graph/api/reportroot-getemailappusageversionsusercounts?view=graph-rest-1.0&tabs=http).
+
+An example event for `outlook_app_usage_version_counts` looks as following:
 
 ```json
 {
@@ -960,32 +962,36 @@ An example event for `outlook_app_usage` looks as following:
             "outlook": {
                 "app": {
                     "usage": {
-                        "outlook_2013": {
-                            "count": ""
-                        },
-                        "outlook_2016": {
-                            "count": ""
-                        },
-                        "outlook_2007": {
-                            "count": ""
-                        },
-                        "undetermined": {
-                            "count": ""
-                        },
-                        "report": {
-                            "period": {
-                                "day": "7"
-                            },
-                            "refresh_date": "2024-12-22"
-                        },
-                        "outlook_2019": {
-                            "count": ""
-                        },
-                        "outlook_m365": {
-                            "count": ""
-                        },
-                        "outlook_2010": {
-                            "count": ""
+                        "version": {
+                            "counts": {
+                                "outlook_2013": {
+                                    "count": 1
+                                },
+                                "outlook_2016": {
+                                    "count": 7
+                                },
+                                "outlook_2007": {
+                                    "count": 6
+                                },
+                                "undetermined": {
+                                    "count": 3
+                                },
+                                "report": {
+                                    "period": {
+                                        "day": "7"
+                                    },
+                                    "refresh_date": "2025-01-26"
+                                },
+                                "outlook_2019": {
+                                    "count": 2
+                                },
+                                "outlook_m365": {
+                                    "count": 10
+                                },
+                                "outlook_2010": {
+                                    "count": 1
+                                }
+                            }
                         }
                     }
                 }
@@ -994,52 +1000,52 @@ An example event for `outlook_app_usage` looks as following:
     },
     "agent": {
         "name": "docker-fleet-agent",
-        "id": "abf38fab-f7b6-4e1c-a3b3-a70a64f9e5db",
-        "ephemeral_id": "08417a8d-9698-4c62-b7dc-e1b048647626",
+        "id": "e6840d3f-0681-4dde-b0e6-f0e767ba296c",
+        "ephemeral_id": "5180e26c-bab3-433c-9dce-fd0be1cabfd0",
         "type": "filebeat",
         "version": "8.16.0"
     },
-    "@timestamp": "2024-12-24T09:39:43.406Z",
+    "@timestamp": "2025-01-26",
     "ecs": {
         "version": "8.16.0"
     },
     "data_stream": {
         "namespace": "default",
         "type": "metrics",
-        "dataset": "o365_metrics.outlook_app_usage"
+        "dataset": "o365_metrics.outlook_app_usage_version_counts"
+    },
+    "elastic_agent": {
+        "id": "e6840d3f-0681-4dde-b0e6-f0e767ba296c",
+        "version": "8.16.0",
+        "snapshot": false
     },
     "host": {
         "hostname": "docker-fleet-agent",
         "os": {
             "kernel": "5.10.104-linuxkit",
             "name": "Wolfi",
-            "family": "",
             "type": "linux",
+            "family": "",
             "version": "20230201",
             "platform": "wolfi"
         },
         "ip": [
-            "192.168.48.7"
+            "172.31.0.7"
         ],
         "containerized": false,
         "name": "docker-fleet-agent",
         "mac": [
-            "02-42-C0-A8-30-07"
+            "02-42-AC-1F-00-07"
         ],
         "architecture": "aarch64"
     },
-    "elastic_agent": {
-        "id": "abf38fab-f7b6-4e1c-a3b3-a70a64f9e5db",
-        "version": "8.16.0",
-        "snapshot": false
-    },
     "event": {
         "agent_id_status": "verified",
-        "ingested": "2024-12-24T09:39:44Z",
-        "dataset": "o365_metrics.outlook_app_usage"
+        "ingested": "2025-01-28T07:05:32Z",
+        "dataset": "o365_metrics.outlook_app_usage_version_counts"
     },
     "tags": [
-        "o365metrics-outlook_app_usage"
+        "o365metrics-outlook_app_usage_version_counts"
     ]
 }
 ```
@@ -1060,15 +1066,15 @@ Please refer to the following [document](https://www.elastic.co/guide/en/ecs/cur
 | host.containerized | If the host is a container. | boolean |  |
 | host.os.build | OS build information. | keyword |  |
 | host.os.codename | OS codename, if any. | keyword |  |
-| o365.metrics.outlook.app.usage.outlook_2007.count | The count of unique users using Outlook 2007 during the reporting period. | integer |  |
-| o365.metrics.outlook.app.usage.outlook_2010.count | The count of unique users using Outlook 2010 during the reporting period. | integer |  |
-| o365.metrics.outlook.app.usage.outlook_2013.count | The count of unique users using Outlook 2013 during the reporting period. | integer |  |
-| o365.metrics.outlook.app.usage.outlook_2016.count | The count of unique users using Outlook 2016 during the reporting period. | integer |  |
-| o365.metrics.outlook.app.usage.outlook_2019.count | The count of unique users using Outlook 2019 during the reporting period. | integer |  |
-| o365.metrics.outlook.app.usage.outlook_m365.count | The count of unique users using the Outlook Microsoft 365 version during the reporting period. | integer |  |
-| o365.metrics.outlook.app.usage.report.period.day | The duration (e.g., 7 days) over which the report data is aggregated. | integer | d |
-| o365.metrics.outlook.app.usage.report.refresh_date | The date when the report data was last updated. | date |  |
-| o365.metrics.outlook.app.usage.undetermined.count | The count of unique users whose Outlook version could not be identified. | integer |  |
+| o365.metrics.outlook.app.usage.version.counts.outlook_2007.count | The count of unique users using Outlook 2007 during the reporting period. | long |  |
+| o365.metrics.outlook.app.usage.version.counts.outlook_2010.count | The count of unique users using Outlook 2010 during the reporting period. | long |  |
+| o365.metrics.outlook.app.usage.version.counts.outlook_2013.count | The count of unique users using Outlook 2013 during the reporting period. | long |  |
+| o365.metrics.outlook.app.usage.version.counts.outlook_2016.count | The count of unique users using Outlook 2016 during the reporting period. | long |  |
+| o365.metrics.outlook.app.usage.version.counts.outlook_2019.count | The count of unique users using Outlook 2019 during the reporting period. | long |  |
+| o365.metrics.outlook.app.usage.version.counts.outlook_m365.count | The count of unique users using the Outlook Microsoft 365 version during the reporting period. | long |  |
+| o365.metrics.outlook.app.usage.version.counts.report.period.day | The duration (e.g., 7 days) over which the report data is aggregated. | integer | d |
+| o365.metrics.outlook.app.usage.version.counts.report.refresh_date | The date when the report data was last updated. | date |  |
+| o365.metrics.outlook.app.usage.version.counts.undetermined.count | The count of unique users whose Outlook version could not be identified. | long |  |
 
 
 ### SharePoint Site Usage
