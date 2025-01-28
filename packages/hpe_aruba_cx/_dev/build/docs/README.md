@@ -966,12 +966,14 @@ Note: Descriptions have not been filled out
 | `<ulay_l3_port>`      | aruba.multicast.ulay_l3_port      |
 | `<vni_id>`            | aruba.multicast.vni_id            |
 
-#### [Multicast Traffic Manager events](https://www.arubanetworks.com/techdocs/AOS-CX/10.07/HTML/5200-8214/Content/events/MTM.htm)
-| Docs Field   | Schema Mapping |
-|--------------|----------------|
-| `<limit>`    | aruba.limit.threshold    |
+#### [Multicast Traffic Manager events](https://arubanetworking.hpe.com/techdocs/AOS-CX/10.15/HTML/elmrg/Content/events/MTM.htm)
+| Docs Field   | Schema Mapping            |
+|--------------|---------------------------|
+| `<limit>`    | aruba.limit.threshold     |
+| `<mgmd_type>`| aruba.multicast.mgmd_type |
+| `<status>`   | aruba.status              |
 
-#### [Multiple spanning tree protocol events](https://www.arubanetworks.com/techdocs/AOS-CX/10.07/HTML/5200-8214/Content/events/MSTP.htm)
+#### [Multiple spanning tree protocol events](https://arubanetworking.hpe.com/techdocs/AOS-CX/10.15/HTML/elmrg/Content/events/MSTP.htm)
 | Docs Field            | Schema Mapping               |
 |-----------------------|------------------------------|
 | `<config_parameter>`  | aruba.mstp.config_parameter  |
@@ -993,19 +995,19 @@ Note: Descriptions have not been filled out
 | `<state>`             | aruba.state                  |
 | `<value>`             | aruba.mstp.config_value      |
 
-#### [MVRP events](https://www.arubanetworks.com/techdocs/AOS-CX/10.07/HTML/5200-8214/Content/events/MVRP.htm)
-| Docs Field   | Schema Mapping     |
-|--------------|--------------------|
-| `<port>`     | aruba.port         |
-| `<vlan>`     | network.vlan.id    |
+#### [MVRP events](https://arubanetworking.hpe.com/techdocs/AOS-CX/10.15/HTML/elmrg/Content/events/MVRP.htm)
+| Docs Field   | Schema Mapping        |
+|--------------|-----------------------|
+| `<port>`     | aruba.port            |
+| `<vlan>`     | network.vlan.id       |
 | `<vlan_max>` | aruba.limit.threshold |
 
-#### [NAE Agents events](https://www.arubanetworks.com/techdocs/AOS-CX/10.07/HTML/5200-8214/Content/events/NAE_ALERT.htm)
-| Docs Field | Schema Mapping      |
-|------------|---------------------|
+#### [NAE Agents events](https://arubanetworking.hpe.com/techdocs/AOS-CX/10.15/HTML/elmrg/Content/events/NAE_ALERT.htm)
+| Docs Field   | Schema Mapping      |
+|--------------|---------------------|
 | `<name>`     | aruba.nae.name      |
 
-#### [NAE events](https://www.arubanetworks.com/techdocs/AOS-CX/10.07/HTML/5200-8214/Content/events/TSDBD.htm)
+#### [NAE events](https://arubanetworking.hpe.com/techdocs/AOS-CX/10.15/HTML/elmrg/Content/events/TSDBD.htm)
 | Docs Field     | Schema Mapping               |
 |----------------|------------------------------|
 | `<condition>`  | aruba.nae.condition          |
@@ -1014,17 +1016,23 @@ Note: Descriptions have not been filled out
 | `<uri>`        | url.original                 |
 | `<user>`       | user.name                    |
 
-#### [NAE Scripts events](https://www.arubanetworks.com/techdocs/AOS-CX/10.07/HTML/5200-8214/Content/events/POLICYD.htm)
-| Field                  | Description | Type | Common                       |
-|------------------------|-------------|------|------------------------------|
-| aruba.nae.action_type  |             |      |                              |
-| aruba.nae.agent        |             |      | agent.name                   |
-| aruba.nae.condition    |             |      |                              |
-| aruba.nae.description  |             |      |                              |
-| aruba.nae.msg          |             |      | message                      |
-| aruba.nae.name         |             |      | agent.name                   |
+#### [NAE script generation events](https://arubanetworking.hpe.com/techdocs/AOS-CX/10.15/HTML/elmrg/Content/events/NAE_SCRIPT_GENERATION.htm)
+| Docs Field    | Schema Mapping      |
+|---------------|---------------------|
+| `<agent>`     | aruba.nae.name      |
+| `<reason>`    | event.reason        |
 
-#### [ND snooping events](https://www.arubanetworks.com/techdocs/AOS-CX/10.07/HTML/5200-8214/Content/events/ND-SNOOPING.htm)
+#### [NAE Scripts events](https://arubanetworking.hpe.com/techdocs/AOS-CX/10.15/HTML/elmrg/Content/events/POLICYD.htm)
+| Docs Field     | Schema Mapping              |
+|----------------|-----------------------------|
+| `<action_type>`| aruba.nae.action_type       |
+| `<agent>`      | aruba.nae.name              |
+| `<condition>`  | aruba.nae.condition         |
+| `<description>`| aruba.nae.description       |
+| `<msg>`        | message                     |
+| `<name>`       | aruba.nae.name              |
+
+#### [ND snooping events](https://arubanetworking.hpe.com/techdocs/AOS-CX/10.15/HTML/elmrg/Content/events/ND-SNOOPING.htm)
 | Docs Field   | Schema Mapping         |
 |--------------|------------------------|
 | `<count>`    | aruba.count            |
@@ -1036,7 +1044,7 @@ Note: Descriptions have not been filled out
 | `<vid>`      | network.vlan.id        |
 | `<vlan>`     | network.vlan.id        |
 
-#### [NDM events](https://www.arubanetworks.com/techdocs/AOS-CX/10.07/HTML/5200-8214/Content/events/NDM.htm)
+#### [NDM events](https://arubanetworking.hpe.com/techdocs/AOS-CX/10.15/HTML/elmrg/Content/events/NDM.htm)
 | Docs Field         | Schema Mapping         |
 |--------------------|------------------------|
 | `<ip>`             | client.ip              |
@@ -1051,18 +1059,18 @@ Note: Descriptions have not been filled out
 | `<throttle_count>` | aruba.throttle_count   |
 | `<vrf>`            | aruba.vrf.id           |
 
-#### [NTP events](https://www.arubanetworks.com/techdocs/AOS-CX/10.07/HTML/5200-8214/Content/events/NTP.htm)
-| Field                  | Description | Type | Common                       |
-|------------------------|-------------|------|------------------------------|
-| aruba.ntp.event        |             |      | event.code                   |
-| aruba.ntp.old_state    |             |      |                              |
-| aruba.ntp.server       |             |      | server.address               |
-| aruba.ntp.server_info  |             |      |                              |
-| aruba.ntp.state        |             |      | aruba.status                 |
-| aruba.ntp.trusted_keys |             |      |                              |
-| aruba.ntp.untrusted_keys |           |      |                              |
+#### [NTP events](https://arubanetworking.hpe.com/techdocs/AOS-CX/10.15/HTML/elmrg/Content/events/NTP.htm)
+| Docs Field         | Schema Mapping               |
+|--------------------|------------------------------|
+| `<event>`          | aruba.ntp.event              |
+| `<new>`            | aruba.state                  |
+| `<old>`            | aruba.ntp.old                |
+| `<server>`         | server.address               |
+| `<server_info>`    | aruba.ntp.server_info        |
+| `<trusted_keys>`   | aruba.ntp.trusted_keys       |
+| `<untrusted_keys>` | aruba.ntp.untrusted_keys     |
 
-#### [OSPFv2 events](https://www.arubanetworks.com/techdocs/AOS-CX/10.07/HTML/5200-8214/Content/events/OSPFv2.htm)
+#### [OSPFv2 events](https://arubanetworking.hpe.com/techdocs/AOS-CX/10.15/HTML/elmrg/Content/events/OSPFv2.htm)
 | Docs Field         | Schema Mapping                      |
 |--------------------|-------------------------------------|
 | `<action>`         | event.action                        |
@@ -1070,10 +1078,13 @@ Note: Descriptions have not been filled out
 | `<destination>`    | destination.address                 |
 | `<err>`            | event.reason                        |
 | `<event>`          | aruba.ospf.event                    |
+| `<external>`       | aruba.ospf.external                 |
 | `<fp_id>`          | aruba.ospf.fp_id                    |
 | `<group_id>`       | group.id                            |
 | `<input>`          | aruba.ospf.input                    |
+| `<inter>`          | aruba.ospf.inter                    |
 | `<interface>`      | aruba.interface.id                  |
+| `<intra>`          | aruba.ospf.intra                    |
 | `<new>`            | aruba.ospf.router_id                |
 | `<new_state>`      | aruba.state                         |
 | `<next_state>`     | aruba.state                         |
@@ -1081,36 +1092,55 @@ Note: Descriptions have not been filled out
 | `<old>`            | aruba.ospf.old_router_id            |
 | `<old_state>`      | aruba.ospf.old_state                |
 | `<ospf-interface>` | aruba.interface.id                  |
+| `<process-id>`     | process.pid                         |
+| `<reason>`         | event.reason                        |
 | `<router-id>`      | aruba.ospf.router_id                |
 | `<rule>`           | rule.name                           |
+| `<source-ip>`      | source.ip                           |
 | `<state>`          | aruba.state / aruba.ospf.old_state  |
 | `<stats_id>`       | aruba.ospf.stats_id                 |
+| `<vrf>`            | aruba.vrf.id                        |
 
-#### [OSPFv3 events](https://www.arubanetworks.com/techdocs/AOS-CX/10.07/HTML/5200-8214/Content/events/OSPFv3.htm)
+#### [OSPFv3 events](https://arubanetworking.hpe.com/techdocs/AOS-CX/10.15/HTML/elmrg/Content/events/OSPFv3.htm)
 | Docs Field         | Schema Mapping                      |
 |--------------------|-------------------------------------|
 | `<action>`         | event.action                        |
 | `<area>`           | aruba.ospf.area                     |
 | `<err>`            | event.reason                        |
+| `<external>`       | aruba.ospf.external                 |
 | `<fp_id>`          | aruba.ospf.fp_id                    |
 | `<group_id>`       | group.id                            |
 | `<input>`          | aruba.ospf.input                    |
+| `<inter>`          | aruba.ospf.inter                    |
 | `<interface>`      | aruba.interface.id                  |
+| `<intra>`          | aruba.ospf.intra                    |
 | `<link-local>`     | aruba.ospf.link_local               |
 | `<new_state>`      | aruba.state                         |
 | `<old_state>`      | aruba.ospf.old_state                |
+| `<process-id>`     | process.pid                         |
+| `<reason>`         | event.reason                        |
 | `<router-id>`      | aruba.ospf.router_id                |
 | `<rule>`           | rule.name                           |
 | `<stats_id>`       | aruba.ospf.stats_id                 |
+| `<vrf>`            | aruba.vrf.id                        |
 
-#### [Password Reset events](https://www.arubanetworks.com/techdocs/AOS-CX/10.07/HTML/5200-8214/Content/events/PASSWD_RESET.htm)
+#### [Packet capture events](https://arubanetworking.hpe.com/techdocs/AOS-CX/10.15/HTML/elmrg/Content/events/PACKET-CAPTURE.htm)
+| Docs Field       | Schema Mapping                      |
+|------------------|-------------------------------------|
+| `<reason>`       | event.reason                        |
+| `<session_name>` | aruba.packet_capture.session_name   |
+| `<value>`        | aruba.packet_capture.value          |
+
+#### [Password Reset events](https://arubanetworking.hpe.com/techdocs/AOS-CX/10.15/HTML/elmrg/Content/events/PASSWD_RESET.htm)
 | Docs Field               | Schema Mapping               |
 |--------------------------|------------------------------|
 
-#### [PIM events](https://www.arubanetworks.com/techdocs/AOS-CX/10.07/HTML/5200-8214/Content/events/PIM.htm)
+#### [PIM events](https://arubanetworking.hpe.com/techdocs/AOS-CX/10.15/HTML/elmrg/Content/events/PIM.htm)
 | Docs Field          | Schema Mapping               |
 |---------------------|------------------------------|
+| `<action_str>`      | event.action                 |
 | `<callerid>`        | aruba.pim.callerid           |
+| `<capacity_type>`   | aruba.pim.capacity_type      |
 | `<dip0>`            | aruba.pim.dip0               |
 | `<dip1>`            | aruba.pim.dip1               |
 | `<dip2>`            | aruba.pim.dip2               |
@@ -1129,7 +1159,7 @@ Note: Descriptions have not been filled out
 | `<ip_version>`      | aruba.pim.ip_version         |
 | `<isl_status>`      | aruba.status                 |
 | `<limit>`           | aruba.limit.threshold        |
-| `<mode>`            | aruba.limit.mode             |
+| `<mode>`            | aruba.pim.mode               |
 | `<neighbor_ip>`     | client.ip                    |
 | `<pim_version>`     | package.version              |
 | `<pkt>`             | network.packets              |
@@ -1153,11 +1183,49 @@ Note: Descriptions have not been filled out
 | `<value>`           | aruba.pim.error_value        |
 | `<vrf_name> / <vrfname>` | aruba.vrf.name          |
 
-#### [Policies events](https://www.arubanetworks.com/techdocs/AOS-CX/10.07/HTML/5200-8214/Content/events/POLICY.htm)
+#### [Policies events](https://arubanetworking.hpe.com/techdocs/AOS-CX/10.15/HTML/elmrg/Content/events/POLICY.htm)
 | Docs Field       | Schema Mapping               |
 |------------------|------------------------------|
 | `<application>`  | aruba.policy.application     |
 | `<policy_name>`  | aruba.policy.name            |
+
+#### [PORT_ACCESS events / Port access events](https://arubanetworking.hpe.com/techdocs/AOS-CX/10.15/HTML/elmrg/Content/events/PORT_ACCESS.htm)
+| Docs Field              | Schema Mapping               |
+|-------------------------|------------------------------|
+| `<address>`             | client.address               |
+| `<auth-method>`         | aruba.port_access.auth_method|
+| `<error_cause>`         | event.action                 |
+| `<failure-reason>`      | event.reason                 |
+| `<feature>`             | aruba.port_access.feature    |
+| `<if_name>`             | aruba.interface.name         |
+| `<ip>`                  | url.domain                   |
+| `<limit>`               | aruba.limit.threshold        |
+| `<mac_address>`         | client.mac                   |
+| `<mac_addr>`            | client.mac                   |
+| `<mode>`                | aruba.port_access.mode       |
+| `<monitor_name>`        | aruba.port_access.monitor_name|
+| `<new_limit>`           | aruba.limit.threshold        |
+| `<new_name>`            | aruba.port_access.name       |
+| `<new_mode>`            | aruba.port_access.mode       |
+| `<new_limit>`           | aruba.limit.threshold        |
+| `<num-cached-clients>`  | aruba.port_access.num_cached_clients|
+| `<old_mode>`            | aruba.port_access.old_mode   |
+| `<old_name>`            | aruba.port_access.old_name   |
+| `<policy_name>`         | aruba.policy.name            |
+| `<port>`                | aruba.port                   |
+| `<port>`                | url.port                     |
+| `<port-name>`           | aruba.port                   |
+| `<port_name>`           | aruba.port                   |
+| `<proto>`               | url.scheme                   |
+| `<request_id>`          | aruba.port_access.request_id |
+| `<request-id>`          | aruba.port_access.request_id |
+| `<request_pkt>`         | aruba.port_access.request_pkt|
+| `<response>`            | event.reason                 |
+| `<server_list>`         | aruba.port_access.server_list|
+| `<role-name>`           | aruba.role                   |
+| `<role_name>`           | aruba.role                   |
+| `<vlan_id>`             | network.vlan.id              |
+| `<vrf-name>`            | aruba.vrf.name               |
 
 #### [Port access roles events](https://www.arubanetworks.com/techdocs/AOS-CX/10.07/HTML/5200-8214/Content/events/ROLE.htm)
 | Docs Field              | Schema Mapping               |
@@ -1187,23 +1255,6 @@ Note: Descriptions have not been filled out
 | Docs Field | Schema Mapping       |
 |------------|----------------------|
 | `<name>`     | aruba.port           |
-
-#### [PORT_ACCESS events](https://www.arubanetworks.com/techdocs/AOS-CX/10.07/HTML/5200-8214/Content/events/PORT_ACCESS.htm)
-| Docs Field      | Schema Mapping               |
-|-----------------|------------------------------|
-| `<limit>`       | aruba.limit.threshold        |
-| `<mac_address>` | client.mac                   |
-| `<mode>`        | aruba.port_access.mode       |
-| `<new_limit>`   | aruba.limit.threshold        |
-| `<new_name>`    | aruba.port_access.name       |
-| `<new_mode>`    | aruba.port_access.mode       |
-| `<old_limit>`   | aruba.port_access.old_limit  |
-| `<old_mode>`    | aruba.port_access.old_mode   |
-| `<old_name>`    | aruba.port_access.old_name   |
-| `<policy_name>` | aruba.policy.name            |
-| `<port>`        | aruba.port                   |
-| `<vlan_id>`     | network.vlan.id              |
-
 
 #### [Power events](https://www.arubanetworks.com/techdocs/AOS-CX/10.07/HTML/5200-8214/Content/events/POWER.htm)
 | Docs Field    | Schema Mapping         |
