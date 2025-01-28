@@ -16,7 +16,7 @@ Following Microsoft 365 Graph Reports can be collected by Microsoft Office 365 M
 | [OneDrive Usage Storage](https://learn.microsoft.com/en-us/microsoft-365/admin/activity-reports/onedrive-for-business-usage-ww?view=o365-worldwide)      |    [reportRoot: getOneDriveUsageStorage](https://learn.microsoft.com/en-us/graph/api/reportroot-getonedriveusagestorage?view=graph-rest-1.0&tabs=http)    |   Office 365 One Drive Usage metrics   |   `Period`-based   |
 | [Outlook Activity Counts](https://learn.microsoft.com/en-us/microsoft-365/admin/activity-reports/email-activity-ww?view=o365-worldwide)      |    [reportRoot: getEmailActivityCounts](https://learn.microsoft.com/en-us/graph/api/reportroot-getemailactivitycounts?view=graph-rest-1.0&tabs=http)    |   Office 365 Outlook Activity metrics   |   `Period`-based   |
 | [Outlook App Usage Version Counts](https://learn.microsoft.com/en-us/microsoft-365/admin/activity-reports/email-apps-usage-ww?view=o365-worldwide)      |    [reportRoot: getEmailAppUsageVersionsUserCounts](https://learn.microsoft.com/en-us/graph/api/reportroot-getemailappusageversionsusercounts?view=graph-rest-1.0&tabs=http)    |   Microsoft 365 Outlook App Usage Version Counts metrics   |   `Period`-based   |
-| [Outlook Mailbox Usage Quota Status Mailbox Counts](https://learn.microsoft.com/en-us/microsoft-365/admin/activity-reports/mailbox-usage?view=o365-worldwide)      |    [reportRoot: getMailboxUsageQuotaStatusMailboxCounts](https://learn.microsoft.com/en-us/graph/api/reportroot-getmailboxusagequotastatusmailboxcounts?view=graph-rest-1.0&tabs=http)    |  Microsoft 365 mailbox quota status mailbox counts metrics   |   `Period`-based   |
+| [Outlook Mailbox Usage Quota Status Mailbox Counts](https://learn.microsoft.com/en-us/microsoft-365/admin/activity-reports/mailbox-usage?view=o365-worldwide)      |    [reportRoot: getMailboxUsageQuotaStatusMailboxCounts](https://learn.microsoft.com/en-us/graph/api/reportroot-getmailboxusagequotastatusmailboxcounts?view=graph-rest-1.0&tabs=http)    |  Microsoft 365 mailbox usage quota status metrics   |   `Period`-based   |
 | [Outlook Mailbox Usage Detail](https://learn.microsoft.com/en-us/microsoft-365/admin/activity-reports/mailbox-usage?view=o365-worldwide)      |    [reportRoot: getMailboxUsageDetail](https://learn.microsoft.com/en-us/graph/api/reportroot-getmailboxusagedetail?view=graph-rest-1.0&tabs=http)    |   Microsoft 365 mailbox usage detail metrics   |   `Period`-based   |
 | [SharePoint Site Usage Storage](https://learn.microsoft.com/en-us/microsoft-365/admin/activity-reports/sharepoint-site-usage-ww?view=o365-worldwide)      |    [reportRoot: getSharePointSiteUsageStorage](https://learn.microsoft.com/en-us/graph/api/reportroot-getsharepointsiteusagestorage?view=graph-rest-1.0&tabs=http)    |   Office 365 Sharepoint Site Usage metrics   |   `Period`-based   |
 | [SharePoint Site Usage Site Detail](https://learn.microsoft.com/en-us/microsoft-365/admin/activity-reports/sharepoint-site-usage-ww?view=o365-worldwide)      |    [reportRoot: getSharePointSiteUsageDetail](https://learn.microsoft.com/en-us/graph/api/reportroot-getsharepointsiteusagedetail?view=graph-rest-1.0&tabs=http)    |   Office 365 Sharepoint Site Usage metrics   |   `Period`-based   |
@@ -245,43 +245,41 @@ Please refer to the following [document](https://www.elastic.co/guide/en/ecs/cur
 | o365.metrics.active.users.yammer.inactive.count | Number of Yammer inactive users. | integer |
 
 
-### Mailbox Usage Quota Status Mailbox Counts
+### Mailbox Usage Quota Status
 
-Get details about Mailbox Usage Quota Status Mailbox Counts [Microsoft Graph API](https://learn.microsoft.com/en-us/graph/api/reportroot-getmailboxusagequotastatusmailboxcounts?view=graph-rest-1.0&tabs=http).
+Get details about Mailbox Usage Quota Status [Microsoft Graph API](https://learn.microsoft.com/en-us/graph/api/reportroot-getmailboxusagequotastatusmailboxcounts?view=graph-rest-1.0&tabs=http).
 
-An example event for `mailbox_usage_quota_status_mailbox_counts` looks as following:
+An example event for `mailbox_usage_quota_status` looks as following:
 
 ```json
 {
     "o365": {
         "metrics": {
             "mailbox": {
-                "quota": {
-                    "status": {
-                        "mailbox": {
-                            "counts": {
-                                "send_receive_prohibited": {
-                                    "count": 10
+                "usage": {
+                    "quota": {
+                        "status": {
+                            "send_receive_prohibited": {
+                                "count": 9
+                            },
+                            "indeterminate": {
+                                "count": 3
+                            },
+                            "under_limit": {
+                                "count": 20
+                            },
+                            "warning_issued": {
+                                "count": 1
+                            },
+                            "report": {
+                                "date": "2025-01-26",
+                                "period": {
+                                    "day": "7"
                                 },
-                                "indeterminate": {
-                                    "count": 2
-                                },
-                                "under_limit": {
-                                    "count": 20
-                                },
-                                "warning_issued": {
-                                    "count": 1
-                                },
-                                "report": {
-                                    "date": "2025-01-17",
-                                    "period": {
-                                        "day": "7"
-                                    },
-                                    "refresh_date": "2025-01-22"
-                                },
-                                "send_prohibited": {
-                                    "count": 7
-                                }
+                                "refresh_date": "2025-01-26"
+                            },
+                            "send_prohibited": {
+                                "count": 6
                             }
                         }
                     }
@@ -291,24 +289,19 @@ An example event for `mailbox_usage_quota_status_mailbox_counts` looks as follow
     },
     "agent": {
         "name": "docker-fleet-agent",
-        "id": "73a1ed51-116e-490c-ba16-d06108d88322",
-        "ephemeral_id": "9b1317af-952d-4b7e-b66e-70e0178623ff",
+        "id": "0af64850-a098-46f3-a3c6-98b706017b44",
         "type": "filebeat",
+        "ephemeral_id": "3c0f3a0f-f3dd-4793-affb-f9441816b674",
         "version": "8.16.0"
     },
-    "@timestamp": "2025-01-17",
+    "@timestamp": "2025-01-26",
     "ecs": {
         "version": "8.16.0"
     },
     "data_stream": {
         "namespace": "default",
         "type": "metrics",
-        "dataset": "o365_metrics.mailbox_usage_quota_status_mailbox_counts"
-    },
-    "elastic_agent": {
-        "id": "73a1ed51-116e-490c-ba16-d06108d88322",
-        "version": "8.16.0",
-        "snapshot": false
+        "dataset": "o365_metrics.mailbox_usage_quota_status"
     },
     "host": {
         "hostname": "docker-fleet-agent",
@@ -322,18 +315,23 @@ An example event for `mailbox_usage_quota_status_mailbox_counts` looks as follow
         },
         "containerized": false,
         "ip": [
-            "172.30.0.7"
+            "192.168.32.7"
         ],
         "name": "docker-fleet-agent",
         "mac": [
-            "02-42-AC-1E-00-07"
+            "02-42-C0-A8-20-07"
         ],
         "architecture": "aarch64"
     },
+    "elastic_agent": {
+        "id": "0af64850-a098-46f3-a3c6-98b706017b44",
+        "version": "8.16.0",
+        "snapshot": false
+    },
     "event": {
         "agent_id_status": "verified",
-        "ingested": "2025-01-24T11:13:41Z",
-        "dataset": "o365_metrics.mailbox_usage_quota_status_mailbox_counts"
+        "ingested": "2025-01-28T12:46:50Z",
+        "dataset": "o365_metrics.mailbox_usage_quota_status"
     },
     "tags": [
         "o365.metrics.mailbox.usage"
@@ -357,14 +355,14 @@ Please refer to the following [document](https://www.elastic.co/guide/en/ecs/cur
 | host.containerized | If the host is a container. | boolean |  |
 | host.os.build | OS build information. | keyword |  |
 | host.os.codename | OS codename, if any. | keyword |  |
-| o365.metrics.mailbox.quota.status.mailbox.counts.indeterminate.count | The number of mailboxes where the quota status could not be determined. | long |  |
-| o365.metrics.mailbox.quota.status.mailbox.counts.report.date | The specific date for which the report data applies. | date |  |
-| o365.metrics.mailbox.quota.status.mailbox.counts.report.period.day | The duration (e.g., 7 days) over which the quota status data is aggregated. | integer | d |
-| o365.metrics.mailbox.quota.status.mailbox.counts.report.refresh_date | The date when the report data was last updated. | date |  |
-| o365.metrics.mailbox.quota.status.mailbox.counts.send_prohibited.count | The number of mailboxes restricted from sending emails due to exceeding their send quota during the reporting period. | long |  |
-| o365.metrics.mailbox.quota.status.mailbox.counts.send_receive_prohibited.count | The number of mailboxes restricted from both sending and receiving emails due to exceeding their total quota during the reporting period. | long |  |
-| o365.metrics.mailbox.quota.status.mailbox.counts.under_limit.count | The number of mailboxes operating within their assigned quota limits during the reporting period. | long |  |
-| o365.metrics.mailbox.quota.status.mailbox.counts.warning_issued.count | The number of mailboxes that have exceeded their warning threshold quota during the reporting period. | long |  |
+| o365.metrics.mailbox.usage.quota.status.indeterminate.count | The number of mailboxes where the quota status could not be determined. | long |  |
+| o365.metrics.mailbox.usage.quota.status.report.date | The specific date for which the report data applies. | date |  |
+| o365.metrics.mailbox.usage.quota.status.report.period.day | The duration (e.g., 7 days) over which the quota status data is aggregated. | integer | d |
+| o365.metrics.mailbox.usage.quota.status.report.refresh_date | The date when the report data was last updated. | date |  |
+| o365.metrics.mailbox.usage.quota.status.send_prohibited.count | The number of mailboxes restricted from sending emails due to exceeding their send quota during the reporting period. | long |  |
+| o365.metrics.mailbox.usage.quota.status.send_receive_prohibited.count | The number of mailboxes restricted from both sending and receiving emails due to exceeding their total quota during the reporting period. | long |  |
+| o365.metrics.mailbox.usage.quota.status.under_limit.count | The number of mailboxes operating within their assigned quota limits during the reporting period. | long |  |
+| o365.metrics.mailbox.usage.quota.status.warning_issued.count | The number of mailboxes that have exceeded their warning threshold quota during the reporting period. | long |  |
 
 
 ### Mailbox Usage Detail
