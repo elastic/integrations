@@ -4,7 +4,7 @@
 
 [Amazon Bedrock](https://docs.aws.amazon.com/bedrock/index.html) offers a fully managed service that provides access to high-performing foundation models (FMs) from leading AI startups and Amazon through a unified API. You can choose from a wide variety of foundation models to find the one that best fits your specific use case. With Amazon Bedrock, you gain access to robust tools for building generative AI applications with security, privacy, and responsible AI practices. Amazon Bedrock enables you to easily experiment with and evaluate top foundation models, customize them privately with your data using methods like fine-tuning and Retrieval Augmented Generation (RAG), and develop agents that perform tasks by leveraging your enterprise systems and data sources.
 
-The Amazon Bedrock integration enables seamless connection of your model invocation logging, runtime metrics and guardrails metrics to Elastic, allowing you to efficiently collect and monitor invocation logs and runtime metrics for usage monitoring.
+The Amazon Bedrock integration enables seamless connection of your model invocation logging, runtime metrics and Guardrails metrics to Elastic, allowing you to efficiently collect and monitor invocation logs and runtime metrics for usage monitoring.
 
 Elastic Security can leverage this data for security analytics including
 correlation, visualization and incident response. With invocation logging, you
@@ -28,8 +28,8 @@ Data streams:
  - `runtime`: Collects Amazon Bedrock runtime metrics such as model invocation
    count, invocation latency, input token count, output token count and many
    more.   
- - `guardrails`: Collects Amazon Bedrock guardrails metrics such as guardrail invocation
-count, guardrail invocation latency, text unit utilisation count, guardrail policy types associated with interventions and many more.
+ - `guardrails`: Collects Amazon Bedrock Guardrails metrics such as guardrail invocation
+count, guardrail invocation latency, text unit utilization count, guardrail policy types associated with interventions and many more.
 
 ## Requirements
 
