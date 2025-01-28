@@ -166,15 +166,25 @@ Please refer to the following [document](https://www.elastic.co/guide/en/ecs/cur
 
 {{fields "outlook_app_usage"}}
 
-### SharePoint Site Usage
+### SharePoint Site Usage Detail
 
-{{event "sharepoint_site_usage"}}
+{{event "sharepoint_site_usage_detail"}}
 
 **ECS Field Reference**
 
 Please refer to the following [document](https://www.elastic.co/guide/en/ecs/current/ecs-field-reference.html) for detailed information on ECS fields.
 
-{{fields "sharepoint_site_usage"}}
+{{fields "sharepoint_site_usage_detail"}}
+
+### SharePoint Site Usage Storage
+
+{{event "sharepoint_site_usage_storage"}}
+
+**ECS Field Reference**
+
+Please refer to the following [document](https://www.elastic.co/guide/en/ecs/current/ecs-field-reference.html) for detailed information on ECS fields.
+
+{{fields "sharepoint_site_usage_storage"}}
 
 ### Teams User Activity User Counts
 

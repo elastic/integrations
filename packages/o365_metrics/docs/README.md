@@ -943,9 +943,126 @@ Please refer to the following [document](https://www.elastic.co/guide/en/ecs/cur
 | o365.metrics.outlook.app.usage.undetermined.count | The count of unique users whose Outlook version could not be identified. | integer |  |
 
 
-### SharePoint Site Usage
+### SharePoint Site Usage Detail
 
-An example event for `sharepoint_site_usage` looks as following:
+An example event for `sharepoint_site_usage_detail` looks as following:
+
+```json
+{
+    "o365metrics": {
+        "sharepoint": {
+            "site": {
+                "usage": {
+                    "detail": {
+                        "active_file": {
+                            "count": "0"
+                        },
+                        "file": {
+                            "count": "0"
+                        },
+                        "page_view": {
+                            "count": "0"
+                        },
+                        "report": {
+                            "period": "7",
+                            "refresh_date": "2024-12-22"
+                        },
+                        "storage_allocated": {
+                            "byte": "27487790694400"
+                        },
+                        "storage_used": {
+                            "byte": "1586077"
+                        },
+                        "visited_page": {
+                            "count": "0"
+                        }
+                    }
+                }
+            }
+        }
+    },
+    "agent": {
+        "name": "docker-fleet-agent",
+        "id": "027b7b81-b3c6-49b9-8f61-1a5e892e7bfe",
+        "ephemeral_id": "f4133cae-978e-44e1-83e0-cab27e682a99",
+        "type": "filebeat",
+        "version": "8.16.0"
+    },
+    "@timestamp": "2024-12-26T23:18:42.620Z",
+    "ecs": {
+        "version": "8.16.0"
+    },
+    "data_stream": {
+        "namespace": "default",
+        "type": "metrics",
+        "dataset": "o365_metrics.sharepoint_site_usage_detail"
+    },
+    "host": {
+        "hostname": "docker-fleet-agent",
+        "os": {
+            "kernel": "5.15.153.1-microsoft-standard-WSL2",
+            "codename": "noble",
+            "name": "Ubuntu",
+            "type": "linux",
+            "family": "debian",
+            "version": "24.04.1 LTS (Noble Numbat)",
+            "platform": "ubuntu"
+        },
+        "containerized": true,
+        "ip": [
+            "172.18.0.7"
+        ],
+        "name": "docker-fleet-agent",
+        "mac": [
+            "02-42-AC-12-00-07"
+        ],
+        "architecture": "x86_64"
+    },
+    "elastic_agent": {
+        "id": "027b7b81-b3c6-49b9-8f61-1a5e892e7bfe",
+        "version": "8.16.0",
+        "snapshot": false
+    },
+    "event": {
+        "agent_id_status": "verified",
+        "ingested": "2024-12-26T23:18:52Z",
+        "dataset": "o365_metrics.sharepoint_site_usage_detail"
+    },
+    "tags": [
+        "o365.metrics.sharepoint_site_usage_detail"
+    ]
+}
+```
+
+**ECS Field Reference**
+
+Please refer to the following [document](https://www.elastic.co/guide/en/ecs/current/ecs-field-reference.html) for detailed information on ECS fields.
+
+**Exported fields**
+
+| Field | Description | Type |
+|---|---|---|
+| @timestamp | Event timestamp. | date |
+| cloud.image.id | Image ID for the cloud instance. | keyword |
+| data_stream.dataset | Data stream dataset. | constant_keyword |
+| data_stream.namespace | Data stream namespace. | constant_keyword |
+| data_stream.type | Data stream type. | constant_keyword |
+| host.containerized | If the host is a container. | boolean |
+| host.os.build | OS build information. | keyword |
+| host.os.codename | OS codename, if any. | keyword |
+| o365metrics.sharepoint.site.usage.detail.active_file.count | The number of active files in the SharePoint site during the reporting period. | integer |
+| o365metrics.sharepoint.site.usage.detail.file.count | The total number of files in the SharePoint site. | integer |
+| o365metrics.sharepoint.site.usage.detail.page_view.count | The number of page views in the SharePoint site during the reporting period. | integer |
+| o365metrics.sharepoint.site.usage.detail.report.period | The duration of the reporting period for SharePoint site usage, in days. | integer |
+| o365metrics.sharepoint.site.usage.detail.report.refresh_date | The date when the SharePoint site usage data was last refreshed. | date |
+| o365metrics.sharepoint.site.usage.detail.storage_allocated.byte | The amount of storage allocated to the SharePoint site, in bytes. | integer |
+| o365metrics.sharepoint.site.usage.detail.storage_used.byte | The amount of storage used in the SharePoint site, in bytes. | integer |
+| o365metrics.sharepoint.site.usage.detail.visited_page.count | The number of visited pages in the SharePoint site during the reporting period. | integer |
+
+
+### SharePoint Site Usage Storage
+
+An example event for `sharepoint_site_usage_storage` looks as following:
 
 ```json
 {
@@ -981,7 +1098,7 @@ An example event for `sharepoint_site_usage` looks as following:
     "data_stream": {
         "namespace": "default",
         "type": "metrics",
-        "dataset": "o365_metrics.sharepoint_site_usage"
+        "dataset": "o365_metrics.sharepoint_site_usage_storage"
     },
     "host": {
         "hostname": "docker-fleet-agent",
@@ -1012,10 +1129,10 @@ An example event for `sharepoint_site_usage` looks as following:
     "event": {
         "agent_id_status": "verified",
         "ingested": "2024-12-26T23:18:52Z",
-        "dataset": "o365_metrics.sharepoint_site_usage"
+        "dataset": "o365_metrics.sharepoint_site_usage_storage"
     },
     "tags": [
-        "o365.metrics.sharepoint_site_usage"
+        "o365.metrics.sharepoint_site_usage_storage"
     ]
 }
 ```
@@ -1036,14 +1153,6 @@ Please refer to the following [document](https://www.elastic.co/guide/en/ecs/cur
 | host.containerized | If the host is a container. | boolean |
 | host.os.build | OS build information. | keyword |
 | host.os.codename | OS codename, if any. | keyword |
-| o365metrics.sharepoint.site.usage.detail.active_file.count | The number of active files in the SharePoint site during the reporting period. | integer |
-| o365metrics.sharepoint.site.usage.detail.file.count | The total number of files in the SharePoint site. | integer |
-| o365metrics.sharepoint.site.usage.detail.page_view.count | The number of page views in the SharePoint site during the reporting period. | integer |
-| o365metrics.sharepoint.site.usage.detail.report.period | The duration of the reporting period for SharePoint site usage, in days. | integer |
-| o365metrics.sharepoint.site.usage.detail.report.refresh_date | The date when the SharePoint site usage data was last refreshed. | date |
-| o365metrics.sharepoint.site.usage.detail.storage_allocated.byte | The amount of storage allocated to the SharePoint site, in bytes. | integer |
-| o365metrics.sharepoint.site.usage.detail.storage_used.byte | The amount of storage used in the SharePoint site, in bytes. | integer |
-| o365metrics.sharepoint.site.usage.detail.visited_page.count | The number of visited pages in the SharePoint site during the reporting period. | integer |
 | o365metrics.sharepoint.site.usage.storage.report.date | The date the SharePoint site storage usage report was generated. | date |
 | o365metrics.sharepoint.site.usage.storage.report.period | The duration of the reporting period for SharePoint site storage usage, in days. | integer |
 | o365metrics.sharepoint.site.usage.storage.report.refresh_date | The date when the SharePoint site storage usage data was last refreshed. | date |
