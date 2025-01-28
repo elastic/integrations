@@ -1769,10 +1769,10 @@ An example event for `subscriptions` looks as following:
                         },
                         "service_plan": [
                             {
-                                "appliesTo": "User",
-                                "provisioningStatus": "Disabled",
-                                "servicePlanId": "f9646fb2-e3b2-4309-95de-dc4833737456",
-                                "servicePlanName": "CRMSTANDARD"
+                                "applies_to": "User",
+                                "provisioning_status": "Disabled",
+                                "service_plan_id": "f9646fb2-e3b2-4309-95de-dc4833737456",
+                                "service_plan_name": "CRMSTANDARD"
                             }
                         ],
                         "sku_id": "d17b27af-3f49-4822-99f9-56a661538792",
