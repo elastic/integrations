@@ -837,6 +837,8 @@ Please refer to the following [document](https://www.elastic.co/guide/en/ecs/cur
 
 ### Outlook Activity
 
+Get details about Outlook Activity from [Microsoft Graph API](https://learn.microsoft.com/en-us/graph/api/reportroot-getemailactivitycounts?view=graph-rest-1.0&tabs=http).
+
 An example event for `outlook_activity` looks as following:
 
 ```json
@@ -849,23 +851,23 @@ An example event for `outlook_activity` looks as following:
                         "count": ""
                     },
                     "meeting_created": {
-                        "count": "0"
+                        "count": 0
                     },
                     "emails_received": {
-                        "count": "3"
+                        "count": 11
                     },
                     "emails_sent": {
-                        "count": ""
+                        "count": 1
                     },
                     "report": {
-                        "date": "2024-12-16",
+                        "date": "2025-01-21",
                         "period": {
                             "day": "7"
                         },
-                        "refresh_date": "2024-12-22"
+                        "refresh_date": "2025-01-26"
                     },
                     "emails_read": {
-                        "count": ""
+                        "count": 6
                     }
                 }
             }
@@ -873,12 +875,12 @@ An example event for `outlook_activity` looks as following:
     },
     "agent": {
         "name": "docker-fleet-agent",
-        "id": "abf38fab-f7b6-4e1c-a3b3-a70a64f9e5db",
+        "id": "e416de39-a342-4f53-86e7-e36d8846b4b7",
+        "ephemeral_id": "d9e690ae-7a58-4c59-b143-1408bbb93a4f",
         "type": "filebeat",
-        "ephemeral_id": "08417a8d-9698-4c62-b7dc-e1b048647626",
         "version": "8.16.0"
     },
-    "@timestamp": "2024-12-24T09:36:40.780Z",
+    "@timestamp": "2025-01-21",
     "ecs": {
         "version": "8.16.0"
     },
@@ -892,29 +894,29 @@ An example event for `outlook_activity` looks as following:
         "os": {
             "kernel": "5.10.104-linuxkit",
             "name": "Wolfi",
-            "family": "",
             "type": "linux",
+            "family": "",
             "version": "20230201",
             "platform": "wolfi"
         },
         "containerized": false,
         "ip": [
-            "192.168.48.7"
+            "192.168.0.7"
         ],
         "name": "docker-fleet-agent",
         "mac": [
-            "02-42-C0-A8-30-07"
+            "02-42-C0-A8-00-07"
         ],
         "architecture": "aarch64"
     },
     "elastic_agent": {
-        "id": "abf38fab-f7b6-4e1c-a3b3-a70a64f9e5db",
+        "id": "e416de39-a342-4f53-86e7-e36d8846b4b7",
         "version": "8.16.0",
         "snapshot": false
     },
     "event": {
         "agent_id_status": "verified",
-        "ingested": "2024-12-24T09:36:41Z",
+        "ingested": "2025-01-28T08:13:54Z",
         "dataset": "o365_metrics.outlook_activity"
     },
     "tags": [
@@ -939,11 +941,11 @@ Please refer to the following [document](https://www.elastic.co/guide/en/ecs/cur
 | host.containerized | If the host is a container. | boolean |  |
 | host.os.build | OS build information. | keyword |  |
 | host.os.codename | OS codename, if any. | keyword |  |
-| o365.metrics.outlook.activity.emails_read.count | The count of email messages read by users during the reporting period. | integer |  |
-| o365.metrics.outlook.activity.emails_received.count | The count of email messages received by users during the reporting period. | integer |  |
-| o365.metrics.outlook.activity.emails_sent.count | The count of email messages sent by users during the reporting period. | integer |  |
-| o365.metrics.outlook.activity.meeting_created.count | The count of calendar meetings created by users during the reporting period. | integer |  |
-| o365.metrics.outlook.activity.meeting_interacted.count | The count of meetings where users interacted (e.g., accepted, declined, or modified) during the reporting period. | integer |  |
+| o365.metrics.outlook.activity.emails_read.count | The count of email messages read by users during the reporting period. | long |  |
+| o365.metrics.outlook.activity.emails_received.count | The count of email messages received by users during the reporting period. | long |  |
+| o365.metrics.outlook.activity.emails_sent.count | The count of email messages sent by users during the reporting period. | long |  |
+| o365.metrics.outlook.activity.meeting_created.count | The count of calendar meetings created by users during the reporting period. | long |  |
+| o365.metrics.outlook.activity.meeting_interacted.count | The count of meetings where users interacted (e.g., accepted, declined, or modified) during the reporting period. | long |  |
 | o365.metrics.outlook.activity.report.date | The specific date for which the report data applies. | date |  |
 | o365.metrics.outlook.activity.report.period.day | The duration (e.g., 7 days) over which the report data is aggregated. | integer | d |
 | o365.metrics.outlook.activity.report.refresh_date | The date when the report data was last updated. | date |  |

@@ -162,6 +162,8 @@ Please refer to the following [document](https://www.elastic.co/guide/en/ecs/cur
 
 ### Outlook Activity
 
+Get details about Outlook Activity from [Microsoft Graph API](https://learn.microsoft.com/en-us/graph/api/reportroot-getemailactivitycounts?view=graph-rest-1.0&tabs=http).
+
 {{event "outlook_activity"}}
 
 **ECS Field Reference**
