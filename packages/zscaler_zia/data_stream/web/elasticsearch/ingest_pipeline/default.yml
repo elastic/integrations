@@ -239,6 +239,13 @@ processors:
       target_field: source.geo
       tag: geoip_source_ip
       ignore_missing: true
+  - geoip:
+      field: source.nat.ip
+      target_field: source.geo
+      tag: geoip_source_nat_ip
+      if: ctx.source?.geo == null
+      description: If source.ip fails to populate geo fields.
+      ignore_missing: true
   - convert:
       field: json.cltpubip
       tag: convert_cltpubip_to_ip

@@ -203,7 +203,7 @@ If you only need to collect data from one AWS service, consider using the indivi
 (for example, to only collect monitoring metrics for EC2, you can configure only the **AWS EC2** integration).
 
 For step-by-step instructions on how to set up an integration, see the
-[Getting started](https://www.elastic.co/guide/en/welcome-to-elastic/current/getting-started-observability.html) guide.
+[Getting started](https://www.elastic.co/guide/en/starting-with-the-elasticsearch-platform-and-its-solutions/current/getting-started-observability.html) guide.
 
 ## Debug
 ### Latency causes missing metrics

@@ -12,9 +12,9 @@ For example, you could use the data from this integration to consolidate and cor
 
 The Microsoft 365 Defender integration collects logs for four types of events: Alert, Event, Incident and Log.
 
-**Alert:** This data streams leverages the [M365 Defender Streaming API](https://learn.microsoft.com/en-us/graph/api/resources/security-alert?view=graph-rest-1.0) to collect alerts including suspicious activities in a customer's tenant that Microsoft or partner security providers have identified and flagged for action.
+**Alert:** This data streams leverages the [Microsoft Graph Security API](https://learn.microsoft.com/en-us/graph/api/resources/security-alert?view=graph-rest-1.0) to collect alerts including suspicious activities in a customer's tenant that Microsoft or partner security providers have identified and flagged for action.
 
-**Event (Recommended):** This data streams leverages the [M365 Defender Streaming API](https://learn.microsoft.com/en-us/microsoft-365/security/defender/streaming-api?view=o365-worldwide) to collect Alert, Device, Email, App and Identity Events. Events are streamed to an Azure Event Hub. For a list of Supported Events exposed by the Streaming API and supported by Elastic's integration, please see Microsoft's documentation [here](https://learn.microsoft.com/en-us/microsoft-365/security/defender/supported-event-types?view=o365-worldwide).
+**Event (Recommended):** This data stream leverages the [M365 Defender Streaming API](https://learn.microsoft.com/en-us/microsoft-365/security/defender/streaming-api?view=o365-worldwide) to collect Alert, Device, Email, App and Identity Events. Events are streamed to an Azure Event Hub. For a list of Supported Events exposed by the Streaming API and supported by Elastic's integration, please see Microsoft's documentation [here](https://learn.microsoft.com/en-us/microsoft-365/security/defender/supported-event-types?view=o365-worldwide).
 
 **Incidents and Alerts (Recommended):** This data streams leverages the [Microsoft Graph Security API](https://learn.microsoft.com/en-us/graph/api/resources/security-api-overview?view=graph-rest-1.0) to ingest a collection of correlated alert instances and associated metadata that reflects the story of an attack in M365D. Incidents stemming from Microsoft 365 Defender, Microsoft Defender for Endpoint, Microsoft Defender for Office 365, Microsoft Defender for Identity, Microsoft Defender for Cloud Apps, and Microsoft Purview Data Loss Prevention are supported by this integration.
 
@@ -26,35 +26,36 @@ You need Elasticsearch for storing and searching your data and Kibana for visual
 
 This module has used **Microsoft Azure Event Hub** for Streaming Event, **Microsoft Graph Security v1.0 REST API** for Incident and **Microsoft 365 Defender API** for Log data streams.
 
-For **Event**, in filebeat [Azure Event Hub](https://www.elastic.co/guide/en/beats/filebeat/current/filebeat-input-azure-eventhub.html) input, state such as leases on partitions and checkpoints in the event stream are shared between receivers using an Azure Storage container. For this reason, as a prerequisite to using this input, users will have to create or use an existing storage account.
+For **Event**, using filebeat's [Azure Event Hub](https://www.elastic.co/guide/en/beats/filebeat/current/filebeat-input-azure-eventhub.html) input, state such as leases on partitions and checkpoints in the event stream are shared between receivers using an Azure Storage container. For this reason, as a prerequisite to using this input, users will have to create or use an existing storage account.
 
 ## Compatibility
 
 - Supported Microsoft 365 Defender streaming event types have been supported in the current integration version:
 
-  | Sr. No. | Resource types            |
-  |---------|---------------------------|
-  |    1    | AlertEvidence             |
-  |    2    | AlertInfo                 |
-  |    3    | DeviceEvents              |
-  |    4    | DeviceFileCertificateInfo |
-  |    5    | DeviceFileEvents          |
-  |    6    | DeviceImageLoadEvents     |
-  |    7    | DeviceInfo                |
-  |    8    | DeviceLogonEvents         |
-  |    9    | DeviceNetworkEvents       |
-  |   10    | DeviceNetworkInfo         |
-  |   11    | DeviceProcessEvents       |
-  |   12    | DeviceRegistryEvents      |
-  |   13    | EmailAttachmentInfo       |
-  |   14    | EmailEvents               |
-  |   15    | EmailPostDeliveryEvents   |
-  |   16    | EmailUrlInfo              |
-  |   17    | IdentityLogonEvents       |
-  |   18    | IdentityQueryEvents       |
-  |   19    | IdentityDirectoryEvents   |
-  |   20    | CloudAppEvents            |
-  |   21    | UrlClickEvent             |
+  | Resource types            | Description               |
+  |---------------------------|---------------------------|
+  | AlertEvidence             | Files, IP addresses, URLs, users, or devices associated with alerts. |
+  | AlertInfo                 | Alerts from M365 Defender XDR services, including severity and threat categorization. |
+  | DeviceEvents              | Event types, including events triggered by security controls. |
+  | DeviceFileCertificateInfo | Certificate information of signed files obtained from certificate verification events on endpoints. |
+  | DeviceFileEvents          | File creation, modification, and other file system events. |
+  | DeviceImageLoadEvents     | DLL loading events. |
+  | DeviceInfo                | Machine information, including OS information. |
+  | DeviceLogonEvents         | Sign-ins and other authentication events on devices. |
+  | DeviceNetworkEvents       | Network connection and related events. |
+  | DeviceNetworkInfo         | Network properties of devices, as well as connected networks and domains. |
+  | DeviceProcessEvents       | Process creation and related events. |
+  | DeviceRegistryEvents      | Creation and modification of registry entries. |
+  | EmailAttachmentInfo       | Information about files attached to emails. |
+  | EmailEvents               | Microsoft 365 email events, including email delivery and blocking events. |
+  | EmailPostDeliveryEvents   | Security events that occur post-delivery, after Microsoft 365 delivers the emails to the recipient mailbox. |
+  | EmailUrlInfo              | Information about URLs in emails. |
+  | IdentityInfo              | Account information from various sources, including Microsoft Entra ID. |
+  | IdentityLogonEvents       | Authentication events on Active Directory and Microsoft online services. |
+  | IdentityQueryEvents       | Queries for Active Directory objects, such as users, groups, devices, and domains. |
+  | IdentityDirectoryEvents   | Events involving an on-premises domain controller running Active Directory (AD). This table covers a range of identity-related events and system events on the domain controller. |
+  | CloudAppEvents            | Events involving accounts and objects in Office 365 and other cloud apps and services. |
+  | UrlClickEvent             | Safe Links clicks from email messages, Teams, and Office 365 apps. |
 
 ## Setup
 
@@ -585,12 +586,39 @@ This is the `event` dataset.
 | input.type | Input type | keyword |
 | log.offset | Log offset | long |
 | m365_defender.event.aad_device_id | Unique identifier for the device in Azure AD. | keyword |
+| m365_defender.event.account.address | The address of the account user. | keyword |
+| m365_defender.event.account.assigned_roles | The Microsoft Entra roles assigned to the account. | keyword |
+| m365_defender.event.account.blast_radius | The potential impact of the user account in the org. | keyword |
+| m365_defender.event.account.city | City where the account user is located. | keyword |
+| m365_defender.event.account.cloud_sid | The Microsoft Entra security identifer for the account. | keyword |
+| m365_defender.event.account.company_name | The company to which the account belongs. | keyword |
+| m365_defender.event.account.country | Country/Region where the account user is located. | keyword |
+| m365_defender.event.account.created | Date and time when the account user was created. | date |
+| m365_defender.event.account.criticality_level | The criticality level assigned to an asset in M365 Defender XDR Exposure Management. Accepted values are Low (3) to Very High (0). | keyword |
+| m365_defender.event.account.deleted_date_time | The date and time the user was deleted. | date |
+| m365_defender.event.account.department | Name of the department that the account user belongs to. | keyword |
 | m365_defender.event.account.display_name | Name of the account user displayed in the address book. Typically a combination of a given or first name, a middle initiation, and a last name or surname. | keyword |
+| m365_defender.event.account.distinguished_name | The user's distinguished name. | keyword |
 | m365_defender.event.account.domain | Domain of the account. | keyword |
+| m365_defender.event.account.email_address | SMTP address of the account. | keyword |
+| m365_defender.event.account.employee_id | Employee ID number of the account user. | keyword |
+| m365_defender.event.account.given_name | Given name or first name of the account user. | keyword |
 | m365_defender.event.account.id | An identifier for the account as found by Microsoft Defender for Cloud Apps. Could be Azure Active Directory ID, user principal name, or other identifiers. | keyword |
+| m365_defender.event.account.is_enabled | Indicates whether the account is enabled or not. | boolean |
+| m365_defender.event.account.job_title | Job title of the account user. | keyword |
+| m365_defender.event.account.manager | The listed manager of the account user. | keyword |
 | m365_defender.event.account.name | User name of the account. | keyword |
 | m365_defender.event.account.object_id | Unique identifier for the account in Azure Active Directory. | keyword |
+| m365_defender.event.account.on_prem_sid | On-premises security identifier (SID) of the account. | keyword |
+| m365_defender.event.account.other_mail_addresses | The additional email addresses of the user. | keyword |
+| m365_defender.event.account.phone | The listed phone number of the account user. | keyword |
+| m365_defender.event.account.risk_level | Level of the detected risk. Possible values are low, medium, high, hidden, none, and unknownFutureValue. | keyword |
+| m365_defender.event.account.risk_level_details | Details of the detected risk. | keyword |
 | m365_defender.event.account.sid | Security Identifier (SID) of the account. | keyword |
+| m365_defender.event.account.sip_proxy_address | Voice over IP (VOIP) session initiation protocol (SIP) address of the account. | keyword |
+| m365_defender.event.account.state | The geographical state of the user account. | keyword |
+| m365_defender.event.account.surname | Surname, family name, or last name of the account user. | keyword |
+| m365_defender.event.account.tags | Tags assigned to the account user by Defender for Identity. | keyword |
 | m365_defender.event.account.type | Type of user account, indicating its general role and access levels, such as Regular, System, Admin, DcAdmin, System, Application. | keyword |
 | m365_defender.event.account.upn | User principal name (UPN) of the account. | keyword |
 | m365_defender.event.action.result | Result of the action. | keyword |
@@ -618,6 +646,7 @@ This is the `event` dataset.
 | m365_defender.event.certificate.creation_time | Date and time the certificate was created. | date |
 | m365_defender.event.certificate.expiration_time | Date and time the certificate is set to expire. | date |
 | m365_defender.event.certificate.serial_number | Identifier for the certificate that is unique to the issuing certificate authority (CA). | keyword |
+| m365_defender.event.change_source | Identifies which identity provider or process triggered the addition of the new row. For example, the System-UserPersistence value is used for any rows added by an automated process. | keyword |
 | m365_defender.event.city | City where the client IP address is geolocated. | keyword |
 | m365_defender.event.client_version | Version of the endpoint agent or sensor running on the machine. | keyword |
 | m365_defender.event.confidence_level | List of confidence levels of any spam or phishing verdicts. For spam, this column shows the spam confidence level (SCL), indicating if the email was skipped (-1), found to be not spam (0,1), found to be spam with moderate confidence (5,6), or found to be spam with high confidence (9). For phishing, this column displays whether the confidence level is "High" or "Low". | flattened |
@@ -820,6 +849,8 @@ This is the `event` dataset.
 | m365_defender.event.signature_type | Indicates whether signature information was read as embedded content in the file itself or read from an external catalog file. | keyword |
 | m365_defender.event.signer | Information about the signer of the file. | keyword |
 | m365_defender.event.signer_hash | Unique hash value identifying the signer. | keyword |
+| m365_defender.event.source_provider | The identity's source, such as Microsoft Entra ID, Active Directory, or a hybrid identity synchronized from Active Directory to Azure Active Directory. | keyword |
+| m365_defender.event.source_system | The source system for the record. | keyword |
 | m365_defender.event.subject | Subject of the email. | keyword |
 | m365_defender.event.target.account_display_name | Display name of the account that the recorded action was applied to. | keyword |
 | m365_defender.event.target.account_upn | User principal name (UPN) of the account that the recorded action was applied to. | keyword |
@@ -833,6 +864,7 @@ This is the `event` dataset.
 | m365_defender.event.timestamp | Date and time when the event was recorded. | date |
 | m365_defender.event.title | Title of the alert. | keyword |
 | m365_defender.event.tunnel_type | Tunneling protocol, if the interface is used for this purpose, for example 6to4, Teredo, ISATAP, PPTP, SSTP, and SSH. | keyword |
+| m365_defender.event.type | The type of record. | keyword |
 | m365_defender.event.url | Full URL in the email subject, body, or attachment. | keyword |
 | m365_defender.event.url_chain | For scenarios involving redirections, it includes URLs present in the redirection chain. | keyword |
 | m365_defender.event.url_count | Number of embedded URLs in the email. | long |

@@ -1,6 +1,19 @@
 ---
 description: Pipeline for Palo Alto XDR Incident API.
 processors:
+  - rename:
+      description: Use 'event.original' if present (e.g. when reprocessing), otherwise 'message'.
+      field: message
+      target_field: event.original
+      ignore_missing: true
+      if: ctx.event?.original == null
+  - remove:
+      description: In case of reprocessing, remove all fields that will be repopulated.
+      keep:
+        - event.original
+        - tags
+        - "@timestamp"
+      ignore_missing: true
   - set:
       field: ecs.version
       value: '8.11.0'
@@ -13,11 +26,6 @@ processors:
   - append:
       field: event.type
       value: info
-  - rename:
-      field: message
-      target_field: event.original
-      ignore_missing: true
-      if: ctx.event?.original == null
   - json:
       field: event.original
       target_field: panw_cortex.xdr

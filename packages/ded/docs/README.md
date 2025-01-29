@@ -7,7 +7,7 @@ For more detailed information refer to the following blog:
 
 ## Installation
 1. **Upgrading**: If upgrading from a version below v2.0.0, see the section v2.0.0 and beyond.
-1. **Add the Integration Package**: Install the package via **Management > Integrations > Add Data Exfiltration Detection**. Configure the integration name and agent policy. Click Save and Continue.
+1. **Add the Integration Package**: Install the package via **Management > Integrations > Add Data Exfiltration Detection**. Configure the integration name and agent policy. Click Save and Continue. (Note that this integration does not rely on an agent, and can be assigned to a policy without an agent.)
 1. **Install assets**: Install the assets by clicking **Settings > Install Data Exfiltration Detection assets**.
 1. **Check the health of the transform**: The transform is scheduled to run every 30 minutes. This transform creates the index `ml_network_ded-<VERSION>`. To check the health of the transform go to **Management > Stack Management > Data > Transforms** under `logs-ded.pivot_transform-default-<FLEET-TRANSFORM-VERSION>`. Follow the instructions under the header `Customize Data Exfiltration Detection Transform` below to adjust filters based on your environment's needs.
 1. **Create data views for anomaly detection jobs**: The anomaly detection jobs under this package rely on two indices. One has file events (`logs-endpoint.events.file-*`), and the other index (`ml_network_ded.all`) collects network logs from a transform. Before enabling the anomaly detection jobs, create a data view with both index patterns.

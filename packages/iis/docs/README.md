@@ -31,7 +31,7 @@ You can use our hosted Elasticsearch Service on Elastic Cloud, which is recommen
 ## Setup
 
 For step-by-step instructions on how to set up an integration, see the
-[Getting started](https://www.elastic.co/guide/en/welcome-to-elastic/current/getting-started-observability.html) guide.
+[Getting started](https://www.elastic.co/guide/en/starting-with-the-elasticsearch-platform-and-its-solutions/current/getting-started-observability.html) guide.
 
 For more information on configuring IIS logging, refer to the [Microsoft documentation](https://learn.microsoft.com/en-us/iis/manage/provisioning-and-managing-iis/configure-logging-in-iis).
 
@@ -559,7 +559,28 @@ An example event for `application_pool` looks as following:
         "application_pool": {
             "name": "DefaultAppPool",
             "net_clr": {
-                "total_exceptions_thrown": 0
+                "total_exceptions_thrown": 0,
+                "finallys_per_sec": 0,
+                "exceptions_thrown_per_sec": 0,
+                "locks_and_threads": {
+                    "current_queue_length": 0,
+                    "contention_rate_per_sec": 0
+                },
+                "memory": {
+                    "gen_2_heap_size": 0,
+                    "large_object_heap_size": 0,
+                    "gen_1_heap_size": 0,
+                    "gen_1_collections": 0,
+                    "gen_0_heap_size": 0,
+                    "bytes_in_all_heaps": 0,
+                    "total_committed_bytes": 0,
+                    "gen_0_collections": 0,
+                    "gen_2_collections": 0,
+                    "allocated_bytes_per_sec": 0,
+                    "time_in_gc_perc": 0
+                },
+                "filters_per_sec": 0,
+                "throw_to_catch_depth_per_sec": 0
             },
             "process": {
                 "handle_count": 466,
@@ -607,8 +628,22 @@ Please refer to the following [document](https://www.elastic.co/guide/en/ecs/cur
 | host.os.build | OS build information. | keyword |  |  |
 | host.os.codename | OS codename, if any. | keyword |  |  |
 | iis.application_pool.name | application pool name | keyword |  |  |
+| iis.application_pool.net_clr.exceptions_thrown_per_sec | Number of Exceptions Thrown / sec. | float |  |  |
 | iis.application_pool.net_clr.filters_per_sec | Number of filters per sec. | float |  | gauge |
 | iis.application_pool.net_clr.finallys_per_sec | The number of finallys per sec. | float |  | gauge |
+| iis.application_pool.net_clr.locks_and_threads.contention_rate_per_sec | Contention Rate / sec. | float |  |  |
+| iis.application_pool.net_clr.locks_and_threads.current_queue_length | Current Queue Length. | float |  |  |
+| iis.application_pool.net_clr.memory.allocated_bytes_per_sec | Allocated Bytes/sec. | float | byte |  |
+| iis.application_pool.net_clr.memory.bytes_in_all_heaps | Number of bytes in all heaps. | float | byte |  |
+| iis.application_pool.net_clr.memory.gen_0_collections | Number of Gen 0 Collections. | float |  |  |
+| iis.application_pool.net_clr.memory.gen_0_heap_size | Gen 0 heap size. | float |  |  |
+| iis.application_pool.net_clr.memory.gen_1_collections | Number of Gen 1 Collections. | float |  |  |
+| iis.application_pool.net_clr.memory.gen_1_heap_size | Gen 1 heap size. | float |  |  |
+| iis.application_pool.net_clr.memory.gen_2_collections | Number of Gen 2 Collections. | float |  |  |
+| iis.application_pool.net_clr.memory.gen_2_heap_size | Gen 2 heap size. | float |  |  |
+| iis.application_pool.net_clr.memory.large_object_heap_size | Large Object Heap size. | float |  |  |
+| iis.application_pool.net_clr.memory.time_in_gc_perc | % Time in GC. | float |  |  |
+| iis.application_pool.net_clr.memory.total_committed_bytes | Number of total committed bytes. | float | byte |  |
 | iis.application_pool.net_clr.throw_to_catch_depth_per_sec | Throw to catch depth count per sec. | float |  | gauge |
 | iis.application_pool.net_clr.total_exceptions_thrown | Total number of exceptions thrown. | long |  | counter |
 | iis.application_pool.process.cpu_usage_perc | The CPU usage percentage. | float | s | gauge |
@@ -621,3 +656,22 @@ Please refer to the following [document](https://www.elastic.co/guide/en/ecs/cur
 | iis.application_pool.process.virtual_bytes | Memory virtual bytes. | float | byte | gauge |
 | iis.application_pool.process.working_set | Memory working set. | float |  |  |
 | service.address | Address where data about this service was collected from. This should be a URI, network address (ipv4:port or [ipv6]:port) or a resource path (sockets). | keyword |  |  |
+
+
+# Installing ASP.NET for `net_clr` Metrics
+To ensure `net_clr` metrics appear, it is necessary to install ASP.NET. Follow the steps below to install ASP.NET on your IIS server.
+
+## Steps to Install ASP.NET
+1. **Select the IIS server**:
+    - Open the IIS Manager.
+    - Select the server node in the left-hand Connections pane.
+2. **Click on `Manage`**:
+    - In the right-hand Actions pane, click on `Manage`.
+3. **Select `Add Roles and Features`**:
+    - This will open the Add Roles and Features Wizard.
+4. **On `Server Roles`, select the following options**:
+    - Navigate to `Web Server (IIS) > Web Server > Application Development`.
+    - Check the boxes for:
+        - `.NET Extensibility`
+        - `ASP.NET`
+          For more detailed instructions, please refer to the [official documentation](https://learn.microsoft.com/en-us/iis/application-frameworks/scenario-build-an-aspnet-website-on-iis/configuring-step-1-install-iis-and-asp-net-modules).
