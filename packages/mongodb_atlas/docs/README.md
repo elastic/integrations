@@ -418,7 +418,7 @@ Please refer to the following [document](https://www.elastic.co/guide/en/ecs/cur
 | mongodb_atlas.mongod_audit.local.is_system_user | True if the event is caused by a system user, false otherwise. | boolean |
 | mongodb_atlas.mongod_audit.local.port | Port number of the running instance. | long |
 | mongodb_atlas.mongod_audit.local.unix | Unix that contains the MongoDB socket file path if the client connects through a Unix domain socket. | keyword |
-| mongodb_atlas.mongod_audit.param | Specific details for the event. | object |
+| mongodb_atlas.mongod_audit.param | Specific details for the event. | flattened |
 | mongodb_atlas.mongod_audit.remote.ip | IP address of the incoming connection associated with the event. | ip |
 | mongodb_atlas.mongod_audit.remote.is_system_user | True if the event is caused by a system user, false otherwise. | boolean |
 | mongodb_atlas.mongod_audit.remote.port | Port number of the incoming connection associated with the event. | long |
@@ -535,7 +535,7 @@ Please refer to the following [document](https://www.elastic.co/guide/en/ecs/cur
 | data_stream.namespace | Data stream namespace. | constant_keyword |
 | data_stream.type | Data stream type. | constant_keyword |
 | input.type | Type of Filebeat input. | keyword |
-| mongodb_atlas.mongod_database.attributes | One or more key-value pairs for additional log attributes. If a log message does not include any additional attributes, the attr object is omitted. | object |
+| mongodb_atlas.mongod_database.attributes | One or more key-value pairs for additional log attributes. If a log message does not include any additional attributes, the attr object is omitted. | flattened |
 | mongodb_atlas.mongod_database.component | The component field indicates the category to which a logged event belongs, such as NETWORK or COMMAND. | keyword |
 | mongodb_atlas.mongod_database.hostname | A human-readable label that identifies the host that stores the log files you want to download. | keyword |
 | mongodb_atlas.mongod_database.id | The unique identifier for the log statement. | long |
@@ -543,7 +543,7 @@ Please refer to the following [document](https://www.elastic.co/guide/en/ecs/cur
 | mongodb_atlas.mongod_database.size | The original size of a log entry if it has been truncated. Only included if the log entry contains at least one truncated attr attribute. | object |
 | mongodb_atlas.mongod_database.tags | Strings representing any tags applicable to the log statement, for example, ["startupWarnings"]. | keyword |
 | mongodb_atlas.mongod_database.thread.name | The name of the thread that caused the log statement. | keyword |
-| mongodb_atlas.mongod_database.truncated | Information about log message truncation, if applicable. Only included if the log entry contains at least one truncated attr attribute. | object |
+| mongodb_atlas.mongod_database.truncated | Information about log message truncation, if applicable. Only included if the log entry contains at least one truncated attr attribute. | flattened |
 
 
 ### Organization
@@ -743,7 +743,7 @@ Please refer to the following [document](https://www.elastic.co/guide/en/ecs/cur
 | data_stream.type | Data stream type. | constant_keyword |
 | input.type | Type of Filebeat input. | keyword |
 | mongodb_atlas.organization.access_list_entry | Access list entry of the API Key targeted by the event. | keyword |
-| mongodb_atlas.organization.additional_info.\* | Additional meta information about the event. Only present when includeRaw query parameter is true. | object |
+| mongodb_atlas.organization.additional_info.\* | Additional meta information about the event. Only present when includeRaw query parameter is true. | flattened |
 | mongodb_atlas.organization.alert.config.id | Unique identifier for the alert configuration associated with the alertId. | keyword |
 | mongodb_atlas.organization.alert.id | Unique identifier for the alert associated with this event. | keyword |
 | mongodb_atlas.organization.api_key.id | Unique identifier for the API Key that triggered this event. | keyword |
@@ -914,7 +914,7 @@ Please refer to the following [document](https://www.elastic.co/guide/en/ecs/cur
 | data_stream.namespace | Data stream namespace. | constant_keyword |
 | data_stream.type | Data stream type. | constant_keyword |
 | input.type | Type of Filebeat input. | keyword |
-| mongodb_atlas.project.additional_info.\* | Additional meta information about the event. Only present when includeRaw query parameter is true. | object |
+| mongodb_atlas.project.additional_info.\* | Additional meta information about the event. Only present when includeRaw query parameter is true. | flattened |
 | mongodb_atlas.project.alert.config.id | Unique identifier for the alert configuration associated with the alertId. | keyword |
 | mongodb_atlas.project.alert.id | Unique identifier for the alert associated with this event. | keyword |
 | mongodb_atlas.project.api_key.id | Unique identifier for the API Key that triggered this event. If this field is present in the response, Cloud Manager does not return the userId field. | keyword |
