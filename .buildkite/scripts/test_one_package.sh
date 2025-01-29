@@ -33,19 +33,6 @@ with_docker_compose_plugin
 with_kubernetes
 
 use_elastic_package
-#
-# This variable does not exist in builds triggered automatically
-GITHUB_PR_TRIGGER_COMMENT="${GITHUB_PR_TRIGGER_COMMENT:-""}"
-
-# Test purposes - to be removed
-GITHUB_PR_TRIGGER_COMMENT="/test stack 8.18.0-SNAPSHOT"
-
-if [[ "${GITHUB_PR_TRIGGER_COMMENT}" =~ ^/test\ stack ]]; then
-    echo "--- Stack version set from Github comment"
-    STACK_VERSION=$(echo "$GITHUB_PR_TRIGGER_COMMENT" | cut -d " " -f 3)
-    export STACK_VERSION
-    echo "Use Elastic stack version from Github comment: ${STACK_VERSION}"
-fi
 
 pushd packages > /dev/null
 if ! process_package "${package}" "${from}" "${to}"; then

@@ -29,6 +29,19 @@ to="$(get_to_changeset)"
 
 echo "[DEBUG] Checking with commits: from: '${from}' to: '${to}'"
 
+# This variable does not exist in builds triggered automatically
+GITHUB_PR_TRIGGER_COMMENT="${GITHUB_PR_TRIGGER_COMMENT:-""}"
+
+# Test purposes - to be removed
+GITHUB_PR_TRIGGER_COMMENT="/test stack 8.18.0-SNAPSHOT"
+
+if [[ "${GITHUB_PR_TRIGGER_COMMENT}" =~ ^/test\ stack ]]; then
+    echo "--- Stack version set from Github comment"
+    STACK_VERSION=$(echo "$GITHUB_PR_TRIGGER_COMMENT" | cut -d " " -f 3)
+    export STACK_VERSION
+    echo "Use Elastic stack version from Github comment: ${STACK_VERSION}"
+fi
+
 packages_to_test=0
 
 for package in ${PACKAGE_LIST}; do
@@ -67,6 +80,16 @@ for package in ${PACKAGE_LIST}; do
         - build/elastic-stack-dump/*/logs/fleet-server-internal/**/*
 EOF
 done
+
+if [[ "${GITHUB_PR_TRIGGER_COMMENT}" =~ ^/test\ stack ]]; then
+    cat << EOF >> ${PIPELINE_FILE}
+    - label: "Force to run a regular build"
+      key: "fail-github-pr-comment"
+      commands:
+       - 'echo "Remember to run a new build with `/test` or pushing new commits"'
+       - 'exit 1'
+EOF
+fi
 
 if [ ${packages_to_test} -eq 0 ]; then
     buildkite-agent annotate "No packages to be tested" --context "ctx-no-packages" --style "warning"
