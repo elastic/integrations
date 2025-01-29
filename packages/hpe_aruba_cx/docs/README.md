@@ -1230,11 +1230,11 @@ Note: Descriptions have not been filled out
 #### [Port access application-based policy events](https://arubanetworking.hpe.com/techdocs/AOS-CX/10.15/HTML/elmrg/Content/events/PORT_ACC_ABP.htm)
 | Docs Field       | Schema Mapping               |
 |------------------|------------------------------|
-| `<client>`       | aruba.pac_abp.client         |
-| `<line_card>`    | aruba.acc_abp.line_card      |
-| `<operation>`    | aruba.pac_abp.operation      |
-| `<pac_abp_name>` | aruba.pac_abp.name           |
-| `<result>`       | aruba.pac_abp.result         |
+| `<client>`       | aruba.pac_gbp.client         |
+| `<line_card>`    | aruba.pac_gbp.line_card      |
+| `<operation>`    | aruba.pac_gbp.operation      |
+| `<pac_abp_name>` | aruba.pac_gbp.name           |
+| `<result>`       | aruba.pac_gbp.result         |
 
 #### [Port access group based policy events](https://arubanetworking.hpe.com/techdocs/AOS-CX/10.15/HTML/elmrg/Content/events/PORT_ACCESS_GBP.htm)
 | Docs Field    | Schema Mapping         |
