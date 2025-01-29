@@ -489,19 +489,19 @@ Please refer to the following [document](https://www.elastic.co/guide/en/ecs/cur
 | o365.metrics.mailbox.usage.detail.created_date | The date the mailbox was created. | date |  |
 | o365.metrics.mailbox.usage.detail.deleted_date | The date the mailbox was deleted. | date |  |
 | o365.metrics.mailbox.usage.detail.deleted_item.count | The number of items in the deleted items folder. | long |  |
-| o365.metrics.mailbox.usage.detail.deleted_item_quota.byte | The quota limit for the deleted items folder (in bytes). | long |  |
-| o365.metrics.mailbox.usage.detail.deleted_item_size.byte | The total size of items in the deleted items folder (in bytes). | long |  |
+| o365.metrics.mailbox.usage.detail.deleted_item_quota.byte | The quota limit for the deleted items folder (in bytes). | long | byte |
+| o365.metrics.mailbox.usage.detail.deleted_item_size.byte | The total size of items in the deleted items folder (in bytes). | long | byte |
 | o365.metrics.mailbox.usage.detail.display_name | The full name of the user. | keyword |  |
 | o365.metrics.mailbox.usage.detail.has_archive | Indicates if the user has an archive mailbox. | boolean |  |
 | o365.metrics.mailbox.usage.detail.is_deleted | Indicates if the mailbox is deleted. | boolean |  |
-| o365.metrics.mailbox.usage.detail.issue_warning_quota.byte | The mailbox size limit at which a warning is issued (in bytes). | long |  |
+| o365.metrics.mailbox.usage.detail.issue_warning_quota.byte | The mailbox size limit at which a warning is issued (in bytes). | long | byte |
 | o365.metrics.mailbox.usage.detail.item.count | The total number of items in the mailbox. | long |  |
 | o365.metrics.mailbox.usage.detail.last_activity_date | The most recent activity date for the mailbox. | date |  |
-| o365.metrics.mailbox.usage.detail.prohibit_send_quota.byte | The mailbox size limit at which sending messages is prohibited (in bytes). | long |  |
-| o365.metrics.mailbox.usage.detail.prohibit_send_receive_quota.byte | The mailbox size limit at which sending and receiving messages is prohibited (in bytes). | long |  |
+| o365.metrics.mailbox.usage.detail.prohibit_send_quota.byte | The mailbox size limit at which sending messages is prohibited (in bytes). | long | byte |
+| o365.metrics.mailbox.usage.detail.prohibit_send_receive_quota.byte | The mailbox size limit at which sending and receiving messages is prohibited (in bytes). | long | byte |
 | o365.metrics.mailbox.usage.detail.report.period.day | The reporting period over which the data is aggregated (in days). | integer | d |
 | o365.metrics.mailbox.usage.detail.report.refresh_date | The date when the report data was last updated. | date |  |
-| o365.metrics.mailbox.usage.detail.storage_used.byte | The total storage used in the mailbox (in bytes). | long |  |
+| o365.metrics.mailbox.usage.detail.storage_used.byte | The total storage used in the mailbox (in bytes). | long | byte |
 | o365.metrics.mailbox.usage.detail.user_principal_name | The email or principal username of the user. | keyword |  |
 
 
