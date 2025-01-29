@@ -120,7 +120,7 @@ Take note of the following values, which you will use later when specifying sett
 * `Tenant ID`: use the "Tenant ID" from your Microsoft Entra ID.
 * `Subscription ID`: use the "Subscription Id" to access Azure APIs.
 
-* Only one of the following(Optional):
+* Only one of the following (Optional):
     * `Department ID`: use the "Department Id" content if you decide to collect metrics from a department.
     * `Billing account ID`: use the "Billing account ID" content if you decide to collect metrics from a billing account.
 
