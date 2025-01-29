@@ -132,19 +132,19 @@ processors:
       tag: rename_sha1_string
   - append:
       field: related.hash
-      value: "{{file.hash.sha1}}"
+      value: "{{{file.hash.sha1}}}"
       allow_duplicates: false
       tag: append_sha1_hash
       if: ctx.file?.hash?.sha1 != null && ctx.file?.hash?.sha1 != ""
   - append:
       field: related.hash
-      value: "{{file.hash.sha256}}"
+      value: "{{{file.hash.sha256}}}"
       allow_duplicates: false
       tag: append_sha256_hash
       if: ctx.file?.hash?.sha256 != null && ctx.file?.hash?.sha256 != ""
   - append:
       field: related.hash
-      value: "{{file.hash.md5}}"
+      value: "{{{file.hash.md5}}}"
       allow_duplicates: false
       tag: append_md5_hash
       if: ctx.file?.hash?.md5 != null && ctx.file?.hash?.md5 != ""
@@ -181,7 +181,20 @@ processors:
       if: ctx.host?.mac != null
   - set: 
       field: threat.framework
+      value: CrowdStrike Falcon Detections Framework
+      tag: set_threat_framework_cs
+      description: For Crowdstrike Falcon Detection tactics and/or that are prefixed with "CS"
+      if: >-
+        (ctx.crowdstrike?.event?.TacticId != null && ctx.crowdstrike.event.TacticId.startsWith("CS"))
+        || (ctx.crowdstrike?.event?.TechniqueId != null && ctx.crowdstrike.event.TechniqueId.startsWith("CS"))
+        || (ctx.crowdstrike?.event?.Tactic != null && ['malware','exploit','post-exploit','machine learning','custom intelligence','falcon overwatch','falcon intel','ai powered ioa','insecure security posture'].contains(ctx.crowdstrike.event.Tactic.toLowerCase()))
+
+  - set: 
+      field: threat.framework
       value: MITRE ATT&CK
+      override: false
+      tag: set_threat_framework
+      if: ctx.threat?.framework == null && ctx.crowdstrike?.event?.TacticId != null && ctx.crowdstrike.event.TacticId.startsWith("TA")
   - append:
       field: threat.technique.name
       value: "{{{crowdstrike.event.Technique}}}"
@@ -207,7 +220,7 @@ on_failure:
   - append:
       field: error.message
       value: |-
-        Processor "{{ _ingest.on_failure_processor_type }}" with tag "{{ _ingest.on_failure_processor_tag }}" in pipeline "{{ _ingest.on_failure_pipeline }}" failed with message "{{ _ingest.on_failure_message }}"
+        Processor "{{{ _ingest.on_failure_processor_type }}}" with tag "{{{ _ingest.on_failure_processor_tag }}}" in pipeline "{{{ _ingest.on_failure_pipeline }}}" failed with message "{{{ _ingest.on_failure_message }}}"
   - set:
       field: event.kind
       value: pipeline_error

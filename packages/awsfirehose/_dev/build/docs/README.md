@@ -1,8 +1,9 @@
 # Amazon Data Firehose
-Amazon Data Firehose integration offers users a way to stream logs from Firehose to Elastic Cloud.
-This integration includes predefined rules that automatically route AWS service logs to the respective integrations, which
-include field mappings, ingest pipelines, predefined dashboards and ect. Here is a list of log types that are supported
-by this integration:
+Amazon Data Firehose integration offers users a way to stream logs and CloudWatch metrics from Firehose to Elastic Cloud.
+This integration includes predefined rules that automatically route AWS service logs and CloudWatch metrics to the respective integrations, which
+include field mappings, ingest pipelines, and predefined dashboards. 
+
+Here is a list of log types that are supported by this integration:
 
 | AWS service log    | Log destination          |
 |--------------------|--------------------------|
@@ -16,6 +17,31 @@ by this integration:
 | S3 access          | S3                       |
 | VPC Flow           | Firehose, CloudWatch, S3 |
 | WAF                | Firehose, CloudWatch. S3 |
+
+Here is a list of CloudWatch metrics that are supported by this integration:
+
+| AWS service monitoring metrics |
+|--------------------------------|
+| API Gateway                    |
+| DynamoDB                       |
+| EBS                            |
+| EC2                            |
+| ECS                            |
+| ELB                            |
+| EMR                            |
+| Network Firewall               |
+| Kafka                          |
+| Kinesis                        |
+| Lambda                         |
+| NATGateway                     |
+| RDS                            |
+| S3                             |
+| S3 Storage Lens                |
+| SNS                            |
+| SQS                            |
+| TransitGateway                 |
+| Usage                          |
+| VPN                            |
 
 ## Limitation
 It is not possible to configure a delivery stream to send data to Elastic Cloud via PrivateLink (VPC endpoint). 
@@ -59,9 +85,11 @@ This is a current limitation in Firehose, which we are working with AWS to resol
     This endpoint can be found in the Elastic Cloud console. An example is https://my-deployment-28u274.es.eu-west-1.aws.found.io.
 
     2. **API key** should be a Base64 encoded Elastic API key, which can be created in Kibana by following the
-    instructions under API Keys. If you are using an API key with “Restrict privileges”, be sure to review the Indices
+    instructions under API Keys. If you are using an API key with “Restricted privileges”, be sure to review the Indices
     privileges to provide at least "auto_configure" & "write" permissions for the indices you will be using with this
-    delivery stream.
+    delivery stream. By default, logs will be stored in `logs-awsfirehose-default` index and metrics will be stored in
+    `metrics-aws.cloudwatch-default` index. Therefore, Elastic highly recommends giving `logs-awsfirehose-default` and 
+    `metrics-aws.cloudwatch-default` indices with "write" privilege.
 
     3. We recommend leaving **Content encoding** set to **GZIP** for improved network efficiency.
 
@@ -75,9 +103,11 @@ This is a current limitation in Firehose, which we are working with AWS to resol
 
     7. **Parameters**
 
-       1. Elastic recommends setting the `es_datastream_name` parameter to `logs-awsfirehose-default` in order to
-       leverage the routing rules defined in this integration. If this parameter is not specified, data is sent to the
-       `logs-generic-default` data stream by default.
+       1. Elastic recommends only setting the `es_datastream_name` parameter when ingesting logs that are not supported
+       by this Firehose integration. If this parameter is not specified, data is sent to the `logs-awsfirehose-default`
+       index by default and the routing rules defined in this integration will be applied automatically.
+       Please make sure the index specified with this `es_datastream_name` parameter has the proper permission given by
+       the API key.
        ![Firehose Destination Settings](../img/destination-settings.png)
 
        2. The **include_cw_extracted_fields** parameter is optional and can be set when using a CloudWatch logs subscription
@@ -91,6 +121,20 @@ This is a current limitation in Firehose, which we are working with AWS to resol
        This parameter will increase the data volume in Elasticsearch and should be used with care.
 
 3. Send data to the Firehose delivery stream
-
+    1. logs
     Consult the [AWS documentation](https://docs.aws.amazon.com/firehose/latest/dev/basic-write.html) for details on how to
     configure a variety of log sources to send data to Firehose delivery streams.
+
+    2. metrics
+    Consult the [AWS documentation](https://docs.aws.amazon.com/AmazonCloudWatch/latest/monitoring/CloudWatch-metric-streams-setup.html)
+    for details on how to set up a metric stream in CloudWatch and 
+    [Custom setup with Firehose](https://docs.aws.amazon.com/AmazonCloudWatch/latest/monitoring/CloudWatch-metric-streams-setup-datalake.html) 
+    to send metrics to Firehose. For Elastic, we only support JSON and OpenTelemetry 1.0.0 formats for the metrics.
+
+## Logs reference
+
+{{fields "logs"}}
+
+## Metrics reference
+
+{{fields "metrics"}}

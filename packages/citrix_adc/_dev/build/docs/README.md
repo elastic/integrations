@@ -64,7 +64,7 @@ Example Host Configuration: `http://localhost:9080`
 
 ## Setup
   
-For step-by-step instructions on how to set up an integration, see the [Getting started](https://www.elastic.co/guide/en/welcome-to-elastic/current/getting-started-observability.html) guide.
+For step-by-step instructions on how to set up an integration, see the [Getting started](https://www.elastic.co/guide/en/starting-with-the-elasticsearch-platform-and-its-solutions/current/getting-started-observability.html) guide.
 
 ### Steps for configuring CEF format:
 
@@ -77,7 +77,7 @@ For step-by-step instructions on how to set up an integration, see the [Getting 
 
 ### Steps for configuring Syslog format:
 
-The Citrix WAF GUI can be used to configure syslog servers and WAF message types to be sent to the syslog servers. Refer to [How to Send Application Firewall Messages to a Separate Syslog Server](https://support.citrix.com/article/CTX138973) and [How to Send NetScaler Application Firewall Logs to Syslog Server and NS.log](https://support.citrix.com/article/CTX211543) for details.
+The Citrix WAF GUI can be used to configure syslog servers and WAF message types to be sent to the syslog servers. Refer to [How to Send Application Firewall Messages to a Separate Syslog Server](https://support.citrix.com/s/article/CTX138973-how-to-send-application-firewall-messages-to-a-separate-syslog-server) and [How to Send NetScaler Application Firewall Logs to Syslog Server and NS.log](https://support.citrix.com/s/article/CTX483235-send-logs-to-external-syslog-server?language=en_US) for details.
 
 ## Validation
 
@@ -120,6 +120,10 @@ This is the `interface` data stream. The Citrix ADC interfaces are numbered in s
 
 {{event "interface"}}
 
+**ECS Field Reference**
+
+Please refer to the following [document](https://www.elastic.co/guide/en/ecs/current/ecs-field-reference.html) for detailed information on ECS fields.
+
 {{fields "interface"}}
 
 ### Load Balancing Virtual Server
@@ -127,6 +131,10 @@ This is the `interface` data stream. The Citrix ADC interfaces are numbered in s
 This is the `lbvserver` data stream. The load balancing server is logically located between the client and the server farm, and manages traffic flow to the servers in the server farm. `lbvserver` data stream collects metrics related to name, state, client connections, requests and responses.
 
 {{event "lbvserver"}}
+
+**ECS Field Reference**
+
+Please refer to the following [document](https://www.elastic.co/guide/en/ecs/current/ecs-field-reference.html) for detailed information on ECS fields.
 
 {{fields "lbvserver"}}
 
@@ -136,6 +144,10 @@ This is the `service` data stream. With the help of the service endpoint, metric
 
 {{event "service"}}
 
+**ECS Field Reference**
+
+Please refer to the following [document](https://www.elastic.co/guide/en/ecs/current/ecs-field-reference.html) for detailed information on ECS fields.
+
 {{fields "service"}}
 
 ### System
@@ -143,6 +155,10 @@ This is the `service` data stream. With the help of the service endpoint, metric
 This is the `system` data stream. With the help of the system endpoint, metrics like memory in use, total system memory, CPU count can be collected along with other statistics for system resources.
 
 {{event "system"}}
+
+**ECS Field Reference**
+
+Please refer to the following [document](https://www.elastic.co/guide/en/ecs/current/ecs-field-reference.html) for detailed information on ECS fields.
 
 {{fields "system"}}
 
@@ -152,6 +168,10 @@ This is the `vpn` data stream. Citrix VPN is the add-on that provides full Secur
 
 {{event "vpn"}}
 
+**ECS Field Reference**
+
+Please refer to the following [document](https://www.elastic.co/guide/en/ecs/current/ecs-field-reference.html) for detailed information on ECS fields.
+
 {{fields "vpn"}}
 
 ### Logs
@@ -159,5 +179,9 @@ This is the `vpn` data stream. Citrix VPN is the add-on that provides full Secur
 The `citrix_adc.log` dataset provides events from the configured syslog server.
 
 {{event "log"}}
+
+**ECS Field Reference**
+
+Please refer to the following [document](https://www.elastic.co/guide/en/ecs/current/ecs-field-reference.html) for detailed information on ECS fields.
 
 {{fields "log"}}

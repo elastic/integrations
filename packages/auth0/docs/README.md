@@ -1,29 +1,30 @@
 # Auth0 Log Streams Integration
 
-Auth0 offers integrations that push log events via log streams to Elasticsearch. The [Auth0 Log Streams](https://auth0.com/docs/customize/log-streams) integration package creates a HTTP listener that accepts incoming log events and ingests them into Elasticsearch. This allows you to search, observe and visualize the Auth0 log events through Elasticsearch.
+Auth0 offers integrations that push log events via log streams to Elasticsearch or allows an Elastic Agent to make API requests for log events. The [Auth0 Log Streams](https://auth0.com/docs/customize/log-streams) integration package creates a HTTP listener that accepts incoming log events or runs periodic API requests to collect events and ingests them into Elasticsearch. This allows you to search, observe and visualize the Auth0 log events through Elasticsearch.
 
-The agent running this integration must be able to accept requests from the Internet in order for Auth0 to be able connect. Auth0 requires that the webhook accept requests over HTTPS. So you must either configure the integration with a valid TLS certificate or use a reverse proxy in front of the integration.
+## Compatibility
 
-For more information, see Auth0's webpage on [integration to Elastic Security](https://marketplace.auth0.com/integrations/elastic-security).
+The package collects log events either sent via log stream webhooks, or by API request to the Auth0 v2 API.
 
-## Compatability
-
-The package collects log events sent via log stream webhooks.
-
-## Configuration
-
-### Enabling the integration in Elastic
+## Enabling the integration in Elastic
 
 1. In Kibana go to **Management > Integrations**
 2. In "Search for integrations" search bar type **Auth0**
 3. Click on "Auth0" integration from the search results.
 4. Click on **Add Auth0** button to add Auth0 integration.
 
+## Configuration for Webhook input
+
+The agent running this integration must be able to accept requests from the Internet in order for Auth0 to be able connect. Auth0 requires that the webhook accept requests over HTTPS. So you must either configure the integration with a valid TLS certificate or use a reverse proxy in front of the integration.
+
+For more information, see Auth0's webpage on [integration to Elastic Security](https://marketplace.auth0.com/integrations/elastic-security).
+
 ### Configure the Auth0 integration
 
-1. Enter values for "Listen Address", "Listen Port" and "Webhook path" to form the endpoint URL. Make note of the **Endpoint URL** `https://{AGENT_ADDRESS}:8383/auth0/logs`.
-2. Enter value for "Secret value". This must match the "Authorization Token" value entered when configuring the "Custom Webhook" from Auth0 cloud.
-3. Enter values for "TLS". Auth0 requires that the webhook accept requests over HTTPS. So you must either configure the integration with a valid TLS certificate or use a reverse proxy in front of the integration.
+1. Click on **Collect Auth0 log streams events via Webhooks** to enable it.
+2. Enter values for "Listen Address", "Listen Port" and "Webhook path" to form the endpoint URL. Make note of the **Endpoint URL** `https://{AGENT_ADDRESS}:8383/auth0/logs`.
+3. Enter value for "Secret value". This must match the "Authorization Token" value entered when configuring the "Custom Webhook" from Auth0 cloud.
+4. Enter values for "TLS". Auth0 requires that the webhook accept requests over HTTPS. So you must either configure the integration with a valid TLS certificate or use a reverse proxy in front of the integration.
 
 ### Creating the stream in Auth0
 
@@ -33,8 +34,27 @@ The package collects log events sent via log stream webhooks.
 4. In **Payload URL**, paste the **Endpoint URL** collected during Step 1 of **Configure the Auth0 integration** section.
 5. In **Authorization Token**, paste the **Authorization Token**. This must match the value entered in Step 2 of **Configure the Auth0 integration** section.
 6. In **Content Type**, choose  **application/json**.
-7. In **Content Format**, choose  **JSON Lines**.
-8. **Click Save**.
+7. In **Content Format**, choose **JSON Lines**.
+8. Click **Save**.
+
+## Configuration for API request input
+
+### Creating an application in Auth0
+
+1. From the Auth0 management console, navigate to **Applications > Applications** and click **+ Create Application**.
+2. Choose **Machine to Machine Application**.
+3. Name the new **Application** appropriately (e.g. Elastic) and click **Create**.
+4. Select the **Auth0 Management API** option and click **Authorize**.
+5. Select the `read:logs` and `read:logs_users` permissions and then click **Authorize**.
+6. Navigate to the **Settings** tab. Take note of the "Domain", "Client ID" and "Client Secret" values in the **Basic Information** section.
+7. Click **Save Changes**.
+
+### Configure the Auth0 integration
+
+1. In the Elastic Auth0 integration user interface click on **Collect Auth0 log events via API requests** to enable it.
+2. Enter value for "URL". This must be an https URL using the **Domain** value obtained from Auth cloud above.
+3. Enter value for "Client ID". This must match the "Client ID" value obtained from Auth0 cloud above.
+4. Enter value for "Client Secret". This must match the "Client Secret" value obtained from Auth0 cloud above.
 
 ## Log Events
 
@@ -79,6 +99,7 @@ The Auth0 logs dataset provides events from Auth0 log stream. All Auth0 log even
 | auth0.logs.data.scope | Scope permissions applied to the event. | keyword |
 | auth0.logs.data.strategy | Name of the strategy involved in the event. | keyword |
 | auth0.logs.data.strategy_type | Type of strategy involved in the event. | keyword |
+| auth0.logs.data.tenant_name | The name of the auth0 tenant. | keyword |
 | auth0.logs.data.type | Type of event. | keyword |
 | auth0.logs.data.user_agent | User agent string from the client device that caused the event. | text |
 | auth0.logs.data.user_id | ID of the user involved in the event. | keyword |
@@ -96,120 +117,83 @@ An example event for `logs` looks as following:
 
 ```json
 {
-    "@timestamp": "2021-11-03T03:25:28.923Z",
+    "@timestamp": "2021-11-03T03:06:05.696Z",
     "agent": {
-        "ephemeral_id": "d1c0e886-ddc2-44b4-903a-9bf026566c0c",
-        "id": "2c778b7a-e0be-4a84-8c7c-e0142f3690df",
-        "name": "docker-fleet-agent",
+        "ephemeral_id": "ca08f8bd-d4b8-4ea2-aefa-eb285a0b32c6",
+        "id": "212c7c0c-b1d6-427f-b567-7cc8887732b9",
+        "name": "elastic-agent-75377",
         "type": "filebeat",
-        "version": "8.1.0"
+        "version": "8.13.0"
     },
     "auth0": {
         "logs": {
             "data": {
-                "classification": "Login - Success",
-                "client_id": "aI61p8I8aFjmYRliLWgvM9ev97kCCNDB",
-                "client_name": "Default App",
-                "connection": "Username-Password-Authentication",
-                "connection_id": "con_1a5wCUmAs6VOU17n",
-                "date": "2021-11-03T03:25:28.923Z",
+                "classification": "Login - Failure",
+                "date": "2021-11-03T03:06:05.696Z",
+                "description": "Callback URL mismatch. http://localhost:3000/callback is not in the list of allowed callback URLs",
                 "details": {
-                    "completedAt": 1635909928922,
-                    "elapsedTime": 1110091,
-                    "initiatedAt": 1635908818831,
-                    "prompts": [
-                        {
-                            "completedAt": 1635909903693,
-                            "connection": "Username-Password-Authentication",
-                            "connection_id": "con_1a5wCUmAs6VOU17n",
-                            "identity": "6182002f34f4dd006b05b5c7",
-                            "name": "prompt-authenticate",
-                            "stats": {
-                                "loginsCount": 1
+                    "error": {
+                        "message": "Callback URL mismatch. http://localhost:3000/callback is not in the list of allowed callback URLs",
+                        "oauthError": "Callback URL mismatch. http://localhost:3000/callback is not in the list of allowed callback URLs. Please go to 'https://manage.auth0.com/#/applications/aI61p8I8aFjmYRliLWgvM9ev97kCCNDB/settings' and make sure you are sending the same callback url from your application.",
+                        "payload": {
+                            "attempt": "http://localhost:3000/callback",
+                            "client": {
+                                "clientID": "aI61p8I8aFjmYRliLWgvM9ev97kCCNDB"
                             },
-                            "strategy": "auth0"
+                            "code": "unauthorized_client",
+                            "message": "Callback URL mismatch. http://localhost:3000/callback is not in the list of allowed callback URLs",
+                            "name": "CallbackMismatchError",
+                            "status": 403
                         },
-                        {
-                            "completedAt": 1635909903745,
-                            "elapsedTime": 1084902,
-                            "flow": "universal-login",
-                            "initiatedAt": 1635908818843,
-                            "name": "login",
-                            "timers": {
-                                "rules": 5
-                            },
-                            "user_id": "auth0|6182002f34f4dd006b05b5c7",
-                            "user_name": "neo@test.com"
-                        },
-                        {
-                            "completedAt": 1635909928352,
-                            "elapsedTime": 23378,
-                            "flow": "consent",
-                            "grantInfo": {
-                                "audience": "https://dev-yoj8axza.au.auth0.com/userinfo",
-                                "id": "618201284369c9b4f9cd6d52",
-                                "scope": "openid profile"
-                            },
-                            "initiatedAt": 1635909904974,
-                            "name": "consent"
-                        }
-                    ],
-                    "session_id": "1TAd-7tsPYzxWudzqfHYXN0e6q1D0GSc",
-                    "stats": {
-                        "loginsCount": 1
+                        "type": "callback-url-mismatch"
+                    },
+                    "qs": {
+                        "client_id": "aI61p8I8aFjmYRliLWgvM9ev97kCCNDB",
+                        "redirect_uri": "http://localhost:3000/callback",
+                        "response_type": "code",
+                        "scope": "openid profile",
+                        "state": "Vz6G2zZf95/FCOQALrpvd4bS6jx5xvRos2pVldFAiw4="
                     }
                 },
                 "hostname": "dev-yoj8axza.au.auth0.com",
-                "login": {
-                    "completedAt": "2021-11-03T03:25:28.922Z",
-                    "elapsedTime": 1110091,
-                    "initiatedAt": "2021-11-03T03:06:58.831Z",
-                    "stats": {
-                        "loginsCount": 1
-                    }
-                },
-                "strategy": "auth0",
-                "strategy_type": "database",
-                "type": "Successful login"
+                "type": "Failed login"
             }
         }
     },
     "data_stream": {
         "dataset": "auth0.logs",
-        "namespace": "ep",
+        "namespace": "12089",
         "type": "logs"
     },
     "ecs": {
         "version": "8.11.0"
     },
     "elastic_agent": {
-        "id": "2c778b7a-e0be-4a84-8c7c-e0142f3690df",
+        "id": "212c7c0c-b1d6-427f-b567-7cc8887732b9",
         "snapshot": false,
-        "version": "8.1.0"
+        "version": "8.13.0"
     },
     "event": {
-        "action": "successful-login",
+        "action": "failed-login",
         "agent_id_status": "verified",
         "category": [
-            "authentication",
-            "session"
+            "authentication"
         ],
         "dataset": "auth0.logs",
-        "id": "90020211103032530111223343147286033102509916061341581378",
-        "ingested": "2022-11-18T20:59:34Z",
+        "id": "90020211103030609732115389415260839021644201259064885298",
+        "ingested": "2024-11-11T15:35:02Z",
         "kind": "event",
-        "original": "{\"data\":{\"client_id\":\"aI61p8I8aFjmYRliLWgvM9ev97kCCNDB\",\"client_name\":\"Default App\",\"connection\":\"Username-Password-Authentication\",\"connection_id\":\"con_1a5wCUmAs6VOU17n\",\"date\":\"2021-11-03T03:25:28.923Z\",\"details\":{\"completedAt\":1635909928922,\"elapsedTime\":1110091,\"initiatedAt\":1635908818831,\"prompts\":[{\"completedAt\":1635909903693,\"connection\":\"Username-Password-Authentication\",\"connection_id\":\"con_1a5wCUmAs6VOU17n\",\"elapsedTime\":null,\"identity\":\"6182002f34f4dd006b05b5c7\",\"name\":\"prompt-authenticate\",\"stats\":{\"loginsCount\":1},\"strategy\":\"auth0\"},{\"completedAt\":1635909903745,\"elapsedTime\":1084902,\"flow\":\"universal-login\",\"initiatedAt\":1635908818843,\"name\":\"login\",\"timers\":{\"rules\":5},\"user_id\":\"auth0|6182002f34f4dd006b05b5c7\",\"user_name\":\"neo@test.com\"},{\"completedAt\":1635909928352,\"elapsedTime\":23378,\"flow\":\"consent\",\"grantInfo\":{\"audience\":\"https://dev-yoj8axza.au.auth0.com/userinfo\",\"expiration\":null,\"id\":\"618201284369c9b4f9cd6d52\",\"scope\":\"openid profile\"},\"initiatedAt\":1635909904974,\"name\":\"consent\"}],\"session_id\":\"1TAd-7tsPYzxWudzqfHYXN0e6q1D0GSc\",\"stats\":{\"loginsCount\":1}},\"hostname\":\"dev-yoj8axza.au.auth0.com\",\"ip\":\"81.2.69.143\",\"log_id\":\"90020211103032530111223343147286033102509916061341581378\",\"strategy\":\"auth0\",\"strategy_type\":\"database\",\"type\":\"s\",\"user_agent\":\"Mozilla/5.0 (X11;Ubuntu; Linux x86_64; rv:93.0) Gecko/20100101 Firefox/93.0\",\"user_id\":\"auth0|6182002f34f4dd006b05b5c7\",\"user_name\":\"neo@test.com\"},\"log_id\":\"90020211103032530111223343147286033102509916061341581378\"}",
-        "outcome": "success",
+        "original": "{\"data\":{\"connection_id\":\"\",\"date\":\"2021-11-03T03:06:05.696Z\",\"description\":\"Callback URL mismatch. http://localhost:3000/callback is not in the list of allowed callback URLs\",\"details\":{\"body\":{},\"error\":{\"message\":\"Callback URL mismatch. http://localhost:3000/callback is not in the list of allowed callback URLs\",\"oauthError\":\"Callback URL mismatch. http://localhost:3000/callback is not in the list of allowed callback URLs. Please go to 'https://manage.auth0.com/#/applications/aI61p8I8aFjmYRliLWgvM9ev97kCCNDB/settings' and make sure you are sending the same callback url from your application.\",\"payload\":{\"attempt\":\"http://localhost:3000/callback\",\"authorized\":[],\"client\":{\"clientID\":\"aI61p8I8aFjmYRliLWgvM9ev97kCCNDB\"},\"code\":\"unauthorized_client\",\"message\":\"Callback URL mismatch. http://localhost:3000/callback is not in the list of allowed callback URLs\",\"name\":\"CallbackMismatchError\",\"status\":403},\"type\":\"callback-url-mismatch\"},\"qs\":{\"client_id\":\"aI61p8I8aFjmYRliLWgvM9ev97kCCNDB\",\"redirect_uri\":\"http://localhost:3000/callback\",\"response_type\":\"code\",\"scope\":\"openid profile\",\"state\":\"Vz6G2zZf95/FCOQALrpvd4bS6jx5xvRos2pVldFAiw4=\"}},\"hostname\":\"dev-yoj8axza.au.auth0.com\",\"ip\":\"81.2.69.143\",\"log_id\":\"90020211103030609732115389415260839021644201259064885298\",\"type\":\"f\",\"user_agent\":\"Mozilla/5.0 (X11; Ubuntu; Linux x86_64; rv:93.0) Gecko/20100101 Firefox/93.0\"},\"log_id\":\"90020211103030609732115389415260839021644201259064885298\"}",
+        "outcome": "failure",
         "type": [
-            "info",
-            "start"
+            "info"
         ]
     },
     "input": {
         "type": "http_endpoint"
     },
     "log": {
-        "level": "info"
+        "level": "error"
     },
     "network": {
         "type": "ipv4"
@@ -234,21 +218,16 @@ An example event for `logs` looks as following:
         "forwarded",
         "auth0-logstream"
     ],
-    "user": {
-        "id": "auth0|6182002f34f4dd006b05b5c7",
-        "name": "neo@test.com"
-    },
     "user_agent": {
         "device": {
             "name": "Other"
         },
         "name": "Firefox",
-        "original": "Mozilla/5.0 (X11;Ubuntu; Linux x86_64; rv:93.0) Gecko/20100101 Firefox/93.0",
+        "original": "Mozilla/5.0 (X11; Ubuntu; Linux x86_64; rv:93.0) Gecko/20100101 Firefox/93.0",
         "os": {
             "name": "Ubuntu"
         },
         "version": "93.0."
     }
 }
-
 ```

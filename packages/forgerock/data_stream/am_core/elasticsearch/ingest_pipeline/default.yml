@@ -31,7 +31,7 @@ processors:
       on_failure:
         - append:
             field: error.message
-            value: '{{ _ingest.on_failure_message }}'
+            value: '{{{ _ingest.on_failure_message }}}'
   # am-core processing
   - set:
       field: event.reason
@@ -73,11 +73,6 @@ processors:
         - forgerock.exception
       ignore_failure: true
       ignore_missing: true
-  - remove:
-      field: event.original
-      if: ctx.tags == null || !(ctx.tags.contains('preserve_original_event'))
-      ignore_failure: true
-      ignore_missing: true
   - script:
       description: Drops null/empty values recursively
       lang: painless
@@ -99,7 +94,11 @@ processors:
 on_failure:
   - append:
       field: error.message
-      value: "{{ _ingest.on_failure_message }}"
+      value: "{{{ _ingest.on_failure_message }}}"
   - set:
       field: event.kind
       value: pipeline_error
+  - append:
+      field: tags
+      value: preserve_original_event
+      allow_duplicates: false

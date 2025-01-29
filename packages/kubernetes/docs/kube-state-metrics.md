@@ -126,7 +126,6 @@ An example event for `state_container` looks as following:
         "dataset": "kubernetes.state_container"
     }
 }
-
 ```
 
 **Exported fields**
@@ -178,6 +177,7 @@ An example event for `state_container` looks as following:
 | kubernetes.container.memory.request.bytes | Container requested memory in bytes | long | byte | gauge |
 | kubernetes.container.name | Kubernetes container name | keyword |  |  |
 | kubernetes.container.status.last_terminated_reason | The last reason the container was in terminated state (Completed, ContainerCannotRun, Error or OOMKilled). | keyword |  |  |
+| kubernetes.container.status.last_terminated_timestamp | Last terminated time (epoch) of the container | double |  |  |
 | kubernetes.container.status.phase | Container phase (running, waiting, terminated) | keyword |  |  |
 | kubernetes.container.status.ready | Container ready status | boolean |  |  |
 | kubernetes.container.status.reason | The reason the container is currently in waiting (ContainerCreating, CrashLoopBackoff, ErrImagePull, ImagePullBackoff) or terminated (Completed, ContainerCannotRun, Error, OOMKilled) state. | keyword |  |  |
@@ -1282,7 +1282,6 @@ An example event for `state_persistentvolume` looks as following:
         "type": "kubernetes"
     }
 }
-
 ```
 
 **Exported fields**
@@ -1518,7 +1517,6 @@ An example event for `state_pod` looks as following:
         "dataset": "kubernetes.state_pod"
     }
 }
-
 ```
 
 **Exported fields**
@@ -1582,6 +1580,8 @@ An example event for `state_pod` looks as following:
 | kubernetes.pod.name | Kubernetes pod name | keyword |
 | kubernetes.pod.status.phase | Kubernetes pod phase (Running, Pending...) | keyword |
 | kubernetes.pod.status.ready | Kubernetes pod ready status (true, false or unknown) | keyword |
+| kubernetes.pod.status.ready_time | Readiness achieved time in unix timestamp for a pod | double |
+| kubernetes.pod.status.reason | The reason the pod is in its current state (Evicted, NodeAffinity, NodeLost, Shutdown or UnexpectedAdmissionError) | keyword |
 | kubernetes.pod.status.scheduled | Kubernetes pod scheduled status (true, false, unknown) | keyword |
 | kubernetes.pod.uid | Kubernetes pod UID | keyword |
 | kubernetes.replicaset.name | Kubernetes replicaset name | keyword |
@@ -1823,7 +1823,6 @@ An example event for `state_resourcequota` looks as following:
         }
     }
 }
-
 ```
 
 **Exported fields**
@@ -1956,7 +1955,6 @@ An example event for `state_service` looks as following:
         "dataset": "kubernetes.state_service"
     }
 }
-
 ```
 
 **Exported fields**
@@ -2259,7 +2257,6 @@ An example event for `state_storageclass` looks as following:
         "version": "1.5.0"
     }
 }
-
 ```
 
 **Exported fields**

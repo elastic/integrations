@@ -215,6 +215,10 @@ Make sure the settings are correct and the SA has proper permissions for the giv
 
 The `audit` dataset collects audit logs of administrative activities and accesses within your Google Cloud resources.
 
+**ECS Field Reference**
+
+Please refer to the following [document](https://www.elastic.co/guide/en/ecs/current/ecs-field-reference.html) for detailed information on ECS fields.
+
 {{fields "audit"}}
 
 {{event "audit"}}
@@ -222,6 +226,10 @@ The `audit` dataset collects audit logs of administrative activities and accesse
 ### Firewall
 
 The `firewall` dataset collects logs from Firewall Rules in your Virtual Private Cloud (VPC) networks.
+
+**ECS Field Reference**
+
+Please refer to the following [document](https://www.elastic.co/guide/en/ecs/current/ecs-field-reference.html) for detailed information on ECS fields.
 
 {{fields "firewall"}}
 
@@ -231,6 +239,10 @@ The `firewall` dataset collects logs from Firewall Rules in your Virtual Private
 
 The `vpcflow` dataset collects logs sent from and received by VM instances, including instances used as GKE nodes.
 
+**ECS Field Reference**
+
+Please refer to the following [document](https://www.elastic.co/guide/en/ecs/current/ecs-field-reference.html) for detailed information on ECS fields.
+
 {{fields "vpcflow"}}
 
 {{event "vpcflow"}}
@@ -239,6 +251,10 @@ The `vpcflow` dataset collects logs sent from and received by VM instances, incl
 
 The `dns` dataset collects queries that name servers resolve for your Virtual Private Cloud (VPC) networks, as well as queries from an external entity directly to a public zone.
 
+**ECS Field Reference**
+
+Please refer to the following [document](https://www.elastic.co/guide/en/ecs/current/ecs-field-reference.html) for detailed information on ECS fields.
+
 {{fields "dns"}}
 
 {{event "dns"}}
@@ -246,6 +262,10 @@ The `dns` dataset collects queries that name servers resolve for your Virtual Pr
 ### Loadbalancing Logs
 
 The `loadbalancing_logs` dataset collects logs of the requests sent to and handled by GCP Load Balancers.
+
+**ECS Field Reference**
+
+Please refer to the following [document](https://www.elastic.co/guide/en/ecs/current/ecs-field-reference.html) for detailed information on ECS fields.
 
 {{fields "loadbalancing_logs"}}
 
@@ -257,6 +277,10 @@ The `loadbalancing_logs` dataset collects logs of the requests sent to and handl
 
 The `billing` dataset collects GCP Billing information from Google Cloud BigQuery daily cost detail table.
 
+**ECS Field Reference**
+
+Please refer to the following [document](https://www.elastic.co/guide/en/ecs/current/ecs-field-reference.html) for detailed information on ECS fields.
+
 {{fields "billing"}}
 
 {{event "billing"}}
@@ -264,6 +288,10 @@ The `billing` dataset collects GCP Billing information from Google Cloud BigQuer
 ### Compute
 
 The `compute` dataset is designed to fetch metrics for [Compute Engine](https://cloud.google.com/compute/) Virtual Machines in Google Cloud Platform.
+
+**ECS Field Reference**
+
+Please refer to the following [document](https://www.elastic.co/guide/en/ecs/current/ecs-field-reference.html) for detailed information on ECS fields.
 
 {{fields "compute"}}
 
@@ -273,6 +301,10 @@ The `compute` dataset is designed to fetch metrics for [Compute Engine](https://
 
 The `dataproc` dataset is designed to fetch metrics from [Dataproc](https://cloud.google.com/dataproc/) in Google Cloud Platform.
 
+**ECS Field Reference**
+
+Please refer to the following [document](https://www.elastic.co/guide/en/ecs/current/ecs-field-reference.html) for detailed information on ECS fields.
+
 {{fields "dataproc"}}
 
 {{event "dataproc"}}
@@ -280,6 +312,10 @@ The `dataproc` dataset is designed to fetch metrics from [Dataproc](https://clou
 ### Firestore
 
 The `firestore` dataset fetches metrics from [Firestore](https://cloud.google.com/firestore/) in Google Cloud Platform.
+
+**ECS Field Reference**
+
+Please refer to the following [document](https://www.elastic.co/guide/en/ecs/current/ecs-field-reference.html) for detailed information on ECS fields.
 
 {{fields "firestore"}}
 
@@ -289,6 +325,10 @@ The `firestore` dataset fetches metrics from [Firestore](https://cloud.google.co
 
 The `gke` dataset is designed to fetch metrics from [GKE](https://cloud.google.com/kubernetes-engine) in Google Cloud Platform.
 
+**ECS Field Reference**
+
+Please refer to the following [document](https://www.elastic.co/guide/en/ecs/current/ecs-field-reference.html) for detailed information on ECS fields.
+
 {{fields "gke"}}
 
 {{event "gke"}}
@@ -296,6 +336,10 @@ The `gke` dataset is designed to fetch metrics from [GKE](https://cloud.google.c
 ### Loadbalancing Metrics
 
 The `loadbalancing_metrics` dataset is designed to fetch HTTPS, HTTP, and Layer 3 metrics from [Load Balancing](https://cloud.google.com/load-balancing/) in Google Cloud Platform.
+
+**ECS Field Reference**
+
+Please refer to the following [document](https://www.elastic.co/guide/en/ecs/current/ecs-field-reference.html) for detailed information on ECS fields.
 
 {{fields "loadbalancing_metrics"}}
 
@@ -305,6 +349,10 @@ The `loadbalancing_metrics` dataset is designed to fetch HTTPS, HTTP, and Layer 
 
 The `redis` dataset is designed to fetch metrics from [GCP Memorystore](https://cloud.google.com/memorystore/) for [Redis](https://cloud.google.com/memorystore/docs/redis/redis-overview) in Google Cloud Platform.
 
+**ECS Field Reference**
+
+Please refer to the following [document](https://www.elastic.co/guide/en/ecs/current/ecs-field-reference.html) for detailed information on ECS fields.
+
 {{fields "redis"}}
 
 {{event "redis"}}
@@ -312,6 +360,10 @@ The `redis` dataset is designed to fetch metrics from [GCP Memorystore](https://
 ### Storage
 
 The `storage` dataset fetches metrics from [Storage](https://cloud.google.com/storage/) in Google Cloud Platform.
+
+**ECS Field Reference**
+
+Please refer to the following [document](https://www.elastic.co/guide/en/ecs/current/ecs-field-reference.html) for detailed information on ECS fields.
 
 {{fields "storage"}}
 

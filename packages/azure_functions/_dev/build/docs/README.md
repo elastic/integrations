@@ -2,8 +2,13 @@
 
 The Azure Functions integration allows you to monitor Azure Functions. Azure Functions is an event-driven, serverless compute platform that helps you develop more efficiently using the programming language of your choice. Triggers cause a function to run. A trigger defines how a function is invoked and a function must have exactly one trigger. 
 
-Use this integration to build web APIs, respond to database changes, process IoT streams, manage message queues, and more. Refer common [Azure Functions scenarios](https://learn.microsoft.com/en-us/azure/azure-functions/functions-scenarios?pivots=programming-language-csharp) for more information.
+Use Azure Functions to build web APIs, respond to database changes, process IoT streams, manage message queues, and more. Refer common [Azure Functions scenarios](https://learn.microsoft.com/en-us/azure/azure-functions/functions-scenarios?pivots=programming-language-csharp) for more information.
 
+## Hosting plans and metrics
+
+Each Azure Functions app requires a hosting plan: Consumption plan, Flex Consumption plan, Premium plan, Dedicated plan, or Container Apps. For more details on the various plans, check the [Azure Functions hosting options](https://learn.microsoft.com/en-us/azure/azure-functions/functions-scale?WT.mc_id=Portal-WebsitesExtension).
+
+These plans differ from eachother in the number of metrics they generate, which are then exported outside of Azure for other monitoring solutions like Elastic Observability. For example, metrics specific to Azure Function Apps, such as 'FunctionExecutionCount' and 'FunctionExecutionUnits', are only available for function apps operating on a Consumption (serverless) plan and are not observed in other plans. On the other hand, all other metrics are generated exclusively for Premium and Dedicated plans and are not available for the Consumption plan.
 
 ## Data streams
 The Azure Functions integration contains two data streams: [Function App Logs](#logs) and [Metrics](#metrics)
@@ -72,6 +77,10 @@ https://management.usgovcloudapi.net/
 
 {{event "functionapplogs"}}
 
+**ECS Field Reference**
+
+Please refer to the following [document](https://www.elastic.co/guide/en/ecs/current/ecs-field-reference.html) for detailed information on ECS fields.
+
 {{fields "functionapplogs"}}
 
 ### Metrics
@@ -82,7 +91,7 @@ https://management.usgovcloudapi.net/
 To use this integration you will need:
 
 * **Azure App Registration**: You need to set up an Azure App Registration to allow the Agent to access the Azure APIs. The App Registration requires the Monitoring Reader role to access to be able to collect metrics from Function Apps. See more details in the Setup section.
-* **Elasticsearch and Kibana**: You need Elasticsearch to store and search your data and Kibana to visualize and manage it. You can use our hosted Elasticsearch Service on Elastic Cloud, which is recommended, the [Native Azure Integration](https://azuremarketplace.microsoft.com/en-us/marketplace/apps/elastic.elasticsearch?tab=Overview), or self-manage the Elastic Stack on your hardware.
+* **Elasticsearch and Kibana**: You need Elasticsearch to store and search your data and Kibana to visualize and manage it. You can use our hosted Elasticsearch Service on Elastic Cloud, which is recommended, the [Native Azure Integration](https://azuremarketplace.microsoft.com/en/marketplace/apps/elastic.ec-azure-pp?tab=overview), or self-manage the Elastic Stack on your hardware.
 
 #### Setup
 
@@ -200,5 +209,9 @@ Examples:
 #### Metrics Reference
 
 {{event "metrics"}}
+
+**ECS Field Reference**
+
+Please refer to the following [document](https://www.elastic.co/guide/en/ecs/current/ecs-field-reference.html) for detailed information on ECS fields.
 
 {{fields "metrics"}}

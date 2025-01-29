@@ -20,7 +20,7 @@ Usage details metrics track actual expenses including details like subscription 
 To use this integration you will need:
 
 * **Azure App Registration**: You need to set up an Azure App Registration to allow the Agent to access the Azure APIs. The App Registration requires a role to access the billing information. The required role is different depending on the subscription, department, or billing account scope. Check the [Setup section](#setup) for more details.
-* **Elasticsearch and Kibana**: You need Elasticsearch to store and search your data and Kibana to visualize and manage it. You can use our hosted Elasticsearch Service on Elastic Cloud, which is recommended, the [Native Azure Integration](https://azuremarketplace.microsoft.com/en-us/marketplace/apps/elastic.elasticsearch?tab=Overview), or self-manage the Elastic Stack on your hardware.
+* **Elasticsearch and Kibana**: You need Elasticsearch to store and search your data and Kibana to visualize and manage it. You can use our hosted Elasticsearch Service on Elastic Cloud, which is recommended, the [Native Azure Integration](https://azuremarketplace.microsoft.com/en/marketplace/apps/elastic.ec-azure-pp?tab=overview), or self-manage the Elastic Stack on your hardware.
 * **Payment method**: Azure Billing Metrics integration queries are charged based on the number of standard API calls. One integration makes two calls every 24 hours in the standard configuration.
 
 ## Setup
@@ -118,10 +118,11 @@ To collect billing metrics from a billing account (instead of a subscription):
 Take note of the following values, which you will use later when specifying settings.
 
 * `Tenant ID`: use the "Tenant ID" from your Microsoft Entra ID.
-* Only one of the following:
-	* `Subscription ID`: use the "Subscription Id" content if you decide to collect metrics from a subscription.
-	* `Department Id`: use the "Department Id" content if you decide to collect metrics from a department.
-	* `Billing account ID`: use the "Billing account ID" content if you decide to collect metrics from a billing account.
+* `Subscription ID`: use the "Subscription Id" to access Azure APIs.
+
+* Only one of the following (Optional):
+    * `Department ID`: use the "Department Id" content if you decide to collect metrics from a department.
+    * `Billing account ID`: use the "Billing account ID" content if you decide to collect metrics from a billing account.
 
 Your App Registration is now ready for the Elastic Agent.
 
@@ -156,7 +157,7 @@ The settings' main section contains all the options needed to access the Azure A
 
 #### Advanced options
 
-There are two additional advanced options:
+There are a few additional advanced options:
 
 `Resource Manager Endpoint` _string_
 : Optional. By default, the integration uses the Azure public environment. To override, users can provide a specific resource manager endpoint to use a different Azure environment.
@@ -177,6 +178,15 @@ Examples:
 * `https://login.microsoftonline.de` for Azure GermanCloud
 * `https://login.microsoftonline.com` for Azure PublicCloud
 * `https://login.microsoftonline.us` for Azure USGovernmentCloud
+
+`Resource Manager Audience` _string_
+: Optional. By default, the integration uses the associated Resource Manager Audience. To override, users can provide a specific resource manager audience to use a different Azure environment.
+
+Examples:
+
+* `https://management.core.chinacloudapi.cn` for Azure ChinaCloud
+* `https://management.core.windows.net` for Azure PublicCloud
+* `https://management.core.usgovcloudapi.net` for Azure USGovernmentCloud
 
 #### Data stream options
 
@@ -199,7 +209,7 @@ There are three supported scopes for this integration:
 * Department
 * Billing Account
 
-The integration uses the Subscription ID as the default scope for the billing data.
+>Note: The integration uses the Subscription ID as the default scope for the billing data.
 
 To change the scope, expand the data stream section named **Collect Azure Billing metrics** in the integration settings and set one of the two available options (if you set both, the billing account scope take precedence over the department):
 
@@ -215,5 +225,9 @@ The Azure Billing Metrics data stream provides events from Consumption and Cost 
 #### Example
 
 {{event "billing"}}
+
+**ECS Field Reference**
+
+Please refer to the following [document](https://www.elastic.co/guide/en/ecs/current/ecs-field-reference.html) for detailed information on ECS fields.
 
 {{fields "billing"}}

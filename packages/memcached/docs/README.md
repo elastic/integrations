@@ -6,6 +6,10 @@ As a result of its speed, scalability, simple design, efficient memory managemen
 ## Metrics
 The below metrics are fetched from memcached:
 
+**ECS Field Reference**
+
+Please refer to the following [document](https://www.elastic.co/guide/en/ecs/current/ecs-field-reference.html) for detailed information on ECS fields.
+
 **Exported fields**
 
 | Field | Description | Type | Unit | Metric Type |
@@ -21,12 +25,11 @@ The below metrics are fetched from memcached:
 | data_stream.dataset | Data stream dataset. | constant_keyword |  |  |
 | data_stream.namespace | Data stream namespace. | constant_keyword |  |  |
 | data_stream.type | Data stream type. | constant_keyword |  |  |
-| ecs.version | ECS version this event conforms to. `ecs.version` is a required field and must exist in all events. When querying across multiple indices -- which may conform to slightly different ECS versions -- this field lets integrations adjust to the schema version of the events. | keyword |  |  |
 | event.dataset | Event module | constant_keyword |  |  |
 | event.kind | Event kind | constant_keyword |  |  |
 | event.module | Event module | constant_keyword |  |  |
 | event.type | Event type | constant_keyword |  |  |
-| host.name | Name of the host. It can contain what `hostname` returns on Unix systems, the fully qualified domain name, or a name specified by the user. The sender decides which value to use. | keyword |  |  |
+| host.name | Name of the host. It can contain what hostname returns on Unix systems, the fully qualified domain name (FQDN), or a name specified by the user. The recommended value is the lowercase FQDN of the host. | keyword |  |  |
 | memcached.stats.cmd.get | Number of "get" commands received since server startup not counting if they were successful or not. | long |  | counter |
 | memcached.stats.cmd.set | Number of "set" commands serviced since server startup. | long |  | counter |
 | memcached.stats.connections.current | Number of open connections to this Memcached server, should be the same value on all servers during normal operation. | long |  | counter |
@@ -44,8 +47,6 @@ The below metrics are fetched from memcached:
 | memcached.stats.uptime.sec | Memcached server uptime. | long | s | gauge |
 | memcached.stats.written.bytes | Total number of bytes sent to the network by the server. | long | byte | counter |
 | service.address | Address where data about this service was collected from. This should be a URI, network address (ipv4:port or [ipv6]:port) or a resource path (sockets). | keyword |  |  |
-| service.type | The type of the service data is collected from. The type can be used to group and correlate logs and metrics from one service type. Example: If logs or metrics are collected from Elasticsearch, `service.type` would be `elasticsearch`. | keyword |  |  |
-| tags | List of keywords used to tag each event. | keyword |  |  |
 
 
 An example event for `stats` looks as following:
@@ -66,7 +67,7 @@ An example event for `stats` looks as following:
         "type": "metrics"
     },
     "ecs": {
-        "version": "8.5.1"
+        "version": "8.11.0"
     },
     "elastic_agent": {
         "id": "a6434521-6e0b-4509-be07-c1591bcfe768",
@@ -89,7 +90,7 @@ An example event for `stats` looks as following:
             "192.168.112.7"
         ],
         "mac": [
-            "02:42:c0:a8:70:07"
+            "02-42-AC-1F-00-07"
         ],
         "name": "docker-fleet-agent",
         "os": {

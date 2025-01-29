@@ -1,6 +1,19 @@
 ---
 description: Pipeline for Palo Alto XDR Incident API.
 processors:
+  - rename:
+      description: Use 'event.original' if present (e.g. when reprocessing), otherwise 'message'.
+      field: message
+      target_field: event.original
+      ignore_missing: true
+      if: ctx.event?.original == null
+  - remove:
+      description: In case of reprocessing, remove all fields that will be repopulated.
+      keep:
+        - event.original
+        - tags
+        - "@timestamp"
+      ignore_missing: true
   - set:
       field: ecs.version
       value: '8.11.0'
@@ -13,11 +26,6 @@ processors:
   - append:
       field: event.type
       value: info
-  - rename:
-      field: message
-      target_field: event.original
-      ignore_missing: true
-      if: ctx.event?.original == null
   - json:
       field: event.original
       target_field: panw_cortex.xdr
@@ -25,7 +33,8 @@ processors:
       if: ctx.panw_cortex?.xdr?.reply?.result_count == 0
   - fingerprint:
       fields:
-        - panw_cortex.xdr.alert_count
+        - panw_cortex.xdr.creation_time
+        - panw_cortex.xdr.modification_time
         - panw_cortex.xdr.incident_id
       target_field: "_id"
       ignore_missing: true
@@ -48,9 +57,12 @@ processors:
         - UNIX_MS
       if: ctx.panw_cortex?.xdr?.modification_time != null
   - set:
-      field: "@timestamp"
+      field: event.created
       copy_from: panw_cortex.xdr.creation_time
-      if: ctx.panw_cortex?.xdr?.creation_time != null
+  - set:
+      field: "@timestamp"
+      copy_from: panw_cortex.xdr.modification_time
+      if: ctx.panw_cortex?.xdr?.modification_time != null
   - set:
       field: event.severity
       value: 0
@@ -71,6 +83,10 @@ processors:
       field: event.severity
       value: 4
       if: ctx.panw_cortex?.xdr?.severity == "high"
+  - set:
+      field: event.severity
+      value: 5
+      if: ctx.panw_cortex?.xdr?.severity == "critical"    
   - rename:
       field: panw_cortex.xdr.incident_id
       target_field: event.id
@@ -200,15 +216,14 @@ processors:
         - panw_cortex.xdr.mitre_techniques_id_and_names
         - panw_cortex.xdr.mitre_tactics_id_and_names
       ignore_missing: true
-  - remove:
-      field: event.original
-      if: ctx.tags?.contains('preserve_original_event') != true
-      ignore_failure: true
-      ignore_missing: true
 on_failure:
   - set:
       field: event.kind
       value: pipeline_error
+  - append:
+      field: tags
+      value: preserve_original_event
+      allow_duplicates: false
   - append:
       field: error.message
       value: '{{{ _ingest.on_failure_message }}}'

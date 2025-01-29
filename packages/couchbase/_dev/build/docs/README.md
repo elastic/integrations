@@ -33,9 +33,11 @@ You need Elasticsearch for storing and searching your data and Kibana for visual
 
 In order to ingest data from Couchbase, you must know the host(s) and the administrator credentials for the Couchbase instance(s).
 
-Host Configuration Format: `http[s]://username:password@host:port`
+Host Configuration Format: `http[s]://[username:password@]hostname[:port]`
 
 Example Host Configuration: `http://Administrator:password@localhost:8091`
+
+> Note: To mask the password in the Hosts connection string, remove the username and password from the string. Then, set up the Hosts field with only the host address and port (`localhost:5984` in the example) and any additional connection parameters. Finally, use the `username` and `password` fields under advanced options for configuration.
 
 ## Setup
 
@@ -56,6 +58,10 @@ This is the `bucket` data stream. A bucket is a logical container for a related 
 
 {{event "bucket"}}
 
+**ECS Field Reference**
+
+Please refer to the following [document](https://www.elastic.co/guide/en/ecs/current/ecs-field-reference.html) for detailed information on ECS fields.
+
 {{fields "bucket"}}
 
 ### Cache
@@ -64,6 +70,10 @@ This is the `cache` data stream. The cache is hardware or software that is used 
 
 {{event "cache"}}
 
+**ECS Field Reference**
+
+Please refer to the following [document](https://www.elastic.co/guide/en/ecs/current/ecs-field-reference.html) for detailed information on ECS fields.
+
 {{fields "cache"}}
 
 ### Cluster
@@ -71,6 +81,10 @@ This is the `cache` data stream. The cache is hardware or software that is used 
 This is the `cluster` data stream. A cluster is a collection of nodes that are accessed and managed as a single group. Each node is an equal partner in orchestrating the cluster to provide facilities such as operational information (monitoring) or managing cluster membership of nodes and the health of nodes.
 
 {{event "cluster"}}
+
+**ECS Field Reference**
+
+Please refer to the following [document](https://www.elastic.co/guide/en/ecs/current/ecs-field-reference.html) for detailed information on ECS fields.
 
 {{fields "cluster"}}
 
@@ -84,6 +98,10 @@ CBL Replication pull is a process by which clients download database changes fro
 
 {{event "cbl_replication"}}
 
+**ECS Field Reference**
+
+Please refer to the following [document](https://www.elastic.co/guide/en/ecs/current/ecs-field-reference.html) for detailed information on ECS fields.
+
 {{fields "cbl_replication"}}
 
 ### Database Stats
@@ -91,6 +109,10 @@ CBL Replication pull is a process by which clients download database changes fro
 This is the `database_stats` data stream. Database statistics provides stats relative to the database like document writes, read and received.
 
 {{event "database_stats"}}
+
+**ECS Field Reference**
+
+Please refer to the following [document](https://www.elastic.co/guide/en/ecs/current/ecs-field-reference.html) for detailed information on ECS fields.
 
 {{fields "database_stats"}}
 
@@ -108,6 +130,10 @@ Global Secondary Indexes (GSI) support queries made by the Query Service.
 
 {{event "miscellaneous"}}
 
+**ECS Field Reference**
+
+Please refer to the following [document](https://www.elastic.co/guide/en/ecs/current/ecs-field-reference.html) for detailed information on ECS fields.
+
 {{fields "miscellaneous"}}
 
 ### Resource Utilization
@@ -115,6 +141,10 @@ Global Secondary Indexes (GSI) support queries made by the Query Service.
 This is the `resource` data stream. The Resource Utilization metrics are related to [MemStats](https://golang.org/pkg/runtime/#MemStats) records statistics about the memory allocator.
 
 {{event "resource"}}
+
+**ECS Field Reference**
+
+Please refer to the following [document](https://www.elastic.co/guide/en/ecs/current/ecs-field-reference.html) for detailed information on ECS fields.
 
 {{fields "resource"}}
 
@@ -124,6 +154,10 @@ This is the `node` data stream. A Couchbase Server node is a physical or virtual
 
 {{event "node"}}
 
+**ECS Field Reference**
+
+Please refer to the following [document](https://www.elastic.co/guide/en/ecs/current/ecs-field-reference.html) for detailed information on ECS fields.
+
 {{fields "node"}}
 
 ### Query Index
@@ -131,6 +165,10 @@ This is the `node` data stream. A Couchbase Server node is a physical or virtual
 This is the `query_index` data stream. The Query service enables you to issue queries to extract data from the Couchbase server. The Index collects statistics provided by the Index service.
 
 {{event "query_index"}}
+
+**ECS Field Reference**
+
+Please refer to the following [document](https://www.elastic.co/guide/en/ecs/current/ecs-field-reference.html) for detailed information on ECS fields.
 
 {{fields "query_index"}}
 
@@ -141,5 +179,9 @@ This is the `xdcr` data stream. Cross Data Center Replication (XDCR) replicates 
 Note: It is preferable to add a new integration if user requires to fetch metrics from multiple hosts for XDCR data stream.
 
 {{event "xdcr"}}
+
+**ECS Field Reference**
+
+Please refer to the following [document](https://www.elastic.co/guide/en/ecs/current/ecs-field-reference.html) for detailed information on ECS fields.
 
 {{fields "xdcr"}}

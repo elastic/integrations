@@ -21,7 +21,7 @@ processors:
   - script:
       description: Add value for email direction based on cybox email direction id.
       tag: script_to_add_email_direction
-      if: ctx.ses.cybox.emails instanceof List
+      if: ctx.ses?.cybox?.emails instanceof List
       params:
         '0': unknown
         '1': inbound
@@ -712,6 +712,7 @@ processors:
         foreach:
           field: _ingest._value.url.category_ids
           tag: foreach_cybox_files_url_category_ids
+          ignore_missing: true
           processor:
             convert:
               field: _ingest._value
@@ -750,6 +751,7 @@ processors:
         foreach:
           field: _ingest._value.url.referrer_category_ids
           tag: foreach_cybox_files_url_referrer_category_ids
+          ignore_missing: true
           processor:
             convert:
               field: _ingest._value

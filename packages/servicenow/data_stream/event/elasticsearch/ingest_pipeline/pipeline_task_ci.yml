@@ -1,0 +1,140 @@
+---
+description: Pipeline for processing Task CI logs.
+processors:
+  - set:
+      field: event.kind
+      tag: set_event_kind_to_event_task_ci
+      value: event
+  - append:
+      field: event.type
+      tag: append_event_type_task_ci
+      value: info
+  - append:
+      field: event.category
+      tag: append_event_category_task_ci
+      value: configuration
+  - convert:
+      field: servicenow.event.applied.display_value
+      tag: convert_applied_display_value_to_boolean
+      type: boolean
+      ignore_missing: true
+      if: ctx.servicenow?.event?.applied?.display_value != ''
+      on_failure:
+        - remove:
+            field: servicenow.event.applied.display_value
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - convert:
+      field: servicenow.event.applied.value
+      tag: convert_applied_value_to_boolean
+      type: boolean
+      ignore_missing: true
+      if: ctx.servicenow?.event?.applied?.value != ''
+      on_failure:
+        - remove:
+            field: servicenow.event.applied.value
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - date:
+      field: servicenow.event.applied_date.display_value
+      tag: date_applied_date_display_value
+      target_field: servicenow.event.applied_date.display_value
+      timezone: '{{{event.timezone}}}'
+      formats:
+        - yyyy-MM-dd H:mm:ss
+        - yyyy-MM-dd HH:mm:ss
+        - yyyy-MM-dd
+        - MM-dd-yyyy H:mm:ss
+        - MM-dd-yyyy HH:mm:ss
+        - MM-dd-yyyy
+        - dd-MM-yyyy H:mm:ss
+        - dd-MM-yyyy HH:mm:ss
+        - dd-MM-yyyy
+        - MM/dd/yyyy H:mm:ss
+        - MM/dd/yyyy HH:mm:ss
+        - MM/dd/yyyy
+        - dd/MM/yyyy H:mm:ss
+        - dd/MM/yyyy HH:mm:ss
+        - dd/MM/yyyy
+        - MM/dd/yy H:mm:ss
+        - MM/dd/yy HH:mm:ss
+        - MM/dd/yy
+        - dd.MM.yyyy H:mm:ss
+        - dd.MM.yyyy HH:mm:ss
+        - dd.MM.yyyy
+      if: ctx.servicenow?.event?.applied_date?.display_value != null && ctx.servicenow.event.applied_date.display_value != ''
+      on_failure:
+        - remove:
+            field: servicenow.event.applied_date.display_value
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - date:
+      field: servicenow.event.applied_date.value
+      tag: date_applied_date_value
+      target_field: servicenow.event.applied_date.value
+      formats:
+        - yyyy-MM-dd H:mm:ss
+        - yyyy-MM-dd HH:mm:ss
+        - yyyy-MM-dd
+        - MM-dd-yyyy H:mm:ss
+        - MM-dd-yyyy HH:mm:ss
+        - MM-dd-yyyy
+        - dd-MM-yyyy H:mm:ss
+        - dd-MM-yyyy HH:mm:ss
+        - dd-MM-yyyy
+        - MM/dd/yyyy H:mm:ss
+        - MM/dd/yyyy HH:mm:ss
+        - MM/dd/yyyy
+        - dd/MM/yyyy H:mm:ss
+        - dd/MM/yyyy HH:mm:ss
+        - dd/MM/yyyy
+        - MM/dd/yy H:mm:ss
+        - MM/dd/yy HH:mm:ss
+        - MM/dd/yy
+        - dd.MM.yyyy H:mm:ss
+        - dd.MM.yyyy HH:mm:ss
+        - dd.MM.yyyy
+      if: ctx.servicenow?.event?.applied_date?.value != null && ctx.servicenow.event.applied_date.value != ''
+      on_failure:
+        - remove:
+            field: servicenow.event.applied_date.value
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - convert:
+      field: servicenow.event.manual_proposed_change.display_value
+      tag: convert_manual_proposed_change_display_value_to_boolean
+      type: boolean
+      ignore_missing: true
+      if: ctx.servicenow?.event?.manual_proposed_change?.display_value != ''
+      on_failure:
+        - remove:
+            field: servicenow.event.manual_proposed_change.display_value
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - convert:
+      field: servicenow.event.manual_proposed_change.value
+      tag: convert_manual_proposed_change_value_to_boolean
+      type: boolean
+      ignore_missing: true
+      if: ctx.servicenow?.event?.manual_proposed_change?.value != ''
+      on_failure:
+        - remove:
+            field: servicenow.event.manual_proposed_change.value
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+on_failure:
+  - append:
+      field: error.message
+      value: >-
+        Processor '{{{ _ingest.on_failure_processor_type }}}'
+        {{{#_ingest.on_failure_processor_tag}}}with tag '{{{ _ingest.on_failure_processor_tag }}}'
+        {{{/_ingest.on_failure_processor_tag}}}failed with message '{{{ _ingest.on_failure_message }}}'
+  - set:
+      field: event.kind
+      value: pipeline_error

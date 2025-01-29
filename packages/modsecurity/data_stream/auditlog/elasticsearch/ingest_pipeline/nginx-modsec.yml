@@ -31,7 +31,7 @@ processors:
 
   - date:
       field: _temps.date
-      timezone: "{{ event.timezone }}"
+      timezone: "{{{ event.timezone }}}"
       formats:
         - E MMM dd HH:mm:ss yyyy
         - E MMM  d HH:mm:ss yyyy
@@ -59,7 +59,7 @@ processors:
                   field: error.message
                   value: "fail-{{{ _ingest.on_failure_processor_tag }}}"
               - fail:
-                  message: "Processor {{ _ingest.on_failure_processor_type }} with tag {{ _ingest.on_failure_processor_tag }} in pipeline {{ _ingest.on_failure_pipeline }} failed with message: {{ _ingest.on_failure_message }}"
+                  message: "Processor {{{ _ingest.on_failure_processor_type }}} with tag {{{ _ingest.on_failure_processor_tag }}} in pipeline {{{ _ingest.on_failure_pipeline }}} failed with message: {{{ _ingest.on_failure_message }}}"
 
 # rename ecs
   - rename:
@@ -86,11 +86,11 @@ processors:
   - set:
       field: _temps.url
       if: ctx.json.transaction.host_port == 443
-      value: "https://{{json.transaction.request.headers.Host}}:{{json.transaction.host_port}}{{json.transaction.request.uri}}"
+      value: "https://{{{json.transaction.request.headers.Host}}}:{{{json.transaction.host_port}}}{{{json.transaction.request.uri}}}"
   - set:
       field: _temps.url
       if: ctx.json.transaction.host_port == 80
-      value: "http://{{json.transaction.request.headers.Host}}:{{json.transaction.host_port}}{{json.transaction.request.uri}}"
+      value: "http://{{{json.transaction.request.headers.Host}}}:{{{json.transaction.host_port}}}{{{json.transaction.request.uri}}}"
   - uri_parts:
       field: _temps.url
       ignore_failure: true

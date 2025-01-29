@@ -12,23 +12,30 @@ processors:
   - json:
       field: event.original
       target_field: json
+# Cleanup equivalent names
+  - rename:
+      field: json.groupId
+      target_field: json.group_id
+      ignore_missing: true
+  - rename:
+      field: json.orgId
+      target_field: json.org_id
+      ignore_missing: true
   - fingerprint:
       fields:
         - json.org_id
+        - json.group_id
         - json.created
         - json.event
       target_field: _id
+      ignore_missing: true
   - rename:
       field: json
       target_field: snyk.audit_logs
       ignore_missing: true
   - rename:
-      field: snyk.audit_logs.groupId
+      field: snyk.audit_logs.group_id
       target_field: user.group.id
-      ignore_missing: true
-  - rename:
-      field: snyk.audit_logs.orgId
-      target_field: snyk.audit_logs.org_id
       ignore_missing: true
   - set:
       field: organization.id
@@ -144,11 +151,6 @@ processors:
         }
         handleMap(ctx);
   - remove:
-      field: event.original
-      if: ctx?.tags == null || !(ctx.tags.contains('preserve_original_event'))
-      ignore_failure: true
-      ignore_missing: true
-  - remove:
       field:
         - snyk.audit_logs.created
         - message
@@ -158,6 +160,10 @@ on_failure:
   - set:
       field: event.kind
       value: pipeline_error
+  - append:
+      field: tags
+      value: preserve_original_event
+      allow_duplicates: false
   - append:
       field: error.message
       value: '{{{ _ingest.on_failure_message }}}'

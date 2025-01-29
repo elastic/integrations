@@ -78,6 +78,10 @@ Please ensure that the IIS log format configuration matches one of the formats b
 
 The fields reported are:
 
+**ECS Field Reference**
+
+Please refer to the following [document](https://www.elastic.co/guide/en/ecs/current/ecs-field-reference.html) for detailed information on ECS fields.
+
 {{fields "access"}}
 
 ### error
@@ -87,6 +91,10 @@ This data stream will collect and parse error IIS logs.
 {{event "error"}}
 
 The fields reported are:
+
+**ECS Field Reference**
+
+Please refer to the following [document](https://www.elastic.co/guide/en/ecs/current/ecs-field-reference.html) for detailed information on ECS fields.
 
 {{fields "error"}}
 
@@ -101,6 +109,10 @@ The `webserver` data stream allows users to retrieve aggregated metrics for the 
 
 The fields reported are:
 
+**ECS Field Reference**
+
+Please refer to the following [document](https://www.elastic.co/guide/en/ecs/current/ecs-field-reference.html) for detailed information on ECS fields.
+
 {{fields "webserver"}}
 
 ### website
@@ -110,6 +122,10 @@ This data stream will collect metrics of specific sites, users can configure whi
 {{event "website"}}
 
 The fields reported are:
+
+**ECS Field Reference**
+
+Please refer to the following [document](https://www.elastic.co/guide/en/ecs/current/ecs-field-reference.html) for detailed information on ECS fields.
 
 {{fields "website"}}
 
@@ -121,4 +137,26 @@ This data stream will collect metrics of specific application pools, users can c
 
 The fields reported are:
 
+**ECS Field Reference**
+
+Please refer to the following [document](https://www.elastic.co/guide/en/ecs/current/ecs-field-reference.html) for detailed information on ECS fields.
+
 {{fields "application_pool"}}
+
+# Installing ASP.NET for `net_clr` Metrics
+To ensure `net_clr` metrics appear, it is necessary to install ASP.NET. Follow the steps below to install ASP.NET on your IIS server.
+
+## Steps to Install ASP.NET
+1. **Select the IIS server**:
+    - Open the IIS Manager.
+    - Select the server node in the left-hand Connections pane.
+2. **Click on `Manage`**:
+    - In the right-hand Actions pane, click on `Manage`.
+3. **Select `Add Roles and Features`**:
+    - This will open the Add Roles and Features Wizard.
+4. **On `Server Roles`, select the following options**:
+    - Navigate to `Web Server (IIS) > Web Server > Application Development`.
+    - Check the boxes for:
+        - `.NET Extensibility`
+        - `ASP.NET`
+          For more detailed instructions, please refer to the [official documentation](https://learn.microsoft.com/en-us/iis/application-frameworks/scenario-build-an-aspnet-website-on-iis/configuring-step-1-install-iis-and-asp-net-modules).

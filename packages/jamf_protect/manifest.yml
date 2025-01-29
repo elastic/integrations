@@ -1,18 +1,26 @@
 format_version: 3.0.3
 name: jamf_protect
 title: Jamf Protect
-version: "2.1.0"
+version: "2.9.1"
 description: Receives events from Jamf Protect with Elastic Agent.
 type: integration
 categories:
   - security
 conditions:
   kibana:
-    version: "^8.13.0"
+    version: "^8.16.2"
 screenshots:
   - src: /img/jamfprotect_kibana.png
     title: Jamf Protect Kibana
     size: 1800x1138
+    type: image/png
+  - src: /img/jamfprotect_telemetry_kibana1.png
+    title: Jamf Protect Kibana - Telemetry
+    size: 2035x1281
+    type: image/png
+  - src: /img/jamfprotect_telemetry_kibana2.png
+    title: Jamf Protect Kibana - Telemetry
+    size: 2035x1281
     type: image/png
 icons:
   - src: /img/jamf_logo.svg
@@ -79,7 +87,14 @@ policy_templates:
             multi: false
             required: false
             show_user: true
-            description: It is a required parameter for collecting logs via the AWS S3 Bucket.
+            description: ARN of the AWS S3 bucket that will be polled for list operation. It is a required parameter for collecting logs via the AWS S3 Bucket unless you set an Access Point ARN. In case both configurations are added, this one takes precedence.
+          - name: access_point_arn
+            type: text
+            title: "[S3] Access Point ARN"
+            multi: false
+            required: false
+            show_user: true
+            description: ARN of the AWS S3 Access Point that will be polled for list operation. Mandatory if the "Collect logs via S3 Bucket" switch is on. It is a required parameter for collecting logs via the AWS S3 Bucket unless you set a Bucket ARN.
           - name: global_bucket_name
             type: text
             title: "[Global][S3] Jamf Protect Bucket Name"
@@ -87,15 +102,8 @@ policy_templates:
             required: false
             show_user: true
             description: |-
-              Jamf Protect is an S3-compatible, globally distributed object storage. This parameter can replace Bucket ARN with a Bucket Name for collecting logs from Jamf Protect or another 3rd party S3-compatible service. This is a global setting which can be overriden by specific local bucket names for each data stream if required.
+              Jamf Protect is an S3-compatible, globally distributed object storage. This parameter can replace Bucket ARN and Access Point ARN with a Bucket Name for collecting logs from Jamf Protect or another 3rd party S3-compatible service. This is a global setting which can be overriden by specific local bucket names for each data stream if required.
               Using non-AWS S3 compatible buckets requires the use of Access Key ID and Secret Access Key for authentication. To specify the non-AWS S3 bucket name, use the non_aws_bucket_name config and the endpoint must be set to replace the default API endpoint.
-          - name: queue_url
-            type: text
-            title: "[Global][SQS] Queue URL"
-            multi: false
-            required: false
-            show_user: true
-            description: "URL of the AWS SQS queue that messages will be received from. \nThis is only required if you want to collect logs via AWS SQS.\nThis is a global queue URL, i.e this can be overriden by specific local queue URLs for each data stream if required."
           - name: access_key_id
             type: password
             secret: true

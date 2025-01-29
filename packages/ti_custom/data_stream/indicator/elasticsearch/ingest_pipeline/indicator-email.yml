@@ -1,0 +1,21 @@
+---
+description: Pipeline for processing email STIX patterns
+processors:
+  - grok:
+      field: _ingest._value
+      tag: grok_email_pattern
+      patterns:
+        - "^\\[?email-addr:value%{SPACE}=%{SPACE}'%{DATA:_tmp.email_addr}'\\]?"
+        - "^\\[?email-message:value%{SPACE}=%{SPACE}'%{DATA:_tmp.email_addr}'\\]?"
+        - "^\\[?email-message:from_ref.value%{SPACE}=%{SPACE}'%{DATA:_tmp.email_addr}'\\]?"
+        - "^\\[?email-message:to_refs\\[\\*\\].value%{SPACE}=%{SPACE}'%{DATA:_tmp.email_addr}'\\]?"
+      ignore_failure: true
+
+  # In cases of multiple patterns, it is necessary to append all IOCs so that they are not overwritten
+  - append:
+      field: threat.indicator.email.address
+      value: '{{{ _tmp.email_addr }}}'
+      if: ctx._tmp?.email_addr != null
+  - remove:
+      field: _tmp
+      ignore_missing: true

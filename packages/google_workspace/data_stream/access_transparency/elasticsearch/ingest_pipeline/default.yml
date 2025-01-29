@@ -3,7 +3,7 @@ description: Pipeline for parsing google_workspace access transparency logs.
 processors:
   - set:
       field: ecs.version
-      value: '8.11.0'
+      value: '8.16.0'
   - rename:
       field: message
       target_field: event.original
@@ -107,6 +107,26 @@ processors:
         - append:
             field: error.message
             value: '{{{_ingest.on_failure_message}}}'
+  - geoip:
+      field: source.ip
+      target_field: source.geo
+      ignore_missing: true
+  - geoip:
+      database_file: GeoLite2-ASN.mmdb
+      field: source.ip
+      target_field: source.as
+      properties:
+        - asn
+        - organization_name
+      ignore_missing: true
+  - rename:
+      field: source.as.asn
+      target_field: source.as.number
+      ignore_missing: true
+  - rename:
+      field: source.as.organization_name
+      target_field: source.as.organization.name
+      ignore_missing: true
   - set:
       field: google_workspace.ip_address
       copy_from: source.ip
@@ -334,14 +354,10 @@ processors:
         - google_workspace.actor.email
         - google_workspace.id.time
       ignore_missing: true
-  - remove:
-      field: event.original
-      if: ctx.tags == null || !(ctx.tags.contains('preserve_original_event'))
-      ignore_missing: true
   - script:
       description: Drops null/empty values recursively.
       lang: painless
-      source:
+      source: |
         boolean dropEmptyFields(Object object) {
           if (object == null || object == '') {
             return true;
@@ -359,6 +375,11 @@ processors:
       field: event.kind
       value: pipeline_error
       if: ctx.error?.message != null
+  - append:
+      field: tags
+      value: preserve_original_event
+      allow_duplicates: false
+      if: ctx.error?.message != null
 on_failure:
   - append:
       field: error.message
@@ -366,3 +387,7 @@ on_failure:
   - set:
       field: event.kind
       value: pipeline_error
+  - append:
+      field: tags
+      value: preserve_original_event
+      allow_duplicates: false

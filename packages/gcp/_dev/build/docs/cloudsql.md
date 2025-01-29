@@ -10,6 +10,10 @@ CloudSQL MySQL metrics.
 
 {{event "cloudsql_mysql"}}
 
+**ECS Field Reference**
+
+Please refer to the following [document](https://www.elastic.co/guide/en/ecs/current/ecs-field-reference.html) for detailed information on ECS fields.
+
 {{fields "cloudsql_mysql"}}
 
 ## PostgreSQL Metrics
@@ -17,6 +21,10 @@ CloudSQL MySQL metrics.
 CloudSQL PostgreSQL metrics.
 
 {{event "cloudsql_postgresql"}}
+
+**ECS Field Reference**
+
+Please refer to the following [document](https://www.elastic.co/guide/en/ecs/current/ecs-field-reference.html) for detailed information on ECS fields.
 
 {{fields "cloudsql_postgresql"}}
 
@@ -26,5 +34,9 @@ CloudSQL PostgreSQL metrics.
 CloudSQL SQL Server metrics.
 
 {{event "cloudsql_sqlserver"}}
+
+**ECS Field Reference**
+
+Please refer to the following [document](https://www.elastic.co/guide/en/ecs/current/ecs-field-reference.html) for detailed information on ECS fields.
 
 {{fields "cloudsql_sqlserver"}}

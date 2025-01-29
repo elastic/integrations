@@ -5,7 +5,7 @@ processors:
       field: raw_message
       ignore_missing: true
       patterns:
-      - '^(\[%{NUMBER:process.pid:long}(-%{BASE16FLOAT:postgresql.log.session_line_number:long})?\] ((\[%{USERNAME:user.name}\]@\[%{POSTGRESQL_DB_NAME:postgresql.log.database}\]|%{USERNAME:user.name}@%{POSTGRESQL_DB_NAME:postgresql.log.database}) )?)?%{WORD:log.level}:  (?:%{POSTGRESQL_ERROR:postgresql.log.sql_state_code}|%{SPACE})(duration: %{NUMBER:temp.duration:float} ms  %{POSTGRESQL_QUERY_STEP}: %{GREEDYDATA:postgresql.log.query}|: %{GREEDYDATA:message}|%{GREEDYDATA:message})'
+      - '^(\[%{NUMBER:process.pid:long}(-%{BASE16FLOAT:postgresql.log.session_line_number:long})?\]:? ?)?(\[%{NUMBER:postgresql.log.session_line_number:long}(-%{BASE16FLOAT:postgresql.log.sequence_number:long})?\] )?((\[%{USERNAME:user.name}\]@\[%{POSTGRESQL_DB_NAME:postgresql.log.database}\]|%{USERNAME:user.name}@%{POSTGRESQL_DB_NAME:postgresql.log.database} )?)?(%{DATA:_temp_.database_connection_str} ?)?%{WORD:log.level}:  ?(?:%{POSTGRESQL_ERROR:postgresql.log.sql_state_code}|%{SPACE})(duration: %{NUMBER:temp.duration:float} ms  %{POSTGRESQL_QUERY_STEP}: %{GREEDYDATA:postgresql.log.query}|: %{GREEDYDATA:message}|%{GREEDYDATA:message})'
       pattern_definitions:
         GREEDYDATA: |-
           (.|
@@ -13,3 +13,35 @@ processors:
         POSTGRESQL_DB_NAME: '[a-zA-Z0-9_]+[a-zA-Z0-9_\$]*'
         POSTGRESQL_QUERY_STEP: '%{WORD:postgresql.log.query_step}(?: <unnamed>| %{WORD:postgresql.log.query_name})?'
         POSTGRESQL_ERROR: '\b[A-Z0-9]{5}\b'
+  - kv:
+      tag: kv_log_database_info
+      field: _temp_.database_connection_str
+      target_field: _temp_.database_connection_obj
+      field_split: ','
+      value_split: '='
+      ignore_missing: true
+      strip_brackets: true
+      description: Splits PostgreSQL log info string into key-value pairs.
+      ignore_failure: true
+      on_failure:
+        - append:
+            field: error.message
+            value: "fail-{{{ _ingest.on_failure_processor_tag }}}"
+        - fail:
+            message: "Processor {{ _ingest.on_failure_processor_type }} with tag {{ _ingest.on_failure_processor_tag }} in pipeline {{ _ingest.on_failure_pipeline }} failed with message: {{ _ingest.on_failure_message }}"
+  - rename:
+      field: _temp_.database_connection_obj.app
+      target_field: postgresql.log.application_name
+      ignore_missing: true
+  - rename:
+      field: _temp_.database_connection_obj.client
+      target_field: postgresql.log.client_addr
+      ignore_missing: true
+  - rename:
+      field: _temp_.database_connection_obj.db
+      target_field: postgresql.log.database
+      ignore_missing: true
+  - rename:
+      field: _temp_.database_connection_obj.user
+      target_field: user.name
+      ignore_missing: true

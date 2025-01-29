@@ -19,6 +19,10 @@ This integration has been tested against InfluxDB OSS 2.4, InfluxDB OSS 2.0
 
 Status metrics include details of memory usage, OS thread usage, query statistics, organization & users statistics, tasks & task workers, WAL size etc.
 
+**ECS Field Reference**
+
+Please refer to the following [document](https://www.elastic.co/guide/en/ecs/current/ecs-field-reference.html) for detailed information on ECS fields.
+
 **Exported fields**
 
 | Field | Description | Type | Unit | Metric Type |
@@ -34,9 +38,7 @@ Status metrics include details of memory usage, OS thread usage, query statistic
 | data_stream.dataset | Data stream dataset. | constant_keyword |  |  |
 | data_stream.namespace | Data stream namespace. | constant_keyword |  |  |
 | data_stream.type | Data stream type. | constant_keyword |  |  |
-| ecs.version | ECS version this event conforms to. `ecs.version` is a required field and must exist in all events. When querying across multiple indices -- which may conform to slightly different ECS versions -- this field lets integrations adjust to the schema version of the events. | keyword |  |  |
-| host.ip | Host ip addresses. | ip |  |  |
-| host.name | Name of the host. It can contain what `hostname` returns on Unix systems, the fully qualified domain name, or a name specified by the user. The sender decides which value to use. | keyword |  |  |
+| host.name | Name of the host. It can contain what hostname returns on Unix systems, the fully qualified domain name (FQDN), or a name specified by the user. The recommended value is the lowercase FQDN of the host. | keyword |  |  |
 | influxdb.status.buckets_total | Number of total buckets on the server. | double |  | counter |
 | influxdb.status.dashboards_total | Number of total dashboards on the server. | double |  | counter |
 | influxdb.status.go_runtime.memstats_alloc_bytes | Number of bytes allocated and still in use. | double | byte | gauge |
@@ -98,7 +100,6 @@ Status metrics include details of memory usage, OS thread usage, query statistic
 | influxdb.status.uptime_seconds | InfluxDB process uptime in seconds. | double | s | gauge |
 | influxdb.status.users_total | Number of total users on the server. | double |  | counter |
 | service.address | Address where data about this service was collected from. This should be a URI, network address (ipv4:port or [ipv6]:port) or a resource path (sockets). | keyword |  |  |
-| service.type | The type of the service data is collected from. The type can be used to group and correlate logs and metrics from one service type. Example: If logs or metrics are collected from Elasticsearch, `service.type` would be `elasticsearch`. | keyword |  |  |
 
 
 An example event for `status` looks as following:
@@ -139,7 +140,7 @@ An example event for `status` looks as following:
         "type": "metrics"
     },
     "ecs": {
-        "version": "8.5.1"
+        "version": "8.11.0"
     },
     "elastic_agent": {
         "id": "f89b312e-866e-4215-bbb4-f0ddec5e4872",
@@ -161,7 +162,7 @@ An example event for `status` looks as following:
             "192.168.80.7"
         ],
         "mac": [
-            "02:42:c0:a8:50:07"
+            "02-42-AC-1F-00-07"
         ],
         "name": "docker-fleet-agent",
         "os": {
@@ -203,6 +204,10 @@ An example event for `status` looks as following:
 
 Advanced status metric include details of query execution statistics, compaction levels, retention details, errors & partial writes, latency etc.
 
+**ECS Field Reference**
+
+Please refer to the following [document](https://www.elastic.co/guide/en/ecs/current/ecs-field-reference.html) for detailed information on ECS fields.
+
 **Exported fields**
 
 | Field | Description | Type |
@@ -218,9 +223,7 @@ Advanced status metric include details of query execution statistics, compaction
 | data_stream.dataset | Data stream dataset. | constant_keyword |
 | data_stream.namespace | Data stream namespace. | constant_keyword |
 | data_stream.type | Data stream type. | constant_keyword |
-| ecs.version | ECS version this event conforms to. `ecs.version` is a required field and must exist in all events. When querying across multiple indices -- which may conform to slightly different ECS versions -- this field lets integrations adjust to the schema version of the events. | keyword |
-| host.ip | Host ip addresses. | ip |
-| host.name | Name of the host. It can contain what `hostname` returns on Unix systems, the fully qualified domain name, or a name specified by the user. The sender decides which value to use. | keyword |
+| host.name | Name of the host. It can contain what hostname returns on Unix systems, the fully qualified domain name (FQDN), or a name specified by the user. The recommended value is the lowercase FQDN of the host. | keyword |
 | influxdb.advstatus.instance | InfluxDB instance. | keyword |
 | influxdb.advstatus.labels.bucket | Bucket ID | keyword |
 | influxdb.advstatus.labels.compiler_type | Type of the compiler | keyword |
@@ -250,7 +253,6 @@ Advanced status metric include details of query execution statistics, compaction
 | influxdb.advstatus.tasks.executor_run_latency_seconds.histogram | Records the latency between the time the run was due to run and the time the task started execution, by task type. | histogram |
 | influxdb.advstatus.tasks.executor_run_queue_delta.histogram | The duration in seconds between a run being due to start and actually starting. | histogram |
 | service.address | Address where data about this service was collected from. This should be a URI, network address (ipv4:port or [ipv6]:port) or a resource path (sockets). | keyword |
-| service.type | The type of the service data is collected from. The type can be used to group and correlate logs and metrics from one service type. Example: If logs or metrics are collected from Elasticsearch, `service.type` would be `elasticsearch`. | keyword |
 
 
 An example event for `advstatus` looks as following:
@@ -291,7 +293,7 @@ An example event for `advstatus` looks as following:
         "type": "metrics"
     },
     "ecs": {
-        "version": "8.5.1"
+        "version": "8.11.0"
     },
     "elastic_agent": {
         "id": "f89b312e-866e-4215-bbb4-f0ddec5e4872",
@@ -313,7 +315,7 @@ An example event for `advstatus` looks as following:
             "192.168.80.7"
         ],
         "mac": [
-            "02:42:c0:a8:50:07"
+            "02-42-AC-1F-00-07"
         ],
         "name": "docker-fleet-agent",
         "os": {

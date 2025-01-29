@@ -62,13 +62,27 @@ Users can also use this in case of a Hybrid Cloud model, where one may define th
 | azure.frontdoor.access.backend_hostname | The host name in the request from client. If you enable custom domains and have wildcard domain (\*.contoso.com), hostname is a.contoso.com. if you use Azure Front Door domain (contoso.azurefd.net), hostname is contoso.azurefd.net. | keyword |
 | azure.frontdoor.access.cache_status | Provides the status code of how the request gets handled by the CDN service when it comes to caching. | keyword |
 | azure.frontdoor.access.error_info | This field provides detailed info of the error token for each response. | keyword |
+| azure.frontdoor.access.identity.authorization.action | Action | keyword |
+| azure.frontdoor.access.identity.authorization.evidence.principal_id | Principal ID | keyword |
+| azure.frontdoor.access.identity.authorization.evidence.principal_type | Principal type | keyword |
+| azure.frontdoor.access.identity.authorization.evidence.role | Role | keyword |
+| azure.frontdoor.access.identity.authorization.evidence.role_assignment_id | Role assignment ID | keyword |
+| azure.frontdoor.access.identity.authorization.evidence.role_assignment_scope | Role assignment scope | keyword |
+| azure.frontdoor.access.identity.authorization.evidence.role_definition_id | Role definition ID | keyword |
+| azure.frontdoor.access.identity.authorization.scope | Scope | keyword |
+| azure.frontdoor.access.identity.claims.\* | Claims | object |
+| azure.frontdoor.access.identity.claims_initiated_by_user.fullname | Fullname | keyword |
+| azure.frontdoor.access.identity.claims_initiated_by_user.givenname | Givenname | keyword |
+| azure.frontdoor.access.identity.claims_initiated_by_user.name | Name | keyword |
+| azure.frontdoor.access.identity.claims_initiated_by_user.schema | Schema | keyword |
+| azure.frontdoor.access.identity.claims_initiated_by_user.surname | Surname | keyword |
+| azure.frontdoor.access.identity_name | identity name | keyword |
 | azure.frontdoor.access.is_received_from_client | Boolean value. | boolean |
 | azure.frontdoor.access.pop | The edge pop, which responded to the user request. | keyword |
 | azure.frontdoor.access.routing_rule_name | The name of the route that the request matched. | keyword |
 | azure.frontdoor.access.rules_engine_match_names | The names of the rules that were processed. | keyword |
-| azure.frontdoor.access.time | The date and time when the AFD edge delivered requested contents to client (in UTC). | keyword |
-| azure.frontdoor.access.time_taken | The length of time from the time AFD edge server receives a client's request to the time that AFD sends the last byte of response to client, in milliseconds. This field doesn't take into account network latency and TCP buffering. | keyword |
-| azure.frontdoor.access.time_to_first_byte | The length of time in milliseconds from AFD receives the request to the time the first byte gets sent to client, as measured on Azure Front Door. This property doesn't measure the client data. | keyword |
+| azure.frontdoor.access.time_taken | The length of time from the time AFD edge server receives a client's request to the time that AFD sends the last byte of response to client, in milliseconds. This field doesn't take into account network latency and TCP buffering. | double |
+| azure.frontdoor.access.time_to_first_byte | The length of time in milliseconds from AFD receives the request to the time the first byte gets sent to client, as measured on Azure Front Door. This property doesn't measure the client data. | double |
 | azure.frontdoor.category | Azure frontdoor category name. | keyword |
 | azure.frontdoor.operation_name | Azure operation name. | keyword |
 | azure.frontdoor.resource_id | Azure Resource ID. | keyword |
@@ -97,9 +111,23 @@ Users can also use this in case of a Hybrid Cloud model, where one may define th
 | azure.frontdoor.tracking_reference | The unique reference string that identifies a request served by AFD, also sent as X-Azure-Ref header to the client. Required for searching details in the access logs for a specific request. | keyword |
 | azure.frontdoor.waf.details.data | Detail data. | keyword |
 | azure.frontdoor.waf.details.msg | Detail msg. | keyword |
+| azure.frontdoor.waf.identity.authorization.action | Action | keyword |
+| azure.frontdoor.waf.identity.authorization.evidence.principal_id | Principal ID | keyword |
+| azure.frontdoor.waf.identity.authorization.evidence.principal_type | Principal type | keyword |
+| azure.frontdoor.waf.identity.authorization.evidence.role | Role | keyword |
+| azure.frontdoor.waf.identity.authorization.evidence.role_assignment_id | Role assignment ID | keyword |
+| azure.frontdoor.waf.identity.authorization.evidence.role_assignment_scope | Role assignment scope | keyword |
+| azure.frontdoor.waf.identity.authorization.evidence.role_definition_id | Role definition ID | keyword |
+| azure.frontdoor.waf.identity.authorization.scope | Scope | keyword |
+| azure.frontdoor.waf.identity.claims.\* | Claims | object |
+| azure.frontdoor.waf.identity.claims_initiated_by_user.fullname | Fullname | keyword |
+| azure.frontdoor.waf.identity.claims_initiated_by_user.givenname | Givenname | keyword |
+| azure.frontdoor.waf.identity.claims_initiated_by_user.name | Name | keyword |
+| azure.frontdoor.waf.identity.claims_initiated_by_user.schema | Schema | keyword |
+| azure.frontdoor.waf.identity.claims_initiated_by_user.surname | Surname | keyword |
+| azure.frontdoor.waf.identity_name | identity name | keyword |
 | azure.frontdoor.waf.policy | WAF policy name. | keyword |
 | azure.frontdoor.waf.policy_mode | WAF policy mode. | keyword |
-| azure.frontdoor.waf.time | The date and time when the AFD edge delivered requested contents to client (in UTC). | keyword |
 | cloud.image.id | Image ID for the cloud instance. | keyword |
 | data_stream.dataset | Data stream dataset. | constant_keyword |
 | data_stream.namespace | Data stream namespace. | constant_keyword |

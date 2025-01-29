@@ -17,7 +17,7 @@ DRY_RUN="$(buildkite-agent meta-data get DRY_RUN --default ${DRY_RUN:-"true"})"
 BASE_COMMIT="$(buildkite-agent meta-data get BASE_COMMIT --default ${BASE_COMMIT:-""})"
 PACKAGE_NAME="$(buildkite-agent meta-data get PACKAGE_NAME --default ${PACKAGE_NAME:-""})"
 PACKAGE_VERSION="$(buildkite-agent meta-data get PACKAGE_VERSION --default ${PACKAGE_VERSION:-""})"
-REMOVE_OTHER_PACKAGES="$(buildkite-agent meta-data get PREMOVE_OTHER_PACKAGES --default ${REMOVE_OTHER_PACKAGES:-"false"})"
+REMOVE_OTHER_PACKAGES="$(buildkite-agent meta-data get REMOVE_OTHER_PACKAGES --default ${REMOVE_OTHER_PACKAGES:-"false"})"
 
 if [[ -z "$PACKAGE_NAME" ]] || [[ -z "$PACKAGE_VERSION" ]]; then
   buildkite-agent annotate "The variables **PACKAGE_NAME** or **PACKAGE_VERSION** aren't defined, please try again" --style "warning"
@@ -106,10 +106,9 @@ removeOtherPackages() {
 
 update_git_config() {
     pushd $WORKSPACE > /dev/null
-    git config --global user.name "${GITHUB_USERNAME_SECRET}"
-    git config --global user.email "${GITHUB_EMAIL_SECRET}"
+    git config --global user.name "${GITHUB_USERNAME}"
+    git config --global user.email "${GITHUB_EMAIL}"
 
-    git config remote.origin.url "https://${GITHUB_USERNAME_SECRET}:${GITHUB_TOKEN}@github.com/elastic/integrations.git"
     popd > /dev/null
 }
 

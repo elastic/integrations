@@ -4,10 +4,22 @@ The Mimecast integration collects events from the [Mimecast API](https://integra
 
 ## Configuration
 
+### v1 API Endpoints
+
 Authorization parameters for the Mimecast API (`Application Key`, `Application
 ID`, `Access Key`, and `Secret Key`) should be provided by a Mimecast
 representative for this integration. Under `Advanced options` you can set the
 time interval between two API requests as well as the API URL. A Mimecast
+representative should also be able to give you this information in case you need
+to change the defaults.
+
+> Note: Rate limit quotas may require you to set up different credentials for the different available log types.
+
+### v2 API Endpoints
+
+Authorization parameters for the Mimecast API (`Client ID` and `Client Key`) should
+be provided by a Mimecast representative for this integration. Under `Advanced options`
+you can set the time interval between two API requests as well as the API URL. A Mimecast
 representative should also be able to give you this information in case you need
 to change the defaults.
 
@@ -37,6 +49,17 @@ https://integrations.mimecast.com/documentation/endpoint-reference/logs-and-stat
 
 {{fields "audit_events"}}
 
+### Cloud Integrated Logs
+
+This is the `mimecast.cloud_integrated_logs` dataset. These logs contain Mimecast
+threats and security events with the following details: entities, mail flows and URL
+protected events. More information about [these logs](
+https://developer.services.mimecast.com/docs/threatssecurityeventsanddataforci/1/routes/siem/v1/batch/events/ci/get).
+
+{{event "cloud_integrated_logs"}}
+
+{{fields "cloud_integrated_logs"}}
+
 ### DLP Logs
 
 This is the `mimecast.dlp_logs` dataset. These logs contain information about
@@ -47,6 +70,17 @@ https://integrations.mimecast.com/documentation/endpoint-reference/logs-and-stat
 {{event "dlp_logs"}}
 
 {{fields "dlp_logs"}}
+
+### Message Release Logs
+
+This is the `mimecast.message_release_logs` dataset. These logs contain information about
+messages that were either released to the recipient, with details about the user that
+processed the release. More information about [these logs](
+https://integrations.mimecast.com/documentation/endpoint-reference/logs-and-statistics/get-message-release-logs/). 
+
+{{event "message_release_logs"}}
+
+{{fields "message_release_logs"}}
 
 ### SIEM Logs
 

@@ -42,7 +42,7 @@ In order to ingest data from Nagios XI, you must know the host for Nagios XI and
 
 ## Setup
 
-For step-by-step instructions on how to set up an integration, see the [Getting started](https://www.elastic.co/guide/en/welcome-to-elastic/current/getting-started-observability.html) guide.
+For step-by-step instructions on how to set up an integration, see the [Getting started](https://www.elastic.co/guide/en/starting-with-the-elasticsearch-platform-and-its-solutions/current/getting-started-observability.html) guide.
 
 ## Validation
 
@@ -61,6 +61,10 @@ This is the `events` data stream.
 
 {{event "events"}}
 
+**ECS Field Reference**
+
+Please refer to the following [document](https://www.elastic.co/guide/en/ecs/current/ecs-field-reference.html) for detailed information on ECS fields.
+
 {{fields "events"}}
 
 ## Metrics reference
@@ -72,6 +76,10 @@ This is the `host` data stream.
 - This data stream gives Nagios XI Host Round Trip Travel Time (rta) and Packet Loss (pl) metrics.
 
 {{event "host"}}
+
+**ECS Field Reference**
+
+Please refer to the following [document](https://www.elastic.co/guide/en/ecs/current/ecs-field-reference.html) for detailed information on ECS fields.
 
 {{fields "host"}}
 
@@ -85,5 +93,9 @@ This is the `service` dataset.
 - If the user enters both the host name and the display name, then the integration would only fetch those services with the entered display name and only from the entered hosts. It is not possible to fetch 1 service from host1 and another service from host2 in this case as it will fetch all the services from all the hosts that are configured
 
 {{event "service"}}
+
+**ECS Field Reference**
+
+Please refer to the following [document](https://www.elastic.co/guide/en/ecs/current/ecs-field-reference.html) for detailed information on ECS fields.
 
 {{fields "service"}}

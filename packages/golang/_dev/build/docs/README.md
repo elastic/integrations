@@ -33,7 +33,7 @@ You can use our hosted Elasticsearch Service on Elastic Cloud, which is recommen
 
 ## Setup
 
-For step-by-step instructions on how to set up an integration, see the [Getting started](https://www.elastic.co/guide/en/welcome-to-elastic/current/getting-started-observability.html) guide.
+For step-by-step instructions on how to set up an integration, see the [Getting started](https://www.elastic.co/guide/en/starting-with-the-elasticsearch-platform-and-its-solutions/current/getting-started-observability.html) guide.
 
 ### Troubleshooting
 
@@ -47,6 +47,10 @@ This is the `expvar` data stream. Metrics of garbage collector, mcache structure
 
 {{event "expvar"}}
 
+**ECS Field Reference**
+
+Please refer to the following [document](https://www.elastic.co/guide/en/ecs/current/ecs-field-reference.html) for detailed information on ECS fields.
+
 {{fields "expvar"}}
 
 ### Heap
@@ -54,5 +58,9 @@ This is the `expvar` data stream. Metrics of garbage collector, mcache structure
 This is the `heap` data stream. Metrics like heap allocations and GC pause can be collected using `heap` data stream.
 
 {{event "heap"}}
+
+**ECS Field Reference**
+
+Please refer to the following [document](https://www.elastic.co/guide/en/ecs/current/ecs-field-reference.html) for detailed information on ECS fields.
 
 {{fields "heap"}}

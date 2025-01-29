@@ -1,0 +1,460 @@
+- name: cilium_tetragon
+  type: group
+  fields:
+    - name: log
+      type: group
+      fields:
+        - name: process_exec
+          type: group
+          fields:
+            - name: parent
+              type: group
+              fields:
+                - name: exec_id
+                  type: keyword
+                - name: start_time
+                  type: keyword
+                - name: auid
+                  type: long
+                - name: flags
+                  type: keyword
+                - name: parent_exec_id
+                  type: keyword
+                - name: tid
+                  type: long
+                - name: pod
+                  type: group
+                  fields:
+                    - name: container
+                      type: group
+                      fields:
+                        - name: name
+                          type: keyword
+                        - name: image
+                          type: group
+                          fields:
+                            - name: name
+                              type: keyword
+                            - name: id
+                              type: keyword
+                        - name: start_time
+                          type: keyword
+                        - name: pid
+                          type: long
+                        - name: id
+                          type: keyword
+                    - name: namespace
+                      type: keyword
+                    - name: name
+                      type: keyword
+                    - name: workload
+                      type: keyword
+                    - name: pod_labels
+                      type: group
+                      fields:
+                        - name: app.kubernetes.io/name
+                          type: keyword
+                        - name: org
+                          type: keyword
+                        - name: class
+                          type: keyword
+                        - name: pod-template-hash
+                          type: keyword
+                    - name: workload_kind
+                      type: keyword
+                - name: docker
+                  type: keyword
+                - name: refcnt
+                  type: long
+            - name: process
+              type: group
+              fields:
+                - name: exec_id
+                  type: keyword
+                - name: uid
+                  type: long
+                - name: start_time
+                  type: keyword
+                - name: auid
+                  type: long
+                - name: pod
+                  type: group
+                  fields:
+                    - name: container
+                      type: group
+                      fields:
+                        - name: image
+                          type: group
+                          fields:
+                            - name: id
+                              type: keyword
+                        - name: start_time
+                          type: keyword
+                        - name: pid
+                          type: long
+                    - name: namespace
+                      type: keyword
+                    - name: name
+                      type: keyword
+                    - name: workload
+                      type: keyword
+                    - name: pod_labels
+                      type: group
+                      fields:
+                        - name: app
+                          type: keyword
+                        - name: pod-template-hash
+                          type: keyword
+                        - name: app.kubernetes.io/name
+                          type: keyword
+                        - name: org
+                          type: keyword
+                        - name: class
+                          type: keyword
+                    - name: workload_kind
+                      type: keyword
+                - name: flags
+                  type: keyword
+                - name: parent_exec_id
+                  type: keyword
+                - name: docker
+                  type: keyword
+        - name: time
+          type: keyword
+        - name: node_name
+          type: keyword
+        - name: cluster_name
+          type: keyword
+        - name: process_exit
+          type: group
+          fields:
+            - name: signal
+              type: keyword
+            - name: status
+              type: float
+            - name: parent
+              type: group
+              fields:
+                - name: exec_id
+                  type: keyword
+                - name: start_time
+                  type: keyword
+                - name: auid
+                  type: long
+                - name: pod
+                  type: group
+                  fields:
+                    - name: container
+                      type: group
+                      fields:
+                        - name: name
+                          type: keyword
+                        - name: image
+                          type: group
+                          fields:
+                            - name: name
+                              type: keyword
+                            - name: id
+                              type: keyword
+                        - name: start_time
+                          type: keyword
+                        - name: pid
+                          type: long
+                        - name: id
+                          type: keyword
+                    - name: namespace
+                      type: keyword
+                    - name: name
+                      type: keyword
+                    - name: workload
+                      type: keyword
+                    - name: pod_labels
+                      type: group
+                      fields:
+                        - name: pod-template-hash
+                          type: keyword
+                        - name: app.kubernetes.io/name
+                          type: keyword
+                        - name: org
+                          type: keyword
+                        - name: class
+                          type: keyword
+                    - name: workload_kind
+                      type: keyword
+                - name: flags
+                  type: keyword
+                - name: parent_exec_id
+                  type: keyword
+                - name: tid
+                  type: long
+                - name: docker
+                  type: keyword
+                - name: refcnt
+                  type: long
+            - name: process
+              type: group
+              fields:
+                - name: exec_id
+                  type: keyword
+                - name: uid
+                  type: long
+                - name: start_time
+                  type: keyword
+                - name: auid
+                  type: long
+                - name: pod
+                  type: group
+                  fields:
+                    - name: container
+                      type: group
+                      fields:
+                        - name: image
+                          type: group
+                          fields:
+                            - name: id
+                              type: keyword
+                        - name: start_time
+                          type: keyword
+                        - name: pid
+                          type: long
+                    - name: namespace
+                      type: keyword
+                    - name: name
+                      type: keyword
+                    - name: workload
+                      type: keyword
+                    - name: pod_labels
+                      type: group
+                      fields:
+                        - name: pod-template-hash
+                          type: keyword
+                        - name: app.kubernetes.io/name
+                          type: keyword
+                        - name: org
+                          type: keyword
+                        - name: class
+                          type: keyword
+                    - name: workload_kind
+                      type: keyword
+                - name: flags
+                  type: keyword
+                - name: parent_exec_id
+                  type: keyword
+                - name: docker
+                  type: keyword
+                - name: refcnt
+                  type: long
+            - name: time
+              type: keyword
+        - name: process_kprobe
+          type: group
+          fields:
+            - name: action
+              type: keyword
+            - name: policy_name
+              type: keyword
+            - name: args
+              type: nested
+              fields:
+                - name: user_ns_arg
+                  type: group
+                  fields:
+                    - name: uid
+                      type: long
+                    - name: level
+                      type: long
+                    - name: gid
+                      type: long
+                    - name: ns
+                      type: group
+                      fields:
+                        - name: inum
+                          type: long
+                        - name: is_host
+                          type: boolean
+                - name: capability_arg
+                  type: group
+                  fields:
+                    - name: name
+                      type: keyword
+                    - name: value
+                      type: long
+                - name: int_arg
+                  type: long
+                - name: file_arg
+                  type: group
+                  fields:
+                    - name: path
+                      type: keyword
+                    - name: permission
+                      type: keyword
+            - name: function_name
+              type: keyword
+            - name: parent
+              type: group
+              fields:
+                - name: auid
+                  type: long
+                - name: docker
+                  type: keyword
+                - name: flags
+                  type: keyword
+                - name: parent_exec_id
+                  type: keyword
+                - name: pod
+                  type: group
+                  fields:
+                    - name: container
+                      type: group
+                      fields:
+                        - name: id
+                          type: keyword
+                        - name: image
+                          type: group
+                          fields:
+                            - name: id
+                              type: keyword
+                            - name: name
+                              type: keyword
+                        - name: name
+                          type: keyword
+                        - name: pid
+                          type: long
+                        - name: start_time
+                          type: date
+                    - name: name
+                      type: keyword
+                    - name: namespace
+                      type: keyword
+                    - name: workload
+                      type: keyword
+                    - name: workload_kind
+                      type: keyword
+                    - name: pod_labels
+                      type: group
+                      fields:
+                        - name: app.kubernetes.io/name
+                          type: keyword
+                        - name: class
+                          type: keyword
+                        - name: org
+                          type: keyword
+                - name: refcnt
+                  type: long
+            - name: process
+              type: group
+              fields:
+                - name: auid
+                  type: long
+                - name: docker
+                  type: keyword
+                - name: flags
+                  type: keyword
+                - name: ns
+                  type: group
+                  fields:
+                    - name: cgroup
+                      type: group
+                      fields:
+                        - name: inum
+                          type: long
+                    - name: ipc
+                      type: group
+                      fields:
+                        - name: inum
+                          type: long
+                    - name: mnt
+                      type: group
+                      fields:
+                        - name: inum
+                          type: long
+                    - name: net
+                      type: group
+                      fields:
+                        - name: inum
+                          type: long
+                    - name: pid
+                      type: group
+                      fields:
+                        - name: inum
+                          type: long
+                        - name: pid_for_children
+                          type: group
+                          fields:
+                            - name: inum
+                              type: long
+                    - name: time
+                      type: group
+                      fields:
+                        - name: inum
+                          type: long
+                        - name: is_host
+                          type: boolean
+                        - name: time_for_children
+                          type: group
+                          fields:
+                            - name: inum
+                              type: long
+                            - name: is_host
+                              type: boolean
+                    - name: user
+                      type: group
+                      fields:
+                        - name: inum
+                          type: long
+                        - name: is_host
+                          type: boolean
+                    - name: uts
+                      type: group
+                      fields:
+                        - name: inum
+                          type: long
+                    - name: pid_for_children
+                      type: group
+                      fields:
+                        - name: inum
+                          type: long
+                    - name: time_for_children
+                      type: group
+                      fields:
+                        - name: inum
+                          type: long
+                        - name: is_host
+                          type: boolean
+                - name: parent_exec_id
+                  type: keyword
+                - name: pod
+                  type: group
+                  fields:
+                    - name: workload
+                      type: keyword
+                    - name: container
+                      type: group
+                      fields:
+                        - name: image
+                          type: group
+                          fields:
+                            - name: id
+                              type: keyword
+                        - name: pid
+                          type: long
+                        - name: start_time
+                          type: date
+                    - name: pod_labels
+                      type: group
+                      fields:
+                        - name: app.kubernetes.io/name
+                          type: keyword
+                        - name: class
+                          type: keyword
+                        - name: org
+                          type: keyword
+                - name: refcnt
+                  type: long
+            - name: return
+              type: group
+              fields:
+                - name: int_arg
+                  type: long
+            - name: return_action
+              type: keyword

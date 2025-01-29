@@ -28,7 +28,7 @@ Note:
 
 ## Compatibility
 
-This integration has been tested against `IBM MQ v9.1` and `IBM MQ v9.2`. The ibmmq `qmgr` data stream is compatible with a containerized distribution of IBM MQ (since version 9.1.0).
+This integration has been tested against IBM MQ v9.1 and IBM MQ v9.2. Currently, the `ibmmq qmgr` data stream is only compatible with the containerized versions of IBM MQ, such as those available from [IBM Cloud Container Registry](https://icr.io/) or [Docker Hub](https://hub.docker.com/r/ibmcom/mq). 
 
 ## Prerequisites
 
@@ -41,7 +41,7 @@ In order to ingest data from IBM MQ:
 
 ## Setup
 
-For step-by-step instructions on how to set up an integration, see the [Getting started](https://www.elastic.co/guide/en/welcome-to-elastic/current/getting-started-observability.html) guide.
+For step-by-step instructions on how to set up an integration, see the [Getting started](https://www.elastic.co/guide/en/starting-with-the-elasticsearch-platform-and-its-solutions/current/getting-started-observability.html) guide.
 
 ## Steps to setup Prometheus
 
@@ -65,6 +65,10 @@ The `qmgr` data stream collects [performance metrics of Queue Manager](https://w
 
 {{event "qmgr"}}
 
+**ECS Field Reference**
+
+Please refer to the following [document](https://www.elastic.co/guide/en/ecs/current/ecs-field-reference.html) for detailed information on ECS fields.
+
 {{fields "qmgr"}}
 
 ## Logs reference
@@ -74,5 +78,9 @@ The `qmgr` data stream collects [performance metrics of Queue Manager](https://w
 The `errorlog` data stream collects [Error logs of Queue Manager](https://www.site24x7.com/help/log-management/ibm-mq-error-logs.html) which include the description, action, explanation and code of the error.
 
 {{event "errorlog"}}
+
+**ECS Field Reference**
+
+Please refer to the following [document](https://www.elastic.co/guide/en/ecs/current/ecs-field-reference.html) for detailed information on ECS fields.
 
 {{fields "errorlog"}}

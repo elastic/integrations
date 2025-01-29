@@ -1,6 +1,8 @@
 # Azure OpenAI Integration
 
-The Azure OpenAI service provides flexibility to build your own copilot and AI applications. The Azure OpenAI integration collects metrics and logs through [azure-monitor](https://learn.microsoft.com/en-us/azure/azure-monitor/reference/supported-metrics/metrics-index) and Azure [event hub](https://learn.microsoft.com/en-us/azure/azure-monitor/essentials/stream-monitoring-data-event-hubs) respectively.
+The Azure OpenAI service provides flexibility to build your own copilot and AI applications. The Azure OpenAI integration collects metrics and logs through [azure-monitor](https://learn.microsoft.com/en-us/azure/azure-monitor/reference/supported-metrics/metrics-index) and the Azure [event hub](https://learn.microsoft.com/en-us/azure/azure-monitor/essentials/stream-monitoring-data-event-hubs) respectively.
+
+To fully populate the Azure OpenAI dashboard lenses, you have to enable both logs and metrics data streams and set up the Azure Billing integration in advance.
 
 ## Data streams
 
@@ -8,29 +10,55 @@ The Azure OpenAI service provides flexibility to build your own copilot and AI a
 
 The Azure OpenAI logs data stream captures the audit events and the request-response events.
 
-Supported Azure log categories:
+These are the supported Azure log categories:
 
-| Data Stream |  Log Category   |
-|:-----------:|:---------------:|
-|    logs     |      audit      |
-|    logs     | requestresponse |
+| Data Stream |       Log Category       |
+|:-----------:|:------------------------:|
+|    logs     |          Audit           |
+|    logs     |     RequestResponse      |
+|    logs     | ApiManagementGatewayLogs |
 
-
-**Note**:
-
-The logs data stream fetches the default cognitive services log listed [here](https://learn.microsoft.com/en-us/azure/architecture/ai-ml/openai/architecture/log-monitor-azure-openai#:~:text=Metric-,Default%20Azure%20OpenAI%20logging,-This%20solution). This doesn't record the inputs and outputs of the service, like prompts, tokens, and models.
 
 #### Requirements and setup
 
-Refer to the [Azure Logs](https://docs.elastic.co/integrations/azure) page for more information about setting up and using this integration.
+Refer to the [Azure Logs](https://docs.elastic.co/integrations/azure) page for more information on how to set up and use this integration.
+
+#### Default Logging
+
+The Azure OpenAI provides native logging and monitoring to track the telemetry of the service. The Audit and RequestResponse log categories come under the native logging. However, the default logging doesn't log the inputs and outputs of the service. This is useful to ensure that the services operates as expected.
+
+The logs collected using the default cognitive services are listed on the [Monitor OpenAI models](https://learn.microsoft.com/en-us/azure/architecture/ai-ml/openai/architecture/log-monitor-azure-openai#:~:text=Metric-,Default%20Azure%20OpenAI%20logging,-This%20solution) page.
+
+#### Advance Logging
+
+The API Management services provide the advanced logging capabilities. The `ApiManagementGatewayLogs` category comes under the advanced logging. This is not directly available in the Azure OpenAI service itself. You have to set up the API Management services in Azure to access the Azure OpenAI. When the setup is complete, add the diagnostic setting for the API Management service.
+
+For more information on how to implement the comprehensive solution using API Management services to monitor the Azure OpenAI services, check the [Monitor OpenAI models](https://learn.microsoft.com/en-us/azure/architecture/ai-ml/openai/architecture/log-monitor-azure-openai) page.
+
+**Diagnostic settings**
+
+- Enable the category `Logs related to ApiManagement Gateway` to stream the logs to the event hub.
+
+```text
+   ┌──────────────────┐      ┌──────────────┐     ┌─────────────────┐
+   │   APIM service   │      │  Diagnostic  │     │    Event Hub    │
+   │    <<source>>    │─────▶│   settings   │────▶│ <<destination>> │
+   └──────────────────┘      └──────────────┘     └─────────────────┘
+```
+
+The logs collected using the API Management services for the enterprise customer of the Azure OpenAI services are listed on the [Monitor OpenAI models](https://learn.microsoft.com/en-us/azure/architecture/ai-ml/openai/architecture/log-monitor-azure-openai#:~:text=Azure%20OpenAI%20logging-,This%20solution,-Request%20count) page. This records the inputs and outputs of the request, like prompts, tokens, and model usage.
 
 #### Settings
 
-Refer to the [settings](https://docs.elastic.co/integrations/azure#:~:text=*.cloudapp.net-,Settings,-Use%20the%20following) section for more details on the configuration.
+Refer to [Azure Logs Integration settings](https://docs.elastic.co/integrations/azure#:~:text=*.cloudapp.net-,Settings,-Use%20the%20following) for more details on the configuration.
 
 #### Logs Reference
 
 {{event "logs"}}
+
+**ECS Field Reference**
+
+For more details on ECS fields, check the [ECS Field Reference](https://www.elastic.co/guide/en/ecs/current/ecs-field-reference.html) documentation.
 
 {{fields "logs"}}
 
@@ -38,7 +66,7 @@ Refer to the [settings](https://docs.elastic.co/integrations/azure#:~:text=*.clo
 
 The metrics data stream collects the cognitive service metrics that is specific to the Azure OpenAI service. The metrics that are specific to PTUs will only be available with the provisioned deployments.
 
-Refer [here](https://learn.microsoft.com/en-us/azure/ai-services/openai/how-to/monitoring#:~:text=Applies%20to%20PTU%2C%20and%20PTU%2Dmanaged%20deployments) to find more details on the metrics applicable to PTU only deployment.
+For more details on the metrics applicable to PTU only deployment, check the [Monitor Azure OpenAI](https://learn.microsoft.com/en-us/azure/ai-services/openai/how-to/monitoring#:~:text=Applies%20to%20PTU%2C%20and%20PTU%2Dmanaged%20deployments) documentaiton.
 
 #### Requirements
 
@@ -64,5 +92,9 @@ The primary aggregation value will be retrieved for all the metrics contained in
 #### Metrics Reference
 
 {{event "metrics"}}
+
+**ECS Field Reference**
+
+For more details on ECS fields, check the [ECS Field Reference](https://www.elastic.co/guide/en/ecs/current/ecs-field-reference.html) documentation.
 
 {{fields "metrics"}}

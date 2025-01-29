@@ -7,7 +7,7 @@ processors:
     if: ctx.json?.timestamp != null && ctx.json?.timestamp instanceof String
 - set:
     field: _tmp.timestamp
-    value: "{{json.timestamp.epochSecond}}.{{json.timestamp.nano}}"
+    value: "{{{json.timestamp.epochSecond}}}.{{{json.timestamp.nano}}}"
     if: ctx.json?.timestamp != null && ctx.json?.timestamp instanceof Map && ctx.json?.timestamp?.epochSecond != null && ctx.json?.timestamp?.nano != null
 - rename:
     field: json.source
@@ -85,7 +85,7 @@ processors:
     ignore_empty_value: true
 - append:
     field: related.hosts
-    value: '{{_tmp.service.domain}}'
+    value: '{{{_tmp.service.domain}}}'
     allow_duplicates: false
     if: ctx._tmp?.service?.domain != null
 on_failure:

@@ -40,6 +40,10 @@ This is the `metrics` dataset of the etcd package, in charge of retrieving gener
 
 {{event "metrics"}}
 
+**ECS Field Reference**
+
+Please refer to the following [document](https://www.elastic.co/guide/en/ecs/current/ecs-field-reference.html) for detailed information on ECS fields.
+
 {{fields "metrics"}}
 
 ### leader
@@ -47,6 +51,10 @@ This is the `metrics` dataset of the etcd package, in charge of retrieving gener
 This is the `leader` dataset of the etcd package, in charge of retrieving generic metrics about leader from a etcd v2 instance.
 
 {{event "leader"}}
+
+**ECS Field Reference**
+
+Please refer to the following [document](https://www.elastic.co/guide/en/ecs/current/ecs-field-reference.html) for detailed information on ECS fields.
 
 {{fields "leader"}}
 
@@ -56,6 +64,10 @@ This is the `self` dataset of the etcd package, in charge of retrieving generic 
 
 {{event "self"}}
 
+**ECS Field Reference**
+
+Please refer to the following [document](https://www.elastic.co/guide/en/ecs/current/ecs-field-reference.html) for detailed information on ECS fields.
+
 {{fields "self"}}
 
 ### store
@@ -63,5 +75,9 @@ This is the `self` dataset of the etcd package, in charge of retrieving generic 
 This is the `store` dataset of the etcd package, in charge of retrieving generic metrics about store from a etcd v2 instance.
 
 {{event "store"}}
+
+**ECS Field Reference**
+
+Please refer to the following [document](https://www.elastic.co/guide/en/ecs/current/ecs-field-reference.html) for detailed information on ECS fields.
 
 {{fields "store"}}

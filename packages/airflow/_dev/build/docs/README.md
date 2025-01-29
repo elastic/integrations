@@ -35,7 +35,7 @@ To ingest data from Airflow, users must have [StatsD](https://github.com/statsd/
 
 ## Setup
 
-For step-by-step instructions on how to set up an integration, see the [Getting started](https://www.elastic.co/guide/en/welcome-to-elastic/current/getting-started-observability.html) guide.
+For step-by-step instructions on how to set up an integration, see the [Getting started](https://www.elastic.co/guide/en/starting-with-the-elasticsearch-platform-and-its-solutions/current/getting-started-observability.html) guide.
 
 ## Steps to Setup Airflow
 
@@ -67,5 +67,9 @@ Once the integration is set up, you can click on the Assets tab in the Airflow i
 This is the `statsd` data stream, which collects metrics related to scheduler activities, pool usage, task execution details, executor performance, and worker states in Airflow.
 
 {{event "statsd"}}
+
+**ECS Field Reference**
+
+Please refer to the following [document](https://www.elastic.co/guide/en/ecs/current/ecs-field-reference.html) for detailed information on ECS fields.
 
 {{fields "statsd"}}

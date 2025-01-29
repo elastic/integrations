@@ -21,10 +21,11 @@ processors:
         AVC_PREFIX: 'avc:%{SPACE}%{WORD:auditd.log.avc.action}%{SPACE}{%{SPACE}%{WORD:auditd.log.avc.request}%{SPACE}}%{SPACE}for%{SPACE}'
         MESSAGE: "(?:'(?:%{AVC_PREFIX}|[^=]*\\s)?%{ANY:auditd.log.sub_kv}'|\"([^=]*\\s)?%{ANY:auditd.log.sub_kv}\")"
         GS: '\x1d'
+        ENRICHED_FIELDS: '((?:%{GS})%{AUDIT_KEY_VALUES:auditd.log.sub_kv_enriched})?'
         ANY: ".*"
       patterns:
         - '%{AUDIT_PREFIX} %{AUDIT_KEY_VALUES:auditd.log.kv} old auid=%{NUMBER:auditd.log.old_auid} new auid=%{NUMBER:auditd.log.new_auid} old ses=%{NUMBER:auditd.log.old_ses} new ses=%{NUMBER:auditd.log.new_ses}'
-        - '%{AUDIT_PREFIX} %{AUDIT_KEY_VALUES:auditd.log.kv} msg=%{MESSAGE}'
+        - '%{AUDIT_PREFIX} %{AUDIT_KEY_VALUES:auditd.log.kv} msg=%{MESSAGE}%{ENRICHED_FIELDS}'
         - '%{AUDIT_PREFIX} %{AUDIT_KEY_VALUES:auditd.log.kv}%{GS}%{WORD:auditd.log.original_field}={ %{AUDIT_KEY_VALUES:auditd.log.sub_kv} }'
         - '%{AUDIT_PREFIX} %{AVC_PREFIX}?%{AUDIT_KEY_VALUES:auditd.log.kv}'
         - '%{AUDIT_PREFIX}'
@@ -36,6 +37,12 @@ processors:
       target_field: auditd.log
   - kv:
       field: auditd.log.sub_kv
+      field_split: '\s+(?=[^\s]+=)'
+      value_split: '='
+      target_field: auditd.log
+      ignore_missing: true
+  - kv:
+      field: auditd.log.sub_kv_enriched
       field_split: '\s+(?=[^\s]+=)'
       value_split: '='
       target_field: auditd.log
@@ -1299,7 +1306,7 @@ processors:
                 category:
                   - process
                 type:
-                  - stop
+                  - end
           DAEMON_ACCEPT:
             - event:
                 action:
@@ -1334,7 +1341,7 @@ processors:
                 category:
                   - process
                 type:
-                  - stop
+                  - end
           DAEMON_ERR:
             - event:
                 action:
@@ -1610,7 +1617,7 @@ processors:
                 category:
                   - process
                 type:
-                  - stop
+                  - end
           SOFTWARE_UPDATE:
             - event:
                 action:
@@ -1992,8 +1999,8 @@ processors:
       ignore_missing: true
       processor:
         set:
-          field: "{{_ingest._value.target}}"
-          value: "{{_ingest._value.value}}"
+          field: "{{{_ingest._value.target}}}"
+          value: "{{{_ingest._value.value}}}"
   - set:
       if: "ctx.auditd.log?.record_type == 'SYSTEM_BOOT' || ctx.auditd.log?.record_type == 'SYSTEM_SHUTDOWN'"
       field: event.category
@@ -2037,12 +2044,12 @@ processors:
   - set:
       if: "ctx.auditd.log?.record_type == 'VIRT_MACHINE_ID'"
       field: container.name
-      value: "{{ auditd.log.vm }}"
+      value: "{{{ auditd.log.vm }}}"
       ignore_empty_value: true
   - set:
       if: "ctx.auditd.log?.record_type == 'VIRT_MACHINE_ID'"
       field: container.runtime
-      value: "{{ auditd.log.virt }}"
+      value: "{{{ auditd.log.virt }}}"
       ignore_empty_value: true
   - set:
       if: >
@@ -2265,10 +2272,10 @@ processors:
         - append:
             field: error.message
             value: "failed extracting process arguments: {{{ _ingest.on_failure_message }}}"
-  - rename:
-      ignore_failure: true
-      field: auditd.log.record_type
-      target_field: event.action
+  - set:
+      field: event.action
+      copy_from: auditd.log.record_type
+      override: false
   - lowercase:
       ignore_failure: true
       field: event.action
@@ -2314,15 +2321,11 @@ processors:
       field:
         - auditd.log.kv
         - auditd.log.sub_kv
+        - auditd.log.sub_kv_enriched
         - auditd.log.epoch
         - auditd.log.copy
         - auditd.log.arch
         - auditd.log.res
-      ignore_failure: true
-      ignore_missing: true
-  - remove:
-      field: event.original
-      if: "ctx?.tags == null || !(ctx.tags.contains('preserve_original_event'))"
       ignore_failure: true
       ignore_missing: true
 on_failure:

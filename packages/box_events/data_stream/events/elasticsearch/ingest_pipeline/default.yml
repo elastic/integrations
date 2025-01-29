@@ -12,6 +12,8 @@ processors:
   - json:
       field: event.original
       target_field: box
+  - drop:
+      if: ctx.box?.entries instanceof List && ctx.box.entries.length == 0
   - fingerprint:
       fields:
         - box.event_id
@@ -1221,12 +1223,6 @@ processors:
       field: threat.indicator.as.organization_name
       target_field: threat.indicator.as.organization.name
       ignore_missing: true
-# Conditionally, remove event.original
-  - remove:
-      field: event.original
-      if: "ctx.tags == null || !(ctx.tags.contains('preserve_original_event'))"
-      ignore_failure: true
-      ignore_missing: true
 # Drop empty/null fields
   - script:
       description: Drops null/empty values recursively
@@ -1252,6 +1248,10 @@ on_failure:
   - set:
       field: event.kind
       value: pipeline_error
+  - append:
+      field: tags
+      value: preserve_original_event
+      allow_duplicates: false
   - append:
       field: error.message
       value: '{{{ _ingest.on_failure_message }}}'

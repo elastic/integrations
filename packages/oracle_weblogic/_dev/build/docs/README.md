@@ -22,7 +22,7 @@ In order to ingest data from Oracle WebLogic:
      -javaagent:/home/oracle/jolokia-jvm-1.6.0-agent.jar=port=8005,host=localhost
     ```
 
-    (Optional) User can run Jolokia on https by configuring following [parameters](https://jolokia.org/reference/html/agents.html#:~:text=Table%C2%A03.6.-,JVM%20agent%20configuration%20options,-Parameter).
+    (Optional) User can run Jolokia on https by configuring the following [parameters](https://jolokia.org/reference/html/manual/agents.html#agent-jvm-config).
 
     ```
      -javaagent:<path-to-jolokia-agent>=port=<port>,host=<hostname>,protocol=<http/https>,keystore=<path-to-keystore>,keystorePassword=<kestore-password>,keyStoreType=<keystore-type>
@@ -47,6 +47,10 @@ The `access` data stream collects Access logs form `Access.log`.
 
 {{event "access"}}
 
+**ECS Field Reference**
+
+Please refer to the following [document](https://www.elastic.co/guide/en/ecs/current/ecs-field-reference.html) for detailed information on ECS fields.
+
 {{fields "access"}}
 
 ### Admin Server logs
@@ -54,6 +58,10 @@ The `access` data stream collects Access logs form `Access.log`.
 The `admin_server` data stream collects Admin Server logs from `Adminserver.log`.
 
 {{event "admin_server"}}
+
+**ECS Field Reference**
+
+Please refer to the following [document](https://www.elastic.co/guide/en/ecs/current/ecs-field-reference.html) for detailed information on ECS fields.
 
 {{fields "admin_server"}}
 
@@ -63,6 +71,10 @@ The `domain` data stream collects Domain logs from `Domain.log`.
 
 {{event "domain"}}
 
+**ECS Field Reference**
+
+Please refer to the following [document](https://www.elastic.co/guide/en/ecs/current/ecs-field-reference.html) for detailed information on ECS fields.
+
 {{fields "domain"}}
 
 ### Managed Server Logs
@@ -70,6 +82,10 @@ The `domain` data stream collects Domain logs from `Domain.log`.
 The `managed_server` data stream collects Managed Server logs from `Managedserver.log`.
 
 {{event "managed_server"}}
+
+**ECS Field Reference**
+
+Please refer to the following [document](https://www.elastic.co/guide/en/ecs/current/ecs-field-reference.html) for detailed information on ECS fields.
 
 {{fields "managed_server"}}
 
@@ -81,6 +97,10 @@ The `deployed_application` data stream collects metrics of Deployed Application.
 
 {{event "deployed_application"}}
 
+**ECS Field Reference**
+
+Please refer to the following [document](https://www.elastic.co/guide/en/ecs/current/ecs-field-reference.html) for detailed information on ECS fields.
+
 {{fields "deployed_application"}}
 
 ### ThreadPool metrics
@@ -88,5 +108,9 @@ The `deployed_application` data stream collects metrics of Deployed Application.
 This `threadpool` data stream collects metrics of ThreadPool.
 
 {{event "threadpool"}}
+
+**ECS Field Reference**
+
+Please refer to the following [document](https://www.elastic.co/guide/en/ecs/current/ecs-field-reference.html) for detailed information on ECS fields.
 
 {{fields "threadpool"}}

@@ -1,0 +1,221 @@
+---
+description: Pipeline for F5 BIG-IP iHealth Information Request logs.
+processors:
+  - append:
+      field: event.category
+      tag: append_event_category
+      value: vulnerability
+  - append:
+      field: event.type
+      tag: append_event_type
+      value: info
+  - set:
+      field: observer.product
+      tag: set_observer_product
+      value: iHealth Information
+  - script:
+      lang: painless
+      tag: script_to_convert_diagnostics_objects_into_string
+      description: Script to convert diagnostics objects into string.
+      source: |
+        def convertKeysToString(Map versionMap, String[] keysToConvert) {
+          def convertedMap = [:];
+          versionMap.entrySet().forEach(entry -> {
+            def key = entry.getKey().toString();
+            def value = entry.getValue();
+            if (Arrays.asList(keysToConvert).contains(key)) {
+              convertedMap[key] = value.toString();
+            } else {
+              convertedMap[key] = value;
+            }
+          });
+          return convertedMap;
+        }
+        def diagnosticArray = ctx.json.diagnostics;
+        def keysToConvert = new String[] {
+          'minor',
+          'major',
+          'maintenance',
+          'fix',
+          'point'
+        };
+        if (diagnosticArray instanceof List) {
+          for (int i = 0; i < diagnosticArray.size(); i++) {
+            def versionArray = diagnosticArray[i].version;
+            if (versionArray instanceof List) {
+              for (int j = 0; j < versionArray.size(); j++) {
+                versionArray[j] = convertKeysToString(versionArray[j], keysToConvert);
+              }
+              ctx.json.diagnostics[i].put('version', versionArray);
+            }
+          }
+        }
+  - script:
+      lang: painless
+      tag: script_to_append_diagnostics_objects_into_ecs_fields
+      description: Script to append diagnostics objects into ECS fields.
+      source: |
+        def diagnosticArray = ctx.json.diagnostics;
+        def cveIds = new HashSet();
+        def importance = new HashSet();
+        def header = new HashSet();
+        def summary = new HashSet();
+        def ruleName = new HashSet();
+        def ruleRef = new HashSet();
+        def threatRef = new HashSet();
+        if (ctx.vulnerability == null) {
+          ctx.vulnerability = new HashMap()
+        }
+        if (ctx.rule == null) {
+          ctx.rule = new HashMap()
+        }
+        if (ctx.threat == null) {
+          ctx.threat = new HashMap()
+        }
+        if (ctx.threat.enrichments == null) {
+          ctx.threat.enrichments = new HashMap()
+        }
+        if (ctx.threat.enrichments.indicator == null) {
+          ctx.threat.enrichments.indicator = new HashMap()
+        }
+        if (diagnosticArray instanceof List) {
+          for (int i = 0; i < diagnosticArray.size(); i++) {
+            def cveIdsArray = diagnosticArray[i].cveIds;
+            if (cveIdsArray instanceof List) {
+              for (int j=0; j < cveIdsArray.size(); j++) {
+                cveIds.add(cveIdsArray[j]);
+              }
+              ctx.json.diagnostics[i].remove('cveIds');
+              ctx.json.diagnostics[i].put('cve_ids', cveIdsArray);
+            }
+            def solutionArray = diagnosticArray[i].solution;
+            if (solutionArray instanceof List) {
+              for (int j=0; j < solutionArray.size(); j++) {
+                if (solutionArray[j].id != null) {
+                  ruleRef.add(solutionArray[j].id);
+                }
+                if (solutionArray[j].value != null) {
+                  threatRef.add(solutionArray[j].value);
+                }
+              }
+              ctx.json.diagnostics[i].remove('cveIds');
+              ctx.json.diagnostics[i].put('cve_ids', cveIdsArray);
+            }
+            if (diagnosticArray[i].importance != null){
+              importance.add(diagnosticArray[i].importance);
+            }
+            if (diagnosticArray[i].header != null){
+              header.add(diagnosticArray[i].header);
+            }
+            if (diagnosticArray[i].summary != null){
+              summary.add(diagnosticArray[i].summary);
+            }
+            if (diagnosticArray[i].name != null){
+              ruleName.add(diagnosticArray[i].name);
+            }
+          }
+        }
+        ctx.vulnerability.put('id', cveIds);
+        ctx.vulnerability.put('severity', importance);
+        ctx.vulnerability.put('description', header);
+        ctx.vulnerability.put('description', summary);
+        ctx.rule.put('name', ruleName);
+        ctx.rule.put('reference', ruleRef);
+        ctx.threat.enrichments.indicator.put('reference', threatRef);
+  - rename:
+      field: json
+      tag: rename_json_to_f5_bigip.log
+      target_field: f5_bigip.log
+      ignore_missing: true
+  - set:
+      field: host.hostname
+      tag: set_hostname_to_host_hostname
+      copy_from: f5_bigip.log.system.hostname
+      ignore_empty_value: true
+  - rename:
+      field: f5_bigip.log.system.ihealthLink
+      tag: rename_system_ihealth_link
+      target_field: f5_bigip.log.system.ihealth_link
+      ignore_missing: true
+  - set:
+      field: url.full
+      tag: set_ihealth_link_to_url_full
+      copy_from: f5_bigip.log.system.ihealth_link
+      ignore_empty_value: true
+  - rename:
+      field: f5_bigip.log.system.qkviewNumber
+      tag: rename_system_qkview_number
+      target_field: f5_bigip.log.system.qkview_number
+      ignore_missing: true
+  - date:
+      field: f5_bigip.log.telemetryServiceInfo.cycleEnd
+      tag: date_cycle_end_conversion
+      target_field: f5_bigip.log.telemetry_service_info.cycle_end
+      if: ctx.f5_bigip.log?.telemetryServiceInfo?.cycleEnd != null && ctx.f5_bigip.log.telemetryServiceInfo.cycleEnd != ''
+      formats:
+        - EEE, dd MMM yyyy HH:mm:ss z
+        - ISO8601
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - set:
+      field: event.end
+      tag: set_cycle_end_to_event_end
+      copy_from: f5_bigip.log.telemetry_service_info.cycle_end
+      ignore_empty_value: true
+  - date:
+      field: f5_bigip.log.telemetryServiceInfo.cycleStart
+      tag: date_cycle_start_conversion
+      target_field: f5_bigip.log.telemetry_service_info.cycle_start
+      if: ctx.f5_bigip.log?.telemetryServiceInfo?.cycleStart != null && ctx.f5_bigip.log.telemetryServiceInfo.cycleStart != ''
+      formats:
+        - EEE, dd MMM yyyy HH:mm:ss z
+        - ISO8601
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - set:
+      field: event.start
+      tag: set_cycle_start_to_event_start
+      copy_from: f5_bigip.log.telemetry_service_info.cycle_start
+      ignore_empty_value: true
+  - rename:
+      field: f5_bigip.log.telemetryEventCategory
+      tag: rename_telemetry_event_category
+      target_field: f5_bigip.log.telemetry.event.category
+      ignore_missing: true
+  - remove:
+      field:
+        - f5_bigip.log.telemetryServiceInfo.cycleEnd
+        - f5_bigip.log.telemetryServiceInfo.cycleStart
+      tag: remove_mapped_fields
+      ignore_failure: true
+      ignore_missing: true
+  - foreach:
+      field: f5_bigip.log.diagnostics
+      if: ctx.f5_bigip?.log?.diagnostics instanceof List
+      ignore_failure: true
+      processor:
+        remove:
+          field:
+            - _ingest._value.cve_ids
+            - _ingest._value.header
+            - _ingest._value.importance
+            - _ingest._value.name
+            - _ingest._value.solution
+            - _ingest._value.summary
+          tag: remove_duplicate_custom_fields_from_diagnostics_array
+          ignore_missing: true
+          if: ctx.tags == null || !ctx.tags.contains('preserve_duplicate_custom_fields')
+  - remove:
+      if: ctx.tags == null || !ctx.tags.contains('preserve_duplicate_custom_fields')
+      field:
+        - f5_bigip.log.system.hostname
+        - f5_bigip.log.system.ihealth_link
+        - f5_bigip.log.telemetry_service_info.cycle_end
+        - f5_bigip.log.telemetry_service_info.cycle_start
+      tag: remove_custom_duplicate_fields
+      ignore_failure: true
+      ignore_missing: true

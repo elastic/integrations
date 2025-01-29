@@ -86,6 +86,10 @@ Retrieves Microsoft Entra ID sign-in logs. The sign-ins report provides informat
 
 {{event "signinlogs"}}
 
+**ECS Field Reference**
+
+Please refer to the following [document](https://www.elastic.co/guide/en/ecs/current/ecs-field-reference.html) for detailed information on ECS fields.
+
 {{fields "signinlogs"}}
 
 ### Identity Protection logs
@@ -93,6 +97,10 @@ Retrieves Microsoft Entra ID sign-in logs. The sign-ins report provides informat
 Retrieves Microsoft Entra ID Protection logs. The [Microsoft Entra ID Protection](https://docs.microsoft.com/en-us/azure/active-directory/identity-protection/overview-identity-protection) service analyzes events from Microsoft Entra ID users' behavior, detects risk situations, and can respond by reporting only or even blocking users at risk, according to policy configurations.
 
 {{event "identity_protection"}}
+
+**ECS Field Reference**
+
+Please refer to the following [document](https://www.elastic.co/guide/en/ecs/current/ecs-field-reference.html) for detailed information on ECS fields.
 
 {{fields "identity_protection"}}
 
@@ -109,6 +117,10 @@ The Provisioning Logs contain a lot of details about a inbound/outbound sync act
 
 {{event "provisioning"}}
 
+**ECS Field Reference**
+
+Please refer to the following [document](https://www.elastic.co/guide/en/ecs/current/ecs-field-reference.html) for detailed information on ECS fields.
+
 {{fields "provisioning"}}
 
 ### Audit logs
@@ -116,5 +128,9 @@ The Provisioning Logs contain a lot of details about a inbound/outbound sync act
 Retrieves Microsoft Entra ID audit logs. The audit logs provide traceability through logs for all changes done by various features within Microsoft Entra ID. Examples of audit logs include changes made to any resources within Microsoft Entra ID like adding or removing users, apps, groups, roles and policies.
 
 {{event "auditlogs"}}
+
+**ECS Field Reference**
+
+Please refer to the following [document](https://www.elastic.co/guide/en/ecs/current/ecs-field-reference.html) for detailed information on ECS fields.
 
 {{fields "auditlogs"}}

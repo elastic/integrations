@@ -183,7 +183,6 @@ An example event for `log` looks as following:
         "forwarded"
     ]
 }
-
 ```
 
 **Exported fields**
@@ -385,6 +384,13 @@ An example event for `log` looks as following:
 | server.ip | IP address of the server (IPv4 or IPv6). | ip |
 | server.mac | MAC address of the server. The notation format from RFC 7042 is suggested: Each octet (that is, 8-bit byte) is represented by two [uppercase] hexadecimal digits giving the value of the octet as an unsigned integer. Successive octets are separated by a hyphen. | keyword |
 | server.port | Port of the server. | long |
+| snort.alert_message | Snort alert message. | keyword |
+| snort.classification | Snort classification. | keyword |
+| snort.generator_id | Snort generator id. | keyword |
+| snort.preprocessor | Snort preprocessor. | keyword |
+| snort.priority | Snort priority. | long |
+| snort.signature_id | Snort signature id. | keyword |
+| snort.signature_revision | Snort signature revision. | keyword |
 | source.address | Some event source addresses are defined ambiguously. The event will sometimes list an IP, a domain or a unix socket.  You should always store the raw address in the `.address` field. Then it should be duplicated to `.ip` or `.domain`, depending on which one it is. | keyword |
 | source.as.number | Unique number allocated to the autonomous system. The autonomous system number (ASN) uniquely identifies each network on the Internet. | long |
 | source.as.organization.name | Organization name. | keyword |

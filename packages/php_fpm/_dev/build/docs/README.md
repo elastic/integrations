@@ -43,7 +43,7 @@ Example Status path configuration: `/status`
 
 ## Setup
 
-For step-by-step instructions on how to set up an integration, see the [Getting Started](https://www.elastic.co/guide/en/welcome-to-elastic/current/getting-started-observability.html) guide.
+For step-by-step instructions on how to set up an integration, see the [Getting Started](https://www.elastic.co/guide/en/starting-with-the-elasticsearch-platform-and-its-solutions/current/getting-started-observability.html) guide.
 
 ## Validation
 
@@ -61,6 +61,10 @@ The `pool` data stream collects metrics related to the setup and contents of the
 
 {{event "pool"}}
 
+**ECS Field Reference**
+
+Please refer to the following [document](https://www.elastic.co/guide/en/ecs/current/ecs-field-reference.html) for detailed information on ECS fields.
+
 {{fields "pool"}}
 
 ### Process
@@ -68,5 +72,9 @@ The `pool` data stream collects metrics related to the setup and contents of the
 The `process` data stream collects metrics related to the request duration, content length, process state, etc.
 
 {{event "process"}}
+
+**ECS Field Reference**
+
+Please refer to the following [document](https://www.elastic.co/guide/en/ecs/current/ecs-field-reference.html) for detailed information on ECS fields.
 
 {{fields "process"}}

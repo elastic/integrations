@@ -200,7 +200,6 @@ An example event for `device` looks as following:
         "type": "devices"
     }
 }
-
 ```
 
 **Exported fields**
@@ -422,7 +421,6 @@ An example event for `event` looks as following:
         "type": "MVEvents"
     }
 }
-
 ```
 
 **Exported fields**
@@ -580,7 +578,6 @@ An example event for `group` looks as following:
         "type": "groups"
     }
 }
-
 ```
 
 **Exported fields**

@@ -5,8 +5,8 @@
 Get a comprehensive understanding of what lines of code are consuming compute resources throughout your entire fleet by visualizing your data in Kibana using the flamegraph, stacktraces, and top functions views.
 
 ## Requirements
-* The workloads to be profiled must be running on Linux machines; with kernel >=4.15
-* Elastic Cloud, version 8.7 or higher
+* The workloads to be profiled must be running on Linux machines; The minimum supported kernel version is either 4.19 for x86_64 or 5.5 for ARM64 machines.
+* Elastic Cloud, version 8.10 or higher
 
 ## Key Features
 

@@ -66,56 +66,59 @@ This module has been tested against **Cloudflare version v4**.
 ## Setup
 
 ### To collect data from AWS S3 Bucket, follow the below steps:
-- Configure the [Data Forwarder](https://developers.cloudflare.com/logs/get-started/enable-destinations/aws-s3/) to ingest data into an AWS S3 bucket.
-- The default value of the "Bucket List Prefix" is listed below. However, the user can set the parameter "Bucket List Prefix" according to the requirement.
+- Configure [Cloudflare Logpush to Amazon S3](https://developers.cloudflare.com/logs/get-started/enable-destinations/aws-s3/) to send Cloudflare's data to an AWS S3 bucket.
+- The default values of the "Bucket List Prefix" are listed below. However, users can set the parameter "Bucket List Prefix" according to their requirements.
 
   | Data Stream Name           | Bucket List Prefix     |
   | -------------------------- | ---------------------- |
-  | Access Request             | access_request         |
+  | Access Request             | access_request         |
   | Audit Logs                 | audit_logs             |
-  | CASB findings              | casb                   |
-  | Device Posture Results     | device_posture         |
+  | CASB findings              | casb                   |
+  | Device Posture Results     | device_posture         |
   | DNS                        | dns                    |
   | DNS Firewall               | dns_firewall           |
   | Firewall Event             | firewall_event         |
-  | Gateway DNS                | gateway_dns            |
-  | Gateway HTTP               | gateway_http           |
+  | Gateway DNS                | gateway_dns            |
+  | Gateway HTTP               | gateway_http           |
   | Gateway Network            | gateway_network        |
   | HTTP Request               | http_request           |
   | Magic IDS                  | magic_ids              |
   | NEL Report                 | nel_report             |
   | Network Analytics          | network_analytics_logs |
-  | Zero Trust Network Session | network_session        |
+  | Zero Trust Network Session | network_session        |
   | Sinkhole HTTP              | sinkhole_http          |
   | Spectrum Event             | spectrum_event         |
   | Workers Trace Events       | workers_trace          |
 
 ### To collect data from AWS SQS, follow the below steps:
-1. If data forwarding to an AWS S3 Bucket hasn't been configured, then first setup an AWS S3 Bucket as mentioned in the above documentation.
-2. To setup an SQS queue, follow "Step 1: Create an Amazon SQS queue" mentioned in the [Documentation](https://docs.aws.amazon.com/AmazonS3/latest/userguide/ways-to-add-notification-config-to-bucket.html).
-  - While creating an SQS Queue, please provide the same bucket ARN that has been generated after creating an AWS S3 Bucket.
-3. Setup event notification for an S3 bucket. Follow this [Link](https://docs.aws.amazon.com/AmazonS3/latest/userguide/enable-event-notifications.html).
-  - The user has to perform Step 3 for all the data-streams individually, and each time prefix parameter should be set the same as the S3 Bucket List Prefix as created earlier. (for example, `audit_logs/` for audit data stream.)
-  - For all the event notifications that have been created, select the event type as s3:ObjectCreated:*, select the destination type SQS Queue, and select the queue that has been created in Step 2.
+1. If Logpush forwarding to an AWS S3 Bucket hasn't been configured, then first setup an AWS S3 Bucket as mentioned in the above documentation.
+2. Follow the steps below for each Logpush data stream that has been enabled:
+     1. Create an SQS queue
+         - To setup an SQS queue, follow "Step 1: Create an Amazon SQS queue" mentioned in the [Amazon documentation](https://docs.aws.amazon.com/AmazonS3/latest/userguide/ways-to-add-notification-config-to-bucket.html).
+         - While creating an SQS Queue, please provide the same bucket ARN that has been generated after creating an AWS S3 Bucket.
+     2. Setup event notification from the S3 bucket using the instructions [here](https://docs.aws.amazon.com/AmazonS3/latest/userguide/enable-event-notifications.html). Use the following settings:
+        - Event type: `All object create events` (`s3:ObjectCreated:*`)
+         - Destination: SQS Queue
+         - Prefix (filter): enter the prefix for this Logpush data stream, e.g. `audit_logs/`
+         - Select the SQS queue that has been created for this data stream
 
-**Note**:
+ **Note**:
+  - A separate SQS queue and S3 bucket notification is required for each enabled data stream.
+  - Permissions for the above AWS S3 bucket and SQS queues should be configured according to the [Filebeat S3 input documentation](https://www.elastic.co/guide/en/beats/filebeat/current/filebeat-input-aws-s3.html#_aws_permissions_2)
   - Credentials for the above AWS S3 and SQS input types should be configured using the [link](https://www.elastic.co/guide/en/beats/filebeat/current/filebeat-input-aws-s3.html#aws-credentials-config).
   - Data collection via AWS S3 Bucket and AWS SQS are mutually exclusive in this case.
-  - You can configure a global SQS queue for all data streams or a local SQS queue for each data stream. Configuring
-    data stream specific SQS queues will enable better performance and scalability. Data stream specific SQS queues
-    will always override any global queue definitions for that specific data stream.
 
-### To collect data from Cloudflare R2 Buckets, follow the below steps:
+### To collect data from S3-Compatible Cloudflare R2 Buckets, follow the below steps:
 - Configure the [Data Forwarder](https://developers.cloudflare.com/logs/get-started/enable-destinations/r2/) to push logs to Cloudflare R2.
 
 **Note**:
 - When creating the API token, make sure it has [Admin permissions](https://developers.cloudflare.com/r2/api/s3/tokens/#permissions). This is needed to list buckets and view bucket configuration.
 
-When configuring the integration to read from R2 Buckets, the following steps are required:
+When configuring the integration to read from S3-Compatible Buckets such as Cloudflare R2, the following steps are required:
 - Enable the toggle `Collect logs via S3 Bucket`.
 - Make sure that the Bucket Name is set.
 - Although you have to create an API token, that token should not be used for authentication with the S3 API. You just have to set the Access Key ID and Secret Access Key.
-- Set the endpoint URL which can be found in Bucket Details. Endpoint should be a full URI, typically in the form of `https(s)://<accountid>.r2.cloudflarestorage.com`, that will be used as the API endpoint of the service.
+- Set the endpoint URL which can be found in Bucket Details. Endpoint should be a full URI that will be used as the API endpoint of the service. For Cloudflare R2 buckets, the URI is typically in the form of `https(s)://<accountid>.r2.cloudflarestorage.com`.
 - Bucket Prefix is optional for each data stream.
 
 **Note**:
@@ -153,6 +156,7 @@ curl --location --request POST 'https://api.cloudflare.com/client/v4/zones/<ZONE
 - The destination_conf parameter inside the request data should set the Content-Type header to `application/json`. This is the content type that the HTTP endpoint expects for incoming events.
 - Default port for the HTTP Endpoint is _9560_.
 - When using the same port for more than one dataset, be sure to specify different dataset paths.
+- To enable request ACKing, add a `wait_for_completion_timeout` request query with the timeout for an ACK. See the [HTTP Endpoint documentation](https://www.elastic.co/guide/en/beats/filebeat/current/filebeat-input-http_endpoint.html) for details.
 
 ### Enabling the integration in Elastic
 1. In Kibana, go to Management > Integrations

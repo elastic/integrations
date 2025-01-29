@@ -229,7 +229,7 @@ An example event for `guardduty` looks as following:
         "type": "logs"
     },
     "ecs": {
-        "version": "8.10.0"
+        "version": "8.11.0"
     },
     "elastic_agent": {
         "id": "9e5875f3-d206-43b3-b24e-5a5096e50846",
@@ -325,6 +325,10 @@ An example event for `guardduty` looks as following:
     }
 }
 ```
+
+**ECS Field Reference**
+
+Please refer to the following [document](https://www.elastic.co/guide/en/ecs/current/ecs-field-reference.html) for detailed information on ECS fields.
 
 **Exported fields**
 
@@ -574,6 +578,44 @@ An example event for `guardduty` looks as following:
 | aws.guardduty.service.evidence.threat_intelligence_details.threat.names | A list of names of the threats in the threat intelligence list that triggered the finding. | keyword |
 | aws.guardduty.service.feature_name | The name of the feature that generated a finding. | keyword |
 | aws.guardduty.service.resource_role | The resource role information for this finding. | keyword |
+| aws.guardduty.service.runtime_details.context.address_family | Represents the communication protocol associated with the address. For example, the address family AF_INET is used for IP version of 4 protocol. | keyword |
+| aws.guardduty.service.runtime_details.context.command_line_example | Example of the command line involved in the suspicious activity. | keyword |
+| aws.guardduty.service.runtime_details.context.file_system_type | Represents the type of mounted fileSystem. | keyword |
+| aws.guardduty.service.runtime_details.context.flags | Represents options that control the behavior of a runtime operation or action. For example, a filesystem mount operation may contain a read-only flag. | keyword |
+| aws.guardduty.service.runtime_details.context.iana_protocol_number | Specifies a particular protocol within the address family. Usually there is a single protocol in address families. For example, the address family AF_INET only has the IP protocol. | keyword |
+| aws.guardduty.service.runtime_details.context.ld_preload | The value of the LD_PRELOAD environment variable. | keyword |
+| aws.guardduty.service.runtime_details.context.library_path | The path to the new library that was loaded. | keyword |
+| aws.guardduty.service.runtime_details.context.memory_regions | Specifies the Region of a process's address space such as stack and heap. | keyword |
+| aws.guardduty.service.runtime_details.context.modified_at | The timestamp at which the process modified the current process. The timestamp is in UTC date string format. | date |
+| aws.guardduty.service.runtime_details.context.modifying_process | Information about the process that modified the current process. This is available for multiple finding types. | flattened |
+| aws.guardduty.service.runtime_details.context.module_file_path | The path to the module loaded into the kernel. | keyword |
+| aws.guardduty.service.runtime_details.context.module_name | The name of the module loaded into the kernel. | keyword |
+| aws.guardduty.service.runtime_details.context.module_sha256 | The SHA256 hash of the module. | keyword |
+| aws.guardduty.service.runtime_details.context.mount_source | The path on the host that is mounted by the container. | keyword |
+| aws.guardduty.service.runtime_details.context.mount_target | The path in the container that is mapped to the host directory. | keyword |
+| aws.guardduty.service.runtime_details.context.release_agent_path | The path in the container that modified the release agent file. | keyword |
+| aws.guardduty.service.runtime_details.context.runc_binary_path | The path to the leveraged runc implementation. | keyword |
+| aws.guardduty.service.runtime_details.context.script_path | The path to the script that was executed. | keyword |
+| aws.guardduty.service.runtime_details.context.service_name | Name of the security service that has been potentially disabled. | keyword |
+| aws.guardduty.service.runtime_details.context.shell_history_file_path | The path to the modified shell history file. | keyword |
+| aws.guardduty.service.runtime_details.context.socket_path | The path to the socket that was accessed. | keyword |
+| aws.guardduty.service.runtime_details.context.target_process | Information about the process that had its memory overwritten by the current process. | flattened |
+| aws.guardduty.service.runtime_details.context.threat_file_path | The suspicious file path for which the threat intelligence details were found. | keyword |
+| aws.guardduty.service.runtime_details.context.tool_category | Category that the tool belongs to. Some of the examples are Backdoor Tool, Pentest Tool, Network Scanner, and Network Sniffer. | keyword |
+| aws.guardduty.service.runtime_details.context.tool_name | Name of the potentially suspicious tool. | keyword |
+| aws.guardduty.service.runtime_details.process.euid | The effective user ID of the user that executed the process. | long |
+| aws.guardduty.service.runtime_details.process.executable_path | The absolute path of the process executable file. | keyword |
+| aws.guardduty.service.runtime_details.process.executable_sha256 | The SHA256 hash of the process executable. | keyword |
+| aws.guardduty.service.runtime_details.process.lineage | Information about the process's lineage. | flattened |
+| aws.guardduty.service.runtime_details.process.name | The name of the process. | keyword |
+| aws.guardduty.service.runtime_details.process.namespace_pid | The ID of the child process. | long |
+| aws.guardduty.service.runtime_details.process.parent_uuid | The unique ID of the parent process. This ID is assigned to the parent process by GuardDuty. | keyword |
+| aws.guardduty.service.runtime_details.process.pid | The ID of the process. | long |
+| aws.guardduty.service.runtime_details.process.pwd | The present working directory of the process. | keyword |
+| aws.guardduty.service.runtime_details.process.start_time | The time when the process started. This is in UTC format. | date |
+| aws.guardduty.service.runtime_details.process.user | The user that executed the process. | keyword |
+| aws.guardduty.service.runtime_details.process.user_id | The unique ID of the user that executed the process. | long |
+| aws.guardduty.service.runtime_details.process.uuid | The unique ID assigned to the process by GuardDuty. | keyword |
 | aws.guardduty.service.service_name | The AWS service name whose API was invoked. | keyword |
 | aws.guardduty.service.user_feedback | Feedback that was submitted about the finding. | keyword |
 | aws.guardduty.severity.code | The severity of the finding in double. | double |
@@ -581,90 +623,14 @@ An example event for `guardduty` looks as following:
 | aws.guardduty.title | The title of the finding. | keyword |
 | aws.guardduty.type | The type of finding. | keyword |
 | aws.guardduty.updated_at | The time and date when the finding was last updated. | date |
-| cloud.account.id | The cloud account or organization id used to identify different entities in a multi-tenant environment. Examples: AWS account id, Google Cloud ORG Id, or other unique identifier. | keyword |
-| cloud.account.name | The cloud account name or alias used to identify different entities in a multi-tenant environment. Examples: AWS account name, Google Cloud ORG display name. | keyword |
-| cloud.availability_zone | Availability zone in which this host, resource, or service is located. | keyword |
 | cloud.image.id | Image ID for the cloud instance. | keyword |
-| cloud.instance.id | Instance ID of the host machine. | keyword |
-| cloud.instance.name | Instance name of the host machine. | keyword |
-| cloud.machine.type | Machine type of the host machine. | keyword |
-| cloud.project.id | The cloud project identifier. Examples: Google Cloud Project id, Azure Project id. | keyword |
-| cloud.provider | Name of the cloud provider. Example values are aws, azure, gcp, or digitalocean. | keyword |
-| cloud.region | Region in which this host, resource, or service is located. | keyword |
-| cloud.service.name | The cloud service name is intended to distinguish services running on different platforms within a provider, eg AWS EC2 vs Lambda, GCP GCE vs App Engine, Azure VM vs App Server. Examples: app engine, app service, cloud run, fargate, lambda. | keyword |
-| container.id | Unique container id. | keyword |
-| container.image.name | Name of the image the container was built on. | keyword |
-| container.labels | Image labels. | object |
-| container.name | Container name. | keyword |
-| container.runtime | Runtime managing this container. | keyword |
-| container.security_context.privileged | Indicates whether the container is running in privileged mode. | boolean |
 | data_stream.dataset | Data stream dataset. | constant_keyword |
 | data_stream.namespace | Data stream namespace. | constant_keyword |
 | data_stream.type | Data stream type. | constant_keyword |
-| destination.address | Some event destination addresses are defined ambiguously. The event will sometimes list an IP, a domain or a unix socket.  You should always store the raw address in the `.address` field. Then it should be duplicated to `.ip` or `.domain`, depending on which one it is. | keyword |
-| dns.question.name | The name being queried. If the name field contains non-printable characters (below 32 or above 126), those characters should be represented as escaped base 10 integers (\DDD). Back slashes and quotes should be escaped. Tabs, carriage returns, and line feeds should be converted to \t, \r, and \n respectively. | keyword |
-| ecs.version | ECS version this event conforms to. `ecs.version` is a required field and must exist in all events. When querying across multiple indices -- which may conform to slightly different ECS versions -- this field lets integrations adjust to the schema version of the events. | keyword |
-| event.action | The action captured by the event. This describes the information in the event. It is more specific than `event.category`. Examples are `group-add`, `process-started`, `file-created`. The value is normally defined by the implementer. | keyword |
-| event.created | `event.created` contains the date/time when the event was first read by an agent, or by your pipeline. This field is distinct from `@timestamp` in that `@timestamp` typically contain the time extracted from the original event. In most situations, these two timestamps will be slightly different. The difference can be used to calculate the delay between your source generating an event, and the time when your agent first processed it. This can be used to monitor your agent's or pipeline's ability to keep up with your event source. In case the two timestamps are identical, `@timestamp` should be used. | date |
-| event.dataset | Name of the dataset. If an event source publishes more than one type of log or events (e.g. access log, error log), the dataset is used to specify which one the event comes from. It's recommended but not required to start the dataset name with the module name, followed by a dot, then the dataset name. | constant_keyword |
-| event.end | `event.end` contains the date when the event ended or when the activity was last observed. | date |
-| event.id | Unique ID to describe the event. | keyword |
-| event.kind | This is one of four ECS Categorization Fields, and indicates the highest level in the ECS category hierarchy. `event.kind` gives high-level information about what type of information the event contains, without being specific to the contents of the event. For example, values of this field distinguish alert events from metric events. The value of this field can be used to inform how these kinds of events should be handled. They may warrant different retention, different access control, it may also help understand whether the data is coming in at a regular interval or not. | keyword |
 | event.module | Event module. | constant_keyword |
-| event.original | Raw text message of entire event. Used to demonstrate log integrity or where the full log message (before splitting it up in multiple parts) may be required, e.g. for reindex. This field is not indexed and doc_values are disabled. It cannot be searched, but it can be retrieved from `_source`. If users wish to override this and index this field, please see `Field data types` in the `Elasticsearch Reference`. | keyword |
-| event.provider | Source of the event. Event transports such as Syslog or the Windows Event Log typically mention the source of an event. It can be the name of the software that generated the event (e.g. Sysmon, httpd), or of a subsystem of the operating system (kernel, Microsoft-Windows-Security-Auditing). | keyword |
-| event.severity | The numeric severity of the event according to your event source. What the different severity values mean can be different between sources and use cases. It's up to the implementer to make sure severities are consistent across events from the same source. The Syslog severity belongs in `log.syslog.severity.code`. `event.severity` is meant to represent the severity according to the event source (e.g. firewall, IDS). If the event source does not publish its own severity, you may optionally copy the `log.syslog.severity.code` to `event.severity`. | long |
-| event.start | `event.start` contains the date when the event started or when the activity was first observed. | date |
-| event.type | This is one of four ECS Categorization Fields, and indicates the third level in the ECS category hierarchy. `event.type` represents a categorization "sub-bucket" that, when used along with the `event.category` field values, enables filtering events down to a level appropriate for single visualization. This field is an array. This will allow proper categorization of some events that fall in multiple event types. | keyword |
-| file.hash.sha256 | SHA256 hash. | keyword |
-| file.name | Name of the file including the extension, without the directory. | keyword |
-| file.path | Full path to the file, including the file name. It should include the drive letter, when appropriate. | keyword |
-| file.path.text | Multi-field of `file.path`. | match_only_text |
-| host.architecture | Operating system architecture. | keyword |
 | host.containerized | If the host is a container. | boolean |
-| host.domain | Name of the domain of which the host is a member. For example, on Windows this could be the host's Active Directory domain or NetBIOS domain name. For Linux this could be the domain of the host's LDAP provider. | keyword |
-| host.hostname | Hostname of the host. It normally contains what the `hostname` command returns on the host machine. | keyword |
-| host.id | Unique host id. As hostname is not always unique, use values that are meaningful in your environment. Example: The current usage of `beat.name`. | keyword |
-| host.ip | Host ip addresses. | ip |
-| host.mac | Host MAC addresses. The notation format from RFC 7042 is suggested: Each octet (that is, 8-bit byte) is represented by two [uppercase] hexadecimal digits giving the value of the octet as an unsigned integer. Successive octets are separated by a hyphen. | keyword |
-| host.name | Name of the host. It can contain what hostname returns on Unix systems, the fully qualified domain name (FQDN), or a name specified by the user. The recommended value is the lowercase FQDN of the host. | keyword |
 | host.os.build | OS build information. | keyword |
 | host.os.codename | OS codename, if any. | keyword |
-| host.os.family | OS family (such as redhat, debian, freebsd, windows). | keyword |
-| host.os.kernel | Operating system kernel version as a raw string. | keyword |
-| host.os.name | Operating system name, without the version. | keyword |
-| host.os.name.text | Multi-field of `host.os.name`. | match_only_text |
-| host.os.platform | Operating system platform (such centos, ubuntu, windows). | keyword |
-| host.os.version | Operating system version as a raw string. | keyword |
-| host.type | Type of host. For Cloud providers this can be the machine type like `t2.medium`. If vm, this could be the container, for example, or other information meaningful in your environment. | keyword |
 | input.type | Input type | keyword |
 | log.offset | Log offset | long |
-| message | For log events the message field contains the log message, optimized for viewing in a log viewer. For structured logs without an original message field, other fields can be concatenated to form a human-readable summary of the event. If multiple messages exist, they can be combined into one message. | match_only_text |
-| network.direction | Direction of the network traffic. When mapping events from a host-based monitoring context, populate this field from the host's point of view, using the values "ingress" or "egress". When mapping events from a network or perimeter-based monitoring context, populate this field from the point of view of the network perimeter, using the values "inbound", "outbound", "internal" or "external". Note that "internal" is not crossing perimeter boundaries, and is meant to describe communication between two hosts within the perimeter. Note also that "external" is meant to describe traffic between two hosts that are external to the perimeter. This could for example be useful for ISPs or VPN service providers. | keyword |
-| network.transport | Same as network.iana_number, but instead using the Keyword name of the transport layer (udp, tcp, ipv6-icmp, etc.) The field value must be normalized to lowercase for querying. | keyword |
-| orchestrator.namespace | Namespace in which the action is taking place. | keyword |
-| orchestrator.resource.name | Name of the resource being acted upon. | keyword |
-| orchestrator.resource.type | Type of resource being acted upon. | keyword |
-| related.hash | All the hashes seen on your event. Populating this field, then using it to search for hashes can help in situations where you're unsure what the hash algorithm is (and therefore which key name to search). | keyword |
-| related.hosts | All hostnames or other host identifiers seen on your event. Example identifiers include FQDNs, domain names, workstation names, or aliases. | keyword |
-| related.ip | All of the IPs seen on your event. | ip |
-| related.user | All the user names or other user identifiers seen on the event. | keyword |
-| rule.category | A categorization value keyword used by the entity using the rule for detection of this event. | keyword |
-| rule.name | The name of the rule or signature generating the event. | keyword |
-| rule.ruleset | Name of the ruleset, policy, group, or parent category in which the rule used to generate this event is a member. | keyword |
-| source.address | Some event source addresses are defined ambiguously. The event will sometimes list an IP, a domain or a unix socket.  You should always store the raw address in the `.address` field. Then it should be duplicated to `.ip` or `.domain`, depending on which one it is. | keyword |
-| source.as.number | Unique number allocated to the autonomous system. The autonomous system number (ASN) uniquely identifies each network on the Internet. | long |
-| source.as.organization.name | Organization name. | keyword |
-| source.as.organization.name.text | Multi-field of `source.as.organization.name`. | match_only_text |
-| source.geo.city_name | City name. | keyword |
-| source.geo.country_iso_code | Country ISO code. | keyword |
-| source.geo.country_name | Country name. | keyword |
-| source.geo.location | Longitude and latitude. | geo_point |
-| source.ip | IP address of the source (IPv4 or IPv6). | ip |
-| source.port | Port of the source. | long |
-| tags | List of keywords used to tag each event. | keyword |
-| user.id | Unique identifier of the user. | keyword |
-| user.name | Short name or login of the user. | keyword |
-| user.name.text | Multi-field of `user.name`. | match_only_text |
-| user.roles | Array of user roles at the time of the event. | keyword |
 

@@ -1,0 +1,116 @@
+type: logs
+title: Anomali ThreatStream
+ilm_policy: logs-ti_anomali.intelligence-default_policy
+streams:
+  - input: cel
+    template_path: cel.yml.hbs
+    title: Anomali ThreatStream
+    description: Retrieves indicators from the intelligence endpoint of the Anomali ThreatStream API
+    vars:
+      - name: username
+        type: text
+        title: Username
+        description: The username for Anomali ThreatStream.
+        multi: false
+        required: true
+        show_user: true
+      - name: api_key
+        type: password
+        title: API key
+        description: The API key for Anomali ThreatStream.
+        multi: false
+        required: true
+        show_user: true
+        secret: true
+      - name: url
+        type: text
+        title: URL
+        description: The base URL of the Anomali ThreatStream instance.
+        default: https://api.threatstream.com
+        required: true
+        show_user: true
+      - name: interval
+        type: text
+        title: Interval
+        description: Duration between requests to the CrowdStrike Falcon Intelligence API. Supported units for this parameter are h/m/s.
+        default: 5m
+        multi: false
+        required: true
+        show_user: true
+      - name: ioc_duration_before_deletion
+        type: text
+        title: IOC Duration Before Deletion
+        multi: false
+        required: true
+        show_user: true
+        default: "90d"
+        description: >-
+          All IOCs are deleted after this duration. This setting is required to avoid "orphaned" IOCs that never expire.
+          If an earlier expiration time is set upstream, that will be used.
+          Use [Elasticsearch time units](https://www.elastic.co/guide/en/elasticsearch/reference/current/api-conventions.html#time-units)
+          to specify a duration in minutes, hours or days (e.g 10d).
+      - name: preserve_original_event
+        required: true
+        show_user: true
+        title: Preserve original event
+        description: Preserves a raw copy of the original event, added to the field `event.original`
+        type: bool
+        multi: false
+        default: false
+      - name: enable_request_tracer
+        type: bool
+        title: Enable request tracing
+        multi: false
+        required: false
+        show_user: false
+        description: >-
+          The request tracer logs requests and responses to the agent's local file-system for debugging configurations.
+          Enabling this request tracing compromises security and should only be used for debugging.
+          See [documentation](https://www.elastic.co/guide/en/beats/filebeat/current/filebeat-input-cel.html#_resource_tracer_filename)
+          for details.
+      - name: remote_api_true
+        type: bool
+        title: Get remote observables
+        multi: false
+        required: true
+        show_user: false
+        default: false
+        description: >-
+          Get remote observables (for ThreatStream OnPrem only).
+          This attribute does not need to be set to retrieve local observables.
+          Only use this when retrieving remote observables from ThreatStream Cloud.
+      - name: page_size
+        type: integer
+        title: Page Size
+        description: The number of objects to return in each response. The maximum is 1000.
+        default: 1000
+        multi: false
+        required: true
+        show_user: false
+      - name: http_client_timeout
+        type: text
+        title: HTTP Client Timeout
+        description: Duration before declaring that the HTTP client connection has timed out. Valid time units are ns, us, ms, s, m, h.
+        multi: false
+        required: true
+        show_user: false
+        default: 30s
+      - name: tags
+        type: text
+        title: Tags
+        multi: true
+        required: true
+        show_user: false
+        default:
+          - forwarded
+          - anomali-intelligence
+      - name: processors
+        type: yaml
+        title: Processors
+        multi: false
+        required: false
+        show_user: false
+        description: >-
+          Processors are used to reduce the number of fields in the exported event or to enhance the event with metadata.
+          This executes in the agent before the logs are parsed.
+          See [Processors](https://www.elastic.co/guide/en/beats/filebeat/current/filtering-and-enhancing-data.html) for details.
