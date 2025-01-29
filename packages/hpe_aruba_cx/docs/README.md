@@ -2154,11 +2154,11 @@ The `log` dataset collects the HPE Aruba CX logs.
 | aruba.ospf.old_state |  | keyword |
 | aruba.ospf.router_id |  | keyword |
 | aruba.ospf.stats_id |  | keyword |
-| aruba.pac_abp.client |  | keyword |
-| aruba.pac_abp.line_card |  | keyword |
-| aruba.pac_abp.name |  | keyword |
-| aruba.pac_abp.operation |  | keyword |
-| aruba.pac_abp.result |  | keyword |
+| aruba.pac_gbp.client |  | keyword |
+| aruba.pac_gbp.line_card |  | keyword |
+| aruba.pac_gbp.name |  | keyword |
+| aruba.pac_gbp.operation |  | keyword |
+| aruba.pac_gbp.result |  | keyword |
 | aruba.packet_capture.session_name |  | keyword |
 | aruba.packet_capture.value |  | keyword |
 | aruba.pim.callerid |  | keyword |
