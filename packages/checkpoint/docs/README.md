@@ -512,7 +512,7 @@ An example event for `firewall` looks as following:
 | checkpoint.security_outzone | Network zone of outbound traffic as reported by the observer to categorize the destination area of egress traffic, e.g. Internal, External, DMZ, HR, Legal, etc. | keyword |
 | checkpoint.sendtotrackerasadvancedauditlog |  | keyword |
 | checkpoint.sent_bytes |  | keyword |
-| checkpoint.ser_agent_kid | User agenta kind | keyword |
+| checkpoint.ser_agent_kid | User agent kind | keyword |
 | checkpoint.server_inbound_interface | In-bound interface name as reported by the system. | keyword |
 | checkpoint.server_outbound_interface | Out-bound interface name as reported by the system. | keyword |
 | checkpoint.session_description |  | keyword |
