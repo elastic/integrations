@@ -235,7 +235,7 @@ processors:
         FAN_STATUS: "[-_0-9a-zA-Z]+"
 
     # Power events (3xx)
-    # https://www.arubanetworks.com/techdocs/AOS-CX/10.07/HTML/5200-8214/Content/events/POWER.htm
+    # https://arubanetworking.hpe.com/techdocs/AOS-CX/10.15/HTML/elmrg/Content/events/POWER.htm
   - dissect:
       field: message
       tag: power_event_301
@@ -291,6 +291,25 @@ processors:
       description: "There is insufficient power to power a card. Power can be removed from configured PoE PDs to be able to power the card."
       if: "ctx.event?.code == '316'"
       pattern: "%{aruba.power.type} module %{aruba.power.name} denied power due to insufficient power. Configured PoE power can be deconfigured to allow card to be granted power."
+  - grok:
+      field: message
+      tag: power_event_320_321
+      description: "Log when PSU voltage alert [occurs|recovers]"
+      if: "['320','321'].contains(ctx.event?.code)"
+      patterns:
+        - "^PSU %{DATA:aruba.power.name} %{DATA:aruba.power.alert} (occurred|recovered)"
+  - dissect:
+      field: message
+      tag: power_event_323
+      description: "Log event for an unsupported PSU, recorded periodically for each PSU"
+      if: "ctx.event?.code == '323'"
+      pattern: "PSU %{aruba.power.name} is not supported by the system. Please insert a supported PSU. Refer to the Installation Guide for supported configurations."
+  - dissect:
+      field: message
+      tag: power_event_324
+      description: "Log PSU fault event in previous boot"
+      if: "ctx.event?.code == '324'"
+      pattern: "PSU %{aruba.power.name} encountered %{aruba.power.fault} fault with 0x%{aruba.status} during previous boot."
 
     # Interface events (40x && 1420x)
     # https://www.arubanetworks.com/techdocs/AOS-CX/10.15/HTML/elmrg/Content/events/INTERFACE.htm
@@ -337,7 +356,7 @@ processors:
         - "^There are %{NUMBER:aruba.count:long} LED (types|configs) in subsystem %{GREEDYDATA:aruba.subsystem}"
 
     # Port events (60x)
-    # https://www.arubanetworks.com/techdocs/AOS-CX/10.07/HTML/5200-8214/Content/events/LED.htm
+    # https://arubanetworking.hpe.com/techdocs/AOS-CX/10.15/HTML/elmrg/Content/events/PORT.htm
   - grok:
       field: message
       tag: port_event_601_602
@@ -370,6 +389,13 @@ processors:
       description: "Log when a duplicate address is received on a port"
       if: "ctx.event?.code == '607'"
       pattern: "Overlapping networks observed for %{client.ip}"
+  - grok:
+      field: message
+      tag: port_event_608_609
+      description: "This log event informs the user that interface is [down|recovered] due to PVLAN hardware resource allocation failure"
+      if: "['608','609'].contains(ctx.event?.code)"
+      patterns:
+        - "^Interface %{DATA:aruba.port} is (down due to|recovered from) PVLAN hardware resource allocation failure"
 
     # SYS events (7xx)
     # https://www.arubanetworks.com/techdocs/AOS-CX/10.15/HTML/elmrg/Content/events/SYS.htm
@@ -1135,7 +1161,7 @@ processors:
         - "^UUFB %{DATA:aruba.port} (enabled|disabled) in hardware"
 
   # Redundant Management events (220x)
-  # https://www.arubanetworks.com/techdocs/AOS-CX/10.07/HTML/5200-8214/Content/events/REDUNDANT_MANAGEMENT.htm
+  # https://arubanetworking.hpe.com/techdocs/AOS-CX/10.15/HTML/elmrg/Content/events/REDUNDANT_MANAGEMENT.htm
   - dissect:
       if: "ctx.event.code == '2201'"
       tag: redundant_mgmt_event_2201
@@ -1318,7 +1344,7 @@ processors:
         - "^SSM-map %{DATA:aruba.acl.name} applied to %{DATA:aruba.mgmd.protocol} interface %{GREEDYDATA:aruba.port}"
 
     # Replication Manager events (270x)
-    # https://www.arubanetworks.com/techdocs/AOS-CX/10.07/HTML/5200-8214/Content/events/REPLD.htm
+    # https://arubanetworking.hpe.com/techdocs/AOS-CX/10.15/HTML/elmrg/Content/events/REPLD.htm
   - dissect:
       field: message
       tag: replication_mgr_event_2705
@@ -1835,7 +1861,7 @@ processors:
       pattern: "UDLD interface %{aruba.interface.id} is error-disabled"
 
     # Proxy ARP events (420x)
-    # https://www.arubanetworks.com/techdocs/AOS-CX/10.07/HTML/5200-8214/Content/events/PROXY-ARP.htm
+    # https://arubanetworking.hpe.com/techdocs/AOS-CX/10.15/HTML/elmrg/Content/events/PROXY-ARP.htm
   - grok:
       field: message
       tag: proxy_arp_event_4205_4206_4207_4208
@@ -2167,7 +2193,7 @@ processors:
         - "^Distance External %{DATA:aruba.ospf.external}, Inter-area %{DATA:aruba.ospf.inter}, and Intra-area %{DATA:aruba.ospf.intra} applied to all the %{NUMBER:process.pid:long}processes in %{DATA:aruba.vrf.id} VRF"
 
   # Rapid per VLAN Spanning Tree Protocol events (500x)
-  # https://www.arubanetworks.com/techdocs/AOS-CX/10.07/HTML/5200-8214/Content/events/RPVST.htm
+  # https://arubanetworking.hpe.com/techdocs/AOS-CX/10.15/HTML/elmrg/Content/events/RPVST.htm
   - dissect:
       if: "ctx.event?.code == '5003'"
       tag: rpvst_event_5003
@@ -2227,7 +2253,12 @@ processors:
       description: "Log event when the current virtual port count crosses the maximum allowed value"
       patterns: 
         - "^Current Virtual Ports %{NUMBER:aruba.limit.read_value:long} exceeds the max supported limit %{GREEDYDATA:aruba.limit.threshold}"
-
+  - dissect:
+      if: "ctx.event?.code == '5018'"
+      tag: rpvst_event_5018
+      field: "message"
+      description: "RPVST AUTO VLAN Instance Creation is limited, Current VPORTs exceed the maximum supported system limit"
+      pattern: "The current virtual port count for RPVST AUTO VLAN has exceeded the maximum supported system limit %{aruba.limit.threshold}"
 
   # PIM events (51xx)
   # https://arubanetworking.hpe.com/techdocs/AOS-CX/10.15/HTML/elmrg/Content/events/PIM.htm
@@ -2568,17 +2599,24 @@ processors:
         5605_PATTERN: "changed the HTTPS Server idle timeout to %{NUMBER:aruba.timeout:long}"
 
   # Quality of Service events (570x)
-  # https://www.arubanetworks.com/techdocs/AOS-CX/10.07/HTML/5200-8214/Content/events/QOS.htm
+  # https://arubanetworking.hpe.com/techdocs/AOS-CX/10.15/HTML/elmrg/Content/events/QOS.htm
   - grok:
-      if: "['5701','5702'].contains(ctx.event?.code)"
-      tag: qos_event_5701_5702
+      if: "['5701','5702','5704'].contains(ctx.event?.code)"
+      tag: qos_event_5701_5702_5704
       field: "message"
-      description: "QoS failed to retrieve default configuration | QoS error occurred"
+      description: "QoS failed to retrieve default configuration | QoS error occurred | Logs warning event when threshold-profile is enabled on port and if port other than threshold profile enabled have trust mode as cos or none."
       patterns:
         - "(E|e)rror: %{GREEDYDATA:event.reason}"
+        - "^QoS warning: %{GREEDYDATA:event.reason}"
+  - dissect:
+      if: "ctx.event?.code == '5703'"
+      tag: qos_event_5703
+      field: "message"
+      description: "Logged when there are more unique combinations of flow controlled priorities than the system allows."
+      pattern: "The PFC configuration for interface %{aruba.interface.name} exceeds the system limit of %{aruba.limit.threshold} unique combinations and was not applied"
 
   # QoS ASIC Provider events (580x)
-  # https://www.arubanetworks.com/techdocs/AOS-CX/10.07/HTML/5200-8214/Content/events/QOS_ASIC.htm
+  # https://arubanetworking.hpe.com/techdocs/AOS-CX/10.15/HTML/elmrg/Content/events/QOS_ASIC.htm
   - dissect:
       if: "ctx.event?.code == '5801'"
       tag: qos_asic_event_5801
@@ -2615,6 +2653,12 @@ processors:
       field: "message"
       description: "Warning PFC priority sharing a queue"
       pattern: "Port: %{aruba.port} PFC priority %{aruba.priority} using queue %{aruba.qos.queue} should not be sharing the queue with other local-priorities"
+  - dissect:
+      if: "ctx.event?.code == '5807'"
+      tag: qos_asic_event_5807
+      field: "message"
+      description: "QoS de-initialization not executed after card removal"
+      pattern: "QoS de-initialization not executed after card removal from slot %{aruba.slot}"
 
   # NAE events (60xx)
   # https://arubanetworking.hpe.com/techdocs/AOS-CX/10.15/HTML/elmrg/Content/events/TSDBD.htm
@@ -2800,7 +2844,7 @@ processors:
       pattern: "User %{user.name} has configured an invalid SSH authorized key with key identifier %{user.id}"
 
     # Port Statistics events (660x)
-    # https://www.arubanetworks.com/techdocs/AOS-CX/10.07/HTML/5200-8214/Content/events/COUNTERS.htm
+    # https://arubanetworking.hpe.com/techdocs/AOS-CX/10.15/HTML/elmrg/Content/events/COUNTERS.htm
   - grok:
       field: message
       tag: port_stats_event_6601_6602_6603_6604
@@ -3201,7 +3245,7 @@ processors:
       pattern: "USB device %{aruba.status}."
 
   # Power over Ethernet events (79xx)
-  # https://www.arubanetworks.com/techdocs/AOS-CX/10.07/HTML/5200-8214/Content/events/POE.htm
+  # https://arubanetworking.hpe.com/techdocs/AOS-CX/10.15/HTML/elmrg/Content/events/POE.htm
   - dissect:
       if: "ctx.event?.code == '7901'"
       tag: poe_event_7901
@@ -3277,8 +3321,8 @@ processors:
       description: "Powered device is drawing power more than its class"
       pattern: "Powered device is drawing power more than its class on interface %{aruba.interface.name}, type:%{aruba.poe.pd_type} class:%{aruba.poe.pd_class} power:%{aruba.power.value} is exceeding the max average power of the PD class. Check the PD max power draw, cabling type and length to improve interoperability"
   - grok:
-      if: "['7923','7931','7932','7934','7935','7936','7937','7938','7940'].contains(ctx.event?.code)"
-      tag: poe_event_7923_7931_7932_7934_7935_7936_7937_7938_7940
+      if: "['7923','7931','7932','7934','7935','7936','7937','7938','7940','7941'].contains(ctx.event?.code)"
+      tag: poe_event_7923_7931_7932_7934_7935_7936_7937_7938_7940_7941
       field: "message"
       patterns:
         - "interface %{DATA:aruba.interface.name} "
@@ -3908,20 +3952,21 @@ processors:
         - "^PFC TLV status priority mismatch on interface %{DATA:aruba.interface.name}$"
 
   # Port access roles events (930x)
-  # https://www.arubanetworks.com/techdocs/AOS-CX/10.07/HTML/5200-8214/Content/events/ROLE.htm
+  # https://arubanetworking.hpe.com/techdocs/AOS-CX/10.15/HTML/elmrg/Content/events/ROLE.htm
   - grok:
       field: message
-      tag: port_access_event_9301_9302
-      if: "['9301','9302'].contains(ctx.event?.code)"
-      description: "Logs an event if there are errors when applying a ClearPass role | maximum limit is reached while creating a Port Access Role"
+      tag: port_access_event_9301_9302_9303
+      if: "['9301','9302','9303'].contains(ctx.event?.code)"
+      description: "Logs an event if there are errors when applying a ClearPass role | maximum limit is reached while creating a Port Access Role | Warns a user when local user role is already existing"
       patterns:
         - "^Failed to apply ClearPass role - %{GREEDYDATA:event.reason}"
         # There is a spelling error in the documentation removing the matching for "Failed"
         - "to create the role - %{DATA:aruba.role}, maximum limit reached"
         - "^Throttled %{NUMBER:aruba.throttle_count:long} Messages"
+        - "^A local user role with name %{DATA:aruba.role} already exists and conflicts with the newly inserted ClearPass role"
 
   # Port security events (940x)
-  # https://www.arubanetworks.com/techdocs/AOS-CX/10.07/HTML/5200-8214/Content/events/PORT-SECURITY.htm
+  # https://arubanetworking.hpe.com/techdocs/AOS-CX/10.15/HTML/elmrg/Content/events/PORT-SECURITY.htm
   - grok:
       field: message
       tag: port_security_event_9401_9402
@@ -3930,6 +3975,7 @@ processors:
       patterns:
         - "^Client limit exceeded on port %{DATA:aruba.interface.name}, caused by an unauthorized client %{MAC:client.mac}"
         - "^Port security sticky client move violation triggered on port %{DATA:aruba.port} for client with MAC address %{MAC:client.mac}"
+        - "^Throttled %{NUMBER:aruba.throttle_count:long} Messages"
 
   # EVPN Events (95xx)
   # https://www.arubanetworks.com/techdocs/AOS-CX/10.15/HTML/elmrg/Content/events/EVPN.htm
@@ -4431,9 +4477,9 @@ processors:
         - "in table %{GREEDYDATA:aruba.tcam.table_name}"
 
   # RBAC events (1030x)
-  # https://www.arubanetworks.com/techdocs/AOS-CX/10.07/HTML/5200-8214/Content/events/RBACD.htm
+  # https://arubanetworking.hpe.com/techdocs/AOS-CX/10.15/HTML/elmrg/Content/events/RBACD.htm
   - grok:
-      if: "['10301', '10302'].contains(ctx.event?.code)"
+      if: "['10301','10302'].contains(ctx.event?.code)"
       tag: policies_event_10301_10302
       field: "message"
       description: "Log event when local tac_plus server has been started | server failed to start"
@@ -4933,6 +4979,93 @@ processors:
       patterns:
         - "^Uplink Failure Detection session-id %{DATA:aruba.instance.id}, state changed from %{DATA:aruba.ufd.from_state} to %{GREEDYDATA:aruba.state}."
 
+  # PTP events (1210x)
+  # https://arubanetworking.hpe.com/techdocs/AOS-CX/10.15/HTML/elmrg/Content/events/PTP.htm
+  - dissect:
+      field: message
+      tag: ptp_event_12101
+      description: "Event reported when PTP clock is started."
+      if: "ctx.event?.code == '12101'"
+      pattern: "PTP %{aruba.ptp.type} %{aruba.ptp.delay_mechanism} %{aruba.ptp.clock_step} clock started with profile %{aruba.ptp.profile} and transport %{aruba.ptp.transport}."
+  - dissect:
+      field: message
+      tag: ptp_event_12102
+      description: ""
+      if: "ctx.event?.code == '12102'"
+      pattern: "PTP clock stopped. Reason: %{event.reason}"
+  - grok:
+      field: message
+      tag: ptp_event_12103_12104
+      description: "Event reported when PTP port is enabled for tx and rx | enabled port is disabled"
+      if: "['12103','12104'].contains(ctx.event?.code)"
+      patterns:
+        - "^Interface %{DATA:aruba.interface.name} (enabled|disabled) for PTP exchange.( Reason: %{GREEDYDATA:event.reason})?"
+  - dissect:
+      field: message
+      tag: ptp_event_12105
+      description: "Event reported for different PTP clock state."
+      if: "ctx.event?.code == '12105'"
+      pattern: "PTP clock is in %{aruba.state} state"
+  - dissect:
+      field: message
+      tag: ptp_event_12106
+      description: "Event reported for different PTP port state."
+      if: "ctx.event?.code == '12106'"
+      pattern: "Interface %{aruba.interface.name} is in %{aruba.state} state%{event.reason}"
+  - dissect:
+      field: message
+      tag: ptp_event_12107
+      description: "Event reported when PTP parent is updated/modified."
+      if: "ctx.event?.code == '12107'"
+      pattern: "New GrandSource/Parent is selected: Parent: %{aruba.ptp.parent}, GrandSource: %{aruba.ptp.grandsource}, Quality: %{aruba.ptp.quality}, Priority1: %{aruba.ptp.priority1}, Priority2: %{aruba.ptp.priority2}"
+  - grok:
+      field: message
+      tag: ptp_event_12108_12109_12110_12111_12112_12113
+      description: "when PTP log announce interval is modified | Log min [pdelay|delay] request interval is modified | sync request timeout is modified | sync interval is modified | announce request timeout is modified"
+      if: "['12108','12109','12110','12111','12112','12113'].contains(ctx.event?.code)"
+      patterns:
+        - "^PTP operational (log_announce_interval|log_min_pdelay_request_interval|log_min_delay_request_interval|sync_request_timeout|sync_interval|announce_request_timeout) %{PTP_COMMON}"
+      pattern_definitions:
+        PTP_COMMON: "is changed to %{DATA:aruba.ptp.value} on interface %{DATA:aruba.interface.name} for profile %{GREEDYDATA:aruba.ptp.profile}"
+  - dissect:
+      field: message
+      tag: ptp_event_12114
+      description: "Event reported if PTP configuration is invalid."
+      if: "ctx.event?.code == '12114'"
+      pattern: "PTP config invalid. Reason: %{event.reason}"
+  - grok:
+      field: message
+      tag: ptp_event_12115_12116
+      description: "Event reported if PTP [domain|vlan] configuration is modified"
+      if: "['12115','12116'].contains(ctx.event?.code)"
+      patterns:
+        - "^PTP (domain|vlan) modified from %{DATA:aruba.ptp.old} to %{DATA:aruba.ptp.new} (value|on port %{GREEDYDATA:aruba.port})"
+  - dissect:
+      field: message
+      tag: ptp_event_12117
+      description: "Event reported if PTP source_ip_interface configuration is modified."
+      if: "ctx.event?.code == '12117'"
+      pattern: "PTP source_ip_interface %{event.action}. Port: %{aruba.port}"
+  - dissect:
+      field: message
+      tag: ptp_event_12118
+      description: "Event reported if PTP source_ip configuration is modified."
+      if: "ctx.event?.code == '12118'"
+      pattern: "PTP source_ip %{event.action}. IP: %{source.ip}"
+  - grok:
+      field: message
+      tag: ptp_event_12119_12120
+      description: "Event reported if PTP offset goes beyond the threshold value | is within the threshold value"
+      if: "['12119','12120'].contains(ctx.event?.code)"
+      patterns:
+        - "^PTP offset has reached (beyond|below) the threshold %{DATA:aruba.ptp.low_limit} < %{DATA:aruba.ptp.curr_offset} < %{GREEDYDATA:aruba.ptp.high_limit}"
+  - dissect:
+      field: message
+      tag: ptp_event_12121
+      description: "Event reported if PTP clock is BC and PTP enabled on MCLAG"
+      if: "ctx.event?.code == '12121'"
+      pattern: "PTP may not work as expected when PTP clock is BC and enabled on MCLAG %{aruba.interface.name}-%{aruba.ptp.lag_name}."
+
   # Job scheduler events (1220x && 1370x)
   # https://www.arubanetworks.com/techdocs/AOS-CX/10.15/HTML/elmrg/Content/events/SCHEDULE.htm
   - dissect:
@@ -4995,6 +5128,40 @@ processors:
         - "^Netvp add failed for vni_id: %{DATA:aruba.vxlan.vni_id}, tunnel_id: %{DATA:aruba.vxlan.tunnel_id}, vlan: %{GREEDYDATA:network.vlan.id}."
         - "^Tunnel add failed for tunnel_id: %{DATA:aruba.vxlan.tunnel_id}, ecmp_id: %{GREEDYDATA:aruba.vxlan.ecmp_id}."
 
+  # Port access group based policy events (1260x)
+  # https://arubanetworking.hpe.com/techdocs/AOS-CX/10.15/HTML/elmrg/Content/events/PORT_ACCESS_GBP.htm
+  - grok:
+      field: message
+      tag: pac_gbp_event_12601_12602
+      description: "The group based policy configuration is updated by the user | class configuration is updated by the user"
+      if: "['12601','12602'].contains(ctx.event?.code)"
+      patterns:
+        - "^Configuration (change|update) in the policy( due to class change)? %{DATA:aruba.pac_gbp.name} %{GREEDYDATA:aruba.pac_gbp.operation}"
+  - dissect:
+      field: message
+      tag: pac_gbp_event_12603
+      description: "The group based policy applying/unapplying for client"
+      if: "ctx.event?.code == '12603'"
+      pattern: "Trigger received to %{aruba.pac_gbp.operation} policy: %{aruba.pac_gbp.name} for client: %{aruba.pac_gbp.client}"
+  - dissect:
+      field: message
+      tag: pac_gbp_event_12604
+      description: "The group based policy apply/unapply for client result"
+      if: "ctx.event?.code == '12604'"
+      pattern: "Trigger received to %{aruba.pac_gbp.operation} policy: %{aruba.pac_gbp.name} for client: %{aruba.pac_gbp.client} is %{aruba.pac_gbp.result}"
+  - dissect:
+      field: message
+      tag: pac_gbp_event_12605
+      description: "The group based policy apply/unapply on new linecard"
+      if: "ctx.event?.code == '12605'"
+      pattern: "Trigger received on %{aruba.pac_gbp.operation} of line_card: %{aruba.pac_gbp.line_card} to %{event.action} policy: %{aruba.pac_gbp.name}"
+  - dissect:
+      field: message
+      tag: pac_gbp_event_12606
+      description: "The group based policy apply/unapply on new linecard result"
+      if: "ctx.event?.code == '12606'"
+      pattern: "Trigger received on %{aruba.pac_gbp.operation} of line_card: %{aruba.pac_gbp.line_card} to %{event.action} policy: %{aruba.pac_gbp.name} is %{aruba.pac_gbp.result}"
+
   # NAE script generation events (1270x)
   # https://arubanetworking.hpe.com/techdocs/AOS-CX/10.15/HTML/elmrg/Content/events/NAE_SCRIPT_GENERATION.htm
   - dissect:
@@ -5004,7 +5171,7 @@ processors:
       if: "ctx.event?.code == '12701'"
       pattern: "NAE agent %{aruba.nae.name} creation failed. Reason %{event.reason}"
 
-# Telnet server events (1290x)
+  # Telnet server events (1290x)
   # https://www.arubanetworks.com/techdocs/AOS-CX/10.15/HTML/elmrg/Content/events/TELNET_SERVER.htm
   - grok:
       field: message
@@ -5449,6 +5616,17 @@ processors:
         - "^Received certificate from Activate server, processing with certificate manager. Certificate length: %{NUMBER:aruba.len:long}."
         - "Central location %{DATA:aruba.rest.central_location}( successfully fetched)? from %{DATA:aruba.rest.central_source} via VRF %{GREEDYDATA:aruba.vrf.id}."
         - "^Switch time is synced with Activate Server %{GREEDYDATA:aruba.rest.activate_address}"
+
+  # Port access application-based policy events (1470x)
+  # https://arubanetworking.hpe.com/techdocs/AOS-CX/10.15/HTML/elmrg/Content/events/PORT_ACC_ABP.htm
+  - grok:
+      field: message
+      tag: acc_abp_event_14701_14702_14703_14704
+      description: "User updated the application based policy (class)? configuration | The application based policy applying/unapplying for client"
+      if: "['14701','14702','14703','14704'].contains(ctx.event?.code)"
+      patterns: 
+        - "^Configuration (change|update) in the policy( due to class change)? %{DATA:aruba.acc_abp.pac_abp_name} %{GREEDYDATA:aruba.acc_abp.operation}"
+        - "^Trigger received to %{DATA:aruba.acc_abp.operation} policy: %{DATA:aruba.acc_abp.pac_abp_name} for client: (%{GREEDYDATA:aruba.acc_abp.client}|%{DATA:aruba.acc_abp.client} is %{GREEDYDATA:aruba.acc_abp.result})"
 
   # IPSec tunnel offload events (1480x)
   # https://www.arubanetworks.com/techdocs/AOS-CX/10.15/HTML/elmrg/Content/events/IPSEC.htm

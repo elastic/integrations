@@ -1227,13 +1227,32 @@ Note: Descriptions have not been filled out
 | `<vlan_id>`             | network.vlan.id              |
 | `<vrf-name>`            | aruba.vrf.name               |
 
-#### [Port access roles events](https://www.arubanetworks.com/techdocs/AOS-CX/10.07/HTML/5200-8214/Content/events/ROLE.htm)
+#### [Port access application-based policy events](https://arubanetworking.hpe.com/techdocs/AOS-CX/10.15/HTML/elmrg/Content/events/PORT_ACC_ABP.htm)
+| Docs Field       | Schema Mapping               |
+|------------------|------------------------------|
+| `<client>`       | aruba.pac_abp.client         |
+| `<line_card>`    | aruba.acc_abp.line_card      |
+| `<operation>`    | aruba.pac_abp.operation      |
+| `<pac_abp_name>` | aruba.pac_abp.name           |
+| `<result>`       | aruba.pac_abp.result         |
+
+#### [Port access group based policy events](https://arubanetworking.hpe.com/techdocs/AOS-CX/10.15/HTML/elmrg/Content/events/PORT_ACCESS_GBP.htm)
+| Docs Field    | Schema Mapping         |
+|---------------|------------------------|
+| `<action>`    | event.action           |
+| `<client>`    | aruba.pac_gbp.client   |
+| `<line_card>` | aruba.pac_gbp.line_card|
+| `<pac_gbp_name>` | aruba.pac_gbp.name  |
+| `<operation>` | aruba.pac_gbp.operation|
+| `<result>`    | aruba.pac_gbp.result   |
+
+#### [Port access roles events](https://arubanetworking.hpe.com/techdocs/AOS-CX/10.15/HTML/elmrg/Content/events/ROLE.htm)
 | Docs Field              | Schema Mapping               |
 |-------------------------|------------------------------|
 | `<cprole_error_string>` | event.reason                 |
 | `<role_name>`           | aruba.role                   |
 
-#### [Port events](https://www.arubanetworks.com/techdocs/AOS-CX/10.07/HTML/5200-8214/Content/events/PORT.htm)
+#### [Port events](https://arubanetworking.hpe.com/techdocs/AOS-CX/10.15/HTML/elmrg/Content/events/PORT.htm)
 | Docs Field     | Schema Mapping               |
 |----------------|------------------------------|
 | `<error>`      | event.reason                 |
@@ -1241,26 +1260,29 @@ Note: Descriptions have not been filled out
 | `<ip_address>` | client.ip                    |
 | `<mtu>`        | aruba.mtu                    |
 | `<policy>`     | aruba.policy.name            |
+| `<port>`       | aruba.port                   |
 | `<status>`     | aruba.status                 |
 | `<vlan>`       | network.vlan.id              |
 
-#### [Port security events](https://www.arubanetworks.com/techdocs/AOS-CX/10.07/HTML/5200-8214/Content/events/PORT-SECURITY.htm)
+#### [Port security events](https://arubanetworking.hpe.com/techdocs/AOS-CX/10.15/HTML/elmrg/Content/events/PORT-SECURITY.htm)
 | Docs Field     | Schema Mapping       |
 |----------------|----------------------|
 | `<if_name>`    | aruba.interface.name |
 | `<mac_addr>`   | client.mac           |
 | `<port>`       | aruba.port           |
 
-#### [Port Statistics events](https://www.arubanetworks.com/techdocs/AOS-CX/10.07/HTML/5200-8214/Content/events/COUNTERS.htm)
+#### [Port Statistics events](https://arubanetworking.hpe.com/techdocs/AOS-CX/10.15/HTML/elmrg/Content/events/COUNTERS.htm)
 | Docs Field | Schema Mapping       |
 |------------|----------------------|
-| `<name>`     | aruba.port           |
+| `<name>`   | aruba.port           |
 
-#### [Power events](https://www.arubanetworks.com/techdocs/AOS-CX/10.07/HTML/5200-8214/Content/events/POWER.htm)
+#### [Power events](https://arubanetworking.hpe.com/techdocs/AOS-CX/10.15/HTML/elmrg/Content/events/POWER.htm)
 | Docs Field    | Schema Mapping         |
 |---------------|------------------------|
+| `<alert>`     | aruba.power.alert      |
 | `<failures>`  | aruba.count            |
 | `<fanidx>`    | aruba.power.fanidx     |
+| `<fault>`     | aruba.power.fault      |
 | `<name>`      | aruba.power.name       |
 | `<redund>`    | aruba.power.redund     |
 | `<sensorid>`  | aruba.power.sensorid   |
@@ -1270,7 +1292,7 @@ Note: Descriptions have not been filled out
 | `<Type>`      | aruba.power.type       |
 | `<warnings>`  | aruba.count            |
 
-#### [Power over Ethernet events](https://www.arubanetworks.com/techdocs/AOS-CX/10.07/HTML/5200-8214/Content/events/POE.htm)
+#### [Power over Ethernet events](https://arubanetworking.hpe.com/techdocs/AOS-CX/10.15/HTML/elmrg/Content/events/POE.htm)
 | Docs Field           | Schema Mapping               |
 |----------------------|------------------------------|
 | `<assigned_class>`   | aruba.poe.assigned_class     |
@@ -1294,13 +1316,40 @@ Note: Descriptions have not been filled out
 | `<req_class_b>`      | aruba.poe.req_class_b        |
 | `<subsys_name>`      | aruba.poe.subsys_name        |
 
-#### [Proxy ARP events](https://www.arubanetworks.com/techdocs/AOS-CX/10.07/HTML/5200-8214/Content/events/PROXY-ARP.htm)
+#### [PTP events](https://arubanetworking.hpe.com/techdocs/AOS-CX/10.15/HTML/elmrg/Content/events/PTP.htm)
+| Docs Field       | Schema Mapping           |
+|------------------|--------------------------|
+| `<action>`       | event.action             |
+| `<clock_step>`   | aruba.ptp.clock_step     |
+| `<curr_offset>`  | aruba.ptp.curr_offset    |
+| `<delay_mechanism>` | aruba.ptp.delay_mechanism |
+| `<grandsource>`  | aruba.ptp.grandsource    |
+| `<high_limit>`   | aruba.ptp.high_limit     |
+| `<int_name>`     | aruba.interface.name     |
+| `<lag_name>`     | aruba.ptp.lag_name       |
+| `<low_limit>`    | aruba.ptp.low_limit      |
+| `<name>`         | aruba.interface.name     |
+| `<new>`          | aruba.ptp.new            |
+| `<old>`          | aruba.ptp.old            |
+| `<parent>`       | aruba.ptp.parent         |
+| `<port>`         | aruba.port               |
+| `<priority1>`    | aruba.ptp.priority1      |
+| `<priority2>`    | aruba.ptp.priority2      |
+| `<profile>`      | aruba.ptp.profile        |
+| `<quality>`      | aruba.ptp.quality        |
+| `<reason>`       | event.reason             |
+| `<state>`        | aruba.state              |
+| `<transport>`    | aruba.ptp.transport      |
+| `<type>`         | aruba.ptp.type           |
+| `<value>`        | aruba.ptp.value / aruba.port / source.ip |
+
+#### [Proxy ARP events](https://arubanetworking.hpe.com/techdocs/AOS-CX/10.15/HTML/elmrg/Content/events/PROXY-ARP.htm)
 | Docs Field    | Schema Mapping |
 |---------------|----------------|
 | `<port>`      | aruba.port     |
 | `<vrf>`       | aruba.vrf.id   |
 
-#### [QoS ASIC Provider events](https://www.arubanetworks.com/techdocs/AOS-CX/10.07/HTML/5200-8214/Content/events/QOS_ASIC.htm)
+#### [QoS ASIC Provider events](https://arubanetworking.hpe.com/techdocs/AOS-CX/10.15/HTML/elmrg/Content/events/QOS_ASIC.htm)
 | Docs Field           | Schema Mapping       |
 |----------------------|----------------------|
 | `<error_string>`     | event.reason         |
@@ -1312,17 +1361,25 @@ Note: Descriptions have not been filled out
 | `<queue>`            | aruba.qos.queue      |
 | `<val>`              | error.code           |
 
-#### [Quality of Service events](https://www.arubanetworks.com/techdocs/AOS-CX/10.07/HTML/5200-8214/Content/events/QOS.htm)
-| Docs Field         | Schema Mapping       |
-|--------------------|----------------------|
-| `<error>`          | event.reason         |
-| `<error_string>`   | event.reason         |
+#### [Quality of Service events](https://arubanetworking.hpe.com/techdocs/AOS-CX/10.15/HTML/elmrg/Content/events/QOS.htm)
+| Docs Field       | Schema Mapping         |
+|------------------|------------------------|
+| `<error>`        | event.reason           |
+| `<error_string>` | event.reason           |
+| `<ifname>`       | aruba.interface.name   |
+| `<limit>`        | aruba.limit.threshold  |
+| `<warning_string>`| event.reason          |
 
-#### [Rapid per VLAN Spanning Tree Protocol events](https://www.arubanetworks.com/techdocs/AOS-CX/10.07/HTML/5200-8214/Content/events/RPVST.htm)
+#### [Queue Monitoring events](https://arubanetworking.hpe.com/techdocs/AOS-CX/10.15/HTML/elmrg/Content/events/QTP.htm)
+| Docs Field       | Schema Mapping         |
+|------------------|------------------------|
+
+#### [Rapid per VLAN Spanning Tree Protocol events](https://arubanetworking.hpe.com/techdocs/AOS-CX/10.15/HTML/elmrg/Content/events/RPVST.htm)
 | Docs Field                | Schema Mapping               |
 |---------------------------|------------------------------|
 | `<Current_Virtual_Ports>` | aruba.limit.read_value       |
 | `<interface>`             | aruba.interface.id           |
+| `<lvlan>`                 | aruba.limit.threshold        |
 | `<mac>`                   | client.mac                   |
 | `<Maximum_Virtual_Ports>` | aruba.limit.threshold        |
 | `<new_mac>`               | client.mac                   |
@@ -1342,19 +1399,18 @@ Note: Descriptions have not been filled out
 | `<instance>`              | aruba.instance.id            |
 | `<vlan>`                  | network.vlan.id              |
 
-#### [RBAC events](https://www.arubanetworks.com/techdocs/AOS-CX/10.07/HTML/5200-8214/Content/events/RBACD.htm)
+#### [RBAC events](https://arubanetworking.hpe.com/techdocs/AOS-CX/10.15/HTML/elmrg/Content/events/RBACD.htm)
 | Docs Field    | Schema Mapping |
 |---------------|----------------|
 | `<tac_status>` | aruba.status  |
 
-
-#### [Redundant Management events](https://www.arubanetworks.com/techdocs/AOS-CX/10.07/HTML/5200-8214/Content/events/REDUNDANT_MANAGEMENT.htm)
+#### [Redundant Management events](https://arubanetworking.hpe.com/techdocs/AOS-CX/10.15/HTML/elmrg/Content/events/REDUNDANT_MANAGEMENT.htm)
 | Docs Field      | Schema Mapping               |
 |-----------------|------------------------------|
 | `<mgmt_module>` | aruba.redundant.mgmt_module  |
 | `<reason>`      | event.reason                 |
 
-#### [Replication Manager events](https://www.arubanetworks.com/techdocs/AOS-CX/10.07/HTML/5200-8214/Content/events/REPLD.htm)
+#### [Replication Manager events](https://arubanetworking.hpe.com/techdocs/AOS-CX/10.15/HTML/elmrg/Content/events/REPLD.htm)
 | Docs Field   | Schema Mapping               |
 |--------------|------------------------------|
 | `<uuid_str>` | aruba.instance.id            |
