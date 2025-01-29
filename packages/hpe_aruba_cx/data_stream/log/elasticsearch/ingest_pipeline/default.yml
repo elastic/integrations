@@ -571,6 +571,35 @@ processors:
       if: "ctx.event?.code == '1032'"
       pattern: "sFlow sampling mode set to %{aruba.sflow.mode}."
 
+    # NTP events (110x)
+    # https://arubanetworking.hpe.com/techdocs/AOS-CX/10.15/HTML/elmrg/Content/events/NTP.htm
+  - dissect:
+      field: message
+      tag: ntp_event_1101
+      description: "Logs NTP Association configuration changes"
+      if: "ctx.event?.code == '1101'"
+      pattern: "NTP Association %{aruba.ntp.event}: %{server.address} %{aruba.ntp.server_info}"
+  - dissect:
+      field: message
+      tag: ntp_event_1102
+      description: "Logs NTP Trusted and Untrusted authentication-keys"
+      if: "ctx.event?.code == '1102'"
+      pattern: "NTP Trusted keys %{aruba.ntp.trusted_keys} and Untrusted keys %{aruba.ntp.untrusted_keys}"
+  - grok:
+      field: message
+      tag: ntp_event_1103_1104_1107
+      description: "Logs NTP Authentication state changes | configuration state changes | when NTP is changed to enabled or disabled"
+      if: "['1103','1104','1107'].contains(ctx.event?.code)"
+      patterns:
+        - "state change: %{DATA:aruba.ntp.old} -> %{GREEDYDATA:aruba.state}"
+  - grok:
+      field: message
+      tag: ntp_event_1105_1106
+      description: "Logs NTP primary server connection established state change | server connection lost state change"
+      if: "['1105','1106'].contains(ctx.event?.code)"
+      patterns:
+        - "^NTP primary server connection (established|lost) to %{GREEDYDATA:server.address}"
+
     # Supportability events (12xx)
     # https://www.arubanetworks.com/techdocs/AOS-CX/10.15/HTML/elmrg/Content/events/SUPPORTABILITY.htm
   - grok:
@@ -970,7 +999,7 @@ processors:
         - "^(DHCP|DHCPv6) Server Lease cleared on vrf %{DATA:aruba.vrf.name}\\.$"
 
     # Multiple spanning tree protocol events (20xx)
-    # https://www.arubanetworks.com/techdocs/AOS-CX/10.07/HTML/5200-8214/Content/events/MSTP.htm
+    # https://arubanetworking.hpe.com/techdocs/AOS-CX/10.15/HTML/elmrg/Content/events/MSTP.htm
   - grok:
       field: message
       tag: mstp_event_2003_2004
@@ -1184,8 +1213,8 @@ processors:
       patterns: 
         - "^Decrypted TACACS passkey length %{NUMBER:aruba.len:long} exceeded the maximum allowed plaintext key length %{GREEDYDATA:aruba.limit.threshold}"
 
-    # OSPFv2 events (2401)
-    # https://www.arubanetworks.com/techdocs/AOS-CX/10.07/HTML/5200-8214/Content/events/OSPFv2.htm
+    # OSPFv2 events (24xx)
+    # https://arubanetworking.hpe.com/techdocs/AOS-CX/10.15/HTML/elmrg/Content/events/OSPFv2.htm
   - grok:
       field: message
       tag: ospfv2_event_2401_2402_2404
@@ -1224,6 +1253,25 @@ processors:
       if: "['2407','2408'].contains(ctx.event?.code)"
       patterns:
         - "^OSPF (all|designated) routers field entry added: group_id=%{DATA:group.id} fp_id=%{DATA:aruba.ospf.fp_id} stat_id=%{GREEDYDATA:aruba.ospf.stats_id}"
+  - dissect:
+      field: message
+      tag: ospfv2_event_2409
+      description: "Logs the changes of OSPFv2 Graceful Restart state."
+      if: "['2409'].contains(ctx.event?.code)"
+      pattern: "Graceful Restart state changed, %{aruba.ospf.old_state} -> %{aruba.state}, reason: %{event.reason}"
+  - dissect:
+      field: message
+      tag: ospfv2_event_2410
+      description: "Logs when router-id is duplicate."
+      if: "['2410'].contains(ctx.event?.code)"
+      pattern: "Duplicate router-id for %{aruba.interface.id} from source %{source.ip}"
+  - grok:
+      field: message
+      tag: ospfv2_event_2411
+      description: "Logs the changes of OSPFv2 distance"
+      if: "['2411'].contains(ctx.event?.code)"
+      patterns: 
+        - "^Distance External %{DATA:aruba.ospf.external}, Inter-area %{DATA:aruba.ospf.inter}, and Intra-area %{DATA:aruba.ospf.intra} applied to all the OSPF processes %{NUMBER:process.pid:long} in %{DATA:aruba.vrf.id} VRF"
 
     # MGMD events (26xx)
     # https://arubanetworking.hpe.com/techdocs/AOS-CX/10.15/HTML/elmrg/Content/events/MGMD.htm
@@ -1495,7 +1543,7 @@ processors:
         - "^HW Fault \\(Error %{DATA:error.code}\\) detected on the switch. %{DATA:aruba.hardware.impact_statement}. Contact support for assistance"
 
     # MVRP events (310x)
-    # https://www.arubanetworks.com/techdocs/AOS-CX/10.07/HTML/5200-8214/Content/events/MVRP.htm
+    # https://arubanetworking.hpe.com/techdocs/AOS-CX/10.15/HTML/elmrg/Content/events/MVRP.htm
   - grok:
       field: message
       tag: mvrp_event_3101_3102_3103_3104_3105
@@ -1505,6 +1553,7 @@ processors:
         - "^MVRP (en|dis)abled on port %{GREEDYDATA:aruba.port}"
         - "^MVRP failed to create VLAN %{DATA:network.vlan.id}. Maximum VLANs %{DATA:aruba.limit.threshold} already created"
         - "^MVRP statistics have been cleared for (%{3104_PATTERN}|%{3105_PATTERN})"
+        - "^Throttled %{NUMBER:aruba.throttle_count:long} Messages"
       pattern_definitions:
         3104_PATTERN: "port %{GREEDYDATA:aruba.port}"
         3105_PATTERN: "%{DATA:aruba.port} ports"
@@ -1727,13 +1776,27 @@ processors:
         - "^Interface: %{DATA:aruba.interface.id} has been configured with the invalid"
 
     # Multicast Traffic Manager events (400x)
-    # https://www.arubanetworks.com/techdocs/AOS-CX/10.07/HTML/5200-8214/Content/events/MTM.htm
-  - dissect:
+    # https://arubanetworking.hpe.com/techdocs/AOS-CX/10.15/HTML/elmrg/Content/events/MTM.htm
+  - grok:
       field: message
       tag: multicast_traffic_mgr_event_4001
       description: "Event raised when the maximum number of multicast L3 Bridge Control Forwarding entries is reached"
       if: "ctx.event?.code == '4001'"
-      pattern: "The Multicast L3 Bridge Control Forwarding entries limit was reached: %{aruba.limit.threshold}"
+      patterns: 
+        - "^The Multicast L3 Bridge Control Forwarding entries limit was reached: %{GREEDYDATA:aruba.limit.threshold}"
+        - "^Throttled %{NUMBER:aruba.throttle_count:long} Messages"
+  - dissect:
+      field: message
+      tag: multicast_traffic_mgr_event_4002
+      description: "Logged when mgmd snooping filter unknown mcast feature enablement or removal status in MTM"
+      if: "ctx.event?.code == '4002'"
+      pattern: "%{aruba.multicast.mgmd_type} snooping filter unknown mcast feature will be %{aruba.status}."
+  - dissect:
+      field: message
+      tag: multicast_traffic_mgr_event_4003
+      description: "Logged when error occurs while updating mgmd snooping filter unknown mcast entry into cpurx table."
+      if: "ctx.event?.code == '4003'"
+      pattern: "Failed to %{aruba.status} %{aruba.multicast.mgmd_type} snooping filter unknown mcast feature."
 
     # UDLD events (410x)
     # https://www.arubanetworks.com/techdocs/AOS-CX/10.15/HTML/elmrg/Content/events/UDLD.htm
@@ -2061,7 +2124,7 @@ processors:
       pattern: "MAC hash collision occurred for MAC %{server.mac} on VLAN %{network.vlan.id}"
 
     # OSPFv3 events (490x)
-    # https://www.arubanetworks.com/techdocs/AOS-CX/10.07/HTML/5200-8214/Content/events/OSPFv3.htm
+    # https://arubanetworking.hpe.com/techdocs/AOS-CX/10.15/HTML/elmrg/Content/events/OSPFv3.htm
   - dissect:
       field: message
       tag: ospfv3_event_4901
@@ -2080,6 +2143,28 @@ processors:
       pattern_definitions:
         INTERFACE_AREA: "(I|i)nterface %{DATA:aruba.ospf.link_local} on %{DATA:aruba.interface.id}\\(%{DATA:aruba.ospf.area}\\)"
         STATE_CHANGE: "%{DATA:aruba.ospf.old_state} (->|to) %{GREEDYDATA:aruba.state}"
+  - dissect:
+      field: message
+      tag: ospfv3_event_4906
+      description: "Logs the changes of OSPFv3 Graceful Restart state."
+      if: "['4906'].contains(ctx.event?.code)"
+      pattern: "Graceful Restart state changed, %{aruba.ospf.old_state} -> %{aruba.state}, reason: %{event.reason}"
+  - dissect:
+      field: message
+      tag: ospfv3_event_4907
+      description: "Logs when router-id is duplicate."
+      if: "['4907'].contains(ctx.event?.code)"
+      pattern: "Duplicate router-id for %{aruba.ospf.link_local} from source %{source.ip}"
+  - grok:
+      field: message
+      tag: ospfv3_event_4908
+      description: "Logs the changes of OSPFv3 distance."
+      if: "['4908'].contains(ctx.event?.code)"
+      patterns:
+        # What is the correct pattern?
+        - "^Distance External %{DATA:aruba.ospf.external}, Inter-area %{DATA:aruba.ospf.inter}, and Intra-area %{DATA:aruba.ospf.intra} applied to all the OSPFv3 processes %{NUMBER:process.pid:long} in %{DATA:aruba.vrf.id} VRF"
+        # Original in Doc
+        - "^Distance External %{DATA:aruba.ospf.external}, Inter-area %{DATA:aruba.ospf.inter}, and Intra-area %{DATA:aruba.ospf.intra} applied to all the %{NUMBER:process.pid:long}processes in %{DATA:aruba.vrf.id} VRF"
 
   # Rapid per VLAN Spanning Tree Protocol events (500x)
   # https://www.arubanetworks.com/techdocs/AOS-CX/10.07/HTML/5200-8214/Content/events/RPVST.htm
@@ -2145,7 +2230,7 @@ processors:
 
 
   # PIM events (51xx)
-  # https://www.arubanetworks.com/techdocs/AOS-CX/10.07/HTML/5200-8214/Content/events/PIM.htm
+  # https://arubanetworking.hpe.com/techdocs/AOS-CX/10.15/HTML/elmrg/Content/events/PIM.htm
   - grok:
       if: "ctx.event?.code == '5101'"
       field: message
@@ -2313,6 +2398,32 @@ processors:
       description: "BFD Session created or deleted"
       patterns:
         - "^BFD Session (created|deleted) for neighbor %{IP:server.ip} on interface %{GREEDYDATA:aruba.interface.name}"
+  - grok:
+      field: message
+      tag: pim_event_5127_5128_5129
+      if: "['5127','5128','5129'].contains(ctx.event?.code)"
+      description: "This log event informs the user that PIM resource utilization has exceeded the supported limits | has reached 90 percent of the supported limits | drops below 90 percent of the supported limits"
+      patterns:
+        - "^PIM Resource utilization of %{DATA:aruba.pim.capacity_type} has"
+  - grok:
+      field: message
+      tag: pim_event_5130_5131
+      if: "['5130','5131'].contains(ctx.event?.code)"
+      description: "Router PIM-SSM configuration status | Router PIM-SSM range ACL configuration status"
+      patterns:
+        - "^Router %{DATA:package.version} PIM-SSM( range ACL)? is %{DATA:aruba.pim.mode} on VRF %{GREEDYDATA:aruba.vrf.name}"
+  - dissect:
+      if: "ctx.event?.code == '5132'"
+      field: message
+      tag: pim_event_5132
+      description: "The dynamic VXLAN tunnel bridging mode configured and the Border Gateway status with respect to PIM."
+      pattern: "Vxlan-tunnel configured with %{aruba.pim.mode} mode. Border router functionality is %{aruba.status} on this router."
+  - dissect:
+      if: "ctx.event?.code == '5133'"
+      field: message
+      tag: pim_event_5133
+      description: "PIM NSF timer status"
+      pattern: "PIM NSF timer %{aruba.status} %{event.action}"
 
   # SSH server events (520x)
   # https://www.arubanetworks.com/techdocs/AOS-CX/10.15/HTML/elmrg/Content/events/SSH_SERVER.htm
@@ -2416,6 +2527,30 @@ processors:
         - "^(Created|Deleted) a vrf entity %{GREEDYDATA:aruba.vrf.name}"
         - "^vrf entity creation failed %{GREEDYDATA:aruba.vrf.name}"
 
+  # NAE Scripts events (55xx)
+  # https://arubanetworking.hpe.com/techdocs/AOS-CX/10.15/HTML/elmrg/Content/events/POLICYD.htm
+  - grok:
+      if: "['5501','5502','5503'].contains(ctx.event?.code)"
+      tag: nae_script_event_5501_5502_5503
+      field: "message"
+      description: "NAE script has been validated | Error found in NAE Script | Error found in NAE Agent"
+      patterns:
+        - "^NAE script %{DATA:aruba.nae.name} has been validated"
+        - "^Error found in NAE (Script|Agent) %{GREEDYDATA:aruba.nae.name}."
+  - dissect:
+      if: "ctx.event?.code == '5504'"
+      tag: nae_script_event_5504
+      field: "message"
+      description: "NAE Action error"
+      pattern: "Error executing NAE action %{aruba.nae.action_type} belonging to condition %{aruba.nae.condition} and agent %{aruba.nae.name} due to %{aruba.nae.description}."
+  - grok:
+      if: "['5505','5506'].contains(ctx.event?.code)"
+      tag: nae_script_event_5505_5506
+      field: "message"
+      description: "NAE [Script|Agent] has been created by the system"
+      patterns:
+        - "^NAE (Script|Agent) %{DATA:aruba.nae.name} has been created by the system"
+
   # HTTPS Server events (560x)
   # https://www.arubanetworks.com/techdocs/AOS-CX/10.15/HTML/elmrg/Content/events/HTTPS_SERVER.htm
   - grok:
@@ -2482,7 +2617,7 @@ processors:
       pattern: "Port: %{aruba.port} PFC priority %{aruba.priority} using queue %{aruba.qos.queue} should not be sharing the queue with other local-priorities"
 
   # NAE events (60xx)
-  # https://www.arubanetworks.com/techdocs/AOS-CX/10.07/HTML/5200-8214/Content/events/TSDBD.htm
+  # https://arubanetworking.hpe.com/techdocs/AOS-CX/10.15/HTML/elmrg/Content/events/TSDBD.htm
   - grok:
       if: "['6001','6002','6003','6008','6009','6010'].contains(ctx.event?.code)"
       tag: nae_event_6001_6002_6003_6008_6009_6010
@@ -2509,7 +2644,7 @@ processors:
       pattern: "NAE agent %{aruba.nae.name} with condition %{aruba.nae.condition} has error and is not watched."
 
   # NDM events (61xx)
-  # https://www.arubanetworks.com/techdocs/AOS-CX/10.07/HTML/5200-8214/Content/events/NDM.htm
+  # https://arubanetworking.hpe.com/techdocs/AOS-CX/10.15/HTML/elmrg/Content/events/NDM.htm
   - grok:
       if: "['6101','6102','6104','6113'].contains(ctx.event?.code)"
       tag: server_event_6101_6102_6104_6113
@@ -2713,7 +2848,7 @@ processors:
       pattern: "Information while copying configs. Info: %{event.reason}"
 
   # NAE Agents events (690x)
-  # https://www.arubanetworks.com/techdocs/AOS-CX/10.07/HTML/5200-8214/Content/events/NAE_ALERT.htm
+  # https://arubanetworking.hpe.com/techdocs/AOS-CX/10.15/HTML/elmrg/Content/events/NAE_ALERT.htm
   - dissect:
       if: "ctx.event.code == '6901'"
       tag: config_event_6801
@@ -3506,7 +3641,7 @@ processors:
         - "^DHCPv6-Snooping dropped DHCP %{DATA:aruba.dhcp.message_type} packet received from unauthorized server %{IP:server.ip} on trusted port %{GREEDYDATA:aruba.port}"
 
   # ND snooping events (840x)
-  # https://www.arubanetworks.com/techdocs/AOS-CX/10.07/HTML/5200-8214/Content/events/ND-SNOOPING.htm
+  # https://arubanetworking.hpe.com/techdocs/AOS-CX/10.15/HTML/elmrg/Content/events/ND-SNOOPING.htm
   - grok:
       field: message
       tag: ND_snooping_event_8402_8403_8404_8405
@@ -4276,7 +4411,7 @@ processors:
       pattern: "ACL %{aruba.acl.type} %{aruba.acl.name} failed to apply on %{aruba.acl.application}"
 
   # Policies events (1010x)
-  # https://www.arubanetworks.com/techdocs/AOS-CX/10.07/HTML/5200-8214/Content/events/POLICY.htm
+  # https://arubanetworking.hpe.com/techdocs/AOS-CX/10.15/HTML/elmrg/Content/events/POLICY.htm
   - dissect:
       if: "ctx.event?.code == '10101'"
       tag: policies_event_10101
@@ -4319,7 +4454,7 @@ processors:
         - "^ARP inspection %{DATA:aruba.status} on port %{GREEDYDATA:aruba.port}."
 
   # PORT_ACCESS events (1050x)
-  # https://www.arubanetworks.com/techdocs/AOS-CX/10.07/HTML/5200-8214/Content/events/PORT_ACCESS.htm
+  # https://arubanetworking.hpe.com/techdocs/AOS-CX/10.15/HTML/elmrg/Content/events/PORT_ACCESS.htm
   - grok:
       if: "['10501','10502','10503'].contains(ctx.event?.code)"
       tag: port_access_event_10501_10502_10503
@@ -4356,6 +4491,107 @@ processors:
       field: "message"
       description: "VLAN is configured as Trunk for some clients and access for others. This could potentially result in traffic loss"
       pattern: "VLAN conflict detected on port %{aruba.port}"
+  - dissect:
+      if: "ctx.event?.code == '10509'"
+      tag: port_access_event_10509
+      field: "message"
+      description: "Log event when an intruder is detected on the port"
+      pattern: "Client limit exceeded on port %{aruba.port}, caused by an unauthenticated client %{client.mac}"
+  - grok:
+      if: "['10510','10511'].contains(ctx.event?.code)"
+      tag: port_access_event_10510_10511
+      field: "message"
+      description: "The authentication mode associated with the port is changed | Clients were logged off due to proxy logoff"
+      patterns:
+        - "^All clients except client with MAC address %{MAC:client.mac} logged-off on the port %{DATA:aruba.port} due to a (proxy-logoff request|change in authentication mode from %{DATA:aruba.port_access.old_mode} to %{GREEDYDATA:aruba.port_access.mode})"
+  - grok:
+      if: "['10512','10513'].contains(ctx.event?.code)"
+      tag: port_access_event_10512_10513
+      field: "message"
+      description: "Received a client for authentication/authorization on secure port | Deleted a port-access client"
+      patterns:        
+        - "^Client with MAC address %{MAC:client.mac} (learnt|deleted) on port %{GREEDYDATA:aruba.port}"
+  - grok:
+      if: "['10514','10515','10516','10517','10518','10519'].contains(ctx.event?.code)"
+      tag: port_access_event_10514_10515_10516_10517_10518_10519
+      field: "message"
+      description: "Client authorized [with role|failed authentication] | MAC authentication [request sent for client|response received for client] | 802.1x Authentication response received for client"
+      patterns:
+        - "^Client with MAC address %{MAC:client.mac} authorized on port %{DATA:aruba.port} with role %{GREEDYDATA:aruba.role}"
+        - "^Client with MAC address %{MAC:client.mac} on port %{DATA:aruba.port} failed %{DATA:aruba.port_access.auth_method} authentication with reason %{GREEDYDATA:event.reason}"
+        - "^Client with MAC address %{MAC:client.mac} on port %{DATA:aruba.interface.name} triggered for (MAC|802.1x) authentication request with ID %{GREEDYDATA:aruba.port_access.request_id}"
+        - "^Client with MAC address %{MAC:client.mac} on port %{DATA:aruba.interface.name} received response for (MAC-Authentication|802.1x authentication) request ID %{DATA:aruba.port_access.request_id} as %{GREEDYDATA:event.reason}"
+  - dissect:
+      if: "ctx.event?.code == '10520'"
+      tag: port_access_event_10520
+      field: "message"
+      description: "Port Access cached-client maximum limit reached"
+      pattern: "Reached the maximum cached-clients limit of %{aruba.limit.threshold} on the switch for Limited Auth-Survivability"
+  - grok:
+      if: "ctx.event?.code == '10521'"
+      tag: port_access_event_10521
+      field: "message"
+      description: "Cached-Clients were recovered from persistent-storage"
+      patterns:
+        - "^Restored %{NUMBER:aruba.port_access.num_cached_clients:long} cached-clients from persistent-storage after reboot"
+  - grok:
+      if: "['10522','10523'].contains(ctx.event?.code)"
+      tag: port_access_event_10522_10523
+      field: "message"
+      description: "The port is [flapped|disabled] by port-access daemon"
+      patterns:
+        - "^Interface %{DATA:aruba.interface.name} is (flapped|disabled) by port-access as part of a CoA request"
+  - grok:
+      if: "['10524','10525','10526'].contains(ctx.event?.code)"
+      tag: port_access_event_10524_10525_10526
+      field: "message"
+      description: "Disconnect/CoA request received from dyn-authorization client | request is handled successfully | request is failed"
+      patterns:
+        - "^%{DATA:aruba.port_access.request_pkt} request received for client with MAC address %{MAC:client.mac} on port %{DATA:aruba.interface.name} from dyn-authorization client %{DATA:client.address} on vrf %{GREEDYDATA:aruba.vrf.name}"
+        - "^%{DATA:aruba.port_access.request_pkt} request received from %{DATA:client.address} on VRF %{DATA:aruba.vrf.name} for client with MAC address %{MAC:client.mac} on port %{DATA:aruba.interface.name} (is successfully processed|failed to process with error %{GREEDYDATA:event.action})"
+  # TODO: not sure how to parse <ip:port, proto, vrf {vrf_name}> will need real data to validate
+  - grok:
+      if: "['10527','10528'].contains(ctx.event?.code)"
+      tag: port_access_event_10527_10528
+      field: "message"
+      description: "MAC Authentication request sent for client | response received for client"
+      patterns:
+        - "^MAC Authentication (triggered|succeeded) for client %{MAC:client.mac} on port %{DATA:aruba.interface.name} with ID %{DATA:aruba.port_access.request_id} (to|from) server %{IP:url.domain}:%{NUMBER:url.port:long}, %{DATA:url.scheme}, vrf %{GREEDYDATA:aruba.vrf.name}"
+  - grok:
+      if: "['10529','10532'].contains(ctx.event?.code)"
+      tag: port_access_event_10529_10532
+      field: "message"
+      description: "MAC Authentication response received for client | 802.1x Authentication response received for client"
+      patterns:
+        - "^(MAC|802.1x) Authentication failed with reason %{DATA:event.reason} for client %{MAC:client.mac} on port %{DATA:aruba.interface.name} with ID %{DATA:aruba.port_access.request_id} from servers %{GREEDYDATA:aruba.port_access.server_list}"
+  # TODO: not sure how to parse <ip:port, proto, vrf {vrf_name}> will need real data to validate
+  - grok:
+      if: "['10530','10531'].contains(ctx.event?.code)"
+      tag: port_access_event_10530_10531
+      field: "message"
+      description: "802.1x Authentication request sent for client"
+      patterns:
+        - "^802.1x Authentication (triggered|succeeded) for client %{MAC:client.mac} on port %{DATA:aruba.interface.name} with ID %{DATA:aruba.port_access.request_id} (to|from) server %{IP:url.domain}:%{NUMBER:url.port:long}, %{DATA:url.scheme}, vrf %{GREEDYDATA:aruba.vrf.name}"
+  - grok:
+      if: "['10533','10534'].contains(ctx.event?.code)"
+      tag: port_access_event_10533_10534
+      field: "message"
+      description: "The interface is [blocked|unblocked] by port-access daemon"
+      patterns:
+        - "^Interface %{DATA:aruba.interface.name} is (blocked|unblocked) by port-access"
+  - grok:
+      if: "['10535','10536'].contains(ctx.event?.code)"
+      tag: port_access_event_10535_10536
+      field: "message"
+      description: "The feature has invalid or missing feature pack and it will not operate until a valid feature pack is installed | The feature doesn't have valid feature pack but it will operate normally."
+      patterns:
+        - "^Policy %{DATA:aruba.policy.name} is of type %{DATA:aruba.port_access.feature} and a valid feature pack is required to use the policy"
+  - dissect:
+      if: "ctx.event?.code == '10537'"
+      tag: port_access_event_10537
+      field: "message"
+      description: "Flow monitor is applied on a LAG port via a role. LAG ports do not support flow monitors"
+      pattern: "Failed to apply flow monitor %{aruba.port_access.monitor_name} in role %{aruba.role} on port %{aruba.port}. Flow monitor is not supported on LAG ports."
 
   # L3 Encap capacity events (1060x)
   # https://www.arubanetworks.com/techdocs/AOS-CX/10.15/HTML/elmrg/Content/events/L3_ENCAP.htm
@@ -4758,6 +4994,15 @@ processors:
       patterns:
         - "^Netvp add failed for vni_id: %{DATA:aruba.vxlan.vni_id}, tunnel_id: %{DATA:aruba.vxlan.tunnel_id}, vlan: %{GREEDYDATA:network.vlan.id}."
         - "^Tunnel add failed for tunnel_id: %{DATA:aruba.vxlan.tunnel_id}, ecmp_id: %{GREEDYDATA:aruba.vxlan.ecmp_id}."
+
+  # NAE script generation events (1270x)
+  # https://arubanetworking.hpe.com/techdocs/AOS-CX/10.15/HTML/elmrg/Content/events/NAE_SCRIPT_GENERATION.htm
+  - dissect:
+      field: message
+      tag: nae_script_gen_event_12701
+      description: "NAE agent creation failed"
+      if: "ctx.event?.code == '12701'"
+      pattern: "NAE agent %{aruba.nae.name} creation failed. Reason %{event.reason}"
 
 # Telnet server events (1290x)
   # https://www.arubanetworks.com/techdocs/AOS-CX/10.15/HTML/elmrg/Content/events/TELNET_SERVER.htm
@@ -5261,6 +5506,30 @@ processors:
       if: "['15107','15108'].contains(ctx.event?.code)"
       patterns: 
         - "^IP Flow table utilization (has exceeded high|back to lower) threshold on linecard %{GREEDYDATA:aruba.instance.id}"
+
+  # Packet capture events (152xx)
+  # https://arubanetworking.hpe.com/techdocs/AOS-CX/10.15/HTML/elmrg/Content/events/PACKET-CAPTURE.htm
+  - grok:
+      field: message
+      tag: packet_capture_event_15201_15202_15203_15204
+      description: "when packet capture is failed to [start|stop] | when packet capture is [started|stopped]"
+      if: "['15201','15202','15203','15204'].contains(ctx.event?.code)"
+      patterns:
+        - "the session %{GREEDYDATA:aruba.packet_capture.session_name}"
+  - grok:
+      field: message
+      tag: packet_capture_event_15205_15206_15207_15208_15209_15210_15211_15212
+      description: "session row client state set to [initializing|in-progress|completed|hw failed|conection failed] | Packet capture session row hw programmed value | state set to completed due to [max time out|max packet transmitted]"
+      if: "['15205','15206','15207','15208','15209','15210','15211','15212'].contains(ctx.event?.code)"
+      patterns:
+        - "^Packet capture session %{DATA:aruba.packet_capture.session_name} (client|max)"
+        - "^Packet capture session %{DATA:aruba.packet_capture.session_name} hw programmed is %{GREEDYDATA:aruba.packet_capture.value}"
+  - dissect:
+      field: message
+      tag: packet_capture_event_15213
+      description: "Event raised when packet capture configuration is invalid"
+      if: "ctx.event?.code == '15213'"
+      pattern: "Packet capture configuration error for session %{aruba.packet_capture.session_name}, reason : %{event.reason}"
 
   # Bidirectional PIM (PIM-BIDI) events (1530x)
   # https://www.arubanetworks.com/techdocs/AOS-CX/10.15/HTML/elmrg/Content/events/PIM-BIDI.htm
