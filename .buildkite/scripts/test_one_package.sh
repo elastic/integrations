@@ -37,9 +37,11 @@ use_elastic_package
 # This variable does not exist in builds triggered automatically
 GITHUB_PR_TRIGGER_COMMENT="${GITHUB_PR_TRIGGER_COMMENT:-""}"
 
-if [[ "${GITHUB_PR_TRIGGERT_COMMENT}" =~ test\ stack ]]; then
+# Test purposes - to be removed
+GITHUB_PR_TRIGGERT_COMMENT="test stack 9.0.0-SNAPSHOT"
+
+if [[ "${GITHUB_PR_TRIGGER_COMMENT}" =~ ^test\ stack ]]; then
     STACK_VERSION=$(echo "$GITHUB_PR_TRIGGER_COMMENT" | cut -d " " -f 3)
-    STACK_VERSION=9.0.0-SNAPSHOT
     export STACK_VERSION
     echo "Use Elastic stack version: ${STACK_VERSION}"
 fi
