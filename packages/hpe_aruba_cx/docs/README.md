@@ -1230,10 +1230,21 @@ Note: Descriptions have not been filled out
 #### [Port access application-based policy events](https://arubanetworking.hpe.com/techdocs/AOS-CX/10.15/HTML/elmrg/Content/events/PORT_ACC_ABP.htm)
 | Docs Field       | Schema Mapping               |
 |------------------|------------------------------|
-| `<client>`       | aruba.acc_abp.client         |
-| `<operation>`    | aruba.acc_abp.operation      |
-| `<pac_abp_name>` | aruba.acc_abp.pac_abp_name   |
-| `<result>`       | aruba.acc_abp.result         |
+| `<client>`       | aruba.pac_abp.client         |
+| `<line_card>`    | aruba.acc_abp.line_card      |
+| `<operation>`    | aruba.pac_abp.operation      |
+| `<pac_abp_name>` | aruba.pac_abp.name           |
+| `<result>`       | aruba.pac_abp.result         |
+
+#### [Port access group based policy events](https://arubanetworking.hpe.com/techdocs/AOS-CX/10.15/HTML/elmrg/Content/events/PORT_ACCESS_GBP.htm)
+| Docs Field    | Schema Mapping         |
+|---------------|------------------------|
+| `<action>`    | event.action           |
+| `<client>`    | aruba.pac_gbp.client   |
+| `<line_card>` | aruba.pac_gbp.line_card|
+| `<pac_gbp_name>` | aruba.pac_gbp.name  |
+| `<operation>` | aruba.pac_gbp.operation|
+| `<result>`    | aruba.pac_gbp.result   |
 
 #### [Port access roles events](https://arubanetworking.hpe.com/techdocs/AOS-CX/10.15/HTML/elmrg/Content/events/ROLE.htm)
 | Docs Field              | Schema Mapping               |
@@ -2143,6 +2154,11 @@ The `log` dataset collects the HPE Aruba CX logs.
 | aruba.ospf.old_state |  | keyword |
 | aruba.ospf.router_id |  | keyword |
 | aruba.ospf.stats_id |  | keyword |
+| aruba.pac_abp.client |  | keyword |
+| aruba.pac_abp.line_card |  | keyword |
+| aruba.pac_abp.name |  | keyword |
+| aruba.pac_abp.operation |  | keyword |
+| aruba.pac_abp.result |  | keyword |
 | aruba.packet_capture.session_name |  | keyword |
 | aruba.packet_capture.value |  | keyword |
 | aruba.pim.callerid |  | keyword |
