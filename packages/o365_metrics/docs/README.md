@@ -662,7 +662,7 @@ An example event for `onedrive_usage_account_counts` looks as following:
                     "account": {
                         "counts": {
                             "active": {
-                                "count": "14"
+                                "count": 14
                             },
                             "report": {
                                 "date": "2024-11-23",
@@ -670,7 +670,7 @@ An example event for `onedrive_usage_account_counts` looks as following:
                                 "refresh_date": "2024-11-29"
                             },
                             "total": {
-                                "count": "18"
+                                "count": 18
                             }
                         }
                     }
@@ -768,7 +768,7 @@ An example event for `onedrive_usage_file_counts` looks as following:
                     "file": {
                         "counts": {
                             "active": {
-                                "count": "14"
+                                "count": 14
                             },
                             "report": {
                                 "date": "2024-11-23",
@@ -776,7 +776,7 @@ An example event for `onedrive_usage_file_counts` looks as following:
                                 "refresh_date": "2024-11-29"
                             },
                             "total": {
-                                "count": "164"
+                                "count": 164
                             }
                         }
                     }
