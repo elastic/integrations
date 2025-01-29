@@ -15,15 +15,16 @@ Following Microsoft 365 Graph Reports can be collected by Microsoft Office 365 M
 | [OneDrive Usage File Counts](https://learn.microsoft.com/en-us/microsoft-365/admin/activity-reports/onedrive-for-business-usage-ww?view=o365-worldwide)      |    [reportRoot: getOneDriveUsageFileCounts](https://learn.microsoft.com/en-us/graph/api/reportroot-getonedriveusagefilecounts?view=graph-rest-1.0&tabs=http)    |   Office 365 One Drive Usage metrics   |   `Period`-based   |
 | [OneDrive Usage Storage](https://learn.microsoft.com/en-us/microsoft-365/admin/activity-reports/onedrive-for-business-usage-ww?view=o365-worldwide)      |    [reportRoot: getOneDriveUsageStorage](https://learn.microsoft.com/en-us/graph/api/reportroot-getonedriveusagestorage?view=graph-rest-1.0&tabs=http)    |   Office 365 One Drive Usage metrics   |   `Period`-based   |
 | [Outlook Activity Counts](https://learn.microsoft.com/en-us/microsoft-365/admin/activity-reports/email-activity-ww?view=o365-worldwide)      |    [reportRoot: getEmailActivityCounts](https://learn.microsoft.com/en-us/graph/api/reportroot-getemailactivitycounts?view=graph-rest-1.0&tabs=http)    |   Office 365 Outlook Activity metrics   |   `Period`-based   |
-| [Outlook App Usage Version User Counts](https://learn.microsoft.com/en-us/microsoft-365/admin/activity-reports/email-apps-usage-ww?view=o365-worldwide)      |    [reportRoot: getEmailAppUsageVersionsUserCounts](https://learn.microsoft.com/en-us/graph/api/reportroot-getemailappusageversionsusercounts?view=graph-rest-1.0&tabs=http)    |   Office 365 Outlook App Usage metrics   |   `Period`-based   |
-| [Outlook Mailbox Usage Quota Status Mailbox Counts](https://learn.microsoft.com/en-us/microsoft-365/admin/activity-reports/mailbox-usage?view=o365-worldwide)      |    [reportRoot: getMailboxUsageQuotaStatusMailboxCounts](https://learn.microsoft.com/en-us/graph/api/reportroot-getmailboxusagequotastatusmailboxcounts?view=graph-rest-1.0&tabs=http)    |   O365 mailbox quota status and mailbox usage detail metrics   |   `Period`-based   |
-| [Outlook Mailbox Usage Mailbox Detail](https://learn.microsoft.com/en-us/microsoft-365/admin/activity-reports/mailbox-usage?view=o365-worldwide)      |    [reportRoot: getMailboxUsageDetail](https://learn.microsoft.com/en-us/graph/api/reportroot-getmailboxusagedetail?view=graph-rest-1.0&tabs=http)    |   O365 mailbox quota status and mailbox usage detail metrics   |   `Period`-based   |
+| [Outlook App Usage Version Counts](https://learn.microsoft.com/en-us/microsoft-365/admin/activity-reports/email-apps-usage-ww?view=o365-worldwide)      |    [reportRoot: getEmailAppUsageVersionsUserCounts](https://learn.microsoft.com/en-us/graph/api/reportroot-getemailappusageversionsusercounts?view=graph-rest-1.0&tabs=http)    |   Microsoft 365 Outlook App Usage Version Counts metrics   |   `Period`-based   |
+| [Outlook Mailbox Usage Quota Status Mailbox Counts](https://learn.microsoft.com/en-us/microsoft-365/admin/activity-reports/mailbox-usage?view=o365-worldwide)      |    [reportRoot: getMailboxUsageQuotaStatusMailboxCounts](https://learn.microsoft.com/en-us/graph/api/reportroot-getmailboxusagequotastatusmailboxcounts?view=graph-rest-1.0&tabs=http)    |  Microsoft 365 mailbox usage quota status metrics   |   `Period`-based   |
+| [Outlook Mailbox Usage Detail](https://learn.microsoft.com/en-us/microsoft-365/admin/activity-reports/mailbox-usage?view=o365-worldwide)      |    [reportRoot: getMailboxUsageDetail](https://learn.microsoft.com/en-us/graph/api/reportroot-getmailboxusagedetail?view=graph-rest-1.0&tabs=http)    |   Microsoft 365 mailbox usage detail metrics   |   `Period`-based   |
 | [SharePoint Site Usage Storage](https://learn.microsoft.com/en-us/microsoft-365/admin/activity-reports/sharepoint-site-usage-ww?view=o365-worldwide)      |    [reportRoot: getSharePointSiteUsageStorage](https://learn.microsoft.com/en-us/graph/api/reportroot-getsharepointsiteusagestorage?view=graph-rest-1.0&tabs=http)    |   Office 365 Sharepoint Site Usage metrics   |   `Period`-based   |
 | [SharePoint Site Usage Site Detail](https://learn.microsoft.com/en-us/microsoft-365/admin/activity-reports/sharepoint-site-usage-ww?view=o365-worldwide)      |    [reportRoot: getSharePointSiteUsageDetail](https://learn.microsoft.com/en-us/graph/api/reportroot-getsharepointsiteusagedetail?view=graph-rest-1.0&tabs=http)    |   Office 365 Sharepoint Site Usage metrics   |   `Period`-based   |
-| [Teams User Activity User Counts](https://learn.microsoft.com/en-us/microsoft-365/admin/activity-reports/microsoft-teams-user-activity-preview?view=o365-worldwide)      |    [reportRoot: getTeamsUserActivityUserCounts](https://learn.microsoft.com/en-us/graph/api/reportroot-getteamsuseractivityusercounts?view=graph-rest-1.0&tabs=http)    |   Office 365 Teams User Activity User Counts metrics   |   `Period`-based   |
+| [Teams Device Usage User Counts](https://learn.microsoft.com/en-us/microsoft-365/admin/activity-reports/microsoft-teams-device-usage-preview?view=o365-worldwide)      |    [reportRoot: getTeamsDeviceUsageUserCounts](https://learn.microsoft.com/en-us/graph/api/reportroot-getteamsdeviceusageusercounts?view=graph-rest-1.0&tabs=http)    |   Microsoft 365 Teams Device Usage User Counts metrics   |   `Period`-based   |
+| [Teams User Activity User Counts](https://learn.microsoft.com/en-us/microsoft-365/admin/activity-reports/microsoft-teams-user-activity-preview?view=o365-worldwide)      |    [reportRoot: getTeamsUserActivityUserCounts](https://learn.microsoft.com/en-us/graph/api/reportroot-getteamsuseractivityusercounts?view=graph-rest-1.0&tabs=http)    |   Microsoft 365 Teams User Activity User Counts metrics   |   `Period`-based   |
 | [Teams User Activity User Detail](https://learn.microsoft.com/en-us/microsoft-365/admin/activity-reports/microsoft-teams-user-activity-preview?view=o365-worldwide)      |    [reportRoot: getTeamsUserActivityUserDetail](https://learn.microsoft.com/en-us/graph/api/reportroot-getteamsuseractivityuserdetail?view=graph-rest-1.0&tabs=http)    |   Microsoft 365 Teams User Activity User Detail   |    `Day`-based   |
 | [Viva Engage Groups Activity Group Detail](https://learn.microsoft.com/en-us/microsoft-365/admin/activity-reports/viva-engage-groups-activity-report-ww?view=o365-worldwide)      |    [reportRoot: getYammerGroupsActivityDetail](https://learn.microsoft.com/en-us/graph/api/reportroot-getyammergroupsactivitydetail?view=graph-rest-1.0&tabs=http)    |   Microsoft 365 Viva Engage Groups Activity   |   `Day`-based   |
-| [Yammer Device Usage User Counts](https://learn.microsoft.com/en-us/microsoft-365/admin/activity-reports/viva-engage-device-usage-report-ww?view=o365-worldwide)      |    [reportRoot: getYammerDeviceUsageUserCounts](https://learn.microsoft.com/en-us/graph/api/reportroot-getyammerdeviceusageusercounts?view=graph-rest-1.0&tabs=http)    |   Office 365 Yammer Device Usage metrics   |   `Period`-based   |
+| [Viva Enageg Device Usage User Counts](https://learn.microsoft.com/en-us/microsoft-365/admin/activity-reports/viva-engage-device-usage-report-ww?view=o365-worldwide)      |    [reportRoot: getYammerDeviceUsageUserCounts](https://learn.microsoft.com/en-us/graph/api/reportroot-getyammerdeviceusageusercounts?view=graph-rest-1.0&tabs=http)    |   Microsoft 365 Viva Engage Device Usage User Counts metrics   |   `Period`-based   |
 
 ## Setup
 
@@ -89,7 +90,7 @@ By default for all Microsoft 365 usage reports, the user names, emails, group, o
 
 ## Metrics
 
-Uses the Office 365 Graph API to retrieve metrics from Office 365.
+Uses the Microsoft 365 Graph API to retrieve metrics from Microsoft 365.
 
 ### Active Users
 
@@ -244,97 +245,93 @@ Please refer to the following [document](https://www.elastic.co/guide/en/ecs/cur
 | o365.metrics.active.users.yammer.inactive.count | Number of Yammer inactive users. | integer |
 
 
-### Mailbox Usage
+### Mailbox Usage Quota Status
 
-An example event for `mailbox_usage` looks as following:
+Get details about Mailbox Usage Quota Status [Microsoft Graph API](https://learn.microsoft.com/en-us/graph/api/reportroot-getmailboxusagequotastatusmailboxcounts?view=graph-rest-1.0&tabs=http).
+
+An example event for `mailbox_usage_quota_status` looks as following:
 
 ```json
 {
-    "@timestamp": "2024-12-24T09:24:40.827Z",
+    "o365": {
+        "metrics": {
+            "mailbox": {
+                "usage": {
+                    "quota": {
+                        "status": {
+                            "send_receive_prohibited": {
+                                "count": 9
+                            },
+                            "indeterminate": {
+                                "count": 3
+                            },
+                            "under_limit": {
+                                "count": 20
+                            },
+                            "warning_issued": {
+                                "count": 1
+                            },
+                            "report": {
+                                "date": "2025-01-26",
+                                "period": {
+                                    "day": "7"
+                                },
+                                "refresh_date": "2025-01-26"
+                            },
+                            "send_prohibited": {
+                                "count": 6
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    },
     "agent": {
         "name": "docker-fleet-agent",
-        "id": "abf38fab-f7b6-4e1c-a3b3-a70a64f9e5db",
-        "ephemeral_id": "08417a8d-9698-4c62-b7dc-e1b048647626",
+        "id": "0af64850-a098-46f3-a3c6-98b706017b44",
         "type": "filebeat",
+        "ephemeral_id": "3c0f3a0f-f3dd-4793-affb-f9441816b674",
+        "version": "8.16.0"
+    },
+    "@timestamp": "2025-01-26",
+    "ecs": {
         "version": "8.16.0"
     },
     "data_stream": {
         "namespace": "default",
         "type": "metrics",
-        "dataset": "o365_metrics.mailbox_usage"
-    },
-    "ecs": {
-        "version": "8.16.0"
-    },
-    "elastic_agent": {
-        "id": "abf38fab-f7b6-4e1c-a3b3-a70a64f9e5db",
-        "version": "8.16.0",
-        "snapshot": false
-    },
-    "event": {
-        "agent_id_status": "verified",
-        "ingested": "2024-12-24T09:24:41Z",
-        "dataset": "o365_metrics.mailbox_usage"
+        "dataset": "o365_metrics.mailbox_usage_quota_status"
     },
     "host": {
         "hostname": "docker-fleet-agent",
         "os": {
             "kernel": "5.10.104-linuxkit",
             "name": "Wolfi",
-            "type": "linux",
             "family": "",
+            "type": "linux",
             "version": "20230201",
             "platform": "wolfi"
         },
         "containerized": false,
         "ip": [
-            "192.168.48.7"
+            "192.168.32.7"
         ],
         "name": "docker-fleet-agent",
         "mac": [
-            "02-42-C0-A8-30-07"
+            "02-42-C0-A8-20-07"
         ],
         "architecture": "aarch64"
     },
-    "o365": {
-        "metrics": {
-            "mailbox": {
-                "usage": {
-                    "detail": {
-                        "item": {
-                            "count": "82"
-                        },
-                        "deleted_item_size": {
-                            "byte": "0"
-                        },
-                        "prohibit_send_quota": {
-                            "byte": "106300440576"
-                        },
-                        "deleted_item_quota": {
-                            "byte": "32212254720"
-                        },
-                        "issue_warning_quota": {
-                            "byte": "105226698752"
-                        },
-                        "deleted_item": {
-                            "count": "0"
-                        },
-                        "report": {
-                            "period": {
-                                "day": "7"
-                            },
-                            "refresh_date": "2024-12-22"
-                        },
-                        "prohibit_send_receive_quota": {
-                            "byte": "107374182400"
-                        },
-                        "storage_used": {
-                            "byte": "7986169"
-                        }
-                    }
-                }
-            }
-        }
+    "elastic_agent": {
+        "id": "0af64850-a098-46f3-a3c6-98b706017b44",
+        "version": "8.16.0",
+        "snapshot": false
+    },
+    "event": {
+        "agent_id_status": "verified",
+        "ingested": "2025-01-28T12:46:50Z",
+        "dataset": "o365_metrics.mailbox_usage_quota_status"
     },
     "tags": [
         "o365.metrics.mailbox.usage"
@@ -358,24 +355,154 @@ Please refer to the following [document](https://www.elastic.co/guide/en/ecs/cur
 | host.containerized | If the host is a container. | boolean |  |
 | host.os.build | OS build information. | keyword |  |
 | host.os.codename | OS codename, if any. | keyword |  |
-| o365.metrics.mailbox.quota.status.indeterminate.count | The number of mailboxes where the quota status could not be determined. | integer |  |
-| o365.metrics.mailbox.quota.status.report.date | The specific date for which the report data applies. | date |  |
-| o365.metrics.mailbox.quota.status.report.period.day | The duration (e.g., 7 days) over which the quota status data is aggregated. | integer | d |
-| o365.metrics.mailbox.quota.status.report.refresh_date | The date when the report data was last updated. | date |  |
-| o365.metrics.mailbox.quota.status.send_prohibited.count | The number of mailboxes restricted from sending emails due to exceeding their send quota during the reporting period. | integer |  |
-| o365.metrics.mailbox.quota.status.send_receive_prohibited.count | The number of mailboxes restricted from both sending and receiving emails due to exceeding their total quota during the reporting period. | integer |  |
-| o365.metrics.mailbox.quota.status.under_limit.count | The number of mailboxes operating within their assigned quota limits during the reporting period. | integer |  |
-| o365.metrics.mailbox.quota.status.warning_issued.count | The number of mailboxes that have exceeded their warning threshold quota during the reporting period. | integer |  |
-| o365.metrics.mailbox.usage.detail.deleted_item.count | The number of items in the deleted items folder. | integer |  |
-| o365.metrics.mailbox.usage.detail.deleted_item_quota.byte | The quota limit for the deleted items folder (in bytes). | integer |  |
-| o365.metrics.mailbox.usage.detail.deleted_item_size.byte | The total size of items in the deleted items folder (in bytes). | integer |  |
-| o365.metrics.mailbox.usage.detail.issue_warning_quota.byte | The mailbox size limit at which a warning is issued (in bytes). | integer |  |
-| o365.metrics.mailbox.usage.detail.item.count | The total number of items in the mailbox. | integer |  |
-| o365.metrics.mailbox.usage.detail.prohibit_send_quota.byte | The mailbox size limit at which sending messages is prohibited (in bytes). | integer |  |
-| o365.metrics.mailbox.usage.detail.prohibit_send_receive_quota.byte | The mailbox size limit at which sending and receiving messages is prohibited (in bytes). | integer |  |
+| o365.metrics.mailbox.usage.quota.status.indeterminate.count | The number of mailboxes where the quota status could not be determined. | long |  |
+| o365.metrics.mailbox.usage.quota.status.report.date | The specific date for which the report data applies. | date |  |
+| o365.metrics.mailbox.usage.quota.status.report.period.day | The duration (e.g., 7 days) over which the quota status data is aggregated. | integer | d |
+| o365.metrics.mailbox.usage.quota.status.report.refresh_date | The date when the report data was last updated. | date |  |
+| o365.metrics.mailbox.usage.quota.status.send_prohibited.count | The number of mailboxes restricted from sending emails due to exceeding their send quota during the reporting period. | long |  |
+| o365.metrics.mailbox.usage.quota.status.send_receive_prohibited.count | The number of mailboxes restricted from both sending and receiving emails due to exceeding their total quota during the reporting period. | long |  |
+| o365.metrics.mailbox.usage.quota.status.under_limit.count | The number of mailboxes operating within their assigned quota limits during the reporting period. | long |  |
+| o365.metrics.mailbox.usage.quota.status.warning_issued.count | The number of mailboxes that have exceeded their warning threshold quota during the reporting period. | long |  |
+
+
+### Mailbox Usage Detail
+
+Get details about Mailbox Usage Detail [Microsoft Graph API](https://learn.microsoft.com/en-us/graph/api/reportroot-getmailboxusagedetail?view=graph-rest-1.0&tabs=http).
+
+An example event for `mailbox_usage_detail` looks as following:
+
+```json
+{
+    "o365": {
+        "metrics": {
+            "mailbox": {
+                "usage": {
+                    "detail": {
+                        "item": {
+                            "count": 181
+                        },
+                        "deleted_item_size": {
+                            "byte": 440815
+                        },
+                        "prohibit_send_quota": {
+                            "byte": 106300440576
+                        },
+                        "deleted_item_quota": {
+                            "byte": 32212254720
+                        },
+                        "last_activity_date": "2024-10-11",
+                        "display_name": "Dgo Sky",
+                        "has_archive": true,
+                        "issue_warning_quota": {
+                            "byte": 105226698752
+                        },
+                        "deleted_item": {
+                            "count": 66
+                        },
+                        "user_principal_name": "DgoS@OnMicrosoft.com",
+                        "is_deleted": false,
+                        "report": {
+                            "period": {
+                                "day": "7"
+                            },
+                            "refresh_date": "2025-01-22"
+                        },
+                        "prohibit_send_receive_quota": {
+                            "byte": 107374182400
+                        },
+                        "created_date": "2024-10-11",
+                        "storage_used": {
+                            "byte": 6399001
+                        }
+                    }
+                }
+            }
+        }
+    },
+    "agent": {
+        "name": "docker-fleet-agent",
+        "id": "e6f906c1-7164-4902-843f-78493e2b68a4",
+        "ephemeral_id": "d04fab8b-d48e-4df3-83f1-aa2022d19736",
+        "type": "filebeat",
+        "version": "8.16.0"
+    },
+    "@timestamp": "2025-01-22",
+    "ecs": {
+        "version": "8.16.0"
+    },
+    "data_stream": {
+        "namespace": "default",
+        "type": "metrics",
+        "dataset": "o365_metrics.mailbox_usage_detail"
+    },
+    "host": {
+        "hostname": "docker-fleet-agent",
+        "os": {
+            "kernel": "5.10.104-linuxkit",
+            "name": "Wolfi",
+            "type": "linux",
+            "version": "20230201",
+            "platform": "wolfi"
+        },
+        "ip": [
+            "172.24.0.7"
+        ],
+        "containerized": false,
+        "name": "docker-fleet-agent",
+        "mac": [
+            "02-42-AC-18-00-07"
+        ],
+        "architecture": "aarch64"
+    },
+    "elastic_agent": {
+        "id": "e6f906c1-7164-4902-843f-78493e2b68a4",
+        "version": "8.16.0",
+        "snapshot": false
+    },
+    "event": {
+        "agent_id_status": "verified",
+        "ingested": "2025-01-24T09:32:25Z",
+        "dataset": "o365_metrics.mailbox_usage_detail"
+    },
+    "tags": [
+        "o365.metrics.mailbox.usage"
+    ]
+}
+```
+
+**ECS Field Reference**
+
+Please refer to the following [document](https://www.elastic.co/guide/en/ecs/current/ecs-field-reference.html) for detailed information on ECS fields.
+
+**Exported fields**
+
+| Field | Description | Type | Unit |
+|---|---|---|---|
+| @timestamp | Event timestamp. | date |  |
+| cloud.image.id | Image ID for the cloud instance. | keyword |  |
+| data_stream.dataset | Data stream dataset. | constant_keyword |  |
+| data_stream.namespace | Data stream namespace. | constant_keyword |  |
+| data_stream.type | Data stream type. | constant_keyword |  |
+| host.containerized | If the host is a container. | boolean |  |
+| host.os.build | OS build information. | keyword |  |
+| host.os.codename | OS codename, if any. | keyword |  |
+| o365.metrics.mailbox.usage.detail.created_date | The date the mailbox was created. | date |  |
+| o365.metrics.mailbox.usage.detail.deleted_date | The date the mailbox was deleted. | date |  |
+| o365.metrics.mailbox.usage.detail.deleted_item.count | The number of items in the deleted items folder. | long |  |
+| o365.metrics.mailbox.usage.detail.deleted_item_quota.byte | The quota limit for the deleted items folder (in bytes). | long | byte |
+| o365.metrics.mailbox.usage.detail.deleted_item_size.byte | The total size of items in the deleted items folder (in bytes). | long | byte |
+| o365.metrics.mailbox.usage.detail.display_name | The full name of the user. | keyword |  |
+| o365.metrics.mailbox.usage.detail.has_archive | Indicates if the user has an archive mailbox. | boolean |  |
+| o365.metrics.mailbox.usage.detail.is_deleted | Indicates if the mailbox is deleted. | boolean |  |
+| o365.metrics.mailbox.usage.detail.issue_warning_quota.byte | The mailbox size limit at which a warning is issued (in bytes). | long | byte |
+| o365.metrics.mailbox.usage.detail.item.count | The total number of items in the mailbox. | long |  |
+| o365.metrics.mailbox.usage.detail.last_activity_date | The most recent activity date for the mailbox. | date |  |
+| o365.metrics.mailbox.usage.detail.prohibit_send_quota.byte | The mailbox size limit at which sending messages is prohibited (in bytes). | long | byte |
+| o365.metrics.mailbox.usage.detail.prohibit_send_receive_quota.byte | The mailbox size limit at which sending and receiving messages is prohibited (in bytes). | long | byte |
 | o365.metrics.mailbox.usage.detail.report.period.day | The reporting period over which the data is aggregated (in days). | integer | d |
 | o365.metrics.mailbox.usage.detail.report.refresh_date | The date when the report data was last updated. | date |  |
-| o365.metrics.mailbox.usage.detail.storage_used.byte | The total storage used in the mailbox (in bytes). | integer |  |
+| o365.metrics.mailbox.usage.detail.storage_used.byte | The total storage used in the mailbox (in bytes). | long | byte |
+| o365.metrics.mailbox.usage.detail.user_principal_name | The email or principal username of the user. | keyword |  |
 
 
 ### Microsoft 365 Groups Activity Group Detail
@@ -708,6 +835,8 @@ Please refer to the following [document](https://www.elastic.co/guide/en/ecs/cur
 
 ### Outlook Activity
 
+Get details about Outlook Activity from [Microsoft Graph API](https://learn.microsoft.com/en-us/graph/api/reportroot-getemailactivitycounts?view=graph-rest-1.0&tabs=http).
+
 An example event for `outlook_activity` looks as following:
 
 ```json
@@ -717,26 +846,26 @@ An example event for `outlook_activity` looks as following:
             "outlook": {
                 "activity": {
                     "meeting_interacted": {
-                        "count": ""
+                        "count": 6
                     },
                     "meeting_created": {
-                        "count": "0"
+                        "count": 0
                     },
                     "emails_received": {
-                        "count": "3"
+                        "count": 11
                     },
                     "emails_sent": {
-                        "count": ""
+                        "count": 1
                     },
                     "report": {
-                        "date": "2024-12-16",
+                        "date": "2025-01-21",
                         "period": {
                             "day": "7"
                         },
-                        "refresh_date": "2024-12-22"
+                        "refresh_date": "2025-01-26"
                     },
                     "emails_read": {
-                        "count": ""
+                        "count": 6
                     }
                 }
             }
@@ -744,12 +873,12 @@ An example event for `outlook_activity` looks as following:
     },
     "agent": {
         "name": "docker-fleet-agent",
-        "id": "abf38fab-f7b6-4e1c-a3b3-a70a64f9e5db",
+        "id": "e416de39-a342-4f53-86e7-e36d8846b4b7",
+        "ephemeral_id": "d9e690ae-7a58-4c59-b143-1408bbb93a4f",
         "type": "filebeat",
-        "ephemeral_id": "08417a8d-9698-4c62-b7dc-e1b048647626",
         "version": "8.16.0"
     },
-    "@timestamp": "2024-12-24T09:36:40.780Z",
+    "@timestamp": "2025-01-21",
     "ecs": {
         "version": "8.16.0"
     },
@@ -763,29 +892,29 @@ An example event for `outlook_activity` looks as following:
         "os": {
             "kernel": "5.10.104-linuxkit",
             "name": "Wolfi",
-            "family": "",
             "type": "linux",
+            "family": "",
             "version": "20230201",
             "platform": "wolfi"
         },
         "containerized": false,
         "ip": [
-            "192.168.48.7"
+            "192.168.0.7"
         ],
         "name": "docker-fleet-agent",
         "mac": [
-            "02-42-C0-A8-30-07"
+            "02-42-C0-A8-00-07"
         ],
         "architecture": "aarch64"
     },
     "elastic_agent": {
-        "id": "abf38fab-f7b6-4e1c-a3b3-a70a64f9e5db",
+        "id": "e416de39-a342-4f53-86e7-e36d8846b4b7",
         "version": "8.16.0",
         "snapshot": false
     },
     "event": {
         "agent_id_status": "verified",
-        "ingested": "2024-12-24T09:36:41Z",
+        "ingested": "2025-01-28T08:13:54Z",
         "dataset": "o365_metrics.outlook_activity"
     },
     "tags": [
@@ -810,19 +939,21 @@ Please refer to the following [document](https://www.elastic.co/guide/en/ecs/cur
 | host.containerized | If the host is a container. | boolean |  |
 | host.os.build | OS build information. | keyword |  |
 | host.os.codename | OS codename, if any. | keyword |  |
-| o365.metrics.outlook.activity.emails_read.count | The count of email messages read by users during the reporting period. | integer |  |
-| o365.metrics.outlook.activity.emails_received.count | The count of email messages received by users during the reporting period. | integer |  |
-| o365.metrics.outlook.activity.emails_sent.count | The count of email messages sent by users during the reporting period. | integer |  |
-| o365.metrics.outlook.activity.meeting_created.count | The count of calendar meetings created by users during the reporting period. | integer |  |
-| o365.metrics.outlook.activity.meeting_interacted.count | The count of meetings where users interacted (e.g., accepted, declined, or modified) during the reporting period. | integer |  |
+| o365.metrics.outlook.activity.emails_read.count | The count of email messages read by users during the reporting period. | long |  |
+| o365.metrics.outlook.activity.emails_received.count | The count of email messages received by users during the reporting period. | long |  |
+| o365.metrics.outlook.activity.emails_sent.count | The count of email messages sent by users during the reporting period. | long |  |
+| o365.metrics.outlook.activity.meeting_created.count | The count of calendar meetings created by users during the reporting period. | long |  |
+| o365.metrics.outlook.activity.meeting_interacted.count | The count of meetings where users interacted (e.g., accepted, declined, or modified) during the reporting period. | long |  |
 | o365.metrics.outlook.activity.report.date | The specific date for which the report data applies. | date |  |
 | o365.metrics.outlook.activity.report.period.day | The duration (e.g., 7 days) over which the report data is aggregated. | integer | d |
 | o365.metrics.outlook.activity.report.refresh_date | The date when the report data was last updated. | date |  |
 
 
-### Outlook App Usage
+### Outlook App Usage Version Counts
 
-An example event for `outlook_app_usage` looks as following:
+Get details about Microsoft Outlook App Usage Version Counts from [Microsoft Graph API](https://learn.microsoft.com/en-us/graph/api/reportroot-getemailappusageversionsusercounts?view=graph-rest-1.0&tabs=http).
+
+An example event for `outlook_app_usage_version_counts` looks as following:
 
 ```json
 {
@@ -831,32 +962,36 @@ An example event for `outlook_app_usage` looks as following:
             "outlook": {
                 "app": {
                     "usage": {
-                        "outlook_2013": {
-                            "count": ""
-                        },
-                        "outlook_2016": {
-                            "count": ""
-                        },
-                        "outlook_2007": {
-                            "count": ""
-                        },
-                        "undetermined": {
-                            "count": ""
-                        },
-                        "report": {
-                            "period": {
-                                "day": "7"
-                            },
-                            "refresh_date": "2024-12-22"
-                        },
-                        "outlook_2019": {
-                            "count": ""
-                        },
-                        "outlook_m365": {
-                            "count": ""
-                        },
-                        "outlook_2010": {
-                            "count": ""
+                        "version": {
+                            "counts": {
+                                "outlook_2013": {
+                                    "count": 1
+                                },
+                                "outlook_2016": {
+                                    "count": 7
+                                },
+                                "outlook_2007": {
+                                    "count": 6
+                                },
+                                "undetermined": {
+                                    "count": 3
+                                },
+                                "report": {
+                                    "period": {
+                                        "day": "7"
+                                    },
+                                    "refresh_date": "2025-01-26"
+                                },
+                                "outlook_2019": {
+                                    "count": 2
+                                },
+                                "outlook_m365": {
+                                    "count": 10
+                                },
+                                "outlook_2010": {
+                                    "count": 1
+                                }
+                            }
                         }
                     }
                 }
@@ -865,52 +1000,52 @@ An example event for `outlook_app_usage` looks as following:
     },
     "agent": {
         "name": "docker-fleet-agent",
-        "id": "abf38fab-f7b6-4e1c-a3b3-a70a64f9e5db",
-        "ephemeral_id": "08417a8d-9698-4c62-b7dc-e1b048647626",
+        "id": "e6840d3f-0681-4dde-b0e6-f0e767ba296c",
+        "ephemeral_id": "5180e26c-bab3-433c-9dce-fd0be1cabfd0",
         "type": "filebeat",
         "version": "8.16.0"
     },
-    "@timestamp": "2024-12-24T09:39:43.406Z",
+    "@timestamp": "2025-01-26",
     "ecs": {
         "version": "8.16.0"
     },
     "data_stream": {
         "namespace": "default",
         "type": "metrics",
-        "dataset": "o365_metrics.outlook_app_usage"
+        "dataset": "o365_metrics.outlook_app_usage_version_counts"
+    },
+    "elastic_agent": {
+        "id": "e6840d3f-0681-4dde-b0e6-f0e767ba296c",
+        "version": "8.16.0",
+        "snapshot": false
     },
     "host": {
         "hostname": "docker-fleet-agent",
         "os": {
             "kernel": "5.10.104-linuxkit",
             "name": "Wolfi",
-            "family": "",
             "type": "linux",
+            "family": "",
             "version": "20230201",
             "platform": "wolfi"
         },
         "ip": [
-            "192.168.48.7"
+            "172.31.0.7"
         ],
         "containerized": false,
         "name": "docker-fleet-agent",
         "mac": [
-            "02-42-C0-A8-30-07"
+            "02-42-AC-1F-00-07"
         ],
         "architecture": "aarch64"
     },
-    "elastic_agent": {
-        "id": "abf38fab-f7b6-4e1c-a3b3-a70a64f9e5db",
-        "version": "8.16.0",
-        "snapshot": false
-    },
     "event": {
         "agent_id_status": "verified",
-        "ingested": "2024-12-24T09:39:44Z",
-        "dataset": "o365_metrics.outlook_app_usage"
+        "ingested": "2025-01-28T07:05:32Z",
+        "dataset": "o365_metrics.outlook_app_usage_version_counts"
     },
     "tags": [
-        "o365metrics-outlook_app_usage"
+        "o365metrics-outlook_app_usage_version_counts"
     ]
 }
 ```
@@ -931,15 +1066,15 @@ Please refer to the following [document](https://www.elastic.co/guide/en/ecs/cur
 | host.containerized | If the host is a container. | boolean |  |
 | host.os.build | OS build information. | keyword |  |
 | host.os.codename | OS codename, if any. | keyword |  |
-| o365.metrics.outlook.app.usage.outlook_2007.count | The count of unique users using Outlook 2007 during the reporting period. | integer |  |
-| o365.metrics.outlook.app.usage.outlook_2010.count | The count of unique users using Outlook 2010 during the reporting period. | integer |  |
-| o365.metrics.outlook.app.usage.outlook_2013.count | The count of unique users using Outlook 2013 during the reporting period. | integer |  |
-| o365.metrics.outlook.app.usage.outlook_2016.count | The count of unique users using Outlook 2016 during the reporting period. | integer |  |
-| o365.metrics.outlook.app.usage.outlook_2019.count | The count of unique users using Outlook 2019 during the reporting period. | integer |  |
-| o365.metrics.outlook.app.usage.outlook_m365.count | The count of unique users using the Outlook Microsoft 365 version during the reporting period. | integer |  |
-| o365.metrics.outlook.app.usage.report.period.day | The duration (e.g., 7 days) over which the report data is aggregated. | integer | d |
-| o365.metrics.outlook.app.usage.report.refresh_date | The date when the report data was last updated. | date |  |
-| o365.metrics.outlook.app.usage.undetermined.count | The count of unique users whose Outlook version could not be identified. | integer |  |
+| o365.metrics.outlook.app.usage.version.counts.outlook_2007.count | The count of unique users using Outlook 2007 during the reporting period. | long |  |
+| o365.metrics.outlook.app.usage.version.counts.outlook_2010.count | The count of unique users using Outlook 2010 during the reporting period. | long |  |
+| o365.metrics.outlook.app.usage.version.counts.outlook_2013.count | The count of unique users using Outlook 2013 during the reporting period. | long |  |
+| o365.metrics.outlook.app.usage.version.counts.outlook_2016.count | The count of unique users using Outlook 2016 during the reporting period. | long |  |
+| o365.metrics.outlook.app.usage.version.counts.outlook_2019.count | The count of unique users using Outlook 2019 during the reporting period. | long |  |
+| o365.metrics.outlook.app.usage.version.counts.outlook_m365.count | The count of unique users using the Outlook Microsoft 365 version during the reporting period. | long |  |
+| o365.metrics.outlook.app.usage.version.counts.report.period.day | The duration (e.g., 7 days) over which the report data is aggregated. | integer | d |
+| o365.metrics.outlook.app.usage.version.counts.report.refresh_date | The date when the report data was last updated. | date |  |
+| o365.metrics.outlook.app.usage.version.counts.undetermined.count | The count of unique users whose Outlook version could not be identified. | long |  |
 
 
 ### SharePoint Site Usage
@@ -1439,41 +1574,49 @@ Please refer to the following [document](https://www.elastic.co/guide/en/ecs/cur
 | o365.metrics.viva_engage.groups.activity.group.detail.report.refresh_date | The date when the report data was last updated. | date |  |
 
 
-### Yammer Device Usage
+### Viva Engage Device Usage User Counts
 
-An example event for `yammer_device_usage` looks as following:
+Get details about Yammer device usage from [Microsoft Graph API](https://learn.microsoft.com/en-us/graph/api/reportroot-getyammerdeviceusageusercounts?view=graph-rest-1.0&tabs=http).
+
+An example event for `viva_engage_device_usage_user_counts` looks as following:
 
 ```json
 {
     "o365": {
         "metrics": {
-            "yammer": {
-                "device": {
-                    "usage": {
-                        "other": {
-                            "count": "1"
-                        },
-                        "windows_phone": {
-                            "count": "2"
-                        },
-                        "web": {
-                            "count": "3"
-                        },
-                        "report": {
-                            "date": "2024-12-18",
-                            "period": {
-                                "day": "7"
-                            },
-                            "refresh_date": "2024-12-24"
-                        },
-                        "ipad": {
-                            "count": "5"
-                        },
-                        "android_phone": {
-                            "count": "3"
-                        },
-                        "iphone": {
-                            "count": "1"
+            "viva": {
+                "engage": {
+                    "device": {
+                        "usage": {
+                            "user": {
+                                "counts": {
+                                    "other": {
+                                        "count": 2
+                                    },
+                                    "windows_phone": {
+                                        "count": 12
+                                    },
+                                    "web": {
+                                        "count": 3
+                                    },
+                                    "report": {
+                                        "date": "2025-01-25",
+                                        "period": {
+                                            "day": "7"
+                                        },
+                                        "refresh_date": "2025-01-26"
+                                    },
+                                    "ipad": {
+                                        "count": 1
+                                    },
+                                    "android_phone": {
+                                        "count": 6
+                                    },
+                                    "iphone": {
+                                        "count": 4
+                                    }
+                                }
+                            }
                         }
                     }
                 }
@@ -1482,22 +1625,22 @@ An example event for `yammer_device_usage` looks as following:
     },
     "agent": {
         "name": "docker-fleet-agent",
-        "id": "2f0e797b-2ccc-4639-b6f4-f1d3647cf01d",
+        "id": "1017792f-50f9-430c-8888-042d046c690b",
+        "ephemeral_id": "9d29bf05-61fe-429a-9179-aa2eaf0a42bc",
         "type": "filebeat",
-        "ephemeral_id": "131c1ad1-8f88-4dff-b6f9-d1bd298cb934",
         "version": "8.16.0"
     },
-    "@timestamp": "2024-12-26T12:42:17.877Z",
+    "@timestamp": "2025-01-25",
     "ecs": {
         "version": "8.16.0"
     },
     "data_stream": {
         "namespace": "default",
         "type": "metrics",
-        "dataset": "o365_metrics.yammer_device_usage"
+        "dataset": "o365_metrics.viva_engage_device_usage_user_counts"
     },
     "elastic_agent": {
-        "id": "2f0e797b-2ccc-4639-b6f4-f1d3647cf01d",
+        "id": "1017792f-50f9-430c-8888-042d046c690b",
         "version": "8.16.0",
         "snapshot": false
     },
@@ -1511,23 +1654,23 @@ An example event for `yammer_device_usage` looks as following:
             "version": "20230201",
             "platform": "wolfi"
         },
-        "ip": [
-            "192.168.144.7"
-        ],
         "containerized": false,
+        "ip": [
+            "192.168.16.7"
+        ],
         "name": "docker-fleet-agent",
         "mac": [
-            "02-42-C0-A8-90-07"
+            "02-42-C0-A8-10-07"
         ],
         "architecture": "aarch64"
     },
     "event": {
         "agent_id_status": "verified",
-        "ingested": "2024-12-26T12:42:18Z",
-        "dataset": "o365_metrics.yammer_device_usage"
+        "ingested": "2025-01-28T12:11:16Z",
+        "dataset": "o365_metrics.viva_engage_device_usage_user_counts"
     },
     "tags": [
-        "o365metrics-yammer_device_usage"
+        "o365metrics-viva_engage_device_usage_user_counts"
     ]
 }
 ```
@@ -1548,13 +1691,149 @@ Please refer to the following [document](https://www.elastic.co/guide/en/ecs/cur
 | host.containerized | If the host is a container. | boolean |  |
 | host.os.build | OS build information. | keyword |  |
 | host.os.codename | OS codename, if any. | keyword |  |
-| o365.metrics.yammer.device.usage.android_phone.count | The count of users accessing Yammer on Android phones. | integer |  |
-| o365.metrics.yammer.device.usage.ipad.count | The count of users accessing Yammer on iPads. | integer |  |
-| o365.metrics.yammer.device.usage.iphone.count | The count of users accessing Yammer on iPhones. | integer |  |
-| o365.metrics.yammer.device.usage.other.count | The count of users accessing Yammer on devices not listed. | integer |  |
-| o365.metrics.yammer.device.usage.report.date | The specific date for which the report data applies. | date |  |
-| o365.metrics.yammer.device.usage.report.period.day | The duration (e.g., 7 days) over which the quota status data is aggregated. | integer | d |
-| o365.metrics.yammer.device.usage.report.refresh_date | The date when the report data was last updated. | date |  |
-| o365.metrics.yammer.device.usage.web.count | The count of users accessing Yammer via web browsers. | integer |  |
-| o365.metrics.yammer.device.usage.windows_phone.count | The count of users accessing Yammer on Windows Phone devices. | integer |  |
+| o365.metrics.viva.engage.device.usage.user.counts.android_phone.count | The count of users accessing Yammer on Android phones. | long |  |
+| o365.metrics.viva.engage.device.usage.user.counts.ipad.count | The count of users accessing Yammer on iPads. | long |  |
+| o365.metrics.viva.engage.device.usage.user.counts.iphone.count | The count of users accessing Yammer on iPhones. | long |  |
+| o365.metrics.viva.engage.device.usage.user.counts.other.count | The count of users accessing Yammer on devices not listed. | long |  |
+| o365.metrics.viva.engage.device.usage.user.counts.report.date | The specific date for which the report data applies. | date |  |
+| o365.metrics.viva.engage.device.usage.user.counts.report.period.day | The duration (e.g., 7 days) over which the quota status data is aggregated. | integer | d |
+| o365.metrics.viva.engage.device.usage.user.counts.report.refresh_date | The date when the report data was last updated. | date |  |
+| o365.metrics.viva.engage.device.usage.user.counts.web.count | The count of users accessing Yammer via web browsers. | long |  |
+| o365.metrics.viva.engage.device.usage.user.counts.windows_phone.count | The count of users accessing Yammer on Windows Phone devices. | long |  |
+
+
+
+### Teams Device Usage User Counts
+
+Get details about Teams device usage from [Microsoft Graph API](https://learn.microsoft.com/en-us/graph/api/reportroot-getteamsdeviceusageusercounts?view=graph-rest-1.0&tabs=http).
+
+An example event for `teams_device_usage_user_counts` looks as following:
+
+```json
+{
+    "o365": {
+        "metrics": {
+            "teams": {
+                "device": {
+                    "usage": {
+                        "user": {
+                            "counts": {
+                                "windows_phone": {
+                                    "count": 2
+                                },
+                                "web": {
+                                    "count": 1
+                                },
+                                "linux": {
+                                    "count": 10
+                                },
+                                "report": {
+                                    "date": "2025-01-21",
+                                    "period": {
+                                        "day": "7"
+                                    },
+                                    "refresh_date": "2025-01-21"
+                                },
+                                "chrome_os": {
+                                    "count": 20
+                                },
+                                "ios": {
+                                    "count": 7
+                                },
+                                "windows": {
+                                    "count": 9
+                                },
+                                "android_phone": {
+                                    "count": 5
+                                },
+                                "mac": {
+                                    "count": 2
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    },
+    "agent": {
+        "name": "docker-fleet-agent",
+        "id": "dd15c14a-87a8-447a-9664-47ede1fae11a",
+        "ephemeral_id": "cee4f8bf-01b4-425c-8ecb-a2fa49a97348",
+        "type": "filebeat",
+        "version": "8.16.0"
+    },
+    "@timestamp": "2025-01-21",
+    "ecs": {
+        "version": "8.16.0"
+    },
+    "data_stream": {
+        "namespace": "default",
+        "type": "metrics",
+        "dataset": "o365_metrics.teams_device_usage_user_counts"
+    },
+    "elastic_agent": {
+        "id": "dd15c14a-87a8-447a-9664-47ede1fae11a",
+        "version": "8.16.0",
+        "snapshot": false
+    },
+    "host": {
+        "hostname": "docker-fleet-agent",
+        "os": {
+            "kernel": "5.10.104-linuxkit",
+            "name": "Wolfi",
+            "type": "linux",
+            "family": "",
+            "version": "20230201",
+            "platform": "wolfi"
+        },
+        "ip": [
+            "172.19.0.7"
+        ],
+        "containerized": false,
+        "name": "docker-fleet-agent",
+        "mac": [
+            "02-42-AC-13-00-07"
+        ],
+        "architecture": "aarch64"
+    },
+    "event": {
+        "agent_id_status": "verified",
+        "ingested": "2025-01-23T07:00:30Z",
+        "dataset": "o365_metrics.teams_device_usage_user_counts"
+    },
+    "tags": [
+        "o365.metrics.teams.device.usage.user.counts"
+    ]
+}
+```
+
+**ECS Field Reference**
+
+Please refer to the following [document](https://www.elastic.co/guide/en/ecs/current/ecs-field-reference.html) for detailed information on ECS fields.
+
+**Exported fields**
+
+| Field | Description | Type | Unit |
+|---|---|---|---|
+| @timestamp | Event timestamp. | date |  |
+| cloud.image.id | Image ID for the cloud instance. | keyword |  |
+| data_stream.dataset | Data stream dataset. | constant_keyword |  |
+| data_stream.namespace | Data stream namespace. | constant_keyword |  |
+| data_stream.type | Data stream type. | constant_keyword |  |
+| host.containerized | If the host is a container. | boolean |  |
+| host.os.build | OS build information. | keyword |  |
+| host.os.codename | OS codename, if any. | keyword |  |
+| o365.metrics.teams.device.usage.user.counts.android_phone.count | The number of active Teams users on Android devices. | long |  |
+| o365.metrics.teams.device.usage.user.counts.chrome_os.count | The number of active Teams users on Chrome OS devices. | long |  |
+| o365.metrics.teams.device.usage.user.counts.ios.count | The number of active Teams users on iOS devices (iPhone and iPad). | long |  |
+| o365.metrics.teams.device.usage.user.counts.linux.count | The number of active Teams users on Linux devices. | long |  |
+| o365.metrics.teams.device.usage.user.counts.mac.count | The number of active Teams users on macOS devices. | long |  |
+| o365.metrics.teams.device.usage.user.counts.report.date | The specific date for which the report data applies. | date |  |
+| o365.metrics.teams.device.usage.user.counts.report.period.day | The duration (e.g., 7 days) over which the report data is aggregated. | integer | d |
+| o365.metrics.teams.device.usage.user.counts.report.refresh_date | The date when the report data was last updated. | date |  |
+| o365.metrics.teams.device.usage.user.counts.web.count | The number of active Teams users accessing via web browsers. | long |  |
+| o365.metrics.teams.device.usage.user.counts.windows.count | The number of active Teams users on Windows devices. | long |  |
+| o365.metrics.teams.device.usage.user.counts.windows_phone.count | The number of active Teams users on Windows Phone devices. | long |  |
+
 

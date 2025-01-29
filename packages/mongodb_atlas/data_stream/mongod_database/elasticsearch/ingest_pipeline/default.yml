@@ -19,6 +19,9 @@ processors:
   - set:
       field: event.type
       value: ["access", "info"]
+  - fail:
+      if: ctx.error?.message != null && ctx.message == null && ctx.event?.original == null
+      message: error message set and no data to process.
   - rename:
       field: message
       target_field: event.original
@@ -32,6 +35,7 @@ processors:
       field: event.original
       target_field: json
       tag: json_decoding
+      allow_duplicate_keys: true
       on_failure:
         - append:
             field: error.message

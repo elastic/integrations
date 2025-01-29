@@ -152,7 +152,7 @@
                         "id": "",
                         "params": {
                             "fontSize": 12,
-                            "markdown": "## Amazon Bedrock Guardrails\n\nThis dashboard provides insights into the following:\n- Guardrail invocations, invocation latency\n- Text units utilized by different guardrail policies\n- Policy types involved in guardrail interventions\n",
+                            "markdown": "## Amazon Bedrock Guardrails\n\nThis dashboard provides insights into the following:\n- Guardrail invocations, invocation latency\n- Text units utilized by different guardrail policies\n- Policy types involved in guardrail interventions\n- Prompt and response where guardrails intervened\n",
                             "openLinksInNewTab": false
                         },
                         "title": "",
@@ -161,15 +161,433 @@
                     }
                 },
                 "gridData": {
-                    "h": 9,
+                    "h": 12,
                     "i": "44396b18-9871-4e9b-97d4-89bb202bda30",
-                    "w": 9,
+                    "w": 16,
                     "x": 0,
                     "y": 3
                 },
                 "panelIndex": "44396b18-9871-4e9b-97d4-89bb202bda30",
                 "title": "",
                 "type": "visualization"
+            },
+            {
+                "embeddableConfig": {
+                    "attributes": {
+                        "description": "The sum of guardrail policy invocations grouped by guardrail policy name and policy version",
+                        "references": [
+                            {
+                                "id": "metrics-*",
+                                "name": "indexpattern-datasource-layer-9bedb80c-4bd2-4206-a1dc-585943b8988a",
+                                "type": "index-pattern"
+                            }
+                        ],
+                        "state": {
+                            "adHocDataViews": {},
+                            "datasourceStates": {
+                                "formBased": {
+                                    "currentIndexPatternId": "metrics-*",
+                                    "layers": {
+                                        "9bedb80c-4bd2-4206-a1dc-585943b8988a": {
+                                            "columnOrder": [
+                                                "2265a51d-c985-462e-9055-3d5008c80b36"
+                                            ],
+                                            "columns": {
+                                                "2265a51d-c985-462e-9055-3d5008c80b36": {
+                                                    "customLabel": true,
+                                                    "dataType": "number",
+                                                    "filter": {
+                                                        "language": "kuery",
+                                                        "query": "aws_bedrock.guardrails.guardrail_arn : * "
+                                                    },
+                                                    "isBucketed": false,
+                                                    "label": "Total  guardrails API invocations",
+                                                    "operationType": "sum",
+                                                    "params": {
+                                                        "emptyAsNull": true,
+                                                        "format": {
+                                                            "id": "number",
+                                                            "params": {
+                                                                "decimals": 0
+                                                            }
+                                                        }
+                                                    },
+                                                    "scale": "ratio",
+                                                    "sourceField": "aws_bedrock.guardrails.invocations"
+                                                }
+                                            },
+                                            "ignoreGlobalFilters": false,
+                                            "incompleteColumns": {},
+                                            "indexPatternId": "metrics-*",
+                                            "sampling": 1
+                                        }
+                                    }
+                                },
+                                "indexpattern": {
+                                    "layers": {}
+                                },
+                                "textBased": {
+                                    "layers": {}
+                                }
+                            },
+                            "filters": [],
+                            "internalReferences": [],
+                            "query": {
+                                "language": "kuery",
+                                "query": ""
+                            },
+                            "visualization": {
+                                "color": "#B9A888",
+                                "layerId": "9bedb80c-4bd2-4206-a1dc-585943b8988a",
+                                "layerType": "data",
+                                "metricAccessor": "2265a51d-c985-462e-9055-3d5008c80b36"
+                            }
+                        },
+                        "title": "",
+                        "type": "lens",
+                        "visualizationType": "lnsMetric"
+                    },
+                    "description": "The total mumber of requests to the ApplyGuardrail API operation",
+                    "enhancements": {},
+                    "hidePanelTitles": true
+                },
+                "gridData": {
+                    "h": 6,
+                    "i": "66eac818-f5ed-44c7-bb72-fed7ae0e8dd6",
+                    "w": 6,
+                    "x": 16,
+                    "y": 3
+                },
+                "panelIndex": "66eac818-f5ed-44c7-bb72-fed7ae0e8dd6",
+                "title": "Invocations",
+                "type": "lens"
+            },
+            {
+                "embeddableConfig": {
+                    "attributes": {
+                        "references": [
+                            {
+                                "id": "logs-*",
+                                "name": "indexpattern-datasource-layer-9a7f0331-1842-486c-ae2b-53b60f14e588",
+                                "type": "index-pattern"
+                            }
+                        ],
+                        "state": {
+                            "adHocDataViews": {},
+                            "datasourceStates": {
+                                "formBased": {
+                                    "layers": {
+                                        "9a7f0331-1842-486c-ae2b-53b60f14e588": {
+                                            "columnOrder": [
+                                                "eea8f9f9-e73c-41d3-a3cd-4bf88f3478e5",
+                                                "05ce0146-bc3e-467c-936b-b600bc4ac3af"
+                                            ],
+                                            "columns": {
+                                                "05ce0146-bc3e-467c-936b-b600bc4ac3af": {
+                                                    "customLabel": true,
+                                                    "dataType": "number",
+                                                    "isBucketed": false,
+                                                    "label": "Invocations Count",
+                                                    "operationType": "count",
+                                                    "params": {
+                                                        "emptyAsNull": true,
+                                                        "format": {
+                                                            "id": "number",
+                                                            "params": {
+                                                                "compact": true,
+                                                                "decimals": 0
+                                                            }
+                                                        }
+                                                    },
+                                                    "scale": "ratio",
+                                                    "sourceField": "aws_bedrock.invocation.request_id"
+                                                },
+                                                "eea8f9f9-e73c-41d3-a3cd-4bf88f3478e5": {
+                                                    "dataType": "string",
+                                                    "isBucketed": true,
+                                                    "label": "Filters",
+                                                    "operationType": "filters",
+                                                    "params": {
+                                                        "filters": [
+                                                            {
+                                                                "input": {
+                                                                    "language": "kuery",
+                                                                    "query": "gen_ai.request.id : * and not  gen_ai.guardrail_id : * "
+                                                                },
+                                                                "label": "Without guardrail interventions"
+                                                            },
+                                                            {
+                                                                "input": {
+                                                                    "language": "kuery",
+                                                                    "query": "gen_ai.guardrail_id : * "
+                                                                },
+                                                                "label": "With guardrail interventions"
+                                                            }
+                                                        ]
+                                                    },
+                                                    "scale": "ordinal"
+                                                }
+                                            },
+                                            "ignoreGlobalFilters": false,
+                                            "incompleteColumns": {},
+                                            "sampling": 1
+                                        }
+                                    }
+                                },
+                                "indexpattern": {
+                                    "layers": {}
+                                },
+                                "textBased": {
+                                    "layers": {}
+                                }
+                            },
+                            "filters": [],
+                            "internalReferences": [],
+                            "query": {
+                                "language": "kuery",
+                                "query": ""
+                            },
+                            "visualization": {
+                                "layers": [
+                                    {
+                                        "categoryDisplay": "default",
+                                        "colorMapping": {
+                                            "assignments": [],
+                                            "colorMode": {
+                                                "type": "categorical"
+                                            },
+                                            "paletteId": "eui_amsterdam_color_blind",
+                                            "specialAssignments": [
+                                                {
+                                                    "color": {
+                                                        "type": "loop"
+                                                    },
+                                                    "rule": {
+                                                        "type": "other"
+                                                    },
+                                                    "touched": false
+                                                }
+                                            ]
+                                        },
+                                        "emptySizeRatio": 0.3,
+                                        "layerId": "9a7f0331-1842-486c-ae2b-53b60f14e588",
+                                        "layerType": "data",
+                                        "legendDisplay": "default",
+                                        "metrics": [
+                                            "05ce0146-bc3e-467c-936b-b600bc4ac3af"
+                                        ],
+                                        "nestedLegend": false,
+                                        "numberDisplay": "percent",
+                                        "primaryGroups": [
+                                            "eea8f9f9-e73c-41d3-a3cd-4bf88f3478e5"
+                                        ]
+                                    }
+                                ],
+                                "shape": "donut"
+                            }
+                        },
+                        "title": "",
+                        "type": "lens",
+                        "visualizationType": "lnsPie"
+                    },
+                    "enhancements": {}
+                },
+                "gridData": {
+                    "h": 12,
+                    "i": "7a7a6fc6-c31d-4af6-8d42-7dc9fb295e4d",
+                    "w": 20,
+                    "x": 28,
+                    "y": 3
+                },
+                "panelIndex": "7a7a6fc6-c31d-4af6-8d42-7dc9fb295e4d",
+                "title": "Invocations - with and without guardrail interventions",
+                "type": "lens"
+            },
+            {
+                "embeddableConfig": {
+                    "attributes": {
+                        "description": "The sum of guardrail policy invocations grouped by guardrail policy name and policy version",
+                        "references": [
+                            {
+                                "id": "metrics-*",
+                                "name": "indexpattern-datasource-layer-9bedb80c-4bd2-4206-a1dc-585943b8988a",
+                                "type": "index-pattern"
+                            }
+                        ],
+                        "state": {
+                            "adHocDataViews": {},
+                            "datasourceStates": {
+                                "formBased": {
+                                    "currentIndexPatternId": "metrics-*",
+                                    "layers": {
+                                        "9bedb80c-4bd2-4206-a1dc-585943b8988a": {
+                                            "columnOrder": [
+                                                "2265a51d-c985-462e-9055-3d5008c80b36"
+                                            ],
+                                            "columns": {
+                                                "2265a51d-c985-462e-9055-3d5008c80b36": {
+                                                    "customLabel": true,
+                                                    "dataType": "number",
+                                                    "filter": {
+                                                        "language": "kuery",
+                                                        "query": "aws_bedrock.guardrails.guardrail_arn : * "
+                                                    },
+                                                    "isBucketed": false,
+                                                    "label": "Total text unit utilization",
+                                                    "operationType": "sum",
+                                                    "params": {
+                                                        "emptyAsNull": true,
+                                                        "format": {
+                                                            "id": "number",
+                                                            "params": {
+                                                                "compact": true,
+                                                                "decimals": 0
+                                                            }
+                                                        }
+                                                    },
+                                                    "scale": "ratio",
+                                                    "sourceField": "aws_bedrock.guardrails.text_unit_count"
+                                                }
+                                            },
+                                            "ignoreGlobalFilters": false,
+                                            "incompleteColumns": {},
+                                            "indexPatternId": "metrics-*",
+                                            "sampling": 1
+                                        }
+                                    }
+                                },
+                                "indexpattern": {
+                                    "layers": {}
+                                },
+                                "textBased": {
+                                    "layers": {}
+                                }
+                            },
+                            "filters": [],
+                            "internalReferences": [],
+                            "query": {
+                                "language": "kuery",
+                                "query": ""
+                            },
+                            "visualization": {
+                                "color": "#6092C0",
+                                "layerId": "9bedb80c-4bd2-4206-a1dc-585943b8988a",
+                                "layerType": "data",
+                                "metricAccessor": "2265a51d-c985-462e-9055-3d5008c80b36"
+                            }
+                        },
+                        "title": "",
+                        "type": "lens",
+                        "visualizationType": "lnsMetric"
+                    },
+                    "description": "Text unit is a billing measure representing up to 1,000 characters of processed text.",
+                    "enhancements": {},
+                    "hidePanelTitles": true
+                },
+                "gridData": {
+                    "h": 6,
+                    "i": "bdf8c3ec-0324-497f-86fa-7271466a4f1e",
+                    "w": 6,
+                    "x": 16,
+                    "y": 9
+                },
+                "panelIndex": "bdf8c3ec-0324-497f-86fa-7271466a4f1e",
+                "title": "Invocations",
+                "type": "lens"
+            },
+            {
+                "embeddableConfig": {
+                    "attributes": {
+                        "description": "The sum of guardrail policy invocations grouped by guardrail policy name and policy version",
+                        "references": [
+                            {
+                                "id": "metrics-*",
+                                "name": "indexpattern-datasource-layer-9bedb80c-4bd2-4206-a1dc-585943b8988a",
+                                "type": "index-pattern"
+                            }
+                        ],
+                        "state": {
+                            "adHocDataViews": {},
+                            "datasourceStates": {
+                                "formBased": {
+                                    "currentIndexPatternId": "metrics-*",
+                                    "layers": {
+                                        "9bedb80c-4bd2-4206-a1dc-585943b8988a": {
+                                            "columnOrder": [
+                                                "2265a51d-c985-462e-9055-3d5008c80b36"
+                                            ],
+                                            "columns": {
+                                                "2265a51d-c985-462e-9055-3d5008c80b36": {
+                                                    "customLabel": true,
+                                                    "dataType": "number",
+                                                    "filter": {
+                                                        "language": "kuery",
+                                                        "query": "aws_bedrock.guardrails.guardrail_arn : * "
+                                                    },
+                                                    "isBucketed": false,
+                                                    "label": "Average Guardrails API latency",
+                                                    "operationType": "average",
+                                                    "params": {
+                                                        "emptyAsNull": true,
+                                                        "format": {
+                                                            "id": "duration",
+                                                            "params": {
+                                                                "compact": true,
+                                                                "decimals": 0,
+                                                                "fromUnit": "milliseconds",
+                                                                "toUnit": "asMilliseconds"
+                                                            }
+                                                        }
+                                                    },
+                                                    "scale": "ratio",
+                                                    "sourceField": "aws_bedrock.guardrails.invocation_latency"
+                                                }
+                                            },
+                                            "ignoreGlobalFilters": false,
+                                            "incompleteColumns": {},
+                                            "indexPatternId": "metrics-*",
+                                            "sampling": 1
+                                        }
+                                    }
+                                },
+                                "indexpattern": {
+                                    "layers": {}
+                                },
+                                "textBased": {
+                                    "layers": {}
+                                }
+                            },
+                            "filters": [],
+                            "internalReferences": [],
+                            "query": {
+                                "language": "kuery",
+                                "query": ""
+                            },
+                            "visualization": {
+                                "color": "#CA8EAE",
+                                "layerId": "9bedb80c-4bd2-4206-a1dc-585943b8988a",
+                                "layerType": "data",
+                                "metricAccessor": "2265a51d-c985-462e-9055-3d5008c80b36"
+                            }
+                        },
+                        "title": "",
+                        "type": "lens",
+                        "visualizationType": "lnsMetric"
+                    },
+                    "description": "The latency of the invocations",
+                    "enhancements": {},
+                    "hidePanelTitles": true
+                },
+                "gridData": {
+                    "h": 6,
+                    "i": "4278e386-9ec9-4a68-8f8c-6939792773b5",
+                    "w": 6,
+                    "x": 22,
+                    "y": 3
+                },
+                "panelIndex": "4278e386-9ec9-4a68-8f8c-6939792773b5",
+                "title": "Invocations",
+                "type": "lens"
             },
             {
                 "embeddableConfig": {
@@ -194,7 +612,7 @@
                         "id": "",
                         "params": {
                             "fontSize": 12,
-                            "markdown": "### Guardrail policy types of intervened invocations",
+                            "markdown": "### Guardrail policy types for interventions",
                             "openLinksInNewTab": false
                         },
                         "title": "",
@@ -205,9 +623,9 @@
                 "gridData": {
                     "h": 3,
                     "i": "0b5aefb0-77b2-4afe-9ca9-61e87dfe37f7",
-                    "w": 39,
-                    "x": 9,
-                    "y": 3
+                    "w": 48,
+                    "x": 0,
+                    "y": 15
                 },
                 "panelIndex": "0b5aefb0-77b2-4afe-9ca9-61e87dfe37f7",
                 "title": "",
@@ -257,7 +675,7 @@
                                                         "query": "aws_bedrock.guardrails.guardrail_content_source : \"Input\" and aws_bedrock.guardrails.guardrail_policy_type  : * "
                                                     },
                                                     "isBucketed": false,
-                                                    "label": "Count of interventions",
+                                                    "label": "Invocations",
                                                     "operationType": "sum",
                                                     "params": {
                                                         "emptyAsNull": true,
@@ -371,12 +789,12 @@
                 "gridData": {
                     "h": 14,
                     "i": "53c528bf-c0c7-4277-86d7-98b7c0730b25",
-                    "w": 19,
-                    "x": 9,
-                    "y": 6
+                    "w": 28,
+                    "x": 0,
+                    "y": 18
                 },
                 "panelIndex": "53c528bf-c0c7-4277-86d7-98b7c0730b25",
-                "title": "Number of invocations where the guardrails intervened - by Policy Type (Input)",
+                "title": "Invocations where guardrails intervened - by policy type (Input)",
                 "type": "lens"
             },
             {
@@ -405,7 +823,7 @@
                                                     "customLabel": true,
                                                     "dataType": "number",
                                                     "isBucketed": false,
-                                                    "label": "by Policy Type",
+                                                    "label": "by policy type",
                                                     "operationType": "sum",
                                                     "params": {
                                                         "emptyAsNull": true,
@@ -507,195 +925,10 @@
                     "i": "b306f023-4026-450f-a778-1302c59d0286",
                     "w": 20,
                     "x": 28,
-                    "y": 6
+                    "y": 18
                 },
                 "panelIndex": "b306f023-4026-450f-a778-1302c59d0286",
                 "title": "Significant Intervened Policy Type (Input \u0026 Output)",
-                "type": "lens"
-            },
-            {
-                "embeddableConfig": {
-                    "attributes": {
-                        "description": "The sum of guardrail policy invocations grouped by guardrail policy name and policy version",
-                        "references": [
-                            {
-                                "id": "metrics-*",
-                                "name": "indexpattern-datasource-layer-9bedb80c-4bd2-4206-a1dc-585943b8988a",
-                                "type": "index-pattern"
-                            }
-                        ],
-                        "state": {
-                            "adHocDataViews": {},
-                            "datasourceStates": {
-                                "formBased": {
-                                    "currentIndexPatternId": "metrics-*",
-                                    "layers": {
-                                        "9bedb80c-4bd2-4206-a1dc-585943b8988a": {
-                                            "columnOrder": [
-                                                "2265a51d-c985-462e-9055-3d5008c80b36"
-                                            ],
-                                            "columns": {
-                                                "2265a51d-c985-462e-9055-3d5008c80b36": {
-                                                    "customLabel": true,
-                                                    "dataType": "number",
-                                                    "filter": {
-                                                        "language": "kuery",
-                                                        "query": "aws_bedrock.guardrails.guardrail_arn : * "
-                                                    },
-                                                    "isBucketed": false,
-                                                    "label": "Invocation Count",
-                                                    "operationType": "sum",
-                                                    "params": {
-                                                        "emptyAsNull": true,
-                                                        "format": {
-                                                            "id": "number",
-                                                            "params": {
-                                                                "decimals": 0
-                                                            }
-                                                        }
-                                                    },
-                                                    "scale": "ratio",
-                                                    "sourceField": "aws_bedrock.guardrails.invocations"
-                                                }
-                                            },
-                                            "ignoreGlobalFilters": false,
-                                            "incompleteColumns": {},
-                                            "indexPatternId": "metrics-*",
-                                            "sampling": 1
-                                        }
-                                    }
-                                },
-                                "indexpattern": {
-                                    "layers": {}
-                                },
-                                "textBased": {
-                                    "layers": {}
-                                }
-                            },
-                            "filters": [],
-                            "internalReferences": [],
-                            "query": {
-                                "language": "kuery",
-                                "query": ""
-                            },
-                            "visualization": {
-                                "color": "#6092C0",
-                                "layerId": "9bedb80c-4bd2-4206-a1dc-585943b8988a",
-                                "layerType": "data",
-                                "metricAccessor": "2265a51d-c985-462e-9055-3d5008c80b36"
-                            }
-                        },
-                        "title": "",
-                        "type": "lens",
-                        "visualizationType": "lnsMetric"
-                    },
-                    "description": "",
-                    "enhancements": {},
-                    "hidePanelTitles": true
-                },
-                "gridData": {
-                    "h": 7,
-                    "i": "66eac818-f5ed-44c7-bb72-fed7ae0e8dd6",
-                    "w": 9,
-                    "x": 0,
-                    "y": 12
-                },
-                "panelIndex": "66eac818-f5ed-44c7-bb72-fed7ae0e8dd6",
-                "title": "Invocations (copy)",
-                "type": "lens"
-            },
-            {
-                "embeddableConfig": {
-                    "attributes": {
-                        "description": "The sum of guardrail policy invocations grouped by guardrail policy name and policy version",
-                        "references": [
-                            {
-                                "id": "metrics-*",
-                                "name": "indexpattern-datasource-layer-9bedb80c-4bd2-4206-a1dc-585943b8988a",
-                                "type": "index-pattern"
-                            }
-                        ],
-                        "state": {
-                            "adHocDataViews": {},
-                            "datasourceStates": {
-                                "formBased": {
-                                    "currentIndexPatternId": "metrics-*",
-                                    "layers": {
-                                        "9bedb80c-4bd2-4206-a1dc-585943b8988a": {
-                                            "columnOrder": [
-                                                "2265a51d-c985-462e-9055-3d5008c80b36"
-                                            ],
-                                            "columns": {
-                                                "2265a51d-c985-462e-9055-3d5008c80b36": {
-                                                    "customLabel": true,
-                                                    "dataType": "number",
-                                                    "filter": {
-                                                        "language": "kuery",
-                                                        "query": "aws_bedrock.guardrails.guardrail_arn : * "
-                                                    },
-                                                    "isBucketed": false,
-                                                    "label": "Average Invocation Latency",
-                                                    "operationType": "average",
-                                                    "params": {
-                                                        "emptyAsNull": true,
-                                                        "format": {
-                                                            "id": "duration",
-                                                            "params": {
-                                                                "compact": true,
-                                                                "decimals": 0,
-                                                                "fromUnit": "milliseconds",
-                                                                "toUnit": "asMilliseconds"
-                                                            }
-                                                        }
-                                                    },
-                                                    "scale": "ratio",
-                                                    "sourceField": "aws_bedrock.guardrails.invocation_latency"
-                                                }
-                                            },
-                                            "ignoreGlobalFilters": false,
-                                            "incompleteColumns": {},
-                                            "indexPatternId": "metrics-*",
-                                            "sampling": 1
-                                        }
-                                    }
-                                },
-                                "indexpattern": {
-                                    "layers": {}
-                                },
-                                "textBased": {
-                                    "layers": {}
-                                }
-                            },
-                            "filters": [],
-                            "internalReferences": [],
-                            "query": {
-                                "language": "kuery",
-                                "query": ""
-                            },
-                            "visualization": {
-                                "color": "#6092C0",
-                                "layerId": "9bedb80c-4bd2-4206-a1dc-585943b8988a",
-                                "layerType": "data",
-                                "metricAccessor": "2265a51d-c985-462e-9055-3d5008c80b36"
-                            }
-                        },
-                        "title": "",
-                        "type": "lens",
-                        "visualizationType": "lnsMetric"
-                    },
-                    "description": "",
-                    "enhancements": {},
-                    "hidePanelTitles": true
-                },
-                "gridData": {
-                    "h": 7,
-                    "i": "4278e386-9ec9-4a68-8f8c-6939792773b5",
-                    "w": 9,
-                    "x": 0,
-                    "y": 19
-                },
-                "panelIndex": "4278e386-9ec9-4a68-8f8c-6939792773b5",
-                "title": "Invocations (copy)",
                 "type": "lens"
             },
             {
@@ -742,7 +975,7 @@
                                                         "query": "aws_bedrock.guardrails.guardrail_content_source : \"Output\" and aws_bedrock.guardrails.guardrail_policy_type  : * "
                                                     },
                                                     "isBucketed": false,
-                                                    "label": "Count of interventions",
+                                                    "label": "Invocations",
                                                     "operationType": "sum",
                                                     "params": {
                                                         "emptyAsNull": true,
@@ -856,104 +1089,12 @@
                 "gridData": {
                     "h": 13,
                     "i": "de59c8b6-d037-409a-9bfa-1f397380aec0",
-                    "w": 19,
-                    "x": 9,
-                    "y": 20
+                    "w": 28,
+                    "x": 0,
+                    "y": 32
                 },
                 "panelIndex": "de59c8b6-d037-409a-9bfa-1f397380aec0",
-                "title": "Number of invocations where the guardrails intervened - by Policy Type (Output)",
-                "type": "lens"
-            },
-            {
-                "embeddableConfig": {
-                    "attributes": {
-                        "description": "The sum of guardrail policy invocations grouped by guardrail policy name and policy version",
-                        "references": [
-                            {
-                                "id": "metrics-*",
-                                "name": "indexpattern-datasource-layer-9bedb80c-4bd2-4206-a1dc-585943b8988a",
-                                "type": "index-pattern"
-                            }
-                        ],
-                        "state": {
-                            "adHocDataViews": {},
-                            "datasourceStates": {
-                                "formBased": {
-                                    "currentIndexPatternId": "metrics-*",
-                                    "layers": {
-                                        "9bedb80c-4bd2-4206-a1dc-585943b8988a": {
-                                            "columnOrder": [
-                                                "2265a51d-c985-462e-9055-3d5008c80b36"
-                                            ],
-                                            "columns": {
-                                                "2265a51d-c985-462e-9055-3d5008c80b36": {
-                                                    "customLabel": true,
-                                                    "dataType": "number",
-                                                    "filter": {
-                                                        "language": "kuery",
-                                                        "query": "aws_bedrock.guardrails.guardrail_arn : * "
-                                                    },
-                                                    "isBucketed": false,
-                                                    "label": "Total Text Units",
-                                                    "operationType": "sum",
-                                                    "params": {
-                                                        "emptyAsNull": true,
-                                                        "format": {
-                                                            "id": "number",
-                                                            "params": {
-                                                                "compact": true,
-                                                                "decimals": 0
-                                                            }
-                                                        }
-                                                    },
-                                                    "scale": "ratio",
-                                                    "sourceField": "aws_bedrock.guardrails.text_unit_count"
-                                                }
-                                            },
-                                            "ignoreGlobalFilters": false,
-                                            "incompleteColumns": {},
-                                            "indexPatternId": "metrics-*",
-                                            "sampling": 1
-                                        }
-                                    }
-                                },
-                                "indexpattern": {
-                                    "layers": {}
-                                },
-                                "textBased": {
-                                    "layers": {}
-                                }
-                            },
-                            "filters": [],
-                            "internalReferences": [],
-                            "query": {
-                                "language": "kuery",
-                                "query": ""
-                            },
-                            "visualization": {
-                                "color": "#6092C0",
-                                "layerId": "9bedb80c-4bd2-4206-a1dc-585943b8988a",
-                                "layerType": "data",
-                                "metricAccessor": "2265a51d-c985-462e-9055-3d5008c80b36"
-                            }
-                        },
-                        "title": "",
-                        "type": "lens",
-                        "visualizationType": "lnsMetric"
-                    },
-                    "description": "",
-                    "enhancements": {},
-                    "hidePanelTitles": true
-                },
-                "gridData": {
-                    "h": 7,
-                    "i": "bdf8c3ec-0324-497f-86fa-7271466a4f1e",
-                    "w": 9,
-                    "x": 0,
-                    "y": 26
-                },
-                "panelIndex": "bdf8c3ec-0324-497f-86fa-7271466a4f1e",
-                "title": "Invocations (copy)",
+                "title": "Invocations where guardrails intervened - by policy type (Output)",
                 "type": "lens"
             },
             {
@@ -1000,7 +1141,7 @@
                                                         "query": "aws_bedrock.guardrails.guardrail_content_source : \"Input\" and aws_bedrock.guardrails.guardrail_policy_type : * "
                                                     },
                                                     "isBucketed": false,
-                                                    "label": "Text Units",
+                                                    "label": "Text units",
                                                     "operationType": "sum",
                                                     "params": {
                                                         "emptyAsNull": true,
@@ -1121,10 +1262,10 @@
                     "i": "0968f2f2-5800-4ba9-aad0-ab7511aa312c",
                     "w": 23,
                     "x": 0,
-                    "y": 33
+                    "y": 45
                 },
                 "panelIndex": "0968f2f2-5800-4ba9-aad0-ab7511aa312c",
-                "title": "Count of Text Units - by Policy Type (Input)",
+                "title": "Text unit utilization - by policy type (Input)",
                 "type": "lens"
             },
             {
@@ -1171,7 +1312,7 @@
                                                         "query": "aws_bedrock.guardrails.guardrail_content_source : \"Output\" and aws_bedrock.guardrails.guardrail_policy_type : * "
                                                     },
                                                     "isBucketed": false,
-                                                    "label": "Text Units",
+                                                    "label": "Text units",
                                                     "operationType": "sum",
                                                     "params": {
                                                         "emptyAsNull": true,
@@ -1292,10 +1433,10 @@
                     "i": "af903398-6739-4005-926a-9d3727e412cd",
                     "w": 25,
                     "x": 23,
-                    "y": 33
+                    "y": 45
                 },
                 "panelIndex": "af903398-6739-4005-926a-9d3727e412cd",
-                "title": "Count of Text Units - by Policy Type (Output)",
+                "title": "Text unit utilization - by policy type (Output)",
                 "type": "lens"
             },
             {
@@ -1321,7 +1462,7 @@
                         "id": "",
                         "params": {
                             "fontSize": 12,
-                            "markdown": "#### Guardrails Invocation Details",
+                            "markdown": "### Prompt and response where guardrails intervened",
                             "openLinksInNewTab": false
                         },
                         "title": "",
@@ -1334,7 +1475,7 @@
                     "i": "b5ceeacc-0daf-4b56-b55b-601fec5d60ab",
                     "w": 48,
                     "x": 0,
-                    "y": 45
+                    "y": 57
                 },
                 "panelIndex": "b5ceeacc-0daf-4b56-b55b-601fec5d60ab",
                 "title": "",
@@ -1352,10 +1493,10 @@
                         "grid": {
                             "columns": {
                                 "aws_bedrock.invocation.output.completion_text": {
-                                    "width": 713
+                                    "width": 473
                                 },
                                 "gen_ai.prompt": {
-                                    "width": 1082
+                                    "width": 864
                                 }
                             }
                         },
@@ -1469,155 +1610,13 @@
                 "gridData": {
                     "h": 17,
                     "i": "883d2904-4dfc-40f7-87a2-ea546c4f9823",
-                    "w": 31,
+                    "w": 48,
                     "x": 0,
-                    "y": 48
+                    "y": 60
                 },
                 "panelIndex": "883d2904-4dfc-40f7-87a2-ea546c4f9823",
                 "title": "Amazon Bedrock Guardrails Invocation Details",
                 "type": "search"
-            },
-            {
-                "embeddableConfig": {
-                    "attributes": {
-                        "references": [
-                            {
-                                "id": "logs-*",
-                                "name": "indexpattern-datasource-layer-9a7f0331-1842-486c-ae2b-53b60f14e588",
-                                "type": "index-pattern"
-                            }
-                        ],
-                        "state": {
-                            "adHocDataViews": {},
-                            "datasourceStates": {
-                                "formBased": {
-                                    "currentIndexPatternId": "logs-*",
-                                    "layers": {
-                                        "9a7f0331-1842-486c-ae2b-53b60f14e588": {
-                                            "columnOrder": [
-                                                "eea8f9f9-e73c-41d3-a3cd-4bf88f3478e5",
-                                                "05ce0146-bc3e-467c-936b-b600bc4ac3af"
-                                            ],
-                                            "columns": {
-                                                "05ce0146-bc3e-467c-936b-b600bc4ac3af": {
-                                                    "customLabel": true,
-                                                    "dataType": "number",
-                                                    "isBucketed": false,
-                                                    "label": "Invocations Count",
-                                                    "operationType": "count",
-                                                    "params": {
-                                                        "emptyAsNull": true,
-                                                        "format": {
-                                                            "id": "number",
-                                                            "params": {
-                                                                "compact": true,
-                                                                "decimals": 0
-                                                            }
-                                                        }
-                                                    },
-                                                    "scale": "ratio",
-                                                    "sourceField": "aws_bedrock.invocation.request_id"
-                                                },
-                                                "eea8f9f9-e73c-41d3-a3cd-4bf88f3478e5": {
-                                                    "dataType": "string",
-                                                    "isBucketed": true,
-                                                    "label": "Filters",
-                                                    "operationType": "filters",
-                                                    "params": {
-                                                        "filters": [
-                                                            {
-                                                                "input": {
-                                                                    "language": "kuery",
-                                                                    "query": "gen_ai.request.id : * and not  gen_ai.guardrail_id : * "
-                                                                },
-                                                                "label": "Without guardrail interventions"
-                                                            },
-                                                            {
-                                                                "input": {
-                                                                    "language": "kuery",
-                                                                    "query": "gen_ai.guardrail_id : * "
-                                                                },
-                                                                "label": "With guardrail interventions"
-                                                            }
-                                                        ]
-                                                    },
-                                                    "scale": "ordinal"
-                                                }
-                                            },
-                                            "ignoreGlobalFilters": false,
-                                            "incompleteColumns": {},
-                                            "indexPatternId": "logs-*",
-                                            "sampling": 1
-                                        }
-                                    }
-                                },
-                                "indexpattern": {
-                                    "layers": {}
-                                },
-                                "textBased": {
-                                    "layers": {}
-                                }
-                            },
-                            "filters": [],
-                            "internalReferences": [],
-                            "query": {
-                                "language": "kuery",
-                                "query": ""
-                            },
-                            "visualization": {
-                                "layers": [
-                                    {
-                                        "categoryDisplay": "default",
-                                        "colorMapping": {
-                                            "assignments": [],
-                                            "colorMode": {
-                                                "type": "categorical"
-                                            },
-                                            "paletteId": "eui_amsterdam_color_blind",
-                                            "specialAssignments": [
-                                                {
-                                                    "color": {
-                                                        "type": "loop"
-                                                    },
-                                                    "rule": {
-                                                        "type": "other"
-                                                    },
-                                                    "touched": false
-                                                }
-                                            ]
-                                        },
-                                        "layerId": "9a7f0331-1842-486c-ae2b-53b60f14e588",
-                                        "layerType": "data",
-                                        "legendDisplay": "default",
-                                        "metrics": [
-                                            "05ce0146-bc3e-467c-936b-b600bc4ac3af"
-                                        ],
-                                        "nestedLegend": false,
-                                        "numberDisplay": "percent",
-                                        "primaryGroups": [
-                                            "eea8f9f9-e73c-41d3-a3cd-4bf88f3478e5"
-                                        ]
-                                    }
-                                ],
-                                "shape": "pie"
-                            }
-                        },
-                        "title": "",
-                        "type": "lens",
-                        "visualizationType": "lnsPie"
-                    },
-                    "enhancements": {}
-                },
-                "gridData": {
-                    "h": 17,
-                    "i": "7a7a6fc6-c31d-4af6-8d42-7dc9fb295e4d",
-                    "w": 17,
-                    "x": 31,
-                    "y": 48
-                },
-                "panelIndex": "7a7a6fc6-c31d-4af6-8d42-7dc9fb295e4d",
-                "title": "Invocations - With and Without guardrail interventions",
-                "type": "lens"
             },
             {
                 "embeddableConfig": {
@@ -1642,7 +1641,7 @@
                         "id": "",
                         "params": {
                             "fontSize": 12,
-                            "markdown": "#### Guardrail Invocations by guardrail policy",
+                            "markdown": "### Guardrail invocations by guardrail policy",
                             "openLinksInNewTab": false
                         },
                         "title": "",
@@ -1655,7 +1654,7 @@
                     "i": "c0f562af-7448-4052-9e74-308a29579cde",
                     "w": 48,
                     "x": 0,
-                    "y": 65
+                    "y": 77
                 },
                 "panelIndex": "c0f562af-7448-4052-9e74-308a29579cde",
                 "title": "",
@@ -1720,7 +1719,7 @@
                                                         "query": "aws_bedrock.guardrails.guardrail_arn : * "
                                                     },
                                                     "isBucketed": false,
-                                                    "label": "Guardrail API Invocations",
+                                                    "label": "Guardrail API invocations",
                                                     "operationType": "sum",
                                                     "params": {
                                                         "emptyAsNull": true,
@@ -1804,7 +1803,7 @@
                     "i": "fef52202-33e3-4348-a8b6-267e1ffc9bf4",
                     "w": 12,
                     "x": 0,
-                    "y": 68
+                    "y": 80
                 },
                 "panelIndex": "fef52202-33e3-4348-a8b6-267e1ffc9bf4",
                 "title": "Guardrail API invocations",
@@ -1869,7 +1868,7 @@
                                                         "query": "aws_bedrock.guardrails.guardrail_arn : * "
                                                     },
                                                     "isBucketed": false,
-                                                    "label": "Interventions",
+                                                    "label": "Invocations",
                                                     "operationType": "sum",
                                                     "params": {
                                                         "emptyAsNull": true,
@@ -1953,10 +1952,10 @@
                     "i": "4ed4b199-5fd8-414b-8ed2-d857fc624bd1",
                     "w": 12,
                     "x": 12,
-                    "y": 68
+                    "y": 80
                 },
                 "panelIndex": "4ed4b199-5fd8-414b-8ed2-d857fc624bd1",
-                "title": "Number of invocations where guardrails intervened",
+                "title": "Invocations where guardrails intervened",
                 "type": "lens"
             },
             {
@@ -2018,7 +2017,7 @@
                                                         "query": "aws_bedrock.guardrails.guardrail_arn : * "
                                                     },
                                                     "isBucketed": false,
-                                                    "label": "Text Units",
+                                                    "label": "Text units",
                                                     "operationType": "sum",
                                                     "params": {
                                                         "emptyAsNull": true,
@@ -2102,10 +2101,10 @@
                     "i": "e9498c39-6c3b-42c4-894e-c266b711ab96",
                     "w": 12,
                     "x": 24,
-                    "y": 68
+                    "y": 80
                 },
                 "panelIndex": "e9498c39-6c3b-42c4-894e-c266b711ab96",
-                "title": "Text Units Utilization",
+                "title": "Text unit utilization",
                 "type": "lens"
             },
             {
@@ -2254,10 +2253,10 @@
                     "i": "b490d8e1-5c1d-4d31-ad9d-b1656017b73d",
                     "w": 12,
                     "x": 36,
-                    "y": 68
+                    "y": 80
                 },
                 "panelIndex": "b490d8e1-5c1d-4d31-ad9d-b1656017b73d",
-                "title": "Invocation Latency",
+                "title": "Guardrails API invocation latency",
                 "type": "lens"
             },
             {
@@ -2283,7 +2282,7 @@
                         "id": "",
                         "params": {
                             "fontSize": 12,
-                            "markdown": "#### Guardrail Invocations By Content Source (Input \u0026 Output)",
+                            "markdown": "### Guardrail invocations by content source (Input \u0026 Output)",
                             "openLinksInNewTab": false
                         },
                         "title": "",
@@ -2296,7 +2295,7 @@
                     "i": "d76ad5dd-0b2f-40d9-8b9e-3c466814147f",
                     "w": 48,
                     "x": 0,
-                    "y": 81
+                    "y": 93
                 },
                 "panelIndex": "d76ad5dd-0b2f-40d9-8b9e-3c466814147f",
                 "title": "",
@@ -2413,6 +2412,7 @@
                                         "yConfig": [
                                             {
                                                 "axisMode": "right",
+                                                "color": "#6092c0",
                                                 "forAccessor": "be6a6ac1-fc28-459e-94e7-9358b93834a0"
                                             }
                                         ]
@@ -2439,7 +2439,7 @@
                     "i": "e5a1e1ea-32e5-4346-91c3-3f59de7966a2",
                     "w": 12,
                     "x": 0,
-                    "y": 84
+                    "y": 96
                 },
                 "panelIndex": "e5a1e1ea-32e5-4346-91c3-3f59de7966a2",
                 "title": "Guardrail API invocations",
@@ -2477,7 +2477,7 @@
                                                         "query": "aws_bedrock.guardrails.guardrail_content_source : \"Input\" and not aws_bedrock.guardrails.guardrail_policy_type  : * "
                                                     },
                                                     "isBucketed": false,
-                                                    "label": "Interventions (Input)",
+                                                    "label": "Invocations (Input)",
                                                     "operationType": "average",
                                                     "params": {
                                                         "emptyAsNull": true,
@@ -2513,7 +2513,7 @@
                                                         "query": "aws_bedrock.guardrails.guardrail_content_source : \"Output\"  and not aws_bedrock.guardrails.guardrail_policy_type  : * "
                                                     },
                                                     "isBucketed": false,
-                                                    "label": "Interventions (Output)",
+                                                    "label": "Invocations (Output)",
                                                     "operationType": "average",
                                                     "params": {
                                                         "emptyAsNull": true,
@@ -2591,10 +2591,10 @@
                     "i": "5bf7721c-b709-432e-90cc-bd17e9cd6cdf",
                     "w": 12,
                     "x": 12,
-                    "y": 84
+                    "y": 96
                 },
                 "panelIndex": "5bf7721c-b709-432e-90cc-bd17e9cd6cdf",
-                "title": "Number of invocations where guardrails intervened",
+                "title": "Invocations where guardrails intervened",
                 "type": "lens"
             },
             {
@@ -2629,7 +2629,7 @@
                                                         "query": "aws_bedrock.guardrails.guardrail_content_source : \"Input\" and not aws_bedrock.guardrails.guardrail_policy_type  : * "
                                                     },
                                                     "isBucketed": false,
-                                                    "label": "Text Units (Input)",
+                                                    "label": "Text units (Input)",
                                                     "operationType": "average",
                                                     "params": {
                                                         "emptyAsNull": true,
@@ -2665,7 +2665,7 @@
                                                         "query": "aws_bedrock.guardrails.guardrail_content_source : \"Output\"  and not aws_bedrock.guardrails.guardrail_policy_type  : * "
                                                     },
                                                     "isBucketed": false,
-                                                    "label": "Text Units (Output)",
+                                                    "label": "Text units (Output)",
                                                     "operationType": "average",
                                                     "params": {
                                                         "emptyAsNull": true,
@@ -2743,10 +2743,10 @@
                     "i": "b1b199ef-ec5e-48e5-b429-62aa2b1bcf3b",
                     "w": 12,
                     "x": 24,
-                    "y": 84
+                    "y": 96
                 },
                 "panelIndex": "b1b199ef-ec5e-48e5-b429-62aa2b1bcf3b",
-                "title": "Text Units Utilization",
+                "title": "Text unit utilization",
                 "type": "lens"
             },
             {
@@ -2899,10 +2899,10 @@
                     "i": "e2c426e6-29a4-4c09-be35-66762b723d3e",
                     "w": 12,
                     "x": 36,
-                    "y": 84
+                    "y": 96
                 },
                 "panelIndex": "e2c426e6-29a4-4c09-be35-66762b723d3e",
-                "title": "Invocation Latency",
+                "title": "Guardrails API invocation latency",
                 "type": "lens"
             }
         ],
@@ -2911,10 +2911,30 @@
         "version": 2
     },
     "coreMigrationVersion": "8.8.0",
-    "created_at": "2025-01-15T12:11:37.678Z",
+    "created_at": "2025-01-28T12:46:16.983Z",
     "id": "aws_bedrock-14fd745a-d3c1-4ebe-bd25-00b465336cde",
     "managed": false,
     "references": [
+        {
+            "id": "metrics-*",
+            "name": "66eac818-f5ed-44c7-bb72-fed7ae0e8dd6:indexpattern-datasource-layer-9bedb80c-4bd2-4206-a1dc-585943b8988a",
+            "type": "index-pattern"
+        },
+        {
+            "id": "logs-*",
+            "name": "7a7a6fc6-c31d-4af6-8d42-7dc9fb295e4d:indexpattern-datasource-layer-9a7f0331-1842-486c-ae2b-53b60f14e588",
+            "type": "index-pattern"
+        },
+        {
+            "id": "metrics-*",
+            "name": "bdf8c3ec-0324-497f-86fa-7271466a4f1e:indexpattern-datasource-layer-9bedb80c-4bd2-4206-a1dc-585943b8988a",
+            "type": "index-pattern"
+        },
+        {
+            "id": "metrics-*",
+            "name": "4278e386-9ec9-4a68-8f8c-6939792773b5:indexpattern-datasource-layer-9bedb80c-4bd2-4206-a1dc-585943b8988a",
+            "type": "index-pattern"
+        },
         {
             "id": "metrics-*",
             "name": "53c528bf-c0c7-4277-86d7-98b7c0730b25:indexpattern-datasource-layer-d38beee5-eef7-4810-a50f-400fc6ba8000",
@@ -2927,22 +2947,7 @@
         },
         {
             "id": "metrics-*",
-            "name": "66eac818-f5ed-44c7-bb72-fed7ae0e8dd6:indexpattern-datasource-layer-9bedb80c-4bd2-4206-a1dc-585943b8988a",
-            "type": "index-pattern"
-        },
-        {
-            "id": "metrics-*",
-            "name": "4278e386-9ec9-4a68-8f8c-6939792773b5:indexpattern-datasource-layer-9bedb80c-4bd2-4206-a1dc-585943b8988a",
-            "type": "index-pattern"
-        },
-        {
-            "id": "metrics-*",
             "name": "de59c8b6-d037-409a-9bfa-1f397380aec0:indexpattern-datasource-layer-d38beee5-eef7-4810-a50f-400fc6ba8000",
-            "type": "index-pattern"
-        },
-        {
-            "id": "metrics-*",
-            "name": "bdf8c3ec-0324-497f-86fa-7271466a4f1e:indexpattern-datasource-layer-9bedb80c-4bd2-4206-a1dc-585943b8988a",
             "type": "index-pattern"
         },
         {
@@ -2953,11 +2958,6 @@
         {
             "id": "metrics-*",
             "name": "af903398-6739-4005-926a-9d3727e412cd:indexpattern-datasource-layer-d38beee5-eef7-4810-a50f-400fc6ba8000",
-            "type": "index-pattern"
-        },
-        {
-            "id": "logs-*",
-            "name": "7a7a6fc6-c31d-4af6-8d42-7dc9fb295e4d:indexpattern-datasource-layer-9a7f0331-1842-486c-ae2b-53b60f14e588",
             "type": "index-pattern"
         },
         {
