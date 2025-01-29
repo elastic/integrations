@@ -1,0 +1,262 @@
+---
+description: Pipeline for processing Microsoft 365 mailbox usage detail metrics.
+processors:
+  - set:
+      field: ecs.version
+      value: "8.16.0"
+  - set:
+      copy_from: mailboxusagedetail
+      field: event.original
+      ignore_empty_value: true
+      if: ctx.event?.original == null && (ctx.tags != null && (ctx.tags.contains('preserve_original_event')))      
+  - json:
+      field: mailboxusagedetail
+      target_field: o365.metrics.mailbox.usage.detail
+      tag: json_decoding
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - script:
+      lang: painless
+      description: Replace spaces, dashes and bom character in field names under o365.metrics.mailbox.usage.detail.
+      tag: painless_purge_spaces_and_dashes
+      ignore_failure: true
+      if: ctx.o365?.metrics?.mailbox?.usage?.detail instanceof Map
+      source: |
+        String underscore(String s) {
+          String result = /[ -]/.matcher(s).replaceAll('_').replace("/", "_").toLowerCase();
+          String result1 = /[\ufeff]/.matcher(result).replaceAll('');
+          return /[()]/.matcher(result1).replaceAll('')
+        }
+        
+        def out = [:];
+        for (def item : ctx.o365.metrics.mailbox.usage.detail.entrySet()) {
+          out[underscore(item.getKey())] = item.getValue();
+        }
+        ctx.o365.metrics.mailbox.usage.detail = out;      
+
+  - remove:
+      if: ctx.mailboxusagedetail != null
+      field: mailboxusagedetail
+      ignore_missing: true
+
+  - convert:
+      field: o365.metrics.mailbox.usage.detail.deleted_item_count
+      tag: convert_o365.metrics.mailbox.usage.detail.deleted_item_count
+      type: long
+      if: ctx.o365?.metrics?.mailbox?.usage?.detail?.deleted_item_count != null && ctx.o365?.metrics?.mailbox?.usage?.detail?.deleted_item_count != ''
+      on_failure:
+        - remove:
+            field: o365.metrics.mailbox.usage.detail.deleted_item_count
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - rename:
+      field: o365.metrics.mailbox.usage.detail.deleted_item_count
+      target_field: o365.metrics.mailbox.usage.detail.deleted_item.count
+      ignore_missing: true
+  - convert:
+      field: o365.metrics.mailbox.usage.detail.item_count
+      tag: convert_o365.metrics.mailbox.usage.detail.item_count
+      type: long
+      if: ctx.o365?.metrics?.mailbox?.usage?.detail?.item_count != null && ctx.o365?.metrics?.mailbox?.usage?.detail?.item_count != ''
+      on_failure:
+        - remove:
+            field: o365.metrics.mailbox.usage.detail.item_count
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - rename:
+      field: o365.metrics.mailbox.usage.detail.item_count
+      target_field: o365.metrics.mailbox.usage.detail.item.count
+      ignore_missing: true      
+  - convert:
+      field: o365.metrics.mailbox.usage.detail.deleted_item_quota_byte
+      tag: convert_o365.metrics.mailbox.usage.detail.deleted_item_quota_byte
+      type: long
+      if: ctx.o365?.metrics?.mailbox?.usage?.detail?.deleted_item_quota_byte != null && ctx.o365?.metrics?.mailbox?.usage?.detail?.deleted_item_quota_byte != ''
+      on_failure:
+        - remove:
+            field: o365.metrics.mailbox.usage.detail.deleted_item_quota_byte
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - rename:
+      field: o365.metrics.mailbox.usage.detail.deleted_item_quota_byte
+      target_field: o365.metrics.mailbox.usage.detail.deleted_item_quota.byte
+      ignore_missing: true 
+  - convert:
+      field: o365.metrics.mailbox.usage.detail.deleted_item_size_byte
+      tag: convert_o365.metrics.mailbox.usage.detail.deleted_item_size_byte
+      type: long
+      if: ctx.o365?.metrics?.mailbox?.usage?.detail?.deleted_item_size_byte != null && ctx.o365?.metrics?.mailbox?.usage?.detail?.deleted_item_size_byte != ''
+      on_failure:
+        - remove:
+            field: o365.metrics.mailbox.usage.detail.deleted_item_size_byte
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - rename:
+      field: o365.metrics.mailbox.usage.detail.deleted_item_size_byte
+      target_field: o365.metrics.mailbox.usage.detail.deleted_item_size.byte
+      ignore_missing: true  
+  - convert:
+      field: o365.metrics.mailbox.usage.detail.issue_warning_quota_byte
+      tag: convert_o365.metrics.mailbox.usage.detail.issue_warning_quota_byte
+      type: long
+      if: ctx.o365?.metrics?.mailbox?.usage?.detail?.issue_warning_quota_byte != null && ctx.o365?.metrics?.mailbox?.usage?.detail?.issue_warning_quota_byte != ''
+      on_failure:
+        - remove:
+            field: o365.metrics.mailbox.usage.detail.issue_warning_quota_byte
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - rename:
+      field: o365.metrics.mailbox.usage.detail.issue_warning_quota_byte
+      target_field: o365.metrics.mailbox.usage.detail.issue_warning_quota.byte
+      ignore_missing: true 
+  - convert:
+      field: o365.metrics.mailbox.usage.detail.prohibit_send_receive_quota_byte
+      tag: convert_o365.metrics.mailbox.usage.detail.prohibit_send_receive_quota_byte
+      type: long
+      if: ctx.o365?.metrics?.mailbox?.usage?.detail?.prohibit_send_receive_quota_byte != null && ctx.o365?.metrics?.mailbox?.usage?.detail?.prohibit_send_receive_quota_byte != ''
+      on_failure:
+        - remove:
+            field: o365.metrics.mailbox.usage.detail.prohibit_send_receive_quota_byte
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - rename:
+      field: o365.metrics.mailbox.usage.detail.prohibit_send_receive_quota_byte
+      target_field: o365.metrics.mailbox.usage.detail.prohibit_send_receive_quota.byte
+      ignore_missing: true 
+  - convert:
+      field: o365.metrics.mailbox.usage.detail.prohibit_send_quota_byte
+      tag: convert_o365.metrics.mailbox.usage.detail.prohibit_send_quota_byte
+      type: long
+      if: ctx.o365?.metrics?.mailbox?.usage?.detail?.prohibit_send_quota_byte != null && ctx.o365?.metrics?.mailbox?.usage?.detail?.prohibit_send_quota_byte != ''
+      on_failure:
+        - remove:
+            field: o365.metrics.mailbox.usage.detail.prohibit_send_quota_byte
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - rename:
+      field: o365.metrics.mailbox.usage.detail.prohibit_send_quota_byte
+      target_field: o365.metrics.mailbox.usage.detail.prohibit_send_quota.byte
+      ignore_missing: true       
+  - convert:
+      field: o365.metrics.mailbox.usage.detail.storage_used_byte
+      tag: convert_o365.metrics.mailbox.usage.detail.storage_used_byte
+      type: long
+      if: ctx.o365?.metrics?.mailbox?.usage?.detail?.storage_used_byte != null && ctx.o365?.metrics?.mailbox?.usage?.detail?.storage_used_byte != ''
+      on_failure:
+        - remove:
+            field: o365.metrics.mailbox.usage.detail.storage_used_byte
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - rename:
+      field: o365.metrics.mailbox.usage.detail.storage_used_byte
+      target_field: o365.metrics.mailbox.usage.detail.storage_used.byte
+      ignore_missing: true
+  - rename:
+      field: o365.metrics.mailbox.usage.detail.report_period
+      target_field: o365.metrics.mailbox.usage.detail.report.period.day
+      ignore_missing: true
+  - date:
+      field: o365.metrics.mailbox.usage.detail.report_refresh_date
+      tag: date_o365.metrics.mailbox.usage.detail.report_refresh_date
+      if: ctx.o365.metrics?.mailbox?.usage?.detail?.report_refresh_date != null && ctx.o365.metrics?.mailbox?.usage?.detail?.report_refresh_date != ''
+      timezone: UTC
+      formats:
+        - yyyy-MM-dd
+      on_failure:
+        - remove:
+            field: o365.metrics.mailbox.usage.detail.report_refresh_date
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - rename:
+      field: o365.metrics.mailbox.usage.detail.report_refresh_date
+      target_field: o365.metrics.mailbox.usage.detail.report.refresh_date
+      ignore_missing: true
+  - set:
+      field: '@timestamp'
+      tag: set_timestamp_from_report_refresh_date
+      copy_from: o365.metrics.mailbox.usage.detail.report.refresh_date
+      ignore_empty_value: true
+  - fingerprint:
+      fields:
+        - o365.metrics.mailbox.usage.detail.report.refresh_date
+        - o365.metrics.mailbox.usage.detail.user_principal_name
+      target_field: _id                         
+  - lowercase:
+      field: o365.metrics.mailbox.usage.detail.is_deleted
+      tag: lowercase_o365.metrics.mailbox.usage.detail.is_deleted
+      if: ctx.o365.metrics?.mailbox?.usage?.detail?.is_deleted != null && ctx.o365.metrics?.mailbox?.usage?.detail?.is_deleted != ''
+  - convert:
+      field: o365.metrics.mailbox.usage.detail.is_deleted
+      tag: convert_o365.metrics.mailbox.usage.detail.is_deleted
+      type: boolean
+      if: ctx.o365.metrics?.mailbox?.usage?.detail?.is_deleted != null && ctx.o365.metrics?.mailbox?.usage?.detail?.is_deleted != ''
+      on_failure:
+        - remove:
+            field: ctx.o365.metrics?.mailbox?.usage?.detail?.is_deleted
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - lowercase:
+      field: o365.metrics.mailbox.usage.detail.has_archive
+      tag: lowercase_o365.metrics.mailbox.usage.detail.has_archive
+      if: ctx.o365.metrics?.mailbox?.usage?.detail?.has_archive != null && ctx.o365.metrics?.mailbox?.usage?.detail?.has_archive != ''
+  - convert:
+      field: o365.metrics.mailbox.usage.detail.has_archive
+      tag: convert_o365.o365.metrics.mailbox.usage.detail.has_archive
+      type: boolean
+      if: ctx.o365.metrics?.mailbox?.usage?.detail?.has_archive != null && ctx.o365.metrics?.mailbox?.usage?.detail?.has_archive != ''
+      on_failure:
+        - remove:
+            field: o365.metrics.mailbox.usage.detail.has_archive
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - script:
+      lang: painless
+      tag: script_to_remove_null_values
+      description: Drops null/empty values recursively.
+      source: |
+        boolean drop(Object o) {
+          if (o == null || o == "") {
+            return true;
+          } else if (o instanceof Map) {
+            ((Map) o).values().removeIf(v -> drop(v));
+            return (((Map) o).size() == 0);
+          } else if (o instanceof List) {
+            ((List) o).removeIf(v -> drop(v));
+            return (((List) o).length == 0);
+          }
+          return false;
+        }
+        drop(ctx);
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+on_failure:
+  - set:
+      field: error.message
+      value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - append:
+      field: tags
+      value: preserve_original_event
+      allow_duplicates: false
+  - append:
+      field: event.kind
+      value: pipeline_error
+      allow_duplicates: false
+  - append:
+      field: event.type
+      value: error
+      if: ctx.error?.message != null
