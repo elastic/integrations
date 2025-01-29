@@ -163,6 +163,8 @@ An example event for `firewall` looks as following:
 | checkpoint.appi_name | Name of application downloaded on the protected mobile device. | keyword |
 | checkpoint.arrival_time | Email arrival timestamp. | keyword |
 | checkpoint.attachments_num | Number of attachments in the mail. | integer |
+| checkpoint.attack | Name of the vulnerability category in case of a host or network vulnerability. | keyword |
+| checkpoint.attack_info | Description of the vulnerability in case of a host or network vulnerability. | keyword |
 | checkpoint.attack_status | In case of a malicious event on an endpoint computer, the status of the attack. | keyword |
 | checkpoint.audit_status | Audit Status. Can be Success or Failure. | keyword |
 | checkpoint.auth_method | Password authentication protocol used (PAP or EAP). | keyword |
@@ -216,6 +218,7 @@ An example event for `firewall` looks as following:
 | checkpoint.delivery_time | Timestamp of when email was delivered (MTA finished handling the email. | keyword |
 | checkpoint.desc | Override application description. | keyword |
 | checkpoint.description | Additional explanation how the security gateway enforced the connection. | keyword |
+| checkpoint.description_url | URL of description | keyword |
 | checkpoint.destination_object | Matched object name on destination column. | keyword |
 | checkpoint.detected_on | System and applications version the file was emulated on. | keyword |
 | checkpoint.developer_certificate_name | Name of the developer's certificate that was used to sign the mobile application. | keyword |
@@ -268,6 +271,7 @@ An example event for `firewall` looks as following:
 | checkpoint.dropped_total | Amount of dropped packets (both incoming and outgoing). | integer |
 | checkpoint.drops_amount | Amount of multicast packets dropped. | integer |
 | checkpoint.dst_country | Destination country. | keyword |
+| checkpoint.dst_domain_name | Destination domain name. | keyword |
 | checkpoint.dst_phone_number | Destination IP-Phone. | keyword |
 | checkpoint.dst_user_dn | User distinguished name connected to the destination IP address. | keyword |
 | checkpoint.dst_user_name | Connected user name on the destination IP. | keyword |
@@ -473,6 +477,7 @@ An example event for `firewall` looks as following:
 | checkpoint.registered_ip-phones | Registered IP-Phones. | keyword |
 | checkpoint.reject_category | Authentication failure reason. | keyword |
 | checkpoint.reject_id | A reject ID that corresponds to the one presented in the Mobile Access error page. | keyword |
+| checkpoint.reject_id_kid | A reject ID kind | keyword |
 | checkpoint.rematch_info | Information sent when old connections cannot be matched during policy installation. | keyword |
 | checkpoint.remediated_files | In case of an infection and a successful cleaning of that infection, this is a list of remediated files on the computer. | keyword |
 | checkpoint.reply_status | ICAP reply status code, e.g. 200 or 204. | integer |
@@ -507,6 +512,7 @@ An example event for `firewall` looks as following:
 | checkpoint.security_outzone | Network zone of outbound traffic as reported by the observer to categorize the destination area of egress traffic, e.g. Internal, External, DMZ, HR, Legal, etc. | keyword |
 | checkpoint.sendtotrackerasadvancedauditlog |  | keyword |
 | checkpoint.sent_bytes |  | keyword |
+| checkpoint.ser_agent_kid | User agent kind | keyword |
 | checkpoint.server_inbound_interface | In-bound interface name as reported by the system. | keyword |
 | checkpoint.server_outbound_interface | Out-bound interface name as reported by the system. | keyword |
 | checkpoint.session_description |  | keyword |
