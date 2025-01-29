@@ -1,0 +1,133 @@
+{
+    "attributes": {
+        "description": "Collect installed browser extension information for all users",
+        "name": "browser-monitoring",
+        "version": 1,
+        "queries": [
+            {
+                "ecs_mapping": [
+                    {
+                        "key": "file.path",
+                        "value": {
+                            "field": "path"
+                        }
+                    },
+                    {
+                        "key": "user.name",
+                        "value": {
+                            "field": "username"
+                        }
+                    },
+                    {
+                        "key": "file.name",
+                        "value": {
+                            "field": "name"
+                        }
+                    }
+                ],
+                "id": "chrome_extensions",
+                "interval": 21600,
+                "query": "SELECT * FROM users JOIN chrome_extensions USING (uid)",
+                "version": "1.4.5"
+            },
+            {
+                "ecs_mapping": [
+                    {
+                        "key": "user.name",
+                        "value": {
+                            "field": "username"
+                        }
+                    },
+                    {
+                        "key": "file.path",
+                        "value": {
+                            "field": "path"
+                        }
+                    },
+                    {
+                        "key": "user.full_name",
+                        "value": {
+                            "field": "description"
+                        }
+                    }
+                ],
+                "id": "chrome_extension_content_scripts",
+                "interval": 21600,
+                "query": "SELECT * FROM users JOIN chrome_extension_content_scripts USING (uid)",
+                "version": "1.4.5"
+            },
+            {
+                "id": "safari_extensions",
+                "interval": 21600,
+                "platform": "darwin",
+                "query": "SELECT * FROM users JOIN safari_extensions USING (uid)",
+                "version": "1.4.5"
+            },
+            {
+                "ecs_mapping": [
+                    {
+                        "key": "user.name",
+                        "value": {
+                            "field": "username"
+                        }
+                    },
+                    {
+                        "key": "file.path",
+                        "value": {
+                            "field": "path"
+                        }
+                    }
+                ],
+                "id": "firefox_addons",
+                "interval": 21600,
+                "query": "SELECT * FROM users JOIN firefox_addons USING (uid)",
+                "version": "1.4.5"
+            },
+            {
+                "ecs_mapping": [
+                    {
+                        "key": "file.path",
+                        "value": {
+                            "field": "path"
+                        }
+                    },
+                    {
+                        "key": "registry.path",
+                        "value": {
+                            "field": "registry_path"
+                        }
+                    }
+                ],
+                "id": "ie_extensions",
+                "interval": 21600,
+                "platform": "windows",
+                "query": "SELECT * FROM ie_extensions;",
+                "version": "1.4.5"
+            },
+            {
+                "ecs_mapping": [
+                    {
+                        "key": "user.name",
+                        "value": {
+                            "field": "username"
+                        }
+                    },
+                    {
+                        "key": "file.path",
+                        "value": {
+                            "field": "path"
+                        }
+                    }
+                ],
+                "id": "browser_plugins",
+                "interval": 21600,
+                "platform": "darwin",
+                "query": "SELECT * FROM users JOIN browser_plugins USING (uid)",
+                "version": "1.4.5"
+            }
+        ]
+    },
+    "coreMigrationVersion": "8.8.0",
+    "id": "osquery_manager-15e85d01-713d-483a-a928-e7a373d21f6c",
+    "type": "osquery-pack-asset"
+}
