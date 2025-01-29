@@ -83,6 +83,7 @@ done
 
 if [[ "${GITHUB_PR_TRIGGER_COMMENT}" =~ ^/test\ stack ]]; then
     cat << EOF >> ${PIPELINE_FILE}
+    - wait
     - label: "Force to run a regular build"
       key: "fail-github-pr-comment"
       commands:
