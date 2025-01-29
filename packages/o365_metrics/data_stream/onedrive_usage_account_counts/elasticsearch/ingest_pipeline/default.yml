@@ -1,18 +1,27 @@
 ---
-description: Pipeline for renaming object
+description: Pipeline for processing o365 onedrive usage account counts
 processors:
   - set:
       field: ecs.version
       value: "8.16.0"        
 
-# Pipeline for Usage Account Counts 
+# Pipeline for Usage Account Counts
   - json:
       field: onedrive_usageaccountcounts
       target_field: o365.metrics.onedrive.usage.account.counts
-      ignore_failure: true
+      tag: json_decoding
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - set:
+      copy_from: onedrive_usageaccountcounts
+      field: event.original
+      ignore_empty_value: true
+      if: ctx.event?.original == null && (ctx.tags != null && (ctx.tags.contains('preserve_original_event')))
   - script:
       lang: painless
-      description: Replace spaces and dashes in field names under o365.metrics.onedrive.usage.account.counts.
+      description: Replace spaces, dashes and bom character in field names under o365.metrics.onedrive.usage.account.counts.
       tag: painless_purge_spaces_and_dashes
       ignore_failure: true
       if: ctx.o365?.metrics?.onedrive?.usage?.account?.counts instanceof Map
@@ -31,6 +40,17 @@ processors:
       field: o365.metrics.onedrive.usage.account.counts.active
       target_field: o365.metrics.onedrive.usage.account.counts.active.count
       ignore_missing: true
+  - convert:
+      field: o365.metrics.onedrive.usage.account.counts.active.count
+      tag: convert_o365.metrics.onedrive.usage.account.counts.active.count
+      type: long
+      if: ctx.o365?.metrics?.onedrive?.usage?.account?.counts?.active?.count != null && ctx.o365?.metrics?.onedrive?.usage?.account?.counts?.active?.count != ''
+      on_failure:
+        - remove:
+            field: o365.metrics.onedrive.usage.account.counts.active.count
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - rename:
       field: o365.metrics.onedrive.usage.account.counts.report_date
       target_field: o365.metrics.onedrive.usage.account.counts.report.date
@@ -47,6 +67,26 @@ processors:
       field: o365.metrics.onedrive.usage.account.counts.total
       target_field: o365.metrics.onedrive.usage.account.counts.total.count
       ignore_missing: true
+  - convert:
+      field: o365.metrics.onedrive.usage.account.counts.total.count
+      tag: convert_o365.metrics.onedrive.usage.account.counts.total.count
+      type: long
+      if: ctx.o365?.metrics?.onedrive?.usage?.account?.counts?.total?.count != null && ctx.o365?.metrics?.onedrive?.usage?.account?.counts?.total?.count != ''
+      on_failure:
+        - remove:
+            field: o365.metrics.onedrive.usage.account.counts.total.count
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - set:
+      field: '@timestamp'
+      tag: set_timestamp_from_report_date
+      copy_from: o365.metrics.onedrive.usage.account.counts.report.date
+      ignore_empty_value: true
+  - fingerprint:
+      fields:
+        - o365.metrics.onedrive.usage.account.counts.report.date
+      target_field: _id  
   - remove:
       if: ctx.onedrive_usageaccountcounts != null
       field: onedrive_usageaccountcounts
@@ -57,10 +97,18 @@ processors:
       ignore_missing: true
 
 on_failure:
-  - append:
+  - set:
       field: error.message
       value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - append:
       field: event.kind
       value: pipeline_error
+      allow_duplicates: false
+  - append: 
+      field: event.type 
+      value: error 
+      if: ctx.error?.message != null
+  - append:
+      field: tags
+      value: preserve_original_event
       allow_duplicates: false

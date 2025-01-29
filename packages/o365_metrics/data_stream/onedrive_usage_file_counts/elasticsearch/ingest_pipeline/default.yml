@@ -1,5 +1,5 @@
 ---
-description: Pipeline for renaming object
+description: Pipeline for processing o365 onedrive file counts metrics.
 processors:
   - set:
       field: ecs.version
@@ -9,10 +9,19 @@ processors:
   - json:
       field: onedrive_usagefilecounts
       target_field: o365.metrics.onedrive.usage.file.counts
-      ignore_failure: true
+      tag: json_decoding
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - set:
+      copy_from: onedrive_usagefilecounts
+      field: event.original
+      ignore_empty_value: true
+      if: ctx.event?.original == null && (ctx.tags != null && (ctx.tags.contains('preserve_original_event')))
   - script:
       lang: painless
-      description: Replace spaces and dashes in field names under o365.metrics.onedrive.usage.file.counts.
+      description: Replace spaces, dashes and bom character in field names under o365.metrics.onedrive.usage.file.counts.
       tag: painless_purge_spaces_and_dashes
       ignore_failure: true
       if: ctx.o365?.metrics?.onedrive?.usage?.file?.counts instanceof Map
@@ -35,6 +44,17 @@ processors:
       field: o365.metrics.onedrive.usage.file.counts.active
       target_field: o365.metrics.onedrive.usage.file.counts.active.count
       ignore_missing: true
+  - convert:
+      field: o365.metrics.onedrive.usage.file.counts.active.count
+      tag: convert_o365.metrics.onedrive.usage.file.counts.active.count
+      type: long
+      if: ctx.o365?.metrics?.onedrive?.usage?.file?.counts?.active?.count != null && ctx.o365?.metrics?.onedrive?.usage?.file?.counts?.active?.count != ''
+      on_failure:
+        - remove:
+            field: o365.metrics.onedrive.usage.file.counts.active.count
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - rename:
       field: o365.metrics.onedrive.usage.file.counts.report_date
       target_field: o365.metrics.onedrive.usage.file.counts.report.date
@@ -51,16 +71,44 @@ processors:
       field: o365.metrics.onedrive.usage.file.counts.total
       target_field: o365.metrics.onedrive.usage.file.counts.total.count
       ignore_missing: true
+  - convert:
+      field: o365.metrics.onedrive.usage.file.counts.total.count
+      tag: convert_o365.metrics.onedrive.usage.file.counts.total.count
+      type: long
+      if: ctx.o365?.metrics?.onedrive?.usage?.file?.counts?.total?.count != null && ctx.o365?.metrics?.onedrive?.usage?.file?.counts?.total?.count != ''
+      on_failure:
+        - remove:
+            field: o365.metrics.onedrive.usage.file.counts.total.count
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - remove: 
       field:
         - o365.metrics.onedrive.usage.file.counts.site_type
-      ignore_missing: true                
+      ignore_missing: true
+  - set:
+      field: '@timestamp'
+      tag: set_timestamp_from_report_date
+      copy_from: o365.metrics.onedrive.usage.file.counts.report.date
+      ignore_empty_value: true
+  - fingerprint:
+      fields:
+        - o365.metrics.onedrive.usage.file.counts.report.date
+      target_field: _id  
 
 on_failure:
-  - append:
+  - set:
       field: error.message
       value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - append:
       field: event.kind
       value: pipeline_error
+      allow_duplicates: false
+  - append: 
+      field: event.type 
+      value: error 
+      if: ctx.error?.message != null
+  - append:
+      field: tags
+      value: preserve_original_event
       allow_duplicates: false

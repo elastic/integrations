@@ -662,7 +662,7 @@ An example event for `onedrive_usage_account_counts` looks as following:
                     "account": {
                         "counts": {
                             "active": {
-                                "count": "0"
+                                "count": "14"
                             },
                             "report": {
                                 "date": "2024-11-23",
@@ -700,11 +700,11 @@ Please refer to the following [document](https://www.elastic.co/guide/en/ecs/cur
 | host.containerized | If the host is a container. | boolean |
 | host.os.build | OS build information. | keyword |
 | host.os.codename | OS codename, if any. | keyword |
-| o365.metrics.onedrive.usage.account.counts.active.count | The number of OneDrive accounts that were active during the reporting period. | integer |
+| o365.metrics.onedrive.usage.account.counts.active.count | The number of OneDrive accounts that were active during the reporting period. | long |
 | o365.metrics.onedrive.usage.account.counts.report.date | The date the report was generated. | date |
 | o365.metrics.onedrive.usage.account.counts.report.period | The duration of the reporting period, in days. | integer |
 | o365.metrics.onedrive.usage.account.counts.report.refresh_date | The date when the data in the report was last refreshed. | date |
-| o365.metrics.onedrive.usage.account.counts.total.count | The total number of OneDrive accounts evaluated in the report. | integer |
+| o365.metrics.onedrive.usage.account.counts.total.count | The total number of OneDrive accounts evaluated in the report. | long |
 
 
 ### OneDrive Usage File Counts
@@ -768,7 +768,7 @@ An example event for `onedrive_usage_file_counts` looks as following:
                     "file": {
                         "counts": {
                             "active": {
-                                "count": "0"
+                                "count": "14"
                             },
                             "report": {
                                 "date": "2024-11-23",
@@ -806,11 +806,11 @@ Please refer to the following [document](https://www.elastic.co/guide/en/ecs/cur
 | host.containerized | If the host is a container. | boolean |
 | host.os.build | OS build information. | keyword |
 | host.os.codename | OS codename, if any. | keyword |
-| o365.metrics.onedrive.usage.file.counts.active.count | The number of OneDrive accounts with active file usage during the reporting period. | integer |
+| o365.metrics.onedrive.usage.file.counts.active.count | The number of OneDrive accounts with active file usage during the reporting period. | long |
 | o365.metrics.onedrive.usage.file.counts.report.date | The date the report was generated. | date |
 | o365.metrics.onedrive.usage.file.counts.report.period | The duration of the reporting period, in days. | integer |
 | o365.metrics.onedrive.usage.file.counts.report.refresh_date | The date when the data in the report was last refreshed. | date |
-| o365.metrics.onedrive.usage.file.counts.total.count | The total number of OneDrive accounts evaluated in the report. | integer |
+| o365.metrics.onedrive.usage.file.counts.total.count | The total number of OneDrive accounts evaluated in the report. | long |
 
 
 ### OneDrive Usage Storage
@@ -877,7 +877,9 @@ An example event for `onedrive_usage_storage` looks as following:
                             "period": "7",
                             "refresh_date": "2024-12-22"
                         },
-                        "used_byte": "91893426"
+                        "used": {
+                            "bytes": 91659303
+                        }
                     }
                 }
             }
@@ -908,7 +910,7 @@ Please refer to the following [document](https://www.elastic.co/guide/en/ecs/cur
 | o365.metrics.onedrive.usage.storage.report.date | The date the report was generated. | date |
 | o365.metrics.onedrive.usage.storage.report.period | The duration of the reporting period, in days. | integer |
 | o365.metrics.onedrive.usage.storage.report.refresh_date | The date when the data in the report was last refreshed. | date |
-| o365.metrics.onedrive.usage.storage.used_byte | The total storage used across OneDrive accounts during the reporting period, in bytes. | integer |
+| o365.metrics.onedrive.usage.storage.used.bytes | The total storage used across OneDrive accounts during the reporting period, in bytes. | long |
 
 
 ### Outlook Activity

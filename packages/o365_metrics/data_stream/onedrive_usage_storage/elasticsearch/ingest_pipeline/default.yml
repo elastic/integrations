@@ -1,5 +1,5 @@
 ---
-description: Pipeline for renaming object
+description: Pipeline or processing o365 onedrive usage storage metrics.
 processors:
   - set:
       field: ecs.version
@@ -9,10 +9,18 @@ processors:
   - json:
       field: onedrive_usagestorage
       target_field: o365.metrics.onedrive.usage.storage  
-      ignore_failure: true 
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - set:
+      copy_from: onedrive_usagestorage
+      field: event.original
+      ignore_empty_value: true
+      if: ctx.event?.original == null && (ctx.tags != null && (ctx.tags.contains('preserve_original_event')))
   - script:
       lang: painless
-      description: Replace spaces and dashes in field names under o365.metrics.onedrive.usage.storage.
+      description: Replace spaces, dashes and bom character in field names under o365.metrics.onedrive.usage.storage.
       tag: painless_purge_spaces_and_dashes
       if: ctx.o365?.metrics?.onedrive?.usage?.storage instanceof Map
       source: |
@@ -32,8 +40,19 @@ processors:
       ignore_missing: true      
   - rename:
       field: o365.metrics.onedrive.usage.storage.storage_used_(byte)
-      target_field: o365.metrics.onedrive.usage.storage.used_byte
+      target_field: o365.metrics.onedrive.usage.storage.used.bytes
       ignore_missing: true
+  - convert:
+      field: o365.metrics.onedrive.usage.storage.used.bytes
+      tag: convert_o365.metrics.onedrive.usage.storage.used.bytes
+      type: long
+      if: ctx.o365?.metrics?.onedrive?.usage?.storage?.used?.bytes != null && ctx.o365?.metrics?.onedrive?.usage?.storage?.used?.bytes != ''
+      on_failure:
+        - remove:
+            field: o365.metrics.onedrive.usage.storage.used.bytes
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - rename:
       field: o365.metrics.onedrive.usage.storage.report_date
       target_field: o365.metrics.onedrive.usage.storage.report.date
@@ -49,13 +68,30 @@ processors:
   - remove: 
       field:
         - o365.metrics.onedrive.usage.storage.site_type
-      ignore_missing: true                    
+      ignore_missing: true
+  - set:
+      field: '@timestamp'
+      tag: set_timestamp_from_report_date
+      copy_from: o365.metrics.onedrive.usage.storage.report.date
+      ignore_empty_value: true
+  - fingerprint:
+      fields:
+        - o365.metrics.onedrive.usage.storage.report.date
+      target_field: _id                    
 
 on_failure:
-  - append:
+  - set:
       field: error.message
       value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - append:
       field: event.kind
       value: pipeline_error
+      allow_duplicates: false
+  - append: 
+      field: event.type 
+      value: error 
+      if: ctx.error?.message != null
+  - append:
+      field: tags
+      value: preserve_original_event
       allow_duplicates: false
