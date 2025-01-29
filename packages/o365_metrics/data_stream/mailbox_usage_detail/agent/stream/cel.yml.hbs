@@ -52,16 +52,17 @@ redact:
     - base.tenant_id
 
 
+
 program: |
     state.with(
       request(
         "GET",
-        state.url + "/reports/getEmailActivityCounts(period='" + state.base.period + "')"
+        state.url + "/reports/getMailboxUsageDetail(period='" + state.base.period + "')"
       ).do_request().as(resp,
         resp.StatusCode == 200
         ?
           bytes(resp.Body).mime("text/csv; header=present").as(body, {
-                                     "events": body.map(e, {"outlookactivity": e.encode_json()}),                     
+                                     "events": body.map(e, {"mailboxusagedetail": e.encode_json()}),
         
           })
         :
@@ -81,4 +82,4 @@ program: |
             "want_more": false,
           }
       )
-    )
+    )        
