@@ -56,12 +56,12 @@ program: |
     state.with(
       request(
         "GET",
-        state.url + "/reports/getEmailActivityCounts(period='" + state.base.period + "')"
+        state.url + "/reports/getEmailAppUsageVersionsUserCounts(period='" + state.base.period + "')"
       ).do_request().as(resp,
         resp.StatusCode == 200
         ?
           bytes(resp.Body).mime("text/csv; header=present").as(body, {
-                                     "events": body.map(e, {"outlookactivity": e.encode_json()}),                     
+                                     "events": body.map(e, {"outlookappusage": e.encode_json()}),                     
         
           })
         :
