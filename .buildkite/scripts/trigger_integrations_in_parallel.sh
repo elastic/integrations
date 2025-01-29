@@ -84,8 +84,8 @@ done
 if [[ "${GITHUB_PR_TRIGGER_COMMENT}" =~ ^/test\ stack ]]; then
     cat << EOF >> ${PIPELINE_FILE}
     - wait
-    - label: "Force to run a regular build"
-      key: "fail-github-pr-comment"
+    - label: 'Required to trigger a CI build without ${GITHUB_PR_TRIGGER_COMMENT} (add "/test" comment or push new commit)'
+      key: "fail-ci-build"
       commands:
        - 'echo "Remember to run a new build with `/test` or pushing new commits"'
        - 'exit 1'
