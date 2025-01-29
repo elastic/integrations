@@ -38,7 +38,7 @@ use_elastic_package
 GITHUB_PR_TRIGGER_COMMENT="${GITHUB_PR_TRIGGER_COMMENT:-""}"
 
 # Test purposes - to be removed
-GITHUB_PR_TRIGGERT_COMMENT="test stack 9.0.0-SNAPSHOT"
+GITHUB_PR_TRIGGER_COMMENT="test stack 9.0.0-SNAPSHOT"
 
 if [[ "${GITHUB_PR_TRIGGER_COMMENT}" =~ ^test\ stack ]]; then
     STACK_VERSION=$(echo "$GITHUB_PR_TRIGGER_COMMENT" | cut -d " " -f 3)
