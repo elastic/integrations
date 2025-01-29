@@ -58,7 +58,7 @@ Refer to [Google Cloud Platform configuration](https://www.elastic.co/docs/curre
 
 ## Troubleshooting
 
-Refer to [Google Cloud Platform troubleshooting](https://www.elastic.co/docs/current/integrations/gcp#metrics-collection-configuration:~:text=to%20collect%20metrics.-,Troubleshooting,-If%20you%20don%27t) for more information about troubleshooting.
+Refer to [Google Cloud Platform troubleshooting](https://www.elastic.co/guide/en/integrations/current/gcp.html#_troubleshooting) for more information about troubleshooting.
 
 ## Reference
 
