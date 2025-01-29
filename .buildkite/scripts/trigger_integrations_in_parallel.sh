@@ -32,11 +32,7 @@ echo "[DEBUG] Checking with commits: from: '${from}' to: '${to}'"
 # This variable does not exist in builds triggered automatically
 GITHUB_PR_TRIGGER_COMMENT="${GITHUB_PR_TRIGGER_COMMENT:-""}"
 
-# Test purposes - to be removed
-GITHUB_PR_TRIGGER_COMMENT="/test stack 8.18.0-SNAPSHOT"
-
-# TODO: to be updated BUILDKITE_PIPELINE_SLUG value: integrations-test-stack
-if [[ "${BUILDKITE_PIPELINE_SLUG}" == "integrations" && "${GITHUB_PR_TRIGGER_COMMENT}" =~ ^/test\ stack ]]; then
+if [[ "${BUILDKITE_PIPELINE_SLUG}" == "integrations-test-stack" && "${GITHUB_PR_TRIGGER_COMMENT}" =~ ^/test\ stack ]]; then
     echo "--- Stack version set from Github comment"
     STACK_VERSION=$(echo "$GITHUB_PR_TRIGGER_COMMENT" | cut -d " " -f 3)
     export STACK_VERSION
