@@ -1,0 +1,197 @@
+---
+description: Pipeline for processing BeyondInsight and Password Safe Managed Systems logs
+processors:
+  - rename:
+      field: message
+      target_field: beyondinsight_password_safe.managedsystem
+
+  - drop:
+      if: ctx.error?.statuscode != null && ctx.error.statuscode != 200
+
+  - fingerprint:
+      fields:
+        - beyondinsight_password_safe.managedsystem
+      target_field: "_id"
+
+####################
+# Scripts for processing input #
+####################
+  - script:
+      description: Drops null/empty values recursively.
+      lang: painless
+      source: |
+        boolean dropEmptyFields(Object object) {
+          if (object == null || object == "") {
+            return true;
+          } else if (object instanceof Map) {
+            ((Map) object).values().removeIf(value -> dropEmptyFields(value));
+            return (((Map) object).size() == 0);
+          } else if (object instanceof List) {
+            ((List) object).removeIf(value -> dropEmptyFields(value));
+            return (((List) object).length == 0);
+          }
+          return false;
+        }
+        dropEmptyFields(ctx);
+
+  - script:
+      description: Convert Additional Info keys to snake case.
+      tag: additional-info-keys-to-snake-case
+      lang: painless
+      source: |
+        Map keysToSnakeCase(Map m) {
+          def regex = /_?([a-z])([A-Z]+)/;
+          def snakeCaseMap = [:];
+
+          for (entry in m.entrySet()) {
+            def k = entry.getKey();
+            def v = entry.getValue();
+
+            if (v instanceof Map) {
+              v = keysToSnakeCase(v);
+            } else if (v instanceof List) {
+              for (int i = 0; i < v.size(); i++) {
+                def item = v.get(i);
+                if (item instanceof Map) {
+                  v.set(i, keysToSnakeCase(item));
+                }
+              }
+            }
+
+            k = regex.matcher(k).replaceAll('$1_$2').toLowerCase();
+            snakeCaseMap.put(k, v);
+          }
+          return snakeCaseMap;
+        }
+
+        if (ctx.beyondinsight_password_safe.managedsystem != null) {
+          ctx.beyondinsight_password_safe.managedsystem = keysToSnakeCase(ctx.beyondinsight_password_safe.managedsystem);
+        }
+
+
+####################
+# ECS Fields #
+####################
+  - set:
+      field: ecs.version
+      value: '8.11.0'
+
+  - set:
+      field: event.kind
+      value: asset
+
+  - append:
+      field: event.category
+      value: iam
+
+  - append:
+      field: event.type
+      value: info
+
+  - set:
+      field: event.dataset
+      value: beyondinsight_password_safe.managedsystem
+
+  - set:
+      field: event.module
+      value: beyondinsight_password_safe
+
+  - set:
+      field: host.name
+      copy_from: beyondinsight_password_safe.managedsystem.host_name
+
+  - append:
+      field: related.hosts
+      value: '{{{beyondinsight_password_safe.managedsystem.host_name}}}'
+
+      allow_duplicates: false
+      if: ctx.beyondinsight_password_safe.managedsystem.host_name != null
+
+  - set:
+      field: host.domain
+      copy_from: beyondinsight_password_safe.managedsystem.dns_name
+      if: ctx.beyondinsight_password_safe.managedsystem.dns_name != null
+
+  - append:
+      field: related.hosts
+      value: '{{{beyondinsight_password_safe.managedsystem.dns_name}}}'
+      allow_duplicates: false
+      if: ctx.beyondinsight_password_safe.managedsystem.dns_name != null
+
+  - set:
+      field: user.email
+      copy_from: beyondinsight_password_safe.managedsystem.contact_email
+      if: ctx.beyondinsight_password_safe.managedsystem.contact_email != null
+
+  - append:
+      field: related.user
+      value: '{{beyondinsight_password_safe.managedsystem.contact_email}}'
+      allow_duplicates: false
+      if: ctx.beyondinsight_password_safe.managedsystem.contact_email != null
+
+  - set:
+      field: url.full
+      value: '{{{beyondinsight_password_safe.managedsystem.access_url}}}'
+      if: ctx.beyondinsight_password_safe.managedsystem.access_url != null
+
+  - convert:
+      field: beyondinsight_password_safe.managedsystem.ssh_key_enforcement_mode
+      type: string
+
+  - script:
+      description: Convert ssh_key_enforcement_mode to their text meaning
+      lang: painless
+      params:
+        descriptions:
+          "0": "None"
+          "1": "Auto"
+          "2": "Strict"
+      if: ctx.beyondinsight_password_safe?.managedsystem?.ssh_key_enforcement_mode != null
+      source: |
+        ctx.beyondinsight_password_safe.managedsystem.ssh_key_enforcement_mode = params.descriptions.getOrDefault(
+          ctx.beyondinsight_password_safe.managedsystem.ssh_key_enforcement_mode,
+          "unknown"
+        );
+
+ #################### Override host.ip ######################
+  - gsub:
+      field: beyondinsight_password_safe.managedsystem.ipaddress
+      pattern: "\\b0+(\\d)"
+      replacement: "$1"
+  - convert:
+      field: beyondinsight_password_safe.managedsystem.ipaddress
+      type: ip
+      if: ctx.beyondinsight_password_safe.managedsystem?.ipaddress != null && ctx.beyondinsight_password_safe.managedsystem.ipaddress != ''
+
+  - append:
+      field: host.ip
+      value: "{{{beyondinsight_password_safe.managedsystem.ipaddress}}}"     
+  - append:
+      field: related.hosts
+      value: '{{{beyondinsight_password_safe.managedsystem.ipaddress}}}'
+      allow_duplicates: false
+
+  - convert:
+      field: beyondinsight_password_safe.managedsystem.ipaddress
+      target_field: beyondinsight_password_safe.managedsystem.ipaddress
+      type: ip
+      if: ctx.beyondinsight_password_safe.managedsystem?.ipaddress != null && ctx.beyondinsight_password_safe.managedsystem.ipaddress != ''
+      ignore_missing: true
+
+  - append:
+      field: host.ip
+      value: "{{{beyondinsight_password_safe.managedsystem.ipaddress}}}"
+
+  - geoip:
+      field: host.ip
+      target_field: host.geo
+      ignore_missing: true
+      ignore_failure: true
+
+on_failure:
+  - append:
+      field: error.message
+      value: '{{{_ingest.on_failure_message}}}'
+  - set:
+      field: event.kind
+      value: pipeline_error
