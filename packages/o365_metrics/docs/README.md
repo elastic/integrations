@@ -19,7 +19,7 @@ Following Microsoft 365 Graph Reports can be collected by Microsoft Office 365 M
 | [Outlook Mailbox Usage Quota Status Mailbox Counts](https://learn.microsoft.com/en-us/microsoft-365/admin/activity-reports/mailbox-usage?view=o365-worldwide)      |    [reportRoot: getMailboxUsageQuotaStatusMailboxCounts](https://learn.microsoft.com/en-us/graph/api/reportroot-getmailboxusagequotastatusmailboxcounts?view=graph-rest-1.0&tabs=http)    |  Microsoft 365 mailbox usage quota status metrics   |   `Period`-based   |
 | [Outlook Mailbox Usage Detail](https://learn.microsoft.com/en-us/microsoft-365/admin/activity-reports/mailbox-usage?view=o365-worldwide)      |    [reportRoot: getMailboxUsageDetail](https://learn.microsoft.com/en-us/graph/api/reportroot-getmailboxusagedetail?view=graph-rest-1.0&tabs=http)    |   Microsoft 365 mailbox usage detail metrics   |   `Period`-based   |
 | [SharePoint Site Usage Storage](https://learn.microsoft.com/en-us/microsoft-365/admin/activity-reports/sharepoint-site-usage-ww?view=o365-worldwide)      |    [reportRoot: getSharePointSiteUsageStorage](https://learn.microsoft.com/en-us/graph/api/reportroot-getsharepointsiteusagestorage?view=graph-rest-1.0&tabs=http)    |   Office 365 Sharepoint Site Usage metrics   |   `Period`-based   |
-| [SharePoint Site Usage Site Detail](https://learn.microsoft.com/en-us/microsoft-365/admin/activity-reports/sharepoint-site-usage-ww?view=o365-worldwide)      |    [reportRoot: getSharePointSiteUsageDetail](https://learn.microsoft.com/en-us/graph/api/reportroot-getsharepointsiteusagedetail?view=graph-rest-1.0&tabs=http)    |   Office 365 Sharepoint Site Usage metrics   |   `Period`-based   |
+| [SharePoint Site Usage Detail](https://learn.microsoft.com/en-us/microsoft-365/admin/activity-reports/sharepoint-site-usage-ww?view=o365-worldwide)      |    [reportRoot: getSharePointSiteUsageDetail](https://learn.microsoft.com/en-us/graph/api/reportroot-getsharepointsiteusagedetail?view=graph-rest-1.0&tabs=http)    |   Office 365 Sharepoint Site Usage metrics   |   `Period`-based   |
 | [Teams Device Usage User Counts](https://learn.microsoft.com/en-us/microsoft-365/admin/activity-reports/microsoft-teams-device-usage-preview?view=o365-worldwide)      |    [reportRoot: getTeamsDeviceUsageUserCounts](https://learn.microsoft.com/en-us/graph/api/reportroot-getteamsdeviceusageusercounts?view=graph-rest-1.0&tabs=http)    |   Microsoft 365 Teams Device Usage User Counts metrics   |   `Period`-based   |
 | [Teams User Activity User Counts](https://learn.microsoft.com/en-us/microsoft-365/admin/activity-reports/microsoft-teams-user-activity-preview?view=o365-worldwide)      |    [reportRoot: getTeamsUserActivityUserCounts](https://learn.microsoft.com/en-us/graph/api/reportroot-getteamsuseractivityusercounts?view=graph-rest-1.0&tabs=http)    |   Microsoft 365 Teams User Activity User Counts metrics   |   `Period`-based   |
 | [Teams User Activity User Detail](https://learn.microsoft.com/en-us/microsoft-365/admin/activity-reports/microsoft-teams-user-activity-preview?view=o365-worldwide)      |    [reportRoot: getTeamsUserActivityUserDetail](https://learn.microsoft.com/en-us/graph/api/reportroot-getteamsuseractivityuserdetail?view=graph-rest-1.0&tabs=http)    |   Microsoft 365 Teams User Activity User Detail   |    `Day`-based   |
@@ -93,9 +93,11 @@ By default for all Microsoft 365 usage reports, the user names, emails, group, o
 
 Uses the Microsoft 365 Graph API to retrieve metrics from Microsoft 365.
 
-### Active Users
+### Active Users Services User Count
 
-An example event for `active_users` looks as following:
+Get details about Active Users Services User Count from [Microsoft Graph API](https://learn.microsoft.com/en-us/graph/api/reportroot-getoffice365servicesusercounts?view=graph-rest-1.0&tabs=http).
+
+An example event for `active_users_services_user_counts` looks as following:
 
 ```json
 {
@@ -103,58 +105,64 @@ An example event for `active_users` looks as following:
         "metrics": {
             "active": {
                 "users": {
-                    "teams": {
-                        "inactive": {
-                            "count": "20"
-                        },
-                        "active": {
-                            "count": "0"
-                        }
-                    },
-                    "sharepoint": {
-                        "inactive": {
-                            "count": "20"
-                        },
-                        "active": {
-                            "count": "0"
-                        }
-                    },
-                    "yammer": {
-                        "inactive": {
-                            "count": "25"
-                        },
-                        "active": {
-                            "count": "0"
-                        }
-                    },
-                    "office365": {
-                        "inactive": {
-                            "count": "25"
-                        },
-                        "active": {
-                            "count": "0"
-                        }
-                    },
-                    "report": {
-                        "period": {
-                            "day": "7"
-                        },
-                        "refresh_date": "2024-11-29"
-                    },
-                    "exchange": {
-                        "inactive": {
-                            "count": "20"
-                        },
-                        "active": {
-                            "count": "0"
-                        }
-                    },
-                    "onedrive": {
-                        "inactive": {
-                            "count": "20"
-                        },
-                        "active": {
-                            "count": "0"
+                    "services": {
+                        "user": {
+                            "counts": {
+                                "exchange": {
+                                    "active": {
+                                        "count": "0"
+                                    },
+                                    "inactive": {
+                                        "count": "22"
+                                    }
+                                },
+                                "office365": {
+                                    "active": {
+                                        "count": "0"
+                                    },
+                                    "inactive": {
+                                        "count": "25"
+                                    }
+                                },
+                                "onedrive": {
+                                    "active": {
+                                        "count": "0"
+                                    },
+                                    "inactive": {
+                                        "count": "20"
+                                    }
+                                },
+                                "report": {
+                                    "period": {
+                                        "day": "7"
+                                    },
+                                    "refresh_date": "2024-11-29"
+                                },
+                                "sharepoint": {
+                                    "active": {
+                                        "count": "0"
+                                    },
+                                    "inactive": {
+                                        "count": "20"
+                                    }
+                                },
+                                "teams": {
+                                    "active": {
+                                        "count": "0"
+                                    },
+                                    "inactive": {
+                                        "count": "20"
+                                    }
+                                },
+                                "yammer": {
+                                    "active": {
+                                        "count": "0"
+                                    },
+                                    "inactive": {
+                                        "count": "25"
+                                    }
+                                }
+                            }
                         }
                     }
                 }
@@ -175,7 +183,7 @@ An example event for `active_users` looks as following:
     "data_stream": {
         "namespace": "default",
         "type": "metrics",
-        "dataset": "o365_metrics.active_users"
+        "dataset": "o365_metrics.active.users.services.user.counts"
     },
     "elastic_agent": {
         "id": "1bd16076-38b3-44b9-980b-eab55ebe95b9",
@@ -206,11 +214,10 @@ An example event for `active_users` looks as following:
     "event": {
         "agent_id_status": "verified",
         "ingested": "2024-12-24T10:36:57Z",
-        "dataset": "o365_metrics.active_users",
-        "original": "{\"Exchange Active\":\"0\",\"Exchange Inactive\":\"22\",\"Office 365 Active\":\"0\",\"Office 365 Inactive\":\"25\",\"OneDrive Active\":\"0\",\"OneDrive Inactive\":\"20\",\"Report Period\":\"7\",\"SharePoint Active\":\"0\",\"SharePoint Inactive\":\"20\",\"Skype For Business Active\":\"\",\"Skype For Business Inactive\":\"\",\"Teams Active\":\"0\",\"Teams Inactive\":\"20\",\"Yammer Active\":\"0\",\"Yammer Inactive\":\"25\",\"Report Refresh Date\":\"2024-11-29\"}"
+        "dataset": "o365_metrics.active.users.services.user.counts"
     },
     "tags": [
-        "o365.metrics.active.users",
+        "o365.metrics.active.users.services.user.counts",
         "preserve_original_event"
     ]
 }
@@ -232,25 +239,25 @@ Please refer to the following [document](https://www.elastic.co/guide/en/ecs/cur
 | host.containerized | If the host is a container. | boolean |  |
 | host.os.build | OS build information. | keyword |  |
 | host.os.codename | OS codename, if any. | keyword |  |
-| o365.metrics.active.users.exchange.active.count | Number of Exchange active users. | integer |  |
-| o365.metrics.active.users.exchange.inactive.count | Number of Exchange inactive users. | integer |  |
-| o365.metrics.active.users.office365.active.count | Number of Office 365 active users. | integer |  |
-| o365.metrics.active.users.office365.inactive.count | Number of Office 365 inactive users. | integer |  |
-| o365.metrics.active.users.onedrive.active.count | Number of OneDrive active users. | integer |  |
-| o365.metrics.active.users.onedrive.inactive.count | Number of OneDrive inactive users. | integer |  |
-| o365.metrics.active.users.report.period.day | The reporting period over which the data is aggregated (in days). | integer | d |
-| o365.metrics.active.users.report.refresh_date | The date when the report data was last updated. | date |  |
-| o365.metrics.active.users.sharepoint.active.count | Number of SharePoint active users. | integer |  |
-| o365.metrics.active.users.sharepoint.inactive.count | Number of SharePoint inactive users. | integer |  |
-| o365.metrics.active.users.teams.active.count | Number of Teams active users. | integer |  |
-| o365.metrics.active.users.teams.inactive.count | Number of Teams inactive users. | integer |  |
-| o365.metrics.active.users.yammer.active.count | Number of Yammer active users. | integer |  |
-| o365.metrics.active.users.yammer.inactive.count | Number of Yammer inactive users. | integer |  |
+| o365.metrics.active.users.services.user.counts.exchange.active.count | Number of Exchange active users. | integer |  |
+| o365.metrics.active.users.services.user.counts.exchange.inactive.count | Number of Exchange inactive users. | integer |  |
+| o365.metrics.active.users.services.user.counts.office365.active.count | Number of Office 365 active users. | integer |  |
+| o365.metrics.active.users.services.user.counts.office365.inactive.count | Number of Office 365 inactive users. | integer |  |
+| o365.metrics.active.users.services.user.counts.onedrive.active.count | Number of OneDrive active users. | integer |  |
+| o365.metrics.active.users.services.user.counts.onedrive.inactive.count | Number of OneDrive inactive users. | integer |  |
+| o365.metrics.active.users.services.user.counts.report.period.day | The reporting period over which the data is aggregated (in days). | integer | d |
+| o365.metrics.active.users.services.user.counts.report.refresh_date | The date when the report data was last updated. | date |  |
+| o365.metrics.active.users.services.user.counts.sharepoint.active.count | Number of SharePoint active users. | integer |  |
+| o365.metrics.active.users.services.user.counts.sharepoint.inactive.count | Number of SharePoint inactive users. | integer |  |
+| o365.metrics.active.users.services.user.counts.teams.active.count | Number of Teams active users. | integer |  |
+| o365.metrics.active.users.services.user.counts.teams.inactive.count | Number of Teams inactive users. | integer |  |
+| o365.metrics.active.users.services.user.counts.yammer.active.count | Number of Yammer active users. | integer |  |
+| o365.metrics.active.users.services.user.counts.yammer.inactive.count | Number of Yammer inactive users. | integer |  |
 
 
 ### Mailbox Usage Quota Status
 
-Get details about Mailbox Usage Quota Status [Microsoft Graph API](https://learn.microsoft.com/en-us/graph/api/reportroot-getmailboxusagequotastatusmailboxcounts?view=graph-rest-1.0&tabs=http).
+Get details about Mailbox Usage Quota Status from [Microsoft Graph API](https://learn.microsoft.com/en-us/graph/api/reportroot-getmailboxusagequotastatusmailboxcounts?view=graph-rest-1.0&tabs=http).
 
 An example event for `mailbox_usage_quota_status` looks as following:
 
@@ -370,7 +377,7 @@ Please refer to the following [document](https://www.elastic.co/guide/en/ecs/cur
 
 ### Mailbox Usage Detail
 
-Get details about Mailbox Usage Detail [Microsoft Graph API](https://learn.microsoft.com/en-us/graph/api/reportroot-getmailboxusagedetail?view=graph-rest-1.0&tabs=http).
+Get details about Mailbox Usage Detail from [Microsoft Graph API](https://learn.microsoft.com/en-us/graph/api/reportroot-getmailboxusagedetail?view=graph-rest-1.0&tabs=http).
 
 An example event for `mailbox_usage_detail` looks as following:
 
@@ -1300,6 +1307,8 @@ Please refer to the following [document](https://www.elastic.co/guide/en/ecs/cur
 
 ### SharePoint Site Usage Detail
 
+Get details about SharePoint Site Usage Detail from [Microsoft Graph API](https://learn.microsoft.com/en-us/graph/api/reportroot-getsharepointsiteusagedetail?view=graph-rest-1.0&tabs=http).
+
 An example event for `sharepoint_site_usage_detail` looks as following:
 
 ```json
@@ -1432,6 +1441,8 @@ Please refer to the following [document](https://www.elastic.co/guide/en/ecs/cur
 
 ### SharePoint Site Usage Storage
 
+Get details about SharePoint Site Usage Storage from [Microsoft Graph API](https://learn.microsoft.com/en-us/graph/api/reportroot-getsharepointsiteusagedetail?view=graph-rest-1.0&tabs=http).
+
 An example event for `sharepoint_site_usage_storage` looks as following:
 
 ```json
@@ -1536,6 +1547,8 @@ Please refer to the following [document](https://www.elastic.co/guide/en/ecs/cur
 
 
 ### Teams User Activity User Counts
+
+Get details about Teams User Activity User Counts from [Microsoft Graph API](https://learn.microsoft.com/en-us/graph/api/reportroot-getteamsuseractivityusercounts?view=graph-rest-1.0&tabs=http).
 
 An example event for `teams_user_activity_user_counts` looks as following:
 
@@ -1657,7 +1670,7 @@ Please refer to the following [document](https://www.elastic.co/guide/en/ecs/cur
 
 ### Teams User Activity User Detail
 
-Get details about Microsoft Teams user activity by user from [Microsoft Graph API](https://learn.microsoft.com/en-us/graph/api/reportroot-getteamsuseractivityuserdetail?view=graph-rest-1.0&tabs=http).
+Get details about Teams User Activity User Detail from [Microsoft Graph API](https://learn.microsoft.com/en-us/graph/api/reportroot-getteamsuseractivityuserdetail?view=graph-rest-1.0&tabs=http).
 
 An example event for `teams_user_activity_user_detail` looks as following:
 
@@ -1831,7 +1844,7 @@ Please refer to the following [document](https://www.elastic.co/guide/en/ecs/cur
 
 ### Viva Engage Groups Activity Group Detail
 
-Get details about Yammer groups activity by group from [Microsoft Graph API](https://learn.microsoft.com/en-us/graph/api/reportroot-getyammergroupsactivitydetail?view=graph-rest-1.0&tabs=http).
+Get details about Yammer Groups Activity Group Detail by group from [Microsoft Graph API](https://learn.microsoft.com/en-us/graph/api/reportroot-getyammergroupsactivitydetail?view=graph-rest-1.0&tabs=http).
 
 An example event for `viva_engage_groups_activity_group_detail` looks as following:
 
@@ -1927,7 +1940,7 @@ Please refer to the following [document](https://www.elastic.co/guide/en/ecs/cur
 
 ### Viva Engage Device Usage User Counts
 
-Get details about Yammer device usage from [Microsoft Graph API](https://learn.microsoft.com/en-us/graph/api/reportroot-getyammerdeviceusageusercounts?view=graph-rest-1.0&tabs=http).
+Get details about Yammer Device Usage User Counts from [Microsoft Graph API](https://learn.microsoft.com/en-us/graph/api/reportroot-getyammerdeviceusageusercounts?view=graph-rest-1.0&tabs=http).
 
 An example event for `viva_engage_device_usage_user_counts` looks as following:
 
@@ -2056,7 +2069,7 @@ Please refer to the following [document](https://www.elastic.co/guide/en/ecs/cur
 
 ### Teams Device Usage User Counts
 
-Get details about Teams device usage from [Microsoft Graph API](https://learn.microsoft.com/en-us/graph/api/reportroot-getteamsdeviceusageusercounts?view=graph-rest-1.0&tabs=http).
+Get details about Teams Device Usage User Counts from [Microsoft Graph API](https://learn.microsoft.com/en-us/graph/api/reportroot-getteamsdeviceusageusercounts?view=graph-rest-1.0&tabs=http).
 
 An example event for `teams_device_usage_user_counts` looks as following:
 
