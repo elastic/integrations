@@ -72,7 +72,7 @@
                         "id": "",
                         "params": {
                             "fontSize": 12,
-                            "markdown": "**Navigation**\n\n**Corelight**\n\n- [Security Posture](#/dashboard/corelight-7c0946bc-acd0-4ec3-ab3b-8a92853f4a3b)\n- **Data Insights**\n  - **Name Resolution Insights**\n  - [Secure Channel Insights](#/dashboard/corelight-45197477-c13f-4e52-a5dd-fb4f53564963)\n  - [Remote Activity Insights](#/dashboard/corelight-f4864774-ed73-4b78-b861-5b8235ec12cf)\n- Security Workflows\n  - [Intel](#/dashboard/corelight-323b0f27-993e-4fee-ae6e-b5977d7cab11)\n  - [IP Interrogation](#/dashboard/corelight-3a4a279f-f238-47de-90ba-f643c5647fde)\n  - [Log Hunting](#/dashboard/corelight-ff07e65c-2703-4cbe-a45f-3881025352a3)\n  - [Notices](#/dashboard/corelight-f7da14f0-85db-48e8-a591-1f650af0f618)\n  - [RDP Inferences Overview](#/dashboard/corelight-2d4dc345-cbbe-4d7a-9203-5ab11c8cb5ba)\n  - [SSH Inferences Overview](#/dashboard/corelight-65a5fa91-06e4-459b-b4bb-998c85a6cf08)\n  - [Corelight Suricata IDS Alert Overview](#/dashboard/corelight-f1208ffe-d168-46d1-9531-24de523d1bfb)\n  - [VPN Insights](#/dashboard/corelight-023162b6-94da-4d8d-b1f6-de6192356cce)\n\n[**Integrations Page**](/app/integrations/detail/corelight/overview)",
+                            "markdown": "**Navigation**\n\n**Corelight**\n\n- [Security Posture](#/dashboard/corelight-7c0946bc-acd0-4ec3-ab3b-8a92853f4a3b)\n- **Data Insights**\n  - **Name Resolution Insights**\n  - [Secure Channel Insights](#/dashboard/corelight-45197477-c13f-4e52-a5dd-fb4f53564963)\n  - [Remote Activity Insights](#/dashboard/corelight-f4864774-ed73-4b78-b861-5b8235ec12cf)\n- Security Workflows\n  - [Intel](#/dashboard/corelight-323b0f27-993e-4fee-ae6e-b5977d7cab11)\n  - [IP Interrogation](#/dashboard/corelight-3a4a279f-f238-47de-90ba-f643c5647fde)\n  - [Log Hunting](#/dashboard/corelight-ff07e65c-2703-4cbe-a45f-3881025352a3)\n  - [Notices](#/dashboard/corelight-f7da14f0-85db-48e8-a591-1f650af0f618)\n  - [RDP Inferences Overview](#/dashboard/corelight-2d4dc345-cbbe-4d7a-9203-5ab11c8cb5ba)\n  - [SSH Inferences Overview](#/dashboard/corelight-65a5fa91-06e4-459b-b4bb-998c85a6cf08)\n  - [Corelight Suricata IDS Alert Overview](#/dashboard/corelight-f1208ffe-d168-46d1-9531-24de523d1bfb)\n  - [VPN Insights](#/dashboard/corelight-023162b6-94da-4d8d-b1f6-de6192356cce)\n- Data Explorer\n  - [Connections](#/dashboard/corelight-eff0434c-1e27-4c02-959e-9f5d95488efb)\n  - [DNS](#/dashboard/corelight-58885f47-95e1-4242-a1ee-783de69ace17)\n  - [Files](#/dashboard/corelight-0cfc8a95-4979-4265-b9ad-91edf63f01a9)\n  - [HTTP](#/dashboard/corelight-8c5f15f7-7063-4228-be54-fb8c20b29caa)\n  - [Software](#/dashboard/corelight-40bbc19b-dd9c-4b43-a88a-e29fc8701902)\n  - [SSL and x509](#/dashboard/corelight-e4a93cfe-4b1f-44df-ab99-50c74f6f2203)\n\n[**Integrations Page**](/app/integrations/detail/corelight/overview)",
                             "openLinksInNewTab": false
                         },
                         "title": "",
@@ -286,11 +286,11 @@
                                         }
                                     ],
                                     "layers": {
-                                        "4e79664b-da6b-45c7-bf56-28f4cb40ee64": {
+                                        "cbedb337-c405-4d63-9d4a-78dd92fea7cc": {
                                             "columns": [
                                                 {
-                                                    "columnId": "Destination",
-                                                    "fieldName": "Destination",
+                                                    "columnId": "Destination IP",
+                                                    "fieldName": "Destination IP",
                                                     "inMetricDimension": true,
                                                     "meta": {
                                                         "esType": "ip",
@@ -298,8 +298,8 @@
                                                     }
                                                 },
                                                 {
-                                                    "columnId": "# of Queries",
-                                                    "fieldName": "# of Queries",
+                                                    "columnId": "Number of Queries",
+                                                    "fieldName": "Number of Queries",
                                                     "inMetricDimension": true,
                                                     "meta": {
                                                         "esType": "long",
@@ -307,8 +307,8 @@
                                                     }
                                                 },
                                                 {
-                                                    "columnId": "# of Unique Clients",
-                                                    "fieldName": "# of Unique Clients",
+                                                    "columnId": "Number of Unique Clients",
+                                                    "fieldName": "Number of Unique Clients",
                                                     "inMetricDimension": true,
                                                     "meta": {
                                                         "esType": "long",
@@ -336,7 +336,7 @@
                                             ],
                                             "index": "30745a83f179da5f11b16656250be0a248d7293f796a233331383a8b71ff135a",
                                             "query": {
-                                                "esql": "from logs-corelight.conn-*\r\n| limit 10000\r\n| where observer.vendor == \"Corelight\" and event.dataset == \"conn\" and observer.hostname is not null and network.protocol == \"dns\"\r\n| stats count(), count_distinct(source.ip), values(destination.geo.country_name) , values(conn.local_resp) by destination.ip\r\n| eval `values(destination.geo.country_name)` = case(`values(destination.geo.country_name)` is null, \"Unknown\",\r\n`values(destination.geo.country_name)`)\r\n| eval Internal = case(\r\n    `values(conn.local_resp)` == true, \"yes\", \"no\")\r\n| rename destination.ip as Destination, `count()` as `# of Queries`, `count_distinct(source.ip)` as `# of Unique Clients`, `values(destination.geo.country_name)` as Country\r\n| sort `# of Queries` DESC, `# of Unique Clients` ASC\r\n| keep Destination, `# of Queries`,`# of Unique Clients`,`Country`, Internal"
+                                                "esql": "from logs-corelight.conn-*\r\n| limit 10000\r\n| where observer.vendor == \"Corelight\" and event.dataset == \"conn\" and observer.hostname is not null and network.protocol == \"dns\"\r\n| stats count(), count_distinct(source.ip), values(destination.geo.country_name) , values(conn.local_resp) by destination.ip\r\n| eval `values(destination.geo.country_name)` = case(`values(destination.geo.country_name)` is null, \"Unknown\",\r\n`values(destination.geo.country_name)`)\r\n| eval Internal = case(\r\n    `values(conn.local_resp)` == true, \"yes\", \"no\")\r\n| rename destination.ip as `Destination IP`, `count()` as `Number of Queries`, `count_distinct(source.ip)` as `Number of Unique Clients`, `values(destination.geo.country_name)` as Country\r\n| sort `Number of Queries` DESC, `Number of Unique Clients` ASC\r\n| keep `Destination IP`, `Number of Queries`,`Number of Unique Clients`,`Country`, Internal"
                                             },
                                             "timeField": "@timestamp"
                                         }
@@ -345,18 +345,18 @@
                             },
                             "filters": [],
                             "query": {
-                                "esql": "from logs-corelight.conn-*\r\n| limit 10000\r\n| where observer.vendor == \"Corelight\" and event.dataset == \"conn\" and observer.hostname is not null and network.protocol == \"dns\"\r\n| stats count(), count_distinct(source.ip), values(destination.geo.country_name) , values(conn.local_resp) by destination.ip\r\n| eval `values(destination.geo.country_name)` = case(`values(destination.geo.country_name)` is null, \"Unknown\",\r\n`values(destination.geo.country_name)`)\r\n| eval Internal = case(\r\n    `values(conn.local_resp)` == true, \"yes\", \"no\")\r\n| rename destination.ip as Destination, `count()` as `# of Queries`, `count_distinct(source.ip)` as `# of Unique Clients`, `values(destination.geo.country_name)` as Country\r\n| sort `# of Queries` DESC, `# of Unique Clients` ASC\r\n| keep Destination, `# of Queries`,`# of Unique Clients`,`Country`, Internal"
+                                "esql": "from logs-corelight.conn-*\r\n| limit 10000\r\n| where observer.vendor == \"Corelight\" and event.dataset == \"conn\" and observer.hostname is not null and network.protocol == \"dns\"\r\n| stats count(), count_distinct(source.ip), values(destination.geo.country_name) , values(conn.local_resp) by destination.ip\r\n| eval `values(destination.geo.country_name)` = case(`values(destination.geo.country_name)` is null, \"Unknown\",\r\n`values(destination.geo.country_name)`)\r\n| eval Internal = case(\r\n    `values(conn.local_resp)` == true, \"yes\", \"no\")\r\n| rename destination.ip as `Destination IP`, `count()` as `Number of Queries`, `count_distinct(source.ip)` as `Number of Unique Clients`, `values(destination.geo.country_name)` as Country\r\n| sort `Number of Queries` DESC, `Number of Unique Clients` ASC\r\n| keep `Destination IP`, `Number of Queries`,`Number of Unique Clients`,`Country`, Internal"
                             },
                             "visualization": {
                                 "columns": [
                                     {
-                                        "columnId": "Destination"
+                                        "columnId": "Destination IP"
                                     },
                                     {
-                                        "columnId": "# of Queries"
+                                        "columnId": "Number of Queries"
                                     },
                                     {
-                                        "columnId": "# of Unique Clients"
+                                        "columnId": "Number of Unique Clients"
                                     },
                                     {
                                         "columnId": "Country"
@@ -365,11 +365,11 @@
                                         "columnId": "Internal"
                                     }
                                 ],
-                                "layerId": "4e79664b-da6b-45c7-bf56-28f4cb40ee64",
+                                "layerId": "cbedb337-c405-4d63-9d4a-78dd92fea7cc",
                                 "layerType": "data"
                             }
                         },
-                        "title": "Table Destination \u0026 # of Queries \u0026 # of Unique Clients \u0026 Country \u0026 Internal",
+                        "title": "Table Destination IP \u0026 Number of Queries \u0026 Number of Unique Clients \u0026 Country \u0026 Internal",
                         "type": "lens",
                         "visualizationType": "lnsDatatable"
                     },
@@ -847,11 +847,11 @@
                                         }
                                     ],
                                     "layers": {
-                                        "023b380c-de3d-46b1-8a33-78b5e61aeec1": {
+                                        "1954c25a-d1bc-490f-a98e-11935de92ce7": {
                                             "columns": [
                                                 {
-                                                    "columnId": "Source",
-                                                    "fieldName": "Source",
+                                                    "columnId": "Source IP",
+                                                    "fieldName": "Source IP",
                                                     "inMetricDimension": true,
                                                     "meta": {
                                                         "esType": "ip",
@@ -859,8 +859,8 @@
                                                     }
                                                 },
                                                 {
-                                                    "columnId": "Responder",
-                                                    "fieldName": "Responder",
+                                                    "columnId": "Destination IP",
+                                                    "fieldName": "Destination IP",
                                                     "inMetricDimension": true,
                                                     "meta": {
                                                         "esType": "ip",
@@ -897,7 +897,7 @@
                                             ],
                                             "index": "2822558581c97b9590f6300cb704338209e089678c681675277821265127a97a",
                                             "query": {
-                                                "esql": "from logs-corelight.dns-*\r\n| limit 10000\r\n| where observer.vendor == \"Corelight\" and event.dataset == \"dns\" and observer.hostname is not null and dns.response_code == \"NXDOMAIN\"\r\n| stats count() by source.ip, destination.ip, dns.question.name, dns.flags.rejected\r\n| rename source.ip as Source, destination.ip as Responder, dns.question.name as Query, dns.flags.rejected as query_rejected, `count()` as Count\r\n|eval `Rejected?` = case(query_rejected == true, \"Yes\", \"No\")\r\n| sort Count desc\r\n| keep Source, Responder, Query, `Rejected?`, Count"
+                                                "esql": "from logs-corelight.dns-*\r\n| limit 10000\r\n| where observer.vendor == \"Corelight\" and event.dataset == \"dns\" and observer.hostname is not null and dns.response_code == \"NXDOMAIN\"\r\n| stats count() by source.ip, destination.ip, dns.question.name, dns.flags.rejected\r\n| rename source.ip as `Source IP`, destination.ip as `Destination IP`, dns.question.name as Query, dns.flags.rejected as query_rejected, `count()` as Count\r\n|eval `Rejected?` = case(query_rejected == true, \"Yes\", \"No\")\r\n| sort Count desc\r\n| keep `Source IP`, `Destination IP`, Query, `Rejected?`, Count"
                                             },
                                             "timeField": "@timestamp"
                                         }
@@ -906,15 +906,15 @@
                             },
                             "filters": [],
                             "query": {
-                                "esql": "from logs-corelight.dns-*\r\n| limit 10000\r\n| where observer.vendor == \"Corelight\" and event.dataset == \"dns\" and observer.hostname is not null and dns.response_code == \"NXDOMAIN\"\r\n| stats count() by source.ip, destination.ip, dns.question.name, dns.flags.rejected\r\n| rename source.ip as Source, destination.ip as Responder, dns.question.name as Query, dns.flags.rejected as query_rejected, `count()` as Count\r\n|eval `Rejected?` = case(query_rejected == true, \"Yes\", \"No\")\r\n| sort Count desc\r\n| keep Source, Responder, Query, `Rejected?`, Count"
+                                "esql": "from logs-corelight.dns-*\r\n| limit 10000\r\n| where observer.vendor == \"Corelight\" and event.dataset == \"dns\" and observer.hostname is not null and dns.response_code == \"NXDOMAIN\"\r\n| stats count() by source.ip, destination.ip, dns.question.name, dns.flags.rejected\r\n| rename source.ip as `Source IP`, destination.ip as `Destination IP`, dns.question.name as Query, dns.flags.rejected as query_rejected, `count()` as Count\r\n|eval `Rejected?` = case(query_rejected == true, \"Yes\", \"No\")\r\n| sort Count desc\r\n| keep `Source IP`, `Destination IP`, Query, `Rejected?`, Count"
                             },
                             "visualization": {
                                 "columns": [
                                     {
-                                        "columnId": "Source"
+                                        "columnId": "Source IP"
                                     },
                                     {
-                                        "columnId": "Responder"
+                                        "columnId": "Destination IP"
                                     },
                                     {
                                         "columnId": "Query"
@@ -926,11 +926,11 @@
                                         "columnId": "Count"
                                     }
                                 ],
-                                "layerId": "023b380c-de3d-46b1-8a33-78b5e61aeec1",
+                                "layerId": "1954c25a-d1bc-490f-a98e-11935de92ce7",
                                 "layerType": "data"
                             }
                         },
-                        "title": "Table Source \u0026 Responder \u0026 Query \u0026 Rejected? \u0026 Count",
+                        "title": "Table Source IP \u0026 Destination IP \u0026 Query \u0026 Rejected? \u0026 Count",
                         "type": "lens",
                         "visualizationType": "lnsDatatable"
                     },
@@ -1037,7 +1037,7 @@
                                                         "query": "\"source.ip\": *"
                                                     },
                                                     "isBucketed": false,
-                                                    "label": "Source",
+                                                    "label": "Source IP",
                                                     "operationType": "last_value",
                                                     "params": {
                                                         "sortField": "@timestamp"
@@ -1067,7 +1067,7 @@
                                                     "customLabel": true,
                                                     "dataType": "ip",
                                                     "isBucketed": true,
-                                                    "label": "Responder",
+                                                    "label": "Destination IP",
                                                     "operationType": "terms",
                                                     "params": {
                                                         "exclude": [],
@@ -1726,7 +1726,7 @@
                                                         "query": "\"source.ip\": *"
                                                     },
                                                     "isBucketed": false,
-                                                    "label": "Source",
+                                                    "label": "Source IP",
                                                     "operationType": "last_value",
                                                     "params": {
                                                         "sortField": "@timestamp"
@@ -1742,7 +1742,7 @@
                                                         "query": "\"destination.ip\": *"
                                                     },
                                                     "isBucketed": false,
-                                                    "label": "Responder",
+                                                    "label": "Destination IP",
                                                     "operationType": "last_value",
                                                     "params": {
                                                         "sortField": "@timestamp"
@@ -2043,7 +2043,7 @@
                                         }
                                     ],
                                     "layers": {
-                                        "edc2bdb5-61b7-42da-911c-40d192c3d539": {
+                                        "c0c77f56-7569-4747-b999-9c164462ef11": {
                                             "columns": [
                                                 {
                                                     "columnId": "Query",
@@ -2055,8 +2055,8 @@
                                                     }
                                                 },
                                                 {
-                                                    "columnId": "Responder",
-                                                    "fieldName": "Responder",
+                                                    "columnId": "Destination IP",
+                                                    "fieldName": "Destination IP",
                                                     "inMetricDimension": true,
                                                     "meta": {
                                                         "esType": "ip",
@@ -2075,7 +2075,7 @@
                                             ],
                                             "index": "2822558581c97b9590f6300cb704338209e089678c681675277821265127a97a",
                                             "query": {
-                                                "esql": "from logs-corelight.dns-*\r\n| limit 10000\r\n| where observer.vendor == \"Corelight\" and event.dataset == \"dns\" and observer.hostname is not null\r\n| stats avg_rtt = avg(dns.rtt) by dns.question.name,destination.ip\r\n| where avg_rtt \u003e 0.015\r\n| eval avg_rtt = to_string(round(avg_rtt*1000, 2))\r\n| rename dns.question.name as Query, destination.ip as Responder, avg_rtt as `Avg. Response Time (ms)`\r\n| keep Query,Responder,`Avg. Response Time (ms)`"
+                                                "esql": "from logs-corelight.dns-*\r\n| limit 10000\r\n| where observer.vendor == \"Corelight\" and event.dataset == \"dns\" and observer.hostname is not null\r\n| stats avg_rtt = avg(dns.rtt) by dns.question.name,destination.ip\r\n| where avg_rtt \u003e 0.015\r\n| eval avg_rtt = to_string(round(avg_rtt*1000, 2))\r\n| rename dns.question.name as Query, destination.ip as `Destination IP`, avg_rtt as `Avg. Response Time (ms)`\r\n| keep Query, `Destination IP`,`Avg. Response Time (ms)`"
                                             },
                                             "timeField": "@timestamp"
                                         }
@@ -2084,7 +2084,7 @@
                             },
                             "filters": [],
                             "query": {
-                                "esql": "from logs-corelight.dns-*\r\n| limit 10000\r\n| where observer.vendor == \"Corelight\" and event.dataset == \"dns\" and observer.hostname is not null\r\n| stats avg_rtt = avg(dns.rtt) by dns.question.name,destination.ip\r\n| where avg_rtt \u003e 0.015\r\n| eval avg_rtt = to_string(round(avg_rtt*1000, 2))\r\n| rename dns.question.name as Query, destination.ip as Responder, avg_rtt as `Avg. Response Time (ms)`\r\n| keep Query,Responder,`Avg. Response Time (ms)`"
+                                "esql": "from logs-corelight.dns-*\r\n| limit 10000\r\n| where observer.vendor == \"Corelight\" and event.dataset == \"dns\" and observer.hostname is not null\r\n| stats avg_rtt = avg(dns.rtt) by dns.question.name,destination.ip\r\n| where avg_rtt \u003e 0.015\r\n| eval avg_rtt = to_string(round(avg_rtt*1000, 2))\r\n| rename dns.question.name as Query, destination.ip as `Destination IP`, avg_rtt as `Avg. Response Time (ms)`\r\n| keep Query, `Destination IP`,`Avg. Response Time (ms)`"
                             },
                             "visualization": {
                                 "columns": [
@@ -2092,17 +2092,17 @@
                                         "columnId": "Query"
                                     },
                                     {
-                                        "columnId": "Responder"
+                                        "columnId": "Destination IP"
                                     },
                                     {
                                         "columnId": "Avg. Response Time (ms)"
                                     }
                                 ],
-                                "layerId": "edc2bdb5-61b7-42da-911c-40d192c3d539",
+                                "layerId": "c0c77f56-7569-4747-b999-9c164462ef11",
                                 "layerType": "data"
                             }
                         },
-                        "title": "Table Query \u0026 Responder \u0026 Avg. Response Time (ms)",
+                        "title": "Table Query \u0026 Destination IP \u0026 Avg. Response Time (ms)",
                         "type": "lens",
                         "visualizationType": "lnsDatatable"
                     },
@@ -2568,9 +2568,9 @@
         "version": 2
     },
     "coreMigrationVersion": "8.8.0",
-    "created_at": "2025-01-03T09:56:21.193Z",
+    "created_at": "2025-01-29T12:41:00.621Z",
     "id": "corelight-8546a96c-86c9-4edf-9d46-88338d6ac40e",
-    "managed": true,
+    "managed": false,
     "references": [
         {
             "id": "logs-*",
@@ -2619,5 +2619,6 @@
         }
     ],
     "type": "dashboard",
-    "typeMigrationVersion": "10.2.0"
+    "typeMigrationVersion": "10.2.0",
+    "updated_by": "u_mGBROF_q5bmFCATbLXAcCwKa0k8JvONAwSruelyKA5E_0"
 }
