@@ -16,6 +16,7 @@ processors:
   - set:
       copy_from: onedrive_usagestorage
       field: event.original
+      ignore_failure: true
       ignore_empty_value: true
       if: ctx.event?.original == null && (ctx.tags != null && (ctx.tags.contains('preserve_original_event')))
   - script:
@@ -40,16 +41,16 @@ processors:
       ignore_missing: true      
   - rename:
       field: o365.metrics.onedrive.usage.storage.storage_used_(byte)
-      target_field: o365.metrics.onedrive.usage.storage.used.bytes
+      target_field: o365.metrics.onedrive.usage.storage.used.byte
       ignore_missing: true
   - convert:
-      field: o365.metrics.onedrive.usage.storage.used.bytes
-      tag: convert_o365.metrics.onedrive.usage.storage.used.bytes
+      field: o365.metrics.onedrive.usage.storage.used.byte
+      tag: convert_o365.metrics.onedrive.usage.storage.used.byte
       type: long
-      if: ctx.o365?.metrics?.onedrive?.usage?.storage?.used?.bytes != null && ctx.o365?.metrics?.onedrive?.usage?.storage?.used?.bytes != ''
+      if: ctx.o365?.metrics?.onedrive?.usage?.storage?.used?.byte != null && ctx.o365?.metrics?.onedrive?.usage?.storage?.used?.byte != ''
       on_failure:
         - remove:
-            field: o365.metrics.onedrive.usage.storage.used.bytes
+            field: o365.metrics.onedrive.usage.storage.used.byte
         - append:
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'

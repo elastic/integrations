@@ -883,7 +883,7 @@ An example event for `onedrive_usage_storage` looks as following:
                             "refresh_date": "2024-12-22"
                         },
                         "used": {
-                            "bytes": 91659303
+                            "byte": 91659303
                         }
                     }
                 }
@@ -903,20 +903,20 @@ Please refer to the following [document](https://www.elastic.co/guide/en/ecs/cur
 
 **Exported fields**
 
-| Field | Description | Type |
-|---|---|---|
-| @timestamp | Event timestamp. | date |
-| cloud.image.id | Image ID for the cloud instance. | keyword |
-| data_stream.dataset | Data stream dataset. | constant_keyword |
-| data_stream.namespace | Data stream namespace. | constant_keyword |
-| data_stream.type | Data stream type. | constant_keyword |
-| host.containerized | If the host is a container. | boolean |
-| host.os.build | OS build information. | keyword |
-| host.os.codename | OS codename, if any. | keyword |
-| o365.metrics.onedrive.usage.storage.report.date | The date the report was generated. | date |
-| o365.metrics.onedrive.usage.storage.report.period | The duration of the reporting period, in days. | integer |
-| o365.metrics.onedrive.usage.storage.report.refresh_date | The date when the data in the report was last refreshed. | date |
-| o365.metrics.onedrive.usage.storage.used.bytes | The total storage used across OneDrive accounts during the reporting period, in bytes. | long |
+| Field | Description | Type | Unit |
+|---|---|---|---|
+| @timestamp | Event timestamp. | date |  |
+| cloud.image.id | Image ID for the cloud instance. | keyword |  |
+| data_stream.dataset | Data stream dataset. | constant_keyword |  |
+| data_stream.namespace | Data stream namespace. | constant_keyword |  |
+| data_stream.type | Data stream type. | constant_keyword |  |
+| host.containerized | If the host is a container. | boolean |  |
+| host.os.build | OS build information. | keyword |  |
+| host.os.codename | OS codename, if any. | keyword |  |
+| o365.metrics.onedrive.usage.storage.report.date | The date the report was generated. | date |  |
+| o365.metrics.onedrive.usage.storage.report.period | The duration of the reporting period, in days. | integer |  |
+| o365.metrics.onedrive.usage.storage.report.refresh_date | The date when the data in the report was last refreshed. | date |  |
+| o365.metrics.onedrive.usage.storage.used.byte | The total storage used across OneDrive accounts during the reporting period, in bytes. | long | byte |
 
 
 ### Outlook Activity
@@ -1167,13 +1167,13 @@ An example event for `sharepoint_site_usage_detail` looks as following:
                 "usage": {
                     "detail": {
                         "active_file": {
-                            "count": "0"
+                            "count": "16"
                         },
                         "file": {
-                            "count": "0"
+                            "count": "14"
                         },
                         "page_view": {
-                            "count": "0"
+                            "count": "12"
                         },
                         "report": {
                             "period": "7",
@@ -1186,7 +1186,7 @@ An example event for `sharepoint_site_usage_detail` looks as following:
                             "byte": "1586077"
                         },
                         "visited_page": {
-                            "count": "0"
+                            "count": "13"
                         }
                     }
                 }
@@ -1238,10 +1238,12 @@ An example event for `sharepoint_site_usage_detail` looks as following:
     "event": {
         "agent_id_status": "verified",
         "ingested": "2024-12-26T23:18:52Z",
-        "dataset": "o365_metrics.sharepoint_site_usage_detail"
+        "dataset": "o365_metrics.sharepoint_site_usage_detail",
+        "original": "{\"IsDeleted\":\"False\",\"SiteId\":\"00000000-0000-0000-0000-000000000000\",\"FileCount\":\"14\",\"StorageAllocated(Byte)\":\"27487790694400\",\"ReportRefreshDate\":\"2024-12-22\",\"ReportPeriod\":\"7\",\"ActiveFileCount\":\"16\",\"OwnerPrincipalName\":\"\",\"VisitedPageCount\":\"14\",\"OwnerDisplayName\":\"82D28824CBDAF3EA9AD693254DE8CC08\",\"SiteURL\":\"\",\"StorageUsedByte\":\"1586077\",\"RootWebTemplate\":\"Team Site\",\"LastActivityDate\":\"\",\"PageViewCount\":\"12\"}"
     },
     "tags": [
-        "o365.metrics.sharepoint_site_usage_detail"
+        "o365.metrics.sharepoint_site_usage_detail",
+        "preserve_original_event"
     ]
 }
 ```
@@ -1252,24 +1254,24 @@ Please refer to the following [document](https://www.elastic.co/guide/en/ecs/cur
 
 **Exported fields**
 
-| Field | Description | Type |
-|---|---|---|
-| @timestamp | Event timestamp. | date |
-| cloud.image.id | Image ID for the cloud instance. | keyword |
-| data_stream.dataset | Data stream dataset. | constant_keyword |
-| data_stream.namespace | Data stream namespace. | constant_keyword |
-| data_stream.type | Data stream type. | constant_keyword |
-| host.containerized | If the host is a container. | boolean |
-| host.os.build | OS build information. | keyword |
-| host.os.codename | OS codename, if any. | keyword |
-| o365metrics.sharepoint.site.usage.detail.active_file.count | The number of active files in the SharePoint site during the reporting period. | integer |
-| o365metrics.sharepoint.site.usage.detail.file.count | The total number of files in the SharePoint site. | integer |
-| o365metrics.sharepoint.site.usage.detail.page_view.count | The number of page views in the SharePoint site during the reporting period. | integer |
-| o365metrics.sharepoint.site.usage.detail.report.period | The duration of the reporting period for SharePoint site usage, in days. | integer |
-| o365metrics.sharepoint.site.usage.detail.report.refresh_date | The date when the SharePoint site usage data was last refreshed. | date |
-| o365metrics.sharepoint.site.usage.detail.storage_allocated.byte | The amount of storage allocated to the SharePoint site, in bytes. | integer |
-| o365metrics.sharepoint.site.usage.detail.storage_used.byte | The amount of storage used in the SharePoint site, in bytes. | integer |
-| o365metrics.sharepoint.site.usage.detail.visited_page.count | The number of visited pages in the SharePoint site during the reporting period. | integer |
+| Field | Description | Type | Unit |
+|---|---|---|---|
+| @timestamp | Event timestamp. | date |  |
+| cloud.image.id | Image ID for the cloud instance. | keyword |  |
+| data_stream.dataset | Data stream dataset. | constant_keyword |  |
+| data_stream.namespace | Data stream namespace. | constant_keyword |  |
+| data_stream.type | Data stream type. | constant_keyword |  |
+| host.containerized | If the host is a container. | boolean |  |
+| host.os.build | OS build information. | keyword |  |
+| host.os.codename | OS codename, if any. | keyword |  |
+| o365.metrics.sharepoint.site.usage.detail.active_file.count | The number of active files in the SharePoint site during the reporting period. | long |  |
+| o365.metrics.sharepoint.site.usage.detail.file.count | The total number of files in the SharePoint site. | long |  |
+| o365.metrics.sharepoint.site.usage.detail.page_view.count | The number of page views in the SharePoint site during the reporting period. | long |  |
+| o365.metrics.sharepoint.site.usage.detail.report.period | The duration of the reporting period for SharePoint site usage, in days. | integer |  |
+| o365.metrics.sharepoint.site.usage.detail.report.refresh_date | The date when the SharePoint site usage data was last refreshed. | date |  |
+| o365.metrics.sharepoint.site.usage.detail.storage_allocated.byte | The amount of storage allocated to the SharePoint site, in bytes. | long | byte |
+| o365.metrics.sharepoint.site.usage.detail.storage_used.byte | The amount of storage used in the SharePoint site, in bytes. | long | byte |
+| o365.metrics.sharepoint.site.usage.detail.visited_page.count | The number of visited pages in the SharePoint site during the reporting period. | long |  |
 
 
 ### SharePoint Site Usage Storage
@@ -1341,10 +1343,12 @@ An example event for `sharepoint_site_usage_storage` looks as following:
     "event": {
         "agent_id_status": "verified",
         "ingested": "2024-12-26T23:18:52Z",
-        "dataset": "o365_metrics.sharepoint_site_usage_storage"
+        "dataset": "o365_metrics.sharepoint_site_usage_storage",
+        "original": "{\"Report Date\":\"2024-11-23\",\"Report Period\":\"7\",\"Site Type\":\"All\",\"Storage Used (Byte)\":\"1933176386\",\"Report Refresh Date\":\"2024-11-29\"}"
     },
     "tags": [
-        "o365.metrics.sharepoint_site_usage_storage"
+        "o365.metrics.sharepoint_site_usage_storage",
+        "preserve_original_event"
     ]
 }
 ```
@@ -1355,20 +1359,20 @@ Please refer to the following [document](https://www.elastic.co/guide/en/ecs/cur
 
 **Exported fields**
 
-| Field | Description | Type |
-|---|---|---|
-| @timestamp | Event timestamp. | date |
-| cloud.image.id | Image ID for the cloud instance. | keyword |
-| data_stream.dataset | Data stream dataset. | constant_keyword |
-| data_stream.namespace | Data stream namespace. | constant_keyword |
-| data_stream.type | Data stream type. | constant_keyword |
-| host.containerized | If the host is a container. | boolean |
-| host.os.build | OS build information. | keyword |
-| host.os.codename | OS codename, if any. | keyword |
-| o365metrics.sharepoint.site.usage.storage.report.date | The date the SharePoint site storage usage report was generated. | date |
-| o365metrics.sharepoint.site.usage.storage.report.period | The duration of the reporting period for SharePoint site storage usage, in days. | integer |
-| o365metrics.sharepoint.site.usage.storage.report.refresh_date | The date when the SharePoint site storage usage data was last refreshed. | date |
-| o365metrics.sharepoint.site.usage.storage.storage_used.byte | The total storage used across SharePoint sites during the reporting period, in bytes. | integer |
+| Field | Description | Type | Unit |
+|---|---|---|---|
+| @timestamp | Event timestamp. | date |  |
+| cloud.image.id | Image ID for the cloud instance. | keyword |  |
+| data_stream.dataset | Data stream dataset. | constant_keyword |  |
+| data_stream.namespace | Data stream namespace. | constant_keyword |  |
+| data_stream.type | Data stream type. | constant_keyword |  |
+| host.containerized | If the host is a container. | boolean |  |
+| host.os.build | OS build information. | keyword |  |
+| host.os.codename | OS codename, if any. | keyword |  |
+| o365.metrics.sharepoint.site.usage.storage.report.date | The date the SharePoint site storage usage report was generated. | date |  |
+| o365.metrics.sharepoint.site.usage.storage.report.period | The duration of the reporting period for SharePoint site storage usage, in days. | integer |  |
+| o365.metrics.sharepoint.site.usage.storage.report.refresh_date | The date when the SharePoint site storage usage data was last refreshed. | date |  |
+| o365.metrics.sharepoint.site.usage.storage.storage_used.byte | The total storage used across SharePoint sites during the reporting period, in bytes. | long | byte |
 
 
 ### Teams User Activity User Counts
