@@ -222,30 +222,30 @@ Please refer to the following [document](https://www.elastic.co/guide/en/ecs/cur
 
 **Exported fields**
 
-| Field | Description | Type |
-|---|---|---|
-| @timestamp | Event timestamp. | date |
-| cloud.image.id | Image ID for the cloud instance. | keyword |
-| data_stream.dataset | Data stream dataset. | constant_keyword |
-| data_stream.namespace | Data stream namespace. | constant_keyword |
-| data_stream.type | Data stream type. | constant_keyword |
-| host.containerized | If the host is a container. | boolean |
-| host.os.build | OS build information. | keyword |
-| host.os.codename | OS codename, if any. | keyword |
-| o365.metrics.active.users.exchange.active.count | Number of Exchange active users. | integer |
-| o365.metrics.active.users.exchange.inactive.count | Number of Exchange inactive users. | integer |
-| o365.metrics.active.users.office365.active.count | Number of Office 365 active users. | integer |
-| o365.metrics.active.users.office365.inactive.count | Number of Office 365 inactive users. | integer |
-| o365.metrics.active.users.onedrive.active.count | Number of OneDrive active users. | integer |
-| o365.metrics.active.users.onedrive.inactive.count | Number of OneDrive inactive users. | integer |
-| o365.metrics.active.users.report.period.day | Report period in days. | integer |
-| o365.metrics.active.users.report.refresh_date | Date when the report was refreshed. | date |
-| o365.metrics.active.users.sharepoint.active.count | Number of SharePoint active users. | integer |
-| o365.metrics.active.users.sharepoint.inactive.count | Number of SharePoint inactive users. | integer |
-| o365.metrics.active.users.teams.active.count | Number of Teams active users. | integer |
-| o365.metrics.active.users.teams.inactive.count | Number of Teams inactive users. | integer |
-| o365.metrics.active.users.yammer.active.count | Number of Yammer active users. | integer |
-| o365.metrics.active.users.yammer.inactive.count | Number of Yammer inactive users. | integer |
+| Field | Description | Type | Unit |
+|---|---|---|---|
+| @timestamp | Event timestamp. | date |  |
+| cloud.image.id | Image ID for the cloud instance. | keyword |  |
+| data_stream.dataset | Data stream dataset. | constant_keyword |  |
+| data_stream.namespace | Data stream namespace. | constant_keyword |  |
+| data_stream.type | Data stream type. | constant_keyword |  |
+| host.containerized | If the host is a container. | boolean |  |
+| host.os.build | OS build information. | keyword |  |
+| host.os.codename | OS codename, if any. | keyword |  |
+| o365.metrics.active.users.exchange.active.count | Number of Exchange active users. | integer |  |
+| o365.metrics.active.users.exchange.inactive.count | Number of Exchange inactive users. | integer |  |
+| o365.metrics.active.users.office365.active.count | Number of Office 365 active users. | integer |  |
+| o365.metrics.active.users.office365.inactive.count | Number of Office 365 inactive users. | integer |  |
+| o365.metrics.active.users.onedrive.active.count | Number of OneDrive active users. | integer |  |
+| o365.metrics.active.users.onedrive.inactive.count | Number of OneDrive inactive users. | integer |  |
+| o365.metrics.active.users.report.period.day | The reporting period over which the data is aggregated (in days). | integer | d |
+| o365.metrics.active.users.report.refresh_date | The date when the report data was last updated. | date |  |
+| o365.metrics.active.users.sharepoint.active.count | Number of SharePoint active users. | integer |  |
+| o365.metrics.active.users.sharepoint.inactive.count | Number of SharePoint inactive users. | integer |  |
+| o365.metrics.active.users.teams.active.count | Number of Teams active users. | integer |  |
+| o365.metrics.active.users.teams.inactive.count | Number of Teams inactive users. | integer |  |
+| o365.metrics.active.users.yammer.active.count | Number of Yammer active users. | integer |  |
+| o365.metrics.active.users.yammer.inactive.count | Number of Yammer inactive users. | integer |  |
 
 
 ### Mailbox Usage Quota Status
@@ -796,7 +796,9 @@ An example event for `onedrive_usage_account_counts` looks as following:
                             },
                             "report": {
                                 "date": "2024-11-23",
-                                "period": "7",
+                                "period": {
+                                    "day": "1"
+                                },
                                 "refresh_date": "2024-11-29"
                             },
                             "total": {
@@ -821,21 +823,21 @@ Please refer to the following [document](https://www.elastic.co/guide/en/ecs/cur
 
 **Exported fields**
 
-| Field | Description | Type |
-|---|---|---|
-| @timestamp | Event timestamp. | date |
-| cloud.image.id | Image ID for the cloud instance. | keyword |
-| data_stream.dataset | Data stream dataset. | constant_keyword |
-| data_stream.namespace | Data stream namespace. | constant_keyword |
-| data_stream.type | Data stream type. | constant_keyword |
-| host.containerized | If the host is a container. | boolean |
-| host.os.build | OS build information. | keyword |
-| host.os.codename | OS codename, if any. | keyword |
-| o365.metrics.onedrive.usage.account.counts.active.count | The number of OneDrive accounts that were active during the reporting period. | long |
-| o365.metrics.onedrive.usage.account.counts.report.date | The date the report was generated. | date |
-| o365.metrics.onedrive.usage.account.counts.report.period | The duration of the reporting period, in days. | integer |
-| o365.metrics.onedrive.usage.account.counts.report.refresh_date | The date when the data in the report was last refreshed. | date |
-| o365.metrics.onedrive.usage.account.counts.total.count | The total number of OneDrive accounts evaluated in the report. | long |
+| Field | Description | Type | Unit |
+|---|---|---|---|
+| @timestamp | Event timestamp. | date |  |
+| cloud.image.id | Image ID for the cloud instance. | keyword |  |
+| data_stream.dataset | Data stream dataset. | constant_keyword |  |
+| data_stream.namespace | Data stream namespace. | constant_keyword |  |
+| data_stream.type | Data stream type. | constant_keyword |  |
+| host.containerized | If the host is a container. | boolean |  |
+| host.os.build | OS build information. | keyword |  |
+| host.os.codename | OS codename, if any. | keyword |  |
+| o365.metrics.onedrive.usage.account.counts.active.count | The number of OneDrive accounts that were active during the reporting period. | long |  |
+| o365.metrics.onedrive.usage.account.counts.report.date | The date the report was generated. | date |  |
+| o365.metrics.onedrive.usage.account.counts.report.period.day | The reporting period over which the data is aggregated (in days). | integer | d |
+| o365.metrics.onedrive.usage.account.counts.report.refresh_date | The date when the report data was last updated. | date |  |
+| o365.metrics.onedrive.usage.account.counts.total.count | The total number of OneDrive accounts evaluated in the report. | long |  |
 
 
 ### OneDrive Usage File Counts
@@ -904,7 +906,9 @@ An example event for `onedrive_usage_file_counts` looks as following:
                             },
                             "report": {
                                 "date": "2024-11-23",
-                                "period": "7",
+                                "period": {
+                                    "day": "7"
+                                },
                                 "refresh_date": "2024-11-29"
                             },
                             "total": {
@@ -929,21 +933,21 @@ Please refer to the following [document](https://www.elastic.co/guide/en/ecs/cur
 
 **Exported fields**
 
-| Field | Description | Type |
-|---|---|---|
-| @timestamp | Event timestamp. | date |
-| cloud.image.id | Image ID for the cloud instance. | keyword |
-| data_stream.dataset | Data stream dataset. | constant_keyword |
-| data_stream.namespace | Data stream namespace. | constant_keyword |
-| data_stream.type | Data stream type. | constant_keyword |
-| host.containerized | If the host is a container. | boolean |
-| host.os.build | OS build information. | keyword |
-| host.os.codename | OS codename, if any. | keyword |
-| o365.metrics.onedrive.usage.file.counts.active.count | The number of OneDrive accounts with active file usage during the reporting period. | long |
-| o365.metrics.onedrive.usage.file.counts.report.date | The date the report was generated. | date |
-| o365.metrics.onedrive.usage.file.counts.report.period | The duration of the reporting period, in days. | integer |
-| o365.metrics.onedrive.usage.file.counts.report.refresh_date | The date when the data in the report was last refreshed. | date |
-| o365.metrics.onedrive.usage.file.counts.total.count | The total number of OneDrive accounts evaluated in the report. | long |
+| Field | Description | Type | Unit |
+|---|---|---|---|
+| @timestamp | Event timestamp. | date |  |
+| cloud.image.id | Image ID for the cloud instance. | keyword |  |
+| data_stream.dataset | Data stream dataset. | constant_keyword |  |
+| data_stream.namespace | Data stream namespace. | constant_keyword |  |
+| data_stream.type | Data stream type. | constant_keyword |  |
+| host.containerized | If the host is a container. | boolean |  |
+| host.os.build | OS build information. | keyword |  |
+| host.os.codename | OS codename, if any. | keyword |  |
+| o365.metrics.onedrive.usage.file.counts.active.count | The number of OneDrive accounts with active file usage during the reporting period. | long |  |
+| o365.metrics.onedrive.usage.file.counts.report.date | The date the report was generated. | date |  |
+| o365.metrics.onedrive.usage.file.counts.report.period.day | The reporting period over which the data is aggregated (in days). | integer | d |
+| o365.metrics.onedrive.usage.file.counts.report.refresh_date | The date when the report data was last updated. | date |  |
+| o365.metrics.onedrive.usage.file.counts.total.count | The total number of OneDrive accounts evaluated in the report. | long |  |
 
 
 ### OneDrive Usage Storage
@@ -1008,7 +1012,9 @@ An example event for `onedrive_usage_storage` looks as following:
                     "storage": {
                         "report": {
                             "date": "2024-12-16",
-                            "period": "7",
+                            "period": {
+                                "day": "7"
+                            },
                             "refresh_date": "2024-12-22"
                         },
                         "used": {
@@ -1043,8 +1049,8 @@ Please refer to the following [document](https://www.elastic.co/guide/en/ecs/cur
 | host.os.build | OS build information. | keyword |  |
 | host.os.codename | OS codename, if any. | keyword |  |
 | o365.metrics.onedrive.usage.storage.report.date | The date the report was generated. | date |  |
-| o365.metrics.onedrive.usage.storage.report.period | The duration of the reporting period, in days. | integer |  |
-| o365.metrics.onedrive.usage.storage.report.refresh_date | The date when the data in the report was last refreshed. | date |  |
+| o365.metrics.onedrive.usage.storage.report.period.day | The reporting period over which the data is aggregated (in days). | integer | d |
+| o365.metrics.onedrive.usage.storage.report.refresh_date | The date when the report data was last updated. | date |  |
 | o365.metrics.onedrive.usage.storage.used.byte | The total storage used across OneDrive accounts during the reporting period, in bytes. | long | byte |
 
 
@@ -1414,8 +1420,8 @@ Please refer to the following [document](https://www.elastic.co/guide/en/ecs/cur
 | o365.metrics.sharepoint.site.usage.detail.owner_display_name | The display name of the SharePoint site owner. | keyword |  |
 | o365.metrics.sharepoint.site.usage.detail.owner_principal_name | The principal name of the SharePoint site owner. | keyword |  |
 | o365.metrics.sharepoint.site.usage.detail.page_view.count | The number of page views in the SharePoint site during the reporting period. | long |  |
-| o365.metrics.sharepoint.site.usage.detail.report.period | The duration of the reporting period for SharePoint site usage, in days. | integer |  |
-| o365.metrics.sharepoint.site.usage.detail.report.refresh_date | The date when the SharePoint site usage data was last refreshed. | date |  |
+| o365.metrics.sharepoint.site.usage.detail.report.period.day | The reporting period over which the data is aggregated (in days). | integer | d |
+| o365.metrics.sharepoint.site.usage.detail.report.refresh_date | The date when the report data was last updated. | date |  |
 | o365.metrics.sharepoint.site.usage.detail.root_web_template | The template used for the root web of the SharePoint site. | keyword |  |
 | o365.metrics.sharepoint.site.usage.detail.site_id | The unique identifier of the SharePoint site. | keyword |  |
 | o365.metrics.sharepoint.site.usage.detail.site_url | The URL of the SharePoint site. | keyword |  |
@@ -1438,7 +1444,9 @@ An example event for `sharepoint_site_usage_storage` looks as following:
                         "storage": {
                             "report": {
                                 "date": "2024-11-23",
-                                "period": "7",
+                                "period": {
+                                    "day": "7"
+                                },
                                 "refresh_date": "2024-11-29"
                             },
                             "storage_used": {
@@ -1521,9 +1529,9 @@ Please refer to the following [document](https://www.elastic.co/guide/en/ecs/cur
 | host.containerized | If the host is a container. | boolean |  |
 | host.os.build | OS build information. | keyword |  |
 | host.os.codename | OS codename, if any. | keyword |  |
-| o365.metrics.sharepoint.site.usage.storage.report.date | The date the SharePoint site storage usage report was generated. | date |  |
-| o365.metrics.sharepoint.site.usage.storage.report.period | The duration of the reporting period for SharePoint site storage usage, in days. | integer |  |
-| o365.metrics.sharepoint.site.usage.storage.report.refresh_date | The date when the SharePoint site storage usage data was last refreshed. | date |  |
+| o365.metrics.sharepoint.site.usage.storage.report.date | The date the report was generated. | date |  |
+| o365.metrics.sharepoint.site.usage.storage.report.period.day | The reporting period over which the data is aggregated (in days). | integer | d |
+| o365.metrics.sharepoint.site.usage.storage.report.refresh_date | The date when the report data was last updated. | date |  |
 | o365.metrics.sharepoint.site.usage.storage.storage_used.byte | The total storage used across SharePoint sites during the reporting period, in bytes. | long | byte |
 
 
