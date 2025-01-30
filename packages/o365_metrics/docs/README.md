@@ -1429,18 +1429,20 @@ An example event for `sharepoint_site_usage_storage` looks as following:
 
 ```json
 {
-    "o365metrics": {
-        "sharepoint": {
-            "site": {
-                "usage": {
-                    "storage": {
-                        "report": {
-                            "date": "2024-12-25",
-                            "period": "7",
-                            "refresh_date": "2024-12-25"
-                        },
-                        "storage_used": {
-                            "byte": "1942032506"
+    "o365": {
+        "metrics": {
+            "sharepoint": {
+                "site": {
+                    "usage": {
+                        "storage": {
+                            "report": {
+                                "date": "2024-11-23",
+                                "period": "7",
+                                "refresh_date": "2024-11-29"
+                            },
+                            "storage_used": {
+                                "byte": 1933176386
+                            }
                         }
                     }
                 }
