@@ -12,13 +12,16 @@
             "panelsJSON": {
                 "66498ddb-96f8-4b37-8110-1e36cb11e63e": {
                     "explicitInput": {
-                        "enhancements": {},
+                        "dataViewId": "metrics-*",
                         "fieldName": "cloud.account.name",
-                        "grow": false,
                         "id": "66498ddb-96f8-4b37-8110-1e36cb11e63e",
                         "searchTechnique": "prefix",
-                        "title": "AWS Account Name",
-                        "width": "medium"
+                        "selectedOptions": [],
+                        "sort": {
+                            "by": "_count",
+                            "direction": "desc"
+                        },
+                        "title": "AWS Account Name"
                     },
                     "grow": false,
                     "order": 0,
@@ -27,20 +30,24 @@
                 },
                 "c888adfa-9c35-49a5-9c0e-35c280d9bc4c": {
                     "explicitInput": {
-                        "enhancements": {},
+                        "dataViewId": "metrics-*",
                         "fieldName": "cloud.region",
-                        "grow": false,
                         "id": "c888adfa-9c35-49a5-9c0e-35c280d9bc4c",
                         "searchTechnique": "prefix",
-                        "title": "AWS Region",
-                        "width": "medium"
+                        "selectedOptions": [],
+                        "sort": {
+                            "by": "_count",
+                            "direction": "desc"
+                        },
+                        "title": "AWS Region"
                     },
                     "grow": false,
                     "order": 1,
                     "type": "optionsListControl",
                     "width": "medium"
                 }
-            }
+            },
+            "showApplySelections": false
         },
         "description": "Amazon Bedrock overview dashboard",
         "kibanaSavedObjectMeta": {
@@ -98,7 +105,56 @@
         "panelsJSON": [
             {
                 "embeddableConfig": {
+                    "attributes": {
+                        "layout": "horizontal",
+                        "links": [
+                            {
+                                "destinationRefName": "link_00e16c8b-3dee-40f9-946e-893337622b00_dashboard",
+                                "id": "00e16c8b-3dee-40f9-946e-893337622b00",
+                                "label": "Amazon Bedrock Overview",
+                                "options": {
+                                    "openInNewTab": false,
+                                    "useCurrentDateRange": true,
+                                    "useCurrentFilters": false
+                                },
+                                "order": 0,
+                                "type": "dashboardLink"
+                            },
+                            {
+                                "destinationRefName": "link_983ccba7-513b-4b83-8d15-ec8115ea9500_dashboard",
+                                "id": "983ccba7-513b-4b83-8d15-ec8115ea9500",
+                                "label": "Amazon Bedrock Guardrails",
+                                "options": {
+                                    "openInNewTab": false,
+                                    "useCurrentDateRange": true,
+                                    "useCurrentFilters": false
+                                },
+                                "order": 1,
+                                "type": "dashboardLink"
+                            }
+                        ]
+                    },
                     "enhancements": {},
+                    "hidePanelTitles": true
+                },
+                "gridData": {
+                    "h": 3,
+                    "i": "a032aba8-cb49-443c-a985-5973689ba62a",
+                    "w": 48,
+                    "x": 0,
+                    "y": 0
+                },
+                "panelIndex": "a032aba8-cb49-443c-a985-5973689ba62a",
+                "title": "Related Dashboards",
+                "type": "links"
+            },
+            {
+                "embeddableConfig": {
+                    "enhancements": {
+                        "dynamicActions": {
+                            "events": []
+                        }
+                    },
                     "hidePanelTitles": true,
                     "savedVis": {
                         "data": {
@@ -115,7 +171,7 @@
                         "id": "",
                         "params": {
                             "fontSize": 10,
-                            "markdown": "# Amazon Bedrock\n\n\nPrimary metrics and logs from Amazon Bedrock service. This dashboard contains:\n\n- Request rates\n- Error rates\n- Token usage\n- Latency information\n- LLM prompt, input and response",
+                            "markdown": "# Amazon Bedrock\n\n\nPrimary metrics and logs from Amazon Bedrock service. This dashboard contains:\n\n- Invocation rates\n- Error rates\n- Token usage\n- Latency information\n- LLM prompt, input and response",
                             "openLinksInNewTab": false
                         },
                         "title": "",
@@ -124,11 +180,11 @@
                     }
                 },
                 "gridData": {
-                    "h": 9,
+                    "h": 12,
                     "i": "65d17dfa-754c-4cb1-990d-2933e6fc3cd3",
-                    "w": 15,
+                    "w": 14,
                     "x": 0,
-                    "y": 0
+                    "y": 3
                 },
                 "panelIndex": "65d17dfa-754c-4cb1-990d-2933e6fc3cd3",
                 "title": "Amazon Bedrock",
@@ -163,10 +219,17 @@
                                                         "query": "aws_bedrock.runtime.model_id : * "
                                                     },
                                                     "isBucketed": false,
-                                                    "label": "Total Invocations",
+                                                    "label": "Total invocations",
                                                     "operationType": "sum",
                                                     "params": {
-                                                        "emptyAsNull": true
+                                                        "emptyAsNull": true,
+                                                        "format": {
+                                                            "id": "number",
+                                                            "params": {
+                                                                "compact": true,
+                                                                "decimals": 0
+                                                            }
+                                                        }
                                                     },
                                                     "scale": "ratio",
                                                     "sourceField": "aws_bedrock.runtime.invocations"
@@ -193,6 +256,7 @@
                                 "query": ""
                             },
                             "visualization": {
+                                "color": "#B9A888",
                                 "layerId": "2d90b8dd-3df3-44fd-9663-b25a6846fbe6",
                                 "layerType": "data",
                                 "metricAccessor": "9170c5a9-b76c-43db-82c9-6c77ccf1cbf3"
@@ -202,15 +266,16 @@
                         "type": "lens",
                         "visualizationType": "lnsMetric"
                     },
+                    "description": "The number of requests to the Converse, ConverseStream, InvokeModel, and InvokeModelWithResponseStream API operations.",
                     "enhancements": {},
                     "hidePanelTitles": true
                 },
                 "gridData": {
-                    "h": 9,
+                    "h": 6,
                     "i": "e60d4cb7-a41f-4607-be08-6fe1437abfbd",
-                    "w": 6,
-                    "x": 15,
-                    "y": 0
+                    "w": 5,
+                    "x": 14,
+                    "y": 3
                 },
                 "panelIndex": "e60d4cb7-a41f-4607-be08-6fe1437abfbd",
                 "title": "",
@@ -251,6 +316,13 @@
                                                     "label": "Total tokens",
                                                     "operationType": "formula",
                                                     "params": {
+                                                        "format": {
+                                                            "id": "number",
+                                                            "params": {
+                                                                "compact": true,
+                                                                "decimals": 0
+                                                            }
+                                                        },
                                                         "formula": "sum(aws_bedrock.runtime.input_token_count) + sum(aws_bedrock.runtime.output_token_count)",
                                                         "isFormulaBroken": false
                                                     },
@@ -340,6 +412,7 @@
                                 "query": ""
                             },
                             "visualization": {
+                                "color": "#CA8EAE",
                                 "layerId": "2d90b8dd-3df3-44fd-9663-b25a6846fbe6",
                                 "layerType": "data",
                                 "metricAccessor": "9170c5a9-b76c-43db-82c9-6c77ccf1cbf3"
@@ -349,18 +422,155 @@
                         "type": "lens",
                         "visualizationType": "lnsMetric"
                     },
+                    "description": "The total number of input and output tokens.",
                     "enhancements": {},
                     "hidePanelTitles": true
                 },
                 "gridData": {
-                    "h": 9,
+                    "h": 6,
                     "i": "0859e03b-1edc-4d5b-8067-4c0e28997201",
-                    "w": 6,
-                    "x": 21,
-                    "y": 0
+                    "w": 5,
+                    "x": 19,
+                    "y": 3
                 },
                 "panelIndex": "0859e03b-1edc-4d5b-8067-4c0e28997201",
                 "title": "",
+                "type": "lens"
+            },
+            {
+                "embeddableConfig": {
+                    "attributes": {
+                        "references": [
+                            {
+                                "id": "metrics-*",
+                                "name": "indexpattern-datasource-layer-94286ada-c213-4185-8d61-6285ea6d56c0",
+                                "type": "index-pattern"
+                            }
+                        ],
+                        "state": {
+                            "adHocDataViews": {},
+                            "datasourceStates": {
+                                "formBased": {
+                                    "layers": {
+                                        "94286ada-c213-4185-8d61-6285ea6d56c0": {
+                                            "columnOrder": [
+                                                "a115bc75-d25a-4092-a8bc-c877d036116f",
+                                                "d568367b-f431-4305-b905-dfcd9c1db633"
+                                            ],
+                                            "columns": {
+                                                "a115bc75-d25a-4092-a8bc-c877d036116f": {
+                                                    "dataType": "string",
+                                                    "isBucketed": true,
+                                                    "label": "Top 10 values of aws_bedrock.runtime.model_id",
+                                                    "operationType": "terms",
+                                                    "params": {
+                                                        "exclude": [],
+                                                        "excludeIsRegex": false,
+                                                        "include": [],
+                                                        "includeIsRegex": false,
+                                                        "missingBucket": false,
+                                                        "orderBy": {
+                                                            "columnId": "d568367b-f431-4305-b905-dfcd9c1db633",
+                                                            "type": "column"
+                                                        },
+                                                        "orderDirection": "desc",
+                                                        "otherBucket": true,
+                                                        "parentFormat": {
+                                                            "id": "terms"
+                                                        },
+                                                        "size": 10
+                                                    },
+                                                    "scale": "ordinal",
+                                                    "sourceField": "aws_bedrock.runtime.model_id"
+                                                },
+                                                "d568367b-f431-4305-b905-dfcd9c1db633": {
+                                                    "dataType": "number",
+                                                    "isBucketed": false,
+                                                    "label": "Median of aws_bedrock.runtime.invocations",
+                                                    "operationType": "median",
+                                                    "params": {
+                                                        "emptyAsNull": true
+                                                    },
+                                                    "scale": "ratio",
+                                                    "sourceField": "aws_bedrock.runtime.invocations"
+                                                }
+                                            },
+                                            "ignoreGlobalFilters": false,
+                                            "incompleteColumns": {},
+                                            "sampling": 1
+                                        }
+                                    }
+                                },
+                                "indexpattern": {
+                                    "layers": {}
+                                },
+                                "textBased": {
+                                    "layers": {}
+                                }
+                            },
+                            "filters": [],
+                            "internalReferences": [],
+                            "query": {
+                                "language": "kuery",
+                                "query": ""
+                            },
+                            "visualization": {
+                                "layers": [
+                                    {
+                                        "allowMultipleMetrics": false,
+                                        "categoryDisplay": "default",
+                                        "colorMapping": {
+                                            "assignments": [],
+                                            "colorMode": {
+                                                "type": "categorical"
+                                            },
+                                            "paletteId": "eui_amsterdam_color_blind",
+                                            "specialAssignments": [
+                                                {
+                                                    "color": {
+                                                        "type": "loop"
+                                                    },
+                                                    "rule": {
+                                                        "type": "other"
+                                                    },
+                                                    "touched": false
+                                                }
+                                            ]
+                                        },
+                                        "emptySizeRatio": 0.3,
+                                        "layerId": "94286ada-c213-4185-8d61-6285ea6d56c0",
+                                        "layerType": "data",
+                                        "legendDisplay": "default",
+                                        "metrics": [
+                                            "d568367b-f431-4305-b905-dfcd9c1db633"
+                                        ],
+                                        "nestedLegend": false,
+                                        "numberDisplay": "percent",
+                                        "primaryGroups": [
+                                            "a115bc75-d25a-4092-a8bc-c877d036116f"
+                                        ],
+                                        "secondaryGroups": []
+                                    }
+                                ],
+                                "shape": "donut"
+                            }
+                        },
+                        "title": "",
+                        "type": "lens",
+                        "visualizationType": "lnsPie"
+                    },
+                    "description": "The number of requests to the Converse, ConverseStream, InvokeModel, and InvokeModelWithResponseStream API operations, grouped by model",
+                    "enhancements": {}
+                },
+                "gridData": {
+                    "h": 12,
+                    "i": "8cf3855f-bcfd-4fe8-a6ca-9bec037219d2",
+                    "w": 24,
+                    "x": 24,
+                    "y": 3
+                },
+                "panelIndex": "8cf3855f-bcfd-4fe8-a6ca-9bec037219d2",
+                "title": "Model usage",
                 "type": "lens"
             },
             {
@@ -398,6 +608,13 @@
                                                     "label": "Total errors",
                                                     "operationType": "formula",
                                                     "params": {
+                                                        "format": {
+                                                            "id": "number",
+                                                            "params": {
+                                                                "compact": true,
+                                                                "decimals": 0
+                                                            }
+                                                        },
                                                         "formula": "sum(aws_bedrock.runtime.invocation_client_errors) + sum(aws_bedrock.runtime.invocation_server_errors)",
                                                         "isFormulaBroken": false
                                                     },
@@ -489,157 +706,69 @@
                             "visualization": {
                                 "layerId": "2d90b8dd-3df3-44fd-9663-b25a6846fbe6",
                                 "layerType": "data",
-                                "metricAccessor": "9170c5a9-b76c-43db-82c9-6c77ccf1cbf3"
+                                "metricAccessor": "9170c5a9-b76c-43db-82c9-6c77ccf1cbf3",
+                                "palette": {
+                                    "name": "custom",
+                                    "params": {
+                                        "colorStops": [
+                                            {
+                                                "color": "#209280",
+                                                "stop": 0
+                                            },
+                                            {
+                                                "color": "#d6bf57",
+                                                "stop": 1
+                                            },
+                                            {
+                                                "color": "#cc5642",
+                                                "stop": 5
+                                            }
+                                        ],
+                                        "continuity": "above",
+                                        "maxSteps": 5,
+                                        "name": "custom",
+                                        "progression": "fixed",
+                                        "rangeMax": null,
+                                        "rangeMin": 0,
+                                        "rangeType": "number",
+                                        "reverse": false,
+                                        "steps": 3,
+                                        "stops": [
+                                            {
+                                                "color": "#209280",
+                                                "stop": 1
+                                            },
+                                            {
+                                                "color": "#d6bf57",
+                                                "stop": 5
+                                            },
+                                            {
+                                                "color": "#cc5642",
+                                                "stop": 6
+                                            }
+                                        ]
+                                    },
+                                    "type": "palette"
+                                }
                             }
                         },
                         "title": "",
                         "type": "lens",
                         "visualizationType": "lnsMetric"
                     },
+                    "description": "The total number of invocations that result in server-side and client-side errors.",
                     "enhancements": {},
                     "hidePanelTitles": true
                 },
                 "gridData": {
-                    "h": 9,
+                    "h": 6,
                     "i": "8aded3de-be0e-42ca-936d-58f82aabdb7f",
-                    "w": 6,
-                    "x": 27,
-                    "y": 0
+                    "w": 5,
+                    "x": 14,
+                    "y": 9
                 },
                 "panelIndex": "8aded3de-be0e-42ca-936d-58f82aabdb7f",
                 "title": "",
-                "type": "lens"
-            },
-            {
-                "embeddableConfig": {
-                    "attributes": {
-                        "references": [
-                            {
-                                "id": "metrics-*",
-                                "name": "indexpattern-datasource-layer-94286ada-c213-4185-8d61-6285ea6d56c0",
-                                "type": "index-pattern"
-                            }
-                        ],
-                        "state": {
-                            "adHocDataViews": {},
-                            "datasourceStates": {
-                                "formBased": {
-                                    "layers": {
-                                        "94286ada-c213-4185-8d61-6285ea6d56c0": {
-                                            "columnOrder": [
-                                                "a115bc75-d25a-4092-a8bc-c877d036116f",
-                                                "d568367b-f431-4305-b905-dfcd9c1db633"
-                                            ],
-                                            "columns": {
-                                                "a115bc75-d25a-4092-a8bc-c877d036116f": {
-                                                    "dataType": "string",
-                                                    "isBucketed": true,
-                                                    "label": "Top 10 values of aws_bedrock.runtime.model_id",
-                                                    "operationType": "terms",
-                                                    "params": {
-                                                        "exclude": [],
-                                                        "excludeIsRegex": false,
-                                                        "include": [],
-                                                        "includeIsRegex": false,
-                                                        "missingBucket": false,
-                                                        "orderBy": {
-                                                            "columnId": "d568367b-f431-4305-b905-dfcd9c1db633",
-                                                            "type": "column"
-                                                        },
-                                                        "orderDirection": "desc",
-                                                        "otherBucket": true,
-                                                        "parentFormat": {
-                                                            "id": "terms"
-                                                        },
-                                                        "size": 10
-                                                    },
-                                                    "scale": "ordinal",
-                                                    "sourceField": "aws_bedrock.runtime.model_id"
-                                                },
-                                                "d568367b-f431-4305-b905-dfcd9c1db633": {
-                                                    "dataType": "number",
-                                                    "isBucketed": false,
-                                                    "label": "Median of aws_bedrock.runtime.invocations",
-                                                    "operationType": "median",
-                                                    "params": {
-                                                        "emptyAsNull": true
-                                                    },
-                                                    "scale": "ratio",
-                                                    "sourceField": "aws_bedrock.runtime.invocations"
-                                                }
-                                            },
-                                            "ignoreGlobalFilters": false,
-                                            "incompleteColumns": {},
-                                            "sampling": 1
-                                        }
-                                    }
-                                },
-                                "indexpattern": {
-                                    "layers": {}
-                                },
-                                "textBased": {
-                                    "layers": {}
-                                }
-                            },
-                            "filters": [],
-                            "internalReferences": [],
-                            "query": {
-                                "language": "kuery",
-                                "query": ""
-                            },
-                            "visualization": {
-                                "layers": [
-                                    {
-                                        "categoryDisplay": "default",
-                                        "colorMapping": {
-                                            "assignments": [],
-                                            "colorMode": {
-                                                "type": "categorical"
-                                            },
-                                            "paletteId": "eui_amsterdam_color_blind",
-                                            "specialAssignments": [
-                                                {
-                                                    "color": {
-                                                        "type": "loop"
-                                                    },
-                                                    "rule": {
-                                                        "type": "other"
-                                                    },
-                                                    "touched": false
-                                                }
-                                            ]
-                                        },
-                                        "layerId": "94286ada-c213-4185-8d61-6285ea6d56c0",
-                                        "layerType": "data",
-                                        "legendDisplay": "default",
-                                        "metrics": [
-                                            "d568367b-f431-4305-b905-dfcd9c1db633"
-                                        ],
-                                        "nestedLegend": false,
-                                        "numberDisplay": "percent",
-                                        "primaryGroups": [
-                                            "a115bc75-d25a-4092-a8bc-c877d036116f"
-                                        ]
-                                    }
-                                ],
-                                "shape": "pie"
-                            }
-                        },
-                        "title": "",
-                        "type": "lens",
-                        "visualizationType": "lnsPie"
-                    },
-                    "enhancements": {}
-                },
-                "gridData": {
-                    "h": 9,
-                    "i": "8cf3855f-bcfd-4fe8-a6ca-9bec037219d2",
-                    "w": 15,
-                    "x": 33,
-                    "y": 0
-                },
-                "panelIndex": "8cf3855f-bcfd-4fe8-a6ca-9bec037219d2",
-                "title": "Model Usage",
                 "type": "lens"
             },
             {
@@ -795,10 +924,10 @@
                     "i": "5dee3cb3-d1dd-4a11-883a-5763d9ad9594",
                     "w": 24,
                     "x": 0,
-                    "y": 9
+                    "y": 15
                 },
                 "panelIndex": "5dee3cb3-d1dd-4a11-883a-5763d9ad9594",
-                "title": "Overall invocation rate by LLM",
+                "title": "Overall invocation rate - by model",
                 "type": "lens"
             },
             {
@@ -832,7 +961,7 @@
                                                         "query": "aws_bedrock.runtime.model_id : * "
                                                     },
                                                     "isBucketed": false,
-                                                    "label": "InvocationServerErrors",
+                                                    "label": "Invocation server errors",
                                                     "operationType": "sum",
                                                     "params": {
                                                         "emptyAsNull": true
@@ -936,14 +1065,14 @@
                                 ],
                                 "legend": {
                                     "isVisible": true,
+                                    "legendStats": [],
                                     "position": "right",
                                     "shouldTruncate": false
                                 },
                                 "preferredSeriesType": "bar_stacked",
                                 "title": "Empty XY chart",
                                 "valueLabels": "hide",
-                                "valuesInLegend": false,
-                                "yTitle": "Number of errors"
+                                "yTitle": "Errors"
                             }
                         },
                         "title": "",
@@ -957,10 +1086,10 @@
                     "i": "62338e91-b65f-4d81-a1e2-4f2e487b48ef",
                     "w": 24,
                     "x": 24,
-                    "y": 9
+                    "y": 15
                 },
                 "panelIndex": "62338e91-b65f-4d81-a1e2-4f2e487b48ef",
-                "title": "Overall error rate by type",
+                "title": "Overall error rate - by error type",
                 "type": "lens"
             },
             {
@@ -1116,10 +1245,10 @@
                     "i": "ca033329-58f5-4336-8f80-eed0a108af70",
                     "w": 24,
                     "x": 0,
-                    "y": 20
+                    "y": 26
                 },
                 "panelIndex": "ca033329-58f5-4336-8f80-eed0a108af70",
-                "title": "Overall invocation latency by LLM",
+                "title": "Overall invocation latency - by model",
                 "type": "lens"
             },
             {
@@ -1191,7 +1320,7 @@
                                                         "query": "aws_bedrock.runtime.model_id : * "
                                                     },
                                                     "isBucketed": false,
-                                                    "label": "Number of throttled invocations",
+                                                    "label": "Throttled invocations",
                                                     "operationType": "sum",
                                                     "params": {
                                                         "emptyAsNull": true
@@ -1255,13 +1384,13 @@
                                 ],
                                 "legend": {
                                     "isVisible": true,
+                                    "legendStats": [],
                                     "position": "right",
                                     "shouldTruncate": false
                                 },
                                 "preferredSeriesType": "bar_stacked",
                                 "title": "Empty XY chart",
-                                "valueLabels": "hide",
-                                "valuesInLegend": false
+                                "valueLabels": "hide"
                             }
                         },
                         "title": "",
@@ -1275,15 +1404,19 @@
                     "i": "8ad98788-cfba-4110-9cc3-6e867e26a02d",
                     "w": 24,
                     "x": 24,
-                    "y": 20
+                    "y": 26
                 },
                 "panelIndex": "8ad98788-cfba-4110-9cc3-6e867e26a02d",
-                "title": "Overall invocation throttle by LLM",
+                "title": "Overall invocation throttle - by model",
                 "type": "lens"
             },
             {
                 "embeddableConfig": {
-                    "enhancements": {},
+                    "enhancements": {
+                        "dynamicActions": {
+                            "events": []
+                        }
+                    },
                     "hidePanelTitles": true,
                     "savedVis": {
                         "data": {
@@ -1312,7 +1445,7 @@
                     "i": "d0820ee2-b660-45f4-ba50-3e0d254947f1",
                     "w": 48,
                     "x": 0,
-                    "y": 31
+                    "y": 37
                 },
                 "panelIndex": "d0820ee2-b660-45f4-ba50-3e0d254947f1",
                 "type": "visualization"
@@ -1458,14 +1591,14 @@
                                 ],
                                 "legend": {
                                     "isVisible": true,
+                                    "legendStats": [],
                                     "position": "right",
                                     "shouldTruncate": false
                                 },
                                 "preferredSeriesType": "bar_stacked",
                                 "title": "Empty XY chart",
                                 "valueLabels": "hide",
-                                "valuesInLegend": false,
-                                "yTitle": "Number of tokens"
+                                "yTitle": "Tokens"
                             }
                         },
                         "title": "",
@@ -1479,7 +1612,7 @@
                     "i": "880691ea-95e9-4b2a-a47e-26619703a7cc",
                     "w": 24,
                     "x": 0,
-                    "y": 34
+                    "y": 40
                 },
                 "panelIndex": "880691ea-95e9-4b2a-a47e-26619703a7cc",
                 "title": "Token usage",
@@ -1653,14 +1786,14 @@
                                 ],
                                 "legend": {
                                     "isVisible": true,
+                                    "legendStats": [],
                                     "position": "right",
                                     "shouldTruncate": false
                                 },
                                 "preferredSeriesType": "bar_stacked",
                                 "title": "Empty XY chart",
                                 "valueLabels": "hide",
-                                "valuesInLegend": false,
-                                "yTitle": "Number of tokens"
+                                "yTitle": "Tokens"
                             }
                         },
                         "title": "",
@@ -1674,15 +1807,19 @@
                     "i": "4ec26dba-21c2-4537-b0e5-7452f1492d45",
                     "w": 24,
                     "x": 24,
-                    "y": 34
+                    "y": 40
                 },
                 "panelIndex": "4ec26dba-21c2-4537-b0e5-7452f1492d45",
-                "title": "Token usage by LLM",
+                "title": "Token usage - by model",
                 "type": "lens"
             },
             {
                 "embeddableConfig": {
-                    "enhancements": {},
+                    "enhancements": {
+                        "dynamicActions": {
+                            "events": []
+                        }
+                    },
                     "hidePanelTitles": true,
                     "savedVis": {
                         "data": {
@@ -1712,7 +1849,7 @@
                     "i": "c565b542-aa47-4f01-a1df-610bb21a58a0",
                     "w": 48,
                     "x": 0,
-                    "y": 45
+                    "y": 51
                 },
                 "panelIndex": "c565b542-aa47-4f01-a1df-610bb21a58a0",
                 "title": "",
@@ -1835,14 +1972,14 @@
                                 ],
                                 "legend": {
                                     "isVisible": true,
+                                    "legendStats": [],
                                     "position": "right",
                                     "shouldTruncate": false
                                 },
                                 "preferredSeriesType": "bar_stacked",
                                 "title": "Empty XY chart",
                                 "valueLabels": "hide",
-                                "valuesInLegend": false,
-                                "yTitle": "Number of images"
+                                "yTitle": "Images"
                             }
                         },
                         "title": "",
@@ -1856,10 +1993,10 @@
                     "i": "6e8e1f15-c077-42c3-8a44-7c3bfb206b70",
                     "w": 24,
                     "x": 0,
-                    "y": 48
+                    "y": 54
                 },
                 "panelIndex": "6e8e1f15-c077-42c3-8a44-7c3bfb206b70",
-                "title": "Output generated images",
+                "title": "Output: Generated images",
                 "type": "lens"
             },
             {
@@ -2006,14 +2143,14 @@
                                 ],
                                 "legend": {
                                     "isVisible": true,
+                                    "legendStats": [],
                                     "position": "right",
                                     "shouldTruncate": false
                                 },
                                 "preferredSeriesType": "bar_stacked",
                                 "title": "Empty XY chart",
                                 "valueLabels": "hide",
-                                "valuesInLegend": false,
-                                "yTitle": "Number of images"
+                                "yTitle": "Images"
                             }
                         },
                         "title": "",
@@ -2027,15 +2164,19 @@
                     "i": "e9edf2c3-3b38-4d20-ac8d-8107092925c2",
                     "w": 24,
                     "x": 24,
-                    "y": 48
+                    "y": 54
                 },
                 "panelIndex": "e9edf2c3-3b38-4d20-ac8d-8107092925c2",
-                "title": "Output generated images by LLM",
+                "title": "Output: Generated images - by model",
                 "type": "lens"
             },
             {
                 "embeddableConfig": {
-                    "enhancements": {},
+                    "enhancements": {
+                        "dynamicActions": {
+                            "events": []
+                        }
+                    },
                     "hidePanelTitles": true,
                     "savedVis": {
                         "data": {
@@ -2064,7 +2205,7 @@
                     "i": "42603f74-2fd7-4e50-86c1-b12502638365",
                     "w": 48,
                     "x": 0,
-                    "y": 59
+                    "y": 65
                 },
                 "panelIndex": "42603f74-2fd7-4e50-86c1-b12502638365",
                 "type": "visualization"
@@ -2082,12 +2223,20 @@
                             "aws_bedrock.invocation.error_code",
                             "gen_ai.request.model.role"
                         ],
+                        "description": "",
                         "grid": {},
                         "hideChart": false,
-                        "isTextBasedQuery": true,
+                        "isTextBasedQuery": false,
                         "kibanaSavedObjectMeta": {
                             "searchSourceJSON": {
+                                "fields": [
+                                    {
+                                        "field": "*",
+                                        "include_unmapped": true
+                                    }
+                                ],
                                 "filter": [],
+                                "highlightAll": true,
                                 "index": {
                                     "allowHidden": false,
                                     "allowNoIndex": false,
@@ -2102,21 +2251,21 @@
                                 },
                                 "query": {
                                     "esql": "from logs-* \n| where event.dataset == \"aws_bedrock.invocation\"\n\n\n"
-                                }
+                                },
+                                "sort": [
+                                    {
+                                        "@timestamp": {
+                                            "format": "strict_date_optional_time",
+                                            "order": "desc"
+                                        }
+                                    },
+                                    {
+                                        "_doc": "desc"
+                                    }
+                                ]
                             }
                         },
-                        "references": [
-                            {
-                                "id": "fleet-managed-default",
-                                "name": "tag-ref-fleet-managed-default",
-                                "type": "tag"
-                            },
-                            {
-                                "id": "fleet-pkg-aws_bedrock-default",
-                                "name": "tag-ref-fleet-pkg-aws_bedrock-default",
-                                "type": "tag"
-                            }
-                        ],
+                        "references": [],
                         "sort": [
                             [
                                 "@timestamp",
@@ -2124,8 +2273,9 @@
                             ]
                         ],
                         "timeRestore": false,
-                        "usesAdHocDataView": true
+                        "title": ""
                     },
+                    "description": "",
                     "enhancements": {}
                 },
                 "gridData": {
@@ -2133,7 +2283,7 @@
                     "i": "80dbad78-afff-4302-bb83-79021ff3ea6d",
                     "w": 48,
                     "x": 0,
-                    "y": 62
+                    "y": 68
                 },
                 "panelIndex": "80dbad78-afff-4302-bb83-79021ff3ea6d",
                 "title": "Invocation logs",
@@ -2148,17 +2298,36 @@
                             "aws_bedrock.invocation.output.completion_text",
                             "gen_ai.usage.completion_tokens"
                         ],
+                        "description": "",
                         "grid": {},
                         "hideChart": false,
                         "isTextBasedQuery": false,
                         "kibanaSavedObjectMeta": {
                             "searchSourceJSON": {
+                                "fields": [
+                                    {
+                                        "field": "*",
+                                        "include_unmapped": true
+                                    }
+                                ],
                                 "filter": [],
+                                "highlightAll": true,
                                 "indexRefName": "kibanaSavedObjectMeta.searchSourceJSON.index",
                                 "query": {
                                     "language": "kuery",
                                     "query": "data_stream.dataset : \"aws_bedrock.invocation\" and aws_bedrock.invocation.output.completion_text : * "
-                                }
+                                },
+                                "sort": [
+                                    {
+                                        "@timestamp": {
+                                            "format": "strict_date_optional_time",
+                                            "order": "desc"
+                                        }
+                                    },
+                                    {
+                                        "_doc": "desc"
+                                    }
+                                ]
                             }
                         },
                         "references": [
@@ -2175,7 +2344,7 @@
                             ]
                         ],
                         "timeRestore": false,
-                        "usesAdHocDataView": false
+                        "title": ""
                     },
                     "description": "",
                     "enhancements": {},
@@ -2186,10 +2355,10 @@
                     "i": "2d88ce23-6c22-4595-8935-2c8a9d8db20c",
                     "w": 48,
                     "x": 0,
-                    "y": 77
+                    "y": 83
                 },
                 "panelIndex": "2d88ce23-6c22-4595-8935-2c8a9d8db20c",
-                "title": "Text request response usage",
+                "title": "Prompt, response, and token utilisation details",
                 "type": "search"
             },
             {
@@ -2378,10 +2547,10 @@
                     "i": "1640cb44-d18b-4a1c-b7b1-ed449eab5cd2",
                     "w": 24,
                     "x": 0,
-                    "y": 94
+                    "y": 100
                 },
                 "panelIndex": "1640cb44-d18b-4a1c-b7b1-ed449eab5cd2",
-                "title": "Initial and final response time comparison by LLM",
+                "title": "Initial and final response time comparison - by model",
                 "type": "lens"
             },
             {
@@ -2571,21 +2740,21 @@
                     "i": "dbc558ba-8e7e-4315-b83c-ad2af9a38e1b",
                     "w": 24,
                     "x": 24,
-                    "y": 94
+                    "y": 100
                 },
                 "panelIndex": "dbc558ba-8e7e-4315-b83c-ad2af9a38e1b",
-                "title": "Percentage comparison of initial and final response time by LLM",
+                "title": "Percentage comparison of initial and final response time - by model",
                 "type": "lens"
             }
         ],
         "timeRestore": false,
         "title": "[Amazon Bedrock] Overview",
-        "version": 1
+        "version": 2
     },
     "coreMigrationVersion": "8.8.0",
-    "created_at": "2024-10-15T14:30:33.781Z",
+    "created_at": "2025-01-28T12:46:17.825Z",
     "id": "aws_bedrock-2a19b571-251b-487b-84b2-abd887efb8a4",
-    "managed": true,
+    "managed": false,
     "references": [
         {
             "id": "metrics-*",
@@ -2604,12 +2773,12 @@
         },
         {
             "id": "metrics-*",
-            "name": "8aded3de-be0e-42ca-936d-58f82aabdb7f:indexpattern-datasource-layer-2d90b8dd-3df3-44fd-9663-b25a6846fbe6",
+            "name": "8cf3855f-bcfd-4fe8-a6ca-9bec037219d2:indexpattern-datasource-layer-94286ada-c213-4185-8d61-6285ea6d56c0",
             "type": "index-pattern"
         },
         {
             "id": "metrics-*",
-            "name": "8cf3855f-bcfd-4fe8-a6ca-9bec037219d2:indexpattern-datasource-layer-94286ada-c213-4185-8d61-6285ea6d56c0",
+            "name": "8aded3de-be0e-42ca-936d-58f82aabdb7f:indexpattern-datasource-layer-2d90b8dd-3df3-44fd-9663-b25a6846fbe6",
             "type": "index-pattern"
         },
         {
@@ -2654,17 +2823,27 @@
         },
         {
             "id": "logs-*",
-            "name": "2d88ce23-6c22-4595-8935-2c8a9d8db20c:kibanaSavedObjectMeta.searchSourceJSON.index",
-            "type": "index-pattern"
-        },
-        {
-            "id": "logs-*",
             "name": "1640cb44-d18b-4a1c-b7b1-ed449eab5cd2:indexpattern-datasource-layer-5b42ffbd-cc1d-4c5b-be1a-22f3a2023ea4",
             "type": "index-pattern"
         },
         {
             "id": "logs-*",
             "name": "dbc558ba-8e7e-4315-b83c-ad2af9a38e1b:indexpattern-datasource-layer-5b42ffbd-cc1d-4c5b-be1a-22f3a2023ea4",
+            "type": "index-pattern"
+        },
+        {
+            "id": "aws_bedrock-2a19b571-251b-487b-84b2-abd887efb8a4",
+            "name": "a032aba8-cb49-443c-a985-5973689ba62a:link_00e16c8b-3dee-40f9-946e-893337622b00_dashboard",
+            "type": "dashboard"
+        },
+        {
+            "id": "aws_bedrock-14fd745a-d3c1-4ebe-bd25-00b465336cde",
+            "name": "a032aba8-cb49-443c-a985-5973689ba62a:link_983ccba7-513b-4b83-8d15-ec8115ea9500_dashboard",
+            "type": "dashboard"
+        },
+        {
+            "id": "logs-*",
+            "name": "2d88ce23-6c22-4595-8935-2c8a9d8db20c:kibanaSavedObjectMeta.searchSourceJSON.index",
             "type": "index-pattern"
         },
         {
@@ -2679,5 +2858,5 @@
         }
     ],
     "type": "dashboard",
-    "typeMigrationVersion": "8.9.0"
+    "typeMigrationVersion": "10.2.0"
 }

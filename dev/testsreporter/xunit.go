@@ -49,6 +49,19 @@ func (t testCase) String() string {
 	return sb.String()
 }
 
+func (t testCase) PackageName() string {
+	values := strings.Split(t.ClassName, ".")
+	return values[0]
+}
+
+func (t testCase) DataStream() string {
+	values := strings.Split(t.ClassName, ".")
+	if len(values) == 2 {
+		return values[1]
+	}
+	return ""
+}
+
 func testFailures(path string) ([]testCase, error) {
 	contents, err := os.ReadFile(path)
 	if err != nil {
