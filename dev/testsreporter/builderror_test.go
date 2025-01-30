@@ -38,23 +38,25 @@ func TestNewBuildError(t *testing.T) {
 			},
 			expectedError: false,
 			expected: buildError{
-				serverless:        true,
-				serverlessProject: "observability",
-				logsDB:            false,
-				stackVersion:      "8.16.0-SNAPSHOT",
+				dataError: dataError{
+					serverless:        true,
+					serverlessProject: "observability",
+					logsDB:            false,
+					stackVersion:      "8.16.0-SNAPSHOT",
+					errorLinks: errorLinks{
+						firstBuild:     "https://buildkite.com/elastic/integrations/build/10",
+						closedIssueURL: "https://github.com/elastic/integrations/issues/2",
+						previousBuilds: []string{
+							"https://buildkite.com/elastic/integrations/builds/1",
+							"https://buildkite.com/elastic/integrations/builds/3",
+						},
+					},
+				},
 				packages: []string{
 					"elastic_package_registry",
 					"nginx",
 				},
 				teams: []string{"@elastic/ecosystem"},
-				errorLinks: errorLinks{
-					firstBuild:     "https://buildkite.com/elastic/integrations/build/10",
-					closedIssueURL: "https://github.com/elastic/integrations/issues/2",
-					previousBuilds: []string{
-						"https://buildkite.com/elastic/integrations/builds/1",
-						"https://buildkite.com/elastic/integrations/builds/3",
-					},
-				},
 			},
 		},
 	}

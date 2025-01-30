@@ -20,9 +20,11 @@ func TestSummary(t *testing.T) {
 		{
 			title: "summary stack version with data stream",
 			resultError: &packageError{
-				stackVersion: "8.14",
-				packageName:  "foo",
-				dataStream:   "data",
+				dataError: dataError{
+					stackVersion: "8.14",
+				},
+				packageName: "foo",
+				dataStream:  "data",
 				testCase: testCase{
 					Name: "mytest",
 				},
@@ -36,8 +38,10 @@ func TestSummary(t *testing.T) {
 		{
 			title: "summary stack version with owners wihtout data stream",
 			resultError: &packageError{
-				stackVersion: "8.14",
-				packageName:  "foo",
+				dataError: dataError{
+					stackVersion: "8.14",
+				},
+				packageName: "foo",
 				testCase: testCase{
 					Name: "mytest",
 				},
@@ -54,9 +58,11 @@ func TestSummary(t *testing.T) {
 		{
 			title: "summary stack version with data stream and owners",
 			resultError: &packageError{
-				stackVersion: "8.14",
-				packageName:  "foo",
-				dataStream:   "data",
+				dataError: dataError{
+					stackVersion: "8.14",
+				},
+				packageName: "foo",
+				dataStream:  "data",
 				testCase: testCase{
 					Name: "mytest",
 				},
@@ -74,10 +80,12 @@ func TestSummary(t *testing.T) {
 		{
 			title: "summary serverless with data stream and owners",
 			resultError: &packageError{
-				serverless:        true,
-				serverlessProject: "observability",
-				packageName:       "foo",
-				dataStream:        "data",
+				dataError: dataError{
+					serverless:        true,
+					serverlessProject: "observability",
+				},
+				packageName: "foo",
+				dataStream:  "data",
 				testCase: testCase{
 					Name: "mytest",
 				},
@@ -95,9 +103,11 @@ func TestSummary(t *testing.T) {
 		{
 			title: "summary serverless with owners without data stream",
 			resultError: &packageError{
-				serverless:        true,
-				serverlessProject: "observability",
-				packageName:       "foo",
+				dataError: dataError{
+					serverless:        true,
+					serverlessProject: "observability",
+				},
+				packageName: "foo",
 				testCase: testCase{
 					Name: "mytest",
 				},
@@ -114,7 +124,9 @@ func TestSummary(t *testing.T) {
 		{
 			title: "summary logsdb",
 			resultError: &packageError{
-				logsDB:      true,
+				dataError: dataError{
+					logsDB: true,
+				},
 				packageName: "foo",
 				testCase: testCase{
 					Name: "mytest",
@@ -132,9 +144,11 @@ func TestSummary(t *testing.T) {
 		{
 			title: "summary broad failure",
 			resultError: &buildError{
-				logsDB:       false,
-				serverless:   false,
-				stackVersion: "8.16",
+				dataError: dataError{
+					logsDB:       false,
+					serverless:   false,
+					stackVersion: "8.16",
+				},
 				packages: []string{
 					"foo",
 					"bar",
@@ -176,19 +190,21 @@ func TestDescription(t *testing.T) {
 			title:   "description error all fields",
 			summary: "summary",
 			resultError: &packageError{
-				stackVersion: "8.14",
-				packageName:  "foo",
+				dataError: dataError{
+					stackVersion: "8.14",
+					errorLinks: errorLinks{
+						firstBuild:     "http://link/1",
+						closedIssueURL: "http://link/old",
+						previousBuilds: []string{
+							"http://link/2",
+							"http://link/3",
+						},
+					},
+				},
+				packageName: "foo",
 				testCase: testCase{
 					Name:  "mytest",
 					Error: "myerror",
-				},
-				errorLinks: errorLinks{
-					firstBuild:     "http://link/1",
-					closedIssueURL: "http://link/old",
-					previousBuilds: []string{
-						"http://link/2",
-						"http://link/3",
-					},
 				},
 			},
 			expected: `- Stack version: 8.14
@@ -213,19 +229,21 @@ Latest failed builds:
 			title:   "description failure all fields",
 			summary: "summary",
 			resultError: &packageError{
-				stackVersion: "8.14",
-				packageName:  "foo",
+				dataError: dataError{
+					stackVersion: "8.14",
+					errorLinks: errorLinks{
+						firstBuild:     "http://link/1",
+						closedIssueURL: "http://link/old",
+						previousBuilds: []string{
+							"http://link/2",
+							"http://link/3",
+						},
+					},
+				},
+				packageName: "foo",
 				testCase: testCase{
 					Name:    "mytest",
 					Failure: "myfailure",
-				},
-				errorLinks: errorLinks{
-					firstBuild:     "http://link/1",
-					closedIssueURL: "http://link/old",
-					previousBuilds: []string{
-						"http://link/2",
-						"http://link/3",
-					},
 				},
 			},
 			expected: `- Stack version: 8.14
@@ -250,18 +268,20 @@ Latest failed builds:
 			title:   "description no closed issue",
 			summary: "summary",
 			resultError: &packageError{
-				stackVersion: "8.14",
-				packageName:  "foo",
+				dataError: dataError{
+					stackVersion: "8.14",
+					errorLinks: errorLinks{
+						firstBuild: "http://link/1",
+						previousBuilds: []string{
+							"http://link/2",
+							"http://link/3",
+						},
+					},
+				},
+				packageName: "foo",
 				testCase: testCase{
 					Name:  "mytest",
 					Error: "myerror",
-				},
-				errorLinks: errorLinks{
-					firstBuild: "http://link/1",
-					previousBuilds: []string{
-						"http://link/2",
-						"http://link/3",
-					},
 				},
 			},
 			expected: `- Stack version: 8.14
@@ -285,18 +305,20 @@ Latest failed builds:
 			summary:  "summary",
 			maxLinks: 2,
 			resultError: &packageError{
-				stackVersion: "8.14",
-				packageName:  "foo",
+				dataError: dataError{
+					stackVersion: "8.14",
+					errorLinks: errorLinks{
+						firstBuild: "http://link/1",
+						previousBuilds: []string{
+							"http://link/2",
+							"http://link/3",
+						},
+					},
+				},
+				packageName: "foo",
 				testCase: testCase{
 					Name:  "mytest",
 					Error: "myerror",
-				},
-				errorLinks: errorLinks{
-					firstBuild: "http://link/1",
-					previousBuilds: []string{
-						"http://link/2",
-						"http://link/3",
-					},
 				},
 			},
 			expected: `- Stack version: 8.14
@@ -318,22 +340,24 @@ Latest 2 failed builds:
 		{
 			title: "description broad failure",
 			resultError: &buildError{
-				logsDB:       false,
-				serverless:   false,
-				stackVersion: "8.16",
+				dataError: dataError{
+					logsDB:       false,
+					serverless:   false,
+					stackVersion: "8.16",
+					errorLinks: errorLinks{
+						firstBuild: "http://link/1",
+						previousBuilds: []string{
+							"http://link/2",
+							"http://link/3",
+						},
+						closedIssueURL: "http://issue.link/1",
+					},
+				},
 				packages: []string{
 					"foo",
 					"bar",
 				},
 				teams: []string{"team1"},
-				errorLinks: errorLinks{
-					firstBuild: "http://link/1",
-					previousBuilds: []string{
-						"http://link/2",
-						"http://link/3",
-					},
-					closedIssueURL: "http://issue.link/1",
-				},
 			},
 			expected: `- Stack version: 8.16
 - Packages:

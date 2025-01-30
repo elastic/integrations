@@ -14,14 +14,18 @@ const (
 	buildReportingTeamLabel = "Team:Ecosystem"
 )
 
-type buildError struct {
+type dataError struct {
 	errorLinks
 	serverless        bool
 	serverlessProject string
 	logsDB            bool
 	stackVersion      string
-	teams             []string
-	packages          []string
+}
+
+type buildError struct {
+	dataError
+	teams    []string
+	packages []string
 }
 
 type buildErrorOptions struct {
@@ -40,17 +44,19 @@ var _ failureObserver = new(buildError)
 
 func newBuildError(options buildErrorOptions) (*buildError, error) {
 	b := buildError{
-		serverless:        options.Serverless,
-		serverlessProject: options.ServerlessProject,
-		logsDB:            options.LogsDB,
-		stackVersion:      options.StackVersion,
-		packages:          options.Packages,
-		teams:             []string{buildReportingTeam},
-		errorLinks: errorLinks{
-			firstBuild:     options.BuildURL,
-			closedIssueURL: options.ClosedIssueURL,
-			previousBuilds: options.PreviousBuilds,
+		dataError: dataError{
+			serverless:        options.Serverless,
+			serverlessProject: options.ServerlessProject,
+			logsDB:            options.LogsDB,
+			stackVersion:      options.StackVersion,
+			errorLinks: errorLinks{
+				firstBuild:     options.BuildURL,
+				closedIssueURL: options.ClosedIssueURL,
+				previousBuilds: options.PreviousBuilds,
+			},
 		},
+		packages: options.Packages,
+		teams:    []string{buildReportingTeam},
 	}
 
 	return &b, nil
