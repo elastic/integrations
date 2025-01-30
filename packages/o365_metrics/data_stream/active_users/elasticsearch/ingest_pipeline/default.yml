@@ -1,5 +1,5 @@
 ---
-description: Pipeline for renaming object
+description: Pipeline for processing o365 active users metrics.
 processors:
   - set:
       field: ecs.version
@@ -7,10 +7,19 @@ processors:
   - json:
       field: active_users
       target_field: o365.metrics.active.users
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - set:
+      copy_from: active_users
+      field: event.original
+      ignore_empty_value: true
       ignore_failure: true
+      if: ctx.event?.original == null && (ctx.tags != null && (ctx.tags.contains('preserve_original_event')))
   - script:
       lang: painless
-      description: Replace spaces and dashes in field names under o365.metrics.active.users.
+      description: Replace spaces, dashes and bom character in field names under o365.metrics.active.users.
       tag: painless_purge_spaces_and_dashes
       if: ctx.o365.metrics?.active?.users instanceof Map
       source: |
@@ -92,16 +101,33 @@ processors:
       field: o365.metrics.active.users.yammer_inactive
       target_field: o365.metrics.active.users.yammer.inactive.count
       ignore_missing: true
+  - set:
+      field: '@timestamp'
+      tag: set_timestamp_from_report_report_refresh_date
+      copy_from: o365.metrics.active.users.report.refresh_date
+      ignore_empty_value: true
+  - fingerprint:
+      fields:
+        - o365.metrics.active.users.report.refresh_date
+      target_field: _id
   - remove:
       field:
         - o365.metrics.active.users.skype_for_business
       ignore_missing: true
 
 on_failure:
-  - append:
+  - set:
       field: error.message
       value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - append:
       field: event.kind
       value: pipeline_error
+      allow_duplicates: false
+  - append: 
+      field: event.type 
+      value: error 
+      if: ctx.error?.message != null
+  - append:
+      field: tags
+      value: preserve_original_event
       allow_duplicates: false
