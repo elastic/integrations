@@ -32,15 +32,15 @@ program: |
   ?
     bytes(resp.Body).decode_json().as(body,
       {
-        "events": body.line_items.map(item, item.with(
+        "events": body.line_items.map(item,
           {
             "ess": {
-              "billing": {
+              "billing": item.with({
                 "organization_id": state.organization_id
-              }
+              })
             }
           }
-        )),
+        ),
         "want_more": false,
       }
     )
