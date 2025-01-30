@@ -266,7 +266,7 @@
                                                     "customLabel": true,
                                                     "dataType": "number",
                                                     "isBucketed": false,
-                                                    "label": "corelight_notice",
+                                                    "label": "Notices",
                                                     "operationType": "count",
                                                     "params": {
                                                         "emptyAsNull": false,
@@ -895,7 +895,7 @@
                                         }
                                     ],
                                     "layers": {
-                                        "abd300dd-7b80-4eed-b881-365940246470": {
+                                        "3823b563-07c1-4481-8386-bf674c7380a6": {
                                             "columns": [
                                                 {
                                                     "columnId": "@timestamp",
@@ -907,8 +907,8 @@
                                                     }
                                                 },
                                                 {
-                                                    "columnId": "sourcetype",
-                                                    "fieldName": "sourcetype",
+                                                    "columnId": "Source Type",
+                                                    "fieldName": "Source Type",
                                                     "inMetricDimension": true,
                                                     "meta": {
                                                         "esType": "keyword",
@@ -916,8 +916,8 @@
                                                     }
                                                 },
                                                 {
-                                                    "columnId": "src",
-                                                    "fieldName": "src",
+                                                    "columnId": "Source IP",
+                                                    "fieldName": "Source IP",
                                                     "inMetricDimension": true,
                                                     "meta": {
                                                         "esType": "ip",
@@ -925,8 +925,8 @@
                                                     }
                                                 },
                                                 {
-                                                    "columnId": "severity_display",
-                                                    "fieldName": "severity_display",
+                                                    "columnId": "Severity",
+                                                    "fieldName": "Severity",
                                                     "inMetricDimension": true,
                                                     "meta": {
                                                         "esType": "keyword",
@@ -936,7 +936,7 @@
                                             ],
                                             "index": "b2bcbb11fd7b30e2a9f2ee93a6a5ffd1f700ee82fff0bfc92dd439c707a35ebb",
                                             "query": {
-                                                "esql": "from logs-corelight.various-*\r\n| where event.dataset == \"notice\" and (notice.note is not null or source.ip is not null  or destination.ip is not null or network.transport is not null or notice.p is not null)and notice.message is not null and severity.level is not null\r\n| limit 10000\r\n| stats values(@timestamp), values(event.dataset), values(source.ip), values(severity.name),values(severity.level) by @timestamp, source.ip, destination.ip, destination.port\r\n| eval severity_display = concat(`values(severity.name)`,\" (\",to_string(`values(severity.level)`),\")\")\r\n| rename `values(@timestamp)` as @timestamp,`values(source.ip)` as src, `values(event.dataset)` as sourcetype\r\n| keep @timestamp, sourcetype, src, severity_display\r\n| sort @timestamp\r\n| LIMIT 500"
+                                                "esql": "from logs-corelight.various-*\r\n| where event.dataset == \"notice\" and (notice.note is not null or source.ip is not null  or destination.ip is not null or network.transport is not null or notice.p is not null)and notice.message is not null and severity.level is not null\r\n| limit 10000\r\n| stats values(@timestamp), values(event.dataset), values(source.ip), values(severity.name),values(severity.level) by @timestamp, source.ip, destination.ip, destination.port\r\n| eval Severity = concat(`values(severity.name)`,\" (\",to_string(`values(severity.level)`),\")\")\r\n| rename `values(@timestamp)` as @timestamp,`values(source.ip)` as `Source IP`, `values(event.dataset)` as `Source Type`\r\n| keep @timestamp, `Source Type`, `Source IP`, Severity\r\n| sort @timestamp\r\n| LIMIT 500"
                                             },
                                             "timeField": "@timestamp"
                                         }
@@ -945,7 +945,7 @@
                             },
                             "filters": [],
                             "query": {
-                                "esql": "from logs-corelight.various-*\r\n| where event.dataset == \"notice\" and (notice.note is not null or source.ip is not null  or destination.ip is not null or network.transport is not null or notice.p is not null)and notice.message is not null and severity.level is not null\r\n| limit 10000\r\n| stats values(@timestamp), values(event.dataset), values(source.ip), values(severity.name),values(severity.level) by @timestamp, source.ip, destination.ip, destination.port\r\n| eval severity_display = concat(`values(severity.name)`,\" (\",to_string(`values(severity.level)`),\")\")\r\n| rename `values(@timestamp)` as @timestamp,`values(source.ip)` as src, `values(event.dataset)` as sourcetype\r\n| keep @timestamp, sourcetype, src, severity_display\r\n| sort @timestamp\r\n| LIMIT 500"
+                                "esql": "from logs-corelight.various-*\r\n| where event.dataset == \"notice\" and (notice.note is not null or source.ip is not null  or destination.ip is not null or network.transport is not null or notice.p is not null)and notice.message is not null and severity.level is not null\r\n| limit 10000\r\n| stats values(@timestamp), values(event.dataset), values(source.ip), values(severity.name),values(severity.level) by @timestamp, source.ip, destination.ip, destination.port\r\n| eval Severity = concat(`values(severity.name)`,\" (\",to_string(`values(severity.level)`),\")\")\r\n| rename `values(@timestamp)` as @timestamp,`values(source.ip)` as `Source IP`, `values(event.dataset)` as `Source Type`\r\n| keep @timestamp, `Source Type`, `Source IP`, Severity\r\n| sort @timestamp\r\n| LIMIT 500"
                             },
                             "visualization": {
                                 "columns": [
@@ -953,16 +953,16 @@
                                         "columnId": "@timestamp"
                                     },
                                     {
-                                        "columnId": "sourcetype"
+                                        "columnId": "Source Type"
                                     },
                                     {
-                                        "columnId": "src"
+                                        "columnId": "Source IP"
                                     },
                                     {
-                                        "columnId": "severity_display"
+                                        "columnId": "Severity"
                                     }
                                 ],
-                                "layerId": "abd300dd-7b80-4eed-b881-365940246470",
+                                "layerId": "3823b563-07c1-4481-8386-bf674c7380a6",
                                 "layerType": "data",
                                 "paging": {
                                     "enabled": true,
@@ -970,7 +970,7 @@
                                 }
                             }
                         },
-                        "title": "Table @timestamp \u0026 sourcetype \u0026 src \u0026 severity_display",
+                        "title": "Table @timestamp \u0026 Source Type \u0026 Source IP \u0026 Severity",
                         "type": "lens",
                         "visualizationType": "lnsDatatable"
                     },
@@ -996,7 +996,7 @@
         "version": 2
     },
     "coreMigrationVersion": "8.8.0",
-    "created_at": "2025-01-06T05:25:20.474Z",
+    "created_at": "2025-01-29T06:38:38.009Z",
     "id": "corelight-f7da14f0-85db-48e8-a591-1f650af0f618",
     "managed": false,
     "references": [

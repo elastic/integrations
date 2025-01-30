@@ -201,17 +201,13 @@
                                 "id": "logs-*",
                                 "name": "indexpattern-datasource-layer-8d61793d-b09e-4753-9178-efc0b6f492ae",
                                 "type": "index-pattern"
-                            },
-                            {
-                                "id": "logs-*",
-                                "name": "f5457800-6d5c-4a8f-b130-6d56936acc98",
-                                "type": "index-pattern"
                             }
                         ],
                         "state": {
                             "adHocDataViews": {},
                             "datasourceStates": {
                                 "formBased": {
+                                    "currentIndexPatternId": "logs-*",
                                     "layers": {
                                         "8d61793d-b09e-4753-9178-efc0b6f492ae": {
                                             "columnOrder": [
@@ -223,7 +219,7 @@
                                                     "customLabel": true,
                                                     "dataType": "string",
                                                     "isBucketed": true,
-                                                    "label": "record_type",
+                                                    "label": "Record Type",
                                                     "operationType": "terms",
                                                     "params": {
                                                         "exclude": [],
@@ -250,7 +246,7 @@
                                                     "customLabel": true,
                                                     "dataType": "number",
                                                     "isBucketed": false,
-                                                    "label": "count",
+                                                    "label": "Count",
                                                     "operationType": "count",
                                                     "params": {
                                                         "emptyAsNull": false,
@@ -267,6 +263,7 @@
                                             },
                                             "ignoreGlobalFilters": false,
                                             "incompleteColumns": {},
+                                            "indexPatternId": "logs-*",
                                             "sampling": 1
                                         }
                                     }
@@ -477,19 +474,19 @@
                                         }
                                     ],
                                     "layers": {
-                                        "9707bf41-7a6f-412b-bdba-7bc32f25f8b1": {
+                                        "2e981f47-df96-43db-b5f9-fbf631d48e9f": {
                                             "columns": [
                                                 {
-                                                    "columnId": "query",
-                                                    "fieldName": "query",
+                                                    "columnId": "Query",
+                                                    "fieldName": "Query",
                                                     "meta": {
                                                         "esType": "keyword",
                                                         "type": "string"
                                                     }
                                                 },
                                                 {
-                                                    "columnId": "count",
-                                                    "fieldName": "count",
+                                                    "columnId": "Count",
+                                                    "fieldName": "Count",
                                                     "inMetricDimension": true,
                                                     "meta": {
                                                         "esType": "long",
@@ -499,7 +496,7 @@
                                             ],
                                             "index": "a38513451b31bef37a02d6388a528d0f89a52d6d0a351159461db643ba67a7f2",
                                             "query": {
-                                                "esql": "from logs-corelight.dns*\r\n| limit 10000\r\n| where event.dataset == \"dns\" and observer.hostname is not null and (source.ip not in (\"0.0.0.0\",\"255.255.255.255\") or destination.ip not in (\"0.0.0.0\",\"255.255.255.255\")) and dns.question.type is not null and dns.question.type != \"PTR\"\r\n| stats COUNT() by source.ip, dns.response_code, destination.domain, dns.question.type \r\n| stats COUNT() by destination.domain  \r\n| rename destination.domain as query,`COUNT()` as count\r\n| sort count desc\r\n| limit 10\r\n| keep query, count"
+                                                "esql": "from logs-corelight.dns*\r\n| limit 10000\r\n| where event.dataset == \"dns\" and observer.hostname is not null and (source.ip not in (\"0.0.0.0\",\"255.255.255.255\") or destination.ip not in (\"0.0.0.0\",\"255.255.255.255\")) and dns.question.type is not null and dns.question.type != \"PTR\"\r\n| stats COUNT() by source.ip, dns.response_code, destination.domain, dns.question.type \r\n| stats COUNT() by destination.domain  \r\n| rename destination.domain as Query,`COUNT()` as Count\r\n| sort Count desc\r\n| limit 10\r\n| keep Query, Count"
                                             },
                                             "timeField": "@timestamp"
                                         }
@@ -508,18 +505,18 @@
                             },
                             "filters": [],
                             "query": {
-                                "esql": "from logs-corelight.dns*\r\n| limit 10000\r\n| where event.dataset == \"dns\" and observer.hostname is not null and (source.ip not in (\"0.0.0.0\",\"255.255.255.255\") or destination.ip not in (\"0.0.0.0\",\"255.255.255.255\")) and dns.question.type is not null and dns.question.type != \"PTR\"\r\n| stats COUNT() by source.ip, dns.response_code, destination.domain, dns.question.type \r\n| stats COUNT() by destination.domain  \r\n| rename destination.domain as query,`COUNT()` as count\r\n| sort count desc\r\n| limit 10\r\n| keep query, count"
+                                "esql": "from logs-corelight.dns*\r\n| limit 10000\r\n| where event.dataset == \"dns\" and observer.hostname is not null and (source.ip not in (\"0.0.0.0\",\"255.255.255.255\") or destination.ip not in (\"0.0.0.0\",\"255.255.255.255\")) and dns.question.type is not null and dns.question.type != \"PTR\"\r\n| stats COUNT() by source.ip, dns.response_code, destination.domain, dns.question.type \r\n| stats COUNT() by destination.domain  \r\n| rename destination.domain as Query,`COUNT()` as Count\r\n| sort Count desc\r\n| limit 10\r\n| keep Query, Count"
                             },
                             "visualization": {
                                 "columns": [
                                     {
-                                        "columnId": "query"
+                                        "columnId": "Query"
                                     },
                                     {
-                                        "columnId": "count"
+                                        "columnId": "Count"
                                     }
                                 ],
-                                "layerId": "9707bf41-7a6f-412b-bdba-7bc32f25f8b1",
+                                "layerId": "2e981f47-df96-43db-b5f9-fbf631d48e9f",
                                 "layerType": "data"
                             }
                         },
@@ -572,19 +569,19 @@
                                         }
                                     ],
                                     "layers": {
-                                        "461470aa-ff64-464a-abb4-35c7ff9891ec": {
+                                        "99d2b11e-4dfd-4ae4-aa07-5c1a7c0df652": {
                                             "columns": [
                                                 {
-                                                    "columnId": "query",
-                                                    "fieldName": "query",
+                                                    "columnId": "Query",
+                                                    "fieldName": "Query",
                                                     "meta": {
                                                         "esType": "keyword",
                                                         "type": "string"
                                                     }
                                                 },
                                                 {
-                                                    "columnId": "count",
-                                                    "fieldName": "count",
+                                                    "columnId": "Count",
+                                                    "fieldName": "Count",
                                                     "inMetricDimension": true,
                                                     "meta": {
                                                         "esType": "long",
@@ -594,7 +591,7 @@
                                             ],
                                             "index": "a38513451b31bef37a02d6388a528d0f89a52d6d0a351159461db643ba67a7f2",
                                             "query": {
-                                                "esql": "from logs-corelight.dns*\r\n| limit 10000\r\n| where event.dataset == \"dns\" and observer.hostname is not null and (source.ip not in (\"0.0.0.0\",\"255.255.255.255\") or destination.ip not in (\"0.0.0.0\",\"255.255.255.255\")) and dns.question.type is not null and dns.question.type != \"PTR\" and dns.response_code == \"NXDOMAIN\"\r\n| stats COUNT() by source.ip, dns.response_code, destination.domain, dns.question.type \r\n| stats COUNT() by destination.domain  \r\n| rename destination.domain as query,`COUNT()` as count\r\n| sort count desc\r\n| limit 10\r\n| keep query, count"
+                                                "esql": "from logs-corelight.dns*\r\n| limit 10000\r\n| where event.dataset == \"dns\" and observer.hostname is not null and (source.ip not in (\"0.0.0.0\",\"255.255.255.255\") or destination.ip not in (\"0.0.0.0\",\"255.255.255.255\")) and dns.question.type is not null and dns.question.type != \"PTR\" and dns.response_code == \"NXDOMAIN\"\r\n| stats COUNT() by source.ip, dns.response_code, destination.domain, dns.question.type \r\n| stats COUNT() by destination.domain  \r\n| rename destination.domain as Query,`COUNT()` as Count\r\n| sort Count desc\r\n| limit 10\r\n| keep Query, Count"
                                             },
                                             "timeField": "@timestamp"
                                         }
@@ -603,18 +600,18 @@
                             },
                             "filters": [],
                             "query": {
-                                "esql": "from logs-corelight.dns*\r\n| limit 10000\r\n| where event.dataset == \"dns\" and observer.hostname is not null and (source.ip not in (\"0.0.0.0\",\"255.255.255.255\") or destination.ip not in (\"0.0.0.0\",\"255.255.255.255\")) and dns.question.type is not null and dns.question.type != \"PTR\" and dns.response_code == \"NXDOMAIN\"\r\n| stats COUNT() by source.ip, dns.response_code, destination.domain, dns.question.type \r\n| stats COUNT() by destination.domain  \r\n| rename destination.domain as query,`COUNT()` as count\r\n| sort count desc\r\n| limit 10\r\n| keep query, count"
+                                "esql": "from logs-corelight.dns*\r\n| limit 10000\r\n| where event.dataset == \"dns\" and observer.hostname is not null and (source.ip not in (\"0.0.0.0\",\"255.255.255.255\") or destination.ip not in (\"0.0.0.0\",\"255.255.255.255\")) and dns.question.type is not null and dns.question.type != \"PTR\" and dns.response_code == \"NXDOMAIN\"\r\n| stats COUNT() by source.ip, dns.response_code, destination.domain, dns.question.type \r\n| stats COUNT() by destination.domain  \r\n| rename destination.domain as Query,`COUNT()` as Count\r\n| sort Count desc\r\n| limit 10\r\n| keep Query, Count"
                             },
                             "visualization": {
                                 "columns": [
                                     {
-                                        "columnId": "query"
+                                        "columnId": "Query"
                                     },
                                     {
-                                        "columnId": "count"
+                                        "columnId": "Count"
                                     }
                                 ],
-                                "layerId": "461470aa-ff64-464a-abb4-35c7ff9891ec",
+                                "layerId": "99d2b11e-4dfd-4ae4-aa07-5c1a7c0df652",
                                 "layerType": "data"
                             }
                         },
@@ -646,17 +643,13 @@
                                 "id": "logs-*",
                                 "name": "indexpattern-datasource-layer-3f134d5e-ac9c-4b86-b0bf-137369691a82",
                                 "type": "index-pattern"
-                            },
-                            {
-                                "id": "logs-*",
-                                "name": "284c4fe0-79f1-4138-a21f-7012a1e303c1",
-                                "type": "index-pattern"
                             }
                         ],
                         "state": {
                             "adHocDataViews": {},
                             "datasourceStates": {
                                 "formBased": {
+                                    "currentIndexPatternId": "logs-*",
                                     "layers": {
                                         "3f134d5e-ac9c-4b86-b0bf-137369691a82": {
                                             "columnOrder": [
@@ -668,7 +661,7 @@
                                                     "customLabel": true,
                                                     "dataType": "number",
                                                     "isBucketed": false,
-                                                    "label": "count",
+                                                    "label": "Count",
                                                     "operationType": "count",
                                                     "params": {
                                                         "emptyAsNull": false,
@@ -686,7 +679,7 @@
                                                     "customLabel": true,
                                                     "dataType": "ip",
                                                     "isBucketed": true,
-                                                    "label": "id_orig_h",
+                                                    "label": "Source IP",
                                                     "operationType": "terms",
                                                     "params": {
                                                         "exclude": [],
@@ -712,6 +705,7 @@
                                             },
                                             "ignoreGlobalFilters": false,
                                             "incompleteColumns": {},
+                                            "indexPatternId": "logs-*",
                                             "sampling": 1
                                         }
                                     }
@@ -919,7 +913,7 @@
                                                     "customLabel": true,
                                                     "dataType": "number",
                                                     "isBucketed": false,
-                                                    "label": "count",
+                                                    "label": "Count",
                                                     "operationType": "count",
                                                     "params": {
                                                         "emptyAsNull": false,
@@ -937,7 +931,7 @@
                                                     "customLabel": true,
                                                     "dataType": "string",
                                                     "isBucketed": true,
-                                                    "label": "query",
+                                                    "label": "Query",
                                                     "operationType": "terms",
                                                     "params": {
                                                         "exclude": [],
@@ -1174,7 +1168,7 @@
                                                     "customLabel": true,
                                                     "dataType": "number",
                                                     "isBucketed": false,
-                                                    "label": "count",
+                                                    "label": "Count",
                                                     "operationType": "count",
                                                     "params": {
                                                         "emptyAsNull": false,
@@ -1192,7 +1186,7 @@
                                                     "customLabel": true,
                                                     "dataType": "string",
                                                     "isBucketed": true,
-                                                    "label": "query",
+                                                    "label": "Query",
                                                     "operationType": "terms",
                                                     "params": {
                                                         "exclude": [],
@@ -1321,7 +1315,7 @@
         "version": 2
     },
     "coreMigrationVersion": "8.8.0",
-    "created_at": "2025-01-06T05:25:13.406Z",
+    "created_at": "2025-01-29T10:37:06.803Z",
     "id": "corelight-58885f47-95e1-4242-a1ee-783de69ace17",
     "managed": false,
     "references": [
@@ -1347,17 +1341,7 @@
         },
         {
             "id": "logs-*",
-            "name": "198a30fc-31cb-416d-a087-42d3d1905705:f5457800-6d5c-4a8f-b130-6d56936acc98",
-            "type": "index-pattern"
-        },
-        {
-            "id": "logs-*",
             "name": "3e25700f-0903-43b1-96cd-07c24b1df42b:indexpattern-datasource-layer-3f134d5e-ac9c-4b86-b0bf-137369691a82",
-            "type": "index-pattern"
-        },
-        {
-            "id": "logs-*",
-            "name": "3e25700f-0903-43b1-96cd-07c24b1df42b:284c4fe0-79f1-4138-a21f-7012a1e303c1",
             "type": "index-pattern"
         },
         {

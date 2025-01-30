@@ -404,7 +404,7 @@
                                         }
                                     ],
                                     "layers": {
-                                        "d99d143b-808b-4f68-a2f8-7337d8bd51b6": {
+                                        "3fcf021a-7c2c-43ec-b5c8-ab338ca92860": {
                                             "columns": [
                                                 {
                                                     "columnId": "Subject",
@@ -416,8 +416,8 @@
                                                     }
                                                 },
                                                 {
-                                                    "columnId": "Destination",
-                                                    "fieldName": "Destination",
+                                                    "columnId": "Destination IP",
+                                                    "fieldName": "Destination IP",
                                                     "inMetricDimension": true,
                                                     "meta": {
                                                         "esType": "ip",
@@ -436,7 +436,7 @@
                                             ],
                                             "index": "22ef31a921118149e9248d9055373ee05aa0a1357176fab08d84de81b8045865",
                                             "query": {
-                                                "esql": "from logs-corelight.ssl-*\r\n| limit 10000\r\n| where observer.vendor == \"Corelight\" and event.dataset == \"tls\" and observer.hostname is not null and ssl.\r\nvalidation_status == \"self signed certificate\"\r\n| stats values(destination.domain), values(ssl.validation_status), values(destination.ip) by destination.ip, destination.domain\r\n| rename `values(destination.domain)` as Subject, `values(destination.ip)` as Destination, `values(ssl.validation_status)` as Status\r\n| keep Subject, Destination, Status"
+                                                "esql": "from logs-corelight.ssl-*\r\n| limit 10000\r\n| where observer.vendor == \"Corelight\" and event.dataset == \"tls\" and observer.hostname is not null and ssl.\r\nvalidation_status == \"self signed certificate\"\r\n| stats values(destination.domain), values(ssl.validation_status), values(destination.ip) by destination.ip, destination.domain\r\n| rename `values(destination.domain)` as Subject, `values(destination.ip)` as `Destination IP`, `values(ssl.validation_status)` as Status\r\n| keep Subject, `Destination IP`, Status"
                                             },
                                             "timeField": "@timestamp"
                                         }
@@ -445,7 +445,7 @@
                             },
                             "filters": [],
                             "query": {
-                                "esql": "from logs-corelight.ssl-*\r\n| limit 10000\r\n| where observer.vendor == \"Corelight\" and event.dataset == \"tls\" and observer.hostname is not null and ssl.\r\nvalidation_status == \"self signed certificate\"\r\n| stats values(destination.domain), values(ssl.validation_status), values(destination.ip) by destination.ip, destination.domain\r\n| rename `values(destination.domain)` as Subject, `values(destination.ip)` as Destination, `values(ssl.validation_status)` as Status\r\n| keep Subject, Destination, Status"
+                                "esql": "from logs-corelight.ssl-*\r\n| limit 10000\r\n| where observer.vendor == \"Corelight\" and event.dataset == \"tls\" and observer.hostname is not null and ssl.\r\nvalidation_status == \"self signed certificate\"\r\n| stats values(destination.domain), values(ssl.validation_status), values(destination.ip) by destination.ip, destination.domain\r\n| rename `values(destination.domain)` as Subject, `values(destination.ip)` as `Destination IP`, `values(ssl.validation_status)` as Status\r\n| keep Subject, `Destination IP`, Status"
                             },
                             "visualization": {
                                 "columns": [
@@ -453,17 +453,17 @@
                                         "columnId": "Subject"
                                     },
                                     {
-                                        "columnId": "Destination"
+                                        "columnId": "Destination IP"
                                     },
                                     {
                                         "columnId": "Status"
                                     }
                                 ],
-                                "layerId": "d99d143b-808b-4f68-a2f8-7337d8bd51b6",
+                                "layerId": "3fcf021a-7c2c-43ec-b5c8-ab338ca92860",
                                 "layerType": "data"
                             }
                         },
-                        "title": "Table Subject \u0026 Destination \u0026 Status",
+                        "title": "Table Subject \u0026 Destination IP \u0026 Status",
                         "type": "lens",
                         "visualizationType": "lnsDatatable"
                     },
@@ -512,7 +512,7 @@
                                         }
                                     ],
                                     "layers": {
-                                        "2ab5c5ab-83af-436d-9031-40dd1d38020f": {
+                                        "5f614d44-8cba-4f12-baa1-af0a711658d0": {
                                             "columns": [
                                                 {
                                                     "columnId": "Cipher",
@@ -523,16 +523,16 @@
                                                     }
                                                 },
                                                 {
-                                                    "columnId": "dest_ip",
-                                                    "fieldName": "dest_ip",
+                                                    "columnId": "Destination IP",
+                                                    "fieldName": "Destination IP",
                                                     "meta": {
                                                         "esType": "ip",
                                                         "type": "ip"
                                                     }
                                                 },
                                                 {
-                                                    "columnId": "Unique_Conns",
-                                                    "fieldName": "Unique_Conns",
+                                                    "columnId": "Unique Conns",
+                                                    "fieldName": "Unique Conns",
                                                     "inMetricDimension": true,
                                                     "meta": {
                                                         "esType": "long",
@@ -551,7 +551,7 @@
                                             ],
                                             "index": "22ef31a921118149e9248d9055373ee05aa0a1357176fab08d84de81b8045865",
                                             "query": {
-                                                "esql": "from logs-corelight.ssl-*\r\n| limit 10000\r\n| where observer.vendor == \"Corelight\" and event.dataset == \"tls\" and observer.hostname is not null and tls.cipher is not null and (tls.cipher like \"*RC4*\" or tls.cipher like \"*DES*\" or tls.cipher like \"*3DES*\" or tls.cipher like \"*MD5*\" or tls.cipher like \"*NULL*\" or tls.cipher like \"*EXPORT*\")\r\n| stats values(destination.ip), count_distinct(event.id), count() by tls.cipher\r\n| eval mv_last(`values(destination.ip)`)\r\n| rename `mv_last(``values(destination.ip)``)` as dest_ip, `count_distinct(event.id)` as Unique_Conns , `count()` as Count, tls.cipher as Cipher\r\n| keep Cipher,dest_ip,Unique_Conns,Count\r\n| sort Unique_Conns desc, Count desc"
+                                                "esql": "from logs-corelight.ssl-*\r\n| limit 10000\r\n| where observer.vendor == \"Corelight\" and event.dataset == \"tls\" and observer.hostname is not null and tls.cipher is not null and (tls.cipher like \"*RC4*\" or tls.cipher like \"*DES*\" or tls.cipher like \"*3DES*\" or tls.cipher like \"*MD5*\" or tls.cipher like \"*NULL*\" or tls.cipher like \"*EXPORT*\")\r\n| stats values(destination.ip), count_distinct(event.id), count() by tls.cipher\r\n| eval mv_last(`values(destination.ip)`)\r\n| rename `mv_last(``values(destination.ip)``)` as `Destination IP`, `count_distinct(event.id)` as `Unique Conns`, `count()` as Count, tls.cipher as Cipher\r\n| keep Cipher,`Destination IP`,`Unique Conns`,Count\r\n| sort `Unique Conns` desc, Count desc"
                                             },
                                             "timeField": "@timestamp"
                                         }
@@ -560,7 +560,7 @@
                             },
                             "filters": [],
                             "query": {
-                                "esql": "from logs-corelight.ssl-*\r\n| limit 10000\r\n| where observer.vendor == \"Corelight\" and event.dataset == \"tls\" and observer.hostname is not null and tls.cipher is not null and (tls.cipher like \"*RC4*\" or tls.cipher like \"*DES*\" or tls.cipher like \"*3DES*\" or tls.cipher like \"*MD5*\" or tls.cipher like \"*NULL*\" or tls.cipher like \"*EXPORT*\")\r\n| stats values(destination.ip), count_distinct(event.id), count() by tls.cipher\r\n| eval mv_last(`values(destination.ip)`)\r\n| rename `mv_last(``values(destination.ip)``)` as dest_ip, `count_distinct(event.id)` as Unique_Conns , `count()` as Count, tls.cipher as Cipher\r\n| keep Cipher,dest_ip,Unique_Conns,Count\r\n| sort Unique_Conns desc, Count desc"
+                                "esql": "from logs-corelight.ssl-*\r\n| limit 10000\r\n| where observer.vendor == \"Corelight\" and event.dataset == \"tls\" and observer.hostname is not null and tls.cipher is not null and (tls.cipher like \"*RC4*\" or tls.cipher like \"*DES*\" or tls.cipher like \"*3DES*\" or tls.cipher like \"*MD5*\" or tls.cipher like \"*NULL*\" or tls.cipher like \"*EXPORT*\")\r\n| stats values(destination.ip), count_distinct(event.id), count() by tls.cipher\r\n| eval mv_last(`values(destination.ip)`)\r\n| rename `mv_last(``values(destination.ip)``)` as `Destination IP`, `count_distinct(event.id)` as `Unique Conns`, `count()` as Count, tls.cipher as Cipher\r\n| keep Cipher,`Destination IP`,`Unique Conns`,Count\r\n| sort `Unique Conns` desc, Count desc"
                             },
                             "visualization": {
                                 "axisTitlesVisibilitySettings": {
@@ -582,7 +582,7 @@
                                 "layers": [
                                     {
                                         "accessors": [
-                                            "Unique_Conns",
+                                            "Unique Conns",
                                             "Count"
                                         ],
                                         "colorMapping": {
@@ -603,10 +603,10 @@
                                                 }
                                             ]
                                         },
-                                        "layerId": "2ab5c5ab-83af-436d-9031-40dd1d38020f",
+                                        "layerId": "5f614d44-8cba-4f12-baa1-af0a711658d0",
                                         "layerType": "data",
                                         "seriesType": "bar_stacked",
-                                        "splitAccessor": "dest_ip",
+                                        "splitAccessor": "Destination IP",
                                         "xAccessor": "Cipher"
                                     }
                                 ],
@@ -623,7 +623,7 @@
                                 "valueLabels": "hide"
                             }
                         },
-                        "title": "Unique_Conns \u0026 Count of Cipher",
+                        "title": "Unique Conns \u0026 Count of Cipher",
                         "type": "lens",
                         "visualizationType": "lnsXY"
                     },
@@ -914,11 +914,11 @@
                                         }
                                     ],
                                     "layers": {
-                                        "495f3c21-0b76-4c30-bd24-d10a8ec80019": {
+                                        "245abf70-3066-45e3-87b0-11390408cd79": {
                                             "columns": [
                                                 {
-                                                    "columnId": "uid",
-                                                    "fieldName": "uid",
+                                                    "columnId": "UID",
+                                                    "fieldName": "UID",
                                                     "inMetricDimension": true,
                                                     "meta": {
                                                         "esType": "keyword",
@@ -926,8 +926,8 @@
                                                     }
                                                 },
                                                 {
-                                                    "columnId": "src_ip",
-                                                    "fieldName": "src_ip",
+                                                    "columnId": "Source IP",
+                                                    "fieldName": "Source IP",
                                                     "inMetricDimension": true,
                                                     "meta": {
                                                         "esType": "ip",
@@ -935,8 +935,8 @@
                                                     }
                                                 },
                                                 {
-                                                    "columnId": "dest_ip",
-                                                    "fieldName": "dest_ip",
+                                                    "columnId": "Destination IP",
+                                                    "fieldName": "Destination IP",
                                                     "inMetricDimension": true,
                                                     "meta": {
                                                         "esType": "ip",
@@ -964,7 +964,7 @@
                                             ],
                                             "index": "b2bcbb11fd7b30e2a9f2ee93a6a5ffd1f700ee82fff0bfc92dd439c707a35ebb",
                                             "query": {
-                                                "esql": "from logs-corelight.various-*\r\n| limit 10000\r\n| where observer.vendor == \"Corelight\" and event.dataset == \"ssh\" and observer.hostname is not null\r\n| stats count() by event.id, source.ip, destination.ip, ssh.inferences \r\n| stats count() by event.id, source.ip, destination.ip, ssh.inferences \r\n| eval Description =case(\r\n    ssh.inferences == \"PKA\", \"The client automatically auth'd using pubkey auth.  This inference applies to only the auth type that succeeded. Before it, publickey or password authentication attempts could have occurred.\",\r\n    ssh.inferences == \"KS\", \"Interactive session\",\r\n    ssh.inferences == \"AUTO\", \"The client was a script or automated utility and not driven by a user\",\r\n    ssh.inferences == \"CTS\", \"The client likely already had an entry in its known_hosts file for this server\"\r\n)\r\n| where Description is not null\r\n| rename event.id as uid, source.ip as src_ip, destination.ip as dest_ip, ssh.inferences as Inferences, `count()` as Count\r\n| keep uid , src_ip, dest_ip, Inferences,Count,Description"
+                                                "esql": "from logs-corelight.various-*\r\n| limit 10000\r\n| where observer.vendor == \"Corelight\" and event.dataset == \"ssh\" and observer.hostname is not null\r\n| stats count() by event.id, source.ip, destination.ip, ssh.inferences \r\n| stats count() by event.id, source.ip, destination.ip, ssh.inferences \r\n| eval Description =case(\r\n    ssh.inferences == \"PKA\", \"The client automatically auth'd using pubkey auth.  This inference applies to only the auth type that succeeded. Before it, publickey or password authentication attempts could have occurred.\",\r\n    ssh.inferences == \"KS\", \"Interactive session\",\r\n    ssh.inferences == \"AUTO\", \"The client was a script or automated utility and not driven by a user\",\r\n    ssh.inferences == \"CTS\", \"The client likely already had an entry in its known_hosts file for this server\"\r\n)\r\n| where Description is not null\r\n| rename event.id as UID, source.ip as `Source IP`, destination.ip as `Destination IP`, ssh.inferences as Inferences, `count()` as Count\r\n| keep UID , `Source IP`, `Destination IP`, Inferences,Count,Description"
                                             },
                                             "timeField": "@timestamp"
                                         }
@@ -973,18 +973,18 @@
                             },
                             "filters": [],
                             "query": {
-                                "esql": "from logs-corelight.various-*\r\n| limit 10000\r\n| where observer.vendor == \"Corelight\" and event.dataset == \"ssh\" and observer.hostname is not null\r\n| stats count() by event.id, source.ip, destination.ip, ssh.inferences \r\n| stats count() by event.id, source.ip, destination.ip, ssh.inferences \r\n| eval Description =case(\r\n    ssh.inferences == \"PKA\", \"The client automatically auth'd using pubkey auth.  This inference applies to only the auth type that succeeded. Before it, publickey or password authentication attempts could have occurred.\",\r\n    ssh.inferences == \"KS\", \"Interactive session\",\r\n    ssh.inferences == \"AUTO\", \"The client was a script or automated utility and not driven by a user\",\r\n    ssh.inferences == \"CTS\", \"The client likely already had an entry in its known_hosts file for this server\"\r\n)\r\n| where Description is not null\r\n| rename event.id as uid, source.ip as src_ip, destination.ip as dest_ip, ssh.inferences as Inferences, `count()` as Count\r\n| keep uid , src_ip, dest_ip, Inferences,Count,Description"
+                                "esql": "from logs-corelight.various-*\r\n| limit 10000\r\n| where observer.vendor == \"Corelight\" and event.dataset == \"ssh\" and observer.hostname is not null\r\n| stats count() by event.id, source.ip, destination.ip, ssh.inferences \r\n| stats count() by event.id, source.ip, destination.ip, ssh.inferences \r\n| eval Description =case(\r\n    ssh.inferences == \"PKA\", \"The client automatically auth'd using pubkey auth.  This inference applies to only the auth type that succeeded. Before it, publickey or password authentication attempts could have occurred.\",\r\n    ssh.inferences == \"KS\", \"Interactive session\",\r\n    ssh.inferences == \"AUTO\", \"The client was a script or automated utility and not driven by a user\",\r\n    ssh.inferences == \"CTS\", \"The client likely already had an entry in its known_hosts file for this server\"\r\n)\r\n| where Description is not null\r\n| rename event.id as UID, source.ip as `Source IP`, destination.ip as `Destination IP`, ssh.inferences as Inferences, `count()` as Count\r\n| keep UID , `Source IP`, `Destination IP`, Inferences,Count,Description"
                             },
                             "visualization": {
                                 "columns": [
                                     {
-                                        "columnId": "uid"
+                                        "columnId": "UID"
                                     },
                                     {
-                                        "columnId": "src_ip"
+                                        "columnId": "Source IP"
                                     },
                                     {
-                                        "columnId": "dest_ip"
+                                        "columnId": "Destination IP"
                                     },
                                     {
                                         "columnId": "Inferences"
@@ -993,11 +993,11 @@
                                         "columnId": "Count"
                                     }
                                 ],
-                                "layerId": "495f3c21-0b76-4c30-bd24-d10a8ec80019",
+                                "layerId": "245abf70-3066-45e3-87b0-11390408cd79",
                                 "layerType": "data"
                             }
                         },
-                        "title": "Table uid \u0026 src_ip \u0026 dest_ip \u0026 Inferences \u0026 Count",
+                        "title": "Table UID \u0026 Source IP \u0026 Destination IP \u0026 Inferences \u0026 Count",
                         "type": "lens",
                         "visualizationType": "lnsDatatable"
                     },
@@ -1046,11 +1046,11 @@
                                         }
                                     ],
                                     "layers": {
-                                        "4fbc45bb-a55f-4cb2-ae08-7176a6b75e80": {
+                                        "6e41b218-dd22-4bb2-b790-f429589dc7e3": {
                                             "columns": [
                                                 {
-                                                    "columnId": "uid",
-                                                    "fieldName": "uid",
+                                                    "columnId": "UID",
+                                                    "fieldName": "UID",
                                                     "inMetricDimension": true,
                                                     "meta": {
                                                         "esType": "keyword",
@@ -1058,8 +1058,8 @@
                                                     }
                                                 },
                                                 {
-                                                    "columnId": "src_ip",
-                                                    "fieldName": "src_ip",
+                                                    "columnId": "Source IP",
+                                                    "fieldName": "Source IP",
                                                     "inMetricDimension": true,
                                                     "meta": {
                                                         "esType": "ip",
@@ -1067,8 +1067,8 @@
                                                     }
                                                 },
                                                 {
-                                                    "columnId": "dest_ip",
-                                                    "fieldName": "dest_ip",
+                                                    "columnId": "Destination IP",
+                                                    "fieldName": "Destination IP",
                                                     "inMetricDimension": true,
                                                     "meta": {
                                                         "esType": "ip",
@@ -1096,7 +1096,7 @@
                                             ],
                                             "index": "b2bcbb11fd7b30e2a9f2ee93a6a5ffd1f700ee82fff0bfc92dd439c707a35ebb",
                                             "query": {
-                                                "esql": "from logs-corelight.various-*\r\n| limit 10000\r\n| where observer.vendor == \"Corelight\" and event.dataset == \"ssh\" and observer.hostname is not null\r\n| stats count() by event.id, source.ip, destination.ip, ssh.inferences \r\n| eval Description =case(\r\n    ssh.inferences == \"AUTO\", \"The client is a script automated utility and not driven by a user\",\r\n    ssh.inferences == \"KS\", \"Interactive session\"\r\n)\r\n| where Description is not null\r\n| stats count() by event.id, source.ip, destination.ip, ssh.inferences , Description\r\n| rename event.id as uid, source.ip as src_ip, destination.ip as dest_ip, ssh.inferences as Inference, `count()` as Count\r\n| keep uid , src_ip, dest_ip, Inference, Description,Count"
+                                                "esql": "from logs-corelight.various-*\r\n| limit 10000\r\n| where observer.vendor == \"Corelight\" and event.dataset == \"ssh\" and observer.hostname is not null\r\n| stats count() by event.id, source.ip, destination.ip, ssh.inferences \r\n| eval Description =case(\r\n    ssh.inferences == \"AUTO\", \"The client is a script automated utility and not driven by a user\",\r\n    ssh.inferences == \"KS\", \"Interactive session\"\r\n)\r\n| where Description is not null\r\n| stats count() by event.id, source.ip, destination.ip, ssh.inferences , Description\r\n| rename event.id as UID, source.ip as `Source IP`, destination.ip as `Destination IP`, ssh.inferences as Inference, `count()` as Count\r\n| keep UID, `Source IP`, `Destination IP`, Inference, Description, Count"
                                             },
                                             "timeField": "@timestamp"
                                         }
@@ -1105,18 +1105,18 @@
                             },
                             "filters": [],
                             "query": {
-                                "esql": "from logs-corelight.various-*\r\n| limit 10000\r\n| where observer.vendor == \"Corelight\" and event.dataset == \"ssh\" and observer.hostname is not null\r\n| stats count() by event.id, source.ip, destination.ip, ssh.inferences \r\n| eval Description =case(\r\n    ssh.inferences == \"AUTO\", \"The client is a script automated utility and not driven by a user\",\r\n    ssh.inferences == \"KS\", \"Interactive session\"\r\n)\r\n| where Description is not null\r\n| stats count() by event.id, source.ip, destination.ip, ssh.inferences , Description\r\n| rename event.id as uid, source.ip as src_ip, destination.ip as dest_ip, ssh.inferences as Inference, `count()` as Count\r\n| keep uid , src_ip, dest_ip, Inference, Description,Count"
+                                "esql": "from logs-corelight.various-*\r\n| limit 10000\r\n| where observer.vendor == \"Corelight\" and event.dataset == \"ssh\" and observer.hostname is not null\r\n| stats count() by event.id, source.ip, destination.ip, ssh.inferences \r\n| eval Description =case(\r\n    ssh.inferences == \"AUTO\", \"The client is a script automated utility and not driven by a user\",\r\n    ssh.inferences == \"KS\", \"Interactive session\"\r\n)\r\n| where Description is not null\r\n| stats count() by event.id, source.ip, destination.ip, ssh.inferences , Description\r\n| rename event.id as UID, source.ip as `Source IP`, destination.ip as `Destination IP`, ssh.inferences as Inference, `count()` as Count\r\n| keep UID, `Source IP`, `Destination IP`, Inference, Description, Count"
                             },
                             "visualization": {
                                 "columns": [
                                     {
-                                        "columnId": "uid"
+                                        "columnId": "UID"
                                     },
                                     {
-                                        "columnId": "src_ip"
+                                        "columnId": "Source IP"
                                     },
                                     {
-                                        "columnId": "dest_ip"
+                                        "columnId": "Destination IP"
                                     },
                                     {
                                         "columnId": "Inference"
@@ -1125,11 +1125,11 @@
                                         "columnId": "Description"
                                     }
                                 ],
-                                "layerId": "4fbc45bb-a55f-4cb2-ae08-7176a6b75e80",
+                                "layerId": "6e41b218-dd22-4bb2-b790-f429589dc7e3",
                                 "layerType": "data"
                             }
                         },
-                        "title": "Table uid \u0026 src_ip \u0026 dest_ip \u0026 Inference \u0026 Description",
+                        "title": "Table UID \u0026 Source IP \u0026 Destination IP \u0026 Inference \u0026 Description",
                         "type": "lens",
                         "visualizationType": "lnsDatatable"
                     },
@@ -1420,11 +1420,11 @@
                                         }
                                     ],
                                     "layers": {
-                                        "7523aa3d-bf35-4d6b-b36e-d294e4375e0c": {
+                                        "a591c3d3-91d2-4053-a201-395832db2479": {
                                             "columns": [
                                                 {
-                                                    "columnId": "uid",
-                                                    "fieldName": "uid",
+                                                    "columnId": "UID",
+                                                    "fieldName": "UID",
                                                     "inMetricDimension": true,
                                                     "meta": {
                                                         "esType": "keyword",
@@ -1432,8 +1432,8 @@
                                                     }
                                                 },
                                                 {
-                                                    "columnId": "src_ip",
-                                                    "fieldName": "src_ip",
+                                                    "columnId": "Source IP",
+                                                    "fieldName": "Source IP",
                                                     "inMetricDimension": true,
                                                     "meta": {
                                                         "esType": "ip",
@@ -1441,8 +1441,8 @@
                                                     }
                                                 },
                                                 {
-                                                    "columnId": "dest_ip",
-                                                    "fieldName": "dest_ip",
+                                                    "columnId": "Destination IP",
+                                                    "fieldName": "Destination IP",
                                                     "inMetricDimension": true,
                                                     "meta": {
                                                         "esType": "ip",
@@ -1470,7 +1470,7 @@
                                             ],
                                             "index": "b2bcbb11fd7b30e2a9f2ee93a6a5ffd1f700ee82fff0bfc92dd439c707a35ebb",
                                             "query": {
-                                                "esql": "from logs-corelight.various-*\r\n| limit 10000\r\n| where observer.vendor == \"Corelight\" and event.dataset == \"ssh\" and observer.hostname is not null\r\n| stats count() by event.id, source.ip, destination.ip, ssh.inferences \r\n| eval Description =case(\r\n    ssh.inferences == \"SFD\", \"This indicates a small file download.\",\r\n    ssh.inferences == \"LFD\", \"This indicates a non interactive session where a file was possibly downloaded.\",\r\n    ssh.inferences == \"SFU\", \"This indicates a small file upload.\",\r\n    ssh.inferences == \"LFU\", \"This indicates a non interactive session where a file was possibly uploaded.\"\r\n)\r\n| where Description is not null\r\n| stats count() by event.id, source.ip, destination.ip, ssh.inferences , Description\r\n| rename event.id as uid, source.ip as src_ip, destination.ip as dest_ip, ssh.inferences as Inference, `count()` as Count\r\n| keep uid , src_ip, dest_ip, Inference, Description,Count"
+                                                "esql": "from logs-corelight.various-*\r\n| limit 10000\r\n| where observer.vendor == \"Corelight\" and event.dataset == \"ssh\" and observer.hostname is not null\r\n| stats count() by event.id, source.ip, destination.ip, ssh.inferences \r\n| eval Description =case(\r\n    ssh.inferences == \"SFD\", \"This indicates a small file download.\",\r\n    ssh.inferences == \"LFD\", \"This indicates a non interactive session where a file was possibly downloaded.\",\r\n    ssh.inferences == \"SFU\", \"This indicates a small file upload.\",\r\n    ssh.inferences == \"LFU\", \"This indicates a non interactive session where a file was possibly uploaded.\"\r\n)\r\n| where Description is not null\r\n| stats count() by event.id, source.ip, destination.ip, ssh.inferences , Description\r\n| rename event.id as UID, source.ip as `Source IP`, destination.ip as `Destination IP`, ssh.inferences as Inference, `count()` as Count\r\n| keep UID, `Source IP`, `Destination IP`, Inference, Description, Count"
                                             },
                                             "timeField": "@timestamp"
                                         }
@@ -1479,18 +1479,18 @@
                             },
                             "filters": [],
                             "query": {
-                                "esql": "from logs-corelight.various-*\r\n| limit 10000\r\n| where observer.vendor == \"Corelight\" and event.dataset == \"ssh\" and observer.hostname is not null\r\n| stats count() by event.id, source.ip, destination.ip, ssh.inferences \r\n| eval Description =case(\r\n    ssh.inferences == \"SFD\", \"This indicates a small file download.\",\r\n    ssh.inferences == \"LFD\", \"This indicates a non interactive session where a file was possibly downloaded.\",\r\n    ssh.inferences == \"SFU\", \"This indicates a small file upload.\",\r\n    ssh.inferences == \"LFU\", \"This indicates a non interactive session where a file was possibly uploaded.\"\r\n)\r\n| where Description is not null\r\n| stats count() by event.id, source.ip, destination.ip, ssh.inferences , Description\r\n| rename event.id as uid, source.ip as src_ip, destination.ip as dest_ip, ssh.inferences as Inference, `count()` as Count\r\n| keep uid , src_ip, dest_ip, Inference, Description,Count"
+                                "esql": "from logs-corelight.various-*\r\n| limit 10000\r\n| where observer.vendor == \"Corelight\" and event.dataset == \"ssh\" and observer.hostname is not null\r\n| stats count() by event.id, source.ip, destination.ip, ssh.inferences \r\n| eval Description =case(\r\n    ssh.inferences == \"SFD\", \"This indicates a small file download.\",\r\n    ssh.inferences == \"LFD\", \"This indicates a non interactive session where a file was possibly downloaded.\",\r\n    ssh.inferences == \"SFU\", \"This indicates a small file upload.\",\r\n    ssh.inferences == \"LFU\", \"This indicates a non interactive session where a file was possibly uploaded.\"\r\n)\r\n| where Description is not null\r\n| stats count() by event.id, source.ip, destination.ip, ssh.inferences , Description\r\n| rename event.id as UID, source.ip as `Source IP`, destination.ip as `Destination IP`, ssh.inferences as Inference, `count()` as Count\r\n| keep UID, `Source IP`, `Destination IP`, Inference, Description, Count"
                             },
                             "visualization": {
                                 "columns": [
                                     {
-                                        "columnId": "uid"
+                                        "columnId": "UID"
                                     },
                                     {
-                                        "columnId": "src_ip"
+                                        "columnId": "Source IP"
                                     },
                                     {
-                                        "columnId": "dest_ip"
+                                        "columnId": "Destination IP"
                                     },
                                     {
                                         "columnId": "Inference"
@@ -1499,11 +1499,11 @@
                                         "columnId": "Description"
                                     }
                                 ],
-                                "layerId": "7523aa3d-bf35-4d6b-b36e-d294e4375e0c",
+                                "layerId": "a591c3d3-91d2-4053-a201-395832db2479",
                                 "layerType": "data"
                             }
                         },
-                        "title": "Table uid \u0026 src_ip \u0026 dest_ip \u0026 Inference \u0026 Description",
+                        "title": "Table UID \u0026 Source IP \u0026 Destination IP \u0026 Inference \u0026 Description",
                         "type": "lens",
                         "visualizationType": "lnsDatatable"
                     },
@@ -1552,11 +1552,11 @@
                                         }
                                     ],
                                     "layers": {
-                                        "368cec63-5aa4-4e0e-948a-c72d88fffb30": {
+                                        "6812facf-75fd-40ad-b85e-9e0e5874938f": {
                                             "columns": [
                                                 {
-                                                    "columnId": "uid",
-                                                    "fieldName": "uid",
+                                                    "columnId": "UID",
+                                                    "fieldName": "UID",
                                                     "inMetricDimension": true,
                                                     "meta": {
                                                         "esType": "keyword",
@@ -1564,8 +1564,8 @@
                                                     }
                                                 },
                                                 {
-                                                    "columnId": "src_ip",
-                                                    "fieldName": "src_ip",
+                                                    "columnId": "Source IP",
+                                                    "fieldName": "Source IP",
                                                     "inMetricDimension": true,
                                                     "meta": {
                                                         "esType": "ip",
@@ -1573,8 +1573,8 @@
                                                     }
                                                 },
                                                 {
-                                                    "columnId": "dest_ip",
-                                                    "fieldName": "dest_ip",
+                                                    "columnId": "Destination IP",
+                                                    "fieldName": "Destination IP",
                                                     "inMetricDimension": true,
                                                     "meta": {
                                                         "esType": "ip",
@@ -1602,7 +1602,7 @@
                                             ],
                                             "index": "b2bcbb11fd7b30e2a9f2ee93a6a5ffd1f700ee82fff0bfc92dd439c707a35ebb",
                                             "query": {
-                                                "esql": "from logs-corelight.various-*\r\n| limit 10000\r\n| where observer.vendor == \"Corelight\" and event.dataset == \"ssh\" and observer.hostname is not null and ssh.inferences in ( \"SC\", \"SP\", \"SV\", \"SA\", \"AFR\", \"BAN\" )\r\n| stats count() by event.id,source.ip,destination.ip,ssh.inferences\r\n| rename event.id as uid, source.ip as src_ip, destination.ip as dest_ip,`count()` as Count, ssh.inferences as Inferences\r\n| keep uid, src_ip,dest_ip,Count,Inferences"
+                                                "esql": "from logs-corelight.various-*\r\n| limit 10000\r\n| where observer.vendor == \"Corelight\" and event.dataset == \"ssh\" and observer.hostname is not null and ssh.inferences in ( \"SC\", \"SP\", \"SV\", \"SA\", \"AFR\", \"BAN\" )\r\n| stats count() by event.id,source.ip,destination.ip,ssh.inferences\r\n| rename event.id as UID, source.ip as `Source IP`, destination.ip as `Destination IP`,`count()` as Count, ssh.inferences as Inferences\r\n| keep UID, `Source IP`,`Destination IP`,Count,Inferences"
                                             },
                                             "timeField": "@timestamp"
                                         }
@@ -1611,18 +1611,18 @@
                             },
                             "filters": [],
                             "query": {
-                                "esql": "from logs-corelight.various-*\r\n| limit 10000\r\n| where observer.vendor == \"Corelight\" and event.dataset == \"ssh\" and observer.hostname is not null and ssh.inferences in ( \"SC\", \"SP\", \"SV\", \"SA\", \"AFR\", \"BAN\" )\r\n| stats count() by event.id,source.ip,destination.ip,ssh.inferences\r\n| rename event.id as uid, source.ip as src_ip, destination.ip as dest_ip,`count()` as Count, ssh.inferences as Inferences\r\n| keep uid, src_ip,dest_ip,Count,Inferences"
+                                "esql": "from logs-corelight.various-*\r\n| limit 10000\r\n| where observer.vendor == \"Corelight\" and event.dataset == \"ssh\" and observer.hostname is not null and ssh.inferences in ( \"SC\", \"SP\", \"SV\", \"SA\", \"AFR\", \"BAN\" )\r\n| stats count() by event.id,source.ip,destination.ip,ssh.inferences\r\n| rename event.id as UID, source.ip as `Source IP`, destination.ip as `Destination IP`,`count()` as Count, ssh.inferences as Inferences\r\n| keep UID, `Source IP`,`Destination IP`,Count,Inferences"
                             },
                             "visualization": {
                                 "columns": [
                                     {
-                                        "columnId": "uid"
+                                        "columnId": "UID"
                                     },
                                     {
-                                        "columnId": "src_ip"
+                                        "columnId": "Source IP"
                                     },
                                     {
-                                        "columnId": "dest_ip"
+                                        "columnId": "Destination IP"
                                     },
                                     {
                                         "columnId": "Count"
@@ -1631,11 +1631,11 @@
                                         "columnId": "Inferences"
                                     }
                                 ],
-                                "layerId": "368cec63-5aa4-4e0e-948a-c72d88fffb30",
+                                "layerId": "6812facf-75fd-40ad-b85e-9e0e5874938f",
                                 "layerType": "data"
                             }
                         },
-                        "title": "Table uid \u0026 src_ip \u0026 dest_ip \u0026 Count \u0026 Inferences",
+                        "title": "Table UID \u0026 Source IP \u0026 Destination IP \u0026 Count \u0026 Inferences",
                         "type": "lens",
                         "visualizationType": "lnsDatatable"
                     },
@@ -1805,11 +1805,11 @@
                                         }
                                     ],
                                     "layers": {
-                                        "9f0a36b7-f323-48db-a4ec-0376e36aa6c0": {
+                                        "4bf89721-c628-4281-b0d4-c08a267f89d0": {
                                             "columns": [
                                                 {
-                                                    "columnId": "uid",
-                                                    "fieldName": "uid",
+                                                    "columnId": "UID",
+                                                    "fieldName": "UID",
                                                     "inMetricDimension": true,
                                                     "meta": {
                                                         "esType": "keyword",
@@ -1817,8 +1817,8 @@
                                                     }
                                                 },
                                                 {
-                                                    "columnId": "src_ip",
-                                                    "fieldName": "src_ip",
+                                                    "columnId": "Source IP",
+                                                    "fieldName": "Source IP",
                                                     "inMetricDimension": true,
                                                     "meta": {
                                                         "esType": "ip",
@@ -1826,8 +1826,8 @@
                                                     }
                                                 },
                                                 {
-                                                    "columnId": "dest_ip",
-                                                    "fieldName": "dest_ip",
+                                                    "columnId": "Destination IP",
+                                                    "fieldName": "Destination IP",
                                                     "inMetricDimension": true,
                                                     "meta": {
                                                         "esType": "ip",
@@ -1855,7 +1855,7 @@
                                             ],
                                             "index": "b2bcbb11fd7b30e2a9f2ee93a6a5ffd1f700ee82fff0bfc92dd439c707a35ebb",
                                             "query": {
-                                                "esql": "from logs-corelight.various-*\r\n| limit 10000\r\n| where observer.vendor == \"Corelight\" and event.dataset == \"ssh\" and observer.hostname is not null\r\n| stats count() by event.id, source.ip, destination.ip, ssh.inferences\r\n| eval Description =case(\r\n    ssh.inferences == \"ABP\", \"The client did not complete the SSH state machine for authentication and likely sent the server an exploit\",\r\n    ssh.inferences == \"RSP\", \"The client connected with a -R flag, which provisions the ports to be used for a Reverse Session to be set up at any point onwards. ssh -R 31337:localhost:22 user@192.168.20.33\",\r\n    ssh.inferences == \"RSI\", \"The Reverse session is inititated from the server back to the Client. This initiation can be done at any stage during the session. From the Server, the attacker would initiate the Reverse session by e.g.ssh victim@localhost -p 31337\",\r\n    ssh.inferences == \"RSIA\", \"The inititation of the Reverse session happened very early in the packet stream, indicating automation\",\r\n    ssh.inferences == \"RSL\", \"The Reverse tunnel login login has succeeded, the attacker now has shell on the victim's device\",\r\n    ssh.inferences == \"RSK\", \"Keystrokes are detected within the Reverse tunnel\"\r\n)\r\n| where Description is not null\r\n| rename event.id as uid, source.ip as src_ip, destination.ip as dest_ip, ssh.inferences as Inference, `count()` as Count\r\n| keep uid , src_ip, dest_ip, Inference,Count, Description"
+                                                "esql": "from logs-corelight.various-*\r\n| limit 10000\r\n| where observer.vendor == \"Corelight\" and event.dataset == \"ssh\" and observer.hostname is not null\r\n| stats count() by event.id, source.ip, destination.ip, ssh.inferences\r\n| eval Description =case(\r\n    ssh.inferences == \"ABP\", \"The client did not complete the SSH state machine for authentication and likely sent the server an exploit\",\r\n    ssh.inferences == \"RSP\", \"The client connected with a -R flag, which provisions the ports to be used for a Reverse Session to be set up at any point onwards. ssh -R 31337:localhost:22 user@192.168.20.33\",\r\n    ssh.inferences == \"RSI\", \"The Reverse session is inititated from the server back to the Client. This initiation can be done at any stage during the session. From the Server, the attacker would initiate the Reverse session by e.g.ssh victim@localhost -p 31337\",\r\n    ssh.inferences == \"RSIA\", \"The inititation of the Reverse session happened very early in the packet stream, indicating automation\",\r\n    ssh.inferences == \"RSL\", \"The Reverse tunnel login login has succeeded, the attacker now has shell on the victim's device\",\r\n    ssh.inferences == \"RSK\", \"Keystrokes are detected within the Reverse tunnel\"\r\n)\r\n| where Description is not null\r\n| rename event.id as UID, source.ip as `Source IP`, destination.ip as `Destination IP`, ssh.inferences as Inference, `count()` as Count\r\n| keep UID, `Source IP`, `Destination IP`, Inference, Count, Description"
                                             },
                                             "timeField": "@timestamp"
                                         }
@@ -1864,18 +1864,18 @@
                             },
                             "filters": [],
                             "query": {
-                                "esql": "from logs-corelight.various-*\r\n| limit 10000\r\n| where observer.vendor == \"Corelight\" and event.dataset == \"ssh\" and observer.hostname is not null\r\n| stats count() by event.id, source.ip, destination.ip, ssh.inferences\r\n| eval Description =case(\r\n    ssh.inferences == \"ABP\", \"The client did not complete the SSH state machine for authentication and likely sent the server an exploit\",\r\n    ssh.inferences == \"RSP\", \"The client connected with a -R flag, which provisions the ports to be used for a Reverse Session to be set up at any point onwards. ssh -R 31337:localhost:22 user@192.168.20.33\",\r\n    ssh.inferences == \"RSI\", \"The Reverse session is inititated from the server back to the Client. This initiation can be done at any stage during the session. From the Server, the attacker would initiate the Reverse session by e.g.ssh victim@localhost -p 31337\",\r\n    ssh.inferences == \"RSIA\", \"The inititation of the Reverse session happened very early in the packet stream, indicating automation\",\r\n    ssh.inferences == \"RSL\", \"The Reverse tunnel login login has succeeded, the attacker now has shell on the victim's device\",\r\n    ssh.inferences == \"RSK\", \"Keystrokes are detected within the Reverse tunnel\"\r\n)\r\n| where Description is not null\r\n| rename event.id as uid, source.ip as src_ip, destination.ip as dest_ip, ssh.inferences as Inference, `count()` as Count\r\n| keep uid , src_ip, dest_ip, Inference,Count, Description"
+                                "esql": "from logs-corelight.various-*\r\n| limit 10000\r\n| where observer.vendor == \"Corelight\" and event.dataset == \"ssh\" and observer.hostname is not null\r\n| stats count() by event.id, source.ip, destination.ip, ssh.inferences\r\n| eval Description =case(\r\n    ssh.inferences == \"ABP\", \"The client did not complete the SSH state machine for authentication and likely sent the server an exploit\",\r\n    ssh.inferences == \"RSP\", \"The client connected with a -R flag, which provisions the ports to be used for a Reverse Session to be set up at any point onwards. ssh -R 31337:localhost:22 user@192.168.20.33\",\r\n    ssh.inferences == \"RSI\", \"The Reverse session is inititated from the server back to the Client. This initiation can be done at any stage during the session. From the Server, the attacker would initiate the Reverse session by e.g.ssh victim@localhost -p 31337\",\r\n    ssh.inferences == \"RSIA\", \"The inititation of the Reverse session happened very early in the packet stream, indicating automation\",\r\n    ssh.inferences == \"RSL\", \"The Reverse tunnel login login has succeeded, the attacker now has shell on the victim's device\",\r\n    ssh.inferences == \"RSK\", \"Keystrokes are detected within the Reverse tunnel\"\r\n)\r\n| where Description is not null\r\n| rename event.id as UID, source.ip as `Source IP`, destination.ip as `Destination IP`, ssh.inferences as Inference, `count()` as Count\r\n| keep UID, `Source IP`, `Destination IP`, Inference, Count, Description"
                             },
                             "visualization": {
                                 "columns": [
                                     {
-                                        "columnId": "uid"
+                                        "columnId": "UID"
                                     },
                                     {
-                                        "columnId": "src_ip"
+                                        "columnId": "Source IP"
                                     },
                                     {
-                                        "columnId": "dest_ip"
+                                        "columnId": "Destination IP"
                                     },
                                     {
                                         "columnId": "Inference"
@@ -1884,11 +1884,11 @@
                                         "columnId": "Count"
                                     }
                                 ],
-                                "layerId": "9f0a36b7-f323-48db-a4ec-0376e36aa6c0",
+                                "layerId": "4bf89721-c628-4281-b0d4-c08a267f89d0",
                                 "layerType": "data"
                             }
                         },
-                        "title": "Table uid \u0026 src_ip \u0026 dest_ip \u0026 Inference \u0026 Count",
+                        "title": "Table UID \u0026 Source IP \u0026 Destination IP \u0026 Inference \u0026 Count",
                         "type": "lens",
                         "visualizationType": "lnsDatatable"
                     },
@@ -1920,7 +1920,7 @@
         "version": 2
     },
     "coreMigrationVersion": "8.8.0",
-    "created_at": "2025-01-06T05:25:23.504Z",
+    "created_at": "2025-01-29T12:41:02.238Z",
     "id": "corelight-45197477-c13f-4e52-a5dd-fb4f53564963",
     "managed": false,
     "references": [

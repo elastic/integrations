@@ -488,7 +488,7 @@
                                                     "customLabel": true,
                                                     "dataType": "string",
                                                     "isBucketed": true,
-                                                    "label": "service",
+                                                    "label": "Service",
                                                     "operationType": "terms",
                                                     "params": {
                                                         "exclude": [],
@@ -878,7 +878,7 @@
                     "y": 16
                 },
                 "panelIndex": "7e93794c-5b33-4f11-a62c-20f9e97b95c6",
-                "title": "Top Originators (sources) by # of connections [Logs Corelight]",
+                "title": "Top Originators (sources) by number of connections [Logs Corelight]",
                 "type": "lens"
             },
             {
@@ -1022,7 +1022,7 @@
                     "y": 16
                 },
                 "panelIndex": "1a4ebe9a-d0ba-43f2-98af-58ccb8ef4ffd",
-                "title": "Top Responders (destinations) by # of connections [Logs Corelight]",
+                "title": "Top Responders (destinations) by number of connections [Logs Corelight]",
                 "type": "lens"
             },
             {
@@ -1054,7 +1054,7 @@
                                                     "customLabel": true,
                                                     "dataType": "string",
                                                     "isBucketed": true,
-                                                    "label": "proto",
+                                                    "label": "Proto",
                                                     "operationType": "terms",
                                                     "params": {
                                                         "exclude": [],
@@ -1080,7 +1080,7 @@
                                                     "customLabel": true,
                                                     "dataType": "ip",
                                                     "isBucketed": true,
-                                                    "label": "id_orig_h",
+                                                    "label": "Source IP",
                                                     "operationType": "terms",
                                                     "params": {
                                                         "exclude": [],
@@ -1106,7 +1106,7 @@
                                                     "customLabel": true,
                                                     "dataType": "string",
                                                     "isBucketed": true,
-                                                    "label": "Country",
+                                                    "label": "Destination Country",
                                                     "operationType": "terms",
                                                     "params": {
                                                         "exclude": [],
@@ -1133,7 +1133,7 @@
                                                     "customLabel": true,
                                                     "dataType": "ip",
                                                     "isBucketed": true,
-                                                    "label": "id_resp_h",
+                                                    "label": "Destination IP",
                                                     "operationType": "terms",
                                                     "params": {
                                                         "exclude": [],
@@ -1159,7 +1159,7 @@
                                                     "customLabel": true,
                                                     "dataType": "number",
                                                     "isBucketed": false,
-                                                    "label": "bytes",
+                                                    "label": "Bytes",
                                                     "operationType": "sum",
                                                     "params": {
                                                         "emptyAsNull": false,
@@ -1332,11 +1332,11 @@
                                         }
                                     ],
                                     "layers": {
-                                        "e7dc1811-19ed-4c1f-bcf8-91456f2d9f6c": {
+                                        "f0c07097-c5fe-4a1d-a40c-f3de9ecc1611": {
                                             "columns": [
                                                 {
-                                                    "columnId": "uid",
-                                                    "fieldName": "uid",
+                                                    "columnId": "UID",
+                                                    "fieldName": "UID",
                                                     "inMetricDimension": true,
                                                     "meta": {
                                                         "esType": "keyword",
@@ -1344,8 +1344,8 @@
                                                     }
                                                 },
                                                 {
-                                                    "columnId": "duration",
-                                                    "fieldName": "duration",
+                                                    "columnId": "Duration",
+                                                    "fieldName": "Duration",
                                                     "inMetricDimension": true,
                                                     "meta": {
                                                         "esType": "double",
@@ -1353,8 +1353,8 @@
                                                     }
                                                 },
                                                 {
-                                                    "columnId": "id_orig_h",
-                                                    "fieldName": "id_orig_h",
+                                                    "columnId": "Source IP",
+                                                    "fieldName": "Source IP",
                                                     "inMetricDimension": true,
                                                     "meta": {
                                                         "esType": "ip",
@@ -1362,8 +1362,8 @@
                                                     }
                                                 },
                                                 {
-                                                    "columnId": "id_resp_h",
-                                                    "fieldName": "id_resp_h",
+                                                    "columnId": "Destination IP",
+                                                    "fieldName": "Destination IP",
                                                     "inMetricDimension": true,
                                                     "meta": {
                                                         "esType": "ip",
@@ -1371,8 +1371,8 @@
                                                     }
                                                 },
                                                 {
-                                                    "columnId": "proto",
-                                                    "fieldName": "proto",
+                                                    "columnId": "Proto",
+                                                    "fieldName": "Proto",
                                                     "inMetricDimension": true,
                                                     "meta": {
                                                         "esType": "keyword",
@@ -1382,7 +1382,7 @@
                                             ],
                                             "index": "047b9ce1c481e9105458e4238be7cbb304abc176b09c3b4d196d84686c42b5d0",
                                             "query": {
-                                                "esql": "from logs*\r\n| where event.dataset == \"conn\" and (source.ip is not null or destination.ip is not null) and source.ip not in (\"0.0.0.0\", \"255.255.255.255\") and destination.ip not in (\"0.0.0.0\", \"255.255.255.255\") and observer.hostname is not null and network.protocol is not null and source.port is not null and destination.port is not null and event.duration is not null\r\n| limit 10000\r\n| stats values(event.id), avg(event.duration), values(source.ip), values(destination.ip), values(network.transport) by event.id\r\n| eval duration = `avg(event.duration)`/1000000000\r\n| rename `values(event.id)` as uid, `values(source.ip)` as id_orig_h, `values(destination.ip)` as id_resp_h, `values(network.transport)` as proto \r\n| sort duration desc\r\n| limit 10\r\n| keep uid, duration, id_orig_h, id_resp_h,proto"
+                                                "esql": "from logs*\r\n| where event.dataset == \"conn\" and (source.ip is not null or destination.ip is not null) and source.ip not in (\"0.0.0.0\", \"255.255.255.255\") and destination.ip not in (\"0.0.0.0\", \"255.255.255.255\") and observer.hostname is not null and network.protocol is not null and source.port is not null and destination.port is not null and event.duration is not null\r\n| limit 10000\r\n| stats values(event.id), avg(event.duration), values(source.ip), values(destination.ip), values(network.transport) by event.id\r\n| eval Duration = `avg(event.duration)`/1000000000\r\n| rename `values(event.id)` as UID, `values(source.ip)` as `Source IP`, `values(destination.ip)` as `Destination IP`, `values(network.transport)` as Proto \r\n| sort Duration desc\r\n| limit 10\r\n| keep UID, Duration, `Source IP`, `Destination IP`, Proto"
                                             }
                                         }
                                     }
@@ -1390,31 +1390,31 @@
                             },
                             "filters": [],
                             "query": {
-                                "esql": "from logs*\r\n| where event.dataset == \"conn\" and (source.ip is not null or destination.ip is not null) and source.ip not in (\"0.0.0.0\", \"255.255.255.255\") and destination.ip not in (\"0.0.0.0\", \"255.255.255.255\") and observer.hostname is not null and network.protocol is not null and source.port is not null and destination.port is not null and event.duration is not null\r\n| limit 10000\r\n| stats values(event.id), avg(event.duration), values(source.ip), values(destination.ip), values(network.transport) by event.id\r\n| eval duration = `avg(event.duration)`/1000000000\r\n| rename `values(event.id)` as uid, `values(source.ip)` as id_orig_h, `values(destination.ip)` as id_resp_h, `values(network.transport)` as proto \r\n| sort duration desc\r\n| limit 10\r\n| keep uid, duration, id_orig_h, id_resp_h,proto"
+                                "esql": "from logs*\r\n| where event.dataset == \"conn\" and (source.ip is not null or destination.ip is not null) and source.ip not in (\"0.0.0.0\", \"255.255.255.255\") and destination.ip not in (\"0.0.0.0\", \"255.255.255.255\") and observer.hostname is not null and network.protocol is not null and source.port is not null and destination.port is not null and event.duration is not null\r\n| limit 10000\r\n| stats values(event.id), avg(event.duration), values(source.ip), values(destination.ip), values(network.transport) by event.id\r\n| eval Duration = `avg(event.duration)`/1000000000\r\n| rename `values(event.id)` as UID, `values(source.ip)` as `Source IP`, `values(destination.ip)` as `Destination IP`, `values(network.transport)` as Proto \r\n| sort Duration desc\r\n| limit 10\r\n| keep UID, Duration, `Source IP`, `Destination IP`, Proto"
                             },
                             "visualization": {
                                 "columns": [
                                     {
-                                        "columnId": "uid"
+                                        "columnId": "UID"
                                     },
                                     {
-                                        "columnId": "duration"
+                                        "columnId": "Duration"
                                     },
                                     {
-                                        "columnId": "id_orig_h"
+                                        "columnId": "Source IP"
                                     },
                                     {
-                                        "columnId": "id_resp_h"
+                                        "columnId": "Destination IP"
                                     },
                                     {
-                                        "columnId": "proto"
+                                        "columnId": "Proto"
                                     }
                                 ],
-                                "layerId": "e7dc1811-19ed-4c1f-bcf8-91456f2d9f6c",
+                                "layerId": "f0c07097-c5fe-4a1d-a40c-f3de9ecc1611",
                                 "layerType": "data"
                             }
                         },
-                        "title": "Table uid \u0026 duration \u0026 id_orig_h \u0026 id_resp_h \u0026 proto",
+                        "title": "Table UID \u0026 Duration \u0026 Source IP \u0026 Destination IP \u0026 Proto",
                         "type": "lens",
                         "visualizationType": "lnsDatatable"
                     },
@@ -1463,7 +1463,7 @@
                                                     "customLabel": true,
                                                     "dataType": "string",
                                                     "isBucketed": true,
-                                                    "label": "proto",
+                                                    "label": "Proto",
                                                     "operationType": "terms",
                                                     "params": {
                                                         "exclude": [],
@@ -1489,7 +1489,7 @@
                                                     "customLabel": true,
                                                     "dataType": "ip",
                                                     "isBucketed": true,
-                                                    "label": "id_orig_h",
+                                                    "label": "Source IP",
                                                     "operationType": "terms",
                                                     "params": {
                                                         "exclude": [],
@@ -1515,7 +1515,7 @@
                                                     "customLabel": true,
                                                     "dataType": "string",
                                                     "isBucketed": true,
-                                                    "label": "Country",
+                                                    "label": "Source Country",
                                                     "operationType": "terms",
                                                     "params": {
                                                         "exclude": [],
@@ -1542,7 +1542,7 @@
                                                     "customLabel": true,
                                                     "dataType": "ip",
                                                     "isBucketed": true,
-                                                    "label": "id_resp_h",
+                                                    "label": "Destination IP",
                                                     "operationType": "terms",
                                                     "params": {
                                                         "exclude": [],
@@ -1568,7 +1568,7 @@
                                                     "customLabel": true,
                                                     "dataType": "number",
                                                     "isBucketed": false,
-                                                    "label": "bytes",
+                                                    "label": "Bytes",
                                                     "operationType": "sum",
                                                     "params": {
                                                         "emptyAsNull": false,
@@ -1720,7 +1720,7 @@
         "version": 2
     },
     "coreMigrationVersion": "8.8.0",
-    "created_at": "2025-01-06T05:25:11.861Z",
+    "created_at": "2025-01-29T10:43:21.751Z",
     "id": "corelight-eff0434c-1e27-4c02-959e-9f5d95488efb",
     "managed": false,
     "references": [
