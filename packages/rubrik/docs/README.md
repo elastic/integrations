@@ -590,7 +590,7 @@ An example event for `mssql_databases` looks as following:
 
 ### Tasks
 
-The `tasks` dataset provides metrics related to the state of the tasks by SLA domain.
+The `tasks` dataset provides metrics related to the state of Rubrik backup and object protection tasks by SLA Domain.
 
 **ECS Field Reference**
 
