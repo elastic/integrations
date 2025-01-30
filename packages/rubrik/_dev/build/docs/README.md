@@ -105,3 +105,15 @@ Please refer to the following [document](https://www.elastic.co/guide/en/ecs/cur
 {{fields "mssql_databases"}}
 
 {{event "mssql_databases"}}
+
+### Tasks
+
+The `tasks` dataset provides metrics related to the state of Rubrik backup and object protection tasks by SLA Domain.
+
+**ECS Field Reference**
+
+Please refer to the following [document](https://www.elastic.co/guide/en/ecs/current/ecs-field-reference.html) for detailed information on ECS fields.
+
+{{fields "tasks"}}
+
+{{event "tasks"}}
