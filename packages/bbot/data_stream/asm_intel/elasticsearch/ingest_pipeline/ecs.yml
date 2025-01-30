@@ -1,0 +1,326 @@
+---
+description: Pipeline for mapping BBOT fields to ECS
+
+processors:
+
+# NOTE: ALWAYS use set, do NOT use rename. Duplicated fields are removed in the main pipeline *IF* the tag preserve_duplicate_custom_fields has not been provided.
+
+##############################################################
+# https://www.elastic.co/guide/en/ecs/current/ecs-event.html #
+##############################################################
+
+- append:
+    field: event.category
+    value: network
+    allow_duplicates: false
+    media_type: text/plain
+
+- append:
+    field: event.type
+    value: info
+    allow_duplicates: false
+    media_type: text/plain
+
+#############################################################
+# https://www.elastic.co/guide/en/ecs/current/ecs-host.html #
+#############################################################
+
+- set:
+    if: ctx.bbot?.host != null
+    copy_from: bbot.host
+    field: host.name
+    ignore_empty_value: true
+
+- set:
+    if: ctx.bbot?.data?.DNS_NAME != null
+    copy_from: bbot.data.DNS_NAME
+    field: host.name
+    ignore_empty_value: true
+
+- set:
+    if: ctx.bbot?.data?.DNS_NAME != null
+    copy_from: bbot.data.DNS_NAME
+    field: _tmp.host
+    ignore_empty_value: true
+
+- append:
+    field: host.ip
+    value: '{{{bbot.data.IP_ADDRESS}}}'
+    if: ctx.bbot?.data?.IP_ADDRESS != null
+    allow_duplicates: false
+
+- geoip:
+    field: bbot.data.IP_ADDRESS
+    target_field: host.geo
+    ignore_missing: true
+
+- geoip:
+    database_file: GeoLite2-ASN.mmdb
+    field: bbot.data.IP_ADDRESS
+    target_field: host.as
+    properties:
+      - asn
+      - organization_name
+    ignore_missing: true
+
+- rename:
+    field: host.as.asn
+    target_field: host.as.number
+    ignore_missing: true
+
+- rename:
+    field: host.as.organization_name
+    target_field: host.as.organization.name
+    ignore_missing: true
+
+################################################################
+# https://www.elastic.co/guide/en/ecs/current/ecs-related.html #
+################################################################
+
+# NOTE: Kibana dashboard "BBOT Dashboard" currently displays related.hosts and assumes this is both host names and IP's
+# TODO: split names (related.hosts) and IP's (related.ip) and adjust visualisation to combine related.hosts and related.ip?
+- set:
+    if: ctx.bbot?.resolved_hosts != null
+    copy_from: bbot.resolved_hosts
+    field: related.hosts
+    ignore_empty_value: true
+
+- append:
+    field: related.hosts
+    value: '{{{bbot.host}}}'
+    if: ctx.bbot?.host != null
+    allow_duplicates: false
+
+- append:
+    field: related.hosts
+    value: '{{{bbot.data.DNS_NAME}}}'
+    if: ctx.bbot?.data?.DNS_NAME != null
+    allow_duplicates: false
+
+- append:
+    field: related.ip
+    value: '{{{bbot.data.IP_ADDRESS}}}'
+    if: ctx.bbot?.data?.IP_ADDRESS != null
+    allow_duplicates: false
+
+- foreach:
+    field: bbot.dns_children.A
+    processor:
+        append:
+            field: related.ip
+            value: '{{{_ingest.value}}}'
+            allow_duplicates: false
+    ignore_missing: true
+
+- foreach:
+    field: bbot.dns_children.AAAA
+    processor:
+        append:
+            field: related.ip
+            value: '{{{_ingest.value}}}'
+            allow_duplicates: false
+    ignore_missing: true
+
+- foreach:
+    field: bbot.dns_children.CNAME
+    processor:
+        append:
+            field: related.hosts
+            value: '{{{_ingest.value}}}'
+            allow_duplicates: false
+    ignore_missing: true
+
+- foreach:
+    field: bbot.dns_children.MX
+    processor:
+        append:
+            field: related.hosts
+            value: '{{{_ingest.value}}}'
+            allow_duplicates: false
+    ignore_missing: true
+
+- foreach:
+    field: bbot.dns_children.NS
+    processor:
+        append:
+            field: related.hosts
+            value: '{{{_ingest.value}}}'
+            allow_duplicates: false
+    ignore_missing: true
+
+- foreach:
+    field: bbot.dns_children.PTR
+    processor:
+        append:
+            field: related.hosts
+            value: '{{{_ingest.value}}}'
+            allow_duplicates: false
+    ignore_missing: true
+
+- foreach:
+    field: bbot.dns_children.SOA
+    processor:
+        append:
+            field: related.hosts
+            value: '{{{_ingest.value}}}'
+            allow_duplicates: false
+    ignore_missing: true
+
+############################################################
+# https://www.elastic.co/guide/en/ecs/current/ecs-url.html #
+############################################################
+
+# NOTE: this should probably be a convert not a set.
+- set:
+    if: ctx.bbot?.data?.PROTOCOL?.port != null
+    copy_from: bbot.data.PROTOCOL.port
+    field: url.port
+    ignore_empty_value: true
+
+- set:
+    field: _tmp.url
+    value: '{{{bbot.data.URL}}}'
+    media_type: 'text/plain'
+    if: ctx.bbot?.data?.URL != null
+
+- set:
+    field: _tmp.url
+    value: '{{{bbot.data.URL_UNVERIFIED}}}'
+    media_type: 'text/plain'
+    if: ctx.bbot?.data?.URL_UNVERIFIED != null
+
+# TODO: iterate a list of known event types and extract bbot.data.EVENT_TYPE.url
+- set:
+    field: _tmp.url
+    value: '{{{bbot.data.FINDING.url}}}'
+    media_type: 'text/plain'
+    if: ctx.bbot?.data?.FINDING?.url != null
+
+- set:
+    field: _tmp.url
+    value: '{{{bbot.data.SOCIAL.url}}}'
+    media_type: 'text/plain'
+    if: ctx.bbot?.data?.SOCIAL?.url != null
+
+- set:
+    field: _tmp.url
+    value: '{{{bbot.data.STORAGE_BUCKET.url}}}'
+    media_type: 'text/plain'
+    if: ctx.bbot?.data?.STORAGE_BUCKET?.url != null
+
+- set:
+    field: _tmp.url
+    value: '{{{bbot.data.TECHNOLOGY.url}}}'
+    media_type: 'text/plain'
+    if: ctx.bbot?.data?.TECHNOLOGY?.url != null
+
+- set:
+    field: _tmp.url
+    value: '{{{bbot.data.VULNERABILITY.url}}}'
+    media_type: 'text/plain'
+    if: ctx.bbot?.data?.VULNERABILITY?.url != null
+
+- set:
+    field: _tmp.url
+    value: '{{{bbot.data.WAF.url}}}'
+    media_type: 'text/plain'
+    if: ctx.bbot?.data?.WAF?.url != null
+
+- set:
+    field: _tmp.url
+    value: '{{{bbot.data.WEBSCREENSHOT.url}}}'
+    if: ctx.bbot?.data?.WEBSCREENSHOT?.url != null
+
+- uri_parts:
+    field: _tmp.url
+    target_field: url
+    keep_original: true
+    ignore_missing: true
+
+# NOTE: Kibana dashboard "BBOT Dashboard" currently displays url.domain and url.full
+- append:
+    field: url.full
+    value: '{{{url.original}}}'
+    if: ctx.url?.original != null
+    allow_duplicates: false
+
+# TODO: iterate a list of event types and extract bbot.data.EVENT_TYPE.host
+- set:
+    field: _tmp.host
+    description: Extract host name from FINDING events
+    value: '{{{bbot.data.FINDING.host}}}'
+    media_type: 'text/plain'
+    if: ctx.bbot?.data?.FINDING?.host != null
+
+- set:
+    field: _tmp.host
+    description: Extract host name from PROTOCOL events
+    value: '{{{bbot.data.PROTOCOL.host}}}'
+    media_type: 'text/plain'
+    if: ctx.bbot?.data?.PROTOCOL?.host != null
+
+- set:
+    field: _tmp.host
+    description: Extract host name from TECHNOLOGY events
+    value: '{{{bbot.data.TECHNOLOGY.host}}}'
+    media_type: 'text/plain'
+    if: ctx.bbot?.data?.TECHNOLOGY?.host != null
+
+- set:
+    description: Extract host name from VULNERABILITY events
+    field: _tmp.host
+    value: '{{{bbot.data.VULNERABILITY.host}}}'
+    media_type: 'text/plain'
+    if: ctx.bbot?.data?.VULNERABILITY?.host != null
+
+- set:
+    description: Extract host name from WAF events
+    field: _tmp.host
+    value: '{{{bbot.data.WAF.host}}}'
+    media_type: 'text/plain'
+    if: ctx.bbot?.data?.WAF?.host != null
+
+# NOTE: Kibana dashboard "BBOT Dashboard" currently displays url.domain
+# TODO: migrate use of url.domain to host.name or more appropriate ECS field?
+- set:
+    field: url.domain
+    value: '{{{_tmp.host}}}'
+    media_type: 'text/plain'
+    if: ctx._tmp?.host != null
+
+- append:
+    field: related.hosts
+    value: '{{{url.domain}}}'
+    if: ctx.url?.domain != null
+    allow_duplicates: false
+
+- registered_domain:
+    field: url.domain
+    target_field: url
+    ignore_missing: true
+
+######################################################################
+# https://www.elastic.co/guide/en/ecs/current/ecs-vulnerability.html #
+######################################################################
+
+# NOTE: Kibana dashboard "BBOT Dashboard" currently displays vulnerability.severity
+- set:
+    if: ctx.bbot?.data?.VULNERABILITY?.severity != null
+    copy_from: bbot.data.VULNERABILITY.severity
+    field: vulnerability.severity
+    ignore_empty_value: true
+
+#############
+# Fix Stuff #
+#############
+
+# Uppercase field names will probably work, but it goes against ECS, lowercase 'em
+- foreach:
+    description: Lowercase the first level field under bbot.data, e.g. DNS_NAME becomes dns_name
+    tag: data_event_lowercase
+    field: bbot.data
+    if: ctx.bbot?.data != null
+    ignore_missing: true
+    processor:
+      lowercase:
+        field: "_ingest._key"
