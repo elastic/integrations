@@ -1,5 +1,9 @@
 config_version: "2"
 interval: {{interval}}
+{{#if enable_request_tracer}}
+resource.tracer.filename: "../../logs/cel/http-request-trace-*.ndjson"
+request.tracer.maxbackups: 5
+{{/if}}
 resource.url: {{api_url}}
 state:
   api_username: {{api_username}}
@@ -7,7 +11,10 @@ state:
   session_id: DomainToolsElasticSID
   app_name: elastic_feeds
   app_partner: elastic
-  app_version: 1.0.0
+  app_version: 0.1.0
+redact:
+  fields:
+    - api_key
 program: |
     state.with(
         request(

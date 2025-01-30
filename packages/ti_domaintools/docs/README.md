@@ -36,82 +36,84 @@ For step-by-step instructions on how to set up an integration, see the Getting s
 The `nod_feed` data stream provides events from [DomainTools Newly Observed Domains Feed](https://www.domaintools.com/products/threat-intelligence-feeds/).
 This data is collected via the [DomainTools Real Time Feeds API](https://docs.domaintools.com/feeds/realtime/).
 
-**Exported fields**
-
-| Field                 | Description                                                                  | Type             |
-|-----------------------|------------------------------------------------------------------------------|------------------|
-| @timestamp            | Event timestamp.                                                             | date             |
-| data_stream.dataset   | Data stream dataset name.                                                    | constant_keyword |
-| data_stream.namespace | Data stream namespace.                                                       | constant_keyword |
-| data_stream.type      | Data stream type.                                                            | constant_keyword |
-| host.containerized    | If the host is a container.                                                  | boolean          |
-| host.os.build         | OS build information.                                                        | keyword          |
-| host.os.codename      | OS codename, if any.                                                         | keyword          |
-| input.type            | Type of Filebeat input.                                                      | keyword          |
-| domaintools.domain    | The domain. For example "domaintools.com".                                   | keyword          |
-| domaintools.timestamp | The timestamp the domain was discovered. For example "2024-12-03T16:20:34Z". | date             |
-| message               | The feed raw value. For example "{\"domain\":\"fortworthvirtualrealitytherapy.info\",\"timestamp\":\"2024-12-03T16:20:34Z\"}".                      | keyword          |
+#### Example
 
 An example event for `nod_feed` looks as following:
 
 ```json
 {
-  "input": {
-    "type": "cel"
-  },
-  "agent": {
-    "name": "docker-fleet-agent",
-    "id": "91c524fd-b26c-4a73-b695-9f1093a4c12b",
-    "type": "filebeat",
-    "ephemeral_id": "6b7f3b7e-44a3-42be-9642-09ff131169e8",
-    "version": "8.15.3"
-  },
-  "@timestamp": "2025-01-14T00:11:37.307Z",
-  "ecs": {
-    "version": "8.0.0"
-  },
-  "data_stream": {
-    "namespace": "default",
-    "type": "logs",
-    "dataset": "domaintools.nod_feed"
-  },
-  "host": {
-    "hostname": "docker-fleet-agent",
-    "os": {
-      "kernel": "6.10.11-linuxkit",
-      "codename": "focal",
-      "name": "Ubuntu",
-      "type": "linux",
-      "family": "debian",
-      "version": "20.04.6 LTS (Focal Fossa)",
-      "platform": "ubuntu"
+    "input": {
+        "type": "cel"
     },
-    "containerized": false,
-    "ip": [
-      "172.19.0.7"
-    ],
-    "name": "docker-fleet-agent",
-    "id": "cfae1e7244ae479b9b0968259c91b13a",
-    "mac": [
-      "02-42-AC-13-00-07"
-    ],
-    "architecture": "aarch64"
-  },
-  "elastic_agent": {
-    "id": "91c524fd-b26c-4a73-b695-9f1093a4c12b",
-    "version": "8.15.3",
-    "snapshot": false
-  },
-  "domaintools": {
-    "domain": "bioalchemyglobal.com",
-    "timestamp": "2025-01-14T00:11:33Z"
-  },
-  "message": "{\"timestamp\":\"2025-01-14T00:11:33Z\",\"domain\":\"bioalchemyglobal.com\"}",
-  "event": {
-    "agent_id_status": "verified",
-    "ingested": "2025-01-14T00:11:38Z",
-    "dataset": "domaintools.nod_feed"
-  }
+    "agent": {
+        "name": "docker-fleet-agent",
+        "id": "91c524fd-b26c-4a73-b695-9f1093a4c12b",
+        "type": "filebeat",
+        "ephemeral_id": "6b7f3b7e-44a3-42be-9642-09ff131169e8",
+        "version": "8.15.3"
+    },
+    "@timestamp": "2025-01-14T00:11:37.307Z",
+    "ecs": {
+        "version": "8.0.0"
+    },
+    "data_stream": {
+        "namespace": "default",
+        "type": "logs",
+        "dataset": "domaintools.nod_feed"
+    },
+    "host": {
+        "hostname": "docker-fleet-agent",
+        "os": {
+            "kernel": "6.10.11-linuxkit",
+            "codename": "focal",
+            "name": "Ubuntu",
+            "type": "linux",
+            "family": "debian",
+            "version": "20.04.6 LTS (Focal Fossa)",
+            "platform": "ubuntu"
+        },
+        "containerized": false,
+        "ip": [
+            "172.19.0.7"
+        ],
+        "name": "docker-fleet-agent",
+        "id": "cfae1e7244ae479b9b0968259c91b13a",
+        "mac": [
+            "02-42-AC-13-00-07"
+        ],
+        "architecture": "aarch64"
+    },
+    "elastic_agent": {
+        "id": "91c524fd-b26c-4a73-b695-9f1093a4c12b",
+        "version": "8.15.3",
+        "snapshot": false
+    },
+    "domaintools": {
+        "domain": "bioalchemyglobal.com",
+        "timestamp": "2025-01-14T00:11:33Z"
+    },
+    "message": "{\"timestamp\":\"2025-01-14T00:11:33Z\",\"domain\":\"bioalchemyglobal.com\"}",
+    "event": {
+        "agent_id_status": "verified",
+        "ingested": "2025-01-14T00:11:38Z",
+        "dataset": "domaintools.nod_feed"
+    }
 }
 ```
+
+**Exported fields**
+
+| Field | Description | Type |
+|---|---|---|
+| @timestamp | Event timestamp. | date |
+| data_stream.dataset | Data stream dataset. | constant_keyword |
+| data_stream.namespace | Data stream namespace. | constant_keyword |
+| data_stream.type | Data stream type. | constant_keyword |
+| domaintools.domain | The Domain. Apex-level domains (e.g. example.com but not www.example.com) that we observe for the first time, and have not observed previously with our global DNS sensor network. | keyword |
+| domaintools.feed | The feed. | keyword |
+| domaintools.timestamp | Timestamp when the domain was added to the DomainTools feed, in ISO 8601 UTC form. | date |
+| input.type | Type of filebeat input. | keyword |
+| labels.is_ioc_transform_source | Indicates whether an IOC is in the raw source data stream, or the in latest destination index. | constant_keyword |
+| message | The feed. | keyword |
+
 
