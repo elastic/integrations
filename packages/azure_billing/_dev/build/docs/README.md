@@ -118,10 +118,11 @@ To collect billing metrics from a billing account (instead of a subscription):
 Take note of the following values, which you will use later when specifying settings.
 
 * `Tenant ID`: use the "Tenant ID" from your Microsoft Entra ID.
-* Only one of the following:
-	* `Subscription ID`: use the "Subscription Id" content if you decide to collect metrics from a subscription.
-	* `Department Id`: use the "Department Id" content if you decide to collect metrics from a department.
-	* `Billing account ID`: use the "Billing account ID" content if you decide to collect metrics from a billing account.
+* `Subscription ID`: use the "Subscription Id" to access Azure APIs.
+
+* Only one of the following (Optional):
+    * `Department ID`: use the "Department Id" content if you decide to collect metrics from a department.
+    * `Billing account ID`: use the "Billing account ID" content if you decide to collect metrics from a billing account.
 
 Your App Registration is now ready for the Elastic Agent.
 
@@ -208,7 +209,7 @@ There are three supported scopes for this integration:
 * Department
 * Billing Account
 
-The integration uses the Subscription ID as the default scope for the billing data.
+>Note: The integration uses the Subscription ID as the default scope for the billing data.
 
 To change the scope, expand the data stream section named **Collect Azure Billing metrics** in the integration settings and set one of the two available options (if you set both, the billing account scope take precedence over the department):
 
