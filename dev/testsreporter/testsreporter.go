@@ -30,9 +30,7 @@ type CheckOptions struct {
 	DryRun bool
 }
 
-func Check(resultsPath string, options CheckOptions) error {
-	ctx := context.TODO()
-
+func Check(ctx context.Context, resultsPath string, options CheckOptions) error {
 	if options.CodeownersPath == "" {
 		// set default value for the GitHub CODEOWNERS file
 		options.CodeownersPath = codeowners.DefaultCodeownersPath
