@@ -1297,32 +1297,38 @@ An example event for `sharepoint_site_usage_detail` looks as following:
 
 ```json
 {
-    "o365metrics": {
-        "sharepoint": {
-            "site": {
-                "usage": {
-                    "detail": {
-                        "active_file": {
-                            "count": "16"
-                        },
-                        "file": {
-                            "count": "14"
-                        },
-                        "page_view": {
-                            "count": "12"
-                        },
-                        "report": {
-                            "period": "7",
-                            "refresh_date": "2024-12-22"
-                        },
-                        "storage_allocated": {
-                            "byte": "27487790694400"
-                        },
-                        "storage_used": {
-                            "byte": "1586077"
-                        },
-                        "visited_page": {
-                            "count": "13"
+    "o365": {
+        "metrics": {
+            "sharepoint": {
+                "site": {
+                    "usage": {
+                        "detail": {
+                            "active_file": {
+                                "count": 16
+                            },
+                            "file": {
+                                "count": 14
+                            },
+                            "is_deleted": "False",
+                            "owner_display_name": "82D28824CBDAF3EA9AD693254DE8CC08",
+                            "page_view": {
+                                "count": 12
+                            },
+                            "report": {
+                                "period": "7",
+                                "refresh_date": "2024-12-22"
+                            },
+                            "root_web_template": "Team Site",
+                            "site_id": "00000000-0000-0000-0000-000000000000",
+                            "storage_allocated": {
+                                "byte": 27487790694400
+                            },
+                            "storage_used": {
+                                "byte": 1586077
+                            },
+                            "visited_page": {
+                                "count": 14
+                            }
                         }
                     }
                 }
@@ -1402,9 +1408,16 @@ Please refer to the following [document](https://www.elastic.co/guide/en/ecs/cur
 | host.os.codename | OS codename, if any. | keyword |  |
 | o365.metrics.sharepoint.site.usage.detail.active_file.count | The number of active files in the SharePoint site during the reporting period. | long |  |
 | o365.metrics.sharepoint.site.usage.detail.file.count | The total number of files in the SharePoint site. | long |  |
+| o365.metrics.sharepoint.site.usage.detail.is_deleted | Indicates whether the SharePoint site is deleted. | boolean |  |
+| o365.metrics.sharepoint.site.usage.detail.last_activity_date | The last date of activity in the SharePoint site. | date |  |
+| o365.metrics.sharepoint.site.usage.detail.owner_display_name | The display name of the SharePoint site owner. | keyword |  |
+| o365.metrics.sharepoint.site.usage.detail.owner_principal_name | The principal name of the SharePoint site owner. | keyword |  |
 | o365.metrics.sharepoint.site.usage.detail.page_view.count | The number of page views in the SharePoint site during the reporting period. | long |  |
 | o365.metrics.sharepoint.site.usage.detail.report.period | The duration of the reporting period for SharePoint site usage, in days. | integer |  |
 | o365.metrics.sharepoint.site.usage.detail.report.refresh_date | The date when the SharePoint site usage data was last refreshed. | date |  |
+| o365.metrics.sharepoint.site.usage.detail.root_web_template | The template used for the root web of the SharePoint site. | keyword |  |
+| o365.metrics.sharepoint.site.usage.detail.site_id | The unique identifier of the SharePoint site. | keyword |  |
+| o365.metrics.sharepoint.site.usage.detail.site_url | The URL of the SharePoint site. | keyword |  |
 | o365.metrics.sharepoint.site.usage.detail.storage_allocated.byte | The amount of storage allocated to the SharePoint site, in bytes. | long | byte |
 | o365.metrics.sharepoint.site.usage.detail.storage_used.byte | The amount of storage used in the SharePoint site, in bytes. | long | byte |
 | o365.metrics.sharepoint.site.usage.detail.visited_page.count | The number of visited pages in the SharePoint site during the reporting period. | long |  |
