@@ -2,20 +2,9 @@
 
 ## Overview
 
-[Amazon Bedrock](https://docs.aws.amazon.com/bedrock/index.html) is a fully managed
-service that makes high-performing foundation models (FMs) from leading AI
-startups and Amazon available for your use through a unified API. You can choose
-from a wide range of foundation models to find the model that is best suited for
-your use case. Amazon Bedrock also offers a broad set of capabilities to build
-generative AI applications with security, privacy, and responsible AI. Using
-Amazon Bedrock, you can easily experiment with and evaluate top foundation
-models for your use cases, privately customize them with your data using
-techniques such as fine-tuning and Retrieval Augmented Generation (RAG), and
-build agents that execute tasks using your enterprise systems and data sources.
+[Amazon Bedrock](https://docs.aws.amazon.com/bedrock/index.html) offers a fully managed service that provides access to high-performing foundation models (FMs) from leading AI startups and Amazon through a unified API. You can choose from a wide variety of foundation models to find the one that best fits your specific use case. With Amazon Bedrock, you gain access to robust tools for building generative AI applications with security, privacy, and responsible AI practices. Amazon Bedrock enables you to easily experiment with and evaluate top foundation models, customize them privately with your data using methods like fine-tuning and Retrieval Augmented Generation (RAG), and develop agents that perform tasks by leveraging your enterprise systems and data sources.
 
-The Amazon Bedrock integration allows you to easily connect your Amazon Bedrock model
-invocation logging and runtime metrics to Elastic for seamless collection of
-invocation logs and runtime metrics to monitor usage. 
+The Amazon Bedrock integration enables a seamless connection of your model to Elastic to efficiently collect and monitor invocation logs and runtime metrics.
 
 Elastic Security can leverage this data for security analytics including
 correlation, visualization and incident response. With invocation logging, you
@@ -39,6 +28,8 @@ Data streams:
  - `runtime`: Collects Amazon Bedrock runtime metrics such as model invocation
    count, invocation latency, input token count, output token count and many
    more.   
+ - `guardrails`: Collects Amazon Bedrock Guardrails metrics such as guardrail invocation
+count, guardrail invocation latency, text unit utilization count, guardrail policy types associated with interventions and many more.
 
 ## Requirements
 
@@ -57,43 +48,17 @@ For more details about these requirements, check the [AWS
 integration
 documentation](https://docs.elastic.co/integrations/aws#requirements).
 
-- Elastic Agent must be installed.
-- You can install only one Elastic Agent per host.
-- Elastic Agent is required to stream data from the S3 bucket and ship the
-  data to Elastic, where the events will then be processed via the
+* Elastic Agent must be installed. For detailed guidance, follow these [instructions](https://www.elastic.co/guide/en/fleet/current/elastic-agent-installation.html).
+* You can install only one Elastic Agent per host.
+* Elastic Agent is required to stream data from the S3 bucket and ship the
+  data to Elastic, where the events will then be processed through the
   integration's ingest pipelines.
-
-### Installing and managing an Elastic Agent
-
-To install and manage an Elastic Agent you have the following options:
-
-### Install a Fleet-managed Elastic Agent (recommended)
-
-You install Elastic Agent and use Fleet in Kibana to
-define, configure, and manage your agents in a central location. We recommend
-using Fleet management because it makes the management and upgrade of your
-agents considerably easier.
-
-### Install Elastic Agent in standalone mode (advanced users)
-
-You install Elastic Agent and manually configure the agent
-locally on the system where it is installed. You are responsible for managing
-and upgrading the agents. This approach is for advanced users only.
-
-### Install Elastic Agent in a containerized environment
-
-You can run Elastic Agent inside a container, either with Fleet Server or
-standalone. Docker images for all versions of Elastic Agent are available
-from the Elastic Docker registry, and we provide deployment manifests for
-running on Kubernetes.
-
-To run Elastic Agent, check these [requirements](https://www.elastic.co/guide/en/fleet/current/elastic-agent-installation.html).
 
 ## Setup
 
 To use the Amazon Bedrock model invocation logs, the logging model
 invocation logging must be enabled and be sent to a log store destination,
-either S3 or CloudWatch. For more details check the
+either S3 or CloudWatch. For more details, check the
 [Amazon Bedrock User Guide](https://docs.aws.amazon.com/bedrock/latest/userguide/model-invocation-logging.html).
 
 1. Set up an [Amazon S3](https://docs.aws.amazon.com/bedrock/latest/userguide/model-invocation-logging.html#setup-s3-destination) or [CloudWatch Logs](https://docs.aws.amazon.com/bedrock/latest/userguide/model-invocation-logging.html#setup-cloudwatch-logs-destination) destination.
@@ -103,25 +68,18 @@ either S3 or CloudWatch. For more details check the
 
 ### Collecting Amazon Bedrock model invocation logs from S3 bucket
 
-When collecting logs from S3 bucket is enabled, you can retrieve logs from S3
-objects that are pointed to by S3 notification events read from an SQS queue or
-directly polling list of S3 objects in an S3 bucket. 
+When log collection from an S3 bucket is enabled, you can access logs from S3 objects referenced by S3 notification events received through an SQS queue or by directly polling the list of S3 objects within the bucket.
 
 The use of SQS notification is preferred: polling list of S3 objects is 
-expensive in terms of performance and costs and should be preferably used only 
+expensive in terms of performance and costs and should be used only 
 when no SQS notification can be attached to the S3 buckets. This input 
 integration also supports S3 notification from SNS to SQS.
 
-SQS notification method is enabled setting `queue_url` configuration value. S3 
-bucket list polling method is enabled setting `bucket_arn` configuration value
-and `number_of_workers` value. Both `queue_url` and `bucket_arn` cannot be set 
-at the same time and at least one of the two value must be set.
+To enable the SQS notification method, set the `queue_url` configuration value. To enable the S3 bucket list polling method, configure both the `bucket_arn` and number_of_workers values. Note that `queue_url` and `bucket_arn` cannot be set simultaneously, and at least one of these values must be specified.
 
 ### Collecting Amazon Bedrock model invocation logs from CloudWatch
 
-When collecting logs from CloudWatch is enabled, you can retrieve logs from 
-all log streams in a specific log group. `filterLogEvents` AWS API is used to 
-list log events from the specified log group.
+When CloudWatch log collection is enabled, you can retrieve logs from all log streams within a specified log group. The filterLogEvents AWS API is used to list log events from the specified log group.
 
 **Exported fields**
 
