@@ -1902,7 +1902,8 @@ An example event for `service_health` looks as following:
     "event": {
         "agent_id_status": "verified",
         "ingested": "2025-01-07T10:36:57Z",
-        "dataset": "o365_metrics.service_health"
+        "dataset": "o365_metrics.service_health",
+        "original": "{\"service\":\"Microsoft 365 suite\",\"status\":\"serviceOperational\",\"id\":\"OSDPPlatform\"}"
     },
     "tags": [
         "o365.metrics.service.health"
