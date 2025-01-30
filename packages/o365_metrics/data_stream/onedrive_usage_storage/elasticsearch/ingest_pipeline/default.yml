@@ -6,6 +6,12 @@ processors:
       value: "8.16.0"        
 
 # Pipeline for Usage Storage
+  - set:
+      copy_from: onedrive_usagestorage
+      field: event.original
+      ignore_failure: true
+      ignore_empty_value: true
+      if: ctx.event?.original == null && (ctx.tags != null && (ctx.tags.contains('preserve_original_event')))
   - json:
       field: onedrive_usagestorage
       target_field: o365.metrics.onedrive.usage.storage  
@@ -13,12 +19,6 @@ processors:
         - append:
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
-  - set:
-      copy_from: onedrive_usagestorage
-      field: event.original
-      ignore_failure: true
-      ignore_empty_value: true
-      if: ctx.event?.original == null && (ctx.tags != null && (ctx.tags.contains('preserve_original_event')))
   - script:
       lang: painless
       description: Replace spaces, dashes and bom character in field names under o365.metrics.onedrive.usage.storage.

@@ -1331,7 +1331,9 @@ An example event for `sharepoint_site_usage_detail` looks as following:
                                 "count": 12
                             },
                             "report": {
-                                "period": "7",
+                                "period": {
+                                    "day": "7"
+                                },
                                 "refresh_date": "2024-12-22"
                             },
                             "root_web_template": "Team Site",
