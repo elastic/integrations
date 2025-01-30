@@ -1,15 +1,25 @@
 ---
-description: Pipeline for renaming object
+description: Pipeline for processing Microsoft 365 outlook activity metrics.
 processors:
   - set:
       field: ecs.version
       value: "8.16.0"
+  - set:
+      copy_from: outlookactivity
+      field: event.original
+      ignore_empty_value: true
+      if: ctx.event?.original == null && (ctx.tags != null && (ctx.tags.contains('preserve_original_event')))
   - json:
       field: outlookactivity
       target_field: o365.metrics.outlook.activity
+      tag: json_decoding
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'   
   - script:
       lang: painless
-      description: Replace spaces and dashes in field names under o365.metrics.outlook.activity.
+      description: Replace spaces, dashes and bom character in field names under o365.metrics.outlook.activity.
       tag: painless_purge_spaces_and_dashes
       if: ctx.o365.metrics?.outlook.activity instanceof Map
       source: |
@@ -28,27 +38,94 @@ processors:
       if: ctx.outlookactivity != null
       field: outlookactivity
       ignore_missing: true
-
+  - convert:
+      field: o365.metrics.outlook.activity.read
+      tag: convert_o365.metrics.outlook.activity.read
+      type: long
+      if: ctx.o365?.metrics?.outlook?.activity?.read != null && ctx.o365?.metrics?.outlook?.activity?.read != ''
+      on_failure:
+        - remove:
+            field: o365.metrics.outlook.activity.read
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - rename:
       field: o365.metrics.outlook.activity.read
       target_field: o365.metrics.outlook.activity.emails_read.count
       ignore_missing: true
+  - convert:
+      field: o365.metrics.outlook.activity.receive
+      tag: convert_o365.metrics.outlook.activity.receive
+      type: long
+      if: ctx.o365?.metrics?.outlook?.activity?.receive != null && ctx.o365?.metrics?.outlook?.activity?.receive != ''
+      on_failure:
+        - remove:
+            field: o365.metrics.outlook.activity.receive
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - rename:
       field: o365.metrics.outlook.activity.receive
       target_field: o365.metrics.outlook.activity.emails_received.count
       ignore_missing: true
+  - convert:
+      field: o365.metrics.outlook.activity.send
+      tag: convert_o365.metrics.outlook.activity.send
+      type: long
+      if: ctx.o365?.metrics?.outlook?.activity?.send != null && ctx.o365?.metrics?.outlook?.activity?.send != ''
+      on_failure:
+        - remove:
+            field: o365.metrics.outlook.activity.send
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - rename:
       field: o365.metrics.outlook.activity.send
       target_field: o365.metrics.outlook.activity.emails_sent.count
       ignore_missing: true
+  - convert:
+      field: o365.metrics.outlook.activity.meeting_created
+      tag: convert_o365.metrics.outlook.activity.meeting_created
+      type: long
+      if: ctx.o365?.metrics?.outlook?.activity?.meeting_created != null && ctx.o365?.metrics?.outlook?.activity?.meeting_created != ''
+      on_failure:
+        - remove:
+            field: o365.metrics.outlook.activity.meeting_created
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - rename:
       field: o365.metrics.outlook.activity.meeting_created
       target_field: o365.metrics.outlook.activity.meeting_created.count
       ignore_missing: true
+  - convert:
+      field: o365.metrics.outlook.activity.meeting_interacted
+      tag: convert_o365.metrics.outlook.activity.meeting_interacted
+      type: long
+      if: ctx.o365?.metrics?.outlook?.activity?.meeting_interacted != null && ctx.o365?.metrics?.outlook?.activity?.meeting_interacted != ''
+      on_failure:
+        - remove:
+            field: o365.metrics.outlook.activity.meeting_interacted
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - rename:
       field: o365.metrics.outlook.activity.meeting_interacted
       target_field: o365.metrics.outlook.activity.meeting_interacted.count
       ignore_missing: true
+  - date:
+      field: o365.metrics.outlook.activity.report_date
+      tag: date_o365.metrics.outlook.activity.report_date
+      if: ctx.o365.metrics?.outlook?.activity?.report_date != null && ctx.o365.metrics?.outlook?.activity?.report_date != ''
+      timezone: UTC
+      formats:
+        - yyyy-MM-dd
+      on_failure:
+        - remove:
+            field: o365.metrics.outlook.activity.report_date
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'   
   - rename:
       field: o365.metrics.outlook.activity.report_date
       target_field: o365.metrics.outlook.activity.report.date
@@ -61,12 +138,28 @@ processors:
       field: o365.metrics.outlook.activity.report_refresh_date
       target_field: o365.metrics.outlook.activity.report.refresh_date
       ignore_missing: true
-
+  - set:
+      field: '@timestamp'
+      tag: set_timestamp_from_report_date
+      copy_from: o365.metrics.outlook.activity.report.date
+      ignore_empty_value: true
+  - fingerprint:
+      fields:
+        - o365.metrics.outlook.activity.report.date
+      target_field: _id
 on_failure:
-  - append:
+  - set:
       field: error.message
       value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - append:
+      field: tags
+      value: preserve_original_event
+      allow_duplicates: false
   - append:
       field: event.kind
       value: pipeline_error
       allow_duplicates: false
+  - append:
+      field: event.type
+      value: error
+      if: ctx.error?.message != null
