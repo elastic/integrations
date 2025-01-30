@@ -108,7 +108,7 @@ Please refer to the following [document](https://www.elastic.co/guide/en/ecs/cur
 
 ### Tasks
 
-The `tasks` dataset provides metrics related to the state of the tasks by SLA domain.
+The `tasks` dataset provides metrics related to the state of Rubrik backup and object protection tasks by SLA Domain.
 
 **ECS Field Reference**
 
