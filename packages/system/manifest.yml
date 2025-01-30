@@ -1,7 +1,7 @@
 format_version: 3.0.2
 name: system
 title: System
-version: "1.64.1"
+version: "1.64.2"
 description: Collect system logs and metrics from your servers with Elastic Agent.
 type: integration
 categories:
@@ -78,6 +78,16 @@ policy_templates:
             required: false
             show_user: true
             description: The proc filesystem base directory.
+          - name: degrade_on_partial
+            type: bool
+            title: Mark system/metrics as degraded when partial metrics are encountered
+            multi: false
+            default: false
+            required: false
+            show_user: true
+            description: |
+              While running in unprivileged mode, process/process_summary metricsets can emit partial metrics. Some metrics that require privileged access can be missing.
+              You may want to enable this option to identify potential permission-related issues. If you're unable to provide the necessary access, you can disable this config to keep metricsets healthy.
       - type: httpjson
         title: Collect logs from third-party REST API (deprecated)
         description: Collect logs from third-party REST API (deprecated)
