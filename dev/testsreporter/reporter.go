@@ -45,8 +45,19 @@ func (r reporter) Report(ctx context.Context, issue *githubIssue, resultError fa
 	nextIssue.AddLabels(resultError.Labels())
 	fmt.Printf("Labels to set for this issue: %s\n", strings.Join(nextIssue.Labels(), ","))
 
-	// TODO: TEST - TO REMOVE
-	fmt.Printf("Description of the issue:\n%s", description)
+	summary, err := formatter.Summary()
+	if err != nil {
+		return fmt.Errorf("failed to render issue summary: %w", err)
+	}
+
+	fmt.Println()
+	fmt.Println("---- Issue ----")
+	fmt.Printf("Title: %q\n", formatter.Title())
+	fmt.Printf("Teams: %q\n", strings.Join(formatter.Owners(), ", "))
+	fmt.Printf("Labels: %s\n", strings.Join(nextIssue.Labels(), ", "))
+	fmt.Printf("Summary:\n%s", summary)
+	fmt.Println("----")
+	fmt.Println()
 
 	return r.createOrUpdateIssue(ctx, nextIssue)
 }

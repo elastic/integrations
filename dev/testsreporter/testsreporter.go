@@ -11,7 +11,6 @@ import (
 	"os"
 	"path/filepath"
 	"sort"
-	"strings"
 
 	"github.com/elastic/integrations/dev/codeowners"
 )
@@ -176,22 +175,10 @@ func createInitialIssue(resultError failureObserver, maxPreviousLinks int) (*git
 		maxPreviousLinks: maxPreviousLinks,
 	}
 
-	summary, err := r.Summary()
-	if err != nil {
-		return nil, fmt.Errorf("failed to render initial summary: %w", err)
-	}
 	description, err := r.Description()
 	if err != nil {
 		return nil, fmt.Errorf("failed to render initial description: %w", err)
 	}
-	fmt.Println()
-	fmt.Println("---- Issue ----")
-	fmt.Printf("Title: %q\n", r.Title())
-	fmt.Printf("Teams: %q\n", strings.Join(r.Owners(), ", "))
-	fmt.Printf("Summary:\n%s\n", summary)
-	fmt.Println("----")
-	fmt.Println()
-
 	issue := newGithubIssue(githubIssueOptions{
 		Title:       r.Title(),
 		Description: description,
