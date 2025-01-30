@@ -183,7 +183,7 @@ An example event for `active_users_services_user_counts` looks as following:
     "data_stream": {
         "namespace": "default",
         "type": "metrics",
-        "dataset": "o365_metrics.active.users.services.user.counts"
+        "dataset": "o365_metrics.active_users_services_user_counts"
     },
     "elastic_agent": {
         "id": "1bd16076-38b3-44b9-980b-eab55ebe95b9",
@@ -214,7 +214,7 @@ An example event for `active_users_services_user_counts` looks as following:
     "event": {
         "agent_id_status": "verified",
         "ingested": "2024-12-24T10:36:57Z",
-        "dataset": "o365_metrics.active.users.services.user.counts"
+        "dataset": "o365_metrics.active_users_services_user_counts"
     },
     "tags": [
         "o365.metrics.active.users.services.user.counts",
