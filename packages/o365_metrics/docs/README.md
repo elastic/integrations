@@ -633,7 +633,8 @@ An example event for `onedrive_usage_account_counts` looks as following:
     "event": {
         "agent_id_status": "verified",
         "ingested": "2024-12-24T09:33:51Z",
-        "dataset": "o365_metrics.onedrive_usage_account_counts"
+        "dataset": "o365_metrics.onedrive_usage_account_counts",
+        "original": "{\"Active\":\"16\",\"Report Date\":\"2024-11-23\",\"Report Period\":\"7\",\"Site Type\":\"All\",\"Total\":\"18\",\"Report Refresh Date\":\"2024-11-29\"}"
     },
     "host": {
         "hostname": "docker-fleet-agent",
@@ -679,7 +680,8 @@ An example event for `onedrive_usage_account_counts` looks as following:
         }
     },
     "tags": [
-        "o365.metrics.onedrive_usage_account_counts"
+        "o365.metrics.onedrive_usage_account_counts",
+        "preserve_original_event"
     ]
 }
 ```
@@ -739,7 +741,8 @@ An example event for `onedrive_usage_file_counts` looks as following:
     "event": {
         "agent_id_status": "verified",
         "ingested": "2024-12-24T09:33:51Z",
-        "dataset": "o365_metrics.onedrive_usage_file_counts"
+        "dataset": "o365_metrics.onedrive_usage_file_counts",
+        "original": "{\"Active\":\"16\",\"Report Date\":\"2024-11-23\",\"Report Period\":\"7\",\"Site Type\":\"All\",\"Total\":\"164\",\"Report Refresh Date\":\"2024-11-29\"}"
     },
     "host": {
         "hostname": "docker-fleet-agent",
@@ -785,7 +788,8 @@ An example event for `onedrive_usage_file_counts` looks as following:
         }
     },
     "tags": [
-        "o365.metrics.onedrive_usage_file_counts"
+        "o365.metrics.onedrive_usage_file_counts",
+        "preserve_original_event"
     ]
 }
 ```
@@ -845,7 +849,8 @@ An example event for `onedrive_usage_storage` looks as following:
     "event": {
         "agent_id_status": "verified",
         "ingested": "2024-12-24T09:33:51Z",
-        "dataset": "o365_metrics.onedrive_usage_storage"
+        "dataset": "o365_metrics.onedrive_usage_storage",
+        "original": "{\"Report Date\":\"2024-11-23\",\"Report Period\":\"7\",\"Site Type\":\"All\",\"Storage Used (Byte)\":\"91659303\",\"Report Refresh Date\":\"2024-11-29\"}"
     },
     "host": {
         "hostname": "docker-fleet-agent",
@@ -886,6 +891,7 @@ An example event for `onedrive_usage_storage` looks as following:
         }
     },
     "tags": [
+        "preserve_original_event",
         "o365.metrics.onedrive_usage_storage"
     ]
 }
