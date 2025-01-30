@@ -40,15 +40,14 @@ func (r reporter) Report(ctx context.Context, issue *githubIssue, resultError fa
 	if err != nil {
 		return err
 	}
-	nextIssue.SetDescription(description)
-
-	nextIssue.AddLabels(resultError.Labels())
-	fmt.Printf("Labels to set for this issue: %s\n", strings.Join(nextIssue.Labels(), ","))
 
 	summary, err := formatter.Summary()
 	if err != nil {
 		return fmt.Errorf("failed to render issue summary: %w", err)
 	}
+
+	nextIssue.SetDescription(description)
+	nextIssue.AddLabels(resultError.Labels())
 
 	fmt.Println()
 	fmt.Println("---- Issue ----")
