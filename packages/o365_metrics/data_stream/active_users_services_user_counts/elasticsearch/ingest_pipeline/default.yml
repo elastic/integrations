@@ -5,7 +5,7 @@ processors:
       field: ecs.version
       value: "8.16.0"
   - set:
-      copy_from: active_users
+      copy_from: active_users_services_user_counts
       field: event.original
       ignore_empty_value: true
       ignore_failure: true
@@ -15,15 +15,15 @@ processors:
 #       if: ctx.error?.message != null && ctx.message == null && ctx.event?.original == null
 #       message: error message set and no data to process
   - json:
-      field: active_users
+      field: active_users_services_user_counts
       target_field: o365.metrics.active.users.services.user.counts
       on_failure:
         - append:
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - remove:
-      if: ctx.active_users != null
-      field: active_users
+      if: ctx.active_users_services_user_counts != null
+      field: active_users_services_user_counts
       ignore_missing: true
   - script:
       lang: painless
