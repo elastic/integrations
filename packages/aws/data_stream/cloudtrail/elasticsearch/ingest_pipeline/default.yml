@@ -51,7 +51,7 @@ processors:
   - script:
       description: Appends any relevant entity to `related.entity` for all events
       lang: painless
-      if: ctx?.json?.eventName != null
+      if: "ctx?.json?.eventName != null && ctx?.tags != null && ctx.tags.contains('actor_target_mapping')"
       on_failure: 
         - set:
             description: Add error reason
