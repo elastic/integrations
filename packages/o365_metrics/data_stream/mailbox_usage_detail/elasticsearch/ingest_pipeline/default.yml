@@ -5,18 +5,26 @@ processors:
       field: ecs.version
       value: "8.16.0"
   - set:
-      copy_from: mailboxusagedetail
+      copy_from: mailbox_usage_detail
       field: event.original
       ignore_empty_value: true
-      if: ctx.event?.original == null && (ctx.tags != null && (ctx.tags.contains('preserve_original_event')))      
+      if: ctx.event?.original == null && (ctx.tags != null && (ctx.tags.contains('preserve_original_event')))
+#   - fail:
+#       tag: cel_failure
+#       if: ctx.error?.message != null && ctx.message == null && ctx.event?.original == null
+#       message: error message set and no data to process
   - json:
-      field: mailboxusagedetail
+      field: mailbox_usage_detail
       target_field: o365.metrics.mailbox.usage.detail
       tag: json_decoding
       on_failure:
         - append:
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - remove:
+      if: ctx.mailbox_usage_detail != null
+      field: mailbox_usage_detail
+      ignore_missing: true
   - script:
       lang: painless
       description: Replace spaces, dashes and bom character in field names under o365.metrics.mailbox.usage.detail.
@@ -35,12 +43,6 @@ processors:
           out[underscore(item.getKey())] = item.getValue();
         }
         ctx.o365.metrics.mailbox.usage.detail = out;      
-
-  - remove:
-      if: ctx.mailboxusagedetail != null
-      field: mailboxusagedetail
-      ignore_missing: true
-
   - convert:
       field: o365.metrics.mailbox.usage.detail.deleted_item_count
       tag: convert_o365.metrics.mailbox.usage.detail.deleted_item_count
