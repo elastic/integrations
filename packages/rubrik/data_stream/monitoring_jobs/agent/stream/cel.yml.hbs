@@ -76,22 +76,7 @@ program: |-
           "Content-Type": ["application/json"],
         },
         "Body": {
-          "query": state.queries[state.index],
-          "variables": {
-              {{#if first}}
-              "first": {{first}},
-              {{/if}}
-              "filter": [
-                {{#if filters}}
-                  {{#each filters}}
-                    {
-                      "field": "{{field}}",
-                      "texts": [{{#each values}}"{{this}}"{{#unless @last}}, {{/unless}}{{/each}}]
-                    }{{#unless @last}},{{/unless}}
-                  {{/each}}
-                {{/if}}
-              ]
-            }
+          "query": state.queries[state.index]
         }.encode_json(),
       }
     ).do_request().as(resp, (resp.StatusCode == 200) ?
