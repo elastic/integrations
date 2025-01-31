@@ -727,8 +727,11 @@ An example event for `global_cluster_performance` looks as following:
     },
     "rubrik": {
         "cluster_performance": {
-            "cluster_name": "prod-rub1",
-            "cluster_id": "b1a9e557-0b47-4bc1-841d-e6379e733016",
+            "cluster": {
+                "id": "b1a9e557-0b47-4bc1-841d-e6379e733016",
+                "name": "prod-rub1",
+                "type": "Robo"
+            },
             "miscellaneous_capacity": {
                 "bytes": 3490865159
             },
@@ -763,7 +766,6 @@ An example event for `global_cluster_performance` looks as following:
                 "bytes": 0
             },
             "estimated_runway": 1140,
-            "type": "Robo",
             "status": "Disconnected"
         }
     },

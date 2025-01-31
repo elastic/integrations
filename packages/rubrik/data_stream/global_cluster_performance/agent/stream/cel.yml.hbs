@@ -37,8 +37,8 @@ state:
     index: 0
     queries:
       - |
-        query ClusterGlobalPerformance($first: Int, $after: String, $filter: [Filter!]) {
-          allClusterConnection(first: $first, after: $after, filter: $filter) {
+        query ClusterGlobalPerformance($first: Int, $after: String) {
+          allClusterConnection(first: $first, after: $after) {
             nodes {
               name
               type
@@ -82,16 +82,6 @@ program: |-
             "first": {{pageSize}},
             {{/if}}
             "after": has(state.cursor) ? state.cursor.after : null,
-            "filter": [
-              {{#if filters}}
-                {{#each filters}}
-                  {
-                    "field": "{{field}}",
-                    "texts": [{{#each values}}"{{this}}"{{#unless @last}}, {{/unless}}{{/each}}]
-                  }{{#unless @last}},{{/unless}}
-                {{/each}}
-              {{/if}}
-            ]
           }
         }.encode_json(),
       }
