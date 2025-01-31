@@ -1,14 +1,14 @@
 format_version: 3.1.4
 name: proofpoint_on_demand
 title: Proofpoint On Demand
-version: 1.3.1
+version: 1.4.0
 description: Collect logs from Proofpoint On Demand with Elastic Agent.
 type: integration
 categories:
   - security
 conditions:
   kibana:
-    version: ^8.16.0
+    version: "^8.16.3 || ^8.17.1"
   elastic:
     subscription: basic
 icons:
@@ -69,7 +69,7 @@ policy_templates:
             multi: false
             required: false
             show_user: true
-            default: 5
+            default: 10
           - name: min_wait_time
             type: text
             title: Minimum Wait Time
@@ -85,7 +85,23 @@ policy_templates:
             multi: false
             required: false
             show_user: true
-            default: 180s
+            default: 1h
+          - name: blanket_retries
+            type: bool
+            title: Blanket Retries
+            description: If enabled the agent will retry connection attempts irrespective of the type of connection/network error.
+            multi: false
+            required: false
+            show_user: false
+            default: false
+          - name: infinite_retries
+            type: bool
+            title: Infinite Retries
+            description: If enabled the agent will retry connection attempts indefinitely irrespective of the "Maximum Reconnect Attempts" value.
+            multi: false
+            required: false
+            show_user: false
+            default: false
 owner:
   github: elastic/security-service-integrations
   type: elastic

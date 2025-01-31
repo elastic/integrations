@@ -41,6 +41,15 @@ processors:
         # exactly match the syntax for firepower management logs
         PROCESS_HOST: "(?:%{PROCESS:process.name}:\\s%{SYSLOGHOST:host.name})"
         HOST_PROCESS: "(?:%{SYSLOGHOST:host.hostname}:?\\s+)?(?:%{PROCESS:process.name}?(?:\\[%{POSINT:process.pid:long}\\])?)?"
+  - grok:
+      field: _temp_.full_message
+      tag: grok_extra_timestamp
+      if: ctx._temp_.full_message != null
+      patterns:
+        - '^%{ASA_DATE:_temp_.raw_date}: %{DATA:_temp_.full_message}$'
+        - '%{GREEDYDATA:_temp_.full_message}'
+      pattern_definitions:
+        ASA_DATE: "(?:%{DAY} )?%{MONTH}  *%{MONTHDAY}(?: %{YEAR})? %{TIME}(?: %{TZ:_temp_.tz})?"
   - script:
       lang: painless
       tag: script_log_syslog
@@ -90,6 +99,18 @@ processors:
       value: 7
       if: "ctx?.event?.severity == null"
 
+  - script:
+      lang: painless
+      tag: script_tz_mapping
+      if: ctx._temp_?.tz != null && ctx._temp_?.tz != '' && ctx._conf?.tz_map != null
+      source: >-
+        for (def item : ctx._conf.tz_map) {
+          if (item.tz_short == ctx._temp_.tz) {
+            ctx._temp_.tz = item.tz_long;
+            break;
+          }
+        }
+
   # Time zone can come from three sources, choose in order: log, config, locale, default to UTC.
   - set:
       field: _temp_.tz
@@ -117,6 +138,7 @@ processors:
   #
   - date:
       if: ctx._temp_?.raw_date != null
+      tag: parse_raw_date
       timezone: "{{{ event.timezone }}}"
       field: "_temp_.raw_date"
       formats:
@@ -135,6 +157,8 @@ processors:
         - "EEE MMM dd yyyy HH:mm:ss"
         - "MMM  d yyyy HH:mm:ss z"
         - "MMM dd yyyy HH:mm:ss z"
+        - "MMM  d yyyy HH:mm:ss.SSS z"
+        - "MMM dd yyyy HH:mm:ss.SSS z"
         - "EEE MMM  d yyyy HH:mm:ss z"
         - "EEE MMM dd yyyy HH:mm:ss z"
       on_failure:
@@ -144,6 +168,7 @@ processors:
             ignore_missing: true
         - date:
             if: ctx._temp_?.raw_date != null
+            tag: "parse_raw_date_fallback"
             field: "_temp_.raw_date"
             formats:
               - "ISO8601"
@@ -161,6 +186,8 @@ processors:
               - "EEE MMM dd yyyy HH:mm:ss"
               - "MMM  d yyyy HH:mm:ss z"
               - "MMM dd yyyy HH:mm:ss z"
+              - "MMM  d yyyy HH:mm:ss.SSS z"
+              - "MMM dd yyyy HH:mm:ss.SSS z"
               - "EEE MMM  d yyyy HH:mm:ss z"
               - "EEE MMM dd yyyy HH:mm:ss z"
 
@@ -1101,7 +1128,7 @@ processors:
       if: "ctx._temp_.cisco.message_id == '434004'"
       tag: parse_434004
       field: "message"
-      pattern: "SFR requested ASA to bypass further packet redirection and process %{network.transport} flow from %{_temp_.cisco.source_interface}:%{source.address}/%{source.port} to %{_temp_.cisco.destination_interface}:%{destination.address}/%{destination.port} locally"
+      pattern: "SFR requested %{} to bypass further packet redirection and process %{network.transport} flow from %{_temp_.cisco.source_interface}:%{source.address}/%{source.port} to %{_temp_.cisco.destination_interface}:%{destination.address}/%{destination.port} locally"
   - dissect:
       if: "ctx._temp_.cisco.message_id == '110002'"
       tag: parse_110002
@@ -2303,7 +2330,7 @@ processors:
         "106100":
           denied:
             type: [ connection, denied ]
-            outcome: success
+            outcome: failure
             action: firewall-rule
           permitted:
             type: [ connection, allowed ]
@@ -2316,7 +2343,7 @@ processors:
         "106102":
           denied:
             type: [ connection, denied ]
-            outcome: success
+            outcome: failure
             action: firewall-rule
           permitted:
             type: [ connection, allowed ]
@@ -2346,75 +2373,75 @@ processors:
       params:
         "106001":
           type: [ connection, denied ]
-          outcome: success
+          outcome: failure
           action: firewall-rule
         "106002":
           type: [ connection, denied ]
-          outcome: success
+          outcome: failure
           action: firewall-rule
         "106006":
           type: [ connection, denied ]
-          outcome: success
+          outcome: failure
           action: firewall-rule
         "106007":
           type: [ connection, denied ]
-          outcome: success
+          outcome: failure
           action: firewall-rule
         "106010":
           type: [ connection, denied ]
-          outcome: success
+          outcome: failure
           action: firewall-rule
         "106012":
           type: [ connection, denied ]
-          outcome: success
+          outcome: failure
           action: firewall-rule
         "106013":
           type: [ connection, denied ]
-          outcome: success
+          outcome: failure
           action: firewall-rule
         "106014":
           type: [ connection, denied ]
-          outcome: success
+          outcome: failure
           action: firewall-rule
         "106015":
           type: [ connection, denied ]
-          outcome: success
+          outcome: failure
           action: firewall-rule
         "106016":
           type: [ connection, denied ]
-          outcome: success
+          outcome: failure
           action: firewall-rule
         "106017":
           type: [ connection, denied ]
-          outcome: success
+          outcome: failure
           action: firewall-rule
         "106018":
           type: [ connection, denied ]
-          outcome: success
+          outcome: failure
           action: firewall-rule
         "106020":
           type: [ connection, denied ]
-          outcome: success
+          outcome: failure
           action: firewall-rule
         "106021":
           type: [ connection, denied ]
-          outcome: success
+          outcome: failure
           action: firewall-rule
         "106022":
           type: [ connection, denied ]
-          outcome: success
+          outcome: failure
           action: firewall-rule
         "106023":
           type: [ connection, denied ]
-          outcome: success
+          outcome: failure
           action: firewall-rule
         "106027":
           type: [ connection, denied ]
-          outcome: success
+          outcome: failure
           action: firewall-rule
         "106103":
           type: [ connection, denied ]
-          outcome: success
+          outcome: failure
           action: firewall-rule
         "110002":
           type: [ connection, info ]
@@ -2467,7 +2494,6 @@ processors:
           action: logon-failed
         "113019":
           type: [ connection, end ]
-          outcome: success
           action: client-vpn-disconnected
         "113021":
           category: [ authentication, network ]
@@ -2537,7 +2563,6 @@ processors:
           action: flow-creation
         "302014":
           type: [ connection, end ]
-          outcome: success
           action: flow-expiration
         "302015":
           type: [ connection, start ]
@@ -2585,15 +2610,12 @@ processors:
           action: flow-expiration
         "302036":
           type: [ connection, end ]
-          outcome: success
           action: flow-expiration
         "302304":
           type: [ connection, end ]
-          outcome: success
           action: flow-expiration
         "302306":
           type: [ connection, end ]
-          outcome: success
           action: flow-expiration
         "303002":
           category: [ network, file ]
@@ -2606,7 +2628,7 @@ processors:
           action: url-access
         "304002":
           type: [ access, denied ]
-          outcome: success
+          outcome: failure
           action: url-access
         "305011":
           category: [ network, configuration ]
@@ -2620,30 +2642,30 @@ processors:
           action: nat-slot
         "313001":
           type: [ connection, denied ]
-          outcome: success
+          outcome: failure
           action: firewall-rule
         "313004":
           type: [ connection, denied ]
-          outcome: success
+          outcome: failure
           action: firewall-rule
         "313005":
           type: [ connection, denied ]
-          outcome: success
+          outcome: failure
           action: firewall-rule
         "313008":
           type: [ connection, denied ]
-          outcome: success
+          outcome: failure
           action: firewall-rule
         "313009":
           type: [ connection, denied ]
-          outcome: success
+          outcome: failure
           action: firewall-rule
         "315011":
           type: [ connection, end ]
           action: ssh-session-ended
         "322001":
           type: [ connection, denied ]
-          outcome: success
+          outcome: failure
           action: firewall-rule
         "338001":
           type: [ connection, info ]
@@ -2659,19 +2681,19 @@ processors:
           action: dynamic-filter
         "338005":
           type: [ connection, denied ]
-          outcome: success
+          outcome: failure
           action: dynamic-filter
         "338006":
           type: [ connection, denied ]
-          outcome: success
+          outcome: failure
           action: dynamic-filter
         "338007":
           type: [ connection, denied ]
-          outcome: success
+          outcome: failure
           action: dynamic-filter
         "338008":
           type: [ connection, denied ]
-          outcome: success
+          outcome: failure
           action: dynamic-filter
         "338101":
           type: [ connection, info ]
@@ -2693,11 +2715,11 @@ processors:
           action: dynamic-filter
         "338203":
           type: [ connection, denied ]
-          outcome: success
+          outcome: failure
           action: dynamic-filter
         "338204":
           type: [ connection, denied ]
-          outcome: success
+          outcome: failure
           action: dynamic-filter
         "338301":
           type: [ connection, info ]
@@ -2710,7 +2732,7 @@ processors:
           action: interface-switchover
         "434002":
           type: [ connection, denied ]
-          outcome: success
+          outcome: failure
           action: firewall-rule
         "434004":
           type: [ info ]
@@ -2770,7 +2792,7 @@ processors:
           action: logged-out
         "710003":
           type: [ connection, denied ]
-          outcome: success
+          outcome: failure
           action: firewall-rule
         "710005":
           type: [ connection, denied ]
@@ -2809,7 +2831,6 @@ processors:
           type: [ info ]
         "716002":
           type: [ connection, end ]
-          outcome: success
           action: client-vpn-disconnected
         "716003":
           category: [ authentication, network ]
@@ -2822,11 +2843,9 @@ processors:
           outcome: failure
         "716058":
           type: [ connection, end ]
-          outcome: success
           action: client-vpn-disconnected
         "716059":
           type: [ connection, start ]
-          outcome: success
           action: client-vpn-resumed
         "721016":
           type: [ connection, start ]
@@ -2871,7 +2890,7 @@ processors:
           outcome: success
         "725007":
           type: [ connection, end ]
-          outcome: success
+          outcome: failure
         "725016":
           type: [ connection, info ]
           outcome: success
