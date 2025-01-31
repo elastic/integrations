@@ -86,7 +86,7 @@
                         "id": "",
                         "params": {
                             "fontSize": 12,
-                            "markdown": "**Navigation**\n\n**Agent Health**  \n\n[Overview](#/dashboard/elastic_agent-a148dc70-6b3c-11ed-98de-67bdecd21824)  \n**[Agent Info](#/dashboard/elastic_agent-0600ffa0-6b5e-11ed-98de-67bdecd21824)**  \n[Agent Metrics](#/dashboard/elastic_agent-f47f18cc-9c7d-4278-b2ea-a6dee816d395)  \n[Integrations](#/dashboard/elastic_agent-1a4e7280-6b5e-11ed-98de-67bdecd21824)  \n[Input Metrics](#/dashboard/elastic_agent-a8192f90-cd3f-11ed-869d-e7dc1b551cd2)  \n\n**Overview**\n\nThis dashboards shows more detailed health information specifically related to running Elastic Agent instances.\n\n",
+                            "markdown": "**Agent Health**  \n\n[Overview](#/dashboard/elastic_agent-a148dc70-6b3c-11ed-98de-67bdecd21824)  \n**[Concerning Agents](#/dashboard/elastic_agent-0600ffa0-6b5e-11ed-98de-67bdecd21824)**  \n[Agent Metrics](#/dashboard/elastic_agent-f47f18cc-9c7d-4278-b2ea-a6dee816d395)  \n[Integrations](#/dashboard/elastic_agent-1a4e7280-6b5e-11ed-98de-67bdecd21824)  \n[Input Metrics](#/dashboard/elastic_agent-a8192f90-cd3f-11ed-869d-e7dc1b551cd2)  \n\n**Concerning Agents**\n\nThis dashboard elevates Agents reporting potentially concerning metrics -- use this dashboard to identify Agents that may require closer evaluation.\n\n",
                             "openLinksInNewTab": false
                         },
                         "title": "",
@@ -102,7 +102,7 @@
                     "y": 0
                 },
                 "panelIndex": "10f18ea6-0bc4-4a96-ae2d-da7ed34c3c1a",
-                "title": "Table of Contents",
+                "title": "Navigation",
                 "type": "visualization"
             },
             {
@@ -773,21 +773,65 @@
                                         "501c5bb4-5af0-46bf-99c1-e08ed2c31111": {
                                             "columnOrder": [
                                                 "a99f6081-4d6b-418d-92b5-28f77a248cbf",
-                                                "92e6e054-6aa9-4dca-8dcf-92e3721a1f97"
+                                                "1d6892c0-7564-403e-a30e-88b16ab187aa",
+                                                "92e6e054-6aa9-4dca-8dcf-92e3721a1f97",
+                                                "34f8240d-c5c7-405a-b1a1-58e547a0912e"
                                             ],
                                             "columns": {
+                                                "1d6892c0-7564-403e-a30e-88b16ab187aa": {
+                                                    "customLabel": true,
+                                                    "dataType": "number",
+                                                    "isBucketed": false,
+                                                    "label": "Queue (p50)",
+                                                    "operationType": "median",
+                                                    "params": {
+                                                        "emptyAsNull": true,
+                                                        "format": {
+                                                            "id": "percent",
+                                                            "params": {
+                                                                "decimals": 0
+                                                            }
+                                                        }
+                                                    },
+                                                    "scale": "ratio",
+                                                    "sourceField": "beat.stats.libbeat.pipeline.queue.filled.pct"
+                                                },
+                                                "34f8240d-c5c7-405a-b1a1-58e547a0912e": {
+                                                    "customLabel": true,
+                                                    "dataType": "number",
+                                                    "isBucketed": false,
+                                                    "label": "Queue (Max)",
+                                                    "operationType": "max",
+                                                    "params": {
+                                                        "emptyAsNull": true,
+                                                        "format": {
+                                                            "id": "percent",
+                                                            "params": {
+                                                                "decimals": 0
+                                                            }
+                                                        }
+                                                    },
+                                                    "scale": "ratio",
+                                                    "sourceField": "beat.stats.libbeat.pipeline.queue.filled.pct"
+                                                },
                                                 "92e6e054-6aa9-4dca-8dcf-92e3721a1f97": {
                                                     "customLabel": true,
                                                     "dataType": "number",
                                                     "filter": {
                                                         "language": "kuery",
-                                                        "query": "log.level:warn"
+                                                        "query": ""
                                                     },
                                                     "isBucketed": false,
-                                                    "label": "Queue Filled %",
-                                                    "operationType": "max",
+                                                    "label": "Queue (p90)",
+                                                    "operationType": "percentile",
                                                     "params": {
-                                                        "emptyAsNull": true
+                                                        "format": {
+                                                            "id": "percent",
+                                                            "params": {
+                                                                "decimals": 0
+                                                            }
+                                                        },
+                                                        "percentile": 90
                                                     },
                                                     "scale": "ratio",
                                                     "sourceField": "beat.stats.libbeat.pipeline.queue.filled.pct"
@@ -804,25 +848,18 @@
                                                         "include": [],
                                                         "includeIsRegex": false,
                                                         "missingBucket": false,
-                                                        "orderAgg": {
-                                                            "dataType": "number",
-                                                            "isBucketed": false,
-                                                            "label": "Count of records",
-                                                            "operationType": "count",
-                                                            "params": {
-                                                                "emptyAsNull": true
-                                                            },
-                                                            "scale": "ratio",
-                                                            "sourceField": "___records___"
-                                                        },
                                                         "orderBy": {
-                                                            "type": "custom"
+                                                            "columnId": "92e6e054-6aa9-4dca-8dcf-92e3721a1f97",
+                                                            "type": "column"
                                                         },
                                                         "orderDirection": "desc",
                                                         "otherBucket": true,
                                                         "parentFormat": {
-                                                            "id": "terms"
+                                                            "id": "multi_terms"
                                                         },
+                                                        "secondaryFields": [
+                                                            "component.id"
+                                                        ],
                                                         "size": 100
                                                     },
                                                     "scale": "ordinal",
@@ -839,6 +876,25 @@
                                 }
                             },
                             "filters": [
+                                {
+                                    "$state": {
+                                        "store": "appState"
+                                    },
+                                    "meta": {
+                                        "alias": null,
+                                        "disabled": false,
+                                        "field": "beat.stats.libbeat.pipeline.queue.filled.pct",
+                                        "index": "b536cc6c-2af1-4957-a213-abff957deafe",
+                                        "key": "beat.stats.libbeat.pipeline.queue.filled.pct",
+                                        "negate": false,
+                                        "type": "exists"
+                                    },
+                                    "query": {
+                                        "exists": {
+                                            "field": "beat.stats.libbeat.pipeline.queue.filled.pct"
+                                        }
+                                    }
+                                },
                                 {
                                     "$state": {
                                         "store": "appState"
@@ -870,7 +926,8 @@
                                 "columns": [
                                     {
                                         "columnId": "a99f6081-4d6b-418d-92b5-28f77a248cbf",
-                                        "isTransposed": false
+                                        "isTransposed": false,
+                                        "width": 489.5
                                     },
                                     {
                                         "colorMode": "cell",
@@ -909,9 +966,91 @@
                                                 ]
                                             },
                                             "type": "palette"
-                                        }
+                                        },
+                                        "summaryRow": "none",
+                                        "width": 73.5
+                                    },
+                                    {
+                                        "colorMode": "cell",
+                                        "columnId": "34f8240d-c5c7-405a-b1a1-58e547a0912e",
+                                        "isTransposed": false,
+                                        "palette": {
+                                            "name": "negative",
+                                            "params": {
+                                                "continuity": "above",
+                                                "name": "negative",
+                                                "rangeMax": null,
+                                                "rangeMin": 0,
+                                                "reverse": false,
+                                                "stops": [
+                                                    {
+                                                        "color": "#fbddd6",
+                                                        "stop": 0
+                                                    },
+                                                    {
+                                                        "color": "#f3bbaf",
+                                                        "stop": 20
+                                                    },
+                                                    {
+                                                        "color": "#e99a89",
+                                                        "stop": 40
+                                                    },
+                                                    {
+                                                        "color": "#db7965",
+                                                        "stop": 60
+                                                    },
+                                                    {
+                                                        "color": "#cc5642",
+                                                        "stop": 80
+                                                    }
+                                                ]
+                                            },
+                                            "type": "palette"
+                                        },
+                                        "width": 78.5
+                                    },
+                                    {
+                                        "colorMode": "cell",
+                                        "columnId": "1d6892c0-7564-403e-a30e-88b16ab187aa",
+                                        "isTransposed": false,
+                                        "palette": {
+                                            "name": "negative",
+                                            "params": {
+                                                "continuity": "above",
+                                                "name": "negative",
+                                                "rangeMax": null,
+                                                "rangeMin": 0,
+                                                "reverse": false,
+                                                "stops": [
+                                                    {
+                                                        "color": "#fbddd6",
+                                                        "stop": 0
+                                                    },
+                                                    {
+                                                        "color": "#f3bbaf",
+                                                        "stop": 20
+                                                    },
+                                                    {
+                                                        "color": "#e99a89",
+                                                        "stop": 40
+                                                    },
+                                                    {
+                                                        "color": "#db7965",
+                                                        "stop": 60
+                                                    },
+                                                    {
+                                                        "color": "#cc5642",
+                                                        "stop": 80
+                                                    }
+                                                ]
+                                            },
+                                            "type": "palette"
+                                        },
+                                        "width": 81.5
                                     }
                                 ],
+                                "headerRowHeight": "custom",
+                                "headerRowHeightLines": 2,
                                 "layerId": "501c5bb4-5af0-46bf-99c1-e08ed2c31111",
                                 "layerType": "data"
                             }
@@ -924,9 +1063,9 @@
                     "hidePanelTitles": false
                 },
                 "gridData": {
-                    "h": 14,
+                    "h": 13,
                     "i": "bc7faf53-ac20-4e78-b947-7f1c26b2bbd3",
-                    "w": 20,
+                    "w": 24,
                     "x": 8,
                     "y": 20
                 },
@@ -1124,10 +1263,10 @@
                     "hidePanelTitles": false
                 },
                 "gridData": {
-                    "h": 14,
+                    "h": 13,
                     "i": "718844a9-5ff3-44ed-bdb3-d0e2cf734bb3",
-                    "w": 20,
-                    "x": 28,
+                    "w": 16,
+                    "x": 32,
                     "y": 20
                 },
                 "panelIndex": "718844a9-5ff3-44ed-bdb3-d0e2cf734bb3",
@@ -1238,7 +1377,7 @@
                     "i": "c5caa206-df9f-430b-8ff2-7b29d29b3f06",
                     "w": 40,
                     "x": 8,
-                    "y": 34
+                    "y": 33
                 },
                 "panelIndex": "c5caa206-df9f-430b-8ff2-7b29d29b3f06",
                 "title": "Elastic-Agent errors",
@@ -1250,7 +1389,7 @@
         "version": 1
     },
     "coreMigrationVersion": "8.8.0",
-    "created_at": "2025-01-29T23:27:53.621Z",
+    "created_at": "2025-01-30T15:43:17.139Z",
     "id": "elastic_agent-0600ffa0-6b5e-11ed-98de-67bdecd21824",
     "managed": false,
     "references": [
