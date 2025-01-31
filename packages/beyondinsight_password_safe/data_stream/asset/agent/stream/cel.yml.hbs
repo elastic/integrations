@@ -1,0 +1,139 @@
+config_version: 2
+interval: {{interval}}
+{{#if enable_request_tracer}}
+resource.tracer.filename: "../../logs/cel/http-request-trace-*.ndjson"
+request.tracer.maxbackups: 5
+{{/if}}
+{{#if proxy_url}}
+resource.proxy_url: {{proxy_url}}
+{{/if}}
+{{#if http_client_timeout}}
+resource.timeout: {{http_client_timeout}}
+{{/if}}
+resource.ssl.renegotiation: freely
+resource.url: {{url}}
+{{#if ssl}}
+resource.ssl: {{ssl}}
+{{/if}}
+state:
+  limit: {{limit}}
+  apikey: {{apikey}}
+  password: {{password}}
+  username: {{username}}
+redact:
+  fields:
+    - apikey
+    - password
+program: |-
+  state.?cursor.cookies.orValue(
+  	// Authenticating using API to retrieve Cookie
+  	request("POST", state.url.trim_suffix("/") + "/Auth/SignAppin").with(
+  		{
+  			"Header": {
+  				"Authorization": [
+  					"PS-Auth key=" + state.apikey + ";runas=" + state.username + ((state.?password.orValue("") != "") ? (";pwd=[" + state.password + "];") : ""),
+  				],
+  				"Content-Type": ["application/json"],
+  			},
+  		}
+  	).do_request().as(resp,
+  		resp.Header["Set-Cookie"]
+  	)
+  ).as(cookies,
+  	state.?cursor.asset_reqs.orValue(
+  		request("GET", state.url.trim_suffix("/") + "/Workgroups").with(
+  			{
+  				"Header": {
+  					"Content-Type": ["application/json"],
+  					"Cookie": cookies,
+  				},
+  			}
+  		).do_request().as(resp,
+  			(resp.StatusCode == 200) ?
+  				bytes(resp.Body).decode_json().as(workgroups,
+  					workgroups.map(wg, [string(wg.ID), 0])
+  				)
+  			:
+  				[]
+  		)
+  	).as(asset_reqs,
+  		(asset_reqs == []) ?
+  			state.with(
+  				{
+  					"events": [],
+  					"want_more": false,
+  					"cursor": {
+  						"cookies": cookies,
+  					},
+  				}
+  			)
+  		:
+  			{
+  				"workgroup_id": asset_reqs[0][0],
+  				"offset": asset_reqs[0][1],
+  				"rest_workgroups": tail(asset_reqs),
+  			}.as(r,
+  				request(
+  					"GET",
+  					state.url.trim_suffix("/") + "/Workgroups/" + r.workgroup_id + "/Assets?" + {
+  						"limit": [string(state.limit)],
+  						"offset": [string(r.offset)],
+  					}.format_query()
+  				).with(
+  					{
+  						"Header": {
+  							"Content-Type": ["application/json"],
+  							"Cookie": cookies,
+  						},
+  					}
+  				).do_request().as(assetResp,
+  					(assetResp.StatusCode != 200) ?
+  						state.with(
+  							{
+  								"events": {"error": {"message": "Authentication expired or incorrect. Clearing and retrying...", "statuscode": string(assetResp.StatusCode)}},
+  								"want_more": false,
+  							}
+  						)
+  					:
+  						bytes(assetResp.Body).decode_json().as(assetBody,
+  							(
+  								(size(assetBody.Data) + int(r.offset) < int(assetBody.TotalCount)) ?
+  									([[r.workgroup_id, int(r.offset) + size(assetBody.Data)]] + r.rest_workgroups)
+  								:
+  									r.rest_workgroups
+  							).as(asset_reqs,
+  								state.with(
+  									{
+  										"events": assetBody.Data.map(e,
+  											{
+  												"message": e,
+  												?"event.original": state.?preserve_original_event.orValue(false) ? optional.of(e.encode_json()) : optional.none(),
+  											}
+  										),
+  										"want_more": true,
+  										"cursor": {
+  											"cookies": cookies,
+  											"asset_reqs": asset_reqs,
+  										},
+  									}
+  								)
+  							)
+  						)
+  				)
+  			)
+  	)
+  )
+tags:
+{{#if preserve_original_event}}
+  - preserve_original_event
+{{/if}}
+{{#each tags as |tag|}}
+  - {{tag}}
+{{/each}}
+{{#contains "forwarded" tags}}
+publisher_pipeline.disable_host: true
+{{/contains}}
+{{#if processors}}
+processors:
+{{processors}}
+{{/if}}

@@ -61,11 +61,11 @@ program: |
     ).as(token, !has(token.access_token) ? token :
       {
         "data": state.?last_page.data.orValue([{
-          state.start_field: state.?cursor.last.orValue(now - duration(state.look_back)).format(time_layout.RFC3339),
+          state.start_field: state.?cursor.last.orValue((now - duration(state.look_back)).format(time_layout.RFC3339)),
           state.end_field: now.format(time_layout.RFC3339),
         }]),
       }.as(req,
-        post_request(state.url.trim_right("/") + state.path, "application/json", 
+        post_request(state.url.trim_right("/") + state.path, "application/json",
           {
             "meta": {
               "pagination": {
@@ -77,7 +77,7 @@ program: |
           }.encode_json()
         ).with({
           "Header": {
-            "Authorization": ["Bearer " + token.access_token], 
+            "Authorization": ["Bearer " + token.access_token],
             "Accept": ["application/json"],
             "Content-Type": ["application/json"],
           }
@@ -86,7 +86,16 @@ program: |
             {
               "events": body.data.map(e, {"message": e.encode_json()}),
               "cursor": {
-                "last": ([now] + body.data.map(e, e[state.time_field].parse_time(["2006-01-02T15:04:05-0700", time_layout.RFC3339]))).max(),
+                "last": (
+                  body.data.map(e,
+                    e[state.time_field].parse_time(["2006-01-02T15:04:05-0700", time_layout.RFC3339])
+                  ).as(time_fields,
+                    (size(time_fields) > 0) ?
+                      time_fields.max()
+                    :
+                      now
+                  ).format(time_layout.RFC3339)
+                ),
               },
               ?"last_page": has(body.?meta.pagination.next) && size(body.data) != 0 ?
                 optional.of({

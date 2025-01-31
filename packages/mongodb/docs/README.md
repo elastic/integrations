@@ -343,48 +343,56 @@ Please refer to the following [document](https://www.elastic.co/guide/en/ecs/cur
 
 **Exported fields**
 
-| Field | Description | Type | Metric Type |
-|---|---|---|---|
-| @timestamp | Event timestamp. | date |  |
-| agent.id |  | keyword |  |
-| cloud.account.id | The cloud account or organization id used to identify different entities in a multi-tenant environment.  Examples: AWS account id, Google Cloud ORG Id, or other unique identifier. | keyword |  |
-| cloud.availability_zone | Availability zone in which this host is running. | keyword |  |
-| cloud.image.id | Image ID for the cloud instance. | keyword |  |
-| cloud.instance.id | Instance ID of the host machine. | keyword |  |
-| cloud.provider | Name of the cloud provider. Example values are aws, azure, gcp, or digitalocean. | keyword |  |
-| cloud.region | Region in which this host is running. | keyword |  |
-| container.id | Unique container id. | keyword |  |
-| data_stream.dataset | Data stream dataset. | constant_keyword |  |
-| data_stream.namespace | Data stream namespace. | constant_keyword |  |
-| data_stream.type | Data stream type. | constant_keyword |  |
-| event.dataset | Event dataset | constant_keyword |  |
-| event.module | Event module | constant_keyword |  |
-| host.containerized | If the host is a container. | boolean |  |
-| host.name | Name of the host.  It can contain what `hostname` returns on Unix systems, the fully qualified domain name, or a name specified by the user. The sender decides which value to use. | keyword |  |
-| host.os.build | OS build information. | keyword |  |
-| host.os.codename | OS codename, if any. | keyword |  |
-| mongodb.collstats.collection | Collection name. | keyword |  |
-| mongodb.collstats.commands.count | Number of database commands executed. | long | counter |
-| mongodb.collstats.commands.time.us | Time executing database commands in microseconds. | long | counter |
-| mongodb.collstats.db | Database name. | keyword |  |
-| mongodb.collstats.getmore.count | Number of times a cursor asked for more data. | long | counter |
-| mongodb.collstats.getmore.time.us | Time asking for more cursor rows in microseconds. | long | counter |
-| mongodb.collstats.insert.count | Number of document insert events. | long | counter |
-| mongodb.collstats.insert.time.us | Time inserting new documents in microseconds. | long | counter |
-| mongodb.collstats.lock.read.count | Number of read lock wait events. | long | counter |
-| mongodb.collstats.lock.read.time.us | Time waiting for read locks in microseconds. | long | counter |
-| mongodb.collstats.lock.write.count | Number of write lock wait events. | long | counter |
-| mongodb.collstats.lock.write.time.us | Time waiting for write locks in microseconds. | long | counter |
-| mongodb.collstats.name | Combination of database and collection name. | keyword |  |
-| mongodb.collstats.queries.count | Number of queries executed. | long | counter |
-| mongodb.collstats.queries.time.us | Time running queries in microseconds. | long | counter |
-| mongodb.collstats.remove.count | Number of document delete events. | long | counter |
-| mongodb.collstats.remove.time.us | Time deleting documents in microseconds. | long | counter |
-| mongodb.collstats.total.count | Total number of lock wait events. | long | counter |
-| mongodb.collstats.total.time.us | Total waiting time for locks in microseconds. | long | counter |
-| mongodb.collstats.update.count | Number of document update events. | long | counter |
-| mongodb.collstats.update.time.us | Time updating documents in microseconds. | long | counter |
-| service.address | Address where data about this service was collected from. This should be a URI, network address (ipv4:port or [ipv6]:port) or a resource path (sockets). | keyword |  |
+| Field | Description | Type | Unit | Metric Type |
+|---|---|---|---|---|
+| @timestamp | Event timestamp. | date |  |  |
+| agent.id |  | keyword |  |  |
+| cloud.account.id | The cloud account or organization id used to identify different entities in a multi-tenant environment.  Examples: AWS account id, Google Cloud ORG Id, or other unique identifier. | keyword |  |  |
+| cloud.availability_zone | Availability zone in which this host is running. | keyword |  |  |
+| cloud.image.id | Image ID for the cloud instance. | keyword |  |  |
+| cloud.instance.id | Instance ID of the host machine. | keyword |  |  |
+| cloud.provider | Name of the cloud provider. Example values are aws, azure, gcp, or digitalocean. | keyword |  |  |
+| cloud.region | Region in which this host is running. | keyword |  |  |
+| container.id | Unique container id. | keyword |  |  |
+| data_stream.dataset | Data stream dataset. | constant_keyword |  |  |
+| data_stream.namespace | Data stream namespace. | constant_keyword |  |  |
+| data_stream.type | Data stream type. | constant_keyword |  |  |
+| event.dataset | Event dataset | constant_keyword |  |  |
+| event.module | Event module | constant_keyword |  |  |
+| host.containerized | If the host is a container. | boolean |  |  |
+| host.name | Name of the host.  It can contain what `hostname` returns on Unix systems, the fully qualified domain name, or a name specified by the user. The sender decides which value to use. | keyword |  |  |
+| host.os.build | OS build information. | keyword |  |  |
+| host.os.codename | OS codename, if any. | keyword |  |  |
+| mongodb.collstats.collection | Collection name. | keyword |  |  |
+| mongodb.collstats.commands.count | Number of database commands executed. | long |  | counter |
+| mongodb.collstats.commands.time.us | Time executing database commands in microseconds. | long |  | counter |
+| mongodb.collstats.db | Database name. | keyword |  |  |
+| mongodb.collstats.getmore.count | Number of times a cursor asked for more data. | long |  | counter |
+| mongodb.collstats.getmore.time.us | Time asking for more cursor rows in microseconds. | long |  | counter |
+| mongodb.collstats.insert.count | Number of document insert events. | long |  | counter |
+| mongodb.collstats.insert.time.us | Time inserting new documents in microseconds. | long |  | counter |
+| mongodb.collstats.lock.read.count | Number of read lock wait events. | long |  | counter |
+| mongodb.collstats.lock.read.time.us | Time waiting for read locks in microseconds. | long |  | counter |
+| mongodb.collstats.lock.write.count | Number of write lock wait events. | long |  | counter |
+| mongodb.collstats.lock.write.time.us | Time waiting for write locks in microseconds. | long |  | counter |
+| mongodb.collstats.name | Combination of database and collection name. | keyword |  |  |
+| mongodb.collstats.queries.count | Number of queries executed. | long |  | counter |
+| mongodb.collstats.queries.time.us | Time running queries in microseconds. | long |  | counter |
+| mongodb.collstats.remove.count | Number of document delete events. | long |  | counter |
+| mongodb.collstats.remove.time.us | Time deleting documents in microseconds. | long |  | counter |
+| mongodb.collstats.stats.avgObjSize | The average size of an object in the collection (in bytes). | long |  |  |
+| mongodb.collstats.stats.count | The number of objects or documents in this collection. | long |  |  |
+| mongodb.collstats.stats.max | Shows the maximum number of documents that may be present in a capped collection. | long |  |  |
+| mongodb.collstats.stats.nindexes | The number of indexes on the collection. All collections have at least one index on the _id field. | long |  |  |
+| mongodb.collstats.stats.size | The total uncompressed size in memory of all records in a collection. | long |  |  |
+| mongodb.collstats.stats.storageSize | The total amount of storage allocated to this collection for document storage (in bytes). | long | byte | gauge |
+| mongodb.collstats.stats.totalIndexSize | The total size of all indexes (in bytes). | long |  |  |
+| mongodb.collstats.stats.totalSize | The sum of the storageSize and totalIndexSize (in bytes). | long |  |  |
+| mongodb.collstats.total.count | Total number of lock wait events. | long |  | counter |
+| mongodb.collstats.total.time.us | Total waiting time for locks in microseconds. | long |  | counter |
+| mongodb.collstats.update.count | Number of document update events. | long |  | counter |
+| mongodb.collstats.update.time.us | Time updating documents in microseconds. | long |  | counter |
+| service.address | Address where data about this service was collected from. This should be a URI, network address (ipv4:port or [ipv6]:port) or a resource path (sockets). | keyword |  |  |
 
 
 ### dbstats
