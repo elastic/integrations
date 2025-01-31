@@ -49,6 +49,7 @@ processors:
       field: citrix.extended.message
       patterns:
         - '^User %{DATA:citrix_adc.log.user} - Client_ip %{IP:citrix_adc.log.client_ip} - Nat_ip (%{IP:citrix_adc.log.nat.ip}|"%{DATA}") - Vserver %{IP:citrix_adc.log.vserver.ip}:%{INT:citrix_adc.log.vserver.port} - Last_contact "%{DATA:citrix_adc.log.last_contact}" - Group\(s\) "%{DATA:citrix_adc.log.groups}" ?$'
+        - '^Context %{DATA} - SessionId: %{NUMBER:citrix_adc.log.session_id} - User %{DATA:citrix_adc.log.user} - Client_ip %{IP:citrix_adc.log.client_ip} - Nat_ip (%{IP:citrix_adc.log.nat.ip}|"%{DATA}") - Vserver %{IP:citrix_adc.log.vserver.ip}:%{INT:citrix_adc.log.vserver.port} - Last_contact "%{DATA:citrix_adc.log.last_contact}" - Group\(s\) "%{DATA:citrix_adc.log.groups}" ?$'
 
   - grok:
       tag: grok_sslvpn_udpflowstat
@@ -63,8 +64,8 @@ processors:
       if: 'ctx.citrix.name == "HTTPREQUEST"'
       field: citrix.extended.message
       patterns:
-        - '^Context (%{USERNAME:citrix_adc.log.username}|%{EMAILADDRESS:citrix_adc.log.username})@%{IP:citrix_adc.log.client_ip} ?- SessionId: %{NUMBER:citrix_adc.log.session_id} ?- %{HOSTNAME:citrix_adc.log.hostname} User (%{USERNAME:citrix_adc.log.user}|%{EMAILADDRESS:citrix_adc.log.user}) ?: Group\(s\) %{DATA:citrix_adc.log.groups} : Vserver %{IP:citrix_adc.log.vserver.ip}:%{NUMBER:citrix_adc.log.vserver.port} - %{DATA:_tmp.timestamp} : SSO is %{WORD:citrix_adc.log.sso_status} : %{WORD:citrix_adc.log.method} %{URIPATHPARAM:citrix_adc.log.request.path} - - ?$'
-        - '^Context (%{USERNAME:citrix_adc.log.username}|%{EMAILADDRESS:citrix_adc.log.username})@%{IP:citrix_adc.log.client_ip} ?- SessionId: %{NUMBER:citrix_adc.log.session_id} ?- %{HOSTNAME:citrix_adc.log.hostname} User (%{USERNAME:citrix_adc.log.user}|%{EMAILADDRESS:citrix_adc.log.user}) ?: Group\(s\) %{DATA:citrix_adc.log.groups} : Vserver %{IP:citrix_adc.log.vserver.ip}:%{NUMBER:citrix_adc.log.vserver.port} - %{DATA:_tmp.timestamp} %{DATA:citrix_adc.log.timezone} %{WORD:citrix_adc.log.method} %{DATA:citrix_adc.log.request.path} - -?$'
+        - '^Context (%{USERNAME:citrix_adc.log.username}|%{EMAILADDRESS:citrix_adc.log.username})@%{IP:citrix_adc.log.client_ip} ?- SessionId: %{NUMBER:citrix_adc.log.session_id} ?- (?:\[TECHSUPPORT\]\[ENUMERATION\] )?%{HOSTNAME:citrix_adc.log.hostname} User (%{USERNAME:citrix_adc.log.user}|%{EMAILADDRESS:citrix_adc.log.user}) ?: Group\(s\) %{DATA:citrix_adc.log.groups} : Vserver %{IP:citrix_adc.log.vserver.ip}:%{NUMBER:citrix_adc.log.vserver.port} - %{DATA:_tmp.timestamp} : SSO is %{WORD:citrix_adc.log.sso_status} : %{WORD:citrix_adc.log.method} %{URIPATHPARAM:citrix_adc.log.request.path} - - ?$'
+        - '^Context (%{USERNAME:citrix_adc.log.username}|%{EMAILADDRESS:citrix_adc.log.username})@%{IP:citrix_adc.log.client_ip} ?- SessionId: %{NUMBER:citrix_adc.log.session_id} ?- (?:\[TECHSUPPORT\]\[ENUMERATION\] )?%{HOSTNAME:citrix_adc.log.hostname} User (%{USERNAME:citrix_adc.log.user}|%{EMAILADDRESS:citrix_adc.log.user}) ?: Group\(s\) %{DATA:citrix_adc.log.groups} : Vserver %{IP:citrix_adc.log.vserver.ip}:%{NUMBER:citrix_adc.log.vserver.port} - %{DATA:_tmp.timestamp} %{DATA:citrix_adc.log.timezone} %{WORD:citrix_adc.log.method} %{DATA:citrix_adc.log.request.path} - -?$'
 
   - grok:
       tag: grok_sslvpn_nonhttp_access_denied
