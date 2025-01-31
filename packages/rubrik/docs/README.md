@@ -295,7 +295,6 @@ An example event for `filesets` looks as following:
         "rubrik.filesets"
     ]
 }
-
 ```
 
 ### Drives
@@ -831,6 +830,4 @@ An example event for `global_cluster_performance` looks as following:
         "rubrik.cluster_performance"
     ]
 }
-
 ```
-

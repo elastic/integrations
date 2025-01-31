@@ -67,9 +67,9 @@ Please refer to the following [document](https://www.elastic.co/guide/en/ecs/cur
 
 ### Filesets
 
-{{ fields "filesets" }}
+{{fields "filesets"}}
 
-{{event "filesets" }}
+{{event "filesets"}}
 
 ### Drives
 
@@ -130,4 +130,3 @@ Please refer to the following [document](https://www.elastic.co/guide/en/ecs/cur
 {{fields "global_cluster_performance"}}
 
 {{event "global_cluster_performance"}}
-
