@@ -136,7 +136,7 @@
                         "id": "",
                         "params": {
                             "fontSize": 12,
-                            "markdown": "**Navigation**\n\n**Corelight**\n\n- [Security Posture](#/dashboard/corelight-7c0946bc-acd0-4ec3-ab3b-8a92853f4a3b)\n- Data Insights\n  - [Name Resolution Insights](#/dashboard/corelight-8546a96c-86c9-4edf-9d46-88338d6ac40e)\n  - [Secure Channel Insights](#/dashboard/corelight-45197477-c13f-4e52-a5dd-fb4f53564963)\n  - [Remote Activity Insights](#/dashboard/corelight-f4864774-ed73-4b78-b861-5b8235ec12cf)\n- **Security Workflows**\n  - [Intel](#/dashboard/corelight-323b0f27-993e-4fee-ae6e-b5977d7cab11)\n  - [IP Interrogation](#/dashboard/corelight-3a4a279f-f238-47de-90ba-f643c5647fde)\n  - [Log Hunting](#/dashboard/corelight-ff07e65c-2703-4cbe-a45f-3881025352a3)\n  - [Notices](#/dashboard/corelight-f7da14f0-85db-48e8-a591-1f650af0f618)\n  - [RDP Inferences Overview](#/dashboard/corelight-2d4dc345-cbbe-4d7a-9203-5ab11c8cb5ba)\n  - **SSH Inferences Overview**\n  - [Corelight Suricata IDS Alert Overview](#/dashboard/corelight-f1208ffe-d168-46d1-9531-24de523d1bfb)\n  - [VPN Insights](#/dashboard/corelight-023162b6-94da-4d8d-b1f6-de6192356cce)\n\n[**Integrations Page**](/app/integrations/detail/corelight/overview)",
+                            "markdown": "**Navigation**\n\n**Corelight**\n\n- [Security Posture](#/dashboard/corelight-7c0946bc-acd0-4ec3-ab3b-8a92853f4a3b)\n- Data Insights\n  - [Name Resolution Insights](#/dashboard/corelight-8546a96c-86c9-4edf-9d46-88338d6ac40e)\n  - [Secure Channel Insights](#/dashboard/corelight-45197477-c13f-4e52-a5dd-fb4f53564963)\n  - [Remote Activity Insights](#/dashboard/corelight-f4864774-ed73-4b78-b861-5b8235ec12cf)\n- **Security Workflows**\n  - [Intel](#/dashboard/corelight-323b0f27-993e-4fee-ae6e-b5977d7cab11)\n  - [IP Interrogation](#/dashboard/corelight-3a4a279f-f238-47de-90ba-f643c5647fde)\n  - [Log Hunting](#/dashboard/corelight-ff07e65c-2703-4cbe-a45f-3881025352a3)\n  - [Notices](#/dashboard/corelight-f7da14f0-85db-48e8-a591-1f650af0f618)\n  - [RDP Inferences Overview](#/dashboard/corelight-2d4dc345-cbbe-4d7a-9203-5ab11c8cb5ba)\n  - **SSH Inferences Overview**\n  - [Corelight Suricata IDS Alert Overview](#/dashboard/corelight-f1208ffe-d168-46d1-9531-24de523d1bfb)\n  - [VPN Insights](#/dashboard/corelight-023162b6-94da-4d8d-b1f6-de6192356cce)\n- Data Explorer\n  - [Connections](#/dashboard/corelight-eff0434c-1e27-4c02-959e-9f5d95488efb)\n  - [DNS](#/dashboard/corelight-58885f47-95e1-4242-a1ee-783de69ace17)\n  - [Files](#/dashboard/corelight-0cfc8a95-4979-4265-b9ad-91edf63f01a9)\n  - [HTTP](#/dashboard/corelight-8c5f15f7-7063-4228-be54-fb8c20b29caa)\n  - [Software](#/dashboard/corelight-40bbc19b-dd9c-4b43-a88a-e29fc8701902)\n  - [SSL and x509](#/dashboard/corelight-e4a93cfe-4b1f-44df-ab99-50c74f6f2203)\n\n[**Integrations Page**](/app/integrations/detail/corelight/overview)",
                             "openLinksInNewTab": false
                         },
                         "title": "",
@@ -199,7 +199,7 @@
                                                     "customLabel": true,
                                                     "dataType": "string",
                                                     "isBucketed": true,
-                                                    "label": "InferenceName",
+                                                    "label": "Inference Name",
                                                     "operationType": "terms",
                                                     "params": {
                                                         "exclude": [],
@@ -622,19 +622,19 @@
                                         }
                                     ],
                                     "layers": {
-                                        "7d65d0d7-9023-4311-b224-b8a10a07c24b": {
+                                        "46c8aa32-f485-46f8-ab3b-5f1f42d82690": {
                                             "columns": [
                                                 {
-                                                    "columnId": "Source IP Address",
-                                                    "fieldName": "Source IP Address",
+                                                    "columnId": "Source IP",
+                                                    "fieldName": "Source IP",
                                                     "meta": {
                                                         "esType": "ip",
                                                         "type": "ip"
                                                     }
                                                 },
                                                 {
-                                                    "columnId": "Destination IP Address",
-                                                    "fieldName": "Destination IP Address",
+                                                    "columnId": "Destination IP",
+                                                    "fieldName": "Destination IP",
                                                     "meta": {
                                                         "esType": "ip",
                                                         "type": "ip"
@@ -649,8 +649,8 @@
                                                     }
                                                 },
                                                 {
-                                                    "columnId": "count",
-                                                    "fieldName": "count",
+                                                    "columnId": "Count",
+                                                    "fieldName": "Count",
                                                     "inMetricDimension": true,
                                                     "meta": {
                                                         "esType": "long",
@@ -660,7 +660,7 @@
                                             ],
                                             "index": "b2bcbb11fd7b30e2a9f2ee93a6a5ffd1f700ee82fff0bfc92dd439c707a35ebb",
                                             "query": {
-                                                "esql": "from logs-corelight.various-*\r\n| where event.dataset == \"ssh\" and ssh.inferences is not null\r\n| limit 10000\r\n| stats count(), values(ssh.inferences) by source.ip, destination.ip\r\n| rename source.ip as `Source IP Address`, destination.ip as `Destination IP Address`, `values(ssh.inferences)` as Inferences, `count()` as count\r\n| SORT count desc\r\n| limit 5\r\n| keep `Source IP Address`, `Destination IP Address`, Inferences, count\r\n"
+                                                "esql": "from logs-corelight.various-*\r\n| where event.dataset == \"ssh\" and ssh.inferences is not null\r\n| limit 10000\r\n| stats count(), values(ssh.inferences) by source.ip, destination.ip\r\n| rename source.ip as `Source IP`, destination.ip as `Destination IP`, `values(ssh.inferences)` as Inferences, `count()` as Count\r\n| SORT Count desc\r\n| limit 5\r\n| keep `Source IP`, `Destination IP`, Inferences, Count\r\n"
                                             },
                                             "timeField": "@timestamp"
                                         }
@@ -669,24 +669,24 @@
                             },
                             "filters": [],
                             "query": {
-                                "esql": "from logs-corelight.various-*\r\n| where event.dataset == \"ssh\" and ssh.inferences is not null\r\n| limit 10000\r\n| stats count(), values(ssh.inferences) by source.ip, destination.ip\r\n| rename source.ip as `Source IP Address`, destination.ip as `Destination IP Address`, `values(ssh.inferences)` as Inferences, `count()` as count\r\n| SORT count desc\r\n| limit 5\r\n| keep `Source IP Address`, `Destination IP Address`, Inferences, count\r\n"
+                                "esql": "from logs-corelight.various-*\r\n| where event.dataset == \"ssh\" and ssh.inferences is not null\r\n| limit 10000\r\n| stats count(), values(ssh.inferences) by source.ip, destination.ip\r\n| rename source.ip as `Source IP`, destination.ip as `Destination IP`, `values(ssh.inferences)` as Inferences, `count()` as Count\r\n| SORT Count desc\r\n| limit 5\r\n| keep `Source IP`, `Destination IP`, Inferences, Count\r\n"
                             },
                             "visualization": {
                                 "columns": [
                                     {
-                                        "columnId": "Source IP Address"
+                                        "columnId": "Source IP"
                                     },
                                     {
-                                        "columnId": "Destination IP Address"
+                                        "columnId": "Destination IP"
                                     },
                                     {
                                         "columnId": "Inferences"
                                     },
                                     {
-                                        "columnId": "count"
+                                        "columnId": "Count"
                                     }
                                 ],
-                                "layerId": "7d65d0d7-9023-4311-b224-b8a10a07c24b",
+                                "layerId": "46c8aa32-f485-46f8-ab3b-5f1f42d82690",
                                 "layerType": "data"
                             }
                         },
@@ -739,11 +739,11 @@
                                         }
                                     ],
                                     "layers": {
-                                        "02fef2fe-b4e7-4a8f-8197-809434e81d73": {
+                                        "b6068c04-11b7-4de2-8e94-9d7a12884e66": {
                                             "columns": [
                                                 {
-                                                    "columnId": "Source",
-                                                    "fieldName": "Source",
+                                                    "columnId": "Source IP",
+                                                    "fieldName": "Source IP",
                                                     "inMetricDimension": true,
                                                     "meta": {
                                                         "esType": "ip",
@@ -751,8 +751,8 @@
                                                     }
                                                 },
                                                 {
-                                                    "columnId": "Destination",
-                                                    "fieldName": "Destination",
+                                                    "columnId": "Destination IP",
+                                                    "fieldName": "Destination IP",
                                                     "inMetricDimension": true,
                                                     "meta": {
                                                         "esType": "ip",
@@ -778,8 +778,8 @@
                                                     }
                                                 },
                                                 {
-                                                    "columnId": "count",
-                                                    "fieldName": "count",
+                                                    "columnId": "Count",
+                                                    "fieldName": "Count",
                                                     "inMetricDimension": true,
                                                     "meta": {
                                                         "esType": "long",
@@ -789,7 +789,7 @@
                                             ],
                                             "index": "b2bcbb11fd7b30e2a9f2ee93a6a5ffd1f700ee82fff0bfc92dd439c707a35ebb",
                                             "query": {
-                                                "esql": "from logs-corelight.various-*\r\n| where event.dataset == \"ssh\" and ssh.inferences is not null and ssh.host_key is not null\r\n| limit 10000\r\n| stats count(), values(ssh.inferences), values(ssh.host_key) by source.ip, destination.ip\r\n| rename source.ip as `Source`, destination.ip as `Destination`, `values(ssh.inferences)` as Inferences, `values(ssh.host_key)` as `Host Key`, `count()` as count\r\n| SORT count desc\r\n| keep Source, Destination, `Host Key`, Inferences, count\r\n"
+                                                "esql": "from logs-corelight.various-*\r\n| where event.dataset == \"ssh\" and ssh.inferences is not null and ssh.host_key is not null\r\n| limit 10000\r\n| stats count(), values(ssh.inferences), values(ssh.host_key) by source.ip, destination.ip\r\n| rename source.ip as `Source IP`, destination.ip as `Destination IP`, `values(ssh.inferences)` as Inferences, `values(ssh.host_key)` as `Host Key`, `count()` as Count\r\n| SORT Count desc\r\n| keep `Source IP`, `Destination IP`, `Host Key`, Inferences, Count\r\n"
                                             },
                                             "timeField": "@timestamp"
                                         }
@@ -798,15 +798,15 @@
                             },
                             "filters": [],
                             "query": {
-                                "esql": "from logs-corelight.various-*\r\n| where event.dataset == \"ssh\" and ssh.inferences is not null and ssh.host_key is not null\r\n| limit 10000\r\n| stats count(), values(ssh.inferences), values(ssh.host_key) by source.ip, destination.ip\r\n| rename source.ip as `Source`, destination.ip as `Destination`, `values(ssh.inferences)` as Inferences, `values(ssh.host_key)` as `Host Key`, `count()` as count\r\n| SORT count desc\r\n| keep Source, Destination, `Host Key`, Inferences, count\r\n"
+                                "esql": "from logs-corelight.various-*\r\n| where event.dataset == \"ssh\" and ssh.inferences is not null and ssh.host_key is not null\r\n| limit 10000\r\n| stats count(), values(ssh.inferences), values(ssh.host_key) by source.ip, destination.ip\r\n| rename source.ip as `Source IP`, destination.ip as `Destination IP`, `values(ssh.inferences)` as Inferences, `values(ssh.host_key)` as `Host Key`, `count()` as Count\r\n| SORT Count desc\r\n| keep `Source IP`, `Destination IP`, `Host Key`, Inferences, Count\r\n"
                             },
                             "visualization": {
                                 "columns": [
                                     {
-                                        "columnId": "Source"
+                                        "columnId": "Source IP"
                                     },
                                     {
-                                        "columnId": "Destination"
+                                        "columnId": "Destination IP"
                                     },
                                     {
                                         "columnId": "Host Key"
@@ -815,10 +815,10 @@
                                         "columnId": "Inferences"
                                     },
                                     {
-                                        "columnId": "count"
+                                        "columnId": "Count"
                                     }
                                 ],
-                                "layerId": "02fef2fe-b4e7-4a8f-8197-809434e81d73",
+                                "layerId": "b6068c04-11b7-4de2-8e94-9d7a12884e66",
                                 "layerType": "data",
                                 "paging": {
                                     "enabled": true,
@@ -826,7 +826,7 @@
                                 }
                             }
                         },
-                        "title": "Table Source \u0026 Destination \u0026 Host Key \u0026 Inferences \u0026 count",
+                        "title": "Table Source IP \u0026 Destination IP \u0026 Host Key \u0026 Inferences \u0026 Count",
                         "type": "lens",
                         "visualizationType": "lnsDatatable"
                     },
@@ -877,9 +877,9 @@
         "version": 2
     },
     "coreMigrationVersion": "8.8.0",
-    "created_at": "2025-01-03T09:56:21.193Z",
+    "created_at": "2025-01-29T12:16:47.699Z",
     "id": "corelight-65a5fa91-06e4-459b-b4bb-998c85a6cf08",
-    "managed": true,
+    "managed": false,
     "references": [
         {
             "id": "logs-*",
@@ -918,5 +918,6 @@
         }
     ],
     "type": "dashboard",
-    "typeMigrationVersion": "10.2.0"
+    "typeMigrationVersion": "10.2.0",
+    "updated_by": "u_mGBROF_q5bmFCATbLXAcCwKa0k8JvONAwSruelyKA5E_0"
 }

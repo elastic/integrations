@@ -587,3 +587,93 @@ An example event for `mssql_databases` looks as following:
     }
 }
 ```
+
+### Tasks
+
+The `tasks` dataset provides metrics related to the state of Rubrik backup and object protection tasks by SLA Domain.
+
+**ECS Field Reference**
+
+Please refer to the following [document](https://www.elastic.co/guide/en/ecs/current/ecs-field-reference.html) for detailed information on ECS fields.
+
+**Exported fields**
+
+| Field | Description | Type | Metric Type |
+|---|---|---|---|
+| @timestamp | Event timestamp. | date |  |
+| data_stream.dataset | Data stream dataset. | constant_keyword |  |
+| data_stream.namespace | Data stream namespace. | constant_keyword |  |
+| data_stream.type | Data stream type. | constant_keyword |  |
+| rubrik.tasks.canceled.count | The number of tasks that have been canceled. | long | gauge |
+| rubrik.tasks.failed.count | The number of tasks that have failed. | long | gauge |
+| rubrik.tasks.metric_type | The metric type. | keyword |  |
+| rubrik.tasks.missed.count | The number of tasks that have missed. | long | gauge |
+| rubrik.tasks.sla_domain.id | The Rubrik cluster id where this object originated. | keyword |  |
+| rubrik.tasks.sla_domain.name | The Rubrik cluster name where this object originated. | keyword |  |
+| rubrik.tasks.succeeded.count | The number of tasks that have succeeded. | long | gauge |
+
+
+An example event for `tasks` looks as following:
+
+```json
+{
+    "agent": {
+        "name": "docker-fleet-agent",
+        "id": "6cc06f03-70ef-4dbc-aada-2891efc09a09",
+        "ephemeral_id": "1b4ac717-821e-4363-b42e-5a13ba790f8c",
+        "type": "filebeat",
+        "version": "8.16.0"
+    },
+    "rubrik": {
+        "tasks": {
+            "sla_domain": {
+                "name": "name-1",
+                "id": "4755b8b8-116b-4466-affb-c683f9339b10"
+            },
+            "metric_type": "succeeded_tasks",
+            "succeeded": {
+                "count": 7
+            }
+        }
+    },
+    "@timestamp": "2025-01-17T21:58:09.564Z",
+    "ecs": {
+        "version": "8.16.0"
+    },
+    "data_stream": {
+        "namespace": "default",
+        "type": "metrics",
+        "dataset": "rubrik.tasks"
+    },
+    "elastic_agent": {
+        "id": "6cc06f03-70ef-4dbc-aada-2891efc09a09",
+        "version": "8.16.0",
+        "snapshot": false
+    },
+    "host": {
+        "hostname": "docker-fleet-agent",
+        "os": {
+            "kernel": "6.8.0-51-generic",
+            "name": "Wolfi",
+            "type": "linux",
+            "version": "20230201",
+            "platform": "wolfi"
+        },
+        "containerized": false,
+        "ip": [
+            "172.18.0.7"
+        ],
+        "name": "docker-fleet-agent",
+        "mac": [
+            "02-42-AC-12-00-07"
+        ],
+        "architecture": "x86_64"
+    },
+    "event": {
+        "agent_id_status": "verified",
+        "ingested": "2025-01-17T21:58:10Z",
+        "kind": "metric",
+        "dataset": "rubrik.tasks"
+    }
+}
+```
