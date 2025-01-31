@@ -1,0 +1,47 @@
+title: BeyondInsight and Password Safe Managed Systems Events
+type: logs
+streams:
+  - input: cel
+    title: BeyondInsight and Password Safe Managed Systems Events
+    description: Request settings for BeyondInsight and Password Safe managed systems.
+    enabled: true
+    template_path: cel.yml.hbs
+    vars:
+      - name: interval
+        type: text
+        title: Interval
+        description: Data for all managed systems will be refetched at this interval.
+        show_user: false
+        required: true
+        default: "4h"
+      - name: limit
+        type: integer
+        title: Limit
+        description: The number of events to fetch per request.
+        show_user: false
+        required: true
+        default: 1000
+      - name: tags
+        type: text
+        title: Tags
+        multi: true
+        show_user: false
+        description: Tags to be applied to the events, such as 'forwarded', 'BeyondInsight sign-in attempts'.
+        default:
+          - forwarded
+          - beyondinsight_password_safe.managedsystem
+      - name: preserve_original_event
+        required: true
+        show_user: false
+        title: Preserve Original Event
+        description: Preserves a raw copy of the original event in the `event.original` field.
+        type: bool
+        multi: false
+        default: false
+      - name: processors
+        type: yaml
+        title: Processors
+        multi: false
+        required: false
+        show_user: false
+        description: Processors can be used to reduce the number of fields in the exported event, or to enhance the event with additional metadata. This is executed in the agent before the logs are parsed.

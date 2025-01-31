@@ -7,6 +7,7 @@ package testsreporter
 import (
 	"bytes"
 	_ "embed"
+	"fmt"
 	"strings"
 	"text/template"
 )
@@ -32,25 +33,36 @@ func (r resultsFormatter) Owners() []string {
 	return r.result.Teams()
 }
 
-func (r resultsFormatter) Summary() string {
+func (r resultsFormatter) Summary() (string, error) {
 	var rendered bytes.Buffer
 	templ := template.Must(template.New("summary").Parse(summaryTmpl))
-	templ.Execute(&rendered, r.result.SummaryData())
-
-	return rendered.String()
+	data := r.result.SummaryData()
+	err := templ.Execute(&rendered, data)
+	if err != nil {
+		return "", fmt.Errorf("failed to render summary: %w", err)
+	}
+	return rendered.String(), nil
 }
 
-func (r resultsFormatter) Description() string {
+func (r resultsFormatter) Description() (string, error) {
 	var rendered bytes.Buffer
 	templ := template.Must(template.New("description").Parse(descriptionTmpl))
 
+	summary, err := r.Summary()
+	if err != nil {
+		return "", err
+	}
+
 	data := r.result.DescriptionData()
-	data["summary"] = r.Summary()
+	data["summary"] = summary
 	data["maxPreviousLinks"] = r.maxPreviousLinks
 
-	templ.Execute(&rendered, data)
+	err = templ.Execute(&rendered, data)
+	if err != nil {
+		return "", fmt.Errorf("failed to render description: %w", err)
+	}
 
-	return rendered.String()
+	return rendered.String(), nil
 }
 
 func truncateText(message string, maxLength int) string {

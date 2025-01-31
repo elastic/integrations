@@ -38,7 +38,7 @@ program: |
         :
             state.with({
                 "mintime": string(1000 * int(
-                    state.?cursor.last_published.optMap(t,
+                    state.?cursor.last_response_ts.optMap(t,
                         t.parse_time(time_layout.RFC3339Nano)
                     ).orValue(
                         now - duration(state.initial_interval)
@@ -106,19 +106,19 @@ program: |
                         :
                             optional.none(),
                         "cursor": {
-                            ?"last_published": (has(body.?response.items) && size(body.response.items) > 0) ?
+                            ?"last_response_ts": (has(body.?response.items) && size(body.response.items) > 0) ?
                                 optional.of(
                                     body.response.items.map(i, i.ts).max().as(last_timestamp,
-                                        !has(dyn(state).?cursor.last_published) ?
+                                        !has(dyn(state).?cursor.last_response_ts) ?
                                             last_timestamp
-                                        : (last_timestamp < dyn(state).cursor.last_published) ?
-                                            dyn(state).cursor.last_published
+                                        : (last_timestamp < dyn(state).cursor.last_response_ts) ?
+                                            dyn(state).cursor.last_response_ts
                                         :
                                             last_timestamp
                                     )
                                 )
                             :
-                                dyn(state).?cursor.last_published,
+                                dyn(state).?cursor.last_response_ts,
                         }
                     }
                 :
