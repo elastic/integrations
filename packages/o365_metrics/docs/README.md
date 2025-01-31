@@ -19,7 +19,7 @@ Following Microsoft 365 Graph Reports can be collected by Microsoft Office 365 M
 | [Outlook Mailbox Usage Quota Status Mailbox Counts](https://learn.microsoft.com/en-us/microsoft-365/admin/activity-reports/mailbox-usage?view=o365-worldwide)      |    [reportRoot: getMailboxUsageQuotaStatusMailboxCounts](https://learn.microsoft.com/en-us/graph/api/reportroot-getmailboxusagequotastatusmailboxcounts?view=graph-rest-1.0&tabs=http)    |  Microsoft 365 mailbox usage quota status metrics   |   `Period`-based   |
 | [Outlook Mailbox Usage Detail](https://learn.microsoft.com/en-us/microsoft-365/admin/activity-reports/mailbox-usage?view=o365-worldwide)      |    [reportRoot: getMailboxUsageDetail](https://learn.microsoft.com/en-us/graph/api/reportroot-getmailboxusagedetail?view=graph-rest-1.0&tabs=http)    |   Microsoft 365 mailbox usage detail metrics   |   `Period`-based   |
 | [SharePoint Site Usage Storage](https://learn.microsoft.com/en-us/microsoft-365/admin/activity-reports/sharepoint-site-usage-ww?view=o365-worldwide)      |    [reportRoot: getSharePointSiteUsageStorage](https://learn.microsoft.com/en-us/graph/api/reportroot-getsharepointsiteusagestorage?view=graph-rest-1.0&tabs=http)    |   Office 365 Sharepoint Site Usage metrics   |   `Period`-based   |
-| [SharePoint Site Usage Site Detail](https://learn.microsoft.com/en-us/microsoft-365/admin/activity-reports/sharepoint-site-usage-ww?view=o365-worldwide)      |    [reportRoot: getSharePointSiteUsageDetail](https://learn.microsoft.com/en-us/graph/api/reportroot-getsharepointsiteusagedetail?view=graph-rest-1.0&tabs=http)    |   Office 365 Sharepoint Site Usage metrics   |   `Period`-based   |
+| [SharePoint Site Usage Detail](https://learn.microsoft.com/en-us/microsoft-365/admin/activity-reports/sharepoint-site-usage-ww?view=o365-worldwide)      |    [reportRoot: getSharePointSiteUsageDetail](https://learn.microsoft.com/en-us/graph/api/reportroot-getsharepointsiteusagedetail?view=graph-rest-1.0&tabs=http)    |   Office 365 Sharepoint Site Usage metrics   |   `Period`-based   |
 | [Teams Device Usage User Counts](https://learn.microsoft.com/en-us/microsoft-365/admin/activity-reports/microsoft-teams-device-usage-preview?view=o365-worldwide)      |    [reportRoot: getTeamsDeviceUsageUserCounts](https://learn.microsoft.com/en-us/graph/api/reportroot-getteamsdeviceusageusercounts?view=graph-rest-1.0&tabs=http)    |   Microsoft 365 Teams Device Usage User Counts metrics   |   `Period`-based   |
 | [Teams User Activity User Counts](https://learn.microsoft.com/en-us/microsoft-365/admin/activity-reports/microsoft-teams-user-activity-preview?view=o365-worldwide)      |    [reportRoot: getTeamsUserActivityUserCounts](https://learn.microsoft.com/en-us/graph/api/reportroot-getteamsuseractivityusercounts?view=graph-rest-1.0&tabs=http)    |   Microsoft 365 Teams User Activity User Counts metrics   |   `Period`-based   |
 | [Teams User Activity User Detail](https://learn.microsoft.com/en-us/microsoft-365/admin/activity-reports/microsoft-teams-user-activity-preview?view=o365-worldwide)      |    [reportRoot: getTeamsUserActivityUserDetail](https://learn.microsoft.com/en-us/graph/api/reportroot-getteamsuseractivityuserdetail?view=graph-rest-1.0&tabs=http)    |   Microsoft 365 Teams User Activity User Detail   |    `Day`-based   |
@@ -93,9 +93,11 @@ By default for all Microsoft 365 usage reports, the user names, emails, group, o
 
 Uses the Microsoft 365 Graph API to retrieve metrics from Microsoft 365.
 
-### Active Users
+### Active Users Services User Count
 
-An example event for `active_users` looks as following:
+Get details about Active Users Services User Count from [Microsoft Graph API](https://learn.microsoft.com/en-us/graph/api/reportroot-getoffice365servicesusercounts?view=graph-rest-1.0&tabs=http).
+
+An example event for `active_users_services_user_counts` looks as following:
 
 ```json
 {
@@ -103,58 +105,64 @@ An example event for `active_users` looks as following:
         "metrics": {
             "active": {
                 "users": {
-                    "teams": {
-                        "inactive": {
-                            "count": "20"
-                        },
-                        "active": {
-                            "count": "0"
-                        }
-                    },
-                    "sharepoint": {
-                        "inactive": {
-                            "count": "20"
-                        },
-                        "active": {
-                            "count": "0"
-                        }
-                    },
-                    "yammer": {
-                        "inactive": {
-                            "count": "25"
-                        },
-                        "active": {
-                            "count": "0"
-                        }
-                    },
-                    "office365": {
-                        "inactive": {
-                            "count": "25"
-                        },
-                        "active": {
-                            "count": "0"
-                        }
-                    },
-                    "report": {
-                        "period": {
-                            "day": "7"
-                        },
-                        "refresh_date": "2024-11-29"
-                    },
-                    "exchange": {
-                        "inactive": {
-                            "count": "20"
-                        },
-                        "active": {
-                            "count": "0"
-                        }
-                    },
-                    "onedrive": {
-                        "inactive": {
-                            "count": "20"
-                        },
-                        "active": {
-                            "count": "0"
+                    "services": {
+                        "user": {
+                            "counts": {
+                                "exchange": {
+                                    "active": {
+                                        "count": "0"
+                                    },
+                                    "inactive": {
+                                        "count": "22"
+                                    }
+                                },
+                                "office365": {
+                                    "active": {
+                                        "count": "0"
+                                    },
+                                    "inactive": {
+                                        "count": "25"
+                                    }
+                                },
+                                "onedrive": {
+                                    "active": {
+                                        "count": "0"
+                                    },
+                                    "inactive": {
+                                        "count": "20"
+                                    }
+                                },
+                                "report": {
+                                    "period": {
+                                        "day": "7"
+                                    },
+                                    "refresh_date": "2024-11-29"
+                                },
+                                "sharepoint": {
+                                    "active": {
+                                        "count": "0"
+                                    },
+                                    "inactive": {
+                                        "count": "20"
+                                    }
+                                },
+                                "teams": {
+                                    "active": {
+                                        "count": "0"
+                                    },
+                                    "inactive": {
+                                        "count": "20"
+                                    }
+                                },
+                                "yammer": {
+                                    "active": {
+                                        "count": "0"
+                                    },
+                                    "inactive": {
+                                        "count": "25"
+                                    }
+                                }
+                            }
                         }
                     }
                 }
@@ -175,7 +183,7 @@ An example event for `active_users` looks as following:
     "data_stream": {
         "namespace": "default",
         "type": "metrics",
-        "dataset": "o365_metrics.active_users"
+        "dataset": "o365_metrics.active_users_services_user_counts"
     },
     "elastic_agent": {
         "id": "1bd16076-38b3-44b9-980b-eab55ebe95b9",
@@ -206,10 +214,11 @@ An example event for `active_users` looks as following:
     "event": {
         "agent_id_status": "verified",
         "ingested": "2024-12-24T10:36:57Z",
-        "dataset": "o365_metrics.active_users"
+        "dataset": "o365_metrics.active_users_services_user_counts"
     },
     "tags": [
-        "o365.metrics.active.users"
+        "o365.metrics.active.users.services.user.counts",
+        "preserve_original_event"
     ]
 }
 ```
@@ -220,35 +229,35 @@ Please refer to the following [document](https://www.elastic.co/guide/en/ecs/cur
 
 **Exported fields**
 
-| Field | Description | Type |
-|---|---|---|
-| @timestamp | Event timestamp. | date |
-| cloud.image.id | Image ID for the cloud instance. | keyword |
-| data_stream.dataset | Data stream dataset. | constant_keyword |
-| data_stream.namespace | Data stream namespace. | constant_keyword |
-| data_stream.type | Data stream type. | constant_keyword |
-| host.containerized | If the host is a container. | boolean |
-| host.os.build | OS build information. | keyword |
-| host.os.codename | OS codename, if any. | keyword |
-| o365.metrics.active.users.exchange.active.count | Number of Exchange active users. | integer |
-| o365.metrics.active.users.exchange.inactive.count | Number of Exchange inactive users. | integer |
-| o365.metrics.active.users.office365.active.count | Number of Office 365 active users. | integer |
-| o365.metrics.active.users.office365.inactive.count | Number of Office 365 inactive users. | integer |
-| o365.metrics.active.users.onedrive.active.count | Number of OneDrive active users. | integer |
-| o365.metrics.active.users.onedrive.inactive.count | Number of OneDrive inactive users. | integer |
-| o365.metrics.active.users.report.period.day | Report period in days. | integer |
-| o365.metrics.active.users.report.refresh_date | Date when the report was refreshed. | date |
-| o365.metrics.active.users.sharepoint.active.count | Number of SharePoint active users. | integer |
-| o365.metrics.active.users.sharepoint.inactive.count | Number of SharePoint inactive users. | integer |
-| o365.metrics.active.users.teams.active.count | Number of Teams active users. | integer |
-| o365.metrics.active.users.teams.inactive.count | Number of Teams inactive users. | integer |
-| o365.metrics.active.users.yammer.active.count | Number of Yammer active users. | integer |
-| o365.metrics.active.users.yammer.inactive.count | Number of Yammer inactive users. | integer |
+| Field | Description | Type | Unit |
+|---|---|---|---|
+| @timestamp | Event timestamp. | date |  |
+| cloud.image.id | Image ID for the cloud instance. | keyword |  |
+| data_stream.dataset | Data stream dataset. | constant_keyword |  |
+| data_stream.namespace | Data stream namespace. | constant_keyword |  |
+| data_stream.type | Data stream type. | constant_keyword |  |
+| host.containerized | If the host is a container. | boolean |  |
+| host.os.build | OS build information. | keyword |  |
+| host.os.codename | OS codename, if any. | keyword |  |
+| o365.metrics.active.users.services.user.counts.exchange.active.count | Number of Exchange active users. | integer |  |
+| o365.metrics.active.users.services.user.counts.exchange.inactive.count | Number of Exchange inactive users. | integer |  |
+| o365.metrics.active.users.services.user.counts.office365.active.count | Number of Office 365 active users. | integer |  |
+| o365.metrics.active.users.services.user.counts.office365.inactive.count | Number of Office 365 inactive users. | integer |  |
+| o365.metrics.active.users.services.user.counts.onedrive.active.count | Number of OneDrive active users. | integer |  |
+| o365.metrics.active.users.services.user.counts.onedrive.inactive.count | Number of OneDrive inactive users. | integer |  |
+| o365.metrics.active.users.services.user.counts.report.period.day | The reporting period over which the data is aggregated (in days). | integer | d |
+| o365.metrics.active.users.services.user.counts.report.refresh_date | The date when the report data was last updated. | date |  |
+| o365.metrics.active.users.services.user.counts.sharepoint.active.count | Number of SharePoint active users. | integer |  |
+| o365.metrics.active.users.services.user.counts.sharepoint.inactive.count | Number of SharePoint inactive users. | integer |  |
+| o365.metrics.active.users.services.user.counts.teams.active.count | Number of Teams active users. | integer |  |
+| o365.metrics.active.users.services.user.counts.teams.inactive.count | Number of Teams inactive users. | integer |  |
+| o365.metrics.active.users.services.user.counts.yammer.active.count | Number of Yammer active users. | integer |  |
+| o365.metrics.active.users.services.user.counts.yammer.inactive.count | Number of Yammer inactive users. | integer |  |
 
 
 ### Mailbox Usage Quota Status
 
-Get details about Mailbox Usage Quota Status [Microsoft Graph API](https://learn.microsoft.com/en-us/graph/api/reportroot-getmailboxusagequotastatusmailboxcounts?view=graph-rest-1.0&tabs=http).
+Get details about Mailbox Usage Quota Status from [Microsoft Graph API](https://learn.microsoft.com/en-us/graph/api/reportroot-getmailboxusagequotastatusmailboxcounts?view=graph-rest-1.0&tabs=http).
 
 An example event for `mailbox_usage_quota_status` looks as following:
 
@@ -368,7 +377,7 @@ Please refer to the following [document](https://www.elastic.co/guide/en/ecs/cur
 
 ### Mailbox Usage Detail
 
-Get details about Mailbox Usage Detail [Microsoft Graph API](https://learn.microsoft.com/en-us/graph/api/reportroot-getmailboxusagedetail?view=graph-rest-1.0&tabs=http).
+Get details about Mailbox Usage Detail from [Microsoft Graph API](https://learn.microsoft.com/en-us/graph/api/reportroot-getmailboxusagedetail?view=graph-rest-1.0&tabs=http).
 
 An example event for `mailbox_usage_detail` looks as following:
 
@@ -627,112 +636,6 @@ Please refer to the following [document](https://www.elastic.co/guide/en/ecs/cur
 | o365.metrics.report.name | Name of the report. | keyword |  |
 
 
-### One Drive Usage
-
-An example event for `onedrive_usage` looks as following:
-
-```json
-{
-    "@timestamp": "2024-12-24T09:33:50.076Z",
-    "agent": {
-        "name": "docker-fleet-agent",
-        "id": "abf38fab-f7b6-4e1c-a3b3-a70a64f9e5db",
-        "ephemeral_id": "08417a8d-9698-4c62-b7dc-e1b048647626",
-        "type": "filebeat",
-        "version": "8.16.0"
-    },
-    "data_stream": {
-        "namespace": "default",
-        "type": "metrics",
-        "dataset": "o365_metrics.onedrive_usage"
-    },
-    "ecs": {
-        "version": "8.16.0"
-    },
-    "elastic_agent": {
-        "id": "abf38fab-f7b6-4e1c-a3b3-a70a64f9e5db",
-        "version": "8.16.0",
-        "snapshot": false
-    },
-    "event": {
-        "agent_id_status": "verified",
-        "ingested": "2024-12-24T09:33:51Z",
-        "dataset": "o365_metrics.onedrive_usage"
-    },
-    "host": {
-        "hostname": "docker-fleet-agent",
-        "os": {
-            "kernel": "5.10.104-linuxkit",
-            "name": "Wolfi",
-            "type": "linux",
-            "family": "",
-            "version": "20230201",
-            "platform": "wolfi"
-        },
-        "containerized": false,
-        "ip": [
-            "192.168.48.7"
-        ],
-        "name": "docker-fleet-agent",
-        "mac": [
-            "02-42-C0-A8-30-07"
-        ],
-        "architecture": "aarch64"
-    },
-    "o365": {
-        "metrics": {
-            "onedrive": {
-                "usage": {
-                    "storage": {
-                        "report": {
-                            "date": "2024-12-16",
-                            "period": "7",
-                            "refresh_date": "2024-12-22"
-                        },
-                        "used_byte": "91893426"
-                    }
-                }
-            }
-        }
-    },
-    "tags": [
-        "o365.metrics.onedrive"
-    ]
-}
-```
-
-**ECS Field Reference**
-
-Please refer to the following [document](https://www.elastic.co/guide/en/ecs/current/ecs-field-reference.html) for detailed information on ECS fields.
-
-**Exported fields**
-
-| Field | Description | Type |
-|---|---|---|
-| @timestamp | Event timestamp. | date |
-| cloud.image.id | Image ID for the cloud instance. | keyword |
-| data_stream.dataset | Data stream dataset. | constant_keyword |
-| data_stream.namespace | Data stream namespace. | constant_keyword |
-| data_stream.type | Data stream type. | constant_keyword |
-| host.containerized | If the host is a container. | boolean |
-| host.os.build | OS build information. | keyword |
-| host.os.codename | OS codename, if any. | keyword |
-| o365.metrics.onedrive.usage.account.counts.active.count | The number of OneDrive accounts that were active during the reporting period. | integer |
-| o365.metrics.onedrive.usage.account.counts.report.date | The date the report was generated. | date |
-| o365.metrics.onedrive.usage.account.counts.report.period | The duration of the reporting period, in days. | integer |
-| o365.metrics.onedrive.usage.account.counts.report.refresh_date | The date when the data in the report was last refreshed. | date |
-| o365.metrics.onedrive.usage.account.counts.total.count | The total number of OneDrive accounts evaluated in the report. | integer |
-| o365.metrics.onedrive.usage.file.counts.active.count | The number of OneDrive accounts with active file usage during the reporting period. | integer |
-| o365.metrics.onedrive.usage.file.counts.report.date | The date the report was generated. | date |
-| o365.metrics.onedrive.usage.file.counts.report.period | The duration of the reporting period, in days. | integer |
-| o365.metrics.onedrive.usage.file.counts.report.refresh_date | The date when the data in the report was last refreshed. | date |
-| o365.metrics.onedrive.usage.file.counts.total.count | The total number of OneDrive accounts evaluated in the report. | integer |
-| o365.metrics.onedrive.usage.storage.report.date | The date the report was generated. | date |
-| o365.metrics.onedrive.usage.storage.report.period | The duration of the reporting period, in days. | integer |
-| o365.metrics.onedrive.usage.storage.report.refresh_date | The date when the data in the report was last refreshed. | date |
-| o365.metrics.onedrive.usage.storage.used_byte | The total storage used across OneDrive accounts during the reporting period, in bytes. | integer |
-
-
 ### OneDrive Usage Account Detail
 
 Get details about OneDrive usage by account from [Microsoft Graph API](https://learn.microsoft.com/en-us/graph/api/reportroot-getonedriveusageaccountdetail?view=graph-rest-1.0&tabs=http).
@@ -832,6 +735,330 @@ Please refer to the following [document](https://www.elastic.co/guide/en/ecs/cur
 | o365.metrics.onedrive.usage.account.detail.storage_used.byte | The amount of storage the OneDrive uses. | long |  |
 | o365.metrics.report.api_path | Microsoft Graph API path used to pull the report. | keyword |  |
 | o365.metrics.report.name | Name of the report. | keyword |  |
+
+
+### OneDrive Usage Account Counts
+
+Get details about OneDrive usage by account counts from [Microsoft Graph API](https://learn.microsoft.com/en-us/graph/api/reportroot-getonedriveusageaccountcounts?view=graph-rest-1.0&tabs=http).
+
+An example event for `onedrive_usage_account_counts` looks as following:
+
+```json
+{
+    "@timestamp": "2024-12-24T09:33:50.076Z",
+    "agent": {
+        "name": "docker-fleet-agent",
+        "id": "abf38fab-f7b6-4e1c-a3b3-a70a64f9e5db",
+        "ephemeral_id": "08417a8d-9698-4c62-b7dc-e1b048647626",
+        "type": "filebeat",
+        "version": "8.16.0"
+    },
+    "data_stream": {
+        "namespace": "default",
+        "type": "metrics",
+        "dataset": "o365_metrics.onedrive_usage_account_counts"
+    },
+    "ecs": {
+        "version": "8.16.0"
+    },
+    "elastic_agent": {
+        "id": "abf38fab-f7b6-4e1c-a3b3-a70a64f9e5db",
+        "version": "8.16.0",
+        "snapshot": false
+    },
+    "event": {
+        "agent_id_status": "verified",
+        "ingested": "2024-12-24T09:33:51Z",
+        "dataset": "o365_metrics.onedrive_usage_account_counts",
+        "original": "{\"Active\":\"16\",\"Report Date\":\"2024-11-23\",\"Report Period\":\"7\",\"Site Type\":\"All\",\"Total\":\"18\",\"Report Refresh Date\":\"2024-11-29\"}"
+    },
+    "host": {
+        "hostname": "docker-fleet-agent",
+        "os": {
+            "kernel": "5.10.104-linuxkit",
+            "name": "Wolfi",
+            "type": "linux",
+            "family": "",
+            "version": "20230201",
+            "platform": "wolfi"
+        },
+        "containerized": false,
+        "ip": [
+            "192.168.48.7"
+        ],
+        "name": "docker-fleet-agent",
+        "mac": [
+            "02-42-C0-A8-30-07"
+        ],
+        "architecture": "aarch64"
+    },
+    "o365": {
+        "metrics": {
+            "onedrive": {
+                "usage": {
+                    "account": {
+                        "counts": {
+                            "active": {
+                                "count": 14
+                            },
+                            "report": {
+                                "date": "2024-11-23",
+                                "period": {
+                                    "day": "1"
+                                },
+                                "refresh_date": "2024-11-29"
+                            },
+                            "total": {
+                                "count": 18
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    },
+    "tags": [
+        "o365.metrics.onedrive_usage_account_counts",
+        "preserve_original_event"
+    ]
+}
+```
+
+**ECS Field Reference**
+
+Please refer to the following [document](https://www.elastic.co/guide/en/ecs/current/ecs-field-reference.html) for detailed information on ECS fields.
+
+**Exported fields**
+
+| Field | Description | Type | Unit |
+|---|---|---|---|
+| @timestamp | Event timestamp. | date |  |
+| cloud.image.id | Image ID for the cloud instance. | keyword |  |
+| data_stream.dataset | Data stream dataset. | constant_keyword |  |
+| data_stream.namespace | Data stream namespace. | constant_keyword |  |
+| data_stream.type | Data stream type. | constant_keyword |  |
+| host.containerized | If the host is a container. | boolean |  |
+| host.os.build | OS build information. | keyword |  |
+| host.os.codename | OS codename, if any. | keyword |  |
+| o365.metrics.onedrive.usage.account.counts.active.count | The number of OneDrive accounts that were active during the reporting period. | long |  |
+| o365.metrics.onedrive.usage.account.counts.report.date | The date the report was generated. | date |  |
+| o365.metrics.onedrive.usage.account.counts.report.period.day | The reporting period over which the data is aggregated (in days). | integer | d |
+| o365.metrics.onedrive.usage.account.counts.report.refresh_date | The date when the report data was last updated. | date |  |
+| o365.metrics.onedrive.usage.account.counts.total.count | The total number of OneDrive accounts evaluated in the report. | long |  |
+
+
+### OneDrive Usage File Counts
+
+Get details about OneDrive usage by file counts from [Microsoft Graph API](https://learn.microsoft.com/en-us/graph/api/reportroot-getonedriveusagefilecounts?view=graph-rest-1.0&tabs=http).
+
+An example event for `onedrive_usage_file_counts` looks as following:
+
+```json
+{
+    "@timestamp": "2024-12-24T09:33:50.076Z",
+    "agent": {
+        "name": "docker-fleet-agent",
+        "id": "abf38fab-f7b6-4e1c-a3b3-a70a64f9e5db",
+        "ephemeral_id": "08417a8d-9698-4c62-b7dc-e1b048647626",
+        "type": "filebeat",
+        "version": "8.16.0"
+    },
+    "data_stream": {
+        "namespace": "default",
+        "type": "metrics",
+        "dataset": "o365_metrics.onedrive_usage_file_counts"
+    },
+    "ecs": {
+        "version": "8.16.0"
+    },
+    "elastic_agent": {
+        "id": "abf38fab-f7b6-4e1c-a3b3-a70a64f9e5db",
+        "version": "8.16.0",
+        "snapshot": false
+    },
+    "event": {
+        "agent_id_status": "verified",
+        "ingested": "2024-12-24T09:33:51Z",
+        "dataset": "o365_metrics.onedrive_usage_file_counts",
+        "original": "{\"Active\":\"16\",\"Report Date\":\"2024-11-23\",\"Report Period\":\"7\",\"Site Type\":\"All\",\"Total\":\"164\",\"Report Refresh Date\":\"2024-11-29\"}"
+    },
+    "host": {
+        "hostname": "docker-fleet-agent",
+        "os": {
+            "kernel": "5.10.104-linuxkit",
+            "name": "Wolfi",
+            "type": "linux",
+            "family": "",
+            "version": "20230201",
+            "platform": "wolfi"
+        },
+        "containerized": false,
+        "ip": [
+            "192.168.48.7"
+        ],
+        "name": "docker-fleet-agent",
+        "mac": [
+            "02-42-C0-A8-30-07"
+        ],
+        "architecture": "aarch64"
+    },
+    "o365": {
+        "metrics": {
+            "onedrive": {
+                "usage": {
+                    "file": {
+                        "counts": {
+                            "active": {
+                                "count": 14
+                            },
+                            "report": {
+                                "date": "2024-11-23",
+                                "period": {
+                                    "day": "7"
+                                },
+                                "refresh_date": "2024-11-29"
+                            },
+                            "total": {
+                                "count": 164
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    },
+    "tags": [
+        "o365.metrics.onedrive_usage_file_counts",
+        "preserve_original_event"
+    ]
+}
+```
+
+**ECS Field Reference**
+
+Please refer to the following [document](https://www.elastic.co/guide/en/ecs/current/ecs-field-reference.html) for detailed information on ECS fields.
+
+**Exported fields**
+
+| Field | Description | Type | Unit |
+|---|---|---|---|
+| @timestamp | Event timestamp. | date |  |
+| cloud.image.id | Image ID for the cloud instance. | keyword |  |
+| data_stream.dataset | Data stream dataset. | constant_keyword |  |
+| data_stream.namespace | Data stream namespace. | constant_keyword |  |
+| data_stream.type | Data stream type. | constant_keyword |  |
+| host.containerized | If the host is a container. | boolean |  |
+| host.os.build | OS build information. | keyword |  |
+| host.os.codename | OS codename, if any. | keyword |  |
+| o365.metrics.onedrive.usage.file.counts.active.count | The number of OneDrive accounts with active file usage during the reporting period. | long |  |
+| o365.metrics.onedrive.usage.file.counts.report.date | The date the report was generated. | date |  |
+| o365.metrics.onedrive.usage.file.counts.report.period.day | The reporting period over which the data is aggregated (in days). | integer | d |
+| o365.metrics.onedrive.usage.file.counts.report.refresh_date | The date when the report data was last updated. | date |  |
+| o365.metrics.onedrive.usage.file.counts.total.count | The total number of OneDrive accounts evaluated in the report. | long |  |
+
+
+### OneDrive Usage Storage
+
+Get details about OneDrive usage by storage from [Microsoft Graph API](https://learn.microsoft.com/en-us/graph/api/reportroot-getonedriveusagestorage?view=graph-rest-1.0&tabs=http).
+
+An example event for `onedrive_usage_storage` looks as following:
+
+```json
+{
+    "@timestamp": "2024-12-24T09:33:50.076Z",
+    "agent": {
+        "name": "docker-fleet-agent",
+        "id": "abf38fab-f7b6-4e1c-a3b3-a70a64f9e5db",
+        "ephemeral_id": "08417a8d-9698-4c62-b7dc-e1b048647626",
+        "type": "filebeat",
+        "version": "8.16.0"
+    },
+    "data_stream": {
+        "namespace": "default",
+        "type": "metrics",
+        "dataset": "o365_metrics.onedrive_usage_storage"
+    },
+    "ecs": {
+        "version": "8.16.0"
+    },
+    "elastic_agent": {
+        "id": "abf38fab-f7b6-4e1c-a3b3-a70a64f9e5db",
+        "version": "8.16.0",
+        "snapshot": false
+    },
+    "event": {
+        "agent_id_status": "verified",
+        "ingested": "2024-12-24T09:33:51Z",
+        "dataset": "o365_metrics.onedrive_usage_storage",
+        "original": "{\"Report Date\":\"2024-11-23\",\"Report Period\":\"7\",\"Site Type\":\"All\",\"Storage Used (Byte)\":\"91659303\",\"Report Refresh Date\":\"2024-11-29\"}"
+    },
+    "host": {
+        "hostname": "docker-fleet-agent",
+        "os": {
+            "kernel": "5.10.104-linuxkit",
+            "name": "Wolfi",
+            "type": "linux",
+            "family": "",
+            "version": "20230201",
+            "platform": "wolfi"
+        },
+        "containerized": false,
+        "ip": [
+            "192.168.48.7"
+        ],
+        "name": "docker-fleet-agent",
+        "mac": [
+            "02-42-C0-A8-30-07"
+        ],
+        "architecture": "aarch64"
+    },
+    "o365": {
+        "metrics": {
+            "onedrive": {
+                "usage": {
+                    "storage": {
+                        "report": {
+                            "date": "2024-12-16",
+                            "period": {
+                                "day": "7"
+                            },
+                            "refresh_date": "2024-12-22"
+                        },
+                        "used": {
+                            "byte": 91659303
+                        }
+                    }
+                }
+            }
+        }
+    },
+    "tags": [
+        "preserve_original_event",
+        "o365.metrics.onedrive_usage_storage"
+    ]
+}
+```
+
+**ECS Field Reference**
+
+Please refer to the following [document](https://www.elastic.co/guide/en/ecs/current/ecs-field-reference.html) for detailed information on ECS fields.
+
+**Exported fields**
+
+| Field | Description | Type | Unit |
+|---|---|---|---|
+| @timestamp | Event timestamp. | date |  |
+| cloud.image.id | Image ID for the cloud instance. | keyword |  |
+| data_stream.dataset | Data stream dataset. | constant_keyword |  |
+| data_stream.namespace | Data stream namespace. | constant_keyword |  |
+| data_stream.type | Data stream type. | constant_keyword |  |
+| host.containerized | If the host is a container. | boolean |  |
+| host.os.build | OS build information. | keyword |  |
+| host.os.codename | OS codename, if any. | keyword |  |
+| o365.metrics.onedrive.usage.storage.report.date | The date the report was generated. | date |  |
+| o365.metrics.onedrive.usage.storage.report.period.day | The reporting period over which the data is aggregated (in days). | integer | d |
+| o365.metrics.onedrive.usage.storage.report.refresh_date | The date when the report data was last updated. | date |  |
+| o365.metrics.onedrive.usage.storage.used.byte | The total storage used across OneDrive accounts during the reporting period, in bytes. | long | byte |
 
 
 ### Outlook Activity
@@ -1078,24 +1305,48 @@ Please refer to the following [document](https://www.elastic.co/guide/en/ecs/cur
 | o365.metrics.outlook.app.usage.version.counts.undetermined.count | The count of unique users whose Outlook version could not be identified. | long |  |
 
 
-### SharePoint Site Usage
+### SharePoint Site Usage Detail
 
-An example event for `sharepoint_site_usage` looks as following:
+Get details about SharePoint Site Usage Detail from [Microsoft Graph API](https://learn.microsoft.com/en-us/graph/api/reportroot-getsharepointsiteusagedetail?view=graph-rest-1.0&tabs=http).
+
+An example event for `sharepoint_site_usage_detail` looks as following:
 
 ```json
 {
-    "o365metrics": {
-        "sharepoint": {
-            "site": {
-                "usage": {
-                    "storage": {
-                        "report": {
-                            "date": "2024-12-25",
-                            "period": "7",
-                            "refresh_date": "2024-12-25"
-                        },
-                        "storage_used": {
-                            "byte": "1942032506"
+    "o365": {
+        "metrics": {
+            "sharepoint": {
+                "site": {
+                    "usage": {
+                        "detail": {
+                            "active_file": {
+                                "count": 16
+                            },
+                            "file": {
+                                "count": 14
+                            },
+                            "is_deleted": "False",
+                            "owner_display_name": "82D28824CBDAF3EA9AD693254DE8CC08",
+                            "page_view": {
+                                "count": 12
+                            },
+                            "report": {
+                                "period": {
+                                    "day": "7"
+                                },
+                                "refresh_date": "2024-12-22"
+                            },
+                            "root_web_template": "Team Site",
+                            "site_id": "00000000-0000-0000-0000-000000000000",
+                            "storage_allocated": {
+                                "byte": 27487790694400
+                            },
+                            "storage_used": {
+                                "byte": 1586077
+                            },
+                            "visited_page": {
+                                "count": 14
+                            }
                         }
                     }
                 }
@@ -1116,7 +1367,7 @@ An example event for `sharepoint_site_usage` looks as following:
     "data_stream": {
         "namespace": "default",
         "type": "metrics",
-        "dataset": "o365_metrics.sharepoint_site_usage"
+        "dataset": "o365_metrics.sharepoint_site_usage_detail"
     },
     "host": {
         "hostname": "docker-fleet-agent",
@@ -1147,10 +1398,12 @@ An example event for `sharepoint_site_usage` looks as following:
     "event": {
         "agent_id_status": "verified",
         "ingested": "2024-12-26T23:18:52Z",
-        "dataset": "o365_metrics.sharepoint_site_usage"
+        "dataset": "o365_metrics.sharepoint_site_usage_detail",
+        "original": "{\"IsDeleted\":\"False\",\"SiteId\":\"00000000-0000-0000-0000-000000000000\",\"FileCount\":\"14\",\"StorageAllocated(Byte)\":\"27487790694400\",\"ReportRefreshDate\":\"2024-12-22\",\"ReportPeriod\":\"7\",\"ActiveFileCount\":\"16\",\"OwnerPrincipalName\":\"\",\"VisitedPageCount\":\"14\",\"OwnerDisplayName\":\"82D28824CBDAF3EA9AD693254DE8CC08\",\"SiteURL\":\"\",\"StorageUsedByte\":\"1586077\",\"RootWebTemplate\":\"Team Site\",\"LastActivityDate\":\"\",\"PageViewCount\":\"12\"}"
     },
     "tags": [
-        "o365.metrics.sharepoint_site_usage"
+        "o365.metrics.sharepoint_site_usage_detail",
+        "preserve_original_event"
     ]
 }
 ```
@@ -1161,31 +1414,143 @@ Please refer to the following [document](https://www.elastic.co/guide/en/ecs/cur
 
 **Exported fields**
 
-| Field | Description | Type |
-|---|---|---|
-| @timestamp | Event timestamp. | date |
-| cloud.image.id | Image ID for the cloud instance. | keyword |
-| data_stream.dataset | Data stream dataset. | constant_keyword |
-| data_stream.namespace | Data stream namespace. | constant_keyword |
-| data_stream.type | Data stream type. | constant_keyword |
-| host.containerized | If the host is a container. | boolean |
-| host.os.build | OS build information. | keyword |
-| host.os.codename | OS codename, if any. | keyword |
-| o365metrics.sharepoint.site.usage.detail.active_file.count | The number of active files in the SharePoint site during the reporting period. | integer |
-| o365metrics.sharepoint.site.usage.detail.file.count | The total number of files in the SharePoint site. | integer |
-| o365metrics.sharepoint.site.usage.detail.page_view.count | The number of page views in the SharePoint site during the reporting period. | integer |
-| o365metrics.sharepoint.site.usage.detail.report.period | The duration of the reporting period for SharePoint site usage, in days. | integer |
-| o365metrics.sharepoint.site.usage.detail.report.refresh_date | The date when the SharePoint site usage data was last refreshed. | date |
-| o365metrics.sharepoint.site.usage.detail.storage_allocated.byte | The amount of storage allocated to the SharePoint site, in bytes. | integer |
-| o365metrics.sharepoint.site.usage.detail.storage_used.byte | The amount of storage used in the SharePoint site, in bytes. | integer |
-| o365metrics.sharepoint.site.usage.detail.visited_page.count | The number of visited pages in the SharePoint site during the reporting period. | integer |
-| o365metrics.sharepoint.site.usage.storage.report.date | The date the SharePoint site storage usage report was generated. | date |
-| o365metrics.sharepoint.site.usage.storage.report.period | The duration of the reporting period for SharePoint site storage usage, in days. | integer |
-| o365metrics.sharepoint.site.usage.storage.report.refresh_date | The date when the SharePoint site storage usage data was last refreshed. | date |
-| o365metrics.sharepoint.site.usage.storage.storage_used.byte | The total storage used across SharePoint sites during the reporting period, in bytes. | integer |
+| Field | Description | Type | Unit |
+|---|---|---|---|
+| @timestamp | Event timestamp. | date |  |
+| cloud.image.id | Image ID for the cloud instance. | keyword |  |
+| data_stream.dataset | Data stream dataset. | constant_keyword |  |
+| data_stream.namespace | Data stream namespace. | constant_keyword |  |
+| data_stream.type | Data stream type. | constant_keyword |  |
+| host.containerized | If the host is a container. | boolean |  |
+| host.os.build | OS build information. | keyword |  |
+| host.os.codename | OS codename, if any. | keyword |  |
+| o365.metrics.sharepoint.site.usage.detail.active_file.count | The number of active files in the SharePoint site during the reporting period. | long |  |
+| o365.metrics.sharepoint.site.usage.detail.file.count | The total number of files in the SharePoint site. | long |  |
+| o365.metrics.sharepoint.site.usage.detail.is_deleted | Indicates whether the SharePoint site is deleted. | boolean |  |
+| o365.metrics.sharepoint.site.usage.detail.last_activity_date | The last date of activity in the SharePoint site. | date |  |
+| o365.metrics.sharepoint.site.usage.detail.owner_display_name | The display name of the SharePoint site owner. | keyword |  |
+| o365.metrics.sharepoint.site.usage.detail.owner_principal_name | The principal name of the SharePoint site owner. | keyword |  |
+| o365.metrics.sharepoint.site.usage.detail.page_view.count | The number of page views in the SharePoint site during the reporting period. | long |  |
+| o365.metrics.sharepoint.site.usage.detail.report.period.day | The reporting period over which the data is aggregated (in days). | integer | d |
+| o365.metrics.sharepoint.site.usage.detail.report.refresh_date | The date when the report data was last updated. | date |  |
+| o365.metrics.sharepoint.site.usage.detail.root_web_template | The template used for the root web of the SharePoint site. | keyword |  |
+| o365.metrics.sharepoint.site.usage.detail.site_id | The unique identifier of the SharePoint site. | keyword |  |
+| o365.metrics.sharepoint.site.usage.detail.site_url | The URL of the SharePoint site. | keyword |  |
+| o365.metrics.sharepoint.site.usage.detail.storage_allocated.byte | The amount of storage allocated to the SharePoint site, in bytes. | long | byte |
+| o365.metrics.sharepoint.site.usage.detail.storage_used.byte | The amount of storage used in the SharePoint site, in bytes. | long | byte |
+| o365.metrics.sharepoint.site.usage.detail.visited_page.count | The number of visited pages in the SharePoint site during the reporting period. | long |  |
+
+
+### SharePoint Site Usage Storage
+
+Get details about SharePoint Site Usage Storage from [Microsoft Graph API](https://learn.microsoft.com/en-us/graph/api/reportroot-getsharepointsiteusagedetail?view=graph-rest-1.0&tabs=http).
+
+An example event for `sharepoint_site_usage_storage` looks as following:
+
+```json
+{
+    "o365": {
+        "metrics": {
+            "sharepoint": {
+                "site": {
+                    "usage": {
+                        "storage": {
+                            "report": {
+                                "date": "2024-11-23",
+                                "period": {
+                                    "day": "7"
+                                },
+                                "refresh_date": "2024-11-29"
+                            },
+                            "storage_used": {
+                                "byte": 1933176386
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    },
+    "agent": {
+        "name": "docker-fleet-agent",
+        "id": "027b7b81-b3c6-49b9-8f61-1a5e892e7bfe",
+        "ephemeral_id": "f4133cae-978e-44e1-83e0-cab27e682a99",
+        "type": "filebeat",
+        "version": "8.16.0"
+    },
+    "@timestamp": "2024-12-26T23:18:42.620Z",
+    "ecs": {
+        "version": "8.16.0"
+    },
+    "data_stream": {
+        "namespace": "default",
+        "type": "metrics",
+        "dataset": "o365_metrics.sharepoint_site_usage_storage"
+    },
+    "host": {
+        "hostname": "docker-fleet-agent",
+        "os": {
+            "kernel": "5.15.153.1-microsoft-standard-WSL2",
+            "codename": "noble",
+            "name": "Ubuntu",
+            "type": "linux",
+            "family": "debian",
+            "version": "24.04.1 LTS (Noble Numbat)",
+            "platform": "ubuntu"
+        },
+        "containerized": true,
+        "ip": [
+            "172.18.0.7"
+        ],
+        "name": "docker-fleet-agent",
+        "mac": [
+            "02-42-AC-12-00-07"
+        ],
+        "architecture": "x86_64"
+    },
+    "elastic_agent": {
+        "id": "027b7b81-b3c6-49b9-8f61-1a5e892e7bfe",
+        "version": "8.16.0",
+        "snapshot": false
+    },
+    "event": {
+        "agent_id_status": "verified",
+        "ingested": "2024-12-26T23:18:52Z",
+        "dataset": "o365_metrics.sharepoint_site_usage_storage",
+        "original": "{\"Report Date\":\"2024-11-23\",\"Report Period\":\"7\",\"Site Type\":\"All\",\"Storage Used (Byte)\":\"1933176386\",\"Report Refresh Date\":\"2024-11-29\"}"
+    },
+    "tags": [
+        "o365.metrics.sharepoint_site_usage_storage",
+        "preserve_original_event"
+    ]
+}
+```
+
+**ECS Field Reference**
+
+Please refer to the following [document](https://www.elastic.co/guide/en/ecs/current/ecs-field-reference.html) for detailed information on ECS fields.
+
+**Exported fields**
+
+| Field | Description | Type | Unit |
+|---|---|---|---|
+| @timestamp | Event timestamp. | date |  |
+| cloud.image.id | Image ID for the cloud instance. | keyword |  |
+| data_stream.dataset | Data stream dataset. | constant_keyword |  |
+| data_stream.namespace | Data stream namespace. | constant_keyword |  |
+| data_stream.type | Data stream type. | constant_keyword |  |
+| host.containerized | If the host is a container. | boolean |  |
+| host.os.build | OS build information. | keyword |  |
+| host.os.codename | OS codename, if any. | keyword |  |
+| o365.metrics.sharepoint.site.usage.storage.report.date | The date the report was generated. | date |  |
+| o365.metrics.sharepoint.site.usage.storage.report.period.day | The reporting period over which the data is aggregated (in days). | integer | d |
+| o365.metrics.sharepoint.site.usage.storage.report.refresh_date | The date when the report data was last updated. | date |  |
+| o365.metrics.sharepoint.site.usage.storage.storage_used.byte | The total storage used across SharePoint sites during the reporting period, in bytes. | long | byte |
 
 
 ### Teams User Activity User Counts
+
+Get details about Teams User Activity User Counts from [Microsoft Graph API](https://learn.microsoft.com/en-us/graph/api/reportroot-getteamsuseractivityusercounts?view=graph-rest-1.0&tabs=http).
 
 An example event for `teams_user_activity_user_counts` looks as following:
 
@@ -1307,7 +1672,7 @@ Please refer to the following [document](https://www.elastic.co/guide/en/ecs/cur
 
 ### Teams User Activity User Detail
 
-Get details about Microsoft Teams user activity by user from [Microsoft Graph API](https://learn.microsoft.com/en-us/graph/api/reportroot-getteamsuseractivityuserdetail?view=graph-rest-1.0&tabs=http).
+Get details about Teams User Activity User Detail from [Microsoft Graph API](https://learn.microsoft.com/en-us/graph/api/reportroot-getteamsuseractivityuserdetail?view=graph-rest-1.0&tabs=http).
 
 An example event for `teams_user_activity_user_detail` looks as following:
 
@@ -1481,7 +1846,7 @@ Please refer to the following [document](https://www.elastic.co/guide/en/ecs/cur
 
 ### Viva Engage Groups Activity Group Detail
 
-Get details about Yammer groups activity by group from [Microsoft Graph API](https://learn.microsoft.com/en-us/graph/api/reportroot-getyammergroupsactivitydetail?view=graph-rest-1.0&tabs=http).
+Get details about Yammer Groups Activity Group Detail by group from [Microsoft Graph API](https://learn.microsoft.com/en-us/graph/api/reportroot-getyammergroupsactivitydetail?view=graph-rest-1.0&tabs=http).
 
 An example event for `viva_engage_groups_activity_group_detail` looks as following:
 
@@ -1577,7 +1942,7 @@ Please refer to the following [document](https://www.elastic.co/guide/en/ecs/cur
 
 ### Viva Engage Device Usage User Counts
 
-Get details about Yammer device usage from [Microsoft Graph API](https://learn.microsoft.com/en-us/graph/api/reportroot-getyammerdeviceusageusercounts?view=graph-rest-1.0&tabs=http).
+Get details about Yammer Device Usage User Counts from [Microsoft Graph API](https://learn.microsoft.com/en-us/graph/api/reportroot-getyammerdeviceusageusercounts?view=graph-rest-1.0&tabs=http).
 
 An example event for `viva_engage_device_usage_user_counts` looks as following:
 
@@ -1706,7 +2071,7 @@ Please refer to the following [document](https://www.elastic.co/guide/en/ecs/cur
 
 ### Teams Device Usage User Counts
 
-Get details about Teams device usage from [Microsoft Graph API](https://learn.microsoft.com/en-us/graph/api/reportroot-getteamsdeviceusageusercounts?view=graph-rest-1.0&tabs=http).
+Get details about Teams Device Usage User Counts from [Microsoft Graph API](https://learn.microsoft.com/en-us/graph/api/reportroot-getteamsdeviceusageusercounts?view=graph-rest-1.0&tabs=http).
 
 An example event for `teams_device_usage_user_counts` looks as following:
 
