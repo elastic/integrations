@@ -4,14 +4,16 @@ processors:
   - set:
       field: ecs.version
       value: "8.16.0"
-
-# SharePoint Site Usage Storage         
   - set:
       copy_from: sharepoint_site_usage_storage
       field: event.original
       ignore_empty_value: true
       ignore_failure: true
-      if: ctx.event?.original == null && (ctx.tags != null && (ctx.tags.contains('preserve_original_event')))   
+      if: ctx.event?.original == null && (ctx.tags != null && (ctx.tags.contains('preserve_original_event')))
+  # - fail:
+  #     tag: cel_failure
+  #     if: ctx.error?.message != null && ctx.message == null && ctx.event?.original == null
+  #     message: error message set and no data to process       
   - json:
       field: sharepoint_site_usage_storage
       target_field: o365.metrics.sharepoint.site.usage.storage
@@ -21,12 +23,16 @@ processors:
         - append:
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - remove:
+      if: ctx.sharepoint_site_usage_storage != null
+      field: sharepoint_site_usage_storage
+      ignore_missing: true
   - script:
       lang: painless
-      description: Replace spaces, dashes and bom character in field names under o365.metrics.sharepoint.site.usage.storage.
+      description: Replace spaces and dashes in field names under o365metrics.sharepoint.site.usage.storage.
       tag: painless_purge_spaces_and_dashes
       ignore_failure: true
-      if: ctx.o365.metrics?.sharepoint?.site?.usage?.storage instanceof Map
+      if: ctx.o365?.metrics?.sharepoint?.site?.usage?.storage instanceof Map
       source: |
         String underscore(String s) {
           String result = /[ -]/.matcher(s).replaceAll('_').toLowerCase();
@@ -38,10 +44,6 @@ processors:
           out[underscore(item.getKey())] = item.getValue();
         }
         ctx.o365.metrics.sharepoint.site.usage.storage = out;
-  - remove:
-      if: ctx.sharepoint_site_usage_storage != null
-      field: sharepoint_site_usage_storage
-      ignore_missing: true
   - rename:
       field: o365.metrics.sharepoint.site.usage.storage.storage_used_(byte)
       target_field: o365.metrics.sharepoint.site.usage.storage.storage_used.byte

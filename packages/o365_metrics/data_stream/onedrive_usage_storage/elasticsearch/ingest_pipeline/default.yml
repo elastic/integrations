@@ -4,16 +4,18 @@ processors:
   - set:
       field: ecs.version
       value: "8.16.0"        
-
-# Pipeline for Usage Storage
   - set:
-      copy_from: onedrive_usagestorage
+      copy_from: onedrive_usage_storage
       field: event.original
       ignore_failure: true
       ignore_empty_value: true
       if: ctx.event?.original == null && (ctx.tags != null && (ctx.tags.contains('preserve_original_event')))
+  # - fail:
+  #     tag: cel_failure
+  #     if: ctx.error?.message != null && ctx.message == null && ctx.event?.original == null
+  #     message: error message set and no data to process
   - json:
-      field: onedrive_usagestorage
+      field: onedrive_usage_storage
       target_field: o365.metrics.onedrive.usage.storage  
       on_failure:
         - append:
@@ -23,6 +25,7 @@ processors:
       lang: painless
       description: Replace spaces, dashes and bom character in field names under o365.metrics.onedrive.usage.storage.
       tag: painless_purge_spaces_and_dashes
+      ignore_failure: true
       if: ctx.o365?.metrics?.onedrive?.usage?.storage instanceof Map
       source: |
         String underscore(String s) {
@@ -36,8 +39,8 @@ processors:
         }
         ctx.o365.metrics.onedrive.usage.storage = out;
   - remove:
-      if: ctx.onedrive_usagestorage != null
-      field: onedrive_usagestorage
+      if: ctx.onedrive_usage_storage != null
+      field: onedrive_usage_storage
       ignore_missing: true      
   - rename:
       field: o365.metrics.onedrive.usage.storage.storage_used_(byte)

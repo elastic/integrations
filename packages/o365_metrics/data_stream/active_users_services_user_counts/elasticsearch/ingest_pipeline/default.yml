@@ -10,6 +10,10 @@ processors:
       ignore_empty_value: true
       ignore_failure: true
       if: ctx.event?.original == null && (ctx.tags != null && (ctx.tags.contains('preserve_original_event')))
+#   - fail:
+#       tag: cel_failure
+#       if: ctx.error?.message != null && ctx.message == null && ctx.event?.original == null
+#       message: error message set and no data to process
   - json:
       field: active_users
       target_field: o365.metrics.active.users.services.user.counts
@@ -17,6 +21,10 @@ processors:
         - append:
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - remove:
+      if: ctx.active_users != null
+      field: active_users
+      ignore_missing: true
   - script:
       lang: painless
       description: Replace spaces, dashes and bom character in field names under o365.metrics.active.users.services.user.counts
@@ -32,11 +40,7 @@ processors:
         for (def item : ctx.o365.metrics.active.users.services.user.counts.entrySet()) {
           out[underscore(item.getKey())] = item.getValue();
         }
-        ctx.o365.metrics.active.users.services.user.counts = out;
-  - remove:
-      if: ctx.active_users != null
-      field: active_users
-      ignore_missing: true                        
+        ctx.o365.metrics.active.users.services.user.counts = out;                   
   - rename:
       field: o365.metrics.active.users.services.user.counts.exchange_active
       target_field: o365.metrics.active.users.services.user.counts.exchange.active.count

@@ -4,22 +4,28 @@ processors:
   - set:
       field: ecs.version
       value: "8.16.0"        
-
-# Pipeline for Usage Account Counts
   - set:
-      copy_from: onedrive_usageaccountcounts
+      copy_from: onedrive_usage_account_counts
       field: event.original
       ignore_failure: true
       ignore_empty_value: true
       if: ctx.event?.original == null && (ctx.tags != null && (ctx.tags.contains('preserve_original_event')))
+  # - fail:
+  #     tag: cel_failure
+  #     if: ctx.error?.message != null && ctx.message == null && ctx.event?.original == null
+  #     message: error message set and no data to process
   - json:
-      field: onedrive_usageaccountcounts
+      field: onedrive_usage_account_counts
       target_field: o365.metrics.onedrive.usage.account.counts
       tag: json_decoding
       on_failure:
         - append:
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - remove:
+      if: ctx.onedrive_usage_account_counts != null
+      field: onedrive_usage_account_counts
+      ignore_missing: true
   - script:
       lang: painless
       description: Replace spaces, dashes and bom character in field names under o365.metrics.onedrive.usage.account.counts.
@@ -88,10 +94,6 @@ processors:
       fields:
         - o365.metrics.onedrive.usage.account.counts.report.date
       target_field: _id  
-  - remove:
-      if: ctx.onedrive_usageaccountcounts != null
-      field: onedrive_usageaccountcounts
-      ignore_missing: true
   - remove: 
       field:
         - o365.metrics.onedrive.usage.account.counts.site_type
