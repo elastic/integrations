@@ -17,6 +17,18 @@ processors:
       field: source.ip
       if: ctx.source?.ip == null && ctx.crowdstrike?.LocalAddressIP6 instanceof List && ctx.crowdstrike.LocalAddressIP6.length > 0
       value: '{{{crowdstrike.LocalAddressIP6.0}}}'
+  - convert:
+      tag: convert_source_ip
+      field: source.ip
+      type: ip
+      ignore_missing: true
+      on_failure:
+        - remove:
+            field: source.ip
+            ignore_missing: true
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - set:
       field: source.address
       copy_from: source.ip
@@ -36,6 +48,18 @@ processors:
       target_field: source.mac
       ignore_missing: true
 
+  - convert:
+      tag: convert_RemoteAddressIP4_ip
+      field: crowdstrike.RemoteAddressIP4
+      type: ip
+      ignore_missing: true
+      on_failure:
+        - remove:
+            field: crowdstrike.RemoteAddressIP4
+            ignore_missing: true
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - rename:
       field: crowdstrike.RemoteAddressIP4
       target_field: destination.ip
@@ -45,6 +69,13 @@ processors:
       field: crowdstrike.RemoteAddressIP6
       type: ip
       ignore_missing: true
+      on_failure:
+        - remove:
+            field: crowdstrike.RemoteAddressIP6
+            ignore_missing: true
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - rename:
       field: crowdstrike.RemoteAddressIP6
       target_field: destination.ip
