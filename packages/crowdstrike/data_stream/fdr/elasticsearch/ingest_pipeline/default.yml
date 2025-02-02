@@ -1976,6 +1976,9 @@ processors:
 
   - pipeline:
       tag: pipeline_outbound_network
+      # The condition is all non-inbound, but the pipeline operates assuming the traffic is outbound.
+      # In cases where there is no information we make this assumption rather than dropping the data
+      # on the floor.
       if: ctx.network?.direction != 'inbound'
       name: '{{ IngestPipeline "outbound_network" }}'
       ignore_missing_pipeline: true
