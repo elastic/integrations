@@ -7,6 +7,7 @@
 package main
 
 import (
+	"context"
 	"fmt"
 	"io"
 	"os"
@@ -148,9 +149,10 @@ func ModTidy() error {
 	return sh.RunV("go", "mod", "tidy")
 }
 
-func ReportFailedTests(testResultsFolder string) error {
+func ReportFailedTests(ctx context.Context, testResultsFolder string) error {
 	stackVersion := os.Getenv("STACK_VERSION")
 	serverlessEnv := os.Getenv("SERVERLESS")
+	dryRunEnv := os.Getenv("DRY_RUN")
 	serverlessProjectEnv := os.Getenv("SERVERLESS_PROJECT")
 	buildURL := os.Getenv("BUILDKITE_BUILD_URL")
 
@@ -181,6 +183,15 @@ func ReportFailedTests(testResultsFolder string) error {
 		}
 	}
 
+	dryRun := false
+	if dryRunEnv != "" {
+		var err error
+		dryRun, err = strconv.ParseBool(dryRunEnv)
+		if err != err {
+			return fmt.Errorf("failed to parse DRY_RUN value: %w", err)
+		}
+	}
+
 	options := testsreporter.CheckOptions{
 		Serverless:        serverless,
 		ServerlessProject: serverlessProjectEnv,
@@ -189,6 +200,7 @@ func ReportFailedTests(testResultsFolder string) error {
 		BuildURL:          buildURL,
 		MaxPreviousLinks:  defaultPreviousLinksNumber,
 		MaxTestsReported:  maxIssues,
+		DryRun:            dryRun,
 	}
-	return testsreporter.Check(testResultsFolder, options)
+	return testsreporter.Check(ctx, testResultsFolder, options)
 }

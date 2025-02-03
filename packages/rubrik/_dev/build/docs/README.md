@@ -67,9 +67,10 @@ Please refer to the following [document](https://www.elastic.co/guide/en/ecs/cur
 
 ### Filesets
 
-{{ fields "filesets" }}
+{{fields "filesets"}}
 
-{{event "filesets" }}
+{{event "filesets"}}
+
 ### Drives
 
 The `drives` dataset provides metrics related to the state of the drives.
@@ -105,3 +106,27 @@ Please refer to the following [document](https://www.elastic.co/guide/en/ecs/cur
 {{fields "mssql_databases"}}
 
 {{event "mssql_databases"}}
+
+### Tasks
+
+The `tasks` dataset provides metrics related to the state of Rubrik backup and object protection tasks by SLA Domain.
+
+**ECS Field Reference**
+
+Please refer to the following [document](https://www.elastic.co/guide/en/ecs/current/ecs-field-reference.html) for detailed information on ECS fields.
+
+{{fields "tasks"}}
+
+{{event "tasks"}}
+
+### Global Cluster Performance
+
+The `global_cluster_performance` dataset provides performance related metrics like IOPS, throughput, storage utilization, storage details, streams, and physical ingest of Rubrik Clusters.
+
+**ECS Field Reference**
+
+Please refer to the following [document](https://www.elastic.co/guide/en/ecs/current/ecs-field-reference.html) for detailed information on ECS fields.
+
+{{fields "global_cluster_performance"}}
+
+{{event "global_cluster_performance"}}

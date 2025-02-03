@@ -296,6 +296,7 @@ An example event for `filesets` looks as following:
     ]
 }
 ```
+
 ### Drives
 
 The `drives` dataset provides metrics related to the state of the drives.
@@ -585,5 +586,248 @@ An example event for `mssql_databases` looks as following:
         "kind": "metric",
         "dataset": "rubrik.mssql_databases"
     }
+}
+```
+
+### Tasks
+
+The `tasks` dataset provides metrics related to the state of Rubrik backup and object protection tasks by SLA Domain.
+
+**ECS Field Reference**
+
+Please refer to the following [document](https://www.elastic.co/guide/en/ecs/current/ecs-field-reference.html) for detailed information on ECS fields.
+
+**Exported fields**
+
+| Field | Description | Type | Metric Type |
+|---|---|---|---|
+| @timestamp | Event timestamp. | date |  |
+| data_stream.dataset | Data stream dataset. | constant_keyword |  |
+| data_stream.namespace | Data stream namespace. | constant_keyword |  |
+| data_stream.type | Data stream type. | constant_keyword |  |
+| rubrik.tasks.canceled.count | The number of tasks that have been canceled. | long | gauge |
+| rubrik.tasks.failed.count | The number of tasks that have failed. | long | gauge |
+| rubrik.tasks.metric_type | The metric type. | keyword |  |
+| rubrik.tasks.missed.count | The number of tasks that have missed. | long | gauge |
+| rubrik.tasks.sla_domain.id | The Rubrik cluster id where this object originated. | keyword |  |
+| rubrik.tasks.sla_domain.name | The Rubrik cluster name where this object originated. | keyword |  |
+| rubrik.tasks.succeeded.count | The number of tasks that have succeeded. | long | gauge |
+
+
+An example event for `tasks` looks as following:
+
+```json
+{
+    "agent": {
+        "name": "docker-fleet-agent",
+        "id": "6cc06f03-70ef-4dbc-aada-2891efc09a09",
+        "ephemeral_id": "1b4ac717-821e-4363-b42e-5a13ba790f8c",
+        "type": "filebeat",
+        "version": "8.16.0"
+    },
+    "rubrik": {
+        "tasks": {
+            "sla_domain": {
+                "name": "name-1",
+                "id": "4755b8b8-116b-4466-affb-c683f9339b10"
+            },
+            "metric_type": "succeeded_tasks",
+            "succeeded": {
+                "count": 7
+            }
+        }
+    },
+    "@timestamp": "2025-01-17T21:58:09.564Z",
+    "ecs": {
+        "version": "8.16.0"
+    },
+    "data_stream": {
+        "namespace": "default",
+        "type": "metrics",
+        "dataset": "rubrik.tasks"
+    },
+    "elastic_agent": {
+        "id": "6cc06f03-70ef-4dbc-aada-2891efc09a09",
+        "version": "8.16.0",
+        "snapshot": false
+    },
+    "host": {
+        "hostname": "docker-fleet-agent",
+        "os": {
+            "kernel": "6.8.0-51-generic",
+            "name": "Wolfi",
+            "type": "linux",
+            "version": "20230201",
+            "platform": "wolfi"
+        },
+        "containerized": false,
+        "ip": [
+            "172.18.0.7"
+        ],
+        "name": "docker-fleet-agent",
+        "mac": [
+            "02-42-AC-12-00-07"
+        ],
+        "architecture": "x86_64"
+    },
+    "event": {
+        "agent_id_status": "verified",
+        "ingested": "2025-01-17T21:58:10Z",
+        "kind": "metric",
+        "dataset": "rubrik.tasks"
+    }
+}
+```
+
+### Global Cluster Performance
+
+The `global_cluster_performance` dataset provides performance related metrics like IOPS, throughput, storage utilization, storage details, streams, and physical ingest of Rubrik Clusters.
+
+**ECS Field Reference**
+
+Please refer to the following [document](https://www.elastic.co/guide/en/ecs/current/ecs-field-reference.html) for detailed information on ECS fields.
+
+**Exported fields**
+
+| Field | Description | Type | Unit | Metric Type |
+|---|---|---|---|---|
+| @timestamp | Event timestamp. | date |  |  |
+| data_stream.dataset | Data stream dataset. | constant_keyword |  |  |
+| data_stream.namespace | Data stream namespace. | constant_keyword |  |  |
+| data_stream.type | Data stream type. | constant_keyword |  |  |
+| rubrik.cluster_performance.available_capacity.bytes | The amount of available storage capacity in bytes. | long | byte | gauge |
+| rubrik.cluster_performance.average_daily_growth.bytes | The average daily growth of data in bytes. | long | byte | gauge |
+| rubrik.cluster_performance.cdp_capacity.bytes | The amount of storage used by Continuous Data Protection (CDP) in bytes. | long | byte | gauge |
+| rubrik.cluster_performance.cluster.id | The cluster UUID. | keyword |  |  |
+| rubrik.cluster_performance.cluster.name | The name of the cluster. | keyword |  |  |
+| rubrik.cluster_performance.cluster.type | The type of the cluster (e.g., OnPrem, Robo, Polaris). | keyword |  |  |
+| rubrik.cluster_performance.estimated_runway | The estimated number of days before the cluster reaches full capacity. | long |  |  |
+| rubrik.cluster_performance.ingested_snapshot_storage.bytes | The total amount of ingested snapshot storage in bytes. | long | byte | gauge |
+| rubrik.cluster_performance.live_mount_capacity.bytes | The amount of storage used by live mounts in bytes. | long | byte | gauge |
+| rubrik.cluster_performance.miscellaneous_capacity.bytes | The amount of storage used for miscellaneous purposes in bytes. | long | byte | gauge |
+| rubrik.cluster_performance.pending_snapshot_capacity.bytes | The amount of storage reserved for pending snapshots in bytes. | long | byte | gauge |
+| rubrik.cluster_performance.physical_snapshot_storage.bytes | The amount of physical storage used by snapshots in bytes. | long | byte | gauge |
+| rubrik.cluster_performance.snapshot_capacity.bytes | The total storage capacity used by snapshots in bytes. | long | byte | gauge |
+| rubrik.cluster_performance.status | The current connectivity status of the cluster. | keyword |  |  |
+| rubrik.cluster_performance.total_capacity.bytes | The total storage capacity of the cluster in bytes. | long | byte | gauge |
+| rubrik.cluster_performance.used_capacity.bytes | The amount of used storage capacity in bytes. | long | byte | gauge |
+
+
+An example event for `global_cluster_performance` looks as following:
+
+```json
+{
+    "agent": {
+        "name": "ip-172-31-39-96",
+        "id": "7c37e065-93e1-4e86-a2c9-ee166c4eccbb",
+        "type": "filebeat",
+        "ephemeral_id": "e897b559-c04a-471f-ba91-b2e6b84a5a3c",
+        "version": "8.13.2"
+    },
+    "rubrik": {
+        "cluster_performance": {
+            "cluster": {
+                "id": "b1a9e557-0b47-4bc1-841d-e6379e733016",
+                "name": "prod-rub1",
+                "type": "Robo"
+            },
+            "miscellaneous_capacity": {
+                "bytes": 3490865159
+            },
+            "pending_snapshot_capacity": {
+                "bytes": 2064
+            },
+            "physical_snapshot_storage": {
+                "bytes": 313507076073
+            },
+            "live_mount_capacity": {
+                "bytes": 0
+            },
+            "used_capacity": {
+                "bytes": 316997943296
+            },
+            "ingested_snapshot_storage": {
+                "bytes": 436860485632
+            },
+            "snapshot_capacity": {
+                "bytes": 313507076073
+            },
+            "available_capacity": {
+                "bytes": 719592345600
+            },
+            "total_capacity": {
+                "bytes": 1036590288896
+            },
+            "average_daily_growth": {
+                "bytes": 630829064
+            },
+            "cdp_capacity": {
+                "bytes": 0
+            },
+            "estimated_runway": 1140,
+            "status": "Disconnected"
+        }
+    },
+    "@timestamp": "2025-01-31T13:41:37.416Z",
+    "ecs": {
+        "version": "8.16.0"
+    },
+    "data_stream": {
+        "namespace": "default",
+        "type": "metrics",
+        "dataset": "rubrik.global_cluster_performance"
+    },
+    "elastic_agent": {
+        "id": "7c37e065-93e1-4e86-a2c9-ee166c4eccbb",
+        "version": "8.13.2",
+        "snapshot": false
+    },
+    "host": {
+        "hostname": "ip-172-31-39-96",
+        "os": {
+            "kernel": "6.1.82-99.168.amzn2023.x86_64",
+            "codename": "Amazon Linux",
+            "name": "Amazon Linux",
+            "type": "linux",
+            "family": "redhat",
+            "version": "2023",
+            "platform": "amzn"
+        },
+        "containerized": false,
+        "ip": [
+            "172.31.39.96",
+            "fe80::88f:89ff:fea6:2561",
+            "172.17.0.1",
+            "fe80::42:77ff:fe00:bad7",
+            "172.18.0.1",
+            "fe80::42:ff:fe6c:4aef",
+            "fe80::1803:deff:fef6:6cf3",
+            "172.19.0.1",
+            "fe80::42:dff:fed2:b9a9",
+            "fe80::54a9:a8ff:feb8:2d8d"
+        ],
+        "name": "ip-172-31-39-96",
+        "id": "ec2130e5d5c423ed85ac1c1a0b96beeb",
+        "mac": [
+            "02-42-00-6C-4A-EF",
+            "02-42-0D-D2-B9-A9",
+            "02-42-77-00-BA-D7",
+            "0A-8F-89-A6-25-61",
+            "1A-03-DE-F6-6C-F3",
+            "56-A9-A8-B8-2D-8D"
+        ],
+        "architecture": "x86_64"
+    },
+    "event": {
+        "agent_id_status": "verified",
+        "ingested": "2025-01-31T13:41:47Z",
+        "original": "{\"estimatedRunway\":1140,\"id\":\"b1a9e557-0b47-4bc1-841d-e6379e733016\",\"metric\":{\"availableCapacity\":719592345600,\"averageDailyGrowth\":630829064,\"cdpCapacity\":0,\"ingestedSnapshotStorage\":436860485632,\"liveMountCapacity\":0,\"miscellaneousCapacity\":3490865159,\"pendingSnapshotCapacity\":2064,\"physicalSnapshotStorage\":313507076073,\"snapshotCapacity\":313507076073,\"totalCapacity\":1036590288896,\"usedCapacity\":316997943296},\"name\":\"prod-rub1\",\"status\":\"Disconnected\",\"type\":\"Robo\"}",
+        "kind": "metric",
+        "dataset": "rubrik.global_cluster_performance"
+    },
+    "tags": [
+        "preserve_original_event",
+        "rubrik.cluster_performance"
+    ]
 }
 ```
