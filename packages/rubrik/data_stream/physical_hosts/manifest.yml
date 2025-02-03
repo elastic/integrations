@@ -10,7 +10,7 @@ streams:
       - name: resource_timeout
         type: text
         title: Resource Timeout
-        description: Duration before declaring that the HTTP client connection has timed out. Valid time units are ns, us, ms, s, m, h. Default is "30"s.
+        description: Duration before declaring that the HTTP client connection has timed out. Valid time units are ns, us, ms, s, m, h. Default is 60s
         show_user: false
         multi: false
         required: false
@@ -47,13 +47,13 @@ streams:
         type: bool
         multi: false
         default: false
-      - name: first
+      - name: pageSize
         type: integer
-        title: First
+        title: Page Size
         multi: false
         required: false
         show_user: false
-        description: Returns the first n elements from the list.
+        description: The number of results per page in Rubrik GraphQL queries. Smaller pages mean more API requests but can be more efficient in some cases.
       - name: filters
         type: yaml
         title: Filters
@@ -63,3 +63,18 @@ streams:
         default: "# filter:\n#   - field: \"location\"\n#     texts: \n#       - \"prod-lab.local\"\n"
         description: >-
           Specify filters for refining the data. Filters must be defined as an array of Filter objects. Refer to the [Rubrik API documentation](https://rubrikinc.github.io/rubrik-api-documentation/schema/reference/filter.doc.html) for valid fields.
+      - name: resource_timeout
+        type: text
+        title: Resource Timeout
+        description: Duration before declaring that the HTTP client connection has timed out. Valid time units are ns, us, ms, s, m, h. Default is 60s
+        show_user: false
+        multi: false
+        required: false
+        default: 60s
+      - name: enable_request_tracer
+        type: bool
+        title: Enable request tracing
+        multi: false
+        required: false
+        show_user: false
+        description: The request tracer logs requests and responses to the agent's local file-system for debugging configurations. Enabling this request tracing compromises security and should only be used for debugging. See [documentation](https://www.elastic.co/guide/en/beats/filebeat/current/filebeat-input-httpjson.html#_request_tracer_filename) for details.

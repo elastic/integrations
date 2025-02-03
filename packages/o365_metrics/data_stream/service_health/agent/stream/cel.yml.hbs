@@ -60,9 +60,8 @@ program: |
       ).do_request().as(resp,
         resp.StatusCode == 200
         ?
-          bytes(resp.Body).mime("text/csv; header=present").as(body, {
-                                     "events": body.map(e, {"service_health": e.encode_json()}),                     
-        
+          bytes(resp.Body).decode_json().as(body, {
+              "events": [{"message": body.encode_json()}]                     
           })
         :
           {
