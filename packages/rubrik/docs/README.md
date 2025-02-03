@@ -75,15 +75,15 @@ An example event for `managed_volumes` looks as following:
         "version": "8.16.0"
     },
     "rubrik": {
+        "cluster": {
+            "name": "cluster-1",
+            "id": "7562f3f9-f7ff-4828-af2c-87df3bf4f54c"
+        },
+        "effective_sla_domain": {
+            "id": "4031c11d-078e-4f14-8566-717cfffaf359",
+            "name": "sla-domain-1"
+        },
         "managed_volumes": {
-            "cluster": {
-                "name": "cluster-1",
-                "id": "7562f3f9-f7ff-4828-af2c-87df3bf4f54c"
-            },
-            "effective_sla_domain": {
-                "id": "4031c11d-078e-4f14-8566-717cfffaf359",
-                "name": "sla-domain-1"
-            },
             "num_channels": {
                 "count": 1
             },
@@ -191,16 +191,16 @@ An example event for `monitoring_jobs` looks as following:
         "version": "8.13.2"
     },
     "rubrik": {
+        "cluster": {
+            "id": "52688802-aefd-4dee-9992-1e0c0623b54f",
+            "name": "cluster-1"
+        },
         "monitoring_jobs": {
             "log_backup_jobs": {
                 "count": 0
             },
             "replication_jobs": {
                 "count": 6
-            },
-            "cluster": {
-                "id": "52688802-aefd-4dee-9992-1e0c0623b54f",
-                "name": "cluster-1"
             },
             "recovery_jobs": {
                 "count": 39
@@ -303,13 +303,13 @@ Please refer to the following [document](https://www.elastic.co/guide/en/ecs/cur
 | rubrik.cluster.name | The cluster name. | keyword |
 | rubrik.effective_sla_domain.id | The ID of the SLA domain. | keyword |
 | rubrik.effective_sla_domain.name | The name of the SLA domain. | keyword |
-| rubrik.virtual_machine.agent_status | The status of the Rubrik Backup Service agent for virtual machines. Supported in v5.0+. | keyword |
-| rubrik.virtual_machine.id | The object ID. | keyword |
-| rubrik.virtual_machine.name | The name of the hierarchy object. | keyword |
-| rubrik.virtual_machine.power_status | The power status of VM (ON,OFF,SLEEP etc.). Supported in v5.0+. | keyword |
+| rubrik.virtual_machines.agent_status | The status of the Rubrik Backup Service agent for virtual machines. Supported in v5.0+. | keyword |
+| rubrik.virtual_machines.id | The object ID. | keyword |
+| rubrik.virtual_machines.name | The name of the hierarchy object. | keyword |
+| rubrik.virtual_machines.power_status | The power status of VM (ON,OFF,SLEEP etc.). Supported in v5.0+. | keyword |
 
 
-An example event for `virtualmachines` looks as following:
+An example event for `virtual_machines` looks as following:
 
 ```json
 {
@@ -321,15 +321,15 @@ An example event for `virtualmachines` looks as following:
         "version": "8.16.0"
     },
     "rubrik": {
-        "virtualmachine": {
-            "cluster": {
-                "name": "cluster-1",
-                "id": "7562f3f9-f7ff-4828-af2c-87df3bf4f54c"
-            },
-            "effective_sla_domain": {
-                "id": "4031c11d-078e-4f14-8566-717cfffaf359",
-                "name": "sla-domain-1"
-            },
+        "cluster": {
+            "name": "cluster-1",
+            "id": "7562f3f9-f7ff-4828-af2c-87df3bf4f54c"
+        },
+        "effective_sla_domain": {
+            "id": "4031c11d-078e-4f14-8566-717cfffaf359",
+            "name": "sla-domain-1"
+        },
+        "virtual_machines": {
             "agent_status": "UNREGISTERED",
             "power_status": "POWERED_OFF",
             "name": "dashboard01",
@@ -420,11 +420,15 @@ An example event for `filesets` looks as following:
         "version": "8.13.2"
     },
     "rubrik": {
+        "cluster": {
+            "name": "401-rubrik",
+            "id": "7f4f96b3-e777-4bde-ba08-47a40ecaa416"
+        },
+        "effective_sla_domain": {
+            "name": "2 day",
+            "id": "1efe5fa8-d97f-5067-afcc-e02525ad0a4e"
+        },
         "fileset": {
-            "cluster": {
-                "name": "401-rubrik",
-                "id": "7f4f96b3-e777-4bde-ba08-47a40ecaa416"
-            },
             "archive_snapshots": {
                 "count": 0
             },
@@ -438,10 +442,6 @@ An example event for `filesets` looks as following:
             "host_os_type": "LINUX",
             "archive_storage": {
                 "bytes": 0
-            },
-            "effective_sla_domain": {
-                "name": "2 day",
-                "id": "1efe5fa8-d97f-5067-afcc-e02525ad0a4e"
             },
             "compliance_status": "OUT_OF_COMPLIANCE"
         }
@@ -551,11 +551,11 @@ An example event for `drives` looks as following:
         "version": "8.16.0"
     },
     "rubrik": {
+        "cluster": {
+            "name": "cluster-1",
+            "id": "acbd69a0-64d3-4a34-a83e-c4ecddcd34b8"
+        },
         "drives": {
-            "cluster": {
-                "name": "cluster-1",
-                "id": "acbd69a0-64d3-4a34-a83e-c4ecddcd34b8"
-            },
             "path": "/mnt/wwn-0x4123a4004a3612c7",
             "usable": {
                 "bytes": 1452177072128
@@ -654,15 +654,15 @@ An example event for `physical_hosts` looks as following:
         "version": "8.16.0"
     },
     "rubrik": {
+        "cluster": {
+            "name": "cluster-1",
+            "id": "7562f3f9-f7ff-4828-af2c-87df3bf4f54c"
+        },
+        "effective_sla_domain": {
+            "id": "4031c11d-078e-4f14-8566-717cfffaf359",
+            "name": "sla-domain-1"
+        },
         "physical_hosts": {
-            "cluster": {
-                "name": "cluster-1",
-                "id": "7562f3f9-f7ff-4828-af2c-87df3bf4f54c"
-            },
-            "effective_sla_domain": {
-                "id": "4031c11d-078e-4f14-8566-717cfffaf359",
-                "name": "sla-domain-1"
-            },
             "connectivity_status": "DISCONNECTED",
             "os_type": "WINDOWS",
             "name": "0.0.0.0",
@@ -752,15 +752,15 @@ An example event for `mssql_databases` looks as following:
         "version": "8.16.0"
     },
     "rubrik": {
+        "cluster": {
+            "name": "cluster-1",
+            "id": "f5ce5ffc-42d4-47bc-a64f-d928030892d5"
+        },
+        "effective_sla_domain": {
+            "id": "4031c11d-078e-4f14-8566-717cfffaf359",
+            "name": "sla-domain-1"
+        },
         "mssql_databases": {
-            "cluster": {
-                "name": "cluster-1",
-                "id": "f5ce5ffc-42d4-47bc-a64f-d928030892d5"
-            },
-            "effective_sla_domain": {
-                "id": "4031c11d-078e-4f14-8566-717cfffaf359",
-                "name": "sla-domain-1"
-            },
             "name": "name-1",
             "id": "2abed6ca-bbf7-42df-a402-2166a7abebd0",
             "is_online": true
@@ -848,11 +848,11 @@ An example event for `tasks` looks as following:
         "version": "8.16.0"
     },
     "rubrik": {
+        "sla_domain": {
+            "name": "name-1",
+            "id": "4755b8b8-116b-4466-affb-c683f9339b10"
+        },
         "tasks": {
-            "sla_domain": {
-                "name": "name-1",
-                "id": "4755b8b8-116b-4466-affb-c683f9339b10"
-            },
             "metric_type": "succeeded_tasks",
             "succeeded": {
                 "count": 7
@@ -947,12 +947,12 @@ An example event for `global_cluster_performance` looks as following:
         "version": "8.13.2"
     },
     "rubrik": {
+        "cluster": {
+            "id": "b1a9e557-0b47-4bc1-841d-e6379e733016",
+            "name": "prod-rub1",
+            "type": "Robo"
+        },
         "cluster_performance": {
-            "cluster": {
-                "id": "b1a9e557-0b47-4bc1-841d-e6379e733016",
-                "name": "prod-rub1",
-                "type": "Robo"
-            },
             "miscellaneous_capacity": {
                 "bytes": 3490865159
             },
