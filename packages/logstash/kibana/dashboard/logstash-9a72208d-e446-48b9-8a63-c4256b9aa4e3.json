@@ -10,29 +10,11 @@
                 "ignoreValidations": false
             },
             "panelsJSON": {
-                "2eadbd3f-11a3-4469-9942-decfc7fff885": {
-                    "explicitInput": {
-                        "dataViewId": "metrics-*",
-                        "fieldName": "logstash.node.version",
-                        "id": "2eadbd3f-11a3-4469-9942-decfc7fff885",
-                        "searchTechnique": "prefix",
-                        "selectedOptions": [],
-                        "sort": {
-                            "by": "_count",
-                            "direction": "desc"
-                        },
-                        "title": "Logstash version"
-                    },
-                    "grow": true,
-                    "order": 1,
-                    "type": "optionsListControl",
-                    "width": "medium"
-                },
-                "550fa741-ece7-4199-a4e0-e9bd6d744ca8": {
+                "835e5891-04b0-4bd7-a3cc-b41a01d2fa23": {
                     "explicitInput": {
                         "dataViewId": "metrics-*",
                         "fieldName": "logstash.node.name",
-                        "id": "550fa741-ece7-4199-a4e0-e9bd6d744ca8",
+                        "id": "835e5891-04b0-4bd7-a3cc-b41a01d2fa23",
                         "searchTechnique": "prefix",
                         "selectedOptions": [],
                         "sort": {
@@ -43,6 +25,24 @@
                     },
                     "grow": true,
                     "order": 0,
+                    "type": "optionsListControl",
+                    "width": "medium"
+                },
+                "c5d8db13-609b-4e19-b3da-a8934358226d": {
+                    "explicitInput": {
+                        "dataViewId": "metrics-*",
+                        "fieldName": "logstash.node.version",
+                        "id": "c5d8db13-609b-4e19-b3da-a8934358226d",
+                        "searchTechnique": "prefix",
+                        "selectedOptions": [],
+                        "sort": {
+                            "by": "_count",
+                            "direction": "desc"
+                        },
+                        "title": "Logstash version"
+                    },
+                    "grow": true,
+                    "order": 1,
                     "type": "optionsListControl",
                     "width": "medium"
                 }
@@ -539,13 +539,17 @@
                                 "id": "metrics-*",
                                 "name": "indexpattern-datasource-layer-40151082-fb35-4d4a-aa1f-0647f3de0166",
                                 "type": "index-pattern"
+                            },
+                            {
+                                "id": "metrics-*",
+                                "name": "c1fda930-53ed-4ee7-961c-4a84131b3cbb",
+                                "type": "index-pattern"
                             }
                         ],
                         "state": {
                             "adHocDataViews": {},
                             "datasourceStates": {
                                 "formBased": {
-                                    "currentIndexPatternId": "metrics-*",
                                     "layers": {
                                         "40151082-fb35-4d4a-aa1f-0647f3de0166": {
                                             "columnOrder": [
@@ -721,7 +725,6 @@
                                             },
                                             "ignoreGlobalFilters": false,
                                             "incompleteColumns": {},
-                                            "indexPatternId": "metrics-*",
                                             "sampling": 1
                                         }
                                     }
@@ -741,20 +744,50 @@
                                     "meta": {
                                         "alias": null,
                                         "disabled": false,
-                                        "field": "logstash.node.status",
-                                        "index": "bcfbfd56-2606-49d3-ad97-910c6c3c59c5",
-                                        "key": "logstash.node.status",
-                                        "negate": true,
-                                        "params": {
-                                            "query": "green"
-                                        },
-                                        "type": "phrase"
+                                        "index": "c1fda930-53ed-4ee7-961c-4a84131b3cbb",
+                                        "negate": false,
+                                        "params": [
+                                            {
+                                                "meta": {
+                                                    "alias": null,
+                                                    "disabled": false,
+                                                    "field": "logstash.node.status",
+                                                    "index": "metrics-*",
+                                                    "key": "logstash.node.status",
+                                                    "negate": false,
+                                                    "type": "exists",
+                                                    "value": "exists"
+                                                },
+                                                "query": {
+                                                    "exists": {
+                                                        "field": "logstash.node.status"
+                                                    }
+                                                }
+                                            },
+                                            {
+                                                "meta": {
+                                                    "alias": null,
+                                                    "disabled": false,
+                                                    "field": "logstash.node.status",
+                                                    "index": "metrics-*",
+                                                    "key": "logstash.node.status",
+                                                    "negate": true,
+                                                    "params": {
+                                                        "query": "green"
+                                                    },
+                                                    "type": "phrase"
+                                                },
+                                                "query": {
+                                                    "match_phrase": {
+                                                        "logstash.node.status": "green"
+                                                    }
+                                                }
+                                            }
+                                        ],
+                                        "relation": "AND",
+                                        "type": "combined"
                                     },
-                                    "query": {
-                                        "match_phrase": {
-                                            "logstash.node.status": "green"
-                                        }
-                                    }
+                                    "query": {}
                                 },
                                 {
                                     "$state": {
@@ -953,6 +986,11 @@
             "type": "index-pattern"
         },
         {
+            "id": "metrics-*",
+            "name": "187c603e-4013-460b-95a5-bf4d39d8fcec:c1fda930-53ed-4ee7-961c-4a84131b3cbb",
+            "type": "index-pattern"
+        },
+        {
             "id": "logstash-838aac39-8edd-48b0-95b4-289e42b1e98a",
             "name": "187c603e-4013-460b-95a5-bf4d39d8fcec:drilldown:DASHBOARD_TO_DASHBOARD_DRILLDOWN:0582350f-2442-4e40-be4a-f48687e858f7:dashboardId",
             "type": "dashboard"
@@ -969,12 +1007,12 @@
         },
         {
             "id": "metrics-*",
-            "name": "controlGroup_e3878ae6-06c0-4231-aced-58d920083a03:optionsListDataView",
+            "name": "controlGroup_550fa741-ece7-4199-a4e0-e9bd6d744ca8:optionsListDataView",
             "type": "index-pattern"
         },
         {
             "id": "metrics-*",
-            "name": "controlGroup_294a8e11-ec75-48bb-b2bb-78e16125ff6b:optionsListDataView",
+            "name": "controlGroup_2eadbd3f-11a3-4469-9942-decfc7fff885:optionsListDataView",
             "type": "index-pattern"
         }
     ],
