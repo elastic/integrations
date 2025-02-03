@@ -147,6 +147,7 @@ An example event for `firewall` looks as following:
 | checkpoint.additional_rdata | List of additional resource records. | keyword |
 | checkpoint.administrator | Source administrator name. | keyword |
 | checkpoint.advanced_changes |  | keyword |
+| checkpoint.aggregated_log_count | Number of logs aggregated in the event. | integer |
 | checkpoint.alert | Alert level of matched rule (for connection logs). | keyword |
 | checkpoint.allocated_ports | Amount of allocated ports. | integer |
 | checkpoint.analyzed_on | Check Point ThreatCloud / emulator name. | keyword |
@@ -194,6 +195,7 @@ An example event for `firewall` looks as following:
 | checkpoint.community | Community name for the IPSec key and the use of the IKEv. | keyword |
 | checkpoint.confidence_level | Confidence level determined by ThreatCloud. | integer |
 | checkpoint.conn_direction | Connection direction | keyword |
+| checkpoint.connection_count | Number of connections logged in this event | integer |
 | checkpoint.connection_uid | Calculation of md5 of the IP and user name as UID. | keyword |
 | checkpoint.connectivity_level | Log for a new connection in wire mode. | keyword |
 | checkpoint.conns_amount | Connections amount of aggregated log info. | integer |
@@ -580,6 +582,7 @@ An example event for `firewall` looks as following:
 | checkpoint.unique_detected_day | Detected virus for a specific host during the last day. | integer |
 | checkpoint.unique_detected_hour | Detected virus for a specific host during the last hour. | integer |
 | checkpoint.unique_detected_week | Detected virus for a specific host during the last week. | integer |
+| checkpoint.update_count | Number of times the event has been updated with new occurrences | integer |
 | checkpoint.update_status | Status of database update | keyword |
 | checkpoint.url | Translated URL. | keyword |
 | checkpoint.user | Source user name. | keyword |
