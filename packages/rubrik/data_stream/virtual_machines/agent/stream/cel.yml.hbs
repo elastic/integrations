@@ -1,0 +1,129 @@
+config_version: 2
+interval: {{interval}}
+auth.oauth2:
+  client.id: {{client_id}}
+  client.secret: {{client_secret}}
+  token_url: {{token_url}}
+
+resource.url: https://{{hostname}}.my.rubrik.com/api/graphql
+{{#if ssl}}
+resource.ssl: 
+  {{ssl}}
+{{/if}}
+{{#if resource_timeout}}
+resource.timeout: {{resource_timeout}}
+{{/if}}
+
+{{#if enable_request_tracer}}
+resource.tracer.filename: "../../logs/cel/http-request-trace-*.ndjson"
+{{/if}}
+
+tags:
+{{#if preserve_original_event}}
+  - preserve_original_event
+{{/if}}
+{{#each tags as |tag|}}
+  - {{tag}}
+{{/each}}
+{{#contains "forwarded" tags}}
+publisher_pipeline.disable_host: true
+{{/contains}}
+{{#if processors}}
+processors:
+{{processors}}
+{{/if}}
+
+state:
+  index: 0
+  queries:
+    - |
+        query VirtualMachinesQuery($first: Int, $after: String, $filter: [Filter!]) {
+            vSphereVmNewConnection(first: $first, after: $after, filter: $filter) {
+                pageInfo {
+                  startCursor
+                  endCursor
+                  hasPreviousPage
+                  hasNextPage
+                }
+                nodes {
+                    agentStatus {
+                        agentStatus
+                    }
+                    name
+                    powerStatus
+                    id
+                    cluster {
+                        id
+                        name
+                    }
+                    effectiveSlaDomain {
+                        id
+                        name
+                    }
+                }
+            }
+        }
+
+program: |-
+  state.with(
+    request("POST", state.url).with(
+      {
+        "Header": {
+          "Content-Type": ["application/json"],
+        },
+        "Body": {
+          "query": state.queries[state.index],
+          "variables": {
+              {{#if pageSize}}
+              "first": {{pageSize}},
+              {{/if}}
+              "after": has(state.cursor) ? state.cursor.after : null,
+              "filter": [
+                {{#if filters}}
+                  {{#each filters}}
+                    {
+                      "field": "{{field}}",
+                      "texts": [{{#each values}}"{{this}}"{{#unless @last}}, {{/unless}}{{/each}}]
+                    }{{#unless @last}},{{/unless}}
+                  {{/each}}
+                {{/if}}
+              ]
+            }
+        }.encode_json(),
+      }
+    ).do_request().as(resp, (resp.StatusCode == 200) ?
+      bytes(resp.Body).decode_json().as(body,
+        {
+          "events": body.data.vSphereVmNewConnection.nodes.map(e,
+            {
+              "message": e.encode_json(),
+            }
+          ),
+          "want_more": body.data.vSphereVmNewConnection.pageInfo.hasNextPage || int(state.index) < (size(state.queries) - 1),
+          "queries": state.queries,
+          "index": body.data.vSphereVmNewConnection.pageInfo.hasNextPage ? int(state.index) : (int(state.index) + 1) % size(state.queries),
+          "cursor": {
+            "after": body.data.vSphereVmNewConnection.pageInfo.hasNextPage ? body.data.vSphereVmNewConnection.pageInfo.endCursor : null
+          }
+        }
+      )
+    :
+      {
+        "events": {
+          "error": {
+            "code": string(resp.StatusCode),
+            "id": string(resp.Status),
+            "message": "POST:" +
+            (
+              (size(resp.Body) != 0) ?
+                string(resp.Body)
+              :
+                string(resp.Status) + " (" + string(resp.StatusCode) + ")"
+            ),
+          },
+        },
+        "want_more": false,
+        "cursor": null
+      }
+    )
+  )

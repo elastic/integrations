@@ -3,20 +3,28 @@ description: Pipeline for processing Microsoft 365 mailbox usage quota status ma
 processors:
   - set:
       field: ecs.version
-      value: "8.16.0"   
+      value: "8.16.0"
   - set:
-      copy_from: mailboxquotastatus
+      copy_from: mailbox_usage_quota_status
       field: event.original
       ignore_empty_value: true
-      if: ctx.event?.original == null && (ctx.tags != null && (ctx.tags.contains('preserve_original_event')))   
+      if: ctx.event?.original == null && (ctx.tags != null && (ctx.tags.contains('preserve_original_event')))
+#   - fail:
+#       tag: cel_failure
+#       if: ctx.error?.message != null && ctx.message == null && ctx.event?.original == null
+#       message: error message set and no data to process
   - json:
-      field: mailboxquotastatus
+      field: mailbox_usage_quota_status
       target_field: o365.metrics.mailbox.usage.quota.status
       tag: json_decoding
       on_failure:
         - append:
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'             
+  - remove:
+      if: ctx.mailbox_usage_quota_status != null
+      field: mailbox_usage_quota_status
+      ignore_missing: true
   - script:
       lang: painless
       description: Replace spaces, dashes and bom character in field names under o365.metrics.mailbox.usage.quota.status.
@@ -34,10 +42,6 @@ processors:
           out[underscore(item.getKey())] = item.getValue();
         }
         ctx.o365.metrics.mailbox.usage.quota.status = out;
-  - remove:
-      if: ctx.mailboxquotastatus != null
-      field: mailboxquotastatus
-      ignore_missing: true
   - convert:
       field: o365.metrics.mailbox.usage.quota.status.indeterminate
       tag: convert_o365.metrics.mailbox.usage.quota.status.indeterminate
@@ -146,7 +150,29 @@ processors:
   - fingerprint:
       fields:
         - o365.metrics.mailbox.usage.quota.status.report.date
-      target_field: _id   
+      target_field: _id
+  - script:
+      lang: painless
+      tag: script_to_remove_null_values
+      description: Drops null/empty values recursively.
+      source: |
+        boolean drop(Object o) {
+          if (o == null || o == "") {
+            return true;
+          } else if (o instanceof Map) {
+            ((Map) o).values().removeIf(v -> drop(v));
+            return (((Map) o).size() == 0);
+          } else if (o instanceof List) {
+            ((List) o).removeIf(v -> drop(v));
+            return (((List) o).length == 0);
+          }
+          return false;
+        }
+        drop(ctx);
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'   
 on_failure:
   - set:
       field: error.message

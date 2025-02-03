@@ -1,30 +1,36 @@
 type: metrics
 title: Rubrik Managed Volume Metrics
 streams:
-  - input: httpjson
+  - input: cel
+    title: Rubrik Managed Volumes
+    description: Collect Rubrik Managed Volumes data via the API
+    enabled: true
+    template_path: cel.yml.hbs
     vars:
-      - name: http_client_timeout
-        type: text
-        title: HTTP Client Timeout
-        description: Duration before declaring that the HTTP client connection has timed out. Valid time units are ns, us, ms, s, m, h.
-        multi: false
-        required: false
-        show_user: true
-        default: 60s
       - name: interval
         type: text
         title: Interval
-        multi: false
-        required: true
+        description: The interval at which the API is polled, supported in seconds, minutes, and hours.
         show_user: true
-        description: Interval at which the alerts will be pulled. The value must be between 2m and 1h. Supported units for this parameter are h/m/s.
+        required: true
         default: 5m
+      - name: processors
+        type: yaml
+        title: Processors
+        multi: false
+        required: false
+        show_user: false
+        description: >
+          Processors are used to reduce the number of fields in the exported event or to enhance the event with metadata. This executes in the agent before the logs are parsed. See [Processors](https://www.elastic.co/guide/en/fleet/current/elastic-agent-processor-configuration.html) for details.
+
       - name: tags
         type: text
         title: Tags
         multi: true
         required: false
-        show_user: true
+        show_user: false
+        default:
+          - rubrik.managed_volumes
       - name: preserve_original_event
         required: true
         show_user: true
@@ -33,36 +39,34 @@ streams:
         type: bool
         multi: false
         default: false
-      - name: first
+      - name: pageSize
         type: integer
-        title: First
-        description: Specifies the first n elements to fetch from the list.
-        show_user: true
+        title: Page Size
+        multi: false
         required: false
-        default: 10
+        show_user: false
+        description: The number of results per page in Rubrik GraphQL queries. Smaller pages mean more API requests but can be more efficient in some cases.
       - name: filters
         type: yaml
         title: Filters
         multi: false
         required: false
-        show_user: true
-        default: |
-          # filter:
-          #   - field: "location"
-          #     texts: 
-          #       - "prod-lab.local"
-        description: >
+        show_user: false
+        default: "# filter:\n#   - field: \"location\"\n#     texts: \n#       - \"prod-lab.local\"\n"
+        description: >-
           Specify filters for refining the data. Filters must be defined as an array of Filter objects. Refer to the [Rubrik API documentation](https://rubrikinc.github.io/rubrik-api-documentation/schema/reference/filter.doc.html) for valid fields.
-
-      - name: processors
-        type: yaml
-        title: Processors
+      - name: resource_timeout
+        type: text
+        title: Resource Timeout
+        description: Duration before declaring that the HTTP client connection has timed out. Valid time units are ns, us, ms, s, m, h. Default is 60s
+        show_user: false
+        multi: false
+        required: false
+        default: 60s
+      - name: enable_request_tracer
+        type: bool
+        title: Enable request tracing
         multi: false
         required: false
         show_user: false
-        description: >
-          Processors are used to reduce the number of fields in the exported event or to enhance the event with metadata.  This executes in the agent before the logs are parsed.  See [Processors](https://www.elastic.co/guide/en/fleet/current/elastic-agent-processor-configuration.html) for details.
-
-    template_path: httpjson.yml.hbs
-    title: Rubrik Managed Volumes
-    description: Collect Rubrik Managed Volumes data via the API
+        description: The request tracer logs requests and responses to the agent's local file-system for debugging configurations. Enabling this request tracing compromises security and should only be used for debugging. See [documentation](https://www.elastic.co/guide/en/beats/filebeat/current/filebeat-input-httpjson.html#_request_tracer_filename) for details.
