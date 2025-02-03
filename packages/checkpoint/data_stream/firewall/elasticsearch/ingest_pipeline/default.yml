@@ -411,7 +411,7 @@ processors:
       allow_duplicates: false
   - append:
       field: event.type
-      value:  
+      value:
         - start
       allow_duplicates: false
       if: ctx.checkpoint?.action == 'Log In' || ctx.checkpoint?.operation == 'Log In'
@@ -1077,6 +1077,43 @@ processors:
       formats: ["ISO8601", "UNIX"]
       target_field: event.end
       if: "ctx.checkpoint?.lastupdatetime != null"
+  - date:
+      field: checkpoint.last_hit_time
+      formats: ["ISO8601", "UNIX"]
+      target_field: event.end
+      if: "ctx.checkpoint?.last_hit_time != null"
+  - date:
+      field: checkpoint.creation_time
+      formats: ["ISO8601", "UNIX"]
+      target_field: event.start
+      if: "ctx.checkpoint?.creation_time != null"
+  - rename:
+      field: checkpoint.duration
+      target_field: event.duration
+      ignore_missing: true
+  - convert:
+      tag: convert_event_duration_to_integer
+      field: event.duration
+      type: long
+      ignore_missing: true
+  - script:
+      tag: event_duration_conversion_to_long
+      description: Convert event.duration from seconds to nanoseconds.
+      lang: painless
+      source: ctx.event.duration = ctx.event.duration * 1000000000L
+      if: ctx.event?.duration != null
+  - convert:
+      field: checkpoint.update_count
+      type: integer
+      ignore_missing: true
+  - convert:
+      field: checkpoint.connection_count
+      type: integer
+      ignore_missing: true
+  - convert:
+      field: checkpoint.aggregated_log_count
+      type: integer
+      ignore_missing: true
   - rename:
       field: checkpoint.message
       target_field: message
@@ -1265,6 +1302,8 @@ processors:
         - checkpoint.hll_key
         - checkpoint.segment_time
         - checkpoint.lastupdatetime
+        - checkpoint.last_hit_time
+        - checkpoint.creation_time
         - checkpoint.endpoint_ip
         - checkpoint.origin_ip
         - syslog5424_ts

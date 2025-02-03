@@ -1,8 +1,8 @@
-title: Microsoft 365 Teams User Activity User Counts metrics
+title: Microsoft 365 Teams User Activity User Counts
 type: metrics
 streams:
   - input: cel
-    title: Microsoft 365 Teams User Activity User Counts metrics.
+    title: Microsoft 365 Teams User Activity User Counts
     enabled: false
     description: Collect count of users performing activities in Microsoft 365 Teams, like messaging and meetings.
     template_path: cel.yml.hbs
@@ -13,7 +13,7 @@ streams:
         description: The interval at which the API is polled, supported in seconds, minutes, and hours.
         show_user: true
         required: true
-        default: 3m
+        default: 12h
       - name: processors
         type: yaml
         title: Processors
@@ -22,11 +22,13 @@ streams:
         show_user: false
         description: >
           Processors are used to reduce the number of fields in the exported event or to enhance the event with metadata. This executes in the agent before the logs are parsed. See [Processors](https://www.elastic.co/guide/en/fleet/current/elastic-agent-processor-configuration.html) for details.
+
       - name: period
         type: text
         title: Period
         description: >
           Specifies the length of time over which the report is aggregated. The supported values are: D7, D30, D90, and D180.
+
         show_user: true
         required: true
         default: D7
@@ -40,12 +42,12 @@ streams:
           - o365.metrics.teams.user.activity.user.counts
       - name: preserve_original_event
         required: true
-        show_user: true
+        show_user: false
         title: Preserve original event
         description: Preserves a raw copy of the original event, added to the field `event.original`
         type: bool
         multi: false
-        default: false          
+        default: false
       - name: enable_request_tracer
         type: bool
         title: Enable request tracing
