@@ -37,59 +37,32 @@ state:
   index: 0
   queries:
     - |
-      query LinuxPhysicalHosts($first: Int, $after: String, $filter: [Filter!]) {
-        physicalHosts(first: $first, after: $after, filter: $filter, hostRoot: LINUX_HOST_ROOT) {
-          pageInfo {
-            startCursor
-            endCursor
-            hasPreviousPage
-            hasNextPage
-          }
-          nodes {
-            id
-            name
-            connectionStatus {
-              connectivity
+        query VirtualMachinesQuery($first: Int, $after: String, $filter: [Filter!]) {
+            vSphereVmNewConnection(first: $first, after: $after, filter: $filter) {
+                pageInfo {
+                  startCursor
+                  endCursor
+                  hasPreviousPage
+                  hasNextPage
+                }
+                nodes {
+                    agentStatus {
+                        agentStatus
+                    }
+                    name
+                    powerStatus
+                    id
+                    cluster {
+                        id
+                        name
+                    }
+                    effectiveSlaDomain {
+                        id
+                        name
+                    }
+                }
             }
-            cluster {
-              id
-              name
-            }
-            effectiveSlaDomain {
-              id
-              name
-            }
-            osType
-          }
         }
-      }
-    - |
-      query WindowsPhysicalHosts($first: Int, $after: String, $filter: [Filter!]) {
-        physicalHosts(first: $first, after: $after, filter: $filter, hostRoot: WINDOWS_HOST_ROOT) {
-          pageInfo {
-            startCursor
-            endCursor
-            hasPreviousPage
-            hasNextPage
-          }
-          nodes {
-            id
-            name
-            connectionStatus {
-              connectivity
-            }
-            cluster {
-              id
-              name
-            }
-            effectiveSlaDomain {
-              id
-              name
-            }
-            osType
-          }
-        }
-      }
 
 program: |-
   state.with(
@@ -121,16 +94,16 @@ program: |-
     ).do_request().as(resp, (resp.StatusCode == 200) ?
       bytes(resp.Body).decode_json().as(body,
         {
-          "events": body.data.physicalHosts.nodes.map(e,
+          "events": body.data.vSphereVmNewConnection.nodes.map(e,
             {
               "message": e.encode_json(),
             }
           ),
-          "want_more": body.data.physicalHosts.pageInfo.hasNextPage || int(state.index) < (size(state.queries) - 1),
+          "want_more": body.data.vSphereVmNewConnection.pageInfo.hasNextPage || int(state.index) < (size(state.queries) - 1),
           "queries": state.queries,
-          "index": body.data.physicalHosts.pageInfo.hasNextPage ? int(state.index) : (int(state.index) + 1) % size(state.queries),
+          "index": body.data.vSphereVmNewConnection.pageInfo.hasNextPage ? int(state.index) : (int(state.index) + 1) % size(state.queries),
           "cursor": {
-            "after": body.data.physicalHosts.pageInfo.hasNextPage ? body.data.physicalHosts.pageInfo.endCursor : null
+            "after": body.data.vSphereVmNewConnection.pageInfo.hasNextPage ? body.data.vSphereVmNewConnection.pageInfo.endCursor : null
           }
         }
       )
