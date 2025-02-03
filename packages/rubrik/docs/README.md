@@ -49,10 +49,10 @@ Please refer to the following [document](https://www.elastic.co/guide/en/ecs/cur
 | data_stream.dataset | Data stream dataset. | constant_keyword |  |  |
 | data_stream.namespace | Data stream namespace. | constant_keyword |  |  |
 | data_stream.type | Data stream type. | constant_keyword |  |  |
-| rubrik.managed_volumes.cluster.id | The cluster UUID. | keyword |  |  |
-| rubrik.managed_volumes.cluster.name | The cluster name. | keyword |  |  |
-| rubrik.managed_volumes.effective_sla_domain.id | The ID of the SLA domain. | keyword |  |  |
-| rubrik.managed_volumes.effective_sla_domain.name | The name of the SLA domain. | keyword |  |  |
+| rubrik.cluster.id | The cluster UUID. | keyword |  |  |
+| rubrik.cluster.name | The cluster name. | keyword |  |  |
+| rubrik.effective_sla_domain.id | The ID of the SLA domain. | keyword |  |  |
+| rubrik.effective_sla_domain.name | The name of the SLA domain. | keyword |  |  |
 | rubrik.managed_volumes.free_size.bytes | Free capacity for the volume across all the channels, in bytes. | long | byte | gauge |
 | rubrik.managed_volumes.name | The name of the Managed Volume. | keyword |  |  |
 | rubrik.managed_volumes.num_channels.count | Number of channels to divide the volume into. Each channel provides a unique share to write to. | long |  | gauge |
@@ -168,11 +168,11 @@ Please refer to the following [document](https://www.elastic.co/guide/en/ecs/cur
 | data_stream.dataset | Data stream dataset. | constant_keyword |  |
 | data_stream.namespace | Data stream namespace. | constant_keyword |  |
 | data_stream.type | Data stream type. | constant_keyword |  |
+| rubrik.cluster.id | The cluster UUID. | keyword |  |
+| rubrik.cluster.name | The cluster name. | keyword |  |
 | rubrik.monitoring_jobs.all_jobs.count | The total count of all jobs. | long | gauge |
 | rubrik.monitoring_jobs.archive_jobs.count | The total count of all archive jobs. | long | gauge |
 | rubrik.monitoring_jobs.backup_jobs.count | The total count of all backup jobs. | long | gauge |
-| rubrik.monitoring_jobs.cluster.id | The name of the Cluster associated with the jobs. | keyword |  |
-| rubrik.monitoring_jobs.cluster.name | The ID of the Cluster associated with the jobs. | keyword |  |
 | rubrik.monitoring_jobs.conversion_jobs.count | The total count of all conversion jobs. | long | gauge |
 | rubrik.monitoring_jobs.log_backup_jobs.count | The total count of all log backup jobs. | long | gauge |
 | rubrik.monitoring_jobs.recovery_jobs.count | The total count of all recovery jobs. | long | gauge |
@@ -299,14 +299,14 @@ Please refer to the following [document](https://www.elastic.co/guide/en/ecs/cur
 | data_stream.dataset | Data stream dataset. | constant_keyword |
 | data_stream.namespace | Data stream namespace. | constant_keyword |
 | data_stream.type | Data stream type. | constant_keyword |
-| rubrik.virtualmachine.agent_status | The status of the Rubrik Backup Service agent for virtual machines. Supported in v5.0+. | keyword |
-| rubrik.virtualmachine.cluster.id | The cluster uuid. | keyword |
-| rubrik.virtualmachine.cluster.name | The cluster name. | keyword |
-| rubrik.virtualmachine.effective_sla_domain.id | The ID of the SLA domain. | keyword |
-| rubrik.virtualmachine.effective_sla_domain.name | The name of the SLA domain. | keyword |
-| rubrik.virtualmachine.id | The object ID. | keyword |
-| rubrik.virtualmachine.name | The name of the hierarchy object. | keyword |
-| rubrik.virtualmachine.power_status | The power status of VM (ON,OFF,SLEEP etc.). Supported in v5.0+. | keyword |
+| rubrik.cluster.id | The cluster UUID. | keyword |
+| rubrik.cluster.name | The cluster name. | keyword |
+| rubrik.effective_sla_domain.id | The ID of the SLA domain. | keyword |
+| rubrik.effective_sla_domain.name | The name of the SLA domain. | keyword |
+| rubrik.virtual_machine.agent_status | The status of the Rubrik Backup Service agent for virtual machines. Supported in v5.0+. | keyword |
+| rubrik.virtual_machine.id | The object ID. | keyword |
+| rubrik.virtual_machine.name | The name of the hierarchy object. | keyword |
+| rubrik.virtual_machine.power_status | The power status of VM (ON,OFF,SLEEP etc.). Supported in v5.0+. | keyword |
 
 
 An example event for `virtualmachines` looks as following:
@@ -395,13 +395,13 @@ Please refer to the following [document](https://www.elastic.co/guide/en/ecs/cur
 | data_stream.dataset | Data stream dataset. | constant_keyword |  |  |
 | data_stream.namespace | Data stream namespace. | constant_keyword |  |  |
 | data_stream.type | Data stream type. | constant_keyword |  |  |
+| rubrik.cluster.id | The cluster UUID. | keyword |  |  |
+| rubrik.cluster.name | The cluster name. | keyword |  |  |
+| rubrik.effective_sla_domain.id | The ID of the SLA domain. | keyword |  |  |
+| rubrik.effective_sla_domain.name | The name of the SLA domain. | keyword |  |  |
 | rubrik.fileset.archive_snapshots.count | The number of snapshots that have been archived. | long |  | gauge |
 | rubrik.fileset.archive_storage.bytes | The amount of storage used by archived snapshots. | long | byte | gauge |
-| rubrik.fileset.cluster.id | The Rubrik cluster ID where this object originated. | keyword |  |  |
-| rubrik.fileset.cluster.name | The Rubrik cluster name where this object originated. | keyword |  |  |
 | rubrik.fileset.compliance_status | The current compliance status of the workload. | keyword |  |  |
-| rubrik.fileset.effective_sla_domain.id | The ID of the SLA domain. | keyword |  |  |
-| rubrik.fileset.effective_sla_domain.name | The name of the SLA domain. | keyword |  |  |
 | rubrik.fileset.host_os_type | The operating system type of the host. | keyword |  |  |
 | rubrik.fileset.local_storage.bytes | The local storage size in bytes. | long | byte | gauge |
 | rubrik.fileset.name | The name of the Fileset. | keyword |  |  |
@@ -526,9 +526,9 @@ Please refer to the following [document](https://www.elastic.co/guide/en/ecs/cur
 | data_stream.dataset | Data stream dataset. | constant_keyword |  |  |
 | data_stream.namespace | Data stream namespace. | constant_keyword |  |  |
 | data_stream.type | Data stream type. | constant_keyword |  |  |
+| rubrik.cluster.id | The cluster UUID. | keyword |  |  |
+| rubrik.cluster.name | The cluster name. | keyword |  |  |
 | rubrik.drives.capacity.bytes | Disk capacity, in bytes. | long | byte | gauge |
-| rubrik.drives.cluster.id | The cluster UUID. | keyword |  |  |
-| rubrik.drives.cluster.name | The cluster name. | keyword |  |  |
 | rubrik.drives.id | ID of the Rubrik cluster disk type. | keyword |  |  |
 | rubrik.drives.is_encrypted | Specifies if the disk is encrypted. | boolean |  |  |
 | rubrik.drives.node_id | ID of the Rubrik cluster node. | keyword |  |  |
@@ -632,11 +632,11 @@ Please refer to the following [document](https://www.elastic.co/guide/en/ecs/cur
 | data_stream.dataset | Data stream dataset. | constant_keyword |
 | data_stream.namespace | Data stream namespace. | constant_keyword |
 | data_stream.type | Data stream type. | constant_keyword |
-| rubrik.physical_hosts.cluster.id | The cluster uuid. | keyword |
-| rubrik.physical_hosts.cluster.name | The cluster name. | keyword |
+| rubrik.cluster.id | The cluster UUID. | keyword |
+| rubrik.cluster.name | The cluster name. | keyword |
+| rubrik.effective_sla_domain.id | The ID of the SLA domain. | keyword |
+| rubrik.effective_sla_domain.name | The name of the SLA domain. | keyword |
 | rubrik.physical_hosts.connectivity_status | Connectivity status of host. | keyword |
-| rubrik.physical_hosts.effective_sla_domain.id | The ID of the SLA domain. | keyword |
-| rubrik.physical_hosts.effective_sla_domain.name | The name of the SLA domain. | keyword |
 | rubrik.physical_hosts.id | ID of the physical host. | keyword |
 | rubrik.physical_hosts.name | Name of the physical host. | keyword |
 | rubrik.physical_hosts.os_type | The operating system type of the physical host. | keyword |
@@ -730,10 +730,10 @@ Please refer to the following [document](https://www.elastic.co/guide/en/ecs/cur
 | data_stream.dataset | Data stream dataset. | constant_keyword |
 | data_stream.namespace | Data stream namespace. | constant_keyword |
 | data_stream.type | Data stream type. | constant_keyword |
-| rubrik.mssql_databases.cluster.id | The Rubrik cluster id where this object originated. | keyword |
-| rubrik.mssql_databases.cluster.name | The Rubrik cluster name where this object originated. | keyword |
-| rubrik.mssql_databases.effective_sla_domain.id | The ID of the SLA domain. | keyword |
-| rubrik.mssql_databases.effective_sla_domain.name | The name of the SLA domain. | keyword |
+| rubrik.cluster.id | The cluster UUID. | keyword |
+| rubrik.cluster.name | The cluster name. | keyword |
+| rubrik.effective_sla_domain.id | The ID of the SLA domain. | keyword |
+| rubrik.effective_sla_domain.name | The name of the SLA domain. | keyword |
 | rubrik.mssql_databases.id | ID of the database. | keyword |
 | rubrik.mssql_databases.is_online | Specifies if the SQL Server database is online. | boolean |
 | rubrik.mssql_databases.missed_snapshots.count | Number of missed snapshots. | long |
@@ -825,12 +825,14 @@ Please refer to the following [document](https://www.elastic.co/guide/en/ecs/cur
 | data_stream.dataset | Data stream dataset. | constant_keyword |  |
 | data_stream.namespace | Data stream namespace. | constant_keyword |  |
 | data_stream.type | Data stream type. | constant_keyword |  |
+| rubrik.cluster.id | The cluster UUID. | keyword |  |
+| rubrik.cluster.name | The cluster name. | keyword |  |
+| rubrik.sla_domain.id | The Rubrik SLA domain id. | keyword |  |
+| rubrik.sla_domain.name | The Rubrik SLA domain name. | keyword |  |
 | rubrik.tasks.canceled.count | The number of tasks that have been canceled. | long | gauge |
 | rubrik.tasks.failed.count | The number of tasks that have failed. | long | gauge |
 | rubrik.tasks.metric_type | The metric type. | keyword |  |
 | rubrik.tasks.missed.count | The number of tasks that have missed. | long | gauge |
-| rubrik.tasks.sla_domain.id | The Rubrik cluster id where this object originated. | keyword |  |
-| rubrik.tasks.sla_domain.name | The Rubrik cluster name where this object originated. | keyword |  |
 | rubrik.tasks.succeeded.count | The number of tasks that have succeeded. | long | gauge |
 
 
@@ -915,12 +917,12 @@ Please refer to the following [document](https://www.elastic.co/guide/en/ecs/cur
 | data_stream.dataset | Data stream dataset. | constant_keyword |  |  |
 | data_stream.namespace | Data stream namespace. | constant_keyword |  |  |
 | data_stream.type | Data stream type. | constant_keyword |  |  |
+| rubrik.cluster.id | The cluster UUID. | keyword |  |  |
+| rubrik.cluster.name | The cluster name. | keyword |  |  |
+| rubrik.cluster.type | The type of the cluster (e.g., OnPrem, Robo, Polaris). | keyword |  |  |
 | rubrik.cluster_performance.available_capacity.bytes | The amount of available storage capacity in bytes. | long | byte | gauge |
 | rubrik.cluster_performance.average_daily_growth.bytes | The average daily growth of data in bytes. | long | byte | gauge |
 | rubrik.cluster_performance.cdp_capacity.bytes | The amount of storage used by Continuous Data Protection (CDP) in bytes. | long | byte | gauge |
-| rubrik.cluster_performance.cluster.id | The cluster UUID. | keyword |  |  |
-| rubrik.cluster_performance.cluster.name | The name of the cluster. | keyword |  |  |
-| rubrik.cluster_performance.cluster.type | The type of the cluster (e.g., OnPrem, Robo, Polaris). | keyword |  |  |
 | rubrik.cluster_performance.estimated_runway | The estimated number of days before the cluster reaches full capacity. | long |  |  |
 | rubrik.cluster_performance.ingested_snapshot_storage.bytes | The total amount of ingested snapshot storage in bytes. | long | byte | gauge |
 | rubrik.cluster_performance.live_mount_capacity.bytes | The amount of storage used by live mounts in bytes. | long | byte | gauge |
