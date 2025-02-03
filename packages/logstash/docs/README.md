@@ -165,7 +165,7 @@ An example event for `health_report` looks as following:
     "event": {
         "agent_id_status": "verified",
         "ingested": "2025-01-28T18:41:28Z",
-        "dataset": "logstash.health_report"
+        "dataset": "logstash.health_report.pipeline"
     }
 }
 ```
