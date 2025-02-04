@@ -43,6 +43,8 @@ Please refer to the following [document](https://www.elastic.co/guide/en/ecs/cur
 
 {{fields "managed_volumes"}}
 
+{{event "managed_volumes"}}
+
 ### Monitoring Jobs
 
 The `monitoring_jobs` dataset provides metrics related to the series of activities on either the RSC or a Rubrik cluster.
@@ -53,6 +55,8 @@ Please refer to the following [document](https://www.elastic.co/guide/en/ecs/cur
 
 {{fields "monitoring_jobs"}}
 
+{{event "monitoring_jobs"}}
+
 ### Virtual Machines
 
 The `virtualmachines` dataset provides metrics related to the state of the virtual machines.
@@ -61,15 +65,22 @@ The `virtualmachines` dataset provides metrics related to the state of the virtu
 
 Please refer to the following [document](https://www.elastic.co/guide/en/ecs/current/ecs-field-reference.html) for detailed information on ECS fields.
 
-{{fields "virtualmachines"}}
+{{fields "virtual_machines"}}
 
-{{event "virtualmachines"}}
+{{event "virtual_machines"}}
 
 ### Filesets
 
-{{ fields "filesets" }}
+The `filesets` dataset provides metrics related to the state of the filesets.
 
-{{event "filesets" }}
+**ECS Field Reference**
+
+Please refer to the following [document](https://www.elastic.co/guide/en/ecs/current/ecs-field-reference.html) for detailed information on ECS fields.
+
+{{fields "filesets"}}
+
+{{event "filesets"}}
+
 ### Drives
 
 The `drives` dataset provides metrics related to the state of the drives.
@@ -117,3 +128,15 @@ Please refer to the following [document](https://www.elastic.co/guide/en/ecs/cur
 {{fields "tasks"}}
 
 {{event "tasks"}}
+
+### Global Cluster Performance
+
+The `global_cluster_performance` dataset provides performance related metrics like IOPS, throughput, storage utilization, storage details, streams, and physical ingest of Rubrik Clusters.
+
+**ECS Field Reference**
+
+Please refer to the following [document](https://www.elastic.co/guide/en/ecs/current/ecs-field-reference.html) for detailed information on ECS fields.
+
+{{fields "global_cluster_performance"}}
+
+{{event "global_cluster_performance"}}
