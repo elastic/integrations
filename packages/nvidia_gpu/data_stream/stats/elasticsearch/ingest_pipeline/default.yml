@@ -58,7 +58,7 @@ processors:
     target_field: gpu.memory.temperature
     ignore_missing: true
 - rename:
-    field: prometheus.DCGM_FI_DEV_PCIE_REPLAY_COUNTER.counter
+    field: prometheus.DCGM_FI_DEV_PCIE_REPLAY_COUNTER.rate
     target_field: gpu.pcie.replay
     ignore_missing: true
 - rename:
@@ -110,43 +110,43 @@ processors:
     target_field: gpu.error.message
     ignore_missing: true
 - rename:
-    field: prometheus.DCGM_FI_DEV_ECC_DBE_AGG_TOTAL.counter
+    field: prometheus.DCGM_FI_DEV_ECC_DBE_AGG_TOTAL.rate
     target_field: gpu.memory.errors.double_bit_persistent
     ignore_missing: true
 - rename:
-    field: prometheus.DCGM_FI_DEV_ECC_SBE_AGG_TOTAL.counter
+    field: prometheus.DCGM_FI_DEV_ECC_SBE_AGG_TOTAL.rate
     target_field: gpu.memory.errors.single_bit_persistent
     ignore_missing: true
 - rename:
-    field: prometheus.DCGM_FI_DEV_ECC_DBE_VOL_TOTAL.counter
+    field: prometheus.DCGM_FI_DEV_ECC_DBE_VOL_TOTAL.rate
     target_field: gpu.memory.errors.double_bit_volatile
     ignore_missing: true
 - rename:
-    field: prometheus.DCGM_FI_DEV_ECC_SBE_VOL_TOTAL.counter
+    field: prometheus.DCGM_FI_DEV_ECC_SBE_VOL_TOTAL.rate
     target_field: gpu.memory.errors.single_bit_volatile
     ignore_missing: true
 - rename:
-    field: prometheus.DCGM_FI_DEV_SYNC_BOOST_VIOLATION.counter
+    field: prometheus.DCGM_FI_DEV_SYNC_BOOST_VIOLATION.rate
     target_field: gpu.throttling.sync_boost
     ignore_missing: true
 - rename:
-    field: prometheus.DCGM_FI_DEV_THERMAL_VIOLATION.counter
+    field: prometheus.DCGM_FI_DEV_THERMAL_VIOLATION.rate
     target_field: gpu.throttling.thermal
     ignore_missing: true
 - rename:
-    field: prometheus.DCGM_FI_DEV_LOW_UTIL_VIOLATION.counter
+    field: prometheus.DCGM_FI_DEV_LOW_UTIL_VIOLATION.rate
     target_field: gpu.throttling.low_utilization
     ignore_missing: true
 - rename:
-    field: prometheus.DCGM_FI_DEV_BOARD_LIMIT_VIOLATION.counter
+    field: prometheus.DCGM_FI_DEV_BOARD_LIMIT_VIOLATION.rate
     target_field: gpu.throttling.board_limit
     ignore_missing: true
 - rename:
-    field: prometheus.DCGM_FI_DEV_POWER_VIOLATION.counter
+    field: prometheus.DCGM_FI_DEV_POWER_VIOLATION.rate
     target_field: gpu.throttling.power
     ignore_missing: true
 - rename:
-    field: prometheus.DCGM_FI_DEV_RELIABILITY_VIOLATION.counter
+    field: prometheus.DCGM_FI_DEV_RELIABILITY_VIOLATION.rate
     target_field: gpu.throttling.reliability
     ignore_missing: true
 - rename:
@@ -169,3 +169,21 @@ processors:
     field: prometheus.labels.DCGM_FI_DEV_BRAND
     target_field: gpu.device.brand
     ignore_missing: true
+
+- remove:
+    field: 
+      - "prometheus.DCGM_FI_DEV_PCIE_REPLAY_COUNTER"
+      - "prometheus.DCGM_FI_DEV_ECC_DBE_AGG_TOTAL"
+      - "prometheus.DCGM_FI_DEV_ECC_SBE_AGG_TOTAL"
+      - "prometheus.DCGM_FI_DEV_ECC_DBE_VOL_TOTAL"
+      - "prometheus.DCGM_FI_DEV_ECC_SBE_VOL_TOTAL"
+      - "prometheus.DCGM_FI_DEV_SYNC_BOOST_VIOLATION"
+      - "prometheus.DCGM_FI_DEV_THERMAL_VIOLATION"
+      - "prometheus.DCGM_FI_DEV_LOW_UTIL_VIOLATION"
+      - "prometheus.DCGM_FI_DEV_BOARD_LIMIT_VIOLATION"
+      - "prometheus.DCGM_FI_DEV_POWER_VIOLATION"
+      - "prometheus.DCGM_FI_DEV_RELIABILITY_VIOLATION"
+      - "prometheus.DCGM_FI_DEV_TOTAL_ENERGY_CONSUMPTION"
+      - "prometheus.DCGM_FI_DEV_NVLINK_BANDWIDTH_TOTAL"
+    ignore_missing: true
+    ignore_failure: true
