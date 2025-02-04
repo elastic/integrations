@@ -20,6 +20,7 @@ state:
   password: {{password}}
   batch_size: {{batch_size}}
   params: {{input_parameters}}
+  show_igs: {{show_igs}}
   keep_xml: {{preserve_original_event}}
 redact:
   fields:
@@ -37,6 +38,7 @@ program: |
           state.url.trim_right("/") + "/api/2.0/fo/asset/host/vm/detection/?" +
           state.?params.orValue("").parse_query().with({
             "action": ["list"],
+            "show_igs": [(state.show_igs? "1" : "0")],
             "host_metadata": ["all"],
             "show_qds": ["1"],
             "show_qds_factors": ["1"],
@@ -59,14 +61,30 @@ program: |
                   (ahd_body.?doc.HOST_LIST_VM_DETECTION_OUTPUT.RESPONSE.hasValue() 
                   ?
                     ({
-                      "worklist": (
-                        ahd_body.?doc.HOST_LIST_VM_DETECTION_OUTPUT.RESPONSE.HOST_LIST.HOST.orValue([]).map(h,
-                          h.DETECTION_LIST.DETECTION.map(v,
-                            h.with({
-                              "DETECTION_LIST": v,
-                            })
-                          )).flatten()
-                      ),
+                      "worklist": {
+                        "AHD_LIST": (
+                          ahd_body.?doc.HOST_LIST_VM_DETECTION_OUTPUT.RESPONSE.HOST_LIST.HOST.orValue([]).flatten()
+                        ),
+                        // HOST_QID_LIST has unique QIDs from this batch of hosts.
+                        // When unique QIDs > 1000, it is split into even/odd to avoid "414 Request-URI Too Long" in KB API.
+                        "HOST_QID_LIST": (
+                          ahd_body.?doc.HOST_LIST_VM_DETECTION_OUTPUT.RESPONSE.HOST_LIST.HOST.orValue([]).collate("DETECTION_LIST.DETECTION.QID").flatten().as(qids,
+                            qids.map(qid, string(qid)).as(str_qids, zip(str_qids, qids))
+                          ).keys().as(qids_str, size(qids_str) < 1000 ?
+                            // Put all QIDs into list
+                            [
+                              qids_str
+                            ]
+                          :
+                            // Split QIDs into even and odd
+                            [
+                              qids_str.filter(i, int(i) % 2 == 0),
+                              qids_str.filter(i, int(i) % 2 > 0),
+                            ]
+                          )
+                        ),
+                        "KB_MAP": {},
+                      },
                       "next_page": { 
                         ?"link": ahd_body.?doc.HOST_LIST_VM_DETECTION_OUTPUT.RESPONSE.WARNING.URL
                       },
@@ -88,7 +106,7 @@ program: |
                   {
                     "events": {
                       "error": {
-                        "message": "decode_xml error in ahd:" + string(ahd_body.decode_xml_error) + ":" + (
+                        "message": "decode_xml error in ahd:" + string(ahd_body.decode_xml_error_ahd) + ":" + (
                           string(resp.Body)
                         ),
                       },
@@ -126,8 +144,9 @@ program: |
     !has(state.worklist) ? state : 
       size(state.worklist) > 0 ?
         request("GET", state.url.trim_right("/") + "/api/2.0/fo/knowledge_base/vuln/?" +
+          // TODO: A batch of 1000 QIDs is sent at-a-time to avoid "414 Request-URI Too Long".
           {
-            "ids": [string(state.worklist[0].DETECTION_LIST.QID)],
+            "ids": [state.worklist.HOST_QID_LIST[0].join(",")],
             "action": ["list"],
           }.format_query()
         ).with({
@@ -139,31 +158,55 @@ program: |
           resp.Body.as(xml, try(xml.decode_xml('qualys_api_2_0_kb'), "decode_xml_error_kb").as(kb_body, 
             !has(kb_body.decode_xml_error_kb) 
             ?
-              ({
-                "events": (
-                  has(kb_body.doc.KNOWLEDGE_BASE_VULN_LIST_OUTPUT.RESPONSE.VULN_LIST)
-                  ?
-                    kb_body.doc.KNOWLEDGE_BASE_VULN_LIST_OUTPUT.RESPONSE.VULN_LIST.VULN.map(e, e.with({
-                        "CVE_LIST": e.?CVE_LIST.CVE.orValue([]).map(c, c.ID),
-                    })).as(kb_list, kb_list[0]).as(kb, [{
-                      "message": state.worklist[0].with({
-                        "KNOWLEDGE_BASE": kb,
-                      }).encode_json()
-                    }])
-                  :
-                    [{
-                      "message": state.worklist[0].with({
+              (
+                has(kb_body.doc.KNOWLEDGE_BASE_VULN_LIST_OUTPUT.RESPONSE.VULN_LIST)
+                ?
+                  kb_body.doc.KNOWLEDGE_BASE_VULN_LIST_OUTPUT.RESPONSE.VULN_LIST.VULN.map(e, e.with({
+                      "CVE_LIST": e.?CVE_LIST.CVE.orValue([]).map(c, c.ID),
+                  })).as(kb_list, kb_list.map(k, k.QID).as(qids, zip(qids, kb_list)).as(kb_map,
+                    state.worklist.KB_MAP.with(kb_map).as(wl_kb_map,
+                      size(state.worklist.HOST_QID_LIST) == 1 ?
+                        // Ready to publish events as last set of QIDs for this batch of hosts have been collected. Reset worklist.
+                        {
+                          "events": (
+                            state.worklist.AHD_LIST.map(h, 
+                              h.DETECTION_LIST.DETECTION.map(v,
+                                h.with({
+                                  "DETECTION_LIST": v,
+                                  "KNOWLEDGE_BASE": wl_kb_map[v.QID],
+                                })
+                              )
+                            ).flatten().map(e, 
+                              {"message": e.encode_json()}
+                            )
+                          ),
+                          "worklist": {},
+                          "want_more": has(state.?next_page.link),
+                        }
+                      :
+                        // More QIDs need to be fetched for this batch of hosts. Update HOST_QID_LIST.
+                        {
+                          "events": [],
+                          "worklist": state.worklist.with({
+                            "HOST_QID_LIST": tail(state.worklist.HOST_QID_LIST),
+                            "KB_MAP": wl_kb_map,
+                          }),
+                          "want_more": true,
+                        }
+                    )))
+                :
+                  {
+                    "events": [{
+                      "message": {
                         "KNOWLEDGE_BASE": {
                           "response_error": "response IDs values are missing: " + string(kb_body.?doc.KNOWLEDGE_BASE_VULN_LIST_OUTPUT.RESPONSE.ID_SET.orValue([])),
                         }
-                      }).encode_json()
-                    }]
-                ),
-                "worklist": tail(state.worklist),
-                "want_more": has(state.?next_page.link),
-              }).as(to_publish, to_publish.with({
-                "want_more": to_publish.want_more || size(to_publish.worklist) != 0,
-              })).as(state, 
+                      }.encode_json()
+                    }],
+                    "worklist": {},
+                    "want_more": false,
+                  }
+              ).as(state, 
                 state.want_more && size(state.events) == 0 ?
                   state.with({"events": [{"message": "want_more"}]})
                 :
@@ -173,7 +216,7 @@ program: |
               {
                 "events": {
                   "error": {
-                    "message": "decode_xml error in kb:" + string(kb_body.decode_xml_error) + ":" + (
+                    "message": "decode_xml error in kb:" + string(kb_body.decode_xml_error_kb) + ":" + (
                       size(resp.Body) != 0 ?
                         string(resp.Body)
                       :
@@ -181,6 +224,7 @@ program: |
                     ),
                   },
                 },
+                "worklist": {},
                 "want_more": false,
               }
           ))
@@ -209,6 +253,11 @@ program: |
         }
     )
   )
+
+fields_under_root: true
+fields:
+  _conf:
+    enable_deduplication: {{enable_deduplication}}
 tags:
 {{#if preserve_original_event}}
   - preserve_original_event

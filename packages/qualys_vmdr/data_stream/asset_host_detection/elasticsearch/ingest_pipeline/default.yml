@@ -1,6 +1,9 @@
 ---
 description: Pipeline for processing Asset Host Detection data.
 processors:
+  - drop:
+      description: Ignore want_more placeholder message.
+      if: ctx.message == "want_more"
   - set:
       field: ecs.version
       tag: set_ecs_version
@@ -1543,6 +1546,23 @@ processors:
       target_field: event.original
       ignore_missing: true
       ignore_failure: true
+  - fingerprint:
+      tag: fingerprint_event_original
+      description: >
+        When deduplication is enabled, fingerprint the event.original value 
+        in attempt to prevent the same event from being indexed more than once.
+      if: ctx.event?.original != null && ctx._conf?.enable_deduplication == true
+      fields: 
+        - event.original
+      target_field: _id
+  - set:
+      description: >
+        Prefix the _id with the scan date time because identifiers that generally
+        increase over time based on sorting order generally result in better
+        indexing performance than completely random identifiers.
+      if: ctx.qualys_vmdr?.asset_host_detection?.last_scan_datetime != null && ctx._id != null && ctx._conf?.enable_deduplication == true
+      field: _id
+      value: '{{{qualys_vmdr.asset_host_detection.last_scan_datetime}}}-{{{_id}}}'
   - remove:
       tag: remove_json
       field:
