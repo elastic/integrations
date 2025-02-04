@@ -20,14 +20,10 @@ type errorLinks struct {
 
 type packageError struct {
 	testCase
-	errorLinks
-	serverless        bool
-	serverlessProject string
-	logsDB            bool
-	stackVersion      string
-	teams             []string
-	packageName       string
-	dataStream        string
+	dataError
+	teams       []string
+	packageName string
+	dataStream  string
 }
 
 type packageErrorOptions struct {
@@ -43,20 +39,24 @@ type packageErrorOptions struct {
 	Teams             []string
 }
 
+// Ensures that packageError implements failureObserver interface
+var _ failureObserver = new(packageError)
+
 func newPackageError(options packageErrorOptions) (*packageError, error) {
 	p := packageError{
-		serverless:        options.Serverless,
-		serverlessProject: options.ServerlessProject,
-		logsDB:            options.LogsDB,
-		stackVersion:      options.StackVersion,
-		testCase:          options.TestCase,
-		teams:             options.Teams,
-
-		errorLinks: errorLinks{
-			firstBuild:     options.BuildURL,
-			closedIssueURL: options.ClosedIssueURL,
-			previousBuilds: options.PreviousBuilds,
+		dataError: dataError{
+			serverless:        options.Serverless,
+			serverlessProject: options.ServerlessProject,
+			logsDB:            options.LogsDB,
+			stackVersion:      options.StackVersion,
+			errorLinks: errorLinks{
+				firstBuild:     options.BuildURL,
+				closedIssueURL: options.ClosedIssueURL,
+				previousBuilds: options.PreviousBuilds,
+			},
 		},
+		testCase: options.TestCase,
+		teams:    options.Teams,
 	}
 
 	p.packageName = p.testCase.PackageName()
@@ -129,4 +129,8 @@ func (p *packageError) DescriptionData() map[string]any {
 		"closedIssueURL": p.errorLinks.closedIssueURL,
 		"previousBuilds": p.errorLinks.previousBuilds,
 	}
+}
+
+func (p *packageError) Labels() []string {
+	return nil
 }

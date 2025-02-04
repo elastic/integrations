@@ -70,6 +70,9 @@ steps:
       image: "${LINUX_AGENT_IMAGE}"
       cpu: "8"
       memory: "4G"
+    if: |
+      build.env('BUILDKITE_PULL_REQUEST') != "false" &&
+      build.env('BUILDKITE_PIPELINE_SLUG') == "integrations"
 
   - label: ":sonarqube: Continuous Code Inspection"
     soft_fail: true # FIXME: Coverage is failing, remove this after solving the issue
@@ -83,6 +86,8 @@ steps:
     command: ".buildkite/scripts/run_sonar_scanner.sh"
     artifact_paths:
       - build/test-coverage/coverage_merged.xml
+    if: |
+      build.env('BUILDKITE_PIPELINE_SLUG') == "integrations"
 
   - label: ":junit: Junit annotate"
     plugins:
@@ -108,4 +113,5 @@ steps:
     # run this step when if it is triggered by the daily job
     if: |
       build.source == "trigger_job" &&
+      build.env('BUILDKITE_PIPELINE_SLUG') == "integrations" &&
       build.env('BUILDKITE_TRIGGERED_FROM_BUILD_PIPELINE_SLUG') == "integrations-schedule-daily"
