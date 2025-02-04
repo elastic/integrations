@@ -714,3 +714,305 @@ An example event for `vulnerability` looks as following:
 | tenable_sc.vulnerability.vpr.score | The Vulnerability Priority Rating (VPR) score for the vulnerability. | double |
 | tenable_sc.vulnerability.vuln_pub_date | The date on which the vulnerability was published. | date |
 | tenable_sc.vulnerability.xref | References to third-party information about the vulnerability, exploit, or update associated with the plugin. | keyword |
+
+
+### Vulnerability Patched
+
+This is the `vulnerability_patched` dataset.
+
+An example event for `vulnerability_patched` looks as following:
+
+```json
+{
+    "@timestamp": "2021-09-25T16:08:45.000Z",
+    "agent": {
+        "ephemeral_id": "4e859f73-e37a-4b88-926b-cb67d01e20e1",
+        "id": "f25d13cd-18cc-4e73-822c-c4f849322623",
+        "name": "docker-fleet-agent",
+        "type": "filebeat",
+        "version": "8.10.1"
+    },
+    "data_stream": {
+        "dataset": "tenable_sc.vulnerability_patched",
+        "namespace": "ep",
+        "type": "logs"
+    },
+    "ecs": {
+        "version": "8.11.0"
+    },
+    "elastic_agent": {
+        "id": "f25d13cd-18cc-4e73-822c-c4f849322623",
+        "snapshot": false,
+        "version": "8.10.1"
+    },
+    "event": {
+        "agent_id_status": "verified",
+        "category": [
+            "threat",
+            "vulnerability"
+        ],
+        "created": "2023-09-22T18:02:19.559Z",
+        "dataset": "tenable_sc.vulnerability_patched",
+        "ingested": "2023-09-22T18:02:22Z",
+        "kind": "event",
+        "original": "{\"acceptRisk\":\"0\",\"baseScore\":\"0.0\",\"bid\":\"\",\"checkType\":\"remote\",\"cpe\":\"\",\"cve\":\"CVE-1999-0524\",\"cvssV3BaseScore\":\"0.0\",\"cvssV3TemporalScore\":\"\",\"cvssV3Vector\":\"AV:L/AC:L/PR:N/UI:N/S:U/C:N/I:N/A:N\",\"cvssVector\":\"AV:L/AC:L/Au:N/C:N/I:N/A:N\",\"description\":\"The remote host answers to an ICMP timestamp request.  This allows an attacker to know the date that is set on the targeted machine, which may assist an unauthenticated, remote attacker in defeating time-based authentication protocols.\\n\\nTimestamps returned from machines running Windows Vista / 7 / 2008 / 2008 R2 are deliberately incorrect, but usually within 1000 seconds of the actual system time.\",\"dnsName\":\"_gateway.lxd\",\"exploitAvailable\":\"No\",\"exploitEase\":\"\",\"exploitFrameworks\":\"\",\"family\":{\"id\":\"30\",\"name\":\"General\",\"type\":\"active\"},\"firstSeen\":\"1551284872\",\"hasBeenMitigated\":\"0\",\"hostUniqueness\":\"repositoryID,ip,dnsName\",\"ip\":\"10.238.64.1\",\"ips\":\"10.238.64.1\",\"lastSeen\":\"1632586125\",\"macAddress\":\"00:16:3e:a1:12:f7\",\"netbiosName\":\"\",\"operatingSystem\":\"Linux Kernel 2.6\",\"patchPubDate\":\"-1\",\"pluginID\":\"10114\",\"pluginInfo\":\"10114 (0/1) ICMP Timestamp Request Remote Date Disclosure\",\"pluginModDate\":\"1570190400\",\"pluginName\":\"ICMP Timestamp Request Remote Date Disclosure\",\"pluginPubDate\":\"933508800\",\"pluginText\":\"\\u003cplugin_output\\u003eThe remote clock is synchronized with the local clock.\\n\\u003c/plugin_output\\u003e\",\"port\":\"0\",\"protocol\":\"ICMP\",\"recastRisk\":\"0\",\"repository\":{\"dataFormat\":\"IPv4\",\"description\":\"\",\"id\":\"1\",\"name\":\"Live\",\"sciID\":\"1\"},\"riskFactor\":\"None\",\"seeAlso\":\"\",\"severity\":{\"description\":\"Informative\",\"id\":\"0\",\"name\":\"Info\"},\"solution\":\"Filter out the ICMP timestamp requests (13), and the outgoing ICMP timestamp replies (14).\",\"stigSeverity\":\"\",\"synopsis\":\"It is possible to determine the exact time set on the remote host.\",\"temporalScore\":\"\",\"uniqueness\":\"repositoryID,ip,dnsName\",\"uuid\":\"\",\"version\":\"1.48\",\"vprContext\":\"[{\\\"id\\\":\\\"age_of_vuln\\\",\\\"name\\\":\\\"Vulnerability Age\\\",\\\"type\\\":\\\"string\\\",\\\"value\\\":\\\"730 days +\\\"},{\\\"id\\\":\\\"cvssV3_impactScore\\\",\\\"name\\\":\\\"CVSS v3 Impact Score\\\",\\\"type\\\":\\\"number\\\",\\\"value\\\":0},{\\\"id\\\":\\\"exploit_code_maturity\\\",\\\"name\\\":\\\"Exploit Code Maturity\\\",\\\"type\\\":\\\"string\\\",\\\"value\\\":\\\"Unproven\\\"},{\\\"id\\\":\\\"product_coverage\\\",\\\"name\\\":\\\"Product Coverage\\\",\\\"type\\\":\\\"string\\\",\\\"value\\\":\\\"Very High\\\"},{\\\"id\\\":\\\"threat_intensity_last_28\\\",\\\"name\\\":\\\"Threat Intensity\\\",\\\"type\\\":\\\"string\\\",\\\"value\\\":\\\"Very Low\\\"},{\\\"id\\\":\\\"threat_recency\\\",\\\"name\\\":\\\"Threat Recency\\\",\\\"type\\\":\\\"string\\\",\\\"value\\\":\\\"No recorded events\\\"},{\\\"id\\\":\\\"threat_sources_last_28\\\",\\\"name\\\":\\\"Threat Sources\\\",\\\"type\\\":\\\"string\\\",\\\"value\\\":\\\"No recorded events\\\"}]\",\"vprScore\":\"0.8\",\"vulnPubDate\":\"788961600\",\"xref\":\"CWE #200\"}",
+        "type": [
+            "info"
+        ]
+    },
+    "host": {
+        "domain": "lxd",
+        "hostname": "_gateway.lxd",
+        "ip": [
+            "10.238.64.1"
+        ],
+        "mac": [
+            "00-16-3E-A1-12-F7"
+        ],
+        "name": "_gateway",
+        "os": {
+            "full": "Linux Kernel 2.6"
+        }
+    },
+    "input": {
+        "type": "httpjson"
+    },
+    "network": {
+        "transport": "icmp"
+    },
+    "related": {
+        "hosts": [
+            "_gateway.lxd",
+            "_gateway"
+        ],
+        "ip": [
+            "10.238.64.1"
+        ]
+    },
+    "tags": [
+        "preserve_original_event",
+        "forwarded",
+        "tenable_sc-vulnerability_patched"
+    ],
+    "tenable_sc": {
+        "vulnerability": {
+            "accept_risk": "0",
+            "age": 940,
+            "base_score": "0.0",
+            "check_type": "remote",
+            "custom_hash": "qVUXK2YtClsBlXncLYHLhVzynYK4hG2NbT0hY6guQm0=",
+            "cvss_v3_vector": "AV:L/AC:L/PR:N/UI:N/S:U/C:N/I:N/A:N",
+            "cvss_vector": "AV:L/AC:L/Au:N/C:N/I:N/A:N",
+            "dns": {
+                "name": "_gateway.lxd"
+            },
+            "exploit": {
+                "is_available": false
+            },
+            "family": {
+                "id": "30",
+                "name": "General",
+                "type": "active"
+            },
+            "first_seen": "2019-02-27T16:27:52.000Z",
+            "has_been_mitigated": false,
+            "host_uniqueness": "repositoryID,ip,dnsName",
+            "id": "1_10.238.64.1__gateway.lxd",
+            "ip": "10.238.64.1",
+            "is_vulnerability_published": true,
+            "last_seen": "2021-09-25T16:08:45.000Z",
+            "mac": "00-16-3E-A1-12-F7",
+            "operating_system": "Linux Kernel 2.6",
+            "patch": {
+                "is_published": false
+            },
+            "plugin": {
+                "id": "10114",
+                "info": "10114 (0/1) ICMP Timestamp Request Remote Date Disclosure",
+                "is_modified": true,
+                "is_published": true,
+                "mod_date": "2019-10-04T12:00:00.000Z",
+                "name": "ICMP Timestamp Request Remote Date Disclosure",
+                "pub_date": "1999-08-01T12:00:00.000Z",
+                "text": "<plugin_output>The remote clock is synchronized with the local clock.\n</plugin_output>"
+            },
+            "port": "0",
+            "protocol": "ICMP",
+            "recast_risk": "0",
+            "repository": {
+                "data_format": "IPv4",
+                "id": "1",
+                "name": "Live",
+                "sci_id": "1"
+            },
+            "risk_factor": "None",
+            "severity": {
+                "description": "Informative",
+                "id": "0"
+            },
+            "solution": "Filter out the ICMP timestamp requests (13), and the outgoing ICMP timestamp replies (14).",
+            "synopsis": "It is possible to determine the exact time set on the remote host.",
+            "uniqueness": "repositoryID,ip,dnsName",
+            "version": "1.48",
+            "vpr": {
+                "context": {
+                    "_original": [
+                        {
+                            "id": "age_of_vuln",
+                            "name": "Vulnerability Age",
+                            "type": "string",
+                            "value": "730 days +"
+                        },
+                        {
+                            "id": "cvssV3_impactScore",
+                            "name": "CVSS v3 Impact Score",
+                            "type": "number",
+                            "value": 0
+                        },
+                        {
+                            "id": "exploit_code_maturity",
+                            "name": "Exploit Code Maturity",
+                            "type": "string",
+                            "value": "Unproven"
+                        },
+                        {
+                            "id": "product_coverage",
+                            "name": "Product Coverage",
+                            "type": "string",
+                            "value": "Very High"
+                        },
+                        {
+                            "id": "threat_intensity_last_28",
+                            "name": "Threat Intensity",
+                            "type": "string",
+                            "value": "Very Low"
+                        },
+                        {
+                            "id": "threat_recency",
+                            "name": "Threat Recency",
+                            "type": "string",
+                            "value": "No recorded events"
+                        },
+                        {
+                            "id": "threat_sources_last_28",
+                            "name": "Threat Sources",
+                            "type": "string",
+                            "value": "No recorded events"
+                        }
+                    ],
+                    "age_of_vuln": "730 days +",
+                    "cvssV3_impactScore": 0,
+                    "exploit_code_maturity": "Unproven",
+                    "product_coverage": "Very High",
+                    "threat_intensity_last_28": "Very Low",
+                    "threat_recency": "No recorded events",
+                    "threat_sources_last_28": "No recorded events"
+                },
+                "score": 0.8
+            },
+            "vuln_pub_date": "1995-01-01T12:00:00.000Z",
+            "xref": [
+                "CWE #200"
+            ]
+        }
+    },
+    "vulnerability": {
+        "category": [
+            "General"
+        ],
+        "classification": "CVSS",
+        "description": "The remote host answers to an ICMP timestamp request.  This allows an attacker to know the date that is set on the targeted machine, which may assist an unauthenticated, remote attacker in defeating time-based authentication protocols.\n\nTimestamps returned from machines running Windows Vista / 7 / 2008 / 2008 R2 are deliberately incorrect, but usually within 1000 seconds of the actual system time.",
+        "enumeration": "CVE",
+        "id": [
+            "CVE-1999-0524"
+        ],
+        "reference": [
+            "https://cve.mitre.org/cgi-bin/cvename.cgi?name=CVE-1999-0524"
+        ],
+        "scanner": {
+            "vendor": "Tenable"
+        },
+        "score": {
+            "base": 0,
+            "version": "3.0"
+        },
+        "severity": "Info"
+    }
+}
+```
+
+**Exported fields**
+
+| Field | Description | Type |
+|---|---|---|
+| @timestamp | Event timestamp. | date |
+| cloud.image.id | Image ID for the cloud instance. | keyword |
+| data_stream.dataset | Data stream dataset. | constant_keyword |
+| data_stream.namespace | Data stream namespace. | constant_keyword |
+| data_stream.type | Data stream type. | constant_keyword |
+| event.dataset | Event dataset. | constant_keyword |
+| event.module | Event module. | constant_keyword |
+| host.containerized | If the host is a container. | boolean |
+| host.os.build | OS build information. | keyword |
+| host.os.codename | OS codename, if any. | keyword |
+| input.type | Input type | keyword |
+| log.offset | Log offset | long |
+| tenable_sc.vulnerability.accept_risk | N/A. | keyword |
+| tenable_sc.vulnerability.age | The time in days between the first and last time the vulnerability was seen. | long |
+| tenable_sc.vulnerability.base_score | Intrinsic and fundamental characteristics of a vulnerability that are constant over time and user environments. | keyword |
+| tenable_sc.vulnerability.bid | The Bugtraq ID. | keyword |
+| tenable_sc.vulnerability.check_type | The type of the compliance check that detected the vulnerability. | keyword |
+| tenable_sc.vulnerability.cpe | The Common Platform Enumeration (CPE) number for the plugin. | keyword |
+| tenable_sc.vulnerability.custom_hash | Hash of fields plugin_id, port, protocol, tenable_sc.vulnerability.id for uniqueidentifier of an vulnerability. | keyword |
+| tenable_sc.vulnerability.cvss_v3_vector | Additional CVSSv3 metrics for the vulnerability. | keyword |
+| tenable_sc.vulnerability.cvss_vector | Additional CVSSv2 metrics for the vulnerability. | keyword |
+| tenable_sc.vulnerability.dns.name | DNS name. | keyword |
+| tenable_sc.vulnerability.exploit.ease | Description of how easy it is to exploit the vulnerability. | keyword |
+| tenable_sc.vulnerability.exploit.frameworks | Framework used by exploit. | keyword |
+| tenable_sc.vulnerability.exploit.is_available | A value specifying whether a public exploit exists for the vulnerability. | boolean |
+| tenable_sc.vulnerability.family.id | Family id of the vulnarebility. | keyword |
+| tenable_sc.vulnerability.family.name | Family name of the vulnarebility. | keyword |
+| tenable_sc.vulnerability.family.type | Family type of the vulnarebility. | keyword |
+| tenable_sc.vulnerability.first_seen | The time and date when a scan first identified the vulnerability. | date |
+| tenable_sc.vulnerability.has_been_mitigated | Indicates whether the vulnerability has been mitigated. | boolean |
+| tenable_sc.vulnerability.host_uniqueness | Name of the fields used to determine the uniqueness of the host. | keyword |
+| tenable_sc.vulnerability.id | String containing the values of the field names mentioned in uniqueness concatenated with '_'. | keyword |
+| tenable_sc.vulnerability.ip | The ip address of the asset where a scan found the vulnerability. | keyword |
+| tenable_sc.vulnerability.is_vulnerability_published | Flag for if vulnerablity is published. | boolean |
+| tenable_sc.vulnerability.last_seen | The time and date when a scan most recently identified the vulnerability. | date |
+| tenable_sc.vulnerability.mac | The MAC address of the asset where a scan found the vulnerability. | keyword |
+| tenable_sc.vulnerability.netbios.name | NetBIOS name of the asset where a scan found the vulnerability. | keyword |
+| tenable_sc.vulnerability.operating_system | The operating system of the asset where a scan found the vulnerability. | keyword |
+| tenable_sc.vulnerability.patch.is_published | Flag for if vulnerablity is patched. | boolean |
+| tenable_sc.vulnerability.patch.pub_date | The date on which the patch for the vulnerability was published. | date |
+| tenable_sc.vulnerability.plugin.id | The ID of the plugin. | keyword |
+| tenable_sc.vulnerability.plugin.info | Information regarding the plugin. | keyword |
+| tenable_sc.vulnerability.plugin.is_modified | Flag for if plugin is modified. | boolean |
+| tenable_sc.vulnerability.plugin.is_published | Flag for if plugin is published. | boolean |
+| tenable_sc.vulnerability.plugin.mod_date | The date on which the vulnerability was modified. | date |
+| tenable_sc.vulnerability.plugin.name | The name of the plugin. | keyword |
+| tenable_sc.vulnerability.plugin.pub_date | The date on which the vulnerability was published. | date |
+| tenable_sc.vulnerability.plugin.text | Text provided by plugin. (Usually plugin output text). | keyword |
+| tenable_sc.vulnerability.port | The port the scanner used to communicate with the asset. | keyword |
+| tenable_sc.vulnerability.protocol | The protocol the scanner used to communicate with the asset. | keyword |
+| tenable_sc.vulnerability.recast_risk | Modified the severity risk measure of vulnerabilities using recast rules. | keyword |
+| tenable_sc.vulnerability.repository.data_format | The data format of the repository. | keyword |
+| tenable_sc.vulnerability.repository.description | The description of the repository. | keyword |
+| tenable_sc.vulnerability.repository.id | The ID of the repository. | keyword |
+| tenable_sc.vulnerability.repository.name | The name of the repository. | keyword |
+| tenable_sc.vulnerability.repository.sci_id | N/A. | keyword |
+| tenable_sc.vulnerability.risk_factor | The risk factor associated with the vulnerability. | keyword |
+| tenable_sc.vulnerability.severity.description | The description of the severity. | keyword |
+| tenable_sc.vulnerability.severity.id | The code for the severity assigned when a user recasts the risk associated with the vulnerability. | keyword |
+| tenable_sc.vulnerability.solution | Remediation information for the vulnerability. | keyword |
+| tenable_sc.vulnerability.stig_severity | Security Technical Implementation Guide (STIG) severity code for the vulnerability. | keyword |
+| tenable_sc.vulnerability.synopsis | Brief description of the vulnerability. | keyword |
+| tenable_sc.vulnerability.temporal_score | Characteristics of a vulnerability that change over time but not among user environments. | keyword |
+| tenable_sc.vulnerability.uniqueness | Name of the fields used to determine the uniqueness of the vulnerability. | keyword |
+| tenable_sc.vulnerability.uuid | N/A. | keyword |
+| tenable_sc.vulnerability.version | The version of the vulnerability. | keyword |
+| tenable_sc.vulnerability.vpr.context | The matrix of Vulnerability Priority Rating (VPR) for the vulnerability. | flattened |
+| tenable_sc.vulnerability.vpr.score | The Vulnerability Priority Rating (VPR) score for the vulnerability. | double |
+| tenable_sc.vulnerability.vuln_pub_date | The date on which the vulnerability was published. | date |
+| tenable_sc.vulnerability.xref | References to third-party information about the vulnerability, exploit, or update associated with the plugin. | keyword |
+
