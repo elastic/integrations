@@ -1053,3 +1053,119 @@ An example event for `global_cluster_performance` looks as following:
     ]
 }
 ```
+
+### Node Statistics
+
+The `node_statistics` dataset provides metrics related to the performance of the Rubrik cluster nodes.
+
+**ECS Field Reference**
+
+Please refer to the following [document](https://www.elastic.co/guide/en/ecs/current/ecs-field-reference.html) for detailed information on ECS fields.
+
+**Exported fields**
+
+| Field | Description | Type | Unit | Metric Type |
+|---|---|---|---|---|
+| @timestamp | Event timestamp. | date |  |  |
+| data_stream.dataset | Data stream dataset. | constant_keyword |  |  |
+| data_stream.namespace | Data stream namespace. | constant_keyword |  |  |
+| data_stream.type | Data stream type. | constant_keyword |  |  |
+| rubrik.cluster.id | Rubrik cluster UUID. | keyword |  |  |
+| rubrik.cluster.name | The name of the Rurik cluster. | keyword |  |  |
+| rubrik.cluster.type | The type of the cluster (e.g., OnPrem, Robo, Polaris). | keyword |  |  |
+| rubrik.node_statistics.cpu_stat.pct | CPU utilization of the node. | integer | percent | gauge |
+| rubrik.node_statistics.iops.reads_per_second | Input/output read operations per second. | long | byte | gauge |
+| rubrik.node_statistics.iops.writes_per_second | Input/output write operations per second. | long | byte | gauge |
+| rubrik.node_statistics.network.bytes_received | Data received over the network, in bytes per second | long | byte | gauge |
+| rubrik.node_statistics.network.bytes_transmitted | Data transmitted over the network, in bytes per second. | long | byte | gauge |
+| rubrik.node_statistics.node_id | Rubrik cluster node ID. | keyword |  |  |
+| rubrik.node_statistics.throughput.read_bytes_per_second | Read Input/output throughput, in bytes per second. | long | byte | gauge |
+| rubrik.node_statistics.throughput.write_bytes_per_second | Write Input/output throughput, in bytes per second. | long | byte | gauge |
+| rubrik.node_statistics.time | Time at which the performance metrics were retrieved. | date |  |  |
+| rubrik.node_statistics.used_memory.pct | Memory used on the node, in percentage. | integer | percent | gauge |
+
+
+An example event for `node_statistics` looks as following:
+
+```json
+{
+    "agent": {
+        "name": "docker-fleet-agent",
+        "id": "ba00d2e5-7a61-421c-ac7e-71f3a26344a6",
+        "ephemeral_id": "ab946963-2371-42e5-aed8-a25f4d04356a",
+        "type": "filebeat",
+        "version": "8.16.0"
+    },
+    "rubrik": {
+        "cluster": {
+            "name": "cluster-1",
+            "id": "c9382b9a-68ed-4464-94a9-aa51e9292a6a",
+            "type": "Robo"
+        },
+        "node_statistics": {
+            "used_memory": {
+                "pct": 82
+            },
+            "iops": {
+                "reads_per_second": 9,
+                "writes_per_second": 30
+            },
+            "throughput": {
+                "read_bytes_per_second": 98374,
+                "write_bytes_per_second": 505112
+            },
+            "time": "2025-01-04T00:11:00.000Z",
+            "cpu_stat": {
+                "pct": 30
+            },
+            "node_id": "VXVW241EE7D12",
+            "network": {
+                "bytes_transmitted": 1519,
+                "bytes_received": 212
+            }
+        }
+    },
+    "@timestamp": "2025-01-04T00:11:00.000Z",
+    "ecs": {
+        "version": "8.16.0"
+    },
+    "data_stream": {
+        "namespace": "default",
+        "type": "metrics",
+        "dataset": "rubrik.node_statistics"
+    },
+    "elastic_agent": {
+        "id": "ba00d2e5-7a61-421c-ac7e-71f3a26344a6",
+        "version": "8.16.0",
+        "snapshot": false
+    },
+    "host": {
+        "hostname": "docker-fleet-agent",
+        "os": {
+            "kernel": "6.8.0-52-generic",
+            "name": "Wolfi",
+            "type": "linux",
+            "version": "20230201",
+            "platform": "wolfi"
+        },
+        "containerized": false,
+        "ip": [
+            "172.18.0.7"
+        ],
+        "name": "docker-fleet-agent",
+        "mac": [
+            "02-42-AC-12-00-07"
+        ],
+        "architecture": "x86_64"
+    },
+    "event": {
+        "agent_id_status": "verified",
+        "ingested": "2025-02-04T10:44:52Z",
+        "kind": "metric",
+        "dataset": "rubrik.node_statistics"
+    },
+    "tags": [
+        "rubrik.node_statistics"
+    ]
+}
+```
