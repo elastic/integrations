@@ -84,8 +84,6 @@ the masters won't be visible. In these cases it won't be possible to use `schedu
 The container-logs dataset requires access to the log files in each Kubernetes node where the container logs are stored.
 This defaults to `/var/log/containers/*${kubernetes.container.id}.log`.
 
-<<<<<<< HEAD
-=======
 It uses the [Filestream input](https://www.elastic.co/guide/en/beats/filebeat/current/filebeat-input-filestream.html)
 and defines it's ID as: `id: kubernetes-container-logs-${kubernetes.pod.name}-${kubernetes.container.id}`. For every
 container the Elastic-Agent will generate an instance of the Filestream input harvesting the `paths` defined in the
@@ -97,7 +95,6 @@ configuration rendered, refer to:
 - [Kubernetes autodiscovery with Elastic Agent](https://www.elastic.co/guide/en/fleet/current/elastic-agent-kubernetes-autodiscovery.html)
 - [Conditions based autodiscover](https://www.elastic.co/guide/en/fleet/current/conditions-based-autodiscover.html)
 
->>>>>>> 7801e00866ec0b5d4f4e4215f6b1107851083c87
 #### Routing
 
 The container-logs data stream allows routing logs to a different *dataset* or *namespace* using pod annotations.
