@@ -38,7 +38,7 @@ An example event for `sflow` looks as following:
         "port": 443
     },
     "ecs": {
-        "version": "8.11.0"
+        "version": "8.17.0"
     },
     "event": {
         "action": "SFLOW_5",
