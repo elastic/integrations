@@ -125,8 +125,6 @@ with_mage() {
 
     local install_packages=(
             "github.com/magefile/mage"
-            "github.com/elastic/go-licenser"
-            "golang.org/x/tools/cmd/goimports"
             "github.com/jstemmer/go-junit-report"
             "gotest.tools/gotestsum"
     )
