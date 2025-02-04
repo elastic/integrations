@@ -25,6 +25,9 @@ program: |
   .decode_json().as(body,
     [   
         [{
+            "event": {
+                "dataset": "logstash.health_report.node",
+            },
             "logstash.node": {
             "name":body.name,
             "address":body.http_address,
@@ -36,6 +39,9 @@ program: |
         }],
         body.indicators.pipelines.indicators.as(pipelines, // pipelines = body.indicators.pipelines.indicators
               pipelines.map(pipeline_name, pipelines[pipeline_name].as(pipeline, { // pipeline = pipelines[pipeline_name]
+                    "event": {
+                        "dataset": "logstash.health_report.pipeline",
+                    },
                     "logstash": {
                         "node": {
                             "name": body.name,
