@@ -105,7 +105,7 @@ An example event for `securesphere` looks as following:
         "type": "logs"
     },
     "ecs": {
-        "version": "8.11.0"
+        "version": "8.17.0"
     },
     "elastic_agent": {
         "id": "0412638f-dd94-4c0e-b349-e99a0886d9f0",
@@ -118,7 +118,7 @@ An example event for `securesphere` looks as following:
         "dataset": "imperva.securesphere",
         "ingested": "2023-12-01T09:10:18Z",
         "kind": "event",
-        "original": "\u003c14\u003eCEF:0|Imperva Inc.|SecureSphere|15.1.0|User logged in|User admin logged in from 81.2.69.142.|High|suser=admin rt=Oct 05 2023 18:33:02 cat=SystemEvent",
+        "original": "<14>CEF:0|Imperva Inc.|SecureSphere|15.1.0|User logged in|User admin logged in from 81.2.69.142.|High|suser=admin rt=Oct 05 2023 18:33:02 cat=SystemEvent",
         "severity": 7
     },
     "imperva": {
