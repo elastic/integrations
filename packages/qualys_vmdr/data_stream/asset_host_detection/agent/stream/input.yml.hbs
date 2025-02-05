@@ -173,7 +173,12 @@ program: |
                               h.DETECTION_LIST.DETECTION.map(v,
                                 h.with({
                                   "DETECTION_LIST": v,
-                                  "KNOWLEDGE_BASE": wl_kb_map[v.QID],
+                                  "KNOWLEDGE_BASE": try(wl_kb_map[v.QID], "map_has_no_key_error").as(kb_qid, 
+                                    !has(kb_qid.map_has_no_key_error)? 
+                                      kb_qid
+                                    : 
+                                      {}
+                                  ),
                                 })
                               )
                             ).flatten().map(e, 

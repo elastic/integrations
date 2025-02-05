@@ -1535,10 +1535,14 @@ processors:
         - append:
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
-  # Handle KNOWLEDGE_BASE json
+  # Handle KNOWLEDGE_BASE
+  - append:
+      field: error.message
+      if: ctx.json?.KNOWLEDGE_BASE == null || ctx.json.KNOWLEDGE_BASE.size() == 0
+      value: 'Qualys QID not found in the Knowledge Base'
   - pipeline:
       name: '{{ IngestPipeline "pipeline_knowledge_base" }}'
-      if: ctx.json?.KNOWLEDGE_BASE != null
+      if: ctx.json?.KNOWLEDGE_BASE != null && ctx.json.KNOWLEDGE_BASE.size() > 0
       tag: pipeline_knowledge_base
       ignore_missing_pipeline: true
   - rename:
