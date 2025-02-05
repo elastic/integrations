@@ -1018,6 +1018,8 @@ An example event for `threat_intel_malware_customer` looks as following:
 | mimecast.type | The indicator type, can for example be "domain, email, FileHash-SHA256". | keyword |
 | mimecast.valid_from | The valid from date. | date |
 | mimecast.value | The value of the indicator. | keyword |
+| threat.indicator.first_seen | The date and time when intelligence source first reported sighting this indicator. | date |
+| threat.indicator.modified_at | The date and time when intelligence source last modified information for this indicator. | date |
 
 
 ### Threat Intel Feed Malware: Grid
@@ -1134,6 +1136,8 @@ An example event for `threat_intel_malware_grid` looks as following:
 | mimecast.type | The indicator type, can for example be "domain, email, FileHash-SHA256". | keyword |
 | mimecast.valid_from | The valid from date. | date |
 | mimecast.value | The value of the indicator. | keyword |
+| threat.indicator.first_seen | The date and time when intelligence source first reported sighting this indicator. | date |
+| threat.indicator.modified_at | The date and time when intelligence source last modified information for this indicator. | date |
 
 
 ### TTP Attachment Logs
