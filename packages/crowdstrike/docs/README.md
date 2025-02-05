@@ -1609,6 +1609,7 @@ For example, if your Crowdstrike event contains `id: 123`, `aid: 456`, and `cid:
 | crowdstrike.LogonType |  | keyword |
 | crowdstrike.MACAddress |  | keyword |
 | crowdstrike.MACPrefix |  | keyword |
+| crowdstrike.MD5HashData |  | keyword |
 | crowdstrike.MD5String |  | keyword |
 | crowdstrike.MLModelVersion |  | keyword |
 | crowdstrike.MachOSubType |  | keyword |
@@ -1783,6 +1784,7 @@ For example, if your Crowdstrike event contains `id: 123`, `aid: 456`, and `cid:
 | crowdstrike.RpcOpNum |  | keyword |
 | crowdstrike.RunDllInvocationCount |  | long |
 | crowdstrike.SHA1String |  | keyword |
+| crowdstrike.SHA256HashData |  | keyword |
 | crowdstrike.SHA256String |  | keyword |
 | crowdstrike.SVGID |  | keyword |
 | crowdstrike.SVUID |  | keyword |
@@ -1976,6 +1978,7 @@ For example, if your Crowdstrike event contains `id: 123`, `aid: 456`, and `cid:
 | destination.ip | IP address of the destination (IPv4 or IPv6). | ip |
 | destination.port | Port of the destination. | long |
 | device.id | The unique identifier of a device. The identifier must not change across application sessions but stay fixed for an instance of a (mobile) device. On iOS, this value must be equal to the vendor identifier (https://developer.apple.com/documentation/uikit/uidevice/1620059-identifierforvendor). On Android, this value must be equal to the Firebase Installation ID or a globally unique UUID which is persisted across sessions in your application. For GDPR and data protection law reasons this identifier should not carry information that would allow to identify a user. | keyword |
+| dll.Ext.size | Size of the dll executable. | long |
 | dns.question.name | The name being queried. If the name field contains non-printable characters (below 32 or above 126), those characters should be represented as escaped base 10 integers (\DDD). Back slashes and quotes should be escaped. Tabs, carriage returns, and line feeds should be converted to \t, \r, and \n respectively. | keyword |
 | dns.question.registered_domain | The highest registered domain, stripped of the subdomain. For example, the registered domain for "foo.example.com" is "example.com". This value can be determined precisely with a list like the public suffix list (https://publicsuffix.org). Trying to approximate this by simply taking the last two labels will not work well for TLDs such as "co.uk". | keyword |
 | dns.question.subdomain | The subdomain is all of the labels under the registered_domain. If the domain has multiple levels of subdomain, such as "sub2.sub1.example.com", the subdomain field should contain "sub2.sub1", with no trailing period. | keyword |
@@ -2005,6 +2008,8 @@ For example, if your Crowdstrike event contains `id: 123`, `aid: 456`, and `cid:
 | file.path.text | Multi-field of `file.path`. | match_only_text |
 | file.size | File size in bytes. Only relevant when `file.type` is "file". | long |
 | file.type | File type (file, dir, or symlink). | keyword |
+| group.Ext.real.id |  | keyword |
+| group.id | Unique identifier for the group on the system/platform. | keyword |
 | host.domain | Name of the domain of which the host is a member. For example, on Windows this could be the host's Active Directory domain or NetBIOS domain name. For Linux this could be the domain of the host's LDAP provider. | keyword |
 | host.geo.city_name | City name. | keyword |
 | host.geo.continent_name | Name of the continent. | keyword |
@@ -2035,6 +2040,7 @@ For example, if your Crowdstrike event contains `id: 123`, `aid: 456`, and `cid:
 | observer.type | The type of the observer the data is coming from. There is no predefined list of observer types. Some examples are `forwarder`, `firewall`, `ids`, `ips`, `proxy`, `poller`, `sensor`, `APM server`. | constant_keyword |
 | observer.vendor | Vendor name of the observer. | constant_keyword |
 | observer.version | Observer version. | keyword |
+| process.Ext.token.integrity_level_name |  | keyword |
 | process.args | Array of process arguments, starting with the absolute path to the executable. May be filtered to protect sensitive information. | keyword |
 | process.args_count | Length of the process.args array. This field can be useful for querying or performing bucket analysis on how many arguments were provided to start a process. More arguments may be an indication of suspicious activity. | long |
 | process.command_line | Full command line that started the process, including the absolute path to the executable, and all arguments. Some arguments may be filtered to protect sensitive information. | wildcard |
@@ -2042,11 +2048,14 @@ For example, if your Crowdstrike event contains `id: 123`, `aid: 456`, and `cid:
 | process.end | The time the process ended. | date |
 | process.entity_id | Unique identifier for the process. The implementation of this is specified by the data source, but some examples of what could be used here are a process-generated UUID, Sysmon Process GUIDs, or a hash of some uniquely identifying components of a process. Constructing a globally unique identifier is a common practice to mitigate PID reuse as well as to identify a specific process over time, across multiple monitored hosts. | keyword |
 | process.executable | Absolute path to the process executable. | keyword |
+| process.executable.caseless | Multi-field of `process.executable`. | keyword |
 | process.executable.text | Multi-field of `process.executable`. | match_only_text |
 | process.exit_code | The exit code of the process, if this is a termination event. The field should be absent if there is no exit code for the event (e.g. process start). | long |
+| process.group.id |  | keyword |
 | process.hash.md5 | MD5 hash. | keyword |
 | process.hash.sha256 | SHA256 hash. | keyword |
 | process.name | Process name. Sometimes called program name or similar. | keyword |
+| process.name.caseless | Multi-field of `process.name`. | keyword |
 | process.name.text | Multi-field of `process.name`. | match_only_text |
 | process.parent.entity_id | Unique identifier for the process. The implementation of this is specified by the data source, but some examples of what could be used here are a process-generated UUID, Sysmon Process GUIDs, or a hash of some uniquely identifying components of a process. Constructing a globally unique identifier is a common practice to mitigate PID reuse as well as to identify a specific process over time, across multiple monitored hosts. | keyword |
 | process.parent.name | Process name. Sometimes called program name or similar. | keyword |
@@ -2091,6 +2100,7 @@ For example, if your Crowdstrike event contains `id: 123`, `aid: 456`, and `cid:
 | url.scheme | Scheme of the request, such as "https". Note: The `:` is not part of the scheme. | keyword |
 | url.subdomain | The subdomain portion of a fully qualified domain name includes all of the names except the host name under the registered_domain.  In a partially qualified domain, or if the the qualification level of the full name cannot be determined, subdomain contains all of the names below the registered domain. For example the subdomain portion of "www.east.mydomain.co.uk" is "east". If the domain has multiple levels of subdomain, such as "sub2.sub1.example.com", the subdomain field should contain "sub2.sub1", with no trailing period. | keyword |
 | url.top_level_domain | The effective top level domain (eTLD), also known as the domain suffix, is the last part of the domain name. For example, the top level domain for example.com is "com". This value can be determined precisely with a list like the public suffix list (https://publicsuffix.org). Trying to approximate this by simply taking the last label will not work well for effective TLDs such as "co.uk". | keyword |
+| user.Ext.real.id |  | keyword |
 | user.domain | Name of the directory the user is a member of. For example, an LDAP or Active Directory domain name. | keyword |
 | user.email | User email address. | keyword |
 | user.full_name | User's full name, if available. | keyword |
