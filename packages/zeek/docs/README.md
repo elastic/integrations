@@ -1537,6 +1537,7 @@ The `known_certs` dataset captures information about SSL/TLS certificates seen o
 | tls.server.x509.subject.common_name | List of common names (CN) of subject. | keyword |
 | tls.server.x509.subject.distinguished_name | Distinguished name (DN) of the certificate subject entity. | keyword |
 
+
 ### known_hosts
 
 The `known_hosts` dataset simply records a timestamp and an IP address when Zeek observes a new system on the local network.. See the [documentation](https://docs.zeek.org/en/master/logs/known-and-software.html#known-hosts-log) for more details.
