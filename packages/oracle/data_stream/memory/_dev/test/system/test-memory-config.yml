@@ -8,9 +8,26 @@ agent:
     contents: |
       set -eu
       if grep wolfi /etc/os-release > /dev/null ; then
-        apk update && apk add libaio wget unzip
+        apk update
+        apk add libaio wget unzip
+      elif grep "Red Hat" /etc/os-release > /dev/null ; then
+        microdnf update
+        microdnf install -y libaio wget unzip
+        microdnf clean all
+      elif grep "Ubuntu" /etc/os-release > /dev/null ; then
+        apt-get update
+        if grep "Ubuntu 24" /etc/os-release > /dev/null; then
+            # Error when installing libaio1
+            # Package libaio1 is not available, but is referred to by another package.
+            apt-get -y install libaio1t64 wget unzip
+            # Applied fix described in: https://forums.oracle.com/ords/apexds/post/instant-client-on-ubuntu-24-04-noble-numbat-7244
+            ln -s /usr/lib/x86_64-linux-gnu/libaio.so.1t64 /usr/lib/x86_64-linux-gnu/libaio.so.1
+        else
+            apt-get -y install libaio1 wget unzip
+        fi
       else
-        apt-get update && apt-get -y install libaio1 wget unzip
+        echo "Unsupported OS"
+        exit 1
       fi
       mkdir -p /opt/oracle
       cd /opt/oracle
