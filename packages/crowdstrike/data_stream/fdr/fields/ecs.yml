@@ -76,6 +76,8 @@
 - external: ecs
   name: file.type
 - external: ecs
+  name: group.id
+- external: ecs
   name: host.geo.city_name
 - external: ecs
   name: host.geo.continent_name
@@ -137,10 +139,26 @@
   name: process.entity_id
 - external: ecs
   name: process.executable
+  multi_fields:
+    - name: caseless
+      ignore_above: 1024
+      normalizer: lowercase
+      type: keyword
+    - name: text
+      type: match_only_text
 - external: ecs
   name: process.name
+  multi_fields:
+    - name: caseless
+      ignore_above: 1024
+      normalizer: lowercase
+      type: keyword
+    - name: text
+      type: match_only_text
 - external: ecs
   name: process.exit_code
+- name: process.group.id
+  type: keyword
 - external: ecs
   name: process.hash.md5
 - external: ecs
