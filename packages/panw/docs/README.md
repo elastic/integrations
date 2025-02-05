@@ -697,11 +697,7 @@ An example event for `panos` looks as following:
 | tls.client.server_name | Also called an SNI, this tells the server which hostname to which the client is attempting to connect to. When this value is available, it should get copied to `destination.domain`. | keyword |
 | tls.client.x509.issuer.common_name | List of common name (CN) of issuing certificate authority. | keyword |
 | tls.client.x509.public_key_size | The size of the public key space in bits. | long |
-<<<<<<< HEAD
-| tls.client.x509.serial_number | Unique serial number issued by the certificate authority. For consistency, if this value is alphanumeric, it should be formatted without colons and uppercase characters. | keyword |
-=======
 | tls.client.x509.serial_number | Unique serial number issued by the certificate authority. For consistency, this should be encoded in base 16 and formatted without colons and uppercase characters. | keyword |
->>>>>>> fd8c7f80cf9ad2cf4617b47f93ce304262594ad6
 | tls.client.x509.subject.common_name | List of common names (CN) of subject. | keyword |
 | tls.client.x509.version_number | Version of x509 format. | keyword |
 | tls.curve | String indicating the curve used for the given cipher, when applicable. | keyword |
