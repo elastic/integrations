@@ -12,7 +12,7 @@ processors:
       if: ctx.event?.original == null && (ctx.tags != null && (ctx.tags.contains('preserve_original_event')))         
   - json:
       field: message
-      target_field: o365.teams.call.quality
+      target_field: o365.metrics.teams.call.quality
       on_failure:
         - append:
             field: error.message
@@ -20,6 +20,7 @@ processors:
 
   - script:
       lang: painless
+      ignore_failure: true
       source: |
         // Helper function to convert camelCase to snake_case
         String camelToSnake(String str) {
@@ -64,12 +65,13 @@ processors:
         }
 
         // Apply conversion to the document's source
-        if (ctx.o365?.teams?.call?.quality != null) {
-          ctx.o365.teams.call.quality = convertToSnakeCase(ctx.o365.teams.call.quality);
+        if (ctx.o365?.metrics?.teams?.call?.quality != null) {
+          ctx.o365.metrics.teams.call.quality = convertToSnakeCase(ctx.o365.metrics.teams.call.quality);
         }
 
   - script:
       description: Drops null/empty values recursively.
+      ignore_failure: true
       lang: painless
       source: |
         boolean drop(Object o) {
@@ -85,6 +87,27 @@ processors:
             return false;
         }
         drop(ctx);
+
+  - rename:
+      field: o365.metrics.teams.call.quality.callee.cpu_processor_speed_in_mhz
+      target_field: o365.metrics.teams.call.quality.callee.cpu_processor_speed.mhz
+      ignore_missing: true
+  - rename:
+      field: o365.metrics.teams.call.quality.callee.cpu_cores_count
+      target_field: o365.metrics.teams.call.quality.callee.cpu_cores.count
+      ignore_missing: true
+  - rename:
+      field: o365.metrics.teams.call.quality.caller.cpu_processor_speed_in_mhz
+      target_field: o365.metrics.teams.call.quality.caller.cpu_processor_speed.mhz
+      ignore_missing: true
+  - rename:
+      field: o365.metrics.teams.call.quality.caller.cpu_cores_count
+      target_field: o365.metrics.teams.call.quality.caller.cpu_cores.count
+      ignore_missing: true
+  - rename:
+      field: o365.metrics.teams.call.quality.segments.caller.cpu_processor_speed_in_mhz
+      target_field: o365.metrics.teams.call.quality.segments.caller.cpu_processor_speed.mhz
+      ignore_missing: true
 
   - remove:
       if: ctx.message != null
