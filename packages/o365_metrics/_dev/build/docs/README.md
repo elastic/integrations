@@ -43,7 +43,7 @@ Once the application is registered, configure and/or note the following to setup
     - Navigate to `API permissions` page and click `Add a permission`
     - Select `Office 365 Management APIs` tile from the listed tiles.
     - Click `Application permissions`.
-    - If `User.Read` and `Reports.Read.All` permission under `Microsoft.Graph` tile is not added by default, add this permission.
+    - If `User.Read` and `Reports.Read.All` permission under `Microsoft.Graph` tile is not added by default, add this permission. Additional permissions, such as `ServiceHealth.Read.All` for data streams like Service Health may be required. Refer to the API documentation under the Permissions section to determine the necessary permissions.
     - After the permissions are added, the admin has to grant consent for these permissions.
 
 Once the secret is created and permissions are granted by admin, setup Elastic Agent's Microsoft O365 integration:
