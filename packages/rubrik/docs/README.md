@@ -1074,13 +1074,13 @@ Please refer to the following [document](https://www.elastic.co/guide/en/ecs/cur
 | rubrik.cluster.name | The name of the Rubrik cluster. | keyword |  |  |
 | rubrik.cluster.type | The type of the cluster (e.g., OnPrem, Robo, Polaris). | keyword |  |  |
 | rubrik.node_statistics.cpu_stat.pct | CPU utilization of the node. | integer | percent | gauge |
-| rubrik.node_statistics.iops.reads_per_second | Input/output read operations per second. | long | byte | gauge |
-| rubrik.node_statistics.iops.writes_per_second | Input/output write operations per second. | long | byte | gauge |
-| rubrik.node_statistics.network.bytes_received | Data received over the network, in bytes per second | long | byte | gauge |
-| rubrik.node_statistics.network.bytes_transmitted | Data transmitted over the network, in bytes per second. | long | byte | gauge |
+| rubrik.node_statistics.iops.reads | Input/output read operations per second. | long | byte | gauge |
+| rubrik.node_statistics.iops.writes | Input/output write operations per second. | long | byte | gauge |
+| rubrik.node_statistics.network.received.bytes | Data received over the network, in bytes per second | long | byte | gauge |
+| rubrik.node_statistics.network.transmitted.bytes | Data transmitted over the network, in bytes per second. | long | byte | gauge |
 | rubrik.node_statistics.node_id | Rubrik cluster node ID. | keyword |  |  |
-| rubrik.node_statistics.throughput.read_bytes_per_second | Read Input/output throughput, in bytes per second. | long | byte | gauge |
-| rubrik.node_statistics.throughput.write_bytes_per_second | Write Input/output throughput, in bytes per second. | long | byte | gauge |
+| rubrik.node_statistics.throughput.read.bytes | Read Input/output throughput, in bytes per second. | long | byte | gauge |
+| rubrik.node_statistics.throughput.write.bytes | Write Input/output throughput, in bytes per second. | long | byte | gauge |
 | rubrik.node_statistics.time | Time at which the performance metrics were retrieved. | date |  |  |
 | rubrik.node_statistics.used_memory.pct | Memory used on the node, in percentage. | integer | percent | gauge |
 
@@ -1107,12 +1107,12 @@ An example event for `node_statistics` looks as following:
                 "pct": 82
             },
             "iops": {
-                "reads_per_second": 9,
-                "writes_per_second": 30
+                "reads": 9,
+                "writes": 30
             },
             "throughput": {
-                "read_bytes_per_second": 98374,
-                "write_bytes_per_second": 505112
+                "read.bytes": 98374,
+                "write.bytes": 505112
             },
             "time": "2025-01-04T00:11:00.000Z",
             "cpu_stat": {
@@ -1120,8 +1120,8 @@ An example event for `node_statistics` looks as following:
             },
             "node_id": "VXVW241EE7D12",
             "network": {
-                "bytes_transmitted": 1519,
-                "bytes_received": 212
+                "transmitted.bytes": 1519,
+                "received.bytes": 212
             }
         }
     },
