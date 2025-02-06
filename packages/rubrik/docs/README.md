@@ -1074,8 +1074,8 @@ Please refer to the following [document](https://www.elastic.co/guide/en/ecs/cur
 | rubrik.cluster.name | The name of the Rubrik cluster. | keyword |  |  |
 | rubrik.cluster.type | The type of the cluster (e.g., OnPrem, Robo, Polaris). | keyword |  |  |
 | rubrik.node_statistics.cpu_stat.pct | CPU utilization of the node. | integer | percent | gauge |
-| rubrik.node_statistics.iops.reads | Input/output read operations per second. | long | byte | gauge |
-| rubrik.node_statistics.iops.writes | Input/output write operations per second. | long | byte | gauge |
+| rubrik.node_statistics.iops.reads | Input/output read operations per second. | long |  | gauge |
+| rubrik.node_statistics.iops.writes | Input/output write operations per second. | long |  | gauge |
 | rubrik.node_statistics.network.received.bytes | Data received over the network, in bytes per second | long | byte | gauge |
 | rubrik.node_statistics.network.transmitted.bytes | Data transmitted over the network, in bytes per second. | long | byte | gauge |
 | rubrik.node_statistics.node_id | Rubrik cluster node ID. | keyword |  |  |
