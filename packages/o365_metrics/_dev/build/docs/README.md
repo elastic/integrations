@@ -315,7 +315,7 @@ Please refer to the following [document](https://www.elastic.co/guide/en/ecs/cur
 
 ### Subscriptions
 
-Get details about Service Health from [Microsoft Graph API](https://learn.microsoft.com/en-us/graph/api/subscribedsku-list?view=graph-rest-1.0&tabs=http).
+Get details about Subscriptions from [Microsoft Graph API](https://learn.microsoft.com/en-us/graph/api/subscribedsku-list?view=graph-rest-1.0&tabs=http).
 
 {{event "subscriptions"}}
 
@@ -328,7 +328,7 @@ Please refer to the following [document](https://www.elastic.co/guide/en/ecs/cur
 
 ### Teams Call Quality
 
-Get details about Service Health from [Microsoft Graph API](https://learn.microsoft.com/en-us/graph/api/subscribedsku-list?view=graph-rest-1.0&tabs=http).
+Get details about Teams Call Quality from [Microsoft Graph API](https://learn.microsoft.com/en-us/graph/api/callrecords-callrecord-list-sessions?view=graph-rest-1.0&tabs=http).
 
 {{event "teams_call_quality"}}
 
