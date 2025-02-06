@@ -458,7 +458,7 @@ processors:
       if: ctx.m365_defender?.event?.recipient?.email_address != null
       allow_duplicates: false
   - set:
-      field: email.message_id
+      field: email.local_id
       copy_from: m365_defender.event.network.message_id
       tag: set_email_message_id
       ignore_empty_value: true
@@ -473,7 +473,7 @@ processors:
       tag: set_email_subject
       ignore_empty_value: true
   - set:
-      field: email.local_id
+      field: email.message_id
       copy_from: m365_defender.event.internet_message_id
       tag: set_email_local_id
       ignore_empty_value: true
@@ -574,6 +574,7 @@ processors:
       field:
         - m365_defender.event.sender.from_address
         - m365_defender.event.network.message_id
+        - m365_defender.event.internet_message_id
         - m365_defender.event.recipient.email_address
         - m365_defender.event.file.type
         - m365_defender.event.sha256
