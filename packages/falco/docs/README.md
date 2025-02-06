@@ -278,51 +278,51 @@ Falco alerts can contain a multitude of various fields pertaining to the type of
 | process.group.name | Preserved Falco field | text |  |
 
 
-An example event for `alerts` looks as following:
+An example event for `alerts_cncf` looks as following:
 
 ```json
 {
     "@timestamp": "2024-08-07T13:49:16.479Z",
     "agent": {
-        "ephemeral_id": "e24920c4-6d15-4f8f-b432-f643a642b923",
-        "id": "3cce77a3-202d-48b6-955c-bde66f5021b2",
-        "name": "docker-fleet-agent",
+        "ephemeral_id": "462fb662-e2db-4a82-ba20-7b91240e452b",
+        "id": "9d5ffa41-5648-426e-819a-dbd486b296c2",
+        "name": "elastic-agent-92594",
         "type": "filebeat",
-        "version": "8.14.1"
+        "version": "8.17.1"
     },
     "container": {
         "id": "2ae6a7f15b6e",
         "name": "elastic-package-service-10413-falco-event-generator-1"
     },
     "data_stream": {
-        "dataset": "falco.alerts",
-        "namespace": "94205",
+        "dataset": "falco.alerts_agent",
+        "namespace": "30414",
         "type": "logs"
     },
     "ecs": {
         "version": "8.0.0"
     },
     "elastic_agent": {
-        "id": "3cce77a3-202d-48b6-955c-bde66f5021b2",
+        "id": "9d5ffa41-5648-426e-819a-dbd486b296c2",
         "snapshot": false,
-        "version": "8.14.1"
+        "version": "8.17.1"
     },
     "event": {
         "agent_id_status": "verified",
-        "dataset": "falco.alerts",
-        "ingested": "2024-08-14T12:08:25Z",
+        "category": [
+            "process"
+        ],
+        "dataset": "falco.alerts_agent",
+        "ingested": "2025-02-06T22:49:57Z",
         "kind": "alert",
-        "original": "<5>2024-08-07T13:49:16Z a72f9a747cf8 Falco[1]: {\"uuid\":\"23716645-4d9d-4254-9429-2a287a9af199\",\"output\":\"2024-08-07T13:49:16.479964318+0000: Notice Shell spawned by untrusted binary (parent_exe=/tmp/falco-event-generator3282684109/httpd parent_exepath=/bin/event-generator pcmdline=httpd --loglevel info run ^helper.RunShell$ gparent=event-generator ggparent=containerd-shim aname[4]=containerd-shim aname[5]=init aname[6]=\\u003cNA\\u003e aname[7]=\\u003cNA\\u003e evt_type=execve user=root user_uid=0 user_loginuid=-1 process=bash proc_exepath=/bin/bash parent=httpd command=bash -c ls \\u003e /dev/null terminal=0 exe_flags=EXE_WRITABLE container_id=2ae6a7f15b6e container_name=elastic-package-service-10413-falco-event-generator-1)\",\"priority\":\"Notice\",\"rule\":\"Run shell untrusted\",\"time\":\"2024-08-07T13:49:16.479964318Z\",\"output_fields\":{\"container.id\":\"2ae6a7f15b6e\",\"container.name\":\"elastic-package-service-10413-falco-event-generator-1\",\"evt.arg.flags\":\"EXE_WRITABLE\",\"evt.time.iso8601\":1723038556479964318,\"evt.type\":\"execve\",\"proc.aname[2]\":\"event-generator\",\"proc.aname[3]\":\"containerd-shim\",\"proc.aname[4]\":\"containerd-shim\",\"proc.aname[5]\":\"init\",\"proc.aname[6]\":null,\"proc.aname[7]\":null,\"proc.cmdline\":\"bash -c ls \\u003e /dev/null\",\"proc.exepath\":\"/bin/bash\",\"proc.name\":\"bash\",\"proc.pcmdline\":\"httpd --loglevel info run ^helper.RunShell$\",\"proc.pexe\":\"/tmp/falco-event-generator3282684109/httpd\",\"proc.pexepath\":\"/bin/event-generator\",\"proc.pname\":\"httpd\",\"proc.tty\":0,\"user.loginuid\":-1,\"user.name\":\"root\",\"user.uid\":0},\"source\":\"syscall\",\"tags\":[\"T1059.004\",\"container\",\"host\",\"maturity_stable\",\"mitre_execution\",\"process\",\"shell\"],\"hostname\":\"e822ea6618ae\"}",
+        "original": "{\"uuid\":\"23716645-4d9d-4254-9429-2a287a9af199\",\"output\":\"2024-08-07T13:49:16.479964318+0000: Notice Shell spawned by untrusted binary (parent_exe=/tmp/falco-event-generator3282684109/httpd parent_exepath=/bin/event-generator pcmdline=httpd --loglevel info run ^helper.RunShell$ gparent=event-generator ggparent=containerd-shim aname[4]=containerd-shim aname[5]=init aname[6]=\\u003cNA\\u003e aname[7]=\\u003cNA\\u003e evt_type=execve user=root user_uid=0 user_loginuid=-1 process=bash proc_exepath=/bin/bash parent=httpd command=bash -c ls \\u003e /dev/null terminal=0 exe_flags=EXE_WRITABLE container_id=2ae6a7f15b6e container_name=elastic-package-service-10413-falco-event-generator-1)\",\"priority\":\"Notice\",\"rule\":\"Run shell untrusted\",\"time\":\"2024-08-07T13:49:16.479964318Z\",\"output_fields\":{\"container.id\":\"2ae6a7f15b6e\",\"container.name\":\"elastic-package-service-10413-falco-event-generator-1\",\"evt.arg.flags\":\"EXE_WRITABLE\",\"evt.time.iso8601\":1723038556479964318,\"evt.type\":\"execve\",\"proc.aname[2]\":\"event-generator\",\"proc.aname[3]\":\"containerd-shim\",\"proc.aname[4]\":\"containerd-shim\",\"proc.aname[5]\":\"init\",\"proc.aname[6]\":null,\"proc.aname[7]\":null,\"proc.cmdline\":\"bash -c ls \\u003e /dev/null\",\"proc.exepath\":\"/bin/bash\",\"proc.name\":\"bash\",\"proc.pcmdline\":\"httpd --loglevel info run ^helper.RunShell$\",\"proc.pexe\":\"/tmp/falco-event-generator3282684109/httpd\",\"proc.pexepath\":\"/bin/event-generator\",\"proc.pname\":\"httpd\",\"proc.tty\":0,\"user.loginuid\":-1,\"user.name\":\"root\",\"user.uid\":0},\"source\":\"syscall\",\"tags\":[\"T1059.004\",\"container\",\"host\",\"maturity_stable\",\"mitre_execution\",\"process\",\"shell\"],\"hostname\":\"e822ea6618ae\"}",
         "provider": "syscall",
-        "timezone": "+00:00"
+        "severity": 47,
+        "timezone": "+00:00",
+        "type": [
+            "start"
+        ]
     },
-    "event.category": [
-        "process"
-    ],
-    "event.severity": 2,
-    "event.type": [
-        "start"
-    ],
     "falco": {
         "hostname": "e822ea6618ae",
         "output": "2024-08-07T13:49:16.479964318+0000: Notice Shell spawned by untrusted binary (parent_exe=/tmp/falco-event-generator3282684109/httpd parent_exepath=/bin/event-generator pcmdline=httpd --loglevel info run ^helper.RunShell$ gparent=event-generator ggparent=containerd-shim aname[4]=containerd-shim aname[5]=init aname[6]=<NA> aname[7]=<NA> evt_type=execve user=root user_uid=0 user_loginuid=-1 process=bash proc_exepath=/bin/bash parent=httpd command=bash -c ls > /dev/null terminal=0 exe_flags=EXE_WRITABLE container_id=2ae6a7f15b6e container_name=elastic-package-service-10413-falco-event-generator-1)",
@@ -373,23 +373,23 @@ An example event for `alerts` looks as following:
     "host": {
         "architecture": "aarch64",
         "containerized": false,
-        "hostname": "docker-fleet-agent",
-        "id": "bec788532d91483489ff64145e57effe",
+        "hostname": "elastic-agent-92594",
         "ip": [
-            "192.168.160.9"
+            "172.19.0.2",
+            "172.18.0.7"
         ],
         "mac": [
-            "02-42-C0-A8-A0-09"
+            "02-42-AC-12-00-07",
+            "02-42-AC-13-00-02"
         ],
-        "name": "docker-fleet-agent",
+        "name": "e822ea6618ae",
         "os": {
-            "codename": "focal",
-            "family": "debian",
-            "kernel": "6.6.12-linuxkit",
-            "name": "Ubuntu",
-            "platform": "ubuntu",
+            "family": "",
+            "kernel": "6.12.11-200.fc41.aarch64",
+            "name": "Wolfi",
+            "platform": "wolfi",
             "type": "linux",
-            "version": "20.04.6 LTS (Focal Fossa)"
+            "version": "20230201"
         }
     },
     "input": {
@@ -397,7 +397,7 @@ An example event for `alerts` looks as following:
     },
     "log": {
         "source": {
-            "address": "192.168.160.5:34984"
+            "address": "172.19.0.3:46478"
         },
         "syslog": {
             "appname": "Falco",
@@ -414,6 +414,7 @@ An example event for `alerts` looks as following:
             }
         }
     },
+    "message": "Run shell untrusted",
     "observer": {
         "hostname": "e822ea6618ae",
         "product": "falco",
