@@ -87,20 +87,24 @@ program: |
       state.worklist[?state.?next.orValue(-1)].hasValue() ?
         request(
           "GET",
+          has(state.next_page) && state.next_page != "" ?
+          state.next_page
+          :
           state.url + "/communications/callRecords/" + state.worklist[state.next] + "/sessions?$expand=segments"
         ).do_request().as(resp, resp.StatusCode == 200 ?
           bytes(resp.Body).decode_json().as(body,{
             "events": (
               has(body.value) && size(body.value) > 0 ?
                 body.value.map(e, {
-                  "message": e.encode_json(),
+                  "message": e.encode_json()
                 })
               :
                 [{"message":"retry"}]
             ),
             "worklist": int(state.next) + 1 < size(state.worklist) ? state.worklist : [],
-            "next": int(state.next) + 1 < size(state.worklist) ? int(state.next) + 1 : 0,
-            "want_more": int(state.next) + 1 < size(state.worklist),
+            "next": int(state.next) + 1 < size(state.worklist) ? (has(state.next_page) && state.next_page != "" ?  int(state.next) : int(state.next) + 1) : 0,
+            "want_more": int(state.next) + 1 < size(state.worklist) || "@odata.nextLink" in body,
+            "next_page": "@odata.nextLink" in body ? body["@odata.nextLink"] : "",     
           })
         :
           {
