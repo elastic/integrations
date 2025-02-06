@@ -109,6 +109,17 @@ processors:
       target_field: o365.metrics.teams.call.quality.segments.caller.cpu_processor_speed.mhz
       ignore_missing: true
 
+  - fingerprint:
+      fields:
+        - o365.metrics.teams.call.quality.id
+      target_field: _id
+
+  - set:
+      field: '@timestamp'
+      tag: set_timestamp_from_report_date
+      copy_from: o365.metrics.teams.call.quality.start_date_time
+      ignore_empty_value: true
+
   - remove:
       if: ctx.message != null
       field: message
