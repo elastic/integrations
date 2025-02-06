@@ -133,6 +133,7 @@ An example event for `billing` looks as following:
 | Field | Description | Type |
 |---|---|---|
 | @timestamp | Event timestamp. | date |
+| cloud.account.id |  | keyword |
 | data_stream.dataset | Data stream dataset. | constant_keyword |
 | data_stream.namespace | Data stream namespace. | constant_keyword |
 | data_stream.type | Data stream type. | constant_keyword |
@@ -233,19 +234,15 @@ An example event for `credits` looks as following:
 | Field | Description | Type |
 |---|---|---|
 | @timestamp | Event timestamp. | date |
+| cloud.account.id |  | keyword |
 | data_stream.dataset | Data stream dataset. | constant_keyword |
 | data_stream.namespace | Data stream namespace. | constant_keyword |
 | data_stream.type | Data stream type. | constant_keyword |
 | ess.billing.active | Whether the credit line is active. | boolean |
-| ess.billing.currency | Currency of the credit line. | keyword |
 | ess.billing.ecu_balance | Balance of Elastic Consumption Units (ECUs) in the credit line. | long |
 | ess.billing.ecu_quantity | Initially purchased quantity of Elastic Consumption Units (ECUs) in the credit line. | long |
 | ess.billing.end | End date of the credit line. | date |
-| ess.billing.external_reseller_id | External reseller ID. | keyword |
-| ess.billing.id | ID of the credit line. | keyword |
 | ess.billing.organization_id | ID of the organization in Elastic Cloud. | keyword |
-| ess.billing.reason | Reason for the credit line. | keyword |
-| ess.billing.sales_order_number | Sales order number of the credit line. | keyword |
 | ess.billing.start | Start date of the credit line. | date |
 | ess.billing.type | Type of the credit line. | keyword |
 | input.type |  | keyword |
