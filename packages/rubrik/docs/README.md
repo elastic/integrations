@@ -1071,7 +1071,7 @@ Please refer to the following [document](https://www.elastic.co/guide/en/ecs/cur
 | data_stream.namespace | Data stream namespace. | constant_keyword |  |  |
 | data_stream.type | Data stream type. | constant_keyword |  |  |
 | rubrik.cluster.id | Rubrik cluster UUID. | keyword |  |  |
-| rubrik.cluster.name | The name of the Rurik cluster. | keyword |  |  |
+| rubrik.cluster.name | The name of the Rubrik cluster. | keyword |  |  |
 | rubrik.cluster.type | The type of the cluster (e.g., OnPrem, Robo, Polaris). | keyword |  |  |
 | rubrik.node_statistics.cpu_stat.pct | CPU utilization of the node. | integer | percent | gauge |
 | rubrik.node_statistics.iops.reads_per_second | Input/output read operations per second. | long | byte | gauge |
