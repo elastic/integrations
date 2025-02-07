@@ -2577,8 +2577,8 @@ An example event for `teams_call_quality` looks as following:
                                     "mac_address": "00-00-00-00-00-00-00-00",
                                     "port": 50011,
                                     "received_quality_event_ratio": 0,
-                                    "reflexive_i_p_address": "127.0.0.2",
-                                    "relay_i_p_address": "52.114.188.102",
+                                    "reflexive_ip_address": "127.0.0.2",
+                                    "relay_ip_address": "52.114.188.102",
                                     "relay_port": 52810,
                                     "sent_quality_event_ratio": 0.31,
                                     "subnet": "10.139.80.0"
@@ -2603,8 +2603,8 @@ An example event for `teams_call_quality` looks as following:
                                     "mac_address": "00-00-00-00-00-00",
                                     "port": 27288,
                                     "received_quality_event_ratio": 0.27,
-                                    "reflexive_i_p_address": "127.0.0.2",
-                                    "relay_i_p_address": "52.114.188.32",
+                                    "reflexive_ip_address": "127.0.0.2",
+                                    "relay_ip_address": "52.114.188.32",
                                     "relay_port": 53889,
                                     "sent_quality_event_ratio": 0,
                                     "subnet": "10.150.0.0"
@@ -2808,9 +2808,8 @@ Please refer to the following [document](https://www.elastic.co/guide/en/ecs/cur
 | o365.metrics.teams.call.quality.segments.media.callee_network.mac_address | MAC address of the callee's device | keyword |
 | o365.metrics.teams.call.quality.segments.media.callee_network.port | Port used for the connection | long |
 | o365.metrics.teams.call.quality.segments.media.callee_network.received_quality_event_ratio | Quality event ratio related to the received network quality | float |
-| o365.metrics.teams.call.quality.segments.media.callee_network.reflexive_i_p_address | Reflexive IP address | keyword |
 | o365.metrics.teams.call.quality.segments.media.callee_network.reflexive_ip_address | Reflexive IP address for the callee's network | keyword |
-| o365.metrics.teams.call.quality.segments.media.callee_network.relay_i_p_address | Relay IP address for the callee's network | keyword |
+| o365.metrics.teams.call.quality.segments.media.callee_network.relay_ip_address | Relay IP address for the callee's network | keyword |
 | o365.metrics.teams.call.quality.segments.media.callee_network.relay_port | Relay port | long |
 | o365.metrics.teams.call.quality.segments.media.callee_network.sent_quality_event_ratio | Quality event ratio related to the callee's network | float |
 | o365.metrics.teams.call.quality.segments.media.callee_network.subnet | Subnet of the callee's network | keyword |
@@ -2832,9 +2831,8 @@ Please refer to the following [document](https://www.elastic.co/guide/en/ecs/cur
 | o365.metrics.teams.call.quality.segments.media.caller_network.mac_address | MAC address of the caller's device | keyword |
 | o365.metrics.teams.call.quality.segments.media.caller_network.port | Port used for the connection | long |
 | o365.metrics.teams.call.quality.segments.media.caller_network.received_quality_event_ratio | Quality event ratio related to the received network quality | float |
-| o365.metrics.teams.call.quality.segments.media.caller_network.reflexive_i_p_address | Reflexive IP address for the caller's network | keyword |
-| o365.metrics.teams.call.quality.segments.media.caller_network.relay_i_p_address | Relay IP address for the caller's network | keyword |
-| o365.metrics.teams.call.quality.segments.media.caller_network.relay_ip_address | Relay IP address | keyword |
+| o365.metrics.teams.call.quality.segments.media.caller_network.reflexive_ip_address | Reflexive IP address for the caller's network | keyword |
+| o365.metrics.teams.call.quality.segments.media.caller_network.relay_ip_address | Relay IP address for the caller's network | keyword |
 | o365.metrics.teams.call.quality.segments.media.caller_network.relay_port | Relay port | long |
 | o365.metrics.teams.call.quality.segments.media.caller_network.sent_quality_event_ratio | Quality event ratio related to the caller's network | float |
 | o365.metrics.teams.call.quality.segments.media.caller_network.subnet | Subnet of the caller's network | keyword |
