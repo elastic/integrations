@@ -56,6 +56,24 @@
                                 "observer.vendor": "Corelight"
                             }
                         }
+                    },
+                    {
+                        "$state": {
+                            "store": "appState"
+                        },
+                        "meta": {
+                            "alias": null,
+                            "disabled": false,
+                            "indexRefName": "kibanaSavedObjectMeta.searchSourceJSON.filter[1].meta.index",
+                            "key": "event.id",
+                            "negate": false,
+                            "type": "exists"
+                        },
+                        "query": {
+                            "exists": {
+                                "field": "event.id"
+                            }
+                        }
                     }
                 ],
                 "query": {
@@ -182,7 +200,7 @@
                                                     "dataType": "number",
                                                     "isBucketed": false,
                                                     "label": "All Suricata Alerts",
-                                                    "operationType": "unique_count",
+                                                    "operationType": "count",
                                                     "params": {
                                                         "emptyAsNull": false,
                                                         "format": {
@@ -703,7 +721,7 @@
                                                     "dataType": "number",
                                                     "isBucketed": false,
                                                     "label": "Suricata Alerts",
-                                                    "operationType": "unique_count",
+                                                    "operationType": "count",
                                                     "params": {
                                                         "emptyAsNull": false,
                                                         "format": {
@@ -1672,7 +1690,7 @@
                                                         }
                                                     },
                                                     "scale": "ratio",
-                                                    "sourceField": "notice.note"
+                                                    "sourceField": "event.id"
                                                 },
                                                 "725e430b-5db2-4dce-a571-ec03a89b4e21": {
                                                     "customLabel": false,
@@ -1854,7 +1872,6 @@
                             "adHocDataViews": {},
                             "datasourceStates": {
                                 "formBased": {
-                                    "currentIndexPatternId": "logs-*",
                                     "layers": {
                                         "2f1a7688-ceef-4972-abf3-a0c1fade953e": {
                                             "columnOrder": [
@@ -1882,7 +1899,6 @@
                                             },
                                             "ignoreGlobalFilters": false,
                                             "incompleteColumns": {},
-                                            "indexPatternId": "logs-*",
                                             "sampling": 1
                                         }
                                     }
@@ -4734,13 +4750,17 @@
                                 "id": "logs-*",
                                 "name": "indexpattern-datasource-layer-a43b081c-d4f3-4e85-926b-1297b06b22e0",
                                 "type": "index-pattern"
+                            },
+                            {
+                                "id": "logs-*",
+                                "name": "3c3ae6fa-719c-4286-b6fd-0a9df3ac5115",
+                                "type": "index-pattern"
                             }
                         ],
                         "state": {
                             "adHocDataViews": {},
                             "datasourceStates": {
                                 "formBased": {
-                                    "currentIndexPatternId": "logs-*",
                                     "layers": {
                                         "a43b081c-d4f3-4e85-926b-1297b06b22e0": {
                                             "columnOrder": [
@@ -4808,7 +4828,6 @@
                                                 }
                                             },
                                             "incompleteColumns": {},
-                                            "indexPatternId": "logs-*",
                                             "sampling": 1
                                         }
                                     }
@@ -4828,7 +4847,7 @@
                                     "meta": {
                                         "alias": null,
                                         "disabled": false,
-                                        "index": "1fa6c07e-8ea3-4cbf-8995-4e833a1b4704",
+                                        "index": "3c3ae6fa-719c-4286-b6fd-0a9df3ac5115",
                                         "negate": false,
                                         "params": [
                                             {
@@ -4934,6 +4953,9 @@
                                                 }
                                             },
                                             {
+                                                "$state": {
+                                                    "store": "appState"
+                                                },
                                                 "meta": {
                                                     "alias": null,
                                                     "disabled": false,
@@ -4942,15 +4964,25 @@
                                                     "key": "network.protocol",
                                                     "negate": true,
                                                     "params": [
+                                                        "ssl",
                                                         "tls",
-                                                        "dns",
-                                                        "ssl"
+                                                        "ssh",
+                                                        "https",
+                                                        "dtls",
+                                                        "spicy_ipsec_ike_udp",
+                                                        "spicy_ipsec_udp",
+                                                        "spicy_stun_tcp"
                                                     ],
                                                     "type": "phrases",
                                                     "value": [
+                                                        "ssl",
                                                         "tls",
-                                                        "dns",
-                                                        "ssl"
+                                                        "ssh",
+                                                        "https",
+                                                        "dtls",
+                                                        "spicy_ipsec_ike_udp",
+                                                        "spicy_ipsec_udp",
+                                                        "spicy_stun_tcp"
                                                     ]
                                                 },
                                                 "query": {
@@ -4959,17 +4991,42 @@
                                                         "should": [
                                                             {
                                                                 "match_phrase": {
+                                                                    "network.protocol": "ssl"
+                                                                }
+                                                            },
+                                                            {
+                                                                "match_phrase": {
                                                                     "network.protocol": "tls"
                                                                 }
                                                             },
                                                             {
                                                                 "match_phrase": {
-                                                                    "network.protocol": "dns"
+                                                                    "network.protocol": "ssh"
                                                                 }
                                                             },
                                                             {
                                                                 "match_phrase": {
-                                                                    "network.protocol": "ssl"
+                                                                    "network.protocol": "https"
+                                                                }
+                                                            },
+                                                            {
+                                                                "match_phrase": {
+                                                                    "network.protocol": "dtls"
+                                                                }
+                                                            },
+                                                            {
+                                                                "match_phrase": {
+                                                                    "network.protocol": "spicy_ipsec_ike_udp"
+                                                                }
+                                                            },
+                                                            {
+                                                                "match_phrase": {
+                                                                    "network.protocol": "spicy_ipsec_udp"
+                                                                }
+                                                            },
+                                                            {
+                                                                "match_phrase": {
+                                                                    "network.protocol": "spicy_stun_tcp"
                                                                 }
                                                             }
                                                         ]
@@ -5017,6 +5074,72 @@
                                                 "query": {
                                                     "match_phrase": {
                                                         "network.protocol": "http,ssl"
+                                                    }
+                                                }
+                                            },
+                                            {
+                                                "$state": {
+                                                    "store": "appState"
+                                                },
+                                                "meta": {
+                                                    "alias": null,
+                                                    "disabled": false,
+                                                    "field": "network.protocol",
+                                                    "index": "logs-*",
+                                                    "key": "network.protocol",
+                                                    "negate": true,
+                                                    "params": {
+                                                        "query": "ssl,xmpp"
+                                                    },
+                                                    "type": "phrase"
+                                                },
+                                                "query": {
+                                                    "match_phrase": {
+                                                        "network.protocol": "ssl,xmpp"
+                                                    }
+                                                }
+                                            },
+                                            {
+                                                "$state": {
+                                                    "store": "appState"
+                                                },
+                                                "meta": {
+                                                    "alias": null,
+                                                    "disabled": false,
+                                                    "field": "network.protocol",
+                                                    "index": "logs-*",
+                                                    "key": "network.protocol",
+                                                    "negate": true,
+                                                    "params": {
+                                                        "query": "spicy_ipsec_ike_udp,spicy_ipsec_udp"
+                                                    },
+                                                    "type": "phrase"
+                                                },
+                                                "query": {
+                                                    "match_phrase": {
+                                                        "network.protocol": "spicy_ipsec_ike_udp,spicy_ipsec_udp"
+                                                    }
+                                                }
+                                            },
+                                            {
+                                                "$state": {
+                                                    "store": "appState"
+                                                },
+                                                "meta": {
+                                                    "alias": null,
+                                                    "disabled": false,
+                                                    "field": "network.protocol",
+                                                    "index": "logs-*",
+                                                    "key": "network.protocol",
+                                                    "negate": true,
+                                                    "params": {
+                                                        "query": "krb,krb_tcp"
+                                                    },
+                                                    "type": "phrase"
+                                                },
+                                                "query": {
+                                                    "match_phrase": {
+                                                        "network.protocol": "krb,krb_tcp"
                                                     }
                                                 }
                                             }
@@ -7260,13 +7383,18 @@
         "version": 2
     },
     "coreMigrationVersion": "8.8.0",
-    "created_at": "2025-01-30T05:08:32.850Z",
+    "created_at": "2025-02-06T07:20:19.340Z",
     "id": "corelight-7c0946bc-acd0-4ec3-ab3b-8a92853f4a3b",
     "managed": false,
     "references": [
         {
             "id": "logs-*",
             "name": "kibanaSavedObjectMeta.searchSourceJSON.filter[0].meta.index",
+            "type": "index-pattern"
+        },
+        {
+            "id": "logs-*",
+            "name": "kibanaSavedObjectMeta.searchSourceJSON.filter[1].meta.index",
             "type": "index-pattern"
         },
         {
@@ -7456,6 +7584,11 @@
         },
         {
             "id": "logs-*",
+            "name": "ee6608a6-a905-4e49-acd2-18a119dc633a:3c3ae6fa-719c-4286-b6fd-0a9df3ac5115",
+            "type": "index-pattern"
+        },
+        {
+            "id": "logs-*",
             "name": "29799cca-01ae-4c3f-911d-d07b116968eb:indexpattern-datasource-layer-66267767-efdd-44d5-b1f9-df14b732b457",
             "type": "index-pattern"
         },
@@ -7516,6 +7649,5 @@
         }
     ],
     "type": "dashboard",
-    "typeMigrationVersion": "10.2.0",
-    "updated_by": "u_mGBROF_q5bmFCATbLXAcCwKa0k8JvONAwSruelyKA5E_0"
+    "typeMigrationVersion": "10.2.0"
 }
