@@ -1,0 +1,140 @@
+---
+description: Pipeline for processing sample logs
+processors:
+  - drop:
+      if: ctx.error?.statuscode != null && ctx.error.statuscode != 200
+
+  - rename:
+      field: message
+      target_field: adminbyrequest.events
+
+  - fingerprint:
+      fields:
+        - adminbyrequest.events.id
+      target_field: "_id"
+
+
+####################
+# Scripts for processing input #
+####################
+  - script:
+      description: Drops null/empty values recursively.
+      lang: painless
+      source: |
+        boolean dropEmptyFields(Object object) {
+          if (object == null || object == "") {
+            return true;
+          } else if (object instanceof Map) {
+            ((Map) object).values().removeIf(value -> dropEmptyFields(value));
+            return (((Map) object).size() == 0);
+          } else if (object instanceof List) {
+            ((List) object).removeIf(value -> dropEmptyFields(value));
+            return (((List) object).length == 0);
+          }
+          return false;
+        }
+        dropEmptyFields(ctx);
+
+  - script:
+      description: Convert Additional Info keys to snake case.
+      tag: additional-info-keys-to-snake-case
+      lang: painless
+      source: |
+        Map keysToSnakeCase(Map m) {
+          def regex = /_?([a-z])([A-Z]+)/;
+          def snakeCaseMap = [:];
+
+          for (entry in m.entrySet()) {
+            def k = entry.getKey();
+            def v = entry.getValue();
+
+            if (v instanceof Map) {
+              v = keysToSnakeCase(v);
+            } else if (v instanceof List) {
+              for (int i = 0; i < v.size(); i++) {
+                def item = v.get(i);
+                if (item instanceof Map) {
+                  v.set(i, keysToSnakeCase(item));
+                }
+              }
+            }
+
+            k = regex.matcher(k).replaceAll('$1_$2').toLowerCase();
+            snakeCaseMap.put(k, v);
+          }
+          return snakeCaseMap;
+        }
+
+        if (ctx.adminbyrequest.events != null) {
+          ctx.adminbyrequest.events = keysToSnakeCase(ctx.adminbyrequest.events);
+        }
+
+
+####################
+# ECS Fields #
+####################
+  - set:
+      field: ecs.version
+      value: '8.11.0'
+
+  - set:
+      field: event.kind
+      value: event
+
+  - append:
+      field: event.category
+      value: configuration
+
+  - append:
+      field: event.type
+      value: info
+
+  - set:
+      field: event.dataset
+      value: adminbyrequest.events
+
+  - set:
+      field: event.module
+      value: adminbyrequest
+
+  - set:
+      field: host.hostname
+      copy_from: adminbyrequest.events.computer_name
+      ignore_empty_value: true
+
+  - append:
+      field: related.hosts
+      value: '{{adminbyrequest.events.computer_name}}'
+      allow_duplicates: false
+      if: ctx.adminbyrequest.events.computer_name != null
+
+  - set:
+      field: user.name
+      copy_from: adminbyrequest.events.user_name
+      ignore_empty_value: true
+
+  - set:
+      field: url.original
+      copy_from: adminbyrequest.events.audit_log_url
+      ignore_empty_value: true
+
+  - set:
+      field: file.name
+      copy_from: adminbyrequest.events.application.file
+      ignore_empty_value: true
+
+  - set:
+      field: file.path
+      copy_from: adminbyrequest.events.application.path
+      ignore_empty_value: true
+
+  - set:
+      field: hash.sha256
+      copy_from: adminbyrequest.events.application.sha256
+      ignore_empty_value: true
+
+  - append:
+      field: related.hash
+      value: '{{adminbyrequest.events.application.sha256}}'
+      allow_duplicates: false
+      if: ctx.adminbyrequest.events.application?.sha256 != null

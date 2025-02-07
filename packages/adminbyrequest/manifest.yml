@@ -1,0 +1,79 @@
+format_version: 3.3.0
+name: adminbyrequest
+title: Admin By Request
+version: 0.0.1
+source:
+  license: "Elastic-2.0"
+description: "Admin By Request is a solution for managing and monitoring privileged access to Windows and Mac computers. It enables real-time monitoring of privileged account access, session recordings, and password checkout patterns to help security teams maintain compliance and quickly identify potential privilege abuse."
+type: integration
+categories:
+  - custom
+conditions:
+  kibana:
+    version: "^8.15.3"
+  elastic:
+    subscription: "basic"
+screenshots:
+  - src: /img/sample-screenshot.png
+    title: Sample screenshot
+    size: 600x600
+    type: image/png
+icons:
+  - src: /img/logo.svg
+    title: Sample logo
+    size: 832x101
+    type: image/svg+xml
+policy_templates:
+  - name: adminbyrequest
+    title: Admin By Request Events
+    description: Collect events and audit logs from Admin By Request
+    inputs:
+      - type: cel
+        title: Collect events and audit logs from Admin By Request API
+        description: Collecting events and audit logs from Admin By Request API
+        vars:
+          - name: url
+            type: text
+            title: URL of Admin By Request API Server
+            description: URL of Admin By Request API Server
+            show_user: true
+            required: true
+            default: "https://dc1api.adminbyrequest.com"
+          - name: apikey
+            type: text
+            title: API Key token of Admin By Request API Server
+            description: "This is the API key token you have created on Admin By Request."
+            show_user: true
+            required: true
+            default: "009c801b-e069-45d7-8a09-802170fe7f8e"
+          - name: enable_request_tracer
+            type: bool
+            title: Enable request tracing
+            multi: false
+            required: false
+            show_user: false
+            description: The request tracer logs requests and responses to the agent's local filesystem for debugging configurations. Enabling this request tracing compromises security and should only be used for debugging. See [documentation](https://www.elastic.co/guide/en/beats/filebeat/current/filebeat-input-httpjson.html#_request_tracer_filename) for details.
+          - name: http_client_timeout
+            type: text
+            title: HTTP Client Timeout
+            description: Duration before declaring that the HTTP client connection has timed out. Valid time units are ns, us, ms, s, m, h.
+            multi: false
+            required: false
+            show_user: true
+          - name: proxy_url
+            type: text
+            title: Proxy URL
+            description: URL to proxy connections in the form of http\[s\]://<user>:<password>@<server name/ip>:<port>
+            multi: false
+            required: false
+            show_user: false
+          - name: ssl
+            type: yaml
+            title: SSL Configuration
+            description: i.e. certificate_authorities, supported_protocols, verification_mode etc.
+            multi: false
+            required: false
+            show_user: false
+owner:
+  github: elastic/integrations
+  type: elastic
