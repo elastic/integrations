@@ -1,16 +1,16 @@
-title: Microsoft 365 Subscriptions metrics
+title: Microsoft 365 Teams Call Quality
 type: metrics
 streams:
   - input: cel
-    title: Microsoft 365 Subscriptions metrics.
+    title: Microsoft 365 Teams Call Quality metrics.
     enabled: false
-    description: Collect Microsoft 365 Subscriptions metrics.
+    description: Collect Microsoft 365 Teams Call Quality metrics.
     template_path: cel.yml.hbs
     vars:
       - name: interval
         type: text
         title: Interval
-        description: The interval at which the API is polled, supported in seconds, minutes, and hours.
+        description: How often the API is polled, supports seconds, minutes and hours.
         show_user: true
         required: true
         default: 12h
@@ -26,18 +26,10 @@ streams:
         type: text
         title: Tags
         multi: true
-        required: false
-        show_user: false
-        default:
-          - o365.metrics.subscriptions
-      - name: preserve_original_event
         required: true
         show_user: false
-        title: Preserve original event
-        description: Preserves a raw copy of the original event, added to the field `event.original`
-        type: bool
-        multi: false
-        default: false
+        default:
+          - o365.metrics.teams.call.quality
       - name: enable_request_tracer
         type: bool
         title: Enable request tracing
@@ -46,3 +38,11 @@ streams:
         show_user: false
         description: >-
           The request tracer logs HTTP requests and responses to the agent's local file-system for debugging configurations. Enabling this request tracing compromises security and should only be used for debugging. See [documentation](https://www.elastic.co/guide/en/beats/filebeat/current/filebeat-input-cel.html#_resource_tracer_filename) for details.
+      - name: preserve_original_event
+        required: true
+        show_user: false
+        title: Preserve original event
+        description: Preserves a raw copy of the original event, added to the field `event.original`
+        type: bool
+        multi: false
+        default: false
