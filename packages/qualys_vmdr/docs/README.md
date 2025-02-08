@@ -10,7 +10,7 @@ This module has been tested against the latest Qualys VMDR version **v2**.
 
 ## Data streams
 
-The Qualys VMDR integration collects data for the following two events:
+The Qualys VMDR integration collects data for the following three events:
 
 | Event Type           |
 |----------------------|
@@ -19,6 +19,8 @@ The Qualys VMDR integration collects data for the following two events:
 | User Activity Log    |
 
 Reference for [Rest APIs](https://qualysguard.qg2.apps.qualys.com/qwebhelp/fo_portal/api_doc/index.htm) of Qualys VMDR.
+
+Starting from Qualys VMDR integration version 6.0, the `Asset Host Detection` data stream includes enriched vulnerabilities data from Qualys Knowledge Base API.
 
 ## Requirements
 
@@ -410,7 +412,7 @@ An example event for `asset_host_detection` looks as following:
 | event.module | Name of the module this data is coming from. If your monitoring agent supports the concept of modules or plugins to process events of a given source (e.g. Apache logs), `event.module` should contain the name of this module. | constant_keyword |
 | input.type | Type of filebeat input. | keyword |
 | log.offset | Log offset. | long |
-| observer.vendor |  | constant_keyword |
+| observer.vendor | Vendor name of the observer. | constant_keyword |
 | package.fixed_version |  | keyword |
 | qualys_vmdr.asset_host_detection.asset_id |  | long |
 | qualys_vmdr.asset_host_detection.cloud_provider |  | keyword |
@@ -583,7 +585,7 @@ An example event for `asset_host_detection` looks as following:
 | vulnerability.package.fixed_version |  | keyword |
 | vulnerability.package.name |  | keyword |
 | vulnerability.package.version |  | keyword |
-| vulnerability.scanner.vendor |  | constant_keyword |
+| vulnerability.scanner.vendor | The name of the vulnerability scanner vendor. | constant_keyword |
 | vulnerability.title |  | keyword |
 
 

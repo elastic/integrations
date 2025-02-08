@@ -1,9 +1,6 @@
 ---
 description: Pipeline for processing Asset Host Detection data.
 processors:
-  - drop:
-      description: Ignore want_more placeholder message.
-      if: ctx.message == "want_more"
   - set:
       field: ecs.version
       tag: set_ecs_version
@@ -1148,6 +1145,7 @@ processors:
   # The next two gsub processors facilitate `splitOnToken` in the subsequent script processor, which otherwise cannot split \n or \t.
   - gsub:
       field: qualys_vmdr.asset_host_detection.vulnerability.results
+      description: To facilitate splitOnToken in the subsequent script processor, which otherwise cannot split on \n.
       pattern: '\n'
       replacement: ';;'
       if: ctx.qualys_vmdr?.asset_host_detection?.vulnerability?.results != null && ctx.qualys_vmdr.asset_host_detection.vulnerability.results.startsWith("Package")
@@ -1156,6 +1154,7 @@ processors:
   - gsub:
       field: qualys_vmdr.asset_host_detection.vulnerability.results
       pattern: '\t'
+      description: To facilitate splitOnToken in the subsequent script processor, which otherwise cannot split on \t.
       replacement: '||'
       tag: gsub_qualys_vmdr_asset_host_detection_vulnerability_results_tab
       if: ctx.qualys_vmdr?.asset_host_detection?.vulnerability?.results != null && ctx.qualys_vmdr.asset_host_detection.vulnerability.results.startsWith("Package")
