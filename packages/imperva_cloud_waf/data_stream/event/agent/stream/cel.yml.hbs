@@ -17,6 +17,9 @@ state:
   want_more: false
   user: "{{api_id}}"
   password: "{{api_key}}"
+redact:
+  fields:
+    - password
 program: |
   (
     has(state.worklist) && size(state.worklist) > 0 ?
@@ -52,7 +55,9 @@ program: |
             },
           },
           "want_more": false,
-        }
+          "user": state.user,
+          "password": state.password,
+         }
       )
   ).as(v, has(v.?events.error) ?
     v
@@ -85,7 +90,7 @@ program: |
           "next": (int(v.next)+1) < size(v.worklist) ? (int(v.next)+1) : 0,
           "want_more": (int(v.next)+1) < size(v.worklist),
           "user": state.user,
-          "password": state.password
+          "password": state.password,
         })
       :
         {
@@ -102,6 +107,8 @@ program: |
             },
           },
           "want_more": false,
+          "user": state.user,
+          "password": state.password,
         }
       )
     )
