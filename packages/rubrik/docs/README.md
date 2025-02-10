@@ -6,7 +6,7 @@ These metrics help you understand how to properly manage your Rubrik infrastruct
 
 ## Compatibility
 
-The integration uses the [HTTP JSON input](https://www.elastic.co/guide/en/beats/filebeat/current/filebeat-input-httpjson.html) to collect metrics from Rubrik APIs.
+The integration uses the [CEL input](https://www.elastic.co/guide/en/beats/filebeat/current/filebeat-input-cel.html) to collect metrics from Rubrik APIs.
 
 ## Requirements
 

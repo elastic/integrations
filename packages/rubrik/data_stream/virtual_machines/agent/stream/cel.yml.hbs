@@ -35,6 +35,7 @@ processors:
 
 state:
   index: 0
+  pageSize: {{pageSize}}
   queries:
     - |
         query VirtualMachinesQuery($first: Int, $after: String, $filter: [Filter!]) {
@@ -74,20 +75,8 @@ program: |-
         "Body": {
           "query": state.queries[state.index],
           "variables": {
-              {{#if pageSize}}
-              "first": {{pageSize}},
-              {{/if}}
+              "first": has(state.pageSize) ? state.pageSize : null,
               "after": has(state.cursor) ? state.cursor.after : null,
-              "filter": [
-                {{#if filters}}
-                  {{#each filters}}
-                    {
-                      "field": "{{field}}",
-                      "texts": [{{#each values}}"{{this}}"{{#unless @last}}, {{/unless}}{{/each}}]
-                    }{{#unless @last}},{{/unless}}
-                  {{/each}}
-                {{/if}}
-              ]
             }
         }.encode_json(),
       }
