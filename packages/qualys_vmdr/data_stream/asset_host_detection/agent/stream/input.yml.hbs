@@ -65,8 +65,10 @@ program: |
                         "AHD_LIST": (
                           ahd_body.?doc.HOST_LIST_VM_DETECTION_OUTPUT.RESPONSE.HOST_LIST.HOST.orValue([]).flatten()
                         ),
-                        // HOST_QID_LIST has unique QIDs from this batch of hosts.
-                        // When unique QIDs > 1000, it is split into even/odd to avoid "414 Request-URI Too Long" in KB API.
+                        // HOST_QID_LIST has unique QIDs from current batch of hosts.
+                        // When entire HOST_QID_LIST is sent to KB API && if size(HOST_QID_LIST) ~ 2000, this can lead to "414 Request-URI Too Long" response.
+                        // As a temporary workaround when unique QIDs >= 1000, it is split into even/odd.
+                        // This workaround will be updated with new tail and front functions added from https://github.com/elastic/mito/pull/81 in next beats version.
                         "HOST_QID_LIST": (
                           ahd_body.?doc.HOST_LIST_VM_DETECTION_OUTPUT.RESPONSE.HOST_LIST.HOST.orValue([]).collate("DETECTION_LIST.DETECTION.QID").flatten().as(qids,
                             qids.map(qid, string(qid)).as(str_qids, zip(str_qids, qids))
@@ -144,7 +146,6 @@ program: |
     !has(state.worklist) ? state : 
       size(state.worklist) > 0 ?
         request("GET", state.url.trim_right("/") + "/api/2.0/fo/knowledge_base/vuln/?" +
-          // TODO: A batch of 1000 QIDs is sent at-a-time to avoid "414 Request-URI Too Long".
           {
             "ids": [state.worklist.HOST_QID_LIST[0].join(",")],
             "action": ["list"],
@@ -213,7 +214,7 @@ program: |
                   }
               ).as(state, 
                 state.want_more && size(state.events) == 0 ?
-                  state.with({"events": [{"message": "want_more"}]})
+                  state.with({"events": [{"message": "retry"}]})
                 :
                   state
               )
@@ -262,7 +263,7 @@ program: |
 - drop_event:
     when:
       equals:
-        message: want_more
+        message: retry
 fields_under_root: true
 fields:
   _conf:
