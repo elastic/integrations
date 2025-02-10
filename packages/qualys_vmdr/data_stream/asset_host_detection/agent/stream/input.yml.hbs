@@ -260,10 +260,6 @@ program: |
     )
   )
 
-- drop_event:
-    when:
-      equals:
-        message: retry
 fields_under_root: true
 fields:
   _conf:
@@ -284,8 +280,12 @@ tags:
 {{#contains "forwarded" tags}}
 publisher_pipeline.disable_host: true
 {{/contains}}
-{{#if processors}}
 processors:
+- drop_event:
+    when:
+      equals:
+        message: retry
+{{#if processors}}
 {{processors}}
 {{/if}}
 xsd:
