@@ -58,7 +58,7 @@ processors:
   - set:
       field: cloudflare_logpush.firewall_event.timestamp
       copy_from: '@timestamp'
-      ignore_failure: true
+      ignore_empty_value: true
   - rename:
       field: json.Action
       target_field: cloudflare_logpush.firewall_event.action
@@ -66,7 +66,7 @@ processors:
   - set:
       field: event.action
       copy_from: cloudflare_logpush.firewall_event.action
-      ignore_failure: true
+      ignore_empty_value: true
   - lowercase:
       field: event.action
       ignore_missing: true
@@ -77,7 +77,7 @@ processors:
   - set:
       field: http.request.method
       copy_from: cloudflare_logpush.firewall_event.client.request.method
-      ignore_failure: true
+      ignore_empty_value: true
   - convert:
       field: json.EdgeResponseStatus
       target_field: cloudflare_logpush.firewall_event.edge.response.status
@@ -91,7 +91,7 @@ processors:
   - set:
       field: http.response.status_code
       copy_from: cloudflare_logpush.firewall_event.edge.response.status
-      ignore_failure: true
+      ignore_empty_value: true
   - rename:
       field: json.RuleID
       target_field: cloudflare_logpush.firewall_event.rule.id
@@ -99,7 +99,7 @@ processors:
   - set:
       field: rule.id
       copy_from: cloudflare_logpush.firewall_event.rule.id
-      ignore_failure: true
+      ignore_empty_value: true
   - convert:
       field: json.ClientASN
       target_field: cloudflare_logpush.firewall_event.client.asn.value
@@ -113,7 +113,7 @@ processors:
   - set:
       field: source.as.number
       copy_from: cloudflare_logpush.firewall_event.client.asn.value
-      ignore_failure: true
+      ignore_empty_value: true
   - rename:
       field: json.ClientCountry
       target_field: cloudflare_logpush.firewall_event.client.country
@@ -121,7 +121,7 @@ processors:
   - set:
       field: source.geo.country_iso_code
       copy_from: cloudflare_logpush.firewall_event.client.country
-      ignore_failure: true
+      ignore_empty_value: true
   - convert:
       field: json.ClientIP
       target_field: cloudflare_logpush.firewall_event.client.ip
@@ -135,7 +135,7 @@ processors:
   - set:
       field: source.ip
       copy_from: cloudflare_logpush.firewall_event.client.ip
-      ignore_failure: true
+      ignore_empty_value: true
   - rename:
       field: json.ClientASNDescription
       target_field: cloudflare_logpush.firewall_event.client.asn.description
@@ -212,7 +212,7 @@ processors:
   - set:
       field: url.scheme
       copy_from: cloudflare_logpush.firewall_event.client.request.scheme
-      ignore_failure: true
+      ignore_empty_value: true
   - user_agent:
       field: json.ClientRequestUserAgent
       if: ctx.json?.ClientRequestUserAgent != ''
@@ -264,6 +264,7 @@ processors:
   - set:
       field: event.id
       copy_from: cloudflare_logpush.firewall_event.ray.id
+      ignore_empty_value: true
   - rename:
       field: json.Source
       target_field: cloudflare_logpush.firewall_event.source
