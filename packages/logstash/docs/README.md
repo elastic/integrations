@@ -83,89 +83,42 @@ An example event for `health_report` looks as following:
 {
     "logstash": {
         "pipeline": {
-            "symptom": "The pipeline is concerning; 1 area is impacted and 1 diagnosis is available",
+            "symptom": "The pipeline is unhealthy; 1 area is impacted and 1 diagnosis is available",
             "diagnosis": {
-                "help_url": "https://www.elastic.co/guide/en/logstash/8.17/health-report-pipeline-status.html#finished",
-                "cause": "pipeline has finished running because its inputs have been closed and events have been processed",
-                "action": "if you expect this pipeline to run indefinitely, you will need to configure its inputs to continue receiving or fetching events",
-                "id": "logstash:health:pipeline:status:diagnosis:finished"
+                "help_url": "https://www.elastic.co/guide/en/logstash/8.17/health-report-pipeline-status.html#terminated",
+                "action": "view logs to determine the cause of abnormal pipeline shutdown",
+                "cause": "pipeline is not running, likely because it has encountered an error",
+                "id": "logstash:health:pipeline:status:diagnosis:terminated"
             },
-            "id": "self-closer",
-            "state": "FINISHED",
+            "state": "TERMINATED",
             "impacts": {
-                "severity": 10,
+                "severity": 1,
                 "impact_areas": [
                     "pipeline_execution"
                 ],
-                "description": "pipeline has finished running",
+                "description": "the pipeline is not currently processing",
                 "id": "logstash:health:pipeline:status:impact:not_processing"
             },
+            "id": "bad",
             "flow": {
                 "worker_utilization": {
-                    "current": 0.0009642,
-                    "last_24_hours": 0.0009642,
-                    "last_5_minutes": 0.0009642,
-                    "last_1_hour": 0.0009642,
-                    "last_15_minutes": 0.0009642,
-                    "lifetime": 0.0009642,
-                    "last_1_minute": 0.0009642
+                    "current": 0.000001826,
+                    "last_24_hours": 0.000001826,
+                    "last_5_minutes": 0.000001826,
+                    "last_1_hour": 0.000001826,
+                    "last_15_minutes": 0.000001826,
+                    "lifetime": 0.000001826,
+                    "last_1_minute": 0.000001826
                 }
             },
-            "status": "yellow"
+            "status": "red"
         },
         "node": {
             "address": "0.0.0.0:9600",
-            "name": "87f8aa570fcb",
-            "uuid": "8c2afc7e-a64f-42f3-9ab9-5e16dc95c9bc",
-            "version": "8.17.1"
+            "name": "9cbebe0b66d9",
+            "version": "8.17.1",
+            "uuid": "1a3d4358-0d0a-4b82-8cf7-21f59ea592e8"
         }
-    },
-    "agent": {
-        "name": "a9f1b9c5936b",
-        "id": "af72217c-8c4d-427f-8c92-6b4566e9937f",
-        "type": "filebeat",
-        "ephemeral_id": "40ea6231-3856-4b90-8083-73b30558cfe7",
-        "version": "8.17.1"
-    },
-    "@timestamp": "2025-01-28T18:41:24.669Z",
-    "ecs": {
-        "version": "8.0.0"
-    },
-    "data_stream": {
-        "namespace": "default",
-        "type": "metrics",
-        "dataset": "logstash.health_report"
-    },
-    "host": {
-        "hostname": "a9f1b9c5936b",
-        "os": {
-            "kernel": "6.10.14-linuxkit",
-            "codename": "focal",
-            "name": "Ubuntu",
-            "family": "debian",
-            "type": "linux",
-            "version": "20.04.6 LTS (Focal Fossa)",
-            "platform": "ubuntu"
-        },
-        "containerized": false,
-        "ip": [
-            "172.17.0.3"
-        ],
-        "name": "a9f1b9c5936b",
-        "mac": [
-            "02-42-AC-11-00-03"
-        ],
-        "architecture": "aarch64"
-    },
-    "elastic_agent": {
-        "id": "af72217c-8c4d-427f-8c92-6b4566e9937f",
-        "version": "8.17.1",
-        "snapshot": false
-    },
-    "event": {
-        "agent_id_status": "verified",
-        "ingested": "2025-01-28T18:41:28Z",
-        "dataset": "logstash.health_report"
     }
 }
 ```
