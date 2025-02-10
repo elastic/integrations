@@ -10,7 +10,7 @@ This module has been tested against the latest Qualys VMDR version **v2**.
 
 ## Data streams
 
-The Qualys VMDR integration collects data for the following two events:
+The Qualys VMDR integration collects data for the following three events:
 
 | Event Type           |
 |----------------------|
@@ -19,6 +19,8 @@ The Qualys VMDR integration collects data for the following two events:
 | User Activity Log    |
 
 Reference for [Rest APIs](https://qualysguard.qg2.apps.qualys.com/qwebhelp/fo_portal/api_doc/index.htm) of Qualys VMDR.
+
+Starting from Qualys VMDR integration version 6.0, the `Asset Host Detection` data stream includes enriched vulnerabilities data from Qualys Knowledge Base API.
 
 ## Requirements
 
