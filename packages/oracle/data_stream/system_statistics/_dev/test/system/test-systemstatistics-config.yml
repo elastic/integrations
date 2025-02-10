@@ -7,16 +7,16 @@ agent:
     language: "sh"
     contents: |
       set -eu
-      if grep wolfi /etc/os-release > /dev/null ; then
+      if grep -q wolfi /etc/os-release ; then
         apk update
         apk add libaio wget unzip
-      elif grep "Red Hat" /etc/os-release > /dev/null ; then
+      elif grep -q "Red Hat" /etc/os-release ; then
         microdnf update -y
         microdnf install -y libaio wget unzip
         microdnf clean all
-      elif grep "Ubuntu" /etc/os-release > /dev/null ; then
+      elif grep -q "Ubuntu" /etc/os-release ; then
         apt-get update
-        if grep "Ubuntu 24" /etc/os-release > /dev/null; then
+        if grep -q "Ubuntu 24" /etc/os-release ; then
             # Error when installing libaio1
             # Package libaio1 is not available, but is referred to by another package.
             apt-get -y install libaio1t64 wget unzip
