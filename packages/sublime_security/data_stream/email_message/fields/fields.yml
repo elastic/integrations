@@ -641,9 +641,25 @@
                     - name: type
                       type: keyword
                       description: The type of authentication result, derived from the field name.
+                # https://github.com/elastic/kibana/pull/204104
+                # Option 1: generate all keys as keywords under fields
+                # - name: fields
+                #   type: object
+                #   object_type: keyword
+                #   object_type_mapping_type: "*"
+                # - name: fields.position
+                #   # description: ?
+                #   type: long # should be considered as keyword too?
+                # Option 2: keep position as long
                 - name: fields
-                  type: object
-                  object_type: keyword
+                  type: group
+                  fields:
+                    - name: "*"
+                      type: object
+                      object_type: keyword
+                    - name: position
+                      # description: ?
+                      type: long
                 - name: index
                   type: long
                   description: Index indicates the order in which a hop occurred from sender to recipient.
