@@ -132,7 +132,7 @@
               type: boolean
               description: If the file was pre-approved to run
         - name: installs
-          type: nested
+          type: group
           fields:
             - name: application
               type: keyword
@@ -144,7 +144,7 @@
               type: keyword
               description: The vendor of the application
         - name: uninstalls
-          type: nested
+          type: group
           fields:
             - name: application
               type: keyword
@@ -156,7 +156,7 @@
               type: keyword
               description: The vendor of the application
         - name: elevated_applications
-          type: nested
+          type: group
           fields:
             - name: name
               type: keyword
@@ -189,4 +189,17 @@
               type: keyword
               description: Link to the file (checksum) on virustotal.com
         - name: scan_results
-          type: flattened
+          type: group
+          fields:
+            - name: scan_result
+              type: keyword
+              description: Malware scan result (possible values - Clean, Malicious, Suspicious)
+            - name: scan_result_code
+              type: keyword
+              description: 0 = Clean, 1 = Malicious, 2 = Suspicious
+            - name: engine
+              type: keyword
+              description: Name of the antivirus engine with this result
+            - name: threat
+              type: keyword
+              description: Name of malware, if file is malicious or suspicious

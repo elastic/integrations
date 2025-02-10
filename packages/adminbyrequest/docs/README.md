@@ -180,7 +180,10 @@ The following non-ECS fields are used in events documents:
 | adminbyrequest.auditlog.request_time_utc | Request time in Coordinated Universal Time (UTC) | date |
 | adminbyrequest.auditlog.response_time | Time between a request and approval by an administrator | keyword |
 | adminbyrequest.auditlog.response_time_in_seconds | Response time in seconds | long |
-| adminbyrequest.auditlog.scan_results |  | flattened |
+| adminbyrequest.auditlog.scan_results.engine | Name of the antivirus engine with this result | keyword |
+| adminbyrequest.auditlog.scan_results.scan_result | Malware scan result (possible values - Clean, Malicious, Suspicious) | keyword |
+| adminbyrequest.auditlog.scan_results.scan_result_code | 0 = Clean, 1 = Malicious, 2 = Suspicious | keyword |
+| adminbyrequest.auditlog.scan_results.threat | Name of malware, if file is malicious or suspicious | keyword |
 | adminbyrequest.auditlog.settings_name | The name of the matching subsettings or "Global" if no subsetting was matched | keyword |
 | adminbyrequest.auditlog.sso_validated | If the request was validated by Single Sign-On (SSO) on the endpoint | boolean |
 | adminbyrequest.auditlog.start_time_utc | Start time in Coordinated Universal Time (UTC) | date |
