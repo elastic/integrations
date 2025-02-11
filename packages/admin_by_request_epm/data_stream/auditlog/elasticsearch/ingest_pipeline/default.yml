@@ -6,11 +6,11 @@ processors:
 
   - rename:
       field: message
-      target_field: adminbyrequest.auditlog
+      target_field: admin_by_request_epm.auditlog
 
   - fingerprint:
       fields:
-        - adminbyrequest.auditlog.id
+        - admin_by_request_epm.auditlog.id
       target_field: "_id"
 
 ####################
@@ -64,8 +64,8 @@ processors:
           return snakeCaseMap;
         }
 
-        if (ctx.adminbyrequest.auditlog != null) {
-          ctx.adminbyrequest.auditlog = keysToSnakeCase(ctx.adminbyrequest.auditlog);
+        if (ctx.admin_by_request_epm.auditlog != null) {
+          ctx.admin_by_request_epm.auditlog = keysToSnakeCase(ctx.admin_by_request_epm.auditlog);
         }
 
 
@@ -90,82 +90,82 @@ processors:
 
   - set:
       field: event.dataset
-      value: adminbyrequest.auditlog
+      value: admin_by_request_epm.auditlog
 
   - set:
       field: event.module
-      value: adminbyrequest
+      value: admin_by_request_epm
 
   - set:
       field: user.full_name
-      copy_from: adminbyrequest.auditlog.user.full_name
+      copy_from: admin_by_request_epm.auditlog.user.full_name
       ignore_empty_value: true
 
   - append:
       field: related.user
-      value: '{{adminbyrequest.auditlog.user.full_name}}'
+      value: '{{admin_by_request_epm.auditlog.user.full_name}}'
       allow_duplicates: false
-      if: ctx.adminbyrequest.auditlog.user.full_name != null
+      if: ctx.admin_by_request_epm.auditlog.user.full_name != null
 
   - set:
       field: user.email
-      copy_from: adminbyrequest.auditlog.user.email
+      copy_from: admin_by_request_epm.auditlog.user.email
       ignore_empty_value: true
 
   - append:
       field: related.user
-      value: '{{adminbyrequest.auditlog.user.email}}'
+      value: '{{admin_by_request_epm.auditlog.user.email}}'
       allow_duplicates: false
-      if: ctx.adminbyrequest.auditlog.user.email != null
+      if: ctx.admin_by_request_epm.auditlog.user.email != null
 
   - set:
       field: host.hostname
-      copy_from: adminbyrequest.auditlog.computer.name
+      copy_from: admin_by_request_epm.auditlog.computer.name
       ignore_empty_value: true
 
   - append:
       field: related.hosts
-      value: '{{adminbyrequest.auditlog.computer.name}}'
+      value: '{{admin_by_request_epm.auditlog.computer.name}}'
       allow_duplicates: false
-      if: ctx.adminbyrequest.auditlog.computer.name != null
+      if: ctx.admin_by_request_epm.auditlog.computer.name != null
 
   - set:
       field: os.platform
-      copy_from: adminbyrequest.auditlog.computer.platform
+      copy_from: admin_by_request_epm.auditlog.computer.platform
       ignore_empty_value: true
 
   - set:
       field: file.name
-      copy_from: adminbyrequest.auditlog.application.file
+      copy_from: admin_by_request_epm.auditlog.application.file
       ignore_empty_value: true
 
   - set:
       field: file.path
-      copy_from: adminbyrequest.auditlog.application.path
+      copy_from: admin_by_request_epm.auditlog.application.path
       ignore_empty_value: true
 
   - set:
       field: hash.sha256
-      copy_from: adminbyrequest.auditlog.application.sha256
+      copy_from: admin_by_request_epm.auditlog.application.sha256
       ignore_empty_value: true
 
   - append:
       field: related.hash
-      value: '{{adminbyrequest.auditlog.application.sha256}}'
+      value: '{{admin_by_request_epm.auditlog.application.sha256}}'
       allow_duplicates: false
-      if: ctx.adminbyrequest.auditlog.application?.sha256 != null
+      if: ctx.admin_by_request_epm.auditlog.application?.sha256 != null
 
   - set:
       field: "@timestamp"
-      copy_from: adminbyrequest.auditlog.request_time_utc
+      copy_from: admin_by_request_epm.auditlog.request_time_utc
 
 ####################
 # Admin By Request Auditlog Fields #
 ####################
   # convert response time into a numeric field
   - grok:
-      field: adminbyrequest.auditlog.response_time
-      if: ctx.adminbyrequest.auditlog.response_time != null
+      field: admin_by_request_epm.auditlog.response_time
+      if: ctx.admin_by_request_epm.auditlog.response_time != null
       patterns: ["%{HOUR:hours}:%{MINUTE:minutes}:%{SECOND:seconds}.%{NANOSECOND:nanoseconds}"]
       pattern_definitions:
         NANOSECOND: \d{7}
@@ -173,18 +173,18 @@ processors:
   - script:
       lang: painless
       description: Creating new field response_time_in_seconds from hours, minutes, seconds and nanoseconds
-      if: ctx.adminbyrequest.auditlog.response_time != null
+      if: ctx.admin_by_request_epm.auditlog.response_time != null
       source: |
-        ctx.adminbyrequest.auditlog.response_time_in_seconds = (Integer.parseInt(ctx.hours) * 3600) + 
+        ctx.admin_by_request_epm.auditlog.response_time_in_seconds = (Integer.parseInt(ctx.hours) * 3600) + 
                               (Integer.parseInt(ctx.minutes) * 60) + 
                               Integer.parseInt(ctx.seconds) + 
                               (Integer.parseInt(ctx.nanoseconds) / 10000000.0);
 
   - remove:
       field:
-        - adminbyrequest.auditlog.request_time
-        - adminbyrequest.auditlog.start_time
-        - adminbyrequest.auditlog.end_time
+        - admin_by_request_epm.auditlog.request_time
+        - admin_by_request_epm.auditlog.start_time
+        - admin_by_request_epm.auditlog.end_time
         - hours
         - minutes
         - seconds

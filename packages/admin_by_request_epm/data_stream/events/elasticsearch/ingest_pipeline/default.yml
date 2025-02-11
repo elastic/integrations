@@ -6,11 +6,11 @@ processors:
 
   - rename:
       field: message
-      target_field: adminbyrequest.events
+      target_field: admin_by_request_epm.events
 
   - fingerprint:
       fields:
-        - adminbyrequest.events.id
+        - admin_by_request_epm.events.id
       target_field: "_id"
 
 
@@ -65,8 +65,8 @@ processors:
           return snakeCaseMap;
         }
 
-        if (ctx.adminbyrequest.events != null) {
-          ctx.adminbyrequest.events = keysToSnakeCase(ctx.adminbyrequest.events);
+        if (ctx.admin_by_request_epm.events != null) {
+          ctx.admin_by_request_epm.events = keysToSnakeCase(ctx.admin_by_request_epm.events);
         }
 
 
@@ -91,50 +91,50 @@ processors:
 
   - set:
       field: event.dataset
-      value: adminbyrequest.events
+      value: admin_by_request_epm.events
 
   - set:
       field: event.module
-      value: adminbyrequest
+      value: admin_by_request_epm
 
   - set:
       field: host.hostname
-      copy_from: adminbyrequest.events.computer_name
+      copy_from: admin_by_request_epm.events.computer_name
       ignore_empty_value: true
 
   - append:
       field: related.hosts
-      value: '{{adminbyrequest.events.computer_name}}'
+      value: '{{admin_by_request_epm.events.computer_name}}'
       allow_duplicates: false
-      if: ctx.adminbyrequest.events.computer_name != null
+      if: ctx.admin_by_request_epm.events.computer_name != null
 
   - set:
       field: user.name
-      copy_from: adminbyrequest.events.user_name
+      copy_from: admin_by_request_epm.events.user_name
       ignore_empty_value: true
 
   - set:
       field: url.original
-      copy_from: adminbyrequest.events.audit_log_url
+      copy_from: admin_by_request_epm.events.audit_log_url
       ignore_empty_value: true
 
   - set:
       field: file.name
-      copy_from: adminbyrequest.events.application.file
+      copy_from: admin_by_request_epm.events.application.file
       ignore_empty_value: true
 
   - set:
       field: file.path
-      copy_from: adminbyrequest.events.application.path
+      copy_from: admin_by_request_epm.events.application.path
       ignore_empty_value: true
 
   - set:
       field: hash.sha256
-      copy_from: adminbyrequest.events.application.sha256
+      copy_from: admin_by_request_epm.events.application.sha256
       ignore_empty_value: true
 
   - append:
       field: related.hash
-      value: '{{adminbyrequest.events.application.sha256}}'
+      value: '{{admin_by_request_epm.events.application.sha256}}'
       allow_duplicates: false
-      if: ctx.adminbyrequest.events.application?.sha256 != null
+      if: ctx.admin_by_request_epm.events.application?.sha256 != null
