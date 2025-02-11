@@ -2114,7 +2114,7 @@ processors:
   - set:
       field: url.scheme
       value: http
-      if: ctx.crowdstrike?.DownloadPort != 443
+      if: ctx.crowdstrike?.DownloadPort != null && ctx.crowdstrike.DownloadPort != 443
   - set:
       field: url.full
       value: "{{{url.scheme}}}://{{{server.address}}}{{{url.path}}}"
@@ -2183,17 +2183,22 @@ processors:
   - set:
       field: dns.type
       value: query
-      if: ctx.event?.action == "DnsRequest"
+      if: ctx.event?.action != null && ctx.event.action.contains("DnsRequest")
   - registered_domain:
       field: crowdstrike.DomainName
       target_field: dns.question
       ignore_missing: true
-      if: ctx.event?.action == "DnsRequest"
+      if: ctx.event?.action != null && ctx.event.action.contains("DnsRequest")
   - rename:
       field: dns.question.domain
       target_field: dns.question.name
       ignore_missing: true
-      if: ctx.event?.action == "DnsRequest"
+      if: ctx.event?.action != null && ctx.event.action.contains("DnsRequest")
+  - rename:
+      field: crowdstrike.DomainName
+      target_field: dns.question.name
+      ignore_missing: true
+      if: ctx.event?.action != null && ctx.event.action.contains("DnsRequest") && ctx.dns?.question?.name == null
   - script:
       tag: dns-request-type-to-name
       description: Map decimal DNS request type to its name.
@@ -2246,7 +2251,7 @@ processors:
         "257": CAA
         "32768": TA
         "32769": DLV
-      if: ctx.event?.action == "DnsRequest" && ctx.crowdstrike?.RequestType != null && !ctx.crowdstrike.RequestType.isEmpty()
+      if: ctx.event?.action != null && ctx.event.action.contains("DnsRequest") && ctx.crowdstrike?.RequestType != null && !ctx.crowdstrike.RequestType.isEmpty()
       source: |-
         def t = params[ctx.crowdstrike.RequestType];
         if (t != null) {
@@ -2256,6 +2261,18 @@ processors:
           ctx.dns.question.type = t;
           ctx.crowdstrike.remove("RequestType");
         }
+
+  # SMB fields.
+  - registered_domain:
+      field: crowdstrike.DomainName
+      target_field: destination
+      ignore_missing: true
+      if: ctx.event?.action != null && ctx.event.action.contains("SmbServerShareOpenedEtw")
+  - rename:
+      field: crowdstrike.DomainName
+      target_field: destination.domain
+      ignore_missing: true
+      if: ctx.event?.action != null && ctx.event.action.contains("SmbServerShareOpenedEtw") && ctx.destination?.domain == null
 
   ## File fields.
   - convert:
