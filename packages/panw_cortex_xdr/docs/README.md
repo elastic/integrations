@@ -144,22 +144,65 @@ An example event for `alerts` looks as following:
 | input.type | Type of Filebeat input. | keyword |
 | log.flags | Flags for the log file. | keyword |
 | log.offset | Offset of the entry in the log file. | long |
+| panw_cortex.xdr.action_country |  | keyword |
+| panw_cortex.xdr.action_external_hostname | Any external hostname related to the specific event action. | keyword |
+| panw_cortex.xdr.action_file_macro_sha256 |  | keyword |
 | panw_cortex.xdr.action_pretty | Pretty description of the action type. | keyword |
+| panw_cortex.xdr.action_process_causality_id | The parent processor ID related to the action. | keyword |
+| panw_cortex.xdr.action_process_signature_status |  | keyword |
+| panw_cortex.xdr.actor_causality_id | The parent process ID of the actor process. | keyword |
+| panw_cortex.xdr.actor_process_causality_id | The parent processor ID related to the actor. | keyword |
+| panw_cortex.xdr.actor_process_command_line | Actor full command line. | keyword |
+| panw_cortex.xdr.actor_process_image_md5 |  | keyword |
+| panw_cortex.xdr.actor_process_image_name | Actor binary name. | keyword |
+| panw_cortex.xdr.actor_process_image_path |  | keyword |
+| panw_cortex.xdr.actor_process_image_sha256 | SHA256 hash indentifier of the actor. | keyword |
+| panw_cortex.xdr.actor_process_instance_id | The process ID related to the actor. | keyword |
+| panw_cortex.xdr.actor_process_os_pid |  | keyword |
+| panw_cortex.xdr.actor_process_signature_status | The signature of the actor process. | keyword |
+| panw_cortex.xdr.actor_process_signature_vendor | The signature vendor of the actor process. | keyword |
+| panw_cortex.xdr.actor_thread_thread_id |  | keyword |
 | panw_cortex.xdr.agent_data_collection_status | Collection status of the agent. | boolean |
+| panw_cortex.xdr.agent_host_boot_time | Uptime of the host. | date |
+| panw_cortex.xdr.agent_install_type | Display name of the actor. | keyword |
 | panw_cortex.xdr.agent_ip_addresses_v6 | Agent ipv6 address | ip |
-| panw_cortex.xdr.agent_is_vdi | If agent is running inside a Virtual Desktop. | keyword |
+| panw_cortex.xdr.agent_is_vdi | If agent is running inside a Virtual Desktop. | boolean |
 | panw_cortex.xdr.agent_version | Version of the XDR Endpoint agent. | keyword |
 | panw_cortex.xdr.alert_id | The ID of the alert. | keyword |
 | panw_cortex.xdr.alert_type | The type of the alert. | keyword |
+| panw_cortex.xdr.association_strength |  | long |
 | panw_cortex.xdr.attempt_counter | Attempts to block or stop the malicious process. | long |
 | panw_cortex.xdr.bioc_category_enum_key | Behavior Indicator type key. | keyword |
 | panw_cortex.xdr.bioc_description | A description of the related bioc event. | flattened |
 | panw_cortex.xdr.bioc_indicator | The Behavioral Indicator type matching to the event. | keyword |
+| panw_cortex.xdr.case_id |  | keyword |
 | panw_cortex.xdr.category | The Alert category. | keyword |
+| panw_cortex.xdr.causality_actor_causality_id |  | keyword |
+| panw_cortex.xdr.causality_actor_process_command_line |  | keyword |
+| panw_cortex.xdr.causality_actor_process_execution_time |  | keyword |
+| panw_cortex.xdr.causality_actor_process_image_md5 |  | keyword |
+| panw_cortex.xdr.causality_actor_process_image_name |  | keyword |
+| panw_cortex.xdr.causality_actor_process_image_path |  | keyword |
+| panw_cortex.xdr.causality_actor_process_image_sha256 |  | keyword |
+| panw_cortex.xdr.causality_actor_process_signature_status |  | keyword |
+| panw_cortex.xdr.causality_actor_process_signature_vendor |  | keyword |
+| panw_cortex.xdr.contains_featured_host |  | keyword |
+| panw_cortex.xdr.contains_featured_ip |  | keyword |
+| panw_cortex.xdr.contains_featured_user |  | keyword |
 | panw_cortex.xdr.deduplicate_tokens |  | keyword |
 | panw_cortex.xdr.description | A description of the related event. | keyword |
+| panw_cortex.xdr.dns_query_name | The related DNS query for the event. | keyword |
+| panw_cortex.xdr.dst_action_country | The country related to the destination. | keyword |
+| panw_cortex.xdr.dst_action_external_hostname | The external hostname of the destination. | keyword |
+| panw_cortex.xdr.dst_action_external_port | The external (NAT) port of the destination. | keyword |
+| panw_cortex.xdr.dst_agent_id | The endpoint ID of a destination agent. | keyword |
+| panw_cortex.xdr.dst_association_strength |  | long |
+| panw_cortex.xdr.dst_causality_actor_process_execution_time | The process execution time of the destination process. | keyword |
 | panw_cortex.xdr.end_match_attempt_ts |  | date |
 | panw_cortex.xdr.endpoint_id | The unique ID of the endpoint. | keyword |
+| panw_cortex.xdr.event_id | The ID unique to the underlying event related to the alert. | keyword |
+| panw_cortex.xdr.event_sub_type | Sub type of the event related to the alert. | integer |
+| panw_cortex.xdr.event_type | Event type | keyword |
 | panw_cortex.xdr.events.action_country |  | keyword |
 | panw_cortex.xdr.events.action_external_hostname | Any external hostname related to the specific event action. | keyword |
 | panw_cortex.xdr.events.action_file_macro_sha256 |  | keyword |
@@ -217,6 +260,19 @@ An example event for `alerts` looks as following:
 | panw_cortex.xdr.events.story_id |  | keyword |
 | panw_cortex.xdr.external_id | External ID related to the Alert itself. | keyword |
 | panw_cortex.xdr.filter_rule_id | ID of the filter rule. | keyword |
+| panw_cortex.xdr.fw_app_category | Layer 7 application category related to the firewall event. | keyword |
+| panw_cortex.xdr.fw_app_id | The layer 7 application ID from the firewall event. | keyword |
+| panw_cortex.xdr.fw_app_subcategory | Layer 7 application subcategory related to the firewall event. | keyword |
+| panw_cortex.xdr.fw_app_technology | Layer 7 application type related to the firewall event. | keyword |
+| panw_cortex.xdr.fw_device_name | Related firewall device. | keyword |
+| panw_cortex.xdr.fw_email_recipient |  | keyword |
+| panw_cortex.xdr.fw_email_sender |  | keyword |
+| panw_cortex.xdr.fw_email_subject |  | keyword |
+| panw_cortex.xdr.fw_is_phishing | If event is related to a phishing campaign. | keyword |
+| panw_cortex.xdr.fw_misc | Additional information related to the firewall event. | keyword |
+| panw_cortex.xdr.fw_url_domain | Related domain to the firewall event. | keyword |
+| panw_cortex.xdr.fw_vsys | The related VSYS name if applicable. | keyword |
+| panw_cortex.xdr.fw_xff |  | keyword |
 | panw_cortex.xdr.is_pcap | If alert contains pcap. | boolean |
 | panw_cortex.xdr.is_whitelisted | If process is whitelisted. | boolean |
 | panw_cortex.xdr.local_insert_ts |  | date |
@@ -224,11 +280,25 @@ An example event for `alerts` looks as following:
 | panw_cortex.xdr.mac_address | Array of all the MAC addresses related to the agent. | keyword |
 | panw_cortex.xdr.matching_service_rule_id |  | keyword |
 | panw_cortex.xdr.matching_status | Matching status of the endpoint group. | keyword |
+| panw_cortex.xdr.module_id | The ID of the module that caught the event. | keyword |
 | panw_cortex.xdr.original_tags | Original tags for the asset. | keyword |
+| panw_cortex.xdr.os_actor_causality_id | The ID of the OS actor process | keyword |
+| panw_cortex.xdr.os_actor_effective_username | Username related to the OS actor. | keyword |
+| panw_cortex.xdr.os_actor_process_causality_id | The ID of the parent process related to the OS actor. | keyword |
+| panw_cortex.xdr.os_actor_process_command_line | OS actor full command line example. | keyword |
+| panw_cortex.xdr.os_actor_process_image_name | OS actor binary name. | keyword |
+| panw_cortex.xdr.os_actor_process_image_path | OS actor binary path. | keyword |
+| panw_cortex.xdr.os_actor_process_image_sha256 | SHA256 hash indentifier of the OS actor process. | keyword |
+| panw_cortex.xdr.os_actor_process_instance_id | The process ID related to the OS actor. | keyword |
+| panw_cortex.xdr.os_actor_process_os_pid | The OS PID related to the related process. | integer |
+| panw_cortex.xdr.os_actor_process_signature_status | Signature of the OS actor process. | keyword |
+| panw_cortex.xdr.os_actor_process_signature_vendor | Signature vendor of the OS actor process. | keyword |
+| panw_cortex.xdr.os_actor_thread_thread_id | The thread ID related to the related OS actor process. | integer |
 | panw_cortex.xdr.resolution_comment |  | keyword |
 | panw_cortex.xdr.resolution_status |  | keyword |
 | panw_cortex.xdr.source |  | keyword |
 | panw_cortex.xdr.starred | If alert type is prioritized (starred). | boolean |
+| panw_cortex.xdr.story_id |  | keyword |
 
 
 ### Incidents
