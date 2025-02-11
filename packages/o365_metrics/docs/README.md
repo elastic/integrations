@@ -8,24 +8,26 @@ Following Microsoft 365 Graph Reports can be collected by Microsoft Office 365 M
 
 | Report          | API | Data-stream Name | Aggregation Level |
 |-----------------|-----|-------------|-------------------|
-| [Microsoft 365 Active Users Service User Counts](https://learn.microsoft.com/en-us/microsoft-365/admin/activity-reports/active-users-ww?view=o365-worldwide)      |    [reportRoot: getOffice365ServicesUserCounts](https://learn.microsoft.com/en-us/graph/api/reportroot-getoffice365servicesusercounts?view=graph-rest-1.0&tabs=http)    |   Office 365 Active Users metrics   |   `Period`-based   |
+| [Microsoft 365 Active Users Service User Counts](https://learn.microsoft.com/en-us/microsoft-365/admin/activity-reports/active-users-ww?view=o365-worldwide)      |    [reportRoot: getOffice365ServicesUserCounts](https://learn.microsoft.com/en-us/graph/api/reportroot-getoffice365servicesusercounts?view=graph-rest-1.0&tabs=http)    |   Microsoft 365 Active Users metrics   |   `Period`-based   |
 | [Microsoft 365 Groups Activity Group Detail](https://learn.microsoft.com/en-us/microsoft-365/admin/activity-reports/office-365-groups-ww?view=o365-worldwide)      |    [reportRoot: getOffice365GroupsActivityDetail](https://learn.microsoft.com/en-us/graph/api/reportroot-getoffice365groupsactivitydetail?view=graph-rest-1.0&tabs=http)    |   Microsoft 365 Groups Activity Group Detail   |   `Day`-based   |
 | [OneDrive Usage Account Detail](https://learn.microsoft.com/en-us/microsoft-365/admin/activity-reports/onedrive-for-business-usage-ww?view=o365-worldwide)      |    [reportRoot: getOneDriveUsageAccountDetail](https://learn.microsoft.com/en-us/graph/api/reportroot-getonedriveusageaccountdetail?view=graph-rest-1.0&tabs=http)    |   Microsoft 365 OneDrive Usage Account Detail   |   `Day`-based   |
-| [OneDrive Usage Account Counts](https://learn.microsoft.com/en-us/microsoft-365/admin/activity-reports/onedrive-for-business-usage-ww?view=o365-worldwide)      |    [reportRoot: getOneDriveUsageAccountCounts](https://learn.microsoft.com/en-us/graph/api/reportroot-getonedriveusageaccountcounts?view=graph-rest-1.0&tabs=http)    |   Office 365 One Drive Usage metrics   |   `Period`-based   |
-| [OneDrive Usage File Counts](https://learn.microsoft.com/en-us/microsoft-365/admin/activity-reports/onedrive-for-business-usage-ww?view=o365-worldwide)      |    [reportRoot: getOneDriveUsageFileCounts](https://learn.microsoft.com/en-us/graph/api/reportroot-getonedriveusagefilecounts?view=graph-rest-1.0&tabs=http)    |   Office 365 One Drive Usage metrics   |   `Period`-based   |
-| [OneDrive Usage Storage](https://learn.microsoft.com/en-us/microsoft-365/admin/activity-reports/onedrive-for-business-usage-ww?view=o365-worldwide)      |    [reportRoot: getOneDriveUsageStorage](https://learn.microsoft.com/en-us/graph/api/reportroot-getonedriveusagestorage?view=graph-rest-1.0&tabs=http)    |   Office 365 One Drive Usage metrics   |   `Period`-based   |
-| [Outlook Activity Counts](https://learn.microsoft.com/en-us/microsoft-365/admin/activity-reports/email-activity-ww?view=o365-worldwide)      |    [reportRoot: getEmailActivityCounts](https://learn.microsoft.com/en-us/graph/api/reportroot-getemailactivitycounts?view=graph-rest-1.0&tabs=http)    |   Office 365 Outlook Activity metrics   |   `Period`-based   |
+| [OneDrive Usage Account Counts](https://learn.microsoft.com/en-us/microsoft-365/admin/activity-reports/onedrive-for-business-usage-ww?view=o365-worldwide)      |    [reportRoot: getOneDriveUsageAccountCounts](https://learn.microsoft.com/en-us/graph/api/reportroot-getonedriveusageaccountcounts?view=graph-rest-1.0&tabs=http)    |   Microsoft 365 One Drive Usage metrics   |   `Period`-based   |
+| [OneDrive Usage File Counts](https://learn.microsoft.com/en-us/microsoft-365/admin/activity-reports/onedrive-for-business-usage-ww?view=o365-worldwide)      |    [reportRoot: getOneDriveUsageFileCounts](https://learn.microsoft.com/en-us/graph/api/reportroot-getonedriveusagefilecounts?view=graph-rest-1.0&tabs=http)    |   Microsoft 365 One Drive Usage metrics   |   `Period`-based   |
+| [OneDrive Usage Storage](https://learn.microsoft.com/en-us/microsoft-365/admin/activity-reports/onedrive-for-business-usage-ww?view=o365-worldwide)      |    [reportRoot: getOneDriveUsageStorage](https://learn.microsoft.com/en-us/graph/api/reportroot-getonedriveusagestorage?view=graph-rest-1.0&tabs=http)    |   Microsoft 365 One Drive Usage metrics   |   `Period`-based   |
+| [Outlook Activity Counts](https://learn.microsoft.com/en-us/microsoft-365/admin/activity-reports/email-activity-ww?view=o365-worldwide)      |    [reportRoot: getEmailActivityCounts](https://learn.microsoft.com/en-us/graph/api/reportroot-getemailactivitycounts?view=graph-rest-1.0&tabs=http)    |   Microsoft 365 Outlook Activity metrics   |   `Period`-based   |
 | [Outlook App Usage Version Counts](https://learn.microsoft.com/en-us/microsoft-365/admin/activity-reports/email-apps-usage-ww?view=o365-worldwide)      |    [reportRoot: getEmailAppUsageVersionsUserCounts](https://learn.microsoft.com/en-us/graph/api/reportroot-getemailappusageversionsusercounts?view=graph-rest-1.0&tabs=http)    |   Microsoft 365 Outlook App Usage Version Counts metrics   |   `Period`-based   |
 | [Outlook Mailbox Usage Quota Status Mailbox Counts](https://learn.microsoft.com/en-us/microsoft-365/admin/activity-reports/mailbox-usage?view=o365-worldwide)      |    [reportRoot: getMailboxUsageQuotaStatusMailboxCounts](https://learn.microsoft.com/en-us/graph/api/reportroot-getmailboxusagequotastatusmailboxcounts?view=graph-rest-1.0&tabs=http)    |  Microsoft 365 mailbox usage quota status metrics   |   `Period`-based   |
 | [Outlook Mailbox Usage Detail](https://learn.microsoft.com/en-us/microsoft-365/admin/activity-reports/mailbox-usage?view=o365-worldwide)      |    [reportRoot: getMailboxUsageDetail](https://learn.microsoft.com/en-us/graph/api/reportroot-getmailboxusagedetail?view=graph-rest-1.0&tabs=http)    |   Microsoft 365 mailbox usage detail metrics   |   `Period`-based   |
-| [SharePoint Site Usage Storage](https://learn.microsoft.com/en-us/microsoft-365/admin/activity-reports/sharepoint-site-usage-ww?view=o365-worldwide)      |    [reportRoot: getSharePointSiteUsageStorage](https://learn.microsoft.com/en-us/graph/api/reportroot-getsharepointsiteusagestorage?view=graph-rest-1.0&tabs=http)    |   Office 365 Sharepoint Site Usage metrics   |   `Period`-based   |
-| [SharePoint Site Usage Detail](https://learn.microsoft.com/en-us/microsoft-365/admin/activity-reports/sharepoint-site-usage-ww?view=o365-worldwide)      |    [reportRoot: getSharePointSiteUsageDetail](https://learn.microsoft.com/en-us/graph/api/reportroot-getsharepointsiteusagedetail?view=graph-rest-1.0&tabs=http)    |   Office 365 Sharepoint Site Usage metrics   |   `Period`-based   |
+| [SharePoint Site Usage Storage](https://learn.microsoft.com/en-us/microsoft-365/admin/activity-reports/sharepoint-site-usage-ww?view=o365-worldwide)      |    [reportRoot: getSharePointSiteUsageStorage](https://learn.microsoft.com/en-us/graph/api/reportroot-getsharepointsiteusagestorage?view=graph-rest-1.0&tabs=http)    |   Microsoft 365 Sharepoint Site Usage metrics   |   `Period`-based   |
+| [SharePoint Site Usage Detail](https://learn.microsoft.com/en-us/microsoft-365/admin/activity-reports/sharepoint-site-usage-ww?view=o365-worldwide)      |    [reportRoot: getSharePointSiteUsageDetail](https://learn.microsoft.com/en-us/graph/api/reportroot-getsharepointsiteusagedetail?view=graph-rest-1.0&tabs=http)    |   Microsoft 365 Sharepoint Site Usage metrics   |   `Period`-based   |
 | [Teams Device Usage User Counts](https://learn.microsoft.com/en-us/microsoft-365/admin/activity-reports/microsoft-teams-device-usage-preview?view=o365-worldwide)      |    [reportRoot: getTeamsDeviceUsageUserCounts](https://learn.microsoft.com/en-us/graph/api/reportroot-getteamsdeviceusageusercounts?view=graph-rest-1.0&tabs=http)    |   Microsoft 365 Teams Device Usage User Counts metrics   |   `Period`-based   |
 | [Teams User Activity User Counts](https://learn.microsoft.com/en-us/microsoft-365/admin/activity-reports/microsoft-teams-user-activity-preview?view=o365-worldwide)      |    [reportRoot: getTeamsUserActivityUserCounts](https://learn.microsoft.com/en-us/graph/api/reportroot-getteamsuseractivityusercounts?view=graph-rest-1.0&tabs=http)    |   Microsoft 365 Teams User Activity User Counts metrics   |   `Period`-based   |
 | [Teams User Activity User Detail](https://learn.microsoft.com/en-us/microsoft-365/admin/activity-reports/microsoft-teams-user-activity-preview?view=o365-worldwide)      |    [reportRoot: getTeamsUserActivityUserDetail](https://learn.microsoft.com/en-us/graph/api/reportroot-getteamsuseractivityuserdetail?view=graph-rest-1.0&tabs=http)    |   Microsoft 365 Teams User Activity User Detail   |    `Day`-based   |
 | [Viva Engage Groups Activity Group Detail](https://learn.microsoft.com/en-us/microsoft-365/admin/activity-reports/viva-engage-groups-activity-report-ww?view=o365-worldwide)      |    [reportRoot: getYammerGroupsActivityDetail](https://learn.microsoft.com/en-us/graph/api/reportroot-getyammergroupsactivitydetail?view=graph-rest-1.0&tabs=http)    |   Microsoft 365 Viva Engage Groups Activity   |   `Day`-based   |
 | [Viva Engage Device Usage User Counts](https://learn.microsoft.com/en-us/microsoft-365/admin/activity-reports/viva-engage-device-usage-report-ww?view=o365-worldwide)      |    [reportRoot: getYammerDeviceUsageUserCounts](https://learn.microsoft.com/en-us/graph/api/reportroot-getyammerdeviceusageusercounts?view=graph-rest-1.0&tabs=http)    |   Microsoft 365 Viva Engage Device Usage User Counts metrics   |   `Period`-based   |
-| [Service Health](https://learn.microsoft.com/en-us/graph/service-communications-concept-overview?view=o365-worldwide)                                                 |    [reportRoot: getServiceHealth](https://learn.microsoft.com/en-us/graph/api/servicehealth-get?view=graph-rest-1.0&tabs=http)    |   Office 365 Service Health metrics   |   No aggregation  |
+| [Service Health](https://learn.microsoft.com/en-us/graph/service-communications-concept-overview?view=o365-worldwide)                                                 |    [reportRoot: getServiceHealth](https://learn.microsoft.com/en-us/graph/api/servicehealth-get?view=graph-rest-1.0&tabs=http)    |   Microsoft 365 Service Health metrics   |   No aggregation  |
+| [Subscriptions](https://learn.microsoft.com/en-us/graph/api/resources/subscribedsku?view=graph-rest-1.0?view=o365-worldwide)                                                 |    [reportRoot: subscribedSkus](https://learn.microsoft.com/en-us/graph/api/subscribedsku-list?view=graph-rest-1.0&tabs=http)    |   Microsoft 365 Subscriptions metrics   |   No aggregation  |
+| [Teamms Call Quality](https://learn.microsoft.com/en-us/graph/api/resources/communications-api-overview?view=graph-rest-1.0?view=o365-worldwide)                                                 |    [reportRoot: callRecords](https://learn.microsoft.com/en-us/graph/api/callrecords-callrecord-list-sessions?view=graph-rest-1.0&tabs=http)    |   Microsoft 365 Teams Call Quality metrics   |   No aggregation  |
 
 ## Setup
 
@@ -41,7 +43,7 @@ Once the application is registered, configure and/or note the following to setup
     - Navigate to `API permissions` page and click `Add a permission`
     - Select `Office 365 Management APIs` tile from the listed tiles.
     - Click `Application permissions`.
-    - If `User.Read` and `Reports.Read.All` permission under `Microsoft.Graph` tile is not added by default, add this permission.
+    - If `User.Read` and `Reports.Read.All` permission under `Microsoft.Graph` tile is not added by default, add this permission. Additional permissions, such as `ServiceHealth.Read.All` for data streams like Service Health may be required. Refer to the API documentation under the Permissions section to determine the necessary permissions.
     - After the permissions are added, the admin has to grant consent for these permissions.
 
 Once the secret is created and permissions are granted by admin, setup Elastic Agent's Microsoft O365 integration:
@@ -2295,4 +2297,564 @@ Please refer to the following [document](https://www.elastic.co/guide/en/ecs/cur
 | o365.metrics.service.health.id | The service id. | keyword |
 | o365.metrics.service.health.service | The service name. | keyword |
 | o365.metrics.service.health.status | Show the overall service health status (Eg. serviceOperational, serviceOperational etc.). | keyword |
+
+
+
+### Subscriptions
+
+Get details about Subscriptions from [Microsoft Graph API](https://learn.microsoft.com/en-us/graph/api/subscribedsku-list?view=graph-rest-1.0&tabs=http).
+
+An example event for `subscriptions` looks as following:
+
+```json
+{
+    "o365": {
+        "metrics": {
+            "subscriptions": {
+                "account_id": "f97aeefc-af85-414d-8ae4-b457f90efc40",
+                "account_name": "Account1",
+                "applies_to": "User",
+                "capability_status": "Enabled",
+                "consumed_units": {
+                    "count": 14
+                },
+                "id": "48a80680-7326-48cd-9935-b556b81d3a4e_c7df2760-2c81-4ef7-b578-5b5392b571df",
+                "prepaid_units": {
+                    "enabled": {
+                        "count": 25
+                    },
+                    "locked_out": {
+                        "count": 5
+                    },
+                    "suspended": {
+                        "count": 13
+                    },
+                    "warning": {
+                        "count": 7
+                    }
+                },
+                "service_plans": [
+                    {
+                        "applies_to": "Company",
+                        "provisioning_status": "Success",
+                        "service_plan_id": "8c098270-9dd4-4350-9b30-ba4703f3b36b",
+                        "service_plan_name": "ADALLOM_S_O365"
+                    }
+                ],
+                "sku_id": "c7df2760-2c81-4ef7-b578-5b5392b571df",
+                "sku_part_number": "ENTERPRISEPREMIUM",
+                "subscription_ids": [
+                    "43d26afe-cb98-48b9-acc4-ae3ef2ac6c51"
+                ],
+                "surplus_units": {
+                    "count": 11
+                }
+            }
+        }
+    },
+    "agent": {
+        "name": "docker-fleet-agent",
+        "id": "abf38fab-f7b6-4e1c-a3b3-a70a64f9e5db",
+        "ephemeral_id": "08417a8d-9698-4c62-b7dc-e1b048647626",
+        "type": "filebeat",
+        "version": "8.16.0"
+    },
+    "@timestamp": "2025-01-29T12:36:44.408Z",
+    "ecs": {
+        "version": "8.16.0"
+    },
+    "data_stream": {
+        "namespace": "default",
+        "type": "metrics",
+        "dataset": "o365_metrics.subscriptions"
+    },
+    "host": {
+        "hostname": "docker-fleet-agent",
+        "os": {
+            "kernel": "5.10.104-linuxkit",
+            "name": "Wolfi",
+            "family": "",
+            "type": "linux",
+            "version": "20230201",
+            "platform": "wolfi"
+        },
+        "ip": [
+            "192.168.48.7"
+        ],
+        "containerized": false,
+        "name": "docker-fleet-agent",
+        "mac": [
+            "02-42-C0-A8-30-07"
+        ],
+        "architecture": "aarch64"
+    },
+    "elastic_agent": {
+        "id": "abf38fab-f7b6-4e1c-a3b3-a70a64f9e5db",
+        "version": "8.16.0",
+        "snapshot": false
+    },
+    "event": {
+        "agent_id_status": "verified",
+        "ingested": "2025-01-29T12:35:44.48Z",
+        "dataset": "o365_metrics.subscriptions",
+        "original": "{\"accountName\":\"Account1\",\"accountId\":\"f97aeefc-af85-414d-8ae4-b457f90efc40\",\"appliesTo\":\"User\",\"capabilityStatus\":\"Enabled\",\"consumedUnits\":14,\"id\":\"48a80680-7326-48cd-9935-b556b81d3a4e_c7df2760-2c81-4ef7-b578-5b5392b571df\",\"prepaidUnits\":{\"enabled\":25,\"lockedOut\":5,\"suspended\":13,\"warning\":7},\"servicePlans\":[{\"servicePlanId\":\"8c098270-9dd4-4350-9b30-ba4703f3b36b\",\"servicePlanName\":\"ADALLOM_S_O365\",\"provisioningStatus\":\"Success\",\"appliesTo\":\"Company\"}],\"skuId\":\"c7df2760-2c81-4ef7-b578-5b5392b571df\",\"skuPartNumber\":\"ENTERPRISEPREMIUM\",\"subscriptionIds\":[\"43d26afe-cb98-48b9-acc4-ae3ef2ac6c51\"]}"
+    },
+    "tags": [
+        "o365metrics-subscriptions"
+    ]
+}
+```
+
+**ECS Field Reference**
+
+Please refer to the following [document](https://www.elastic.co/guide/en/ecs/current/ecs-field-reference.html) for detailed information on ECS fields.
+
+**Exported fields**
+
+| Field | Description | Type |
+|---|---|---|
+| @timestamp | Event timestamp. | date |
+| cloud.image.id | Image ID for the cloud instance. | keyword |
+| data_stream.dataset | Data stream dataset. | constant_keyword |
+| data_stream.namespace | Data stream namespace. | constant_keyword |
+| data_stream.type | Data stream type. | constant_keyword |
+| host.containerized | If the host is a container. | boolean |
+| host.os.build | OS build information. | keyword |
+| host.os.codename | OS codename, if any. | keyword |
+| o365.metrics.subscriptions.account_id | Unique identifier for the account. | keyword |
+| o365.metrics.subscriptions.account_name | Name of the account. | text |
+| o365.metrics.subscriptions.applies_to | Type of entity the subscription applies to (e.g. User or Company). | keyword |
+| o365.metrics.subscriptions.capability_status | Status of the capability (e.g. Enabled, Suspended). | keyword |
+| o365.metrics.subscriptions.consumed_units.count | Number of consumed units. | long |
+| o365.metrics.subscriptions.id | Unique identifier for the subscription entry. | keyword |
+| o365.metrics.subscriptions.prepaid_units.enabled.count | Number of enabled prepaid units. | long |
+| o365.metrics.subscriptions.prepaid_units.locked_out.count | Number of locked-out prepaid units. | long |
+| o365.metrics.subscriptions.prepaid_units.suspended.count | Number of suspended prepaid units. | long |
+| o365.metrics.subscriptions.prepaid_units.warning.count | Number of prepaid units in warning state. | long |
+| o365.metrics.subscriptions.service_plans.applies_to | Type of entity the service plan applies to. | keyword |
+| o365.metrics.subscriptions.service_plans.provisioning_status | Status of the service plan provisioning. | keyword |
+| o365.metrics.subscriptions.service_plans.service_plan_id | Unique identifier for the service plan. | keyword |
+| o365.metrics.subscriptions.service_plans.service_plan_name | Name of the service plan. | keyword |
+| o365.metrics.subscriptions.sku_id | Unique identifier for the SKU. | keyword |
+| o365.metrics.subscriptions.sku_part_number | SKU part number. | keyword |
+| o365.metrics.subscriptions.subscription_ids | Array of subscription IDs. | keyword |
+| o365.metrics.subscriptions.surplus_units.count | Number of unused units which indicates if you oversubscribed to any SKUs. | long |
+
+
+
+### Teams Call Quality
+
+Get details about Teams Call Quality from [Microsoft Graph API](https://learn.microsoft.com/en-us/graph/api/callrecords-callrecord-list-sessions?view=graph-rest-1.0&tabs=http).
+
+An example event for `teams_call_quality` looks as following:
+
+```json
+{
+    "o365": {
+        "metrics": {
+            "teams": {
+                "call": {
+                    "quality": {
+                        "callee": {
+                            "cpu_cores": {
+                                "count": 2
+                            },
+                            "cpu_name": "Intel(R) Xeon(R) Platinum 8272CL CPU @ 2.60GHz",
+                            "cpu_processor_speed": {
+                                "mhz": 2594
+                            },
+                            "feedback": {
+                                "rating": "poor",
+                                "tokens": {
+                                    "distorted_sound": false,
+                                    "echo": false,
+                                    "interruptions": false,
+                                    "low_volume": false,
+                                    "no_sound": false,
+                                    "noisy": true,
+                                    "other_no_sound": false,
+                                    "stopped": false
+                                }
+                            },
+                            "identity": {
+                                "user": {
+                                    "display_name": "Owen Franklin",
+                                    "id": "f69e2c00-0000-0000-0000-185e5f5f5d8a",
+                                    "tenant_id": "dc368399-474c-4d40-900c-6265431fd81f"
+                                }
+                            },
+                            "name": "machineName_2",
+                            "user_agent": {
+                                "header_value": "UCCAPI/16.0.12527.20122 OC/16.0.12527.20194 (Skype for Business)",
+                                "platform": "windows",
+                                "product_family": "skypeForBusiness"
+                            }
+                        },
+                        "caller": {
+                            "cpu_cores": {
+                                "count": 8
+                            },
+                            "cpu_name": "AMD EPYC 7452 32-Core Processor",
+                            "cpu_processor_speed": {
+                                "mhz": 2346
+                            },
+                            "identity": {
+                                "user": {
+                                    "display_name": "Abbie Wilkins",
+                                    "id": "821809f5-0000-0000-0000-3b5136c0e777",
+                                    "tenant_id": "dc368399-474c-4d40-900c-6265431fd81f"
+                                }
+                            },
+                            "name": "machineName_1",
+                            "user_agent": {
+                                "header_value": "RTCC/7.0.0.0 UCWA/7.0.0.0 AndroidLync/6.25.0.27 (SM-G930U Android 8.0.0)",
+                                "platform": "android",
+                                "product_family": "skypeForBusiness"
+                            }
+                        },
+                        "end_date_time": "2020-02-25T18:52:46.7640013Z",
+                        "id": "e523d2ed-2966-4b6b-925b-754a88034cc5",
+                        "is_test": false,
+                        "modalities": [
+                            "audio"
+                        ],
+                        "segments": {
+                            "callee": {
+                                "cpu_cores_count": 2,
+                                "cpu_name": "Intel(R) Xeon(R) Platinum 8272CL CPU @ 2.60GHz",
+                                "identity": {
+                                    "user": {
+                                        "display_name": "Owen Franklin",
+                                        "id": "f69e2c00-0000-0000-0000-185e5f5f5d8a",
+                                        "tenant_id": "dc368399-474c-4d40-900c-6265431fd81f"
+                                    }
+                                },
+                                "name": "machineName_2",
+                                "user_agent": {
+                                    "header_value": "UCCAPI/16.0.12527.20122 OC/16.0.12527.20194 (Skype for Business)",
+                                    "platform": "windows",
+                                    "product_family": "skypeForBusiness"
+                                }
+                            },
+                            "caller": {
+                                "cpu_cores_count": 8,
+                                "cpu_name": "AMD EPYC 7452 32-Core Processor",
+                                "cpu_processor_speed_in_mhz": 2346,
+                                "identity": {
+                                    "user": {
+                                        "display_name": "Abbie Wilkins",
+                                        "id": "821809f5-0000-0000-0000-3b5136c0e777",
+                                        "tenant_id": "dc368399-474c-4d40-900c-6265431fd81f"
+                                    }
+                                },
+                                "name": "machineName_1",
+                                "user_agent": {
+                                    "header_value": "RTCC/7.0.0.0 UCWA/7.0.0.0 AndroidLync/6.25.0.27 (SM-G930U Android 8.0.0)",
+                                    "platform": "android",
+                                    "product_family": "skypeForBusiness"
+                                }
+                            },
+                            "end_date_time": "2020-02-25T18:52:46.7640013Z",
+                            "id": "e523d2ed-2966-4b6b-925b-754a88034cc5",
+                            "media": {
+                                "callee_device": {
+                                    "capture_device_driver": "Microsoft: 5.0.8638.1100",
+                                    "capture_device_name": "Microphone (Microsoft Virtual Audio Device (Simple) (WDM))",
+                                    "initial_signal_level_root_mean_square": 146.7885,
+                                    "mic_glitch_rate": 143,
+                                    "received_noise_level": -86,
+                                    "received_signal_level": -14,
+                                    "render_device_driver": "Microsoft: 5.0.8638.1100",
+                                    "render_device_name": "Speakers (Microsoft Virtual Audio Device (Simple) (WDM))",
+                                    "speaker_glitch_rate": 182
+                                },
+                                "callee_network": {
+                                    "bandwidth_low_event_ratio": 0,
+                                    "connection_type": "wired",
+                                    "delay_event_ratio": 0,
+                                    "ip_address": "10.139.0.12",
+                                    "link_speed": 4294967295,
+                                    "mac_address": "00-00-00-00-00-00-00-00",
+                                    "port": 50011,
+                                    "received_quality_event_ratio": 0,
+                                    "reflexive_ip_address": "127.0.0.2",
+                                    "relay_ip_address": "52.114.188.102",
+                                    "relay_port": 52810,
+                                    "sent_quality_event_ratio": 0.31,
+                                    "subnet": "10.139.80.0"
+                                },
+                                "caller_device": {
+                                    "capture_device_name": "Default input device",
+                                    "initial_signal_level_root_mean_square": 60.25816,
+                                    "mic_glitch_rate": 23,
+                                    "received_noise_level": -68,
+                                    "received_signal_level": -10,
+                                    "render_device_name": "Default output device",
+                                    "render_mute_event_ratio": 1,
+                                    "render_zero_volume_event_ratio": 1,
+                                    "speaker_glitch_rate": 3830
+                                },
+                                "caller_network": {
+                                    "bandwidth_low_event_ratio": 0,
+                                    "connection_type": "wifi",
+                                    "delay_event_ratio": 0,
+                                    "ip_address": "10.150.0.2",
+                                    "link_speed": 54000000,
+                                    "mac_address": "00-00-00-00-00-00",
+                                    "port": 27288,
+                                    "received_quality_event_ratio": 0.27,
+                                    "reflexive_ip_address": "127.0.0.2",
+                                    "relay_ip_address": "52.114.188.32",
+                                    "relay_port": 53889,
+                                    "sent_quality_event_ratio": 0,
+                                    "subnet": "10.150.0.0"
+                                },
+                                "label": "main-audio",
+                                "streams": [
+                                    {
+                                        "average_audio_network_jitter": "PT0.043S",
+                                        "average_bandwidth_estimate": 9965083,
+                                        "average_jitter": "PT0.016S",
+                                        "average_packet_loss_rate": 0,
+                                        "average_round_trip_time": "PT0.061S",
+                                        "is_audio_forward_error_correction_used": true,
+                                        "max_audio_network_jitter": "PT0.046S",
+                                        "max_jitter": "PT0.021S",
+                                        "max_packet_loss_rate": 0,
+                                        "max_round_trip_time": "PT0.079S",
+                                        "packet_utilization": 67,
+                                        "stream_direction": "callerToCallee",
+                                        "stream_id": "1504545584",
+                                        "was_media_bypassed": false
+                                    },
+                                    {
+                                        "average_audio_degradation": 1.160898,
+                                        "average_audio_network_jitter": "PT0.266S",
+                                        "average_bandwidth_estimate": 15644878,
+                                        "average_jitter": "PT0.007S",
+                                        "average_packet_loss_rate": 0.01381693,
+                                        "average_ratio_of_concealed_samples": 0.06233422,
+                                        "average_round_trip_time": "PT0.064S",
+                                        "is_audio_forward_error_correction_used": false,
+                                        "max_audio_network_jitter": "PT0.474S",
+                                        "max_jitter": "PT0.012S",
+                                        "max_packet_loss_rate": 0.03738318,
+                                        "max_ratio_of_concealed_samples": 0.07192807,
+                                        "max_round_trip_time": "PT0.106S",
+                                        "packet_utilization": 709,
+                                        "stream_direction": "calleeToCaller",
+                                        "stream_id": "1785122252",
+                                        "was_media_bypassed": false
+                                    }
+                                ]
+                            },
+                            "start_date_time": "2020-02-25T18:52:21.2169889Z"
+                        },
+                        "start_date_time": "2020-02-25T18:52:21.2169889Z"
+                    }
+                }
+            }
+        }
+    },
+    "agent": {
+        "name": "docker-fleet-agent",
+        "id": "abf38fab-f7b6-4e1c-a3b3-a70a64f9e5db",
+        "ephemeral_id": "08417a8d-9698-4c62-b7dc-e1b048647626",
+        "type": "filebeat",
+        "version": "8.16.0"
+    },
+    "@timestamp": "2025-01-29T12:36:44.408Z",
+    "ecs": {
+        "version": "8.16.0"
+    },
+    "data_stream": {
+        "namespace": "default",
+        "type": "metrics",
+        "dataset": "o365_metrics.teams_call_quality"
+    },
+    "host": {
+        "hostname": "docker-fleet-agent",
+        "os": {
+            "kernel": "5.10.104-linuxkit",
+            "name": "Wolfi",
+            "family": "",
+            "type": "linux",
+            "version": "20230201",
+            "platform": "wolfi"
+        },
+        "ip": [
+            "192.168.48.7"
+        ],
+        "containerized": false,
+        "name": "docker-fleet-agent",
+        "mac": [
+            "02-42-C0-A8-30-07"
+        ],
+        "architecture": "aarch64"
+    },
+    "elastic_agent": {
+        "id": "abf38fab-f7b6-4e1c-a3b3-a70a64f9e5db",
+        "version": "8.16.0",
+        "snapshot": false
+    },
+    "event": {
+        "agent_id_status": "verified",
+        "ingested": "2025-01-29T12:35:44.48Z",
+        "dataset": "o365_metrics.teams_call_quality",
+        "original": "{ \"id\": \"e523d2ed-2966-4b6b-925b-754a88034cc5\", \"modalities\": [ \"audio\" ], \"startDateTime\": \"2020-02-25T18:52:21.2169889Z\", \"endDateTime\": \"2020-02-25T18:52:46.7640013Z\", \"isTest\": false, \"caller\": { \"@odata.type\": \"#microsoft.graph.callRecords.participantEndpoint\", \"name\": \"machineName_1\", \"cpuName\": \"AMD EPYC 7452 32-Core Processor\", \"cpuCoresCount\": 8, \"cpuProcessorSpeedInMhz\": 2346, \"userAgent\": { \"@odata.type\": \"#microsoft.graph.callRecords.clientUserAgent\", \"headerValue\": \"RTCC\/7.0.0.0 UCWA\/7.0.0.0 AndroidLync\/6.25.0.27 (SM-G930U Android 8.0.0)\", \"platform\": \"android\", \"productFamily\": \"skypeForBusiness\" }, \"identity\": { \"@odata.type\": \"#microsoft.graph.identitySet\", \"user\": { \"id\": \"821809f5-0000-0000-0000-3b5136c0e777\", \"displayName\": \"Abbie Wilkins\", \"tenantId\": \"dc368399-474c-4d40-900c-6265431fd81f\" } } }, \"callee\": { \"@odata.type\": \"#microsoft.graph.callRecords.participantEndpoint\", \"name\": \"machineName_2\", \"cpuName\": \"Intel(R) Xeon(R) Platinum 8272CL CPU @ 2.60GHz\", \"cpuCoresCount\": 2, \"cpuProcessorSpeedInMhz\": 2594, \"userAgent\": { \"@odata.type\": \"#microsoft.graph.callRecords.clientUserAgent\", \"headerValue\": \"UCCAPI\/16.0.12527.20122 OC\/16.0.12527.20194 (Skype for Business)\", \"platform\": \"windows\", \"productFamily\": \"skypeForBusiness\" }, \"identity\": { \"user\": { \"id\": \"f69e2c00-0000-0000-0000-185e5f5f5d8a\", \"displayName\": \"Owen Franklin\", \"tenantId\": \"dc368399-474c-4d40-900c-6265431fd81f\" } }, \"feedback\": { \"rating\": \"poor\", \"tokens\": { \"NoSound\": false, \"OtherNoSound\": false, \"Echo\": false, \"Noisy\": true, \"LowVolume\": false, \"Stopped\": false, \"DistortedSound\": false, \"Interruptions\": false } } }, \"segments\": [ { \"startDateTime\": \"2020-02-25T18:52:21.2169889Z\", \"endDateTime\": \"2020-02-25T18:52:46.7640013Z\", \"id\": \"e523d2ed-2966-4b6b-925b-754a88034cc5\", \"caller\": { \"@odata.type\": \"#microsoft.graph.callRecords.participantEndpoint\", \"name\": \"machineName_1\", \"cpuName\": \"AMD EPYC 7452 32-Core Processor\", \"cpuCoresCount\": 8, \"cpuProcessorSpeedInMhz\": 2346, \"userAgent\": { \"@odata.type\": \"#microsoft.graph.callRecords.clientUserAgent\", \"headerValue\": \"RTCC\/7.0.0.0 UCWA\/7.0.0.0 AndroidLync\/6.25.0.27 (SM-G930U Android 8.0.0)\", \"platform\": \"android\", \"productFamily\": \"skypeForBusiness\" }, \"identity\": { \"user\": { \"id\": \"821809f5-0000-0000-0000-3b5136c0e777\", \"displayName\": \"Abbie Wilkins\", \"tenantId\": \"dc368399-474c-4d40-900c-6265431fd81f\" } } }, \"callee\": { \"@odata.type\": \"#microsoft.graph.callRecords.participantEndpoint\", \"name\": \"machineName_2\", \"cpuName\": \"Intel(R) Xeon(R) Platinum 8272CL CPU @ 2.60GHz\", \"cpuCoresCount\": 2, \"userAgent\": { \"@odata.type\": \"#microsoft.graph.callRecords.clientUserAgent\", \"headerValue\": \"UCCAPI\/16.0.12527.20122 OC\/16.0.12527.20194 (Skype for Business)\", \"platform\": \"windows\", \"productFamily\": \"skypeForBusiness\" }, \"identity\": { \"user\": { \"id\": \"f69e2c00-0000-0000-0000-185e5f5f5d8a\", \"displayName\": \"Owen Franklin\", \"tenantId\": \"dc368399-474c-4d40-900c-6265431fd81f\" } } }, \"media\": [ { \"label\": \"main-audio\", \"callerNetwork\": { \"ipAddress\": \"10.150.0.2\", \"subnet\": \"10.150.0.0\", \"linkSpeed\": 54000000, \"connectionType\": \"wifi\", \"port\": 27288, \"reflexiveIPAddress\": \"127.0.0.2\", \"relayIPAddress\": \"52.114.188.32\", \"relayPort\": 53889, \"macAddress\": \"00-00-00-00-00-00\", \"dnsSuffix\": null, \"sentQualityEventRatio\": 0, \"receivedQualityEventRatio\": 0.27, \"delayEventRatio\": 0, \"bandwidthLowEventRatio\": 0 }, \"calleeNetwork\": { \"ipAddress\": \"10.139.0.12\", \"subnet\": \"10.139.80.0\", \"linkSpeed\": 4294967295, \"connectionType\": \"wired\", \"port\": 50011, \"reflexiveIPAddress\": \"127.0.0.2\", \"relayIPAddress\": \"52.114.188.102\", \"relayPort\": 52810, \"macAddress\": \"00-00-00-00-00-00-00-00\", \"dnsSuffix\": null, \"sentQualityEventRatio\": 0.31, \"receivedQualityEventRatio\": 0, \"delayEventRatio\": 0, \"bandwidthLowEventRatio\": 0 }, \"callerDevice\": { \"captureDeviceName\": \"Default input device\", \"renderDeviceName\": \"Default output device\", \"receivedSignalLevel\": -10, \"receivedNoiseLevel\": -68, \"initialSignalLevelRootMeanSquare\": 60.25816, \"renderZeroVolumeEventRatio\": 1, \"renderMuteEventRatio\": 1, \"micGlitchRate\": 23, \"speakerGlitchRate\": 3830 }, \"calleeDevice\": { \"captureDeviceName\": \"Microphone (Microsoft Virtual Audio Device (Simple) (WDM))\", \"captureDeviceDriver\": \"Microsoft: 5.0.8638.1100\", \"renderDeviceName\": \"Speakers (Microsoft Virtual Audio Device (Simple) (WDM))\", \"renderDeviceDriver\": \"Microsoft: 5.0.8638.1100\", \"receivedSignalLevel\": -14, \"receivedNoiseLevel\": -86, \"initialSignalLevelRootMeanSquare\": 146.7885, \"micGlitchRate\": 143, \"speakerGlitchRate\": 182 }, \"streams\": [ { \"streamId\": \"1504545584\", \"streamDirection\": \"callerToCallee\", \"averageAudioDegradation\": null, \"averageJitter\": \"PT0.016S\", \"maxJitter\": \"PT0.021S\", \"averagePacketLossRate\": 0, \"maxPacketLossRate\": 0, \"averageRatioOfConcealedSamples\": null, \"maxRatioOfConcealedSamples\": null, \"averageRoundTripTime\": \"PT0.061S\", \"maxRoundTripTime\": \"PT0.079S\", \"packetUtilization\": 67, \"averageBandwidthEstimate\": 9965083, \"wasMediaBypassed\": false, \"averageAudioNetworkJitter\": \"PT0.043S\", \"maxAudioNetworkJitter\": \"PT0.046S\", \"rmsFreezeDuration\": null, \"averageFreezeDuration\": null, \"isAudioForwardErrorCorrectionUsed\": true }, { \"streamId\": \"1785122252\", \"streamDirection\": \"calleeToCaller\", \"averageAudioDegradation\": 1.160898, \"averageJitter\": \"PT0.007S\", \"maxJitter\": \"PT0.012S\", \"averagePacketLossRate\": 0.01381693, \"maxPacketLossRate\": 0.03738318, \"averageRatioOfConcealedSamples\": 0.06233422, \"maxRatioOfConcealedSamples\": 0.07192807, \"averageRoundTripTime\": \"PT0.064S\", \"maxRoundTripTime\": \"PT0.106S\", \"packetUtilization\": 709, \"averageBandwidthEstimate\": 15644878, \"wasMediaBypassed\": false, \"averageAudioNetworkJitter\": \"PT0.266S\", \"maxAudioNetworkJitter\": \"PT0.474S\", \"rmsFreezeDuration\": null, \"averageFreezeDuration\": null, \"isAudioForwardErrorCorrectionUsed\": false } ] } ] } ] }"
+    },
+    "tags": [
+        "o365metrics-teams.call.quality"
+    ]
+}
+```
+
+**ECS Field Reference**
+
+Please refer to the following [document](https://www.elastic.co/guide/en/ecs/current/ecs-field-reference.html) for detailed information on ECS fields.
+
+**Exported fields**
+
+| Field | Description | Type |
+|---|---|---|
+| @timestamp | Event timestamp. | date |
+| cloud.image.id | Image ID for the cloud instance. | keyword |
+| data_stream.dataset | Data stream dataset. | constant_keyword |
+| data_stream.namespace | Data stream namespace. | constant_keyword |
+| data_stream.type | Data stream type. | constant_keyword |
+| host.containerized | If the host is a container. | boolean |
+| host.os.build | OS build information. | keyword |
+| host.os.codename | OS codename, if any. | keyword |
+| input.type | Type of Filebeat input. | keyword |
+| o365.metrics.teams.call.quality.callee.cpu_cores.count | The number of CPU cores on the callee's device | long |
+| o365.metrics.teams.call.quality.callee.cpu_name | The name of the CPU on the callee's device | keyword |
+| o365.metrics.teams.call.quality.callee.cpu_processor_speed.mhz | The processor speed in MHz on the callee's CPU | long |
+| o365.metrics.teams.call.quality.callee.feedback.rating | The rating the callee gave for the call quality | keyword |
+| o365.metrics.teams.call.quality.callee.feedback.tokens.distorted_sound | Whether distorted sound was reported by the callee | boolean |
+| o365.metrics.teams.call.quality.callee.feedback.tokens.echo | Whether echo was reported by the callee | boolean |
+| o365.metrics.teams.call.quality.callee.feedback.tokens.interruptions | Whether interruptions were reported by the callee | boolean |
+| o365.metrics.teams.call.quality.callee.feedback.tokens.low_volume | Whether low volume was reported by the callee | boolean |
+| o365.metrics.teams.call.quality.callee.feedback.tokens.no_sound | Whether no sound was reported by the callee | boolean |
+| o365.metrics.teams.call.quality.callee.feedback.tokens.noisy | Whether background noise was reported by the callee | boolean |
+| o365.metrics.teams.call.quality.callee.feedback.tokens.other_no_sound | Whether other no sound issues were reported by the callee | boolean |
+| o365.metrics.teams.call.quality.callee.feedback.tokens.stopped | Whether the call was stopped prematurely by the callee | boolean |
+| o365.metrics.teams.call.quality.callee.identity.user.display_name | The display name of the callee | keyword |
+| o365.metrics.teams.call.quality.callee.identity.user.id | The unique user ID for the callee | keyword |
+| o365.metrics.teams.call.quality.callee.identity.user.tenant_id | The tenant ID of the callee's organization | keyword |
+| o365.metrics.teams.call.quality.callee.name | The name of the callee | keyword |
+| o365.metrics.teams.call.quality.callee.user_agent.header_value | The header value of the user agent | keyword |
+| o365.metrics.teams.call.quality.callee.user_agent.platform | The platform of the callee (e.g., Windows, macOS) | keyword |
+| o365.metrics.teams.call.quality.callee.user_agent.product_family | The product family of the callee (e.g., Teams, Skype) | keyword |
+| o365.metrics.teams.call.quality.caller.cpu_cores.count | The number of CPU cores on the caller's device | long |
+| o365.metrics.teams.call.quality.caller.cpu_name | The name of the CPU on the caller's device | keyword |
+| o365.metrics.teams.call.quality.caller.cpu_processor_speed.mhz | The processor speed in MHz on the caller's CPU | long |
+| o365.metrics.teams.call.quality.caller.identity.user.display_name | The display name of the caller | keyword |
+| o365.metrics.teams.call.quality.caller.identity.user.id | The unique user ID for the caller | keyword |
+| o365.metrics.teams.call.quality.caller.identity.user.tenant_id | The tenant ID of the caller's organization | keyword |
+| o365.metrics.teams.call.quality.caller.name | The name of the caller | keyword |
+| o365.metrics.teams.call.quality.caller.user_agent.header_value | The header value of the user agent | keyword |
+| o365.metrics.teams.call.quality.caller.user_agent.platform | The platform of the caller (e.g., Windows, macOS) | keyword |
+| o365.metrics.teams.call.quality.caller.user_agent.product_family | The product family of the caller (e.g., Teams, Skype) | keyword |
+| o365.metrics.teams.call.quality.end_date_time | The end date and time of the call | date |
+| o365.metrics.teams.call.quality.id | Unique identifier for the call quality record | keyword |
+| o365.metrics.teams.call.quality.is_test | Indicates whether the call is a test call | boolean |
+| o365.metrics.teams.call.quality.modalities | Types of communication used in the call (audio, video, etc.) | keyword |
+| o365.metrics.teams.call.quality.segments.callee.cpu_cores_count | The number of CPU cores on the callee's device | long |
+| o365.metrics.teams.call.quality.segments.callee.cpu_name | The name of the CPU on the callee's device | keyword |
+| o365.metrics.teams.call.quality.segments.callee.cpu_processor_speed_in_mhz | The processor speed in MHz on the callee's CPU | long |
+| o365.metrics.teams.call.quality.segments.callee.feedback.rating | The rating the callee gave for the call quality | keyword |
+| o365.metrics.teams.call.quality.segments.callee.feedback.tokens.distorted_sound | Whether distorted sound was reported by the callee | boolean |
+| o365.metrics.teams.call.quality.segments.callee.feedback.tokens.echo | Whether echo was reported by the callee | boolean |
+| o365.metrics.teams.call.quality.segments.callee.feedback.tokens.interruptions | Whether interruptions were reported by the callee | boolean |
+| o365.metrics.teams.call.quality.segments.callee.feedback.tokens.low_volume | Whether low volume was reported by the callee | boolean |
+| o365.metrics.teams.call.quality.segments.callee.feedback.tokens.no_sound | Whether no sound was reported by the callee | boolean |
+| o365.metrics.teams.call.quality.segments.callee.feedback.tokens.noisy | Whether background noise was reported by the callee | boolean |
+| o365.metrics.teams.call.quality.segments.callee.feedback.tokens.other_no_sound | Whether other no sound issues were reported by the callee | boolean |
+| o365.metrics.teams.call.quality.segments.callee.feedback.tokens.stopped | Whether the call was stopped prematurely by the callee | boolean |
+| o365.metrics.teams.call.quality.segments.callee.identity.user.display_name | The display name of the callee | keyword |
+| o365.metrics.teams.call.quality.segments.callee.identity.user.id | The unique user ID for the callee | keyword |
+| o365.metrics.teams.call.quality.segments.callee.identity.user.tenant_id | The tenant ID of the callee's organization | keyword |
+| o365.metrics.teams.call.quality.segments.callee.name | The name of the callee | keyword |
+| o365.metrics.teams.call.quality.segments.callee.user_agent.header_value | The header value of the user agent | keyword |
+| o365.metrics.teams.call.quality.segments.callee.user_agent.platform | The platform of the callee (e.g., Windows, macOS) | keyword |
+| o365.metrics.teams.call.quality.segments.callee.user_agent.product_family | The product family of the callee (e.g., Teams, Skype) | keyword |
+| o365.metrics.teams.call.quality.segments.caller.cpu_cores_count | The number of CPU cores on the caller's device | long |
+| o365.metrics.teams.call.quality.segments.caller.cpu_name | The name of the CPU on the caller's device | keyword |
+| o365.metrics.teams.call.quality.segments.caller.cpu_processor_speed_in_mhz | The processor speed in MHz on the caller's CPU | long |
+| o365.metrics.teams.call.quality.segments.caller.identity.user.display_name | The display name of the caller | keyword |
+| o365.metrics.teams.call.quality.segments.caller.identity.user.id | The unique user ID for the caller | keyword |
+| o365.metrics.teams.call.quality.segments.caller.identity.user.tenant_id | The tenant ID of the caller's organization | keyword |
+| o365.metrics.teams.call.quality.segments.caller.name | The name of the caller | keyword |
+| o365.metrics.teams.call.quality.segments.caller.user_agent.header_value | The header value of the user agent | keyword |
+| o365.metrics.teams.call.quality.segments.caller.user_agent.platform | The platform of the caller (e.g., Windows, macOS) | keyword |
+| o365.metrics.teams.call.quality.segments.caller.user_agent.product_family | The product family of the caller (e.g., Teams, Skype) | keyword |
+| o365.metrics.teams.call.quality.segments.end_date_time | End time of the segment | date |
+| o365.metrics.teams.call.quality.segments.id | Unique identifier for the segment | keyword |
+| o365.metrics.teams.call.quality.segments.media.callee_device.capture_device_driver | The name of the callee's capture device driver | keyword |
+| o365.metrics.teams.call.quality.segments.media.callee_device.capture_device_name | The name of the callee's capture device | keyword |
+| o365.metrics.teams.call.quality.segments.media.callee_device.initial_signal_level_root_mean_square | Initial RMS of the callee's signal level | float |
+| o365.metrics.teams.call.quality.segments.media.callee_device.mic_glitch_rate | The glitch rate for the callee's microphone | float |
+| o365.metrics.teams.call.quality.segments.media.callee_device.received_noise_level | The received noise level on the callee's device | float |
+| o365.metrics.teams.call.quality.segments.media.callee_device.received_signal_level | The received signal level on the callee's device | float |
+| o365.metrics.teams.call.quality.segments.media.callee_device.render_device_driver | The name of the callee's render device driver | keyword |
+| o365.metrics.teams.call.quality.segments.media.callee_device.render_device_name | The name of the callee's render device | keyword |
+| o365.metrics.teams.call.quality.segments.media.callee_device.speaker_glitch_rate | The glitch rate for the callee's speaker | float |
+| o365.metrics.teams.call.quality.segments.media.callee_network.bandwidth_low_event_ratio | The event ratio of low bandwidth for the callee's network | float |
+| o365.metrics.teams.call.quality.segments.media.callee_network.connection_type | Type of connection used (e.g., wifi, wired) | keyword |
+| o365.metrics.teams.call.quality.segments.media.callee_network.delay_event_ratio | The event ratio of delay in the callee's network | float |
+| o365.metrics.teams.call.quality.segments.media.callee_network.dns_suffix | DNS suffix for the callee's network | keyword |
+| o365.metrics.teams.call.quality.segments.media.callee_network.ip_address | IP address of the callee's network | keyword |
+| o365.metrics.teams.call.quality.segments.media.callee_network.link_speed | Link speed of the callee's network connection | long |
+| o365.metrics.teams.call.quality.segments.media.callee_network.mac_address | MAC address of the callee's device | keyword |
+| o365.metrics.teams.call.quality.segments.media.callee_network.port | Port used for the connection | long |
+| o365.metrics.teams.call.quality.segments.media.callee_network.received_quality_event_ratio | Quality event ratio related to the received network quality | float |
+| o365.metrics.teams.call.quality.segments.media.callee_network.reflexive_ip_address | Reflexive IP address for the callee's network | keyword |
+| o365.metrics.teams.call.quality.segments.media.callee_network.relay_ip_address | Relay IP address for the callee's network | keyword |
+| o365.metrics.teams.call.quality.segments.media.callee_network.relay_port | Relay port | long |
+| o365.metrics.teams.call.quality.segments.media.callee_network.sent_quality_event_ratio | Quality event ratio related to the callee's network | float |
+| o365.metrics.teams.call.quality.segments.media.callee_network.subnet | Subnet of the callee's network | keyword |
+| o365.metrics.teams.call.quality.segments.media.caller_device.capture_device_name | The name of the caller's capture device | keyword |
+| o365.metrics.teams.call.quality.segments.media.caller_device.initial_signal_level_root_mean_square | Initial RMS of the caller's signal level | float |
+| o365.metrics.teams.call.quality.segments.media.caller_device.mic_glitch_rate | The glitch rate for the caller's microphone | float |
+| o365.metrics.teams.call.quality.segments.media.caller_device.received_noise_level | The received noise level on the caller's device | float |
+| o365.metrics.teams.call.quality.segments.media.caller_device.received_signal_level | The received signal level on the caller's device | float |
+| o365.metrics.teams.call.quality.segments.media.caller_device.render_device_name | The name of the caller's render device | keyword |
+| o365.metrics.teams.call.quality.segments.media.caller_device.render_mute_event_ratio | Ratio of mute events during rendering | float |
+| o365.metrics.teams.call.quality.segments.media.caller_device.render_zero_volume_event_ratio | Ratio of zero volume events during rendering | float |
+| o365.metrics.teams.call.quality.segments.media.caller_device.speaker_glitch_rate | The glitch rate for the caller's speaker | float |
+| o365.metrics.teams.call.quality.segments.media.caller_network.bandwidth_low_event_ratio | The event ratio of low bandwidth for the caller's network | float |
+| o365.metrics.teams.call.quality.segments.media.caller_network.connection_type | Type of connection used (e.g., wifi, wired) | keyword |
+| o365.metrics.teams.call.quality.segments.media.caller_network.delay_event_ratio | The event ratio of delay in the caller's network | float |
+| o365.metrics.teams.call.quality.segments.media.caller_network.dns_suffix | DNS suffix for the caller's network | keyword |
+| o365.metrics.teams.call.quality.segments.media.caller_network.ip_address | IP address of the caller's network | keyword |
+| o365.metrics.teams.call.quality.segments.media.caller_network.link_speed | Link speed of the caller's network connection | long |
+| o365.metrics.teams.call.quality.segments.media.caller_network.mac_address | MAC address of the caller's device | keyword |
+| o365.metrics.teams.call.quality.segments.media.caller_network.port | Port used for the connection | long |
+| o365.metrics.teams.call.quality.segments.media.caller_network.received_quality_event_ratio | Quality event ratio related to the received network quality | float |
+| o365.metrics.teams.call.quality.segments.media.caller_network.reflexive_ip_address | Reflexive IP address for the caller's network | keyword |
+| o365.metrics.teams.call.quality.segments.media.caller_network.relay_ip_address | Relay IP address for the caller's network | keyword |
+| o365.metrics.teams.call.quality.segments.media.caller_network.relay_port | Relay port | long |
+| o365.metrics.teams.call.quality.segments.media.caller_network.sent_quality_event_ratio | Quality event ratio related to the caller's network | float |
+| o365.metrics.teams.call.quality.segments.media.caller_network.subnet | Subnet of the caller's network | keyword |
+| o365.metrics.teams.call.quality.segments.media.label | The label for the media stream (e.g., "main-audio") | keyword |
+| o365.metrics.teams.call.quality.segments.media.streams.average_audio_degradation | Average audio degradation metric | float |
+| o365.metrics.teams.call.quality.segments.media.streams.average_audio_network_jitter | Average audio network jitter in milliseconds | keyword |
+| o365.metrics.teams.call.quality.segments.media.streams.average_bandwidth_estimate | Average bandwidth estimate in bits per second | float |
+| o365.metrics.teams.call.quality.segments.media.streams.average_jitter | Average jitter in milliseconds | keyword |
+| o365.metrics.teams.call.quality.segments.media.streams.average_packet_loss_rate | Average rate of packet loss | float |
+| o365.metrics.teams.call.quality.segments.media.streams.average_ratio_of_concealed_samples | Average ratio of concealed samples | float |
+| o365.metrics.teams.call.quality.segments.media.streams.average_round_trip_time | Average round trip time in milliseconds | keyword |
+| o365.metrics.teams.call.quality.segments.media.streams.is_audio_forward_error_correction_used | Indicates if audio forward error correction was used | boolean |
+| o365.metrics.teams.call.quality.segments.media.streams.max_audio_network_jitter | Maximum audio network jitter in milliseconds | keyword |
+| o365.metrics.teams.call.quality.segments.media.streams.max_jitter | Maximum jitter in milliseconds | keyword |
+| o365.metrics.teams.call.quality.segments.media.streams.max_packet_loss_rate | Maximum rate of packet loss | float |
+| o365.metrics.teams.call.quality.segments.media.streams.max_ratio_of_concealed_samples |  | float |
+| o365.metrics.teams.call.quality.segments.media.streams.max_round_trip_time | Maximum round trip time in milliseconds | keyword |
+| o365.metrics.teams.call.quality.segments.media.streams.packet_utilization | Utilization rate of packets | float |
+| o365.metrics.teams.call.quality.segments.media.streams.stream_direction | Direction of the media stream | keyword |
+| o365.metrics.teams.call.quality.segments.media.streams.stream_id | The stream ID | keyword |
+| o365.metrics.teams.call.quality.segments.media.streams.was_media_bypassed | Indicates if media was bypassed | boolean |
+| o365.metrics.teams.call.quality.segments.quality_score | Quality score of the call segment | float |
+| o365.metrics.teams.call.quality.segments.start_date_time | Start time of the segment | date |
+| o365.metrics.teams.call.quality.start_date_time | The start date and time of the call | date |
 

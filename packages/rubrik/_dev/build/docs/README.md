@@ -140,3 +140,15 @@ Please refer to the following [document](https://www.elastic.co/guide/en/ecs/cur
 {{fields "global_cluster_performance"}}
 
 {{event "global_cluster_performance"}}
+
+### Node Statistics
+
+The `node_statistics` dataset provides metrics related to the performance of the Rubrik cluster nodes.
+
+**ECS Field Reference**
+
+Please refer to the following [document](https://www.elastic.co/guide/en/ecs/current/ecs-field-reference.html) for detailed information on ECS fields.
+
+{{fields "node_statistics"}}
+
+{{event "node_statistics"}}
