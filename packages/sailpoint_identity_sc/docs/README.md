@@ -22,7 +22,7 @@ To create a **Personal Access Token (PAT)** using an **admin account**, follow t
 ### Events
 
 Event documents can be found by setting the following filter: 
-`event.dataset : "sailpoint_identity_security_cloud.events"`
+`event.dataset : "sailpoint_identity_sc.events"`
 
 An example event for `events` looks as following:
 
@@ -30,22 +30,22 @@ An example event for `events` looks as following:
 {
     "@timestamp": "2024-12-12T10:58:27.962Z",
     "agent": {
-        "ephemeral_id": "c21a8b2e-4984-4d5f-857d-4b634b98c6d6",
-        "id": "1d39083c-68fe-4adf-aee4-e67078919988",
-        "name": "elastic-agent-15840",
+        "ephemeral_id": "c66d99e7-2d3b-4b3a-98ea-d64d114e37fe",
+        "id": "e8f2e5b9-6585-49bd-9022-eb2edfc745c1",
+        "name": "elastic-agent-98705",
         "type": "filebeat",
         "version": "8.15.0"
     },
     "data_stream": {
-        "dataset": "sailpoint_identity_security_cloud.events",
-        "namespace": "13052",
+        "dataset": "sailpoint_identity_sc.events",
+        "namespace": "71277",
         "type": "logs"
     },
     "ecs": {
         "version": "8.11.0"
     },
     "elastic_agent": {
-        "id": "1d39083c-68fe-4adf-aee4-e67078919988",
+        "id": "e8f2e5b9-6585-49bd-9022-eb2edfc745c1",
         "snapshot": false,
         "version": "8.15.0"
     },
@@ -54,10 +54,10 @@ An example event for `events` looks as following:
         "category": [
             "iam"
         ],
-        "dataset": "sailpoint_identity_security_cloud.events",
-        "ingested": "2025-02-11T08:52:12Z",
+        "dataset": "sailpoint_identity_sc.events",
+        "ingested": "2025-02-11T15:12:05Z",
         "kind": "event",
-        "module": "sailpoint_identity_security_cloud",
+        "module": "sailpoint_identity_sc",
         "type": [
             "info"
         ]
@@ -90,7 +90,7 @@ An example event for `events` looks as following:
             "test.user"
         ]
     },
-    "sailpoint_identity_security_cloud": {
+    "sailpoint_identity_sc": {
         "events": {
             "_type": "event",
             "_version": "v2",
@@ -134,7 +134,7 @@ An example event for `events` looks as following:
     },
     "tags": [
         "forwarded",
-        "sailpoint_identity_security_cloud.events"
+        "sailpoint_identity_sc.events"
     ]
 }
 ```
@@ -154,60 +154,60 @@ The following non-ECS fields are used in events documents:
 | data_stream.namespace | Data stream namespace. | constant_keyword |
 | data_stream.type | Data stream type. | constant_keyword |
 | input.type | Input type. | keyword |
-| sailpoint_identity_security_cloud.events._type | Document type of the access profile. This enum represents currently supported document types. Additional values may be introduced in the future without prior notice. | keyword |
-| sailpoint_identity_security_cloud.events._version | Version of the SailPoint events. Example: V2. | keyword |
-| sailpoint_identity_security_cloud.events.action | Event name as displayed in audit reports. | keyword |
-| sailpoint_identity_security_cloud.events.actor.name | Name of the actor responsible for generating the event. Example: System. | keyword |
-| sailpoint_identity_security_cloud.events.attributes.access_profiles_after | Access profiles assigned after the event. | keyword |
-| sailpoint_identity_security_cloud.events.attributes.access_profiles_before | Access profiles assigned before the event. | keyword |
-| sailpoint_identity_security_cloud.events.attributes.account_id | Account identifier. | keyword |
-| sailpoint_identity_security_cloud.events.attributes.account_name | Name of the account. | keyword |
-| sailpoint_identity_security_cloud.events.attributes.account_source | Source of the account. | keyword |
-| sailpoint_identity_security_cloud.events.attributes.account_uuid | Unique identifier for the account. | keyword |
-| sailpoint_identity_security_cloud.events.attributes.app_id | Application identifier. | keyword |
-| sailpoint_identity_security_cloud.events.attributes.attribute_name | Name of the attribute. | keyword |
-| sailpoint_identity_security_cloud.events.attributes.attribute_value | Value of the attribute. | keyword |
-| sailpoint_identity_security_cloud.events.attributes.cloud_app_name | Name of the cloud application. | keyword |
-| sailpoint_identity_security_cloud.events.attributes.description | Description of the entity. | keyword |
-| sailpoint_identity_security_cloud.events.attributes.duration | Duration of the process. | keyword |
-| sailpoint_identity_security_cloud.events.attributes.errors | Errors related to the event. | keyword |
-| sailpoint_identity_security_cloud.events.attributes.host_name | Hostname involved in the event. | ip |
-| sailpoint_identity_security_cloud.events.attributes.id | Unique identifier. | keyword |
-| sailpoint_identity_security_cloud.events.attributes.identities_processed | Identifier for processed identities. | keyword |
-| sailpoint_identity_security_cloud.events.attributes.identities_selected | Number of selected identities. | keyword |
-| sailpoint_identity_security_cloud.events.attributes.identities_total | Total number of identities involved. | keyword |
-| sailpoint_identity_security_cloud.events.attributes.info | Information related to the attribute in the event. Example: SailPoint. | keyword |
-| sailpoint_identity_security_cloud.events.attributes.interface | Interface associated with the event. | keyword |
-| sailpoint_identity_security_cloud.events.attributes.match_all_account | Criteria for matching all accounts. | keyword |
-| sailpoint_identity_security_cloud.events.attributes.match_all_accounts_after | Matching criteria for accounts after the event. | keyword |
-| sailpoint_identity_security_cloud.events.attributes.match_all_accounts_before | Matching criteria for accounts before the event. | keyword |
-| sailpoint_identity_security_cloud.events.attributes.modified_after | Last modification timestamp after the event. | keyword |
-| sailpoint_identity_security_cloud.events.attributes.modified_before | Last modification timestamp before the event. | keyword |
-| sailpoint_identity_security_cloud.events.attributes.name | Name of the entity. | keyword |
-| sailpoint_identity_security_cloud.events.attributes.operation | Type of operation. | keyword |
-| sailpoint_identity_security_cloud.events.attributes.org | Organization involved in the event. Example: acme. | keyword |
-| sailpoint_identity_security_cloud.events.attributes.pod | Pod name involved in the event. Example: stg03-useast1. | keyword |
-| sailpoint_identity_security_cloud.events.attributes.process_id | Process identifier. | keyword |
-| sailpoint_identity_security_cloud.events.attributes.scope | Scope of the event. | keyword |
-| sailpoint_identity_security_cloud.events.attributes.segment | Segment associated with the event. | keyword |
-| sailpoint_identity_security_cloud.events.attributes.source_name | Name of the source involved in the event. | keyword |
-| sailpoint_identity_security_cloud.events.attributes.user_id | User identifier. | keyword |
-| sailpoint_identity_security_cloud.events.attributes.users_added | Users added during the event. | keyword |
-| sailpoint_identity_security_cloud.events.created | ISO-8601 date-time indicating when the object was created. | date |
-| sailpoint_identity_security_cloud.events.details | Identifier for event details. | keyword |
-| sailpoint_identity_security_cloud.events.id | Unique identifier for the access profile. | keyword |
-| sailpoint_identity_security_cloud.events.ip_address | IP address of the target system. | ip |
-| sailpoint_identity_security_cloud.events.name | Name of the access profile. | keyword |
-| sailpoint_identity_security_cloud.events.objects | Objects affected by the event. | keyword |
-| sailpoint_identity_security_cloud.events.operation | Operation or action performed during the event. | keyword |
-| sailpoint_identity_security_cloud.events.org | Organization associated with the event. Example: acme. | keyword |
-| sailpoint_identity_security_cloud.events.pod | Name of the pod involved in the event. Example: stg03-useast1. | keyword |
-| sailpoint_identity_security_cloud.events.stack | The event stack. Example: Type. | keyword |
-| sailpoint_identity_security_cloud.events.status | Status of the event. | keyword |
-| sailpoint_identity_security_cloud.events.synced | ISO-8601 date-time indicating when the object was queued for synchronization into the search database for API use. | date |
-| sailpoint_identity_security_cloud.events.target.name | Name of the target or recipient of the event. | keyword |
-| sailpoint_identity_security_cloud.events.technical_name | Normalized event name following the pattern 'objects_operation_status'. | keyword |
-| sailpoint_identity_security_cloud.events.tracking_number | Identifier for the group of events. | keyword |
-| sailpoint_identity_security_cloud.events.type | Type of event. Refer to the Event Types list for more details. Example: "IDENTITY_PROCESSING". | keyword |
+| sailpoint_identity_sc.events._type | Document type of the access profile. This enum represents currently supported document types. Additional values may be introduced in the future without prior notice. | keyword |
+| sailpoint_identity_sc.events._version | Version of the SailPoint events. Example: V2. | keyword |
+| sailpoint_identity_sc.events.action | Event name as displayed in audit reports. | keyword |
+| sailpoint_identity_sc.events.actor.name | Name of the actor responsible for generating the event. Example: System. | keyword |
+| sailpoint_identity_sc.events.attributes.access_profiles_after | Access profiles assigned after the event. | keyword |
+| sailpoint_identity_sc.events.attributes.access_profiles_before | Access profiles assigned before the event. | keyword |
+| sailpoint_identity_sc.events.attributes.account_id | Account identifier. | keyword |
+| sailpoint_identity_sc.events.attributes.account_name | Name of the account. | keyword |
+| sailpoint_identity_sc.events.attributes.account_source | Source of the account. | keyword |
+| sailpoint_identity_sc.events.attributes.account_uuid | Unique identifier for the account. | keyword |
+| sailpoint_identity_sc.events.attributes.app_id | Application identifier. | keyword |
+| sailpoint_identity_sc.events.attributes.attribute_name | Name of the attribute. | keyword |
+| sailpoint_identity_sc.events.attributes.attribute_value | Value of the attribute. | keyword |
+| sailpoint_identity_sc.events.attributes.cloud_app_name | Name of the cloud application. | keyword |
+| sailpoint_identity_sc.events.attributes.description | Description of the entity. | keyword |
+| sailpoint_identity_sc.events.attributes.duration | Duration of the process. | keyword |
+| sailpoint_identity_sc.events.attributes.errors | Errors related to the event. | keyword |
+| sailpoint_identity_sc.events.attributes.host_name | Hostname involved in the event. | ip |
+| sailpoint_identity_sc.events.attributes.id | Unique identifier. | keyword |
+| sailpoint_identity_sc.events.attributes.identities_processed | Identifier for processed identities. | keyword |
+| sailpoint_identity_sc.events.attributes.identities_selected | Number of selected identities. | keyword |
+| sailpoint_identity_sc.events.attributes.identities_total | Total number of identities involved. | keyword |
+| sailpoint_identity_sc.events.attributes.info | Information related to the attribute in the event. Example: SailPoint. | keyword |
+| sailpoint_identity_sc.events.attributes.interface | Interface associated with the event. | keyword |
+| sailpoint_identity_sc.events.attributes.match_all_account | Criteria for matching all accounts. | keyword |
+| sailpoint_identity_sc.events.attributes.match_all_accounts_after | Matching criteria for accounts after the event. | keyword |
+| sailpoint_identity_sc.events.attributes.match_all_accounts_before | Matching criteria for accounts before the event. | keyword |
+| sailpoint_identity_sc.events.attributes.modified_after | Last modification timestamp after the event. | keyword |
+| sailpoint_identity_sc.events.attributes.modified_before | Last modification timestamp before the event. | keyword |
+| sailpoint_identity_sc.events.attributes.name | Name of the entity. | keyword |
+| sailpoint_identity_sc.events.attributes.operation | Type of operation. | keyword |
+| sailpoint_identity_sc.events.attributes.org | Organization involved in the event. Example: acme. | keyword |
+| sailpoint_identity_sc.events.attributes.pod | Pod name involved in the event. Example: stg03-useast1. | keyword |
+| sailpoint_identity_sc.events.attributes.process_id | Process identifier. | keyword |
+| sailpoint_identity_sc.events.attributes.scope | Scope of the event. | keyword |
+| sailpoint_identity_sc.events.attributes.segment | Segment associated with the event. | keyword |
+| sailpoint_identity_sc.events.attributes.source_name | Name of the source involved in the event. | keyword |
+| sailpoint_identity_sc.events.attributes.user_id | User identifier. | keyword |
+| sailpoint_identity_sc.events.attributes.users_added | Users added during the event. | keyword |
+| sailpoint_identity_sc.events.created | ISO-8601 date-time indicating when the object was created. | date |
+| sailpoint_identity_sc.events.details | Identifier for event details. | keyword |
+| sailpoint_identity_sc.events.id | Unique identifier for the access profile. | keyword |
+| sailpoint_identity_sc.events.ip_address | IP address of the target system. | ip |
+| sailpoint_identity_sc.events.name | Name of the access profile. | keyword |
+| sailpoint_identity_sc.events.objects | Objects affected by the event. | keyword |
+| sailpoint_identity_sc.events.operation | Operation or action performed during the event. | keyword |
+| sailpoint_identity_sc.events.org | Organization associated with the event. Example: acme. | keyword |
+| sailpoint_identity_sc.events.pod | Name of the pod involved in the event. Example: stg03-useast1. | keyword |
+| sailpoint_identity_sc.events.stack | The event stack. Example: Type. | keyword |
+| sailpoint_identity_sc.events.status | Status of the event. | keyword |
+| sailpoint_identity_sc.events.synced | ISO-8601 date-time indicating when the object was queued for synchronization into the search database for API use. | date |
+| sailpoint_identity_sc.events.target.name | Name of the target or recipient of the event. | keyword |
+| sailpoint_identity_sc.events.technical_name | Normalized event name following the pattern 'objects_operation_status'. | keyword |
+| sailpoint_identity_sc.events.tracking_number | Identifier for the group of events. | keyword |
+| sailpoint_identity_sc.events.type | Type of event. Refer to the Event Types list for more details. Example: "IDENTITY_PROCESSING". | keyword |
 
 

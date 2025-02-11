@@ -22,7 +22,7 @@ To create a **Personal Access Token (PAT)** using an **admin account**, follow t
 ### Events
 
 Event documents can be found by setting the following filter: 
-`event.dataset : "sailpoint_identity_security_cloud.events"`
+`event.dataset : "sailpoint_identity_sc.events"`
 
 {{event "events"}}
 
