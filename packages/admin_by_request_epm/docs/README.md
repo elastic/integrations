@@ -1,16 +1,16 @@
-# Admin By Request integration
+# Admin By Request EPM integration
 
-The Elastic integration for [Admin By Request](https://www.adminbyrequest.com/en/endpoint-privilege-management) enables real-time monitoring and analysis of audit logging of privilege elevations, software installations and administrative actions through user portal. This integration collects, processes, and visualizes audit logs and events to enhance security posture, compliance, and operational efficiency.
+The Elastic integration for [Admin By Request EPM](https://www.adminbyrequest.com/en/endpoint-privilege-management) enables real-time monitoring and analysis of audit logging of privilege elevations, software installations and administrative actions through user portal. This integration collects, processes, and visualizes audit logs and events to enhance security posture, compliance, and operational efficiency.
 
 ## Data Streams
 
 - **`auditlog`**: Provides audit data that includes elevation requests, approvals, application installations, and scan results.
 - [Auditlog](https://www.adminbyrequest.com/en/docs/auditlog-api) are records generated when user takes action such as installing a software, running an application with admin privileges, requesting for admin session, approval or denial of requests and scan results.
-- This data stream leverages the Admin By Request API `/auditlog/delta` endpoint to retrieve data.
+- This data stream leverages the Admin By Request EPM API `/auditlog/delta` endpoint to retrieve data.
 
 - **`events`**: Provides system security events and administrative changes, including group modifications, policy changes and security violations. This allows tracking of administrative activities and security-critical events. Some events have corresponding audit log entries.
 - [Events](https://www.adminbyrequest.com/en/docs/events-api) are records that are generated on various actions done by users and administrators. These include group modifications, policy changes, security violations, and other administrative activities.
-- This data stream leverages the Admin By Request API `/events` endpoint to retrieve data.
+- This data stream leverages the Admin By Request EPM API `/events` endpoint to retrieve data.
 
 ## Requirements
 
@@ -316,7 +316,7 @@ The following non-ECS fields are used in events documents:
 | Field | Description | Type |
 |---|---|---|
 | @timestamp | Event timestamp. | date |
-| admin_by_request_epm.events.additional_data | Additional data can for example be the version of the Admin By Request install/uninstall event or the tampered registry key | text |
+| admin_by_request_epm.events.additional_data | Additional data can for example be the version of the Admin By Request EPM install/uninstall event or the tampered registry key | text |
 | admin_by_request_epm.events.alert_account | A secondary account. For example the account added to the local administrators account by the "userAccount" user | keyword |
 | admin_by_request_epm.events.application.file | The file name of the file executed using Run As Admin | keyword |
 | admin_by_request_epm.events.application.name | The name of the application (description property of file) | keyword |
