@@ -8,7 +8,12 @@ processors:
   - fingerprint:
       fields:
         - sailpoint_identity_security_cloud.events.id
+      tag: fingerprinting
       target_field: "_id"
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
 ##################### Scripts for processing input #####################
   - script:
       description: Drops null/empty values recursively.
@@ -103,7 +108,7 @@ processors:
       field: related.hosts
       value: "{{{sailpoint_identity_security_cloud.events.ip_address}}}"
       allow_duplicates: false
-      if: ctx.sailpoint_identity_security_cloud.events.ip_address != null && ctx.sailpoint_identity_security_cloud.events.ip_address != ''
+      if: ctx.sailpoint_identity_security_cloud.events?.ip_address != null && ctx.sailpoint_identity_security_cloud.events.ip_address != ''
   
   - append:
       field: related.user
@@ -126,13 +131,13 @@ processors:
 
   - remove:
       field: sailpoint_identity_security_cloud.events.ip_address
-      if: ctx.sailpoint_identity_security_cloud.events.ip_address == "" 
+      if: ctx.sailpoint_identity_security_cloud.events?.ip_address == "" 
 
   - append:
       field: host.ip
       value: "{{{sailpoint_identity_security_cloud.events.ip_address}}}"    
       allow_duplicates: false 
-      if: ctx.sailpoint_identity_security_cloud.events.ip_address != null && ctx.sailpoint_identity_security_cloud.events.ip_address != ''
+      if: ctx.sailpoint_identity_security_cloud.events?.ip_address != null && ctx.sailpoint_identity_security_cloud.events.ip_address != ''
 
   - geoip:
       field: host.ip

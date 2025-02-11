@@ -5,7 +5,7 @@ The Elastic integration for [Sailpoint identity security cloud](https://www.sail
 ## Data Streams
 
 - **`events`**: Provides audit data that includes actions such as `USER_MANAGEMENT`, `PASSWORD_ACTIVITY`, `PROVISIONING`, `ACCESS_ITEM`, `SOURCE_MANAGEMENT`, `CERTIFICATION`, `AUTH`, `SYSTEM_CONFIG`, `ACCESS_REQUEST`, `SSO`, `WORKFLOW`, `SEGMENT` and more.
-- [Audit Events](https://community.sailpoint.com/t5/IdentityNow-Wiki/Audit-Events-in-Cloud-Audit/ta-p/218727) are records that a user took action in an IdentityNow tenant, or other service like IdentityAI. Audit Events are structurally and conceptually very similar to IdentityIQ's Audit Events, but have evolved in several ways.
+- [Audit Events](https://community.sailpoint.com/t5/IdentityNow-Wiki/Audit-Events-in-Cloud-Audit/ta-p/218727) are records that a user took action in an [IdentityNow](https://www.sailpoint.com/products/identitynow) tenant, or other service like [IdentityAI](https://www.sailpoint.com/products/ai-driven-identity-security). Audit Events are structurally and conceptually very similar to [IdentityIQ's](https://www.sailpoint.com/products/identity-security-software/identity-iq)Audit Events, but have evolved in several ways.
 - This data stream leverages the Sailpoint identity security cloud API's `/v2024/search/events` endpoint to retrieve event logs.
 
 ## Requirements

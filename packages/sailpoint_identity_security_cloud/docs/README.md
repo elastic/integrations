@@ -5,7 +5,7 @@ The Elastic integration for [Sailpoint identity security cloud](https://www.sail
 ## Data Streams
 
 - **`events`**: Provides audit data that includes actions such as `USER_MANAGEMENT`, `PASSWORD_ACTIVITY`, `PROVISIONING`, `ACCESS_ITEM`, `SOURCE_MANAGEMENT`, `CERTIFICATION`, `AUTH`, `SYSTEM_CONFIG`, `ACCESS_REQUEST`, `SSO`, `WORKFLOW`, `SEGMENT` and more.
-- [Audit Events](https://community.sailpoint.com/t5/IdentityNow-Wiki/Audit-Events-in-Cloud-Audit/ta-p/218727) are records that a user took action in an IdentityNow tenant, or other service like IdentityAI. Audit Events are structurally and conceptually very similar to IdentityIQ's Audit Events, but have evolved in several ways.
+- [Audit Events](https://community.sailpoint.com/t5/IdentityNow-Wiki/Audit-Events-in-Cloud-Audit/ta-p/218727) are records that a user took action in an [IdentityNow](https://www.sailpoint.com/products/identitynow) tenant, or other service like [IdentityAI](https://www.sailpoint.com/products/ai-driven-identity-security). Audit Events are structurally and conceptually very similar to [IdentityIQ's](https://www.sailpoint.com/products/identity-security-software/identity-iq)Audit Events, but have evolved in several ways.
 - This data stream leverages the Sailpoint identity security cloud API's `/v2024/search/events` endpoint to retrieve event logs.
 
 ## Requirements
@@ -30,22 +30,22 @@ An example event for `events` looks as following:
 {
     "@timestamp": "2024-12-12T10:58:27.962Z",
     "agent": {
-        "ephemeral_id": "361e1814-0bb8-40b5-9acd-83ded493a682",
-        "id": "7d8f3623-455f-4cbf-ac18-62aa1b4084cd",
-        "name": "elastic-agent-51608",
+        "ephemeral_id": "c21a8b2e-4984-4d5f-857d-4b634b98c6d6",
+        "id": "1d39083c-68fe-4adf-aee4-e67078919988",
+        "name": "elastic-agent-15840",
         "type": "filebeat",
         "version": "8.15.0"
     },
     "data_stream": {
         "dataset": "sailpoint_identity_security_cloud.events",
-        "namespace": "97868",
+        "namespace": "13052",
         "type": "logs"
     },
     "ecs": {
         "version": "8.11.0"
     },
     "elastic_agent": {
-        "id": "7d8f3623-455f-4cbf-ac18-62aa1b4084cd",
+        "id": "1d39083c-68fe-4adf-aee4-e67078919988",
         "snapshot": false,
         "version": "8.15.0"
     },
@@ -55,7 +55,7 @@ An example event for `events` looks as following:
             "iam"
         ],
         "dataset": "sailpoint_identity_security_cloud.events",
-        "ingested": "2025-02-03T20:22:44Z",
+        "ingested": "2025-02-11T08:52:12Z",
         "kind": "event",
         "module": "sailpoint_identity_security_cloud",
         "type": [
