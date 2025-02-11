@@ -26,7 +26,7 @@ To create an **API Key** follow the instructions provided in the official docume
 ### Auditlog
 
 Auditlog documents can be found by setting the following filter: 
-`event.dataset : "adminbyrequest.auditlog"`
+`event.dataset : "admin_by_request_epm.auditlog"`
 
 An example event for `auditlog` looks as following:
 
@@ -212,7 +212,7 @@ The following non-ECS fields are used in events documents:
 ### Events
 
 Event documents can be found by setting the following filter: 
-`event.dataset : "adminbyrequest.events"`
+`event.dataset : "admin_by_request_epm.events"`
 
 An example event for `events` looks as following:
 
