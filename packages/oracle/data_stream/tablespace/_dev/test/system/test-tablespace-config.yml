@@ -6,16 +6,36 @@ agent:
   provisioning_script:
     language: "sh"
     contents: |
-      if grep wolfi /etc/os-release > /dev/null ; then
-        apk update && apk add libaio wget unzip
+      set -eu
+      if grep -q wolfi /etc/os-release ; then
+        apk update
+        apk add libaio wget unzip
+      elif grep -q "Red Hat" /etc/os-release ; then
+        microdnf update -y
+        microdnf install -y libaio wget unzip
+        microdnf clean all
+      elif grep -q "Ubuntu" /etc/os-release ; then
+        apt-get update
+        if grep -q "Ubuntu 24" /etc/os-release ; then
+            # Error when installing libaio1
+            # Package libaio1 is not available, but is referred to by another package.
+            apt-get -y install libaio1t64 wget unzip
+            # Applied fix described in: https://forums.oracle.com/ords/apexds/post/instant-client-on-ubuntu-24-04-noble-numbat-7244
+            ln -s /usr/lib/x86_64-linux-gnu/libaio.so.1t64 /usr/lib/x86_64-linux-gnu/libaio.so.1
+        else
+            apt-get -y install libaio1 wget unzip
+        fi
       else
-        apt-get update && apt-get -y install libaio1 wget unzip
+        echo "Unsupported OS"
+        exit 1
       fi
       mkdir -p /opt/oracle
       cd /opt/oracle
-      wget https://download.oracle.com/otn_software/linux/instantclient/214000/instantclient-basic-linux.x64-21.4.0.0.0dbru.zip && unzip -o instantclient-basic-linux.x64-21.4.0.0.0dbru.zip
-      wget https://download.oracle.com/otn_software/linux/instantclient/217000/instantclient-sqlplus-linux.x64-21.7.0.0.0dbru.zip && unzip -o instantclient-sqlplus-linux.x64-21.7.0.0.0dbru.zip
-      echo /opt/oracle/instantclient_21_4 > /etc/ld.so.conf.d/oracle-instantclient.conf && ldconfig
+      wget https://download.oracle.com/otn_software/linux/instantclient/214000/instantclient-basic-linux.x64-21.4.0.0.0dbru.zip && unzip -o instantclient-basic-linux.x64-21.4.0.0.0dbru.zip || exit 1
+      wget https://download.oracle.com/otn_software/linux/instantclient/217000/instantclient-sqlplus-linux.x64-21.7.0.0.0dbru.zip && unzip -o instantclient-sqlplus-linux.x64-21.7.0.0.0dbru.zip || exit 1
+      mkdir -p /etc/ld.so.conf.d/
+      echo /opt/oracle/instantclient_21_4 > /etc/ld.so.conf.d/oracle-instantclient.conf
+      ldconfig
       cp /opt/oracle/instantclient_21_7/glogin.sql /opt/oracle/instantclient_21_7/libsqlplus.so /opt/oracle/instantclient_21_7/libsqlplusic.so /opt/oracle/instantclient_21_7/sqlplus /opt/oracle/instantclient_21_4/
   pre_start_script:
     language: "sh"
