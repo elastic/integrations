@@ -26,7 +26,7 @@ To create an **API Key** follow the instructions provided in the official docume
 ### Auditlog
 
 Auditlog documents can be found by setting the following filter: 
-`event.dataset : "admin_by_request_epm.auditlog"`
+`event.dataset : "adminbyrequest.auditlog"`
 
 An example event for `auditlog` looks as following:
 
@@ -68,22 +68,22 @@ An example event for `auditlog` looks as following:
         }
     },
     "agent": {
-        "ephemeral_id": "fb29bdf3-e24d-4c15-8fef-d32db7c2023a",
-        "id": "be169ee6-7860-408e-9a90-309e551336e4",
-        "name": "elastic-agent-60450",
+        "ephemeral_id": "7ccca78d-8938-4e22-84b9-4aed25f2e1ff",
+        "id": "d67b52ba-ce50-4018-9a6b-9f24c1024ace",
+        "name": "elastic-agent-15804",
         "type": "filebeat",
         "version": "8.15.3"
     },
     "data_stream": {
         "dataset": "admin_by_request_epm.auditlog",
-        "namespace": "80996",
+        "namespace": "89043",
         "type": "logs"
     },
     "ecs": {
         "version": "8.11.0"
     },
     "elastic_agent": {
-        "id": "be169ee6-7860-408e-9a90-309e551336e4",
+        "id": "d67b52ba-ce50-4018-9a6b-9f24c1024ace",
         "snapshot": false,
         "version": "8.15.3"
     },
@@ -93,7 +93,7 @@ An example event for `auditlog` looks as following:
             "configuration"
         ],
         "dataset": "admin_by_request_epm.auditlog",
-        "ingested": "2025-02-06T07:12:50Z",
+        "ingested": "2025-02-11T11:01:52Z",
         "kind": "event",
         "module": "admin_by_request_epm",
         "type": [
@@ -153,7 +153,7 @@ The following non-ECS fields are used in events documents:
 | admin_by_request_epm.auditlog.application.version | The version of the file | keyword |
 | admin_by_request_epm.auditlog.application.virustotal_link | Link to the file (checksum) on virustotal.com | keyword |
 | admin_by_request_epm.auditlog.approved_by | Name of person that approved the request | keyword |
-| admin_by_request_epm.auditlog.auditlog_link | Link to this request in the auditlog on www.admin_by_request_epm.com | keyword |
+| admin_by_request_epm.auditlog.auditlog_link | Link to this request in the auditlog on www.adminbyrequest.com | keyword |
 | admin_by_request_epm.auditlog.computer.make | The vendor of the machine, as it appears in the inventory | keyword |
 | admin_by_request_epm.auditlog.computer.model | The model of the machine, as it appears in the inventory | keyword |
 | admin_by_request_epm.auditlog.computer.name | The name of the computer executing the request | keyword |
@@ -212,13 +212,13 @@ The following non-ECS fields are used in events documents:
 ### Events
 
 Event documents can be found by setting the following filter: 
-`event.dataset : "admin_by_request_epm.events"`
+`event.dataset : "adminbyrequest.events"`
 
 An example event for `events` looks as following:
 
 ```json
 {
-    "@timestamp": "2025-02-05T07:46:47.018Z",
+    "@timestamp": "2025-02-11T11:03:47.467Z",
     "admin_by_request_epm": {
         "events": {
             "application": {
@@ -242,22 +242,22 @@ An example event for `events` looks as following:
         }
     },
     "agent": {
-        "ephemeral_id": "a828e738-0e75-4f4c-a480-4e5324046143",
-        "id": "4ec4a85c-a24d-4db6-98e9-ed1b7a3d920b",
-        "name": "elastic-agent-33200",
+        "ephemeral_id": "5b7f2cf9-5c37-434a-90b6-fa040843314a",
+        "id": "2881c2ca-9917-4afc-a1dd-9e122409339d",
+        "name": "elastic-agent-16383",
         "type": "filebeat",
         "version": "8.15.3"
     },
     "data_stream": {
         "dataset": "admin_by_request_epm.events",
-        "namespace": "33969",
+        "namespace": "67511",
         "type": "logs"
     },
     "ecs": {
         "version": "8.11.0"
     },
     "elastic_agent": {
-        "id": "4ec4a85c-a24d-4db6-98e9-ed1b7a3d920b",
+        "id": "2881c2ca-9917-4afc-a1dd-9e122409339d",
         "snapshot": false,
         "version": "8.15.3"
     },
@@ -267,7 +267,7 @@ An example event for `events` looks as following:
             "configuration"
         ],
         "dataset": "admin_by_request_epm.events",
-        "ingested": "2025-02-05T07:46:49Z",
+        "ingested": "2025-02-11T11:03:50Z",
         "kind": "event",
         "module": "admin_by_request_epm",
         "type": [
@@ -297,7 +297,7 @@ An example event for `events` looks as following:
     },
     "tags": [
         "forwarded",
-        "event"
+        "admin_by_request_epm.events"
     ],
     "user": {
         "name": "FastTrack Support"
