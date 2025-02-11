@@ -6,10 +6,12 @@ resource.tracer.maxbackups: 5
 {{/if}}
 resource.url: {{url}}
 state:
+  {{!-- TODO: handle advanced security as well --}}
   token_id: {{token_id}}
   api_token: {{api_token}}
-  look_back: {{initial_interval}}
+  initial_interval: {{initial_interval}}
   path: /public_api/v2/alerts/get_alerts_multi_events
+  want_more: false
   filter_time_field: server_creation_time
   sort_time_field: creation_time
   sort_time_order: asc
@@ -42,19 +44,24 @@ program: |
           ?"search_to": state.?search_to,
         }
       }.encode_json()
-    ).do_request().as(resp, resp.StatusCode == 200 ?
+    ).with({
+      "Header":{
+        "Authorization": ["Bearer " + string(state.api_token)],
+        "x-xdr-auth-id": [string(state.token_id)],
+      }
+    }).do_request().as(resp, resp.StatusCode == 200 ?
       bytes(resp.Body).decode_json().as(body, 
         (
           // TODO: handle max total_count case of 9999
-          int(state.search_from) + body.reply.alerts.size() < body.reply.total_count
+          debug("want_more", int(state.?search_from.orValue(0)) + body.reply.alerts.size() < body.reply.total_count)
         ).as(want_more, {
-          ?"search_from": want_more ? optional.of(int(state.search_from) + body.reply.alerts.size()) : optional.none(),
-          ?"search_to": want_more ? optional.of(int(state.search_from) + body.reply.alerts.size() + state.batch_size) : optional.none(),
+          ?"search_from": debug("search_from", want_more ? optional.of(int(state.?search_from.orValue(0)) + body.reply.alerts.size()) : optional.none()),
+          ?"search_to": debug("search_to", want_more ? optional.of(int(state.?search_from.orValue(0)) + body.reply.alerts.size() + int(state.batch_size)) : optional.none()),
           "want_more": want_more,
-          "events": body.reply.alerts.map(e, {
+          "events": debug("events", body.reply.alerts.map(e, {
             "message": e.encode_json(),
-          }),
-          "cursor": {
+          })),
+          "cursor": debug("cursor", {
             ?"last_timestamp": (
               body.?reply.alerts.orValue([]).size() > 0 ?
                 optional.of(body.reply.alerts.map(e, int(e.local_insert_ts)).max())
@@ -62,7 +69,7 @@ program: |
                 state.?cursor.last_timestamp
             ),
             ?"filter_time": filter_time,
-          },
+          }),
         })
       )
     :

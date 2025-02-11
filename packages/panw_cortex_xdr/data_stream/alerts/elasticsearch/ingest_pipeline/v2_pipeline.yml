@@ -89,10 +89,12 @@ processors:
         - panw_cortex.xdr.event_type
         - panw_cortex.xdr.alert_id
       target_field: "_id"
+      tag: fingerprint_id
       ignore_missing: true
   - script:
       description: Drops null/empty values recursively
       lang: painless
+      tag: script_drop_null
       source: |
         boolean drop(Object o) {
           if (o == null || o == "") {
@@ -255,6 +257,7 @@ processors:
       field:
         - panw_cortex.xdr.mac
       ignore_missing: true
+      tag: remove_mac
       if: ctx.host?.mac != null
   - gsub:
       field: host.mac
@@ -274,6 +277,7 @@ processors:
   - script:
       if: ctx.panw_cortex?.xdr?.mitre_technique_id_and_name != null
       lang: painless
+      tag: script_mitre_technique
       description: "Extract Mitre Techniques and append it to Threat ECS fields"
       source: |-
         void addTechnique(def ctx, def x, def y) {
@@ -302,6 +306,7 @@ processors:
   - script:
       if: ctx.panw_cortex?.xdr?.mitre_tactic_id_and_name != null
       lang: painless
+      tag: script_mitre_tactic
       description: "Extract Mitre Tactics and append it to Threat ECS fields"
       source: |-
         void addTactic(def ctx, def x, def y) {
@@ -608,6 +613,7 @@ processors:
   - geoip:
       database_file: GeoLite2-ASN.mmdb
       field: source.ip
+      tag: geoip_source.ip_source.as
       target_field: source.as
       properties:
         - asn
@@ -616,6 +622,7 @@ processors:
   - geoip:
       database_file: GeoLite2-ASN.mmdb
       field: destination.ip
+      tag: geoip_destination.ip_destination.as
       target_field: destination.as
       properties:
         - asn
@@ -709,6 +716,7 @@ processors:
         - panw_cortex.xdr.mitre_technique_id_and_name
         - panw_cortex.xdr.mitre_tactic_id_and_name
       ignore_missing: true
+      tag: remove_fields
 
 # Error handling
 on_failure:
