@@ -6,11 +6,11 @@ The Elastic integration for [Admin By Request EPM](https://www.adminbyrequest.co
 
 - **`auditlog`**: Provides audit data that includes elevation requests, approvals, application installations, and scan results.
 - [Auditlog](https://www.adminbyrequest.com/en/docs/auditlog-api) are records generated when user takes action such as installing a software, running an application with admin privileges, requesting for admin session, approval or denial of requests and scan results.
-- This data stream leverages the Admin By Request EPM API `/auditlog/delta` endpoint to retrieve data.
+- This data stream leverages the Admin By Request EPM API [`/auditlog/delta`](https://www.adminbyrequest.com/en/docs/auditlog-api#:~:text=throttle%20your%20account-,Delta%20Data,-To%20avoid%20having) endpoint to retrieve data.
 
 - **`events`**: Provides system security events and administrative changes, including group modifications, policy changes and security violations. This allows tracking of administrative activities and security-critical events. Some events have corresponding audit log entries.
 - [Events](https://www.adminbyrequest.com/en/docs/events-api) are records that are generated on various actions done by users and administrators. These include group modifications, policy changes, security violations, and other administrative activities.
-- This data stream leverages the Admin By Request EPM API `/events` endpoint to retrieve data.
+- This data stream leverages the Admin By Request EPM API [`/events`](https://www.adminbyrequest.com/en/docs/events-api) endpoint to retrieve data.
 
 ## Requirements
 
