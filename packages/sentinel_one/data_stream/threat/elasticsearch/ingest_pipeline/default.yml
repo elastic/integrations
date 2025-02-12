@@ -73,9 +73,17 @@ processors:
       field: json.agentDetectionInfo.agentDomain
       target_field: sentinel_one.threat.detection.agent.domain
       ignore_missing: true
+  - split:
+      field: json.agentDetectionInfo.agentIpV4
+      target_field: json.agentDetectionInfo.agentIpV4
+      tag: split_agentIpV4
+      separator: ','
+      preserve_trailing: false
+      ignore_missing: true
   - convert:
       field: json.agentDetectionInfo.agentIpV4
       target_field: sentinel_one.threat.detection.agent.ipv4
+      tag: convert_agentIpV4_to_ip
       type: ip
       ignore_missing: true
       on_failure:
@@ -84,16 +92,28 @@ processors:
             ignore_missing: true
         - append:
             field: error.message
-            value: '{{{_ingest.on_failure_message}}}'
-  - append:
-      field: related.ip
-      value: '{{{sentinel_one.threat.detection.agent.ipv4}}}'
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - foreach:
+      field: sentinel_one.threat.detection.agent.ipv4
       if: ctx.sentinel_one?.threat?.detection?.agent?.ipv4 != null
-      allow_duplicates: false
+      processor:
+        append:
+          field: related.ip
+          value: '{{{_ingest._value}}}'
+          allow_duplicates: false
+          ignore_failure: true
       ignore_failure: true
+  - split:
+      field: json.agentDetectionInfo.agentIpV6
+      target_field: json.agentDetectionInfo.agentIpV6
+      tag: split_agentIpV6
+      separator: ','
+      preserve_trailing: false
+      ignore_missing: true
   - convert:
       field: json.agentDetectionInfo.agentIpV6
       target_field: sentinel_one.threat.detection.agent.ipv6
+      tag: convert_agentIpV6_to_ip
       type: ip
       ignore_missing: true
       on_failure:
@@ -102,12 +122,16 @@ processors:
             ignore_missing: true
         - append:
             field: error.message
-            value: '{{{_ingest.on_failure_message}}}'
-  - append:
-      field: related.ip
-      value: '{{{sentinel_one.threat.detection.agent.ipv6}}}'
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - foreach:
+      field: sentinel_one.threat.detection.agent.ipv6
       if: ctx.sentinel_one?.threat?.detection?.agent?.ipv6 != null
-      allow_duplicates: false
+      processor:
+        append:
+          field: related.ip
+          value: '{{{_ingest._value}}}'
+          allow_duplicates: false
+          ignore_failure: true
       ignore_failure: true
   - rename:
       field: json.agentDetectionInfo.agentLastLoggedInUpn
@@ -168,6 +192,7 @@ processors:
       ignore_missing: true
   - convert:
       field: json.agentDetectionInfo.externalIp
+      tag: convert_externalIp_to_ip
       type: ip
       ignore_missing: true
       on_failure:
@@ -176,7 +201,7 @@ processors:
             ignore_missing: true
         - append:
             field: error.message
-            value: '{{{_ingest.on_failure_message}}}'
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - geoip:
       field: json.agentDetectionInfo.externalIp
       target_field: host.geo
@@ -693,7 +718,7 @@ processors:
                 field: error.message
                 value: '{{{_ingest.on_failure_message}}}'
       ignore_failure: true
-      if: ctx.json?.mitigationStatus != null && ctx.json.mitigationStatus instanceof List
+      if: ctx.json.mitigationStatus instanceof List
   - foreach:
       field: json.mitigationStatus
       processor:
@@ -707,7 +732,7 @@ processors:
                 field: error.message
                 value: '{{{_ingest.on_failure_message}}}'
       ignore_failure: true
-      if: ctx.json?.mitigationStatus != null && ctx.json.mitigationStatus instanceof List
+      if: ctx.json.mitigationStatus instanceof List
   - foreach:
       field: json.mitigationStatus
       processor:
@@ -721,7 +746,7 @@ processors:
                 field: error.message
                 value: '{{{_ingest.on_failure_message}}}'
       ignore_failure: true
-      if: ctx.json?.mitigationStatus != null && ctx.json.mitigationStatus instanceof List
+      if: ctx.json.mitigationStatus instanceof List
   - foreach:
       field: json.mitigationStatus
       processor:
@@ -735,7 +760,7 @@ processors:
                 field: error.message
                 value: '{{{_ingest.on_failure_message}}}'
       ignore_failure: true
-      if: ctx.json?.mitigationStatus != null && ctx.json.mitigationStatus instanceof List
+      if: ctx.json.mitigationStatus instanceof List
   - foreach:
       field: json.mitigationStatus
       processor:
@@ -749,7 +774,7 @@ processors:
                 field: error.message
                 value: '{{{_ingest.on_failure_message}}}'
       ignore_failure: true
-      if: ctx.json?.mitigationStatus != null && ctx.json.mitigationStatus instanceof List
+      if: ctx.json.mitigationStatus instanceof List
   - foreach:
       field: json.mitigationStatus
       processor:
@@ -763,7 +788,7 @@ processors:
                 field: error.message
                 value: '{{{_ingest.on_failure_message}}}'
       ignore_failure: true
-      if: ctx.json?.mitigationStatus != null && ctx.json.mitigationStatus instanceof List
+      if: ctx.json.mitigationStatus instanceof List
   - foreach:
       field: json.mitigationStatus
       processor:
@@ -777,7 +802,7 @@ processors:
                 field: error.message
                 value: '{{{_ingest.on_failure_message}}}'
       ignore_failure: true
-      if: ctx.json?.mitigationStatus != null && ctx.json.mitigationStatus instanceof List
+      if: ctx.json.mitigationStatus instanceof List
   - foreach:
       field: json.mitigationStatus
       processor:
@@ -788,7 +813,7 @@ processors:
             - ISO8601
           ignore_failure: true
       ignore_failure: true
-      if: ctx.json?.mitigationStatus != null && ctx.json.mitigationStatus instanceof List
+      if: ctx.json.mitigationStatus instanceof List
   - foreach:
       field: json.mitigationStatus
       processor:
@@ -797,7 +822,16 @@ processors:
           target_field: _ingest._value.latest_report
           ignore_missing: true
       ignore_failure: true
-      if: ctx.json?.mitigationStatus != null && ctx.json.mitigationStatus instanceof List
+      if: ctx.json.mitigationStatus instanceof List
+  - foreach:
+      field: json.mitigationStatus
+      processor:
+        rename:
+          field: _ingest._value.reportId
+          target_field: _ingest._value.report_id
+          ignore_missing: true
+      ignore_failure: true
+      if: ctx.json.mitigationStatus instanceof List
   - foreach:
       field: json.mitigationStatus
       processor:
@@ -808,7 +842,7 @@ processors:
             - ISO8601
           ignore_failure: true
       ignore_failure: true
-      if: ctx.json?.mitigationStatus != null && ctx.json.mitigationStatus instanceof List
+      if: ctx.json.mitigationStatus instanceof List
   - foreach:
       field: json.mitigationStatus
       processor:
@@ -819,7 +853,7 @@ processors:
             - ISO8601
           ignore_failure: true
       ignore_failure: true
-      if: ctx.json?.mitigationStatus != null && ctx.json.mitigationStatus instanceof List
+      if: ctx.json.mitigationStatus instanceof List
   - foreach:
       field: json.mitigationStatus
       processor:
@@ -833,7 +867,7 @@ processors:
             - _ingest._value.mitigationStartedAt
           ignore_missing: true
       ignore_failure: true
-      if: ctx.json?.mitigationStatus != null && ctx.json.mitigationStatus instanceof List
+      if: ctx.json.mitigationStatus instanceof List
   - rename:
       field: json.mitigationStatus
       target_field: sentinel_one.threat.mitigation_status
@@ -1176,4 +1210,7 @@ on_failure:
       allow_duplicates: false
   - append:
       field: error.message
-      value: '{{{ _ingest.on_failure_message }}}'
+      value: >-
+        Processor '{{{ _ingest.on_failure_processor_type }}}'
+        {{{#_ingest.on_failure_processor_tag}}}with tag '{{{ _ingest.on_failure_processor_tag }}}'
+        {{{/_ingest.on_failure_processor_tag}}}failed with message '{{{ _ingest.on_failure_message }}}'
