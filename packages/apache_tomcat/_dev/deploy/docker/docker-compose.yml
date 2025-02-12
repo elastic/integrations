@@ -21,3 +21,9 @@ services:
       - ./sample_logs:/sample_logs:ro
       - ${SERVICE_LOGS_DIR}:/var/log/
     command: /bin/sh -c "cp /sample_logs/* /var/log/"
+
+  log_generator:
+    image: curlimages/curl
+    depends_on:
+      - apache_tomcat
+    command: /bin/sh -c "for i in $(seq 1 30); do curl -s http://apache_tomcat:8080; sleep 0.5; done"

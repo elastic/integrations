@@ -83,10 +83,14 @@ processors:
 - append:
     field: event.category
     value: authentication
+- set:
+    field: auth0.logs.data.type_id
+    copy_from: auth0.logs.data.type
+    ignore_empty_value: true
 - script:
     lang: painless
     description: Sets event type, category and action based on type
-    if: ctx?.auth0?.logs?.data?.type != null
+    if: ctx.auth0?.logs?.data?.type != null
     params:
       actions:
         f:

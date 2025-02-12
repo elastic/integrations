@@ -101,6 +101,7 @@ The Auth0 logs dataset provides events from Auth0 log stream. All Auth0 log even
 | auth0.logs.data.strategy_type | Type of strategy involved in the event. | keyword |
 | auth0.logs.data.tenant_name | The name of the auth0 tenant. | keyword |
 | auth0.logs.data.type | Type of event. | keyword |
+| auth0.logs.data.type_id | The short Auth0 type identifier. | keyword |
 | auth0.logs.data.user_agent | User agent string from the client device that caused the event. | text |
 | auth0.logs.data.user_id | ID of the user involved in the event. | keyword |
 | auth0.logs.data.user_name | Name of the user involved in the event. | keyword |
@@ -119,9 +120,9 @@ An example event for `logs` looks as following:
 {
     "@timestamp": "2021-11-03T03:06:05.696Z",
     "agent": {
-        "ephemeral_id": "ca08f8bd-d4b8-4ea2-aefa-eb285a0b32c6",
-        "id": "212c7c0c-b1d6-427f-b567-7cc8887732b9",
-        "name": "elastic-agent-75377",
+        "ephemeral_id": "9598f1df-dee9-4d8d-a60d-bbb668a8f749",
+        "id": "adf3895e-82ca-44b8-9f15-cbbf4bbbe7b2",
+        "name": "elastic-agent-23667",
         "type": "filebeat",
         "version": "8.13.0"
     },
@@ -156,20 +157,21 @@ An example event for `logs` looks as following:
                     }
                 },
                 "hostname": "dev-yoj8axza.au.auth0.com",
-                "type": "Failed login"
+                "type": "Failed login",
+                "type_id": "f"
             }
         }
     },
     "data_stream": {
         "dataset": "auth0.logs",
-        "namespace": "12089",
+        "namespace": "27710",
         "type": "logs"
     },
     "ecs": {
         "version": "8.11.0"
     },
     "elastic_agent": {
-        "id": "212c7c0c-b1d6-427f-b567-7cc8887732b9",
+        "id": "adf3895e-82ca-44b8-9f15-cbbf4bbbe7b2",
         "snapshot": false,
         "version": "8.13.0"
     },
@@ -181,7 +183,7 @@ An example event for `logs` looks as following:
         ],
         "dataset": "auth0.logs",
         "id": "90020211103030609732115389415260839021644201259064885298",
-        "ingested": "2024-11-11T15:35:02Z",
+        "ingested": "2025-02-11T02:57:32Z",
         "kind": "event",
         "original": "{\"data\":{\"connection_id\":\"\",\"date\":\"2021-11-03T03:06:05.696Z\",\"description\":\"Callback URL mismatch. http://localhost:3000/callback is not in the list of allowed callback URLs\",\"details\":{\"body\":{},\"error\":{\"message\":\"Callback URL mismatch. http://localhost:3000/callback is not in the list of allowed callback URLs\",\"oauthError\":\"Callback URL mismatch. http://localhost:3000/callback is not in the list of allowed callback URLs. Please go to 'https://manage.auth0.com/#/applications/aI61p8I8aFjmYRliLWgvM9ev97kCCNDB/settings' and make sure you are sending the same callback url from your application.\",\"payload\":{\"attempt\":\"http://localhost:3000/callback\",\"authorized\":[],\"client\":{\"clientID\":\"aI61p8I8aFjmYRliLWgvM9ev97kCCNDB\"},\"code\":\"unauthorized_client\",\"message\":\"Callback URL mismatch. http://localhost:3000/callback is not in the list of allowed callback URLs\",\"name\":\"CallbackMismatchError\",\"status\":403},\"type\":\"callback-url-mismatch\"},\"qs\":{\"client_id\":\"aI61p8I8aFjmYRliLWgvM9ev97kCCNDB\",\"redirect_uri\":\"http://localhost:3000/callback\",\"response_type\":\"code\",\"scope\":\"openid profile\",\"state\":\"Vz6G2zZf95/FCOQALrpvd4bS6jx5xvRos2pVldFAiw4=\"}},\"hostname\":\"dev-yoj8axza.au.auth0.com\",\"ip\":\"81.2.69.143\",\"log_id\":\"90020211103030609732115389415260839021644201259064885298\",\"type\":\"f\",\"user_agent\":\"Mozilla/5.0 (X11; Ubuntu; Linux x86_64; rv:93.0) Gecko/20100101 Firefox/93.0\"},\"log_id\":\"90020211103030609732115389415260839021644201259064885298\"}",
         "outcome": "failure",
