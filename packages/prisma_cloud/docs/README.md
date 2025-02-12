@@ -362,7 +362,7 @@ An example event for `alert` looks as following:
 | prisma_cloud.alert.policy.created_by |  | keyword |
 | prisma_cloud.alert.policy.created_on |  | date |
 | prisma_cloud.alert.policy.deleted |  | boolean |
-| prisma_cloud.alert.policy.description |  | text |
+| prisma_cloud.alert.policy.description |  | match_only_text |
 | prisma_cloud.alert.policy.enabled |  | boolean |
 | prisma_cloud.alert.policy.finding_types |  | keyword |
 | prisma_cloud.alert.policy.id |  | keyword |
@@ -370,8 +370,8 @@ An example event for `alert` looks as following:
 | prisma_cloud.alert.policy.last_modified_by |  | keyword |
 | prisma_cloud.alert.policy.last_modified_on |  | date |
 | prisma_cloud.alert.policy.name |  | keyword |
-| prisma_cloud.alert.policy.name.text | Multi-field of `prisma_cloud.alert.policy.name`. | text |
-| prisma_cloud.alert.policy.recommendation |  | text |
+| prisma_cloud.alert.policy.name.text | Multi-field of `prisma_cloud.alert.policy.name`. | match_only_text |
+| prisma_cloud.alert.policy.recommendation |  | match_only_text |
 | prisma_cloud.alert.policy.remediable |  | boolean |
 | prisma_cloud.alert.policy.remediation.actions.operation |  | keyword |
 | prisma_cloud.alert.policy.remediation.actions.payload |  | keyword |
