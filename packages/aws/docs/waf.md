@@ -95,6 +95,9 @@ Please refer to the following [document](https://www.elastic.co/guide/en/ecs/cur
 | aws.waf.rule_group_list.ruleGroupId |  | keyword |
 | aws.waf.rule_group_list.terminatingRule.action |  | keyword |
 | aws.waf.rule_group_list.terminatingRule.ruleId |  | keyword |
+| aws.waf.rule_group_list.terminatingRule.ruleMatchDetails.conditionType |  | keyword |
+| aws.waf.rule_group_list.terminatingRule.ruleMatchDetails.location |  | keyword |
+| aws.waf.rule_group_list.terminatingRule.ruleMatchDetails.matchedData |  | keyword |
 | aws.waf.source.id | The source ID. This field shows the ID of the associated resource. | keyword |
 | aws.waf.source.name | The source of the request. Possible values: CF for Amazon CloudFront, APIGW for Amazon API Gateway, ALB for Application Load Balancer, and APPSYNC for AWS AppSync. | keyword |
 | aws.waf.terminating_rule_match_details | Detailed information about the terminating rule that matched the request. A terminating rule has an action that ends the inspection process against a web request. Possible actions for a terminating rule are ALLOW and BLOCK. This is only populated for SQL injection and cross-site scripting (XSS) match rule statements. As with all rule statements that inspect for more than one thing, AWS WAF applies the action on the first match and stops inspecting the web request. A web request with a terminating action could contain other threats, in addition to the one reported in the log. | nested |
