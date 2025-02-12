@@ -100,6 +100,7 @@ Please refer to the following [document](https://www.elastic.co/guide/en/ecs/cur
 | aws.waf.rule_group_list.terminatingRule.ruleMatchDetails.matchedData |  | keyword |
 | aws.waf.source.id | The source ID. This field shows the ID of the associated resource. | keyword |
 | aws.waf.source.name | The source of the request. Possible values: CF for Amazon CloudFront, APIGW for Amazon API Gateway, ALB for Application Load Balancer, and APPSYNC for AWS AppSync. | keyword |
+| aws.waf.terminating_rule_match_details.conditionType |  | keyword |
 | aws.waf.terminating_rule_match_details.location |  | keyword |
 | aws.waf.terminating_rule_match_details.matchedData |  | keyword |
 | cloud.image.id | Image ID for the cloud instance. | keyword |
