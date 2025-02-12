@@ -1,6 +1,7 @@
 ---
 description: Pipeline for Palo Alto Cortext XDR Alerts v2 API.
 processors:
+  # TODO: handle _v6 IPs.
   # TODO: Test following fields with real API. These fields are null in API doc.
       # fw_app_category
       # fw_app_id
@@ -246,29 +247,32 @@ processors:
       tag: rename_panw_cortex.xdr.endpoint_id
       target_field: host.id
       ignore_missing: true
-  - split:
-      field: panw_cortex.xdr.mac
-      tag: split_panw_cortex.xdr.mac
-      target_field: host.mac
-      separator: ","
-      ignore_missing: true
-      if: ctx.host?.mac == null
-  - remove:
-      field:
-        - panw_cortex.xdr.mac
-      ignore_missing: true
-      tag: remove_mac
-      if: ctx.host?.mac != null
-  - gsub:
-      field: host.mac
-      tag: gsub_host.mac
-      ignore_missing: true
-      pattern: '[:.]'
-      replacement: '-'
-  - uppercase:
-      field: host.mac
-      tag: uppercase_host.mac
-      ignore_missing: true
+
+# TODO: populate host.mac from mac_addresses ?
+
+#   - split:
+#       field: panw_cortex.xdr.mac
+#       tag: split_panw_cortex.xdr.mac
+#       target_field: host.mac
+#       separator: ","
+#       ignore_missing: true
+#       if: ctx.host?.mac == null
+#   - remove:
+#       field:
+#         - panw_cortex.xdr.mac
+#       ignore_missing: true
+#       tag: remove_mac
+#       if: ctx.host?.mac != null
+#   - gsub:
+#       field: host.mac
+#       tag: gsub_host.mac
+#       ignore_missing: true
+#       pattern: '[:.]'
+#       replacement: '-'
+#   - uppercase:
+#       field: host.mac
+#       tag: uppercase_host.mac
+#       ignore_missing: true
   - rename:
       field: panw_cortex.xdr.dns_query_name
       tag: rename_panw_cortex.xdr.dns_query_name
