@@ -81,19 +81,19 @@ This is a current limitation in Firehose, which we are working with AWS to resol
     
     **Destination settings**
 
-    1. Set **Elastic endpoint URL** to point to your **Elasticsearch** endpoint of your deployment.
+    1. Set **Elastic endpoint URL** to point to your **Elasticsearch** cluster running in Elastic Cloud.
     This endpoint can be found from the [Elastic Cloud console](https://cloud.elastic.co/).
 
     2. **API key** is the base64 encoded Elastic API key.
     This can be created in Kibana by following the instructions under API Keys.
     If you are using an API key with Restricted privileges, be sure to review the Indices privileges to provide at least "auto_configure" & "write" permissions for the indices you will be using with this delivery stream.
-    By default, logs will be stored in indexes of `logs-awsfirehose-default` data stream and metrics will be stored in indexes of `metrics-aws.cloudwatch-default` datas stream.
+    By default, logs will be stored in `logs-awsfirehose-default` data stream and metrics will be stored in `metrics-aws.cloudwatch-default` data stream.
     Therefore, Elastic highly recommends giving `logs-awsfirehose-default` and `metrics-aws.cloudwatch-default` indices with "write" privilege.
 
     3. We recommend setting **Content encoding** to **GZIP** for improved network efficiency.
 
     4. **Retry duration** determines how long Firehose continues retrying the request in the event of an error. 
-    A duration between 60 seconds to 300 seconds should be suitable for most use cases.
+    A duration between 60 and 300 seconds should be suitable for most use cases.
 
     5. Elastic requires a **Buffer size** of `1MiB` to avoid exceeding the Elasticsearch `http.max_content_length` setting (typically 100MB) when the buffer is uncompressed.
 
