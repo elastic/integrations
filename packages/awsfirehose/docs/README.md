@@ -90,7 +90,7 @@ This is a current limitation in Firehose, which we are working with AWS to resol
     By default, logs will be stored in `logs-awsfirehose-default` data stream and metrics will be stored in `metrics-aws.cloudwatch-default` data stream.
     Therefore, Elastic highly recommends giving `logs-awsfirehose-default` and `metrics-aws.cloudwatch-default` indices with "write" privilege.
 
-    3. We recommend setting **Content encoding** to **GZIP** for improved network efficiency.
+    3. We recommend setting **Content encoding** to **GZIP** to reduce the data transfer costs.
 
     4. **Retry duration** determines how long Firehose continues retrying the request in the event of an error. 
     A duration between 60 and 300 seconds should be suitable for most use cases.
