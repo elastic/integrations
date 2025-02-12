@@ -434,6 +434,14 @@ An example event for `stats` looks as following:
 | envoy.tcp.\*.stddev | Envoyproxy standard deviation timers metric | object |  |
 | envoy.tcp.\*.value | Envoyproxy gauges | object | gauge |
 | envoy.tcp.prefix | Stats prefix for the TCP Proxy network filter | keyword |  |
+| envoy.thread_local_cluster_manager.\*.count | Envoyproxy counters | object | counter |
+| envoy.thread_local_cluster_manager.\*.max | Envoyproxy max timers metric | object |  |
+| envoy.thread_local_cluster_manager.\*.mean | Envoyproxy mean timers metric | object |  |
+| envoy.thread_local_cluster_manager.\*.mean_rate | Envoyproxy mean rate timers metric | object |  |
+| envoy.thread_local_cluster_manager.\*.median | Envoyproxy median timers metric | object |  |
+| envoy.thread_local_cluster_manager.\*.min | Envoyproxy min timers metric | object |  |
+| envoy.thread_local_cluster_manager.\*.stddev | Envoyproxy standard deviation timers metric | object |  |
+| envoy.thread_local_cluster_manager.\*.value | Envoyproxy gauges | object | gauge |
 | envoy.thrift.\*.count | Envoyproxy counters | object | counter |
 | envoy.thrift.\*.max | Envoyproxy max timers metric | object |  |
 | envoy.thrift.\*.mean | Envoyproxy mean timers metric | object |  |
