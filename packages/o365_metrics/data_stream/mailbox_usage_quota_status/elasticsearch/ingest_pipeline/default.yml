@@ -4,15 +4,15 @@ processors:
   - set:
       field: ecs.version
       value: "8.16.0"
+  - fail:
+      tag: cel_failure
+      if: ctx.error?.mailbox_usage_quota_status != null && ctx.mailbox_usage_quota_status == null && ctx.event?.original == null
+      message: error message set and no data to process
   - set:
       copy_from: mailbox_usage_quota_status
       field: event.original
       ignore_empty_value: true
       if: ctx.event?.original == null && (ctx.tags != null && (ctx.tags.contains('preserve_original_event')))
-#   - fail:
-#       tag: cel_failure
-#       if: ctx.error?.message != null && ctx.message == null && ctx.event?.original == null
-#       message: error message set and no data to process
   - json:
       field: mailbox_usage_quota_status
       target_field: o365.metrics.mailbox.usage.quota.status
