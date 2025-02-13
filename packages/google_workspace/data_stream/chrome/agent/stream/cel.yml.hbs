@@ -41,7 +41,7 @@ program: |
         "maxResults": [string(state.batch_size)],
         "endTime": [string(state.end_time)],
         "startTime": [string(state.start_time)],
-        ?"pageToken": has(state.next_page_token) ? optional.of([string(state.next_page_token)]) : optional.none(),
+        ?"pageToken": state.?cursor.next_page_token.optMap(v, [string(v)]),
       }.format_query()
     ).do_request().as(resp, resp.StatusCode == 200 ?
       bytes(resp.Body).decode_json().as(body,{
@@ -56,9 +56,9 @@ program: |
           ),
         "cursor": {
            "last_timestamp": state.end_time,
+           ?"next_page_token": body.?nextPageToken,
          },
         "want_more": has(body.nextPageToken),
-        ?"next_page_token": body.?nextPageToken,
       })
     :
       {
