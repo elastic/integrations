@@ -435,6 +435,12 @@ processors:
       field: message
       description: "113009"
       pattern: 'AAA retrieved default group policy %{_temp_.cisco.group_policy} for user %{source.user.name}'
+  - dissect:
+      if: "ctx._temp_.cisco.message_id == '113011'"
+      tag: parse_113011
+      field: message
+      description: "113011"
+      pattern: 'AAA retrieved user specific group policy (%{_temp_.cisco.group_policy}) for user = %{source.user.name}'
   - grok:
       if: "ctx._temp_.cisco.message_id == '113012'"
       tag: parse_113012
@@ -2478,6 +2484,11 @@ processors:
           outcome: success
           action: logged-in
         "113009":
+          category: [ authentication, network ]
+          type: [ allowed, info ]
+          outcome: success
+          action: logged-in
+        "113011":
           category: [ authentication, network ]
           type: [ allowed, info ]
           outcome: success
