@@ -112,7 +112,9 @@ This is a current limitation in Firehose, which we are working with AWS to resol
        Setting this parameter can add many fields into each record and may significantly increase data volume in Elasticsearch.
        As such, use of this parameter should be carefully considered and used only when the extracted fields are required for specific filtering and/or aggregation.
 
-    ![Firehose Destination Settings](../img/destination-settings.png)
+    8. **Backup settings** It is recommended to configure S3 backup for failed records. These backups can be used to restore data losses caused by unforeseen service outages.
+
+        ![Firehose Destination Settings](../img/destination-settings.png)
 
 3. Send data to the Firehose delivery stream
     1. logs
