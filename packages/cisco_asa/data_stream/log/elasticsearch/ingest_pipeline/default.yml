@@ -1019,6 +1019,15 @@ processors:
       field: "event.reason"
       description: "722034"
       pattern: 'New %{network.transport} SVC connection, no existing connection.'
+  - grok:
+      if: "ctx._temp_.cisco.message_id == '722041'"
+      tag: parse_svc_message_772041
+      field: "message"
+      description: "svc_message"
+      patterns:
+        - '^TunnelGroup <%{NOTBRACKET:_temp_.cisco.tunnel_group}> GroupPolicy <%{NOTBRACKET:_temp_.cisco.group_policy}> User <%{NOTBRACKET:source.user.name}> IP <%{NOTBRACKET:source.address}> %{GREEDYDATA:event.reason}$'
+      pattern_definitions:
+        NOTBRACKET: "[^<>]+"
   - dissect:
       if: "ctx._temp_.cisco.message_id == '722051'"
       tag: parse_722051
@@ -2887,6 +2896,8 @@ processors:
           type: [ connection, info ]
         "722037":
           type: [ connection, end ]
+        "722041":
+          type: [ connection, info ]
         "722051":
           type: [ connection, info ]
           outcome: success
