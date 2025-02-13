@@ -18,21 +18,31 @@ The Microsoft Sentinel integration collects logs for three types of events: Aler
 
 ## Requirements
 
+### Agentless deployment
+
+Agentless deployments are only supported in Elastic Serverless and Elastic Cloud environments. Agentless deployments provide a means to ingest data while avoiding the orchestration, management, and maintenance needs associated with standard ingest infrastructure. Using agentless deployment makes manual agent deployment unnecessary, allowing you to focus on your data instead of the agent that collects it.
+
+For more information, refer to [Agentless integrations](https://www.elastic.co/guide/en/serverless/current/security-agentless-integrations.html) and [Agentless integrations FAQ](https://www.elastic.co/guide/en/serverless/current/agentless-integration-troubleshooting.html)
+
+> Note: Currently Agentless support for Microsoft Sentinel integration is limited to API and not supported for Azure Event Hub input.
+
+### Agent-based deployment
+
 Elastic Agent must be installed. For more details and installation instructions, please refer to the [Elastic Agent Installation Guide](https://www.elastic.co/guide/en/fleet/current/elastic-agent-installation.html).
 
-### Installing and managing an Elastic Agent:
+#### Installing and managing an Elastic Agent:
 
 There are several options for installing and managing Elastic Agent:
 
-### Install a Fleet-managed Elastic Agent (recommended):
+#### Install a Fleet-managed Elastic Agent (recommended):
 
 With this approach, you install Elastic Agent and use Fleet in Kibana to define, configure, and manage your agents in a central location. We recommend using Fleet management because it makes the management and upgrade of your agents considerably easier.
 
-### Install Elastic Agent in standalone mode (advanced users):
+#### Install Elastic Agent in standalone mode (advanced users):
 
 With this approach, you install Elastic Agent and manually configure the agent locally on the system where it’s installed. You are responsible for managing and upgrading the agents. This approach is reserved for advanced users only.
 
-### Install Elastic Agent in a containerized environment:
+#### Install Elastic Agent in a containerized environment:
 
 You can run Elastic Agent inside a container, either with Fleet Server or standalone. Docker images for all versions of Elastic Agent are available from the Elastic Docker registry, and we provide deployment manifests for running on Kubernetes.
 
