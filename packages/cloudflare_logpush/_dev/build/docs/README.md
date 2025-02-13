@@ -25,6 +25,10 @@ The Cloudflare Logpush integration collects logs for the following types of even
 
 **Device Posture Results**: See Example Schema [here](https://developers.cloudflare.com/logs/reference/log-fields/account/device_posture_results/).
 
+**DLP Forensic Copies**: See Example Schema [here](https://developers.cloudflare.com/logs/reference/log-fields/account/dlp_forensic_copies/).
+
+**Email Securtity Alerts**: See Example Schema [here](https://developers.cloudflare.com/logs/reference/log-fields/account/email_security_alerts/).
+
 **Gateway DNS**: See Example Schema [here](https://developers.cloudflare.com/logs/reference/log-fields/account/gateway_dns/).
 
 **Gateway HTTP**: See Example Schema [here](https://developers.cloudflare.com/logs/reference/log-fields/account/gateway_http/).
@@ -48,6 +52,8 @@ The Cloudflare Logpush integration collects logs for the following types of even
 **NEL Report**: See Example Schema [here](https://developers.cloudflare.com/logs/reference/log-fields/zone/nel_reports/).
 
 **Network Analytics**: See Example Schema [here](https://developers.cloudflare.com/logs/reference/log-fields/account/network_analytics_logs/).
+
+**Page Shield events**: See Example Schema [here](https://developers.cloudflare.com/logs/reference/log-fields/zone/page_shield_events/).
 
 **Sinkhole HTTP**: See Example Schema [here](https://developers.cloudflare.com/logs/reference/log-fields/account/sinkhole_http_logs/).
 
@@ -210,6 +216,16 @@ This is the `device_posture` dataset.
 
 {{fields "device_posture"}}
 
+### dlp_forensic_copies
+
+This is the `dlp_forensic_copies` dataset.
+
+#### Example
+
+{{event "dlp_forensic_copies"}}
+
+{{fields "dlp_forensic_copies"}}
+
 ### dns
 
 This is the `dns` dataset.
@@ -229,6 +245,16 @@ This is the `dns_firewall` dataset.
 {{event "dns_firewall"}}
 
 {{fields "dns_firewall"}}
+
+### email_security_alerts
+
+This is the `email_security_alerts` dataset.
+
+#### Example
+
+{{event "email_security_alerts"}}
+
+{{fields "email_security_alerts"}}
 
 ### firewall_event
 
@@ -319,6 +345,16 @@ This is the `network_session` dataset.
 {{event "network_session"}}
 
 {{fields "network_session"}}
+
+### page_shield_events
+
+This is the `page_shield_events` dataset.
+
+#### Example
+
+{{event "page_shield_events"}}
+
+{{fields "page_shield_events"}}
 
 ### sinkhole_http
 
