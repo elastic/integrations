@@ -230,6 +230,43 @@ processors:
       target_field: imperva.securesphere.device.custom_string5.value
       ignore_missing: true
   - rename:
+      field: cef.extensions.deviceCustomString6Label
+      tag: 'rename_cef_extensions_deviceCustomString6Label'
+      target_field: imperva.securesphere.device.custom_string6.label
+      ignore_missing: true
+  - rename:
+      field: cef.extensions.deviceCustomString6
+      tag: 'rename_cef_extensions_deviceCustomString6'
+      target_field: imperva.securesphere.device.custom_string6.value
+      ignore_missing: true
+  - script:
+      description: Extracts additional custom string.
+      tag: script_to_extract_additional_custom_string
+      lang: painless
+      source: |-
+        if (ctx.cef?.extensions instanceof Map) {
+          boolean hasCustomString = true;
+          for (int i = 7; i <= 21 && hasCustomString; i++) {
+            String key = "cs" + i;
+            String labelKey = key + "Label";
+            if (ctx.cef.extensions.containsKey(key) || ctx.cef.extensions.containsKey(labelKey)) {
+              String newKey = "custom_string" + i;
+              ctx.imperva.securesphere.device[newKey] = [:];
+
+              if (ctx.cef.extensions.containsKey(key)) {
+                ctx.imperva.securesphere.device[newKey]["value"] = ctx.cef.extensions[key];
+              }
+              if (ctx.cef.extensions.containsKey(labelKey)) {
+                ctx.imperva.securesphere.device[newKey]["label"] = ctx.cef.extensions[labelKey];
+              }
+
+            } else {
+              // Let it break the loop if the key is not found.
+              hasCustomString = false;
+            }
+          }
+        }
+  - rename:
       field: cef.extensions.deviceEventCategory
       tag: 'rename_cef_extensions_deviceEventCategory'
       target_field: imperva.securesphere.device.event.category
