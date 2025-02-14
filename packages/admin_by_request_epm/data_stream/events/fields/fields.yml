@@ -1,0 +1,115 @@
+- name: admin_by_request_epm
+  title: Admin By Request EPM Event Fields
+  type: group
+  fields:
+    - name: events
+      type: group
+      fields:
+        - name: id
+          type: keyword
+          description: The unique ID of this entry. This ID can be used to query updated information on this entry by appending it to the url to request this resource only
+        - name: event_code
+          type: keyword
+          description: The event code to uniquely identify this type of event; see list further down. The code can be used as filter
+        - name: event_level
+          type: keyword
+          description: The severity level; 0 = Informational, 1 = Warning, 2 = Alert
+        - name: event_text
+          type: text
+          description: Description of the event
+        - name: event_time
+          type: date
+          description: Time of the event
+        - name: event_time_utc
+          type: date
+          description: Event time in Coordinated Universal Time (UTC). Will default to eventTime if not available.
+        - name: computer_name
+          type: keyword
+          description: The computer name of the event
+        - name: user_account
+          type: keyword
+          description: The user's account name
+        - name: user_name
+          type: keyword
+          description: The full name of the user
+        - name: alert_account
+          type: keyword
+          description: A secondary account. For example the account added to the local administrators account by the "userAccount" user
+        - name: audit_log_url
+          type: keyword
+          description: URL to the auditlog entry (if any)
+        - name: rollback
+          type: boolean
+          description: Indicating if the event was rolled back. An example is a user adding a user to the local administrators group that was rolled back
+        - name: additional_data
+          type: text
+          description: Additional data can for example be the version of the Admin By Request EPM install/uninstall event or the tampered registry key
+        - name: application
+          type: group
+          fields:
+            - name: file
+              type: keyword
+              description: The file name of the file executed using Run As Admin
+            - name: path
+              type: keyword
+              description: The file path of the executed application
+            - name: name
+              type: keyword
+              description: The name of the application (description property of file)
+            - name: vendor
+              type: keyword
+              description: The vendor of the application
+            - name: version
+              type: keyword
+              description: The version of the file
+            - name: sha256
+              type: keyword
+              description: The checksum of the file
+        - name: elevated_applications
+          type: group
+          fields:
+            - name: name
+              type: keyword
+              description: The name of the application (description property of file)
+            - name: path
+              type: keyword
+              description: The file path of the executed application
+            - name: file
+              type: keyword
+              description: The file name of the file executed
+            - name: version
+              type: keyword
+              description: The version of the file
+            - name: vendor
+              type: keyword
+              description: The vendor of the application
+            - name: sha256
+              type: keyword
+              description: The checksum of the file
+            - name: scan_result
+              type: keyword
+              description: Malware scan result (possible values - Clean, Malicious, Suspicious)
+            - name: scan_result_code
+              type: keyword
+              description: 0 = Clean, 1 = Malicious, 2 = Suspicious
+            - name: threat
+              type: keyword
+              description: Name of malware, if file is malicious or suspicious
+            - name: virustotal_link
+              type: keyword
+              description: Link to the file (checksum) on virustotal.com
+        - name: scan_results
+          type: group
+          fields:
+            - name: scan_result
+              type: keyword
+              description: Malware scan result (possible values - Clean, Malicious, Suspicious)
+            - name: scan_result_code
+              type: keyword
+              description: 0 = Clean, 1 = Malicious, 2 = Suspicious
+            - name: engine
+              type: keyword
+              description: Name of the antivirus engine with this result
+            - name: threat
+              type: keyword
+              description: Name of malware, if file is malicious or suspicious
