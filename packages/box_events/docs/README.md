@@ -270,4 +270,6 @@ Preserves a raw copy of the original event, added to the field `event.original`.
 | related.description | Array of `description` derived from `threat[.enrichments].indicator.description` | keyword |
 | related.indicator_type | Array of `indicator_type` derived from `threat[.enrichments].indicator.type` | keyword |
 | related.location | Array of `location` derived from `related.ip` | geo_point |
+| threat.enrichments.indicator.first_seen | The date and time when intelligence source first reported sighting this indicator. | date |
+| threat.enrichments.indicator.last_seen | The date and time when intelligence source last reported sighting this indicator. | date |
 

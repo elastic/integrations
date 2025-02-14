@@ -717,6 +717,7 @@ An example event for `event` looks as following:
 | log.offset | Log offset. | long |
 | log.source.address | Source address from which the log event read/sent. | keyword |
 | tags | User defined tags. | keyword |
+| threat.indicator.modified_at | The date and time when intelligence source last modified information for this indicator. | date |
 
 
 ### Assets

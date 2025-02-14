@@ -889,6 +889,32 @@ processors:
         }
         ctx.threat.indicator.type = "software";
         ctx.related.indicator_type.add(ctx.threat.indicator.type);
+  - date:
+      field: threat.indicator.first_seen
+      tag: date_threat_indicator_first_seen
+      target_field: threat.indicator.first_seen
+      formats:
+        - ISO8601
+      if: ctx.threat?.indicator?.first_seen != null && ctx.threat.indicator.first_seen != ''
+      on_failure:
+        - remove:
+            field: threat.indicator.first_seen
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - date:
+      field: threat.indicator.last_seen
+      tag: date_threat_indicator_last_seen
+      target_field: threat.indicator.last_seen
+      formats:
+        - ISO8601
+      if: ctx.threat?.indicator?.last_seen != null && ctx.threat.indicator.last_seen != ''
+      on_failure:
+        - remove:
+            field: threat.indicator.last_seen
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
 
 # Remove or mark invalid IPs.
   - foreach:
