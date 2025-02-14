@@ -125,6 +125,25 @@ processors:
     field: related.ip
     copy_from: host.ip
     ignore_empty_value: true
+- set:
+    field: host.id
+    copy_from: jamf_pro.events.event.computer.udid
+    ignore_empty_value: true
+- set:
+    field: host.name
+    copy_from: jamf_pro.events.event.computer.device_name
+    ignore_empty_value: true
+- convert:
+    target_field: source.ip
+    type: ip
+    field: jamf_pro.events.event.computer.ip_address
+    if: ctx.jamf_pro?.events?.event?.computer?.ip_address != null && ctx.jamf_pro.events.event.computer.ip_address != ''
+    ignore_missing: true
+    ignore_failure: true
+- set:
+    field: event.action
+    copy_from: jamf_pro.events.webhook.webhook_event
+    ignore_empty_value: true
 
 ####################
 # Asset definition #
