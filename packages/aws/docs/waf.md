@@ -86,7 +86,6 @@ Please refer to the following [document](https://www.elastic.co/guide/en/ecs/cur
 | aws.waf.rate_based_rule_list.location |  | keyword |
 | aws.waf.rate_based_rule_list.matchedData |  | keyword |
 | aws.waf.request.headers | List of request headers | flattened |
-| aws.waf.rule_group_list | The list of rule groups that acted on this request. | nested |
 | aws.waf.rule_group_list.nonTerminatingMatchingRules.action |  | keyword |
 | aws.waf.rule_group_list.nonTerminatingMatchingRules.ruleId |  | keyword |
 | aws.waf.rule_group_list.nonTerminatingMatchingRules.ruleMatchDetails.conditionType |  | keyword |
