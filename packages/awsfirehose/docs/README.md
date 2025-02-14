@@ -16,7 +16,7 @@ Here is a list of log types that are supported by this integration:
 | Route53 Resolver   | Firehose, CloudWatch, S3 |
 | S3 access          | S3                       |
 | VPC Flow           | Firehose, CloudWatch, S3 |
-| WAF                | Firehose, CloudWatch, S3 |
+| WAF                | Firehose, CloudWatch. S3 |
 
 Here is a list of CloudWatch metrics that are supported by this integration:
 
