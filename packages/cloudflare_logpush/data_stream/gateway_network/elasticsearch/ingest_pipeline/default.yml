@@ -21,7 +21,7 @@ processors:
   - set:
       field: event.kind
       value: event
-# ECS fields
+# ECS fields
   - script:
       lang: painless
       tag: painless_datetime_to_milli
@@ -74,7 +74,7 @@ processors:
       field: destination.ip
       copy_from: cloudflare_logpush.gateway_network.destination.ip
       ignore_empty_value: true
-# Geo enrichment (destination IP)
+# Geo enrichment (destination IP)
   - geoip:
       field: destination.ip
       target_field: destination.geo
@@ -146,7 +146,7 @@ processors:
       field: source.ip
       copy_from: cloudflare_logpush.gateway_network.source.ip
       ignore_empty_value: true
-# Geo enrichment (source IP)
+# Geo enrichment (source IP)
   - geoip:
       field: source.ip
       target_field: source.geo
@@ -175,8 +175,18 @@ processors:
       copy_from: cloudflare_logpush.gateway_network.source.port
       ignore_empty_value: true
   - rename:
+      field: json.TransportName
+      target_field: cloudflare_logpush.gateway_network.transport
+      ignore_missing: true
+  - append:
+      field: cloudflare_logpush.gateway_network.transport
+      value: '{{{json.Transport}}}'
+      if: ctx.cloudflare_logpush?.gateway_network?.policy?.name != null && ctx.json?.Policy != ctx.cloudflare_logpush?.gateway_network?.policy?.name
+      allow_duplicates: false
+  - rename:
       field: json.Transport
       target_field: cloudflare_logpush.gateway_network.transport
+      if: ctx.cloudflare_logpush?.gateway_network?.policy?.name == null
       ignore_missing: true
   - set:
       field: network.transport
@@ -204,6 +214,34 @@ processors:
       target_field: cloudflare_logpush.gateway_network.account_id
       ignore_missing: true
   - rename:
+      field: json.ApplicationIDs
+      target_field: cloudflare_logpush.gateway_network.application.ids
+      ignore_missing: true
+  - rename:
+      field: json.ApplicationNames
+      target_field: cloudflare_logpush.gateway_network.application.names
+      ignore_missing: true
+  - rename:
+      field: json.CategoryIDs
+      target_field: cloudflare_logpush.gateway_network.category.ids
+      ignore_missing: true
+  - rename:
+      field: json.CategoryNames
+      target_field: cloudflare_logpush.gateway_network.category.names
+      ignore_missing: true
+  - rename:
+      field: json.DestinationIPContinentCode
+      target_field: cloudflare_logpush.gateway_network.destination_ip.continent_code
+      ignore_missing: true
+  - rename:
+      field: json.DestinationIPCountryCode
+      target_field: cloudflare_logpush.gateway_network.destination_ip.country_code
+      ignore_missing: true
+  - rename:
+      field: json.DetectedProtocol
+      target_field: cloudflare_logpush.gateway_network.detected_protocol
+      ignore_missing: true
+  - rename:
       field: json.OverrideIP
       target_field: cloudflare_logpush.gateway_network.override.ip
       ignore_missing: true
@@ -220,8 +258,32 @@ processors:
       target_field: cloudflare_logpush.gateway_network.policy.name
       ignore_missing: true
   - rename:
+      field: json.ProxyEndpoint
+      target_field: cloudflare_logpush.gateway_network.proxy_endpoint
+      ignore_missing: true
+  - rename:
       field: json.SourceInternalIP
       target_field: cloudflare_logpush.gateway_network.source.internal_ip
+      ignore_missing: true
+  - rename:
+      field: json.SourceIPContinentCode
+      target_field: cloudflare_logpush.gateway_network.source_ip.continent_code
+      ignore_missing: true
+  - rename:
+      field: json.SourceIPCountryCode
+      target_field: cloudflare_logpush.gateway_network.source_ip.country_code
+      ignore_missing: true
+  - rename:
+      field: json.TransportProtocol
+      target_field: cloudflare_logpush.gateway_network.transport
+      ignore_missing: true
+  - rename:
+      field: json.VirtualNetworkID
+      target_field: cloudflare_logpush.gateway_network.virtual_network.id
+      ignore_missing: true
+  - rename:
+      field: json.VirtualNetworkName
+      target_field: cloudflare_logpush.gateway_network.virtual_network.name
       ignore_missing: true
 # Create related fields
   - append:
