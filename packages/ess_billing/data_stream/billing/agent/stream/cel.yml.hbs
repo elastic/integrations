@@ -13,8 +13,7 @@ resource.ssl: {{ssl}}
 {{#if http_client_timeout}}
 resource.timeout: {{http_client_timeout}}
 {{/if}}
-# Should be https://api.elastic-cloud.com/
-resource.url: {{url}}
+resource.url: {{url}}/api/v2/billing/organizations/{{organization_id}}/costs/instances
 state:
   api_key: {{api_key}}
   organization_id: "{{organization_id}}"
@@ -25,7 +24,6 @@ redact:
 program: |
   (
     state.with({
-      "url": state.url.trim_right("/") + "/api/v2/billing/organizations/" + state.organization_id + "/costs/instances",
       "from": (
         has(state.?cursor.last_to)
         ?
@@ -99,7 +97,12 @@ program: |
               ),
             },
           },
-          "want_more": false,
+          "cursor": {
+            "last_to": state.to
+          },
+          "want_more": state.to.parse_time(time_layout.RFC3339) < now() - duration("24h"),
+          "api_key": state.api_key,
+          "organization_id": state.organization_id
         }
       )
     )
