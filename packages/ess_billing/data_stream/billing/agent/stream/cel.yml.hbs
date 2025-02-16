@@ -59,7 +59,9 @@ program: |
         }
       }).do_request().as(resp, resp.StatusCode == 200
       ?
-        bytes(resp.Body).decode_json().as(body,
+        // Response is successful, but did we get any data?
+        bytes(resp.Body).decode_json().as(body, has(body.instances) && size(body.instances) > 0
+        ?
           {
             "events": body.instances.map(instance, instance.product_line_items.map(line_item,
               {
@@ -73,17 +75,40 @@ program: |
                   })
                 }
               }
-            )).flatten(),  // Pass line_items as events, with added info
+            )).flatten(), // Pass line_items as events, with added info
             "cursor": {
               "last_to": state.to
             },
             // Are we more than 1 day behind?
             "want_more": state.to.parse_time(time_layout.RFC3339) < now() - duration("24h"),
             "api_key": state.api_key,
-            "organization_id": state.organization_id
+            "organization_id": state.organization_id,
+          }
+        :
+          // We don't have any data, but we still need to return an event
+          // Otherwise the "want_more" logic will not work
+          {
+            "events": [{
+              "ess": {
+                "billing": {
+                  "organization_id": state.organization_id,
+                  "from": state.from,
+                  "to": state.to,
+                  "total_ecu": 0,
+                }
+              }
+            }],
+            "cursor": {
+              "last_to": state.to
+            },
+            // Are we more than 1 day behind?
+            "want_more": state.to.parse_time(time_layout.RFC3339) < now() - duration("24h"),
+            "api_key": state.api_key,
+            "organization_id": state.organization_id,
           }
         )
       :
+        // Response was not successful, return an error event
         {
           "events": {
             "error": {
@@ -102,7 +127,7 @@ program: |
           },
           "want_more": state.to.parse_time(time_layout.RFC3339) < now() - duration("24h"),
           "api_key": state.api_key,
-          "organization_id": state.organization_id
+          "organization_id": state.organization_id,
         }
       )
     )
