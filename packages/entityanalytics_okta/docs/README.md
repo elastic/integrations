@@ -127,77 +127,56 @@ Full synchronizations will be bounded on either side by "write marker" documents
 
 ## Logs reference
 
-### User
+### Entity
 
-This is the `User` dataset.
+This is the `Entity` dataset.
 
 #### Example
 
-An example event for `user` looks as following:
+An example event for `entity` looks as following:
 
 ```json
 {
-    "@timestamp": "2024-12-31T12:11:21.622Z",
+    "@timestamp": "2025-02-17T01:32:37.018Z",
     "agent": {
-        "ephemeral_id": "c29e9e17-ba86-4877-8c1f-477c825c77ab",
-        "id": "32153630-b5af-4d10-8d44-6168dfbff6b9",
-        "name": "elastic-agent-21762",
+        "ephemeral_id": "5565e14c-c3d1-4168-9860-fb280f704fad",
+        "id": "f1b6848f-87f5-4d0e-8dae-49fb70d285f6",
+        "name": "elastic-agent-11615",
         "type": "filebeat",
         "version": "8.15.0"
     },
-    "asset": {
-        "category": "entity",
-        "type": "okta_user"
-    },
     "data_stream": {
-        "dataset": "entityanalytics_okta.user",
-        "namespace": "89318",
+        "dataset": "entityanalytics_okta.entity",
+        "namespace": "71124",
         "type": "logs"
     },
     "ecs": {
         "version": "8.11.0"
     },
     "elastic_agent": {
-        "id": "32153630-b5af-4d10-8d44-6168dfbff6b9",
+        "id": "f1b6848f-87f5-4d0e-8dae-49fb70d285f6",
         "snapshot": false,
         "version": "8.15.0"
-    },
-    "entityanalytics_okta": {
-        "user": {
-            "credentials": {
-                "recovery_question": {
-                    "is_set": false
-                }
-            }
-        }
     },
     "event": {
         "action": "started",
         "agent_id_status": "verified",
-        "category": [
-            "iam"
-        ],
-        "dataset": "entityanalytics_okta.user",
-        "ingested": "2024-12-31T12:11:23Z",
+        "dataset": "entityanalytics_okta.entity",
+        "ingested": "2025-02-17T01:32:38Z",
         "kind": "asset",
-        "original": "{\"input\":{\"type\":\"entity-analytics\"},\"agent\":{\"name\":\"elastic-agent-21762\",\"id\":\"32153630-b5af-4d10-8d44-6168dfbff6b9\",\"type\":\"filebeat\",\"ephemeral_id\":\"c29e9e17-ba86-4877-8c1f-477c825c77ab\",\"version\":\"8.15.0\"},\"@timestamp\":\"2024-12-31T12:11:21.622Z\",\"ecs\":{\"version\":\"8.11.0\"},\"data_stream\":{\"namespace\":\"89318\",\"type\":\"logs\",\"dataset\":\"entityanalytics_okta.user\"},\"elastic_agent\":{\"id\":\"32153630-b5af-4d10-8d44-6168dfbff6b9\",\"version\":\"8.15.0\",\"snapshot\":false},\"event\":{\"start\":\"2024-12-31T12:11:21.622Z\",\"action\":\"started\",\"dataset\":\"entityanalytics_okta.user\"},\"tags\":[\"preserve_original_event\",\"preserve_duplicate_custom_fields\",\"forwarded\",\"entityanalytics_okta-user\"],\"labels\":{\"identity_source\":\"entity-analytics-entityanalytics_okta.user-2b35adb3-ef6b-4c4c-b0ae-6d53979a7e1e\"},\"_version_type\":\"internal\",\"_index\":\"logs-entityanalytics_okta.user-89318\",\"_id\":null,\"_version\":-4}",
-        "start": "2024-12-31T12:11:21.622Z",
-        "type": [
-            "user",
-            "info"
-        ]
+        "start": "2025-02-17T01:32:37.018Z"
     },
     "input": {
         "type": "entity-analytics"
     },
     "labels": {
-        "identity_source": "entity-analytics-entityanalytics_okta.user-2b35adb3-ef6b-4c4c-b0ae-6d53979a7e1e"
+        "identity_source": "entity-analytics-entityanalytics_okta.entity-e600b1a8-23ab-4aa5-9694-d245bc06b6ed"
     },
     "tags": [
         "preserve_original_event",
         "preserve_duplicate_custom_fields",
         "forwarded",
-        "entityanalytics_okta-user"
+        "entityanalytics_okta-entity"
     ]
 }
 ```

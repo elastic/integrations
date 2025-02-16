@@ -127,12 +127,12 @@ Full synchronizations will be bounded on either side by "write marker" documents
 
 ## Logs reference
 
-### User
+### Entity
 
-This is the `User` dataset.
+This is the `Entity` dataset.
 
 #### Example
 
-{{event "user"}}
+{{event "entity"}}
 
-{{fields "user"}}
+{{fields "entity"}}
