@@ -88,7 +88,8 @@ streams:
         show_user: false
         default: v1
         description: >-
-          The Processor version option controls the processor version to use.
+          The "processor version" option controls which processor version to use.
+          
           Possible values are `v1` and `v2`. Default is `v1`.
       - name: migrate_checkpoint
         type: bool
@@ -98,8 +99,12 @@ streams:
         show_user: false
         default: false
         description: >-
-          (Processor v2 only) The Migrate checkpoint information option controls if the input 
-          should perform the checkpoint information migration from v1 to v2. Default is `false`.
+          (Processor v2 only) The "migrate checkpoint information" option
+          controls if the input should perform the checkpoint information
+          migration from v1 to v2 at startup.
+          
+          Default is `false`.
+
       - name: processor_update_interval
         type: text
         title: Processor update interval
@@ -108,8 +113,10 @@ streams:
         show_user: false
         default: 10s
         description: >-
-          (Processor v2 only) The Processor update interval option controls how often attempt to claim
-          partitions. Default is `10` seconds.
+          (Processor v2 only) The Processor update interval option controls how
+          often attempt to claim partitions.
+          
+          Default is `10` seconds.
       - name: processor_start_position
         type: text
         title: Processor start position
@@ -118,22 +125,39 @@ streams:
         show_user: false
         default: earliest
         description: >-
-          (Processor v2 only) The Processor start position option controls the start position for all partitions.
-          Possible values are `earliest` and `latest`. Default is `earliest`.
+          (Processor v2 only) The "processor start position" option controls
+          from what position in the event hub the input should start processing
+          messages for all partitions.
+          
+          Possible values are `earliest` and `latest`.
+          
+          `earliest` starts processing messages from the last checkpoint, or the
+          beginning of the event hub if no checkpoint is available.
+
+          `latest` starts processing messages from the end of the event hub.
+          
+          Default is `earliest`.
+
       - name: partition_receive_timeout
         type: text
         title: Partition receive timeout
         multi: false
         required: false
         show_user: false
-        default: 5m
+        default: 5s
         description: >-
-          (Processor v2 only) The Partition receive timeout option controls the batching of incoming
-          messages together with Partition receive count. Default is `5m`.
-
-          The partition client waits up to Partition receive timeout or
-          for at least Partition receive count events, then it returns
+          (Processor v2 only) Max time to wait before processing the
+          messages received from the event hub.
+          
+          The partition client waits up to "partition receive timeout" or
+          for at least "partition receive count events", then it returns
           the events it has received.
+
+          The Partition receive timeout option controls the batching
+          of incoming messages together with Partition receive count.
+
+          Default is `5` seconds.
+
       - name: partition_receive_count
         type: text
         title: Partition receive count
@@ -142,12 +166,17 @@ streams:
         show_user: false
         default: 100
         description: >-
-          (Processor v2 only) The Partition receive count option controls the batching of
-          incoming messages together with Partition receive timeout. Default is `100`.
+          (Processor v2 only) Max number of events to wait for before processing
+          the messages received from the event hub.
+          
+          The "partition receive count" option controls the batching of
+          incoming messages together with Partition receive timeout. 
 
-          The partition client waits up to Partition receive timeout or
-          for at least Partition receive count events, then it returns
+          The partition client waits up to "partition receive timeout" or
+          for at least "partition receive count" events, then it returns
           the events it has received.
+
+          Default is `100` messages.
 
 # Ensures agents have permissions to write data to `logs-*-*`
 elasticsearch:
