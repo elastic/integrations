@@ -14,8 +14,7 @@ state:
   limit: {{limit}}
   page_limit: {{page_limit}}
   filter: {{filter}}
-program: |-
-  
+program: |
   (
   	state.?cursor.auth_data.expires.optMap(t,
   		t.parse_time(time_layout.RFC1123) - now() > duration("5m")
@@ -36,30 +35,30 @@ program: |-
   				}.encode_json(),
   			}
   		).do_request().as(resp, resp.StatusCode == 200 ?
-				bytes(resp.Body).decode_json().as(body,
-					{
-						"token": body.data.token,
-						"expires": body.data.expires,
-					}
-				)
-			:
-				state.with(
-					{
-						"events": {
-							"error": {
-								"code": string(resp.StatusCode),
-								"id": string(resp.Status),
-								"message": "POST " + state.url.trim_right("/") + "/auth/external: " + (
-									size(resp.Body) != 0 ?
-										string(resp.Body)
-									:
-										string(resp.Status) + ' (' + string(resp.StatusCode) + ')'
-								),
-							},
-						},
-						"want_more": false,
-					}
-				)
+  			bytes(resp.Body).decode_json().as(body,
+  				{
+  					"token": body.data.token,
+  					"expires": body.data.expires,
+  				}
+  			)
+  		:
+  			state.with(
+  				{
+  					"events": {
+  						"error": {
+  							"code": string(resp.StatusCode),
+  							"id": string(resp.Status),
+  							"message": "POST " + state.url.trim_right("/") + "/auth/external: " + (
+  								size(resp.Body) != 0 ?
+  									string(resp.Body)
+  								:
+  									string(resp.Status) + ' (' + string(resp.StatusCode) + ')'
+  							),
+  						},
+  					},
+  					"want_more": false,
+  				}
+  			)
   		)
   ).as(v, has(v.?events.error) ?
     v
@@ -145,68 +144,68 @@ program: |-
   					}
   				)
   			:
-				resp.StatusCode == 200 ?
-					bytes(resp.Body).decode_json().as(body,
-						(body.data.state == "Ready") ?
-							// 'Ready' (Results found) - Save the first page token.
-							state.with(
-								{
-									"events": [{"message": {"event": {"reason": "polling"}}.encode_json()}],
-									"want_more": true,
-									"cursor": state.cursor.with(
-										{
-											"auth_data": auth_data,
-											"page_token": body.data.pageTokens[0],
-										}
-									),
-								}
-							)
-						: (body.data.state == "Done") ?
-							// 'Done' (Results empty) - Clear the task ID and end the sequence.
-							state.with(
-								{
-									"events": [],
-									"want_more": false,
-									"cursor": state.cursor.with(
-										{
-											"auth_data": auth_data,
-											"task_id": null,
-										}
-									),
-								}
-							)
-						:
-							// Not ready or done - Keep polling.
-							state.with(
-								{
-									"events": [{"message": {"event": {"reason": "polling"}}.encode_json()}],
-									"want_more": true,
-									"cursor": state.cursor.with(
-										{
-											"auth_data": auth_data,
-										}
-									),
-								}
-							)
-					)
-				:
-					state.with(
-						{
-							"events": {
-								"error": {
-									"code": string(resp.StatusCode),
-									"id": string(resp.Status),
-									"message": "GET " + state.url.trim_right("/") + "/app/laas-logs-api/api/logs_query: " + (
-										size(resp.Body) != 0 ?
-											string(resp.Body)
-										:
-											string(resp.Status) + ' (' + string(resp.StatusCode) + ')'
-									),
-								},
-							},
-							"want_more": false,
-						}
-					)
+  			resp.StatusCode == 200 ?
+  				bytes(resp.Body).decode_json().as(body,
+  					(body.data.state == "Ready") ?
+  						// 'Ready' (Results found) - Save the first page token.
+  						state.with(
+  							{
+  								"events": [{"message": {"event": {"reason": "polling"}}.encode_json()}],
+  								"want_more": true,
+  								"cursor": state.cursor.with(
+  									{
+  										"auth_data": auth_data,
+  										"page_token": body.data.pageTokens[0],
+  									}
+  								),
+  							}
+  						)
+  					: (body.data.state == "Done") ?
+  						// 'Done' (Results empty) - Clear the task ID and end the sequence.
+  						state.with(
+  							{
+  								"events": [],
+  								"want_more": false,
+  								"cursor": state.cursor.with(
+  									{
+  										"auth_data": auth_data,
+  										"task_id": null,
+  									}
+  								),
+  							}
+  						)
+  					:
+  						// Not ready or done - Keep polling.
+  						state.with(
+  							{
+  								"events": [{"message": {"event": {"reason": "polling"}}.encode_json()}],
+  								"want_more": true,
+  								"cursor": state.cursor.with(
+  									{
+  										"auth_data": auth_data,
+  									}
+  								),
+  							}
+  						)
+  				)
+  			:
+  				state.with(
+  					{
+  						"events": {
+  							"error": {
+  								"code": string(resp.StatusCode),
+  								"id": string(resp.Status),
+  								"message": "GET " + state.url.trim_right("/") + "/app/laas-logs-api/api/logs_query: " + (
+  									size(resp.Body) != 0 ?
+  										string(resp.Body)
+  									:
+  										string(resp.Status) + ' (' + string(resp.StatusCode) + ')'
+  								),
+  							},
+  						},
+  						"want_more": false,
+  					}
+  				)
   		)
   	:
   		// Task is ready - Use the task ID and page token to retrieve a page of results.
@@ -233,56 +232,56 @@ program: |-
   					}
   				)
   			:
-				resp.StatusCode == 200 ?
-					bytes(resp.Body).decode_json().as(body,
-						(body.data.nextPageToken != "NULL") ?
-							// Not the last page - Save the next page token and continue.
-							state.with(
-								{
-									"events": body.data.records.map(e, {"message": e.encode_json()}),
-									"want_more": true,
-									"cursor": state.cursor.with(
-										{
-											"auth_data": auth_data,
-											"page_token": body.data.nextPageToken,
-										}
-									),
-								}
-							)
-						:
-							// Last page - Clear the task ID and page token, and end the sequence.
-							state.with(
-								{
-									"events": body.data.records.map(e, {"message": e.encode_json()}),
-									"want_more": false,
-									"cursor": state.cursor.with(
-										{
-											"auth_data": auth_data,
-											"task_id": null,
-											"page_token": null,
-										}
-									),
-								}
-							)
-					)
-				:
-					state.with(
-						{
-							"events": {
-								"error": {
-									"code": string(resp.StatusCode),
-									"id": string(resp.Status),
-									"message": "POST " + state.url.trim_right("/") + "/app/laas-logs-api/api/logs_query/retrieve: " + (
-										size(resp.Body) != 0 ?
-											string(resp.Body)
-										:
-											string(resp.Status) + ' (' + string(resp.StatusCode) + ')'
-									),
-								},
-							},
-							"want_more": false,
-						}
-					)
+  			resp.StatusCode == 200 ?
+  				bytes(resp.Body).decode_json().as(body,
+  					(body.data.nextPageToken != "NULL") ?
+  						// Not the last page - Save the next page token and continue.
+  						state.with(
+  							{
+  								"events": body.data.records.map(e, {"message": e.encode_json()}),
+  								"want_more": true,
+  								"cursor": state.cursor.with(
+  									{
+  										"auth_data": auth_data,
+  										"page_token": body.data.nextPageToken,
+  									}
+  								),
+  							}
+  						)
+  					:
+  						// Last page - Clear the task ID and page token, and end the sequence.
+  						state.with(
+  							{
+  								"events": body.data.records.map(e, {"message": e.encode_json()}),
+  								"want_more": false,
+  								"cursor": state.cursor.with(
+  									{
+  										"auth_data": auth_data,
+  										"task_id": null,
+  										"page_token": null,
+  									}
+  								),
+  							}
+  						)
+  				)
+  			:
+  				state.with(
+  					{
+  						"events": {
+  							"error": {
+  								"code": string(resp.StatusCode),
+  								"id": string(resp.Status),
+  								"message": "POST " + state.url.trim_right("/") + "/app/laas-logs-api/api/logs_query/retrieve: " + (
+  									size(resp.Body) != 0 ?
+  										string(resp.Body)
+  									:
+  										string(resp.Status) + ' (' + string(resp.StatusCode) + ')'
+  								),
+  							},
+  						},
+  						"want_more": false,
+  					}
+  				)
   		)
   ))
 tags:
