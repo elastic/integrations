@@ -11,11 +11,6 @@ processors:
       if: ctx.event?.action != "started" && ctx.event?.action != "completed"
       ignore_missing: true
 
-  # Drop data(devices) based on the selected dataset "users".
-  - drop:
-      tag: drop_devices_dataset
-      if: ctx.device?.id != null && ctx.tags.contains('users-entities')
-
   - set:
       field: event.kind
       tag: set_event_kind
@@ -24,6 +19,10 @@ processors:
       name: '{{ IngestPipeline "user" }}'
       tag: pipeline_to_user
       if: ctx.user?.id != null
+  - pipeline:
+      name: '{{ IngestPipeline "device" }}'
+      tag: pipeline_to_device
+      if: ctx.device?.id != null
 
   - script:
       lang: painless

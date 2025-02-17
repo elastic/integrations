@@ -200,6 +200,23 @@ An example event for `entity` looks as following:
 | data_stream.dataset | Data stream dataset. | constant_keyword |
 | data_stream.namespace | Data stream namespace. | constant_keyword |
 | data_stream.type | Data stream type. | constant_keyword |
+| device.serial_number | The unique serial number serves as a distinct identifier for each device, aiding in inventory management and device authentication. | keyword |
+| entityanalytics_okta.device._embedded | embedded resources related to the device. | flattened |
+| entityanalytics_okta.device._links | link relations for the device's current status. | flattened |
+| entityanalytics_okta.device.activated | timestamp when transition to ACTIVE status completed. | date |
+| entityanalytics_okta.device.created | timestamp when device was created. | date |
+| entityanalytics_okta.device.id | unique key for device. | keyword |
+| entityanalytics_okta.device.last_login | timestamp of last login. | date |
+| entityanalytics_okta.device.last_updated | timestamp when device was last updated. | date |
+| entityanalytics_okta.device.password_changed | timestamp when password last changed. | date |
+| entityanalytics_okta.device.profile.\* |  | keyword |
+| entityanalytics_okta.device.profile.registered | Whether the device is registered. | boolean |
+| entityanalytics_okta.device.profile.secure_hardware_present | Whether the device is using secure hardware. | boolean |
+| entityanalytics_okta.device.status | current status of device. | keyword |
+| entityanalytics_okta.device.status_changed | timestamp when status last changed. | date |
+| entityanalytics_okta.device.transitioning_to_status | target status of an in-progress asynchronous status transition. | keyword |
+| entityanalytics_okta.device.type | device type that determines the schema for the device's profile. | flattened |
+| entityanalytics_okta.device.users | Users associated with the device. | flattened |
 | entityanalytics_okta.groups.id | The ID for the group. | keyword |
 | entityanalytics_okta.groups.profile.\* | Group profile details. | object |
 | entityanalytics_okta.user._embedded | embedded resources related to the user. | flattened |
