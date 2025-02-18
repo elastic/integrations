@@ -60,13 +60,13 @@ An example event for `log` looks as following:
 
 ```json
 {
-    "@timestamp": "2023-09-27T18:59:58.096Z",
+    "@timestamp": "2025-02-11T12:35:51.176Z",
     "agent": {
-        "ephemeral_id": "bbb180b6-3756-4f5b-81d5-6e333e740796",
-        "id": "86a82f91-ff66-4d28-ab7c-eb9350f317ed",
-        "name": "docker-fleet-agent",
+        "ephemeral_id": "a75480a0-76e2-405c-8d22-f94565290605",
+        "id": "350e4955-b5fc-4e5f-aec3-3fd91ae31e8c",
+        "name": "elastic-agent-60157",
         "type": "filebeat",
-        "version": "8.10.1"
+        "version": "9.0.0"
     },
     "coredns": {
         "log": {
@@ -76,7 +76,7 @@ An example event for `log` looks as following:
     },
     "data_stream": {
         "dataset": "coredns.log",
-        "namespace": "ep",
+        "namespace": "52129",
         "type": "logs"
     },
     "destination": {
@@ -87,7 +87,7 @@ An example event for `log` looks as following:
             "RD",
             "RA"
         ],
-        "id": "58521",
+        "id": "18320",
         "question": {
             "class": "IN",
             "name": "google.com",
@@ -101,46 +101,47 @@ An example event for `log` looks as following:
         "version": "8.11.0"
     },
     "elastic_agent": {
-        "id": "86a82f91-ff66-4d28-ab7c-eb9350f317ed",
-        "snapshot": false,
-        "version": "8.10.1"
+        "id": "350e4955-b5fc-4e5f-aec3-3fd91ae31e8c",
+        "snapshot": true,
+        "version": "9.0.0"
     },
     "event": {
         "agent_id_status": "verified",
         "category": [
             "network"
         ],
-        "created": "2023-09-27T18:59:58.096Z",
+        "created": "2025-02-11T12:35:51.176Z",
         "dataset": "coredns.log",
-        "duration": 32133957.999999996,
-        "ingested": "2023-09-27T18:59:59Z",
+        "duration": 13501371,
+        "ingested": "2025-02-11T12:35:52Z",
         "kind": "event",
-        "original": "[INFO] 192.168.112.3:45632 - 58521 \"A IN google.com. udp 51 false 1232\" NOERROR qr,rd,ra 65 0.032133958s",
+        "module": "coredns",
+        "original": "[INFO] 192.168.254.3:54031 - 18320 \"A IN google.com. udp 51 false 1232\" NOERROR qr,rd,ra 65 0.013501371s",
         "outcome": "success",
         "type": [
             "protocol"
         ]
     },
     "host": {
-        "architecture": "aarch64",
-        "containerized": false,
-        "hostname": "docker-fleet-agent",
-        "id": "ddbe644fa129402e9d5cf6452db1422d",
+        "architecture": "x86_64",
+        "containerized": true,
+        "hostname": "elastic-agent-60157",
         "ip": [
-            "172.31.0.7"
+            "192.168.253.2",
+            "192.168.245.6"
         ],
         "mac": [
-            "02-42-AC-1F-00-07"
+            "02-42-C0-A8-F5-06",
+            "02-42-C0-A8-FD-02"
         ],
-        "name": "docker-fleet-agent",
+        "name": "elastic-agent-60157",
         "os": {
-            "codename": "focal",
-            "family": "debian",
-            "kernel": "5.15.49-linuxkit",
-            "name": "Ubuntu",
-            "platform": "ubuntu",
+            "family": "",
+            "kernel": "3.10.0-1160.118.1.el7.x86_64",
+            "name": "Wolfi",
+            "platform": "wolfi",
             "type": "linux",
-            "version": "20.04.6 LTS (Focal Fossa)"
+            "version": "20230201"
         }
     },
     "input": {
@@ -148,8 +149,9 @@ An example event for `log` looks as following:
     },
     "log": {
         "file": {
-            "device_id": 141,
-            "inode": 18614042,
+            "device_id": "64768",
+            "fingerprint": "e0fe3490d4af287771c9a48344064d30bc9da48cdf1c20296fd81b614118f16a",
+            "inode": "35527099",
             "path": "/tmp/service_logs/coredns.log"
         },
         "level": "info",
@@ -166,14 +168,14 @@ An example event for `log` looks as following:
             "google.com"
         ],
         "ip": [
-            "192.168.112.3"
+            "192.168.254.3"
         ]
     },
     "source": {
-        "address": "192.168.112.3",
+        "address": "192.168.254.3",
         "bytes": 51,
-        "ip": "192.168.112.3",
-        "port": 45632
+        "ip": "192.168.254.3",
+        "port": 54031
     },
     "tags": [
         "preserve_original_event",
