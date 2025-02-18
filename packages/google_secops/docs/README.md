@@ -2,7 +2,7 @@
 
 [Google SecOps](https://cloud.google.com/chronicle/docs/secops/secops-overview) is a cloud-based service designed for enterprises to retain, analyze, and search large volumes of security and network telemetry. It normalizes, indexes, and correlates data to detect threats, investigate their scope and cause, and provide remediation through prebuilt integrations. The platform enables security analysts to examine aggregated security information, search across domains, and mitigate threats throughout their lifecycle.
 
-The Google SecOps integration collects alerts using the [REST API](https://cloud.google.com/chronicle/docs/reference/detection-engine-api#listdetections).
+The Google SecOps integration collects alerts using the [Detection Engine API](https://cloud.google.com/chronicle/docs/reference/detection-engine-api#listdetections).
 
 ## Compatibility
 
@@ -16,21 +16,31 @@ This integration collects the following logs:
 
 ## Requirements
 
+### Agentless deployment
+
+Agentless deployments are only supported in Elastic Serverless and Elastic Cloud environments. Agentless deployments provide a means to ingest data while avoiding the orchestration, management, and maintenance needs associated with standard ingest infrastructure. Using agentless deployment makes manual agent deployment unnecessary, allowing you to focus on your data instead of the agent that collects it.
+
+For more information, refer to [Agentless integrations](https://www.elastic.co/guide/en/serverless/current/security-agentless-integrations.html) and [Agentless integrations FAQ](https://www.elastic.co/guide/en/serverless/current/agentless-integration-troubleshooting.html)
+
+> Note: Currently Agentless support for Microsoft Sentinel integration is limited to API and not supported for Azure Event Hub input.
+
+### Agent-based deployment
+
 Elastic Agent must be installed. For more details and installation instructions, please refer to the [Elastic Agent Installation Guide](https://www.elastic.co/guide/en/fleet/current/elastic-agent-installation.html).
 
-### Installing and managing an Elastic Agent:
+#### Installing and managing an Elastic Agent:
 
 There are several options for installing and managing Elastic Agent:
 
-### Install a Fleet-managed Elastic Agent (recommended):
+#### Install a Fleet-managed Elastic Agent (recommended):
 
 With this approach, you install Elastic Agent and use Fleet in Kibana to define, configure, and manage your agents in a central location. We recommend using Fleet management because it makes the management and upgrade of your agents considerably easier.
 
-### Install Elastic Agent in standalone mode (advanced users):
+#### Install Elastic Agent in standalone mode (advanced users):
 
 With this approach, you install Elastic Agent and manually configure the agent locally on the system where it’s installed. You are responsible for managing and upgrading the agents. This approach is reserved for advanced users only.
 
-### Install Elastic Agent in a containerized environment:
+#### Install Elastic Agent in a containerized environment:
 
 You can run Elastic Agent inside a container, either with Fleet Server or standalone. Docker images for all versions of Elastic Agent are available from the Elastic Docker registry, and we provide deployment manifests for running on Kubernetes.
 
@@ -41,17 +51,29 @@ Please note, there are minimum requirements for running Elastic Agent. For more 
 ### To collect data from the Google SecOps API:
 
    - Create Google SecOps service account [Steps to create](https://developers.google.com/identity/protocols/oauth2/service-account#creatinganaccount).
-   - Permissions required for Service Account: 
-      - chronicle.rules.list
    - **Chronicle API** must be enabled.
+
+### To enable the Chronicle API:
+
+   - Log in to the  "https://console.cloud.google.com/"  using valid credentials.
+   - Navigate to the ‘Chronicle API’
+   - Click `Enabale`
+
+### To Update the Permission of Service Account
+   - Open GCP Console, Then go to IAM.
+   - In View By Main Tab > Click GRANT ACCESS.
+   - Add Service Account name in New Principals.
+   - In Assign Role, Select Owner.
+   - Click Save
 
 This integration will make use of the following *oauth2 scope*:
 
 - `https://www.googleapis.com/auth/chronicle-backstory`
 
 Once Service Account credentials are downloaded as a JSON file, then the integration can be setup to collect data.
+For more details, please refer [Google Chronicle Detection Engine API]( https://cloud.google.com/chronicle/docs/reference/detection-engine-api#getting_api_authentication_credentials).
 
-If installing in GCP-Cloud Environment, No need to provide any credentials and make sure the account linked with the VM has all the required IAM permissions. Steps to [Set up Application Default Credentials](https://cloud.google.com/docs/authentication/provide-credentials-adc).
+If installing in GCP-Cloud environment, credentials are not necessary but make sure the account linked with the VM has all the required IAM permissions. Steps to [Set up Application Default Credentials](https://cloud.google.com/docs/authentication/provide-credentials-adc).
 
 ### Enabling the integration in Elastic:
 
@@ -76,17 +98,17 @@ An example event for `alert` looks as following:
 
 ```json
 {
-    "@timestamp": "2025-02-03T03:23:28.000Z",
+    "@timestamp": "2025-02-01T03:23:28.000Z",
     "agent": {
-        "ephemeral_id": "f4ea7520-66d3-4be8-9a29-dd1fed84014d",
-        "id": "a11319e4-84ef-4ead-887b-36ba10409d8b",
-        "name": "elastic-agent-67340",
+        "ephemeral_id": "858e7528-be63-436e-8f9a-0b69dd835768",
+        "id": "f6dd5beb-736a-4458-b707-30650a61a95d",
+        "name": "elastic-agent-45835",
         "type": "filebeat",
         "version": "8.16.0"
     },
     "data_stream": {
         "dataset": "google_secops.alert",
-        "namespace": "86548",
+        "namespace": "75212",
         "type": "logs"
     },
     "destination": {
@@ -104,25 +126,25 @@ An example event for `alert` looks as following:
         "version": "8.17.0"
     },
     "elastic_agent": {
-        "id": "a11319e4-84ef-4ead-887b-36ba10409d8b",
+        "id": "f6dd5beb-736a-4458-b707-30650a61a95d",
         "snapshot": false,
         "version": "8.16.0"
     },
     "event": {
         "agent_id_status": "verified",
-        "created": "2025-02-04T03:12:54.177Z",
+        "created": "2025-02-01T03:12:54.177Z",
         "dataset": "google_secops.alert",
         "end": "2025-02-03T03:23:28.000Z",
         "id": "de_66bf2e94-f97e-2564-1a75-2fdbf8cb6403",
-        "ingested": "2025-02-11T06:31:12Z",
+        "ingested": "2025-02-14T12:15:07Z",
         "kind": "alert",
-        "original": "{\"createdTime\":\"2025-02-04T03:12:54.177084Z\",\"detection\":{\"alertState\":\"NOT_ALERTING\",\"description\":\"This rule is to generate alerts when the event_type is STATUS_UPDATE\",\"outcomes\":[{\"key\":\"risk_score\",\"value\":\"60\"}],\"riskScore\":60,\"ruleId\":\"ru_123873a9a-170d-1234-a63d-9874f33ee011\",\"ruleLabels\":[{\"key\":\"author\",\"value\":\"John\"},{\"key\":\"description\",\"value\":\"This rule is to generate alerts when the event_type is STATUS_UPDATE\"},{\"key\":\"severity\",\"value\":\"Medium\"}],\"ruleName\":\"rule_to_detect_status_update\",\"ruleType\":\"SINGLE_EVENT\",\"ruleVersion\":\"ru_123873a9a-170d-1234-a63d-9874f33ee011@v_1732873302_954607000\",\"urlBackToProduct\":\"https://example.com\",\"variables\":{\"risk_score\":{\"int64Val\":\"60\",\"type\":\"OUTCOME\",\"value\":\"60\"}}},\"detectionTime\":\"2025-02-03T03:23:28Z\",\"event\":{\"about\":[{\"labels\":[{\"key\":\"header_time_milliseconds_offset\",\"value\":\"612\"}]}],\"additional\":{\"arguments_fd\":\"8\",\"event_modifier\":\"0\",\"exec_chain_thread_uuid\":\"5AB2623F-F6EF-4A6C-B2E4-CC7E28BEB515\",\"header_time_milliseconds_offset\":\"612\",\"header_version\":\"11\",\"identity_cd_hash\":\"a70ddfe3eb75dd35005a9c863c4174d63148406c\",\"identity_signer_id\":\"com.apple.curl\",\"identity_signer_id_truncated\":\"false\",\"identity_signer_type\":\"1\",\"identity_team_id_truncated\":\"false\",\"key\":\"6CC2ABE4-385C-4444-8BC0-FD5B618BA1C1\",\"subject_audit_id\":\"4294967295\",\"subject_terminal_id_type\":\"4-IPv4\"},\"metadata\":{\"baseLabels\":{\"allowScopedAccess\":true,\"logTypes\":[\"JAMF_TELEMETRY\"]},\"enrichmentLabels\":{\"allowScopedAccess\":true},\"eventTimestamp\":\"2025-02-03T03:23:28Z\",\"eventType\":\"STATUS_UPDATE\",\"id\":\"AAAAAByuGF66kDlZ79NglQZk0cQPPPPPBgSSSSSSSSS=\",\"ingestedTimestamp\":\"2025-02-03T06:00:42.443096Z\",\"logType\":\"JAMF_TELEMETRY\",\"productEventType\":\"AUE_CONNECT-32\",\"productName\":\"JAMF_TELEMETRY\",\"vendorName\":\"JAMF\"},\"network\":{\"sessionId\":\"100001\"},\"principal\":{\"asset\":{\"hardware\":[{\"serialNumber\":\"PPX94A9874\"}],\"hostname\":\"TEST-PPX94A9874\",\"productObjectId\":\"45DE0BEE-8056-5B41-B09A-08E259E49317\",\"software\":[{\"version\":\"Version 15.2 (Build 24C101)\"}]},\"group\":{\"groupDisplayName\":\"wheel\"},\"hostname\":\"TEST-PPX94A9874\",\"ip\":[\"0.0.0.0\"],\"labels\":[{\"key\":\"arguments_fd\",\"value\":\"8\"}],\"process\":{\"file\":{\"fullPath\":\"/bin/bash\",\"md5\":\"b14dba7fe27186f216037a3b60599582\",\"sha1\":\"47bba82e8a43cfa14a1124a477090f9fbd0e026a\",\"sha256\":\"4d8b9a54a2077c1457410843a9842ef29e0f371fb4061097095758012c031809\"},\"pid\":\"47203\"},\"processAncestors\":[{\"file\":{\"fullPath\":\"/usr/bin/curl\"},\"pid\":\"47325\"}],\"user\":{\"groupIdentifiers\":[\"0\"],\"userDisplayName\":\"root\",\"userid\":\"0\"}},\"securityResult\":[{\"description\":\"0-success\",\"detectionFields\":[{\"key\":\"return_value\",\"value\":\"0\"}]}],\"target\":{\"group\":{\"groupDisplayName\":\"wheel\"},\"user\":{\"groupIdentifiers\":[\"0\"],\"userDisplayName\":\"root\",\"userid\":\"0\"}}},\"id\":\"de_66bf2e94-f97e-2564-1a75-2fdbf8cb6403\",\"label\":\"e\",\"timeWindow\":{\"endTime\":\"2025-02-03T03:23:28Z\",\"startTime\":\"2025-02-03T03:23:28Z\"},\"type\":\"RULE_DETECTION\"}",
+        "original": "{\"createdTime\":\"2025-02-01T03:12:54.177084Z\",\"detection\":{\"alertState\":\"NOT_ALERTING\",\"description\":\"This rule is to generate alerts when the event_type is STATUS_UPDATE\",\"outcomes\":[{\"key\":\"risk_score\",\"value\":\"60\"}],\"riskScore\":60,\"ruleId\":\"ru_123873a9a-170d-1234-a63d-9874f33ee011\",\"ruleLabels\":[{\"key\":\"author\",\"value\":\"John\"},{\"key\":\"description\",\"value\":\"This rule is to generate alerts when the event_type is STATUS_UPDATE\"},{\"key\":\"severity\",\"value\":\"Medium\"}],\"ruleName\":\"rule_to_detect_status_update\",\"ruleType\":\"SINGLE_EVENT\",\"ruleVersion\":\"ru_123873a9a-170d-1234-a63d-9874f33ee011@v_1732873302_954607000\",\"urlBackToProduct\":\"https://example.com\",\"variables\":{\"risk_score\":{\"int64Val\":\"60\",\"type\":\"OUTCOME\",\"value\":\"60\"}}},\"detectionTime\":\"2025-02-01T03:23:28Z\",\"event\":{\"about\":[{\"labels\":[{\"key\":\"header_time_milliseconds_offset\",\"value\":\"612\"}]}],\"additional\":{\"arguments_fd\":\"8\",\"event_modifier\":\"0\",\"exec_chain_thread_uuid\":\"5AB2623F-F6EF-4A6C-B2E4-CC7E28BEB515\",\"header_time_milliseconds_offset\":\"612\",\"header_version\":\"11\",\"identity_cd_hash\":\"a70ddfe3eb75dd35005a9c863c4174d63148406c\",\"identity_signer_id\":\"com.apple.curl\",\"identity_signer_id_truncated\":\"false\",\"identity_signer_type\":\"1\",\"identity_team_id_truncated\":\"false\",\"key\":\"6CC2ABE4-385C-4444-8BC0-FD5B618BA1C1\",\"subject_audit_id\":\"4294967295\",\"subject_terminal_id_type\":\"4-IPv4\"},\"metadata\":{\"baseLabels\":{\"allowScopedAccess\":true,\"logTypes\":[\"JAMF_TELEMETRY\"]},\"enrichmentLabels\":{\"allowScopedAccess\":true},\"eventTimestamp\":\"2025-02-03T03:23:28Z\",\"eventType\":\"STATUS_UPDATE\",\"id\":\"AAAAAByuGF66kDlZ79NglQZk0cQPPPPPBgSSSSSSSSS=\",\"ingestedTimestamp\":\"2025-02-01T06:00:42.443096Z\",\"logType\":\"JAMF_TELEMETRY\",\"productEventType\":\"AUE_CONNECT-32\",\"productName\":\"JAMF_TELEMETRY\",\"vendorName\":\"JAMF\"},\"network\":{\"sessionId\":\"100001\"},\"principal\":{\"asset\":{\"hardware\":[{\"serialNumber\":\"PPX94A9874\"}],\"hostname\":\"TEST-PPX94A9874\",\"productObjectId\":\"45DE0BEE-8056-5B41-B09A-08E259E49317\",\"software\":[{\"version\":\"Version 15.2 (Build 24C101)\"}]},\"group\":{\"groupDisplayName\":\"wheel\"},\"hostname\":\"TEST-PPX94A9874\",\"ip\":[\"0.0.0.0\"],\"labels\":[{\"key\":\"arguments_fd\",\"value\":\"8\"}],\"process\":{\"file\":{\"fullPath\":\"/bin/bash\",\"md5\":\"b14dba7fe27186f216037a3b60599582\",\"sha1\":\"47bba82e8a43cfa14a1124a477090f9fbd0e026a\",\"sha256\":\"4d8b9a54a2077c1457410843a9842ef29e0f371fb4061097095758012c031809\"},\"pid\":\"47203\"},\"processAncestors\":[{\"file\":{\"fullPath\":\"/usr/bin/curl\"},\"pid\":\"47325\"}],\"user\":{\"groupIdentifiers\":[\"0\"],\"userDisplayName\":\"root\",\"userid\":\"0\"}},\"securityResult\":[{\"description\":\"0-success\",\"detectionFields\":[{\"key\":\"return_value\",\"value\":\"0\"}]}],\"target\":{\"group\":{\"groupDisplayName\":\"wheel\"},\"user\":{\"groupIdentifiers\":[\"0\"],\"userDisplayName\":\"root\",\"userid\":\"0\"}}},\"id\":\"de_66bf2e94-f97e-2564-1a75-2fdbf8cb6403\",\"label\":\"e\",\"timeWindow\":{\"endTime\":\"2025-02-03T03:23:28Z\",\"startTime\":\"2025-02-01T03:23:28Z\"},\"type\":\"RULE_DETECTION\"}",
         "risk_score": 60,
-        "start": "2025-02-03T03:23:28.000Z"
+        "start": "2025-02-01T03:23:28.000Z"
     },
     "google_secops": {
         "alert": {
-            "createdTime": "2025-02-04T03:12:54.177Z",
+            "createdTime": "2025-02-01T03:12:54.177Z",
             "detection": {
                 "alertState": "NOT_ALERTING",
                 "description": "This rule is to generate alerts when the event_type is STATUS_UPDATE",
@@ -160,7 +182,7 @@ An example event for `alert` looks as following:
                     }
                 }
             },
-            "detectionTime": "2025-02-03T03:23:28.000Z",
+            "detectionTime": "2025-02-01T03:23:28.000Z",
             "event": {
                 "about": [
                     {
@@ -200,7 +222,7 @@ An example event for `alert` looks as following:
                     "eventTimestamp": "2025-02-03T03:23:28.000Z",
                     "eventType": "STATUS_UPDATE",
                     "id": "AAAAAByuGF66kDlZ79NglQZk0cQPPPPPBgSSSSSSSSS=",
-                    "ingestedTimestamp": "2025-02-03T06:00:42.443Z",
+                    "ingestedTimestamp": "2025-02-01T06:00:42.443Z",
                     "logType": "JAMF_TELEMETRY",
                     "productEventType": "AUE_CONNECT-32",
                     "productName": "JAMF_TELEMETRY",
@@ -290,7 +312,7 @@ An example event for `alert` looks as following:
             "label": "e",
             "timeWindow": {
                 "endTime": "2025-02-03T03:23:28.000Z",
-                "startTime": "2025-02-03T03:23:28.000Z"
+                "startTime": "2025-02-01T03:23:28.000Z"
             },
             "type": "RULE_DETECTION"
         }
