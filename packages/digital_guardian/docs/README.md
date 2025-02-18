@@ -157,10 +157,20 @@ An example event for `arc` looks as following:
 | data_stream.dataset | Data stream dataset. | constant_keyword |
 | data_stream.namespace | Data stream namespace. | constant_keyword |
 | data_stream.type | Data stream type. | constant_keyword |
+| digital_guardian.arc.dg_alert.alert_al | Alert AL | keyword |
+| digital_guardian.arc.dg_alert.alert_at | Alert AT | keyword |
+| digital_guardian.arc.dg_alert.alert_bc | Alert BC | keyword |
 | digital_guardian.arc.dg_alert.alert_did | Alert DID | keyword |
-| digital_guardian.arc.dg_alert.alert_wb | Alert WB | integer |
+| digital_guardian.arc.dg_alert.alert_etl | Alert ETL | keyword |
+| digital_guardian.arc.dg_alert.alert_etu | Alert ETU | date |
+| digital_guardian.arc.dg_alert.alert_ur | Alert UR | date |
+| digital_guardian.arc.dg_alert.alert_wb | Alert WB | keyword |
 | digital_guardian.arc.dg_alert.dg_category_name | Alert Category Name | keyword |
+| digital_guardian.arc.dg_alert.dg_detection_source | Alert Detection Source | keyword |
+| digital_guardian.arc.dg_alert.dg_name | Alert Name | keyword |
+| digital_guardian.arc.dg_alert.dg_policy.dg_category_name | Alert Policy Category Name | keyword |
 | digital_guardian.arc.dg_alert.dg_policy.dg_name | Alert Policy Name | keyword |
+| digital_guardian.arc.dg_alert.dg_rule_action_type | Alert Rule Action Type | keyword |
 | digital_guardian.arc.dg_attachments.dg_file_size | File Size | keyword |
 | digital_guardian.arc.dg_attachments.dg_file_size_bytes | File Size in Bytes | long |
 | digital_guardian.arc.dg_comment | Comment | keyword |
