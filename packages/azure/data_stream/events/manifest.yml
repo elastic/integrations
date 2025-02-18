@@ -88,9 +88,14 @@ streams:
         show_user: false
         default: v1
         description: >-
-          The "processor version" option controls which processor version to use.
+          The processor version that the integration should use.
+          Possible values are `v1` and `v2` (preview). 
           
-          Possible values are `v1` and `v2`. Default is `v1`.
+          The v2 processor is in preview, so using the v1 processor
+          is recommended for typical use cases.
+          
+          Default is `v1`.
+          
       - name: migrate_checkpoint
         type: bool
         title: Migrate checkpoint information
@@ -103,7 +108,8 @@ streams:
           controls if the input should perform the checkpoint information
           migration from v1 to v2 at startup.
           
-          Default is `false`.
+          Default is `false`, which means the input will not perform the
+          checkpoint migration.
 
       - name: processor_update_interval
         type: text
@@ -113,8 +119,8 @@ streams:
         show_user: false
         default: 10s
         description: >-
-          (Processor v2 only) The Processor update interval option controls how
-          often attempt to claim partitions.
+          (Processor v2 only) How often the input should attempt to claim
+          partitions.
           
           Default is `10` seconds.
       - name: processor_start_position
@@ -134,7 +140,8 @@ streams:
           `earliest` starts processing messages from the last checkpoint, or the
           beginning of the event hub if no checkpoint is available.
 
-          `latest` starts processing messages from the end of the event hub.
+          `latest` starts processing messages from the the latest event in the
+          event hub and continues to process new events as they arrive.
           
           Default is `earliest`.
 
