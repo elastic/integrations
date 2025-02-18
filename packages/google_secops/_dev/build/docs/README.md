@@ -22,8 +22,6 @@ Agentless deployments are only supported in Elastic Serverless and Elastic Cloud
 
 For more information, refer to [Agentless integrations](https://www.elastic.co/guide/en/serverless/current/security-agentless-integrations.html) and [Agentless integrations FAQ](https://www.elastic.co/guide/en/serverless/current/agentless-integration-troubleshooting.html)
 
-> Note: Currently Agentless support for Microsoft Sentinel integration is limited to API and not supported for Azure Event Hub input.
-
 ### Agent-based deployment
 
 Elastic Agent must be installed. For more details and installation instructions, please refer to the [Elastic Agent Installation Guide](https://www.elastic.co/guide/en/fleet/current/elastic-agent-installation.html).
