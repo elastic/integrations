@@ -316,29 +316,16 @@ processors:
   - dissect:
       if: "ctx._temp_.cisco.message_id == '106102' || ctx._temp_.cisco.message_id == '106103'"
       field: "message"
-      description: "106103"
+      description: "106102, 106103"
       pattern: "access-list %{_temp_.cisco.list_id} %{event.outcome} %{network.transport} for user %{user.name} %{_temp_.cisco.source_interface}/%{source.address}(%{source.port})%{}-> %{_temp_.cisco.destination_interface}/%{destination.address}(%{destination.port})%{}"
-  - dissect:
-      if: "ctx._temp_.cisco.message_id == '109102' || ctx._temp_.cisco.message_id == '109103'"
-      field: "message"
-      description: "109103"
-      pattern: "access-list %{_temp_.cisco.list_id} %{event.outcome} %{network.transport} for user %{user.name} %{_temp_.cisco.source_interface}/%{source.address}(%{source.port})%{}-> %{_temp_.cisco.destination_interface}/%{destination.address}(%{destination.port})%{}"
-  - dissect:
-      if: "ctx._temp_.cisco.message_id == '109201'"
-      field: "message"
-      description: "109201"
-      pattern: "UAUTH: Session=%{?session_id}, User=%{user.name}, Assigned IP=%{source.address}, Succeeded adding entry."
-  - dissect:
-      if: "ctx._temp_.cisco.message_id == '109207'"
-      field: "message"
-      description: "109207"
-      pattern: "UAUTH: Session=%{?session_id}, User=%{user.name}, Assigned IP=%{source.address}, Succeeded updating entry."
   - grok:
-      if: "ctx._temp_.cisco.message_id == '109210'"
+      if: "['109201', '109202', '109204', '109207', '109210'].contains(ctx._temp_.cisco.message_id)"
       field: "message"
-      description: "109210"
+      description: "109201, 109202, 109204, 109207, 109210"
       patterns:
-        - "UAUTH: Session(=| )%{NOTSPACE}, User(=| )%{DATA:user.name}, Assigned IP(=| )%{DATA:source.address}, (Succeeded removing entry.|Successfully removed the rules for user during tunnel torn down.)"
+        - "UAUTH: Session(=| )%{DATA}, User(=| )%{NOTCOMMA:user.name}, Assigned IP(=| )%{IP:source.address}, Succe%{GREEDYDATA}"
+      pattern_definitions:
+        NOTCOMMA: "[^,]+"
   - dissect:
       if: "ctx._temp_.cisco.message_id == '111004'"
       field: "message"
@@ -362,6 +349,7 @@ processors:
       description: "111004"
       value: "change"
       if: "ctx._temp_.cisco.message_id == '111004'"
+  # Note: This one does not in any way adhere to the documentation on cisco's site for these message ids
   - grok:
       if: '["111008", "111009"].contains(ctx._temp_.cisco.message_id)'
       description: "111008, 111009"
@@ -399,7 +387,7 @@ processors:
       patterns:
         - "AAA transaction status ACCEPT(%{SPACE})?: user = ?(%{CISCO_USER:source.user.name}|\\*+)(%{SPACE})?"
       pattern_definitions:
-        CISCO_USER: ((LOCAL\\)?(%{HOSTNAME}\\)?%{USERNAME}(@%{HOSTNAME})?(, *%{NUMBER})?)
+        CISCO_USER: ((LOCAL\\+)?(%{HOSTNAME}\\+)?%{USERNAME}(@%{HOSTNAME})?(, *%{NUMBER})?)
   - grok:
       if: "ctx._temp_.cisco.message_id == '113009'"
       description: "113009"
@@ -407,7 +395,7 @@ processors:
       patterns:
         - "AAA retrieved default group policy \\(%{DATA:source.user.group.name}\\) for user = ?(%{CISCO_USER:source.user.name}|\\*+)(%{SPACE})?"
       pattern_definitions:
-        CISCO_USER: ((LOCAL\\)?(%{HOSTNAME}\\)?%{USERNAME}(@%{HOSTNAME})?(, *%{NUMBER})?)
+        CISCO_USER: ((LOCAL\\+)?(%{HOSTNAME}\\+)?%{USERNAME}(@%{HOSTNAME})?(, *%{NUMBER})?)
   - grok:
       if: "ctx._temp_.cisco.message_id == '113012'"
       field: "message"
@@ -415,7 +403,7 @@ processors:
       patterns:
       - "AAA user authentication Successful(%{SPACE})?: local database(%{SPACE})?: [Uu]ser = %{CISCO_USER:source.user.name}"
       pattern_definitions:
-        CISCO_USER: ((LOCAL\\)?(%{HOSTNAME}\\)?%{USERNAME}(@%{HOSTNAME})?(, *%{NUMBER})?)
+        CISCO_USER: ((LOCAL\\+)?(%{HOSTNAME}\\+)?%{USERNAME}(@%{HOSTNAME})?(, *%{NUMBER})?)
   - grok:
       if: "ctx._temp_.cisco.message_id == '113014'"
       description: "113014"
@@ -423,7 +411,7 @@ processors:
       patterns:
           - "AAA authentication server not accessible(%{SPACE})?: server = %{IP:destination.address}(%{SPACE})?: [Uu]ser = (%{CISCO_USER:source.user.name}|\\*+)(%{SPACE})?"
       pattern_definitions:
-        CISCO_USER: ((LOCAL\\)?(%{HOSTNAME}\\)?%{USERNAME}(@%{HOSTNAME})?(, *%{NUMBER})?)
+        CISCO_USER: ((LOCAL\\+)?(%{HOSTNAME}\\+)?%{USERNAME}(@%{HOSTNAME})?(, *%{NUMBER})?)
   - dissect:
       if: "ctx._temp_.cisco.message_id == '113019'"
       field: "message"
@@ -470,6 +458,19 @@ processors:
         NOTCOLON: "[^:]*"
         IPORHOST: "(?:%{IP}|%{HOSTNAME})"
         TYPE: "%{WORD}-%{WORD}"
+  - dissect:
+      if: "ctx._temp_.cisco.message_id == '210022'"
+      field: "message"
+      description: "210022"
+      tag: "210022"
+      pattern: "LU missed %{_temp_.cisco.missed_updates_count} updates"
+
+  - convert:
+      if: ctx._temp_?.cisco?.missed_updates_count != null
+      field: _temp_.cisco.missed_updates_count
+      target_field: _temp_.cisco.missed_updates_count
+      tag: convert-missed_updates_to_integer
+      type: integer
   - grok:
       if: '["302013", "302015"].contains(ctx._temp_.cisco.message_id)'
       field: "message"
@@ -920,6 +921,15 @@ processors:
       field: "message"
       description: "734001"
       pattern: "DAP: User %{user.email}, Addr %{source.address}, Connection %{_temp_.cisco.connection_type}: The following DAP records were selected for this connection: %{_temp_.cisco.dap_records->}"
+  - grok:
+      if: "['746012', '746013'].contains(ctx._temp_.cisco.message_id)"
+      field: "message"
+      description: "746012, 746013"
+      patterns:
+        - "Add IP-User mapping %{IP:source.address} - %{CISCO_USER:source.user.name} Succeeded - VPN user"
+        - "Delete IP-User mapping %{IP:source.address} - %{CISCO_USER:source.user.name} Succeeded - VPN user logout"
+      pattern_definitions:
+        CISCO_USER: ((LOCAL\\+)?(%{HOSTNAME}\\+)?%{USERNAME}(@%{HOSTNAME})?(, *%{NUMBER})?)
   - dissect:
       if: "ctx._temp_.cisco.message_id == '805001'"
       field: "message"
@@ -1014,7 +1024,7 @@ processors:
       field: "event.outcome"
       value: "failure"
   - set:
-      if: '["713120"].contains(ctx._temp_.cisco.message_id)'
+      if: '["713120", "746012", "746013"].contains(ctx._temp_.cisco.message_id)'
       field: "event.outcome"
       value: "success"
   - set:
@@ -1050,7 +1060,7 @@ processors:
       field: "event.outcome"
       value: "failure"
   - set:
-      if: '["113039"].contains(ctx._temp_.cisco.message_id)'
+      if: '["113039", "746012"].contains(ctx._temp_.cisco.message_id)'
       field: "event.action"
       value: "client-vpn-connected"
   - set:
@@ -1062,7 +1072,7 @@ processors:
       field: "event.action"
       value: "client-vpn-error"
   - set:
-      if: '["113019"].contains(ctx._temp_.cisco.message_id)'
+      if: '["113019", "746013"].contains(ctx._temp_.cisco.message_id)'
       field: "event.action"
       value: "client-vpn-disconnected"
   - set:

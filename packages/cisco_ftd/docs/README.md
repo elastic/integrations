@@ -227,6 +227,7 @@ An example event for `log` looks as following:
 | cisco.ftd.mapped_source_ip | The translated source IP address. | ip |
 | cisco.ftd.mapped_source_port | The translated source port. | long |
 | cisco.ftd.message_id | The Cisco FTD message identifier. | keyword |
+| cisco.ftd.missed_updates_count | The number of Stateful Failover updates missed. | long |
 | cisco.ftd.privilege.new | When a users privilege is changed this is the new value | keyword |
 | cisco.ftd.privilege.old | When a users privilege is changed this is the old value | keyword |
 | cisco.ftd.rule_name | Name of the Access Control List rule that matched this event. | keyword |
