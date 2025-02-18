@@ -21,7 +21,7 @@ processors:
   - set:
       field: event.kind
       value: event
-# ECS fields
+# ECS fields
   - script:
       lang: painless
       tag: painless_session_start_time_to_milli
@@ -112,6 +112,10 @@ processors:
       copy_from: cloudflare_logpush.network_session.source.bytes
       ignore_empty_value: true
   - rename:
+      field: json.DetectedProtocol
+      target_field: cloudflare_logpush.network_session.detected_protocol
+      ignore_missing: true
+  - rename:
       field: json.DeviceID
       target_field: cloudflare_logpush.network_session.host.id
       ignore_missing: true
@@ -135,7 +139,7 @@ processors:
       field: destination.ip
       copy_from: cloudflare_logpush.network_session.destination.ip
       ignore_empty_value: true
-# Geo enrichment (destination IP)
+# Geo enrichment (destination IP)
   - geoip:
       field: destination.ip
       target_field: destination.geo
@@ -211,7 +215,7 @@ processors:
       field: source.ip
       copy_from: cloudflare_logpush.network_session.source.ip
       ignore_empty_value: true
-# Geo enrichment (source IP)
+# Geo enrichment (source IP)
   - geoip:
       field: source.ip
       target_field: source.geo

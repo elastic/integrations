@@ -1067,6 +1067,7 @@ An example event for `dns_firewall` looks as following:
 | cloudflare_logpush.dns_firewall.response.cached | Whether the response was cached or not. | boolean |
 | cloudflare_logpush.dns_firewall.response.cached_stale | Whether the response was cached stale. In other words, the TTL had expired and the upstream nameserver was not reachable. | boolean |
 | cloudflare_logpush.dns_firewall.response.code | DNS response code. | keyword |
+| cloudflare_logpush.dns_firewall.response.reason | Short descriptions with more context around the final DNS Firewall response. See [Cloudflare docs](https://developers.cloudflare.com/dns/dns-firewall/analytics/) for details. | keyword |
 | cloudflare_logpush.dns_firewall.source.ip | The source IP address of the request. | ip |
 | cloudflare_logpush.dns_firewall.timestamp | Timestamp at which the query occurred. | date |
 | cloudflare_logpush.dns_firewall.upstream.ip | IP of the upstream nameserver (IPv4 or IPv6). | ip |
@@ -1278,14 +1279,19 @@ An example event for `firewall_event` looks as following:
 | cloudflare_logpush.firewall_event.client.request.query | The query-string was requested by the visitor. | keyword |
 | cloudflare_logpush.firewall_event.client.request.scheme | The URL scheme requested by the visitor. | text |
 | cloudflare_logpush.firewall_event.client.request.user.agent | Visitor's user-agent string. | text |
+| cloudflare_logpush.firewall_event.content_scan.results | List of content scan results. | keyword |
+| cloudflare_logpush.firewall_event.content_scan.sizes | List of content object sizes. | long |
+| cloudflare_logpush.firewall_event.content_scan.types | List of content types. | keyword |
 | cloudflare_logpush.firewall_event.edge.colo.code | The airport code of the Cloudflare datacenter that served this request. | keyword |
 | cloudflare_logpush.firewall_event.edge.response.status | HTTP response status code returned to browser. | long |
 | cloudflare_logpush.firewall_event.kind | The kind of event, currently only possible values are. | keyword |
+| cloudflare_logpush.firewall_event.leaked_credential_check | Result of the check for leaked credentials. Possible results are: password_leaked | username_and_password_leaked | username_password_similar | username_leaked | clean. | keyword |
 | cloudflare_logpush.firewall_event.match_index | Rules match index in the chain. | long |
 | cloudflare_logpush.firewall_event.meta_data | Additional product-specific information. | flattened |
 | cloudflare_logpush.firewall_event.origin.ray.id | HTTP origin response status code returned to browser. | keyword |
 | cloudflare_logpush.firewall_event.origin.response.status | The RayID of the request that issued the challenge/jschallenge. | long |
 | cloudflare_logpush.firewall_event.ray.id | The RayID of the request. | keyword |
+| cloudflare_logpush.firewall_event.ref | The user-defined identifier for the rule triggered by this request. | keyword |
 | cloudflare_logpush.firewall_event.rule.id | The Cloudflare security product-specific RuleID triggered by this request. | keyword |
 | cloudflare_logpush.firewall_event.source | The Cloudflare security product triggered by this request. | keyword |
 | cloudflare_logpush.firewall_event.timestamp | The date and time the event occurred at the edge. | date |
@@ -1543,33 +1549,67 @@ An example event for `gateway_dns` looks as following:
 |---|---|---|
 | @timestamp | Event timestamp. | date |
 | cloud.image.id | Image ID for the cloud instance. | keyword |
+| cloudflare_logpush.gateway_dns.account_id | Cloudflare account ID. | keyword |
 | cloudflare_logpush.gateway_dns.answers | The response data objects. | flattened |
 | cloudflare_logpush.gateway_dns.application_id | ID of the application the domain belongs to. | long |
-| cloudflare_logpush.gateway_dns.colo.code | The name of the colo that received the DNS query . | keyword |
+| cloudflare_logpush.gateway_dns.application_name | Name of the application the domain belongs to. | keyword |
+| cloudflare_logpush.gateway_dns.authoritative_name_server_ip | The IPs of the authoritative nameservers that provided the answers, if any. | ip |
+| cloudflare_logpush.gateway_dns.cname | Resolved intermediate cname domains. | keyword |
+| cloudflare_logpush.gateway_dns.cname_category.ids | ID or IDs of category that the intermediate cname domains belongs to. | keyword |
+| cloudflare_logpush.gateway_dns.cname_category.names | Name or names of category that the intermediate cname domains belongs to. | keyword |
+| cloudflare_logpush.gateway_dns.cname_reversed | Resolved intermediate cname domains in reverse. | keyword |
+| cloudflare_logpush.gateway_dns.colo.code | The name of the colo that received the DNS query. | keyword |
 | cloudflare_logpush.gateway_dns.colo.id | The ID of the colo that received the DNS query. | long |
+| cloudflare_logpush.gateway_dns.custom_resolver.address | IP and port combo used to resolve the custom dns resolver query, if any. | keyword |
+| cloudflare_logpush.gateway_dns.custom_resolver.duration_milli | The time it took for the custom resolver to respond in milliseconds. | long |
+| cloudflare_logpush.gateway_dns.custom_resolver.policy.ids | Custom resolver policy UUID, if matched. | keyword |
+| cloudflare_logpush.gateway_dns.custom_resolver.policy.names | Custom resolver policy name, if matched. | keyword |
+| cloudflare_logpush.gateway_dns.custom_resolver.response | Status of the custom resolver response. | keyword |
 | cloudflare_logpush.gateway_dns.destination.ip | The destination IP address the DNS query was made to. | ip |
 | cloudflare_logpush.gateway_dns.destination.port | The destination port used at the edge. The port changes based on the protocol used by the DNS query. | long |
+| cloudflare_logpush.gateway_dns.doh_subdomain | The destination DoH subdomain the DNS query was made to. | keyword |
+| cloudflare_logpush.gateway_dns.dot_subdomain | The destination DoT subdomain the DNS query was made to. | keyword |
+| cloudflare_logpush.gateway_dns.extended_dns_error_codes | List of returned Extended DNS Error Codes. | keyword |
 | cloudflare_logpush.gateway_dns.host.id | UUID of the device where the HTTP request originated from. | keyword |
 | cloudflare_logpush.gateway_dns.host.name | The name of the device where the HTTP request originated from. | keyword |
+| cloudflare_logpush.gateway_dns.initial_category.ids | ID or IDs of category that the queried domains belongs to. | keyword |
+| cloudflare_logpush.gateway_dns.initial_category.names | Name or names of category that the queried domains belongs to. | keyword |
+| cloudflare_logpush.gateway_dns.is_response_cached | Response comes from cache or not. | boolean |
 | cloudflare_logpush.gateway_dns.location.id | UUID of the location the DNS request is coming from. | keyword |
 | cloudflare_logpush.gateway_dns.location.name | Name of the location the DNS request is coming from. | keyword |
 | cloudflare_logpush.gateway_dns.matched.category.ids | ID or IDs of category that the domain was matched with the policy. | long |
 | cloudflare_logpush.gateway_dns.matched.category.names | Name or names of category that the domain was matched with the policy. | keyword |
+| cloudflare_logpush.gateway_dns.matched.indicator_feed.ids | ID or IDs of indicator feed(s) that the domain was matched with the policy. | keyword |
+| cloudflare_logpush.gateway_dns.matched.indicator_feed.names | Name or names of indicator feed(s) that the domain was matched with the policy. | keyword |
 | cloudflare_logpush.gateway_dns.policy.id | ID of the policy/rule that was applied (if any). | keyword |
 | cloudflare_logpush.gateway_dns.policy.name | Name of the policy that was applied (if any) | keyword |
 | cloudflare_logpush.gateway_dns.protocol | The protocol used for the DNS query by the client. | keyword |
 | cloudflare_logpush.gateway_dns.question.category.ids | ID or IDs of category that the domain belongs to. | long |
 | cloudflare_logpush.gateway_dns.question.category.names | Name or names of category that the domain belongs to. | keyword |
+| cloudflare_logpush.gateway_dns.question.id | Globally unique identifier of the query. | keyword |
+| cloudflare_logpush.gateway_dns.question.indicator_feed.ids | ID or IDs of indicator feed(s) that the domain belongs to. | long |
+| cloudflare_logpush.gateway_dns.question.indicator_feed.names | Name or names of indicator feed(s) that the domain belongs to. | keyword |
 | cloudflare_logpush.gateway_dns.question.name | The query name. | keyword |
 | cloudflare_logpush.gateway_dns.question.reversed | Query name in reverse. | keyword |
 | cloudflare_logpush.gateway_dns.question.size | The size of the DNS request in bytes. | long |
 | cloudflare_logpush.gateway_dns.question.type | The type of DNS query. | keyword |
 | cloudflare_logpush.gateway_dns.question.type_id | ID of the type of DNS query. | long |
 | cloudflare_logpush.gateway_dns.resolved_ip | The resolved IPs in the response, if any. | ip |
+| cloudflare_logpush.gateway_dns.resolved_ip_details.category.ids | ID or IDs of category that the IPs in the response belongs to. | keyword |
+| cloudflare_logpush.gateway_dns.resolved_ip_details.category.names | Name or names of category that the IPs in the response belongs to. | keyword |
+| cloudflare_logpush.gateway_dns.resolved_ip_details.continent_codes | Continent code of each resolved IP, if any. | keyword |
+| cloudflare_logpush.gateway_dns.resolved_ip_details.country_codes | Country code of each resolved IP, if any. | keyword |
+| cloudflare_logpush.gateway_dns.resolved_ip_details.ips | The resolved IPs in the response, if any. | ip |
+| cloudflare_logpush.gateway_dns.resolver.policy.id | Resolver policy UUID, if any matched. | keyword |
+| cloudflare_logpush.gateway_dns.resolver.policy.names | Resolver policy name, if any matched. | keyword |
 | cloudflare_logpush.gateway_dns.resolver_decision | Result of the DNS query. | keyword |
+| cloudflare_logpush.gateway_dns.resource_records.json | String that represents the JSON array with the returned resource records. | match_only_text |
+| cloudflare_logpush.gateway_dns.resource_records.object | The rdata objects. | flattened |
 | cloudflare_logpush.gateway_dns.response_code | The return code sent back by the DNS resolver. | keyword |
 | cloudflare_logpush.gateway_dns.source.ip | The source IP address making the DNS query. | ip |
 | cloudflare_logpush.gateway_dns.source.port | The port used by the client when they sent the DNS request. | long |
+| cloudflare_logpush.gateway_dns.source_id.continent_code | Continent code of the source IP address making the DNS query. | keyword |
+| cloudflare_logpush.gateway_dns.source_id.country_code | Country code of the source IP address making the DNS query. | keyword |
 | cloudflare_logpush.gateway_dns.timestamp | The date and time the corresponding DNS request was made. | date |
 | cloudflare_logpush.gateway_dns.timezone | Time zone used to calculate the current time, if a matched rule was scheduled with it. | keyword |
 | cloudflare_logpush.gateway_dns.timezone_inferred_method | Method used to pick the time zone for the schedule. | keyword |
@@ -1801,13 +1841,19 @@ An example event for `gateway_http` looks as following:
 | cloud.image.id | Image ID for the cloud instance. | keyword |
 | cloudflare_logpush.gateway_http.account_id | Cloudflare account tag. | keyword |
 | cloudflare_logpush.gateway_http.action | Action performed by gateway on the HTTP request. | keyword |
+| cloudflare_logpush.gateway_http.application.ids | IDs of the applications that matched the session parameters. | keyword |
+| cloudflare_logpush.gateway_http.application.names | Names of the applications that matched the session parameters. | keyword |
 | cloudflare_logpush.gateway_http.blocked_file.hash | Hash of the file blocked in the response, if any. | keyword |
 | cloudflare_logpush.gateway_http.blocked_file.name | File name blocked in the request, if any. | keyword |
 | cloudflare_logpush.gateway_http.blocked_file.reason | Reason file was blocked in the response, if any. | keyword |
 | cloudflare_logpush.gateway_http.blocked_file.size | File size(bytes) blocked in the response, if any. | long |
 | cloudflare_logpush.gateway_http.blocked_file.type | File type blocked in the response eg. exe, bin, if any. | keyword |
+| cloudflare_logpush.gateway_http.category.ids | IDs of the categories that matched the session parameters. | keyword |
+| cloudflare_logpush.gateway_http.category.names | Names of the categories that matched the session parameters. | keyword |
 | cloudflare_logpush.gateway_http.destination.ip | Destination IP of the request. | ip |
 | cloudflare_logpush.gateway_http.destination.port | Destination port of the request. | long |
+| cloudflare_logpush.gateway_http.destination_ip.continent_code | Continent code of the destination IP of the network session. | keyword |
+| cloudflare_logpush.gateway_http.destination_ip.country_code | Country code of the destination IP of the network session. | keyword |
 | cloudflare_logpush.gateway_http.downloaded_files | List of files downloaded in the HTTP request. | keyword |
 | cloudflare_logpush.gateway_http.file_info | Information about files detected within the HTTP request. | flattened |
 | cloudflare_logpush.gateway_http.host.id | UUID of the device where the HTTP request originated from. | keyword |
@@ -1815,15 +1861,19 @@ An example event for `gateway_http` looks as following:
 | cloudflare_logpush.gateway_http.isolated | If the requested was isolated with Cloudflare Browser Isolation or not. | boolean |
 | cloudflare_logpush.gateway_http.policy.id | The gateway policy UUID applied to the request, if any. | keyword |
 | cloudflare_logpush.gateway_http.policy.name | The name of the gateway policy applied to the request, if any. | keyword |
+| cloudflare_logpush.gateway_http.proxy_endpoint | The proxy endpoint used on this network session, if any. | keyword |
 | cloudflare_logpush.gateway_http.request.host | Content of the host header in the HTTP request. | keyword |
 | cloudflare_logpush.gateway_http.request.method | HTTP request method. | keyword |
 | cloudflare_logpush.gateway_http.request.referrer | Contents of the referer header in the HTTP request. | keyword |
 | cloudflare_logpush.gateway_http.request.version | Version name for the HTTP request. | keyword |
 | cloudflare_logpush.gateway_http.request_id | Cloudflare request ID. | keyword |
 | cloudflare_logpush.gateway_http.response.status_code | HTTP status code gateway returned to the user. Zero if nothing was returned. | long |
+| cloudflare_logpush.gateway_http.session_id | The session identifier of this network session. | keyword |
 | cloudflare_logpush.gateway_http.source.internal_ip | Local LAN IP of the device. Only available when connected via a GRE/IPsec tunnel on-ramp. | ip |
 | cloudflare_logpush.gateway_http.source.ip | Source IP of the request. | ip |
 | cloudflare_logpush.gateway_http.source.port | Source port of the request. | long |
+| cloudflare_logpush.gateway_http.source_ip.continent_code | Continent code of the source IP of the network session. | keyword |
+| cloudflare_logpush.gateway_http.source_ip.country_code | Country code of the source IP of the network session. | keyword |
 | cloudflare_logpush.gateway_http.timestamp | The date and time the corresponding HTTP request was made. | date |
 | cloudflare_logpush.gateway_http.untrusted_certificate_action | Action taken when an untrusted origin certificate error occurs. | keyword |
 | cloudflare_logpush.gateway_http.uploaded_files | List of files uploaded in the HTTP request. | keyword |
@@ -1831,6 +1881,8 @@ An example event for `gateway_http` looks as following:
 | cloudflare_logpush.gateway_http.user.email | Email used to authenticate the client. | keyword |
 | cloudflare_logpush.gateway_http.user.id | User identity where the HTTP request originated from. | keyword |
 | cloudflare_logpush.gateway_http.user_agent | Contents of the user agent header in the HTTP request. | keyword |
+| cloudflare_logpush.gateway_http.virtual_network.id | The identifier of the virtual network the device was connected to, if any. | keyword |
+| cloudflare_logpush.gateway_http.virtual_network.name | The name of the virtual network the device was connected to, if any. | keyword |
 | data_stream.dataset | Data stream dataset. | constant_keyword |
 | data_stream.namespace | Data stream namespace. | constant_keyword |
 | data_stream.type | Data stream type. | constant_keyword |
@@ -2016,23 +2068,35 @@ An example event for `gateway_network` looks as following:
 | cloud.image.id | Image ID for the cloud instance. | keyword |
 | cloudflare_logpush.gateway_network.account_id | Cloudflare account tag. | keyword |
 | cloudflare_logpush.gateway_network.action | Action performed by gateway on the session. | keyword |
+| cloudflare_logpush.gateway_network.application.ids | IDs of the applications that matched the session parameters. | keyword |
+| cloudflare_logpush.gateway_network.application.names | Names of the applications that matched the session parameters. | keyword |
+| cloudflare_logpush.gateway_network.category.ids | IDs of the categories that matched the session parameters. | keyword |
+| cloudflare_logpush.gateway_network.category.names | Names of the categories that matched the session parameters. | keyword |
 | cloudflare_logpush.gateway_network.destination.ip | Destination IP of the network session. | ip |
 | cloudflare_logpush.gateway_network.destination.port | Destination port of the network session. | long |
+| cloudflare_logpush.gateway_network.destination_ip.continent_code | Continent code of the destination IP of the network session. | keyword |
+| cloudflare_logpush.gateway_network.destination_ip.country_code | Country code of the destination IP of the network session. | keyword |
+| cloudflare_logpush.gateway_network.detected_protocol | Detected traffic protocol of the network session. | keyword |
 | cloudflare_logpush.gateway_network.host.id | UUID of the device where the network session originated from. | keyword |
 | cloudflare_logpush.gateway_network.host.name | The name of the device where the network session originated from. | keyword |
 | cloudflare_logpush.gateway_network.override.ip | Overriden IP of the network session, if any. | ip |
 | cloudflare_logpush.gateway_network.override.port | Overriden port of the network session, if any. | long |
 | cloudflare_logpush.gateway_network.policy.id | Identifier of the policy/rule that was applied, if any. | keyword |
 | cloudflare_logpush.gateway_network.policy.name | The name of the gateway policy applied to the session, if any. | keyword |
+| cloudflare_logpush.gateway_network.proxy_endpoint | The proxy endpoint used on this network session, if any. | keyword |
 | cloudflare_logpush.gateway_network.session_id | The session identifier of this network session. | keyword |
 | cloudflare_logpush.gateway_network.sni | Content of the SNI (Server Name Indication) for the TLS network session, if any. | keyword |
 | cloudflare_logpush.gateway_network.source.internal_ip | Local LAN IP of the device. Only available when connected via a GRE/IPsec tunnel on-ramp. | ip |
 | cloudflare_logpush.gateway_network.source.ip | Source IP of the network session. | ip |
 | cloudflare_logpush.gateway_network.source.port | Source port of the network session. | long |
+| cloudflare_logpush.gateway_network.source_ip.continent_code | Continent code of the source IP of the network session. | keyword |
+| cloudflare_logpush.gateway_network.source_ip.country_code | Country code of the source IP of the network session. | keyword |
 | cloudflare_logpush.gateway_network.timestamp | The date and time the corresponding network session was made. | date |
 | cloudflare_logpush.gateway_network.transport | Transport protocol used for this session. | keyword |
 | cloudflare_logpush.gateway_network.user.email | Email associated with the user identity where the network sesion originated from. | keyword |
 | cloudflare_logpush.gateway_network.user.id | User identity where the network session originated from. | keyword |
+| cloudflare_logpush.gateway_network.virtual_network.id | The identifier of the virtual network the device was connected to, if any. | keyword |
+| cloudflare_logpush.gateway_network.virtual_network.name | The name of the virtual network the device was connected to, if any. | keyword |
 | data_stream.dataset | Data stream dataset. | constant_keyword |
 | data_stream.namespace | Data stream namespace. | constant_keyword |
 | data_stream.type | Data stream type. | constant_keyword |
@@ -2345,20 +2409,26 @@ An example event for `http_request` looks as following:
 | @timestamp | Event timestamp. | date |
 | cloud.image.id | Image ID for the cloud instance. | keyword |
 | cloudflare_logpush.http_request.bot.detection_ids | List of IDs that correlate to the Bot Management Heuristic detections made on a request. Available in Logpush v2 only. | long |
+| cloudflare_logpush.http_request.bot.detection_tags | List of tags that correlate to the Bot Management Heuristic detections made on a request. Available only for Bot Management customers. To enable this feature, contact your account team. | long |
 | cloudflare_logpush.http_request.bot.score.src | Detection engine responsible for generating the Bot Score. Possible values are Not Computed, Heuristics, Machine Learning, Behavioral Analysis, Verified Bot, JS Fingerprinting, Cloudflare Service. | text |
 | cloudflare_logpush.http_request.bot.score.value | Cloudflare Bot Score. Scores below 30 are commonly associated with automated traffic. | long |
 | cloudflare_logpush.http_request.bot.tag | Type of bot traffic (if available). Available in Logpush v2 only. | text |
+| cloudflare_logpush.http_request.cache.reserve_used | Cache Reserve was used to serve this request. | boolean |
 | cloudflare_logpush.http_request.cache.response.bytes | Number of bytes returned by the cache. | long |
 | cloudflare_logpush.http_request.cache.response.status | Cache status. | long |
 | cloudflare_logpush.http_request.cache.status | HTTP status code returned by the cache to the edge. | keyword |
 | cloudflare_logpush.http_request.cache.tiered_fill | Tiered Cache was used to serve this request. | boolean |
 | cloudflare_logpush.http_request.client.asn | Client AS number. | long |
+| cloudflare_logpush.http_request.client.city | Approximate city of the client. | keyword |
 | cloudflare_logpush.http_request.client.country | Country of the client IP address. | keyword |
 | cloudflare_logpush.http_request.client.device.type | Client device type. | keyword |
 | cloudflare_logpush.http_request.client.ip | IP address of the client. | ip |
 | cloudflare_logpush.http_request.client.ip_class | Class IP. | keyword |
+| cloudflare_logpush.http_request.client.latitude | Approximate latitude of the client. | keyword |
+| cloudflare_logpush.http_request.client.longitude | Approximate longitude of the client. | keyword |
 | cloudflare_logpush.http_request.client.mtls.auth.fingerprint | The SHA256 fingerprint of the certificate presented by the client during mTLS authentication. | keyword |
 | cloudflare_logpush.http_request.client.mtls.auth.status | The status of mTLS authentication, Only populated on the first request on an mTLS connection. | keyword |
+| cloudflare_logpush.http_request.client.region_code | The ISO-3166-2 region code of the client IP address. | keyword |
 | cloudflare_logpush.http_request.client.request.bytes | Number of bytes in the client request. | long |
 | cloudflare_logpush.http_request.client.request.host | Host requested by the client. | keyword |
 | cloudflare_logpush.http_request.client.request.method | HTTP method of client request. | text |
@@ -2374,6 +2444,9 @@ An example event for `http_request` looks as following:
 | cloudflare_logpush.http_request.client.ssl.protocol | Client SSL (TLS) protocol. | keyword |
 | cloudflare_logpush.http_request.client.tcp_rtt.ms | The smoothed average of TCP round-trip time (SRTT), For the initial request on a connection, this is measured only during connection setup, For a subsequent request on the same connection, it is measured over the entire connection lifetime up until the time that request is received. | long |
 | cloudflare_logpush.http_request.client.xrequested_with | X-Requested-With HTTP header. | text |
+| cloudflare_logpush.http_request.content_scan.results | List of content scan results. | keyword |
+| cloudflare_logpush.http_request.content_scan.sizes | List of content object sizes. | long |
+| cloudflare_logpush.http_request.content_scan.types | List of content types. | keyword |
 | cloudflare_logpush.http_request.cookies | String key-value pairs for Cookies. | flattened |
 | cloudflare_logpush.http_request.edge.cf_connecting_o2o | True if the request looped through multiple zones on the Cloudflare edge. | boolean |
 | cloudflare_logpush.http_request.edge.colo.code | IATA airport code of data center that received the request. | keyword |
@@ -2970,12 +3043,16 @@ An example event for `network_analytics` looks as following:
 | cloud.image.id | Image ID for the cloud instance. | keyword |
 | cloudflare_logpush.network_analytics.attack.campaign.id | Unique identifier of the attack campaign that this packet was a part of, if any. | keyword |
 | cloudflare_logpush.network_analytics.attack.id | Unique identifier of the mitigation that matched the packet, if any. | keyword |
+| cloudflare_logpush.network_analytics.attack.vector | Descriptive name of the type of attack that this packet was a part of, if any. Only for packets matching rules contained within the Cloudflare L3/4 managed ruleset. | keyword |
+| cloudflare_logpush.network_analytics.colo.city | The city where the Cloudflare datacenter that received the packet is located. | keyword |
+| cloudflare_logpush.network_analytics.colo.code | The Cloudflare datacenter that received the packet (nearest IATA airport code). | keyword |
 | cloudflare_logpush.network_analytics.colo.country | The country of colo that received the packet (ISO 3166-1 alpha-2). | keyword |
 | cloudflare_logpush.network_analytics.colo.geo_hash | The Geo Hash where the colo that received the packet is located. | keyword |
 | cloudflare_logpush.network_analytics.colo.geo_location | The latitude and longitude where the colo that received the packet is located. | geo_point |
 | cloudflare_logpush.network_analytics.colo.id | The ID of the colo that received the DNS query. | long |
 | cloudflare_logpush.network_analytics.colo.name | The name of the colo that received the DNS query. | keyword |
 | cloudflare_logpush.network_analytics.destination.as.number.description | The ASN description associated with the destination IP of the packet. | text |
+| cloudflare_logpush.network_analytics.destination.as.number.name | The name of the ASN associated with the destination IP of the packet. | text |
 | cloudflare_logpush.network_analytics.destination.asn | The ASN associated with the destination IP of the packet. | long |
 | cloudflare_logpush.network_analytics.destination.country | The country where the destination IP of the packet is located. | keyword |
 | cloudflare_logpush.network_analytics.destination.geo_hash | The Geo Hash where the destination IP of the packet is located. | keyword |
@@ -3020,10 +3097,12 @@ An example event for `network_analytics` looks as following:
 | cloudflare_logpush.network_analytics.outcome | The action that Cloudflare systems took on the packet. | keyword |
 | cloudflare_logpush.network_analytics.protocol_state | State of the packet in the context of the protocol, if any. | keyword |
 | cloudflare_logpush.network_analytics.rule.id | Unique identifier of the rule contained with the Cloudflare L3/4 managed ruleset that this packet matched, if any. | text |
+| cloudflare_logpush.network_analytics.rule.name | Human-readable name of the rule contained within the Cloudflare L3/4 managed ruleset that this packet matched, if any. | text |
 | cloudflare_logpush.network_analytics.rule.set.id | Unique identifier of the Cloudflare L3/4 managed ruleset containing the rule that this packet matched, if any. | keyword |
 | cloudflare_logpush.network_analytics.rule.set.override.id | Unique identifier of the rule within the accounts root ddos_l4 phase ruleset which resulted in an override of the default sensitivity or action being applied/evaluated, if any. | text |
 | cloudflare_logpush.network_analytics.sample_interval | The sample interval for this log. | long |
 | cloudflare_logpush.network_analytics.source.as.number.description | The ASN description associated with the source IP of the packet. | text |
+| cloudflare_logpush.network_analytics.source.as.number.name | The name of the ASN associated with the source IP of the packet. | text |
 | cloudflare_logpush.network_analytics.source.asn | The ASN associated with the source IP of the packet. | long |
 | cloudflare_logpush.network_analytics.source.country | The country where the source IP of the packet is located. | keyword |
 | cloudflare_logpush.network_analytics.source.geo_hash | The Geo Hash where the source IP of the packet is located. | keyword |
@@ -3283,6 +3362,7 @@ An example event for `network_session` looks as following:
 | cloudflare_logpush.network_session.destination.ip | The IP of the destination (origin) for the network session. | ip |
 | cloudflare_logpush.network_session.destination.port | The port of the destination origin for the network session. | long |
 | cloudflare_logpush.network_session.destination.tunnel_id | Identifier of the Cloudflare One connector to which the network session was routed to, if any. | keyword |
+| cloudflare_logpush.network_session.detected_protocol | Detected traffic protocol of the network session. | keyword |
 | cloudflare_logpush.network_session.egress.colo_name | The name of the Cloudflare colo from which traffic egressed to the origin. | keyword |
 | cloudflare_logpush.network_session.egress.ip | Source IP used when egressing traffic from Cloudflare to the origin. | ip |
 | cloudflare_logpush.network_session.egress.port | Source port used when egressing traffic from Cloudflare to the origin. | long |
@@ -3849,12 +3929,14 @@ An example event for `workers_trace` looks as following:
 | @timestamp | Event timestamp. | date |
 | cloud.image.id | Image ID for the cloud instance. | keyword |
 | cloudflare_logpush.workers_trace.dispatch_namespace | The Cloudflare Worker dispatch namespace. | keyword |
+| cloudflare_logpush.workers_trace.entrypoint | The name of the entrypoint class in which the Worker began execution. | keyword |
 | cloudflare_logpush.workers_trace.event | Details about the source event. | flattened |
 | cloudflare_logpush.workers_trace.exceptions | List of uncaught exceptions during the invocation. | flattened |
 | cloudflare_logpush.workers_trace.logs | List of console messages emitted during the invocation. | flattened |
 | cloudflare_logpush.workers_trace.outcome | The outcome of the worker script invocation. Possible values are ok | exception. | keyword |
 | cloudflare_logpush.workers_trace.script.name | The Cloudflare Worker script name. | keyword |
 | cloudflare_logpush.workers_trace.script.tags | A list of user-defined tags used to categorize the Worker. | keyword |
+| cloudflare_logpush.workers_trace.script.version | The version of the script that was invoked. | flattened |
 | cloudflare_logpush.workers_trace.timestamp | The timestamp of when the event was received. | date |
 | cloudflare_logpush.workers_trace.type | The event type that triggered the invocation. | keyword |
 | data_stream.dataset | Data stream dataset. | constant_keyword |

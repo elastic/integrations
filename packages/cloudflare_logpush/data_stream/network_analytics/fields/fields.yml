@@ -13,12 +13,21 @@
         - name: id
           type: keyword
           description: Unique identifier of the mitigation that matched the packet, if any.
+        - name: vector
+          type: keyword
+          description: Descriptive name of the type of attack that this packet was a part of, if any. Only for packets matching rules contained within the Cloudflare L3/4 managed ruleset.
     - name: colo
       type: group
       fields:
+        - name: city
+          type: keyword
+          description: The city where the Cloudflare datacenter that received the packet is located.
         - name: country
           type: keyword
           description: The country of colo that received the packet (ISO 3166-1 alpha-2).
+        - name: code
+          type: keyword
+          description: The Cloudflare datacenter that received the packet (nearest IATA airport code).
         - name: geo_hash
           type: keyword
           description: The Geo Hash where the colo that received the packet is located.
@@ -43,6 +52,9 @@
                 - name: description
                   type: text
                   description: The ASN description associated with the destination IP of the packet.
+                - name: name
+                  type: text
+                  description: The name of the ASN associated with the destination IP of the packet.
         - name: asn
           type: long
           description: The ASN associated with the destination IP of the packet.
@@ -232,6 +244,9 @@
         - name: id
           type: text
           description: Unique identifier of the rule contained with the Cloudflare L3/4 managed ruleset that this packet matched, if any.
+        - name: name
+          type: text
+          description: Human-readable name of the rule contained within the Cloudflare L3/4 managed ruleset that this packet matched, if any.
         - name: set
           type: group
           fields:
@@ -259,6 +274,9 @@
                 - name: description
                   type: text
                   description: The ASN description associated with the source IP of the packet.
+                - name: name
+                  type: text
+                  description: The name of the ASN associated with the source IP of the packet.
         - name: asn
           type: long
           description: The ASN associated with the source IP of the packet.

@@ -36,7 +36,7 @@ processors:
   - set:
       field: event.kind
       value: event
-# ECS fields
+# ECS fields
   - script:
       lang: painless
       tag: painless_datetime_to_milli
@@ -105,7 +105,7 @@ processors:
       field: destination.ip
       copy_from: cloudflare_logpush.gateway_http.destination.ip
       ignore_empty_value: true
-# Geo enrichment (destination IP)
+# Geo enrichment (destination IP)
   - geoip:
       field: destination.ip
       target_field: destination.geo
@@ -173,7 +173,7 @@ processors:
       field: source.ip
       copy_from: cloudflare_logpush.gateway_http.source.ip
       ignore_empty_value: true
-# Geo enrichment (source IP)
+# Geo enrichment (source IP)
   - geoip:
       field: source.ip
       target_field: source.geo
@@ -239,6 +239,14 @@ processors:
       target_field: cloudflare_logpush.gateway_http.account_id
       ignore_missing: true
   - rename:
+      field: json.ApplicationIDs
+      target_field: cloudflare_logpush.gateway_http.application.ids
+      ignore_missing: true
+  - rename:
+      field: json.ApplicationNames
+      target_field: cloudflare_logpush.gateway_http.application.names
+      ignore_missing: true
+  - rename:
       field: json.BlockedFileHash
       target_field: cloudflare_logpush.gateway_http.blocked_file.hash
       ignore_missing: true
@@ -257,6 +265,22 @@ processors:
   - rename:
       field: json.BlockedFileType
       target_field: cloudflare_logpush.gateway_http.blocked_file.type
+      ignore_missing: true
+  - rename:
+      field: json.CategoryIDs
+      target_field: cloudflare_logpush.gateway_http.category.ids
+      ignore_missing: true
+  - rename:
+      field: json.CategoryNames
+      target_field: cloudflare_logpush.gateway_http.category.names
+      ignore_missing: true
+  - rename:
+      field: json.DestinationIPContinentCode
+      target_field: cloudflare_logpush.gateway_http.destination_ip.continent_code
+      ignore_missing: true
+  - rename:
+      field: json.DestinationIPCountryCode
+      target_field: cloudflare_logpush.gateway_http.destination_ip.country_code
       ignore_missing: true
   - rename:
       field: json.DownloadedFileNames
@@ -283,12 +307,28 @@ processors:
       target_field: cloudflare_logpush.gateway_http.policy.name
       ignore_missing: true
   - rename:
+      field: json.ProxyEndpoint
+      target_field: cloudflare_logpush.gateway_http.proxy_endpoint
+      ignore_missing: true
+  - rename:
       field: json.RequestID
       target_field: cloudflare_logpush.gateway_http.request_id
       ignore_missing: true
   - rename:
+      field: json.SessionID
+      target_field: cloudflare_logpush.gateway_http.session_id
+      ignore_missing: true
+  - rename:
       field: json.SourceInternalIP
       target_field: cloudflare_logpush.gateway_http.source.internal_ip
+      ignore_missing: true
+  - rename:
+      field: json.SourceIPContinentCode
+      target_field: cloudflare_logpush.gateway_http.source_ip.continent_code
+      ignore_missing: true
+  - rename:
+      field: json.SourceIPCountryCode
+      target_field: cloudflare_logpush.gateway_http.source_ip.country_code
       ignore_missing: true
   - rename:
       field: json.UntrustedCertificateAction
@@ -297,6 +337,14 @@ processors:
   - rename:
       field: json.UploadedFileNames
       target_field: cloudflare_logpush.gateway_http.uploaded_files
+      ignore_missing: true
+  - rename:
+      field: json.VirtualNetworkID
+      target_field: cloudflare_logpush.gateway_http.virtual_network.id
+      ignore_missing: true
+  - rename:
+      field: json.VirtualNetworkName
+      target_field: cloudflare_logpush.gateway_http.virtual_network.name
       ignore_missing: true
 # Create related fields
   - append:
