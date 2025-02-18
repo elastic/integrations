@@ -95,22 +95,7 @@ streams:
           is recommended for typical use cases.
           
           Default is `v1`.
-          
-      - name: migrate_checkpoint
-        type: bool
-        title: Migrate checkpoint information
-        multi: false
-        required: false
-        show_user: false
-        default: false
-        description: >-
-          (Processor v2 only) The "migrate checkpoint information" option
-          controls if the input should perform the checkpoint information
-          migration from v1 to v2 at startup.
-          
-          Default is `false`, which means the input will not perform the
-          checkpoint migration.
-
+       
       - name: processor_update_interval
         type: text
         title: Processor update interval
@@ -131,9 +116,8 @@ streams:
         show_user: false
         default: earliest
         description: >-
-          (Processor v2 only) The "processor start position" option controls
-          from what position in the event hub the input should start processing
-          messages for all partitions.
+          (Processor v2 only) Controls from what position in the event hub
+          the input should start processing messages for all partitions.
           
           Possible values are `earliest` and `latest`.
           
@@ -144,6 +128,23 @@ streams:
           event hub and continues to process new events as they arrive.
           
           Default is `earliest`.
+
+      - name: migrate_checkpoint
+        type: bool
+        title: Migrate checkpoint information
+        multi: false
+        required: false
+        show_user: false
+        default: false
+        description: >-
+          (Processor v2 only) Flag to control if the input should perform the
+          checkpoint information migration from v1 to v2 at startup.
+          
+          The checkpoint migration converts the checkpoint information
+          from the v1 format to the v2 format.
+
+          Default is `false`, which means the input will not perform the
+          checkpoint migration.
 
       - name: partition_receive_timeout
         type: text
@@ -156,12 +157,8 @@ streams:
           (Processor v2 only) Max time to wait before processing the
           messages received from the event hub.
           
-          The partition client waits up to "partition receive timeout" or
-          for at least "partition receive count events", then it returns
-          the events it has received.
-
-          The Partition receive timeout option controls the batching
-          of incoming messages together with Partition receive count.
+          The partition consumer waits up to a "receive count" or a
+          "receive timeout", whichever comes first.
 
           Default is `5` seconds.
 
@@ -173,15 +170,11 @@ streams:
         show_user: false
         default: 100
         description: >-
-          (Processor v2 only) Max number of events to wait for before processing
-          the messages received from the event hub.
+          (Processor v2 only) Max number of messages from the event hub
+          to wait for before processing them.
           
-          The "partition receive count" option controls the batching of
-          incoming messages together with Partition receive timeout. 
-
-          The partition client waits up to "partition receive timeout" or
-          for at least "partition receive count" events, then it returns
-          the events it has received.
+          The partition consumer waits up to a "receive count" or a
+          "receive timeout", whichever comes first.
 
           Default is `100` messages.
 

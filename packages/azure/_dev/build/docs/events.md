@@ -517,7 +517,7 @@ _string_
 _string_
 (v2 only) Controls from what position in the event hub the input should start processing messages for all partitions.
 
-Possible values are `earliest` and `latest`. 
+Possible values are `earliest` and `latest`.
 
 * `earliest` starts processing messages from the last checkpoint, or the beginning of the event hub if no checkpoint is available.
 * `latest` starts processing messages from the the latest event in the event hub and continues to process new events as they arrive.
@@ -526,17 +526,21 @@ Default is `earliest`.
 
 `migrate_checkpoint` :
 _boolean_
-(v2 only) Whether to migrate the checkpoint information from the input v1 format to v2 format.
+(v2 only) Flag to control if the input should perform the checkpoint information migration from v1 to v2 at startup. The checkpoint migration converts the checkpoint information from the v1 format to the v2 format.
 
-Default is `false`, which means the input will not perform the checkpoint migration and will start processing messages from the beginning or the end of the event hub according to the `processor_start_position` setting.
+Default is `false`, which means the input will not perform the checkpoint migration.
 
 `partition_receive_timeout` :
 _string_
-(v2 only) Max time to wait before processing the messages received from the event hub. Default is `5s`.
+(v2 only) Max time to wait before processing the messages received from the event hub.
+
+The partition consumer waits up to a "receive count" or a "receive timeout", whichever comes first. Default is `5` seconds.
 
 `partition_receive_count` :
 _string_
-(v2 only) Max number of events to wait for before processing the messages received from the event hub. Default is `100`.
+(v2 only) Max number of messages from the event hub to wait for before processing them.
+
+The partition consumer waits up to a "receive count" or a "receive timeout", whichever comes first. Default is `100` messages.
 
 ## Handling Malformed JSON in Azure Logs
 
