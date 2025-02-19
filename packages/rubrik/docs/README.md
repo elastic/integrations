@@ -1169,3 +1169,28 @@ An example event for `node_statistics` looks as following:
     ]
 }
 ```
+
+### Unmanaged Objects
+The `unmanaged_objects` dataset provides metrics related to the performance of the Rubrik cluster nodes.
+
+**ECS Field Reference**
+
+Please refer to the following [document](https://www.elastic.co/guide/en/ecs/current/ecs-field-reference.html) for detailed information on ECS fields.
+
+**Exported fields**
+
+| Field | Description | Type | Unit | Metric Type |
+|---|---|---|---|---|
+| @timestamp | Event timestamp. | date |  |  |
+| data_stream.dataset | Data stream dataset. | constant_keyword |  |  |
+| data_stream.namespace | Data stream namespace. | constant_keyword |  |  |
+| data_stream.type | Data stream type. | constant_keyword |  |  |
+| rubrik.unmanaged_objects.archive_storage.bytes | The amount of storage on the archival location used by unmanaged snapshots, in bytes. | long | byte | gauge |
+| rubrik.unmanaged_objects.id | The unmanaged object UUID. | keyword |  |  |
+| rubrik.unmanaged_objects.local_storage.bytes | The amount of storage on the local cluster used by unmanaged snapshots, in bytes. | long | byte | gauge |
+| rubrik.unmanaged_objects.name | The unmanaged object name. | keyword |  |  |
+| rubrik.unmanaged_objects.object_type | The unmanaged object type. | keyword |  |  |
+| rubrik.unmanaged_objects.retention_sla_domain.id | The ID of the SLA domain. | keyword |  |  |
+| rubrik.unmanaged_objects.retention_sla_domain.name | The name of the SLA domain. | keyword |  |  |
+| rubrik.unmanaged_objects.snapshot.count | Total number of snapshots to for the specified object. | long |  | gauge |
+| rubrik.unmanaged_objects.unmanaged_status | Unmanaged status for the specified object. | keyword |  |  |
