@@ -40,6 +40,7 @@ processors:
         - '^%{CISCO_PRIORITY_MSGCOUNT}?%{SYSLOGTIMESTAMP} (?:%{IP}|%{CISCO_HOSTNAME:log.syslog.hostname}) %{NUMBER:cisco.ios.sequence}: (?:%{CISCO_UPTIME:cisco.ios.uptime}|%{CISCO_TIMESTAMP}): %{GREEDYDATA:_temp_.message}$'
         - '^%{CISCO_PRIORITY_MSGCOUNT}?(?:(?:%{CISCO_HOSTNAME:log.syslog.hostname}|%{IP})[:]? )?(?:%{NUMBER:cisco.ios.sequence}: )?(?:%{CISCO_UPTIME:cisco.ios.uptime}|%{CISCO_TIMESTAMP}): %{GREEDYDATA:_temp_.message}$'
         - '^%{CISCO_PRIORITY_MSGCOUNT}?%{SYSLOGTIMESTAMP} (?:%{IP:log.syslog.hostname}|%{CISCO_HOSTNAME:log.syslog.hostname}) %{GREEDYDATA:_temp_.message}$'
+        - '^%{CISCO_PRIORITY_MSGCOUNT}?(?:%{CISCO_HOSTNAME:log.syslog.hostname}|%{IP}): \*%{DATA}: (?:%{CISCO_UPTIME:cisco.ios.uptime}|%{CISCO_TIMESTAMP}): %{GREEDYDATA:_temp_.message}$'
         - '^%{SYSLOGTIMESTAMP} (?:%{IP}|%{HOSTNAME:log.syslog.hostname}) %{CISCO_PRIORITY_MSGCOUNT}?(?:%{NUMBER:cisco.ios.sequence}: )(\\*)?(?:%{CISCO_UPTIME:cisco.ios.uptime}|%{CISCO_TIMESTAMP}): %{GREEDYDATA:_temp_.message}$'
         - '^%{SYSLOGTIMESTAMP} (?:%{IP}|%{HOSTNAME:log.syslog.hostname}) %{CISCO_PRIORITY_MSGCOUNT}?(?:%{NUMBER:cisco.ios.sequence}: )%{GREEDYDATA:_temp_.message}$'
       pattern_definitions:
@@ -231,6 +232,11 @@ processors:
       tag: dissect_logout
       pattern: "User %{source.user.name} has %{cisco.ios.action} %{cisco.ios.session.type} session %{cisco.ios.session.number}(%{source.address})"
       if: "ctx.event?.code == 'LOGOUT'"
+  - dissect:
+      field: message
+      tag: dissect_invalid_replay_ctr
+      if: "ctx.event?.code == 'INVALID_REPLAY_CTR'"
+      pattern: "%{} Invalid replay counter from client %{source.mac} - got %{}, expected %{}"
   - grok:
       field: message
       tag: grok_badauth
@@ -257,7 +263,7 @@ processors:
   - set:
        field: event.reason
        value: "Invalid RP"
-       if: ctx.event?.code == "INVALID_RP_JOIN"      
+       if: ctx.event?.code == "INVALID_RP_JOIN"
   - convert:
       field: destination.address
       target_field: destination.ip
@@ -421,6 +427,15 @@ processors:
   - rename: 
       field: destination.as.organization_name
       target_field: destination.as.organization.name
+      ignore_missing: true
+
+  - gsub:
+      field: source.mac
+      pattern: ':'
+      replacement: '-'
+      ignore_missing: true
+  - uppercase:
+      field: source.mac
       ignore_missing: true
 
   - append:
