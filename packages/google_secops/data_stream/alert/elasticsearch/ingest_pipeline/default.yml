@@ -117,6 +117,11 @@ processors:
       copy_from: google_secops.alert.detection.ruleName
       ignore_empty_value: true
   - set:
+      field: google_secops.alert.friendly_name
+      tag: set_rule_name_from_alert_detection_ruleName
+      copy_from: google_secops.alert.detection.ruleName
+      ignore_empty_value: true      
+  - set:
       field: rule.version
       tag: set_rule_version_from_alert_detection_ruleVersion
       copy_from: google_secops.alert.detection.ruleVersion
@@ -996,21 +1001,21 @@ processors:
           for (list in ctx.google_secops?.alert?.event.securityResult) {
             if (list["severity"] != null && list["severity"] != '') {
               if (list["severity"].toUpperCase() == 'CRITICAL') {
-                ctx.event.severity = 500
+                ctx.event.severity = 99
               } else if (list["severity"].toUpperCase() == 'ERROR') {
-                ctx.event.severity = 150
+                ctx.event.severity = 99
               } else if (list["severity"].toUpperCase() == 'HIGH') {
-                ctx.event.severity = 400
+                ctx.event.severity = 73
               } else if (list["severity"].toUpperCase() == 'INFORMATIONAL') {
-                ctx.event.severity = 100
+                ctx.event.severity = 21
               }  else if (list["severity"].toUpperCase() == 'LOW') {
-                ctx.event.severity = 200
+                ctx.event.severity = 21
               } else if (list["severity"].toUpperCase() == 'MEDIUM') {
-                ctx.event.severity = 300
+                ctx.event.severity = 47
               } else if (list["severity"].toUpperCase() == 'NONE') {
-                ctx.event.severity = 101
+                ctx.event.severity = 21
               } else if (list["severity"].toUpperCase() == 'UNKNOWN_SEVERITY') {
-                ctx.event.severity = 0
+                ctx.event.severity = 21
               }
             }
           }

@@ -663,6 +663,7 @@ An example event for `alert` looks as following:
 | google_secops.alert.event.target.user.userDisplayName | The display name of the user (e.g. "John Locke"). | keyword |
 | google_secops.alert.event.target.user.userid | The ID of the user. | keyword |
 | google_secops.alert.event.target.user.windowsSid | The Microsoft Windows SID of the user. | keyword |
+| google_secops.alert.friendly_name | Alert Rule Name. | keyword |
 | google_secops.alert.id | Identifier for the detection. Same as "detection_id". | keyword |
 | google_secops.alert.label | The variable a given set of UDM events belongs to. | keyword |
 | google_secops.alert.timeWindow.endTime | String representing the end of the time window in which the detection was found, in RFC 3339 format. | date |
