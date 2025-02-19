@@ -39,7 +39,7 @@ To generate an Admin key, please generate a key or use an existing one from the 
 
 ## Collection behavior
 
-By default, the OpenAI integration fetches metrics with a bucket width of 1 day (`1d`), which means metrics are aggregated by day. metrics are collected from the initial start time until the current time, excluding the current bucket since it is incomplete. So, based on configured bucket width, the integration collects metrics from the initial start time until the current time minus the bucket width.
+By default, the OpenAI integration fetches metrics with a bucket width of 1 day (`1d`), which means metrics are aggregated by day. Metrics are collected from the initial start time until the current time, excluding the current bucket since it is incomplete. So, based on configured bucket width, the integration collects metrics from the initial start time until the current time minus the bucket width.
 
 ## Logs reference
 
