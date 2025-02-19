@@ -484,16 +484,21 @@ processors:
         - append:
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
-  - append:
-      field: destination.ip
-      tag: append_destination_ip
-      value: "{{{panw_cortex.xdr.action_remote_ip}}}"
-      if: ctx.panw_cortex.xdr.action_remote_ip instanceof String && ctx.panw_cortex.xdr.action_remote_ip != ''
-      allow_duplicates: false
-      on_failure:
-        - append:
-            field: error.message
-            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - foreach:
+      field: panw_cortex.xdr.action_remote_ip
+      tag: foreach_panw_cortex.xdr.action_remote_ip
+      description: v2 API returns action_remote_ip as List
+      if: ctx.panw_cortex?.xdr?.action_remote_ip instanceof List
+      processor:
+        append:
+          field: destination.ip
+          tag: append_destination.ip
+          value: '{{{_ingest._value}}}'
+          allow_duplicates: false
+          on_failure:
+            - append:
+                field: error.message
+                value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - convert:
       field: panw_cortex.xdr.action_remote_ip_v6
       tag: convert_panw_cortex.xdr.action_remote_ip_v6
@@ -507,16 +512,21 @@ processors:
         - append:
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
-  - append:
-      field: destination.ip
-      tag: append_destination_ip_v6
-      value: "{{{panw_cortex.xdr.action_remote_ip_v6}}}"
-      if: ctx.panw_cortex?.xdr?.action_remote_ip_v6 instanceof String && ctx.panw_cortex.xdr.action_remote_ip_v6 != ''
-      allow_duplicates: false
-      on_failure:
-        - append:
-            field: error.message
-            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - foreach:
+      field: panw_cortex.xdr.action_remote_ip_v6
+      tag: foreach_panw_cortex.xdr.action_remote_ip_v6
+      description: v2 API returns action_remote_ip_v6 as List
+      if: ctx.panw_cortex?.xdr?.action_remote_ip_v6 instanceof List
+      processor:
+        append:
+          field: destination.ip
+          tag: append_destination.ip_v6
+          value: '{{{_ingest._value}}}'
+          allow_duplicates: false
+          on_failure:
+            - append:
+                field: error.message
+                value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - convert:
       field: panw_cortex.xdr.action_remote_port
       tag: convert_panw_cortex.xdr.action_remote_port
@@ -530,12 +540,11 @@ processors:
         - append:
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
-  - append:
+  - set:
       field: destination.port
-      tag: append_destination_port
-      value: "{{{panw_cortex.xdr.action_remote_port}}}"
-      if: ctx.panw_cortex?.xdr?.action_remote_port != null && !ctx.panw_cortex.xdr.action_remote_port instanceof List
-      allow_duplicates: false
+      copy_from: panw_cortex.xdr.action_remote_port
+      ignore_empty_value: true
+      tag: set_destination.port
       on_failure:
         - append:
             field: error.message
@@ -553,16 +562,21 @@ processors:
         - append:
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
-  - append:
-      field: source.ip
-      tag: append_source_ip
-      value: "{{{panw_cortex.xdr.action_local_ip}}}"
-      if: ctx.panw_cortex?.xdr?.action_local_ip instanceof String && ctx.panw_cortex.xdr.action_local_ip != ''
-      allow_duplicates: false
-      on_failure:
-        - append:
-            field: error.message
-            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - foreach:
+      field: panw_cortex.xdr.action_local_ip
+      tag: foreach_panw_cortex.xdr.action_local_ip
+      description: v2 API returns action_local_ip as List
+      if: ctx.panw_cortex?.xdr?.action_local_ip instanceof List
+      processor:
+        append:
+          field: source.ip
+          tag: append_source.ip
+          value: '{{{_ingest._value}}}'
+          allow_duplicates: false
+          on_failure:
+            - append:
+                field: error.message
+                value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - convert:
       field: panw_cortex.xdr.action_local_ip_v6
       tag: convert_panw_cortex.xdr.action_local_ip_v6
@@ -576,16 +590,21 @@ processors:
         - append:
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
-  - append:
-      field: source.ip
-      tag: append_source_ip_v6
-      value: "{{{panw_cortex.xdr.action_local_ip_v6}}}"
-      if: ctx.panw_cortex?.xdr?.action_local_ip_v6 instanceof String && ctx.panw_cortex.xdr.action_local_ip_v6 != ''
-      allow_duplicates: false
-      on_failure:
-        - append:
-            field: error.message
-            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - foreach:
+      field: panw_cortex.xdr.action_local_ip_v6
+      tag: foreach_panw_cortex.xdr.action_local_ip_v6
+      description: v2 API returns action_local_ip_v6 as List
+      if: ctx.panw_cortex?.xdr?.action_local_ip_v6 instanceof List
+      processor:
+        append:
+          field: source.ip
+          tag: append_source.ip_v6
+          value: '{{{_ingest._value}}}'
+          allow_duplicates: false
+          on_failure:
+            - append:
+                field: error.message
+                value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - convert:
       field: panw_cortex.xdr.action_local_port
       tag: convert_panw_cortex.xdr.action_local_port
@@ -599,12 +618,11 @@ processors:
         - append:
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
-  - append:
+  - set:
       field: source.port
-      tag: append_source_port
-      value: "{{{panw_cortex.xdr.action_local_port}}}"
-      if: ctx.panw_cortex?.xdr?.action_local_port != null && !ctx.panw_cortex.xdr.action_local_port instanceof List
-      allow_duplicates: false
+      copy_from: panw_cortex.xdr.action_local_port
+      ignore_empty_value: true
+      tag: set_source.port
       on_failure:
         - append:
             field: error.message
@@ -832,6 +850,20 @@ processors:
       tag: rename_panw_cortex.xdr.fw_serial_number
       target_field: observer.serial_number
       ignore_missing: true
+  - convert:
+      field: panw_cortex.xdr.filter_rule_id
+      tag: convert_panw_cortex.xdr.filter_rule_id
+      target_field: panw_cortex.xdr.filter_rule_id
+      type: string
+      description: Consistenly make filter_rule_id as keyword
+      ignore_missing: true
+      on_failure:
+        - remove:
+            field: panw_cortex.xdr.filter_rule_id
+            ignore_missing: true
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - set:
       field: email.subject
       tag: set_email.subject
