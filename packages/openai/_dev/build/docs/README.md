@@ -39,7 +39,80 @@ To generate an Admin key, please generate a key or use an existing one from the 
 
 ## Collection behavior
 
-By default, the OpenAI integration fetches metrics with a bucket width of 1 day (`1d`), which means metrics are aggregated by day. Metrics are collected from the initial start time until the current time, excluding the current bucket since it is incomplete. So, based on configured bucket width, the integration collects metrics from the initial start time until the current time minus the bucket width.
+There are two advanced configuration options for the OpenAI integration: "Initial interval" and "Bucket width".
+
+### Initial interval
+
+- Controls the historical data collection window at startup
+- Default value: 24 hours (`24h`)
+- Purpose: Loads historical context when you first set up the integration
+
+### Bucket width
+
+- Controls the time-based aggregation of metrics (e.g., [bucket_width](https://platform.openai.com/docs/api-reference/usage/completions#usage-completions-bucket_width))
+- Default: `1m` (1 minute)
+- Options: `1m`, `1h`, `1d`
+- Affects API request frequency and data resolution
+
+#### Impact on data resolution
+
+Granularity relationship: `1m` > `1h` > `1d`
+- `1m` buckets provide the highest resolution metrics
+- `1h` buckets aggregate 60-minute intervals
+- `1d` buckets consolidate full 24-hour periods
+
+#### Storage considerations
+
+Bucket width choice affects storage usage and data resolution:
+- `1m`: Maximum granularity, higher storage needs
+- `1h`: Aggregates 60 one-minute intervals
+- `1d`: Most efficient storage, suitable for long-term analysis
+
+Example: For 100 API calls to a particular model per hour:
+- `1m` buckets: Up to 100 documents
+- `1h` buckets: 1 aggregated document
+- `1d` buckets: 1 daily document
+
+#### API request impact
+
+"Bucket width" and "Initial interval" directly affect API request frequency. Here's the technical breakdown:
+
+OpenAI Usage API returns different numbers of buckets based on the bucket width:
+- 1-minute buckets: 60 buckets per API call
+- 1-hour buckets: 24 buckets per API call
+- 1-day buckets: 7 buckets per API call
+
+Formula for API calls:
+1. Hours in initial interval × (60 minutes / bucket size) = Total buckets needed
+2. Total buckets / buckets per API call = API calls per data stream
+3. Total API calls = API calls per data stream × 8 data streams
+
+Technical calculation example with 6-month initial interval and 1-minute buckets:
+- "Initial interval" conversion: 6 months = (6 × 30 × 24) = 4,320 hours
+- Total buckets needed: 4,320 hours × 60 minutes = 259,200 buckets
+- API calls per stream: 259,200 / 60 = 4,320 calls
+- Total API calls across 8 streams: 4,320 × 8 = 34,560 API calls
+
+The number of API calls varies significantly based on both the bucket width configuration and its corresponding buckets-per-call value from the OpenAI API. For example, making 34,560 API calls in a brief period will likely trigger OpenAI's rate limits, resulting in API errors. When using a 1-minute bucket width, it's highly recommended to set the "Initial interval" to a shorter duration - ideally 1 day - to optimize performance. Our testing has confirmed successful operation with a 6-month initial interval combined with a 1-day bucket width, but this same success does not extend to 1-minute or 1-hour bucket widths.
+
+### Collection process
+
+With default settings (Interval: 5m, Bucket width: 1m, Initial interval: 24h), the OpenAI integration follows this collection pattern:
+
+1. Starts collection from (current_time - initial_interval)
+2. Collects data up to (current_time - bucket_width)
+3. Excludes incomplete current bucket for data accuracy and wait for bucket completion
+4. Runs every 5 minutes by default (configurable)
+5. From second collection, start from end of previous bucket timestamp and collect up to (current_time - bucket_width)
+
+#### Example timeline
+
+With default settings (Interval: 5m, Bucket width: 1m, Initial interval: 24h):
+
+1. Integration starts at 10:00 AM
+2. Collects data from 10:00 AM previous day
+3. Continues until 9:59 AM current day
+4. Next collection starts at 10:05 AM from the 10:00 AM bucket to 10:04 AM as the "Interval" is 5 minutes.
 
 ## Logs reference
 
