@@ -123,6 +123,33 @@ processors:
     field: os.name
     copy_from: jamf_pro.inventory.operating_system.name
     ignore_empty_value: true
+- script:
+    tag: script_normalize_operating_system_version
+    lang: painless
+    if: ctx.jamf_pro?.inventory?.operating_system?.version != null && ctx.jamf_pro.inventory.operating_system.version != ''
+    source: |-
+      String normalize(String s) {
+        int n = 0;
+        for (int i = 0; i < s.length(); i++){
+            char c = s.charAt(i);
+            if (c == (char)'.') {
+              n++;
+              continue;
+            }
+            if (c < (char)'0' || (char)'9' < c) {
+              // If we have non-numeric parts, bail.
+              return s;
+            }
+        }
+        if (n >= 2) {
+            return s;
+        }
+        if (n == 1) {
+            return s + ".0";
+        }
+        return s + ".0.0";
+      }
+      ctx.jamf_pro.inventory.operating_system.version = normalize(ctx.jamf_pro.inventory.operating_system.version);
 - set:
     field: os.version
     copy_from: jamf_pro.inventory.operating_system.version
