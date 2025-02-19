@@ -24,13 +24,13 @@ redact:
 program: |
   state.with({
     "from": has(state.?cursor.last_to) ?
-      state.cursor.last_to
-    :
-      (now().format(time_layout.DateOnly).parse_time(time_layout.DateOnly) - duration(state.lookbehind)),
+        timestamp(state.cursor.last_to)
+      :
+        (now().format(time_layout.DateOnly).parse_time(time_layout.DateOnly) - duration(state.lookbehind)),
     "to": has(state.?cursor.last_to) ?
-      (timestamp(state.cursor.last_to) + duration("24h"))
-    :
-      (now().format(time_layout.DateOnly).parse_time(time_layout.DateOnly) - duration(state.lookbehind) + duration("24h")),
+        (timestamp(state.cursor.last_to) + duration("24h"))
+      :
+        (now().format(time_layout.DateOnly).parse_time(time_layout.DateOnly) - duration(state.lookbehind) + duration("24h")),
   }.as(req, (req.to > now()) ?
     // We would fetch data in the future, back off
     {
@@ -63,8 +63,8 @@ program: |
                   "deployment_name": instance.name,  // Include deployment name
                   "deployment_id": instance.id,      // Include deployment ID
                   "organization_id": state.organization_id,  // Include organization ID
-                  "from": req.from,
-                  "to": req.to,
+                  "from": req.from.format(time_layout.RFC3339),
+                  "to": req.to.format(time_layout.RFC3339),
                 })
               }
             }
@@ -83,8 +83,8 @@ program: |
             "ess": {
               "billing": {
                 "organization_id": state.organization_id,
-                "from": req.from,
-                "to": req.to,
+                "from": req.from.format(time_layout.RFC3339),
+                "to": req.to.format(time_layout.RFC3339),
                 "total_ecu": 0,
               }
             }
@@ -104,7 +104,7 @@ program: |
           "error": {
             "code": string(resp.StatusCode),
             "id": string(resp.Status),
-            "message": "GET " + "?from=" + state.from + "&to=" + state.to + " failed: " +
+            "message": "GET " + state.url + "?from=" + req.from.format(time_layout.RFC3339) + "&to=" + req.to.format(time_layout.RFC3339) + " failed: " +
             (
               (size(resp.Body) != 0) ?
                 string(resp.Body)
