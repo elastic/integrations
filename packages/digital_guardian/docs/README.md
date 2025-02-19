@@ -162,9 +162,9 @@ An example event for `arc` looks as following:
 | digital_guardian.arc.dg_alert.alert_at | Alert AT | keyword |
 | digital_guardian.arc.dg_alert.alert_bc | Alert BC | keyword |
 | digital_guardian.arc.dg_alert.alert_did | Alert DID | keyword |
-| digital_guardian.arc.dg_alert.alert_etl | Alert ETL | keyword |
+| digital_guardian.arc.dg_alert.alert_etl | Alert ETL | date |
 | digital_guardian.arc.dg_alert.alert_etu | Alert ETU | date |
-| digital_guardian.arc.dg_alert.alert_ur | Alert UR | date |
+| digital_guardian.arc.dg_alert.alert_ur | Alert UR | keyword |
 | digital_guardian.arc.dg_alert.alert_wb | Alert WB | keyword |
 | digital_guardian.arc.dg_alert.dg_category_name | Alert Category Name | keyword |
 | digital_guardian.arc.dg_alert.dg_detection_source | Alert Detection Source | keyword |
