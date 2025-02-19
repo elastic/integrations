@@ -149,7 +149,53 @@ processors:
         }
         return s + ".0.0";
       }
+      String full_name(String s) {
+        if (s.startsWith('15.')) {
+          return 'sequoia';
+        }
+        if (s.startsWith('14.')) {
+          return 'sonoma';
+        }
+        if (s.startsWith('13.')) {
+          return 'ventura';
+        }
+        if (s.startsWith('12.')) {
+          return 'monterey';
+        }
+        if (s.startsWith('11.')) {
+          return 'big sur';
+        }
+        if (s.startsWith('10.15.')) {
+          return 'catalina';
+        }
+        if (s.startsWith('10.14.')) {
+          return 'mojave';
+        }
+        if (s.startsWith('10.13.')) {
+          return 'high sierra';
+        }
+        if (s.startsWith('10.12.')) {
+          return 'sierra';
+        }
+        if (s.startsWith('10.11.')) {
+          return 'el capitan';
+        }
+        if (s.startsWith('10.10.')) {
+          return 'yosemite';
+        }
+        if (s.startsWith('10.9.')) {
+          return 'mavericks';
+        }
+        return '';
+      }
       ctx.jamf_pro.inventory.operating_system.version = normalize(ctx.jamf_pro.inventory.operating_system.version);
+      String name = full_name(ctx.jamf_pro.inventory.operating_system.version);
+      if (name != '') {
+        if (ctx.os == null) {
+          ctx.os = [:];
+        }
+        ctx.os.full = name;
+      }
 - set:
     field: os.version
     copy_from: jamf_pro.inventory.operating_system.version
