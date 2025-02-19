@@ -4,9 +4,9 @@ Gigamon leverages deep packet inspection (DPI) to extract over 7500+ app related
 
 ## Data streams
 
-The Cybereason integration collects the following logs from Gigamon:
+The Gigamon Integration collects logs from AMI.
 
-- **ami**
+- **Application Metadata Intelligence(AMI)** generates rich contextual information about your applications and protocols which can be used for further analysis.
 
 ## Requirements
 

@@ -24,7 +24,7 @@ request.transforms:
       value: '{{page_size}}'
   - set:
       target: url.params.startDateTime
-      value: '[[formatDate (parseDate .cursor.last_update_at)]]'
+      value: '[[formatDate ((parseDate .cursor.last_update_at).Add (parseDuration "-{{additional_look_back}}"))]]'
       default: '[[formatDate (now (parseDuration "-{{initial_interval}}"))]]'
   - set:
       target: url.params.endDateTime

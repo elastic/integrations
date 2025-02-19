@@ -58,7 +58,7 @@ processors:
   - set:
       field: cloudflare_logpush.spectrum_event.timestamp
       copy_from: '@timestamp'
-      ignore_failure: true
+      ignore_empty_value: true
   - script:
       lang: painless
       tag: painless_connect_timestamp_to_milli
@@ -99,7 +99,7 @@ processors:
   - set:
       field: event.start
       copy_from: cloudflare_logpush.spectrum_event.connect.time
-      ignore_failure: true
+      ignore_empty_value: true
   - script:
       lang: painless
       tag: painless_disconnect_timestamp_to_milli
@@ -140,7 +140,7 @@ processors:
   - set:
       field: event.end
       copy_from: cloudflare_logpush.spectrum_event.disconnect.time
-      ignore_failure: true
+      ignore_empty_value: true
   - rename:
       field: json.Event
       target_field: cloudflare_logpush.spectrum_event.action
@@ -148,7 +148,7 @@ processors:
   - set:
       field: event.action
       copy_from: cloudflare_logpush.spectrum_event.action
-      ignore_failure: true
+      ignore_empty_value: true
   - lowercase:
       field: event.action
       ignore_missing: true
@@ -165,7 +165,7 @@ processors:
   - set:
       field: destination.bytes
       copy_from: cloudflare_logpush.spectrum_event.origin.bytes
-      ignore_failure: true
+      ignore_empty_value: true
   - convert:
       field: json.OriginIP
       target_field: cloudflare_logpush.spectrum_event.origin.ip
@@ -179,7 +179,7 @@ processors:
   - set:
       field: destination.ip
       copy_from: cloudflare_logpush.spectrum_event.origin.ip
-      ignore_failure: true
+      ignore_empty_value: true
   - convert:
       field: json.OriginPort
       target_field: cloudflare_logpush.spectrum_event.origin.port
@@ -193,7 +193,7 @@ processors:
   - set:
       field: destination.port
       copy_from: cloudflare_logpush.spectrum_event.origin.port
-      ignore_failure: true
+      ignore_empty_value: true
   - rename:
       field: json.Application
       target_field: cloudflare_logpush.spectrum_event.application
@@ -201,7 +201,7 @@ processors:
   - set:
       field: event.id
       copy_from: cloudflare_logpush.spectrum_event.application
-      ignore_failure: true
+      ignore_empty_value: true
   - convert:
       field: json.Status
       target_field: cloudflare_logpush.spectrum_event.status
@@ -215,7 +215,7 @@ processors:
   - set:
       field: http.response.status_code
       copy_from: cloudflare_logpush.spectrum_event.status
-      ignore_failure: true
+      ignore_empty_value: true
   - convert:
       field: json.ClientAsn
       target_field: cloudflare_logpush.spectrum_event.client.asn
@@ -229,7 +229,7 @@ processors:
   - set:
       field: source.as.number
       copy_from: cloudflare_logpush.spectrum_event.client.asn
-      ignore_failure: true
+      ignore_empty_value: true
   - convert:
       field: json.ClientBytes
       target_field: cloudflare_logpush.spectrum_event.client.bytes
@@ -243,7 +243,7 @@ processors:
   - set:
       field: source.bytes
       copy_from: cloudflare_logpush.spectrum_event.client.bytes
-      ignore_failure: true
+      ignore_empty_value: true
   - rename:
       field: json.ClientCountry
       target_field: cloudflare_logpush.spectrum_event.client.country
@@ -251,7 +251,7 @@ processors:
   - set:
       field: source.geo.country_iso_code
       copy_from: cloudflare_logpush.spectrum_event.client.country
-      ignore_failure: true
+      ignore_empty_value: true
   - convert:
       field: json.ClientIP
       target_field: cloudflare_logpush.spectrum_event.client.ip
@@ -265,7 +265,7 @@ processors:
   - set:
       field: source.ip
       copy_from: cloudflare_logpush.spectrum_event.client.ip
-      ignore_failure: true
+      ignore_empty_value: true
   - convert:
       field: json.ClientPort
       target_field: cloudflare_logpush.spectrum_event.client.port
@@ -279,7 +279,7 @@ processors:
   - set:
       field: source.port
       copy_from: cloudflare_logpush.spectrum_event.client.port
-      ignore_failure: true
+      ignore_empty_value: true
   - rename:
       field: json.ClientMatchedIpFirewall
       target_field: cloudflare_logpush.spectrum_event.client.matched_ip_firewall
@@ -291,7 +291,7 @@ processors:
   - set:
       field: network.transport
       copy_from: cloudflare_logpush.spectrum_event.client.protocol
-      ignore_failure: true
+      ignore_empty_value: true
   - lowercase:
       field: network.transport
       ignore_missing: true

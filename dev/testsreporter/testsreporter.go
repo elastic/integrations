@@ -10,7 +10,7 @@ import (
 	"fmt"
 	"os"
 	"path/filepath"
-	"strings"
+	"sort"
 
 	"github.com/elastic/integrations/dev/codeowners"
 )
@@ -29,7 +29,7 @@ type CheckOptions struct {
 	DryRun bool
 }
 
-func Check(resultsPath string, options CheckOptions) error {
+func Check(ctx context.Context, resultsPath string, options CheckOptions) error {
 	if options.CodeownersPath == "" {
 		// set default value for the GitHub CODEOWNERS file
 		options.CodeownersPath = codeowners.DefaultCodeownersPath
@@ -45,48 +45,57 @@ func Check(resultsPath string, options CheckOptions) error {
 		return err
 	}
 
-	if len(packageErrors) > options.MaxTestsReported {
-		fmt.Printf("Skip creating GitHub issues, hit the maximum number (%d) of tests to be reported. Total failing tests: %d.\n", options.MaxTestsReported, len(packageErrors))
-		return nil
-	}
-
 	ghCli := newGhCli(githubOptions{
 		DryRun: options.DryRun,
 	})
 
 	aReporter := newReporter(ghCli, options.MaxPreviousLinks)
 
+	if len(packageErrors) > options.MaxTestsReported {
+		fmt.Printf("Skip creating GitHub issues, hit the maximum number (%d) of tests to be reported. Total failing tests: %d.\n", options.MaxTestsReported, len(packageErrors))
+		packages, err := packagesFromTests(resultsPath, options)
+		if err != nil {
+			return fmt.Errorf("failed to get packages from results files: %w", err)
+		}
+		bError, err := newBuildError(buildErrorOptions{
+			Serverless:        options.Serverless,
+			ServerlessProject: options.ServerlessProject,
+			LogsDB:            options.LogsDB,
+			StackVersion:      options.StackVersion,
+			BuildURL:          options.BuildURL,
+			Packages:          packages,
+		})
+		if err != nil {
+			return fmt.Errorf("failed to create the build information error: %w", err)
+		}
+
+		ghIssue, err := createInitialIssue(bError, options.MaxPreviousLinks)
+		if err != nil {
+			return fmt.Errorf("failed to create initial issue: %w", err)
+		}
+
+		if err := aReporter.Report(ctx, ghIssue, bError); err != nil {
+			return err
+		}
+		return nil
+	}
+
 	var multiErr error
 	for _, pError := range packageErrors {
-		ctx := context.TODO()
-		r := resultsFormatter{
-			result:           &pError,
-			maxPreviousLinks: options.MaxPreviousLinks,
+		ghIssue, err := createInitialIssue(pError, options.MaxPreviousLinks)
+		if err != nil {
+			return fmt.Errorf("failed to create initial issue: %w", err)
 		}
-		fmt.Println()
-		fmt.Println("---- Issue ----")
-		fmt.Printf("Title: %q\n", r.Title())
-		fmt.Printf("Teams: %q\n", strings.Join(r.Owners(), ", "))
-		fmt.Printf("Summary:\n%s\n", r.Summary())
-		fmt.Println("----")
-		fmt.Println()
 
-		ghIssue := newGithubIssue(githubIssueOptions{
-			Title:       r.Title(),
-			Description: r.Description(),
-			Labels:      []string{"flaky-test", "automation"},
-			Repository:  "elastic/integrations",
-		})
-
-		if err := aReporter.Report(ctx, ghIssue, &pError); err != nil {
+		if err := aReporter.Report(ctx, ghIssue, pError); err != nil {
 			multiErr = errors.Join(multiErr, err)
 		}
 	}
 	return multiErr
 }
 
-func errorsFromTests(resultsPath string, options CheckOptions) ([]packageError, error) {
-	var packageErrors []packageError
+func errorsFromTests(resultsPath string, options CheckOptions) ([]*packageError, error) {
+	var packageErrors []*packageError
 	err := filepath.Walk(resultsPath, func(path string, info os.FileInfo, err error) error {
 		if err != nil {
 			return err
@@ -115,7 +124,7 @@ func errorsFromTests(resultsPath string, options CheckOptions) ([]packageError, 
 			if err != nil {
 				return fmt.Errorf("failed to create package error: %w", err)
 			}
-			packageErrors = append(packageErrors, *packageError)
+			packageErrors = append(packageErrors, packageError)
 		}
 
 		return nil
@@ -125,4 +134,56 @@ func errorsFromTests(resultsPath string, options CheckOptions) ([]packageError, 
 	}
 
 	return packageErrors, nil
+}
+
+// packagesFromTests returns the sorted packages failing given the results file
+func packagesFromTests(resultsPath string, options CheckOptions) ([]string, error) {
+	packages := []string{}
+	err := filepath.Walk(resultsPath, func(path string, info os.FileInfo, err error) error {
+		if err != nil {
+			return err
+		}
+		if filepath.Ext(path) != ".xml" {
+			return nil
+		}
+		if info.IsDir() {
+			return nil
+		}
+		cases, err := testFailures(path)
+		if err != nil {
+			return err
+		}
+		if len(cases) > 0 {
+			name := cases[0].PackageName()
+			packages = append(packages, name)
+		}
+
+		return nil
+	})
+	if err != nil {
+		return nil, fmt.Errorf("failed to look for errors: %w", err)
+	}
+
+	sort.Strings(packages)
+
+	return packages, nil
+}
+
+func createInitialIssue(resultError failureObserver, maxPreviousLinks int) (*githubIssue, error) {
+	r := resultsFormatter{
+		result:           resultError,
+		maxPreviousLinks: maxPreviousLinks,
+	}
+
+	description, err := r.Description()
+	if err != nil {
+		return nil, fmt.Errorf("failed to render initial description: %w", err)
+	}
+	issue := newGithubIssue(githubIssueOptions{
+		Title:       r.Title(),
+		Description: description,
+		Labels:      []string{"flaky-test", "automation"},
+		Repository:  "elastic/integrations",
+	})
+	return issue, nil
 }

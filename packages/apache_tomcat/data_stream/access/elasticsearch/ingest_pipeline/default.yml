@@ -32,7 +32,7 @@ processors:
   - dissect:
       field: _tmp.dissect_request
       pattern: '%{http.request.method} %{url.original} HTTP/%{http.version}'
-      if: ctx._tmp.dissect_request != '-'
+      if: ctx._tmp?.dissect_request != null && ctx._tmp.dissect_request != '-' && ctx._tmp.dissect_request.contains('HTTP/')
       on_failure:
         - append:
             field: error.message

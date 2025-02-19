@@ -26,6 +26,10 @@ func (i *githubIssue) URL() string {
 	return i.url
 }
 
+func (i *githubIssue) Labels() []string {
+	return i.labels
+}
+
 type githubIssueOptions struct {
 	Repository  string
 	Title       string
@@ -52,4 +56,8 @@ func newGithubIssue(options githubIssueOptions) *githubIssue {
 
 func (i *githubIssue) SetDescription(description string) {
 	i.description = description
+}
+
+func (i *githubIssue) AddLabels(labels []string) {
+	i.labels = append(i.labels, labels...)
 }

@@ -15,13 +15,16 @@ func TestErrorsFromTest(t *testing.T) {
 	cases := []struct {
 		title     string
 		xmlFolder string
-		expected  []packageError
+		expected  []*packageError
 	}{
 		{
 			title:     "read XML files",
 			xmlFolder: "testdata",
-			expected: []packageError{
+			expected: []*packageError{
 				{
+					dataError: dataError{
+						serverless: false,
+					},
 					testCase: testCase{
 						Name:          "system test: default",
 						ClassName:     "cisco_umbrella.log",
@@ -31,9 +34,11 @@ func TestErrorsFromTest(t *testing.T) {
 					teams:       []string{"@elastic/security-service-integrations"},
 					dataStream:  "log",
 					packageName: "cisco_umbrella",
-					serverless:  false,
 				},
 				{
+					dataError: dataError{
+						serverless: false,
+					},
 					testCase: testCase{
 						Name:          "system test: default",
 						ClassName:     "elastic_package_registry.metrics",
@@ -43,9 +48,11 @@ func TestErrorsFromTest(t *testing.T) {
 					teams:       []string{"@elastic/ecosystem"},
 					dataStream:  "metrics",
 					packageName: "elastic_package_registry",
-					serverless:  false,
 				},
 				{
+					dataError: dataError{
+						serverless: false,
+					},
 					testCase: testCase{
 						Name:          "pipeline test: test-fortinet-7-4.log",
 						ClassName:     "fortinet_fortigate.log",
@@ -65,9 +72,11 @@ func TestErrorsFromTest(t *testing.T) {
 					packageName: "fortinet_fortigate",
 					dataStream:  "log",
 					teams:       []string{"@elastic/sec-deployment-and-devices"},
-					serverless:  false,
 				},
 				{
+					dataError: dataError{
+						serverless: false,
+					},
 					testCase: testCase{
 						Name:          "system test: mssql",
 						ClassName:     "sql_input.",
@@ -77,9 +86,11 @@ func TestErrorsFromTest(t *testing.T) {
 					packageName: "sql_input",
 					dataStream:  "",
 					teams:       []string{"@elastic/obs-infraobs-integrations"},
-					serverless:  false,
 				},
 				{
+					dataError: dataError{
+						serverless: false,
+					},
 					testCase: testCase{
 						Name:          "system test: mysql",
 						ClassName:     "sql_input.",
@@ -89,7 +100,6 @@ func TestErrorsFromTest(t *testing.T) {
 					packageName: "sql_input",
 					dataStream:  "",
 					teams:       []string{"@elastic/obs-infraobs-integrations"},
-					serverless:  false,
 				},
 			},
 		},

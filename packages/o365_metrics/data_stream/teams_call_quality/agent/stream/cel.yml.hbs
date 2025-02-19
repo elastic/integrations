@@ -1,0 +1,133 @@
+config_version: 2
+interval: {{interval}}
+auth.oauth2:
+    client.id: {{client_id}}
+    client.secret: {{client_secret}}
+    provider: azure
+    scopes:
+{{#each token_scopes as |token_scope|}}
+      - {{token_scope}}
+{{/each}}
+    endpoint_params: 
+        grant_type: client_credentials
+{{#if token_url}}
+    token_url: {{token_url}}/{{azure_tenant_id}}/oauth2/v2.0/token
+{{else if azure_tenant_id}}
+    azure.tenant_id: {{azure_tenant_id}}
+{{/if}}
+
+resource.url: {{url}}
+{{#if resource_ssl}}
+resource.ssl: 
+  {{resource_ssl}}
+{{/if}}
+
+{{#if enable_request_tracer}}
+resource.tracer.filename: "../../logs/cel/http-request-trace-*.ndjson"
+{{/if}}
+
+tags:
+{{#if preserve_original_event}}
+  - preserve_original_event
+{{/if}}
+{{#each tags as |tag|}}
+  - {{tag}}
+{{/each}}
+{{#contains "forwarded" tags}}
+publisher_pipeline.disable_host: true
+{{/contains}}
+{{#if processors}}
+processors:
+{{processors}}
+{{/if}}
+
+state:
+  want_more: false
+  base:
+    tenant_id: "{{azure_tenant_id}}"
+    period: "{{period}}"
+
+redact:
+  fields:
+    - base.tenant_id
+
+program: |
+  (
+    has(state.worklist) && size(state.worklist) > 0 ?
+      state
+    :
+      state.with(
+          request(
+            "GET",
+            state.url.trim_right("/") + "/communications/callRecords"
+          ).do_request().as(resp, resp.StatusCode == 200 ?
+            bytes(resp.Body).decode_json().as(body, {
+              "worklist": body.value.collate("id"),
+              "next": 0,
+            })
+          :
+            {
+              "events": {
+                "error": {
+                  "code": string(resp.StatusCode),
+                  "id": string(resp.Status),
+                  "message": "GET /callRecords:"+ (
+                    size(resp.Body) != 0 ?
+                      string(resp.Body)
+                    :
+                      string(resp.Status) + ' (' + string(resp.StatusCode) + ')'
+                  ),
+                },
+              },
+              "want_more": false,
+            }
+        ))
+  ).as(state, state.with(
+    !has(state.worklist) ? state : // Exit early due to GET failure.
+      state.worklist[?state.?next.orValue(-1)].hasValue() ?
+        request(
+          "GET",
+          has(state.next_page) && state.next_page != "" ?
+          state.next_page
+          :
+          state.url + "/communications/callRecords/" + state.worklist[state.next] + "/sessions?$expand=segments"
+        ).do_request().as(resp, resp.StatusCode == 200 ?
+          bytes(resp.Body).decode_json().as(body,{
+            "events": (
+              has(body.value) && size(body.value) > 0 ?
+                body.value.map(e, {
+                  "message": e.encode_json()
+                })
+              :
+                [{"message":"retry"}]
+            ),
+            "worklist": int(state.next) + 1 < size(state.worklist) ? state.worklist : [],
+            "next": int(state.next) + 1 < size(state.worklist) ? (has(state.next_page) && state.next_page != "" ?  int(state.next) : int(state.next) + 1) : 0,
+            "want_more": int(state.next) + 1 < size(state.worklist) || "@odata.nextLink" in body,
+            "next_page": "@odata.nextLink" in body ? body["@odata.nextLink"] : "",     
+          })
+        :
+          {
+            "events": {
+              "error": {
+                "code": string(resp.StatusCode),
+                "id": string(resp.Status),
+                "message": "GET /communications/callRecords/"+state.worklist[state.next].name+"/alerts:"+(
+                  size(resp.Body) != 0 ?
+                    string(resp.Body)
+                  :
+                    string(resp.Status) + ' (' + string(resp.StatusCode) + ')'
+                ),
+              },
+            },
+            "want_more": false,
+          }
+        )
+      :
+        {
+          "events": [],
+          "want_more": false,
+          "next_page": {},
+        }
+    )
+  )

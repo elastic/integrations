@@ -105,7 +105,7 @@ An example event for `securesphere` looks as following:
         "type": "logs"
     },
     "ecs": {
-        "version": "8.11.0"
+        "version": "8.17.0"
     },
     "elastic_agent": {
         "id": "0412638f-dd94-4c0e-b349-e99a0886d9f0",
@@ -118,7 +118,7 @@ An example event for `securesphere` looks as following:
         "dataset": "imperva.securesphere",
         "ingested": "2023-12-01T09:10:18Z",
         "kind": "event",
-        "original": "\u003c14\u003eCEF:0|Imperva Inc.|SecureSphere|15.1.0|User logged in|User admin logged in from 81.2.69.142.|High|suser=admin rt=Oct 05 2023 18:33:02 cat=SystemEvent",
+        "original": "<14>CEF:0|Imperva Inc.|SecureSphere|15.1.0|User logged in|User admin logged in from 81.2.69.142.|High|suser=admin rt=Oct 05 2023 18:33:02 cat=SystemEvent",
         "severity": 7
     },
     "imperva": {
@@ -190,14 +190,46 @@ An example event for `securesphere` looks as following:
 | imperva.securesphere.device.action |  | keyword |
 | imperva.securesphere.device.custom_string1.label |  | keyword |
 | imperva.securesphere.device.custom_string1.value |  | keyword |
+| imperva.securesphere.device.custom_string10.label |  | keyword |
+| imperva.securesphere.device.custom_string10.value |  | keyword |
+| imperva.securesphere.device.custom_string11.label |  | keyword |
+| imperva.securesphere.device.custom_string11.value |  | keyword |
+| imperva.securesphere.device.custom_string12.label |  | keyword |
+| imperva.securesphere.device.custom_string12.value |  | keyword |
+| imperva.securesphere.device.custom_string13.label |  | keyword |
+| imperva.securesphere.device.custom_string13.value |  | keyword |
+| imperva.securesphere.device.custom_string14.label |  | keyword |
+| imperva.securesphere.device.custom_string14.value |  | keyword |
+| imperva.securesphere.device.custom_string15.label |  | keyword |
+| imperva.securesphere.device.custom_string15.value |  | keyword |
+| imperva.securesphere.device.custom_string16.label |  | keyword |
+| imperva.securesphere.device.custom_string16.value |  | keyword |
+| imperva.securesphere.device.custom_string17.label |  | keyword |
+| imperva.securesphere.device.custom_string17.value |  | keyword |
+| imperva.securesphere.device.custom_string18.label |  | keyword |
+| imperva.securesphere.device.custom_string18.value |  | keyword |
+| imperva.securesphere.device.custom_string19.label |  | keyword |
+| imperva.securesphere.device.custom_string19.value |  | keyword |
 | imperva.securesphere.device.custom_string2.label |  | keyword |
 | imperva.securesphere.device.custom_string2.value |  | keyword |
+| imperva.securesphere.device.custom_string20.label |  | keyword |
+| imperva.securesphere.device.custom_string20.value |  | keyword |
+| imperva.securesphere.device.custom_string21.label |  | keyword |
+| imperva.securesphere.device.custom_string21.value |  | keyword |
 | imperva.securesphere.device.custom_string3.label |  | keyword |
 | imperva.securesphere.device.custom_string3.value |  | keyword |
 | imperva.securesphere.device.custom_string4.label |  | keyword |
 | imperva.securesphere.device.custom_string4.value |  | keyword |
 | imperva.securesphere.device.custom_string5.label |  | keyword |
 | imperva.securesphere.device.custom_string5.value |  | keyword |
+| imperva.securesphere.device.custom_string6.label |  | keyword |
+| imperva.securesphere.device.custom_string6.value |  | keyword |
+| imperva.securesphere.device.custom_string7.label |  | keyword |
+| imperva.securesphere.device.custom_string7.value |  | keyword |
+| imperva.securesphere.device.custom_string8.label |  | keyword |
+| imperva.securesphere.device.custom_string8.value |  | keyword |
+| imperva.securesphere.device.custom_string9.label |  | keyword |
+| imperva.securesphere.device.custom_string9.value |  | keyword |
 | imperva.securesphere.device.event.category |  | keyword |
 | imperva.securesphere.device.event.class_id |  | keyword |
 | imperva.securesphere.device.product |  | keyword |

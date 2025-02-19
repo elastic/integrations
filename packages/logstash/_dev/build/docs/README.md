@@ -8,14 +8,56 @@ You can find additional information about monitoring Logstash with the Logstash 
 
 The `logstash` package works with Logstash 8.5.0 and later
 
-## Technical Preview note
+## Metrics Collection
 
-This Logstash package also includes a technical preview of Logstash data collection and dashboards
-native to elastic agent. The technical preview includes enhanced data collection, and a number of dashboards, which include additional insight into running pipelines.
+Metric collection for the Logstash integration can be done via Elastic Agent (preferred) or with Stack Monitoring. 
+By utilizing Elastic Agent we are able to query additional monitoring APIs and provide additional dashboards, which provide the best view into your Logstash deployment and pipeline execution.
 
-Note that this feature is not intended for use with the Stack Monitoring UI inside Kibana,
-and is included as a technical preview. Existing implementations wishing to continue using the Stack Monitoring UI should uncheck the technical preview option, and continue to use `Metrics (Stack Monitoring)`. Those users who wish to use the technical preview should uncheck `Metrics (Stack Monitoring)` and check `Metrics (Technical Preview)`
+Elastic Agent based metrics collection is not compatible with the Stack Monitoring UI inside Kibana, please only select Metrics (Elastic Agent).
+Users that prefer the Stack Monitoring UI should uncheck `Metrics (Elastic Agent)` and continue to use `Metrics (Stack Monitoring)`. 
 
+### Fields and Sample Events
+
+#### Health Report
+The health report api is available starting with Logstash 8.16.0, which provides the `health_report` dataset for Node health and Pipeline health dashboards
+
+#### Example
+An example event for 'health_report' looks as following:
+
+{{fields "health_report"}}
+
+{{event "health_report"}}
+
+#### Node
+
+This is the `node` dataset, which drives the Node dashboard pages.
+
+#### Example
+
+{{fields "node_cel"}}
+
+{{event "node_cel"}}
+
+#### Pipeline
+
+This is the `pipeline` dataset, which drives the Pipeline dashboard pages.
+
+#### Example
+
+{{fields "pipeline"}}
+
+{{event "pipeline"}}
+
+#### Plugin
+
+This is the `plugin` dataset, which drives the Pipeline detail dashboard pages. Note that this dataset may produce many documents for logstash instances using a large number of pipelines and/or plugins within those pipelines. For those instances, we recommend reviewing the
+pipeline collection period, and setting it to an appropriate value.
+
+#### Example
+
+{{fields "plugins"}}
+
+{{event "plugins"}}
 
 ## Logs
 
@@ -92,43 +134,3 @@ Logstash metric related data streams works with Logstash 7.3.0 and later.
 {{event "node"}}
 
 
-## Metrics (Technical Preview)
-
-This Logstash package also includes a technical preview of Logstash data collection and dashboards
-native to elastic agent. The technical preview includes enhanced data collection, and a number of dashboards, which include additional insight into running pipelines.
-
-Note that this feature is not intended for use with the Stack Monitoring UI inside Kibana,
-and is included as a technical preview. Existing implementations wishing to continue using the Stack Monitoring UI should uncheck the technical preview option, and continue to use `Metrics (Stack Monitoring)`. Those users who wish to use the technical preview should uncheck `Metrics (Stack Monitoring)` and check `Metrics (Technical Preview)`
-
-### Fields and Sample Event
-
-#### Node
-
-This is the `node` dataset, which drives the Node dashboard pages.
-
-#### Example
-
-{{fields "node_cel"}}
-
-{{event "node_cel"}}
-
-#### Pipeline
-
-This is the `pipeline` dataset, which drives the Pipeline dashboard pages.
-
-#### Example
-
-{{fields "pipeline"}}
-
-{{event "pipeline"}}
-
-#### Plugin
-
-This is the `plugin` dataset, which drives the Pipeline detail dashboard pages. Note that this dataset may produce many documents for logstash instances using a large number of pipelines and/or plugins within those pipelines. For those instances, we recommend reviewing the
-pipeline collection period, and setting it to an appropriate value.
-
-#### Example
-
-{{fields "plugins"}}
-
-{{event "plugins"}}

@@ -1377,6 +1377,7 @@ An example event for `threat` looks as following:
 | sentinel_one.threat.mitigation_status.latest_report | Report download URL. If None, there is no report. | keyword |
 | sentinel_one.threat.mitigation_status.mitigation_ended_at | The time the Agent finished the mitigation. | keyword |
 | sentinel_one.threat.mitigation_status.mitigation_started_at | The time the Agent started the mitigation. | keyword |
+| sentinel_one.threat.mitigation_status.report_id | Report identifier. | keyword |
 | sentinel_one.threat.mitigation_status.status | Status. | keyword |
 | sentinel_one.threat.name | Threat name. | keyword |
 | sentinel_one.threat.originator_process | Originator process. | keyword |

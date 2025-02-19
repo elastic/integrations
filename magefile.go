@@ -7,6 +7,7 @@
 package main
 
 import (
+	"context"
 	"fmt"
 	"io"
 	"os"
@@ -148,7 +149,7 @@ func ModTidy() error {
 	return sh.RunV("go", "mod", "tidy")
 }
 
-func ReportFailedTests(testResultsFolder string) error {
+func ReportFailedTests(ctx context.Context, testResultsFolder string) error {
 	stackVersion := os.Getenv("STACK_VERSION")
 	serverlessEnv := os.Getenv("SERVERLESS")
 	dryRunEnv := os.Getenv("DRY_RUN")
@@ -201,5 +202,5 @@ func ReportFailedTests(testResultsFolder string) error {
 		MaxTestsReported:  maxIssues,
 		DryRun:            dryRun,
 	}
-	return testsreporter.Check(testResultsFolder, options)
+	return testsreporter.Check(ctx, testResultsFolder, options)
 }

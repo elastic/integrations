@@ -35,21 +35,23 @@ func TestNewPackageError(t *testing.T) {
 			},
 			expectedError: false,
 			expected: packageError{
+				dataError: dataError{
+					serverless:        true,
+					serverlessProject: "observability",
+					logsDB:            false,
+					stackVersion:      "8.16.0-SNAPSHOT",
+					errorLinks: errorLinks{
+						firstBuild: "https://buildkite.com/elastic/integrations/build/1",
+					},
+				},
 				testCase: testCase{
 					Name:      "failing test",
 					ClassName: "elastic_package_registry.datastream",
 					Error:     "could not find hits",
 				},
-				serverless:        true,
-				serverlessProject: "observability",
-				logsDB:            false,
-				stackVersion:      "8.16.0-SNAPSHOT",
-				packageName:       "elastic_package_registry",
-				dataStream:        "datastream",
-				teams:             []string{"@elastic/ecosystem"},
-				errorLinks: errorLinks{
-					firstBuild: "https://buildkite.com/elastic/integrations/build/1",
-				},
+				packageName: "elastic_package_registry",
+				dataStream:  "datastream",
+				teams:       []string{"@elastic/ecosystem"},
 			},
 		},
 		{
@@ -69,21 +71,23 @@ func TestNewPackageError(t *testing.T) {
 			},
 			expectedError: false,
 			expected: packageError{
+				dataError: dataError{
+					serverless:        true,
+					serverlessProject: "observability",
+					logsDB:            false,
+					stackVersion:      "8.16.0-SNAPSHOT",
+					errorLinks: errorLinks{
+						firstBuild: "https://buildkite.com/elastic/integrations/build/1",
+					},
+				},
 				testCase: testCase{
 					Name:      "failing test",
 					ClassName: "elastic_package_registry",
 					Error:     "could not find hits",
 				},
-				serverless:        true,
-				serverlessProject: "observability",
-				logsDB:            false,
-				stackVersion:      "8.16.0-SNAPSHOT",
-				packageName:       "elastic_package_registry",
-				dataStream:        "",
-				teams:             []string{"@elastic/ecosystem"},
-				errorLinks: errorLinks{
-					firstBuild: "https://buildkite.com/elastic/integrations/build/1",
-				},
+				packageName: "elastic_package_registry",
+				dataStream:  "",
+				teams:       []string{"@elastic/ecosystem"},
 			},
 		},
 		{

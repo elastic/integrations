@@ -57,9 +57,9 @@ processors:
           field: error.message
           value: "{{{_ingest.on_failure_message}}}"
   - set:
-      if: ctx.cloudflare_logpush?.http_request?.edge?.start_time != null
       field: '@timestamp'
       copy_from: cloudflare_logpush.http_request.edge.start_time
+      ignore_empty_value: true
   - script:
       lang: painless
       tag: painless_edge_end_timestamp_to_milli
@@ -141,7 +141,7 @@ processors:
   - set:
       field: destination.ip
       copy_from: cloudflare_logpush.http_request.origin.ip
-      ignore_failure: true
+      ignore_empty_value: true
   - rename:
       field: json.ClientRequestMethod
       target_field: cloudflare_logpush.http_request.client.request.method
@@ -149,7 +149,7 @@ processors:
   - set:
       field: http.request.method
       copy_from: cloudflare_logpush.http_request.client.request.method
-      ignore_failure: true
+      ignore_empty_value: true
   - rename:
       field: json.EdgeResponseContentType
       target_field: cloudflare_logpush.http_request.edge.response.content_type
@@ -157,7 +157,7 @@ processors:
   - set:
       field: http.response.mime_type
       copy_from: cloudflare_logpush.http_request.edge.response.content_type
-      ignore_failure: true
+      ignore_empty_value: true
   - convert:
       field: json.EdgeResponseStatus
       target_field: cloudflare_logpush.http_request.edge.response.status
@@ -171,7 +171,7 @@ processors:
   - set:
       field: http.response.status_code
       copy_from: cloudflare_logpush.http_request.edge.response.status
-      ignore_failure: true
+      ignore_empty_value: true
   - convert:
       field: json.ClientASN
       target_field: cloudflare_logpush.http_request.client.asn
@@ -185,7 +185,7 @@ processors:
   - set:
       field: source.as.number
       copy_from: cloudflare_logpush.http_request.client.asn
-      ignore_failure: true
+      ignore_empty_value: true
   - rename:
       field: json.ClientCountry
       target_field: cloudflare_logpush.http_request.client.country
@@ -193,7 +193,7 @@ processors:
   - set:
       field: source.geo.country_iso_code
       copy_from: cloudflare_logpush.http_request.client.country
-      ignore_failure: true
+      ignore_empty_value: true
   - convert:
       field: json.ClientIP
       target_field: cloudflare_logpush.http_request.client.ip
@@ -207,7 +207,7 @@ processors:
   - set:
       field: source.ip
       copy_from: cloudflare_logpush.http_request.client.ip
-      ignore_failure: true
+      ignore_empty_value: true
   - rename:
       field: json.BotDetectionIDs
       target_field: cloudflare_logpush.http_request.bot.detection_ids
@@ -652,6 +652,7 @@ processors:
   - set:
       field: event.id
       copy_from: cloudflare_logpush.http_request.ray.id
+      ignore_empty_value: true
   - rename:
       field: json.RequestHeaders
       target_field: cloudflare_logpush.http_request.request.header

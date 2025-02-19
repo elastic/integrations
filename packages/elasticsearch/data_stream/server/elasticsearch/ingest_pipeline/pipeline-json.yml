@@ -54,10 +54,26 @@ processors:
       patterns:
         - '%{GC_ALL}'
         - '%{GC_YOUNG}'
-        - ((\[%{INDEXNAME:elasticsearch.index.name}\]|\[%{INDEXNAME:elasticsearch.index.name}\/%{DATA:elasticsearch.index.id}\]))?%{SPACE}%{GREEDYMULTILINE:message}
+        - ((\[%{INDEXNAME:_parsed_index_name}\]|\[%{INDEXNAME:_parsed_index_name}\/%{DATA:_parsed_index_id}\]))?%{SPACE}%{GREEDYMULTILINE}
   - date:
       field: '@timestamp'
       target_field: '@timestamp'
       formats:
         - ISO8601
       ignore_failure: true
+  - rename:
+      if: ctx?.elasticsearch?.index?.name == null
+      field: _parsed_index_name
+      target_field: elasticsearch.index.name
+      ignore_missing: true
+  - remove:
+      field: _parsed_index_name
+      ignore_missing: true
+  - rename:
+      if: ctx?.elasticsearch?.index?.id == null
+      field: _parsed_index_id
+      target_field: elasticsearch.index.id
+      ignore_missing: true
+  - remove:
+      field: _parsed_index_id
+      ignore_missing: true

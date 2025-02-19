@@ -239,7 +239,9 @@ The following non-ECS fields are used in inventory documents:
 | jamf_pro.inventory.general.declarative_device_management_enabled |  | boolean |
 | jamf_pro.inventory.general.distribution_point |  | keyword |
 | jamf_pro.inventory.general.enrolled_via_automated_device_enrollment |  | boolean |
-| jamf_pro.inventory.general.enrollment_method |  | keyword |
+| jamf_pro.inventory.general.enrollment_method.id |  | keyword |
+| jamf_pro.inventory.general.enrollment_method.object_name |  | keyword |
+| jamf_pro.inventory.general.enrollment_method.object_type |  | keyword |
 | jamf_pro.inventory.general.initial_entry_date |  | date |
 | jamf_pro.inventory.general.itunes_store_account_active |  | boolean |
 | jamf_pro.inventory.general.jamf_binary_version |  | keyword |

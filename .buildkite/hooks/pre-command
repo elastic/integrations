@@ -73,7 +73,7 @@ if [ -n "${ELASTIC_PACKAGE_LINKS_FILE_PATH+x}" ]; then
     export ELASTIC_PACKAGE_LINKS_FILE_PATH=${BASE_DIR}/${ELASTIC_PACKAGE_LINKS_FILE_PATH}
 fi
 
-if [[ "${BUILDKITE_PIPELINE_SLUG}" == "integrations" &&  "${BUILDKITE_STEP_KEY}" == "reference-target-branch" ]]; then
+if [[ ( "${BUILDKITE_PIPELINE_SLUG}" =~ ^(integrations|integrations-test-stack)$ ) &&  "${BUILDKITE_STEP_KEY}" == "reference-target-branch" ]]; then
     # Get the commit from target branch in the first step (reference-target-branch).
     # This step MUST be the first one and not run in parallel with any other step to ensure
     # that there is just one value for this variable
@@ -91,7 +91,7 @@ if [[ "${BUILDKITE_PIPELINE_SLUG}" == "integrations-publish" ]]; then
     fi
 fi
 
-if [[ "${BUILDKITE_PIPELINE_SLUG}" == "integrations" ]]; then
+if [[ "${BUILDKITE_PIPELINE_SLUG}" =~ ^(integrations|integrations-test-stack)$ ]]; then
     if [[ "${BUILDKITE_STEP_KEY}" == "test-integrations" ]]; then
         BUILDKITE_API_TOKEN=$(retry 5 vault kv get -field buildkite_token "${BUILDKITE_API_TOKEN_PATH}")
         export BUILDKITE_API_TOKEN

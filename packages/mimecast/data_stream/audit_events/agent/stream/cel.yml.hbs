@@ -61,11 +61,11 @@ program: |
     ).as(token, !has(token.access_token) ? token :
       {
         "data": state.?last_page.data.orValue([{
-          state.start_field: state.?cursor.last.orValue(now - duration(state.look_back)).format(time_layout.RFC3339),
+          state.start_field: state.?cursor.last.orValue((now - duration(state.look_back)).format(time_layout.RFC3339)),
           state.end_field: now.format(time_layout.RFC3339),
         }]),
       }.as(req,
-        post_request(state.url.trim_right("/") + state.path, "application/json", 
+        post_request(state.url.trim_right("/") + state.path, "application/json",
           {
             "meta": {
               "pagination": {
@@ -77,30 +77,36 @@ program: |
           }.encode_json()
         ).with({
           "Header": {
-            "Authorization": ["Bearer " + token.access_token], 
+            "Authorization": ["Bearer " + token.access_token],
             "Accept": ["application/json"],
             "Content-Type": ["application/json"],
           }
         }).do_request().as(resp, resp.StatusCode == 200 ?
           bytes(resp.Body).decode_json().as(body, body.?fail.orValue([]).size() == 0 ?
-            {
+            (has(body.?meta.pagination.next) && size(body.data) != 0).as(want_more, {
               "events": body.data.map(e, {"message": e.encode_json()}),
               "cursor": {
-                "last": ([now] + body.data.map(e, e[state.time_field].parse_time(["2006-01-02T15:04:05-0700", time_layout.RFC3339]))).max(),
+                "last": (
+                  body.data.map(e,
+                    e[state.time_field].parse_time(["2006-01-02T15:04:05-0700", time_layout.RFC3339])
+                  ).as(time_fields,
+                    (size(time_fields) > 0) ?
+                      time_fields.max()
+                    :
+                      now
+                  ).format(time_layout.RFC3339)
+                ),
               },
-              ?"last_page": has(body.?meta.pagination.next) && size(body.data) != 0 ?
-                optional.of({
-                  ?"next": body.?meta.pagination.next,
-                  "data": req.data,
-                })
-              :
-                optional.none(),
+              "last_page": {
+                ?"next": want_more ? body.?meta.pagination.next : optional.none(),
+                ?"data": want_more ? req.?data : optional.none(),
+              },
               "token": {
                 "access_token": token.access_token,
                 "expires": token.expires,
               },
-              "want_more": has(body.?meta.pagination.next) && size(body.data) != 0,
-            }
+              "want_more": want_more,
+            })
           :
             // Mimecast can return failure states with a 200. This
             // is detected by a non-empty fail array at the root

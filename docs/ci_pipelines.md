@@ -19,6 +19,13 @@ This pipeline is in charge of testing the packages with a local Elastic stack.
 Special comments that can be added in the Pull Request (by Elastic employees):
 - `/test` or `buildkite test this`: a new build is triggered.
 - `/test benchmark fullreport`: a new build is triggered creating a full benchmark report (it will be posted as a GitHub comment in the PR).
+- `/test stack <version>`: a new build is triggered in [integration-test-stack pipeline](https://buildkite.com/elastic/integrations-test-stack) where
+  the packages updated in the PR will be tested using the Elastic stack version `<version>` set in the comment.
+    - The new build will appear as another check status (not required).
+    - Examples:
+        - `/test stack 8.17.0`
+        - `/test stack 8.18.0-SNAPSHOT`
+        - `/test stack 9.0.0-SNAPSHOT`
 
 There are some environment variables that can be added into this pipeline:
 - **FORCE_CHECK_ALL**: If `true`, this forces the CI to check all packages even if those packages have no file updated/added/deleted. Default: `false`.

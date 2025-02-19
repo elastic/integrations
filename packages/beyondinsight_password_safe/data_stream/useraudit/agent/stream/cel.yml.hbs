@@ -1,0 +1,108 @@
+config_version: 2
+interval: {{interval}}
+{{#if enable_request_tracer}}
+resource.tracer.filename: "../../logs/beyondinsight_password_safe/http-request-trace-*.ndjson"
+request.tracer.maxbackups: 5
+{{/if}}
+{{#if proxy_url}}
+resource.proxy_url: {{proxy_url}}
+{{/if}}
+{{#if http_client_timeout}}
+resource.timeout: {{http_client_timeout}}
+{{/if}}
+resource.ssl.renegotiation: freely
+resource.url: {{url}}
+{{#if ssl}}
+resource.ssl: {{ssl}}
+{{/if}}
+state:
+  initial_interval: {{initial_interval}}
+  limit: {{limit}}
+  apikey: {{apikey}}
+  password: {{password}}
+  username: {{username}}
+  preserve_original_event: true
+redact:
+  fields:
+    - apikey
+program: |-
+  state.?cursor.cookies.orValue(
+  	// Authenticating using API to retrieve Cookie
+  	request("POST", state.url.trim_suffix("/") + "/Auth/SignAppin").with(
+  		{
+  			"Header": {
+  				"Authorization": [
+  					"PS-Auth key=" + state.apikey + ";runas=" + state.username + ((state.?password.orValue("") != "") ? (";pwd=[" + state.password + "];") : ""),
+  				],
+  				"Content-Type": ["application/json"],
+  			},
+  		}
+  	).do_request().as(resp,
+  		resp.Header["Set-Cookie"]
+  	)
+  ).as(cookies,
+  	{
+  		"limit": [string(state.limit)],
+  		"startdate": [string(state.?cursor.startdate.orValue((now - duration(state.initial_interval)).format("2006-01-02 15:04:05")))],
+  		"enddate": [string(state.?cursor.enddate.orValue(""))],
+  	}.as(params,
+  		request(
+  			"GET",
+  			state.url.trim_suffix("/") + "/UserAudits?" + params.format_query()
+  		).with(
+  			{
+  				"Header": {
+  					"Content-Type": ["application/json"],
+  					"Cookie": cookies,
+  				},
+  			}
+  		).do_request().as(resp,
+  			(resp.StatusCode == 401) ?
+  				state.with(
+  					{
+  						"events": {"error": {"message": "User not authenticated", "statuscode": string(resp.StatusCode)}},
+  						"want_more": true,
+  						"cursor": state.?cursor.orValue({}).with({"cookies": null}),
+  					}
+  				)
+  			:
+  				bytes(resp.Body).decode_json().as(body,
+  					(size(body.Data) > 0 && int(body.TotalCount) > int(state.limit)).as(wantMore,
+  						state.with(
+  							{
+  								"events": body.Data.map(e,
+  									{
+  										"message": e,
+  										?"event.original": state.?preserve_original_event.orValue(false) ? optional.of(e.encode_json()) : optional.none(),
+  									}
+  								),
+  								"want_more": wantMore,
+  								"cursor": {
+  									"cookies": cookies,
+  									"enddate": string(wantMore ? body.Data[size(body.Data) - 1].CreateDate : ""),
+  									"nextStartdate": wantMore ? state.?cursor.nextStartdate.orValue(body.Data[0].CreateDate) : null,
+  									"startdate": wantMore ?
+  										(params.startdate[0])
+  									: (state.?cursor.?nextStartdate.orValue(null) != null) ? state.cursor.nextStartdate : body.Data[0].CreateDate,
+  								},
+  							}
+  						)
+  					)
+  				)
+  		)
+  	)
+  )
+tags:
+{{#if preserve_original_event}}
+  - preserve_original_event
+{{/if}}
+{{#each tags as |tag|}}
+  - {{tag}}
+{{/each}}
+{{#contains "forwarded" tags}}
+publisher_pipeline.disable_host: true
+{{/contains}}
+{{#if processors}}
+processors:
+{{processors}}
+{{/if}}

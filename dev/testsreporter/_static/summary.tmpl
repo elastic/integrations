@@ -7,10 +7,18 @@
 {{ if .logsDB -}}
 - LogsDB: enabled
 {{ end -}}
+{{ if and (ne .packageName "") (ne .packageName nil) -}}
 - Package: {{ .packageName }}
 - Failing test: {{ .testName }}
-{{ if ne .dataStream "" -}}
+{{ end -}}
+{{ if and (ne .dataStream "") (ne .dataStream nil) -}}
 - DataStream: {{ .dataStream }}
+{{ end -}}
+{{ if and (ne .packages nil) (ne (len .packages) 0) -}}
+- Packages:
+{{- range .packages }}
+    - {{ . }}
+{{- end }}
 {{ end -}}
 {{ if ne (len .owners) 0 -}}
 - Owners:

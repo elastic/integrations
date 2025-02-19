@@ -94,7 +94,7 @@
                         "description": "",
                         "params": {
                             "fontSize": 12,
-                            "markdown": "**Navigation**\n\n**Corelight**\n\n- [Security Posture](#/dashboard/corelight-7c0946bc-acd0-4ec3-ab3b-8a92853f4a3b)\n- Data Insights\n  - [Name Resolution Insights](#/dashboard/corelight-8546a96c-86c9-4edf-9d46-88338d6ac40e)\n  - [Secure Channel Insights](#/dashboard/corelight-45197477-c13f-4e52-a5dd-fb4f53564963)\n  - [Remote Activity Insights](#/dashboard/corelight-f4864774-ed73-4b78-b861-5b8235ec12cf)\n- **Security Workflows**\n  - [Intel](#/dashboard/corelight-323b0f27-993e-4fee-ae6e-b5977d7cab11)\n  - **IP Interrogation**\n  - [Log Hunting](#/dashboard/corelight-ff07e65c-2703-4cbe-a45f-3881025352a3)\n  - [Notices](#/dashboard/corelight-f7da14f0-85db-48e8-a591-1f650af0f618)\n  - [RDP Inferences Overview](#/dashboard/corelight-2d4dc345-cbbe-4d7a-9203-5ab11c8cb5ba)\n  - [SSH Inferences Overview](#/dashboard/corelight-65a5fa91-06e4-459b-b4bb-998c85a6cf08)\n  - [Corelight Suricata IDS Alert Overview](#/dashboard/corelight-f1208ffe-d168-46d1-9531-24de523d1bfb)\n  - [VPN Insights](#/dashboard/corelight-023162b6-94da-4d8d-b1f6-de6192356cce)\n\n[**Integrations Page**](/app/integrations/detail/corelight/overview)",
+                            "markdown": "**Navigation**\n\n**Corelight**\n\n- [Security Posture](#/dashboard/corelight-7c0946bc-acd0-4ec3-ab3b-8a92853f4a3b)\n- Data Insights\n  - [Name Resolution Insights](#/dashboard/corelight-8546a96c-86c9-4edf-9d46-88338d6ac40e)\n  - [Secure Channel Insights](#/dashboard/corelight-45197477-c13f-4e52-a5dd-fb4f53564963)\n  - [Remote Activity Insights](#/dashboard/corelight-f4864774-ed73-4b78-b861-5b8235ec12cf)\n- **Security Workflows**\n  - [Intel](#/dashboard/corelight-323b0f27-993e-4fee-ae6e-b5977d7cab11)\n  - **IP Interrogation**\n  - [Log Hunting](#/dashboard/corelight-ff07e65c-2703-4cbe-a45f-3881025352a3)\n  - [Notices](#/dashboard/corelight-f7da14f0-85db-48e8-a591-1f650af0f618)\n  - [RDP Inferences Overview](#/dashboard/corelight-2d4dc345-cbbe-4d7a-9203-5ab11c8cb5ba)\n  - [SSH Inferences Overview](#/dashboard/corelight-65a5fa91-06e4-459b-b4bb-998c85a6cf08)\n  - [Corelight Suricata IDS Alert Overview](#/dashboard/corelight-f1208ffe-d168-46d1-9531-24de523d1bfb)\n  - [VPN Insights](#/dashboard/corelight-023162b6-94da-4d8d-b1f6-de6192356cce)\n- Data Explorer\n  - [Connections](#/dashboard/corelight-eff0434c-1e27-4c02-959e-9f5d95488efb)\n  - [DNS](#/dashboard/corelight-58885f47-95e1-4242-a1ee-783de69ace17)\n  - [Files](#/dashboard/corelight-0cfc8a95-4979-4265-b9ad-91edf63f01a9)\n  - [HTTP](#/dashboard/corelight-8c5f15f7-7063-4228-be54-fb8c20b29caa)\n  - [Software](#/dashboard/corelight-40bbc19b-dd9c-4b43-a88a-e29fc8701902)\n  - [SSL and x509](#/dashboard/corelight-e4a93cfe-4b1f-44df-ab99-50c74f6f2203)\n\n[**Integrations Page**](/app/integrations/detail/corelight/overview)",
                             "openLinksInNewTab": false
                         },
                         "title": "",
@@ -142,11 +142,11 @@
                                         }
                                     ],
                                     "layers": {
-                                        "4dc7b02c-a18c-4a47-ad03-a8504b947991": {
+                                        "1aaffd29-2c91-47a0-8e65-e459c12f43ee": {
                                             "columns": [
                                                 {
-                                                    "columnId": "count",
-                                                    "fieldName": "count",
+                                                    "columnId": "Count",
+                                                    "fieldName": "Count",
                                                     "inMetricDimension": true,
                                                     "meta": {
                                                         "esType": "long",
@@ -164,7 +164,7 @@
                                             ],
                                             "index": "9ac500899338b2fcf45fd20d129c34e52b042f3ade63945dd675f42672450333",
                                             "query": {
-                                                "esql": "from logs-corelight.conn*\r\n| limit 10000\r\n| where (source.ip is not null or destination.ip is not null) and destination.port not in (80, 8080 ,443)\r\n| stats values(destination.port), values(network.transport), count() by network.transport, destination.port\r\n| eval tp = concat(`values(network.transport)`,\"/\",to_string(`values(destination.port)`))\r\n| rename `count()` as count, tp as `transport/port`\r\n| sort count desc\r\n| limit 10\r\n| keep count, `transport/port`"
+                                                "esql": "from logs-corelight.conn*\r\n| limit 10000\r\n| where (source.ip is not null or destination.ip is not null) and destination.port not in (80, 8080 ,443)\r\n| stats values(destination.port), values(network.transport), count() by network.transport, destination.port\r\n| eval tp = concat(`values(network.transport)`,\"/\",to_string(`values(destination.port)`))\r\n| rename `count()` as Count, tp as `transport/port`\r\n| sort Count desc\r\n| limit 10\r\n| keep Count, `transport/port`"
                                             },
                                             "timeField": "@timestamp"
                                         }
@@ -173,7 +173,7 @@
                             },
                             "filters": [],
                             "query": {
-                                "esql": "from logs-corelight.conn*\r\n| limit 10000\r\n| where (source.ip is not null or destination.ip is not null) and destination.port not in (80, 8080 ,443)\r\n| stats values(destination.port), values(network.transport), count() by network.transport, destination.port\r\n| eval tp = concat(`values(network.transport)`,\"/\",to_string(`values(destination.port)`))\r\n| rename `count()` as count, tp as `transport/port`\r\n| sort count desc\r\n| limit 10\r\n| keep count, `transport/port`"
+                                "esql": "from logs-corelight.conn*\r\n| limit 10000\r\n| where (source.ip is not null or destination.ip is not null) and destination.port not in (80, 8080 ,443)\r\n| stats values(destination.port), values(network.transport), count() by network.transport, destination.port\r\n| eval tp = concat(`values(network.transport)`,\"/\",to_string(`values(destination.port)`))\r\n| rename `count()` as Count, tp as `transport/port`\r\n| sort Count desc\r\n| limit 10\r\n| keep Count, `transport/port`"
                             },
                             "visualization": {
                                 "axisTitlesVisibilitySettings": {
@@ -195,7 +195,7 @@
                                 "layers": [
                                     {
                                         "accessors": [
-                                            "count"
+                                            "Count"
                                         ],
                                         "colorMapping": {
                                             "assignments": [],
@@ -215,7 +215,7 @@
                                                 }
                                             ]
                                         },
-                                        "layerId": "4dc7b02c-a18c-4a47-ad03-a8504b947991",
+                                        "layerId": "1aaffd29-2c91-47a0-8e65-e459c12f43ee",
                                         "layerType": "data",
                                         "seriesType": "bar_horizontal_stacked",
                                         "xAccessor": "transport/port"
@@ -286,11 +286,11 @@
                                         }
                                     ],
                                     "layers": {
-                                        "6c25e852-1698-458a-b791-c61ef733fe97": {
+                                        "732b48bc-c9a4-4112-99b7-4d399cde08e6": {
                                             "columns": [
                                                 {
-                                                    "columnId": "count",
-                                                    "fieldName": "count",
+                                                    "columnId": "Count",
+                                                    "fieldName": "Count",
                                                     "inMetricDimension": true,
                                                     "meta": {
                                                         "esType": "long",
@@ -308,7 +308,7 @@
                                             ],
                                             "index": "9ac500899338b2fcf45fd20d129c34e52b042f3ade63945dd675f42672450333",
                                             "query": {
-                                                "esql": "FROM logs-corelight.conn*\r\n| LIMIT 10000\r\n| WHERE source.ip IS NOT NULL AND destination.ip IS NOT NULL\r\n| STATS VALUES(destination.ip) BY event.id\r\n| EVAL is_dest_internal_ip = CASE(CIDR_MATCH(`VALUES(destination.ip)`, \"10.0.0.0/8\")==\"true\",\"true\", CIDR_MATCH(`VALUES(destination.ip)`, \"172.16.0.0/12\")==\"true\",\"true\", CIDR_MATCH(`VALUES(destination.ip)`, \"192.168.0.0/16\")==\"true\",\"true\",\"false\")\r\n| EVAL ie=CASE(is_dest_internal_ip==\"true\", \"Internal\",is_dest_internal_ip==\"false\",\"External\",\"unknown\")\r\n| STATS COUNT() by ie\r\n| RENAME `COUNT()` as count\r\n| KEEP count,ie"
+                                                "esql": "FROM logs-corelight.conn*\r\n| LIMIT 10000\r\n| WHERE source.ip IS NOT NULL AND destination.ip IS NOT NULL\r\n| STATS VALUES(destination.ip) BY event.id\r\n| EVAL is_dest_internal_ip = CASE(CIDR_MATCH(`VALUES(destination.ip)`, \"10.0.0.0/8\")==\"true\",\"true\", CIDR_MATCH(`VALUES(destination.ip)`, \"172.16.0.0/12\")==\"true\",\"true\", CIDR_MATCH(`VALUES(destination.ip)`, \"192.168.0.0/16\")==\"true\",\"true\",\"false\")\r\n| EVAL ie=CASE(is_dest_internal_ip==\"true\", \"Internal\",is_dest_internal_ip==\"false\",\"External\",\"unknown\")\r\n| STATS COUNT() by ie\r\n| RENAME `COUNT()` as Count\r\n| KEEP Count,ie"
                                             },
                                             "timeField": "@timestamp"
                                         }
@@ -317,7 +317,7 @@
                             },
                             "filters": [],
                             "query": {
-                                "esql": "FROM logs-corelight.conn*\r\n| LIMIT 10000\r\n| WHERE source.ip IS NOT NULL AND destination.ip IS NOT NULL\r\n| STATS VALUES(destination.ip) BY event.id\r\n| EVAL is_dest_internal_ip = CASE(CIDR_MATCH(`VALUES(destination.ip)`, \"10.0.0.0/8\")==\"true\",\"true\", CIDR_MATCH(`VALUES(destination.ip)`, \"172.16.0.0/12\")==\"true\",\"true\", CIDR_MATCH(`VALUES(destination.ip)`, \"192.168.0.0/16\")==\"true\",\"true\",\"false\")\r\n| EVAL ie=CASE(is_dest_internal_ip==\"true\", \"Internal\",is_dest_internal_ip==\"false\",\"External\",\"unknown\")\r\n| STATS COUNT() by ie\r\n| RENAME `COUNT()` as count\r\n| KEEP count,ie"
+                                "esql": "FROM logs-corelight.conn*\r\n| LIMIT 10000\r\n| WHERE source.ip IS NOT NULL AND destination.ip IS NOT NULL\r\n| STATS VALUES(destination.ip) BY event.id\r\n| EVAL is_dest_internal_ip = CASE(CIDR_MATCH(`VALUES(destination.ip)`, \"10.0.0.0/8\")==\"true\",\"true\", CIDR_MATCH(`VALUES(destination.ip)`, \"172.16.0.0/12\")==\"true\",\"true\", CIDR_MATCH(`VALUES(destination.ip)`, \"192.168.0.0/16\")==\"true\",\"true\",\"false\")\r\n| EVAL ie=CASE(is_dest_internal_ip==\"true\", \"Internal\",is_dest_internal_ip==\"false\",\"External\",\"unknown\")\r\n| STATS COUNT() by ie\r\n| RENAME `COUNT()` as Count\r\n| KEEP Count,ie"
                             },
                             "visualization": {
                                 "layers": [
@@ -341,12 +341,12 @@
                                                 }
                                             ]
                                         },
-                                        "layerId": "6c25e852-1698-458a-b791-c61ef733fe97",
+                                        "layerId": "732b48bc-c9a4-4112-99b7-4d399cde08e6",
                                         "layerType": "data",
                                         "legendDisplay": "show",
                                         "legendSize": "small",
                                         "metrics": [
-                                            "count"
+                                            "Count"
                                         ],
                                         "nestedLegend": false,
                                         "numberDisplay": "percent",
@@ -409,11 +409,11 @@
                                         }
                                     ],
                                     "layers": {
-                                        "a71b801d-7569-423a-bc9e-112956956e44": {
+                                        "7c1b32eb-1a8c-49cb-952b-d6c0be0f48ab": {
                                             "columns": [
                                                 {
-                                                    "columnId": "Source",
-                                                    "fieldName": "Source",
+                                                    "columnId": "Source IP",
+                                                    "fieldName": "Source IP",
                                                     "inMetricDimension": true,
                                                     "meta": {
                                                         "esType": "ip",
@@ -421,8 +421,8 @@
                                                     }
                                                 },
                                                 {
-                                                    "columnId": "Destination",
-                                                    "fieldName": "Destination",
+                                                    "columnId": "Destination IP",
+                                                    "fieldName": "Destination IP",
                                                     "inMetricDimension": true,
                                                     "meta": {
                                                         "esType": "ip",
@@ -457,7 +457,7 @@
                                                     }
                                                 },
                                                 {
-                                                    "columnId": "3a71e902-fa30-4bc4-a0d6-68f45263a432",
+                                                    "columnId": "8a35af2a-36ab-4af1-86b7-fad39f1260e1",
                                                     "fieldName": "Bytes",
                                                     "meta": {
                                                         "esType": "long",
@@ -467,7 +467,7 @@
                                             ],
                                             "index": "9ac500899338b2fcf45fd20d129c34e52b042f3ade63945dd675f42672450333",
                                             "query": {
-                                                "esql": "FROM logs-corelight.conn*\r\n| LIMIT 10000\r\n| WHERE (source.ip IS NOT NULL or destination.ip IS NOT NULL) and source.ip not in (\"0.0.0.0\", \"255.255.255.255\") and destination.ip NOT IN (\"0.0.0.0\", \"255.255.255.255\", \"192.168.0.255\") and network.bytes IS NOT NULL\r\n| STATS values(source.ip), values(destination.ip), values(network.transport), values(destination.port), values(event.id), values(destination.geo.country_iso_code), sum(network.bytes) BY source.ip, destination.ip, event.id\r\n| EVAL tp = concat(`values(network.transport)`,\"/\", to_string(`values(destination.port)`))\r\n| SORT `sum(network.bytes)` DESC\r\n| LIMIT 10\r\n| RENAME `values(source.ip)` AS Source, `values(destination.ip)` AS Destination, tp AS Service, `values(event.id)` AS UID, `values(destination.geo.country_iso_code)` AS Country, `sum(network.bytes)` AS Bytes\r\n| KEEP Source,Destination, Service, UID, Country, Bytes"
+                                                "esql": "FROM logs-corelight.conn*\r\n| LIMIT 10000\r\n| WHERE (source.ip IS NOT NULL or destination.ip IS NOT NULL) and source.ip not in (\"0.0.0.0\", \"255.255.255.255\") and destination.ip NOT IN (\"0.0.0.0\", \"255.255.255.255\", \"192.168.0.255\") and network.bytes IS NOT NULL\r\n| STATS values(source.ip), values(destination.ip), values(network.transport), values(destination.port), values(event.id), values(destination.geo.country_iso_code), sum(network.bytes) BY source.ip, destination.ip, event.id\r\n| EVAL tp = concat(`values(network.transport)`,\"/\", to_string(`values(destination.port)`))\r\n| SORT `sum(network.bytes)` DESC\r\n| LIMIT 10\r\n| RENAME `values(source.ip)` AS `Source IP`, `values(destination.ip)` AS `Destination IP`, tp AS Service, `values(event.id)` AS UID, `values(destination.geo.country_iso_code)` AS Country, `sum(network.bytes)` AS Bytes\r\n| KEEP `Source IP`,`Destination IP`, Service, UID, Country, Bytes"
                                             },
                                             "timeField": "@timestamp"
                                         }
@@ -476,15 +476,15 @@
                             },
                             "filters": [],
                             "query": {
-                                "esql": "FROM logs-corelight.conn*\r\n| LIMIT 10000\r\n| WHERE (source.ip IS NOT NULL or destination.ip IS NOT NULL) and source.ip not in (\"0.0.0.0\", \"255.255.255.255\") and destination.ip NOT IN (\"0.0.0.0\", \"255.255.255.255\", \"192.168.0.255\") and network.bytes IS NOT NULL\r\n| STATS values(source.ip), values(destination.ip), values(network.transport), values(destination.port), values(event.id), values(destination.geo.country_iso_code), sum(network.bytes) BY source.ip, destination.ip, event.id\r\n| EVAL tp = concat(`values(network.transport)`,\"/\", to_string(`values(destination.port)`))\r\n| SORT `sum(network.bytes)` DESC\r\n| LIMIT 10\r\n| RENAME `values(source.ip)` AS Source, `values(destination.ip)` AS Destination, tp AS Service, `values(event.id)` AS UID, `values(destination.geo.country_iso_code)` AS Country, `sum(network.bytes)` AS Bytes\r\n| KEEP Source,Destination, Service, UID, Country, Bytes"
+                                "esql": "FROM logs-corelight.conn*\r\n| LIMIT 10000\r\n| WHERE (source.ip IS NOT NULL or destination.ip IS NOT NULL) and source.ip not in (\"0.0.0.0\", \"255.255.255.255\") and destination.ip NOT IN (\"0.0.0.0\", \"255.255.255.255\", \"192.168.0.255\") and network.bytes IS NOT NULL\r\n| STATS values(source.ip), values(destination.ip), values(network.transport), values(destination.port), values(event.id), values(destination.geo.country_iso_code), sum(network.bytes) BY source.ip, destination.ip, event.id\r\n| EVAL tp = concat(`values(network.transport)`,\"/\", to_string(`values(destination.port)`))\r\n| SORT `sum(network.bytes)` DESC\r\n| LIMIT 10\r\n| RENAME `values(source.ip)` AS `Source IP`, `values(destination.ip)` AS `Destination IP`, tp AS Service, `values(event.id)` AS UID, `values(destination.geo.country_iso_code)` AS Country, `sum(network.bytes)` AS Bytes\r\n| KEEP `Source IP`,`Destination IP`, Service, UID, Country, Bytes"
                             },
                             "visualization": {
                                 "columns": [
                                     {
-                                        "columnId": "Source"
+                                        "columnId": "Source IP"
                                     },
                                     {
-                                        "columnId": "Destination"
+                                        "columnId": "Destination IP"
                                     },
                                     {
                                         "columnId": "Service"
@@ -496,16 +496,16 @@
                                         "columnId": "Country"
                                     },
                                     {
-                                        "columnId": "3a71e902-fa30-4bc4-a0d6-68f45263a432",
+                                        "columnId": "8a35af2a-36ab-4af1-86b7-fad39f1260e1",
                                         "isMetric": true,
                                         "isTransposed": false
                                     }
                                 ],
-                                "layerId": "a71b801d-7569-423a-bc9e-112956956e44",
+                                "layerId": "7c1b32eb-1a8c-49cb-952b-d6c0be0f48ab",
                                 "layerType": "data"
                             }
                         },
-                        "title": "Table Source \u0026 Destination \u0026 Service \u0026 UID \u0026 Country",
+                        "title": "Table Source IP \u0026 Destination IP \u0026 Service \u0026 UID \u0026 Country",
                         "type": "lens",
                         "visualizationType": "lnsDatatable"
                     },
@@ -555,11 +555,11 @@
                                         }
                                     ],
                                     "layers": {
-                                        "a9ddc5f6-f5e0-4fa0-98c0-a68dda8b63af": {
+                                        "c9a98c78-20b5-410f-a58a-f7630ae5c909": {
                                             "columns": [
                                                 {
-                                                    "columnId": "dest",
-                                                    "fieldName": "dest",
+                                                    "columnId": "Destination IP",
+                                                    "fieldName": "Destination IP",
                                                     "inMetricDimension": true,
                                                     "meta": {
                                                         "esType": "ip",
@@ -567,8 +567,8 @@
                                                     }
                                                 },
                                                 {
-                                                    "columnId": "src",
-                                                    "fieldName": "src",
+                                                    "columnId": "Source IP",
+                                                    "fieldName": "Source IP",
                                                     "inMetricDimension": true,
                                                     "meta": {
                                                         "esType": "ip",
@@ -576,8 +576,8 @@
                                                     }
                                                 },
                                                 {
-                                                    "columnId": "method",
-                                                    "fieldName": "method",
+                                                    "columnId": "Method",
+                                                    "fieldName": "Method",
                                                     "inMetricDimension": true,
                                                     "meta": {
                                                         "esType": "keyword",
@@ -585,8 +585,8 @@
                                                     }
                                                 },
                                                 {
-                                                    "columnId": "uri",
-                                                    "fieldName": "uri",
+                                                    "columnId": "URI",
+                                                    "fieldName": "URI",
                                                     "inMetricDimension": true,
                                                     "meta": {
                                                         "esType": "keyword",
@@ -594,8 +594,8 @@
                                                     }
                                                 },
                                                 {
-                                                    "columnId": "count",
-                                                    "fieldName": "count",
+                                                    "columnId": "Count",
+                                                    "fieldName": "Count",
                                                     "inMetricDimension": true,
                                                     "meta": {
                                                         "esType": "long",
@@ -605,7 +605,7 @@
                                             ],
                                             "index": "6aca573bd91405e29061774c47708367fafd5165b53f364a28649651ed65671e",
                                             "query": {
-                                                "esql": "FROM logs-corelight.http*\r\n| LIMIT 10000\r\n| WHERE (source.ip IS NOT NULL or destination.ip IS NOT NULL) and http.request.method IS NOT NULL and url.path IS NOT NULL\r\n| STATS values(source.ip), values(destination.ip), values(http.request.method), values(url.path), count() BY source.ip, destination.ip, http.request.method, url.path\r\n| RENAME `values(destination.ip)` AS dest, `values(source.ip)` AS src, `values(http.request.method)` AS method, url.path AS uri, `count()` AS count\r\n| SORT count DESC\r\n| LIMIT 10\r\n| KEEP dest, src, method, uri, count"
+                                                "esql": "FROM logs-corelight.http*\r\n| LIMIT 10000\r\n| WHERE (source.ip IS NOT NULL or destination.ip IS NOT NULL) and http.request.method IS NOT NULL and url.path IS NOT NULL\r\n| STATS values(source.ip), values(destination.ip), values(http.request.method), values(url.path), count() BY source.ip, destination.ip, http.request.method, url.path\r\n| RENAME `values(destination.ip)` AS `Destination IP`, `values(source.ip)` AS `Source IP`, `values(http.request.method)` AS Method, url.path AS URI, `count()` AS Count\r\n| SORT Count DESC\r\n| LIMIT 10\r\n| KEEP `Destination IP`, `Source IP`, Method, URI, Count"
                                             },
                                             "timeField": "@timestamp"
                                         }
@@ -614,31 +614,31 @@
                             },
                             "filters": [],
                             "query": {
-                                "esql": "FROM logs-corelight.http*\r\n| LIMIT 10000\r\n| WHERE (source.ip IS NOT NULL or destination.ip IS NOT NULL) and http.request.method IS NOT NULL and url.path IS NOT NULL\r\n| STATS values(source.ip), values(destination.ip), values(http.request.method), values(url.path), count() BY source.ip, destination.ip, http.request.method, url.path\r\n| RENAME `values(destination.ip)` AS dest, `values(source.ip)` AS src, `values(http.request.method)` AS method, url.path AS uri, `count()` AS count\r\n| SORT count DESC\r\n| LIMIT 10\r\n| KEEP dest, src, method, uri, count"
+                                "esql": "FROM logs-corelight.http*\r\n| LIMIT 10000\r\n| WHERE (source.ip IS NOT NULL or destination.ip IS NOT NULL) and http.request.method IS NOT NULL and url.path IS NOT NULL\r\n| STATS values(source.ip), values(destination.ip), values(http.request.method), values(url.path), count() BY source.ip, destination.ip, http.request.method, url.path\r\n| RENAME `values(destination.ip)` AS `Destination IP`, `values(source.ip)` AS `Source IP`, `values(http.request.method)` AS Method, url.path AS URI, `count()` AS Count\r\n| SORT Count DESC\r\n| LIMIT 10\r\n| KEEP `Destination IP`, `Source IP`, Method, URI, Count"
                             },
                             "visualization": {
                                 "columns": [
                                     {
-                                        "columnId": "dest"
+                                        "columnId": "Destination IP"
                                     },
                                     {
-                                        "columnId": "src"
+                                        "columnId": "Source IP"
                                     },
                                     {
-                                        "columnId": "method"
+                                        "columnId": "Method"
                                     },
                                     {
-                                        "columnId": "uri"
+                                        "columnId": "URI"
                                     },
                                     {
-                                        "columnId": "count"
+                                        "columnId": "Count"
                                     }
                                 ],
-                                "layerId": "a9ddc5f6-f5e0-4fa0-98c0-a68dda8b63af",
+                                "layerId": "c9a98c78-20b5-410f-a58a-f7630ae5c909",
                                 "layerType": "data"
                             }
                         },
-                        "title": "Table dest \u0026 src \u0026 method \u0026 uri \u0026 count",
+                        "title": "Table Destination IP \u0026 Source IP \u0026 Method \u0026 URI \u0026 Count",
                         "type": "lens",
                         "visualizationType": "lnsDatatable"
                     },
@@ -685,7 +685,7 @@
                                                     "customLabel": true,
                                                     "dataType": "string",
                                                     "isBucketed": true,
-                                                    "label": "sourcetype",
+                                                    "label": "Source Type",
                                                     "operationType": "terms",
                                                     "params": {
                                                         "exclude": [],
@@ -908,7 +908,7 @@
                                                     "customLabel": true,
                                                     "dataType": "string",
                                                     "isBucketed": true,
-                                                    "label": "user_agent",
+                                                    "label": "User Agent",
                                                     "operationType": "terms",
                                                     "params": {
                                                         "exclude": [],
@@ -1137,7 +1137,7 @@
                                                     "customLabel": true,
                                                     "dataType": "number",
                                                     "isBucketed": false,
-                                                    "label": "count",
+                                                    "label": "Count",
                                                     "operationType": "count",
                                                     "params": {
                                                         "emptyAsNull": false,
@@ -1340,9 +1340,9 @@
         "version": 2
     },
     "coreMigrationVersion": "8.8.0",
-    "created_at": "2025-01-03T09:56:21.193Z",
+    "created_at": "2025-01-29T12:29:11.476Z",
     "id": "corelight-3a4a279f-f238-47de-90ba-f643c5647fde",
-    "managed": true,
+    "managed": false,
     "references": [
         {
             "id": "logs-*",
@@ -1371,5 +1371,6 @@
         }
     ],
     "type": "dashboard",
-    "typeMigrationVersion": "10.2.0"
+    "typeMigrationVersion": "10.2.0",
+    "updated_by": "u_mGBROF_q5bmFCATbLXAcCwKa0k8JvONAwSruelyKA5E_0"
 }

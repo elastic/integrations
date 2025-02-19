@@ -291,6 +291,7 @@ An example event for `audit` looks as following:
 | o365.audit.ExchangeMetaData.UniqueID |  | keyword |
 | o365.audit.Experience |  | keyword |
 | o365.audit.ExtendedProperties.\* |  | object |
+| o365.audit.ExtendedProperties.RequestType |  | keyword |
 | o365.audit.ExternalAccess |  | boolean |
 | o365.audit.FileSizeBytes |  | long |
 | o365.audit.GroupName |  | keyword |
@@ -316,6 +317,7 @@ An example event for `audit` looks as following:
 | o365.audit.MailboxOwnerUPN |  | keyword |
 | o365.audit.Members |  | flattened |
 | o365.audit.ModifiedProperties.\*.\* |  | object |
+| o365.audit.ModifiedProperties.Role_DisplayName.NewValue |  | keyword |
 | o365.audit.Name |  | keyword |
 | o365.audit.NewValue |  | keyword |
 | o365.audit.ObjectDisplayName |  | keyword |
@@ -328,6 +330,13 @@ An example event for `audit` looks as following:
 | o365.audit.OrganizationName |  | keyword |
 | o365.audit.OriginatingServer |  | keyword |
 | o365.audit.Parameters.\* |  | object |
+| o365.audit.Parameters.AccessRights |  | keyword |
+| o365.audit.Parameters.AllowFederatedUsers |  | keyword |
+| o365.audit.Parameters.AllowGuestUser |  | keyword |
+| o365.audit.Parameters.Enabled |  | keyword |
+| o365.audit.Parameters.ForwardAsAttachmentTo |  | keyword |
+| o365.audit.Parameters.ForwardTo |  | keyword |
+| o365.audit.Parameters.RedirectTo |  | keyword |
 | o365.audit.Platform |  | keyword |
 | o365.audit.PolicyDetails |  | flattened |
 | o365.audit.PolicyId |  | keyword |

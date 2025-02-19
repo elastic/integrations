@@ -1,0 +1,72 @@
+type: metrics
+title: Rubrik Backups Virtual Machines Metrics
+streams:
+  - input: cel
+    title: Rubrik Backups Virtual Machines
+    description: Collect Rubrik Backups virtual machines data via the RSC GraphQL API
+    enabled: true
+    template_path: cel.yml.hbs
+    vars:
+      - name: interval
+        type: text
+        title: Interval
+        description: The interval at which the API is polled, supported in seconds, minutes, and hours.
+        show_user: true
+        required: true
+        default: 5m
+      - name: processors
+        type: yaml
+        title: Processors
+        multi: false
+        required: false
+        show_user: false
+        description: >
+          Processors are used to reduce the number of fields in the exported event or to enhance the event with metadata. This executes in the agent before the logs are parsed. See [Processors](https://www.elastic.co/guide/en/fleet/current/elastic-agent-processor-configuration.html) for details.
+
+      - name: tags
+        type: text
+        title: Tags
+        multi: true
+        required: false
+        show_user: false
+        default:
+          - rubrik.virtual_machines
+      - name: preserve_original_event
+        required: true
+        show_user: true
+        title: Preserve original event
+        description: Preserves a raw copy of the original event, added to the field `event.original`
+        type: bool
+        multi: false
+        default: false
+      - name: pageSize
+        type: integer
+        title: Page Size
+        multi: false
+        required: false
+        show_user: false
+        description: The number of results per page in Rubrik GraphQL queries. Smaller pages mean more API requests but can be more efficient in some cases.
+      - name: filters
+        type: yaml
+        title: Filters
+        multi: false
+        required: false
+        show_user: false
+        default: "# filter:\n#   - field: \"location\"\n#     texts: \n#       - \"prod-lab.local\"\n"
+        description: >-
+          Specify filters for refining the data. Filters must be defined as an array of Filter objects. Refer to the [Rubrik API documentation](https://rubrikinc.github.io/rubrik-api-documentation/schema/reference/filter.doc.html) for valid fields.
+      - name: resource_timeout
+        type: text
+        title: Resource Timeout
+        description: Duration before declaring that the HTTP client connection has timed out. Valid time units are ns, us, ms, s, m, h. Default is 60s
+        show_user: false
+        multi: false
+        required: false
+        default: 60s
+      - name: enable_request_tracer
+        type: bool
+        title: Enable request tracing
+        multi: false
+        required: false
+        show_user: false
+        description: The request tracer logs requests and responses to the agent's local file-system for debugging configurations. Enabling this request tracing compromises security and should only be used for debugging. See [documentation](https://www.elastic.co/guide/en/beats/filebeat/current/filebeat-input-httpjson.html#_request_tracer_filename) for details.

@@ -1,6 +1,6 @@
 name: logstash
 title: Logstash
-version: 2.4.11
+version: 2.6.2
 description: Collect logs and metrics from Logstash with Elastic Agent.
 type: integration
 icons:
@@ -14,11 +14,11 @@ categories:
   - elastic_stack
 conditions:
   kibana:
-    version: ^8.10.1
+    version: ^8.17.0
   elastic:
     subscription: basic
 owner:
-  github: elastic/stack-monitoring
+  github: elastic/logstash
   type: elastic
 screenshots:
   - src: /img/kibana-logstash-log.png
@@ -34,63 +34,8 @@ policy_templates:
     title: Logstash logs and metrics
     description: Collect logs and metrics from Logstash instances
     inputs:
-      - type: logfile
-        title: "Logs"
-        description: "Collect application and slowlog logs from Logstash instances"
-        vars:
-          - name: condition
-            title: Condition
-            description: Condition to filter when to collect this input
-            type: text
-            multi: false
-            required: false
-            show_user: false
-      - type: logstash/metrics
-        title: "Metrics (Stack Monitoring)"
-        description: "Collect node metrics and stats from Logstash instances to power the Stack Monitoring application in Kibana.\n Please disable if only using Technical Preview Logstash Monitoring"
-        vars:
-          - name: hosts
-            type: text
-            title: Hosts
-            multi: true
-            required: true
-            show_user: true
-            default:
-              - http://localhost:9600
-          - name: username
-            type: text
-            title: Username
-            description: Use when connecting to logstash
-            multi: false
-            required: false
-            show_user: false
-          - name: password
-            type: password
-            title: Password
-            description: Use when connecting to logstash
-            multi: false
-            required: false
-            show_user: false
-          - name: ssl
-            type: yaml
-            title: SSL Configuration
-            description: i.e. certificate, certificate_authorities, verification_mode etc. See [SSL](https://www.elastic.co/guide/en/beats/metricbeat/current/configuration-ssl.html#ssl-client-config) for details.
-            multi: false
-            required: false
-            show_user: false
-            default: |
-              #certificate_authorities: ["/etc/ca.crt"]
-              #certificate: "/etc/client.crt"
-              #key: "/etc/client.key"
-          - name: condition
-            title: Condition
-            description: Condition to filter when to collect this input
-            type: text
-            multi: false
-            required: false
-            show_user: false
       - type: cel
-        title: "Metrics (Technical Preview).\nPlease disable if using Stack Monitoring"
+        title: "Metrics (Elastic Agent)"
         description: "Collect Metrics and stats from Logstash instances to power dedicated Logstash Dashboards in Kibana"
         vars:
           - name: url
@@ -117,6 +62,61 @@ policy_templates:
             type: yaml
             title: SSL Configuration
             description: i.e. certificate, certificate_authorities, verification_mode etc. See [SSL](https://www.elastic.co/guide/en/beats/metricbeat/current/configuration-ssl.html#ssl-client-config) for details.
+            multi: false
+            required: false
+            show_user: false
+            default: |
+              #certificate_authorities: ["/etc/ca.crt"]
+              #certificate: "/etc/client.crt"
+              #key: "/etc/client.key"
+          - name: condition
+            title: Condition
+            description: Condition to filter when to collect this input
+            type: text
+            multi: false
+            required: false
+            show_user: false
+      - type: logfile
+        title: "Logs"
+        description: "Collect application and slowlog logs from Logstash instances"
+        vars:
+          - name: condition
+            title: Condition
+            description: Condition to filter when to collect this input
+            type: text
+            multi: false
+            required: false
+            show_user: false
+      - type: logstash/metrics
+        title: "Metrics (Stack Monitoring)"
+        description: "Collect node metrics and stats from Logstash instances to power the Stack Monitoring application in Kibana.\n Disable if using Metrics (Elastic Agent)."
+        vars:
+          - name: hosts
+            type: text
+            title: Hosts
+            multi: true
+            required: true
+            show_user: true
+            default:
+              - http://localhost:9600
+          - name: username
+            type: text
+            title: Username
+            description: Use when connecting to logstash
+            multi: false
+            required: false
+            show_user: false
+          - name: password
+            type: password
+            title: Password
+            description: Use when connecting to logstash
+            multi: false
+            required: false
+            show_user: false
+          - name: ssl
+            type: yaml
+            title: SSL Configuration
+            description: SSL configuration options. See [documentation](https://www.elastic.co/guide/en/beats/metricbeat/current/configuration-ssl.html#ssl-client-config) for details.
             multi: false
             required: false
             show_user: false

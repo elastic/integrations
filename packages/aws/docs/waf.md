@@ -77,13 +77,31 @@ Please refer to the following [document](https://www.elastic.co/guide/en/ecs/cur
 | aws.s3.object.key | The AWS S3 Object key. | keyword |
 | aws.waf.arn | AWS ARN of ACL | keyword |
 | aws.waf.id | ID of ACL | keyword |
-| aws.waf.non_terminating_matching_rules | The list of non-terminating rules in the rule group that match the request. These are always COUNT rules (non-terminating rules that match) | nested |
-| aws.waf.rate_based_rule_list | The list of rate-based rules that acted on the request. | nested |
+| aws.waf.non_terminating_matching_rules.action |  | keyword |
+| aws.waf.non_terminating_matching_rules.ruleId |  | keyword |
+| aws.waf.non_terminating_matching_rules.ruleMatchDetails.conditionType |  | keyword |
+| aws.waf.non_terminating_matching_rules.ruleMatchDetails.location |  | keyword |
+| aws.waf.non_terminating_matching_rules.ruleMatchDetails.matchedData |  | keyword |
+| aws.waf.rate_based_rule_list.conditionType |  | keyword |
+| aws.waf.rate_based_rule_list.location |  | keyword |
+| aws.waf.rate_based_rule_list.matchedData |  | keyword |
 | aws.waf.request.headers | List of request headers | flattened |
-| aws.waf.rule_group_list | The list of rule groups that acted on this request. | nested |
+| aws.waf.rule_group_list.nonTerminatingMatchingRules.action |  | keyword |
+| aws.waf.rule_group_list.nonTerminatingMatchingRules.ruleId |  | keyword |
+| aws.waf.rule_group_list.nonTerminatingMatchingRules.ruleMatchDetails.conditionType |  | keyword |
+| aws.waf.rule_group_list.nonTerminatingMatchingRules.ruleMatchDetails.location |  | keyword |
+| aws.waf.rule_group_list.nonTerminatingMatchingRules.ruleMatchDetails.matchedData |  | keyword |
+| aws.waf.rule_group_list.ruleGroupId |  | keyword |
+| aws.waf.rule_group_list.terminatingRule.action |  | keyword |
+| aws.waf.rule_group_list.terminatingRule.ruleId |  | keyword |
+| aws.waf.rule_group_list.terminatingRule.ruleMatchDetails.conditionType |  | keyword |
+| aws.waf.rule_group_list.terminatingRule.ruleMatchDetails.location |  | keyword |
+| aws.waf.rule_group_list.terminatingRule.ruleMatchDetails.matchedData |  | keyword |
 | aws.waf.source.id | The source ID. This field shows the ID of the associated resource. | keyword |
 | aws.waf.source.name | The source of the request. Possible values: CF for Amazon CloudFront, APIGW for Amazon API Gateway, ALB for Application Load Balancer, and APPSYNC for AWS AppSync. | keyword |
-| aws.waf.terminating_rule_match_details | Detailed information about the terminating rule that matched the request. A terminating rule has an action that ends the inspection process against a web request. Possible actions for a terminating rule are ALLOW and BLOCK. This is only populated for SQL injection and cross-site scripting (XSS) match rule statements. As with all rule statements that inspect for more than one thing, AWS WAF applies the action on the first match and stops inspecting the web request. A web request with a terminating action could contain other threats, in addition to the one reported in the log. | nested |
+| aws.waf.terminating_rule_match_details.conditionType |  | keyword |
+| aws.waf.terminating_rule_match_details.location |  | keyword |
+| aws.waf.terminating_rule_match_details.matchedData |  | keyword |
 | cloud.image.id | Image ID for the cloud instance. | keyword |
 | data_stream.dataset | Data stream dataset. | constant_keyword |
 | data_stream.namespace | Data stream namespace. | constant_keyword |

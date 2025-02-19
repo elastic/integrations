@@ -11,4 +11,5 @@ type failureObserver interface {
 	SummaryData() map[string]interface{}
 	DescriptionData() map[string]interface{}
 	String() string
+	Labels() []string
 }
