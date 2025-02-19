@@ -55,10 +55,10 @@ processors:
     field: email.local_id
     copy_from: microsoft.exchange.networkmessageid
     ignore_empty_value: true
-- set:
+- append:
     field: email.sender.address
-    copy_from: microsoft.exchange.senderaddress
-    ignore_empty_value: true
+    value: "{{{microsoft.exchange.senderaddress}}}"
+    ignore_failure: true
 - dissect:
     field: microsoft.exchange.customdata
     pattern: "%{}S:OriginalFromAddress=%{_tmp.email.from.address};"
