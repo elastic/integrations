@@ -36,8 +36,8 @@ processors:
       description: |
         Splits syslog5424_msg KV list by space and then each by "=" taking into account quoted values.
       source: |
-        def splitUnquoted(String input, String sep) {
-          def tokens = [];
+        def splitOnceByToken(String input, String sep) {
+          def tokens = ["", ""];
           def startPosition = 0;
           def isInQuotes = false;
           char quote = (char)"\"";
@@ -48,16 +48,37 @@ processors:
               else if (input.charAt(currentPosition) == (char)sep && !isInQuotes) {
                   def token = input.substring(startPosition, currentPosition).trim();
                   if (!token.equals("")) {
-                    tokens.add(token);
+                    tokens[0] = token;
                   }
                   startPosition = currentPosition + 1;
+                  break;
+              }
+          }
+          def lastToken = input.substring(startPosition);
+          if (!lastToken.equals(sep) && !lastToken.equals("")) {
+              tokens[1] = lastToken.trim();
+          }
+          return tokens;
+        }
+        def splitUnquoted(String input, String sep) {
+          def tokens = [];
+          def cur = input;
+          def last = cur;
+          while (cur.length() > 0) {
+              def res = splitOnceByToken(cur, sep);
+              last = cur;
+              cur = res[1].trim();
+              def token = res[0].trim();
+              if (token.length() > 0) {
+                  tokens.add(token);
+              } else {
+                  if (cur.length() > 0) {
+                    tokens.add(cur);
+                  }
+                  break;
               }
           }
 
-          def lastToken = input.substring(startPosition);
-          if (!lastToken.equals(sep) && !lastToken.equals("")) {
-              tokens.add(lastToken.trim());
-          }
           return tokens;
         }
 
@@ -66,8 +87,8 @@ processors:
         Map map = new HashMap();
         Pattern pattern = /^\"|\"$/;
         for (def i = 0; i < arr?.length; i++) {
-          def kv = splitUnquoted(arr[i], "=");
-          if (kv.length == 2) {
+          def kv = splitOnceByToken(arr[i], "=");
+          if (kv.length == 2 && kv[0].length() > 0) {
             map[kv[0]] = pattern.matcher(kv[1]).replaceAll("");
           }
         }

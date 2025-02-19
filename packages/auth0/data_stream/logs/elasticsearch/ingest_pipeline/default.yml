@@ -83,10 +83,14 @@ processors:
 - append:
     field: event.category
     value: authentication
+- set:
+    field: auth0.logs.data.type_id
+    copy_from: auth0.logs.data.type
+    ignore_empty_value: true
 - script:
     lang: painless
     description: Sets event type, category and action based on type
-    if: ctx?.auth0?.logs?.data?.type != null
+    if: ctx.auth0?.logs?.data?.type != null
     params:
       actions:
         f:
@@ -130,18 +134,15 @@ processors:
           value: "Invalid email or username"
           type:
             - info
-            - indicator
+            - denied
           category:
-            - threat
+            - intrusion_detection
           action: invalid-username-or-email
         w:
           classification: "Login - Notification"
           value: "Warnings during login"
           type:
             - info
-            - indicator
-          category:
-            - threat
           action: warnings-during-login
         s:
           classification: "Login - Success"
@@ -202,9 +203,9 @@ processors:
           value: "Failed silent authentication"
           type:
             - info
-            - indicator
+            - denied
           category:
-            - threat
+            - intrusion_detection
           action: failed-silent-authentication
         ssa:
           classification: "Silent Authentication - Success"
@@ -873,9 +874,9 @@ processors:
           value: "A user, during enrollment or authentication, enters an incorrect code more than the maximum allowed number of times. Ex: A user enrolling in SMS enters the 6-digit code wrong more than 10 times in a row."
           type:
             - info
-            - indicator
+            - denied
           category:
-            - threat
+            - intrusion_detection
           action: user-entered-too-many-incorrect-codes
         gd_recovery_failed:
           classification: "Other"
@@ -888,9 +889,9 @@ processors:
           value: "A user enters a wrong recovery code too many times."
           type:
             - info
-            - indicator
+            - denied
           category:
-            - threat
+            - intrusion_detection
           action: user-entered-too-many-wrong-codes
         gd_recovery_succeed:
           classification: "Other"
@@ -945,9 +946,9 @@ processors:
           value: "A user is temporarily prevented from logging in because more than 20 logins per minute occurred from the same IP address"
           type:
             - info
-            - indicator
+            - denied
           category:
-            - threat
+            - intrusion_detection
           action: user-blocked-too-many-failed-logins-from-same-ip
         mfar:
           classification: "Other"
