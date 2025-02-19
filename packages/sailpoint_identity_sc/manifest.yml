@@ -1,0 +1,93 @@
+format_version: 3.3.0
+name: sailpoint_identity_sc
+title: Sailpoint Identity Security Cloud
+version: 0.1.0
+source:
+  license: "Elastic-2.0"
+description: "Sailpoint identity security cloud provides enterprise identity governance and security capabilities. The integration allows users to extract audit information from their identity security cloud tenant using the ISC's AuditEvent API."
+type: integration
+categories:
+  - security
+conditions:
+  kibana:
+    version: "^8.16.1"
+  elastic:
+    subscription: "basic"
+screenshots:
+  - src: /img/dashboard.png
+    title: Dashboard
+    size: 600x600
+    type: image/png
+icons:
+  - src: /img/sics.svg
+    title: Logo
+    size: 32x32
+    type: image/svg+xml
+policy_templates:
+  - name: sailpoint_identity_sc
+    title: Sailpoint identity security cloud events
+    description: "Collect events from Sailpoint identity security cloud event reporting."
+    inputs:
+      - type: cel
+        title: Collect Events from Sailpoint identity security cloud Events API
+        description: "Extract all events from Sailpoint identity security cloud via the API."
+        vars:
+          - name: api_host
+            type: text
+            title: Base URL of the Sailpoint identity security cloud Host API
+            description: "Enter the URL of the Sailpoint identity security cloud host API server, e.g., https://{tenant}.api.identitynow-demo.com/"
+            show_user: true
+            required: true
+          - name: client_id
+            type: text
+            title: Client ID for Sailpoint identity security cloud
+            description: "Enter the client ID created on Sailpoint identity security cloud."
+            show_user: true
+            required: true
+            secret: true
+          - name: client_secret
+            type: text
+            title: Client Secret for Sailpoint identity security cloud Events API Server
+            description: "Enter the Client Secret obtained from Sailpoint identity security cloud."
+            show_user: true
+            required: true
+            secret: true
+          - name: token_scopes
+            type: text
+            title: Token Scopes
+            multi: true
+            description: Scopes for OAuth2 token.
+            required: true
+            show_user: false
+            secret: false
+          - name: enable_request_tracer
+            type: bool
+            title: Enable Request Tracing
+            description: "Logs requests and responses to the local filesystem for debugging. Enabling this compromises security and is recommended only for debugging."
+            multi: false
+            required: false
+            show_user: false
+          - name: http_client_timeout
+            type: text
+            title: HTTP Client Timeout
+            description: "Specifies the duration to wait before declaring a timeout. Valid units are ns, us, ms, s, m, h."
+            multi: false
+            required: false
+            show_user: true
+          - name: proxy_url
+            type: text
+            title: Proxy URL
+            description: "Enter the URL for proxy connections in the format: http[s]://<user>:<password>@<server name/ip>:<port>."
+            multi: false
+            required: false
+            show_user: false
+          - name: ssl
+            type: yaml
+            title: SSL Configuration
+            description: "Configuration for certificate authorities, supported protocols, verification mode etc."
+            multi: false
+            required: false
+            show_user: false
+owner:
+  github: elastic/security-service-integrations
+  type: elastic
