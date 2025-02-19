@@ -17,6 +17,9 @@ state:
   sort_time_order: asc
   {{!-- dynamic batch_size is not supported by the API and defaults to 100 --}}
   batch_size: 100
+{{#if advanced_sec_level }}
+  advanced_sec_level: true
+{{/if}}
 redact:
   fields:
     - token_id
@@ -46,10 +49,28 @@ program: |
       }.encode_json()
     ).with({
       "Header":{
-        "Authorization": ["Bearer " + string(state.api_token)],
         "x-xdr-auth-id": [string(state.token_id)],
       }
-    }).do_request().as(resp, resp.StatusCode == 200 ?
+    }).as(req, has(state.advanced_sec_level) ?
+      {
+        "timestamp": int(now) * 1000,
+        "nonce": uuid(),
+      }.as(t, t.with({
+        "auth": (string(state.api_token) + string(t.nonce) + string(t.timestamp)).sha256().hex(),
+      })).as(h, req.with({
+        "Header":{
+          "x-xdr-timestamp": [string(h.timestamp)],
+          "x-xdr-nonce": [string(h.nonce)],
+          "Authorization": [string(h.auth)],
+        }
+      }))
+    :
+      req.with({
+        "Header":{
+          "Authorization": [string(state.api_token)],
+        }
+      })
+    ).do_request().as(resp, resp.StatusCode == 200 ?
       bytes(resp.Body).decode_json().as(body, 
         (
           // TODO: handle max total_count case of 9999
