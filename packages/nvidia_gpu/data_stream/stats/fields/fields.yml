@@ -7,6 +7,7 @@
   fields:
     - name: decoder.utilization
       type: float
+      metric_type: gauge
       description: >
         Utilization of the decoder engine in the GPU.
 
@@ -102,11 +103,13 @@
       fields:
         - name: size.free
           type: long
+          metric_type: gauge
           description: >
             Free size of the framebuffer.
 
         - name: size.used
           type: long
+          metric_type: gauge
           description: >
             Used size of the framebuffer.
 
@@ -120,56 +123,67 @@
       fields:
         - name: size
           type: long
+          metric_type: gauge
           description: >
             Size of the GPU memory in MB.
 
         - name: used
           type: long
+          metric_type: gauge
           description: >
             Used size of the GPU memory in MB.
 
         - name: copy_utilization
           type: float
+          metric_type: gauge
           description: >
             Utilization of the GPU memory copy engine.
 
-        - name: errors.double_bit_persistent
-          type: long
-          metric_type: gauge
+        - name: errors
+          type: group
           description: >
-            Double-bit persistent errors count for GPU memory.
+            Fields related to errors metrics.
 
-        - name: errors.double_bit_volatile
-          type: long
-          metric_type: gauge
-          description: >
-            Double-bit volatile errors count for GPU memory.
+          fields:
+            - name: double_bit_persistent
+              type: long
+              metric_type: gauge
+              description: >
+                Double-bit persistent errors count for GPU memory.
 
-        - name: errors.single_bit_persistent
-          type: long
-          metric_type: gauge
-          description: >
-            Single-bit persistent errors count for GPU memory.
+            - name: double_bit_volatile
+              type: long
+              metric_type: gauge
+              description: >
+                Double-bit volatile errors count for GPU memory.
 
-        - name: errors.single_bit_volatile
-          type: long
-          metric_type: gauge
-          description: >
-            Single-bit volatile errors count for GPU memory.
+            - name: single_bit_persistent
+              type: long
+              metric_type: gauge
+              description: >
+                Single-bit persistent errors count for GPU memory.
+
+            - name: single_bit_volatile
+              type: long
+              metric_type: gauge
+              description: >
+                Single-bit volatile errors count for GPU memory.
 
         - name: frequency
           type: float
+          metric_type: gauge
           description: >
             Clock frequency of the GPU memory.
 
         - name: temperature
           type: float
+          metric_type: gauge
           description: >
             Temperature of the GPU memory.
 
     - name: nvlink.bandwidth.total
       type: long
-      metric_type: counter
+      metric_type: gauge
       description: >
         Total bandwidth of NVLink.
 
@@ -186,15 +200,18 @@
 
     - name: power.usage
       type: float
+      metric_type: gauge
       description: >
         Current power usage of the GPU in Watts.
 
     - name: streaming_multiprocessor.frequency
       type: float
+      metric_type: gauge
       description: >
         Frequency of the streaming multiprocessor.
 
     - name: temperature
+      metric_type: gauge
       type: float
       description: >
         Temperature of the GPU.
@@ -240,30 +257,37 @@
 
     - name: utilization
       type: float
+      metric_type: gauge
       description: >
         Overall utilization of the GPU.
 
 - name: prometheus
   type: group
   description: >
-    Fields related to Prometheus node metadata.
+    Fields related to Prometheus metadata.
 
   fields:
-    - name: node.hostname
-      type: keyword
+    - name: node
+      type: group
       description: >
-        Hostname of the Prometheus node.
+        Fields related to Prometheus node metadata.
 
-      dimension: true
-    - name: node.job
-      type: keyword
-      description: >
-        Job of the Prometheus node.
+      fields:
+        - name: hostname
+          type: keyword
+          description: >
+            Hostname of the Prometheus node.
 
-      dimension: true
-    - name: node.id
-      type: integer
-      description: >
-        ID of the Prometheus node.
+          dimension: true
+        - name: job
+          type: keyword
+          description: >
+            Job of the Prometheus node.
 
-      dimension: true
+          dimension: true
+        - name: id
+          type: integer
+          description: >
+            ID of the Prometheus node.
+
+          dimension: true
