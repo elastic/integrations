@@ -42,7 +42,7 @@ program: |
       "want_more": false,
     }
   :
-    get_request(state.url +
+    get_request(state.url + "?" +
       {
         "from": [req.from.format(time_layout.RFC3339)],
         "to": [req.to.format(time_layout.RFC3339)],
@@ -104,7 +104,7 @@ program: |
           "error": {
             "code": string(resp.StatusCode),
             "id": string(resp.Status),
-            "message": "GET " + state.url + "?from=" + req.from.format(time_layout.RFC3339) + "&to=" + req.to.format(time_layout.RFC3339) + " failed: " +
+            "message": "GET " + resp.Request.URL + ": " +
             (
               (size(resp.Body) != 0) ?
                 string(resp.Body)
