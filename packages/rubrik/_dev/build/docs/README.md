@@ -154,6 +154,7 @@ Please refer to the following [document](https://www.elastic.co/guide/en/ecs/cur
 {{event "node_statistics"}}
 
 ### Unmanaged Objects
+
 The `unmanaged_objects` dataset provides metrics related to the performance of the Rubrik cluster nodes.
 
 **ECS Field Reference**
@@ -161,3 +162,5 @@ The `unmanaged_objects` dataset provides metrics related to the performance of t
 Please refer to the following [document](https://www.elastic.co/guide/en/ecs/current/ecs-field-reference.html) for detailed information on ECS fields.
 
 {{fields "unmanaged_objects"}}
+
+{{event "unmanaged_objects"}}
