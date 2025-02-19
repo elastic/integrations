@@ -2,11 +2,6 @@
 
 Use the NVIDIA GPU Monitoring integration to monitor the health and performance of your NVIDIA GPUs. The integration collects metrics from the NVIDIA Datacenter GPU Manager and sends them to Elasticsearch.
 
-## Data streams
-
-**stats** give you insight into the state of the NVIDIA GPUs.
-Metric data streams collected by the Nvidia GPU Monitoring integration include `stats`. See more details in the [Metrics](#metrics-reference).
-
 ## Requirements
 
 You need Elasticsearch for storing and searching your data and Kibana for visualizing and managing it.
@@ -25,5 +20,11 @@ For step-by-step instructions on how to set up an integration, see the
 
 When running on Kubernetes, you can use ${env.NODE_NAME} to get the node name for use in the hosts field. For example: `hosts: http://${env.NODE_NAME}:9400/metrics`.
 
+## Data streams
+
+**stats** give you insight into the state of the NVIDIA GPUs.
+Metric data streams collected by the Nvidia GPU Monitoring integration include `stats`. See more details in the [Metrics](#metrics-reference).
+
 {{event "stats"}}
+
 {{fields "stats"}}
