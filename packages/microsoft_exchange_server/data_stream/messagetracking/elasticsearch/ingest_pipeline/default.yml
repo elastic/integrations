@@ -52,10 +52,17 @@ processors:
     field: email.local_id
     copy_from: microsoft.exchange.networkmessageid
     ignore_empty_value: true
+<<<<<<< HEAD
 - set:
     field: email.sender.address
     copy_from: microsoft.exchange.senderaddress
     ignore_empty_value: true
+=======
+- append:
+    field: email.sender.address
+    value: "{{{microsoft.exchange.senderaddress}}}"
+    ignore_failure: true
+>>>>>>> 6e46c1196a2d10ecb65748240e1041b6a3e722cc
 - dissect:
     field: microsoft.exchange.customdata
     pattern: "%{}S:OriginalFromAddress=%{_tmp.email.from.address};"
@@ -63,12 +70,21 @@ processors:
 - append:
     field: email.from.address
     value: "{{{_tmp.email.from.address}}}"
+<<<<<<< HEAD
     if: ctx._tmp?.email?.from?.address != null && ctx._tmp.email.from.address != "<>"
+=======
+    if: ctx._tmp?.email?.from?.address != null && ctx?._tmp?.email?.from?.address != "<>"
+>>>>>>> 6e46c1196a2d10ecb65748240e1041b6a3e722cc
     ignore_failure: true
 - append:
     field: email.from.address
     value: "{{{microsoft.exchange.senderaddress}}}"
+<<<<<<< HEAD
     if: ctx.microsoft?.exchange?.senderaddress != null && ctx.microsoft.exchange.senderaddress != ""
+=======
+    if: ctx.email?.from?.address == null
+    ignore_failure: true
+>>>>>>> 6e46c1196a2d10ecb65748240e1041b6a3e722cc
 - remove:
     field: microsoft.exchange.senderaddress
     ignore_missing: true
@@ -83,7 +99,11 @@ processors:
     ignore_failure: true
     ignore_missing: true
 - set:
+<<<<<<< HEAD
     field: event.ingested
+=======
+    field: event.ingested 
+>>>>>>> 6e46c1196a2d10ecb65748240e1041b6a3e722cc
     copy_from: _ingest.timestamp
     ignore_failure: true
 - remove:
