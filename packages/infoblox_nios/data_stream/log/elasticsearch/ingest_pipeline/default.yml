@@ -12,9 +12,9 @@ processors:
   - grok:
       field: event.original
       patterns:
-        - "^<%{NUMBER:log.syslog.priority:long}>%{SYSLOGTIMESTAMP:event.created}\\s+%{NOTSPACE:host.domain}\\s+%{IP:_tmp.host.ip}\\s+%{DATA:infoblox_nios.log.service_name}\\[?%{NUMBER:process.pid:long}?\\]?:\\s+%{GREEDYDATA:message}$"
-        - "^<%{NUMBER:log.syslog.priority:long}>%{SYSLOGTIMESTAMP:event.created}\\s+(%{IP:_tmp.host.ip}|%{NOTSPACE:host.domain})\\s+%{DATA:infoblox_nios.log.service_name}\\[?%{NUMBER:process.pid:long}?\\]?:\\s+%{GREEDYDATA:message}$"
-        - "^<%{NUMBER:log.syslog.priority:long}>%{SYSLOGTIMESTAMP:event.created}\\s+%{IP:_tmp.host.ip}\\s+%{GREEDYDATA:message}$"
+        - "^<%{NUMBER:log.syslog.priority:long}>%{SYSLOGTIMESTAMP:_tmp.timestamp}\\s+%{NOTSPACE:host.domain}\\s+%{IP:_tmp.host.ip}\\s+%{DATA:infoblox_nios.log.service_name}\\[?%{NUMBER:process.pid:long}?\\]?:\\s+%{GREEDYDATA:message}$"
+        - "^<%{NUMBER:log.syslog.priority:long}>%{SYSLOGTIMESTAMP:_tmp.timestamp}\\s+(%{IP:_tmp.host.ip}|%{NOTSPACE:host.domain})\\s+%{DATA:infoblox_nios.log.service_name}\\[?%{NUMBER:process.pid:long}?\\]?:\\s+%{GREEDYDATA:message}$"
+        - "^<%{NUMBER:log.syslog.priority:long}>%{SYSLOGTIMESTAMP:_tmp.timestamp}\\s+%{IP:_tmp.host.ip}\\s+%{GREEDYDATA:message}$"
         - "^%{GREEDYDATA:message}$"
   - rename:
       field: _conf.tz_offset
@@ -23,10 +23,10 @@ processors:
       ignore_missing: true
       ignore_failure: true
   - date:
-      field: event.created
+      field: _tmp.timestamp
       timezone: '{{{event.timezone}}}'
-      if: ctx.event?.timezone != null && ctx.event.created != null
-      target_field: event.created
+      if: ctx.event?.timezone != null && ctx._tmp.timestamp != null
+      target_field: _tmp.timestamp
       formats:
         - MMM  d HH:mm:ss
         - MMM dd HH:mm:ss
@@ -34,15 +34,15 @@ processors:
         - dd-MMM-yyyy HH:mm:ss.SSS
       on_failure:
         - remove:
-            field: event.created
+            field: _tmp.timestamp
             ignore_missing: true
         - append:
             field: error.message
             value: '{{{_ingest.on_failure_message}}}'
   - date:
-      field: event.created
+      field: _tmp.timestamp
       if: ctx.event?.timezone == null && ctx.event?.created != null
-      target_field: event.created
+      target_field: _tmp.timestamp
       formats:
         - MMM  d HH:mm:ss
         - MMM dd HH:mm:ss
@@ -50,7 +50,7 @@ processors:
         - dd-MMM-yyyy HH:mm:ss.SSS
       on_failure:
         - remove:
-            field: event.created
+            field: _tmp.timestamp
             ignore_missing: true
         - append:
             field: error.message
@@ -77,12 +77,7 @@ processors:
       name: '{{ IngestPipeline "pipeline_dns" }}'
       if: ctx.infoblox_nios?.log?.type == 'DNS'
   # Since logstash sets the @timestamp if not present, `override: true` is required to overwrite the value with event timestamp.
-  - set:
-      field: '@timestamp'
-      value: '{{{event.created}}}'
-      if: ctx.event?.created != null
-      override: true
-  # If individual pipelines has timestamp, they should take priority. This makes @timestamp < event.created conforming to ECS.
+  # If individual pipelines have a timestamp, they will take priority. This makes @timestamp < event.created, conforming to ECS.
   - set:
       field: '@timestamp'
       value: '{{{_tmp.timestamp}}}'
