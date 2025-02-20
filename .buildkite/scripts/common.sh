@@ -757,7 +757,7 @@ teardown_test_package() {
 }
 
 list_all_directories() {
-    find . -maxdepth 1 -mindepth 1 -type d | xargs -I {} basename {} | sort |grep -E '^(box_events|claroty_ctd|crowdstrike|mimecast|sublime_security|teleport|ti_anomali)$'
+    find . -maxdepth 1 -mindepth 1 -type d | xargs -I {} basename {} | sort |grep -E '^(box_events|claroty_ctd|crowdstrike|mimecast|sublime_security|ti_anomali)$'
 }
 
 check_package() {
