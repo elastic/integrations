@@ -278,7 +278,7 @@ Falco alerts can contain a multitude of various fields pertaining to the type of
 | process.group.name | Preserved Falco field | text |  |
 
 
-An example event for `alerts_cncf` looks as following:
+An example event for `alerts` looks as following:
 
 ```json
 {

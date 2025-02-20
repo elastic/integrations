@@ -42,6 +42,6 @@ To use this input you will need to deploy the Elastic Agent *first* and then con
 
 Falco alerts can contain a multitude of various fields pertaining to the type of activity on the host machine.
 
-{{ fields "alerts_cncf" }}
+{{ fields "alerts" }}
 
-{{ event "alerts_cncf" }}
+{{ event "alerts" }}
