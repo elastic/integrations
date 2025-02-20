@@ -1,6 +1,6 @@
 # Google SecOps
 
-[Google SecOps](https://cloud.google.com/chronicle/docs/secops/secops-overview) is a cloud-based service designed for enterprises to retain, analyze, and search large volumes of security and network telemetry. It normalizes, indexes, and correlates data to detect threats, investigate their scope and cause, and provide remediation through prebuilt integrations. The platform enables security analysts to examine aggregated security information, search across domains, and mitigate threats throughout their lifecycle.
+[Google SecOps](https://cloud.google.com/chronicle/docs/secops/secops-overview) is a cloud-based service designed for enterprises to retain, analyze, and search large volumes of security and network telemetry. It normalizes, indexes, and correlates data to detect threats. Investigate their scope and cause, and provide remediation through pre-built integrations. The platform enables security analysts to examine aggregated security information, search across domains, and mitigate threats throughout their lifecycle.
 
 The Google SecOps integration collects alerts using the [Detection Engine API](https://cloud.google.com/chronicle/docs/reference/detection-engine-api#listdetections).
 
@@ -18,7 +18,7 @@ This integration collects the following logs:
 
 ### Agentless deployment
 
-Agentless deployments are only supported in Elastic Serverless and Elastic Cloud environments. Agentless deployments provide a means to ingest data while avoiding the orchestration, management, and maintenance needs associated with standard ingest infrastructure. Using agentless deployment makes manual agent deployment unnecessary, allowing you to focus on your data instead of the agent that collects it.
+Agentless deployments are only supported in Elastic Serverless and Elastic Cloud environments. Agentless deployments provide a means to ingest data while avoiding the orchestration, management, and maintenance needs associated with standard ingest infrastructure. Using an agentless deployment makes manual agent deployment unnecessary, allowing you to focus on your data instead of the agent that collects it.
 
 For more information, refer to [Agentless integrations](https://www.elastic.co/guide/en/serverless/current/security-agentless-integrations.html) and [Agentless integrations FAQ](https://www.elastic.co/guide/en/serverless/current/agentless-integration-troubleshooting.html)
 
@@ -48,21 +48,21 @@ Please note, there are minimum requirements for running Elastic Agent. For more 
 
 ### To collect data from the Google SecOps API:
 
-   - Create Google SecOps service account [Steps to create](https://developers.google.com/identity/protocols/oauth2/service-account#creatinganaccount).
-   - **Chronicle API** must be enabled.
+- Create Google SecOps service account [Steps to create](https://developers.google.com/identity/protocols/oauth2/service-account#creatinganaccount).
+- **Chronicle API** must be enabled.
 
 ### To enable the Chronicle API:
 
-   - Log in to the  "https://console.cloud.google.com/"  using valid credentials.
-   - Navigate to the ‘Chronicle API’
-   - Click `Enabale`
+- Log in to the  "https://console.cloud.google.com/"  using valid credentials.
+- Navigate to the ‘Chronicle API’
+- Click `Enabale`
 
 ### To Update the Permission of Service Account
-   - Open GCP Console, Then go to IAM.
-   - In View By Main Tab > Click GRANT ACCESS.
-   - Add Service Account name in New Principals.
-   - In Assign Role, Select Owner.
-   - Click Save
+- Open GCP Console, Then go to IAM.
+- In View By Main Tab > Click GRANT ACCESS.
+- Add Service Account name in New Principals.
+- In Assign Role, Select Owner.
+- Click Save
 
 This integration will make use of the following *oauth2 scope*:
 
@@ -98,15 +98,15 @@ An example event for `alert` looks as following:
 {
     "@timestamp": "2025-02-01T03:23:28.000Z",
     "agent": {
-        "ephemeral_id": "858e7528-be63-436e-8f9a-0b69dd835768",
-        "id": "f6dd5beb-736a-4458-b707-30650a61a95d",
-        "name": "elastic-agent-45835",
+        "ephemeral_id": "d3118427-5847-4816-8115-a9a7fbaf0b8f",
+        "id": "dcee74bf-3ff1-44af-886b-3c56fd6a4702",
+        "name": "elastic-agent-88425",
         "type": "filebeat",
-        "version": "8.16.0"
+        "version": "8.18.0"
     },
     "data_stream": {
         "dataset": "google_secops.alert",
-        "namespace": "75212",
+        "namespace": "26325",
         "type": "logs"
     },
     "destination": {
@@ -124,9 +124,9 @@ An example event for `alert` looks as following:
         "version": "8.17.0"
     },
     "elastic_agent": {
-        "id": "f6dd5beb-736a-4458-b707-30650a61a95d",
-        "snapshot": false,
-        "version": "8.16.0"
+        "id": "dcee74bf-3ff1-44af-886b-3c56fd6a4702",
+        "snapshot": true,
+        "version": "8.18.0"
     },
     "event": {
         "agent_id_status": "verified",
@@ -134,7 +134,7 @@ An example event for `alert` looks as following:
         "dataset": "google_secops.alert",
         "end": "2025-02-03T03:23:28.000Z",
         "id": "de_66bf2e94-f97e-2564-1a75-2fdbf8cb6403",
-        "ingested": "2025-02-14T12:15:07Z",
+        "ingested": "2025-02-20T07:35:23Z",
         "kind": "alert",
         "original": "{\"createdTime\":\"2025-02-01T03:12:54.177084Z\",\"detection\":{\"alertState\":\"NOT_ALERTING\",\"description\":\"This rule is to generate alerts when the event_type is STATUS_UPDATE\",\"outcomes\":[{\"key\":\"risk_score\",\"value\":\"60\"}],\"riskScore\":60,\"ruleId\":\"ru_123873a9a-170d-1234-a63d-9874f33ee011\",\"ruleLabels\":[{\"key\":\"author\",\"value\":\"John\"},{\"key\":\"description\",\"value\":\"This rule is to generate alerts when the event_type is STATUS_UPDATE\"},{\"key\":\"severity\",\"value\":\"Medium\"}],\"ruleName\":\"rule_to_detect_status_update\",\"ruleType\":\"SINGLE_EVENT\",\"ruleVersion\":\"ru_123873a9a-170d-1234-a63d-9874f33ee011@v_1732873302_954607000\",\"urlBackToProduct\":\"https://example.com\",\"variables\":{\"risk_score\":{\"int64Val\":\"60\",\"type\":\"OUTCOME\",\"value\":\"60\"}}},\"detectionTime\":\"2025-02-01T03:23:28Z\",\"event\":{\"about\":[{\"labels\":[{\"key\":\"header_time_milliseconds_offset\",\"value\":\"612\"}]}],\"additional\":{\"arguments_fd\":\"8\",\"event_modifier\":\"0\",\"exec_chain_thread_uuid\":\"5AB2623F-F6EF-4A6C-B2E4-CC7E28BEB515\",\"header_time_milliseconds_offset\":\"612\",\"header_version\":\"11\",\"identity_cd_hash\":\"a70ddfe3eb75dd35005a9c863c4174d63148406c\",\"identity_signer_id\":\"com.apple.curl\",\"identity_signer_id_truncated\":\"false\",\"identity_signer_type\":\"1\",\"identity_team_id_truncated\":\"false\",\"key\":\"6CC2ABE4-385C-4444-8BC0-FD5B618BA1C1\",\"subject_audit_id\":\"4294967295\",\"subject_terminal_id_type\":\"4-IPv4\"},\"metadata\":{\"baseLabels\":{\"allowScopedAccess\":true,\"logTypes\":[\"JAMF_TELEMETRY\"]},\"enrichmentLabels\":{\"allowScopedAccess\":true},\"eventTimestamp\":\"2025-02-03T03:23:28Z\",\"eventType\":\"STATUS_UPDATE\",\"id\":\"AAAAAByuGF66kDlZ79NglQZk0cQPPPPPBgSSSSSSSSS=\",\"ingestedTimestamp\":\"2025-02-01T06:00:42.443096Z\",\"logType\":\"JAMF_TELEMETRY\",\"productEventType\":\"AUE_CONNECT-32\",\"productName\":\"JAMF_TELEMETRY\",\"vendorName\":\"JAMF\"},\"network\":{\"sessionId\":\"100001\"},\"principal\":{\"asset\":{\"hardware\":[{\"serialNumber\":\"PPX94A9874\"}],\"hostname\":\"TEST-PPX94A9874\",\"productObjectId\":\"45DE0BEE-8056-5B41-B09A-08E259E49317\",\"software\":[{\"version\":\"Version 15.2 (Build 24C101)\"}]},\"group\":{\"groupDisplayName\":\"wheel\"},\"hostname\":\"TEST-PPX94A9874\",\"ip\":[\"0.0.0.0\"],\"labels\":[{\"key\":\"arguments_fd\",\"value\":\"8\"}],\"process\":{\"file\":{\"fullPath\":\"/bin/bash\",\"md5\":\"b14dba7fe27186f216037a3b60599582\",\"sha1\":\"47bba82e8a43cfa14a1124a477090f9fbd0e026a\",\"sha256\":\"4d8b9a54a2077c1457410843a9842ef29e0f371fb4061097095758012c031809\"},\"pid\":\"47203\"},\"processAncestors\":[{\"file\":{\"fullPath\":\"/usr/bin/curl\"},\"pid\":\"47325\"}],\"user\":{\"groupIdentifiers\":[\"0\"],\"userDisplayName\":\"root\",\"userid\":\"0\"}},\"securityResult\":[{\"description\":\"0-success\",\"detectionFields\":[{\"key\":\"return_value\",\"value\":\"0\"}]}],\"target\":{\"group\":{\"groupDisplayName\":\"wheel\"},\"user\":{\"groupIdentifiers\":[\"0\"],\"userDisplayName\":\"root\",\"userid\":\"0\"}}},\"id\":\"de_66bf2e94-f97e-2564-1a75-2fdbf8cb6403\",\"label\":\"e\",\"timeWindow\":{\"endTime\":\"2025-02-03T03:23:28Z\",\"startTime\":\"2025-02-01T03:23:28Z\"},\"type\":\"RULE_DETECTION\"}",
         "risk_score": 60,
@@ -306,6 +306,7 @@ An example event for `alert` looks as following:
                     }
                 }
             },
+            "friendly_name": "rule_to_detect_status_update",
             "id": "de_66bf2e94-f97e-2564-1a75-2fdbf8cb6403",
             "label": "e",
             "timeWindow": {
@@ -407,7 +408,7 @@ An example event for `alert` looks as following:
 | google_secops.alert.detection.ruleName | Name of the rule generating the detection, as parsed from `ruleText`. | keyword |
 | google_secops.alert.detection.ruleType | Whether the rule generating this detection is a single event or multi-event rule ("SINGLE_EVENT" or "MULTI_EVENT"). | keyword |
 | google_secops.alert.detection.ruleVersion | Identifier for the rule version generating the detection. | keyword |
-| google_secops.alert.detection.urlBackToProduct | URL pointing to the Google Security Operations application page for this detection.. | keyword |
+| google_secops.alert.detection.urlBackToProduct | URL pointing to the Google Security Operations application page for this detection. | keyword |
 | google_secops.alert.detection.variables.risk_score.int64Val |  | long |
 | google_secops.alert.detection.variables.risk_score.type |  | keyword |
 | google_secops.alert.detection.variables.risk_score.value |  | long |
@@ -446,7 +447,7 @@ An example event for `alert` looks as following:
 | google_secops.alert.event.metadata.urlBackToProduct | A URL that takes the user to the source product console for this event. | keyword |
 | google_secops.alert.event.metadata.vendorName | The name of the product vendor. | keyword |
 | google_secops.alert.event.network.applicationProtocol | The application protocol. | keyword |
-| google_secops.alert.event.network.dns.answers.data | The payload or response to the DNS question for all responses encoded in UTF-8 format. | keyword |
+| google_secops.alert.event.network.dns.answers.data | The payload or response to the DNS question for all responses encoded in UTF-8 format. | keyword |
 | google_secops.alert.event.network.dns.answers.name | The name of the owner of the resource record. | keyword |
 | google_secops.alert.event.network.dns.answers.type | The code specifying the type of the resource record. | keyword |
 | google_secops.alert.event.network.dns.questions.name | The domain name. | keyword |
@@ -583,7 +584,7 @@ An example event for `alert` looks as following:
 | google_secops.alert.event.securityResult.alertState | The alerting types of this security result. | keyword |
 | google_secops.alert.event.securityResult.category | The security category. | keyword |
 | google_secops.alert.event.securityResult.categoryDetails | For vendor-specific categories. For web categorization, put type in here such as "gambling" or "porn". | keyword |
-| google_secops.alert.event.securityResult.description | A human readable description (e.g. "user password was wrong"). | keyword |
+| google_secops.alert.event.securityResult.description | A human readable description (e.g. "user password was wrong").' | keyword |
 | google_secops.alert.event.securityResult.detectionFields.key |  | keyword |
 | google_secops.alert.event.securityResult.detectionFields.value |  | keyword |
 | google_secops.alert.event.securityResult.firstDiscoveredTime | First time the IoC threat was discovered in the provider. | date |
@@ -596,7 +597,7 @@ An example event for `alert` looks as following:
 | google_secops.alert.event.securityResult.ruleType | The type of security rule. | keyword |
 | google_secops.alert.event.securityResult.severity | The severity of the result. | keyword |
 | google_secops.alert.event.securityResult.severityDetails | Vendor-specific severity. | keyword |
-| google_secops.alert.event.securityResult.summary | A human readable summary (e.g. "failed login occurred"). | keyword |
+| google_secops.alert.event.securityResult.summary | A human readable summary (e.g. "failed login occurred"). | keyword |
 | google_secops.alert.event.securityResult.threatId | Vendor-specific ID for a threat. | keyword |
 | google_secops.alert.event.securityResult.threatIdNamespace | The attribute threat_id_namespace qualifies threat_id with an ID namespace to get an unique ID. The attribute threat_id by itself is not unique across Google SecOps as it is a vendor specific ID. | keyword |
 | google_secops.alert.event.securityResult.threatName | A vendor-assigned classification common across multiple customers (e.g. "W32/File-A", "Slammer"). | keyword |
@@ -653,10 +654,10 @@ An example event for `alert` looks as following:
 | google_secops.alert.event.target.resource.attribute.labels.key |  | keyword |
 | google_secops.alert.event.target.resource.attribute.labels.value |  | keyword |
 | google_secops.alert.event.target.resource.name | The full name of the resource. For example, Google Cloud: //cloudresourcemanager.googleapis.com/projects/wombat-123, and AWS: arn:aws:iam::123456789012:user/johndoe. | keyword |
-| google_secops.alert.event.target.resource.productObjectId | A vendor-specific identifier to uniquely identify the entity (a GUID, OID, or similar). | keyword |
+| google_secops.alert.event.target.resource.productObjectId | A vendor-specific identifier to uniquely identify the entity (a GUID, OID, or similar). | keyword |
 | google_secops.alert.event.target.resource.resourceType | Resource type. | keyword |
 | google_secops.alert.event.target.resourceAncestors.name | The full name of the resource. For example, Google Cloud: //cloudresourcemanager.googleapis.com/projects/wombat-123, and AWS: arn:aws:iam::123456789012:user/johndoe. | keyword |
-| google_secops.alert.event.target.resourceAncestors.productObjectId | A vendor-specific identifier to uniquely identify the entity (a GUID, OID, or similar). | keyword |
+| google_secops.alert.event.target.resourceAncestors.productObjectId | A vendor-specific identifier to uniquely identify the entity (a GUID, OID, or similar). | keyword |
 | google_secops.alert.event.target.user.emailAddresses | Email addresses of the user. | keyword |
 | google_secops.alert.event.target.user.groupIdentifiers | Product object identifiers of the group(s) the user belongs to A vendor-specific identifier to uniquely identify the group(s) the user belongs to (a GUID, LDAP OID, or similar). | keyword |
 | google_secops.alert.event.target.user.productObjectId | A vendor-specific identifier to uniquely identify the entity (e.g. a GUID, LDAP, OID, or similar). | keyword |

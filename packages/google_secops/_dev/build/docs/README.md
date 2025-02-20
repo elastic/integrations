@@ -1,6 +1,6 @@
 # Google SecOps
 
-[Google SecOps](https://cloud.google.com/chronicle/docs/secops/secops-overview) is a cloud-based service designed for enterprises to retain, analyze, and search large volumes of security and network telemetry. It normalizes, indexes, and correlates data to detect threats, investigate their scope and cause, and provide remediation through prebuilt integrations. The platform enables security analysts to examine aggregated security information, search across domains, and mitigate threats throughout their lifecycle.
+[Google SecOps](https://cloud.google.com/chronicle/docs/secops/secops-overview) is a cloud-based service designed for enterprises to retain, analyze, and search large volumes of security and network telemetry. It normalizes, indexes, and correlates data to detect threats. Investigate their scope and cause, and provide remediation through pre-built integrations. The platform enables security analysts to examine aggregated security information, search across domains, and mitigate threats throughout their lifecycle.
 
 The Google SecOps integration collects alerts using the [Detection Engine API](https://cloud.google.com/chronicle/docs/reference/detection-engine-api#listdetections).
 
@@ -18,7 +18,7 @@ This integration collects the following logs:
 
 ### Agentless deployment
 
-Agentless deployments are only supported in Elastic Serverless and Elastic Cloud environments. Agentless deployments provide a means to ingest data while avoiding the orchestration, management, and maintenance needs associated with standard ingest infrastructure. Using agentless deployment makes manual agent deployment unnecessary, allowing you to focus on your data instead of the agent that collects it.
+Agentless deployments are only supported in Elastic Serverless and Elastic Cloud environments. Agentless deployments provide a means to ingest data while avoiding the orchestration, management, and maintenance needs associated with standard ingest infrastructure. Using an agentless deployment makes manual agent deployment unnecessary, allowing you to focus on your data instead of the agent that collects it.
 
 For more information, refer to [Agentless integrations](https://www.elastic.co/guide/en/serverless/current/security-agentless-integrations.html) and [Agentless integrations FAQ](https://www.elastic.co/guide/en/serverless/current/agentless-integration-troubleshooting.html)
 
@@ -48,21 +48,21 @@ Please note, there are minimum requirements for running Elastic Agent. For more 
 
 ### To collect data from the Google SecOps API:
 
-   - Create Google SecOps service account [Steps to create](https://developers.google.com/identity/protocols/oauth2/service-account#creatinganaccount).
-   - **Chronicle API** must be enabled.
+- Create Google SecOps service account [Steps to create](https://developers.google.com/identity/protocols/oauth2/service-account#creatinganaccount).
+- **Chronicle API** must be enabled.
 
 ### To enable the Chronicle API:
 
-   - Log in to the  "https://console.cloud.google.com/"  using valid credentials.
-   - Navigate to the ‘Chronicle API’
-   - Click `Enabale`
+- Log in to the  "https://console.cloud.google.com/"  using valid credentials.
+- Navigate to the ‘Chronicle API’
+- Click `Enabale`
 
 ### To Update the Permission of Service Account
-   - Open GCP Console, Then go to IAM.
-   - In View By Main Tab > Click GRANT ACCESS.
-   - Add Service Account name in New Principals.
-   - In Assign Role, Select Owner.
-   - Click Save
+- Open GCP Console, Then go to IAM.
+- In View By Main Tab > Click GRANT ACCESS.
+- Add Service Account name in New Principals.
+- In Assign Role, Select Owner.
+- Click Save
 
 This integration will make use of the following *oauth2 scope*:
 
