@@ -1169,3 +1169,112 @@ An example event for `node_statistics` looks as following:
     ]
 }
 ```
+
+### Unmanaged Objects
+
+The `unmanaged_objects` dataset provides metrics related to the performance of the Rubrik cluster nodes.
+
+**ECS Field Reference**
+
+Please refer to the following [document](https://www.elastic.co/guide/en/ecs/current/ecs-field-reference.html) for detailed information on ECS fields.
+
+**Exported fields**
+
+| Field | Description | Type | Unit | Metric Type |
+|---|---|---|---|---|
+| @timestamp | Event timestamp. | date |  |  |
+| data_stream.dataset | Data stream dataset. | constant_keyword |  |  |
+| data_stream.namespace | Data stream namespace. | constant_keyword |  |  |
+| data_stream.type | Data stream type. | constant_keyword |  |  |
+| rubrik.unmanaged_objects.archive_storage.bytes | The amount of storage on the archival location used by unmanaged snapshots, in bytes. | long | byte | gauge |
+| rubrik.unmanaged_objects.id | The unmanaged object UUID. | keyword |  |  |
+| rubrik.unmanaged_objects.local_storage.bytes | The amount of storage on the local cluster used by unmanaged snapshots, in bytes. | long | byte | gauge |
+| rubrik.unmanaged_objects.name | The unmanaged object name. | keyword |  |  |
+| rubrik.unmanaged_objects.object_type | The unmanaged object type. | keyword |  |  |
+| rubrik.unmanaged_objects.retention_sla_domain.id | The ID of the SLA domain. | keyword |  |  |
+| rubrik.unmanaged_objects.retention_sla_domain.name | The name of the SLA domain. | keyword |  |  |
+| rubrik.unmanaged_objects.snapshot.count | Total number of snapshots to for the specified object. | long |  | gauge |
+| rubrik.unmanaged_objects.unmanaged_status | Unmanaged status for the specified object. | keyword |  |  |
+
+
+An example event for `unmanaged_objects` looks as following:
+
+```json
+{
+    "agent": {
+        "name": "docker-fleet-agent",
+        "id": "04f90ee5-976b-4bc4-8ad6-5ed776487c8d",
+        "ephemeral_id": "3c4f4447-00a4-4594-823d-8868a0d6a7e0",
+        "type": "filebeat",
+        "version": "8.13.1"
+    },
+    "rubrik": {
+        "unmanaged_objects": {
+            "retention_sla_domain": {
+                "name": "Unprotected",
+                "id": "UNPROTECTED"
+            },
+            "object_type": "VirtualMachine",
+            "local_storage": {
+                "bytes": 187053910
+            },
+            "name": "Ubuntu 14.10 Template",
+            "unmanaged_status": "Relic",
+            "archive_storage": {
+                "bytes": 0
+            },
+            "id": "VirtualMachine:::401333e6-16e3-4964-b5c2-076b1876ec8a-vm-237",
+            "snapshot": {
+                "count": 1
+            }
+        }
+    },
+    "@timestamp": "2025-02-19T14:46:25.854Z",
+    "ecs": {
+        "version": "8.16.0"
+    },
+    "data_stream": {
+        "namespace": "default",
+        "type": "metrics",
+        "dataset": "rubrik.unmanaged_objects"
+    },
+    "host": {
+        "hostname": "docker-fleet-agent",
+        "os": {
+            "kernel": "6.10.14-linuxkit",
+            "codename": "focal",
+            "name": "Ubuntu",
+            "type": "linux",
+            "family": "debian",
+            "version": "20.04.6 LTS (Focal Fossa)",
+            "platform": "ubuntu"
+        },
+        "containerized": false,
+        "ip": [
+            "172.18.0.7"
+        ],
+        "name": "docker-fleet-agent",
+        "id": "0c943706945f4061b59521bb029d64e5",
+        "mac": [
+            "02-42-AC-12-00-07"
+        ],
+        "architecture": "arch64"
+    },
+    "elastic_agent": {
+        "id": "04f90ee5-976b-4bc4-8ad6-5ed776487c8d",
+        "version": "8.13.1",
+        "snapshot": false
+    },
+    "event": {
+        "agent_id_status": "verified",
+        "ingested": "2025-02-19T14:46:35Z",
+        "original": "{\"archiveStorage\":0,\"hasSnapshotsWithPolicy\":true,\"id\":\"VirtualMachine:::401333e6-16e3-4964-b5c2-076b1876ec8a-vm-237\",\"isRemote\":false,\"localStorage\":187053910,\"name\":\"Ubuntu 14.10 Template\",\"objectType\":\"VirtualMachine\",\"physicalLocation\":[{\"managedId\":\"vCenter:::401333e6-16e3-4964-b5c2-076b1876ec8a\",\"name\":\"vcvxrail02.local\"}],\"retentionSlaDomainId\":\"UNPROTECTED\",\"retentionSlaDomainName\":\"Unprotected\",\"snapshotCount\":1,\"unmanagedStatus\":\"Relic\"}",
+        "kind": "metric",
+        "dataset": "rubrik.unmanaged_objects"
+    },
+    "tags": [
+        "preserve_original_event",
+        "rubrik.unmanaged_objects"
+    ]
+}
+```
