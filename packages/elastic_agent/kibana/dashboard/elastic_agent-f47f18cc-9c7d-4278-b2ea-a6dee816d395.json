@@ -29,7 +29,29 @@
         "description": "Elastic Agent metrics dashboard",
         "kibanaSavedObjectMeta": {
             "searchSourceJSON": {
-                "filter": [],
+                "filter": [
+                    {
+                        "$state": {
+                            "store": "appState"
+                        },
+                        "meta": {
+                            "alias": null,
+                            "disabled": false,
+                            "indexRefName": "kibanaSavedObjectMeta.searchSourceJSON.filter[0].meta.index",
+                            "key": "agent.name",
+                            "negate": false,
+                            "params": {
+                                "query": "9ca5ae305860"
+                            },
+                            "type": "phrase"
+                        },
+                        "query": {
+                            "match_phrase": {
+                                "agent.name": "9ca5ae305860"
+                            }
+                        }
+                    }
+                ],
                 "query": {
                     "language": "kuery",
                     "query": ""
@@ -142,9 +164,26 @@
                                                 "44b18e3d-0b2a-4516-a929-d180ea15048d",
                                                 "5aa94b2b-b3e5-4f34-b253-d8915a647bd1",
                                                 "38b4c192-cbb8-42cd-bdf2-7749214b9674",
-                                                "8a440893-c550-4cd7-8219-a4c0104ef1c7"
+                                                "8a440893-c550-4cd7-8219-a4c0104ef1c7",
+                                                "06bb5a83-1cd8-4201-a05c-005ceddd16e2"
                                             ],
                                             "columns": {
+                                                "06bb5a83-1cd8-4201-a05c-005ceddd16e2": {
+                                                    "customLabel": true,
+                                                    "dataType": "date",
+                                                    "filter": {
+                                                        "language": "kuery",
+                                                        "query": "\"@timestamp\": *"
+                                                    },
+                                                    "isBucketed": false,
+                                                    "label": "Last Seen",
+                                                    "operationType": "last_value",
+                                                    "params": {
+                                                        "sortField": "@timestamp"
+                                                    },
+                                                    "scale": "ratio",
+                                                    "sourceField": "@timestamp"
+                                                },
                                                 "38b4c192-cbb8-42cd-bdf2-7749214b9674": {
                                                     "customLabel": true,
                                                     "dataType": "string",
@@ -222,10 +261,10 @@
                                                         "includeIsRegex": false,
                                                         "missingBucket": false,
                                                         "orderBy": {
-                                                            "fallback": true,
-                                                            "type": "alphabetical"
+                                                            "columnId": "06bb5a83-1cd8-4201-a05c-005ceddd16e2",
+                                                            "type": "column"
                                                         },
-                                                        "orderDirection": "asc",
+                                                        "orderDirection": "desc",
                                                         "otherBucket": true,
                                                         "parentFormat": {
                                                             "id": "terms"
@@ -297,6 +336,10 @@
                                     },
                                     {
                                         "columnId": "8a440893-c550-4cd7-8219-a4c0104ef1c7",
+                                        "isTransposed": false
+                                    },
+                                    {
+                                        "columnId": "06bb5a83-1cd8-4201-a05c-005ceddd16e2",
                                         "isTransposed": false
                                     }
                                 ],
@@ -498,7 +541,6 @@
                     "y": 9
                 },
                 "panelIndex": "21961c2f-d420-4482-964e-5e7799545c7f",
-                "title": "[Elastic Agent] Agent Uptime",
                 "type": "lens"
             },
             {
@@ -607,7 +649,6 @@
                     "y": 9
                 },
                 "panelIndex": "e3042c9b-987d-41fa-bc6b-0a73565ef278",
-                "title": "[Elastic Agent] Number of Integrations (copy)",
                 "type": "lens"
             },
             {
@@ -710,7 +751,6 @@
                     "y": 9
                 },
                 "panelIndex": "6546c431-8922-4c36-8546-822a6e3f0804",
-                "title": "[Elastic Agent] Number of Integrations",
                 "type": "lens"
             },
             {
@@ -878,7 +918,6 @@
                     "y": 9
                 },
                 "panelIndex": "7f03f527-3388-4868-b7d6-337a4e77c89e",
-                "title": "[Elastic Agent] Number of Integrations (copy)",
                 "type": "lens"
             },
             {
@@ -1046,7 +1085,6 @@
                     "y": 9
                 },
                 "panelIndex": "a7989318-9ba9-41ba-94f0-ec95e1993ab0",
-                "title": "[Elastic Agent] Number of Integrations (copy)",
                 "type": "lens"
             },
             {
@@ -1224,7 +1262,6 @@
                     "y": 9
                 },
                 "panelIndex": "fe2be814-0113-4056-a509-69ddd2458dfa",
-                "title": "[Elastic Agent] Number of Integrations (copy)",
                 "type": "lens"
             },
             {
@@ -1500,7 +1537,6 @@
                     "y": 9
                 },
                 "panelIndex": "2d1e0d7f-fedd-40e0-9bdc-cf46148e7527",
-                "title": "[Elastic Agent] Number of Integrations (copy)",
                 "type": "lens"
             },
             {
@@ -1762,7 +1798,6 @@
                     "y": 9
                 },
                 "panelIndex": "4dfe7f9d-c1a8-4906-9a56-31e2a808f893",
-                "title": "[Elastic Agent] Number of Integrations (copy)",
                 "type": "lens"
             },
             {
@@ -1807,7 +1842,7 @@
                                                                 "decimals": 0
                                                             }
                                                         },
-                                                        "formula": "abs(differences(max(system.process.cpu.total.time.ms))/interval())",
+                                                        "formula": "pick_max(differences(max(system.process.cpu.total.time.ms))/interval(),0)\n",
                                                         "isFormulaBroken": false
                                                     },
                                                     "references": [
@@ -1862,20 +1897,21 @@
                                                                         "36f3abb0-7261-43e6-bc2f-7ad492094054X2"
                                                                     ],
                                                                     "location": {
-                                                                        "max": 65,
-                                                                        "min": 4
+                                                                        "max": 70,
+                                                                        "min": 9
                                                                     },
                                                                     "name": "divide",
                                                                     "text": "differences(max(system.process.cpu.total.time.ms))/interval()",
                                                                     "type": "function"
-                                                                }
+                                                                },
+                                                                0
                                                             ],
                                                             "location": {
-                                                                "max": 66,
+                                                                "max": 74,
                                                                 "min": 0
                                                             },
-                                                            "name": "abs",
-                                                            "text": "abs(differences(max(system.process.cpu.total.time.ms))/interval())",
+                                                            "name": "pick_max",
+                                                            "text": "pick_max(differences(max(system.process.cpu.total.time.ms))/interval(),0)\n",
                                                             "type": "function"
                                                         }
                                                     },
@@ -1918,7 +1954,7 @@
                                                     "params": {
                                                         "dropPartials": false,
                                                         "includeEmptyRows": false,
-                                                        "interval": "auto"
+                                                        "interval": "m"
                                                     },
                                                     "scale": "interval",
                                                     "sourceField": "@timestamp"
@@ -2077,10 +2113,10 @@
                                                         "format": {
                                                             "id": "percent",
                                                             "params": {
-                                                                "decimals": 0
+                                                                "decimals": 2
                                                             }
                                                         },
-                                                        "formula": "counter_rate(max(beat.stats.cgroup.cpu.stats.throttled.ns))/1000000000/100",
+                                                        "formula": "pick_max(counter_rate(max(beat.stats.cgroup.cpu.stats.throttled.ns))/1000000000,0)",
                                                         "isFormulaBroken": false
                                                     },
                                                     "references": [
@@ -2126,17 +2162,22 @@
                                                                         "90bc620d-c329-4607-90d4-5245a7cc7e69X1",
                                                                         1000000000
                                                                     ],
+                                                                    "location": {
+                                                                        "max": 79,
+                                                                        "min": 9
+                                                                    },
                                                                     "name": "divide",
+                                                                    "text": "counter_rate(max(beat.stats.cgroup.cpu.stats.throttled.ns))/1000000000",
                                                                     "type": "function"
                                                                 },
-                                                                100
+                                                                0
                                                             ],
                                                             "location": {
-                                                                "max": 74,
+                                                                "max": 82,
                                                                 "min": 0
                                                             },
-                                                            "name": "divide",
-                                                            "text": "counter_rate(max(beat.stats.cgroup.cpu.stats.throttled.ns))/1000000000/100",
+                                                            "name": "pick_max",
+                                                            "text": "pick_max(counter_rate(max(beat.stats.cgroup.cpu.stats.throttled.ns))/1000000000,0)",
                                                             "type": "function"
                                                         }
                                                     },
@@ -2153,7 +2194,7 @@
                                                     "params": {
                                                         "dropPartials": true,
                                                         "includeEmptyRows": false,
-                                                        "interval": "auto"
+                                                        "interval": "m"
                                                     },
                                                     "scale": "interval",
                                                     "sourceField": "@timestamp"
@@ -2206,6 +2247,7 @@
                                     "yLeft": false,
                                     "yRight": false
                                 },
+                                "fittingFunction": "Zero",
                                 "gridlinesVisibilitySettings": {
                                     "x": true,
                                     "yLeft": true,
@@ -2266,10 +2308,16 @@
             {
                 "embeddableConfig": {
                     "attributes": {
+                        "description": "",
                         "references": [
                             {
                                 "id": "metrics-*",
                                 "name": "indexpattern-datasource-layer-c8958799-403d-41b6-9b7a-836c6de65bb6",
+                                "type": "index-pattern"
+                            },
+                            {
+                                "id": "metrics-*",
+                                "name": "indexpattern-datasource-layer-83904358-02fc-4f87-8ffd-7f7c9be51bc4",
                                 "type": "index-pattern"
                             }
                         ],
@@ -2277,8 +2325,34 @@
                             "adHocDataViews": {},
                             "datasourceStates": {
                                 "formBased": {
-                                    "currentIndexPatternId": "metrics-*",
                                     "layers": {
+                                        "83904358-02fc-4f87-8ffd-7f7c9be51bc4": {
+                                            "columnOrder": [
+                                                "a4544e33-c8fd-4c32-8762-07158abd6f07"
+                                            ],
+                                            "columns": {
+                                                "a4544e33-c8fd-4c32-8762-07158abd6f07": {
+                                                    "customLabel": true,
+                                                    "dataType": "number",
+                                                    "filter": {
+                                                        "language": "kuery",
+                                                        "query": "component.id : \"elastic-agent\" "
+                                                    },
+                                                    "isBucketed": false,
+                                                    "label": "cgroup limit",
+                                                    "operationType": "max",
+                                                    "params": {
+                                                        "emptyAsNull": true
+                                                    },
+                                                    "scale": "ratio",
+                                                    "sourceField": "system.process.cgroup.memory.mem.limit.bytes"
+                                                }
+                                            },
+                                            "ignoreGlobalFilters": false,
+                                            "incompleteColumns": {},
+                                            "linkToLayers": [],
+                                            "sampling": 1
+                                        },
                                         "c8958799-403d-41b6-9b7a-836c6de65bb6": {
                                             "columnOrder": [
                                                 "30880bcc-bda9-4cb3-b86c-e1ec9f01f4a5",
@@ -2339,14 +2413,13 @@
                                                     "params": {
                                                         "dropPartials": true,
                                                         "includeEmptyRows": false,
-                                                        "interval": "auto"
+                                                        "interval": "m"
                                                     },
                                                     "scale": "interval",
                                                     "sourceField": "@timestamp"
                                                 }
                                             },
                                             "incompleteColumns": {},
-                                            "indexPatternId": "metrics-*",
                                             "sampling": 1
                                         }
                                     }
@@ -2395,6 +2468,21 @@
                                             {
                                                 "axisMode": "left",
                                                 "forAccessor": "401c5798-78b4-40ea-8ff7-debce9f4dbeb"
+                                            }
+                                        ]
+                                    },
+                                    {
+                                        "accessors": [
+                                            "a4544e33-c8fd-4c32-8762-07158abd6f07"
+                                        ],
+                                        "layerId": "83904358-02fc-4f87-8ffd-7f7c9be51bc4",
+                                        "layerType": "referenceLine",
+                                        "yConfig": [
+                                            {
+                                                "axisMode": "left",
+                                                "color": "#e7664c",
+                                                "fill": "none",
+                                                "forAccessor": "a4544e33-c8fd-4c32-8762-07158abd6f07"
                                             }
                                         ]
                                     }
@@ -2520,7 +2608,7 @@
                                                     "params": {
                                                         "dropPartials": true,
                                                         "includeEmptyRows": false,
-                                                        "interval": "auto"
+                                                        "interval": "m"
                                                     },
                                                     "scale": "interval",
                                                     "sourceField": "@timestamp"
@@ -2627,7 +2715,7 @@
                     "y": 22
                 },
                 "panelIndex": "91a584c2-e04c-47c5-af83-c547250120d1",
-                "title": "[Elastic Agent] Queue Usage",
+                "title": "[Elastic Agent] Max Queue Usage",
                 "type": "lens"
             },
             {
@@ -2667,7 +2755,7 @@
                                                 "2e112c50-5bc4-4c0b-a69b-8c17e0f9fc0a": {
                                                     "dataType": "string",
                                                     "isBucketed": true,
-                                                    "label": "Top 10 values of component.id",
+                                                    "label": "Top 15 values of component.id",
                                                     "operationType": "terms",
                                                     "params": {
                                                         "missingBucket": false,
@@ -2681,7 +2769,7 @@
                                                             "id": "terms"
                                                         },
                                                         "secondaryFields": [],
-                                                        "size": 10
+                                                        "size": 15
                                                     },
                                                     "scale": "ordinal",
                                                     "sourceField": "component.id"
@@ -3014,20 +3102,20 @@
                             "adHocDataViews": {},
                             "datasourceStates": {
                                 "formBased": {
-                                    "currentIndexPatternId": "metrics-*",
                                     "layers": {
                                         "ad65be36-0be3-4937-8f41-ec9e48adfce6": {
                                             "columnOrder": [
                                                 "23fb1753-21dd-4852-b69d-30a1595a53ab",
                                                 "49cd060d-6f21-4d81-ad6b-1c8462c97353",
                                                 "0d877391-be8f-49bd-82dc-fa71a85ff6f7",
-                                                "a9d75be3-9031-44ea-b501-625e92af752c",
                                                 "2fbe204f-fcbe-479c-8dd0-811ba9fa53ec",
                                                 "d1871152-a5d9-4141-9f46-96372a1267a7",
                                                 "19838b3b-79cc-4975-8d4e-fd2f88652fb3",
                                                 "375518d5-9f32-4f54-ae41-8f0bdbb6a684",
                                                 "5ad29932-9c87-4dd0-87d8-1ff6a7f48f25",
-                                                "a7aa4d58-4f36-4c9a-a736-da7ec2c02126"
+                                                "a7aa4d58-4f36-4c9a-a736-da7ec2c02126",
+                                                "0d877391-be8f-49bd-82dc-fa71a85ff6f7X0",
+                                                "0d877391-be8f-49bd-82dc-fa71a85ff6f7X1"
                                             ],
                                             "columns": {
                                                 "0d877391-be8f-49bd-82dc-fa71a85ff6f7": {
@@ -3035,17 +3123,44 @@
                                                     "dataType": "number",
                                                     "isBucketed": false,
                                                     "label": "Dropped",
-                                                    "operationType": "counter_rate",
+                                                    "operationType": "formula",
                                                     "params": {
                                                         "format": {
                                                             "id": "number",
                                                             "params": {
+                                                                "compact": false,
                                                                 "decimals": 0
                                                             }
-                                                        }
+                                                        },
+                                                        "formula": "counter_rate(max(beat.stats.libbeat.output.events.dropped))",
+                                                        "isFormulaBroken": false
                                                     },
                                                     "references": [
-                                                        "a9d75be3-9031-44ea-b501-625e92af752c"
+                                                        "0d877391-be8f-49bd-82dc-fa71a85ff6f7X1"
+                                                    ],
+                                                    "scale": "ratio",
+                                                    "timeScale": "s"
+                                                },
+                                                "0d877391-be8f-49bd-82dc-fa71a85ff6f7X0": {
+                                                    "customLabel": true,
+                                                    "dataType": "number",
+                                                    "isBucketed": false,
+                                                    "label": "Part of Dropped",
+                                                    "operationType": "max",
+                                                    "params": {
+                                                        "emptyAsNull": false
+                                                    },
+                                                    "scale": "ratio",
+                                                    "sourceField": "beat.stats.libbeat.output.events.dropped"
+                                                },
+                                                "0d877391-be8f-49bd-82dc-fa71a85ff6f7X1": {
+                                                    "customLabel": true,
+                                                    "dataType": "number",
+                                                    "isBucketed": false,
+                                                    "label": "Part of Dropped",
+                                                    "operationType": "counter_rate",
+                                                    "references": [
+                                                        "0d877391-be8f-49bd-82dc-fa71a85ff6f7X0"
                                                     ],
                                                     "scale": "ratio",
                                                     "timeScale": "s"
@@ -3170,17 +3285,6 @@
                                                     "scale": "ratio",
                                                     "sourceField": "beat.stats.libbeat.output.events.toomany"
                                                 },
-                                                "a9d75be3-9031-44ea-b501-625e92af752c": {
-                                                    "dataType": "number",
-                                                    "isBucketed": false,
-                                                    "label": "Maximum of beat.stats.libbeat.output.events.dropped",
-                                                    "operationType": "max",
-                                                    "params": {
-                                                        "emptyAsNull": true
-                                                    },
-                                                    "scale": "ratio",
-                                                    "sourceField": "beat.stats.libbeat.output.events.dropped"
-                                                },
                                                 "d1871152-a5d9-4141-9f46-96372a1267a7": {
                                                     "dataType": "number",
                                                     "isBucketed": false,
@@ -3193,8 +3297,7 @@
                                                     "sourceField": "beat.stats.libbeat.output.events.duplicates"
                                                 }
                                             },
-                                            "incompleteColumns": {},
-                                            "indexPatternId": "metrics-*"
+                                            "incompleteColumns": {}
                                         }
                                     }
                                 }
@@ -3276,7 +3379,7 @@
                                         "layerId": "ad65be36-0be3-4937-8f41-ec9e48adfce6",
                                         "layerType": "data",
                                         "position": "top",
-                                        "seriesType": "bar_stacked",
+                                        "seriesType": "area_stacked",
                                         "showGridlines": false,
                                         "splitAccessor": "23fb1753-21dd-4852-b69d-30a1595a53ab",
                                         "xAccessor": "49cd060d-6f21-4d81-ad6b-1c8462c97353",
@@ -3368,6 +3471,7 @@
             {
                 "embeddableConfig": {
                     "attributes": {
+                        "description": "",
                         "references": [
                             {
                                 "id": "metrics-*",
@@ -3379,7 +3483,6 @@
                             "adHocDataViews": {},
                             "datasourceStates": {
                                 "formBased": {
-                                    "currentIndexPatternId": "metrics-*",
                                     "layers": {
                                         "99f20cec-1684-4175-b773-02c3638f2a32": {
                                             "columnOrder": [
@@ -3405,7 +3508,7 @@
                                                                 "decimals": 2
                                                             }
                                                         },
-                                                        "formula": "differences(max(system.process.cpu.total.time.ms))/interval()",
+                                                        "formula": "pick_max(differences(max(system.process.cpu.total.time.ms))/interval(),0)",
                                                         "isFormulaBroken": false
                                                     },
                                                     "references": [
@@ -3417,7 +3520,7 @@
                                                     "customLabel": true,
                                                     "dataType": "number",
                                                     "isBucketed": false,
-                                                    "label": "Part of  ",
+                                                    "label": "Part of CPU Usage",
                                                     "operationType": "max",
                                                     "params": {
                                                         "emptyAsNull": false
@@ -3429,7 +3532,7 @@
                                                     "customLabel": true,
                                                     "dataType": "number",
                                                     "isBucketed": false,
-                                                    "label": "Part of  ",
+                                                    "label": "Part of CPU Usage",
                                                     "operationType": "differences",
                                                     "references": [
                                                         "36f3abb0-7261-43e6-bc2f-7ad492094054X0"
@@ -3440,7 +3543,7 @@
                                                     "customLabel": true,
                                                     "dataType": "number",
                                                     "isBucketed": false,
-                                                    "label": "Part of  ",
+                                                    "label": "Part of CPU Usage",
                                                     "operationType": "interval",
                                                     "references": [],
                                                     "scale": "ratio"
@@ -3449,20 +3552,32 @@
                                                     "customLabel": true,
                                                     "dataType": "number",
                                                     "isBucketed": false,
-                                                    "label": "Part of  ",
+                                                    "label": "Part of CPU Usage",
                                                     "operationType": "math",
                                                     "params": {
                                                         "tinymathAst": {
                                                             "args": [
-                                                                "36f3abb0-7261-43e6-bc2f-7ad492094054X1",
-                                                                "36f3abb0-7261-43e6-bc2f-7ad492094054X2"
+                                                                {
+                                                                    "args": [
+                                                                        "36f3abb0-7261-43e6-bc2f-7ad492094054X1",
+                                                                        "36f3abb0-7261-43e6-bc2f-7ad492094054X2"
+                                                                    ],
+                                                                    "location": {
+                                                                        "max": 70,
+                                                                        "min": 9
+                                                                    },
+                                                                    "name": "divide",
+                                                                    "text": "differences(max(system.process.cpu.total.time.ms))/interval()",
+                                                                    "type": "function"
+                                                                },
+                                                                0
                                                             ],
                                                             "location": {
-                                                                "max": 61,
+                                                                "max": 73,
                                                                 "min": 0
                                                             },
-                                                            "name": "divide",
-                                                            "text": "differences(max(system.process.cpu.total.time.ms))/interval()",
+                                                            "name": "pick_max",
+                                                            "text": "pick_max(differences(max(system.process.cpu.total.time.ms))/interval(),0)",
                                                             "type": "function"
                                                         }
                                                     },
@@ -3492,6 +3607,7 @@
                                                         "parentFormat": {
                                                             "id": "terms"
                                                         },
+                                                        "secondaryFields": [],
                                                         "size": 10
                                                     },
                                                     "scale": "ordinal",
@@ -3505,7 +3621,7 @@
                                                     "params": {
                                                         "dropPartials": false,
                                                         "includeEmptyRows": false,
-                                                        "interval": "auto"
+                                                        "interval": "m"
                                                     },
                                                     "scale": "interval",
                                                     "sourceField": "@timestamp"
@@ -3513,7 +3629,6 @@
                                             },
                                             "ignoreGlobalFilters": false,
                                             "incompleteColumns": {},
-                                            "indexPatternId": "metrics-*",
                                             "sampling": 1
                                         }
                                     }
@@ -3690,7 +3805,7 @@
                                                     "params": {
                                                         "dropPartials": true,
                                                         "includeEmptyRows": false,
-                                                        "interval": "auto"
+                                                        "interval": "m"
                                                     },
                                                     "scale": "interval",
                                                     "sourceField": "@timestamp"
@@ -3841,7 +3956,7 @@
                                                     "params": {
                                                         "dropPartials": true,
                                                         "includeEmptyRows": false,
-                                                        "interval": "auto"
+                                                        "interval": "m"
                                                     },
                                                     "scale": "interval",
                                                     "sourceField": "@timestamp"
@@ -4239,7 +4354,7 @@
                                                     "params": {
                                                         "dropPartials": true,
                                                         "includeEmptyRows": false,
-                                                        "interval": "auto"
+                                                        "interval": "m"
                                                     },
                                                     "scale": "interval",
                                                     "sourceField": "@timestamp"
@@ -4381,7 +4496,7 @@
                                                     "params": {
                                                         "dropPartials": true,
                                                         "includeEmptyRows": false,
-                                                        "interval": "auto"
+                                                        "interval": "m"
                                                     },
                                                     "scale": "interval",
                                                     "sourceField": "@timestamp"
@@ -4598,7 +4713,7 @@
                                                     "params": {
                                                         "dropPartials": true,
                                                         "includeEmptyRows": false,
-                                                        "interval": "auto"
+                                                        "interval": "m"
                                                     },
                                                     "scale": "interval",
                                                     "sourceField": "@timestamp"
@@ -4788,7 +4903,7 @@
                                                     "params": {
                                                         "dropPartials": true,
                                                         "includeEmptyRows": false,
-                                                        "interval": "auto"
+                                                        "interval": "m"
                                                     },
                                                     "scale": "interval",
                                                     "sourceField": "@timestamp"
@@ -4957,7 +5072,7 @@
                                                     "params": {
                                                         "dropPartials": true,
                                                         "includeEmptyRows": false,
-                                                        "interval": "auto"
+                                                        "interval": "m"
                                                     },
                                                     "scale": "interval",
                                                     "sourceField": "@timestamp"
@@ -5149,7 +5264,7 @@
                                                     "params": {
                                                         "dropPartials": true,
                                                         "includeEmptyRows": false,
-                                                        "interval": "auto"
+                                                        "interval": "m"
                                                     },
                                                     "scale": "interval",
                                                     "sourceField": "@timestamp"
@@ -5339,7 +5454,7 @@
                                                     "params": {
                                                         "dropPartials": true,
                                                         "includeEmptyRows": false,
-                                                        "interval": "auto"
+                                                        "interval": "m"
                                                     },
                                                     "scale": "interval",
                                                     "sourceField": "@timestamp"
@@ -5553,7 +5668,7 @@
                                                     "params": {
                                                         "dropPartials": true,
                                                         "includeEmptyRows": false,
-                                                        "interval": "auto"
+                                                        "interval": "m"
                                                     },
                                                     "scale": "interval",
                                                     "sourceField": "@timestamp"
@@ -5743,7 +5858,7 @@
                                                     "params": {
                                                         "dropPartials": true,
                                                         "includeEmptyRows": false,
-                                                        "interval": "auto"
+                                                        "interval": "m"
                                                     },
                                                     "scale": "interval",
                                                     "sourceField": "@timestamp"
@@ -5933,7 +6048,7 @@
                                                     "params": {
                                                         "dropPartials": true,
                                                         "includeEmptyRows": false,
-                                                        "interval": "auto"
+                                                        "interval": "m"
                                                     },
                                                     "scale": "interval",
                                                     "sourceField": "@timestamp"
@@ -6123,7 +6238,7 @@
                                                     "params": {
                                                         "dropPartials": true,
                                                         "includeEmptyRows": false,
-                                                        "interval": "auto"
+                                                        "interval": "m"
                                                     },
                                                     "scale": "interval",
                                                     "sourceField": "@timestamp"
@@ -6313,7 +6428,7 @@
                                                     "params": {
                                                         "dropPartials": true,
                                                         "includeEmptyRows": false,
-                                                        "interval": "auto"
+                                                        "interval": "m"
                                                     },
                                                     "scale": "interval",
                                                     "sourceField": "@timestamp"
@@ -6557,7 +6672,7 @@
                                                     "params": {
                                                         "dropPartials": true,
                                                         "includeEmptyRows": false,
-                                                        "interval": "auto"
+                                                        "interval": "m"
                                                     },
                                                     "scale": "interval",
                                                     "sourceField": "@timestamp"
@@ -6761,7 +6876,7 @@
                                                     "params": {
                                                         "dropPartials": true,
                                                         "includeEmptyRows": false,
-                                                        "interval": "auto"
+                                                        "interval": "m"
                                                     },
                                                     "scale": "interval",
                                                     "sourceField": "@timestamp"
@@ -6894,7 +7009,6 @@
                             "adHocDataViews": {},
                             "datasourceStates": {
                                 "formBased": {
-                                    "currentIndexPatternId": "metrics-*",
                                     "layers": {
                                         "fa212775-2294-4cb0-a671-eb76e6856d14": {
                                             "columnOrder": [
@@ -6916,10 +7030,10 @@
                                                         "format": {
                                                             "id": "percent",
                                                             "params": {
-                                                                "decimals": 0
+                                                                "decimals": 2
                                                             }
                                                         },
-                                                        "formula": "counter_rate(max(beat.stats.cgroup.cpu.stats.throttled.ns))/1000000000/100",
+                                                        "formula": "counter_rate(max(beat.stats.cgroup.cpu.stats.throttled.ns))/1000000000",
                                                         "isFormulaBroken": false
                                                     },
                                                     "references": [
@@ -6960,22 +7074,15 @@
                                                     "params": {
                                                         "tinymathAst": {
                                                             "args": [
-                                                                {
-                                                                    "args": [
-                                                                        "90bc620d-c329-4607-90d4-5245a7cc7e69X1",
-                                                                        1000000000
-                                                                    ],
-                                                                    "name": "divide",
-                                                                    "type": "function"
-                                                                },
-                                                                100
+                                                                "90bc620d-c329-4607-90d4-5245a7cc7e69X1",
+                                                                1000000000
                                                             ],
                                                             "location": {
-                                                                "max": 74,
+                                                                "max": 70,
                                                                 "min": 0
                                                             },
                                                             "name": "divide",
-                                                            "text": "counter_rate(max(beat.stats.cgroup.cpu.stats.throttled.ns))/1000000000/100",
+                                                            "text": "counter_rate(max(beat.stats.cgroup.cpu.stats.throttled.ns))/1000000000",
                                                             "type": "function"
                                                         }
                                                     },
@@ -6992,7 +7099,7 @@
                                                     "params": {
                                                         "dropPartials": true,
                                                         "includeEmptyRows": false,
-                                                        "interval": "auto"
+                                                        "interval": "m"
                                                     },
                                                     "scale": "interval",
                                                     "sourceField": "@timestamp"
@@ -7024,7 +7131,6 @@
                                                 }
                                             },
                                             "incompleteColumns": {},
-                                            "indexPatternId": "metrics-*",
                                             "sampling": 1
                                         }
                                     }
@@ -7045,6 +7151,7 @@
                                     "yLeft": false,
                                     "yRight": false
                                 },
+                                "fittingFunction": "Zero",
                                 "gridlinesVisibilitySettings": {
                                     "x": true,
                                     "yLeft": true,
@@ -7108,10 +7215,15 @@
         "version": 2
     },
     "coreMigrationVersion": "8.8.0",
-    "created_at": "2025-02-04T17:39:57.852Z",
+    "created_at": "2025-02-20T19:34:02.253Z",
     "id": "elastic_agent-f47f18cc-9c7d-4278-b2ea-a6dee816d395",
     "managed": false,
     "references": [
+        {
+            "id": "metrics-*",
+            "name": "kibanaSavedObjectMeta.searchSourceJSON.filter[0].meta.index",
+            "type": "index-pattern"
+        },
         {
             "id": "metrics-*",
             "name": "ca491918-8011-4c39-b855-e13ae7b9b581:indexpattern-datasource-layer-2be7d580-9fee-48d0-ab61-4ba934a5dbe9",
@@ -7210,6 +7322,11 @@
         {
             "id": "metrics-*",
             "name": "59293071-891d-47d8-9729-8d109fa8a6a3:indexpattern-datasource-layer-c8958799-403d-41b6-9b7a-836c6de65bb6",
+            "type": "index-pattern"
+        },
+        {
+            "id": "metrics-*",
+            "name": "59293071-891d-47d8-9729-8d109fa8a6a3:indexpattern-datasource-layer-83904358-02fc-4f87-8ffd-7f7c9be51bc4",
             "type": "index-pattern"
         },
         {
