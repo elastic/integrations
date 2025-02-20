@@ -192,31 +192,31 @@ An example event for `activemq` looks as following:
 | aws.amazonmq.metrics.activemq.broker.BurstBalance.min | The percentage of burst credits remaining on the Amazon EBS volume used to persist message data for throughput-optimized brokers. | long | percent | gauge |
 | aws.amazonmq.metrics.activemq.broker.CpuCreditBalance.min | The number of earned CPU credits that an instance has accrued since it was launched or started. | long |  | gauge |
 | aws.amazonmq.metrics.activemq.broker.CpuUtilization.avg | The percentage of allocated Amazon EC2 compute units that the broker currently uses. | long | percent | gauge |
-| aws.amazonmq.metrics.activemq.broker.CurrentConnectionsCount.sum | The current number of active connections on the current broker. | long |  | gauge |
-| aws.amazonmq.metrics.activemq.broker.EstablishedConnectionsCount.sum | The total number of connections, active and inactive, that have been established on the broker. | long |  | gauge |
+| aws.amazonmq.metrics.activemq.broker.CurrentConnectionsCount.max | The current number of active connections on the current broker. | long |  | gauge |
+| aws.amazonmq.metrics.activemq.broker.EstablishedConnectionsCount.max | The total number of connections, active and inactive, that have been established on the broker. | long |  | gauge |
 | aws.amazonmq.metrics.activemq.broker.HeapUsage.avg | The percentage of the ActiveMQ JVM memory limit that the broker currently uses. | long | percent | gauge |
-| aws.amazonmq.metrics.activemq.broker.InactiveDurableTopicSubscribersCount.sum | The number of inactive durable topic subscribers. | long |  | gauge |
+| aws.amazonmq.metrics.activemq.broker.InactiveDurableTopicSubscribersCount.max | The number of inactive durable topic subscribers. | long |  | gauge |
 | aws.amazonmq.metrics.activemq.broker.JobSchedulerStorePercentUsage.avg | The percentage of disk space used by the job scheduler store. | long | percent | gauge |
-| aws.amazonmq.metrics.activemq.broker.JournalFilesForFastRecovery.sum | The number of journal files that will be replayed after a clean shutdown. | long |  | gauge |
-| aws.amazonmq.metrics.activemq.broker.JournalFilesForFullRecovery.sum | The number of journal files that will be replayed after an unclean shutdown. | long |  | gauge |
+| aws.amazonmq.metrics.activemq.broker.JournalFilesForFastRecovery.max | The number of journal files that will be replayed after a clean shutdown. | long |  | gauge |
+| aws.amazonmq.metrics.activemq.broker.JournalFilesForFullRecovery.max | The number of journal files that will be replayed after an unclean shutdown. | long |  | gauge |
 | aws.amazonmq.metrics.activemq.broker.MqttMaximumConnections.max | The maximum number of clients you can connect to your broker using MQTT. | long |  | gauge |
-| aws.amazonmq.metrics.activemq.broker.NetworkConnectorConnectionCount.sum | The number of nodes connected to the broker in a network of brokers using NetworkConnector. | long |  | gauge |
-| aws.amazonmq.metrics.activemq.broker.NetworkIn.sum | The volume of incoming traffic for the broker. | long | byte | gauge |
-| aws.amazonmq.metrics.activemq.broker.NetworkOut.sum | The volume of outgoing traffic for the broker. | long | byte | gauge |
-| aws.amazonmq.metrics.activemq.broker.OpenTransactionCount.sum | The total number of transactions in progress. | long |  | gauge |
+| aws.amazonmq.metrics.activemq.broker.NetworkConnectorConnectionCount.max | The number of nodes connected to the broker in a network of brokers using NetworkConnector. | long |  | gauge |
+| aws.amazonmq.metrics.activemq.broker.NetworkIn.max | The volume of incoming traffic for the broker. | long | byte | gauge |
+| aws.amazonmq.metrics.activemq.broker.NetworkOut.max | The volume of outgoing traffic for the broker. | long | byte | gauge |
+| aws.amazonmq.metrics.activemq.broker.OpenTransactionCount.max | The total number of transactions in progress. | long |  | gauge |
 | aws.amazonmq.metrics.activemq.broker.OpenwireMaximumConnections.max | The maximum number of clients you can connect to your broker using OpenWire. | long |  | gauge |
 | aws.amazonmq.metrics.activemq.broker.StompMaximumConnections.max | The maximum number of clients you can connect to your broker using STOMP. | long |  | gauge |
 | aws.amazonmq.metrics.activemq.broker.StorePercentUsage.avg | The percent used by the storage limit. If this reaches 100, the broker will refuse messages. | long | percent | gauge |
 | aws.amazonmq.metrics.activemq.broker.TempPercentUsage.avg | The percentage of available temporary storage used by non-persistent messages. | long | percent | gauge |
-| aws.amazonmq.metrics.activemq.broker.TotalConsumerCount.sum | The number of message consumers subscribed to destinations on the current broker. | long |  | gauge |
-| aws.amazonmq.metrics.activemq.broker.TotalDequeueCount.sum | The total number of messages that have been consumed by clients. | long |  | gauge |
-| aws.amazonmq.metrics.activemq.broker.TotalEnqueueCount.sum | The total number of messages that have been sent to the broker. | long |  | gauge |
-| aws.amazonmq.metrics.activemq.broker.TotalMessageCount.sum | The number of messages stored on the broker. | long |  | gauge |
-| aws.amazonmq.metrics.activemq.broker.TotalProducerCount.sum | The number of message producers active on destinations on the current broker. | long |  | gauge |
-| aws.amazonmq.metrics.activemq.broker.VolumeReadOps.sum | The number of read operations performed on the Amazon EBS volume. | long |  | gauge |
-| aws.amazonmq.metrics.activemq.broker.VolumeWriteOps.sum | The number of write operations performed on the Amazon EBS volume. | long |  | gauge |
+| aws.amazonmq.metrics.activemq.broker.TotalConsumerCount.max | The number of message consumers subscribed to destinations on the current broker. | long |  | gauge |
+| aws.amazonmq.metrics.activemq.broker.TotalDequeueCount.max | The total number of messages that have been consumed by clients. | long |  | gauge |
+| aws.amazonmq.metrics.activemq.broker.TotalEnqueueCount.max | The total number of messages that have been sent to the broker. | long |  | gauge |
+| aws.amazonmq.metrics.activemq.broker.TotalMessageCount.max | The number of messages stored on the broker. | long |  | gauge |
+| aws.amazonmq.metrics.activemq.broker.TotalProducerCount.max | The number of message producers active on destinations on the current broker. | long |  | gauge |
+| aws.amazonmq.metrics.activemq.broker.VolumeReadOps.max | The number of read operations performed on the Amazon EBS volume. | long |  | gauge |
+| aws.amazonmq.metrics.activemq.broker.VolumeWriteOps.max | The number of write operations performed on the Amazon EBS volume. | long |  | gauge |
 | aws.amazonmq.metrics.activemq.broker.WsMaximumConnections.max | The maximum number of clients you can connect to your broker using WebSocket. | long |  | gauge |
-| aws.amazonmq.metrics.activemq.destination.ConsumerCount.sum | The number of consumers subscribed to the destination. | long |  | gauge |
+| aws.amazonmq.metrics.activemq.destination.ConsumerCount.max | The number of consumers subscribed to the destination. | long |  | gauge |
 | aws.amazonmq.metrics.activemq.destination.DequeueCount.sum | The number of messages acknowledged by consumers. | long |  | gauge |
 | aws.amazonmq.metrics.activemq.destination.DispatchCount.sum | The number of messages sent to consumers. | long |  | gauge |
 | aws.amazonmq.metrics.activemq.destination.EnqueueCount.sum | The number of messages sent to the destination. | long |  | gauge |
@@ -224,11 +224,11 @@ An example event for `activemq` looks as following:
 | aws.amazonmq.metrics.activemq.destination.ExpiredCount.sum | The number of messages that could not be delivered because they expired. | long |  | gauge |
 | aws.amazonmq.metrics.activemq.destination.InFlightCount.sum | The number of messages sent to consumers that have not been acknowledged. | long |  | gauge |
 | aws.amazonmq.metrics.activemq.destination.MemoryUsage.avg | The percentage of the memory limit that the destination currently uses. | long | percent | gauge |
-| aws.amazonmq.metrics.activemq.destination.ProducerCount.sum | The number of producers for the destination. | long |  | gauge |
-| aws.amazonmq.metrics.activemq.destination.QueueSize.sum | The number of messages in the queue. | long |  | gauge |
-| aws.amazonmq.metrics.activemq.destination.ReceiveCount.sum | The number of messages that have been received from the remote broker for a duplex network connector. | long |  | gauge |
-| aws.amazonmq.metrics.activemq.destination.TotalDequeueCount.sum | The total number of messages that have been consumed by clients. | long |  | gauge |
-| aws.amazonmq.metrics.activemq.destination.TotalEnqueueCount.sum | The total number of messages that have been sent to the broker. | long |  | gauge |
+| aws.amazonmq.metrics.activemq.destination.ProducerCount.max | The number of producers for the destination. | long |  | gauge |
+| aws.amazonmq.metrics.activemq.destination.QueueSize.max | The number of messages in the queue. | long |  | gauge |
+| aws.amazonmq.metrics.activemq.destination.ReceiveCount.max | The number of messages that have been received from the remote broker for a duplex network connector. | long |  | gauge |
+| aws.amazonmq.metrics.activemq.destination.TotalDequeueCount.max | The total number of messages that have been consumed by clients. | long |  | gauge |
+| aws.amazonmq.metrics.activemq.destination.TotalEnqueueCount.max | The total number of messages that have been sent to the broker. | long |  | gauge |
 | aws.cloudwatch.namespace | The namespace specified when query cloudwatch api. | keyword |  |  |
 | aws.dimensions.Broker | The name of the broker. | keyword |  |  |
 | aws.dimensions.NetworkConnector | The name of the network connector. | keyword |  |  |
