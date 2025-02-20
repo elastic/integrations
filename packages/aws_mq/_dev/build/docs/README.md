@@ -1,4 +1,4 @@
-# Amazon Bedrock
+# Amazon MQ
 
 ## Overview
 
@@ -15,7 +15,8 @@ This integration presently supports Amazon MQ for [Apache ActiveMQ](http://activ
 
 ## Data streams
 
-The Amazon MQ integration collects Apache ActiveMQ metrics.
+The Amazon MQ integration collects Apache ActiveMQ metrics. 
+
 
 Data streams:
  - `activemq_metrics`: Collects broker metrics and destination (queue and topic) metrics.
@@ -28,7 +29,7 @@ visualizing and managing it. You can use our hosted Elasticsearch Service on
 Elastic Cloud, which is recommended, or self-manage the Elastic Stack on your
 own hardware.
 
-Before using any Amazon Bedrock integration you will need:
+Before using any Amazon MQ integration you will need:
 
 * **AWS Credentials** to connect with your AWS account.
 * **AWS Permissions** to make sure the user you're using to connect has
@@ -54,6 +55,14 @@ Amazon MQ provides a range of broker and queue metrics that help monitor system 
 - Tracking broker resource utilization, such as compute, memory, and storage.
 - Monitoring message throughput and queue performance.
 - Identifying connection patterns and active consumers for optimizing messaging workloads.
+
+The following metrics are related to [Amazon MQ quotas](https://docs.aws.amazon.com/amazon-mq/latest/developer-guide/amazon-mq-limits.html). You can disable their collection by turning off **Collect ActiveMQ quota metrics** under **Advanced Options**:
+
+- AmqpMaximumConnections
+- MqttMaximumConnections
+- OpenwireMaximumConnections
+- StompMaximumConnections
+- WsMaximumConnections
 
 {{event "activemq_metrics"}}
 {{fields "activemq_metrics"}}
