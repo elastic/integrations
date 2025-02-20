@@ -5,6 +5,24 @@ processors:
       field: event.ingested
       value: "{{_ingest.timestamp}}"
       tag: ingest_timestamp
+  - date:
+      field: "@timestamp"
+      formats:
+        - ISO8601
+        - UNIX
+        - UNIX_MS
+      tag: daily_timestamp
+      output_format: "yyyy-MM-dd"
+      target_field: "_ingest.day"
+  - fingerprint:
+      fields:
+        - ess.billing.organization_id
+        - ess.billing.start
+        - ess.billing.ecu_quantity
+        - _ingest.day
+      tag: fingerprint_event
+      target_field: _id
+      ignore_missing: true
   - set:
       field: cloud.account.id
       copy_from: ess.billing.organization_id

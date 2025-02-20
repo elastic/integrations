@@ -1,6 +1,8 @@
 ---
 description: "Ingest pipeline for ESS billing data"
 processors:
+  - drop:
+      if: "ctx.ess?.billing == null && ctx.error?.message == null"
   - set:
       field: event.ingested
       value: "{{_ingest.timestamp}}"
@@ -135,6 +137,7 @@ processors:
         if (regionGeo.containsKey(region)) {
           ctx.cloud.geo = regionGeo[region];
         }
+      ignore_failure: true
   - set:
       if: "ctx.cloud.geo.name == null"
       tag: set_unknown_geo
