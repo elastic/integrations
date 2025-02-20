@@ -25,7 +25,7 @@ redact:
 program: |-
   
   (
-  	state.?cursor.?is_initial_pull_done.orValue(false) ?
+  	state.?cursor.?is_historic_data_fetched.orValue(false) ?
   		{
   			"deltaTime": [state.cursor.delta_time.encode_json()],
   			"wantscandetails": ["1"],
@@ -61,7 +61,7 @@ program: |-
   							"cursor": {
   								"startid": int(body.entries[size(body.entries) - 1].id) + 1,
   								"delta_time": state.?want_more.orValue(false) ? state.cursor.delta_time : body.timeNow,
-  								"is_initial_pull_done": false,
+  								"is_historic_data_fetched": false,
   							},
   						}
   					)
@@ -72,7 +72,7 @@ program: |-
   							"want_more": false,
   							"cursor": {
   								"delta_time": state.?want_more.orValue(false) ? state.cursor.delta_time : body.timeNow,
-  								"is_initial_pull_done": true,
+  								"is_historic_data_fetched": true,
   							},
   						}
   					)
