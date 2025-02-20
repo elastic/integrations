@@ -57,9 +57,9 @@ There are two advanced configuration options for the OpenAI integration: "Initia
 #### Impact on data resolution
 
 Granularity relationship: `1m` > `1h` > `1d`
-- `1m` buckets provide the highest resolution metrics
-- `1h` buckets aggregate 60-minute intervals
-- `1d` buckets consolidate full 24-hour periods
+- `1m` buckets provide the highest resolution metrics, with data arriving nearly in real-time (1-minute delay)
+- `1h` buckets aggregate 60-minute intervals, with data arriving less frequently (1-hour delay)
+- `1d` buckets consolidate full 24-hour periods, with data arriving daily (24-hour delay)
 
 #### Storage considerations
 
