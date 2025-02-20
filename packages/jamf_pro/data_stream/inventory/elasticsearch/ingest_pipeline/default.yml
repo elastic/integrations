@@ -89,6 +89,31 @@ processors:
     field: host.mac
     value: '{{{jamf_pro.inventory.hardware.mac_address}}}'
     ignore_failure: true
+- gsub:
+    field: host.mac
+    pattern: '[:.]'
+    replacement: '-'
+    tag: gsub_host_mac
+    ignore_missing: true
+    on_failure:
+      - remove:
+          field: host.mac
+          ignore_missing: true
+      - append:
+          field: error.message
+          value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+- uppercase:
+    field: host.mac
+    tag: uppercase_host_mac
+    ignore_missing: true
+    if: ctx.host?.mac != ''
+    on_failure:
+      - remove:
+          field: host.mac
+          ignore_missing: true
+      - append:
+          field: error.message
+          value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
 - set:
     field: host.geo
     copy_from: jamf_pro.inventory.general.last_ip_address_geo
