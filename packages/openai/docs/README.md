@@ -93,7 +93,7 @@ Technical calculation example with 6-month initial interval and 1-minute buckets
 - API calls per stream: 259,200 / 60 = 4,320 calls
 - Total API calls across 8 streams: 4,320 × 8 = 34,560 API calls
 
-The number of API calls varies significantly based on both the bucket width configuration and its corresponding buckets-per-call value from the OpenAI API. For example, making 34,560 API calls in a brief period will likely trigger OpenAI's rate limits, resulting in API errors. When using a 1-minute bucket width, it's highly recommended to set the "Initial interval" to a shorter duration - ideally 1 day - to optimize performance. Our testing has confirmed successful operation with a 6-month initial interval combined with a 1-day bucket width, but this same success does not extend to 1-minute or 1-hour bucket widths.
+Making 34,560 API calls in a brief period will likely trigger OpenAI's rate limits, resulting in API errors. When using a 1-minute bucket width, it's strongly recommended to set the "Initial interval" to a shorter duration - optimally 1 day - to ensure smooth performance. While our extensive testing demonstrates excellent results with a 6-month initial interval paired with a 1-day bucket width, the same level of success isn't achievable with 1-minute or 1-hour bucket widths due to OpenAI's API rate limitations. For optimal results when collecting historical data over extended periods, implementing 1-day bucket widths proves to be the most effective approach, balancing data granularity with API constraints.
 
 ### Collection process
 
