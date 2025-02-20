@@ -68,11 +68,11 @@ An example event for `activemq` looks as following:
 
 ```json
 {
-    "@timestamp": "2025-02-12T08:30:00.000Z",
+    "@timestamp": "2025-02-20T11:10:00.000Z",
     "agent": {
-        "ephemeral_id": "3c0c4458-3b71-40de-80a4-2eed7068e5a6",
-        "id": "8ed095f7-d5f7-4a44-a144-06e672dd339a",
-        "name": "elastic-agent-74290",
+        "ephemeral_id": "9995e077-e2f3-4eec-b614-f786ea4f0599",
+        "id": "0c953e96-08ac-45dd-9f3a-c31b310d3386",
+        "name": "elastic-agent-24296",
         "type": "metricbeat",
         "version": "8.16.2"
     },
@@ -80,36 +80,78 @@ An example event for `activemq` looks as following:
         "amazonmq": {
             "metrics": {
                 "activemq": {
-                    "destination": {
-                        "ConsumerCount": {
-                            "sum": 0
+                    "broker": {
+                        "AmqpMaximumConnections": {
+                            "max": 300
                         },
-                        "DequeueCount": {
-                            "sum": 0
+                        "CpuCreditBalance": {
+                            "min": 288
                         },
-                        "DispatchCount": {
-                            "sum": 0
+                        "CpuUtilization": {
+                            "avg": 4
                         },
-                        "EnqueueCount": {
-                            "sum": 0
+                        "CurrentConnectionsCount": {
+                            "max": 0
                         },
-                        "EnqueueTime": {
-                            "avg": 78669.6
+                        "EstablishedConnectionsCount": {
+                            "max": 0
                         },
-                        "ExpiredCount": {
-                            "sum": 0
+                        "HeapUsage": {
+                            "avg": 15
                         },
-                        "InFlightCount": {
-                            "sum": 0
+                        "InactiveDurableTopicSubscribersCount": {
+                            "max": 0
                         },
-                        "MemoryUsage": {
+                        "JobSchedulerStorePercentUsage": {
                             "avg": 0
                         },
-                        "ProducerCount": {
-                            "sum": 0
+                        "JournalFilesForFastRecovery": {
+                            "max": 0
                         },
-                        "QueueSize": {
-                            "sum": 0
+                        "JournalFilesForFullRecovery": {
+                            "max": 1
+                        },
+                        "MqttMaximumConnections": {
+                            "max": 300
+                        },
+                        "NetworkIn": {
+                            "max": 226176
+                        },
+                        "NetworkOut": {
+                            "max": 701286
+                        },
+                        "OpenTransactionCount": {
+                            "max": 0
+                        },
+                        "OpenwireMaximumConnections": {
+                            "max": 300
+                        },
+                        "StompMaximumConnections": {
+                            "max": 300
+                        },
+                        "StorePercentUsage": {
+                            "avg": 0
+                        },
+                        "TempPercentUsage": {
+                            "avg": 0
+                        },
+                        "TotalConsumerCount": {
+                            "max": 0
+                        },
+                        "TotalDequeueCount": {
+                            "max": 0
+                        },
+                        "TotalEnqueueCount": {
+                            "max": 0
+                        },
+                        "TotalMessageCount": {
+                            "max": 2
+                        },
+                        "TotalProducerCount": {
+                            "max": 0
+                        },
+                        "WsMaximumConnections": {
+                            "max": 300
                         }
                     }
                 }
@@ -119,8 +161,7 @@ An example event for `activemq` looks as following:
             "namespace": "AWS/AmazonMQ"
         },
         "dimensions": {
-            "Broker": "ObsIntegrations-ActiveMQ-1",
-            "Queue": "integrations-queue-1"
+            "Broker": "ObsIntegrations-ActiveMQ-1"
         }
     },
     "cloud": {
@@ -133,37 +174,37 @@ An example event for `activemq` looks as following:
     },
     "data_stream": {
         "dataset": "aws_mq.activemq_metrics",
-        "namespace": "98200",
+        "namespace": "60457",
         "type": "metrics"
     },
     "ecs": {
         "version": "8.0.0"
     },
     "elastic_agent": {
-        "id": "8ed095f7-d5f7-4a44-a144-06e672dd339a",
+        "id": "0c953e96-08ac-45dd-9f3a-c31b310d3386",
         "snapshot": false,
         "version": "8.16.2"
     },
     "event": {
         "agent_id_status": "verified",
         "dataset": "aws_mq.activemq_metrics",
-        "duration": 137817564,
-        "ingested": "2025-02-12T08:36:58Z",
+        "duration": 130811705,
+        "ingested": "2025-02-20T11:19:30Z",
         "module": "aws"
     },
     "host": {
         "architecture": "x86_64",
         "containerized": true,
-        "hostname": "elastic-agent-74290",
+        "hostname": "elastic-agent-24296",
         "ip": [
-            "192.168.80.2",
-            "192.168.0.4"
+            "192.168.0.4",
+            "192.168.144.2"
         ],
         "mac": [
             "02-42-C0-A8-00-04",
-            "02-42-C0-A8-50-02"
+            "02-42-C0-A8-90-02"
         ],
-        "name": "elastic-agent-74290",
+        "name": "elastic-agent-24296",
         "os": {
             "family": "",
             "kernel": "5.4.0-1106-gcp",
