@@ -16,14 +16,32 @@ processors:
       tag: json_event_original
       target_field: json
       on_failure:
+        - grok:
+            field: event.original
+            patterns:
+            - 'Detection type: %{DATA:json.threat_name} Detection name: %{DATA:json.threat_name}
+              Computer name: %{DATA:json.hostname} Logged user: %{DATA:user.domain}\\%{DATA:json.user}
+              Time of occurrence: %{ESET_TIMESTAMP:_tmp.timestamp} Scanner: %{DATA:json.scanner_id}
+              Action performed: %{DATA:json.action_taken}$'
+            - "%{DATA:eset.alert_message}  %{DATA:json.hostname} %{ESET_TIMESTAMP:_tmp.timestamp}
+              %{DATA:message} File %{GREEDYDATA:json.object_uri}"
+            pattern_definitions:
+              ESET_TIMESTAMP: "\\d+\\/\\d+\\/\\d+, \\d+:\\d+:\\d+ \\w+ \\w+\\+\\d+"
+            on_failure:
+            - append:
+                field: error.message
+                value:
+                - 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}}
+                  in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+                media_type: text/plain
         - append:
-            field: error.message
-            value: "Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}"
-  - set:
-      field: event.kind
-      tag: set_event_kind_alert
-      value: alert
-      if: ctx.json?.event_type != "Audit_Event"
+            field: tags
+            value:
+            - plain_text
+          field: event.kind
+          tag: set_event_kind_alert
+          value: alert
+          if: ctx.json?.event_type != "Audit_Event"
   - set:
       field: event.kind
       tag: set_event_kind_event
