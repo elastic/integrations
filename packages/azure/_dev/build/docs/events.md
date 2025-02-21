@@ -501,7 +501,7 @@ Examples:
 
 This setting can also be used to define your own endpoints, like for hybrid cloud models.
 
-### Input v2 settings (advanced)
+### Input v2 only
 
 The following settings are **input v2 only** and available in the advanced section of the integration.
 
@@ -519,10 +519,8 @@ _string_
 
 Possible values are `earliest` and `latest`.
 
-* `earliest` starts processing messages from the last checkpoint, or the beginning of the event hub if no checkpoint is available.
-* `latest` starts processing messages from the the latest event in the event hub and continues to process new events as they arrive.
-
-Default is `earliest`.
+* `earliest` (default): starts processing messages from the last checkpoint, or the beginning of the event hub if no checkpoint is available.
+* `latest`: starts processing messages from the the latest event in the event hub and continues to process new events as they arrive.
 
 `migrate_checkpoint` :
 _boolean_
