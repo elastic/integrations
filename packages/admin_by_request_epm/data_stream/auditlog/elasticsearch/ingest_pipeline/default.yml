@@ -6,11 +6,11 @@ processors:
 
   - json:
       field: message
-      target_field: message
-
-  - rename:
-      field: message
       target_field: admin_by_request_epm.auditlog
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
 
   - fingerprint:
       fields:
@@ -197,6 +197,7 @@ processors:
         - minutes
         - seconds
         - nanoseconds
+        - message
       ignore_missing: true
 
 
