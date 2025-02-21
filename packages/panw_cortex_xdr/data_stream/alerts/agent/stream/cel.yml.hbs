@@ -50,7 +50,7 @@ program: |
     ).as(req, has(state.advanced_sec_level) ?
       {
         "timestamp": int(now) * 1000,
-        "nonce": uuid(),
+        "nonce": uuid().sha256().hex(),
       }.as(t, t.with({
         "auth": (string(state.api_token) + string(t.nonce) + string(t.timestamp)).sha256().hex(),
       })).as(h, req.with({
