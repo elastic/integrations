@@ -7,15 +7,6 @@ processors:
       target_field: event.original
       ignore_missing: true
       if: ctx.event?.original == null
-  - remove:
-      description: | 
-        In case of reprocessing, rename processors fail with error "field [xyz] already exists". 
-        To prevent this, remove all fields that will be repopulated using rename.
-      field:
-        - event.id
-        - event.reason
-        - threat
-      ignore_missing: true
   - set:
       field: ecs.version
       value: '8.11.0'
@@ -95,11 +86,13 @@ processors:
       field: panw_cortex.xdr.incident_id
       target_field: event.id
       ignore_missing: true
+      override: true
   - rename:
       field: panw_cortex.xdr.description
       target_field: event.reason
       ignore_missing: true
       if: ctx.panw_cortex?.xdr?.description instanceof String
+      override: true
   - set:
       field: related.hosts
       copy_from: panw_cortex.xdr.hosts
