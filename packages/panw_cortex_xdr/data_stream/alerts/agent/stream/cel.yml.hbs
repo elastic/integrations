@@ -6,7 +6,6 @@ resource.tracer.maxbackups: 5
 {{/if}}
 resource.url: {{url}}
 state:
-  {{!-- TODO: handle advanced security as well --}}
   token_id: {{token_id}}
   api_token: {{api_token}}
   initial_interval: {{initial_interval}}
@@ -71,7 +70,6 @@ program: |
     ).do_request().as(resp, resp.StatusCode == 200 ?
       bytes(resp.Body).decode_json().as(body, 
         (
-          // TODO: handle max total_count case of 9999
           int(state.?search_from.orValue(0)) + body.reply.alerts.size() < body.reply.total_count
         ).as(want_more, {
           ?"search_from": want_more ? optional.of(int(state.?search_from.orValue(0)) + body.reply.alerts.size()) : optional.none(),

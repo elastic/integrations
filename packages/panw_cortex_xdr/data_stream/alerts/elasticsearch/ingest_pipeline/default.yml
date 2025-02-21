@@ -1,7 +1,13 @@
 ---
 description: Pipeline for Palo Alto XDR API.
 processors:
-# TODO: Handle cel failure events in pipeline
+  - set:
+      field: ecs.version
+      value: '8.11.0'
+  - fail:
+      tag: cel_failure
+      if: ctx.error?.message != null && ctx.message == null && ctx.event?.original == null
+      message: error message set and no data to process
   - rename:
       description: Use 'event.original' if present (e.g. when reprocessing), otherwise 'message'.
       field: message
@@ -16,9 +22,6 @@ processors:
         - "@timestamp"
         - _conf
       ignore_missing: true
-  - set:
-      field: ecs.version
-      value: '8.11.0'
   - set:
       field: event.kind
       value: alert
