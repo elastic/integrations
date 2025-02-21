@@ -33,15 +33,15 @@ The Azure Logs integration (v2 preview) introduces a new architecture that allow
 
 The integration will automatically detect the log category and forward the logs to the appropriate data stream. When the integration v2 preview cannot find a matching data stream for a log category, it forwards the logs to the platform logs data stream.
 
-IMPORTANT: To use the integrationv2 preview, you must turn off all the existing v1 integrations and turn on only the v2 preview integration.
+IMPORTANT: **To use the integration v2 preview, you must turn off all the existing v1 integrations and turn on only the v2 preview integration.**
 
 ### Efficiency
 
-Under the hood, the v2 preview processes logs using only one `azure-eventhub` input per event hub instead of multiple inputs like the v1 architecture.
+Internally, the v2 preview processes logs using only one `azure-eventhub` input per event hub instead of multiple inputs like the v1 architecture.
 
 The `azure-eventhub` input is the main engine of the integration. It is responsible for fetching the messages from the event hub, processing them, and sending them to the data stream in Elasticsearch.
 
-The integration v2 preview avoids contention and inefficiencies from using multiple inputs with the same event hub, which is typical of the v1 architecture. With the v2 preview, you can still assign the agent policy to multiple Elastic Agents to scale out the logs processing.
+The integration v2 preview avoids contention and inefficiencies from using multiple inputs with the same event hub, problems that are typical of the v1 architecture. With the v2 preview, you can still assign the agent policy to multiple Elastic Agents to scale out the logs processing.
 
 ### Input v2 ✨
 
@@ -501,7 +501,7 @@ Examples:
 
 This setting can also be used to define your own endpoints, like for hybrid cloud models.
 
-### Input v2 settings (advanced)
+### Input v2 only
 
 The following settings are **input v2 only** and available in the advanced section of the integration.
 
@@ -515,30 +515,28 @@ _string_
 
 `processor_start_position` :
 _string_
-(v2 only) Controls from what position in the event hub the input should start processing messages for all partitions.
+(v2 only) Controls from which position in the event hub the input should start processing messages for all partitions.
 
 Possible values are `earliest` and `latest`.
 
-* `earliest` starts processing messages from the last checkpoint, or the beginning of the event hub if no checkpoint is available.
-* `latest` starts processing messages from the the latest event in the event hub and continues to process new events as they arrive.
-
-Default is `earliest`.
+* `earliest` (default): starts processing messages from the last checkpoint, or the beginning of the event hub if no checkpoint is available.
+* `latest`: starts processing messages from the the latest event in the event hub and continues to process new events as they arrive.
 
 `migrate_checkpoint` :
 _boolean_
-(v2 only) Flag to control if the input should perform the checkpoint information migration from v1 to v2 at startup. The checkpoint migration converts the checkpoint information from the v1 format to the v2 format.
+(v2 only) Flag to control whether the input should perform the checkpoint information migration from v1 to v2 at startup. The checkpoint migration converts the checkpoint information from the v1 format to the v2 format.
 
 Default is `false`, which means the input will not perform the checkpoint migration.
 
 `partition_receive_timeout` :
 _string_
-(v2 only) Max time to wait before processing the messages received from the event hub.
+(v2 only) Maximum time to wait before processing the messages received from the event hub.
 
 The partition consumer waits up to a "receive count" or a "receive timeout", whichever comes first. Default is `5` seconds.
 
 `partition_receive_count` :
 _string_
-(v2 only) Max number of messages from the event hub to wait for before processing them.
+(v2 only) Maximum number of messages from the event hub to wait for before processing them.
 
 The partition consumer waits up to a "receive count" or a "receive timeout", whichever comes first. Default is `100` messages.
 
