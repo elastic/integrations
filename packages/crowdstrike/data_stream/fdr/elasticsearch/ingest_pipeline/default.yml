@@ -1749,6 +1749,24 @@ processors:
           ctx.process.uptime = (long) ((e-s)/1000L);
         }
       if: ctx.crowdstrike?.ProcessStartTime != null && ctx.crowdstrike?.ProcessStartTime != "" && ctx.crowdstrike?.ProcessEndTime != null && ctx.crowdstrike?.ProcessEndTime != ""
+  - script:
+      tag: parse-raw-pids
+      lang: painless
+      description: Parse raw process id's so that they roll over if out of 32-bit range
+      source: |-
+        def parsePid(String pid) {
+          try {
+            return Long.parseUnsignedLong(pid);
+          } catch (Exception e) {
+            return pid;
+          }
+        }
+         if ctx.crowdstrike?.RawProcessId != null {
+          ctx.crowdstrike.RawProcessId = parsePid(ctx.crowdstrike.RawProcessId);
+        }
+        if ctx.crowdstrike?.EtwRawProcessId != null {
+          ctx.crowdstrike.EtwRawProcessId = parsePid(ctx.crowdstrike.EtwRawProcessId);
+        }
   - date:
       field: crowdstrike.ProcessStartTime
       target_field: crowdstrike.ProcessStartTime
@@ -1771,10 +1789,10 @@ processors:
       target_field: process.end
       ignore_missing: true
       if: ctx.crowdstrike?.ProcessEndTime != ""
-  - convert:
-      field: crowdstrike.RawProcessId
-      type: long
-      ignore_missing: true
+  # - convert:
+  #     field: crowdstrike.RawProcessId
+  #     type: long
+  #     ignore_missing: true
   - rename:
       field: crowdstrike.RawProcessId
       target_field: process.pid
@@ -1824,10 +1842,10 @@ processors:
       ignore_missing: true
       ignore_failure: true
       if: ctx.process?.thread?.id == null
-  - convert:
-      field: crowdstrike.EtwRawProcessId
-      type: long
-      ignore_missing: true
+  # - convert:
+  #     field: crowdstrike.EtwRawProcessId
+  #     type: long
+  #     ignore_missing: true
   - rename:
       field: crowdstrike.EtwRawProcessId
       target_field: process.pid
