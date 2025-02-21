@@ -14,6 +14,9 @@ source:
             'event.action': ["logged-in-special","privileged-service-called","privileged-operation"]
         - terms:
             'winlog.event_data.PrivilegeList': ["SeDebugPrivilege","SeTakeOwnershipPrivilege","SeBackupPrivilege", "SeRestorePrivilege","SeImpersonatePrivilege","SeAssignPrimaryTokenPrivilege"]
+      must_not:
+        - terms:
+            'process.name': [ "elastic-agent.exe","elastic-agent","metricbeat.exe","metricbeat","filebeat.exe","filebeat","packetbeat.exe","packetbeat","winlogbeat.exe","winlogbeat" ]
 dest:
   index: ml_windows_privilege_type_pad-0.0.1
   aliases:
