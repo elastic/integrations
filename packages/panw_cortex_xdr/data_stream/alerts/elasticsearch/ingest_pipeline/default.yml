@@ -8,11 +8,24 @@ processors:
       ignore_missing: true
       if: ctx.event?.original == null
   - remove:
-      description: In case of reprocessing, remove all fields that will be repopulated.
-      keep:
-        - event.original
-        - tags
-        - "@timestamp"
+      description: | 
+        In case of reprocessing, rename processors fail with error "field [xyz] already exists". 
+        To prevent this, remove all fields that will be repopulated using rename.
+      field:
+        - message
+        - event.id
+        - event.action
+        - event.reason
+        - host
+        - threat
+        - file
+        - process
+        - registry
+        - user
+        - rule
+        - observer
+        - source
+        - destination
       ignore_missing: true
   - set:
       field: ecs.version
