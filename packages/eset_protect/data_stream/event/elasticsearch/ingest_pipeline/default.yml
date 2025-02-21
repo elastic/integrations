@@ -16,9 +16,28 @@ processors:
       tag: json_event_original
       target_field: json
       on_failure:
+        - grok:
+            field: event.original
+            patterns:
+            - 'Detection type: %{DATA:json.threat_name} Detection name: %{DATA:json.threat_name}
+              Computer name: %{DATA:json.hostname} Logged user: %{DATA:user.domain}\\%{DATA:json.user}
+              Time of occurrence: %{ESET_TIMESTAMP:json.occured_plaintext} Scanner: %{DATA:json.scanner_id}
+              Action performed: %{DATA:json.action_taken}$'
+            - "%{DATA:eset.alert_message}  %{DATA:json.hostname} %{ESET_TIMESTAMP:json.occured_plaintext}
+              %{DATA:message} File %{GREEDYDATA:json.object_uri}"
+            pattern_definitions:
+              ESET_TIMESTAMP: "\\d+\\/\\d+\\/\\d+, \\d+:\\d+:\\d+ \\w+ \\w+\\+\\d+"
+            on_failure:
+            - append:
+                field: error.message
+                value:
+                - 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}}
+                  in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+                media_type: text/plain
         - append:
-            field: error.message
-            value: "Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}"
+            field: tags
+            value:
+            - plain_text
   - set:
       field: event.kind
       tag: set_event_kind_alert
@@ -157,12 +176,19 @@ processors:
       value: "{{{eset_protect.event.ipv6}}}"
       allow_duplicates: false
       if: ctx.eset_protect?.event?.ipv6 != null
+  - gsub:
+      field: json.occured_plaintext
+      pattern: UTC\+([0-9])$
+      replacement: UTC+0$1:00
+      target_field: json.occured
+      if: ctx?.json?.occured_plaintext != null && ctx?.json?.occured_plaintext != ''
   - date:
       field: json.occured
       tag: date_occured
       target_field: eset_protect.event.occured
       formats:
         - dd-MMM-yyyy HH:mm:ss
+        - M/d/YY, h:m:s a z
       if: ctx.json?.occured != null && ctx.json.occured != ''
       on_failure:
         - append:
