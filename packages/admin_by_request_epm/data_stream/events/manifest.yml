@@ -1,0 +1,55 @@
+title: Admin By Request EPM Events Data Stream
+type: logs
+streams:
+  - input: cel
+    title: Admin By Request EPM Events Logs
+    description: Request settings for Admin By Request EPM Events Data Stream
+    enabled: true
+    template_path: cel.yml.hbs
+    vars:
+      - name: initial_interval_days
+        type: integer
+        title: Initial Interval
+        description: Number of days from today for which historical data will be fetched (e.g. `60`).
+        show_user: false
+        required: true
+        default: 60
+      - name: interval
+        type: text
+        title: Interval
+        description: Duration between requests to get data from API. Supported units for this parameter are h/m/s (e.g. `10s`).
+        show_user: false
+        required: true
+        default: "60s"
+      - name: page_size
+        type: integer
+        title: Page Size
+        description: Number of events to fetch per request.
+        show_user: true
+        required: true
+        default: 1000
+      - name: tags
+        type: text
+        title: Tags
+        multi: true
+        show_user: true
+        description: Tags to be applied to the event, such as 'forwarded'
+        default:
+          - forwarded
+          - admin_by_request_epm.events
+      - name: preserve_original_
+        required: true
+        show_user: true
+        title: Preserve Original 
+        description: Preserves a raw copy of the original  in the `.original` field
+        type: bool
+        multi: false
+        default: false
+      - name: processors
+        type: yaml
+        title: Processors
+        multi: false
+        required: false
+        show_user: false
+        description: >-
+          Processors can be used to reduce the number of fields in the exported  or to enhance the  with additional metadata. This executes in the agent before the logs are parsed.
