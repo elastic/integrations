@@ -10,6 +10,12 @@ You may also want to plan your Azure capacity better. Send Azure Activity logs t
 
 ## What's new in the integration v2 preview?
 
+The Azure Logs integration v2 preview introduces:
+
+* A new architecture that allows you to collect all logs through a single event hub.
+* Significant efficiency improvements.
+* A new processor (v2) that incorporates the latest Event Hubs SDK.
+
 ### Architecture
 
 The Azure Logs integration (v2 preview) introduces a new architecture that allows you to forward logs from multiple Azure services to the same event hub.
@@ -37,24 +43,20 @@ IMPORTANT: **To use the integration v2 preview, you must turn off all the existi
 
 ### Efficiency
 
-Internally, the v2 preview processes logs using only one `azure-eventhub` input per event hub instead of multiple inputs like the v1 architecture.
+The integration v2 preview avoids contention and inefficiencies from using multiple consumers per partition with the same event hub, problems that are typical of the v1 architecture. With the v2 preview, you can still assign the agent policy to multiple Elastic Agents to scale out the logs processing.
 
-The `azure-eventhub` input is the main engine of the integration. It is responsible for fetching the messages from the event hub, processing them, and sending them to the data stream in Elasticsearch.
+### Processor v2 ✨
 
-The integration v2 preview avoids contention and inefficiencies from using multiple inputs with the same event hub, problems that are typical of the v1 architecture. With the v2 preview, you can still assign the agent policy to multiple Elastic Agents to scale out the logs processing.
+The integration v2 preview offers a new processor v2 starting with integration version 1.23.0.
 
-### Input v2 ✨
-
-The integration v2 preview offers a new `azure-eventhub` input v2 starting with integration version 1.23.0.
-
-The input v2 introduces several changes:
+The processor v2 introduces several changes:
 
 * It uses the latest Event Hubs SDK from Azure.
 * It uses a more efficient checkpoint store based on Azure Blob Storage metadata.
 
-The input v2 is in preview. Input v1 is still the default and is recommended for typical use cases.
+The processor v2 is in preview. Processor v1 is still the default and is recommended for typical use cases.
 
-See the "Settings" section for more details about enabling the input v2.
+See the "Processor v2 only" section in the integration settings for more details about enabling the processor v2.
 
 ## Data streams
 
@@ -501,21 +503,21 @@ Examples:
 
 This setting can also be used to define your own endpoints, like for hybrid cloud models.
 
-### Input v2 only
+### Processor v2 only
 
-The following settings are **input v2 only** and available in the advanced section of the integration.
+The following settings are **processor v2 only** and available in the advanced section of the integration.
 
 `processor_version` :
 _string_
-(v2 only) The input version that the integration should use. Possible values are `v1` and `v2` (preview). The input v2 is in preview. Using the input v1 is recommended for typical use cases. Default is `v1`.
+(v2 only) The processor version that the integration should use. Possible values are `v1` and `v2` (preview). The processor v2 is in preview. Using the processor v1 is recommended for typical use cases. Default is `v1`.
 
 `processor_update_interval` :
 _string_
-(v2 only) How often the input should attempt to claim partitions. Default is `10s`.
+(v2 only) How often the processor should attempt to claim partitions. Default is `10s`.
 
 `processor_start_position` :
 _string_
-(v2 only) Controls from which position in the event hub the input should start processing messages for all partitions.
+(v2 only) Controls from which position in the event hub the processor should start processing messages for all partitions.
 
 Possible values are `earliest` and `latest`.
 
@@ -524,9 +526,9 @@ Possible values are `earliest` and `latest`.
 
 `migrate_checkpoint` :
 _boolean_
-(v2 only) Flag to control whether the input should perform the checkpoint information migration from v1 to v2 at startup. The checkpoint migration converts the checkpoint information from the v1 format to the v2 format.
+(v2 only) Flag to control whether the processor should perform the checkpoint information migration from v1 to v2 at startup. The checkpoint migration converts the checkpoint information from the v1 format to the v2 format.
 
-Default is `false`, which means the input will not perform the checkpoint migration.
+Default is `false`, which means the processor will not perform the checkpoint migration.
 
 `partition_receive_timeout` :
 _string_
