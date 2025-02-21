@@ -33,15 +33,15 @@ The Azure Logs integration (v2 preview) introduces a new architecture that allow
 
 The integration will automatically detect the log category and forward the logs to the appropriate data stream. When the integration v2 preview cannot find a matching data stream for a log category, it forwards the logs to the platform logs data stream.
 
-IMPORTANT: To use the integrationv2 preview, you must turn off all the existing v1 integrations and turn on only the v2 preview integration.
+IMPORTANT: **To use the integration v2 preview, you must turn off all the existing v1 integrations and turn on only the v2 preview integration.**
 
 ### Efficiency
 
-Under the hood, the v2 preview processes logs using only one `azure-eventhub` input per event hub instead of multiple inputs like the v1 architecture.
+Internally, the v2 preview processes logs using only one `azure-eventhub` input per event hub instead of multiple inputs like the v1 architecture.
 
 The `azure-eventhub` input is the main engine of the integration. It is responsible for fetching the messages from the event hub, processing them, and sending them to the data stream in Elasticsearch.
 
-The integration v2 preview avoids contention and inefficiencies from using multiple inputs with the same event hub, which is typical of the v1 architecture. With the v2 preview, you can still assign the agent policy to multiple Elastic Agents to scale out the logs processing.
+The integration v2 preview avoids contention and inefficiencies from using multiple inputs with the same event hub, problems that are typical of the v1 architecture. With the v2 preview, you can still assign the agent policy to multiple Elastic Agents to scale out the logs processing.
 
 ### Input v2 ✨
 
