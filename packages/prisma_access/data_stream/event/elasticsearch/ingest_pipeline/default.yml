@@ -1460,6 +1460,10 @@ processors:
           type: ip
           ignore_missing: true
           on_failure:
+            - append:
+                field: dns.answers.data
+                value: '{{{_ingest._value}}}'
+                allow_duplicates: false
             - remove:
                 field: _ingest._value
                 ignore_missing: true
@@ -1482,8 +1486,9 @@ processors:
       ignore_missing: true
       on_failure:
         - append:
-            field: error.message
-            value: "Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}"
+            field: dns.answers.data
+            value: '{{{cef.extensions.PanOSDNSResponse}}}'
+            allow_duplicates: false
   - foreach:
       field: prisma_access.event.dns.response.value
       if: ctx.prisma_access?.event?.dns?.response?.value instanceof List
@@ -3720,6 +3725,29 @@ processors:
       tag: rename_extension_PanOSRecordType
       target_field: prisma_access.event.record_type
       ignore_missing: true
+  - split:
+      field: prisma_access.event.record_type
+      tag: split_dns_answers_array_from_record_type
+      target_field: _temp.dns_answers
+      if: ctx.prisma_access?.event?.record_type != null && ctx.prisma_access.event.record_type.contains(',')
+      separator: ','
+  - foreach:
+      field: _temp.dns_answers
+      tag: collect_temp_answers_type_into_dns_answers_type
+      if: ctx._temp?.dns_answers instanceof List
+      ignore_failure: true
+      processor:
+        append:
+          field: dns.answers.type
+          value: '{{{_ingest._value}}}'
+          allow_duplicates: false
+          ignore_failure: true
+  - set:
+      field: dns.answers.type
+      tag: set_dns_answers_type_from_record_type
+      copy_from: prisma_access.event.record_type
+      if: ctx.dns?.answers?.type == null
+      ignore_empty_value: true
   - rename:
       field: cef.extensions.PanOSReferer
       tag: rename_extension_PanOSReferer
