@@ -56,9 +56,9 @@ The minimum **kibana.version** required is **8.9.0**.
 
 ## Usage
 
-The Okta provider periodically contacts the Okta API, retrieving updates for users, updates its internal cache of user metadata, and ships updated user metadata to Elasticsearch.
+The Okta provider periodically contacts the Okta API, retrieving updates for users and devices, updates its internal cache of user/device metadata, and ships the updated metadata to Elasticsearch.
 
-Fetching and shipping updates occurs in one of two processes: **full synchronizations** and **incremental updates**. Full synchronizations will send the entire list of users in state, along with write markers to indicate the start and end of the synchronization event. Incremental updates will only send data for changed users during that event. Changes on a user can come in many forms, whether it be a change to the user’s metadata, or a user was added or deleted. By default, full synchronizations occur every 24 hours and incremental updates occur every 15 minutes. These intervals may be customized to suit your use case.
+Fetching and shipping updates occurs in one of two processes: **full synchronizations** and **incremental updates**. Full synchronizations will send the entire list of users and devices in state, along with write markers to indicate the start and end of the synchronization event. Incremental updates will only send data for changed users/devices during that event. Changes can come in many forms, whether it be a change to the user’s or device’s metadata, or a user or device was added or deleted. By default, full synchronizations occur every 24 hours and incremental updates occur every 15 minutes. These intervals may be customized to suit your use case.
 
 ## Sample Events
 
@@ -110,6 +110,106 @@ A user document:
 }
 ```
 
+A device document:
+
+```json
+{
+    "@timestamp": "2023-07-04T09:57:19.786056-05:00",
+    "event": {
+        "action": "device-discovered",
+    },
+    "okta": {
+        "created": "2019-10-02T18:03:07Z",
+        "id": "deviceid",
+        "lastUpdated": "2019-10-02T18:03:07Z",
+        "profile": {
+            "diskEncryptionType": "ALL_INTERNAL_VOLUMES",
+            "displayName": "Example Device name 1",
+            "platform": "WINDOWS",
+            "registered": true,
+            "secureHardwarePresent": false,
+            "serialNumber": "XXDDRFCFRGF3M8MD6D",
+            "sid": "S-1-11-111"
+        },
+        "resourceAlternateID": "",
+        "resourceDisplayName": {
+            "sensitive": false,
+            "value": "Example Device name 1"
+        },
+        "resourceID": "deviceid",
+        "resourceType": "UDDevice",
+        "status": "ACTIVE",
+        "_links": {
+            "activate": {
+                "hints": {
+                    "allow": [
+                        "POST"
+                    ]
+                },
+                "href": "https://localhost/api/v1/devices/deviceid/lifecycle/activate"
+            },
+            "self": {
+                "hints": {
+                    "allow": [
+                        "GET",
+                        "PATCH",
+                        "PUT"
+                    ]
+                },
+                "href": "https://localhost/api/v1/devices/deviceid"
+            },
+            "users": {
+                "hints": {
+                    "allow": [
+                        "GET"
+                    ]
+                },
+                "href": "https://localhost/api/v1/devices/deviceid/users"
+            }
+        },
+        "users": [
+            {
+                "id": "userid",
+                "status": "RECOVERY",
+                "created": "2023-05-14T13:37:20Z",
+                "activated": "0001-01-01T00:00:00Z",
+                "statusChanged": "2023-05-15T01:50:30Z",
+                "lastLogin": "2023-05-15T01:59:20Z",
+                "lastUpdated": "2023-05-15T01:50:32Z",
+                "passwordChanged": "2023-05-15T01:50:32Z",
+                "type": {
+                    "id": "typeid"
+                },
+                "profile": {
+                    "login": "name.surname@example.com",
+                    "email": "name.surname@example.com",
+                    "firstName": "name",
+                    "lastName": "surname"
+                },
+                "credentials": {
+                    "password": {},
+                    "provider": {
+                        "type": "OKTA",
+                        "name": "OKTA"
+                    }
+                },
+                "_links": {
+                    "self": {
+                        "href": "https://localhost/api/v1/users/userid"
+                    }
+                }
+            }
+        ]
+    },
+    "device": {
+        "id": "deviceid",
+    },
+    "labels": {
+        "identity_source": "okta-1"
+    }
+}
+```
+
 Full synchronizations will be bounded on either side by "write marker" documents.
 
 ```json
@@ -127,59 +227,9 @@ Full synchronizations will be bounded on either side by "write marker" documents
 
 ## Logs reference
 
-### Entity
+### Device
 
-This is the `Entity` dataset.
-
-#### Example
-
-An example event for `entity` looks as following:
-
-```json
-{
-    "@timestamp": "2025-02-17T01:32:37.018Z",
-    "agent": {
-        "ephemeral_id": "5565e14c-c3d1-4168-9860-fb280f704fad",
-        "id": "f1b6848f-87f5-4d0e-8dae-49fb70d285f6",
-        "name": "elastic-agent-11615",
-        "type": "filebeat",
-        "version": "8.15.0"
-    },
-    "data_stream": {
-        "dataset": "entityanalytics_okta.entity",
-        "namespace": "71124",
-        "type": "logs"
-    },
-    "ecs": {
-        "version": "8.11.0"
-    },
-    "elastic_agent": {
-        "id": "f1b6848f-87f5-4d0e-8dae-49fb70d285f6",
-        "snapshot": false,
-        "version": "8.15.0"
-    },
-    "event": {
-        "action": "started",
-        "agent_id_status": "verified",
-        "dataset": "entityanalytics_okta.entity",
-        "ingested": "2025-02-17T01:32:38Z",
-        "kind": "asset",
-        "start": "2025-02-17T01:32:37.018Z"
-    },
-    "input": {
-        "type": "entity-analytics"
-    },
-    "labels": {
-        "identity_source": "entity-analytics-entityanalytics_okta.entity-e600b1a8-23ab-4aa5-9694-d245bc06b6ed"
-    },
-    "tags": [
-        "preserve_original_event",
-        "preserve_duplicate_custom_fields",
-        "forwarded",
-        "entityanalytics_okta-entity"
-    ]
-}
-```
+This is the `Device` dataset.
 
 **Exported fields**
 
@@ -217,6 +267,64 @@ An example event for `entity` looks as following:
 | entityanalytics_okta.device.transitioning_to_status | target status of an in-progress asynchronous status transition. | keyword |
 | entityanalytics_okta.device.type | device type that determines the schema for the device's profile. | flattened |
 | entityanalytics_okta.device.users | Users associated with the device. | flattened |
+| event.dataset | Event dataset. | constant_keyword |
+| event.module | Event module. | constant_keyword |
+| input.type | Type of filebeat input. | keyword |
+| labels.identity_source |  | keyword |
+| log.offset | Log offset. | long |
+| user.account.activated_date |  | date |
+| user.account.change_date |  | date |
+| user.account.create_date |  | date |
+| user.account.password_change_date |  | date |
+| user.account.status.deprovisioned |  | boolean |
+| user.account.status.locked_out |  | boolean |
+| user.account.status.password_expired |  | boolean |
+| user.account.status.recovery |  | boolean |
+| user.account.status.suspended |  | boolean |
+| user.geo.city_name |  | keyword |
+| user.geo.country_iso_code |  | keyword |
+| user.geo.name |  | keyword |
+| user.geo.postal_code |  | keyword |
+| user.geo.region_name |  | keyword |
+| user.geo.timezone |  | keyword |
+| user.organization.name |  | keyword |
+| user.profile.department |  | keyword |
+| user.profile.first_name |  | keyword |
+| user.profile.id |  | keyword |
+| user.profile.job_title |  | keyword |
+| user.profile.last_name |  | keyword |
+| user.profile.manager |  | keyword |
+| user.profile.mobile_phone |  | keyword |
+| user.profile.other_identities |  | keyword |
+| user.profile.primaryPhone |  | keyword |
+| user.profile.secondEmail |  | keyword |
+| user.profile.status |  | keyword |
+| user.profile.type |  | keyword |
+
+
+### User
+
+This is the `User` dataset.
+
+**Exported fields**
+
+| Field | Description | Type |
+|---|---|---|
+| @timestamp | Event timestamp. | date |
+| asset.category |  | keyword |
+| asset.costCenter |  | keyword |
+| asset.create_date |  | date |
+| asset.id |  | keyword |
+| asset.last_seen |  | date |
+| asset.last_status_change_date |  | date |
+| asset.last_updated |  | date |
+| asset.name |  | keyword |
+| asset.status |  | keyword |
+| asset.type |  | keyword |
+| asset.vendor |  | keyword |
+| data_stream.dataset | Data stream dataset. | constant_keyword |
+| data_stream.namespace | Data stream namespace. | constant_keyword |
+| data_stream.type | Data stream type. | constant_keyword |
 | entityanalytics_okta.groups.id | The ID for the group. | keyword |
 | entityanalytics_okta.groups.profile.\* | Group profile details. | object |
 | entityanalytics_okta.user._embedded | embedded resources related to the user. | flattened |
