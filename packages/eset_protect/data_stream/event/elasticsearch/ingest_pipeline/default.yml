@@ -38,10 +38,11 @@ processors:
             field: tags
             value:
             - plain_text
-          field: event.kind
-          tag: set_event_kind_alert
-          value: alert
-          if: ctx.json?.event_type != "Audit_Event"
+  - set:
+      field: event.kind
+      tag: set_event_kind_alert
+      value: alert
+      if: ctx.json?.event_type != "Audit_Event"
   - set:
       field: event.kind
       tag: set_event_kind_event
@@ -176,11 +177,11 @@ processors:
       allow_duplicates: false
       if: ctx.eset_protect?.event?.ipv6 != null
   - gsub:
-    field: json.occured_plaintext
-    pattern: UTC\+([0-9])$
-    replacement: UTC+0$1:00
-    target_field: json.occured
-    if: ctx?.json?.occured_plaintext != null && ctx?.json?.occured_plaintext != ''
+      field: json.occured_plaintext
+      pattern: UTC\+([0-9])$
+      replacement: UTC+0$1:00
+      target_field: json.occured
+      if: ctx?.json?.occured_plaintext != null && ctx?.json?.occured_plaintext != ''
   - date:
       field: json.occured
       tag: date_occured
