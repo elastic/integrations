@@ -108,24 +108,37 @@ program: |
 
                 )
             :
-                bytes(resp.Body).decode_json().as(body,
+                resp.StatusCode == 429 && (state.ignore_api_errors == "true") ?
+                    // Cisco Duo auth API rate limit is very low i.e., once per minute. 
+                    // Sometimes 429s are received even when requests are made 
+                    // less than once per minute. This leads to users ingesting 429 
+                    // API errors very often. 
+                    // If users choose not to ingest these errors, ignore them.
                     {
-                        "events": {
-                            "error": {
-                                "code": has(body.code) ? string(body.code) : string(resp.StatusCode),
-                                "id": string(resp.Status),
-                                "message": "GET:"+(
-                                    size(resp.Body) != 0 ?
-                                        string(resp.Body)
-                                    :
-                                        string(resp.Status) + ' (' + string(resp.StatusCode) + ')'
-                                ),
-                                "type": "api_error",
-                            },
-                        },
+                        "events": [],
+                        // Log the rate limit excession at DEBUG level.
+                        "rate_limited": debug("rate_limit_exceeded", bytes(resp.Body).decode_json().?message.orValue("missing message")),
                         "want_more": false,
                     }
-                )
+                : 
+                    bytes(resp.Body).decode_json().as(body,
+                        {
+                            "events": {
+                                "error": {
+                                    "code": has(body.code) ? string(body.code) : string(resp.StatusCode),
+                                    "id": string(resp.Status),
+                                    "message": "GET:"+(
+                                        size(resp.Body) != 0 ?
+                                            string(resp.Body)
+                                        :
+                                            string(resp.Status) + ' (' + string(resp.StatusCode) + ')'
+                                    ),
+                                    "type": "api_error",
+                                },
+                            },
+                            "want_more": false,
+                        }
+                    )
             )
         )
     ))
