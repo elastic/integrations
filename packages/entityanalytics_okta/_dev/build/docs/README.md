@@ -1,6 +1,6 @@
 # Okta Entity Analytics
 
-This [Okta Entity Analytics](https://www.okta.com/) integration allows users to securely stream User Entities data to Elastic Security via the REST API. When integrated with Elastic Security, this valuable data can be leveraged within Elastic for risk-scoring scenarios (e.g., context enrichments) and detecting advanced analytics (UBA) use cases.
+This [Okta Entity Analytics](https://www.okta.com/) integration allows users to securely stream User and Device Entity data to Elastic Security via the REST API. When integrated with Elastic Security, this valuable data can be leveraged within Elastic for risk-scoring scenarios (e.g., context enrichments) and detecting advanced analytics (UBA) use cases.
 
 ## Compatibility
 
@@ -8,9 +8,10 @@ This module has been tested against the Core Okta API version **v1**.
 
 ## Data streams
 
-The Okta Entity Analytics integration collects one type of data: user.
+The Okta Entity Analytics integration collects two types of data: user and device.
 
 **User** is used to retrieve all user logs available in an organization. See more details in the API documentation [here](https://developer.okta.com/docs/reference/api/users/#list-users).
+**Device** is used to retrieve all device logs available in an organization. See more details in the API documentation [here](https://developer.okta.com/docs/api/openapi/okta-management/management/tag/Device/#tag/Device/operation/listDevices).
 
 ## Requirements
 
