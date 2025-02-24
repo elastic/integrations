@@ -1,0 +1,210 @@
+---
+description: Pipeline for processing Admin By Request EPM Audit logs
+processors:
+  - drop:
+      if: ctx?.error?.statuscode != null
+
+  - json:
+      field: message
+      target_field: admin_by_request_epm.auditlog
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+
+  - fingerprint:
+      fields:
+        - admin_by_request_epm.auditlog
+      target_field: "_id"
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+
+####################
+# Scripts for processing input #
+####################
+  - script:
+      description: Drops null/empty values recursively.
+      lang: painless
+      source: |
+        boolean dropEmptyFields(Object object) {
+          if (object == null || object == "") {
+            return true;
+          } else if (object instanceof Map) {
+            ((Map) object).values().removeIf(value -> dropEmptyFields(value));
+            return (((Map) object).size() == 0);
+          } else if (object instanceof List) {
+            ((List) object).removeIf(value -> dropEmptyFields(value));
+            return (((List) object).length == 0);
+          }
+          return false;
+        }
+        dropEmptyFields(ctx);
+
+  - script:
+      description: Convert Additional Info keys to snake case.
+      tag: additional-info-keys-to-snake-case
+      lang: painless
+      source: |
+        Map keysToSnakeCase(Map m) {
+          def regex = /_?([a-z])([A-Z]+)/;
+          def snakeCaseMap = [:];
+
+          for (entry in m.entrySet()) {
+            def k = entry.getKey();
+            def v = entry.getValue();
+
+            if (v instanceof Map) {
+              v = keysToSnakeCase(v);
+            } else if (v instanceof List) {
+              for (int i = 0; i < v.size(); i++) {
+                def item = v.get(i);
+                if (item instanceof Map) {
+                  v.set(i, keysToSnakeCase(item));
+                }
+              }
+            }
+
+            k = regex.matcher(k).replaceAll('$1_$2').toLowerCase();
+            snakeCaseMap.put(k, v);
+          }
+          return snakeCaseMap;
+        }
+
+        if (ctx.admin_by_request_epm.auditlog != null) {
+          ctx.admin_by_request_epm.auditlog = keysToSnakeCase(ctx.admin_by_request_epm.auditlog);
+        }
+
+
+####################
+# ECS Fields #
+####################
+  - set:
+      field: ecs.version
+      value: '8.11.0'
+
+  - set:
+      field: event.kind
+      value: event
+
+  - append:
+      field: event.category
+      value: configuration
+
+  - append:
+      field: event.type
+      value: info
+
+  - set:
+      field: event.dataset
+      value: admin_by_request_epm.auditlog
+
+  - set:
+      field: event.module
+      value: admin_by_request_epm
+
+  - set:
+      field: user.full_name
+      copy_from: admin_by_request_epm.auditlog.user.full_name
+      ignore_empty_value: true
+
+  - append:
+      field: related.user
+      value: '{{admin_by_request_epm.auditlog.user.full_name}}'
+      allow_duplicates: false
+      if: ctx.admin_by_request_epm.auditlog.user.full_name != null
+
+  - set:
+      field: user.email
+      copy_from: admin_by_request_epm.auditlog.user.email
+      ignore_empty_value: true
+
+  - append:
+      field: related.user
+      value: '{{admin_by_request_epm.auditlog.user.email}}'
+      allow_duplicates: false
+      if: ctx.admin_by_request_epm.auditlog.user.email != null
+
+  - set:
+      field: host.hostname
+      copy_from: admin_by_request_epm.auditlog.computer.name
+      ignore_empty_value: true
+
+  - append:
+      field: related.hosts
+      value: '{{admin_by_request_epm.auditlog.computer.name}}'
+      allow_duplicates: false
+      if: ctx.admin_by_request_epm.auditlog.computer.name != null
+
+  - set:
+      field: os.platform
+      copy_from: admin_by_request_epm.auditlog.computer.platform
+      ignore_empty_value: true
+
+  - set:
+      field: file.name
+      copy_from: admin_by_request_epm.auditlog.application.file
+      ignore_empty_value: true
+
+  - set:
+      field: file.path
+      copy_from: admin_by_request_epm.auditlog.application.path
+      ignore_empty_value: true
+
+  - set:
+      field: hash.sha256
+      copy_from: admin_by_request_epm.auditlog.application.sha256
+      ignore_empty_value: true
+
+  - append:
+      field: related.hash
+      value: '{{admin_by_request_epm.auditlog.application.sha256}}'
+      allow_duplicates: false
+      if: ctx.admin_by_request_epm.auditlog.application?.sha256 != null
+
+  - set:
+      field: "@timestamp"
+      copy_from: admin_by_request_epm.auditlog.request_time_utc
+
+####################
+# Admin By Request EPM Auditlog Fields #
+####################
+  # convert response time into a numeric field
+  - grok:
+      field: admin_by_request_epm.auditlog.response_time
+      if: ctx.admin_by_request_epm.auditlog.response_time != null
+      patterns: ["%{HOUR:hours}:%{MINUTE:minutes}:%{SECOND:seconds}.%{NANOSECOND:nanoseconds}"]
+      pattern_definitions:
+        NANOSECOND: \d{7}
+
+  - script:
+      lang: painless
+      description: Creating new field response_time_in_seconds from hours, minutes, seconds and nanoseconds
+      if: ctx.admin_by_request_epm.auditlog.response_time != null
+      source: |
+        ctx.admin_by_request_epm.auditlog.response_time_in_seconds = (Integer.parseInt(ctx.hours) * 3600) + 
+                              (Integer.parseInt(ctx.minutes) * 60) + 
+                              Integer.parseInt(ctx.seconds) + 
+                              (Integer.parseInt(ctx.nanoseconds) / 10000000.0);
+
+  - remove:
+      field:
+        - admin_by_request_epm.auditlog.request_time
+        - admin_by_request_epm.auditlog.start_time
+        - admin_by_request_epm.auditlog.end_time
+        - hours
+        - minutes
+        - seconds
+        - nanoseconds
+        - message
+      ignore_missing: true
+
+
+on_failure:
+  - append:
+      field: error.message
+      value: '{{{_ingest.on_failure_message}}}'
+  - set:
+      field: event.kind
+      value: pipeline_error

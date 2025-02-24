@@ -16,7 +16,6 @@ auth:
     endpoint_params:
       grant_type: "client_credentials"
 interval: {{interval}}
-max_executions: {{max_executions}}
 
 tags:
 {{#if preserve_original_event}}
@@ -62,9 +61,9 @@ program: |-
   						?"event.original": state.?preserve_original_event.orValue(false) ? optional.of(e.encode_json()) : optional.none(),
   					}
   				),
-  				"want_more": size(body.results) >= state.page_size,
   				"cursor": state.?cursor.orValue({}).with(
   					{
+  						?"prev_last_report_date": state.?cursor.last_report_date,
   						?"last_report_date": (size(body.results) > 0) ?
   							optional.of(
   								body.results[size(body.results) - 1].general.reportDate.as(d,
@@ -76,7 +75,9 @@ program: |-
   					}
   				),
   			}
-  		)
+  		).as(state, state.with({
+  			"want_more": size(body.results) >= state.page_size && (state.?cursor.prev_last_report_date != state.?cursor.last_report_date)
+  		}))
   	)
   )
 state:
