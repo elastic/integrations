@@ -4,15 +4,15 @@ processors:
   - set:
       field: ecs.version
       value: "8.16.0"
+  - fail:
+      tag: cel_failure
+      if: ctx.error?.teams_user_activity_user_counts != null && ctx.teams_user_activity_user_counts == null && ctx.event?.original == null
+      message: error message set and no data to process
   - set:
       copy_from: teams_user_activity_user_counts
       field: event.original
       ignore_empty_value: true
       if: ctx.event?.original == null && (ctx.tags != null && (ctx.tags.contains('preserve_original_event')))
-#   - fail:
-#       tag: cel_failure
-#       if: ctx.error?.message != null && ctx.message == null && ctx.event?.original == null
-#       message: error message set and no data to process   
   - json:
       field: teams_user_activity_user_counts
       target_field: o365.metrics.teams.user.activity.user.counts

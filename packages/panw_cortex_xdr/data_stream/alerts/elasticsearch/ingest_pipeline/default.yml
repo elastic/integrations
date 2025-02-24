@@ -14,23 +14,17 @@ processors:
       target_field: event.original
       ignore_missing: true
       if: ctx.event?.original == null
-  - remove:
-      description: In case of reprocessing, remove all fields that will be repopulated.
-      keep:
-        - event.original
-        - tags
-        - "@timestamp"
-        - _conf
-      ignore_missing: true
   - set:
       field: event.kind
       value: alert
   - append:
       field: event.category
       value: malware
+      allow_duplicates: false
   - append:
       field: event.type
       value: info
+      allow_duplicates: false
   - json:
       field: event.original
       target_field: panw_cortex.xdr
