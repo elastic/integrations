@@ -504,6 +504,11 @@ An example event for `auditd` looks as following:
 | auditd.data.sport | local port number | long |
 | auditd.data.state | audit daemon configuration resulting state | keyword |
 | auditd.data.subj | lspp subject's context string | keyword |
+| auditd.data.subj_category | The SELinux category associated with the subject. It helps further refine the level of access by classifying subjects into categories for multi-level security (MLS). Categories are often used to label data with additional attributes, like "high" or "low," enhancing granularity. | keyword |
+| auditd.data.subj_domain | The SELinux domain or type assigned to the subject. The domain specifies the type of resource or process the subject is interacting with, helping enforce domain-based access controls, which are crucial in limiting resource access. | keyword |
+| auditd.data.subj_level | The SELinux sensitivity level for the subject. It indicates the security classification level, like `s0` or `s2`, that defines how data or processes are handled based on confidentiality and integrity levels within the system. | keyword |
+| auditd.data.subj_role | The SELinux role associated with the subject. The role determines the capabilities a subject has within a given SELinux policy. Roles are used to define higher-level security attributes in the context of the system's security policies. | keyword |
+| auditd.data.subj_user | The SELinux user identity. This represents the SELinux user role that is assigned to the subject (user or process) performing an action. It's part of the SELinux security context and is used to enforce policies that restrict what actions a subject can perform. | keyword |
 | auditd.data.success | whether the syscall was successful or not | keyword |
 | auditd.data.syscall | syscall number in effect when the event occurred | keyword |
 | auditd.data.table | netfilter table name | keyword |
