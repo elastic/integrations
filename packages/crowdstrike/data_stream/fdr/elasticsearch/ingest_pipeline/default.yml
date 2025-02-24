@@ -204,6 +204,78 @@ processors:
       ignore_missing: true
       if: ctx.crowdstrike?.HostHiddenStatus == null
 
+# Handle case changes.
+  - rename:
+      tag: rename_GrandParentCommandLine_GrandparentCommandLine
+      field: crowdstrike.GrandParentCommandLine
+      target_field: crowdstrike.GrandparentCommandLine
+      ignore_failure: true
+  - rename:
+      tag: rename_GrandParentImageFileName_GrandparentImageFileName
+      field: crowdstrike.GrandParentImageFileName
+      target_field: crowdstrike.GrandparentImageFileName
+      ignore_failure: true
+  - rename:
+      tag: rename_GrandParentImageFilePath_GrandparentImageFilePath
+      field: crowdstrike.GrandParentImageFilePath
+      target_field: crowdstrike.GrandparentImageFilePath
+      ignore_failure: true
+
+# EppDetectionSummaryEvent renames
+  - rename:
+      tag: rename_Hostname_ComputerName
+      field: crowdstrike.Hostname
+      target_field: crowdstrike.ComputerName
+      ignore_failure: true
+  - rename:
+      tag: rename_LogonDomain_MachineDomain
+      field: crowdstrike.LogonDomain
+      target_field: crowdstrike.MachineDomain
+      ignore_failure: true
+  - rename:
+      tag: rename_AgentId_SensorId
+      field: crowdstrike.AgentId
+      target_field: crowdstrike.SensorId
+      ignore_failure: true
+  - rename:
+      tag: rename_Name_DetectName
+      field: crowdstrike.Name
+      target_field: crowdstrike.DetectName
+      ignore_failure: true
+
+# EppDetectionSummaryEvent converts
+  - convert:
+      field: crowdstrike.LocalIPv6
+      tag: convert_crowdstrike_LocalIPv6_ip
+      type: ip
+      if: ctx.crowdstrike?.LocalIPv6 != null && ctx.crowdstrike.LocalIPv6 != ''
+      on_failure:
+        - remove:
+            field: crowdstrike.LocalIPv6
+            ignore_failure: true
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - foreach:
+      field: crowdstrike.FilesWritten
+      tag: convert_crowdstrike_fileswritten_timestamp_array
+      if: ctx.crowdstrike?.FilesWritten instanceof List
+      ignore_failure: true
+      processor:
+        date:
+          field: _ingest._value.Timestamp
+          target_field: _ingest._value.Timestamp
+          formats:
+            - UNIX
+          tag: convert_crowdstrike_fileswritten_timestamp
+          on_failure:
+            - remove:
+                field: _ingest._value.Timestamp
+                ignore_failure: true
+            - append:
+                field: error.message
+                value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+
 # Handle additional added fields. 
   - convert:
       tag: convert_CurrentLocalIP_ip

@@ -1353,6 +1353,7 @@ For example, if your Crowdstrike event contains `id: 123`, `aid: 456`, and `cid:
 | crowdstrike.AgentLocalTime |  | date |
 | crowdstrike.AgentTimeOffset |  | float |
 | crowdstrike.AgentVersion |  | keyword |
+| crowdstrike.AggregateId |  | keyword |
 | crowdstrike.AllocateVirtualMemoryCount |  | long |
 | crowdstrike.ApiReturnValue |  | keyword |
 | crowdstrike.ArchiveFileWrittenCount |  | long |
@@ -1385,6 +1386,7 @@ For example, if your Crowdstrike event contains `id: 123`, `aid: 456`, and `cid:
 | crowdstrike.CommandHistory |  | keyword |
 | crowdstrike.CommandHistory.text | Multi-field of `crowdstrike.CommandHistory`. | match_only_text |
 | crowdstrike.CompletionEventId |  | keyword |
+| crowdstrike.CompositeId | Global unique identifier that identifies a unique alert. | keyword |
 | crowdstrike.ConHostId |  | keyword |
 | crowdstrike.ConHostProcessId |  | keyword |
 | crowdstrike.ConfigBuild |  | keyword |
@@ -1411,6 +1413,8 @@ For example, if your Crowdstrike event contains `id: 123`, `aid: 456`, and `cid:
 | crowdstrike.CurrentLocalIP |  | ip |
 | crowdstrike.CustomerIdString |  | keyword |
 | crowdstrike.CycleTime |  | long |
+| crowdstrike.DataDomains |  | keyword |
+| crowdstrike.Description |  | keyword |
 | crowdstrike.DesiredAccess |  | keyword |
 | crowdstrike.DetectDescription |  | keyword |
 | crowdstrike.DetectId |  | keyword |
@@ -1452,6 +1456,9 @@ For example, if your Crowdstrike event contains `id: 123`, `aid: 456`, and `cid:
 | crowdstrike.FileName |  | keyword |
 | crowdstrike.FileObject |  | keyword |
 | crowdstrike.FilePath |  | keyword |
+| crowdstrike.FilesWritten.FileName |  | keyword |
+| crowdstrike.FilesWritten.FilePath |  | keyword |
+| crowdstrike.FilesWritten.Timestamp |  | date |
 | crowdstrike.FirmwareAnalysisEclConsumerInterfaceVersion |  | keyword |
 | crowdstrike.FirmwareAnalysisEclControlInterfaceVersion |  | keyword |
 | crowdstrike.FirstDiscoveredDate |  | date |
@@ -1462,6 +1469,7 @@ For example, if your Crowdstrike event contains `id: 123`, `aid: 456`, and `cid:
 | crowdstrike.GrandparentCommandLine |  | keyword |
 | crowdstrike.GrandparentCommandLine.text | Multi-field of `crowdstrike.GrandparentCommandLine`. | match_only_text |
 | crowdstrike.GrandparentImageFileName |  | keyword |
+| crowdstrike.GrandparentImageFilePath |  | keyword |
 | crowdstrike.HostGroups |  | keyword |
 | crowdstrike.HostHiddenStatus |  | keyword |
 | crowdstrike.IOCType |  | keyword |
@@ -1500,6 +1508,7 @@ For example, if your Crowdstrike event contains `id: 123`, `aid: 456`, and `cid:
 | crowdstrike.LocalAddressIP6 |  | ip |
 | crowdstrike.LocalAdminAccess |  | keyword |
 | crowdstrike.LocalIP |  | ip |
+| crowdstrike.LocalIPv6 |  | ip |
 | crowdstrike.LogicalCoreCount |  | long |
 | crowdstrike.LoginSessionId |  | keyword |
 | crowdstrike.LogoffTime |  | date |
@@ -1559,6 +1568,7 @@ For example, if your Crowdstrike event contains `id: 123`, `aid: 456`, and `cid:
 | crowdstrike.ParentCommandLine |  | keyword |
 | crowdstrike.ParentCommandLine.text | Multi-field of `crowdstrike.ParentCommandLine`. | match_only_text |
 | crowdstrike.ParentImageFileName |  | keyword |
+| crowdstrike.ParentImageFilePath |  | keyword |
 | crowdstrike.PasswordLastSet |  | keyword |
 | crowdstrike.PatternDispositionDescription |  | keyword |
 | crowdstrike.PatternDispositionFlags.BlockingUnsupportedOrDisabled |  | boolean |
@@ -1584,6 +1594,7 @@ For example, if your Crowdstrike event contains `id: 123`, `aid: 456`, and `cid:
 | crowdstrike.PatternDispositionFlags.SuspendParent |  | boolean |
 | crowdstrike.PatternDispositionFlags.SuspendProcess |  | boolean |
 | crowdstrike.PatternDispositionValue |  | long |
+| crowdstrike.PatternId |  | keyword |
 | crowdstrike.PciAttachmentState |  | keyword |
 | crowdstrike.PhysicalAddress |  | keyword |
 | crowdstrike.PhysicalAddressLength |  | long |
@@ -1652,7 +1663,9 @@ For example, if your Crowdstrike event contains `id: 123`, `aid: 456`, and `cid:
 | crowdstrike.SourceEndpointNetworkType |  | keyword |
 | crowdstrike.SourceFileName |  | keyword |
 | crowdstrike.SourceProcessId |  | keyword |
+| crowdstrike.SourceProducts |  | keyword |
 | crowdstrike.SourceThreadId |  | keyword |
+| crowdstrike.SourceVendors |  | keyword |
 | crowdstrike.StartTime |  | date |
 | crowdstrike.Status |  | keyword |
 | crowdstrike.SubStatus |  | keyword |
@@ -1677,6 +1690,7 @@ For example, if your Crowdstrike event contains `id: 123`, `aid: 456`, and `cid:
 | crowdstrike.Technique |  | keyword |
 | crowdstrike.Timeout |  | long |
 | crowdstrike.TokenType |  | keyword |
+| crowdstrike.Type | The endpoint detection type ("ldt": Legacy Endpoint Detection, or "ofp": Office Prevention Macro Detection). | keyword |
 | crowdstrike.USN |  | keyword |
 | crowdstrike.UnixMode |  | keyword |
 | crowdstrike.UnsignedModuleLoadCount |  | long |
