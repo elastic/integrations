@@ -3,7 +3,7 @@ description: Pipeline for Jamf Protect Telemetry logs.
 processors:
     - set:
         field: ecs.version
-        value: '8.11.0'
+        value: '8.16.0'
     - json:
         field: message
         target_field: jamf_protect.telemetry
@@ -142,7 +142,7 @@ processors:
 #######################
     - rename:
         field: jamf_protect.telemetry.host.serial
-        target_field: device.id
+        target_field: device.serial_number
         ignore_missing: true
     - set:
         field: device.manufacturer
@@ -307,6 +307,9 @@ processors:
     - pipeline:
         name: '{{ IngestPipeline "pipeline_event_bios_uefi" }}'
         if: ctx.event.action == "bios_uefi"
+    - pipeline:
+        name: '{{ IngestPipeline "pipeline_event_gatekeeper_user_override" }}'
+        if: ctx.event.action == "gatekeeper_user_override"
 
 #############
 ## Cleanup ##
@@ -330,6 +333,7 @@ processors:
         - jamf_protect.telemetry.thread.uuid
         - jamf_protect.telemetry.time
         - jamf_protect.telemetry.version
+        - jamf_protect.telemetry.global_seq_num
         - message
         ignore_missing: true
     - script:
