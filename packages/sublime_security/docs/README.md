@@ -1223,7 +1223,7 @@ An example event for `email_message` looks as following:
 | sublime_security.email_message.headers.hops.authentication_results.spf_details.verdict | Verdict of the SPF. | keyword |
 | sublime_security.email_message.headers.hops.authentication_results.type | The type of authentication result, derived from the field name. | keyword |
 | sublime_security.email_message.headers.hops.fields.\* |  | object |
-| sublime_security.email_message.headers.hops.fields.position |  | long |
+| sublime_security.email_message.headers.hops.fields.position | This field's position along the entire list of header fields. | long |
 | sublime_security.email_message.headers.hops.index | Index indicates the order in which a hop occurred from sender to recipient. | long |
 | sublime_security.email_message.headers.hops.received.additional.raw | The raw string for remaining additional clauses, such as transport information. | keyword |
 | sublime_security.email_message.headers.hops.received.id.raw | The raw string of 'id' section. | keyword |

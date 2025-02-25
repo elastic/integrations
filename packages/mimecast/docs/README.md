@@ -136,27 +136,27 @@ An example event for `audit_events` looks as following:
 {
     "@timestamp": "2024-10-17T02:06:50.000Z",
     "agent": {
-        "ephemeral_id": "d3d233d7-62b7-40f6-8de7-d3c2937d6dae",
-        "id": "b6346117-4ee0-428a-9d74-6580e405feeb",
-        "name": "elastic-agent-20780",
+        "ephemeral_id": "9d307917-d823-49c5-99de-422de2e4de90",
+        "id": "38f355c8-68cd-43d6-bd0a-1e57a3d29eea",
+        "name": "elastic-agent-60619",
         "type": "filebeat",
-        "version": "8.14.0"
+        "version": "8.15.0"
     },
     "client": {
         "ip": "203.59.201.168"
     },
     "data_stream": {
         "dataset": "mimecast.audit_events",
-        "namespace": "54489",
+        "namespace": "26694",
         "type": "logs"
     },
     "ecs": {
         "version": "8.11.0"
     },
     "elastic_agent": {
-        "id": "b6346117-4ee0-428a-9d74-6580e405feeb",
+        "id": "38f355c8-68cd-43d6-bd0a-1e57a3d29eea",
         "snapshot": false,
-        "version": "8.14.0"
+        "version": "8.15.0"
     },
     "event": {
         "action": "api-application-updated",
@@ -167,7 +167,7 @@ An example event for `audit_events` looks as following:
         "created": "2024-10-17T02:06:50.000Z",
         "dataset": "mimecast.audit_events",
         "id": "eNoVzk0PgiAAgOH_wrUO4SizrYOasxUzs6jWLYURfqEg6Wr99-z-bs_7AZplRjFBwQp4E3y5t3G7w1SVz9KxwxtJj7mVNripeP7WV3N2-3AohNUFGw0DmMY2aqOeq7MZfCKqyME1jeUMv_qAdVub6MJdnprZIYz2PS3u-bNuB54kfA2m4GGo6ErJ_zZCi4UD51OQGd3JiqlMUjYu-eTkIdey0di_mNJC1mAFvz-isz1f",
-        "ingested": "2024-12-05T00:52:32Z",
+        "ingested": "2025-02-13T15:17:26Z",
         "original": "{\"auditType\":\"API Application Updated\",\"category\":\"account_logs\",\"eventInfo\":\"API Gateway Application testing Updated. Application Program Interface Addendum (22 September 2022) acknowledged, Date: 2024-10-17, Time: 02:06:50+0000, IP: 203.59.201.168, Application: Administration Console\",\"eventTime\":\"2024-10-17T02:06:50+0000\",\"id\":\"eNoVzk0PgiAAgOH_wrUO4SizrYOasxUzs6jWLYURfqEg6Wr99-z-bs_7AZplRjFBwQp4E3y5t3G7w1SVz9KxwxtJj7mVNripeP7WV3N2-3AohNUFGw0DmMY2aqOeq7MZfCKqyME1jeUMv_qAdVub6MJdnprZIYz2PS3u-bNuB54kfA2m4GGo6ErJ_zZCi4UD51OQGd3JiqlMUjYu-eTkIdey0di_mNJC1mAFvz-isz1f\",\"user\":\"user.name@company.mime-api.com\"}"
     },
     "input": {

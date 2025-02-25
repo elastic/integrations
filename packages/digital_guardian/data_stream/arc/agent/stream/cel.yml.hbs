@@ -19,12 +19,14 @@ auth.oauth2:
   client.secret: {{client_secret}}
   token_url: {{auth_server_url}}/as/token.oauth2
   scopes: {{scope}}
+state:
+  export_profile: {{export_profile}}
 redact:
   fields: ~
 program: |
   state.with(
     request("POST",
-      state.url + "/rest/1.0/export_profiles/{{export_profile}}/export_and_ack"
+      state.url.trim_right("/") + "/rest/1.0/export_profiles/" + state.export_profile + "/export_and_ack"
     ).with({
       "Header":{
           "Accept": ["application/json"],
@@ -34,7 +36,7 @@ program: |
         (has(body.fields) && has(body.data) ? 
           body.fields.map(e, e.name).as(field_names, {
             "events": body.data.map(d, zip(field_names, d).as(e, {
-              "message": e.encode_json(),
+              "message": e.with({"export_profile": state.export_profile}).encode_json(),
             }))
           })
         : 

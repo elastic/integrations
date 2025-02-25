@@ -404,30 +404,27 @@
                                         }
                                     ],
                                     "layers": {
-                                        "3fcf021a-7c2c-43ec-b5c8-ab338ca92860": {
+                                        "1cd908de-f2eb-456e-8bcb-bd8d08a72834": {
                                             "columns": [
                                                 {
-                                                    "columnId": "Subject",
+                                                    "columnId": "465d6d25-e44c-4d00-8884-8fac9b8069b2",
                                                     "fieldName": "Subject",
-                                                    "inMetricDimension": true,
                                                     "meta": {
                                                         "esType": "keyword",
                                                         "type": "string"
                                                     }
                                                 },
                                                 {
-                                                    "columnId": "Destination IP",
+                                                    "columnId": "4565ce99-ddd4-4322-985f-93f50315bce9",
                                                     "fieldName": "Destination IP",
-                                                    "inMetricDimension": true,
                                                     "meta": {
                                                         "esType": "ip",
                                                         "type": "ip"
                                                     }
                                                 },
                                                 {
-                                                    "columnId": "Status",
+                                                    "columnId": "6f600176-ba7e-403d-b8ca-c81015c7d3f4",
                                                     "fieldName": "Status",
-                                                    "inMetricDimension": true,
                                                     "meta": {
                                                         "esType": "keyword",
                                                         "type": "string"
@@ -450,17 +447,27 @@
                             "visualization": {
                                 "columns": [
                                     {
-                                        "columnId": "Subject"
+                                        "columnId": "465d6d25-e44c-4d00-8884-8fac9b8069b2",
+                                        "isMetric": false,
+                                        "isTransposed": false
                                     },
                                     {
-                                        "columnId": "Destination IP"
+                                        "columnId": "4565ce99-ddd4-4322-985f-93f50315bce9",
+                                        "isMetric": false,
+                                        "isTransposed": false
                                     },
                                     {
-                                        "columnId": "Status"
+                                        "columnId": "6f600176-ba7e-403d-b8ca-c81015c7d3f4",
+                                        "isMetric": false,
+                                        "isTransposed": false
                                     }
                                 ],
-                                "layerId": "3fcf021a-7c2c-43ec-b5c8-ab338ca92860",
-                                "layerType": "data"
+                                "layerId": "1cd908de-f2eb-456e-8bcb-bd8d08a72834",
+                                "layerType": "data",
+                                "paging": {
+                                    "enabled": true,
+                                    "size": 10
+                                }
                             }
                         },
                         "title": "Table Subject \u0026 Destination IP \u0026 Status",
@@ -563,69 +570,31 @@
                                 "esql": "from logs-corelight.ssl-*\r\n| limit 10000\r\n| where observer.vendor == \"Corelight\" and event.dataset == \"tls\" and observer.hostname is not null and tls.cipher is not null and (tls.cipher like \"*RC4*\" or tls.cipher like \"*DES*\" or tls.cipher like \"*3DES*\" or tls.cipher like \"*MD5*\" or tls.cipher like \"*NULL*\" or tls.cipher like \"*EXPORT*\")\r\n| stats values(destination.ip), count_distinct(event.id), count() by tls.cipher\r\n| eval mv_last(`values(destination.ip)`)\r\n| rename `mv_last(``values(destination.ip)``)` as `Destination IP`, `count_distinct(event.id)` as `Unique Conns`, `count()` as Count, tls.cipher as Cipher\r\n| keep Cipher,`Destination IP`,`Unique Conns`,Count\r\n| sort `Unique Conns` desc, Count desc"
                             },
                             "visualization": {
-                                "axisTitlesVisibilitySettings": {
-                                    "x": true,
-                                    "yLeft": true,
-                                    "yRight": true
-                                },
-                                "fittingFunction": "None",
-                                "gridlinesVisibilitySettings": {
-                                    "x": true,
-                                    "yLeft": true,
-                                    "yRight": true
-                                },
-                                "labelsOrientation": {
-                                    "x": 0,
-                                    "yLeft": 0,
-                                    "yRight": 0
-                                },
-                                "layers": [
+                                "columns": [
                                     {
-                                        "accessors": [
-                                            "Unique Conns",
-                                            "Count"
-                                        ],
-                                        "colorMapping": {
-                                            "assignments": [],
-                                            "colorMode": {
-                                                "type": "categorical"
-                                            },
-                                            "paletteId": "eui_amsterdam_color_blind",
-                                            "specialAssignments": [
-                                                {
-                                                    "color": {
-                                                        "type": "loop"
-                                                    },
-                                                    "rule": {
-                                                        "type": "other"
-                                                    },
-                                                    "touched": false
-                                                }
-                                            ]
-                                        },
-                                        "layerId": "5f614d44-8cba-4f12-baa1-af0a711658d0",
-                                        "layerType": "data",
-                                        "seriesType": "bar_stacked",
-                                        "splitAccessor": "Destination IP",
-                                        "xAccessor": "Cipher"
+                                        "columnId": "Cipher"
+                                    },
+                                    {
+                                        "columnId": "Destination IP"
+                                    },
+                                    {
+                                        "columnId": "Unique Conns"
+                                    },
+                                    {
+                                        "columnId": "Count"
                                     }
                                 ],
-                                "legend": {
-                                    "isVisible": true,
-                                    "position": "right"
-                                },
-                                "preferredSeriesType": "bar_stacked",
-                                "tickLabelsVisibilitySettings": {
-                                    "x": true,
-                                    "yLeft": true,
-                                    "yRight": true
-                                },
-                                "valueLabels": "hide"
+                                "layerId": "5f614d44-8cba-4f12-baa1-af0a711658d0",
+                                "layerType": "data",
+                                "paging": {
+                                    "enabled": true,
+                                    "size": 10
+                                }
                             }
                         },
                         "title": "Unique Conns \u0026 Count of Cipher",
                         "type": "lens",
-                        "visualizationType": "lnsXY"
+                        "visualizationType": "lnsDatatable"
                     },
                     "disabledActions": [
                         "OPEN_FLYOUT_ADD_DRILLDOWN"
@@ -914,48 +883,51 @@
                                         }
                                     ],
                                     "layers": {
-                                        "245abf70-3066-45e3-87b0-11390408cd79": {
+                                        "5018f473-a970-452e-b1f7-dd47baefc521": {
                                             "columns": [
                                                 {
-                                                    "columnId": "UID",
+                                                    "columnId": "7e0524bd-ad2c-4287-b1e4-1905d9ac30f9",
                                                     "fieldName": "UID",
-                                                    "inMetricDimension": true,
                                                     "meta": {
                                                         "esType": "keyword",
                                                         "type": "string"
                                                     }
                                                 },
                                                 {
-                                                    "columnId": "Source IP",
+                                                    "columnId": "d5a005b3-0ce4-4f1a-8feb-79090add3220",
                                                     "fieldName": "Source IP",
-                                                    "inMetricDimension": true,
                                                     "meta": {
                                                         "esType": "ip",
                                                         "type": "ip"
                                                     }
                                                 },
                                                 {
-                                                    "columnId": "Destination IP",
+                                                    "columnId": "90553087-a24f-465e-a484-a5b8d3531c57",
                                                     "fieldName": "Destination IP",
-                                                    "inMetricDimension": true,
                                                     "meta": {
                                                         "esType": "ip",
                                                         "type": "ip"
                                                     }
                                                 },
                                                 {
-                                                    "columnId": "Inferences",
+                                                    "columnId": "35864d8f-2999-48aa-9878-d4e9e83d3d82",
                                                     "fieldName": "Inferences",
-                                                    "inMetricDimension": true,
                                                     "meta": {
                                                         "esType": "keyword",
                                                         "type": "string"
                                                     }
                                                 },
                                                 {
-                                                    "columnId": "Count",
+                                                    "columnId": "d984ad9e-8e71-44f8-a69e-cf78d234a71f",
+                                                    "fieldName": "Description",
+                                                    "meta": {
+                                                        "esType": "keyword",
+                                                        "type": "string"
+                                                    }
+                                                },
+                                                {
+                                                    "columnId": "e10bc21c-4a4c-45c2-a450-06350d669c88",
                                                     "fieldName": "Count",
-                                                    "inMetricDimension": true,
                                                     "meta": {
                                                         "esType": "long",
                                                         "type": "number"
@@ -964,7 +936,7 @@
                                             ],
                                             "index": "b2bcbb11fd7b30e2a9f2ee93a6a5ffd1f700ee82fff0bfc92dd439c707a35ebb",
                                             "query": {
-                                                "esql": "from logs-corelight.various-*\r\n| limit 10000\r\n| where observer.vendor == \"Corelight\" and event.dataset == \"ssh\" and observer.hostname is not null\r\n| stats count() by event.id, source.ip, destination.ip, ssh.inferences \r\n| stats count() by event.id, source.ip, destination.ip, ssh.inferences \r\n| eval Description =case(\r\n    ssh.inferences == \"PKA\", \"The client automatically auth'd using pubkey auth.  This inference applies to only the auth type that succeeded. Before it, publickey or password authentication attempts could have occurred.\",\r\n    ssh.inferences == \"KS\", \"Interactive session\",\r\n    ssh.inferences == \"AUTO\", \"The client was a script or automated utility and not driven by a user\",\r\n    ssh.inferences == \"CTS\", \"The client likely already had an entry in its known_hosts file for this server\"\r\n)\r\n| where Description is not null\r\n| rename event.id as UID, source.ip as `Source IP`, destination.ip as `Destination IP`, ssh.inferences as Inferences, `count()` as Count\r\n| keep UID , `Source IP`, `Destination IP`, Inferences,Count,Description"
+                                                "esql": "from logs-corelight.various-*\r\n| limit 10000\r\n| where observer.vendor == \"Corelight\" and event.dataset == \"ssh\" and observer.hostname is not null\r\n| stats count() by event.id, source.ip, destination.ip, ssh.inferences \r\n| stats count() by event.id, source.ip, destination.ip, ssh.inferences \r\n| eval Description =case(\r\n    ssh.inferences == \"PKA\", \"The client automatically auth'd using pubkey auth.  This inference applies to only the auth type that succeeded. Before it, publickey or password authentication attempts could have occurred.\",\r\n    ssh.inferences == \"KS\", \"Interactive session\",\r\n    ssh.inferences == \"AUTO\", \"The client was a script or automated utility and not driven by a user\",\r\n    ssh.inferences == \"CTS\", \"The client likely already had an entry in its known_hosts file for this server\"\r\n)\r\n| where Description is not null\r\n| rename event.id as UID, source.ip as `Source IP`, destination.ip as `Destination IP`, ssh.inferences as Inferences, `count()` as Count\r\n| keep UID , `Source IP`, `Destination IP`, Inferences,Description,Count"
                                             },
                                             "timeField": "@timestamp"
                                         }
@@ -973,31 +945,50 @@
                             },
                             "filters": [],
                             "query": {
-                                "esql": "from logs-corelight.various-*\r\n| limit 10000\r\n| where observer.vendor == \"Corelight\" and event.dataset == \"ssh\" and observer.hostname is not null\r\n| stats count() by event.id, source.ip, destination.ip, ssh.inferences \r\n| stats count() by event.id, source.ip, destination.ip, ssh.inferences \r\n| eval Description =case(\r\n    ssh.inferences == \"PKA\", \"The client automatically auth'd using pubkey auth.  This inference applies to only the auth type that succeeded. Before it, publickey or password authentication attempts could have occurred.\",\r\n    ssh.inferences == \"KS\", \"Interactive session\",\r\n    ssh.inferences == \"AUTO\", \"The client was a script or automated utility and not driven by a user\",\r\n    ssh.inferences == \"CTS\", \"The client likely already had an entry in its known_hosts file for this server\"\r\n)\r\n| where Description is not null\r\n| rename event.id as UID, source.ip as `Source IP`, destination.ip as `Destination IP`, ssh.inferences as Inferences, `count()` as Count\r\n| keep UID , `Source IP`, `Destination IP`, Inferences,Count,Description"
+                                "esql": "from logs-corelight.various-*\r\n| limit 10000\r\n| where observer.vendor == \"Corelight\" and event.dataset == \"ssh\" and observer.hostname is not null\r\n| stats count() by event.id, source.ip, destination.ip, ssh.inferences \r\n| stats count() by event.id, source.ip, destination.ip, ssh.inferences \r\n| eval Description =case(\r\n    ssh.inferences == \"PKA\", \"The client automatically auth'd using pubkey auth.  This inference applies to only the auth type that succeeded. Before it, publickey or password authentication attempts could have occurred.\",\r\n    ssh.inferences == \"KS\", \"Interactive session\",\r\n    ssh.inferences == \"AUTO\", \"The client was a script or automated utility and not driven by a user\",\r\n    ssh.inferences == \"CTS\", \"The client likely already had an entry in its known_hosts file for this server\"\r\n)\r\n| where Description is not null\r\n| rename event.id as UID, source.ip as `Source IP`, destination.ip as `Destination IP`, ssh.inferences as Inferences, `count()` as Count\r\n| keep UID , `Source IP`, `Destination IP`, Inferences,Description,Count"
                             },
                             "visualization": {
                                 "columns": [
                                     {
-                                        "columnId": "UID"
+                                        "columnId": "7e0524bd-ad2c-4287-b1e4-1905d9ac30f9",
+                                        "isMetric": false,
+                                        "isTransposed": false
                                     },
                                     {
-                                        "columnId": "Source IP"
+                                        "columnId": "d5a005b3-0ce4-4f1a-8feb-79090add3220",
+                                        "isMetric": false,
+                                        "isTransposed": false
                                     },
                                     {
-                                        "columnId": "Destination IP"
+                                        "columnId": "90553087-a24f-465e-a484-a5b8d3531c57",
+                                        "isMetric": false,
+                                        "isTransposed": false
                                     },
                                     {
-                                        "columnId": "Inferences"
+                                        "columnId": "35864d8f-2999-48aa-9878-d4e9e83d3d82",
+                                        "isMetric": false,
+                                        "isTransposed": false
                                     },
                                     {
-                                        "columnId": "Count"
+                                        "columnId": "d984ad9e-8e71-44f8-a69e-cf78d234a71f",
+                                        "isMetric": false,
+                                        "isTransposed": false
+                                    },
+                                    {
+                                        "columnId": "e10bc21c-4a4c-45c2-a450-06350d669c88",
+                                        "isMetric": true,
+                                        "isTransposed": false
                                     }
                                 ],
-                                "layerId": "245abf70-3066-45e3-87b0-11390408cd79",
-                                "layerType": "data"
+                                "layerId": "5018f473-a970-452e-b1f7-dd47baefc521",
+                                "layerType": "data",
+                                "paging": {
+                                    "enabled": true,
+                                    "size": 10
+                                }
                             }
                         },
-                        "title": "Table UID \u0026 Source IP \u0026 Destination IP \u0026 Inferences \u0026 Count",
+                        "title": "Table UID \u0026 Source IP \u0026 Destination IP \u0026 Inferences \u0026 Description",
                         "type": "lens",
                         "visualizationType": "lnsDatatable"
                     },
@@ -1049,48 +1040,51 @@
                                         "6e41b218-dd22-4bb2-b790-f429589dc7e3": {
                                             "columns": [
                                                 {
-                                                    "columnId": "UID",
+                                                    "columnId": "2ee3abd8-31e6-4b61-bdde-79c19497bf7b",
                                                     "fieldName": "UID",
-                                                    "inMetricDimension": true,
                                                     "meta": {
                                                         "esType": "keyword",
                                                         "type": "string"
                                                     }
                                                 },
                                                 {
-                                                    "columnId": "Source IP",
+                                                    "columnId": "cdae8cad-8cb5-4617-a8f0-f8853b7e7cfa",
                                                     "fieldName": "Source IP",
-                                                    "inMetricDimension": true,
                                                     "meta": {
                                                         "esType": "ip",
                                                         "type": "ip"
                                                     }
                                                 },
                                                 {
-                                                    "columnId": "Destination IP",
+                                                    "columnId": "67018bc7-42c2-4bd6-82e9-84e4e556db02",
                                                     "fieldName": "Destination IP",
-                                                    "inMetricDimension": true,
                                                     "meta": {
                                                         "esType": "ip",
                                                         "type": "ip"
                                                     }
                                                 },
                                                 {
-                                                    "columnId": "Inference",
+                                                    "columnId": "df399330-93d4-4c9e-9ec9-11c37f7b8e11",
                                                     "fieldName": "Inference",
-                                                    "inMetricDimension": true,
                                                     "meta": {
                                                         "esType": "keyword",
                                                         "type": "string"
                                                     }
                                                 },
                                                 {
-                                                    "columnId": "Description",
+                                                    "columnId": "0a9a1a17-7118-45fe-8c7d-b4ea796afa5d",
                                                     "fieldName": "Description",
-                                                    "inMetricDimension": true,
                                                     "meta": {
                                                         "esType": "keyword",
                                                         "type": "string"
+                                                    }
+                                                },
+                                                {
+                                                    "columnId": "7be1c9db-5163-4391-ad09-c85d7153e438",
+                                                    "fieldName": "Count",
+                                                    "meta": {
+                                                        "esType": "long",
+                                                        "type": "number"
                                                     }
                                                 }
                                             ],
@@ -1110,23 +1104,42 @@
                             "visualization": {
                                 "columns": [
                                     {
-                                        "columnId": "UID"
+                                        "columnId": "2ee3abd8-31e6-4b61-bdde-79c19497bf7b",
+                                        "isMetric": false,
+                                        "isTransposed": false
                                     },
                                     {
-                                        "columnId": "Source IP"
+                                        "columnId": "cdae8cad-8cb5-4617-a8f0-f8853b7e7cfa",
+                                        "isMetric": false,
+                                        "isTransposed": false
                                     },
                                     {
-                                        "columnId": "Destination IP"
+                                        "columnId": "67018bc7-42c2-4bd6-82e9-84e4e556db02",
+                                        "isMetric": false,
+                                        "isTransposed": false
                                     },
                                     {
-                                        "columnId": "Inference"
+                                        "columnId": "df399330-93d4-4c9e-9ec9-11c37f7b8e11",
+                                        "isMetric": false,
+                                        "isTransposed": false
                                     },
                                     {
-                                        "columnId": "Description"
+                                        "columnId": "0a9a1a17-7118-45fe-8c7d-b4ea796afa5d",
+                                        "isMetric": false,
+                                        "isTransposed": false
+                                    },
+                                    {
+                                        "columnId": "7be1c9db-5163-4391-ad09-c85d7153e438",
+                                        "isMetric": true,
+                                        "isTransposed": false
                                     }
                                 ],
                                 "layerId": "6e41b218-dd22-4bb2-b790-f429589dc7e3",
-                                "layerType": "data"
+                                "layerType": "data",
+                                "paging": {
+                                    "enabled": true,
+                                    "size": 10
+                                }
                             }
                         },
                         "title": "Table UID \u0026 Source IP \u0026 Destination IP \u0026 Inference \u0026 Description",
@@ -1423,48 +1436,51 @@
                                         "a591c3d3-91d2-4053-a201-395832db2479": {
                                             "columns": [
                                                 {
-                                                    "columnId": "UID",
+                                                    "columnId": "50add82e-1885-4eca-89dd-b193cd09b99c",
                                                     "fieldName": "UID",
-                                                    "inMetricDimension": true,
                                                     "meta": {
                                                         "esType": "keyword",
                                                         "type": "string"
                                                     }
                                                 },
                                                 {
-                                                    "columnId": "Source IP",
+                                                    "columnId": "544ffa5e-88b1-436e-a564-67e8b2979057",
                                                     "fieldName": "Source IP",
-                                                    "inMetricDimension": true,
                                                     "meta": {
                                                         "esType": "ip",
                                                         "type": "ip"
                                                     }
                                                 },
                                                 {
-                                                    "columnId": "Destination IP",
+                                                    "columnId": "a5a650cc-65d2-45ee-a49d-021487c9b39f",
                                                     "fieldName": "Destination IP",
-                                                    "inMetricDimension": true,
                                                     "meta": {
                                                         "esType": "ip",
                                                         "type": "ip"
                                                     }
                                                 },
                                                 {
-                                                    "columnId": "Inference",
+                                                    "columnId": "18be97ca-8ca5-4d6e-a359-e17b52b98d86",
                                                     "fieldName": "Inference",
-                                                    "inMetricDimension": true,
                                                     "meta": {
                                                         "esType": "keyword",
                                                         "type": "string"
                                                     }
                                                 },
                                                 {
-                                                    "columnId": "Description",
+                                                    "columnId": "55315295-19f7-4aef-a027-29b654071489",
                                                     "fieldName": "Description",
-                                                    "inMetricDimension": true,
                                                     "meta": {
                                                         "esType": "keyword",
                                                         "type": "string"
+                                                    }
+                                                },
+                                                {
+                                                    "columnId": "fa4a7170-fc66-44c2-a72f-f32417297bee",
+                                                    "fieldName": "Count",
+                                                    "meta": {
+                                                        "esType": "long",
+                                                        "type": "number"
                                                     }
                                                 }
                                             ],
@@ -1484,23 +1500,42 @@
                             "visualization": {
                                 "columns": [
                                     {
-                                        "columnId": "UID"
+                                        "columnId": "50add82e-1885-4eca-89dd-b193cd09b99c",
+                                        "isMetric": false,
+                                        "isTransposed": false
                                     },
                                     {
-                                        "columnId": "Source IP"
+                                        "columnId": "544ffa5e-88b1-436e-a564-67e8b2979057",
+                                        "isMetric": false,
+                                        "isTransposed": false
                                     },
                                     {
-                                        "columnId": "Destination IP"
+                                        "columnId": "a5a650cc-65d2-45ee-a49d-021487c9b39f",
+                                        "isMetric": false,
+                                        "isTransposed": false
                                     },
                                     {
-                                        "columnId": "Inference"
+                                        "columnId": "18be97ca-8ca5-4d6e-a359-e17b52b98d86",
+                                        "isMetric": false,
+                                        "isTransposed": false
                                     },
                                     {
-                                        "columnId": "Description"
+                                        "columnId": "55315295-19f7-4aef-a027-29b654071489",
+                                        "isMetric": false,
+                                        "isTransposed": false
+                                    },
+                                    {
+                                        "columnId": "fa4a7170-fc66-44c2-a72f-f32417297bee",
+                                        "isMetric": true,
+                                        "isTransposed": false
                                     }
                                 ],
                                 "layerId": "a591c3d3-91d2-4053-a201-395832db2479",
-                                "layerType": "data"
+                                "layerType": "data",
+                                "paging": {
+                                    "enabled": true,
+                                    "size": 10
+                                }
                             }
                         },
                         "title": "Table UID \u0026 Source IP \u0026 Destination IP \u0026 Inference \u0026 Description",
@@ -1552,57 +1587,52 @@
                                         }
                                     ],
                                     "layers": {
-                                        "6812facf-75fd-40ad-b85e-9e0e5874938f": {
+                                        "5e0590c9-4128-4f6c-82e3-480e1929b90d": {
                                             "columns": [
                                                 {
-                                                    "columnId": "UID",
+                                                    "columnId": "f9cbc2cb-78c2-42f4-85d1-eff68eec6b6e",
                                                     "fieldName": "UID",
-                                                    "inMetricDimension": true,
                                                     "meta": {
                                                         "esType": "keyword",
                                                         "type": "string"
                                                     }
                                                 },
                                                 {
-                                                    "columnId": "Source IP",
+                                                    "columnId": "4886f6ee-b4d1-401b-8184-6c461b026904",
                                                     "fieldName": "Source IP",
-                                                    "inMetricDimension": true,
                                                     "meta": {
                                                         "esType": "ip",
                                                         "type": "ip"
                                                     }
                                                 },
                                                 {
-                                                    "columnId": "Destination IP",
+                                                    "columnId": "1d6207f1-ec17-4822-9ce4-5c3c5a34ff81",
                                                     "fieldName": "Destination IP",
-                                                    "inMetricDimension": true,
                                                     "meta": {
                                                         "esType": "ip",
                                                         "type": "ip"
                                                     }
                                                 },
                                                 {
-                                                    "columnId": "Count",
+                                                    "columnId": "3dd30f43-7a57-4cfa-b00b-dc144438629b",
+                                                    "fieldName": "Inferences",
+                                                    "meta": {
+                                                        "esType": "keyword",
+                                                        "type": "string"
+                                                    }
+                                                },
+                                                {
+                                                    "columnId": "e1836834-89e6-441e-a1bd-7e9c903ab9d2",
                                                     "fieldName": "Count",
-                                                    "inMetricDimension": true,
                                                     "meta": {
                                                         "esType": "long",
                                                         "type": "number"
-                                                    }
-                                                },
-                                                {
-                                                    "columnId": "Inferences",
-                                                    "fieldName": "Inferences",
-                                                    "inMetricDimension": true,
-                                                    "meta": {
-                                                        "esType": "keyword",
-                                                        "type": "string"
                                                     }
                                                 }
                                             ],
                                             "index": "b2bcbb11fd7b30e2a9f2ee93a6a5ffd1f700ee82fff0bfc92dd439c707a35ebb",
                                             "query": {
-                                                "esql": "from logs-corelight.various-*\r\n| limit 10000\r\n| where observer.vendor == \"Corelight\" and event.dataset == \"ssh\" and observer.hostname is not null and ssh.inferences in ( \"SC\", \"SP\", \"SV\", \"SA\", \"AFR\", \"BAN\" )\r\n| stats count() by event.id,source.ip,destination.ip,ssh.inferences\r\n| rename event.id as UID, source.ip as `Source IP`, destination.ip as `Destination IP`,`count()` as Count, ssh.inferences as Inferences\r\n| keep UID, `Source IP`,`Destination IP`,Count,Inferences"
+                                                "esql": "from logs-corelight.various-*\r\n| limit 10000\r\n| where observer.vendor == \"Corelight\" and event.dataset == \"ssh\" and observer.hostname is not null and ssh.inferences in ( \"SC\", \"SP\", \"SV\", \"SA\", \"AFR\", \"BAN\" )\r\n| stats count() by event.id,source.ip,destination.ip,ssh.inferences\r\n| rename event.id as UID, source.ip as `Source IP`, destination.ip as `Destination IP`,`count()` as Count, ssh.inferences as Inferences\r\n| keep UID, `Source IP`,`Destination IP`, Inferences, Count"
                                             },
                                             "timeField": "@timestamp"
                                         }
@@ -1611,31 +1641,45 @@
                             },
                             "filters": [],
                             "query": {
-                                "esql": "from logs-corelight.various-*\r\n| limit 10000\r\n| where observer.vendor == \"Corelight\" and event.dataset == \"ssh\" and observer.hostname is not null and ssh.inferences in ( \"SC\", \"SP\", \"SV\", \"SA\", \"AFR\", \"BAN\" )\r\n| stats count() by event.id,source.ip,destination.ip,ssh.inferences\r\n| rename event.id as UID, source.ip as `Source IP`, destination.ip as `Destination IP`,`count()` as Count, ssh.inferences as Inferences\r\n| keep UID, `Source IP`,`Destination IP`,Count,Inferences"
+                                "esql": "from logs-corelight.various-*\r\n| limit 10000\r\n| where observer.vendor == \"Corelight\" and event.dataset == \"ssh\" and observer.hostname is not null and ssh.inferences in ( \"SC\", \"SP\", \"SV\", \"SA\", \"AFR\", \"BAN\" )\r\n| stats count() by event.id,source.ip,destination.ip,ssh.inferences\r\n| rename event.id as UID, source.ip as `Source IP`, destination.ip as `Destination IP`,`count()` as Count, ssh.inferences as Inferences\r\n| keep UID, `Source IP`,`Destination IP`, Inferences, Count"
                             },
                             "visualization": {
                                 "columns": [
                                     {
-                                        "columnId": "UID"
+                                        "columnId": "f9cbc2cb-78c2-42f4-85d1-eff68eec6b6e",
+                                        "isMetric": false,
+                                        "isTransposed": false
                                     },
                                     {
-                                        "columnId": "Source IP"
+                                        "columnId": "4886f6ee-b4d1-401b-8184-6c461b026904",
+                                        "isMetric": false,
+                                        "isTransposed": false
                                     },
                                     {
-                                        "columnId": "Destination IP"
+                                        "columnId": "1d6207f1-ec17-4822-9ce4-5c3c5a34ff81",
+                                        "isMetric": false,
+                                        "isTransposed": false
                                     },
                                     {
-                                        "columnId": "Count"
+                                        "columnId": "3dd30f43-7a57-4cfa-b00b-dc144438629b",
+                                        "isMetric": false,
+                                        "isTransposed": false
                                     },
                                     {
-                                        "columnId": "Inferences"
+                                        "columnId": "e1836834-89e6-441e-a1bd-7e9c903ab9d2",
+                                        "isMetric": true,
+                                        "isTransposed": false
                                     }
                                 ],
-                                "layerId": "6812facf-75fd-40ad-b85e-9e0e5874938f",
-                                "layerType": "data"
+                                "layerId": "5e0590c9-4128-4f6c-82e3-480e1929b90d",
+                                "layerType": "data",
+                                "paging": {
+                                    "enabled": true,
+                                    "size": 10
+                                }
                             }
                         },
-                        "title": "Table UID \u0026 Source IP \u0026 Destination IP \u0026 Count \u0026 Inferences",
+                        "title": "Table UID \u0026 Source IP \u0026 Destination IP \u0026 Inferences \u0026 Count",
                         "type": "lens",
                         "visualizationType": "lnsDatatable"
                     },
@@ -1778,6 +1822,47 @@
             },
             {
                 "embeddableConfig": {
+                    "enhancements": {
+                        "dynamicActions": {
+                            "events": []
+                        }
+                    },
+                    "hidePanelTitles": true,
+                    "savedVis": {
+                        "data": {
+                            "aggs": [],
+                            "searchSource": {
+                                "filter": [],
+                                "query": {
+                                    "language": "kuery",
+                                    "query": ""
+                                }
+                            }
+                        },
+                        "description": "",
+                        "params": {
+                            "fontSize": 12,
+                            "markdown": "Connections employing TLS versions older than 1.2 are recognized as less secure, presenting a higher risk of being compromised. These outdated protocols may indicate legacy systems with configurations that are not aligned with modern security standards.",
+                            "openLinksInNewTab": false
+                        },
+                        "title": "",
+                        "type": "markdown",
+                        "uiState": {}
+                    }
+                },
+                "gridData": {
+                    "h": 8,
+                    "i": "27d556b2-a553-4134-b0fa-5bce2eeaff8e",
+                    "w": 14,
+                    "x": 34,
+                    "y": 76
+                },
+                "panelIndex": "27d556b2-a553-4134-b0fa-5bce2eeaff8e",
+                "title": "",
+                "type": "visualization"
+            },
+            {
+                "embeddableConfig": {
                     "attributes": {
                         "references": [],
                         "state": {
@@ -1808,45 +1893,48 @@
                                         "4bf89721-c628-4281-b0d4-c08a267f89d0": {
                                             "columns": [
                                                 {
-                                                    "columnId": "UID",
+                                                    "columnId": "80b19f52-903e-4dae-8213-4b798349e705",
                                                     "fieldName": "UID",
-                                                    "inMetricDimension": true,
                                                     "meta": {
                                                         "esType": "keyword",
                                                         "type": "string"
                                                     }
                                                 },
                                                 {
-                                                    "columnId": "Source IP",
+                                                    "columnId": "63d749d0-e72c-43d5-bb55-56ea56fd4db6",
                                                     "fieldName": "Source IP",
-                                                    "inMetricDimension": true,
                                                     "meta": {
                                                         "esType": "ip",
                                                         "type": "ip"
                                                     }
                                                 },
                                                 {
-                                                    "columnId": "Destination IP",
+                                                    "columnId": "b2ca7846-f3ef-433d-a7c3-9680d915c1b7",
                                                     "fieldName": "Destination IP",
-                                                    "inMetricDimension": true,
                                                     "meta": {
                                                         "esType": "ip",
                                                         "type": "ip"
                                                     }
                                                 },
                                                 {
-                                                    "columnId": "Inference",
+                                                    "columnId": "ad208ad6-acf8-402a-b1e2-3c61022a8697",
                                                     "fieldName": "Inference",
-                                                    "inMetricDimension": true,
                                                     "meta": {
                                                         "esType": "keyword",
                                                         "type": "string"
                                                     }
                                                 },
                                                 {
-                                                    "columnId": "Count",
+                                                    "columnId": "70e19544-a9fd-45dc-84b1-d821c777839b",
+                                                    "fieldName": "Description",
+                                                    "meta": {
+                                                        "esType": "keyword",
+                                                        "type": "string"
+                                                    }
+                                                },
+                                                {
+                                                    "columnId": "666b0a44-4ed0-4351-ba22-3a5dd4c70d45",
                                                     "fieldName": "Count",
-                                                    "inMetricDimension": true,
                                                     "meta": {
                                                         "esType": "long",
                                                         "type": "number"
@@ -1869,23 +1957,42 @@
                             "visualization": {
                                 "columns": [
                                     {
-                                        "columnId": "UID"
+                                        "columnId": "80b19f52-903e-4dae-8213-4b798349e705",
+                                        "isMetric": false,
+                                        "isTransposed": false
                                     },
                                     {
-                                        "columnId": "Source IP"
+                                        "columnId": "63d749d0-e72c-43d5-bb55-56ea56fd4db6",
+                                        "isMetric": false,
+                                        "isTransposed": false
                                     },
                                     {
-                                        "columnId": "Destination IP"
+                                        "columnId": "b2ca7846-f3ef-433d-a7c3-9680d915c1b7",
+                                        "isMetric": false,
+                                        "isTransposed": false
                                     },
                                     {
-                                        "columnId": "Inference"
+                                        "columnId": "ad208ad6-acf8-402a-b1e2-3c61022a8697",
+                                        "isMetric": false,
+                                        "isTransposed": false
                                     },
                                     {
-                                        "columnId": "Count"
+                                        "columnId": "70e19544-a9fd-45dc-84b1-d821c777839b",
+                                        "isMetric": false,
+                                        "isTransposed": false
+                                    },
+                                    {
+                                        "columnId": "666b0a44-4ed0-4351-ba22-3a5dd4c70d45",
+                                        "isMetric": true,
+                                        "isTransposed": false
                                     }
                                 ],
                                 "layerId": "4bf89721-c628-4281-b0d4-c08a267f89d0",
-                                "layerType": "data"
+                                "layerType": "data",
+                                "paging": {
+                                    "enabled": true,
+                                    "size": 10
+                                }
                             }
                         },
                         "title": "Table UID \u0026 Source IP \u0026 Destination IP \u0026 Inference \u0026 Count",
@@ -1907,6 +2014,329 @@
                 "panelIndex": "3512af68-12fa-4aa3-8721-1af3dfcf1052",
                 "title": "SSH Advanced Threats Inferences [Logs Corelight]",
                 "type": "lens"
+            },
+            {
+                "embeddableConfig": {
+                    "attributes": {
+                        "references": [
+                            {
+                                "id": "logs-*",
+                                "name": "indexpattern-datasource-layer-f13e23d7-6a66-4cfe-9dc3-3fbfc3ab9260",
+                                "type": "index-pattern"
+                            },
+                            {
+                                "id": "logs-*",
+                                "name": "353826bd-4022-4e5b-8a70-268510400523",
+                                "type": "index-pattern"
+                            }
+                        ],
+                        "state": {
+                            "adHocDataViews": {},
+                            "datasourceStates": {
+                                "formBased": {
+                                    "layers": {
+                                        "f13e23d7-6a66-4cfe-9dc3-3fbfc3ab9260": {
+                                            "columnOrder": [
+                                                "c2ee208a-9e52-4dc1-a667-19738d1c14ce"
+                                            ],
+                                            "columns": {
+                                                "c2ee208a-9e52-4dc1-a667-19738d1c14ce": {
+                                                    "customLabel": true,
+                                                    "dataType": "number",
+                                                    "isBucketed": false,
+                                                    "label": "Connections using Less Secure TLS Versions (\u003c TLS1.2)",
+                                                    "operationType": "unique_count",
+                                                    "params": {
+                                                        "emptyAsNull": false,
+                                                        "format": {
+                                                            "id": "number",
+                                                            "params": {
+                                                                "decimals": 0
+                                                            }
+                                                        }
+                                                    },
+                                                    "scale": "ratio",
+                                                    "sourceField": "event.id"
+                                                }
+                                            },
+                                            "ignoreGlobalFilters": false,
+                                            "incompleteColumns": {},
+                                            "sampling": 1
+                                        }
+                                    }
+                                },
+                                "indexpattern": {
+                                    "layers": {}
+                                },
+                                "textBased": {
+                                    "layers": {}
+                                }
+                            },
+                            "filters": [
+                                {
+                                    "$state": {
+                                        "store": "appState"
+                                    },
+                                    "meta": {
+                                        "alias": null,
+                                        "disabled": false,
+                                        "field": "tls.version",
+                                        "index": "353826bd-4022-4e5b-8a70-268510400523",
+                                        "key": "tls.version",
+                                        "negate": false,
+                                        "type": "exists",
+                                        "value": "exists"
+                                    },
+                                    "query": {
+                                        "exists": {
+                                            "field": "tls.version"
+                                        }
+                                    }
+                                },
+                                {
+                                    "$state": {
+                                        "store": "appState"
+                                    },
+                                    "meta": {
+                                        "alias": null,
+                                        "disabled": false,
+                                        "field": "source.ip",
+                                        "index": "a3f09cec-1608-42a0-a1b8-461fc24c5c84",
+                                        "key": "source.ip",
+                                        "negate": false,
+                                        "type": "exists"
+                                    },
+                                    "query": {
+                                        "exists": {
+                                            "field": "source.ip"
+                                        }
+                                    }
+                                },
+                                {
+                                    "$state": {
+                                        "store": "appState"
+                                    },
+                                    "meta": {
+                                        "alias": null,
+                                        "disabled": false,
+                                        "field": "observer.vendor",
+                                        "index": "800bb515-6c46-4ee1-a30f-e973d53d733c",
+                                        "key": "observer.vendor",
+                                        "negate": false,
+                                        "params": {
+                                            "query": "Corelight"
+                                        },
+                                        "type": "phrase"
+                                    },
+                                    "query": {
+                                        "match_phrase": {
+                                            "observer.vendor": "Corelight"
+                                        }
+                                    }
+                                },
+                                {
+                                    "$state": {
+                                        "store": "appState"
+                                    },
+                                    "meta": {
+                                        "alias": null,
+                                        "disabled": false,
+                                        "field": "event.dataset",
+                                        "index": "600d7f5d-aef8-4a96-ba02-b5161cffb267",
+                                        "key": "event.dataset",
+                                        "negate": false,
+                                        "params": {
+                                            "query": "tls"
+                                        },
+                                        "type": "phrase"
+                                    },
+                                    "query": {
+                                        "match_phrase": {
+                                            "event.dataset": "tls"
+                                        }
+                                    }
+                                },
+                                {
+                                    "$state": {
+                                        "store": "appState"
+                                    },
+                                    "meta": {
+                                        "alias": null,
+                                        "disabled": false,
+                                        "field": "tls.version",
+                                        "index": "3390d8d3-eaa8-443f-930d-3b66b1a86d5f",
+                                        "key": "tls.version",
+                                        "negate": true,
+                                        "params": [
+                                            "TLSv12",
+                                            "TLSv13",
+                                            "DTLSv12"
+                                        ],
+                                        "type": "phrases"
+                                    },
+                                    "query": {
+                                        "bool": {
+                                            "minimum_should_match": 1,
+                                            "should": [
+                                                {
+                                                    "match_phrase": {
+                                                        "tls.version": "TLSv12"
+                                                    }
+                                                },
+                                                {
+                                                    "match_phrase": {
+                                                        "tls.version": "TLSv13"
+                                                    }
+                                                },
+                                                {
+                                                    "match_phrase": {
+                                                        "tls.version": "DTLSv12"
+                                                    }
+                                                }
+                                            ]
+                                        }
+                                    }
+                                }
+                            ],
+                            "internalReferences": [],
+                            "query": {
+                                "language": "kuery",
+                                "query": ""
+                            },
+                            "visualization": {
+                                "layerId": "f13e23d7-6a66-4cfe-9dc3-3fbfc3ab9260",
+                                "layerType": "data",
+                                "metricAccessor": "c2ee208a-9e52-4dc1-a667-19738d1c14ce"
+                            }
+                        },
+                        "title": "",
+                        "type": "lens",
+                        "visualizationType": "lnsMetric"
+                    },
+                    "enhancements": {},
+                    "hidePanelTitles": true
+                },
+                "gridData": {
+                    "h": 8,
+                    "i": "6f8ab64b-28ca-4228-9748-c944b6fa4d0a",
+                    "w": 10,
+                    "x": 24,
+                    "y": 76
+                },
+                "panelIndex": "6f8ab64b-28ca-4228-9748-c944b6fa4d0a",
+                "title": "Connections using Less Secure TLS Versions (\u003c TLS1.2)",
+                "type": "lens"
+            },
+            {
+                "embeddableConfig": {
+                    "attributes": {
+                        "references": [],
+                        "state": {
+                            "adHocDataViews": {
+                                "22ef31a921118149e9248d9055373ee05aa0a1357176fab08d84de81b8045865": {
+                                    "allowHidden": false,
+                                    "allowNoIndex": false,
+                                    "fieldFormats": {},
+                                    "id": "22ef31a921118149e9248d9055373ee05aa0a1357176fab08d84de81b8045865",
+                                    "name": "logs-corelight.ssl-*",
+                                    "runtimeFieldMap": {},
+                                    "sourceFilters": [],
+                                    "timeFieldName": "@timestamp",
+                                    "title": "logs-corelight.ssl-*",
+                                    "type": "esql"
+                                }
+                            },
+                            "datasourceStates": {
+                                "textBased": {
+                                    "indexPatternRefs": [
+                                        {
+                                            "id": "22ef31a921118149e9248d9055373ee05aa0a1357176fab08d84de81b8045865",
+                                            "timeField": "@timestamp",
+                                            "title": "logs-corelight.ssl-*"
+                                        }
+                                    ],
+                                    "layers": {
+                                        "a30838f1-c664-403b-b369-e420c9988358": {
+                                            "columns": [
+                                                {
+                                                    "columnId": "Version",
+                                                    "fieldName": "Version",
+                                                    "meta": {
+                                                        "esType": "keyword",
+                                                        "type": "string"
+                                                    }
+                                                },
+                                                {
+                                                    "columnId": "Counter",
+                                                    "fieldName": "Counter",
+                                                    "inMetricDimension": true,
+                                                    "meta": {
+                                                        "esType": "long",
+                                                        "type": "number"
+                                                    }
+                                                },
+                                                {
+                                                    "columnId": "Classification",
+                                                    "fieldName": "Classification",
+                                                    "meta": {
+                                                        "esType": "keyword",
+                                                        "type": "string"
+                                                    }
+                                                }
+                                            ],
+                                            "index": "22ef31a921118149e9248d9055373ee05aa0a1357176fab08d84de81b8045865",
+                                            "query": {
+                                                "esql": "FROM logs-corelight.ssl-*\r\n| LIMIT 10000\r\n| WHERE observer.vendor == \"Corelight\" and event.dataset == \"tls\" and observer.hostname IS NOT NULL and tls.version IS NOT NULL\r\n| EVAL Classification = CASE(tls.version== \"TLSv13\",\"Most Secure (v1.3)\", tls.version== \"TLSv12\",\"Secure (v1.2)\",tls.version ==\"DTLSv12\", \"Secure (v1.2)\", tls.version ==\"unknown-64282\", \"Unknown\", \"Old Version \u003c (v1.2)\")\r\n| STATS COUNT_DISTINCT(event.id), VALUES(tls.version) by Classification, tls.version\r\n| RENAME `VALUES(tls.version)` as Version, `COUNT_DISTINCT(event.id)` as Counter\r\n| KEEP Version, Counter, Classification"
+                                            },
+                                            "timeField": "@timestamp"
+                                        }
+                                    }
+                                }
+                            },
+                            "filters": [],
+                            "query": {
+                                "esql": "FROM logs-corelight.ssl-*\r\n| LIMIT 10000\r\n| WHERE observer.vendor == \"Corelight\" and event.dataset == \"tls\" and observer.hostname IS NOT NULL and tls.version IS NOT NULL\r\n| EVAL Classification = CASE(tls.version== \"TLSv13\",\"Most Secure (v1.3)\", tls.version== \"TLSv12\",\"Secure (v1.2)\",tls.version ==\"DTLSv12\", \"Secure (v1.2)\", tls.version ==\"unknown-64282\", \"Unknown\", \"Old Version \u003c (v1.2)\")\r\n| STATS COUNT_DISTINCT(event.id), VALUES(tls.version) by Classification, tls.version\r\n| RENAME `VALUES(tls.version)` as Version, `COUNT_DISTINCT(event.id)` as Counter\r\n| KEEP Version, Counter, Classification"
+                            },
+                            "visualization": {
+                                "columns": [
+                                    {
+                                        "columnId": "Version"
+                                    },
+                                    {
+                                        "columnId": "Counter"
+                                    },
+                                    {
+                                        "columnId": "Classification"
+                                    }
+                                ],
+                                "layerId": "a30838f1-c664-403b-b369-e420c9988358",
+                                "layerType": "data",
+                                "paging": {
+                                    "enabled": true,
+                                    "size": 10
+                                }
+                            }
+                        },
+                        "title": "Bar vertical stacked",
+                        "type": "lens",
+                        "visualizationType": "lnsDatatable"
+                    },
+                    "description": "Classification based on Industry best practices",
+                    "disabledActions": [
+                        "OPEN_FLYOUT_ADD_DRILLDOWN"
+                    ],
+                    "enhancements": {}
+                },
+                "gridData": {
+                    "h": 15,
+                    "i": "d46f6b40-861a-4435-b774-a9e539923a27",
+                    "w": 24,
+                    "x": 24,
+                    "y": 84
+                },
+                "panelIndex": "d46f6b40-861a-4435-b774-a9e539923a27",
+                "title": "Network Evidence for All TLS versions seen [Logs Corelight]",
+                "type": "lens"
             }
         ],
         "refreshInterval": {
@@ -1920,10 +2350,20 @@
         "version": 2
     },
     "coreMigrationVersion": "8.8.0",
-    "created_at": "2025-01-29T12:41:02.238Z",
+    "created_at": "2025-02-07T05:48:30.115Z",
     "id": "corelight-45197477-c13f-4e52-a5dd-fb4f53564963",
     "managed": false,
     "references": [
+        {
+            "id": "logs-*",
+            "name": "6f8ab64b-28ca-4228-9748-c944b6fa4d0a:indexpattern-datasource-layer-f13e23d7-6a66-4cfe-9dc3-3fbfc3ab9260",
+            "type": "index-pattern"
+        },
+        {
+            "id": "logs-*",
+            "name": "6f8ab64b-28ca-4228-9748-c944b6fa4d0a:353826bd-4022-4e5b-8a70-268510400523",
+            "type": "index-pattern"
+        },
         {
             "id": "logs-*",
             "name": "controlGroup_b7b4bc2e-98d1-453a-a412-a37228a386b1:optionsListDataView",
