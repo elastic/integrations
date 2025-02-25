@@ -220,6 +220,12 @@ processors:
     target_field: url
     keep_original: false
     if: ctx.fortinet?.firewall?.url != null
+    on_failure:
+      - set:
+          field: fortinet.firewall.raw_url
+          copy_from: fortinet.firewall.url
+          ignore_empty_value: true
+          override: true
 - remove:
     field: fortinet.firewall.url
     ignore_missing: true
