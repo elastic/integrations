@@ -57,7 +57,7 @@ There are two advanced configuration options for the OpenAI integration: "Initia
 #### Impact on data resolution
 
 Granularity relationship: `1m` > `1h` > `1d`
-- `1m` buckets provide the highest resolution metrics, with data arriving nearly in real-time (1-minute delay)
+- `1m` buckets provide the highest resolution metrics, with data arriving in near real-time (1-minute delay)
 - `1h` buckets aggregate 60-minute intervals, with data arriving less frequently (1-hour delay)
 - `1d` buckets consolidate full 24-hour periods, with data arriving daily (24-hour delay)
 
@@ -87,13 +87,13 @@ Formula for API calls:
 2. Total buckets / buckets per API call = API calls per data stream
 3. Total API calls = API calls per data stream × 8 data streams
 
-Technical calculation example with 6-month initial interval and 1-minute buckets:
+Technical calculation example with a 6-month initial interval and 1-minute buckets:
 - "Initial interval" conversion: 6 months = (6 × 30 × 24) = 4,320 hours
 - Total buckets needed: 4,320 hours × 60 minutes = 259,200 buckets
 - API calls per stream: 259,200 / 60 = 4,320 calls
 - Total API calls across 8 streams: 4,320 × 8 = 34,560 API calls
 
-Making 34,560 API calls in a brief period will likely trigger OpenAI's rate limits, resulting in API errors. When using a 1-minute bucket width, it's strongly recommended to set the "Initial interval" to a shorter duration - optimally 1 day - to ensure smooth performance. While our extensive testing demonstrates excellent results with a 6-month initial interval paired with a 1-day bucket width, the same level of success isn't achievable with 1-minute or 1-hour bucket widths due to OpenAI's API rate limitations. For optimal results when collecting historical data over extended periods, implementing 1-day bucket widths proves to be the most effective approach, balancing data granularity with API constraints.
+Making 34,560 API calls in a brief period will likely trigger OpenAI's rate limits, resulting in API errors. When using a 1-minute bucket width, it's strongly recommended to set the "Initial interval" to a shorter duration - optimally 1 day - to ensure smooth performance. While our extensive testing demonstrates excellent results with a 6-month initial interval paired with a 1-day bucket width, the same level of success isn't achievable with 1-minute or 1-hour bucket widths due to OpenAI's API rate limitations. To achieve the best results when gathering historical data over long periods, using 1-day bucket widths is the most effective method, ensuring a balance between data granularity and API limitations.
 
 ### Collection process
 
@@ -109,10 +109,7 @@ With default settings (Interval: 5m, Bucket width: 1m, Initial interval: 24h), t
 
 With default settings (Interval: 5m, Bucket width: 1m, Initial interval: 24h):
 
-1. Integration starts at 10:00 AM
-2. Collects data from 10:00 AM previous day
-3. Continues until 9:59 AM current day
-4. Next collection starts at 10:05 AM from the 10:00 AM bucket to 10:04 AM as the "Interval" is 5 minutes.
+The integration starts at 10:00 AM, collects data from 10:00 AM the previous day, and continues until 9:59 AM the current day. The next collection starts at 10:05 AM, collecting from the 10:00 AM bucket to the 10:04 AM bucket, as the "Interval" is 5 minutes.
 
 ## Logs reference
 
