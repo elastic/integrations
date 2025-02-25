@@ -6,7 +6,7 @@ resource.tracer.maxbackups: 5
 {{/if}}
 resource.url: {{url}}
 state:
-  token_id: {{token_id}}
+  token_id: "{{token_id}}"
   api_token: {{api_token}}
   initial_interval: {{initial_interval}}
   path: /public_api/v2/alerts/get_alerts_multi_events
@@ -57,14 +57,14 @@ program: |
           "x-xdr-timestamp": [h.timestamp],
           "x-xdr-nonce": [h.nonce],
           "Authorization": [h.auth],
-          "x-xdr-auth-id": [string(state.token_id)],
+          "x-xdr-auth-id": [state.token_id],
         }
       }))
     :
       req.with({
         "Header":{
           "Authorization": [state.api_token],
-          "x-xdr-auth-id": [string(state.token_id)],
+          "x-xdr-auth-id": [state.token_id],
         }
       })
     ).do_request().as(resp, resp.StatusCode == 200 ?
