@@ -25,7 +25,7 @@ program: |
     has(state.worklist) && size(state.worklist) > 0 ?
       state
     :
-      request("GET", (state.url + "logs.index")).with({
+      request("GET", state.url.trim_right("/") + "/logs.index").with({
         "Header":{
           "Authorization": ["Basic "+string(base64(state.user+":"+state.password))],
         }
@@ -46,7 +46,7 @@ program: |
             "error": {
               "code": string(resp.StatusCode),
               "id": string(resp.Status),
-              "message": "GET " + state.url + "logs.index: " + (
+              "message": "GET " + state.url.trim_right("/") + "/logs.index: " + (
                 size(resp.Body) != 0 ?
                   string(resp.Body)
                 :
@@ -64,7 +64,7 @@ program: |
   : v.next < size(v.worklist) ?
     (
       request("GET",
-        state.url+v.worklist[v.next].filename
+        state.url.trim_right("/") + v.worklist[v.next].filename
       ).with({
         "Header":{
           "Authorization": ["Basic "+string(base64(state.user + ":" + state.password))],
@@ -98,7 +98,7 @@ program: |
             "error": {
               "code": string(resp.StatusCode),
               "id": string(resp.Status),
-              "message": "GET " + state.url+v.worklist[v.next].filename + ": " +(
+              "message": "GET " + state.url.trim_right("/") + v.worklist[v.next].filename + ": " +(
                 size(resp.Body) != 0 ?
                   string(resp.Body)
                 :
