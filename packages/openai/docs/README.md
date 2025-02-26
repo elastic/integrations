@@ -39,7 +39,7 @@ To generate an Admin key, please generate a key or use an existing one from the 
 
 ## Collection behavior
 
-There are two advanced configuration options for the OpenAI integration: "Initial interval" and "Bucket width".
+Among the configuration options for the OpenAI integration, two settings are particularly important to understand: "Initial interval" and "Bucket width".
 
 ### Initial interval
 
