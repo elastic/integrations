@@ -6,7 +6,7 @@ instances. It can parse access and error logs created by the ingress.
 ## Compatibility
 
 The integration was tested with the Nginx Ingress Controller v0.30.0 and v0.40.2. The log format is described
-[here](https://github.com/kubernetes/ingress-nginx/blob/nginx-0.30.0/docs/user-guide/nginx-configuration/log-format.md).
+[here](https://github.com/kubernetes/ingress-nginx/blob/main/docs/user-guide/nginx-configuration/log-format.md).
 
 ## Logs
 

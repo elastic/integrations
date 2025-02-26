@@ -9,8 +9,33 @@ processors:
 - dissect:
     field: message
     pattern: "%{}User %{user.name}@%{client.ip} %{_tmp.event} as %{user_agent.original}"
-    if: 'ctx.message?.contains(''logged in as'') ?: false'
-    description: logged in as
+    if: 'ctx?.message != null && (ctx.message?.contains(''logged in as'') && ctx.message?.contains(''User ''))'
+    description: logged in as User
+- dissect:
+    field: message
+    pattern: "%{} Shared secret from %{client.ip} %{_tmp.event} as %{user_agent.original}"
+    if: 'ctx?.message != null && (ctx.message?.contains(''logged in as'') && ctx.message?.contains(''Shared secret''))'
+    description: logged in as Shared Secret
+- dissect:
+    field: message
+    pattern: "%{} SSL thumbprint logged in as %{user_agent.original}"
+    if: 'ctx?.message != null && (ctx.message?.contains(''logged in as'') && ctx.message?.contains(''SSL thumbprint''))'
+    description: SSL thumbprint logged in
+- set:
+    field: user.name
+    value: "shared_secret_login"
+    if: 'ctx?.message != null && (ctx.message?.contains(''logged in as'') && ctx.message?.contains(''Shared secret''))'
+    description: "Set Shared secret as username"
+- set:
+    field: user.name
+    value: "ssl_thumbprint_login"
+    if: 'ctx?.message != null && (ctx.message?.contains(''logged in as'') && ctx.message?.contains(''SSL thumbprint''))'
+    description: "Set SSL thumbprint as username"
+- set:
+    field: _tmp.event
+    value: "logged in"
+    if: 'ctx?.message != null && (ctx.message?.contains(''logged in as'') && ctx.message?.contains(''Shared secret'') == false && ctx.message?.contains(''User '') == false)'
+    description: "Set tmp_event for non-user/secret logins"
 - dissect:
     field: message
     pattern: "%{}User %{user.name}@%{client.ip} %{_tmp.event} out (login time: %{event.start},

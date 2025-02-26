@@ -26,20 +26,39 @@ This integration has been tested against Check Point Log Exporter on R81.X.
 
 ## Setup
 
-1. Install Elastic Agent on a host between your Check Point Log Exporter instance and Elastic Cluster. The agent will be used to receive syslog data from your Check Point firewalls and ship the events to Elasticsearch. 
-2. For each firewall device you wish to monitor, create a new [Log Exporter/SIEM object](https://sc1.checkpoint.com/documents/R81/WebAdminGuides/EN/CP_R81_LoggingAndMonitoring_AdminGuide/Topics-LMG/Log-Exporter-Configuration-in-SmartConsole.htm?tocpath=Log%20Exporter%7C_____2) in Check Point *SmartConsole*. Set the target server and target port to the Elastic Agent IP address and port number. Set the protocol to UDP or TCP, the Check Point integration supports both. Set the format to syslog.
-3. Configure the Management Server or Dedicated Log Server object in *SmartConsole*.
-4. Install the database within *SmartConsole* (steps included in the Checkpoint docs linked above).
-5. Within Kibana, browse to Integrations and locate the Check Point integration, and 'Add Check Point'
-6. Configure the TCP or UDP input, depending on the protocol you configured Check Point to use. 
-7. Add a certificate if using Secure Syslog over TCP with TLS (optional)
-8. Add integration to a New/Existing policy. 
-9. Browse to dashboard/discover to validate data is flowing from Check Point. 
-
 For step-by-step instructions on how to set up an integration, see the
-[Getting started](https://www.elastic.co/guide/en/welcome-to-elastic/current/getting-started-observability.html) guide.
+[Getting started](https://www.elastic.co/guide/en/starting-with-the-elasticsearch-platform-and-its-solutions/current/getting-started-observability.html) guide.
 
 In some instances firewall events may have the same Checkpoint `loguid` and arrive during the same timestamp resulting in a fingerprint collision. To avoid this [enable semi-unified logging](https://sc1.checkpoint.com/documents/R81/WebAdminGuides/EN/CP_R81_LoggingAndMonitoring_AdminGuide/Topics-LMG/Log-Exporter-Appendix.htm?TocPath=Log%20Exporter%7C_____9) in the Checkpoint dashboard.
+
+### TCP or UDP
+
+Elastic Agent can receive log messages directly via TCP or UDP syslog messages. The Elastic Agent will be used to receive syslog data from your Check Point firewalls and ship the events to Elasticsearch. 
+
+1. For each firewall device you wish to monitor, create a new [Log Exporter/SIEM object](https://sc1.checkpoint.com/documents/R81/WebAdminGuides/EN/CP_R81_LoggingAndMonitoring_AdminGuide/Topics-LMG/Log-Exporter-Configuration-in-SmartConsole.htm?tocpath=Log%20Exporter%7C_____2) in Check Point *SmartConsole*. Set the target server and target port to the Elastic Agent IP address and port number. Set the protocol to UDP or TCP, the Check Point integration supports both. Set the format to syslog.
+2. Configure the Management Server or Dedicated Log Server object in *SmartConsole*.
+3. Install the database within *SmartConsole* (steps included in the Checkpoint docs linked above).
+4. Within Kibana, browse to Integrations and locate the Check Point integration, and 'Add Check Point'.
+5. Add Elastic Agent to host with Fleet, or install Elastic Agent manually after configuring the integration.
+6. Configure the TCP or UDP input, depending on the protocol you configured Check Point to use.
+7. Add a certificate if using Secure Syslog over TCP with TLS (optional)
+8. Add integration to a New/Existing policy.
+9. Browse to dashboard/discover to validate data is flowing from Check Point.
+
+### Logfile
+
+Elastic Agent can process log messages by monitoring a log file on a host receiving syslog messages. The syslog server will receive messages from Check Point, write to a logfile, and Elastic Agent will watch the log file to send to the Elastic Cluster. 
+
+1. Install a syslog server on a host between your Check Point Log Exporter instance and Elastic Cluster. 
+2. Configure the syslog server to write logs to a logfile.
+3. For each firewall device you wish to monitor, create a new [Log Exporter/SIEM object](https://sc1.checkpoint.com/documents/R81/WebAdminGuides/EN/CP_R81_LoggingAndMonitoring_AdminGuide/Topics-LMG/Log-Exporter-Configuration-in-SmartConsole.htm?tocpath=Log%20Exporter%7C_____2) in Check Point *SmartConsole*. Set the target server and target port to the syslog server. Set the protocol to UDP or TCP, the Check Point integration supports both. Set the format to syslog.
+4. Configure the Management Server or Dedicated Log Server object in *SmartConsole*.
+5. Install the database within *SmartConsole* (steps included in the Checkpoint docs linked above).
+6. Within Kibana, navigate to the Integrations section and locate the Check Point integration. Click on the "Add Check Point" button to initiate the integration process.
+7. Add Elastic Agent to host with Fleet, or install Elastic Agent manually after configuring the integration.
+8. Configure the logfile input, to monitor the logfile pattern that the syslog server will write to.
+9. Add integration to a New/Existing policy.
+10. Browse to dashboard/discover to validate data is flowing from Check Point.
 
 ## Logs reference
 
@@ -68,7 +87,7 @@ An example event for `firewall` looks as following:
         "type": "logs"
     },
     "ecs": {
-        "version": "8.11.0"
+        "version": "8.17.0"
     },
     "elastic_agent": {
         "id": "ecc82406-78ce-41c1-b1e2-7c12ce01f525",
@@ -128,6 +147,7 @@ An example event for `firewall` looks as following:
 | checkpoint.additional_rdata | List of additional resource records. | keyword |
 | checkpoint.administrator | Source administrator name. | keyword |
 | checkpoint.advanced_changes |  | keyword |
+| checkpoint.aggregated_log_count | Number of logs aggregated in the event. | integer |
 | checkpoint.alert | Alert level of matched rule (for connection logs). | keyword |
 | checkpoint.allocated_ports | Amount of allocated ports. | integer |
 | checkpoint.analyzed_on | Check Point ThreatCloud / emulator name. | keyword |
@@ -144,6 +164,8 @@ An example event for `firewall` looks as following:
 | checkpoint.appi_name | Name of application downloaded on the protected mobile device. | keyword |
 | checkpoint.arrival_time | Email arrival timestamp. | keyword |
 | checkpoint.attachments_num | Number of attachments in the mail. | integer |
+| checkpoint.attack | Name of the vulnerability category in case of a host or network vulnerability. | keyword |
+| checkpoint.attack_info | Description of the vulnerability in case of a host or network vulnerability. | keyword |
 | checkpoint.attack_status | In case of a malicious event on an endpoint computer, the status of the attack. | keyword |
 | checkpoint.audit_status | Audit Status. Can be Success or Failure. | keyword |
 | checkpoint.auth_method | Password authentication protocol used (PAP or EAP). | keyword |
@@ -173,6 +195,7 @@ An example event for `firewall` looks as following:
 | checkpoint.community | Community name for the IPSec key and the use of the IKEv. | keyword |
 | checkpoint.confidence_level | Confidence level determined by ThreatCloud. | integer |
 | checkpoint.conn_direction | Connection direction | keyword |
+| checkpoint.connection_count | Number of connections logged in this event | integer |
 | checkpoint.connection_uid | Calculation of md5 of the IP and user name as UID. | keyword |
 | checkpoint.connectivity_level | Log for a new connection in wire mode. | keyword |
 | checkpoint.conns_amount | Connections amount of aggregated log info. | integer |
@@ -197,6 +220,7 @@ An example event for `firewall` looks as following:
 | checkpoint.delivery_time | Timestamp of when email was delivered (MTA finished handling the email. | keyword |
 | checkpoint.desc | Override application description. | keyword |
 | checkpoint.description | Additional explanation how the security gateway enforced the connection. | keyword |
+| checkpoint.description_url | URL of description | keyword |
 | checkpoint.destination_object | Matched object name on destination column. | keyword |
 | checkpoint.detected_on | System and applications version the file was emulated on. | keyword |
 | checkpoint.developer_certificate_name | Name of the developer's certificate that was used to sign the mobile application. | keyword |
@@ -249,6 +273,7 @@ An example event for `firewall` looks as following:
 | checkpoint.dropped_total | Amount of dropped packets (both incoming and outgoing). | integer |
 | checkpoint.drops_amount | Amount of multicast packets dropped. | integer |
 | checkpoint.dst_country | Destination country. | keyword |
+| checkpoint.dst_domain_name | Destination domain name. | keyword |
 | checkpoint.dst_phone_number | Destination IP-Phone. | keyword |
 | checkpoint.dst_user_dn | User distinguished name connected to the destination IP address. | keyword |
 | checkpoint.dst_user_name | Connected user name on the destination IP. | keyword |
@@ -454,6 +479,7 @@ An example event for `firewall` looks as following:
 | checkpoint.registered_ip-phones | Registered IP-Phones. | keyword |
 | checkpoint.reject_category | Authentication failure reason. | keyword |
 | checkpoint.reject_id | A reject ID that corresponds to the one presented in the Mobile Access error page. | keyword |
+| checkpoint.reject_id_kid | A reject ID kind | keyword |
 | checkpoint.rematch_info | Information sent when old connections cannot be matched during policy installation. | keyword |
 | checkpoint.remediated_files | In case of an infection and a successful cleaning of that infection, this is a list of remediated files on the computer. | keyword |
 | checkpoint.reply_status | ICAP reply status code, e.g. 200 or 204. | integer |
@@ -488,6 +514,7 @@ An example event for `firewall` looks as following:
 | checkpoint.security_outzone | Network zone of outbound traffic as reported by the observer to categorize the destination area of egress traffic, e.g. Internal, External, DMZ, HR, Legal, etc. | keyword |
 | checkpoint.sendtotrackerasadvancedauditlog |  | keyword |
 | checkpoint.sent_bytes |  | keyword |
+| checkpoint.ser_agent_kid | User agent kind | keyword |
 | checkpoint.server_inbound_interface | In-bound interface name as reported by the system. | keyword |
 | checkpoint.server_outbound_interface | Out-bound interface name as reported by the system. | keyword |
 | checkpoint.session_description |  | keyword |
@@ -555,6 +582,7 @@ An example event for `firewall` looks as following:
 | checkpoint.unique_detected_day | Detected virus for a specific host during the last day. | integer |
 | checkpoint.unique_detected_hour | Detected virus for a specific host during the last hour. | integer |
 | checkpoint.unique_detected_week | Detected virus for a specific host during the last week. | integer |
+| checkpoint.update_count | Number of times the event has been updated with new occurrences | integer |
 | checkpoint.update_status | Status of database update | keyword |
 | checkpoint.url | Translated URL. | keyword |
 | checkpoint.user | Source user name. | keyword |
@@ -774,5 +802,5 @@ An example event for `firewall` looks as following:
 | user_agent.name | Name of the user agent. | keyword |
 | user_agent.original | Unparsed user_agent string. | keyword |
 | user_agent.original.text | Multi-field of `user_agent.original`. | match_only_text |
-| vulnerability.id | The identification (ID) is the number portion of a vulnerability entry. It includes a unique identification number for the vulnerability. For example (https://cve.mitre.org/about/faqs.html#what_is_cve_id)[Common Vulnerabilities and Exposure CVE ID] | keyword |
+| vulnerability.id | The identification (ID) is the number portion of a vulnerability entry. It includes a unique identification number for the vulnerability. For example (https://cve.mitre.org/about/faqs.html#what_is_cve_id) | keyword |
 

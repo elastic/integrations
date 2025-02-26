@@ -31,10 +31,17 @@ processors:
       target_field: event.created
       ignore_missing: true
 
-  - rename:
-      tag: rename_json_modified_ts
+  - date:
+      tag: date_json_modified_ts
       field: json.modified_ts
       target_field: threat.indicator.modified_at
+      formats:
+        - ISO8601
+      if: ctx.json?.modified_ts != null && ctx.json.modified_ts != ''
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
 
   - script:
       tag: script_calculate_deletion_scheduled_at
@@ -558,6 +565,7 @@ processors:
         - json.locations
         - json.meta.detail
         - json.meta.detail2
+        - json.modified_ts
         - json.resource_uri
         - json.sort
         - json.source_locations
@@ -604,3 +612,7 @@ on_failure:
       tag: set_event_kind_on_failure
       field: event.kind
       value: pipeline_error
+  - append:
+      field: tags
+      value: preserve_original_event
+      allow_duplicates: false

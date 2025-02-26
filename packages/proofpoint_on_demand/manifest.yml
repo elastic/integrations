@@ -1,14 +1,14 @@
 format_version: 3.1.4
 name: proofpoint_on_demand
 title: Proofpoint On Demand
-version: 1.0.1
+version: 1.4.0
 description: Collect logs from Proofpoint On Demand with Elastic Agent.
 type: integration
 categories:
   - security
 conditions:
   kibana:
-    version: ^8.13.0
+    version: "^8.16.3 || ^8.17.1"
   elastic:
     subscription: basic
 icons:
@@ -62,6 +62,46 @@ policy_templates:
             required: true
             show_user: true
             secret: true
+          - name: max_reconnect_attempts
+            type: integer
+            title: Maximum Reconnect Attempts
+            description: The maximum number of times the agent will attempt to reconnect to the websocket endpoint if the connection is lost before giving up.
+            multi: false
+            required: false
+            show_user: true
+            default: 10
+          - name: min_wait_time
+            type: text
+            title: Minimum Wait Time
+            description: "The minimum amount of time the agent will wait before attempting to reconnect to the websocket endpoint if the connection is lost. \nThis is a time duration value. Examples, 1s, 1m, 1h.\n"
+            multi: false
+            required: false
+            show_user: true
+            default: 1s
+          - name: max_wait_time
+            type: text
+            title: Maximum Wait Time
+            description: "The maximum amount of time the agent will wait before attempting to reconnect to the websocket endpoint if the connection is lost. \nThis is a time duration value. Examples, 1s, 1m, 1h.\n"
+            multi: false
+            required: false
+            show_user: true
+            default: 1h
+          - name: blanket_retries
+            type: bool
+            title: Blanket Retries
+            description: If enabled the agent will retry connection attempts irrespective of the type of connection/network error.
+            multi: false
+            required: false
+            show_user: false
+            default: false
+          - name: infinite_retries
+            type: bool
+            title: Infinite Retries
+            description: If enabled the agent will retry connection attempts indefinitely irrespective of the "Maximum Reconnect Attempts" value.
+            multi: false
+            required: false
+            show_user: false
+            default: false
 owner:
   github: elastic/security-service-integrations
   type: elastic

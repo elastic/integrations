@@ -6,21 +6,19 @@ The Microsoft SQL Server integration package allows you to search, observe, and 
 
 The Microsoft SQL Server integration collects two types of data streams: logs and metrics.
 
-**Logs** help you keep a record of events happening in Microsoft SQL Server.
-Log data streams collected by the integration include:
+**Log** data streams provide records of events happening in Microsoft SQL Server:
 
-* `audit` provides events from the configured Windows event log channel. For more information on SQL Server auditing, refer to [SQL Server Audit](https://docs.microsoft.com/en-us/sql/relational-databases/security/auditing/sql-server-audit-database-engine?view=sql-server-ver15).
-* `logs` parses error logs created by the Microsoft SQL server.
+* `audit`: Events from the configured Windows event log channel, providing detailed auditing information. See [SQL Server Audit](https://docs.microsoft.com/en-us/sql/relational-databases/security/auditing/sql-server-audit-database-engine?view=sql-server-ver15).
+* `logs`: Error logs created by the Microsoft SQL server for troubleshooting and system events.
 
 Other log sources, such as files, are not supported.
 
 Find more details in [Logs](#logs).
 
-**Metrics** give you insight into the state of Microsoft SQL Server.
-Metric data streams collected by the integration include:
+**Metrics** data streams provide insights into SQL Server performance and health:
 
-* `performance` metrics gather the list of performance objects available on that server. Each server will have a different list of performance objects depending on the installed software.
-* `transaction_log` metrics collect all usage stats and the total space usage.
+* `performance`: Comprehensive performance counters and objects available on the server.
+* `transaction_log`: Usage statistics and space utilization metrics for transaction logs.
 
 Find more details in [Metrics](#metrics).
 
@@ -42,11 +40,24 @@ If you browse Microsoft Developer Network (MSDN) for the following tables, you w
 2. `performance`:
     - [sys.dm_os_performance_counters](https://learn.microsoft.com/en-us/sql/relational-databases/system-dynamic-management-views/sys-dm-os-performance-counters-transact-sql?view=sql-server-ver16)
 
+Please make sure the user has the permissions to system as well as user-defined databases. For the particular user used in the integration, the following requirements are met:
+
+User setup options:
+
+- Grant specific permissions as mentioned in the MSDN pages above.
+- Alteratively, use `sysadmin` role (includes all required permissions): This can be configured via SQL Server Management Studio (SSMS) in `Server Roles`. Read more about joining a role in the [SQL Server documentation](https://learn.microsoft.com/en-us/sql/relational-databases/security/authentication-access/join-a-role?view=sql-server-ver16#SSMSProcedure).
+
+User Mappings (using SQL Server Management Studio (SSMS)):
+
+- Open SSMS and connect to your server.
+- Navigate to "Object Explorer" > "Security" > "Logins".
+- Right-click the user and select "Properties".
+- In the "User Mapping" tab, select the appropriate database and grant the required permissions.
 
 ## Setup
 
 For step-by-step instructions on how to set up any integration, refer to the
-[Getting started](https://www.elastic.co/guide/en/welcome-to-elastic/current/getting-started-observability.html) guide.
+[Getting started](https://www.elastic.co/guide/en/starting-with-the-elasticsearch-platform-and-its-solutions/current/getting-started-observability.html) guide.
 
 Below you'll find more specific details on setting up the Microsoft SQL Server integration.
 
@@ -106,7 +117,7 @@ MSSQL supports a limited set of regular expressions. For more details, refer to 
 
 > Note: Dynamic counters will go through some basic ingest pipeline post-processing to make counter names in lowercase and remove special characters and these fields will not have any static field mappings.
 
-The feature `merge_results` has been introduced in 8.4 beats which creates a single event by combining the metrics in a single event. For more details, refer to [SQL module](https://www.elastic.co/guide/en/beats/metricbeat/current/metricbeat-module-sql.html#_example_merge_multiple_queries_to_single_event).
+The feature `merge_results` has been introduced in 8.4 beats which creates a single event by combining the metrics in a single event. For more details, refer to [SQL module](https://www.elastic.co/guide/en/beats/metricbeat/current/metricbeat-module-sql.html#_example_merge_multiple_queries_into_a_single_event).
 
 Read more in [instructions about each performance counter metrics](https://docs.microsoft.com/en-us/sql/relational-databases/system-dynamic-management-views/sys-dm-os-performance-counters-transact-sql?view=sql-server-ver15).
 
@@ -333,69 +344,54 @@ An example event for `performance` looks as following:
 
 ```json
 {
-    "@timestamp": "2022-11-23T05:03:28.987Z",
+    "@timestamp": "2025-01-16T06:17:48.647Z",
     "agent": {
-        "ephemeral_id": "70f5c0c1-37b1-486b-9806-8105b2cdcd20",
-        "id": "6d444a4a-2158-445e-8953-dc6eef720a34",
-        "name": "docker-fleet-agent",
+        "ephemeral_id": "de13136c-dc52-4b51-87c3-7fe7592f46dc",
+        "id": "c0b6b234-d11b-4387-ab3b-fa3084042073",
+        "name": "elastic-agent-74192",
         "type": "metricbeat",
-        "version": "8.5.0"
-    },
-    "cloud": {
-        "account": {},
-        "instance": {
-            "id": "b30e45e6-7900-4900-8d67-e37cb13374bc",
-            "name": "obs-int-windows-dev"
-        },
-        "machine": {
-            "type": "Standard_D16ds_v5"
-        },
-        "provider": "azure",
-        "region": "CentralIndia",
-        "service": {
-            "name": "Virtual Machines"
-        }
+        "version": "8.18.0"
     },
     "data_stream": {
         "dataset": "microsoft_sqlserver.performance",
-        "namespace": "ep",
+        "namespace": "93265",
         "type": "metrics"
     },
     "ecs": {
-        "version": "8.11.0"
+        "version": "8.0.0"
     },
     "elastic_agent": {
-        "id": "6d444a4a-2158-445e-8953-dc6eef720a34",
-        "snapshot": false,
-        "version": "8.5.0"
+        "id": "c0b6b234-d11b-4387-ab3b-fa3084042073",
+        "snapshot": true,
+        "version": "8.18.0"
     },
     "event": {
         "agent_id_status": "verified",
         "dataset": "microsoft_sqlserver.performance",
-        "duration": 41134100,
-        "ingested": "2022-11-23T05:03:30Z",
+        "duration": 71801450,
+        "ingested": "2025-01-16T06:17:51Z",
         "module": "sql"
     },
     "host": {
         "architecture": "x86_64",
-        "containerized": false,
-        "hostname": "docker-fleet-agent",
-        "id": "66392b0697b84641af8006d87aeb89f1",
+        "containerized": true,
+        "hostname": "elastic-agent-74192",
         "ip": [
-            "172.18.0.5"
+            "192.168.242.2",
+            "192.168.255.6"
         ],
         "mac": [
-            "02-42-AC-12-00-05"
+            "02-42-C0-A8-F2-02",
+            "02-42-C0-A8-FF-06"
         ],
-        "name": "docker-fleet-agent",
+        "name": "elastic-agent-74192",
         "os": {
-            "codename": "focal",
-            "family": "debian",
-            "kernel": "5.10.104-linuxkit",
-            "name": "Ubuntu",
-            "platform": "ubuntu",
+            "family": "",
+            "kernel": "3.10.0-1160.92.1.el7.x86_64",
+            "name": "Wolfi",
+            "platform": "wolfi",
             "type": "linux",
-            "version": "20.04.5 LTS (Focal Fossa)"
+            "version": "20230201"
         }
     },
     "metricset": {
@@ -405,30 +401,53 @@ An example event for `performance` looks as following:
     "mssql": {
         "metrics": {
             "active_temp_tables": 0,
-            "batch_requests_per_sec": 54,
-            "buffer_cache_hit_ratio": 24,
-            "buffer_checkpoint_pages_per_sec": 105,
-            "buffer_database_pages": 2215,
-            "buffer_page_life_expectancy": 16,
-            "buffer_target_pages": 2408448,
-            "compilations_per_sec": 80,
+            "batch_requests_per_sec": 15,
+            "buffer_cache_hit_ratio": 995,
+            "buffer_checkpoint_pages_per_sec": 70,
+            "buffer_database_pages": 2208,
+            "buffer_page_life_expectancy": 19,
+            "buffer_target_pages": 1196032,
+            "compilations_per_sec": 67,
             "connection_reset_per_sec": 13,
             "instance_name": "MSSQLSERVER",
-            "lock_waits_per_sec": 4,
-            "logins_per_sec": 16,
-            "logouts_per_sec": 15,
+            "lock_waits_per_sec": 3,
+            "logins_per_sec": 3,
+            "logouts_per_sec": 2,
             "memory_grants_pending": 0,
             "page_splits_per_sec": 9,
             "re_compilations_per_sec": 0,
-            "server_name": "d10aad520431",
+            "server_name": "ec6574eadb15",
             "transactions": 0,
             "user_connections": 1
-        }
+        },
+        "query": [
+            "SELECT @@servername AS server_name, @@servicename AS instance_name;",
+            "SELECT cntr_value As 'active_temp_tables' FROM sys.dm_os_performance_counters WHERE counter_name = 'Active Temp Tables' AND object_name like '%General Statistics%'",
+            "SELECT cntr_value As 'batch_requests_per_sec' FROM sys.dm_os_performance_counters WHERE counter_name = 'Batch Requests/sec'",
+            "SELECT cntr_value As 'buffer_cache_hit_ratio' FROM sys.dm_os_performance_counters WHERE counter_name = 'Buffer cache hit ratio' AND object_name like '%Buffer Manager%'",
+            "SELECT cntr_value As 'buffer_checkpoint_pages_per_sec' FROM sys.dm_os_performance_counters WHERE counter_name = 'Checkpoint pages/sec' AND object_name like '%Buffer Manager%'",
+            "SELECT cntr_value As 'buffer_database_pages' FROM sys.dm_os_performance_counters WHERE counter_name = 'Database pages' AND object_name like '%Buffer Manager%'",
+            "SELECT cntr_value As 'buffer_page_life_expectancy' FROM sys.dm_os_performance_counters WHERE counter_name = 'Page life expectancy' AND  object_name like '%Buffer Manager%'",
+            "SELECT cntr_value As 'buffer_target_pages' FROM sys.dm_os_performance_counters WHERE counter_name = 'Target pages' AND  object_name like '%Buffer Manager%'",
+            "SELECT cntr_value As 'compilations_per_sec' FROM sys.dm_os_performance_counters WHERE counter_name = 'SQL Compilations/sec'",
+            "SELECT cntr_value As 'connection_reset_per_sec' FROM sys.dm_os_performance_counters WHERE counter_name = 'Connection Reset/sec' AND object_name like '%General Statistics%'",
+            "SELECT cntr_value As 'lock_waits_per_sec' FROM sys.dm_os_performance_counters WHERE counter_name = 'Lock Waits/sec' AND instance_name = '_Total'",
+            "SELECT cntr_value As 'logins_per_sec' FROM sys.dm_os_performance_counters WHERE counter_name = 'Logins/sec' AND object_name like '%General Statistics%'",
+            "SELECT cntr_value As 'logouts_per_sec' FROM sys.dm_os_performance_counters WHERE counter_name = 'Logouts/sec' AND object_name like '%General Statistics%'",
+            "SELECT cntr_value As 'page_splits_per_sec' FROM sys.dm_os_performance_counters WHERE counter_name = 'Page splits/sec'",
+            "SELECT cntr_value As 're_compilations_per_sec' FROM sys.dm_os_performance_counters WHERE counter_name = 'SQL Re-Compilations/sec'",
+            "SELECT cntr_value As 'transactions' FROM sys.dm_os_performance_counters WHERE counter_name = 'Transactions' AND object_name like '%General Statistics%'",
+            "SELECT cntr_value As 'user_connections' FROM sys.dm_os_performance_counters WHERE counter_name= 'User Connections'",
+            "SELECT counter_name, cntr_value FROM sys.dm_os_performance_counters WHERE counter_name like 'Memory Grants Pend%'"
+        ]
     },
     "service": {
-        "address": "elastic-package-service_microsoft_sqlserver_1",
+        "address": "svc-microsoft_sqlserver",
         "type": "sql"
-    }
+    },
+    "tags": [
+        "preserve_sql_queries"
+    ]
 }
 ```
 
@@ -475,6 +494,7 @@ Please refer to the following [document](https://www.elastic.co/guide/en/ecs/cur
 | mssql.metrics.server_name | Name of the mssql server. | keyword |  |
 | mssql.metrics.transactions | Total number of transactions | long | gauge |
 | mssql.metrics.user_connections | Total number of user connections. | long | gauge |
+| mssql.query | The SQL queries executed. | keyword |  |
 | service.address | Address where data about this service was collected from. This should be a URI, network address (ipv4:port or [ipv6]:port) or a resource path (sockets). | keyword |  |
 
 
@@ -486,54 +506,56 @@ An example event for `transaction_log` looks as following:
 
 ```json
 {
-    "@timestamp": "2022-12-20T07:34:29.687Z",
+    "@timestamp": "2025-01-01T06:34:46.685Z",
     "agent": {
-        "ephemeral_id": "8d528ff8-5e90-4572-89f6-61fb3a6c96f1",
-        "id": "d44a1c4a-95bf-47e9-afb0-453a2ef43c00",
-        "name": "192.168.1.2",
+        "ephemeral_id": "a4c1f457-cd5c-4b62-aa68-1f5d32acb43b",
+        "id": "7a86be58-ca0e-433a-bd57-44f2cb3ee3a1",
+        "name": "elastic-agent-78750",
         "type": "metricbeat",
-        "version": "8.5.3"
+        "version": "8.13.0"
     },
     "data_stream": {
         "dataset": "microsoft_sqlserver.transaction_log",
-        "namespace": "default",
+        "namespace": "69278",
         "type": "metrics"
     },
     "ecs": {
-        "version": "8.11.0"
+        "version": "8.0.0"
     },
     "elastic_agent": {
-        "id": "d44a1c4a-95bf-47e9-afb0-453a2ef43c00",
+        "id": "7a86be58-ca0e-433a-bd57-44f2cb3ee3a1",
         "snapshot": false,
-        "version": "8.5.3"
+        "version": "8.13.0"
     },
     "event": {
         "agent_id_status": "verified",
         "dataset": "microsoft_sqlserver.transaction_log",
-        "duration": 2147044750,
-        "ingested": "2022-12-20T07:34:32Z",
+        "duration": 2065982241,
+        "ingested": "2025-01-01T06:34:49Z",
         "module": "sql"
     },
     "host": {
         "architecture": "x86_64",
-        "containerized": false,
-        "hostname": "192.168.1.2",
-        "id": "627E8AE5-E918-5073-A58E-8A2D9ED96875",
+        "containerized": true,
+        "hostname": "elastic-agent-78750",
+        "id": "8259e024976a406e8a54cdbffeb84fec",
         "ip": [
-            "192.168.1.2"
+            "192.168.241.5",
+            "192.168.253.2"
         ],
         "mac": [
-            "36-F7-DC-28-23-80"
+            "02-42-C0-A8-F1-05",
+            "02-42-C0-A8-FD-02"
         ],
-        "name": "192.168.1.2",
+        "name": "elastic-agent-78750",
         "os": {
-            "build": "21D62",
-            "family": "darwin",
-            "kernel": "21.3.0",
-            "name": "macOS",
-            "platform": "darwin",
-            "type": "macos",
-            "version": "12.2.1"
+            "codename": "focal",
+            "family": "debian",
+            "kernel": "3.10.0-1160.92.1.el7.x86_64",
+            "name": "Ubuntu",
+            "platform": "ubuntu",
+            "type": "linux",
+            "version": "20.04.6 LTS (Focal Fossa)"
         }
     },
     "metricset": {
@@ -542,20 +564,21 @@ An example event for `transaction_log` looks as following:
     },
     "mssql": {
         "metrics": {
-            "database_id": 1,
-            "database_name": "master",
+            "database_id": 4,
+            "database_name": "msdb",
             "instance_name": "MSSQLSERVER",
-            "log_space_in_bytes_since_last_backup": 602112,
-            "server_name": "obs-int-mssql20",
-            "total_log_size_bytes": 2088960,
-            "used_log_space_bytes": 1024000,
-            "used_log_space_pct": 49.01960754394531
-        }
+            "query_id": "JZwfIFXvA3yOOL15q7PFZK5UE+Y=",
+            "server_name": "7e672355554d"
+        },
+        "query": "SELECT @@servername AS server_name, @@servicename AS instance_name, name As 'database_name', database_id FROM sys.databases WHERE name='msdb';"
     },
     "service": {
-        "address": "20.228.135.242",
+        "address": "svc-microsoft_sqlserver",
         "type": "sql"
-    }
+    },
+    "tags": [
+        "preserve_sql_queries"
+    ]
 }
 ```
 
@@ -598,5 +621,6 @@ Please refer to the following [document](https://www.elastic.co/guide/en/ecs/cur
 | mssql.metrics.total_log_size_bytes | Total transaction log size in bytes. | long | byte | counter |
 | mssql.metrics.used_log_space_bytes | The occupied size of the log in bytes. | long | byte | gauge |
 | mssql.metrics.used_log_space_pct | A percentage of the occupied size of the log as a percent of the total log size. | float | percent | gauge |
+| mssql.query | The SQL queries executed. | keyword |  |  |
 | service.address | Address where data about this service was collected from. This should be a URI, network address (ipv4:port or [ipv6]:port) or a resource path (sockets). | keyword |  |  |
 

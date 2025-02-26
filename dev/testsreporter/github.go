@@ -18,20 +18,20 @@ import (
 	"github.com/cli/go-gh/v2"
 )
 
-type CommandRunner interface {
+type commandRunner interface {
 	Exec(ctx context.Context, args ...string) (stdout, stdErr bytes.Buffer, err error)
 }
 
-type GhRunner struct {
+type ghRunner struct {
 	DryRun bool
 }
 
-type GithubOptions struct {
+type githubOptions struct {
 	DryRun bool
-	Runner CommandRunner
+	Runner commandRunner
 }
 
-func (g *GhRunner) Exec(ctx context.Context, args ...string) (stdout, stdErr bytes.Buffer, err error) {
+func (g *ghRunner) Exec(ctx context.Context, args ...string) (stdout, stdErr bytes.Buffer, err error) {
 	log.Printf("Running command: %s", strings.Join(args[:4], " "))
 	if g.DryRun {
 		if args[0] != "issue" || args[1] != "list" {
@@ -42,25 +42,25 @@ func (g *GhRunner) Exec(ctx context.Context, args ...string) (stdout, stdErr byt
 	return gh.ExecContext(ctx, args...)
 }
 
-type GhCli struct {
-	runner CommandRunner
+type ghCli struct {
+	runner commandRunner
 }
 
-func NewGhCli(options GithubOptions) *GhCli {
-	var runner CommandRunner
+func newGhCli(options githubOptions) *ghCli {
+	var runner commandRunner
 	runner = options.Runner
 	if runner == nil {
-		runner = &GhRunner{
+		runner = &ghRunner{
 			DryRun: options.DryRun,
 		}
 	}
 
-	return &GhCli{
+	return &ghCli{
 		runner: runner,
 	}
 }
 
-func (g *GhCli) Exists(ctx context.Context, issue *GithubIssue, open bool) (bool, *GithubIssue, error) {
+func (g *ghCli) Exists(ctx context.Context, issue *githubIssue, open bool) (bool, *githubIssue, error) {
 	stateIssue := "open"
 	if !open {
 		stateIssue = "closed"
@@ -85,7 +85,7 @@ func (g *GhCli) Exists(ctx context.Context, issue *GithubIssue, open bool) (bool
 		return false, nil, fmt.Errorf("failed to list issues: %w\n%s", err, stderr.String())
 	}
 
-	type ResponseListIssue struct {
+	type responseListIssue struct {
 		CreatedAt time.Time `json:"createdAt"`
 		ClosedAt  time.Time `json:"closedAt"`
 		Title     string    `json:"title"`
@@ -96,7 +96,7 @@ func (g *GhCli) Exists(ctx context.Context, issue *GithubIssue, open bool) (bool
 		URL       string    `json:"url"`
 	}
 
-	var list []ResponseListIssue
+	var list []responseListIssue
 	err = json.Unmarshal(stdout.Bytes(), &list)
 	if err != nil {
 		return false, nil, fmt.Errorf("failed to unmarshal list of issues: %w", err)
@@ -111,7 +111,7 @@ func (g *GhCli) Exists(ctx context.Context, issue *GithubIssue, open bool) (bool
 
 	for _, i := range list {
 		if i.Title == issue.title {
-			issueGot := NewGithubIssue(GithubIssueOptions{
+			issueGot := newGithubIssue(githubIssueOptions{
 				Number:      i.Number,
 				Title:       i.Title,
 				Description: i.Body,
@@ -127,7 +127,7 @@ func (g *GhCli) Exists(ctx context.Context, issue *GithubIssue, open bool) (bool
 	return false, nil, nil
 }
 
-func (g *GhCli) Create(ctx context.Context, issue *GithubIssue) error {
+func (g *ghCli) Create(ctx context.Context, issue *githubIssue) error {
 	params := []string{
 		"issue",
 		"create",
@@ -149,7 +149,7 @@ func (g *GhCli) Create(ctx context.Context, issue *GithubIssue) error {
 	return nil
 }
 
-func (g *GhCli) Update(ctx context.Context, issue *GithubIssue) error {
+func (g *ghCli) Update(ctx context.Context, issue *githubIssue) error {
 	params := []string{
 		"issue",
 		"edit",

@@ -10,7 +10,7 @@ This module has been tested against the latest Qualys VMDR version **v2**.
 
 ## Data streams
 
-The Qualys VMDR integration collects data for the following two events:
+The Qualys VMDR integration collects data for the following three events:
 
 | Event Type           |
 |----------------------|
@@ -19,6 +19,8 @@ The Qualys VMDR integration collects data for the following two events:
 | User Activity Log    |
 
 Reference for [Rest APIs](https://qualysguard.qg2.apps.qualys.com/qwebhelp/fo_portal/api_doc/index.htm) of Qualys VMDR.
+
+Starting from Qualys VMDR integration version 6.0, the `Asset Host Detection` data stream includes enriched vulnerabilities data from Qualys Knowledge Base API.
 
 ## Requirements
 
@@ -44,7 +46,29 @@ You can run Elastic Agent inside a container, either with Fleet Server or standa
 
 There are some minimum requirements for running Elastic Agent and for more information, refer to the link [here](https://www.elastic.co/guide/en/fleet/current/elastic-agent-installation.html).
 
-The minimum **kibana.version** required is **8.9.0**.
+### Permissions
+
+#### Asset Host Detection
+
+| Role                    | Permission                                     |
+|-------------------------|------------------------------------------------|
+| _Managers_              | All VM scanned hosts in subscription           |
+| _Unit Managers_         | VM scanned hosts in user’s business unit       |
+| _Scanners_              | VM scanned hosts in user’s account             |
+| _Readers_               | VM scanned hosts in user’s account             |
+
+#### Knowledge Base
+
+_Managers_, _Unit Managers_, _Scanners_, _Readers_ have permission to download vulnerability data from the KnowledgeBase.
+
+#### User Activity Log
+
+| Role                    | Permission                                     |
+|-------------------------|------------------------------------------------|
+| _Managers_              | All actions taken by all users                 |
+| _Unit Managers_         | Actions taken by users in their business unit  |
+| _Scanners_              | Own actions only                               |
+| _Readers_               | Own actions only                               |
 
 ## Setup
 

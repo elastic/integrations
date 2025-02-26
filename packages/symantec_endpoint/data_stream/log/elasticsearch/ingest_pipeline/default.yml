@@ -506,7 +506,7 @@ processors:
     description: Convert event.duration from seconds to nanoseconds.
     if: ctx.event?.duration != null
     lang: painless
-    source:
+    source: |
       ctx.event['duration'] = ctx.event.duration * 1e9;
 
 # End
@@ -1098,12 +1098,6 @@ processors:
       ctx.destination = tmp;
 
 - remove:
-    description: Retain event.original when preserve_original_event tag exists.
-    if: ctx.tags == null || !ctx.tags.contains('preserve_original_event')
-    field: event.original
-    ignore_missing: true
-
-- remove:
     if: ctx.tags == null || !ctx.tags.contains('debug')
     ignore_missing: true
     field:
@@ -1124,6 +1118,10 @@ on_failure:
 - set:
     field: event.kind
     value: pipeline_error
+- append:
+    field: tags
+    value: preserve_original_event
+    allow_duplicates: false
 - append:
     field: error.message
     value: 'processor {{{ _ingest.on_failure_processor_type }}}: {{{ _ingest.on_failure_message }}}'

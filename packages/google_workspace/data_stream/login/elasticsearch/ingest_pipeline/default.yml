@@ -3,7 +3,7 @@ description: Pipeline for parsing google_workspace logs
 processors:
   - set:
       field: ecs.version
-      value: '8.11.0'
+      value: '8.16.0'
   - rename:
       field: message
       target_field: event.original
@@ -191,6 +191,9 @@ processors:
           if (ctx["json"]["events"]["parameters"][i]["multiValue"] != null) {
             ctx.google_workspace.login[ctx["json"]["events"]["parameters"][i]["name"]] = ctx["json"]["events"]["parameters"][i]["multiValue"];
           }
+          if (ctx["json"]["events"]["parameters"][i]["boolValue"] != null) {
+            ctx.google_workspace.login[ctx["json"]["events"]["parameters"][i]["name"]] = ctx["json"]["events"]["parameters"][i]["boolValue"];
+          }    
         }
   - script:
       lang: painless
@@ -261,15 +264,14 @@ processors:
         - json
         - _temp_
       ignore_missing: true
-  - remove:
-      field: event.original
-      if: "ctx?.tags == null || !(ctx.tags.contains('preserve_original_event'))"
-      ignore_failure: true
-      ignore_missing: true
 on_failure:
   - set:
       field: event.kind
       value: pipeline_error
+  - append:
+      field: tags
+      value: preserve_original_event
+      allow_duplicates: false
   - append:
       field: error.message
       value: '{{{ _ingest.on_failure_message }}}'

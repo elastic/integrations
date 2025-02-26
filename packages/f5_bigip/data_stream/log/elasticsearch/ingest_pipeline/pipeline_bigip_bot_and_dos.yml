@@ -246,12 +246,47 @@ processors:
         - append:
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
-  - append:
+  - set:
       field: source.ip
-      tag: append_client_ip_into_source_ip
-      value: '{{{f5_bigip.log.client.ip}}}'
-      allow_duplicates: false
+      tag: set_source_ip_from_client_ip
+      copy_from: f5_bigip.log.client.ip
       if: ctx.f5_bigip?.log?.client?.ip != null && ctx.f5_bigip.log.client.ip != 'null'
+      ignore_empty_value: true
+# Geo enrichment (source IP)
+  - geoip:
+      field: source.ip
+      target_field: source.geo
+      tag: geo_source_ip
+      ignore_missing: true
+  - geoip:
+      database_file: GeoLite2-ASN.mmdb
+      tag: geo_source_as
+      field: source.ip
+      target_field: source.as
+      properties:
+        - asn
+        - organization_name
+      ignore_missing: true
+  - rename:
+      field: source.as.asn
+      target_field: source.as.number
+      ignore_missing: true
+      tag: rename_source_as_number
+  - rename:
+      field: source.as.organization_name
+      target_field: source.as.organization.name
+      ignore_missing: true
+      tag: rename_source_as_org
+  - set:
+      field: client.geo
+      tag: set_client_geo
+      copy_from: source.geo
+      ignore_empty_value: true
+  - set:
+      field: client.as
+      tag: set_client_as
+      copy_from: source.as
+      ignore_empty_value: true
   - set:
       field: client.ip
       tag: set_client_ip
@@ -368,6 +403,41 @@ processors:
       field: destination.ip
       tag: set_destination_ip_from_log_destination_ip
       copy_from: f5_bigip.log.destination.ip
+      ignore_empty_value: true
+# Geo enrichment (destination IP)
+  - geoip:
+      field: destination.ip
+      target_field: destination.geo
+      tag: geo_destination_ip
+      ignore_missing: true
+  - geoip:
+      database_file: GeoLite2-ASN.mmdb
+      tag: geo_destination_as
+      field: destination.ip
+      target_field: destination.as
+      properties:
+        - asn
+        - organization_name
+      ignore_missing: true
+  - rename:
+      field: destination.as.asn
+      target_field: destination.as.number
+      ignore_missing: true
+      tag: rename_destination_as_number
+  - rename:
+      field: destination.as.organization_name
+      target_field: destination.as.organization.name
+      ignore_missing: true
+      tag: rename_destination_as_org
+  - set:
+      field: server.geo
+      tag: set_server_geo
+      copy_from: destination.geo
+      ignore_empty_value: true
+  - set:
+      field: server.as
+      tag: set_server_as
+      copy_from: destination.as
       ignore_empty_value: true
   - set:
       field: server.ip

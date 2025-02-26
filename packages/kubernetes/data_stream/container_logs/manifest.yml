@@ -13,6 +13,13 @@ streams:
         multi: true
         default:
           - /var/log/containers/*${kubernetes.container.id}.log
+        description: >-
+          For every container the Elastic-Agent can see (usually every
+          container on the node) an instance of the input will be
+          created harvesting all paths defined here, even if 
+          the paths contain no variable! Refer to the [integration
+          documentation](https://www.elastic.co/guide/en/integrations/current/kubernetes.html)
+          for more details.
       - name: symlinks
         type: bool
         title: Use Symlinks
@@ -42,7 +49,7 @@ streams:
         default: auto
       - name: condition
         title: Condition
-        description: Condition to filter when to apply this datastream. Refer to [Kubernetes provider](http://localhost:8000/guide/providers.html#kubernetes-provider) to find the available keys and to [Conditions](https://www.elastic.co/guide/en/fleet/current/dynamic-input-configuration.html#conditions) on how to use the available keys in conditions.
+        description: Condition to filter when to apply this datastream. Refer to [Kubernetes provider](https://www.elastic.co/guide/en/fleet/current/kubernetes-provider.html) to find the available keys and to [Conditions](https://www.elastic.co/guide/en/fleet/current/dynamic-input-configuration.html#conditions) on how to use the available keys in conditions.
         type: text
         multi: false
         required: false
@@ -69,6 +76,23 @@ streams:
         show_user: false
         description: >-
           Processors are used to reduce the number of fields in the exported event or to enhance the event with metadata. This executes in the agent before the events are shipped. See [Processors](https://www.elastic.co/guide/en/beats/filebeat/current/filtering-and-enhancing-data.html) for details.
+      - name: useFingerprint
+        type: bool
+        title: Use fingerprint
+        multi: false
+        required: true
+        show_user: false
+        description: Selecting fingerprint instructs Elastic Agent to identify files based on their content byte range. 
+        default: true
+      - name: fingerprintYaml
+        title: Fingerprint settings
+        show_user: false
+        description: Configuration settings for prospector.scanner.fingerprint. See available options in [filestream input](https://www.elastic.co/guide/en/beats/filebeat/current/filebeat-input-filestream.html#filebeat-input-filestream-scan-fingerprint).
+        type: yaml
+        default: |
+          enabled: true # This must be set to `true`
+          offset: 0
+          length: 1024
       - name: custom
         title: Custom configurations
         show_user: false

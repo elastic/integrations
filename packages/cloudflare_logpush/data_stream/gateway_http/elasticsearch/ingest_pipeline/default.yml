@@ -80,6 +80,7 @@ processors:
   - set:
       field: event.action
       copy_from: cloudflare_logpush.gateway_http.action
+      ignore_empty_value: true
   - rename:
       field: json.DeviceID
       target_field: cloudflare_logpush.gateway_http.host.id
@@ -87,6 +88,7 @@ processors:
   - set:
       field: host.id
       copy_from: cloudflare_logpush.gateway_http.host.id
+      ignore_empty_value: true
   - rename:
       field: json.DeviceName
       target_field: cloudflare_logpush.gateway_http.host.name
@@ -94,6 +96,7 @@ processors:
   - set:
       field: host.name
       copy_from: cloudflare_logpush.gateway_http.host.name
+      ignore_empty_value: true
   - rename:
       field: json.DestinationIP
       target_field: cloudflare_logpush.gateway_http.destination.ip
@@ -101,6 +104,7 @@ processors:
   - set:
       field: destination.ip
       copy_from: cloudflare_logpush.gateway_http.destination.ip
+      ignore_empty_value: true
 # Geo enrichment (destination IP)
   - geoip:
       field: destination.ip
@@ -128,6 +132,7 @@ processors:
   - set:
       field: destination.port
       copy_from: cloudflare_logpush.gateway_http.destination.port
+      ignore_empty_value: true
   - rename:
       field: json.HTTPMethod
       target_field: cloudflare_logpush.gateway_http.request.method
@@ -135,6 +140,7 @@ processors:
   - set:
       field: http.request.method
       copy_from: cloudflare_logpush.gateway_http.request.method
+      ignore_empty_value: true
   - rename:
       field: json.HTTPStatusCode
       target_field: cloudflare_logpush.gateway_http.response.status_code
@@ -142,6 +148,7 @@ processors:
   - set:
       field: http.response.status_code
       copy_from: cloudflare_logpush.gateway_http.response.status_code
+      ignore_empty_value: true
   - rename:
       field: json.HTTPVersion
       target_field: cloudflare_logpush.gateway_http.request.version
@@ -149,6 +156,7 @@ processors:
   - set:
       field: http.version
       copy_from: cloudflare_logpush.gateway_http.request.version
+      ignore_empty_value: true
   - rename:
       field: json.Referer
       target_field: cloudflare_logpush.gateway_http.request.referrer
@@ -156,6 +164,7 @@ processors:
   - set:
       field: http.request.referrer
       copy_from: cloudflare_logpush.gateway_http.request.referrer
+      ignore_empty_value: true
   - rename:
       field: json.SourceIP
       target_field: cloudflare_logpush.gateway_http.source.ip
@@ -163,6 +172,7 @@ processors:
   - set:
       field: source.ip
       copy_from: cloudflare_logpush.gateway_http.source.ip
+      ignore_empty_value: true
 # Geo enrichment (source IP)
   - geoip:
       field: source.ip
@@ -190,6 +200,7 @@ processors:
   - set:
       field: source.port
       copy_from: cloudflare_logpush.gateway_http.source.port
+      ignore_empty_value: true
   - rename:
       field: json.URL
       target_field: cloudflare_logpush.gateway_http.url
@@ -205,6 +216,7 @@ processors:
   - set:
       field: user_agent.original
       copy_from: cloudflare_logpush.gateway_http.user_agent
+      ignore_empty_value: true
   - rename:
       field: json.UserID
       target_field: cloudflare_logpush.gateway_http.user.id
@@ -212,6 +224,7 @@ processors:
   - set:
       field: user.id
       copy_from: cloudflare_logpush.gateway_http.user.id
+      ignore_empty_value: true
   - rename:
       field: json.Email
       target_field: cloudflare_logpush.gateway_http.user.email
@@ -219,6 +232,7 @@ processors:
   - set:
       field: user.email
       copy_from: cloudflare_logpush.gateway_http.user.email
+      ignore_empty_value: true
 # Custom fields
   - rename:
       field: json.AccountID
@@ -342,7 +356,7 @@ processors:
   - script:
       description: Drops null/empty values recursively.
       lang: painless
-      source:
+      source: |
         boolean dropEmptyFields(Object object) {
           if (object == null || object == "") {
             return true;
@@ -364,3 +378,7 @@ on_failure:
   - set:
       field: event.kind
       value: pipeline_error
+  - append:
+      field: tags
+      value: preserve_original_event
+      allow_duplicates: false

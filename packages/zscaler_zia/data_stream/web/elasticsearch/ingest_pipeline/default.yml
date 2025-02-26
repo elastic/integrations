@@ -239,6 +239,13 @@ processors:
       target_field: source.geo
       tag: geoip_source_ip
       ignore_missing: true
+  - geoip:
+      field: source.nat.ip
+      target_field: source.geo
+      tag: geoip_source_nat_ip
+      if: ctx.source?.geo == null
+      description: If source.ip fails to populate geo fields.
+      ignore_missing: true
   - convert:
       field: json.cltpubip
       tag: convert_cltpubip_to_ip
@@ -1574,6 +1581,11 @@ processors:
       value: pipeline_error
       tag: set_pipeline_error_into_event_kind
       if: ctx.error?.message != null
+  - append:
+      field: tags
+      value: preserve_original_event
+      allow_duplicates: false
+      if: ctx.error?.message != null
 on_failure:
   - append:
       field: error.message
@@ -1582,3 +1594,7 @@ on_failure:
       field: event.kind
       tag: set_pipeline_error_to_event_kind
       value: pipeline_error
+  - append:
+      field: tags
+      value: preserve_original_event
+      allow_duplicates: false

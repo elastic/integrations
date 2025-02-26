@@ -8,16 +8,16 @@ instances. It can parse access and error logs created by the ingress.
 The integration was tested with the Nginx Ingress Controller v0.30.0 and v0.40.2. The log format is described
 [here](https://github.com/kubernetes/ingress-nginx/blob/nginx-0.30.0/docs/user-guide/nginx-configuration/log-format.md).
 
-**EDOT collector supported versions:** 8.16.0-SNAPSHOT
+**EDOT collector supported versions:** 8.16.0
 
 **OpenTelemetry collector components:**
 
-- Filelog receiver v0.110.0+
-- Transform processor v0.110.0+
-- Resource detector processor v0.110.0+
-- (Optional) GeoIP processor v0.110.0+
-- Elasticsearch exporter v0.110.0+
-- Filestorage extension v0.110.0+
+- Filelog receiver v0.112.0+
+- Transform processor v0.112.0+
+- Resource detector processor v0.112.0+
+- (Optional) GeoIP processor v0.112.0+: The optional GeoIP processor is not available in the EDOT collector yet. To use this processor, you must switch to the OpenTelemetry Contrib collector instead.
+- Elasticsearch exporter v0.112.0+
+- Filestorage extension v0.112.0+
 
 ## Usage
 
@@ -44,12 +44,12 @@ processors:
             # .+: Matches the rest of the log line (the message part, without needing specific timestamp or file format).
           - IsMatch(body, "^[EWF]\\d{4} .+")
         statements:
-          - set(body, ExtractGrokPatterns(body, "%{LOG_LEVEL:log.level}%{MONTHNUM}%{MONTHDAY} %{HOUR}:%{MINUTE}:%{SECOND}\\.%{MICROS}%{SPACE}%{NUMBER:error.thread_id} %{SOURCE_FILE:error.source.file}:%{NUMBER:error.source.line_number}\\] %{GREEDYMULTILINE:message}", true, ["LOG_LEVEL=[A-Z]", "MONTHNUM=(0[1-9]|1[0-2])", "MONTHDAY=(0[1-9]|[12][0-9]|3[01])", "HOUR=([01][0-9]|2[0-3])", "MINUTE=[0-5][0-9]", "SECOND=[0-5][0-9]", "MICROS=[0-9]{6}", "SOURCE_FILE=[^:]+", "GREEDYMULTILINE=(.|\\n)*"]))
+          - set(body, ExtractGrokPatterns(body, "%{LOG_LEVEL:log.level}%{MONTHNUM}%{MONTHDAY} %{HOUR}:%{MINUTE}:%{SECOND}\\.%{MICROS}%{SPACE}%{NUMBER:thread_id} %{SOURCE_FILE:source.file.name}:%{NUMBER:source.line_number}\\] %{GREEDYMULTILINE:message}", true, ["LOG_LEVEL=[A-Z]", "MONTHNUM=(0[1-9]|1[0-2])", "MONTHDAY=(0[1-9]|[12][0-9]|3[01])", "HOUR=([01][0-9]|2[0-3])", "MINUTE=[0-5][0-9]", "SECOND=[0-5][0-9]", "MICROS=[0-9]{6}", "SOURCE_FILE=[^:]+", "GREEDYMULTILINE=(.|\\n)*"]))
 
           - set(attributes["data_stream.dataset"], "nginx_ingress_controller.error")
 
           # LogRecord event: https://github.com/open-telemetry/semantic-conventions/pull/982
-          - set(attributes["event.name"], "nginx.ingress.controller.error")
+          - set(attributes["event.name"], "nginx_ingress_controller.error")
 
   transform/parse_nginx_ingress_access/log:
     error_mode: ignore
@@ -77,7 +77,7 @@ processors:
           - set(attributes["data_stream.dataset"], "nginx_ingress_controller.access")
 
           # LogRecord event: https://github.com/open-telemetry/semantic-conventions/pull/982
-          - set(attributes["event.name"], "nginx.ingress.controller.access")
+          - set(attributes["event.name"], "nginx_ingress_controller.access")
           - set(attributes["event.timestamp"], String(Time(body["nginx_ingress_controller.access.time"], "%d/%b/%Y:%H:%M:%S %z")))
 
           - delete_key(body, "nginx_ingress_controller.access.time")
@@ -305,6 +305,6 @@ The `error` data stream collects the Nginx Ingress Controller error logs.
 | attribute.log.file.path | Full path to the log file this event came from, including the file name. It should include the drive letter, when appropriate. If the event wasn't read from a log file, do not populate this field. | keyword |
 | attributes.log.level | Original log level of the log event. If the source of the event provides a log level or textual severity, this is the one that goes in `log.level`. If your source doesn't specify one, you may put your event transport's severity here (e.g. Syslog severity). Some examples are `warn`, `err`, `i`, `informational`. | keyword |
 | body.structured.message | For log events the message field contains the log message, optimized for viewing in a log viewer. For structured logs without an original message field, other fields can be concatenated to form a human-readable summary of the event. If multiple messages exist, they can be combined into one message. | match_only_text |
-| body.structured.error.source.file | Source file | keyword |
-| body.structured.error.source.line_number | Source line number | long |
-| body.structured.error.thread_id | Thread ID | long |
+| body.structured.source.file.name | Source file | keyword |
+| body.structured.source.line_number | Source line number | long |
+| body.structured.thread_id | Thread ID | long |

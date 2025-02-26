@@ -8,9 +8,9 @@ The authentik integration collects event, group, and user logs using REST API.
 
 The authentik integration collects three types of logs:
 
-- **[Event](https://docs.goauthentik.io/developer-docs/api/reference/events-events-list)**                         
-- **[Group](https://docs.goauthentik.io/developer-docs/api/reference/core-groups-list)**                           
-- **[User](https://docs.goauthentik.io/developer-docs/api/reference/core-users-list)**                             
+- **[Event](https://docs.goauthentik.io/docs/developer-docs/api/reference/events-events-list)**                         
+- **[Group](https://docs.goauthentik.io/docs/developer-docs/api/reference/core-groups-list)**                           
+- **[User](https://docs.goauthentik.io/docs/developer-docs/api/reference/core-users-list)**                             
 
 ## Requirements
 

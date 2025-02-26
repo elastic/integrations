@@ -46,7 +46,7 @@ In order to ingest data from the Apache Tomcat, user must have
 
 ## Setup
 
-For step-by-step instructions on how to set up an integration, see the [Getting started](https://www.elastic.co/guide/en/welcome-to-elastic/current/getting-started-observability.html) guide.
+For step-by-step instructions on how to set up an integration, see the [Getting started](https://www.elastic.co/guide/en/starting-with-the-elasticsearch-platform-and-its-solutions/current/getting-started-observability.html) guide.
 
 ## Steps to setup Prometheus
 
@@ -160,13 +160,13 @@ An example event for `access` looks as following:
 
 ```json
 {
-    "@timestamp": "2023-09-27T19:06:51.000Z",
+    "@timestamp": "2025-02-11T10:27:25.000Z",
     "agent": {
-        "ephemeral_id": "660e6653-ce16-42eb-8e2e-9952cf9745d2",
-        "id": "86a82f91-ff66-4d28-ab7c-eb9350f317ed",
-        "name": "docker-fleet-agent",
+        "ephemeral_id": "59700606-89fb-4853-b626-d2e4b8ea7635",
+        "id": "935c33f0-cfd5-4af4-adbd-2185db27468c",
+        "name": "elastic-agent-48650",
         "type": "filebeat",
-        "version": "8.10.1"
+        "version": "9.0.0"
     },
     "apache_tomcat": {
         "access": {
@@ -178,19 +178,19 @@ An example event for `access` looks as following:
     },
     "data_stream": {
         "dataset": "apache_tomcat.access",
-        "namespace": "ep",
+        "namespace": "15310",
         "type": "logs"
     },
     "destination": {
-        "bytes": 11235
+        "bytes": 2237
     },
     "ecs": {
         "version": "8.11.0"
     },
     "elastic_agent": {
-        "id": "86a82f91-ff66-4d28-ab7c-eb9350f317ed",
-        "snapshot": false,
-        "version": "8.10.1"
+        "id": "935c33f0-cfd5-4af4-adbd-2185db27468c",
+        "snapshot": true,
+        "version": "9.0.0"
     },
     "event": {
         "agent_id_status": "verified",
@@ -198,11 +198,11 @@ An example event for `access` looks as following:
             "web"
         ],
         "dataset": "apache_tomcat.access",
-        "ingested": "2023-09-27T19:07:26Z",
+        "ingested": "2025-02-11T10:28:11Z",
         "kind": "event",
         "module": "apache_tomcat",
-        "original": "127.0.0.1 - - [27/Sep/2023:19:06:51 +0000] \"GET / HTTP/1.1\" 200 11235",
-        "outcome": "success",
+        "original": "192.168.255.4 - - [11/Feb/2025:10:27:25 +0000] \"GET / HTTP/1.1\" 400 2237",
+        "outcome": "failure",
         "type": [
             "access"
         ]
@@ -212,7 +212,7 @@ An example event for `access` looks as following:
             "method": "GET"
         },
         "response": {
-            "status_code": 200
+            "status_code": 400
         },
         "version": "1.1"
     },
@@ -221,19 +221,20 @@ An example event for `access` looks as following:
     },
     "log": {
         "file": {
-            "device_id": 141,
-            "inode": 18615366,
-            "path": "/tmp/service_logs/localhost_access_log.2023-09-27.txt"
+            "device_id": "64768",
+            "fingerprint": "eeb052b19f510c012de8da7f6456cc5bbfe52abba100728092fbe35cb7732c8a",
+            "inode": "234909928",
+            "path": "/tmp/service_logs/localhost_access_log.2025-02-11.txt"
         },
         "offset": 0
     },
     "related": {
         "ip": [
-            "127.0.0.1"
+            "192.168.255.4"
         ]
     },
     "source": {
-        "ip": "127.0.0.1"
+        "ip": "192.168.255.4"
     },
     "tags": [
         "preserve_original_event",
@@ -377,11 +378,11 @@ An example event for `localhost` looks as following:
 {
     "@timestamp": "2023-02-23T15:40:03.711Z",
     "agent": {
-        "ephemeral_id": "98a908e5-d419-4da8-8985-4d1417e50646",
-        "id": "86a82f91-ff66-4d28-ab7c-eb9350f317ed",
-        "name": "docker-fleet-agent",
+        "ephemeral_id": "c79cc845-ebf4-492e-b8ea-683d50dbfa39",
+        "id": "f152377f-a02e-4498-8440-ea11f965f420",
+        "name": "elastic-agent-93073",
         "type": "filebeat",
-        "version": "8.10.1"
+        "version": "9.0.0"
     },
     "apache_tomcat": {
         "localhost": {
@@ -390,16 +391,16 @@ An example event for `localhost` looks as following:
     },
     "data_stream": {
         "dataset": "apache_tomcat.localhost",
-        "namespace": "ep",
+        "namespace": "96644",
         "type": "logs"
     },
     "ecs": {
         "version": "8.11.0"
     },
     "elastic_agent": {
-        "id": "86a82f91-ff66-4d28-ab7c-eb9350f317ed",
-        "snapshot": false,
-        "version": "8.10.1"
+        "id": "f152377f-a02e-4498-8440-ea11f965f420",
+        "snapshot": true,
+        "version": "9.0.0"
     },
     "event": {
         "agent_id_status": "verified",
@@ -407,7 +408,7 @@ An example event for `localhost` looks as following:
             "web"
         ],
         "dataset": "apache_tomcat.localhost",
-        "ingested": "2023-09-27T19:12:55Z",
+        "ingested": "2025-02-11T10:33:16Z",
         "kind": "event",
         "module": "apache_tomcat",
         "original": "23-Feb-2023 15:40:03.711 INFO [localhost-startStop-1] org.apache.catalina.core.ApplicationContext.log ContextListener: contextInitialized()",
@@ -421,8 +422,9 @@ An example event for `localhost` looks as following:
     },
     "log": {
         "file": {
-            "device_id": 141,
-            "inode": 18619079,
+            "device_id": "64768",
+            "fingerprint": "021bea49df1c6f91ac6ee6776f649cc7a86a73936e64bd44720ab1858f33c0c0",
+            "inode": "236841090",
             "path": "/tmp/service_logs/localhost.log"
         },
         "level": "info",

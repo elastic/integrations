@@ -9,7 +9,7 @@ processors:
       if: ctx.event?.original == null
   - set:
       field: ecs.version
-      value: '8.11.0'
+      value: '8.17.0'
   - grok:
       field: event.original
       patterns:
@@ -36,8 +36,8 @@ processors:
       field: _temp_.full_message
       ignore_failure: true
       patterns:
-        - "%{DATA:event.provider}-%{INT:event.severity}-%{DATA:event.action}: %{DATA}:%{INT} %{GREEDYDATA:message}"
-        - "%{DATA:event.provider}-%{INT:event.severity}-%{DATA:event.action}: %{GREEDYDATA:message}"
+        - "%{DATA:event.provider}-%{INT:event.severity:long}-%{DATA:event.action}: %{DATA}:%{INT} %{GREEDYDATA:message}"
+        - "%{DATA:event.provider}-%{INT:event.severity:long}-%{DATA:event.action}: %{GREEDYDATA:message}"
   - grok:
       field: _temp_.full_message
       ignore_failure: true

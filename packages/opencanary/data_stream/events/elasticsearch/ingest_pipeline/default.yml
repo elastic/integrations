@@ -774,18 +774,15 @@ processors:
           return false;
         }
         dropEmptyFields(ctx);
-  - remove:
-      description: Remove event.original if it has not been requested
-      tag: remove_event_original
-      field: event.original
-      if: "ctx?.tags == null || !(ctx.tags.contains('preserve_original_event'))"
-      ignore_failure: true
-      ignore_missing: true
 
 on_failure:
   - append:
       field: event.kind
       value: pipeline_error
+  - append:
+      field: tags
+      value: preserve_original_event
+      allow_duplicates: false
   - append:
       field: error.message
       value: 'Processor {{{ _ingest.on_failure_processor_type }}} with tag {{{ _ingest.on_failure_processor_tag }}} in pipeline {{{ _ingest.on_failure_pipeline }}} failed with message {{{ _ingest.on_failure_message }}}'

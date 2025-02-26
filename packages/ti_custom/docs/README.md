@@ -46,6 +46,26 @@ However, for APIs that don't follow a specific communication protocol. The corre
 
 By default the integration only supports STIX 2.1 indicators. This means that to process IOCs in other formats, the `Restrict STIX 2.1 format` option must be disabled, and a custom pipeline added to map the indicators correctly.
 
+### Collecting Threat Intelligence from ISAC Feeds
+
+The Custom Threat Intelligence integration allows you to connect to and pull threat indicators from any server supporting the TAXII protocol. This makes this integration the perfect fit for retrieving structured threat intelligence from Information Sharing and Analysis Centers (ISACs), such as MS-ISAC, FS-ISAC, H-ISAC, and others. These ISACs provide STIX-formatted threat data through TAXII servers.
+
+To configure the integration to pull threat intelligence from an ISAC feed, follow these steps:
+
+1. Ensure ISAC Membership: Confirm that you are a member of the desired ISAC (e.g., MS-ISAC, FS-ISAC) and have access to its TAXII server credentials. Some ISACs require registration and approval before providing TAXII feed access.
+
+2. Obtain the following information from your ISAC:
+    - Server URL: The endpoint for the ISAC’s TAXII server (e.g. https://example-isac.org/taxii/).
+    - Collection Name: The specific collection containing the threat intelligence you want to retrieve.
+    - Authentication Credentials: Username, password, API Key, or client certificate, as required by the ISAC.
+
+3. Set up the integration:
+    - The server URL and collection name should be used to build the URL as follows: `https://{base_url}/{api-root}/collections/{name}/objects/`
+    - Provide the username/password, API Key or upload a client certificate, depending on the ISAC’s requirements.
+    - Set how often the integration should pull updates (e.g. every hour). You can also set the time range to search for indicators when the agent runs for the first time with the Initial Interval.
+
+Once the integration is running and pulling data, it automatically maps threat indicator fields from STIX to ECS. Verify that the imported indicators (e.g. IPs, domains, hashes) align with your detection rules.
+
 ### Expiration of Indicators of Compromise (IOCs)
 
 The Custom Threat Intelligence integration supports IOC expiration. The ingested IOCs expire after certain duration. Based on the [STIX 2.1 reference](https://docs.oasis-open.org/cti/stix/v2.1/os/stix-v2.1-os.html), the following options are available to determine the expiration of indicators:
@@ -185,6 +205,7 @@ An example event for `indicator` looks as following:
 | input.type | Input type | keyword |
 | labels.is_ioc_transform_source | Indicates whether an IOC is in the raw source data stream, or the in latest destination index. | constant_keyword |
 | log.file.device_id | ID of the device containing the filesystem where the file resides. | keyword |
+| log.file.fingerprint | The sha256 fingerprint identity of the file when fingerprinting is enabled. | keyword |
 | log.file.inode | Inode number of the log file. | keyword |
 | log.file.path | Path to the log file. | keyword |
 | log.flags | Flags for the log file. | keyword |

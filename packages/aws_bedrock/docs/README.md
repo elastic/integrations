@@ -2,20 +2,9 @@
 
 ## Overview
 
-[Amazon Bedrock](https://docs.aws.amazon.com/bedrock/index.html) is a fully managed
-service that makes high-performing foundation models (FMs) from leading AI
-startups and Amazon available for your use through a unified API. You can choose
-from a wide range of foundation models to find the model that is best suited for
-your use case. Amazon Bedrock also offers a broad set of capabilities to build
-generative AI applications with security, privacy, and responsible AI. Using
-Amazon Bedrock, you can easily experiment with and evaluate top foundation
-models for your use cases, privately customize them with your data using
-techniques such as fine-tuning and Retrieval Augmented Generation (RAG), and
-build agents that execute tasks using your enterprise systems and data sources.
+[Amazon Bedrock](https://docs.aws.amazon.com/bedrock/index.html) offers a fully managed service that provides access to high-performing foundation models (FMs) from leading AI startups and Amazon through a unified API. You can choose from a wide variety of foundation models to find the one that best fits your specific use case. With Amazon Bedrock, you gain access to robust tools for building generative AI applications with security, privacy, and responsible AI practices. Amazon Bedrock enables you to easily experiment with and evaluate top foundation models, customize them privately with your data using methods like fine-tuning and Retrieval Augmented Generation (RAG), and develop agents that perform tasks by leveraging your enterprise systems and data sources.
 
-The Amazon Bedrock integration allows you to easily connect your Amazon Bedrock model
-invocation logging and runtime metrics to Elastic for seamless collection of
-invocation logs and runtime metrics to monitor usage. 
+The Amazon Bedrock integration enables a seamless connection of your model to Elastic to efficiently collect and monitor invocation logs and runtime metrics.
 
 Elastic Security can leverage this data for security analytics including
 correlation, visualization and incident response. With invocation logging, you
@@ -39,6 +28,8 @@ Data streams:
  - `runtime`: Collects Amazon Bedrock runtime metrics such as model invocation
    count, invocation latency, input token count, output token count and many
    more.   
+ - `guardrails`: Collects Amazon Bedrock Guardrails metrics such as guardrail invocation
+count, guardrail invocation latency, text unit utilization count, guardrail policy types associated with interventions and many more.
 
 ## Requirements
 
@@ -57,43 +48,17 @@ For more details about these requirements, check the [AWS
 integration
 documentation](https://docs.elastic.co/integrations/aws#requirements).
 
-- Elastic Agent must be installed.
-- You can install only one Elastic Agent per host.
-- Elastic Agent is required to stream data from the S3 bucket and ship the
-  data to Elastic, where the events will then be processed via the
+* Elastic Agent must be installed. For detailed guidance, follow these [instructions](https://www.elastic.co/guide/en/fleet/current/elastic-agent-installation.html).
+* You can install only one Elastic Agent per host.
+* Elastic Agent is required to stream data from the S3 bucket and ship the
+  data to Elastic, where the events will then be processed through the
   integration's ingest pipelines.
-
-### Installing and managing an Elastic Agent
-
-To install and manage an Elastic Agent you have the following options:
-
-### Install a Fleet-managed Elastic Agent (recommended)
-
-You install Elastic Agent and use Fleet in Kibana to
-define, configure, and manage your agents in a central location. We recommend
-using Fleet management because it makes the management and upgrade of your
-agents considerably easier.
-
-### Install Elastic Agent in standalone mode (advanced users)
-
-You install Elastic Agent and manually configure the agent
-locally on the system where it is installed. You are responsible for managing
-and upgrading the agents. This approach is for advanced users only.
-
-### Install Elastic Agent in a containerized environment
-
-You can run Elastic Agent inside a container, either with Fleet Server or
-standalone. Docker images for all versions of Elastic Agent are available
-from the Elastic Docker registry, and we provide deployment manifests for
-running on Kubernetes.
-
-To run Elastic Agent, check these [requirements](https://www.elastic.co/guide/en/fleet/current/elastic-agent-installation.html).
 
 ## Setup
 
 To use the Amazon Bedrock model invocation logs, the logging model
 invocation logging must be enabled and be sent to a log store destination,
-either S3 or CloudWatch. For more details check the
+either S3 or CloudWatch. For more details, check the
 [Amazon Bedrock User Guide](https://docs.aws.amazon.com/bedrock/latest/userguide/model-invocation-logging.html).
 
 1. Set up an [Amazon S3](https://docs.aws.amazon.com/bedrock/latest/userguide/model-invocation-logging.html#setup-s3-destination) or [CloudWatch Logs](https://docs.aws.amazon.com/bedrock/latest/userguide/model-invocation-logging.html#setup-cloudwatch-logs-destination) destination.
@@ -103,25 +68,18 @@ either S3 or CloudWatch. For more details check the
 
 ### Collecting Amazon Bedrock model invocation logs from S3 bucket
 
-When collecting logs from S3 bucket is enabled, you can retrieve logs from S3
-objects that are pointed to by S3 notification events read from an SQS queue or
-directly polling list of S3 objects in an S3 bucket. 
+When log collection from an S3 bucket is enabled, you can access logs from S3 objects referenced by S3 notification events received through an SQS queue or by directly polling the list of S3 objects within the bucket.
 
 The use of SQS notification is preferred: polling list of S3 objects is 
-expensive in terms of performance and costs and should be preferably used only 
+expensive in terms of performance and costs and should be used only 
 when no SQS notification can be attached to the S3 buckets. This input 
 integration also supports S3 notification from SNS to SQS.
 
-SQS notification method is enabled setting `queue_url` configuration value. S3 
-bucket list polling method is enabled setting `bucket_arn` configuration value
-and `number_of_workers` value. Both `queue_url` and `bucket_arn` cannot be set 
-at the same time and at least one of the two value must be set.
+To enable the SQS notification method, set the `queue_url` configuration value. To enable the S3 bucket list polling method, configure both the `bucket_arn` and number_of_workers values. Note that `queue_url` and `bucket_arn` cannot be set simultaneously, and at least one of these values must be specified.
 
 ### Collecting Amazon Bedrock model invocation logs from CloudWatch
 
-When collecting logs from CloudWatch is enabled, you can retrieve logs from 
-all log streams in a specific log group. `filterLogEvents` AWS API is used to 
-list log events from the specified log group.
+When CloudWatch log collection is enabled, you can retrieve logs from all log streams within a specified log group. The filterLogEvents AWS API is used to list log events from the specified log group.
 
 **Exported fields**
 
@@ -150,6 +108,7 @@ list log events from the specified log group.
 | aws_bedrock.invocation.input.input_body_s3_path |  | keyword |
 | aws_bedrock.invocation.input.input_content_type |  | keyword |
 | aws_bedrock.invocation.input.input_token_count | The number of tokens used in the GenAI input. | long |
+| aws_bedrock.invocation.input.messages_content_kinds | The different content formats related to the input messages/prompts. | keyword |
 | aws_bedrock.invocation.model_id |  | keyword |
 | aws_bedrock.invocation.output.completion_text | The formatted LLM text model responses. Only a limited number of LLM text models are supported. | text |
 | aws_bedrock.invocation.output.output_body_json |  | flattened |
@@ -176,6 +135,7 @@ list log events from the specified log group.
 | gen_ai.compliance.response_triggered | Lists compliance-related filters that were triggered during the processing of the response, such as data privacy filters or regulatory compliance checks. | keyword |
 | gen_ai.compliance.violation_code | Code identifying the specific compliance rule that was violated. | keyword |
 | gen_ai.compliance.violation_detected | Indicates if any compliance violation was detected during the interaction. | boolean |
+| gen_ai.guardrail_id | Guardrail ID if a guardrail was executed. | keyword |
 | gen_ai.owasp.description | Description of the OWASP risk triggered. | text |
 | gen_ai.owasp.id | Identifier for the OWASP risk addressed. | keyword |
 | gen_ai.performance.request_size | Size of the request payload in bytes. | long |
@@ -185,6 +145,8 @@ list log events from the specified log group.
 | gen_ai.policy.action | Action taken due to a policy violation, such as blocking, alerting, or modifying the content. | keyword |
 | gen_ai.policy.confidence | Confidence level in the policy match that triggered the action, quantifying how closely the identified content matched the policy criteria. | keyword |
 | gen_ai.policy.match_detail.\* |  | object |
+| gen_ai.policy.match_detail.score |  | float |
+| gen_ai.policy.match_detail.threshold |  | float |
 | gen_ai.policy.name | Name of the specific policy that was triggered. | keyword |
 | gen_ai.policy.violation | Specifies if a security policy was violated. | boolean |
 | gen_ai.prompt | The full text of the user's request to the gen_ai. | text |
@@ -408,4 +370,124 @@ An example event for `runtime` looks as following:
 | data_stream.namespace | Data stream namespace. | constant_keyword |  |  |
 | data_stream.type | Data stream type. | constant_keyword |  |  |
 | event.module | Name of the module this data is coming from. If your monitoring agent supports the concept of modules or plugins to process events of a given source (e.g. Apache logs), `event.module` should contain the name of this module. | constant_keyword |  |  |
+
+
+### Guardrails Metrics
+
+Amazon Bedrock guardrail metrics include `Invocations`, `InvocationLatency`, `InvocationClientErrors`, `InvocationServerErrors`, `InvocationThrottles`, `TextUnitCount`, and `InvocationsIntervened`. These metrics enable several use cases, such as:
+
+- Monitoring the latency of guardrail invocations
+- Tracking the number of text units consumed by guardrail policies
+- Detecting invocations where guardrails intervened
+
+An example event for `guardrails` looks as following:
+
+```json
+{
+    "@timestamp": "2025-01-08T08:35:00.000Z",
+    "agent": {
+        "ephemeral_id": "457aa99d-9fdf-4494-9d06-31961a43f33a",
+        "id": "9cdf7072-cfc1-4ad5-b68d-b51f0cd9afa8",
+        "name": "elastic-agent-21656",
+        "type": "metricbeat",
+        "version": "8.16.2"
+    },
+    "aws": {
+        "cloudwatch": {
+            "namespace": "AWS/Bedrock/Guardrails"
+        }
+    },
+    "aws_bedrock": {
+        "guardrails": {
+            "invocation_latency": 207,
+            "invocations": 6,
+            "invocations_intervened": 3,
+            "operation": "ApplyGuardrail",
+            "text_unit_count": 21
+        }
+    },
+    "cloud": {
+        "account": {
+            "id": "11111111111111111",
+            "name": "MonitoringAccount"
+        },
+        "provider": "aws",
+        "region": "ap-south-1"
+    },
+    "data_stream": {
+        "dataset": "aws_bedrock.guardrails",
+        "namespace": "63909",
+        "type": "metrics"
+    },
+    "ecs": {
+        "version": "8.0.0"
+    },
+    "elastic_agent": {
+        "id": "9cdf7072-cfc1-4ad5-b68d-b51f0cd9afa8",
+        "snapshot": false,
+        "version": "8.16.2"
+    },
+    "event": {
+        "agent_id_status": "verified",
+        "dataset": "aws_bedrock.guardrails",
+        "duration": 100053062,
+        "ingested": "2025-01-08T08:43:11Z",
+        "module": "aws"
+    },
+    "host": {
+        "architecture": "x86_64",
+        "containerized": true,
+        "hostname": "elastic-agent-21656",
+        "ip": [
+            "172.26.0.5",
+            "172.29.0.2"
+        ],
+        "mac": [
+            "02-42-AC-1A-00-05",
+            "02-42-AC-1D-00-02"
+        ],
+        "name": "elastic-agent-21656",
+        "os": {
+            "family": "",
+            "kernel": "5.4.0-1106-gcp",
+            "name": "Wolfi",
+            "platform": "wolfi",
+            "type": "linux",
+            "version": "20230201"
+        }
+    },
+    "metricset": {
+        "name": "cloudwatch",
+        "period": 300000
+    },
+    "service": {
+        "type": "aws"
+    }
+}
+```
+**Exported fields**
+
+| Field | Description | Type | Unit | Metric Type |
+|---|---|---|---|---|
+| @timestamp | Event timestamp. | date |  |  |
+| agent.id | Unique identifier of this agent (if one exists). Example: For Beats this would be beat.id. | keyword |  |  |
+| aws.cloudwatch.namespace | The namespace specified when query cloudwatch api. | keyword |  |  |
+| aws.metrics_names_fingerprint | Autogenerated ID representing the fingerprint of the list of metrics names. | keyword |  |  |
+| aws_bedrock.guardrails.guardrail_arn |  | keyword |  |  |
+| aws_bedrock.guardrails.guardrail_content_source |  | keyword |  |  |
+| aws_bedrock.guardrails.guardrail_policy_type |  | keyword |  |  |
+| aws_bedrock.guardrails.guardrail_version |  | keyword |  |  |
+| aws_bedrock.guardrails.invocation_client_errors | The number of invocations that result in AWS client-side errors. | long |  | gauge |
+| aws_bedrock.guardrails.invocation_latency | The latency of the invocations. | long | ms | gauge |
+| aws_bedrock.guardrails.invocation_server_errors | The number of invocations that result in AWS server-side errors. | long |  | gauge |
+| aws_bedrock.guardrails.invocation_throttles | The number of invocations that the system throttled. | long |  | gauge |
+| aws_bedrock.guardrails.invocations | The number of requests to the `ApplyGuardrail` API operation. | long |  | gauge |
+| aws_bedrock.guardrails.invocations_intervened | The number of invocations where the guardrails intervened. | long |  | gauge |
+| aws_bedrock.guardrails.operation |  | keyword |  |  |
+| aws_bedrock.guardrails.text_unit_count | The number of text units consumed by the guardrails policies. | long |  | gauge |
+| cloud.account.id | The cloud account or organization id used to identify different entities in a multi-tenant environment. Examples: AWS account id, Google Cloud ORG Id, or other unique identifier. | keyword |  |  |
+| cloud.region | Region in which this host, resource, or service is located. | keyword |  |  |
+| data_stream.dataset | Data stream dataset. | constant_keyword |  |  |
+| data_stream.namespace | Data stream namespace. | constant_keyword |  |  |
+| data_stream.type | Data stream type. | constant_keyword |  |  |
 

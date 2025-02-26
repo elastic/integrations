@@ -21,6 +21,9 @@ processors:
         - mimecast.id
       target_field: "_id"
       ignore_missing: true
+  - set:
+      field: event.category
+      value: [email]
 
   - date:
       description: Use 'mimecast.eventTime' as the '@timestamp'
@@ -70,25 +73,20 @@ processors:
   # Here we want to add as much categorization information as possible
   # We can do this by parsing mimecast.eventInfo differently based on
   # what event.action is, etc.
-  ### 
-  - dissect:
+  ###
+
+  - grok:
+      tag: grok_logon_authentication_failed
       field: mimecast.eventInfo
-      pattern: "%{mimecast.info}, %{?key}:%{mimecast.email.address}[%{mimecast.email.metadata}] %{?key}: %{client.ip} %{?key}: %{mimecast.application}"
-      if: 'ctx.event?.action=="logon-authentication-failed"'
+      if: ctx.event?.action=="logon-authentication-failed"
+      patterns:
+        - '^%{GREEDYDATA:mimecast.info},\sDate:\s%{DATE:mimecast.date},\sTime:\s%{TIME:mimecast.time} %{TIMEZONE:mimecast.timezone},\sIP:\s%{IP:client.ip},\sApplication:\s%{NOTSPACE:mimecast.application},(?:\sMethod:\s%{DATA:mimecast.method},)?\sReason:\s%{DATA:event.reason}$'
+        - '^%{GREEDYDATA:mimecast.info},\sDate:\s%{DATE:mimecast.date},\sTime:\s%{TIME:mimecast.time}%{TIMEZONE:mimecast.timezone},\sIP:\s%{IP:client.ip},\sApplication:\s%{NOTSPACE:mimecast.application},\sRemote IP is %{IP:mimecast.remote_ip}$'
+        - '^%{GREEDYDATA:mimecast.info},\s%{WORD} ?: ?%{DATA:mimecast.email.address}\[%{DATA:mimecast.email.metadata}\] remote IP ?: ?%{IP:mimecast.remote_ip} application ?: ?%{NOTSPACE:mimecast.application}$'
+      pattern_definitions:
+        DATE: '%{YEAR}-%{MONTHNUM}-%{MONTHDAY}'
+        TIMEZONE: '(?:[A-Z]{3,4}|(?:GMT)?[-+][0-9]{2}:?[0-9]{2})'
       ignore_missing: true
-      ignore_failure: true
-  - dissect:
-       field: mimecast.eventInfo
-       pattern: "%{mimecast.info}, %{?key}: %{mimecast.date}, %{?key}: %{mimecast.time} %{mimecast.timezone}, %{?key}: : %{client.ip},, %{?key}: %{mimecast.application}, %{?key}: %{event.reason}"
-       if: 'ctx.event?.action=="logon-authentication-failed"'
-       ignore_missing: true
-       ignore_failure: true
-  - dissect:
-       field: mimecast.eventInfo
-       pattern: "%{mimecast.info}, %{?key} : %{mimecast.date}, %{?key} : %{mimecast.time}, %{?key} : %{client.ip}, %{?key} : %{mimecast.application}, %{mimecast.remote}"
-       if: 'ctx.event?.action=="logon-authentication-failed"'
-       ignore_missing: true
-       ignore_failure: true
   - dissect:
       field: mimecast.eventInfo
       pattern: "%{mimecast.info}>, %{mimecast.rest_of_event_info}"
@@ -102,11 +100,11 @@ processors:
       ignore_missing: true
       ignore_failure: true
   - dissect:
-       field: mimecast.eventInfo
-       pattern: "%{?drop->} - %{mimecast.info}<%{user.email}> %{?key}: %{mimecast.date} %{?key}: %{mimecast.time} %{mimecast.timezone} %{?key}: %{client.ip} %{?key}: %{mimecast.application}"
-       if: 'ctx.event?.action=="folder-log-entry" || ctx.event?.action=="custom-report-definition-created" || ctx.event?.action=="mimecast-support-login"'
-       ignore_missing: true
-       ignore_failure: true
+      field: mimecast.eventInfo
+      pattern: "%{?drop->} - %{mimecast.info}<%{user.email}> %{?key}: %{mimecast.date} %{?key}: %{mimecast.time} %{mimecast.timezone} %{?key}: %{client.ip} %{?key}: %{mimecast.application}"
+      if: 'ctx.event?.action=="folder-log-entry" || ctx.event?.action=="custom-report-definition-created" || ctx.event?.action=="mimecast-support-login"'
+      ignore_missing: true
+      ignore_failure: true
   - kv:
       field: mimecast.rest_of_event_info
       field_split: ", "
@@ -119,6 +117,7 @@ processors:
       value: "{{{mimecast.rest_of_event_info}}}"
       if: 'ctx.event?.action=="user-logged-on" && ctx?.mimecast?.event_info_parts?.IP == null'
   - grok:
+      tag: grok_mimecast_remote
       field: mimecast.remote
       patterns:
         - "%{IP:mimecast.remote_ip}"
@@ -127,6 +126,11 @@ processors:
       field: mimecast.event_info_parts.Date
       target_field: mimecast.date
       ignore_missing: true
+  - dissect:
+      field: mimecast.event_info_parts.Time
+      pattern: '%{mimecast.event_info_parts.Time} %{mimecast.timezone}'
+      ignore_missing: true
+      ignore_failure: true
   - rename:
       field: mimecast.event_info_parts.Time
       target_field: mimecast.time
@@ -183,6 +187,7 @@ processors:
       ignore_missing: true
       ignore_failure: true
   - grok:
+      tag: grok_rest_of_event_info
       field: mimecast.rest_of_event_info
       patterns:
         - "%{IP:client.ip}"
@@ -244,6 +249,7 @@ processors:
       value: "{{{mimecast.date}}} {{{mimecast.time}}}"
       if: 'ctx?.mimecast?.date != null && ctx?.mimecast?.time != null'
   - date:
+      tag: date_event_created
       field: event.created
       target_field: event.created
       timezone: UTC
@@ -262,7 +268,7 @@ processors:
         - yyyy-MM-dd'T'HH:mm:ss.SSSSSSSSSz
         - yyyy-MM-dd'T'HH:mm:ss.SSSSSSSSSZ
         - yyyy-MM-dd'T'HH:mm:ss z
-      if: 'ctx?.event?.created != null'
+      if: ctx.event?.created != null
   - geoip:
       field: client.ip
       target_field: client.geo
@@ -287,7 +293,12 @@ processors:
       field: related.ip
       value: "{{{client.ip}}}"
       allow_duplicates: false
-      if: 'ctx?.client?.ip !=null'
+      if: ctx.client?.ip !=null
+  - append:
+      field: related.ip
+      value: "{{{mimecast.remote_ip}}}"
+      allow_duplicates: false
+      if: ctx.mimecast?.remote_ip !=null
   - append:
       field: related.user
       value: "{{{user.name}}}"
@@ -319,7 +330,6 @@ processors:
         - mimecast.filename
         - mimecast.criteria
         - mimecast.viewed
-        - mimecast.timezone
         - mimecast.byuser
         - mimecast.export_type
         - mimecast.export_name
@@ -332,19 +342,7 @@ processors:
         - mimecast.organization_name
         - mimecast.event_info_parts
         - mimecast.rest_of_event_info
-
-      ignore_missing: true
-  - remove:
-      description: Remove 'event.original' if 'preserve_original_event' is not set.
-      field: event.original
-      if: "ctx?.tags == null || !(ctx.tags.contains('preserve_original_event'))"
-      ignore_failure: true
-  - remove:
-      description: Remove 'source.ip' if 'auditType' is not set.
-      field: source.ip
-      if: "ctx?.tags == null || !(ctx.tags.contains('preserve_original_event'))"
-      ignore_failure: true
-    
+      ignore_missing: true    
       
   ###
 
@@ -354,5 +352,12 @@ on_failure:
       field: event.kind
       value: pipeline_error
   - append:
+      field: tags
+      value: preserve_original_event
+      allow_duplicates: false
+  - append:
       field: error.message
-      value: '{{{ _ingest.on_failure_message }}}'
+      value: >-
+        Processor '{{{ _ingest.on_failure_processor_type }}}'
+        {{{#_ingest.on_failure_processor_tag}}}with tag '{{{ _ingest.on_failure_processor_tag }}}'
+        {{{/_ingest.on_failure_processor_tag}}}failed with message '{{{ _ingest.on_failure_message }}}'

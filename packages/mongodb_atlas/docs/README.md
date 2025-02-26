@@ -418,7 +418,7 @@ Please refer to the following [document](https://www.elastic.co/guide/en/ecs/cur
 | mongodb_atlas.mongod_audit.local.is_system_user | True if the event is caused by a system user, false otherwise. | boolean |
 | mongodb_atlas.mongod_audit.local.port | Port number of the running instance. | long |
 | mongodb_atlas.mongod_audit.local.unix | Unix that contains the MongoDB socket file path if the client connects through a Unix domain socket. | keyword |
-| mongodb_atlas.mongod_audit.param | Specific details for the event. | object |
+| mongodb_atlas.mongod_audit.param | Specific details for the event. | flattened |
 | mongodb_atlas.mongod_audit.remote.ip | IP address of the incoming connection associated with the event. | ip |
 | mongodb_atlas.mongod_audit.remote.is_system_user | True if the event is caused by a system user, false otherwise. | boolean |
 | mongodb_atlas.mongod_audit.remote.port | Port number of the incoming connection associated with the event. | long |
@@ -535,7 +535,7 @@ Please refer to the following [document](https://www.elastic.co/guide/en/ecs/cur
 | data_stream.namespace | Data stream namespace. | constant_keyword |
 | data_stream.type | Data stream type. | constant_keyword |
 | input.type | Type of Filebeat input. | keyword |
-| mongodb_atlas.mongod_database.attributes | One or more key-value pairs for additional log attributes. If a log message does not include any additional attributes, the attr object is omitted. | object |
+| mongodb_atlas.mongod_database.attributes | One or more key-value pairs for additional log attributes. If a log message does not include any additional attributes, the attr object is omitted. | flattened |
 | mongodb_atlas.mongod_database.component | The component field indicates the category to which a logged event belongs, such as NETWORK or COMMAND. | keyword |
 | mongodb_atlas.mongod_database.hostname | A human-readable label that identifies the host that stores the log files you want to download. | keyword |
 | mongodb_atlas.mongod_database.id | The unique identifier for the log statement. | long |
@@ -543,7 +543,7 @@ Please refer to the following [document](https://www.elastic.co/guide/en/ecs/cur
 | mongodb_atlas.mongod_database.size | The original size of a log entry if it has been truncated. Only included if the log entry contains at least one truncated attr attribute. | object |
 | mongodb_atlas.mongod_database.tags | Strings representing any tags applicable to the log statement, for example, ["startupWarnings"]. | keyword |
 | mongodb_atlas.mongod_database.thread.name | The name of the thread that caused the log statement. | keyword |
-| mongodb_atlas.mongod_database.truncated | Information about log message truncation, if applicable. Only included if the log entry contains at least one truncated attr attribute. | object |
+| mongodb_atlas.mongod_database.truncated | Information about log message truncation, if applicable. Only included if the log entry contains at least one truncated attr attribute. | flattened |
 
 
 ### Organization
@@ -743,7 +743,7 @@ Please refer to the following [document](https://www.elastic.co/guide/en/ecs/cur
 | data_stream.type | Data stream type. | constant_keyword |
 | input.type | Type of Filebeat input. | keyword |
 | mongodb_atlas.organization.access_list_entry | Access list entry of the API Key targeted by the event. | keyword |
-| mongodb_atlas.organization.additional_info.\* | Additional meta information about the event. Only present when includeRaw query parameter is true. | object |
+| mongodb_atlas.organization.additional_info | Additional meta information about the event. Only present when includeRaw query parameter is true. | flattened |
 | mongodb_atlas.organization.alert.config.id | Unique identifier for the alert configuration associated with the alertId. | keyword |
 | mongodb_atlas.organization.alert.id | Unique identifier for the alert associated with this event. | keyword |
 | mongodb_atlas.organization.api_key.id | Unique identifier for the API Key that triggered this event. | keyword |
@@ -777,27 +777,27 @@ An example event for `project` looks as following:
 
 ```json
 {
-    "@timestamp": "2024-02-21T10:00:29.000Z",
+    "@timestamp": "2024-12-02T08:00:31.000Z",
     "agent": {
-        "ephemeral_id": "71a12b64-a637-4933-b64e-676b42558591",
-        "id": "c8e31bbe-eb0d-443a-a1e1-bcdbe26acdb4",
+        "ephemeral_id": "eee37bab-cf94-4b92-8fad-f2904c35165b",
+        "id": "ff1bb0a9-5759-4bb8-9398-60ee35f40ee7",
         "name": "docker-fleet-agent",
         "type": "filebeat",
         "version": "8.13.0"
     },
     "client": {
-        "ip": "0.0.0.0"
+        "ip": "127.0.0.1"
     },
     "data_stream": {
         "dataset": "mongodb_atlas.project",
-        "namespace": "ep",
+        "namespace": "default",
         "type": "logs"
     },
     "ecs": {
         "version": "8.11.0"
     },
     "elastic_agent": {
-        "id": "c8e31bbe-eb0d-443a-a1e1-bcdbe26acdb4",
+        "id": "ff1bb0a9-5759-4bb8-9398-60ee35f40ee7",
         "snapshot": false,
         "version": "8.13.0"
     },
@@ -808,34 +808,34 @@ An example event for `project` looks as following:
             "database"
         ],
         "dataset": "mongodb_atlas.project",
-        "id": "65d5c9bd2c86e3377aa5e5e4",
-        "ingested": "2024-07-08T11:21:04Z",
+        "id": "674d196fe35d5778b498f5d1",
+        "ingested": "2024-12-02T09:03:27Z",
         "kind": "event",
         "module": "mongodb_atlas",
+        "original": "{created=2024-12-02T08:00:31Z, groupId=646f4973c74da376540d14ad, opType=schemaAdvisor, raw={severity=WARNING, hidden=false, opType=schemaAdvisor, description=User performed a Data Explorer read-only operation, hostId=0968068fd1f7b1da746699dd8965db0a, collection=listingsAndReviews, source=USER, userId=6555c26c0e277939e345f40c, et=DATA_EXPLORER, database=sample_airbnb, _t=DATA_EXPLORER_ACCESSED_AUDIT, cre=2024-12-02T08:00:31Z, un=harnish.chavda@elastic.co, isMmsAdmin=false, id=674d196fe35d5778b498f5d1, cid=646f4973c74da376540d14ad, ut=LOCAL, remoteAddr=127.0.0.1}, collection=listingsAndReviews, userId=6555c26c0e277939e345f40c, database=sample_airbnb, eventTypeName=DATA_EXPLORER, links=[{rel=self, href=https://cloud.mongodb.com/api/atlas/v2/groups/646f4973c74da376540d14ad/events/674d196fe35d5778b498f5d1}], id=674d196fe35d5778b498f5d1, isGlobalAdmin=false, remoteAddress=127.0.0.1, username=harnish.chavda@elastic.co}",
         "type": [
-            "info",
-            "change"
+            "info"
         ]
     },
     "group": {
-        "id": "646f4379c47da356740d14ad"
+        "id": "646f4973c74da376540d14ad"
     },
     "host": {
         "architecture": "x86_64",
         "containerized": true,
         "hostname": "docker-fleet-agent",
-        "id": "8259e024976a406e8a54cdbffeb84fec",
+        "id": "8295e029467a406e8a54cdbffeb84fec",
         "ip": [
-            "172.20.0.7"
+            "192.168.253.7"
         ],
         "mac": [
-            "02-42-AC-14-00-07"
+            "02-42-C0-A8-FD-07"
         ],
         "name": "docker-fleet-agent",
         "os": {
             "codename": "focal",
             "family": "debian",
-            "kernel": "3.10.0-1160.118.1.el7.x86_64",
+            "kernel": "4.18.0-348.7.1.el8_5.x86_64",
             "name": "Ubuntu",
             "platform": "ubuntu",
             "type": "linux",
@@ -848,133 +848,55 @@ An example event for `project` looks as following:
     "mongodb_atlas": {
         "project": {
             "additional_info": {
-                "_t": "USER_AUDIT",
-                "cid": "646f4379c47da356740d14ad",
-                "cre": "2024-02-21T10:00:29Z",
-                "description": "User was invited to project",
-                "et": "INVITED_TO_GROUP",
+                "_t": "DATA_EXPLORER_ACCESSED_AUDIT",
+                "cid": "646f4973c74da376540d14ad",
+                "collection": "listingsAndReviews",
+                "cre": "2024-12-02T08:00:31Z",
+                "database": "sample_airbnb",
+                "description": "User performed a Data Explorer read-only operation",
+                "et": "DATA_EXPLORER",
                 "hidden": false,
-                "id": "65d5c9bd2c86e3377aa5e5e4",
+                "host_id": "0968068fd1f7b1da746699dd8965db0a",
+                "id": "674d196fe35d5778b498f5d1",
                 "is_mms_admin": false,
-                "remote_addr": "0.0.0.0",
-                "severity": "INFO",
+                "op_type": "schemaAdvisor",
+                "remote_addr": "127.0.0.1",
+                "severity": "WARNING",
                 "source": "USER",
-                "target_username": "sample.user@example.com",
-                "un": "sample1.user@example.com",
-                "user_id": "sample_user_id",
+                "un": "harnish.chavda@elastic.co",
+                "user_id": "6555c26c0e277939e345f40c",
                 "ut": "LOCAL"
             },
-            "alert": {
-                "config": {
-                    "id": "sample_alert_config_id"
-                },
-                "id": "sample_alert_id"
-            },
-            "api_key": {
-                "id": "sample_api_key_id"
-            },
-            "application": {
-                "id": "647ef2c43a8a03710fbceda1",
-                "name": "Application-0"
-            },
-            "cluster": {
-                "id": "sample_cluster_id",
-                "name": "sample_cluster"
-            },
             "collection": {
-                "name": "sample_collection"
+                "name": "listingsAndReviews"
             },
             "database": {
-                "name": "sample_db",
-                "username": "atlas-sample-dataset-load-646f4e082084495b64d07ead"
-            },
-            "endpoint": {
-                "id": "123e4567-e89b-12d3-a456-426614174000"
+                "name": "sample_airbnb"
             },
             "event_type": {
-                "name": "INVITED_TO_GROUP"
-            },
-            "host": {
-                "id": "sample_host_id",
-                "name": "sample_hostname"
-            },
-            "invoice": {
-                "id": "sample_invoice_id"
+                "name": "DATA_EXPLORER"
             },
             "is_global_admin": false,
-            "metric": {
-                "name": "sample_metric",
-                "unit": "RAW",
-                "value": 50
-            },
             "operation": {
-                "type": "update"
-            },
-            "payment": {
-                "id": "sample_payment_id"
-            },
-            "processor": {
-                "error_msg": "Failed to connect to database instance due to timeout.",
-                "instance": {
-                    "name": "mongo-instance-01"
-                },
-                "name": "eventProcessorService",
-                "state": "active"
-            },
-            "provider_endpoint": {
-                "id": "456f7890-f12a-34d5-b678-567890123456"
-            },
-            "public_key": "sample_public_key",
-            "replicaset": {
-                "name": "sample_replica_set"
-            },
-            "resource": {
-                "id": "789g1011-h12i-34j5-k678-890123456789",
-                "type": "database"
-            },
-            "shard": {
-                "name": "sample_shard"
-            },
-            "snapshot": {
-                "completion_date": "2024-06-18T05:51:05Z",
-                "frequency_type": "HOURLY",
-                "scheduled_creation_date": "2024-06-18T05:47:05Z"
-            },
-            "target_public_key": "sample_target_public_key",
-            "target_user": {
-                "email": "sample.user@example.com"
-            },
-            "team": {
-                "id": "sample_team_id"
-            },
-            "white_list_entry": "sample.user@example.com"
+                "type": "schemaAdvisor"
+            }
         }
     },
-    "organization": {
-        "id": "sample_org_id"
-    },
     "related": {
-        "hosts": [
-            "sample_hostname"
-        ],
         "ip": [
-            "0.0.0.0"
+            "127.0.0.1"
         ],
         "user": [
-            "sample1.user@example.com",
-            "atlas-sample-dataset-load-646f4e082084495b64d07ead",
-            "sample.user@example.com"
+            "harnish.chavda@elastic.co"
         ]
     },
-    "server": {
-        "port": 80
-    },
     "tags": [
-        "mongodb_atlas-project"
+        "mongodb_atlas-project",
+        "preserve_original_event"
     ],
     "user": {
-        "email": "sample1.user@example.com",
-        "id": "sample_user_id"
+        "email": "harnish.chavda@elastic.co",
+        "id": "6555c26c0e277939e345f40c"
     }
 }
 ```
@@ -992,7 +914,7 @@ Please refer to the following [document](https://www.elastic.co/guide/en/ecs/cur
 | data_stream.namespace | Data stream namespace. | constant_keyword |
 | data_stream.type | Data stream type. | constant_keyword |
 | input.type | Type of Filebeat input. | keyword |
-| mongodb_atlas.project.additional_info.\* | Additional meta information about the event. Only present when includeRaw query parameter is true. | object |
+| mongodb_atlas.project.additional_info | Additional meta information about the event. Only present when includeRaw query parameter is true. | flattened |
 | mongodb_atlas.project.alert.config.id | Unique identifier for the alert configuration associated with the alertId. | keyword |
 | mongodb_atlas.project.alert.id | Unique identifier for the alert associated with this event. | keyword |
 | mongodb_atlas.project.api_key.id | Unique identifier for the API Key that triggered this event. If this field is present in the response, Cloud Manager does not return the userId field. | keyword |

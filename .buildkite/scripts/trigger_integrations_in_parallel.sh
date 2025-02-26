@@ -29,6 +29,16 @@ to="$(get_to_changeset)"
 
 echo "[DEBUG] Checking with commits: from: '${from}' to: '${to}'"
 
+# This variable does not exist in builds triggered automatically
+GITHUB_PR_TRIGGER_COMMENT="${GITHUB_PR_TRIGGER_COMMENT:-""}"
+
+if [[ "${BUILDKITE_PIPELINE_SLUG}" == "integrations-test-stack" && "${GITHUB_PR_TRIGGER_COMMENT}" =~ ^/test\ stack ]]; then
+    echo "--- Stack version set from Github comment"
+    STACK_VERSION=$(echo "$GITHUB_PR_TRIGGER_COMMENT" | cut -d " " -f 3)
+    export STACK_VERSION
+    echo "Use Elastic stack version from Github comment: ${STACK_VERSION}"
+fi
+
 packages_to_test=0
 
 for package in ${PACKAGE_LIST}; do

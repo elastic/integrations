@@ -92,7 +92,14 @@ streams:
         multi: false
         required: false
         show_user: true
-        description: ARN of the AWS S3 bucket that will be polled for list operation. It is a required parameter for collecting logs via the AWS S3.
+        description: ARN of the AWS S3 bucket that will be polled for list operation. It is a required parameter for collecting logs via the AWS S3 Bucket unless you set an Access Point ARN. In case both configurations are added, this one takes precedence.
+      - name: access_point_arn
+        type: text
+        title: '[S3] Access Point ARN'
+        multi: false
+        required: false
+        show_user: true
+        description: ARN of the AWS S3 Access Point that will be polled for list operation. Mandatory if the "Collect logs via S3 Bucket" switch is on. It is a required parameter for collecting logs via the AWS S3 Bucket unless you set a Bucket ARN.
       - name: bucket_list_prefix
         type: text
         title: '[S3] Bucket Prefix'
@@ -153,7 +160,7 @@ streams:
         required: false
         show_user: false
         description: >-
-          If the SQS queue will have events that correspond to files that this integration shouldn’t process, file_selectors can be used to limit the files that are downloaded. This is a list of selectors which are made up of regex and expand_event_list_from_field options. The regex should match the S3 object key in the SQS message, and the optional expand_event_list_from_field is the same as the global setting. If file_selectors is given, then any global expand_event_list_from_field value is ignored in favor of the ones specified in the file_selectors. Regexes use [RE2 syntax](https://pkg.go.dev/regexp/syntax). Files that do not match one of the regexes will not be processed.
+          If the SQS queue will have events that correspond to files that this integration shouldn’t process, file_selectors can be used to limit the files that are downloaded. This is a list of selectors which are made up of regex and expand_event_list_from_field options. The regex should match the S3 object key in the SQS message, and the optional expand_event_list_from_field is the same as the global setting. If file_selectors is given, then any global content_type and expand_event_list_from_field values are ignored in favor of the ones specified in the file_selectors. Regexes use [RE2 syntax](https://pkg.go.dev/regexp/syntax). Files that do not match one of the regexes will not be processed.
       - name: external_id
         type: text
         title: External ID

@@ -1,0 +1,26 @@
+host: "{{listen_address}}:{{listen_port}}"
+tags:
+  - syslog_router
+{{#if preserve_original_event}}
+  - preserve_original_event
+{{/if}}
+{{#each tags as |tag|}}
+  - {{tag}}
+{{/each}}
+{{#contains "forwarded" tags}}
+publisher_pipeline.disable_host: true
+{{/contains}}
+{{#if ssl}}
+ssl: {{ssl}}
+{{/if}}
+processors:
+- add_locale: ~
+{{#if reroute_config}}
+{{reroute_config}}
+{{/if}}
+{{#if processors}}
+{{processors}}
+{{/if}}
+{{#if tcp_options}}
+{{tcp_options}}
+{{/if}}

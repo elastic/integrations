@@ -3,7 +3,7 @@ description: Pipeline for parsing fortinet firewall logs
 processors:
   - set:
       field: ecs.version
-      value: '8.11.0'
+      value: '8.17.0'
   - set:
       field: event.original
       copy_from: message
@@ -13,7 +13,8 @@ processors:
       field: event.original
       ecs_compatibility: v1
       patterns:
-        - "^(?:%{SYSLOG5424PRI} *)?%{GREEDYDATA:syslog5424_sd}$"
+        - "^(?:%{SYSLOG5424PRI}%{NONNEGINT} )+(?:%{TIMESTAMP_ISO8601}|-) +(?:%{HOSTNAME:syslog5424_host}|-) +(-|%{SYSLOG5424PRINTASCII}) +(-|%{SYSLOG5424PRINTASCII}) +(-|%{SYSLOG5424PRINTASCII}) +(-|%{SYSLOG5424PRINTASCII}) +(?:%{GREEDYDATA:syslog5424_msg}|-|)"
+        - "^(?:%{SYSLOG5424PRI} *)?%{GREEDYDATA:syslog5424_msg}$"
   - script:
       lang: painless
       source: |
@@ -26,17 +27,17 @@ processors:
           ctx.log.syslog['facility'] = facility;
         }
   - gsub:
-      field: syslog5424_sd
+      field: syslog5424_msg
       pattern: "[\u0000-\u001F\u007F]"
       replacement: ""
   - script:
       lang: painless
-      if: ctx.syslog5424_sd != null
+      if: ctx.syslog5424_msg != null
       description: |
-        Splits syslog5424_sd KV list by space and then each by "=" taking into account quoted values.
+        Splits syslog5424_msg KV list by space and then each by "=" taking into account quoted values.
       source: |
-        def splitUnquoted(String input, String sep) {
-          def tokens = [];
+        def splitOnceByToken(String input, String sep) {
+          def tokens = ["", ""];
           def startPosition = 0;
           def isInQuotes = false;
           char quote = (char)"\"";
@@ -47,26 +48,47 @@ processors:
               else if (input.charAt(currentPosition) == (char)sep && !isInQuotes) {
                   def token = input.substring(startPosition, currentPosition).trim();
                   if (!token.equals("")) {
-                    tokens.add(token);
+                    tokens[0] = token;
                   }
                   startPosition = currentPosition + 1;
+                  break;
               }
           }
-
           def lastToken = input.substring(startPosition);
           if (!lastToken.equals(sep) && !lastToken.equals("")) {
-              tokens.add(lastToken.trim());
+              tokens[1] = lastToken.trim();
           }
           return tokens;
         }
+        def splitUnquoted(String input, String sep) {
+          def tokens = [];
+          def cur = input;
+          def last = cur;
+          while (cur.length() > 0) {
+              def res = splitOnceByToken(cur, sep);
+              last = cur;
+              cur = res[1].trim();
+              def token = res[0].trim();
+              if (token.length() > 0) {
+                  tokens.add(token);
+              } else {
+                  if (cur.length() > 0) {
+                    tokens.add(cur);
+                  }
+                  break;
+              }
+          }
 
-        def arr = splitUnquoted(ctx.syslog5424_sd, " ");
+          return tokens;
+        }
+
+        def arr = splitUnquoted(ctx.syslog5424_msg, " ");
 
         Map map = new HashMap();
         Pattern pattern = /^\"|\"$/;
         for (def i = 0; i < arr?.length; i++) {
-          def kv = splitUnquoted(arr[i], "=");
-          if (kv.length == 2) {
+          def kv = splitOnceByToken(arr[i], "=");
+          if (kv.length == 2 && kv[0].length() > 0) {
             map[kv[0]] = pattern.matcher(kv[1]).replaceAll("");
           }
         }
@@ -175,6 +197,16 @@ processors:
   - rename:
       field: fortinet.firewall.devname
       target_field: observer.name
+      ignore_missing: true
+  - rename:
+      field: syslog5424_host
+      target_field: observer.name
+      if: ctx.observer?.name == null && ctx.syslog5424_host !== null
+      ignore_missing: true
+  - remove:
+      field:
+        - syslog5424_host
+        - syslog5424_msg
       ignore_missing: true
   - script:
       lang: painless
@@ -655,7 +687,6 @@ processors:
   - remove:
       field:
         - _temp
-        - syslog5424_sd
         - fortinet.firewall.tz
         - fortinet.firewall.date
         - fortinet.firewall.devid

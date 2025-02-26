@@ -68,17 +68,17 @@ Please follow the Jamf Pro [Webhooks documentation](https://learn.jamf.com/en-US
 
 You will require the following settings:
 - **Webhook URL**: must be in form `https://your-elastic-agent:9202/jamf-pro-events`  
-Note: `9202` is a port and `/jamf-pro-events` are default values and can be changed this connector's setup. 
+Note: `9202` is a port and `/jamf-pro-events` are default values and can be changed this connector's setup.
 
 - **Authentication type**: "None" and "Header Authentication" are supported.  
 "None" means the (target) Webhook URL is available without authentication, so no secret header or secret value were set during integration policy configuration.  
-"Header Authentication" will require an auth token name and value, set during integration policy configuration.  
+"Header Authentication" will require an auth token name and value, set during integration policy configuration.
 
-| Jamf Pro setting        | Corresponding integration setting | Example value                                       |
-|-------------------------|-----------------------------------|-----------------------------------------------------|
-| _Webhook URL_           | Port + URL                        | `https://your-elastic-agent:${PORT}${URL}`          |
-| _Authentication type_   |                                   | Header Authentication                               |
-| _Header Authentication_ | Secret Header + Secret Value      | `{"Authorization":"${Header}", "Token":"${Value}"}` |
+| Jamf Pro setting        | Corresponding integration setting | Example value                              |
+|-------------------------|-----------------------------------|--------------------------------------------|
+| _Webhook URL_           | Port + URL                        | `https://your-elastic-agent:${PORT}${URL}` |
+| _Authentication type_   |                                   | Header Authentication                      |
+| _Header Authentication_ | Secret Header + Secret Value      | `{"${Header}":"${Value}"}`                 |
 
 - **Content Type**: `JSON`
 
@@ -239,7 +239,9 @@ The following non-ECS fields are used in inventory documents:
 | jamf_pro.inventory.general.declarative_device_management_enabled |  | boolean |
 | jamf_pro.inventory.general.distribution_point |  | keyword |
 | jamf_pro.inventory.general.enrolled_via_automated_device_enrollment |  | boolean |
-| jamf_pro.inventory.general.enrollment_method |  | keyword |
+| jamf_pro.inventory.general.enrollment_method.id |  | keyword |
+| jamf_pro.inventory.general.enrollment_method.object_name |  | keyword |
+| jamf_pro.inventory.general.enrollment_method.object_type |  | keyword |
 | jamf_pro.inventory.general.initial_entry_date |  | date |
 | jamf_pro.inventory.general.itunes_store_account_active |  | boolean |
 | jamf_pro.inventory.general.jamf_binary_version |  | keyword |
@@ -257,7 +259,7 @@ The following non-ECS fields are used in inventory documents:
 | jamf_pro.inventory.general.last_reported_ip |  | ip |
 | jamf_pro.inventory.general.management_id |  | keyword |
 | jamf_pro.inventory.general.mdm_capable.capable |  | boolean |
-| jamf_pro.inventory.general.mdm_capable.capable_users |  | nested |
+| jamf_pro.inventory.general.mdm_capable.capable_users |  | keyword |
 | jamf_pro.inventory.general.mdm_profile_expiration |  | date |
 | jamf_pro.inventory.general.name |  | keyword |
 | jamf_pro.inventory.general.platform |  | keyword |

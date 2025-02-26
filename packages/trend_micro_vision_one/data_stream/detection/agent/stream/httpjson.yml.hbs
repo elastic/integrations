@@ -24,10 +24,10 @@ request.transforms:
       value: "uuid:*"
   - set:
       target: url.params.top
-      value: '5000'
+      value: '{{page_size}}'
   - set:
       target: url.params.startDateTime
-      value: '[[formatDate (parseDate .cursor.last_update_at)]]'
+      value: '[[formatDate ((parseDate .cursor.last_update_at).Add (parseDuration "-{{additional_look_back}}"))]]'
       default: '[[formatDate (now (parseDuration "-{{initial_interval}}"))]]'
   - set:
       target: url.params.endDateTime
@@ -42,7 +42,7 @@ response.pagination:
       fail_on_template_error: true
 cursor:
   last_update_at:
-    value: '[[.last_response.url.params.Get "endDateTime"]]'
+    value: '[[.first_event.eventTimeDT]]'
 response.split:
   target: body.items
   ignore_empty_value: true
