@@ -49,7 +49,9 @@ There are two advanced configuration options for the OpenAI integration: "Initia
 
 ### Bucket width
 
-- Controls the time-based aggregation of metrics (e.g., [bucket_width](https://platform.openai.com/docs/api-reference/usage/completions#usage-completions-bucket_width))
+A "bucket" refers to a time interval where OpenAI usage data is grouped together for reporting purposes. For example, with a 1-minute bucket width, usage metrics are aggregated minute by minute. With a 1-hour bucket width, all activity during that hour is consolidated into a single bucket. The [bucket width](https://platform.openai.com/docs/api-reference/usage/completions#usage-completions-bucket_width) determines your data's granularity and level of detail in your usage reporting.
+
+- Controls the time-based aggregation of metrics
 - Default: `1m` (1 minute)
 - Options: `1m`, `1h`, `1d`
 - Affects API request frequency and data resolution
@@ -75,9 +77,13 @@ Example: For 100 API calls to a particular model per hour:
 
 #### API request impact
 
-"Bucket width" and "Initial interval" directly affect API request frequency. Here's the technical breakdown:
+"Bucket width" and "Initial interval" directly affect API request frequency. When using a 1-minute bucket width, it's strongly recommended to set the "Initial interval" to a shorter duration—optimally 1 day—to ensure smooth performance. While our extensive testing demonstrates excellent results with a 6-month initial interval paired with a 1-day bucket width, the same level of success isn't achievable with 1-minute or 1-hour bucket widths. This is because the OpenAI Usage API returns different bucket quantities based on width (60 buckets per call for 1-minute, 24 for 1-hour, and 7 for 1-day widths). To achieve the best results when gathering historical data over long periods, using 1-day bucket widths is the most effective method, ensuring a balance between data granularity and API limitations.
 
-OpenAI Usage API returns different numbers of buckets based on the bucket width:
+For optimal results with historical data, use 1-day bucket widths for long periods (15+ days), 1-hour for medium periods (1-14 days), and 1-minute only for the most recent 24 hours of data.
+
+Here's an example technical breakdown:
+
+The OpenAI Usage API returns different numbers of buckets based on the bucket width:
 - 1-minute buckets: 60 buckets per API call
 - 1-hour buckets: 24 buckets per API call
 - 1-day buckets: 7 buckets per API call
@@ -93,7 +99,7 @@ Technical calculation example with a 6-month initial interval and 1-minute bucke
 - API calls per stream: 259,200 / 60 = 4,320 calls
 - Total API calls across 8 streams: 4,320 × 8 = 34,560 API calls
 
-Making 34,560 API calls in a brief period will likely trigger OpenAI's rate limits, resulting in API errors. When using a 1-minute bucket width, it's strongly recommended to set the "Initial interval" to a shorter duration - optimally 1 day - to ensure smooth performance. While our extensive testing demonstrates excellent results with a 6-month initial interval paired with a 1-day bucket width, the same level of success isn't achievable with 1-minute or 1-hour bucket widths due to OpenAI's API rate limitations. To achieve the best results when gathering historical data over long periods, using 1-day bucket widths is the most effective method, ensuring a balance between data granularity and API limitations.
+Making 34,560 API calls in a brief period will likely trigger OpenAI's rate limits, resulting in API errors.
 
 ### Collection process
 
