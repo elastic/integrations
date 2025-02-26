@@ -221,11 +221,9 @@ processors:
     keep_original: false
     if: ctx.fortinet?.firewall?.url != null
     on_failure:
-      - set:
-          field: fortinet.firewall.raw_url
-          copy_from: fortinet.firewall.url
-          ignore_empty_value: true
-          override: true
+      - append:
+          field: error.message
+          value: "url parsing failed with message {{ _ingest.on_failure_message }}"
 - remove:
     field: fortinet.firewall.url
     ignore_missing: true

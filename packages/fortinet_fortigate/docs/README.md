@@ -563,7 +563,6 @@ An example event for `log` looks as following:
 | fortinet.firewall.radioidclosest | Radio ID on the AP closest the rogue AP | integer |
 | fortinet.firewall.radioiddetected | Radio ID on the AP which detected the rogue AP | integer |
 | fortinet.firewall.rate | Wireless rogue rate value | keyword |
-| fortinet.firewall.raw_url | Raw url if url parsing fails | keyword |
 | fortinet.firewall.rawdata | Raw data value | keyword |
 | fortinet.firewall.rawdataid | Raw data ID | keyword |
 | fortinet.firewall.rcvddelta | Received bytes delta | keyword |
