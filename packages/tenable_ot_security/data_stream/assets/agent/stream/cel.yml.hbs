@@ -35,43 +35,42 @@ state:
     }
  
 program: |-
-  state.with(
-    request(
-      "POST",
-      state.url.trim_right("/") + "/graphql"
-    ).with(
-      {
-        "Header": {
-          "Content-Type": ["application/json"],
-          "Accept": ["application/json"],
-          "X-ApiKeys": ["key=" + state.key]
-        },
-        "Body": {
-          "query": state.query,
-          "variables": {
-            "first": state.batch_size,
-            "after": state.?end_cursor.value.orValue(null)
-          }
-        }.encode_json()
-      }
-    ).do_request().as(resp,
-      bytes(resp.Body).decode_json().as(body,
-        body.?data.?assets.nodes.orValue([]).as(nodes,
-          {
-            "events": nodes.map(e, {
-              "message": e,
-              ?"event.original": state.?preserve_original_event.orValue(false) ? optional.of(e.encode_json()) : optional.none(),
-            }),
-            "end_cursor": {
-              ?"value": body.?data.?assets.pageInfo.hasNextPage.orValue(false) ? body.?data.?assets.pageInfo.endCursor : optional.none()
-            },
-            "want_more": body.?data.?assets.pageInfo.hasNextPage.orValue(false)
-          }
-        )
-      )
-    )
+  request(
+  	"POST",
+  	state.url.trim_right("/") + "/graphql"
+  ).with(
+  	{
+  		"Header": {
+  			"Content-Type": ["application/json"],
+  			"Accept": ["application/json"],
+  			"X-ApiKeys": ["key=" + state.key],
+  		},
+  		"Body": {
+  			"query": state.query,
+  			"variables": {
+  				"first": state.batch_size,
+  				"after": state.?cursor.end_cursor.orValue(null),
+  			},
+  		}.encode_json(),
+  	}
+  ).do_request().as(resp,
+  	bytes(resp.Body).decode_json().as(body,
+  		body.data.assets.nodes.as(nodes,
+  			state.with(
+  				{
+  					"events": nodes.map(e,
+  						{
+  							"message": e,
+  							?"event.original": state.?preserve_original_event.orValue(false) ? optional.of(e.encode_json()) : optional.none(),
+  						}
+  					),
+  					"cursor": {"end_cursor": (size(nodes) > 0) ? body.data.assets.pageInfo.endCursor : state.?cursor.end_cursor},
+  					"want_more": body.data.assets.pageInfo.hasNextPage,
+  				}
+  			)
+  		)
+  	)
   )
- 
 tags:
 {{#if preserve_original_event}}
   - preserve_original_event
