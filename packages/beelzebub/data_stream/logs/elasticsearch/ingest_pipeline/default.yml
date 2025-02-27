@@ -25,9 +25,27 @@ processors:
       ignore_missing: true
       tag: rename_message_to_event_original
 
+  - redact:
+      if: 'ctx.tags != null && ctx.tags.contains("redact_passwords") && !(ctx.event?.original =~ /\"Password\": *\"\"/)'
+      description: "Redact any passwords in event.original"
+      field: event.original
+      patterns:
+        - '"Password": *"%{DATA:REDACTED}"'
+      prefix: '"Password": "<'
+      suffix: '>"'
+      ignore_missing: true
+      tag: redact_event_original
+
+  - remove:
+      description: "Remove filebeat parsed json object if redaction occurred"
+      if: 'ctx.tags != null && ctx.tags.contains("redact_passwords") && !(ctx.event?.original =~ /\"Password\": *\"\"/)'
+      field: json
+      ignore_missing: true
+      tag: remove_json_due_to_redaction
+
   - json:
       if: ctx.event?.original != null && ctx.json == null
-      description: "Parse JSON from event.original only if we don't already have a JSON object provided by filebeat"
+      description: "Parse JSON from event.original only if we don't already have a JSON object provided by filebeat, or if redaction occurred"
       field: event.original
       target_field: json
       tag: json_event_original
@@ -170,7 +188,16 @@ processors:
       trim_value: ' '
       strip_brackets: true
 
-# TODO: lowercase all header names?
+  - script:
+      if: ctx._tmp?.headers != null
+      description: "Lowercase HTTP header names"
+      source: |
+        def lowercaseMap = [:];
+        for(def entry : ctx._tmp.headers.entrySet()){
+          lowercaseMap.put(entry.getKey().toLowerCase(), entry.getValue());
+        }
+        ctx._tmp.headers = lowercaseMap;
+      tag: lowercase_http_header_names
 
   - rename:
       description: "Replace original field with KVP extracted pairs"
@@ -179,9 +206,21 @@ processors:
       target_field: json.event.Headers
       override: true
 
-# TODO:     description: "ECS extraction/mapping json.event.Headers.Referer -> http.request.referrer if not already obtained"
-#
-# TODO:     description: "ECS extraction/mapping json.event.Headers.Host -> url.domain if not already obtained"
+  - set:
+      if: ctx.http?.request?.referrer == null
+      description: "ECS mapping json.event.Headers.referer -> http.request.referrer if not already obtained"
+      field: http.request.referrer
+      copy_from: json.event.Headers.referer
+      ignore_empty_value: true
+      tag: ecs_map_headers_referer_http_request_referrer
+
+  - set:
+      if: ctx.url?.domain == null
+      description: "ECS mapping json.event.Headers.host -> url.domain if not already obtained"
+      field: url.domain
+      copy_from: json.event.Headers.host
+      ignore_empty_value: true
+      tag: ecs_map_headers_host_url_domain
 
   - gsub:
       description: "ECS extraction/mapping json.event.HostHTTPRequest -> url.domain if not already obtained"
@@ -252,6 +291,13 @@ processors:
       target_field: destination.as.organization.name
       ignore_missing: true
 
+  - set:
+      description: "ECS mapping json.event.User -> user.name"
+      field: user.name
+      copy_from: json.event.User
+      ignore_empty_value: true
+      tag: ecs_map_user_name
+
   - rename:
       field: json
       target_field: beelzebub
@@ -285,10 +331,16 @@ processors:
       if: ctx?.tags == null || !(ctx.tags.contains('preserve_duplicate_custom_fields'))
       description: "Remove ECS mapped fields"
       field:
-        - json.event.ID
-        - json.event.Msg
-        - json.event.SourceIp
-        - json.event.SourcePort
+        - beelzebub.event.ID
+        - beelzebub.event.Msg
+        - beelzebub.event.SourceIp
+        - beelzebub.event.SourcePort
+        - beelzebub.event.HTTPMethod
+        - beelzebub.event.Body
+        - beelzebub.event.RequestURI
+        - beelzebub.event.UserAgent
+        - beelzebub.event.HostHTTPRequest
+        - beelzebub.event.User
       ignore_missing: true
 
   - remove:

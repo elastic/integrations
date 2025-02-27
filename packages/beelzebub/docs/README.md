@@ -1,16 +1,16 @@
 # Beelzebub Integration
 
-Beelzebub is an advanced honeypot framework designed to provide a highly secure environment for detecting and analyzing cyber attacks. It offers a low code approach for easy implementation and uses AI LLM's to mimic the behavior of a high-interaction honeypot.
+Beelzebub is an advanced honeypot framework designed to provide a highly secure environment for detecting and analysing cyber attacks. It offers a low code approach for easy implementation and uses AI LLM's to mimic the behaviour of a high-interaction honeypot.
 
 Beelzebub is available on GitHub via [https://github.com/mariocandela/beelzebub](https://github.com/mariocandela/beelzebub) or via [https://beelzebub-honeypot.com](https://beelzebub-honeypot.com)
 
-This integration provides multiple ingest source options including log files, HTTP and from S3 or S3-like storage buckets.
+This integration provides multiple ingest source options including log files and via HTTP POST.
 
 This allows you to search, observe and visualize the Beelzebub logs through Elasticsearch and Kibana.
 
 This integration was last tested with Beelzebub `v3.3.6`.
 
-Please note that Beelzebub only produces NDJSON log files at this time, to ship logs to this integration via HTTP or S3 you will require another component, such as [fluentd](https://www.fluentd.org/), to perform this.
+Please note that Beelzebub only produces NDJSON log files at this time, to ship logs to this integration via any other method you will require another component, such as [fluentd](https://www.fluentd.org/), to perform this.
 
 For more information, refer to:
 1. [GitHub](https://github.com/mariocandela/beelzebub)
@@ -18,7 +18,7 @@ For more information, refer to:
 
 ## Compatability
 
-The package collects log events from file, via HTTP and from S3 or S3-like storage buckets.
+The package collects log events from file or by receiving HTTP POST requests.
 
 ## Configuration
 
@@ -33,9 +33,10 @@ The package collects log events from file, via HTTP and from S3 or S3-like stora
 
 ### Configure the Beelzebub integration
 
-1. Choose your ingest method, e.g. file, HTTP or S3/S3-like bucket. If using HTTP you can enable HTTPS transport by providing an SSL certificate and private key.
+1. Choose your ingest method, e.g. file or HTTP. If using HTTP you can enable HTTPS transport by providing an SSL certificate and private key.
 2. Choose to store the original event content in `event.original`, or not.
-3. Choose to retain the original fields that have been mapped to ECS fields, or not. 
+3. Choose to redact passwords, or not.
+4. Configure advanced options if desired.
 
 ### Configure Beelzebub logging
 
@@ -163,11 +164,11 @@ An example event for `logs` looks as following:
 {
     "@timestamp": "2025-02-13T01:08:26.000Z",
     "agent": {
-        "ephemeral_id": "7e2a993e-c6c2-4778-b8ee-45ceaa0d85cb",
-        "id": "30ca00a7-05d6-487c-877f-6e356ec4ba85",
-        "name": "elastic-agent-24661",
+        "ephemeral_id": "e447d8df-5e9d-4975-96dc-6da3eee714b8",
+        "id": "1379f18f-0f34-4dff-813f-11c94cce1ce2",
+        "name": "elastic-agent-59859",
         "type": "filebeat",
-        "version": "8.17.2"
+        "version": "8.17.1"
     },
     "beelzebub": {
         "event": {
@@ -176,10 +177,10 @@ An example event for `logs` looks as following:
             "Description": "SSH interactive ChatGPT",
             "ID": "1974e109-d6f8-4bb1-934c-180a163e1cb8",
             "Msg": "New SSH attempt",
-            "Password": "test",
+            "Password": "<REDACTED>",
             "Protocol": "SSH",
-            "RemoteAddr": "103.100.225.133:60748",
-            "SourceIp": "103.100.225.133",
+            "RemoteAddr": "1.128.0.133:60748",
+            "SourceIp": "1.128.0.133",
             "SourcePort": "60748",
             "Status": "Stateless",
             "User": "root"
@@ -191,16 +192,16 @@ An example event for `logs` looks as following:
     },
     "data_stream": {
         "dataset": "beelzebub.logs",
-        "namespace": "40452",
+        "namespace": "91668",
         "type": "logs"
     },
     "ecs": {
         "version": "8.17.0"
     },
     "elastic_agent": {
-        "id": "30ca00a7-05d6-487c-877f-6e356ec4ba85",
+        "id": "1379f18f-0f34-4dff-813f-11c94cce1ce2",
         "snapshot": false,
-        "version": "8.17.2"
+        "version": "8.17.1"
     },
     "event": {
         "agent_id_status": "verified",
@@ -209,58 +210,35 @@ An example event for `logs` looks as following:
         ],
         "dataset": "beelzebub.logs",
         "id": "1974e109-d6f8-4bb1-934c-180a163e1cb8",
-        "ingested": "2025-02-15T07:13:30Z",
+        "ingested": "2025-02-27T01:20:55Z",
         "kind": "event",
-        "original": "{\"event\":{\"DateTime\":\"2025-02-13T01:08:26Z\",\"RemoteAddr\":\"103.100.225.133:60748\",\"Protocol\":\"SSH\",\"Command\":\"\",\"CommandOutput\":\"\",\"Status\":\"Stateless\",\"Msg\":\"New SSH attempt\",\"ID\":\"1974e109-d6f8-4bb1-934c-180a163e1cb8\",\"Environ\":\"\",\"User\":\"root\",\"Password\":\"test\",\"Client\":\"SSH-2.0-dropbear\",\"Headers\":\"\",\"Cookies\":\"\",\"UserAgent\":\"\",\"HostHTTPRequest\":\"\",\"Body\":\"\",\"HTTPMethod\":\"\",\"RequestURI\":\"\",\"Description\":\"SSH interactive ChatGPT\",\"SourceIp\":\"103.100.225.133\",\"SourcePort\":\"60748\"},\"level\":\"info\",\"msg\":\"New Event\",\"status\":\"Stateless\",\"time\":\"2025-02-13T01:08:26Z\"}",
-        "reason": "New SSH attempt",
+        "original": "{\"event\":{\"Body\":\"\",\"Client\":\"SSH-2.0-dropbear\",\"Command\":\"\",\"CommandOutput\":\"\",\"Cookies\":\"\",\"DateTime\":\"2025-02-13T01:08:26Z\",\"Description\":\"SSH interactive ChatGPT\",\"Environ\":\"\",\"HTTPMethod\":\"\",\"Headers\":\"\",\"HostHTTPRequest\":\"\",\"ID\":\"1974e109-d6f8-4bb1-934c-180a163e1cb8\",\"Msg\":\"New SSH attempt\",\"Password\": \"<REDACTED>\",\"Protocol\":\"SSH\",\"RemoteAddr\":\"1.128.0.133:60748\",\"RequestURI\":\"\",\"SourceIp\":\"1.128.0.133\",\"SourcePort\":\"60748\",\"Status\":\"Stateless\",\"User\":\"root\",\"UserAgent\":\"\"},\"level\":\"info\",\"msg\":\"New Event\",\"status\":\"Stateless\",\"time\":\"2025-02-13T01:08:26Z\"}",
+        "reason": "New Event",
         "type": [
             "info"
         ]
     },
     "input": {
-        "type": "filestream"
-    },
-    "log": {
-        "file": {
-            "device_id": "44",
-            "inode": "100",
-            "path": "/tmp/service_logs/beelzebub-logs-ndjson.log"
-        },
-        "offset": 0
+        "type": "http_endpoint"
     },
     "source": {
         "as": {
-            "number": 64496,
+            "number": 1221,
             "organization": {
-                "name": "Documentation ASN"
+                "name": "Telstra Pty Ltd"
             }
         },
-        "geo": {
-            "city_name": "Greenwich",
-            "continent_name": "Europe",
-            "country_iso_code": "GB",
-            "country_name": "United Kingdom",
-            "location": {
-                "lat": 51.47687,
-                "lon": -0.00041
-            },
-            "region_iso_code": "GB-ENG",
-            "region_name": "England"
-        },
-        "ip": "103.100.225.133",
+        "ip": "1.128.0.133",
         "port": 60748
     },
     "tags": [
         "preserve_original_event",
+        "redact_passwords",
         "preserve_duplicate_custom_fields",
         "forwarded"
     ],
-    "user_agent": {
-        "device": {
-            "name": "Other",
-            "type": "Other"
-        },
-        "name": "Other"
+    "user": {
+        "name": "root"
     }
 }
 ```
