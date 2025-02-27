@@ -81,27 +81,7 @@ Example: For 100 API calls to a particular model per hour:
 
 "Bucket width" and "Initial interval" directly affect API request frequency. When using a 1-minute bucket width, it's strongly recommended to set the "Initial interval" to a shorter duration—optimally 1 day—to ensure smooth performance. While our extensive testing demonstrates excellent results with a 6-month initial interval paired with a 1-day bucket width, the same level of success isn't achievable with 1-minute or 1-hour bucket widths. This is because the OpenAI Usage API returns different bucket quantities based on width (60 buckets per call for 1-minute, 24 for 1-hour, and 7 for 1-day widths). To achieve the best results when gathering historical data over long periods, using 1-day bucket widths is the most effective method, ensuring a balance between data granularity and API limitations.
 
-For optimal results with historical data, use 1-day bucket widths for long periods (15+ days), 1-hour for medium periods (1-15 days), and 1-minute only for the most recent 24 hours of data.
-
-Here's an example technical breakdown:
-
-The OpenAI Usage API returns different numbers of buckets based on the bucket width:
-- 1-minute buckets: 60 buckets per API call
-- 1-hour buckets: 24 buckets per API call
-- 1-day buckets: 7 buckets per API call
-
-Formula for API calls:
-1. Hours in initial interval × (60 minutes / bucket size) = Total buckets needed
-2. Total buckets / buckets per API call = API calls per data stream
-3. Total API calls = API calls per data stream × 8 data streams
-
-Technical calculation example with a 6-month initial interval and 1-minute buckets:
-- "Initial interval" conversion: 6 months = (6 × 30 × 24) = 4,320 hours
-- Total buckets needed: 4,320 hours × 60 minutes = 259,200 buckets
-- API calls per stream: 259,200 / 60 = 4,320 calls
-- Total API calls across 8 streams: 4,320 × 8 = 34,560 API calls
-
-Making 34,560 API calls in a brief period will likely trigger OpenAI's rate limits, resulting in API errors.
+> For optimal results with historical data, use 1-day bucket widths for long periods (15+ days), 1-hour for medium periods (1-15 days), and 1-minute only for the most recent 24 hours of data.
 
 ### Collection process
 
