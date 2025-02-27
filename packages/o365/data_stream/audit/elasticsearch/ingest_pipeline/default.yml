@@ -250,6 +250,13 @@ processors:
       field: o365audit.Parameters
       target_field: o365audit.Parameters._raw
       if: 'ctx.o365audit?.Parameters != null && ctx.o365audit?.Parameters instanceof String'
+  - grok:
+      field: o365audit.Parameters._raw
+      if: ctx.o365audit?.NetworkMessageId == null || ctx.o365audit.NetworkMessageId == ''
+      patterns: 
+        - '(-)?Identity"%{o365audit.NetworkMessageId}"$'
+      ignore_missing: true
+      ignore_failure: true
   - script:
       if: ctx.o365audit?.Platform != null
       lang: painless
@@ -1116,6 +1123,12 @@ processors:
       field: o365audit.UserType
       type: string
       ignore_missing: true
+  - set:
+      field: event.provider
+      value: "{{{o365audit.UserType}}}"
+      if: ctx.event?.provider == null && ctx.o365audit?.UserType != null && ctx.o365audit.UserType != ''
+      tag: set_event_provider
+      ignore_empty_value: true
   - foreach:
       field: o365audit.Actor
       if: ctx.o365audit?.Actor instanceof List
@@ -1154,6 +1167,46 @@ processors:
       field: o365audit.YammerNetworkId
       type: string
       ignore_missing: true
+  - set:
+      field: email.message_id
+      value: "{{{o365audit.InternetMessageId}}}"
+      if: ctx.o365audit?.InternetMessageId != null && ctx.o365audit.InternetMessageId != ''
+      tag: set_email_message_id_1
+      ignore_empty_value: true
+  - set:
+      field: email.local_id
+      value: "{{{o365audit.NetworkMessageId}}}"
+      if: ctx.o365audit?.NetworkMessageId != null && ctx.o365audit.NetworkMessageId != ''
+      tag: set_email_local_id_1
+      ignore_empty_value: true
+  - set:
+      field: email.sender.address
+      value: "{{{o365audit.P1Sender}}}"
+      if: ctx.o365audit?.P1Sender != null && ctx.o365audit.P1Sender != ''
+      tag: set_email_sender_address_1
+      ignore_empty_value: true
+  - set:
+      field: email.to.address
+      copy_from: o365audit.Recipients
+      if: ctx.o365audit?.Recipients instanceof List && ctx.o365audit.Recipients.length > 0
+      tag: set_email_to_address_1
+      ignore_empty_value: true
+  - append:
+      field: related.ip
+      value: "{{{o365audit.SenderIp}}}"
+      allow_duplicates: false
+      if: ctx.o365audit?.SenderIp != null && ctx.o365audit.SenderIp != ''
+  - append:
+      field: related.ip
+      value: "{{{o365audit.SenderIP}}}"
+      allow_duplicates: false
+      if: ctx.o365audit?.SenderIP != null && ctx.o365audit.SenderIP != ''
+  - set:
+      field: email.subject
+      value: "{{{o365audit.Subject}}}"
+      if: ctx.o365audit?.Subject != null && ctx.o365audit.Subject != ''
+      tag: set_email_subject_1
+      ignore_empty_value: true
   - gsub:
       field: o365audit.Data
       pattern: ',\"QueryTime\":\"[0-9\/]+\s[0-9]+:[0-9]+:[0-9]+\s[AP]M\"|\"QueryTime\":\"[0-9\/]+\s[0-9]+:[0-9]+:[0-9]+\s[AP]M\",'
@@ -1228,21 +1281,57 @@ processors:
       value: "{{{o365audit.Data.f3u}}}"
       allow_duplicates: false
       if: ctx.o365audit?.Data?.f3u?.splitOnToken('@')?.length == 2 && ctx.o365audit.Data.f3u.length() >= 3;
+  - set:
+      field: user.email
+      value: "{{{o365audit.Data.f3u}}}"
+      if: ctx.user?.email == null && ctx.o365audit?.Data?.f3u?.splitOnToken('@')?.length == 2 && ctx.o365audit.Data.f3u.length() >= 3;
+      tag: set_user_email
+      ignore_empty_value: true
   - append:
       field: related.user
       value: "{{{o365audit.Data.suid}}}"
       allow_duplicates: false
       if: ctx.o365audit?.Data?.suid?.splitOnToken('@')?.length == 2 && ctx.o365audit.Data.suid.length() >= 3;
+  - set:
+      field: email.sender.address
+      value: "{{{o365audit.Data.tsd}}}"
+      if: ctx.o365audit?.Data?.tsd != null && ctx.o365audit.Data.tsd != ''
+      tag: set_email_sender_address_2
+      ignore_empty_value: true
   - append:
       field: related.user
       value: "{{{o365audit.Data.tsd}}}"
       allow_duplicates: false
       if: ctx.o365audit?.Data?.tsd?.splitOnToken('@')?.length == 2 && ctx.o365audit.Data.tsd.length() >= 3;
+  - set:
+      field: email.to_address
+      value: "{{{o365audit.Data.trc}}}"
+      if: ctx.o365audit?.Data?.trc != null && ctx.o365audit.Data.trc != ''
+      tag: set_email_to_address
+      ignore_empty_value: true
   - append:
       field: related.user
       value: "{{{o365audit.Data.trc}}}"
       allow_duplicates: false
       if: ctx.o365audit?.Data?.trc?.splitOnToken('@')?.length == 2 && ctx.o365audit.Data.trc.length() >= 3;
+  - set:
+      field: email.local_id
+      value: "{{{o365audit.Data.aii}}}"
+      if: ctx.email?.local_id == null && ctx.o365audit?.Data?.aii != null && ctx.o365audit.Data.aii != ''
+      tag: set_email_local_id_2
+      ignore_empty_value: true
+  - set:
+      field: email.message_id
+      value: "{{{o365audit.Data.imsgid}}}"
+      if: ctx.email?.message_id == null && ctx.o365audit?.Data?.imsgid != null && ctx.o365audit.Data.imsgid != ''
+      tag: set_email_message_id_2
+      ignore_empty_value: true
+  - set:
+      field: email.subject
+      value: "{{{o365audit.Data.ms}}}"
+      if: ctx.o365audit?.Data?.ms != null && ctx.o365audit.Data.ms != ''
+      tag: set_email_subject_2
+      ignore_empty_value: true
   - rename:
       field: o365audit
       target_field: o365.audit
