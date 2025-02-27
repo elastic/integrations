@@ -10,7 +10,8 @@ processors:
         value: Gatekeeper controls were overridden
     - append:
         field: event.category
-        value: malware 
+        value: malware
+        allow_duplicates: false
     - rename:
         field: jamf_protect.telemetry.event.gatekeeper_user_override.file.path
         target_field: file.path
@@ -57,7 +58,7 @@ processors:
     - append:
         field: threat.indicator.file.path
         value: '{{{file.path}}}'
-        if: ctx.file?.path != null
+        if: ctx.file?.path != null && ctx.file.path != ''
         allow_duplicates: false
     - set:
         field: threat.indicator.type

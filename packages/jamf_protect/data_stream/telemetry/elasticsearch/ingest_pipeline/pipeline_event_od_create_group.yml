@@ -83,7 +83,7 @@ processors:
     - append:
         field: related.hash
         value: '{{{process.hash.cdhash}}}'
-        if: ctx.jamf_protect?.code_directory_hash != null
+        if: ctx.process?.hash?.cdhash != null && ctx.process.hash.cdhash != ''
         allow_duplicates: false
     - rename:
         field: jamf_protect.telemetry.event.od_create_group.instigator.tty.path
@@ -141,6 +141,10 @@ processors:
     - rename:
         field: jamf_protect.telemetry.event.od_create_group.instigator.team_id
         target_field: process.code_signature.team_id
+        ignore_missing: true
+    - convert:
+        field: jamf_protect.telemetry.event.od_create_group.instigator.codesigning_flags
+        type: string
         ignore_missing: true
     - rename:
         field: jamf_protect.telemetry.event.od_create_group.instigator.codesigning_flags

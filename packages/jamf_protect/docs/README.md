@@ -581,7 +581,7 @@ An example event for `telemetry` looks as following:
 | jamf_protect.telemetry.to_username | Username to which an action is directed | keyword |
 | jamf_protect.telemetry.tty | Software terminal device file that the process is associated with | keyword |
 | log.offset | Log offset | long |
-| process.code_signature.flags |  | long |
+| process.code_signature.flags |  | keyword |
 | process.endpoint_security_client |  | boolean |
 | process.hash.cdhash |  | keyword |
 | process.platform_binary |  | boolean |
