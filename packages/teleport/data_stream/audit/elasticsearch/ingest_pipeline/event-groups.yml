@@ -872,20 +872,17 @@ processors:
       field: teleport.audit.aws_region
       target_field: cloud.region
       ignore_missing: true
-      # This could fail if `cloud.region` already exists in the doc. Forced to override the value to avoid throw an exception.
-      override: true
+      if: ctx.cloud?.region == null
   - rename:
       field: teleport.audit.aws_service
       target_field: cloud.service.name
       ignore_missing: true
-      # This could fail if `cloud.service.name` field already exists in the doc. Forced to override the value to avoid throw an exception.
-      override: true
+      if: ctx.cloud?.service?.name == null
   - rename:
       field: teleport.audit.aws_host
       target_field: cloud.instance.id
       ignore_missing: true
-      # This could fail if `cloud.instance.id` field already exists in the doc. Forced to override the value to avoid throw an exception.
-      override: true
+      if: ctx.cloud?.instance?.id == null
   - rename:
       field: teleport.audit.aws_assumed_role
       target_field: teleport.audit.app.aws.assumed_role
@@ -954,8 +951,7 @@ processors:
       field: teleport.audit.db_aws_region
       target_field: cloud.region
       ignore_missing: true
-      # This could fail if `cloud.region` field already exists in the doc. Forced to override the value avoid throw an exception.
-      override: true
+      if: ctx.cloud?.region == null
   - set:
       field: cloud.provider
       value: aws
@@ -976,8 +972,7 @@ processors:
       field: teleport.audit.db_gcp_instance_id
       target_field: cloud.instance.id
       ignore_missing: true
-      # This could fail since `cloud.instance.id` field could already be present in the doc. Forced to override the value to avoid throw an exception.
-      override: true
+      if: ctx.cloud?.instance?.id == null
   - rename:
       field: teleport.audit.db_roles
       target_field: teleport.audit.database.roles
@@ -1417,8 +1412,7 @@ processors:
       field: teleport.audit.instance_id
       target_field: cloud.instance.id
       ignore_missing: true
-      # This could fail if `cloud.account.id` field already exists in the doc. Forced to override the value to avoid throw an exception.
-      override: true
+      if: ctx.cloud?.instance?.id == null
   - rename:
       field: teleport.audit.exit_code
       target_field: process.exit_code
@@ -1438,14 +1432,13 @@ processors:
       field: teleport.audit.account_id
       target_field: cloud.account.id
       ignore_missing: true
-      # This could fail if `cloud.account.id` field already exists in the doc.  Forced to override the value to avoid throw an exception.
-      override: true
+      if: ctx.cloud?.account?.id == null
   - rename:
       field: teleport.audit.region
       target_field: cloud.region
       ignore_missing: true
-      # This could fail if `cloud.region` field already exists in the doc. Forced to override the value to avoid throw an exception.
-      override: true
+      ignore_failure: true
+      if: ctx.cloud?.region == null
   - rename:
       field: teleport.audit.stdout
       target_field: teleport.audit.database.aws.ssm_run.stdout
