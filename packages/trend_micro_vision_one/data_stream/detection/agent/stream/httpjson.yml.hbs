@@ -34,9 +34,10 @@ request.transforms:
       # and we pick the default value.
       value: >-
         [[- if eq .cursor.pagination_finished "true" -]]
+        # look-back time should only be applied for fresh pagination intervals .
           [[- formatDate ((parseDate .cursor.next_start_date).Add (parseDuration "-{{additional_look_back}}")) -]]
         [[- else -]]
-          [[- formatDate ((parseDate .cursor.last_response_date).Add (parseDuration "-{{additional_look_back}}")) -]]
+          [[- formatDate (parseDate .cursor.last_response_date) -]]
         [[- end -]]
       default: '[[formatDate (now (parseDuration "-{{initial_interval}}"))]]'
   - set:
