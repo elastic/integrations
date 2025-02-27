@@ -27,7 +27,17 @@ request.transforms:
       value: '{{page_size}}'
   - set:
       target: url.params.startDateTime
-      value: '[[formatDate ((parseDate .cursor.last_update_at).Add (parseDuration "-{{additional_look_back}}"))]]'
+      # If last pagination cycle was finished successfully
+      # we move the startDate pointer forward
+      # else we reprocess the last interval from the beginning.
+      # If none of the values are in the cursor it means is a fresh start
+      # and we pick the default value.
+      value: >-
+        [[- if eq .cursor.pagination_finished "true" -]]
+          [[- formatDate ((parseDate .cursor.next_start_date).Add (parseDuration "-{{additional_look_back}}")) -]]
+        [[- else -]]
+          [[- formatDate ((parseDate .cursor.last_response_date).Add (parseDuration "-{{additional_look_back}}")) -]]
+        [[- end -]]
       default: '[[formatDate (now (parseDuration "-{{initial_interval}}"))]]'
   - set:
       target: url.params.endDateTime
@@ -35,14 +45,6 @@ request.transforms:
   - set:
       target: url.params.select
       value: 'empty'
-response.pagination:
-  - set:
-      target: url.value
-      value: '[[if index .last_response.body "nextLink"]][[replaceAll " " "%20" .last_response.body.nextLink]][[end]]'
-      fail_on_template_error: true
-cursor:
-  last_update_at:
-    value: '[[.first_event.eventTimeDT]]'
 response.split:
   target: body.items
   ignore_empty_value: true
@@ -50,6 +52,23 @@ response.split:
     target: body.requests
     ignore_empty_value: true
     keep_parent: true
+response.pagination:
+  - set:
+      target: url.value
+      value: '[[if index .last_response.body "nextLink"]][[replaceAll " " "%20" .last_response.body.nextLink]][[end]]'
+      fail_on_template_error: true
+cursor:
+  pagination_finished:
+    # Use this flag to identify if an execution was interrupted in the middle
+    # of a pagination cycle.
+    value: '[[not (index .last_response.body "nextLink")]]'
+  last_response_date:
+    # Use this value to be able to resume from an interrupted pagination cycle.
+    value: '[[.last_response.url.params.Get "startDateTime"]]'
+  next_start_date:
+    # The API returns records sorted from newest to oldest,
+    # in order to pick the next startDate we keep the first event (newest) time.
+    value: '[[.first_event.eventTimeDT]]'
 tags:
 {{#if preserve_original_event}}
   - preserve_original_event
