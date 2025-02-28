@@ -27,14 +27,14 @@ request.transforms:
       value: '{{page_size}}'
   - set:
       target: url.params.startDateTime
-      # If last pagination cycle was finished successfully
+      # If the last pagination cycle was completed successfully
       # we move the startDate pointer forward
-      # else we reprocess the last interval from the beginning.
-      # If none of the values are in the cursor it means is a fresh start
+      # otherwise we reprocess the last interval from the beginning.
+      # If none of the values are in the cursor it means it is a fresh start
       # and we pick the default value.
       value: >-
         [[- if eq .cursor.pagination_finished "true" -]]
-        # look-back time should only be applied for fresh pagination intervals
+        [[- /* look-back time should only be applied to the first request of a new pagination cycle */ -]]
           [[- formatDate ((parseDate .cursor.next_start_date).Add (parseDuration "-{{additional_look_back}}")) -]]
         [[- else -]]
           [[- formatDate (parseDate .cursor.last_response_date) -]]
