@@ -270,17 +270,9 @@ processors:
         target_field: process.code_signature.team_id
         if: ctx.jamf_protect.telemetry?.event?.btm_launch_item_remove?.app == null
         ignore_missing: true
-    - convert:
-        field: jamf_protect.telemetry.event.btm_launch_item_remove.app.codesigning_flags
-        type: string
-        ignore_missing: true
     - rename:
         field: jamf_protect.telemetry.event.btm_launch_item_remove.app.codesigning_flags
         target_field: process.code_signature.flags
-        ignore_missing: true
-    - convert:
-        field: jamf_protect.telemetry.event.btm_launch_item_remove.instigator.codesigning_flags
-        type: string
         ignore_missing: true
     - rename:
         field: jamf_protect.telemetry.event.btm_launch_item_remove.instigator.codesigning_flags
@@ -348,6 +340,15 @@ processors:
         type: string
         ignore_missing: true
 
+    - rename:
+        field: jamf_protect.telemetry.event.btm_launch_item_remove.app.parent_audit_token.signing_id
+        target_field: process.parent.code_signature.signing_id
+        ignore_missing: true
+    - rename:
+        field: jamf_protect.telemetry.event.btm_launch_item_remove.instigator.parent_audit_token.signing_id
+        target_field: process.parent.code_signature.signing_id
+        ignore_missing: true
+
 ##########################
 ## ECS Responsible Process ##
 ##########################
@@ -406,6 +407,15 @@ processors:
         target_field: process.responsible.real_group.id
         if: ctx.jamf_protect.telemetry?.event?.btm_launch_item_remove?.app == null
         type: string
+        ignore_missing: true
+
+    - rename:
+        field: jamf_protect.telemetry.event.btm_launch_item_remove.app.responsible_audit_token.signing_id
+        target_field: process.responsible.code_signature.signing_id
+        ignore_missing: true
+    - rename:
+        field: jamf_protect.telemetry.event.btm_launch_item_remove.instigator.responsible_audit_token.signing_id
+        target_field: process.responsible.code_signature.signing_id
         ignore_missing: true
 
     - pipeline:

@@ -126,7 +126,7 @@ An example event for `alerts` looks as following:
         "type": "logs"
     },
     "ecs": {
-        "version": "8.11.0"
+        "version": "8.16.0"
     },
     "elastic_agent": {
         "id": "678c464f-aeaf-4ddb-82c3-fea65b2c795e",
@@ -322,7 +322,7 @@ An example event for `telemetry` looks as following:
         "serial_number": "123ABC456DJ"
     },
     "ecs": {
-        "version": "8.16.0"
+        "version": "8.17.0"
     },
     "elastic_agent": {
         "id": "39edd9ac-890a-4c7c-937c-574b89b5ef0c",
@@ -581,10 +581,12 @@ An example event for `telemetry` looks as following:
 | jamf_protect.telemetry.to_username | Username to which an action is directed | keyword |
 | jamf_protect.telemetry.tty | Software terminal device file that the process is associated with | keyword |
 | log.offset | Log offset | long |
-| process.code_signature.flags |  | keyword |
+| process.code_signature.flags |  | long |
 | process.endpoint_security_client |  | boolean |
 | process.hash.cdhash |  | keyword |
+| process.parent.code_signature.flags |  | long |
 | process.platform_binary |  | boolean |
+| process.responsible.code_signature.flags |  | long |
 | process.responsible.entity_id |  | keyword |
 | process.responsible.pid |  | long |
 | process.responsible.real_group.id |  | keyword |
@@ -634,7 +636,7 @@ An example event for `web_threat_events` looks as following:
         "port": 80
     },
     "ecs": {
-        "version": "8.11.0"
+        "version": "8.16.0"
     },
     "elastic_agent": {
         "id": "50314729-e4cd-4b04-8d8f-223ef660a602",
@@ -768,7 +770,7 @@ An example event for `web_traffic_events` looks as following:
         "response_code": "NOERROR"
     },
     "ecs": {
-        "version": "8.11.0"
+        "version": "8.16.0"
     },
     "elastic_agent": {
         "id": "56980767-52b4-4e52-aa29-0af97a410ffd",

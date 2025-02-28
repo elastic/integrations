@@ -3,7 +3,7 @@ description: Pipeline for Jamf Protect Telemetry logs.
 processors:
     - set:
         field: ecs.version
-        value: '8.16.0'
+        value: '8.17.0'
     - json:
         field: message
         target_field: jamf_protect.telemetry
@@ -144,6 +144,12 @@ processors:
         field: jamf_protect.telemetry.host.serial
         target_field: device.serial_number
         ignore_missing: true
+    - append:
+        field: device.id
+        value: '{{{ device.serial_number }}}'
+        if: ctx.device?.serial_number != null
+        allow_duplicates: false
+        ignore_failure: true
     - set:
         field: device.manufacturer
         value: Apple
@@ -334,6 +340,7 @@ processors:
         - jamf_protect.telemetry.time
         - jamf_protect.telemetry.version
         - jamf_protect.telemetry.global_seq_num
+        - jamf_protect.telemetry.timestamp
         - message
         ignore_missing: true
     - script:

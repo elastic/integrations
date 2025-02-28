@@ -253,17 +253,13 @@ processors:
         field: jamf_protect.telemetry.event.btm_launch_item_add.instigator.team_id
         target_field: process.code_signature.team_id
         ignore_missing: true
-    - convert:
-        field: jamf_protect.telemetry.event.btm_launch_item_add.app.codesigning_flags
-        type: string
-        ignore_missing: true
     - rename:
         field: jamf_protect.telemetry.event.btm_launch_item_add.app.codesigning_flags
         target_field: process.code_signature.flags
         ignore_missing: true
-    - convert:
+    - rename:
         field: jamf_protect.telemetry.event.btm_launch_item_add.instigator.codesigning_flags
-        type: string
+        target_field: process.code_signature.flags
         ignore_missing: true
     - rename:
         field: jamf_protect.telemetry.event.btm_launch_item_add.instigator.codesigning_flags
@@ -326,6 +322,15 @@ processors:
         type: string
         ignore_missing: true
 
+    - rename:
+        field: jamf_protect.telemetry.event.btm_launch_item_add.app.parent_audit_token.signing_id
+        target_field: process.parent.code_signature.signing_id
+        ignore_missing: true
+    - rename:
+        field: jamf_protect.telemetry.event.btm_launch_item_add.instigator.parent_audit_token.signing_id
+        target_field: process.parent.code_signature.signing_id
+        ignore_missing: true
+
 ##########################
 ## ECS Responsible Process ##
 ##########################
@@ -379,6 +384,15 @@ processors:
         field: jamf_protect.telemetry.event.btm_launch_item_add.instigator.responsible_audit_token.rgid
         target_field: process.responsible.real_group.id
         type: string
+        ignore_missing: true
+
+    - rename:
+        field: jamf_protect.telemetry.event.btm_launch_item_add.app.responsible_audit_token.signing_id
+        target_field: process.responsible.code_signature.signing_id
+        ignore_missing: true
+    - rename:
+        field: jamf_protect.telemetry.event.btm_launch_item_add.instigator.responsible_audit_token.signing_id
+        target_field: process.responsible.code_signature.signing_id
         ignore_missing: true
 
     - pipeline:

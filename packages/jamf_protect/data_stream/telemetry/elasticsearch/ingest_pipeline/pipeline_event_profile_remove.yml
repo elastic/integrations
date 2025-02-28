@@ -167,10 +167,6 @@ processors:
         field: jamf_protect.telemetry.event.profile_remove.instigator.team_id
         target_field: process.code_signature.team_id
         ignore_missing: true
-    - convert:
-        field: jamf_protect.telemetry.event.profile_remove.instigator.codesigning_flags
-        type: string
-        ignore_missing: true
     - rename:
         field: jamf_protect.telemetry.event.profile_remove.instigator.codesigning_flags
         target_field: process.code_signature.flags
@@ -203,6 +199,10 @@ processors:
         target_field: process.parent.real_group.id
         type: string
         ignore_missing: true
+    - rename:
+        field: jamf_protect.telemetry.event.profile_remove.instigator.parent_audit_token.signing_id
+        target_field: process.parent.code_signature.signing_id
+        ignore_missing: true
 
 ##########################
 ## ECS Responsible Process ##
@@ -230,4 +230,8 @@ processors:
         field: jamf_protect.telemetry.event.profile_remove.instigator.responsible_audit_token.rgid
         target_field: process.responsible.real_group.id
         type: string
+        ignore_missing: true
+    - rename:
+        field: jamf_protect.telemetry.event.profile_remove.instigator.responsible_audit_token.signing_id
+        target_field: process.responsible.code_signature.signing_id
         ignore_missing: true

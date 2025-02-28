@@ -458,33 +458,21 @@ processors:
         target_field: process.code_signature.team_id
         ignore_missing: true
 
-    - convert:
-        field: jamf_protect.telemetry.event.authentication.data.od.instigator.codesigning_flags
-        type: string
-        ignore_missing: true
     - rename:
         field: jamf_protect.telemetry.event.authentication.data.od.instigator.codesigning_flags
         target_field: process.code_signature.flags
-        ignore_missing: true
-    - convert:
-        field: jamf_protect.telemetry.event.authentication.data.token.instigator.codesigning_flags
-        type: string
         ignore_missing: true
     - rename:
         field: jamf_protect.telemetry.event.authentication.data.token.instigator.codesigning_flags
         target_field: process.code_signature.flags
         ignore_missing: true
-    - convert:
-        field: jamf_protect.telemetry.event.authentication.data.touchid.instigator.codesigning_flags
-        type: string
-        ignore_missing: true
     - rename:
         field: jamf_protect.telemetry.event.authentication.data.touchid.instigator.codesigning_flags
         target_field: process.code_signature.flags
         ignore_missing: true
-    - convert:
+    - rename:
         field: jamf_protect.telemetry.event.authentication.data.auto_unlock.instigator.codesigning_flags
-        type: string
+        target_field: process.code_signature.flags
         ignore_missing: true
 
 ##########################
@@ -587,6 +575,23 @@ processors:
         type: string
         ignore_missing: true
 
+    - rename:
+        field: jamf_protect.telemetry.event.authentication.data.od.instigator.parent_audit_token.signing_id
+        target_field: process.parent.code_signature.signing_id
+        ignore_missing: true
+    - rename:
+        field: jamf_protect.telemetry.event.authentication.data.token.instigator.parent_audit_token.signing_id
+        target_field: process.parent.code_signature.signing_id
+        ignore_missing: true
+    - rename:
+        field: jamf_protect.telemetry.event.authentication.data.touchid.instigator.parent_audit_token.signing_id
+        target_field: process.parent.code_signature.signing_id
+        ignore_missing: true
+    - rename:
+        field: jamf_protect.telemetry.event.authentication.data.auto_unlock.instigator.parent_audit_token.signing_id
+        target_field: process.parent.code_signature.signing_id
+        ignore_missing: true
+
 ##########################
 ## ECS Responsible Process ##
 ##########################
@@ -685,6 +690,23 @@ processors:
         field: jamf_protect.telemetry.event.authentication.data.auto_unlock.instigator.responsible_audit_token.rgid
         target_field: process.responsible.real_group.id
         type: string
+        ignore_missing: true
+
+    - rename:
+        field: jamf_protect.telemetry.event.authentication.data.od.instigator.responsible_audit_token.signing_id
+        target_field: process.responsible.code_signature.signing_id
+        ignore_missing: true
+    - rename:
+        field: jamf_protect.telemetry.event.authentication.data.token.instigator.responsible_audit_token.signing_id
+        target_field: process.responsible.code_signature.signing_id
+        ignore_missing: true
+    - rename:
+        field: jamf_protect.telemetry.event.authentication.data.touchid.instigator.responsible_audit_token.signing_id
+        target_field: process.responsible.code_signature.signing_id
+        ignore_missing: true
+    - rename:
+        field: jamf_protect.telemetry.event.authentication.data.auto_unlock.instigator.responsible_audit_token.signing_id
+        target_field: process.responsible.code_signature.signing_id
         ignore_missing: true
 
     - pipeline:
