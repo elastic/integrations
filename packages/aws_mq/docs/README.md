@@ -11,15 +11,16 @@ The Amazon MQ integration allows you to efficiently collect and monitor broker p
 
 ## Compatibility
 
-This integration presently supports Amazon MQ for [Apache ActiveMQ](http://activemq.apache.org/) metrics.
+This integration presently supports Amazon MQ for [Apache ActiveMQ](http://activemq.apache.org/) and [RabbitMQ](https://www.rabbitmq.com/) metrics.
 
 ## Data streams
 
-The Amazon MQ integration collects Apache ActiveMQ metrics. 
+The Amazon MQ integration collects Apache ActiveMQ and RabbitMQ metrics. 
 
 
 Data streams:
  - `activemq_metrics`: Collects broker metrics and destination (queue and topic) metrics.
+ - `rabbitmq_metrics`: Collects broker, queue and node metrics.
 
 
 ## Requirements
@@ -48,9 +49,9 @@ documentation](https://docs.elastic.co/integrations/aws#requirements).
 
 ## Metrics
 
-### ActiveMQ Metrics
+### ActiveMQ metrics
 
-Amazon MQ provides a range of broker and queue metrics that help monitor system performance, resource utilization, and message flow. These metrics can be used for various use cases, including:
+AmazonMQ for ActiveMQ provides a range of broker and queue metrics that help monitor system performance, resource utilization, and message flow. These metrics can be used for various use cases, including:
 
 - Tracking broker resource utilization, such as compute, memory, and storage.
 - Monitoring message throughput and queue performance.
@@ -275,6 +276,166 @@ An example event for `activemq` looks as following:
 | aws.dimensions.NetworkConnector | The name of the network connector. | keyword |  |  |
 | aws.dimensions.Queue | The name of the queue. | keyword |  |  |
 | aws.dimensions.Topic | The name of the topic. | keyword |  |  |
+| cloud.account.id | The cloud account or organization id used to identify different entities in a multi-tenant environment. Examples: AWS account id, Google Cloud ORG Id, or other unique identifier. | keyword |  |  |
+| cloud.region | Region in which this host, resource, or service is located. | keyword |  |  |
+| data_stream.dataset | Data stream dataset. | constant_keyword |  |  |
+| data_stream.namespace | Data stream namespace. | constant_keyword |  |  |
+| data_stream.type | Data stream type. | constant_keyword |  |  |
+| event.module | Name of the module this data is coming from. If your monitoring agent supports the concept of modules or plugins to process events of a given source (e.g. Apache logs), `event.module` should contain the name of this module. | constant_keyword |  |  |
+
+
+
+### RabbitMQ metrics
+
+Amazon MQ for RabbitMQ offers a variety of broker and queue metrics to monitor system performance, resource utilization, and message flow. These metrics are essential for:
+
+- Assessing broker resource usage, including CPU, memory, and storage.
+- Tracking message rates and queue depths to ensure efficient message processing.
+- Analyzing connection counts and consumer activity to optimize messaging workloads.
+
+An example event for `rabbitmq` looks as following:
+
+```json
+{
+    "@timestamp": "2025-02-28T10:05:00.000Z",
+    "agent": {
+        "ephemeral_id": "fc4c4367-978d-456e-8738-d7cae2319a83",
+        "id": "151607dd-a8d5-462b-995f-752c336930d8",
+        "name": "elastic-agent-97629",
+        "type": "metricbeat",
+        "version": "8.16.2"
+    },
+    "aws": {
+        "amazonmq": {
+            "metrics": {
+                "rabbitmq": {
+                    "queue": {
+                        "ConsumerCount": {
+                            "max": 0
+                        },
+                        "MessageCount": {
+                            "max": 0
+                        },
+                        "MessageReadyCount": {
+                            "max": 0
+                        },
+                        "MessageUnacknowledgedCount": {
+                            "max": 0
+                        }
+                    }
+                }
+            }
+        },
+        "cloudwatch": {
+            "namespace": "AWS/AmazonMQ"
+        },
+        "dimensions": {
+            "Broker": "ObsIntegrations-RabbitMQ",
+            "Queue": "obs-infra queue",
+            "VirtualHost": "/"
+        }
+    },
+    "cloud": {
+        "account": {
+            "id": "11111111111",
+            "name": "MonitoringAccount"
+        },
+        "provider": "aws",
+        "region": "ap-south-1"
+    },
+    "data_stream": {
+        "dataset": "aws_mq.rabbitmq_metrics",
+        "namespace": "16654",
+        "type": "metrics"
+    },
+    "ecs": {
+        "version": "8.0.0"
+    },
+    "elastic_agent": {
+        "id": "151607dd-a8d5-462b-995f-752c336930d8",
+        "snapshot": false,
+        "version": "8.16.2"
+    },
+    "event": {
+        "agent_id_status": "verified",
+        "dataset": "aws_mq.rabbitmq_metrics",
+        "duration": 117138104,
+        "ingested": "2025-02-28T10:10:52Z",
+        "module": "aws"
+    },
+    "host": {
+        "architecture": "x86_64",
+        "containerized": true,
+        "hostname": "elastic-agent-97629",
+        "ip": [
+            "192.168.192.2",
+            "192.168.0.4"
+        ],
+        "mac": [
+            "02-42-C0-A8-00-04",
+            "02-42-C0-A8-C0-02"
+        ],
+        "name": "elastic-agent-97629",
+        "os": {
+            "family": "",
+            "kernel": "5.4.0-1106-gcp",
+            "name": "Wolfi",
+            "platform": "wolfi",
+            "type": "linux",
+            "version": "20230201"
+        }
+    },
+    "metricset": {
+        "name": "cloudwatch",
+        "period": 300000
+    },
+    "service": {
+        "type": "aws"
+    }
+}
+```
+**Exported fields**
+
+| Field | Description | Type | Unit | Metric Type |
+|---|---|---|---|---|
+| @timestamp | Event timestamp. | date |  |  |
+| agent.id | Unique identifier of this agent (if one exists). Example: For Beats this would be beat.id. | keyword |  |  |
+| aws.amazonmq.metrics.rabbitmq.broker.AckRate.max | The rate at which messages are being acknowledged by consumers. | long |  | gauge |
+| aws.amazonmq.metrics.rabbitmq.broker.ChannelCount.max | The total number of channels established on the broker. | long |  | gauge |
+| aws.amazonmq.metrics.rabbitmq.broker.ConfirmRate.max | The rate at which the RabbitMQ server is confirming published messages. | long |  | gauge |
+| aws.amazonmq.metrics.rabbitmq.broker.ConnectionCount.max | The total number of connections established on the broker. | long |  | gauge |
+| aws.amazonmq.metrics.rabbitmq.broker.ConsumerCount.max | The total number of consumers connected to the broker. | long |  | gauge |
+| aws.amazonmq.metrics.rabbitmq.broker.ExchangeCount.max | The total number of exchanges configured on the broker. | long |  | gauge |
+| aws.amazonmq.metrics.rabbitmq.broker.MessageCount.max | The total number of messages in the queues. | long |  | gauge |
+| aws.amazonmq.metrics.rabbitmq.broker.MessageReadyCount.max | The total number of ready messages in the queues. | long |  | gauge |
+| aws.amazonmq.metrics.rabbitmq.broker.MessageUnacknowledgedCount.max | The total number of unacknowledged messages in the queues. | long |  | gauge |
+| aws.amazonmq.metrics.rabbitmq.broker.PublishRate.max | The rate at which messages are published to the broker. | long |  | gauge |
+| aws.amazonmq.metrics.rabbitmq.broker.QueueCount.max | The total number of queues configured on the broker. | long |  | gauge |
+| aws.amazonmq.metrics.rabbitmq.broker.RabbitMQDiskFree.max | The total volume of free disk space available in a RabbitMQ broker. For cluster deployments, this value represents the aggregate of all RabbitMQ nodes' corresponding metric values. | long | byte | gauge |
+| aws.amazonmq.metrics.rabbitmq.broker.RabbitMQDiskFreeLimit.max | The disk limit for a RabbitMQ broker. For cluster deployments, this value represents the aggregate of all RabbitMQ nodes' corresponding metric values. | long | byte | gauge |
+| aws.amazonmq.metrics.rabbitmq.broker.RabbitMQFdUsed.max | The number of file descriptors used. For cluster deployments, this value represents the aggregate of all RabbitMQ nodes' corresponding metric values. | long |  | gauge |
+| aws.amazonmq.metrics.rabbitmq.broker.RabbitMQIOReadAverageTime.max | The average time for RabbitMQ to perform one read operation. | long | ms | gauge |
+| aws.amazonmq.metrics.rabbitmq.broker.RabbitMQIOWriteAverageTime.max | The average time for RabbitMQ to perform one write operation. | long | ms | gauge |
+| aws.amazonmq.metrics.rabbitmq.broker.RabbitMQMemLimit.max | The RAM limit for a RabbitMQ broker. For cluster deployments, this value represents the aggregate of all RabbitMQ nodes' corresponding metric values. | long | byte | gauge |
+| aws.amazonmq.metrics.rabbitmq.broker.RabbitMQMemUsed.max | The volume of RAM used by a RabbitMQ broker. For cluster deployments, this value represents the aggregate of all RabbitMQ nodes' corresponding metric values. | long | byte | gauge |
+| aws.amazonmq.metrics.rabbitmq.broker.SystemCpuUtilization.max | The percentage of allocated Amazon EC2 compute units that the broker currently uses. For cluster deployments, this value represents the aggregate of all three RabbitMQ nodes' corresponding metric values. | long | percent | gauge |
+| aws.amazonmq.metrics.rabbitmq.node.RabbitMQDiskFree.max | The total volume of free disk space available in a RabbitMQ node. | long | byte | gauge |
+| aws.amazonmq.metrics.rabbitmq.node.RabbitMQDiskFreeLimit.max | The disk limit for a RabbitMQ node. | long | byte | gauge |
+| aws.amazonmq.metrics.rabbitmq.node.RabbitMQFdUsed.max | Number of file descriptors used. | long | byte | gauge |
+| aws.amazonmq.metrics.rabbitmq.node.RabbitMQIOReadAverageTime.max | The average time for RabbitMQ to perform one read operation. | long | ms | gauge |
+| aws.amazonmq.metrics.rabbitmq.node.RabbitMQIOWriteAverageTime.max | The average time for RabbitMQ to perform one write operation. | long | ms | gauge |
+| aws.amazonmq.metrics.rabbitmq.node.RabbitMQMemLimit.max | The RAM limit for a RabbitMQ node. | long | byte | gauge |
+| aws.amazonmq.metrics.rabbitmq.node.RabbitMQMemUsed.max | The volume of RAM used by a RabbitMQ node. | long | byte | gauge |
+| aws.amazonmq.metrics.rabbitmq.node.SystemCpuUtilization.max | The percentage of allocated Amazon EC2 compute units that the broker currently uses. | long | percent | gauge |
+| aws.amazonmq.metrics.rabbitmq.queue.ConsumerCount.max | The number of consumers subscribed to the queue. | long |  | gauge |
+| aws.amazonmq.metrics.rabbitmq.queue.MessageCount.max | The total number of MessageReadyCount and MessageUnacknowledgedCount, referred to as queue depth. | long |  | gauge |
+| aws.amazonmq.metrics.rabbitmq.queue.MessageReadyCount.max | The number of messages that are currently available to be delivered. | long |  | gauge |
+| aws.amazonmq.metrics.rabbitmq.queue.MessageUnacknowledgedCount.max | The number of messages for which the server is awaiting acknowledgement. | long |  | gauge |
+| aws.cloudwatch.namespace | The namespace specified when query cloudwatch api. | keyword |  |  |
+| aws.dimensions.Broker | The name of the broker. | keyword |  |  |
+| aws.dimensions.Node | The name of the node. | keyword |  |  |
+| aws.dimensions.Queue | The name of the queue. | keyword |  |  |
+| aws.dimensions.VirtualHost | The name of the virtual host. | keyword |  |  |
 | cloud.account.id | The cloud account or organization id used to identify different entities in a multi-tenant environment. Examples: AWS account id, Google Cloud ORG Id, or other unique identifier. | keyword |  |  |
 | cloud.region | Region in which this host, resource, or service is located. | keyword |  |  |
 | data_stream.dataset | Data stream dataset. | constant_keyword |  |  |
