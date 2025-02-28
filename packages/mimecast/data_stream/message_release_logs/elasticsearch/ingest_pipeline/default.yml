@@ -191,6 +191,10 @@ processors:
       field: event.kind
       value: event
   - set:
+      field: event.kind
+      value: alert
+      if: ctx.mimecast?.rejectReason != null && ctx.mimecast.rejectReason != ''
+  - set:
       field: event.reason
       copy_from: mimecast.rejectReason
       ignore_empty_value: true
