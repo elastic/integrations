@@ -6,6 +6,12 @@ This [Okta Entity Analytics](https://www.okta.com/) integration allows users to 
 
 This module has been tested against the Core Okta API version **v1**.
 
+## Upgrading to v2 from v1
+
+In v2 of the integration the user and device data was split into separate data streams. The data ingested into your index will be the same but you may need to update device searches if you were using them.
+
+**NOTE**: When you upgrade from v1 you will need to reconfigure the integration and enable it due to internal changes in the package.
+
 ## Data streams
 
 The Okta Entity Analytics integration collects two types of data: user and device.
