@@ -1,0 +1,133 @@
+format_version: 3.1.3
+name: wmi
+title: "WMI Input Package"
+version: 0.0.1
+source:
+  license: "Elastic-2.0"
+description: "WMI Input Package"
+type: input
+categories:
+  - observability
+conditions:
+  kibana:
+    version: "^8.19.0 || ^9.1.0"
+  elastic:
+    subscription: "basic"
+screenshots:
+  - src: /img/sample-screenshot.png
+    title: Sample screenshot
+    size: 600x600
+    type: image/png
+icons:
+  - src: /img/logo_windows.svg
+    title: Windows logo
+    size: 32x32
+    type: image/svg+xml
+policy_templates:
+  - name: wmi
+    type: metrics
+    title: Collect the Windows metrics via WMI
+    description: Collect the Windows metrics via WMI
+    input: windows/metrics
+    template_path: input.yml.hbs
+    vars:
+      - name: period
+        type: text
+        title: Period
+        default: 60s
+      - name: wmi.namespace
+        type: text
+        title: Namespace
+        multi: false
+        required: true
+        show_user: true
+        default: "root\\cimv2"
+        description: WMI Namespace
+      - name: wmi.queries
+        type: yaml
+        title: WMI Queries
+        multi: false
+        required: true
+        show_user: true
+        default: |
+         # - class: Win32_OperatingSystem
+         #   fields:
+         #   - FreePhysicalMemory
+         #   - FreeSpaceInPagingFiles
+         #   - NumberOfUsers
+         #   where: ""
+      - name: wmi.warning_threshold
+        type: text
+        title: Warning Threshold
+        multi: false
+        required: false
+        show_user: false 
+      - name: wmi.host
+        type: text
+        title: Hostname
+        multi: false
+        required: false
+        show_user: false     
+        description: The host for the remote WMI Connection. Default value is localhost. 
+      - name: wmi.domain
+        type: text
+        title: Domain
+        multi: false
+        required: false
+        show_user: false     
+        description: The domain for the remote WMI Connection. Default value is empty string.  
+      - name: wmi.username
+        type: text
+        title: Username
+        multi: false
+        required: false
+        show_user: false     
+        description: The username for the remote WMI Connection. Default value empty string. 
+      - name: wmi.password
+        type: text
+        title: Password
+        multi: false
+        required: false
+        show_user: false  
+        secret: true   
+        description: The password for the remote WMI Connection. Default value empty string  
+      - name: wmi.include_queries
+        type: bool
+        title: Include Queries
+        multi: false
+        required: false
+        show_user: false     
+        description: If enabled the query gets added to the document.   
+      - name: wmi.include_null
+        type: bool
+        title: Include Null Values
+        multi: false
+        required: false
+        show_user: false     
+        description: If enabled the properties with null values gets added to the  document. 
+      - name: wmi.include_empty_strings
+        type: bool
+        title: Include Empty Strings
+        multi: false
+        required: false
+        show_user: false     
+        description: If enabled the properties having empty strings gets added to the  document. 
+      - name: data_stream.dataset
+        type: text
+        title: 'Datastream Dataset name'
+        description: Name of Datastream dataset
+        multi: false
+        default: wmi
+        required: true
+        show_user: true
+      - name: processors
+        type: yaml
+        title: Processors
+        multi: false
+        required: false
+        show_user: false
+        description: >
+          Processors are used to reduce the number of fields in the exported event or to enhance the event with metadata. This executes in the agent before the events are shipped. See [Processors](https://www.elastic.co/guide/en/fleet/current/elastic-agent-processor-configuration.html) for details.  
+owner:
+  github: elastic/obs-infraobs-integrations
+  type: elastic
