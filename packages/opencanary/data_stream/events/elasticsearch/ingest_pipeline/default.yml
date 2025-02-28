@@ -669,7 +669,8 @@ processors:
       ignore_missing: true
       ignore_failure: true
   - remove:
-      description: Remove opencanary.logdata.PASSWORD field
+      if: 'ctx.tags != null && ctx.tags.contains("redact_passwords")'
+      description: Remove opencanary.logdata.PASSWORD field if password redaction is desired
       tag: remove_opencanary_logdata_PASSWORD
       field: opencanary.logdata.PASSWORD
       ignore_missing: true
