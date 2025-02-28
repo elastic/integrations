@@ -40,12 +40,14 @@ streams:
         show_user: true
         required: true
         secret: true
-      - name: start_date_time
+      - name: page_size
         type: text
-        title: Start Date Time
-        description: The start date and time from which the logs will be collected. The format should be in UTC `YYYY-MM-DDTHH:MM:SSZ`. If not provided, all available logs will be collected.
+        title: Page Size
+        description: The number of records to fetch per request. The default value is `100`.
+        multi: false
         show_user: true
-        required: false
+        required: true
+        default: 100
       - name: token_url
         type: text
         title: Oauth2 Token URL
@@ -53,7 +55,6 @@ streams:
         show_user: true
         required: true
         default: https://login.microsoftonline.com
-        secret: false
       - name: token_scopes
         type: text
         title: Token Scopes
@@ -63,7 +64,12 @@ streams:
         description: Scopes for OAuth2 token.
         required: true
         show_user: false
-        secret: false
+      - name: start_date_time
+        type: text
+        title: Start Date Time
+        description: The start date and time from which the logs will be collected. The format should be in UTC `YYYY-MM-DDTHH:MM:SSZ`. If not provided, all available logs will be collected.
+        show_user: true
+        required: false
       - name: resource_ssl
         type: yaml
         title: Resource SSL Configuration
@@ -159,6 +165,7 @@ streams:
         default:
           - forwarded
           - o365-cel
+          - o365-directory-audit-cel
       - name: preserve_original_event
         required: true
         show_user: true
