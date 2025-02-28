@@ -6,7 +6,7 @@ processors:
       type: string
       ignore_missing: true
   - pipeline:
-      name: '{{ IngestPipeline "standard" }}'
+      name: '{{ IngestPipeline "security_standard" }}'
       if: 'ctx.winlog?.provider_name != null && ["Microsoft-Windows-Eventlog", "Microsoft-Windows-Security-Auditing"].contains(ctx.winlog.provider_name)'
   - gsub:
       field: source.ip
@@ -50,7 +50,7 @@ processors:
       ignore_missing: true
   - set:
       field: ecs.version
-      value: '8.11.0'
+      value: '8.17.0'
   - set:
       field: log.level
       copy_from: winlog.level
