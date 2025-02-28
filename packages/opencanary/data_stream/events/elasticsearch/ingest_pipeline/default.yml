@@ -23,9 +23,16 @@ processors:
   ## Parse JSON message to opencanary ##
   ######################################
   - json:
-      description: Parse JSON from event.original to opencanary
-      tag: json_event_original_opencanary
+      if: ctx.json == null
+      description: "Parse JSON from event.original to json only if we don't already have a JSON object provided by filebeat, or if redaction occurred"
+      tag: json_event_original_to_json
       field: event.original
+      target_field: json
+
+  - rename:
+      description: "Rename json to opencanary"
+      tag: rename_json_to_opencanary
+      field: json
       target_field: opencanary
 
   #############################
