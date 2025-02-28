@@ -10,8 +10,10 @@ processors:
       if: ctx.event?.original == null
       field: message
       target_field: event.original
+
   - remove:
-      description: Remove "message"
+      if: ctx.event?.original != null
+      description: "Remove unnecessary message field if event.original exists"
       tag: remove_message
       field: message
       ignore_missing: true
@@ -36,6 +38,25 @@ processors:
       target_field: '@timestamp'
       formats:
         - yyyy-MM-dd HH:mm:ss.SSSSSS
+      ignore_failure: true
+
+
+  ##########################
+  ## Determine event.kind ##
+  ##########################
+  - set:
+      description: Set event.kind as event by default
+      tag: set_event_kind_event
+      field: event.kind
+      value: event
+      ignore_failure: true
+
+  - set:
+      if: ctx.opencanary?.logtype != null && ctx.opencanary?.logtype >= 2000
+      description: Set event.kind as alert if opencanary.logtype >= 2000
+      tag: set_event_kind
+      field: event.kind
+      value: alert
       ignore_failure: true
 
   #############################
@@ -412,13 +433,7 @@ processors:
       field: event.created
       copy_from: '@timestamp'
       ignore_failure: true
-  - set:
-      description: Set event.kind
-      tag: set_event_kind
-      field: event.kind
-      value:
-        - alert
-      ignore_failure: true
+
   - set:
       description: Set event.provider from log.logger
       tag: set_event_provider
