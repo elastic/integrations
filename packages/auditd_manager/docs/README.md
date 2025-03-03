@@ -151,24 +151,24 @@ An example event for `auditd` looks as following:
 
 ```json
 {
-    "@timestamp": "2022-05-12T13:10:13.230Z",
+    "@timestamp": "2025-01-14T18:00:56.117Z",
     "agent": {
-        "ephemeral_id": "cfe4170e-f9b4-435f-b19c-a0e75b573b3a",
-        "id": "753ce520-4f32-45b1-9212-c4dcc9d575a1",
-        "name": "custom-agent",
+        "ephemeral_id": "df24f825-df17-4f54-b3c4-3048edbdf123",
+        "id": "da084743-3b4d-43eb-a6c9-f26c44204375",
+        "name": "elastic-agent-90019",
         "type": "auditbeat",
-        "version": "8.2.0"
+        "version": "8.16.0"
     },
     "auditd": {
         "data": {
-            "a0": "a",
-            "a1": "c00024e8c0",
-            "a2": "38",
+            "a0": "10",
+            "a1": "c001144140",
+            "a2": "3c",
             "a3": "0",
             "arch": "x86_64",
-            "audit_pid": "22501",
+            "audit_pid": 2532842,
             "auid": "unset",
-            "exit": "56",
+            "exit": "60",
             "old": "0",
             "op": "set",
             "result": "success",
@@ -177,15 +177,16 @@ An example event for `auditd` looks as following:
                 "family": "netlink",
                 "saddr": "100000000000000000000000"
             },
+            "subj_user": "docker-default",
             "syscall": "sendto",
             "tty": "(none)"
         },
         "message_type": "config_change",
         "messages": [
-            "type=CONFIG_CHANGE msg=audit(1652361013.230:94471): op=set audit_pid=22501 old=0 auid=4294967295 ses=4294967295 res=1",
-            "type=SYSCALL msg=audit(1652361013.230:94471): arch=c000003e syscall=44 success=yes exit=56 a0=a a1=c00024e8c0 a2=38 a3=0 items=0 ppid=9509 pid=22501 auid=4294967295 uid=0 gid=0 euid=0 suid=0 fsuid=0 egid=0 sgid=0 fsgid=0 tty=(none) ses=4294967295 comm=\"auditbeat\" exe=\"/usr/share/elastic-agent/data/elastic-agent-b9a28a/install/auditbeat-8.2.0-linux-x86_64/auditbeat\" key=(null)",
-            "type=SOCKADDR msg=audit(1652361013.230:94471): saddr=100000000000000000000000",
-            "type=PROCTITLE msg=audit(1652361013.230:94471): proctitle=2F7573722F73686172652F656C61737469632D6167656E742F646174612F656C61737469632D6167656E742D6239613238612F696E7374616C6C2F6175646974626561742D382E322E302D6C696E75782D7838365F36342F617564697462656174002D63006175646974626561742E656C61737469632D6167656E742E796D6C"
+            "type=CONFIG_CHANGE msg=audit(1736877656.117:1197107): op=set audit_pid=2532842 old=0 auid=4294967295 ses=4294967295 subj=docker-default res=1",
+            "type=SYSCALL msg=audit(1736877656.117:1197107): arch=c000003e syscall=44 success=yes exit=60 a0=10 a1=c001144140 a2=3c a3=0 items=0 ppid=2531521 pid=2532842 auid=4294967295 uid=0 gid=0 euid=0 suid=0 fsuid=0 egid=0 sgid=0 fsgid=0 tty=(none) ses=4294967295 comm=\"agentbeat\" exe=\"/usr/share/elastic-agent/data/elastic-agent-3f07f2/components/agentbeat\" subj=docker-default key=(null)",
+            "type=SOCKADDR msg=audit(1736877656.117:1197107): saddr=100000000000000000000000",
+            "type=PROCTITLE msg=audit(1736877656.117:1197107): proctitle=2F7573722F73686172652F656C61737469632D6167656E742F646174612F656C61737469632D6167656E742D3366303766322F636F6D706F6E656E74732F6167656E746265617400617564697462656174002D450073657475702E696C6D2E656E61626C65643D66616C7365002D450073657475702E74656D706C6174652E65"
         ],
         "result": "success",
         "summary": {
@@ -193,7 +194,7 @@ An example event for `auditd` looks as following:
                 "primary": "unset",
                 "secondary": "root"
             },
-            "how": "/usr/share/elastic-agent/data/elastic-agent-b9a28a/install/auditbeat-8.2.0-linux-x86_64/auditbeat",
+            "how": "/usr/share/elastic-agent/data/elastic-agent-3f07f2/components/agentbeat",
             "object": {
                 "primary": "set",
                 "type": "audit-config"
@@ -215,21 +216,24 @@ An example event for `auditd` looks as following:
                 },
                 "id": "0",
                 "name": "root"
+            },
+            "selinux": {
+                "user": "docker-default"
             }
         }
     },
     "data_stream": {
         "dataset": "auditd_manager.auditd",
-        "namespace": "ep",
+        "namespace": "73800",
         "type": "logs"
     },
     "ecs": {
         "version": "8.11.0"
     },
     "elastic_agent": {
-        "id": "753ce520-4f32-45b1-9212-c4dcc9d575a1",
+        "id": "da084743-3b4d-43eb-a6c9-f26c44204375",
         "snapshot": false,
-        "version": "8.2.0"
+        "version": "8.16.0"
     },
     "event": {
         "action": "changed-audit-configuration",
@@ -240,12 +244,12 @@ An example event for `auditd` looks as following:
             "network"
         ],
         "dataset": "auditd_manager.auditd",
-        "ingested": "2022-05-12T13:10:16Z",
+        "ingested": "2025-01-14T18:00:59Z",
         "kind": "event",
         "module": "auditd",
-        "original": "type=CONFIG_CHANGE msg=audit(1652361013.230:94471): op=set audit_pid=22501 old=0 auid=4294967295 ses=4294967295 res=1\ntype=SYSCALL msg=audit(1652361013.230:94471): arch=c000003e syscall=44 success=yes exit=56 a0=a a1=c00024e8c0 a2=38 a3=0 items=0 ppid=9509 pid=22501 auid=4294967295 uid=0 gid=0 euid=0 suid=0 fsuid=0 egid=0 sgid=0 fsgid=0 tty=(none) ses=4294967295 comm=\"auditbeat\" exe=\"/usr/share/elastic-agent/data/elastic-agent-b9a28a/install/auditbeat-8.2.0-linux-x86_64/auditbeat\" key=(null)\ntype=SOCKADDR msg=audit(1652361013.230:94471): saddr=100000000000000000000000\ntype=PROCTITLE msg=audit(1652361013.230:94471): proctitle=2F7573722F73686172652F656C61737469632D6167656E742F646174612F656C61737469632D6167656E742D6239613238612F696E7374616C6C2F6175646974626561742D382E322E302D6C696E75782D7838365F36342F617564697462656174002D63006175646974626561742E656C61737469632D6167656E742E796D6C",
+        "original": "type=CONFIG_CHANGE msg=audit(1736877656.117:1197107): op=set audit_pid=2532842 old=0 auid=4294967295 ses=4294967295 subj=docker-default res=1\ntype=SYSCALL msg=audit(1736877656.117:1197107): arch=c000003e syscall=44 success=yes exit=60 a0=10 a1=c001144140 a2=3c a3=0 items=0 ppid=2531521 pid=2532842 auid=4294967295 uid=0 gid=0 euid=0 suid=0 fsuid=0 egid=0 sgid=0 fsgid=0 tty=(none) ses=4294967295 comm=\"agentbeat\" exe=\"/usr/share/elastic-agent/data/elastic-agent-3f07f2/components/agentbeat\" subj=docker-default key=(null)\ntype=SOCKADDR msg=audit(1736877656.117:1197107): saddr=100000000000000000000000\ntype=PROCTITLE msg=audit(1736877656.117:1197107): proctitle=2F7573722F73686172652F656C61737469632D6167656E742F646174612F656C61737469632D6167656E742D3366303766322F636F6D706F6E656E74732F6167656E746265617400617564697462656174002D450073657475702E696C6D2E656E61626C65643D66616C7365002D450073657475702E74656D706C6174652E65",
         "outcome": "success",
-        "sequence": 94471,
+        "sequence": 1197107,
         "type": [
             "change",
             "connection",
@@ -253,19 +257,37 @@ An example event for `auditd` looks as following:
         ]
     },
     "host": {
-        "name": "custom-agent"
+        "architecture": "x86_64",
+        "containerized": false,
+        "hostname": "elastic-agent-90019",
+        "ip": [
+            "192.168.176.2",
+            "192.168.144.5"
+        ],
+        "mac": [
+            "02-42-C0-A8-90-05",
+            "02-42-C0-A8-B0-02"
+        ],
+        "name": "elastic-agent-90019",
+        "os": {
+            "kernel": "6.8.0-51-generic",
+            "name": "Wolfi",
+            "platform": "wolfi",
+            "type": "linux",
+            "version": "20230201"
+        }
     },
     "network": {
         "direction": "egress"
     },
     "process": {
-        "executable": "/usr/share/elastic-agent/data/elastic-agent-b9a28a/install/auditbeat-8.2.0-linux-x86_64/auditbeat",
-        "name": "auditbeat",
+        "executable": "/usr/share/elastic-agent/data/elastic-agent-3f07f2/components/agentbeat",
+        "name": "agentbeat",
         "parent": {
-            "pid": 9509
+            "pid": 2531521
         },
-        "pid": 22501,
-        "title": "/usr/share/elastic-agent/data/elastic-agent-b9a28a/install/auditbeat-8.2.0-linux-x86_64/auditbeat -c auditbeat.elastic-agent.yml"
+        "pid": 2532842,
+        "title": "/usr/share/elastic-agent/data/elastic-agent-3f07f2/components/agentbeat auditbeat -E setup.ilm.enabled=false -E setup.template.e"
     },
     "service": {
         "type": "auditd"
@@ -290,8 +312,7 @@ An example event for `auditd` looks as following:
 | Field | Description | Type |
 |---|---|---|
 | @timestamp | Date/time when the event originated. This is the date/time extracted from the event, typically representing when the event was generated by the source. If the event source has no original timestamp, this value is typically populated by the first time the event was received by the pipeline. Required field for all events. | date |
-| auditd.data | Auditd related data | flattened |
-| auditd.data.a0-N | the arguments to a syscall | keyword |
+| auditd.data.a\* | the arguments to a syscall | keyword |
 | auditd.data.acct | a user's account name | keyword |
 | auditd.data.acl | access mode of resource assigned to vm | keyword |
 | auditd.data.action | netfilter packet disposition | keyword |
@@ -482,6 +503,11 @@ An example event for `auditd` looks as following:
 | auditd.data.sport | local port number | long |
 | auditd.data.state | audit daemon configuration resulting state | keyword |
 | auditd.data.subj | lspp subject's context string | keyword |
+| auditd.data.subj_category | The SELinux category associated with the subject. It helps further refine the level of access by classifying subjects into categories for multi-level security (MLS). Categories are often used to label data with additional attributes, like "high" or "low," enhancing granularity. | keyword |
+| auditd.data.subj_domain | The SELinux domain or type assigned to the subject. The domain specifies the type of resource or process the subject is interacting with, helping enforce domain-based access controls, which are crucial in limiting resource access. | keyword |
+| auditd.data.subj_level | The SELinux sensitivity level for the subject. It indicates the security classification level, like `s0` or `s2`, that defines how data or processes are handled based on confidentiality and integrity levels within the system. | keyword |
+| auditd.data.subj_role | The SELinux role associated with the subject. The role determines the capabilities a subject has within a given SELinux policy. Roles are used to define higher-level security attributes in the context of the system's security policies. | keyword |
+| auditd.data.subj_user | The SELinux user identity. This represents the SELinux user role that is assigned to the subject (user or process) performing an action. It's part of the SELinux security context and is used to enforce policies that restrict what actions a subject can perform. | keyword |
 | auditd.data.success | whether the syscall was successful or not | keyword |
 | auditd.data.syscall | syscall number in effect when the event occurred | keyword |
 | auditd.data.table | netfilter table name | keyword |
