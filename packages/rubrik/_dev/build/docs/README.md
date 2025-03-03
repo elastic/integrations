@@ -152,3 +152,27 @@ Please refer to the following [document](https://www.elastic.co/guide/en/ecs/cur
 {{fields "node_statistics"}}
 
 {{event "node_statistics"}}
+
+### Unmanaged Objects
+
+The `unmanaged_objects` dataset provides unmanaged object snapshot and storage metrics.
+
+**ECS Field Reference**
+
+Please refer to the following [document](https://www.elastic.co/guide/en/ecs/current/ecs-field-reference.html) for detailed information on ECS fields.
+
+{{fields "unmanaged_objects"}}
+
+{{event "unmanaged_objects"}}
+
+### SLA Domains
+
+The `sla_domains` dataset captures key metrics and configurations of Service Level Agreement (SLA) policy domains in a Rubrik environment, including details on the number of protected objects, such as virtual machines, databases, filesets, and hosts.
+
+**ECS Field Reference**
+
+Please refer to the following [document](https://www.elastic.co/guide/en/ecs/current/ecs-field-reference.html) for detailed information on ECS fields.
+
+{{fields "sla_domains"}}
+
+{{event "sla_domains"}}
