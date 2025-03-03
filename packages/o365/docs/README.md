@@ -300,7 +300,7 @@ An example event for `audit` looks as following:
 | o365.audit.DatabaseType |  | keyword |
 | o365.audit.DeepLinkUrl |  | keyword |
 | o365.audit.DeliveryAction |  | keyword |
-| o365.audit.Description |  | keyword |
+| o365.audit.Description |  | match_only_text |
 | o365.audit.DetectionMethod |  | keyword |
 | o365.audit.DetectionType |  | keyword |
 | o365.audit.Directionality |  | keyword |
