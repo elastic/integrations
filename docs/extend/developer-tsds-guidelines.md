@@ -44,7 +44,7 @@ To set a field as a dimension simply add `dimension: true` to its mapping:
 ```
 
 ::::{note}
-A field having type [flattened](elasticsearch://docs/reference/elasticsearch/mapping-reference/flattened.md) cannot be selected as a dimension field. If the field that you are choosing as a dimension is too long or is of type flattened, consider hashing the value of this field and using the result as a dimension. [Fingerprint processor](elasticsearch://docs/reference/ingestion-tools/enrich-processor/fingerprint-processor.md) can be used for this purpose.
+A field having type [flattened](elasticsearch://reference/elasticsearch/mapping-reference/flattened.md) cannot be selected as a dimension field. If the field that you are choosing as a dimension is too long or is of type flattened, consider hashing the value of this field and using the result as a dimension. [Fingerprint processor](elasticsearch://reference/ingestion-tools/enrich-processor/fingerprint-processor.md) can be used for this purpose.
 
 You can find an example in [Oracle Integration TSDS Enablement Example](https://github.com/elastic/integrations/blob/8a57d6ba96d391afc33da20c80ec51280d22f009/packages/oracle/data_stream/performance/elasticsearch/ingest_pipeline/default.yml#LL127C4-L131C29)
 
@@ -163,7 +163,7 @@ elasticsearch:
 
 * Use [Lens](docs-content://explore-analyze/visualize/lens.md) as the preferred visualisation type.
 * Always assess the number of unique values the field that is selected to be a dimension would hold, especially if it is a numeric field. A field that holds millions of unique values may not be an ideal candidate for becoming a dimension field.
-* If the dimension field value length is very long (max limit is 1024B), consider transforming the value to hash value representation. [Fingerprint processor](elasticsearch://docs/reference/ingestion-tools/enrich-processor/fingerprint-processor.md) can be used for this purpose.
+* If the dimension field value length is very long (max limit is 1024B), consider transforming the value to hash value representation. [Fingerprint processor](elasticsearch://reference/ingestion-tools/enrich-processor/fingerprint-processor.md) can be used for this purpose.
 * In the field mapping files above each dimension field, add in-line comments stating the reason for selecting the field as a dimension field.
 * As part of TSDS migration testing, you may discover other errors which may be unrelated to TSDS migration. Keep the pull request for TSDS migration free from such changes. This helps in obtaining quick PR approval.
 
