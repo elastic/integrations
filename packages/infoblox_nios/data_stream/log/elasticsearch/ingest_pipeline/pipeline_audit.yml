@@ -27,6 +27,7 @@ processors:
       field: _tmp.timestamp
       target_field: _tmp.timestamp
       if: ctx._tmp?.timestamp != null
+      tag: date_tmp_timestamp
       formats:
         - dd-MMM-yyyy HH:mm:ss.SSS
         - yyyy-MM-dd HH:mm:ss.SSS'Z'
@@ -36,7 +37,11 @@ processors:
             ignore_missing: true
         - append:
             field: error.message
-            value: '{{{_ingest.on_failure_message}}}'
+            value: >-
+              Processor '{{{ _ingest.on_failure_processor_type }}}'
+              {{{#_ingest.on_failure_processor_tag}}}with tag '{{{ _ingest.on_failure_processor_tag }}}'
+              {{{/_ingest.on_failure_processor_tag}}}in pipeline {{{_ingest.pipeline}}}
+              failed with message '{{{ _ingest.on_failure_message }}}'
   - kv:
       field: details
       target_field: audit
@@ -114,7 +119,11 @@ processors:
             ignore_missing: true
         - append:
             field: error.message
-            value: '{{{_ingest.on_failure_message}}}'
+            value: >-
+              Processor '{{{ _ingest.on_failure_processor_type }}}'
+              {{{#_ingest.on_failure_processor_tag}}}with tag '{{{ _ingest.on_failure_processor_tag }}}'
+              {{{/_ingest.on_failure_processor_tag}}}in pipeline {{{_ingest.pipeline}}}
+              failed with message '{{{ _ingest.on_failure_message }}}'
   - append:
       field: related.ip
       value: '{{{infoblox_nios.log.audit.ip}}}'
@@ -143,4 +152,8 @@ on_failure:
       value: pipeline_error
   - append:
       field: error.message
-      value: '{{{ _ingest.on_failure_message }}}'
+      value: >-
+        Processor '{{{ _ingest.on_failure_processor_type }}}'
+        {{{#_ingest.on_failure_processor_tag}}}with tag '{{{ _ingest.on_failure_processor_tag }}}'
+        {{{/_ingest.on_failure_processor_tag}}}in pipeline {{{_ingest.pipeline}}}
+        failed with message '{{{ _ingest.on_failure_message }}}'
