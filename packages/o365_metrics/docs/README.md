@@ -2431,10 +2431,10 @@ Please refer to the following [document](https://www.elastic.co/guide/en/ecs/cur
 | o365.metrics.subscriptions.prepaid_units.locked_out.count | Number of locked-out prepaid units. | long |
 | o365.metrics.subscriptions.prepaid_units.suspended.count | Number of suspended prepaid units. | long |
 | o365.metrics.subscriptions.prepaid_units.warning.count | Number of prepaid units in warning state. | long |
-| o365.metrics.subscriptions.service_plans.applies_to | Type of entity the service plan applies to. | keyword |
-| o365.metrics.subscriptions.service_plans.provisioning_status | Status of the service plan provisioning. | keyword |
-| o365.metrics.subscriptions.service_plans.service_plan_id | Unique identifier for the service plan. | keyword |
-| o365.metrics.subscriptions.service_plans.service_plan_name | Name of the service plan. | keyword |
+| o365.metrics.subscriptions.service_plans.\*.applies_to | Type of entity the service plan applies to. | keyword |
+| o365.metrics.subscriptions.service_plans.\*.provisioning_status | Status of the service plan provisioning. | keyword |
+| o365.metrics.subscriptions.service_plans.\*.service_plan_id | Unique identifier for the service plan. | keyword |
+| o365.metrics.subscriptions.service_plans.\*.service_plan_name | Name of the service plan. | keyword |
 | o365.metrics.subscriptions.sku_id | Unique identifier for the SKU. | keyword |
 | o365.metrics.subscriptions.sku_part_number | SKU part number. | keyword |
 | o365.metrics.subscriptions.subscription_ids | Array of subscription IDs. | keyword |

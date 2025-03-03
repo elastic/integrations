@@ -180,6 +180,30 @@ processors:
          target_field: _ingest._value.service_plan_name
          ignore_missing: true
 
+  - script:
+      description: "Convert service_plans from list to object with numeric keys and keep original service_plan_id"
+      lang: painless
+      source: >
+        if (ctx.o365?.metrics?.subscriptions?.service_plans instanceof List) {
+          def servicePlans = ctx.o365.metrics.subscriptions.service_plans;
+          def servicePlansMap = [:];
+          
+          // Iterate over the list and assign numeric keys
+          int index = 1;
+          for (plan in servicePlans) {
+            servicePlansMap.put(index.toString(), [
+              "service_plan_id": plan.service_plan_id,
+              "applies_to": plan.applies_to,
+              "provisioning_status": plan.provisioning_status,
+              "service_plan_name": plan.service_plan_name
+            ]);
+            index++;
+          }
+  
+          // Replace the service_plans list with the newly created map
+          ctx.o365.metrics.subscriptions.service_plans = servicePlansMap;
+        }
+
   - remove:
       if: ctx.message != null
       field: message
