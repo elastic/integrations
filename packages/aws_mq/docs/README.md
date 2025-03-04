@@ -411,7 +411,7 @@ An example event for `rabbitmq` looks as following:
 | aws.amazonmq.metrics.rabbitmq.broker.MessageUnacknowledgedCount.max | The total number of unacknowledged messages in the queues. | long |  | gauge |
 | aws.amazonmq.metrics.rabbitmq.broker.PublishRate.max | The rate at which messages are published to the broker. | long |  | gauge |
 | aws.amazonmq.metrics.rabbitmq.broker.QueueCount.max | The total number of queues configured on the broker. | long |  | gauge |
-| aws.amazonmq.metrics.rabbitmq.broker.RabbitMQDiskFree.max | The total volume of free disk space available in a RabbitMQ broker. For cluster deployments, this value represents the aggregate of all RabbitMQ nodes' corresponding metric values. | long | byte | gauge |
+| aws.amazonmq.metrics.rabbitmq.broker.RabbitMQDiskFree.min | The total volume of free disk space available in a RabbitMQ broker. For cluster deployments, this value represents the aggregate of all RabbitMQ nodes' corresponding metric values. | long | byte | gauge |
 | aws.amazonmq.metrics.rabbitmq.broker.RabbitMQDiskFreeLimit.max | The disk limit for a RabbitMQ broker. For cluster deployments, this value represents the aggregate of all RabbitMQ nodes' corresponding metric values. | long | byte | gauge |
 | aws.amazonmq.metrics.rabbitmq.broker.RabbitMQFdUsed.max | The number of file descriptors used. For cluster deployments, this value represents the aggregate of all RabbitMQ nodes' corresponding metric values. | long |  | gauge |
 | aws.amazonmq.metrics.rabbitmq.broker.RabbitMQIOReadAverageTime.max | The average time for RabbitMQ to perform one read operation. | long | ms | gauge |
