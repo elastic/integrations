@@ -745,6 +745,8 @@ rules:
         headers:
           Content-Type:
             - "application/json"
+          X-Mc-Threat-Feed-Next-Token:
+            - nextnexttoken
         body: |
           {{ minify_json `
           {
@@ -813,6 +815,43 @@ rules:
                       "target_ref": "malware--2480fbad-81b8-4396-900b-93aa66b2caac"
                   }
               ]
+          }
+          `}}
+  - path: /api/ttp/threat-intel/get-feed
+    methods: ["POST"]
+    request_body: /"feedType":"malware_customer","fileType":"stix","token":"nextnexttoken"/
+    request_headers:
+      authorization: ["Bearer topsecretaccesstokenthatshouldnotbeleakedforabit"]
+    responses:
+      - status_code: 200
+        headers:
+          Content-Type:
+            - "application/json"
+        body: |
+          {{ minify_json `
+          {
+            "meta": {
+                "status": 200
+            },
+            "data": [],
+            "fail": [
+                {
+                    "key": {
+                        "start": "2025-02-01T01:00:00+0000",
+                        "end": "2025-02-01T01:00:01+0000",
+                        "fileType": "stix",
+                        "feedType": "malware_customer",
+                        "compress": false
+                    },
+                    "errors": [
+                        {
+                            "code": "err_threat_intel_feed_no_result_found",
+                            "message": "No results found for threat intel feed.",
+                            "retryable": false
+                        }
+                    ]
+                }
+            ]
           }
           `}}
 
@@ -899,6 +938,8 @@ rules:
         headers:
           Content-Type:
             - "application/json"
+          X-Mc-Threat-Feed-Next-Token:
+            - nextnexttoken
         body: |
           {{ minify_json `
           {
@@ -967,6 +1008,43 @@ rules:
                       "valid_from": "2024-11-18T23:45:59.189Z"
                   }
               ]
+          }
+          `}}
+  - path: /api/ttp/threat-intel/get-feed
+    methods: ["POST"]
+    request_body: /"feedType":"malware_grid","fileType":"stix","token":"nextnexttoken"/
+    request_headers:
+      authorization: ["Bearer topsecretaccesstokenthatshouldnotbeleakedforabit"]
+    responses:
+      - status_code: 200
+        headers:
+          Content-Type:
+            - "application/json"
+        body: |
+          {{ minify_json `
+          {
+            "meta": {
+                "status": 200
+            },
+            "data": [],
+            "fail": [
+                {
+                    "key": {
+                        "start": "2025-02-01T01:00:00+0000",
+                        "end": "2025-02-01T01:00:01+0000",
+                        "fileType": "stix",
+                        "feedType": "malware_customer",
+                        "compress": false
+                    },
+                    "errors": [
+                        {
+                            "code": "err_threat_intel_feed_no_result_found",
+                            "message": "No results found for threat intel feed.",
+                            "retryable": false
+                        }
+                    ]
+                }
+            ]
           }
           `}}
 
