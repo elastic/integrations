@@ -21,14 +21,16 @@ state:
   key: {{key}}
   batch_size: {{batch_size}}
   query: >-
-    query getAssets($first: Int, $after: String) {
-      assets(first: $first, after: $after) {
-        nodes {
-          details
-        }
+    query getSystemLogs($first: Int, $after: String) {
+      systemLog(first: $first, after: $after) {
         pageInfo {
           hasNextPage
           endCursor
+        }
+        nodes {
+          message
+          timeStamp
+          userName
         }
       }
     }
@@ -54,7 +56,7 @@ program: |-
   	}
   ).do_request().as(resp,
   	bytes(resp.Body).decode_json().as(body,
-  		body.data.assets.nodes.as(nodes,
+  		body.data.systemLog.nodes.as(nodes,
   			state.with(
   				{
   					"events": nodes.map(e,
@@ -63,8 +65,8 @@ program: |-
   							?"event.original": state.?preserve_original_event.orValue(false) ? optional.of(e.encode_json()) : optional.none(),
   						}
   					),
-  					"cursor": {"end_cursor": (size(nodes) > 0) ? body.data.assets.pageInfo.endCursor : state.?cursor.end_cursor},
-  					"want_more": body.data.assets.pageInfo.hasNextPage,
+  					"cursor": {"end_cursor": (size(nodes) > 0) ? body.data.systemLog.pageInfo.endCursor : state.?cursor.end_cursor},
+  					"want_more": body.data.systemLog.pageInfo.hasNextPage,
   				}
   			)
   		)
