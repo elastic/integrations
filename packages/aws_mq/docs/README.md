@@ -51,7 +51,7 @@ documentation](https://docs.elastic.co/integrations/aws#requirements).
 
 ### ActiveMQ metrics
 
-AmazonMQ for ActiveMQ provides a range of broker and queue metrics that help monitor system performance, resource utilization, and message flow. These metrics can be used for various use cases, including:
+Amazon MQ for ActiveMQ provides a range of broker and queue metrics that help monitor system performance, resource utilization, and message flow. These metrics can be used for various use cases, including:
 
 - Tracking broker resource utilization, such as compute, memory, and storage.
 - Monitoring message throughput and queue performance.
