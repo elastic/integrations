@@ -106,10 +106,13 @@ program: |
                   ).format(time_layout.RFC3339)
                 ),
               },
-              "last_page": {
-                ?"next": want_more ? body.?meta.pagination.next : optional.none(),
-                ?"data": want_more ? req.?data : optional.none(),
-              },
+              "last_page": want_more ?
+                dyn({
+                  ?"next": body.?meta.pagination.next,
+                  ?"data": req.?data,
+                })
+              :
+                dyn(null), // required to clear the incoming state
               "token": {
                 "access_token": token.access_token,
                 "expires": token.expires,
