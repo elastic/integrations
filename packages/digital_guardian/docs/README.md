@@ -79,17 +79,17 @@ An example event for `arc` looks as following:
 
 ```json
 {
-    "@timestamp": "2023-05-23T06:56:39.000Z",
+    "@timestamp": "2025-02-18T04:00:28.647Z",
     "agent": {
-        "ephemeral_id": "bc19c27a-7a31-4b0c-b04b-b3be2ab95a02",
-        "id": "1edfb948-2ef5-4b96-8747-225d782bb6dd",
-        "name": "docker-fleet-agent",
+        "ephemeral_id": "3d727e8f-6944-41c1-a55a-dd22db00d883",
+        "id": "8ae590fa-6e28-49e6-9e43-f64705ab4e6b",
+        "name": "elastic-agent-15774",
         "type": "filebeat",
         "version": "8.13.0"
     },
     "data_stream": {
         "dataset": "digital_guardian.arc",
-        "namespace": "19912",
+        "namespace": "94938",
         "type": "logs"
     },
     "digital_guardian": {
@@ -99,6 +99,7 @@ An example event for `arc` looks as following:
             "dg_name": "test has attached a Salesforce data to an email",
             "dg_tenant": "279b59f3-02f3-44ea-a7c3-9bac2eb0224d",
             "dg_utype": "Incident",
+            "export_profile": "abc123",
             "inc_assign": "test@dgdemo",
             "inc_creator": "dg",
             "inc_id": "230523-WIQHA",
@@ -111,7 +112,7 @@ An example event for `arc` looks as following:
         "version": "8.11.0"
     },
     "elastic_agent": {
-        "id": "1edfb948-2ef5-4b96-8747-225d782bb6dd",
+        "id": "8ae590fa-6e28-49e6-9e43-f64705ab4e6b",
         "snapshot": false,
         "version": "8.13.0"
     },
@@ -120,9 +121,9 @@ An example event for `arc` looks as following:
         "agent_id_status": "verified",
         "dataset": "digital_guardian.arc",
         "id": "1dc3c1fa-5474-4fc0-a7c3-74ff42d28e5e",
-        "ingested": "2024-07-30T15:23:06Z",
+        "ingested": "2025-02-18T04:00:31Z",
         "kind": "alert",
-        "original": "{\"dg_comment\":\"-\",\"dg_description\":\"This file outlook.exe was going to [demo.digitalg@gmail.com]\",\"dg_guid\":\"1dc3c1fa-5474-4fc0-a7c3-74ff42d28e5e\",\"dg_name\":\"test has attached a Salesforce data to an email\",\"dg_tenant\":\"279b59f3-02f3-44ea-a7c3-9bac2eb0224d\",\"dg_utype\":\"Incident\",\"inc_assign\":\"test@dgdemo\",\"inc_creator\":\"dg\",\"inc_id\":\"230523-WIQHA\",\"inc_mtime\":\"2023-05-23 06:56:39\",\"inc_sev\":\"Critical\",\"inc_state\":\"Created\"}",
+        "original": "{\"dg_comment\":\"-\",\"dg_description\":\"This file outlook.exe was going to [demo.digitalg@gmail.com]\",\"dg_guid\":\"1dc3c1fa-5474-4fc0-a7c3-74ff42d28e5e\",\"dg_name\":\"test has attached a Salesforce data to an email\",\"dg_tenant\":\"279b59f3-02f3-44ea-a7c3-9bac2eb0224d\",\"dg_utype\":\"Incident\",\"export_profile\":\"abc123\",\"inc_assign\":\"test@dgdemo\",\"inc_creator\":\"dg\",\"inc_id\":\"230523-WIQHA\",\"inc_mtime\":\"2023-05-23 06:56:39\",\"inc_sev\":\"Critical\",\"inc_state\":\"Created\"}",
         "severity": 1
     },
     "input": {
@@ -157,10 +158,20 @@ An example event for `arc` looks as following:
 | data_stream.dataset | Data stream dataset. | constant_keyword |
 | data_stream.namespace | Data stream namespace. | constant_keyword |
 | data_stream.type | Data stream type. | constant_keyword |
+| digital_guardian.arc.dg_alert.alert_al | Alert AL | keyword |
+| digital_guardian.arc.dg_alert.alert_at | Alert AT | keyword |
+| digital_guardian.arc.dg_alert.alert_bc | Alert BC | keyword |
 | digital_guardian.arc.dg_alert.alert_did | Alert DID | keyword |
-| digital_guardian.arc.dg_alert.alert_wb | Alert WB | integer |
+| digital_guardian.arc.dg_alert.alert_etl | Alert ETL | date |
+| digital_guardian.arc.dg_alert.alert_etu | Alert ETU | date |
+| digital_guardian.arc.dg_alert.alert_ur | Alert UR | keyword |
+| digital_guardian.arc.dg_alert.alert_wb | Alert WB | keyword |
 | digital_guardian.arc.dg_alert.dg_category_name | Alert Category Name | keyword |
+| digital_guardian.arc.dg_alert.dg_detection_source | Alert Detection Source | keyword |
+| digital_guardian.arc.dg_alert.dg_name | Alert Name | keyword |
+| digital_guardian.arc.dg_alert.dg_policy.dg_category_name | Alert Policy Category Name | keyword |
 | digital_guardian.arc.dg_alert.dg_policy.dg_name | Alert Policy Name | keyword |
+| digital_guardian.arc.dg_alert.dg_rule_action_type | Alert Rule Action Type | keyword |
 | digital_guardian.arc.dg_attachments.dg_file_size | File Size | keyword |
 | digital_guardian.arc.dg_attachments.dg_file_size_bytes | File Size in Bytes | long |
 | digital_guardian.arc.dg_comment | Comment | keyword |
@@ -181,6 +192,7 @@ An example event for `arc` looks as following:
 | digital_guardian.arc.dg_tenant | Tenant ID | keyword |
 | digital_guardian.arc.dg_time | Event Time | date |
 | digital_guardian.arc.dg_utype | Operation Type | keyword |
+| digital_guardian.arc.export_profile | Export Profile GUID for the Event | keyword |
 | digital_guardian.arc.inc_assign | Incident Assignee | keyword |
 | digital_guardian.arc.inc_creator | Incident Creator | keyword |
 | digital_guardian.arc.inc_id | Incident ID | keyword |
