@@ -33,7 +33,7 @@ processors:
       tag: "kv_syslog_structured_semicolon_colon"
       field: syslog5424_sd
       field_split: '(?<="); '
-      value_split: '(?i)(?<=[a-z]):{1,2}(?=")'
+      value_split: '(?i)(?<=[0-9a-z]):{1,2}(?=")'
       trim_key: " "
       trim_value: " "
       prefix: checkpoint.
@@ -63,7 +63,7 @@ processors:
       if: ctx.checkpoint == null
       field: syslog5424_sd
       field_split: '(?<=") '
-      value_split: '(?i)(?<=[a-z])=(?=")'
+      value_split: '(?i)(?<=[0-9a-z])=(?=")'
       trim_key: " "
       trim_value: " "
       prefix: checkpoint.
@@ -236,6 +236,11 @@ processors:
       copy_from: checkpoint.src_user_name
       if: ctx.source?.user?.name == null
       ignore_empty_value: true
+  - convert:
+      field: checkpoint.failed_login_factor_num
+      type: long
+      ignore_missing: true
+      ignore_failure: true
   - convert:
       field: checkpoint.client_outbound_packets
       target_field: source.packets
@@ -434,6 +439,17 @@ processors:
       field: checkpoint.action
       value: logon-failed
       if: ctx.checkpoint?.action == 'Failed Log In'
+  - set:
+      field: host.hostname
+      tag: set_host_name
+      copy_from: checkpoint.hostname
+      ignore_empty_value: true
+  - convert:
+      type: ip
+      tag: convert_host_ip
+      field: checkpoint.host_ip
+      target_field: host.ip
+      if: ctx.checkpoint?.host_ip != null
   - append:
       field: related.ip
       value: "{{{source.ip}}}"
@@ -1087,6 +1103,12 @@ processors:
       formats: ["ISO8601", "UNIX"]
       target_field: event.start
       if: "ctx.checkpoint?.creation_time != null"
+  - date:
+      tag: convert_login_timestamp
+      field: checkpoint.login_timestamp
+      formats: ["ISO8601", "UNIX"]
+      target_field: checkpoint.login_timestamp
+      if: "ctx.checkpoint?.login_timestamp != null"
   - rename:
       field: checkpoint.duration
       target_field: event.duration
@@ -1094,6 +1116,11 @@ processors:
   - convert:
       tag: convert_event_duration_to_integer
       field: event.duration
+      type: long
+      ignore_missing: true
+  - convert:
+      tag: convert_session_timeout_to_integer
+      field: checkpoint.session_timeout
       type: long
       ignore_missing: true
   - script:
