@@ -419,7 +419,7 @@ An example event for `rabbitmq` looks as following:
 | aws.amazonmq.metrics.rabbitmq.broker.RabbitMQMemLimit.max | The RAM limit for a RabbitMQ broker. For cluster deployments, this value represents the aggregate of all RabbitMQ nodes' corresponding metric values. | long | byte | gauge |
 | aws.amazonmq.metrics.rabbitmq.broker.RabbitMQMemUsed.max | The volume of RAM used by a RabbitMQ broker. For cluster deployments, this value represents the aggregate of all RabbitMQ nodes' corresponding metric values. | long | byte | gauge |
 | aws.amazonmq.metrics.rabbitmq.broker.SystemCpuUtilization.max | The percentage of allocated Amazon EC2 compute units that the broker currently uses. For cluster deployments, this value represents the aggregate of all three RabbitMQ nodes' corresponding metric values. | long | percent | gauge |
-| aws.amazonmq.metrics.rabbitmq.node.RabbitMQDiskFree.max | The total volume of free disk space available in a RabbitMQ node. | long | byte | gauge |
+| aws.amazonmq.metrics.rabbitmq.node.RabbitMQDiskFree.min | The total volume of free disk space available in a RabbitMQ node. | long | byte | gauge |
 | aws.amazonmq.metrics.rabbitmq.node.RabbitMQDiskFreeLimit.max | The disk limit for a RabbitMQ node. | long | byte | gauge |
 | aws.amazonmq.metrics.rabbitmq.node.RabbitMQFdUsed.max | Number of file descriptors used. | long | byte | gauge |
 | aws.amazonmq.metrics.rabbitmq.node.RabbitMQIOReadAverageTime.max | The average time for RabbitMQ to perform one read operation. | long | ms | gauge |
