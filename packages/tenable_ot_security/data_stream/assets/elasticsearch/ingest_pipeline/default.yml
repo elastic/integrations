@@ -5,6 +5,16 @@ processors:
       field: message
       target_field: tenable_ot_security.assets
 
+  - fingerprint:
+      fields:
+        - tenable_ot_security.assets
+      tag: fingerprinting
+      target_field: "_id"
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'    
+
 ##################### Scripts for processing input #####################
   - script:
       description: Drops null/empty values recursively.
@@ -65,9 +75,6 @@ processors:
   - append:
       field: event.category
       value: iam
-  - set:
-      field: event.dataset
-      value: tenable_ot_security.assets
 
   - set:
       field: event.module
@@ -82,9 +89,54 @@ processors:
       value: tenable_ot_security.assets
 
   - set:
-      field: event.module
-      value: tenable_ot_security
+     field: "@timestamp"
+     copy_from: tenable_ot_security.assets.first_seen
+     ignore_empty_value: true
 
+  - set:
+      field: event.id
+      copy_from: tenable_ot_security.assets.id
+      ignore_empty_value: true
+
+  - append:
+      field: related.hosts
+      value: '{{{tenable_ot_security.assets.ips.nodes}}}'
+      allow_duplicates: false
+  - append:
+      field: related.hosts
+      value: '{{{tenable_ot_security.assets.direct_macs.nodes}}}'    
+      allow_duplicates: false 
+  - gsub:
+      field: "related.hosts"
+      pattern: "^\\{\\d+=(.+)\\}$"
+      replacement: "$1"    
+  
+# #################### Override host.ip ######################
+  - convert:
+      field: tenable_ot_security.assets.direct_ips.nodes[0]
+      type: ip
+      if: ctx.tenable_ot_security.assets?.direct_ips?.nodes[0] != null && ctx.tenable_ot_security.assets.direct_ips.nodes[0] != ''
+      ignore_missing: true
+  
+  - gsub:
+      field: "tenable_ot_security.assets.direct_ips.nodes"
+      pattern: "^\\{\\d+=(.+)\\}$"
+      replacement: "$1"  
+
+  - append:
+      field: host.ip
+      value: "{{{tenable_ot_security.assets.direct_ips.nodes}}}"    
+      allow_duplicates: false 
+      if: ctx.tenable_ot_security.assets?.direct_ips?.nodes != null && ctx.tenable_ot_security.assets.direct_ips.nodes != ''
+  - gsub:
+      field: "host.ip"
+      pattern: "^\\{\\d+=(.+)\\}$"
+      replacement: "$1"  
+  - geoip:
+      field: host.ip
+      target_field: host.geo
+      ignore_missing: true
+      ignore_failure: true      
  ################### Error Log fields ###################
 on_failure:
   - append:

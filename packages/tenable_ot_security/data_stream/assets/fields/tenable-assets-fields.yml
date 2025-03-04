@@ -1,5 +1,5 @@
-- name: tenable_ot_security_cloud
-  title: 'Tenable OT Security Cloud'
+- name: tenable_ot_security
+  title: 'Tenable OT Security'
   type: group
   fields:
     - name: assets
@@ -24,18 +24,50 @@
         - name: last_snapshot
           type: keyword
           description: The ISO timestamp of the last snapshot of the asset.
-        - name: macs
+        - name: macs.nodes
           type: keyword
           description: A list of MAC addresses associated with the asset.
         - name: ips
-          type: keyword
+          type: group
           description: A list of IP addresses associated with the asset.
-        - name: segments
-          type: keyword
+          fields:
+            - name: nodes
+              type: keyword
+              description: The UUID of the IP address.
+        - name: segments.nodes
+          type: group
           description: A list of network segments the asset belongs to.
-        - name: segments_ids
-          type: keyword
-          description: A list of segment UUIDs for the asset.
+          fields:
+            - name: id
+              type: keyword
+              description: The UUID of the segment.
+            - name: name
+              type: keyword
+              description: The name of the segment.
+            - name: type
+              type: keyword
+              description: The type of the segment.
+            - name: archived
+              type: boolean
+              description: Whether the segment is archived.
+            - name: system
+              type: boolean
+              description: Whether the segment is system-defined.
+            - name: key
+              type: keyword
+              description: The key associated with the segment.
+            - name: last_modified_date
+              type: date
+              description: The last modification date of the segment.
+            - name: last_modified_by
+              type: keyword
+              description: The user who last modified the segment.
+            - name: policies.nodes
+              type: keyword
+              description: A list of policies associated with the segment.
+            - name: queries.nodes
+              type: keyword
+              description: A list of queries associated with the segment.
         - name: type
           type: keyword
           description: The type of asset.
@@ -54,11 +86,8 @@
         - name: run_status_time
           type: date
           description: The timestamp when the run status was last updated.
-        - name: raw_family
+        - name: risk.total_risk
           type: keyword
-          description: The raw family classification of the asset.
-        - name: risk
-          type: float
           description: The risk score of the asset.
         - name: criticality
           type: keyword
@@ -69,101 +98,17 @@
         - name: last_update
           type: date
           description: The last update timestamp for the asset.
-        - name: classification_incidents
-          type: keyword
-          description: A list of classification incidents related to the asset.
-        - name: names
-          type: group
-          description: A list of names associated with the asset.
-          fields:
-            - name: names.id
-              type: keyword
-              description: The UUID of the asset name entry.
-            - name: names.source
-              type: keyword
-              description: The source of the name.
-            - name: names.value
-              type: keyword
-              description: The name value.
-        - name: custom_fields
-          type: keyword
-          description: A list of custom fields associated with the asset.
-        - name: direct_ip
-          type: keyword
-          description: The direct IP address of the asset.
         - name: direct_ips
-          type: keyword
-          description: A list of direct IP addresses associated with the asset.
-        - name: direct_mac
-          type: keyword
-          description: The direct MAC address of the asset.
-        - name: direct_macs
-          type: keyword
-          description: A list of direct MAC addresses associated with the asset.
-        - name: additional_ip
-          type: keyword
-          description: Additional IP address of the asset.
-        - name: additional_ips
-          type: keyword
-          description: A list of additional IP addresses associated with the asset.
-        - name: additional_mac
-          type: keyword
-          description: Additional MAC address of the asset.
-        - name: additional_macs
-          type: keyword
-          description: A list of additional MAC addresses associated with the asset.
-        - name: state_update_time
-          type: date
-          description: The timestamp when the state was last updated.
-        - name: extended_segments
           type: group
-          description: Extended segments associated with the asset.
+          description: A list of direct IP addresses associated with the asset.
           fields:
-            - name: extended_segments.id
+            - name: nodes
               type: keyword
-              description: The UUID of the extended segment.
-            - name: extended_segments.name
+              description: The UUID of the IP address.
+        - name: direct_macs
+          type: group
+          description: A list of direct MAC addresses associated with the asset.
+          fields:
+            - name: nodes
               type: keyword
-              description: The name of the extended segment.
-            - name: extended_segments.archived
-              type: boolean
-              description: Whether the segment is archived.
-            - name: extended_segments.system
-              type: boolean
-              description: Whether the segment is a system segment.
-            - name: extended_segments.key
-              type: keyword
-              description: The key associated with the extended segment.
-            - name: extended_segments.last_modified_date
-              type: date
-              description: The last modification date of the extended segment.
-            - name: extended_segments.last_modified_by
-              type: keyword
-              description: The user who last modified the extended segment.
-            - name: extended_segments.type
-              type: keyword
-              description: The type of the extended segment.
-            - name: extended_segments.old_type
-              type: keyword
-              description: The previous type of the extended segment.
-            - name: extended_segments.system_name
-              type: keyword
-              description: The system-defined name of the extended segment.
-            - name: extended_segments.vlan
-              type: keyword
-              description: The VLAN associated with the extended segment.
-            - name: extended_segments.description
-              type: keyword
-              description: The description of the extended segment.
-            - name: extended_segments.is_predefined_name
-              type: boolean
-              description: Whether the name is predefined.
-            - name: extended_segments.subnet
-              type: keyword
-              description: The subnet associated with the extended segment.
-            - name: extended_segments.asset_type
-              type: keyword
-              description: The asset type in the extended segment.
-        - name: state
-          type: keyword
-          description: The current state of the asset.
+              description: The UUID of the MAC address.
