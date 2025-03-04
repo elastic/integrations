@@ -625,7 +625,6 @@ An example event for `organization` looks as following:
     },
     "mongodb_atlas": {
         "organization": {
-            "access_list_entry": "sample.user@example.com",
             "additional_info": {
                 "_t": "RESOURCE_AUDIT",
                 "cid": "663087fcc4818d301a53af06",
