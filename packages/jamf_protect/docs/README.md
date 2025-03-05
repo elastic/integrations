@@ -126,7 +126,7 @@ An example event for `alerts` looks as following:
         "type": "logs"
     },
     "ecs": {
-        "version": "8.16.0"
+        "version": "8.17.0"
     },
     "elastic_agent": {
         "id": "678c464f-aeaf-4ddb-82c3-fea65b2c795e",
@@ -636,7 +636,7 @@ An example event for `web_threat_events` looks as following:
         "port": 80
     },
     "ecs": {
-        "version": "8.16.0"
+        "version": "8.17.0"
     },
     "elastic_agent": {
         "id": "50314729-e4cd-4b04-8d8f-223ef660a602",
@@ -770,7 +770,7 @@ An example event for `web_traffic_events` looks as following:
         "response_code": "NOERROR"
     },
     "ecs": {
-        "version": "8.16.0"
+        "version": "8.17.0"
     },
     "elastic_agent": {
         "id": "56980767-52b4-4e52-aa29-0af97a410ffd",
