@@ -9,7 +9,7 @@ processors:
   - json:
       field: event.original
       tag: json_decoding
-      target_field: o365.directory_audit
+      target_field: json
       if: ctx.event?.original != null
       on_failure:
         - append:
@@ -27,18 +27,56 @@ processors:
   - append:
       field: event.category
       value: web
+  - set:
+      field: event.ingested
+      value: "{{_ingest.timestamp}}"
   - fingerprint:
       fields:
-        - directory_audit.id
-      target_field: "_id"
+        - json.id
+      target_field: _id
       ignore_missing: true
-  # General Schema
   - date:
-      field: o365audit.CreationTime
+      field: json.activityDateTime
+      target_field: o365.directory_audit.activityDateTime
       formats:
         - ISO8601
-      if: ctx.o365audit?.CreationTime != null
+      if: ctx.json?.activityDateTime != null
+  - convert:
+      field: json.initiated_by.user.ip_address
+      tag: ip_conversion
+      type: ip
+      if: ctx.json?.initiated_by?.user?.ip_address != null
+      ignore_missing: true
+      on_failure:
+        - remove:
+            field: json.initiated_by.user.ip_address
+            ignore_missing: true
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - rename:
+      field: json.initiated_by
+      target_field: o365.directory_audit.initiated_by
+      ignore_missing: true
 
+  - script:
+      lang: painless
+      description: Drops null/empty values recursively.
+      tag: painless_remove_null
+      source: |-
+        boolean drop(Object object) {
+          if (object == null || object == '') {
+            return true;
+          } else if (object instanceof Map) {
+            ((Map) object).values().removeIf(v -> drop(v));
+            return (((Map) object).size() == 0);
+          } else if (object instanceof List) {
+            ((List) object).removeIf(v -> drop(v));
+            return (((List) object).length == 0);
+          }
+          return false;
+        }
+        drop(ctx);
 on_failure:
   - set:
       field: event.kind
