@@ -89,6 +89,31 @@ processors:
     field: host.mac
     value: '{{{jamf_pro.inventory.hardware.mac_address}}}'
     ignore_failure: true
+- gsub:
+    field: host.mac
+    pattern: '[:.]'
+    replacement: '-'
+    tag: gsub_host_mac
+    ignore_missing: true
+    on_failure:
+      - remove:
+          field: host.mac
+          ignore_missing: true
+      - append:
+          field: error.message
+          value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+- uppercase:
+    field: host.mac
+    tag: uppercase_host_mac
+    ignore_missing: true
+    if: ctx.host?.mac != ''
+    on_failure:
+      - remove:
+          field: host.mac
+          ignore_missing: true
+      - append:
+          field: error.message
+          value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
 - set:
     field: host.geo
     copy_from: jamf_pro.inventory.general.last_ip_address_geo
@@ -98,6 +123,79 @@ processors:
     field: os.name
     copy_from: jamf_pro.inventory.operating_system.name
     ignore_empty_value: true
+- script:
+    tag: script_normalize_operating_system_version
+    lang: painless
+    if: ctx.jamf_pro?.inventory?.operating_system?.version != null && ctx.jamf_pro.inventory.operating_system.version != ''
+    source: |-
+      String normalize(String s) {
+        int n = 0;
+        for (int i = 0; i < s.length(); i++){
+            char c = s.charAt(i);
+            if (c == (char)'.') {
+              n++;
+              continue;
+            }
+            if (c < (char)'0' || (char)'9' < c) {
+              // If we have non-numeric parts, bail.
+              return s;
+            }
+        }
+        if (n >= 2) {
+            return s;
+        }
+        if (n == 1) {
+            return s + ".0";
+        }
+        return s + ".0.0";
+      }
+      String full_name(String s) {
+        if (s.startsWith('15.')) {
+          return 'sequoia';
+        }
+        if (s.startsWith('14.')) {
+          return 'sonoma';
+        }
+        if (s.startsWith('13.')) {
+          return 'ventura';
+        }
+        if (s.startsWith('12.')) {
+          return 'monterey';
+        }
+        if (s.startsWith('11.')) {
+          return 'big sur';
+        }
+        if (s.startsWith('10.15.')) {
+          return 'catalina';
+        }
+        if (s.startsWith('10.14.')) {
+          return 'mojave';
+        }
+        if (s.startsWith('10.13.')) {
+          return 'high sierra';
+        }
+        if (s.startsWith('10.12.')) {
+          return 'sierra';
+        }
+        if (s.startsWith('10.11.')) {
+          return 'el capitan';
+        }
+        if (s.startsWith('10.10.')) {
+          return 'yosemite';
+        }
+        if (s.startsWith('10.9.')) {
+          return 'mavericks';
+        }
+        return '';
+      }
+      ctx.jamf_pro.inventory.operating_system.version = normalize(ctx.jamf_pro.inventory.operating_system.version);
+      String name = full_name(ctx.jamf_pro.inventory.operating_system.version);
+      if (name != '') {
+        if (ctx.os == null) {
+          ctx.os = [:];
+        }
+        ctx.os.full = name;
+      }
 - set:
     field: os.version
     copy_from: jamf_pro.inventory.operating_system.version
@@ -121,6 +219,8 @@ processors:
 - append:
     field: related.user
     value: '{{{user.email}}}'
+    if: ctx.user?.email != null && ctx.user.email != ""
+    allow_duplicates: false
 - set:
     field: related.ip
     copy_from: host.ip
@@ -138,10 +238,12 @@ processors:
     field: event.type
     value: user
     if: ctx.jamf_pro.inventory.user_and_location != null
+    allow_duplicates: false
 - append:
     field: event.type
     value: info
     if: ctx.jamf_pro.inventory.hardware != null
+    allow_duplicates: false
 
 ##################
 # Error handling #
