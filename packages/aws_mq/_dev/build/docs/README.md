@@ -11,15 +11,16 @@ The Amazon MQ integration allows you to efficiently collect and monitor broker p
 
 ## Compatibility
 
-This integration presently supports Amazon MQ for [Apache ActiveMQ](http://activemq.apache.org/) metrics.
+This integration presently supports Amazon MQ for [Apache ActiveMQ](http://activemq.apache.org/) and [RabbitMQ](https://www.rabbitmq.com/) metrics.
 
 ## Data streams
 
-The Amazon MQ integration collects Apache ActiveMQ metrics. 
+The Amazon MQ integration collects Apache ActiveMQ and RabbitMQ metrics. 
 
 
 Data streams:
  - `activemq_metrics`: Collects broker metrics and destination (queue and topic) metrics.
+ - `rabbitmq_metrics`: Collects broker, queue and node metrics.
 
 
 ## Requirements
@@ -48,9 +49,9 @@ documentation](https://docs.elastic.co/integrations/aws#requirements).
 
 ## Metrics
 
-### ActiveMQ Metrics
+### ActiveMQ metrics
 
-Amazon MQ provides a range of broker and queue metrics that help monitor system performance, resource utilization, and message flow. These metrics can be used for various use cases, including:
+Amazon MQ for ActiveMQ provides a range of broker and queue metrics that help monitor system performance, resource utilization, and message flow. These metrics can be used for various use cases, including:
 
 - Tracking broker resource utilization, such as compute, memory, and storage.
 - Monitoring message throughput and queue performance.
@@ -66,3 +67,15 @@ The following metrics are related to [Amazon MQ quotas](https://docs.aws.amazon.
 
 {{event "activemq_metrics"}}
 {{fields "activemq_metrics"}}
+
+
+### RabbitMQ metrics
+
+Amazon MQ for RabbitMQ offers a variety of broker and queue metrics to monitor system performance, resource utilization, and message flow. These metrics are essential for:
+
+- Assessing broker resource usage, including CPU, memory, and storage.
+- Tracking message rates and queue depths to ensure efficient message processing.
+- Analyzing connection counts and consumer activity to optimize messaging workloads.
+
+{{event "rabbitmq_metrics"}}
+{{fields "rabbitmq_metrics"}}
