@@ -26,6 +26,36 @@ Some IOCs may never expire and will continue to stay in the latest destination i
 #### ILM Policy
 To facilitate IOC expiration, source datastream-backed indices `.ds-logs-ti_threatq.threat-*` are allowed to contain duplicates from each polling interval. ILM policy is added to these source indices so it doesn't lead to unbounded growth. This means data in these source indices will be deleted after `5 days` from ingested date. 
 
+## Requirements
+
+### Agentless deployment
+
+Agentless deployments are only supported in Elastic Serverless and Elastic Cloud environments. Agentless deployments provide a means to ingest data while avoiding the orchestration, management, and maintenance needs associated with standard ingest infrastructure. Using an agentless deployment makes manual agent deployment unnecessary, allowing you to focus on your data instead of the agent that collects it.
+
+For more information, refer to [Agentless integrations](https://www.elastic.co/guide/en/serverless/current/security-agentless-integrations.html) and [Agentless integrations FAQ](https://www.elastic.co/guide/en/serverless/current/agentless-integration-troubleshooting.html)
+
+### Agent-based deployment
+
+Elastic Agent must be installed. For more details and installation instructions, please refer to the [Elastic Agent Installation Guide](https://www.elastic.co/guide/en/fleet/current/elastic-agent-installation.html).
+
+#### Installing and managing an Elastic Agent:
+
+There are several options for installing and managing Elastic Agent:
+
+#### Install a Fleet-managed Elastic Agent (recommended):
+
+With this approach, you install Elastic Agent and use Fleet in Kibana to define, configure, and manage your agents in a central location. We recommend using Fleet management because it makes the management and upgrade of your agents considerably easier.
+
+#### Install Elastic Agent in standalone mode (advanced users):
+
+With this approach, you install Elastic Agent and manually configure the agent locally on the system where it’s installed. You are responsible for managing and upgrading the agents. This approach is reserved for advanced users only.
+
+#### Install Elastic Agent in a containerized environment:
+
+You can run Elastic Agent inside a container, either with Fleet Server or standalone. Docker images for all versions of Elastic Agent are available from the Elastic Docker registry, and we provide deployment manifests for running on Kubernetes.
+
+Please note, there are minimum requirements for running Elastic Agent. For more information, refer to the [Elastic Agent Minimum Requirements](https://www.elastic.co/guide/en/fleet/current/elastic-agent-installation.html#elastic-agent-installation-minimum-requirements).
+
 **Exported fields**
 
 | Field | Description | Type |
@@ -48,20 +78,88 @@ To facilitate IOC expiration, source datastream-backed indices `.ds-logs-ti_thre
 | threat.indicator.first_seen | The date and time when intelligence source first reported sighting this indicator. | date |
 | threat.indicator.last_seen | The date and time when intelligence source last reported sighting this indicator. | date |
 | threat.indicator.modified_at | The date and time when intelligence source last modified information for this indicator. | date |
-| threatq.adversaries | Adversaries that are linked to the object | keyword |
-| threatq.attributes | These provide additional context about an object | flattened |
-| threatq.created_at | Object creation time | date |
+| threatq.adversaries.id |  | keyword |
+| threatq.adversaries.name |  | keyword |
+| threatq.attributes.attribute_id |  | keyword |
+| threatq.attributes.created_at |  | date |
+| threatq.attributes.id |  | keyword |
+| threatq.attributes.indicator_id |  | keyword |
+| threatq.attributes.name |  | keyword |
+| threatq.attributes.sources.name |  | keyword |
+| threatq.attributes.touched_at |  | date |
+| threatq.attributes.updated_at |  | date |
+| threatq.attributes.value |  | keyword |
+| threatq.class |  | keyword |
+| threatq.created_at | Object creation time. | date |
+| threatq.description |  | keyword |
 | threatq.expired_at | Expiration time given by the API. Either `expires_at` or `expired_at` are present in the data. | date |
 | threatq.expires_at | Expiration time given by the API. Either `expires_at` or `expired_at` are present in the data. | date |
-| threatq.expires_calculated_at | Expiration calculation time | date |
-| threatq.id | Indicator ID. `id`, `indicator_id` or both could be present in the dataset. | long |
-| threatq.indicator_id | Indicator ID. `id`, `indicator_id` or both could be present in the dataset. | long |
-| threatq.indicator_value | Original indicator value | keyword |
-| threatq.ioc_expiration_reason | Reason why the indicator is expired. Set inside the ingest pipeline. | keyword |
-| threatq.ioc_expired_at | Expiration time calculated by the integration needed for the transform. | date |
-| threatq.published_at | Object publication time | date |
-| threatq.status | Object status within the Threat Library | keyword |
-| threatq.updated_at | Last modification time | date |
+| threatq.expires_calculated_at | Expiration calculation time. | date |
+| threatq.generated_score |  | long |
+| threatq.hash |  | keyword |
+| threatq.id | Indicator ID. `id`, `indicator_id` or both could be present in the dataset. | keyword |
+| threatq.indicator_id | Indicator ID. `id`, `indicator_id` or both could be present in the dataset. | keyword |
+| threatq.indicator_value | Original indicator value. | keyword |
+| threatq.ioc_expiration_reason |  | keyword |
+| threatq.ioc_expired_at | Expiration time given by the API. Either `expires_at` or `expired_at` are present in the data. | date |
+| threatq.ioc_expires_at | Expiration time given by the API. Either `expires_at` or `expired_at` are present in the data. | date |
+| threatq.manual_score |  | long |
+| threatq.published_at | Object publication time. | date |
+| threatq.related_adversary_count |  | long |
+| threatq.related_asset_count |  | long |
+| threatq.related_attachment_count |  | long |
+| threatq.related_attack_pattern_count |  | long |
+| threatq.related_campaign_count |  | long |
+| threatq.related_course_of_action_count |  | long |
+| threatq.related_event_count |  | long |
+| threatq.related_exploit_target_count |  | long |
+| threatq.related_identity_count |  | long |
+| threatq.related_incident_count |  | long |
+| threatq.related_indicator_count |  | long |
+| threatq.related_infrastructure_count |  | long |
+| threatq.related_intrusion_set_count |  | long |
+| threatq.related_investigation_count |  | long |
+| threatq.related_malware_count |  | long |
+| threatq.related_note_count |  | long |
+| threatq.related_report_count |  | long |
+| threatq.related_signature_count |  | long |
+| threatq.related_task_count |  | long |
+| threatq.related_tool_count |  | long |
+| threatq.related_ttp_count |  | long |
+| threatq.related_vulnerability_count |  | long |
+| threatq.score |  | long |
+| threatq.sources.created_at |  | date |
+| threatq.sources.creator_source_id |  | keyword |
+| threatq.sources.creator_source_name |  | keyword |
+| threatq.sources.creator_source_type |  | keyword |
+| threatq.sources.id |  | keyword |
+| threatq.sources.indicator_id |  | keyword |
+| threatq.sources.indicator_status_id |  | keyword |
+| threatq.sources.indicator_type_id |  | keyword |
+| threatq.sources.name |  | keyword |
+| threatq.sources.provider |  | keyword |
+| threatq.sources.published_at |  | date |
+| threatq.sources.reference_id |  | keyword |
+| threatq.sources.source_expire_days |  | keyword |
+| threatq.sources.source_id |  | keyword |
+| threatq.sources.source_score |  | long |
+| threatq.sources.source_type |  | keyword |
+| threatq.sources.tlp_id |  | keyword |
+| threatq.sources.tlp_name |  | keyword |
+| threatq.sources.type |  | keyword |
+| threatq.sources.updated_at |  | date |
+| threatq.status.description |  | keyword |
+| threatq.status.id |  | keyword |
+| threatq.status.name |  | keyword |
+| threatq.status_id |  | keyword |
+| threatq.tags |  | keyword |
+| threatq.touched_at |  | date |
+| threatq.type.class |  | keyword |
+| threatq.type.id |  | keyword |
+| threatq.type.name |  | keyword |
+| threatq.type_id |  | keyword |
+| threatq.updated_at | Last modification time. | date |
+| threatq.uuid |  | keyword |
 
 
 An example event for `threat` looks as following:
@@ -70,33 +168,33 @@ An example event for `threat` looks as following:
 {
     "@timestamp": "2019-11-15T00:00:02.000Z",
     "agent": {
-        "ephemeral_id": "9f1b0b7f-5be0-463d-9551-3d66aab12b6f",
-        "id": "8299ae35-ee0e-4107-9acb-1b6acfdda1fb",
-        "name": "docker-fleet-agent",
+        "ephemeral_id": "039f6224-d8f6-4017-b8ac-e1cf36d772c4",
+        "id": "a5773a65-56b7-47a3-953d-f6af470689a2",
+        "name": "elastic-agent-37379",
         "type": "filebeat",
-        "version": "8.13.0"
+        "version": "8.18.0"
     },
     "data_stream": {
         "dataset": "ti_threatq.threat",
-        "namespace": "94389",
+        "namespace": "96436",
         "type": "logs"
     },
     "ecs": {
-        "version": "8.11.0"
+        "version": "8.17.0"
     },
     "elastic_agent": {
-        "id": "8299ae35-ee0e-4107-9acb-1b6acfdda1fb",
-        "snapshot": false,
-        "version": "8.13.0"
+        "id": "a5773a65-56b7-47a3-953d-f6af470689a2",
+        "snapshot": true,
+        "version": "8.18.0"
     },
     "event": {
         "agent_id_status": "verified",
         "category": [
             "threat"
         ],
-        "created": "2024-08-02T06:46:26.556Z",
+        "created": "2025-03-05T10:57:53.792Z",
         "dataset": "ti_threatq.threat",
-        "ingested": "2024-08-02T06:46:36Z",
+        "ingested": "2025-03-05T10:57:54Z",
         "kind": "enrichment",
         "original": "{\"adversaries\":[],\"attributes\":[{\"attribute_id\":3,\"created_at\":\"2020-09-11 14:35:53\",\"id\":1877,\"indicator_id\":336,\"name\":\"Description\",\"touched_at\":\"2020-10-15 14:36:00\",\"updated_at\":\"2020-10-15 14:36:00\",\"value\":\"Malicious Host\"},{\"attribute_id\":4,\"created_at\":\"2020-09-11 14:35:53\",\"id\":1878,\"indicator_id\":336,\"name\":\"Country\",\"touched_at\":\"2020-10-15 14:36:00\",\"updated_at\":\"2020-10-15 14:36:00\",\"value\":\"MP\"}],\"class\":\"network\",\"created_at\":\"2020-09-11 14:35:51\",\"expires_calculated_at\":\"2020-10-15 14:40:03\",\"hash\":\"1ece659dcec98b1e1141160b55655c96\",\"id\":336,\"published_at\":\"2020-09-11 14:35:51\",\"score\":4,\"sources\":[{\"created_at\":\"2020-09-11 14:35:53\",\"creator_source_id\":12,\"id\":336,\"indicator_id\":336,\"indicator_status_id\":2,\"indicator_type_id\":15,\"name\":\"AlienVault OTX\",\"published_at\":\"2020-09-11 14:35:53\",\"reference_id\":1,\"source_expire_days\":\"30\",\"source_id\":12,\"source_score\":1,\"source_type\":\"connectors\",\"updated_at\":\"2020-10-15 14:36:00\"}],\"status\":{\"description\":\"Poses a threat\",\"id\":2,\"name\":\"Active\"},\"status_id\":2,\"touched_at\":\"2021-06-07 19:47:27\",\"type\":{\"class\":\"network\",\"id\":15,\"name\":\"IP Address\"},\"type_id\":15,\"updated_at\":\"2019-11-15 00:00:02\",\"value\":\"89.160.20.156\"}",
         "type": [
@@ -105,6 +203,14 @@ An example event for `threat` looks as following:
     },
     "input": {
         "type": "httpjson"
+    },
+    "related": {
+        "hash": [
+            "1ece659dcec98b1e1141160b55655c96"
+        ],
+        "ip": [
+            "89.160.20.156"
+        ]
     },
     "tags": [
         "preserve_original_event",
@@ -119,22 +225,65 @@ An example event for `threat` looks as following:
         }
     },
     "threatq": {
-        "attributes": {
-            "country": [
-                "MP"
-            ],
-            "description": [
-                "Malicious Host"
-            ]
-        },
+        "attributes": [
+            {
+                "attribute_id": "3",
+                "created_at": "2020-09-11T14:35:53.000Z",
+                "id": "1877",
+                "indicator_id": "336",
+                "name": "description",
+                "touched_at": "2020-10-15T14:36:00.000Z",
+                "updated_at": "2020-10-15T14:36:00.000Z",
+                "value": "Malicious Host"
+            },
+            {
+                "attribute_id": "4",
+                "created_at": "2020-09-11T14:35:53.000Z",
+                "id": "1878",
+                "indicator_id": "336",
+                "name": "country",
+                "touched_at": "2020-10-15T14:36:00.000Z",
+                "updated_at": "2020-10-15T14:36:00.000Z",
+                "value": "MP"
+            }
+        ],
+        "class": "network",
         "created_at": "2020-09-11T14:35:51.000Z",
         "expires_calculated_at": "2020-10-15T14:40:03.000Z",
-        "id": 336,
+        "hash": "1ece659dcec98b1e1141160b55655c96",
+        "id": "336",
         "indicator_value": "89.160.20.156",
         "ioc_expiration_reason": "Expiration set by Elastic from the integration's parameter `IOC Expiration Duration`",
         "ioc_expired_at": "2019-11-20T00:00:02.000Z",
         "published_at": "2020-09-11T14:35:51.000Z",
-        "status": "Active"
+        "sources": [
+            {
+                "creator_source_id": "12",
+                "id": "336",
+                "indicator_id": "336",
+                "indicator_status_id": "2",
+                "indicator_type_id": "15",
+                "name": "AlienVault OTX",
+                "reference_id": "1",
+                "source_expire_days": "30",
+                "source_id": "12",
+                "source_score": 1,
+                "source_type": "connectors"
+            }
+        ],
+        "status": {
+            "description": "Poses a threat",
+            "id": "2",
+            "name": "Active"
+        },
+        "status_id": "2",
+        "touched_at": "2021-06-07T19:47:27.000Z",
+        "type": {
+            "class": "network",
+            "id": "15",
+            "name": "IP Address"
+        },
+        "type_id": "15"
     }
 }
 ```

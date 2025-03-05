@@ -39,6 +39,11 @@ cursor:
     ignore_empty_value: true
     value: '[[.last_response.body.nextCursorMark]]'
 response.request_body_on_pagination: true
+response.pagination:
+- set:
+    target: url.params.cursorMark
+    value: '[[if not (eq (len .last_response.body.data) 0)]][[.last_response.body.nextCursorMark]][[end]]'
+    fail_on_template_error: true
 
 response.split:
   target: body.data
