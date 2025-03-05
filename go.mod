@@ -231,3 +231,5 @@ require (
 	sigs.k8s.io/structured-merge-diff/v4 v4.4.2 // indirect
 	sigs.k8s.io/yaml v1.4.0 // indirect
 )
+
+replace github.com/elastic/elastic-package => github.com/mrodm/elastic-package v0.53.1-0.20250304170239-aec8c98b75b7
