@@ -97,6 +97,7 @@ An example event for `log` looks as following:
 | cisco.eapol.type | Cisco eapol type | short |
 | cisco.eapol.version | Cisco eapol version | short |
 | cisco.interface.type | Cisco interface type | keyword |
+| cisco.ssid | Cisco SSID | keyword |
 | cisco.wps.channel | Cisco WPS channel | short |
 | cisco.wps.hits | Cisco WPS hits | short |
 | cisco.wps.preced | Cisco WPS precedence | short |
