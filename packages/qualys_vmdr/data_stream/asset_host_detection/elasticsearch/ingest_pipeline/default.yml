@@ -1169,37 +1169,36 @@ processors:
         if (results.startsWith("Package||")) {
           if (ctx.package == null) {
             ctx.package = new HashMap();
-            ctx.qualys_vmdr.asset_host_detection.package_nested = new HashMap();
+            ctx.qualys_vmdr.asset_host_detection.package_nested = new ArrayList();
           }
           if (ctx.package.name == null) {
             ctx.package.name = new ArrayList();
-            ctx.qualys_vmdr.asset_host_detection.package_nested.name = new ArrayList();
           }
           if (ctx.package.version == null) {
             ctx.package.version = new ArrayList();
-            ctx.qualys_vmdr.asset_host_detection.package_nested.version = new ArrayList();
           }
           if (ctx.package.fixed_version == null) {
             ctx.package.fixed_version = new ArrayList();
-            ctx.qualys_vmdr.asset_host_detection.package_nested.fixed_version = new ArrayList();
           }
           def res = results.splitOnToken(";;");
           for (int i=1; i < res.length; i++) {
+            def pkg_nest = [:];
             def pkg = res[i].splitOnToken("||");
             if (pkg.length < 1) {
               continue;
             }
             ctx.package.name.add(pkg[0]);
-            ctx.qualys_vmdr.asset_host_detection.package_nested.name.add(pkg[0]);
+            pkg_nest.name = pkg[0];
             if (pkg.length < 2) {
               continue;
             }
             ctx.package.version.add(pkg[1]);
-            ctx.qualys_vmdr.asset_host_detection.package_nested.version.add(pkg[1]);
+            pkg_nest.version = pkg[1];
             if (pkg.length == 3) {
               ctx.package.fixed_version.add(pkg[2]);
-              ctx.qualys_vmdr.asset_host_detection.package_nested.fixed_version.add(pkg[2]);
+              pkg_nest.fixed_version = pkg[2];
             }
+            ctx.qualys_vmdr.asset_host_detection.package_nested.add(pkg_nest);
           }
         }
       on_failure:
