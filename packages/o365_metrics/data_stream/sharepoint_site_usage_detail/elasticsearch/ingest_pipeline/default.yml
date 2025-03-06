@@ -159,6 +159,18 @@ processors:
       field: o365.metrics.sharepoint.site.usage.detail.is_deleted
       tag: lowercase_o365.metrics.sharepoint.site.usage.detail.is_deleted
       if: ctx.o365.metrics?.sharepoint?.site?.usage?.detail?.is_deleted != null && ctx.o365.metrics?.sharepoint?.site?.usage?.detail?.is_deleted != ''
+  - convert:
+      field: o365.metrics.sharepoint.site.usage.detail.is_deleted
+      tag: convert_o365.metrics.sharepoint.site.usage.detail.is_deleted
+      target_field: o365.metrics.sharepoint.site.usage.detail.is_deleted
+      type: boolean
+      if: ctx.o365.metrics?.sharepoint?.site?.usage?.detail?.is_deleted != null && ctx.o365.metrics?.sharepoint?.site?.usage?.detail?.is_deleted != ''
+      on_failure:
+        - remove:
+            field: o365.metrics.sharepoint.site.usage.detail.is_deleted
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - rename:
       field: o365.metrics.sharepoint.site.usage.detail.lastactivitydate
       target_field: o365.metrics.sharepoint.site.usage.detail.last_activity_date
