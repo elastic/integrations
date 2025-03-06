@@ -14,7 +14,7 @@ The Azure Logs integration v2 preview introduces:
 
 * A new architecture that allows you to collect all logs through a single event hub.
 * Significant efficiency improvements.
-* A new processor (v2) that incorporates the latest Event Hubs SDK.
+* A new event hub processor (v2) that incorporates the latest Event Hubs SDK.
 
 ### Architecture
 
@@ -45,7 +45,7 @@ IMPORTANT: **To use the integration v2 preview, you must turn off all the existi
 
 The integration v2 preview avoids contention and inefficiencies from using multiple consumers per partition with the same event hub, problems that are typical of the v1 architecture. With the v2 preview, you can still assign the agent policy to multiple Elastic Agents to scale out the logs processing.
 
-### Processor v2 ✨
+### Event Hub Processor v2 ✨
 
 The integration v2 preview offers a new processor v2 starting with integration version 1.23.0.
 
@@ -56,7 +56,7 @@ The processor v2 introduces several changes:
 
 The processor v2 is in preview. Processor v1 is still the default and is recommended for typical use cases.
 
-See the "Processor v2 only" section in the integration settings for more details about enabling the processor v2.
+See the "Event Hub Processor v2 only" section in the integration settings for more details about enabling the processor v2.
 
 ## Data streams
 
@@ -503,21 +503,21 @@ Examples:
 
 This setting can also be used to define your own endpoints, like for hybrid cloud models.
 
-### Processor v2 only
+### Event Hub Processor v2 only
 
-The following settings are **processor v2 only** and available in the advanced section of the integration.
+The following settings are **event hub processor v2 only** and available in the advanced section of the integration.
 
 `processor_version` :
 _string_
-(v2 only) The processor version that the integration should use. Possible values are `v1` and `v2` (preview). The processor v2 is in preview. Using the processor v1 is recommended for typical use cases. Default is `v1`.
+(processor v2 only) The processor version that the integration should use. Possible values are `v1` and `v2` (preview). The processor v2 is in preview. Using the processor v1 is recommended for typical use cases. Default is `v1`.
 
 `processor_update_interval` :
 _string_
-(v2 only) How often the processor should attempt to claim partitions. Default is `10s`.
+(processor v2 only) How often the processor should attempt to claim partitions. Default is `10s`.
 
 `processor_start_position` :
 _string_
-(v2 only) Controls from which position in the event hub the processor should start processing messages for all partitions.
+(processor v2 only) Controls from which position in the event hub the processor should start processing messages for all partitions.
 
 Possible values are `earliest` and `latest`.
 
@@ -526,19 +526,19 @@ Possible values are `earliest` and `latest`.
 
 `migrate_checkpoint` :
 _boolean_
-(v2 only) Flag to control whether the processor should perform the checkpoint information migration from v1 to v2 at startup. The checkpoint migration converts the checkpoint information from the v1 format to the v2 format.
+(processor v2 only) Flag to control whether the processor should perform the checkpoint information migration from v1 to v2 at startup. The checkpoint migration converts the checkpoint information from the v1 format to the v2 format.
 
 Default is `false`, which means the processor will not perform the checkpoint migration.
 
 `partition_receive_timeout` :
 _string_
-(v2 only) Maximum time to wait before processing the messages received from the event hub.
+(processor v2 only) Maximum time to wait before processing the messages received from the event hub.
 
 The partition consumer waits up to a "receive count" or a "receive timeout", whichever comes first. Default is `5` seconds.
 
 `partition_receive_count` :
 _string_
-(v2 only) Maximum number of messages from the event hub to wait for before processing them.
+(processor v2 only) Maximum number of messages from the event hub to wait for before processing them.
 
 The partition consumer waits up to a "receive count" or a "receive timeout", whichever comes first. Default is `100` messages.
 
