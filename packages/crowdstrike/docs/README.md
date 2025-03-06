@@ -29,19 +29,19 @@ For Rest API support, this module has been tested against the **CrowdStrike API 
 
 ## Requirements
 
-### Agentless deployment
+### Agentless Enabled Integration
+Agentless integrations allow you to collect data without having to manage Elastic Agent in your cloud. They make manual agent deployment unnecessary, so you can focus on your data instead of the agent that collects it. For more information, refer to [Agentless integrations](https://www.elastic.co/guide/en/serverless/current/security-agentless-integrations.html) and the [Agentless integrations FAQ](https://www.elastic.co/guide/en/serverless/current/agentless-integration-troubleshooting.html).
 
-Agentless deployments are only supported in Elastic Serverless and Elastic Cloud environments. Agentless deployments provide a means to ingest data while avoiding the orchestration, management, and maintenance needs associated with standard ingest infrastructure. Using an agentless deployment makes manual agent deployment unnecessary, allowing you to focus on your data instead of the agent that collects it.
+Agentless deployments are only supported in Elastic Serverless and Elastic Cloud environments.  This functionality is in beta and is subject to change. Beta features are not subject to the support SLA of official GA features.
 
-For more information, refer to [Agentless integrations](https://www.elastic.co/guide/en/serverless/current/security-agentless-integrations.html) and [Agentless integrations FAQ](https://www.elastic.co/guide/en/serverless/current/agentless-integration-troubleshooting.html)
-
-### Agent-based deployment
-
-Elastic Agent must be installed. For more details and installation instructions, please refer to the [Elastic Agent Installation Guide](https://www.elastic.co/guide/en/fleet/current/elastic-agent-installation.html).
+### Agent Based Installation
+- Elastic Agent must be installed
+- You can install only one Elastic Agent per host.
+- Elastic Agent is required to stream data from the GCP Pub/Sub or REST API and ship the data to Elastic, where the events will then be processed via the integration's ingest pipelines.
 
 #### Installing and managing an Elastic Agent:
 
-There are several options for installing and managing Elastic Agent:
+You have a few options for installing and managing an Elastic Agent:
 
 #### Install a Fleet-managed Elastic Agent (recommended):
 
@@ -53,9 +53,9 @@ With this approach, you install Elastic Agent and manually configure the agent l
 
 #### Install Elastic Agent in a containerized environment:
 
-You can run Elastic Agent inside a container, either with Fleet Server or standalone. Docker images for all versions of Elastic Agent are available from the Elastic Docker registry, and we provide deployment manifests for running on Kubernetes.
+You can run Elastic Agent inside a container, either with Fleet Server or standalone. Docker images for all versions of Elastic Agent are available from the Elastic Docker registry and we provide deployment manifests for running on Kubernetes.
 
-Please note, there are minimum requirements for running Elastic Agent. For more information, refer to the [Elastic Agent Minimum Requirements](https://www.elastic.co/guide/en/fleet/current/elastic-agent-installation.html#elastic-agent-installation-minimum-requirements).
+There are some minimum requirements for running Elastic Agent and for more information, refer to the link [here](https://www.elastic.co/guide/en/fleet/current/elastic-agent-installation.html).
 
 ## Setup
 ### To collect data from CrowdStrike REST API, the following parameters from your CrowdStrike instance are required:
@@ -1091,76 +1091,103 @@ An example event for `falcon` looks as following:
 
 ```json
 {
-    "@timestamp": "2023-11-02T13:41:34.000Z",
+    "@timestamp": "2020-02-12T21:29:10.000Z",
     "agent": {
-        "ephemeral_id": "6111644c-9752-4bb5-a89b-93cc562e49a0",
-        "id": "1954b0d3-6297-409f-afb1-17ede120f119",
-        "name": "elastic-agent-22122",
+        "ephemeral_id": "aec327ff-3031-43f6-93d3-23f577c34ee4",
+        "id": "dbb74a36-2cab-4b4b-b76a-e1f289e05297",
+        "name": "elastic-agent-47514",
         "type": "filebeat",
         "version": "8.18.0"
     },
     "crowdstrike": {
         "event": {
-            "AgentIdString": "fffffffff33333",
-            "SessionId": "1111-fffff-4bb4-99c1-74c13cfc3e5a"
+            "AuditKeyValues": [
+                {
+                    "Key": "APIClientID",
+                    "ValueString": "1234567890abcdefghijklmnopqr"
+                },
+                {
+                    "Key": "partition",
+                    "ValueString": "0"
+                },
+                {
+                    "Key": "offset",
+                    "ValueString": "-1"
+                },
+                {
+                    "Key": "appId",
+                    "ValueString": "siem-connector-v2.0.0"
+                },
+                {
+                    "Key": "eventType",
+                    "ValueString": "[UserActivityAuditEvent HashSpreadingEvent RemoteResponseSessionStartEvent RemoteResponseSessionEndEvent DetectionSummaryEvent AuthActivityAuditEvent]"
+                }
+            ],
+            "OperationName": "streamStarted",
+            "Success": true
         },
         "metadata": {
-            "customerIDString": "abcabcabc22221",
-            "eventType": "RemoteResponseSessionStartEvent",
-            "offset": 1,
+            "customerIDString": "8f69fe9e-b995-4204-95ad-44f9bcf75b6b",
+            "eventType": "AuthActivityAuditEvent",
+            "offset": 0,
             "version": "1.0"
         }
     },
     "data_stream": {
         "dataset": "crowdstrike.falcon",
-        "namespace": "86777",
+        "namespace": "66419",
         "type": "logs"
     },
     "ecs": {
         "version": "8.17.0"
     },
     "elastic_agent": {
-        "id": "1954b0d3-6297-409f-afb1-17ede120f119",
+        "id": "dbb74a36-2cab-4b4b-b76a-e1f289e05297",
         "snapshot": true,
         "version": "8.18.0"
     },
     "event": {
         "action": [
-            "remote_response_session_start_event"
+            "streamStarted"
         ],
         "agent_id_status": "verified",
         "category": [
-            "network",
-            "session"
+            "iam"
         ],
-        "created": "2023-11-02T13:41:34.000Z",
+        "created": "2020-02-12T21:29:10.710Z",
         "dataset": "crowdstrike.falcon",
-        "ingested": "2025-03-05T08:10:11Z",
+        "ingested": "2025-03-06T07:38:10Z",
         "kind": "event",
-        "original": "{\"event\":{\"AgentIdString\":\"fffffffff33333\",\"HostnameField\":\"UKCHUDL00206\",\"SessionId\":\"1111-fffff-4bb4-99c1-74c13cfc3e5a\",\"StartTimestamp\":1698932494,\"UserName\":\"admin.rose@example.com\"},\"metadata\":{\"customerIDString\":\"abcabcabc22221\",\"eventCreationTime\":1698932494000,\"eventType\":\"RemoteResponseSessionStartEvent\",\"offset\":1,\"version\":\"1.0\"}}",
-        "start": "2023-11-02T13:41:34.000Z",
-        "type": [
-            "start"
-        ]
-    },
-    "host": {
-        "name": "UKCHUDL00206"
+        "original": "{\n    \"metadata\": {\n        \"customerIDString\": \"8f69fe9e-b995-4204-95ad-44f9bcf75b6b\",\n        \"offset\": 0,\n        \"eventType\": \"AuthActivityAuditEvent\",\n        \"eventCreationTime\": 1581542950710,\n        \"version\": \"1.0\"\n    },\n    \"event\": {\n        \"UserId\": \"api-client-id:1234567890abcdefghijklmnopqrstuvwxyz\",\n        \"UserIp\": \"10.10.0.8\",\n        \"OperationName\": \"streamStarted\",\n        \"ServiceName\": \"Crowdstrike Streaming API\",\n        \"Success\": true,\n        \"UTCTimestamp\": 1581542950,\n        \"AuditKeyValues\": [\n            {\n                \"Key\": \"APIClientID\",\n                \"ValueString\": \"1234567890abcdefghijklmnopqr\"\n            },\n            {\n                \"Key\": \"partition\",\n                \"ValueString\": \"0\"\n            },\n            {\n                \"Key\": \"offset\",\n                \"ValueString\": \"-1\"\n            },\n            {\n                \"Key\": \"appId\",\n                \"ValueString\": \"siem-connector-v2.0.0\"\n            },\n            {\n                \"Key\": \"eventType\",\n                \"ValueString\": \"[UserActivityAuditEvent HashSpreadingEvent RemoteResponseSessionStartEvent RemoteResponseSessionEndEvent DetectionSummaryEvent AuthActivityAuditEvent]\"\n            }\n        ]\n    }\n}",
+        "outcome": "success"
     },
     "input": {
-        "type": "streaming"
+        "type": "log"
     },
-    "message": "Remote response session started.",
+    "log": {
+        "file": {
+            "path": "/tmp/service_logs/falcon-audit-events.log"
+        },
+        "flags": [
+            "multiline"
+        ],
+        "offset": 910
+    },
+    "message": "Crowdstrike Streaming API",
     "observer": {
         "product": "Falcon",
         "vendor": "Crowdstrike"
     },
     "related": {
-        "hosts": [
-            "UKCHUDL00206"
+        "ip": [
+            "10.10.0.8"
         ],
         "user": [
-            "admin.rose@example.com"
+            "api-client-id:1234567890abcdefghijklmnopqrstuvwxyz"
         ]
+    },
+    "source": {
+        "ip": "10.10.0.8"
     },
     "tags": [
         "preserve_original_event",
@@ -1168,8 +1195,7 @@ An example event for `falcon` looks as following:
         "crowdstrike-falcon"
     ],
     "user": {
-        "email": "admin.rose@example.com",
-        "name": "admin.rose@example.com"
+        "name": "api-client-id:1234567890abcdefghijklmnopqrstuvwxyz"
     }
 }
 ```
@@ -1866,9 +1892,9 @@ An example event for `fdr` looks as following:
 {
     "@timestamp": "2020-10-01T09:58:32.519Z",
     "agent": {
-        "ephemeral_id": "db4fdfe5-968f-4c35-a96c-f50307429751",
-        "id": "9c3f6e25-eac8-458a-9666-ff448b4427a2",
-        "name": "elastic-agent-31911",
+        "ephemeral_id": "2bc0c57f-0753-469b-ab9b-eba29ce220cb",
+        "id": "f3446352-ed21-4068-884d-ee794906a542",
+        "name": "elastic-agent-28231",
         "type": "filebeat",
         "version": "8.18.0"
     },
@@ -1947,14 +1973,14 @@ An example event for `fdr` looks as following:
     },
     "data_stream": {
         "dataset": "crowdstrike.fdr",
-        "namespace": "59425",
+        "namespace": "14866",
         "type": "logs"
     },
     "ecs": {
         "version": "8.17.0"
     },
     "elastic_agent": {
-        "id": "9c3f6e25-eac8-458a-9666-ff448b4427a2",
+        "id": "f3446352-ed21-4068-884d-ee794906a542",
         "snapshot": true,
         "version": "8.18.0"
     },
@@ -1967,7 +1993,7 @@ An example event for `fdr` looks as following:
         "created": "2020-10-01T09:58:32.519Z",
         "dataset": "crowdstrike.fdr",
         "id": "ffffffff-1111-11eb-8462-02ade3b2f949",
-        "ingested": "2025-03-05T09:39:53Z",
+        "ingested": "2025-03-06T07:45:11Z",
         "kind": "event",
         "original": "{\"AuthenticationId\":\"3783389\",\"CommandLine\":\"\\\"C:\\\\WINDOWS\\\\system32\\\\backgroundTaskHost.exe\\\" -ServerName:App.AppXnme9zjyebb2xnyygh6q9ev6p5d234br2.mca\",\"ConfigBuild\":\"1007.3.0012309.1\",\"ConfigStateHash\":\"3998263252\",\"EffectiveTransmissionClass\":\"3\",\"Entitlements\":\"15\",\"ImageFileName\":\"\\\\Device\\\\HarddiskVolume3\\\\Windows\\\\System32\\\\backgroundTaskHost.exe\",\"ImageSubsystem\":\"2\",\"IntegrityLevel\":\"4096\",\"MD5HashData\":\"50d5fd1290d94d46acca0585311e74d5\",\"ParentAuthenticationId\":\"3783389\",\"ParentBaseFileName\":\"svchost.exe\",\"ParentProcessId\":\"2439558094566\",\"ProcessCreateFlags\":\"525332\",\"ProcessEndTime\":\"\",\"ProcessParameterFlags\":\"16385\",\"ProcessStartTime\":\"1604855181.648\",\"ProcessSxsFlags\":\"1600\",\"RawProcessId\":\"22272\",\"RpcClientProcessId\":\"2439558094566\",\"SHA1HashData\":\"0000000000000000000000000000000000000000\",\"SHA256HashData\":\"b8e176fe76a1454a00c4af0f8bf8870650d9c33d3e333239a59445c5b35c9a37\",\"SessionId\":\"1\",\"SourceProcessId\":\"2439558094566\",\"SourceThreadId\":\"77538684027214\",\"Tags\":\"41, 12094627905582, 12094627906234\",\"TargetProcessId\":\"2450046082233\",\"TokenType\":\"2\",\"UserSid\":\"S-1-12-1-3697283754-1083485977-2164330645-2516515886\",\"WindowFlags\":\"128\",\"aid\":\"ffffffff655344736aca58d17fb570f0\",\"aip\":\"67.43.156.14\",\"cid\":\"ffffffff30a3407dae27d0503611022d\",\"event_platform\":\"Win\",\"event_simpleName\":\"ProcessRollup2\",\"id\":\"ffffffff-1111-11eb-8462-02ade3b2f949\",\"name\":\"ProcessRollup2V18\",\"timestamp\":\"1601546312519\"}",
         "outcome": "success",
@@ -1990,7 +2016,7 @@ An example event for `fdr` looks as following:
     },
     "log": {
         "file": {
-            "path": "https://elastic-package-crowdstrike-fdr-58989.s3.us-east-1.amazonaws.com/data"
+            "path": "https://elastic-package-crowdstrike-fdr-32493.s3.us-east-1.amazonaws.com/data"
         },
         "offset": 107991
     },
