@@ -1,6 +1,9 @@
 ---
 description: Pipeline for parsing Infoblox NIOS DNS logs.
 processors:
+  - set:
+      field: network.protocol
+      value: dns
   - grok:
       field: message
       patterns:
@@ -25,6 +28,7 @@ processors:
       field: _tmp.timestamp
       target_field: _tmp.timestamp
       if: ctx._tmp?.timestamp != null && ctx.event?.timezone != null
+      tag: date_tmp_timestamp_tz
       timezone: '{{{event.timezone}}}'
       formats:
         - dd-MMM-yyyy HH:mm:ss.SSS
@@ -35,10 +39,14 @@ processors:
             ignore_missing: true
         - append:
             field: error.message
-            value: '{{{_ingest.on_failure_message}}}'
+            value: >-
+              Processor '{{{ _ingest.on_failure_processor_type }}}'
+              {{{#_ingest.on_failure_processor_tag}}}with tag '{{{ _ingest.on_failure_processor_tag }}}'
+              {{{/_ingest.on_failure_processor_tag}}}failed with message '{{{ _ingest.on_failure_message }}}'
   - date:
       field: _tmp.timestamp
       target_field: _tmp.timestamp
+      tag: date_tmp_timestamp_notz
       if: ctx._tmp?.timestamp != null && ctx.event?.timezone == null
       formats:
         - dd-MMM-yyyy HH:mm:ss.SSS
@@ -49,7 +57,10 @@ processors:
             ignore_missing: true
         - append:
             field: error.message
-            value: '{{{_ingest.on_failure_message}}}'
+            value: >-
+              Processor '{{{ _ingest.on_failure_processor_type }}}'
+              {{{#_ingest.on_failure_processor_tag}}}with tag '{{{ _ingest.on_failure_processor_tag }}}'
+              {{{/_ingest.on_failure_processor_tag}}}failed with message '{{{ _ingest.on_failure_message }}}'
   - script:
       lang: painless
       if: ctx.repeat_message != null
@@ -173,7 +184,10 @@ processors:
             ignore_missing: true
         - append:
             field: error.message
-            value: '{{{_ingest.on_failure_message}}}'
+            value: >-
+              Processor '{{{ _ingest.on_failure_processor_type }}}'
+              {{{#_ingest.on_failure_processor_tag}}}with tag '{{{ _ingest.on_failure_processor_tag }}}'
+              {{{/_ingest.on_failure_processor_tag}}}failed with message '{{{ _ingest.on_failure_message }}}'
   - append:
       field: related.ip
       value: '{{{client.ip}}}'
@@ -191,7 +205,10 @@ processors:
             ignore_missing: true
         - append:
             field: error.message
-            value: '{{{_ingest.on_failure_message}}}'
+            value: >-
+              Processor '{{{ _ingest.on_failure_processor_type }}}'
+              {{{#_ingest.on_failure_processor_tag}}}with tag '{{{ _ingest.on_failure_processor_tag }}}'
+              {{{/_ingest.on_failure_processor_tag}}}failed with message '{{{ _ingest.on_failure_message }}}'
   - append:
       field: related.ip
       value: '{{{server.ip}}}'
@@ -260,4 +277,7 @@ on_failure:
       value: pipeline_error
   - append:
       field: error.message
-      value: '{{{ _ingest.on_failure_message }}}'
+      value: >-
+        Processor '{{{ _ingest.on_failure_processor_type }}}'
+        {{{#_ingest.on_failure_processor_tag}}}with tag '{{{ _ingest.on_failure_processor_tag }}}'
+        {{{/_ingest.on_failure_processor_tag}}}failed with message '{{{ _ingest.on_failure_message }}}'

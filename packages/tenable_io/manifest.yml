@@ -1,14 +1,15 @@
-format_version: "3.0.2"
+format_version: "3.2.3"
 name: tenable_io
 title: Tenable Vulnerability Management
-version: "3.5.0"
+version: "3.8.0"
 description: Collect logs from Tenable Vulnerability Management with Elastic Agent.
 type: integration
 categories:
   - security
+  - vulnerability_management
 conditions:
   kibana:
-    version: "^8.13.0"
+    version: "^8.18.0 || ^9.0.0"
 screenshots:
   - src: /img/tenable_io-screenshot.png
     title: Tenable Vulnerability Management dashboard screenshot
@@ -23,6 +24,14 @@ policy_templates:
   - name: tenable_io
     title: Tenable Vulnerability Management
     description: Collect logs from Tenable Vulnerability Management.
+    deployment_modes: 
+      default:
+        enabled: true 
+      agentless:
+        enabled: true
+        organization: security
+        division: engineering
+        team: security-service-integrations
     inputs:
       - type: cel
         title: Collect Tenable Vulnerability Management logs via API
@@ -68,7 +77,7 @@ policy_templates:
           - name: ssl
             type: yaml
             title: SSL Configuration
-            description: i.e. certificate_authorities, supported_protocols, verification_mode etc.
+            description: SSL configuration options. See [documentation](https://www.elastic.co/guide/en/beats/filebeat/current/configuration-ssl.html#ssl-common-config) for details.
             multi: false
             required: false
             show_user: false

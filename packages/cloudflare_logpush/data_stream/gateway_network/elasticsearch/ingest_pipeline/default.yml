@@ -65,6 +65,7 @@ processors:
   - set:
       field: event.action
       copy_from: cloudflare_logpush.gateway_network.action
+      ignore_empty_value: true
   - rename:
       field: json.DestinationIP
       target_field: cloudflare_logpush.gateway_network.destination.ip
@@ -72,6 +73,7 @@ processors:
   - set:
       field: destination.ip
       copy_from: cloudflare_logpush.gateway_network.destination.ip
+      ignore_empty_value: true
 # Geo enrichment (destination IP)
   - geoip:
       field: destination.ip
@@ -99,6 +101,7 @@ processors:
   - set:
       field: destination.port
       copy_from: cloudflare_logpush.gateway_network.destination.port
+      ignore_empty_value: true
   - rename:
       field: json.DeviceID
       target_field: cloudflare_logpush.gateway_network.host.id
@@ -106,6 +109,7 @@ processors:
   - set:
       field: host.id
       copy_from: cloudflare_logpush.gateway_network.host.id
+      ignore_empty_value: true
   - rename:
       field: json.DeviceName
       target_field: cloudflare_logpush.gateway_network.host.name
@@ -113,6 +117,7 @@ processors:
   - set:
       field: host.name
       copy_from: cloudflare_logpush.gateway_network.host.name
+      ignore_empty_value: true
   - rename:
       field: json.SNI
       target_field: cloudflare_logpush.gateway_network.sni
@@ -120,9 +125,11 @@ processors:
   - set:
       field: tls.client.server_name
       copy_from: cloudflare_logpush.gateway_network.sni
+      ignore_empty_value: true
   - set:
       field: destination.domain
       copy_from: tls.client.server_name
+      ignore_empty_value: true
   - rename:
       field: json.SessionID
       target_field: cloudflare_logpush.gateway_network.session_id
@@ -130,6 +137,7 @@ processors:
   - set:
       field: event.id
       copy_from: cloudflare_logpush.gateway_network.session_id
+      ignore_empty_value: true
   - rename:
       field: json.SourceIP
       target_field: cloudflare_logpush.gateway_network.source.ip
@@ -137,6 +145,7 @@ processors:
   - set:
       field: source.ip
       copy_from: cloudflare_logpush.gateway_network.source.ip
+      ignore_empty_value: true
 # Geo enrichment (source IP)
   - geoip:
       field: source.ip
@@ -164,6 +173,7 @@ processors:
   - set:
       field: source.port
       copy_from: cloudflare_logpush.gateway_network.source.port
+      ignore_empty_value: true
   - rename:
       field: json.Transport
       target_field: cloudflare_logpush.gateway_network.transport
@@ -171,6 +181,7 @@ processors:
   - set:
       field: network.transport
       copy_from: cloudflare_logpush.gateway_network.transport
+      ignore_empty_value: true
   - rename:
       field: json.UserID
       target_field: cloudflare_logpush.gateway_network.user.id
@@ -178,6 +189,7 @@ processors:
   - set:
       field: user.id
       copy_from: cloudflare_logpush.gateway_network.user.id
+      ignore_empty_value: true
   - rename:
       field: json.Email
       target_field: cloudflare_logpush.gateway_network.user.email
@@ -185,6 +197,7 @@ processors:
   - set:
       field: user.email
       copy_from: cloudflare_logpush.gateway_network.user.email
+      ignore_empty_value: true
 # Custom fields
   - rename:
       field: json.AccountID

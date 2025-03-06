@@ -94,7 +94,7 @@ An example event for `log` looks as following:
         ]
     },
     "ecs": {
-        "version": "8.11.0"
+        "version": "8.17.0"
     },
     "elastic_agent": {
         "id": "7aaba523-565c-4597-bc42-59135436336b",
@@ -555,6 +555,7 @@ An example event for `log` looks as following:
 | watchguard_firebox.log.updated_role |  | keyword |
 | watchguard_firebox.log.user_auth_protocol |  | keyword |
 | watchguard_firebox.log.user_domain |  | keyword |
+| watchguard_firebox.log.user_email |  | keyword |
 | watchguard_firebox.log.user_name |  | keyword |
 | watchguard_firebox.log.user_response_time |  | date |
 | watchguard_firebox.log.user_type |  | keyword |

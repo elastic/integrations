@@ -7,6 +7,7 @@ package testsreporter
 import (
 	"bytes"
 	_ "embed"
+	"fmt"
 	"strings"
 	"text/template"
 )
@@ -19,50 +20,49 @@ var descriptionTmpl string
 
 const defaultMaxLengthMessages = 1000
 
-type ResultsFormatter struct {
-	result           PackageError
+type resultsFormatter struct {
+	result           failureObserver
 	maxPreviousLinks int
 }
 
-func (r ResultsFormatter) Title() string {
+func (r resultsFormatter) Title() string {
 	return r.result.String()
 }
 
-func (r ResultsFormatter) Owners() []string {
-	return r.result.Teams
+func (r resultsFormatter) Owners() []string {
+	return r.result.Teams()
 }
 
-func (r ResultsFormatter) Summary() string {
+func (r resultsFormatter) Summary() (string, error) {
 	var rendered bytes.Buffer
 	templ := template.Must(template.New("summary").Parse(summaryTmpl))
-	templ.Execute(&rendered, map[string]interface{}{
-		"stackVersion":      r.result.StackVersion,
-		"serverless":        r.result.Serverless,
-		"serverlessProject": r.result.ServerlessProject,
-		"logsDB":            r.result.LogsDB,
-		"packageName":       r.result.PackageName,
-		"testName":          r.result.Name,
-		"dataStream":        r.result.DataStream,
-		"owners":            r.Owners(),
-	})
-
-	return rendered.String()
+	data := r.result.SummaryData()
+	err := templ.Execute(&rendered, data)
+	if err != nil {
+		return "", fmt.Errorf("failed to render summary: %w", err)
+	}
+	return rendered.String(), nil
 }
 
-func (r ResultsFormatter) Description() string {
+func (r resultsFormatter) Description() (string, error) {
 	var rendered bytes.Buffer
 	templ := template.Must(template.New("description").Parse(descriptionTmpl))
-	templ.Execute(&rendered, map[string]interface{}{
-		"summary":          r.Summary(),
-		"failure":          truncateText(r.result.Failure, defaultMaxLengthMessages),
-		"error":            truncateText(r.result.Error, defaultMaxLengthMessages),
-		"firstBuild":       r.result.BuildURL,
-		"closedIssueURL":   r.result.ClosedIssueURL,
-		"previousBuilds":   r.result.PreviousBuilds,
-		"maxPreviousLinks": r.maxPreviousLinks,
-	})
 
-	return rendered.String()
+	summary, err := r.Summary()
+	if err != nil {
+		return "", err
+	}
+
+	data := r.result.DescriptionData()
+	data["summary"] = summary
+	data["maxPreviousLinks"] = r.maxPreviousLinks
+
+	err = templ.Execute(&rendered, data)
+	if err != nil {
+		return "", fmt.Errorf("failed to render description: %w", err)
+	}
+
+	return rendered.String(), nil
 }
 
 func truncateText(message string, maxLength int) string {

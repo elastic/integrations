@@ -24,7 +24,7 @@ This module has been tested against `Tenable Vulnerability Management release` [
 
 ## Requirements
 
-- Elastic Agent must be installed.
+- Elastic Agent must be installed _or_ use [Agentless integration](#agentless-enabled-integration).
 - You can install only one Elastic Agent per host.
 - Elastic Agent is required to stream data through the REST API and ship the data to Elastic, where the events will then be processed via the integration's ingest pipelines.
 
@@ -52,6 +52,12 @@ The minimum **kibana.version** required is **8.12.0**.
   - In this integration, export and plugin endpoints of vulnerability management are used to fetch data.
   - The default value is the recommended value for a batch size by Tenable. Using a smaller batch size can improve performance. A very large value might not work as intended depending on the API and instance limitations.
   - If any long-running export jobs are stuck in the "PROCESSING" state and reach the user-provided timeout, the export job will be terminated, allowing for the initiation of a new export job after the specified interval.
+
+## Agentless Enabled Integration
+
+Agentless integrations allow you to collect data without having to manage Elastic Agent in your cloud. They make manual agent deployment unnecessary, so you can focus on your data instead of the agent that collects it. For more information, refer to [Agentless integrations](https://www.elastic.co/guide/en/serverless/current/security-agentless-integrations.html) and the [Agentless integrations FAQ](https://www.elastic.co/guide/en/serverless/current/agentless-integration-troubleshooting.html).
+
+Agentless deployments are only supported in Elastic Serverless and Elastic Cloud environments.  This functionality is in beta and is subject to change. Beta features are not subject to the support SLA of official GA features.
 
 ## Setup
 
@@ -327,6 +333,7 @@ An example event for `asset` looks as following:
 | tenable_io.asset.operating_systems | The operating systems that scans have associated with the asset record. | keyword |
 | tenable_io.asset.qualys.asset_ids | The Asset ID of the asset in Qualys. | keyword |
 | tenable_io.asset.qualys.host_ids | The Host ID of the asset in Qualys. | keyword |
+| tenable_io.asset.serial_number | The serial number of the Asset. | keyword |
 | tenable_io.asset.servicenow_sysid | The unique record identifier of the asset in ServiceNow. | keyword |
 | tenable_io.asset.sources.first_seen | The ISO timestamp when the source first reported the asset. | date |
 | tenable_io.asset.sources.last_seen | The ISO timestamp when the source last reported the asset. | date |

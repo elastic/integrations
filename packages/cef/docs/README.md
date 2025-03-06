@@ -122,6 +122,15 @@ Check Point CEF extensions are mapped as follows:
 | outzone                    | -                           | observer.egress.zone     | -                              |
 | product                    | -                           | observer.product         | -                              |
 
+## Pre-Processors
+
+There are cases where incoming CEF messages do not follow the CEF specification exactly, and this can cause errors with
+message decoding. To work around this, there is an option for pre-processors, which are run before the CEF message is decoded.
+These can be used modify the message to follow the CEF specification correctly, which will allow proper decoding.
+
+The pre-processors will modify the `message` field before CEF decoding is done on the agent, but the original, non-preprocessed,
+message will still be preserved in the `event.original` field when the agent sends the event.
+
 ## Logs
 
 ### CEF log
@@ -175,7 +184,7 @@ An example event for `log` looks as following:
         "port": 443
     },
     "ecs": {
-        "version": "8.11.0"
+        "version": "8.17.0"
     },
     "elastic_agent": {
         "id": "f1ee4a83-b99b-4611-925d-b83b001f8b86",

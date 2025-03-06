@@ -512,6 +512,12 @@ prepare_stack() {
         args="${args} -U stack.logsdb_enabled=true"
     fi
 
+    if [[ "${STACK_VERSION}" =~ ^7\.17 ]]; then
+        # Required starting with STACK_VERSION 7.17.21
+        export ELASTIC_AGENT_IMAGE_REF_OVERRIDE="docker.elastic.co/beats/elastic-agent-complete:${STACK_VERSION}-amd64"
+        echo "Override elastic-agent docker image: ${ELASTIC_AGENT_IMAGE_REF_OVERRIDE}"
+    fi
+
     echo "Boot up the Elastic stack"
     if ! ${ELASTIC_PACKAGE_BIN} stack up -d ${args} ; then
         return 1
@@ -852,6 +858,12 @@ run_tests_package() {
     if ! skip_installation_step "${package}" ; then
         echo "--- [${package}] test installation"
         if ! install_package "${package}" ; then
+            if [[ "${package}" == "elastic_connectors" ]]; then
+                # TODO: Remove this skip once elastic_connectors can be installed again
+                # For reference: https://github.com/elastic/kibana/pull/211419
+                echo "[${package}]: Known issue when package is installed - skipped all tests"
+                return 0
+            fi
             return 1
         fi
     fi

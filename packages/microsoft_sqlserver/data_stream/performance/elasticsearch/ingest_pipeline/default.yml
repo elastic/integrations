@@ -5,13 +5,14 @@ processors:
     field: sql.driver
     ignore_missing: true
     ignore_failure: true
-- remove:
-    field: sql.query
-    ignore_missing: true
-    ignore_failure: true
 - rename:
     field: sql
     target_field: mssql
+    ignore_missing: true
+    ignore_failure: true
+- remove:
+    field: mssql.query
+    if: "ctx?.tags == null || !(ctx.tags.contains('preserve_sql_queries'))"
     ignore_missing: true
     ignore_failure: true
 - foreach:

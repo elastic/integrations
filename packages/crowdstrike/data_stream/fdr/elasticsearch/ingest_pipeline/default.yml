@@ -1749,6 +1749,24 @@ processors:
           ctx.process.uptime = (long) ((e-s)/1000L);
         }
       if: ctx.crowdstrike?.ProcessStartTime != null && ctx.crowdstrike?.ProcessStartTime != "" && ctx.crowdstrike?.ProcessEndTime != null && ctx.crowdstrike?.ProcessEndTime != ""
+  - script:
+      tag: parse-raw-pids
+      lang: painless
+      description: Parse raw process id's so that they roll over if out of 32-bit range
+      source: |-
+        def parsePid(String pid) {
+          try {
+            return Long.parseUnsignedLong(pid);
+          } catch (Exception e) {
+            return pid;
+          }
+        }
+        if (ctx.crowdstrike?.RawProcessId != null) {
+          ctx.crowdstrike.RawProcessId = parsePid(ctx.crowdstrike.RawProcessId);
+        }
+        if (ctx.crowdstrike?.EtwRawProcessId != null) {
+          ctx.crowdstrike.EtwRawProcessId = parsePid(ctx.crowdstrike.EtwRawProcessId);
+        }
   - date:
       field: crowdstrike.ProcessStartTime
       target_field: crowdstrike.ProcessStartTime
@@ -1771,10 +1789,6 @@ processors:
       target_field: process.end
       ignore_missing: true
       if: ctx.crowdstrike?.ProcessEndTime != ""
-  - convert:
-      field: crowdstrike.RawProcessId
-      type: long
-      ignore_missing: true
   - rename:
       field: crowdstrike.RawProcessId
       target_field: process.pid
@@ -1824,10 +1838,6 @@ processors:
       ignore_missing: true
       ignore_failure: true
       if: ctx.process?.thread?.id == null
-  - convert:
-      field: crowdstrike.EtwRawProcessId
-      type: long
-      ignore_missing: true
   - rename:
       field: crowdstrike.EtwRawProcessId
       target_field: process.pid
@@ -1925,16 +1935,21 @@ processors:
 
   ## Networking fields.
   - set:
-      field: source.ip
-      if: ctx.source?.ip == null && ctx.crowdstrike?.CurrentLocalIP != null
-      value: "{{{crowdstrike.CurrentLocalIP}}}"
+      field: network.direction
+      value: outbound
+      if: ctx.crowdstrike?.ConnectionDirection == "0"
   - set:
-      field: source.ip
-      if: ctx.source?.ip == null && ctx.crowdstrike.LocalIP != null
-      value: "{{{crowdstrike.LocalIP}}}"
+      field: network.direction
+      value: inbound
+      if: ctx.crowdstrike?.ConnectionDirection == "1"
+  - set:
+      field: network.direction
+      value: unknown
+      if: ctx.network?.direction == null && ctx.crowdstrike?.ConnectionDirection != null && ctx.crowdstrike.ConnectionDirection != ""
+
   - split:
       field: crowdstrike.LocalAddressIP4
-      separator: "\\s+"
+      separator: '\s+'
       if: ctx.crowdstrike?.LocalAddressIP4 != null
   - convert:
       tag: convert_LocalAddressIP4_ip
@@ -1945,21 +1960,9 @@ processors:
         - append:
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
-  - set:
-      field: source.ip
-      if: ctx.source?.ip == null && ctx.crowdstrike?.LocalAddressIP4 instanceof List && ctx.crowdstrike.LocalAddressIP4.length > 0
-      value: "{{{crowdstrike.LocalAddressIP4.0}}}"
-  # - foreach:
-  #     if: ctx.crowdstrike?.LocalAddressIP4 instanceof List && ctx.crowdstrike.LocalAddressIP4.length > 0
-  #     field: crowdstrike.LocalAddressIP4
-  #     processor:
-  #       append:
-  #         field: source.ip
-  #         value: '{{{_ingest._value}}}'
-  #         allow_duplicates: false
   - split:
       field: crowdstrike.LocalAddressIP6
-      separator: "\\s+"
+      separator: '\s+'
       if: ctx.crowdstrike?.LocalAddressIP6 != null
   - convert:
       tag: convert_LocalAddressIP6_ip
@@ -1970,56 +1973,31 @@ processors:
         - append:
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
-  - set:
-      field: source.ip
-      if: ctx.source?.ip == null && ctx.crowdstrike?.LocalAddressIP6 instanceof List && ctx.crowdstrike.LocalAddressIP6.length > 0
-      value: "{{{crowdstrike.LocalAddressIP6.0}}}"
-  # - foreach:
-  #     if: ctx.crowdstrike?.LocalAddressIP6 != null && ctx.crowdstrike.LocalAddressIP6 instanceof List && ctx.crowdstrike.LocalAddressIP6.length > 0
-  #     field: crowdstrike.LocalAddressIP6
-  #     processor:
-  #       append:
-  #         field: source.ip
-  #         value: '{{{_ingest._value}}}'
-  #         allow_duplicates: false
-  - set:
-      field: source.address
-      copy_from: source.ip
-      ignore_empty_value: true
-  - rename:
-      field: crowdstrike.LocalPort
-      target_field: source.port
-      ignore_missing: true
   - convert:
       tag: convert_RemoteAddressIP4_ip
       field: crowdstrike.RemoteAddressIP4
       type: ip
       ignore_missing: true
-  - rename:
-      field: crowdstrike.RemoteAddressIP4
-      target_field: destination.ip
-      ignore_missing: true
-  - set:
-      field: destination.address
-      copy_from: destination.ip
-      ignore_empty_value: true
   - convert:
       tag: convert_RemoteAddressIP6_ip
       field: crowdstrike.RemoteAddressIP6
       type: ip
       ignore_missing: true
-  - rename:
-      field: crowdstrike.RemoteAddressIP6
-      target_field: destination.ip
-      ignore_missing: true
-  - set:
-      field: destination.address
-      copy_from: destination.ip
-      ignore_empty_value: true
-  - rename:
-      field: crowdstrike.RemotePort
-      target_field: destination.port
-      ignore_missing: true
+
+  - pipeline:
+      tag: pipeline_outbound_network
+      # The condition is all non-inbound, but the pipeline operates assuming the traffic is outbound.
+      # In cases where there is no information we make this assumption rather than dropping the data
+      # on the floor.
+      if: ctx.network?.direction != 'inbound'
+      name: '{{ IngestPipeline "outbound_network" }}'
+      ignore_missing_pipeline: true
+  - pipeline:
+      tag: pipeline_inbound_network
+      if: ctx.network?.direction == 'inbound'
+      name: '{{ IngestPipeline "inbound_network" }}'
+      ignore_missing_pipeline: true
+
   - rename:
       field: crowdstrike.Protocol
       target_field: network.iana_number
@@ -2054,18 +2032,6 @@ processors:
         } else if (iana_number == '132') {
             ctx.network.transport = 'sctp';
         }
-  - set:
-      field: network.direction
-      value: outbound
-      if: ctx.crowdstrike?.ConnectionDirection == "0"
-  - set:
-      field: network.direction
-      value: inbound
-      if: ctx.crowdstrike?.ConnectionDirection == "1"
-  - set:
-      field: network.direction
-      value: unknown
-      if: ctx.network?.direction == null && ctx.crowdstrike?.ConnectionDirection != null && ctx.crowdstrike.ConnectionDirection != ""
   - community_id:
       ignore_missing: true
       ignore_failure: true
@@ -2158,7 +2124,7 @@ processors:
   - set:
       field: url.scheme
       value: http
-      if: ctx.crowdstrike?.DownloadPort != 443
+      if: ctx.crowdstrike?.DownloadPort != null && ctx.crowdstrike.DownloadPort != 443
   - set:
       field: url.full
       value: "{{{url.scheme}}}://{{{server.address}}}{{{url.path}}}"
@@ -2227,17 +2193,22 @@ processors:
   - set:
       field: dns.type
       value: query
-      if: ctx.event?.action == "DnsRequest"
+      if: ctx.event?.action != null && ctx.event.action.contains("DnsRequest")
   - registered_domain:
       field: crowdstrike.DomainName
       target_field: dns.question
       ignore_missing: true
-      if: ctx.event?.action == "DnsRequest"
+      if: ctx.event?.action != null && ctx.event.action.contains("DnsRequest")
   - rename:
       field: dns.question.domain
       target_field: dns.question.name
       ignore_missing: true
-      if: ctx.event?.action == "DnsRequest"
+      if: ctx.event?.action != null && ctx.event.action.contains("DnsRequest")
+  - rename:
+      field: crowdstrike.DomainName
+      target_field: dns.question.name
+      ignore_missing: true
+      if: ctx.event?.action != null && ctx.dns?.question?.name == null && ctx.event.action.contains("DnsRequest")
   - script:
       tag: dns-request-type-to-name
       description: Map decimal DNS request type to its name.
@@ -2290,7 +2261,7 @@ processors:
         "257": CAA
         "32768": TA
         "32769": DLV
-      if: ctx.event?.action == "DnsRequest" && ctx.crowdstrike?.RequestType != null && !ctx.crowdstrike.RequestType.isEmpty()
+      if: ctx.event?.action != null && ctx.crowdstrike?.RequestType != null && !ctx.crowdstrike.RequestType.isEmpty() && ctx.event.action.contains("DnsRequest")
       source: |-
         def t = params[ctx.crowdstrike.RequestType];
         if (t != null) {
@@ -2300,6 +2271,18 @@ processors:
           ctx.dns.question.type = t;
           ctx.crowdstrike.remove("RequestType");
         }
+
+  # SMB fields.
+  - registered_domain:
+      field: crowdstrike.DomainName
+      target_field: destination
+      ignore_missing: true
+      if: ctx.event?.action != null && ctx.event.action.contains("SmbServerShareOpenedEtw")
+  - rename:
+      field: crowdstrike.DomainName
+      target_field: destination.domain
+      ignore_missing: true
+      if: ctx.event?.action != null && ctx.destination?.domain == null && ctx.event.action.contains("SmbServerShareOpenedEtw")
 
   ## File fields.
   - convert:

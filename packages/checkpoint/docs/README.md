@@ -87,7 +87,7 @@ An example event for `firewall` looks as following:
         "type": "logs"
     },
     "ecs": {
-        "version": "8.11.0"
+        "version": "8.17.0"
     },
     "elastic_agent": {
         "id": "ecc82406-78ce-41c1-b1e2-7c12ce01f525",
@@ -147,6 +147,7 @@ An example event for `firewall` looks as following:
 | checkpoint.additional_rdata | List of additional resource records. | keyword |
 | checkpoint.administrator | Source administrator name. | keyword |
 | checkpoint.advanced_changes |  | keyword |
+| checkpoint.aggregated_log_count | Number of logs aggregated in the event. | integer |
 | checkpoint.alert | Alert level of matched rule (for connection logs). | keyword |
 | checkpoint.allocated_ports | Amount of allocated ports. | integer |
 | checkpoint.analyzed_on | Check Point ThreatCloud / emulator name. | keyword |
@@ -163,9 +164,12 @@ An example event for `firewall` looks as following:
 | checkpoint.appi_name | Name of application downloaded on the protected mobile device. | keyword |
 | checkpoint.arrival_time | Email arrival timestamp. | keyword |
 | checkpoint.attachments_num | Number of attachments in the mail. | integer |
+| checkpoint.attack | Name of the vulnerability category in case of a host or network vulnerability. | keyword |
+| checkpoint.attack_info | Description of the vulnerability in case of a host or network vulnerability. | keyword |
 | checkpoint.attack_status | In case of a malicious event on an endpoint computer, the status of the attack. | keyword |
 | checkpoint.audit_status | Audit Status. Can be Success or Failure. | keyword |
 | checkpoint.auth_method | Password authentication protocol used (PAP or EAP). | keyword |
+| checkpoint.auth_method2 | Additional authentication method information. | keyword |
 | checkpoint.auth_status | The authentication status for an event. | keyword |
 | checkpoint.authority_rdata | List of authoritative servers. | keyword |
 | checkpoint.authorization | Authorization HTTP header value. | keyword |
@@ -182,6 +186,7 @@ An example event for `firewall` looks as following:
 | checkpoint.certificate_validation | Precise error, describing HTTPS certificate failure under "HTTPS categorize websites" feature. | keyword |
 | checkpoint.cgnet | Describes NAT allocation for specific subscriber. | keyword |
 | checkpoint.chunk_type | Chunck of the sctp stream. | keyword |
+| checkpoint.client_build | Client build version. | keyword |
 | checkpoint.client_ipe |  | keyword |
 | checkpoint.client_name | Client Application or Software Blade that detected the event. | keyword |
 | checkpoint.client_type | Endpoint Connect. | keyword |
@@ -192,6 +197,7 @@ An example event for `firewall` looks as following:
 | checkpoint.community | Community name for the IPSec key and the use of the IKEv. | keyword |
 | checkpoint.confidence_level | Confidence level determined by ThreatCloud. | integer |
 | checkpoint.conn_direction | Connection direction | keyword |
+| checkpoint.connection_count | Number of connections logged in this event | integer |
 | checkpoint.connection_uid | Calculation of md5 of the IP and user name as UID. | keyword |
 | checkpoint.connectivity_level | Log for a new connection in wire mode. | keyword |
 | checkpoint.conns_amount | Connections amount of aggregated log info. | integer |
@@ -216,9 +222,11 @@ An example event for `firewall` looks as following:
 | checkpoint.delivery_time | Timestamp of when email was delivered (MTA finished handling the email. | keyword |
 | checkpoint.desc | Override application description. | keyword |
 | checkpoint.description | Additional explanation how the security gateway enforced the connection. | keyword |
+| checkpoint.description_url | URL of description | keyword |
 | checkpoint.destination_object | Matched object name on destination column. | keyword |
 | checkpoint.detected_on | System and applications version the file was emulated on. | keyword |
 | checkpoint.developer_certificate_name | Name of the developer's certificate that was used to sign the mobile application. | keyword |
+| checkpoint.device_identification | UUID of the device. | keyword |
 | checkpoint.device_name | Name of the device. | keyword |
 | checkpoint.device_type | Type of the device. | keyword |
 | checkpoint.diameter_app_ID | The ID of diameter application. | integer |
@@ -268,6 +276,7 @@ An example event for `firewall` looks as following:
 | checkpoint.dropped_total | Amount of dropped packets (both incoming and outgoing). | integer |
 | checkpoint.drops_amount | Amount of multicast packets dropped. | integer |
 | checkpoint.dst_country | Destination country. | keyword |
+| checkpoint.dst_domain_name | Destination domain name. | keyword |
 | checkpoint.dst_phone_number | Destination IP-Phone. | keyword |
 | checkpoint.dst_user_dn | User distinguished name connected to the destination IP address. | keyword |
 | checkpoint.dst_user_name | Connected user name on the destination IP. | keyword |
@@ -300,6 +309,7 @@ An example event for `firewall` looks as following:
 | checkpoint.esod_rule_type | Unknown rule type. | keyword |
 | checkpoint.esod_scan_status | Scan failed. | keyword |
 | checkpoint.event_count | Number of events associated with the log. | long |
+| checkpoint.event_type | The type of event. | keyword |
 | checkpoint.expire_time | Connection closing time. | keyword |
 | checkpoint.extension_version | Build version of the SandBlast Agent browser extension. | keyword |
 | checkpoint.extracted_file_hash | Archive hash in case of extracted files. | keyword |
@@ -308,6 +318,7 @@ An example event for `firewall` looks as following:
 | checkpoint.extracted_file_uid | UID of extracted files in case of an archive. | keyword |
 | checkpoint.extracted_file_verdict | Verdict of extracted files in case of an archive. | keyword |
 | checkpoint.facility |  | keyword |
+| checkpoint.failed_login_factor_num | The type of event. | long |
 | checkpoint.failure_impact | The impact of update service failure. | keyword |
 | checkpoint.failure_reason | MTA failure description. | keyword |
 | checkpoint.fields |  | keyword |
@@ -323,7 +334,10 @@ An example event for `firewall` looks as following:
 | checkpoint.fw_subproduct | Can be vpn/non vpn. | keyword |
 | checkpoint.hide_ip | Source IP which will be used after CGNAT. | ip |
 | checkpoint.hit | Number of hits on a rule. | integer |
+| checkpoint.host_ip | The host IP. | ip |
 | checkpoint.host_time | Local time on the endpoint computer. | keyword |
+| checkpoint.host_type | The host type. | keyword |
+| checkpoint.hostname | The host name. | keyword |
 | checkpoint.http_host | Domain name of the server that the HTTP request is sent to. | keyword |
 | checkpoint.http_location | Response header, indicates the URL to redirect a page to. | keyword |
 | checkpoint.http_server | Server HTTP header value, contains information about the software used by the origin server, which handles the request. | keyword |
@@ -379,6 +393,8 @@ An example event for `firewall` looks as following:
 | checkpoint.log_sys_message | Sytem log messages. | keyword |
 | checkpoint.logic_changes |  | keyword |
 | checkpoint.logid | System messages | keyword |
+| checkpoint.login_option | Login option. | keyword |
+| checkpoint.login_timestamp | The login time. | date |
 | checkpoint.long_desc | More information on the process (usually describing error reason in failure). | keyword |
 | checkpoint.machine | L2TP machine which triggered the log and the log refers to it. | keyword |
 | checkpoint.malware_family | Additional information on protection. | keyword |
@@ -409,6 +425,7 @@ An example event for `firewall` looks as following:
 | checkpoint.mitre_persistence | The adversary is trying to maintain his foothold. | keyword |
 | checkpoint.mitre_privilege_escalation | The adversary is trying to gain higher-level permissions. | keyword |
 | checkpoint.monitor_reason | Aggregated logs of monitored packets. | keyword |
+| checkpoint.more | Additional information provided by the event. | keyword |
 | checkpoint.msgid | Message ID. | keyword |
 | checkpoint.name | Application name. | keyword |
 | checkpoint.nat46 | NAT 46 status, in most cases "enabled". | keyword |
@@ -426,12 +443,16 @@ An example event for `firewall` looks as following:
 | checkpoint.observable_comment | IOC observable signature description. | keyword |
 | checkpoint.observable_id | IOC observable signature id. | keyword |
 | checkpoint.observable_name | IOC observable signature name. | keyword |
+| checkpoint.office_mode_ip | Office mode IP. | ip |
 | checkpoint.operation | Operation made by Threat Extraction. | keyword |
 | checkpoint.operation_number | The operation number. | keyword |
 | checkpoint.operation_result_description |  | keyword |
 | checkpoint.operation_results |  | keyword |
 | checkpoint.origin_sic_name | SIC name of the Security Gateway that generated the event. | keyword |
 | checkpoint.original_queue_id | Original postfix email queue id. | keyword |
+| checkpoint.os_bits | OS bits. | keyword |
+| checkpoint.os_build | OS build. | keyword |
+| checkpoint.os_edition | OS edition. | keyword |
 | checkpoint.outgoing_url | URL related to this log (for HTTP). | keyword |
 | checkpoint.outzonlags |  | keyword |
 | checkpoint.package_action |  | keyword |
@@ -473,6 +494,7 @@ An example event for `firewall` looks as following:
 | checkpoint.registered_ip-phones | Registered IP-Phones. | keyword |
 | checkpoint.reject_category | Authentication failure reason. | keyword |
 | checkpoint.reject_id | A reject ID that corresponds to the one presented in the Mobile Access error page. | keyword |
+| checkpoint.reject_id_kid | A reject ID kind | keyword |
 | checkpoint.rematch_info | Information sent when old connections cannot be matched during policy installation. | keyword |
 | checkpoint.remediated_files | In case of an infection and a successful cleaning of that infection, this is a list of remediated files on the computer. | keyword |
 | checkpoint.reply_status | ICAP reply status code, e.g. 200 or 204. | integer |
@@ -507,11 +529,13 @@ An example event for `firewall` looks as following:
 | checkpoint.security_outzone | Network zone of outbound traffic as reported by the observer to categorize the destination area of egress traffic, e.g. Internal, External, DMZ, HR, Legal, etc. | keyword |
 | checkpoint.sendtotrackerasadvancedauditlog |  | keyword |
 | checkpoint.sent_bytes |  | keyword |
+| checkpoint.ser_agent_kid | User agent kind | keyword |
 | checkpoint.server_inbound_interface | In-bound interface name as reported by the system. | keyword |
 | checkpoint.server_outbound_interface | Out-bound interface name as reported by the system. | keyword |
 | checkpoint.session_description |  | keyword |
 | checkpoint.session_id | Log uuid. | keyword |
 | checkpoint.session_name |  | keyword |
+| checkpoint.session_timeout | Session timeout. | long |
 | checkpoint.session_uid | HTTP session-id. | keyword |
 | checkpoint.short_desc | Short description of the process that was executed. | keyword |
 | checkpoint.sig_id | Application's signature ID which how it was detected by. | keyword |
@@ -571,13 +595,16 @@ An example event for `firewall` looks as following:
 | checkpoint.total_attachments | The number of attachments in an email. | integer |
 | checkpoint.triggered_by | The name of the mechanism that triggered the Software Blade to enforce a protection. | keyword |
 | checkpoint.trusted_domain | In case of phishing event, the domain, which the attacker was impersonating. | keyword |
+| checkpoint.tunnel_protocol | Tunnel protocol. | keyword |
 | checkpoint.unique_detected_day | Detected virus for a specific host during the last day. | integer |
 | checkpoint.unique_detected_hour | Detected virus for a specific host during the last hour. | integer |
 | checkpoint.unique_detected_week | Detected virus for a specific host during the last week. | integer |
+| checkpoint.update_count | Number of times the event has been updated with new occurrences | integer |
 | checkpoint.update_status | Status of database update | keyword |
 | checkpoint.url | Translated URL. | keyword |
 | checkpoint.user | Source user name. | keyword |
 | checkpoint.user_agent | String identifying requesting software user agent. | keyword |
+| checkpoint.user_dn | User DN. | keyword |
 | checkpoint.usercheck |  | keyword |
 | checkpoint.usercheck_confirmation_level |  | keyword |
 | checkpoint.usercheck_interaction_name |  | keyword |
@@ -793,5 +820,5 @@ An example event for `firewall` looks as following:
 | user_agent.name | Name of the user agent. | keyword |
 | user_agent.original | Unparsed user_agent string. | keyword |
 | user_agent.original.text | Multi-field of `user_agent.original`. | match_only_text |
-| vulnerability.id | The identification (ID) is the number portion of a vulnerability entry. It includes a unique identification number for the vulnerability. For example (https://cve.mitre.org/about/faqs.html#what_is_cve_id)[Common Vulnerabilities and Exposure CVE ID] | keyword |
+| vulnerability.id | The identification (ID) is the number portion of a vulnerability entry. It includes a unique identification number for the vulnerability. For example (https://cve.mitre.org/about/faqs.html#what_is_cve_id) | keyword |
 

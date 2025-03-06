@@ -1,0 +1,100 @@
+config_version: 2
+interval: {{interval}}
+{{#if enable_request_tracer}}
+resource.tracer.filename: "../../logs/cel/http-request-trace-*.ndjson"
+request.tracer.maxbackups: 5
+{{/if}}
+{{#if proxy_url}}
+resource.proxy_url: {{proxy_url}}
+{{/if}}
+{{#if http_client_timeout}}
+resource.timeout: {{http_client_timeout}}
+{{/if}}
+resource.ssl.renegotiation: freely
+resource.url: {{url}}
+{{#if ssl}}
+resource.ssl: {{ssl}}
+{{/if}}
+state:
+  limit: {{limit}}
+  apikey: {{apikey}}
+  password: {{password}}
+  username: {{username}}
+redact:
+  fields:
+    - apikey
+    - password
+program: |-
+  state.?cursor.cookies.orValue(
+  	// Authenticating using API to retrieve Cookie
+  	request("POST", state.url.trim_suffix("/") + "/Auth/SignAppin").with(
+  		{
+  			"Header": {
+  				"Authorization": [
+  					"PS-Auth key=" + state.apikey + ";runas=" + state.username + ((state.?password.orValue("") != "") ? (";pwd=[" + state.password + "];") : ""),
+  				],
+  				"Content-Type": ["application/json"],
+  			},
+  		}
+  	).do_request().as(resp,
+  		resp.Header["Set-Cookie"]
+  	)
+  ).as(cookies,
+  	request(
+  		"GET",
+  		state.url.trim_suffix("/") + "/ManagedSystems?" + {
+  			"limit": [string(state.limit)],
+  			"offset": [string(state.?cursor.offset.orValue(0))],
+  		}.format_query()
+  	).with(
+  		{
+  			"Header": {
+  				"Content-Type": ["application/json"],
+  				"Cookie": cookies,
+  			},
+  		}
+  	).do_request().as(resp,
+  		(resp.StatusCode == 401) ?
+  			state.with(
+  				{
+  					"events": {"error": {"message": "Authentication expired or incorrect. Clearing and retrying...", "statuscode": string(resp.StatusCode)}},
+  					"want_more": true,
+  					"cursor": {
+  						"cookies": null,
+  					},
+  				}
+  			)
+  		:
+  			bytes(resp.Body).decode_json().as(body,
+  				state.with(
+  					{
+  						"events": body.Data.map(e,
+  							{
+  								"message": e,
+  								?"event.original": state.?preserve_original_event.orValue(false) ? optional.of(e.encode_json()) : optional.none(),
+  							}
+  						),
+  						"want_more": size(body.Data) + int(state.?cursor.offset.orValue(0)) < body.TotalCount,
+  						"cursor": {
+  							"cookies": cookies,
+  							"offset": (size(body.Data) + int(state.?cursor.offset.orValue(0)) < body.TotalCount) ? (int(state.?cursor.offset.orValue(0)) + size(body.Data)) : 0,
+  						},
+  					}
+  				)
+  			)
+  	)
+  )
+tags:
+{{#if preserve_original_event}}
+  - preserve_original_event
+{{/if}}
+{{#each tags as |tag|}}
+  - {{tag}}
+{{/each}}
+{{#contains "forwarded" tags}}
+publisher_pipeline.disable_host: true
+{{/contains}}
+{{#if processors}}
+processors:
+{{processors}}
+{{/if}}

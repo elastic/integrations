@@ -90,28 +90,35 @@ program: |
           }
         }).do_request().as(resp, resp.StatusCode == 200 ?
           bytes(resp.Body).decode_json().as(body, body.?fail.orValue([]).size() == 0 ?
-            {
+            (has(body.?meta.pagination.next) && size(body.data) != 0).as(want_more, {
               "events": body.data.map(e, e[state.data_path].map(l, {"message": l.encode_json()})).flatten(),
               "cursor": {
-                "last": ([now] + body.data.map(e,
-                  e[state.data_path].map(l,
-                    l[state.time_field].parse_time(["2006-01-02T15:04:05-0700", time_layout.RFC3339])
-                  )
-                ).flatten()).max().format(time_layout.RFC3339),
+                "last": (
+                  body.data.map(e,
+                    e[state.data_path].map(l,
+                      l[state.time_field].parse_time(["2006-01-02T15:04:05-0700", time_layout.RFC3339])
+                    )
+                  ).flatten().as(time_fields,
+                    (size(time_fields) > 0) ?
+                      time_fields.max()
+                    :
+                      now
+                  ).format(time_layout.RFC3339)
+                ),
               },
-              ?"last_page": has(body.?meta.pagination.next) && size(body.data) != 0 ?
-                optional.of({
+              "last_page": want_more ?
+                dyn({
                   ?"next": body.?meta.pagination.next,
-                  "data": req.data,
+                  ?"data": req.?data,
                 })
               :
-                optional.none(),
+                dyn(null), // required to clear the incoming state
               "token": {
                 "access_token": token.access_token,
                 "expires": token.expires,
               },
-              "want_more": has(body.?meta.pagination.next) && size(body.data) != 0,
-            }
+              "want_more": want_more,
+            })
           :
             // Mimecast can return failure states with a 200. This
             // is detected by a non-empty fail array at the root
