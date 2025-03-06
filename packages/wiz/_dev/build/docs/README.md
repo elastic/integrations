@@ -8,7 +8,7 @@ The Wiz integration collects four types of data: Audit, Cloud Configuration Find
 
 ## Requirements
 
-This integration supports using [Elastic Agent](#elastic-agent) or [agentless](#agentless-enabled-integration) ingestion of data.
+This integration supports using Elastic Agent or agentless ingestion of data.
 
 ## Elastic Agent
 
