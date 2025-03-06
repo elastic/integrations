@@ -14,7 +14,7 @@ The Azure Logs integration v2 preview introduces:
 
 * A new architecture that allows you to collect all logs through a single event hub.
 * Significant efficiency improvements.
-* A new processor (v2) that incorporates the latest Event Hubs SDK.
+* A new event hub processor (v2) that incorporates the latest Event Hubs SDK.
 
 ### Architecture
 
@@ -45,7 +45,7 @@ IMPORTANT: **To use the integration v2 preview, you must turn off all the existi
 
 The integration v2 preview avoids contention and inefficiencies from using multiple consumers per partition with the same event hub, problems that are typical of the v1 architecture. With the v2 preview, you can still assign the agent policy to multiple Elastic Agents to scale out the logs processing.
 
-### Processor v2 ✨
+### Event Hub Processor v2 ✨
 
 The integration v2 preview offers a new processor v2 starting with integration version 1.23.0.
 
@@ -503,9 +503,9 @@ Examples:
 
 This setting can also be used to define your own endpoints, like for hybrid cloud models.
 
-### Processor v2 only
+### Event Hub Processor v2 only
 
-The following settings are **processor v2 only** and available in the advanced section of the integration.
+The following settings are **event hub processor v2 only** and available in the advanced section of the integration.
 
 `processor_version` :
 _string_
