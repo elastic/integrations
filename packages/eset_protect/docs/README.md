@@ -570,10 +570,12 @@ An example event for `event` looks as following:
 | eset_protect.event.application | Application name associated with the event. | keyword |
 | eset_protect.event.cause |  | keyword |
 | eset_protect.event.circumstances | Short description of what caused the event. | keyword |
+| eset_protect.event.command_line | Command line of process which triggered detection. | keyword |
 | eset_protect.event.computer_severity_score | Computer severity score associated with the event. | long |
 | eset_protect.event.count | Number of alerts of this type generated since last alarm. | long |
 | eset_protect.event.description | Description of the blocked file. | keyword |
 | eset_protect.event.detail | Detailed description of the action. | keyword |
+| eset_protect.event.detection_uuid | A detection's unique identifier can be used to query details via ESET CONNECT API. | keyword |
 | eset_protect.event.domain | Audit log domain. | keyword |
 | eset_protect.event.eialarmid | ID sub-part of the alarm link ($1 in ^http.\*/alarm/([0-9]+)$). | keyword |
 | eset_protect.event.eiconsolelink | Link to the alarm in ESET Inspect console. | keyword |
@@ -616,6 +618,7 @@ An example event for `event` looks as following:
 | eset_protect.event.threat_handled | Indicates whether or not the detection was handled. | boolean |
 | eset_protect.event.threat_name | Name of the detection. | keyword |
 | eset_protect.event.threat_type | Type of detection. | keyword |
+| eset_protect.event.trigger_event | Description of event which triggered detection. | keyword |
 | eset_protect.event.type | Type of exported events. | keyword |
 | eset_protect.event.username | Name of the user account associated with the event. | keyword |
 | event.dataset | Event dataset. | constant_keyword |
