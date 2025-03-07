@@ -196,12 +196,20 @@ processors:
               instances.iamInstanceProfile?.arn
             ]);
 
+            if (instances.networkInterfaceSet?.items == null) {
+              return true;
+            }
+
             instances.networkInterfaceSet?.items?.stream().forEach(networks -> {
               addValues(enrichCtx.related, [
                 networks.networkInterfaceId,
                 networks.vpcId,
                 networks.subnetId
               ]);
+
+              if (networks.groupSet?.items == null) {
+                return true;
+              }
 
               networks.groupSet?.items?.stream().forEach(group -> {
                 addValue(enrichCtx.related, group.groupId);
