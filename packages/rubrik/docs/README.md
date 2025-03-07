@@ -1,6 +1,6 @@
 # Rubrik RSC Metrics Integration
 
-This integration periodically fetches metrics from [Rubrik GraphQL API](https://www.rubrik.com/resources/api-integration). It uses Rubrik’s API to query Rubrik Security Cloud and the Rubrik cluster host for health and performance metrics. The integration uses the [CEL input](https://www.elastic.co/guide/en/beats/filebeat/current/filebeat-input-cel.htmlaP{}) to collect metrics from Rubrik APIs. 
+This integration periodically collects health and performance metrics from Rubrik Security Cloud and Rubrik cluster hosts using the [Rubrik APIs](https://www.rubrik.com/resources/api-integration). It leverages the [CEL input](https://www.elastic.co/guide/en/beats/filebeat/current/filebeat-input-cel.html) to retrieve data from both REST and GraphQL endpoints, ensuring comprehensive data coverage.
 
 ## Compatibility
 This integration has been tested to be compatible with:
@@ -17,10 +17,13 @@ You can use our hosted Elasticsearch Service on Elastic Cloud, which is recommen
 
 To configure this integration in Elastic, you need the following information:
 
-- Hostname
-- Client ID
-- Client Secret
-- Token URL
+ - **Hostname** is the account name of your Rubrik domain.
+ - **Client ID** is the client ID of the service account.
+ - **Client Secret** is the client secret of the service account.
+ - **Cluster UUID** is the ID of the registered Rubrik cluster.
+ - **Cluster IP** is the Rubrik cluster IP or a resolvable host name.
+
+NOTE: Cluster IP and Cluster UUID are required to access the Rubrik REST APIs. 
 
 For more details on these settings, refer to the [Rubrik official documentation](https://docs.rubrik.com/en-us/saas/saas/adding_a_service_account.html).
 
