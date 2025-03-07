@@ -145,6 +145,8 @@ Please refer to the following [document](https://www.elastic.co/guide/en/ecs/cur
 
 The `node_statistics` dataset provides metrics related to the performance of the Rubrik cluster nodes.
 
+**IMPORTANT: Setting `interval` to more than `1h` may cause documents to be dropped if node statistics metrics fall outside the index time range.**
+
 **ECS Field Reference**
 
 Please refer to the following [document](https://www.elastic.co/guide/en/ecs/current/ecs-field-reference.html) for detailed information on ECS fields.
