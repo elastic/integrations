@@ -462,6 +462,13 @@ processors:
       target_field: opencanary.vnc.password
       ignore_missing: true
       ignore_failure: true
+  - remove:
+      description: Remove VNC password field if it contains the text that indicates an unknown password
+      tag: remove_opencanary_vnc_password
+      if: ctx.opencanary?.vnc?.password == '<Password was not in the common list>'
+      field: opencanary.vnc.password
+      ignore_missing: true
+      ignore_failure: true
   - rename:
       description: Rename VNC 'VNC Server Challenge' field to opencanary.vnc.server_challenge
       tag: rename_opencanary_logdata_VNC_Server_Challenge
@@ -470,6 +477,8 @@ processors:
       target_field: opencanary.vnc.server_challenge
       ignore_missing: true
       ignore_failure: true
+
+
 
   # NTP events
   - rename:
@@ -687,23 +696,6 @@ processors:
       copy_from: opencanary.logdata.UserName
       field: user.name
       ignore_empty_value: true
-  - remove:
-      if: 'ctx.tags != null && ctx.tags.contains("redact_passwords")'
-      description: Remove opencanary.logdata.PASSWORD field if password redaction is desired
-      tag: remove_opencanary_logdata_PASSWORD
-      field: opencanary.logdata.PASSWORD
-      ignore_missing: true
-      ignore_failure: true
-  - redact:
-      description: Redact any passwords in the log data
-      tag: redact_event_original
-      if: 'ctx.tags != null && ctx.tags.contains("redact_passwords") && ctx.event?.original =~ /\"PASSWORD\": \"/'
-      field: event.original
-      patterns:
-        - '"PASSWORD": "%{DATA:REDACTED}"'
-      prefix: '"PASSWORD": "<'
-      suffix: '>"'
-      ignore_missing: true
   - set:
       description: Rename opencanary.logdata.DOMAIN to user.domain
       tag: rename_opencanary_logdata_DOMAIN
@@ -759,6 +751,28 @@ processors:
       allow_duplicates: false
       ignore_failure: true
 
+  ########################
+  ## Password Redaction ##
+  ########################
+  - remove:
+      if: 'ctx.tags != null && ctx.tags.contains("redact_passwords")'
+      description: Remove password fields if password redaction is desired
+      tag: remove_opencanary_logdata_PASSWORD
+      field:
+        - opencanary.logdata.PASSWORD
+        - opencanary.vnc.password
+      ignore_missing: true
+      ignore_failure: true
+  - redact:
+      description: Redact any passwords in the log data
+      tag: redact_event_original
+      if: 'ctx.tags != null && ctx.tags.contains("redact_passwords") && ctx.event?.original =~ /\"PASSWORD\": \"/'
+      field: event.original
+      patterns:
+        - '"PASSWORD": "%{DATA:REDACTED}"'
+      prefix: '"PASSWORD": "<'
+      suffix: '>"'
+      ignore_missing: true
 
   ##############
   ## Clean Up ##
