@@ -99,7 +99,7 @@ processors:
         String sid(String text) {
             def bytes = Base64.getDecoder().decode(text);
             int subauths = Byte.toUnsignedInt(bytes[1]);
-            def uid = "S-"+Byte.toString(bytes[0])+"-"+Integer.toString(subauths)+"-";
+            def uid = "S-"+Byte.toString(bytes[0])+"-";
             int auth = 0;
             for (int i = 2; i < 8; i++) {
                 auth |= Byte.toUnsignedInt(bytes[i])<<(8*(5-(i-2)));
@@ -160,6 +160,53 @@ processors:
         }
 
         ctx.activedirectory = renameKeys(ctx.activedirectory, params)
+
+  - script:
+      lang: painless
+      ignore_failure: false
+      tag: Set User Account Control
+      description: Set User Account Control
+      # User Account Control Attributes Table
+      # https://learn.microsoft.com/en-us/openspecs/windows_protocols/ms-samr/4df07fab-1bbc-452f-8e92-7853a3c7e380
+      params:
+        "0x00000001": USER_ACCOUNT_DISABLED
+        "0x00000002": USER_HOME_DIRECTORY_REQUIRED
+        "0x00000004": USER_PASSWORD_NOT_REQUIRED
+        "0x00000008": USER_TEMP_DUPLICATE_ACCOUNT
+        "0x00000010": USER_NORMAL_ACCOUNT
+        "0x00000020": USER_MNS_LOGON_ACCOUNT
+        "0x00000040": USER_INTERDOMAIN_TRUST_ACCOUNT
+        "0x00000080": USER_WORKSTATION_TRUST_ACCOUNT
+        "0x00000100": USER_SERVER_TRUST_ACCOUNT
+        "0x00000200": USER_DONT_EXPIRE_PASSWORD
+        "0x00000400": USER_ACCOUNT_AUTO_LOCKED
+        "0x00000800": USER_ENCRYPTED_TEXT_PASSWORD_ALLOWED
+        "0x00001000": USER_SMARTCARD_REQUIRED
+        "0x00002000": USER_TRUSTED_FOR_DELEGATION
+        "0x00004000": USER_NOT_DELEGATED
+        "0x00008000": USER_USE_DES_KEY_ONLY
+        "0x00010000": USER_DONT_REQUIRE_PREAUTH
+        "0x00020000": USER_PASSWORD_EXPIRED
+        "0x00040000": USER_TRUSTED_TO_AUTHENTICATE_FOR_DELEGATION
+        "0x00080000": USER_NO_AUTH_DATA_REQUIRED
+        "0x00100000": USER_PARTIAL_SECRETS_ACCOUNT
+        "0x00200000": USER_USE_AES_KEYS
+      source: |-
+        if (ctx.activedirectory?.user?.user_account_control == null) {
+          return;
+        }
+        Long newUacValue = Long.decode(ctx.activedirectory.user.user_account_control);
+        ArrayList uacResult = new ArrayList();
+        for (entry in params.entrySet()) {
+          Long flag = Long.decode(entry.getKey());
+          if ((newUacValue.longValue() & flag.longValue()) == flag.longValue()) {
+            uacResult.add(entry.getValue());
+          }
+        }
+        if (uacResult.length == 0) {
+          return;
+        }
+        ctx.activedirectory.user.put("uac_list", uacResult);
 
   - date:
       field: activedirectory.user.when_created
@@ -224,8 +271,20 @@ processors:
       if: ctx.user?.domain != null
   - set:
       field: asset.id
-      copy_from: activedirectory.id
-      ignore_empty_value: true
+      copy_from: activedirectory.user.object_sid
+  - set:
+      field: user.id
+      copy_from: activedirectory.user.object_sid
+
+  - foreach:
+      tag: foreach_group_id
+      field: activedirectory.groups
+      if: ctx.activedirectory?.groups instanceof List
+      processor:
+        set:
+          tag: set_group_id
+          field: "_ingest._value.id"
+          value: "{{{_ingest._value.object_sid}}}"
 
   - append:
       field: related.user
@@ -233,24 +292,10 @@ processors:
       tag: append_name_into_related_user
       allow_duplicates: false
       if: ctx.activedirectory?.user?.name != null
-  - append:
-      field: related.user
-      value: "{{{activedirectory.id}}}"
-      tag: append_id_into_related_user
-      allow_duplicates: false
-      if: ctx.activedirectory?.id != null
-  - append:
-      field: related.user
-      value: "{{{activedirectory.user.object_guid}}}"
-      tag: append_object_guid_into_related_user
-      allow_duplicates: false
-      if: ctx.activedirectory?.user?.object_guid != null
-  - append:
-      field: related.user
-      value: "{{{activedirectory.user.object_sid}}}"
-      tag: append_object_sid_into_related_user
-      allow_duplicates: false
-      if: ctx.activedirectory?.user?.object_sid != null
+
+  - rename:
+      field: activedirectory.id
+      target_field: activedirectory.user.object_dn
 
   - rename:
       field: activedirectory
