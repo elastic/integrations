@@ -52,4 +52,4 @@ processors:
 
 Open each `elasticsearch/ingest_pipeline/default.yml` file created for each data stream. Edit each ingest pipeline to match your needs.
 
-The [processor reference](elasticsearch://docs/reference/ingestion-tools/enrich-processor/index.md) provides a list of all available processors and their configurations.
+The [processor reference](elasticsearch://reference/ingestion-tools/enrich-processor/index.md) provides a list of all available processors and their configurations.

@@ -759,34 +759,6 @@ processors:
             - admin
             - change
           action: directory-service-object-modified
-        "5379":
-          category:
-            - iam
-          type:
-            - user
-            - info
-          action: credential-manager-credentials-were-read
-        "5380":
-          category:
-            - iam
-          type:
-            - user
-            - info
-          action: vault-credential-find
-        "5381":
-          category:
-            - iam
-          type:
-            - user
-            - info
-          action: vault-credentials-were-read
-        "5382":
-          category:
-            - iam
-          type:
-            - user
-            - info
-          action: vault-credentials-were-read
         "5140":
           category:
             - network
@@ -833,6 +805,34 @@ processors:
           type:
             - info
           action: windows-firewall-bind-local-port
+        "5379":
+          category:
+            - iam
+          type:
+            - user
+            - info
+          action: credential-manager-credentials-were-read
+        "5380":
+          category:
+            - iam
+          type:
+            - user
+            - info
+          action: vault-credential-find
+        "5381":
+          category:
+            - iam
+          type:
+            - user
+            - info
+          action: vault-credentials-were-read
+        "5382":
+          category:
+            - iam
+          type:
+            - user
+            - info
+          action: vault-credentials-were-read
       source: |-
         if (ctx.event?.code == null || params.get(ctx.event.code) == null) {
           return;
@@ -849,8 +849,8 @@ processors:
       ignore_failure: false
       tag: Set Logon Type
       description: Set Logon Type
-# Logon Types
-# https://docs.microsoft.com/en-us/windows/security/threat-protection/auditing/basic-audit-logon-events
+      # Logon Types
+      # https://docs.microsoft.com/en-us/windows/security/threat-protection/auditing/basic-audit-logon-events
       params:
         "2": Interactive
         "3": Network
@@ -939,9 +939,9 @@ processors:
       ignore_failure: false
       tag: Set Kerberos Ticket Options
       description: Set Kerberos Ticket Options
-# Kerberos TGT and TGS Ticket Options
-# https://docs.microsoft.com/en-us/windows/security/threat-protection/auditing/event-4768
-# https://docs.microsoft.com/en-us/windows/security/threat-protection/auditing/event-4769
+      # Kerberos TGT and TGS Ticket Options
+      # https://docs.microsoft.com/en-us/windows/security/threat-protection/auditing/event-4768
+      # https://docs.microsoft.com/en-us/windows/security/threat-protection/auditing/event-4769
       params:
         "0x40000000": Forwardable
         "0x20000000": Forwarded
@@ -1110,8 +1110,6 @@ processors:
       ignore_failure: false
       tag: Set Audit Information
       description: Set Audit Information
-      # Audit Categories Description
-      # https://docs.microsoft.com/en-us/openspecs/windows_protocols/ms-gpac/77878370-0712-47cd-997d-b07053429f6d
       params:
         "0CCE9210-69AE-11D9-BED3-505054503030": ["Security State Change", "System"]
         "0CCE9211-69AE-11D9-BED3-505054503030": ["Security System Extension", "System"]
@@ -2923,7 +2921,7 @@ processors:
             ctx.winlog.event_data.put("LayerNameDescription", params.descriptions[code]);
           }
         }
-        if (ctx?.winlog?.event_data?.AccessMask != null) {
+        if (ctx.winlog?.event_data?.AccessMask != null) {
           ArrayList list = new ArrayList();
           long accessMask;
           for (elem in split(ctx.winlog.event_data.AccessMask)) {
@@ -3252,6 +3250,14 @@ processors:
             ctx.user.target.put("domain", ctx.winlog.event_data.TargetDomainName);
           }
         }
+    # split member name into parts based on comma ignoring escaped commas
+    # https://learn.microsoft.com/en-us/previous-versions/windows/desktop/ldap/distinguished-names
+  - split:
+      if: ctx.winlog?.event_data?.MemberName != null
+      field: winlog.event_data.MemberName
+      target_field: _temp.MemberNameParts
+      separator: "(?<!\\\\),"
+      ignore_missing: true
   - script:
       lang: painless
       ignore_failure: false
@@ -3265,8 +3271,8 @@ processors:
               "4761", "4762", "4763", "4764", "4799"].contains(ctx.event.code)) {
           return;
         }
-        if (ctx.winlog?.event_data?.MemberName != null) {
-          def memberNameParts = ctx.winlog.event_data.MemberName.splitOnToken(",");
+        if (ctx._temp?.MemberNameParts != null) {
+          def memberNameParts = ctx._temp.MemberNameParts;
           def memberName = memberNameParts[0].replace("CN=","").replace("cn=","");
           if (ctx.related == null) {
             HashMap hm = new HashMap();
@@ -3383,16 +3389,15 @@ processors:
       description: Copy Subject User from Event Data
       source: |-
         if (ctx.event?.code == null ||
-            !["4657", "4670", "4672", "4673", "4674", "4688", "4689", "4697",
-              "4698", "4699", "4700", "4701", "4702", "4706", "4707", "4713",
-              "4716", "4717", "4718", "4719", "4720", "4722", "4723", "4724",
-              "4725", "4726", "4727", "4728", "4729", "4730", "4731", "4732",
-              "4733", "4734", "4735", "4737", "4738", "4739", "4740", "4741",
-              "4742", "4743", "4744", "4745", "4746", "4747", "4748", "4749",
-              "4750", "4751", "4752", "4753", "4754", "4755", "4756", "4757",
-              "4758", "4759", "4760", "4761", "4762", "4763", "4764", "4767",
-              "4781", "4798", "4799", "4817", "4904", "4905", "4907", "4912",
-              "4648", "4797", "5140", "5145", "5379", "5380", "5381", "5382", "5136", "4662"].contains(ctx.event.code)) {
+            !["4648", "4657", "4662", "4670", "4672", "4673", "4674", "4688", "4689", "4697",
+              "4698", "4699", "4700", "4701", "4702", "4706", "4707", "4713", "4716", "4717",
+              "4718", "4719", "4720", "4722", "4723", "4724", "4725", "4726", "4727", "4728",
+              "4729", "4730", "4731", "4732", "4733", "4734", "4735", "4737", "4738", "4739",
+              "4740", "4741", "4742", "4743", "4744", "4745", "4746", "4747", "4748", "4749",
+              "4750", "4751", "4752", "4753", "4754", "4755", "4756", "4757", "4758", "4759",
+              "4760", "4761", "4762", "4763", "4764", "4767", "4781", "4797", "4798", "4799",
+              "4817", "4904", "4905", "4907", "4912", "5136", "5140", "5145", "5379", "5380",
+              "5381", "5382"].contains(ctx.event.code)) {
           return;
         }
         if (ctx.winlog?.event_data?.SubjectUserSid != null) {
@@ -3812,7 +3817,7 @@ processors:
           int start = 0;
           int end = 0;
           boolean in_quote = false;
-          ArrayList al = new ArrayList();          
+          ArrayList al = new ArrayList();
           for (int i = 0; i < ctx.winlog.event_data.CommandLine.length(); i++) {
             end = i;
             if (Character.compare(ctx.winlog.event_data.CommandLine.charAt(i), "\"".charAt(0)) == 0) {
@@ -3955,7 +3960,7 @@ processors:
           LS: Local service account
           SY: Local system
           NU: Network logon user
-          NO: Network configuration operators
+          "NO": Network configuration operators
           NS: Network service account
           PO: Printer operators
           PS: Personal self
@@ -4133,7 +4138,7 @@ processors:
         HashMap translateACL(def dacl, def params) {
           def aceArray = dacl.splitOnToken(";");
           HashMap hm = new HashMap();
-          
+
           if (aceArray.length >= 6 ) {
             hm.put("grantee", translateSID(aceArray[5], params));
           }
@@ -4155,7 +4160,7 @@ processors:
               hm.put("perms", al);
             }
           }
-          return hm; 
+          return hm;
         }
         String translateSID(def sid, def params) {
           if (!params.AccountSIDDescription.containsKey(sid)) {
@@ -4171,8 +4176,7 @@ processors:
           }
           return params.AccountSIDDescription[sid];
         }
-          
-        
+
         void enrichSDDL(def sddlStr, def Sd, def params, def ctx) {
           Pattern sdOwnerPattern = /^O\:[A-Z]{2}/;
           Matcher sdOwnerMatcher = sdOwnerPattern.matcher(sddlStr);
@@ -4263,7 +4267,7 @@ processors:
         if (ctx.winlog?.event_data?.SidList != null) {
           splitSidList(ctx.winlog.event_data.SidList, params, ctx);
         }
-  
+
   #
   # Populate network.transport from network.iana_number. 
   #
@@ -4309,7 +4313,7 @@ processors:
         ctx.event?.code != null &&
         ["5140", "5145"].contains(ctx.event.code) &&
         ctx.winlog?.event_data?.RelativeTargetName != null &&
-        ctx.winlog?.event_data?.RelativeTargetName != ""
+        ctx.winlog.event_data.RelativeTargetName != ""
   - set:
       field: file.directory
       copy_from: winlog.event_data.ShareLocalPath
@@ -4317,7 +4321,7 @@ processors:
         ctx.event?.code != null &&
         ["5140", "5145"].contains(ctx.event.code) &&
         ctx.winlog?.event_data?.ShareLocalPath != null &&
-        ctx.winlog?.event_data?.ShareLocalPath != ""
+        ctx.winlog.event_data.ShareLocalPath != ""
   - set:
       field: file.path
       value: "{{file.directory}}\\{{file.name}}"
@@ -4329,7 +4333,7 @@ processors:
         ctx.event?.code != null &&
         ["5140", "5145"].contains(ctx.event.code) &&
         ctx.winlog?.event_data?.ShareLocalPath != null &&
-        ctx.winlog?.event_data?.ShareLocalPath != ""
+        ctx.winlog.event_data.ShareLocalPath != ""
   - set:
       field: file.target_path
       value: "{{winlog.event_data.ShareName}}\\{{file.name}}"
@@ -4337,7 +4341,7 @@ processors:
         ctx.event?.code != null &&
         ["5140", "5145"].contains(ctx.event.code) &&
         ctx.winlog?.event_data?.ShareName != null &&
-        ctx.winlog?.event_data?.ShareName != "" &&
+        ctx.winlog.event_data.ShareName != "" &&
         ctx.file?.name != null
   - script:
       description: Adds file information.
@@ -4358,6 +4362,10 @@ processors:
   - community_id:
       ignore_missing: true
       ignore_failure: true
+  - remove:
+      field:
+        - _temp
+      ignore_missing: true
           
 on_failure:
   - set:
