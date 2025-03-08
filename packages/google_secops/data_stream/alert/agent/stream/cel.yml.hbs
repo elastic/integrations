@@ -1,0 +1,118 @@
+config_version: 2
+interval: {{interval}}
+resource.tracer:
+  enabled: {{enable_request_tracer}}
+  filename: "../../logs/cel/http-request-trace-*.ndjson"
+  maxbackups: 5
+{{#if proxy_url}}
+resource.proxy_url: {{proxy_url}}
+{{/if}}
+{{#if ssl}}
+resource.ssl: {{ssl}}
+{{/if}}
+{{#if http_client_timeout}}
+resource.timeout: {{http_client_timeout}}
+{{/if}}
+resource.url: {{url}}
+auth.oauth2.provider: google
+auth.oauth2.google.{{credentials_type}}: {{credentials}}
+auth.oauth2.scopes:
+  - https://www.googleapis.com/auth/chronicle-backstory
+state:
+  initial_interval: {{initial_interval}}
+  page_size: {{batch_size}}
+redact:
+  fields: ~
+program: |
+  (
+    state.?want_more.orValue(false) ?
+      state
+    :
+      state.with({
+        "start_time": state.?cursor.last_timestamp.orValue((now - duration(state.initial_interval)).format(time_layout.RFC3339)),
+        "end_time": now.format(time_layout.RFC3339),
+      })
+  ).as(state,
+    request(
+      "GET",
+      state.url.trim_right("/") + "/v2/detect/rules/-/detections?" + {
+        "page_size": [string(state.page_size)],
+        "start_time": [string(state.start_time)],
+        "end_time": [string(state.end_time)],
+        ?"page_token": has(state.next_page) && has(state.next_page.token) ? optional.of([string(state.next_page.token)]) : optional.none(),
+      }.format_query()
+    ).do_request().as(resp, resp.StatusCode == 200 ?
+      resp.Body.decode_json().as(body, {
+        "events": (
+          has(body.detections) ?
+            body.detections.map(d,
+              d.collectionElements.map(ce,
+                ce.references.map(result, {
+                  "message":{
+                    ?"type": d.?type,
+                    ?"detection": d.detection[?0],
+                    ?"createdTime": d.?createdTime,
+                    ?"detectionTime": d.?detectionTime,
+                    ?"id": d.?id,
+                    ?"timeWindow": d.?timeWindow,
+                    ?"label": ce.?label,
+                    ?"event": result.?event
+                  }.encode_json()
+                })
+              )
+            ).flatten()
+          :
+            []
+        ),
+        "cursor": {
+          ?"last_timestamp": (
+            has(body.nextPageToken) ?
+              state.?cursor.last_timestamp
+            :
+              state.?end_time
+          )
+        },
+        "start_time": state.start_time,
+        "end_time": state.end_time,
+        "initial_interval": state.initial_interval,
+        "page_size": state.page_size,
+        "next_page": {
+          ?"token": body.?nextPageToken,
+        },
+        "want_more": has(body.nextPageToken),
+      })
+    :
+      {
+        "events": {
+          "error": {
+            "code": string(resp.StatusCode),
+            "id": string(resp.Status),
+            "message": "GET " + state.url.trim_right("/") + "/v2/detect/rules/-/detections: " +(
+              size(resp.Body) != 0 ?
+                string(resp.Body)
+              :
+                string(resp.Status) + ' (' + string(resp.StatusCode) + ')'
+            ),
+          },
+        },
+        "want_more": false,
+      }
+    )
+  )
+tags:
+{{#if preserve_original_event}}
+  - preserve_original_event
+{{/if}}
+{{#if preserve_duplicate_custom_fields}}
+  - preserve_duplicate_custom_fields
+{{/if}}
+{{#each tags as |tag|}}
+  - {{tag}}
+{{/each}}
+{{#contains "forwarded" tags}}
+publisher_pipeline.disable_host: true
+{{/contains}}
+{{#if processors}}
+processors:
+{{processors}}
+{{/if}}
