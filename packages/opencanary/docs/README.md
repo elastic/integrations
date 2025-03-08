@@ -50,74 +50,68 @@ An example event for `events` looks as following:
 
 ```json
 {
-    "@timestamp": "2024-04-05T14:37:26.457Z",
+    "@timestamp": "2025-02-24T16:47:30.787Z",
     "destination": {
-        "address": "10.10.10.10",
-        "domain": "OpenCanary1",
-        "ip": "10.10.10.10",
-        "port": 445
+        "address": "1.128.0.1",
+        "ip": "1.128.0.1",
+        "port": 21
     },
     "event": {
-        "action": "flistxattr",
         "category": [
             "network",
             "intrusion_detection"
         ],
-        "created": "2024-04-05T14:37:26.457Z",
-        "kind": [
-            "alert"
-        ],
-        "original": "{\"dst_host\": \"10.10.10.10\", \"dst_port\": 445, \"local_time\": \"2024-04-05 14:37:26.457226\", \"local_time_adjusted\": \"2024-04-05 07:37:26.457252\", \"logdata\": {\"AUDITACTION\": \"flistxattr\", \"DOMAIN\": \"CONTOSO\", \"FILENAME\": \"/shares/database\", \"LOCALNAME\": \"OpenCanary1\", \"REMOTENAME\": \"Client1\", \"SHARENAME\": \"database\", \"SMBARCH\": \"OSX\", \"SMBVER\": \"SMB3_11\", \"STATUS\": \"ok\", \"USER\": \"jdoe\"}, \"logtype\": 5000, \"node_id\": \"opencanary-1\", \"src_host\": \"192.168.0.10\", \"src_port\": \"-1\", \"utc_time\": \"2024-04-05 14:37:26.457249\"}",
-        "provider": "LOG_SMB_FILE_OPEN",
-        "start": "2024-04-05T14:37:26.457Z",
+        "created": "2025-02-24T16:47:30.787Z",
+        "kind": "alert",
+        "original": "{\"dst_host\": \"1.128.0.1\", \"dst_port\": 21, \"local_time\": \"2025-02-24 16:47:30.787072\", \"local_time_adjusted\": \"2025-02-24 16:47:30.787123\", \"logdata\": {\"PASSWORD\": \"<REDACTED>\", \"USERNAME\": \"test\"}, \"logtype\": 2000, \"node_id\": \"opencanary-1\", \"src_host\": \"1.128.0.1\", \"src_port\": 56998, \"utc_time\": \"2025-02-24 16:47:30.787112\"}",
+        "provider": "LOG_FTP_LOGIN_ATTEMPT",
+        "start": "2025-02-24T16:47:30.787Z",
         "type": [
             "connection"
         ]
     },
     "log": {
-        "logger": "LOG_SMB_FILE_OPEN"
+        "logger": "LOG_FTP_LOGIN_ATTEMPT"
     },
     "network": {
         "direction": "internal"
     },
     "opencanary": {
+        "dst_host": "1.128.0.1",
+        "dst_port": 21,
+        "local_time": "2025-02-24 16:47:30.787072",
+        "local_time_adjusted": "2025-02-24 16:47:30.787123",
+        "logdata": {
+            "username": "test"
+        },
+        "logtype": 2000,
         "node": {
             "id": "opencanary-1"
         },
-        "smb": {
-            "filename": "/shares/database",
-            "share_name": "database",
-            "smb_arch": "OSX",
-            "smb_version": "SMB3_11",
-            "status": "ok"
-        }
+        "src_host": "1.128.0.1",
+        "src_port": 56998,
+        "utc_time": "2025-02-24 16:47:30.787112"
     },
     "related": {
-        "hosts": [
-            "OpenCanary1",
-            "Client1"
-        ],
         "ip": [
-            "10.10.10.10",
-            "192.168.0.10"
+            "1.128.0.1"
         ],
         "user": [
-            "jdoe"
+            "test"
         ]
     },
     "source": {
-        "address": "192.168.0.10",
-        "domain": "Client1",
-        "ip": "192.168.0.10",
-        "port": -1
+        "address": "1.128.0.1",
+        "ip": "1.128.0.1",
+        "port": 56998
     },
     "tags": [
         "preserve_original_event",
-        "redact_passwords"
+        "redact_passwords",
+        "preserve_duplicate_custom_fields"
     ],
     "user": {
-        "domain": "CONTOSO",
-        "name": "jdoe"
+        "name": "test"
     }
 }
 ```
@@ -137,25 +131,55 @@ An example event for `events` looks as following:
 | host.os.build | OS build information. | keyword |
 | host.os.codename | OS codename, if any. | keyword |
 | input.type | Input type. | keyword |
+| log.file.device_id | ID of the device containing the filesystem where the file resides. | keyword |
+| log.file.fingerprint | The sha256 fingerprint identity of the file when fingerprinting is enabled. | keyword |
+| log.file.inode | Inode number of the log file. | keyword |
 | log.offset | Offset of the entry in the log file. | long |
+| opencanary.dst_host |  | keyword |
+| opencanary.dst_port |  | integer |
+| opencanary.honeycred |  | boolean |
+| opencanary.local_time |  | keyword |
+| opencanary.local_time_adjusted |  | keyword |
+| opencanary.logdata.auditaction |  | keyword |
+| opencanary.logdata.community_string |  | keyword |
 | opencanary.logdata.cwr |  | keyword |
 | opencanary.logdata.df |  | keyword |
+| opencanary.logdata.domain |  | keyword |
 | opencanary.logdata.ece |  | keyword |
+| opencanary.logdata.headers.\* |  | keyword |
+| opencanary.logdata.host |  | keyword |
+| opencanary.logdata.hostname |  | keyword |
 | opencanary.logdata.id |  | long |
+| opencanary.logdata.in |  | keyword |
+| opencanary.logdata.language |  | keyword |
 | opencanary.logdata.len |  | keyword |
+| opencanary.logdata.localname |  | keyword |
+| opencanary.logdata.mac |  | keyword |
+| opencanary.logdata.msg.logdata | Generic log message field | text |
+| opencanary.logdata.password | The password submitted to the service | keyword |
+| opencanary.logdata.path |  | keyword |
 | opencanary.logdata.prec |  | keyword |
+| opencanary.logdata.proto |  | keyword |
+| opencanary.logdata.remotename |  | keyword |
+| opencanary.logdata.repo |  | keyword |
+| opencanary.logdata.requests |  | keyword |
 | opencanary.logdata.res |  | keyword |
 | opencanary.logdata.session |  | keyword |
 | opencanary.logdata.syn |  | keyword |
 | opencanary.logdata.tos |  | keyword |
 | opencanary.logdata.ttl |  | long |
 | opencanary.logdata.urgp |  | long |
+| opencanary.logdata.user |  | keyword |
+| opencanary.logdata.useragent |  | keyword |
+| opencanary.logdata.username |  | keyword |
 | opencanary.logdata.window |  | long |
+| opencanary.logtype |  | long |
 | opencanary.mssql.client.app |  | keyword |
 | opencanary.mssql.client.hostname |  | keyword |
 | opencanary.mssql.client.interface_library |  | keyword |
 | opencanary.mssql.database |  | keyword |
 | opencanary.node.id | Identifier for the OpenCanary node as configured in `/etc/opencanaryd/opencanary.conf` | keyword |
+| opencanary.ntp.cmd |  | keyword |
 | opencanary.redis.args |  | keyword |
 | opencanary.redis.command |  | keyword |
 | opencanary.skin | Skin configured for the OpenCanary service. | keyword |
@@ -165,10 +189,16 @@ An example event for `events` looks as following:
 | opencanary.smb.smb_arch |  | keyword |
 | opencanary.smb.smb_version |  | keyword |
 | opencanary.smb.status |  | keyword |
+| opencanary.src_host |  | keyword |
+| opencanary.src_port |  | integer |
 | opencanary.ssh.local_version |  | keyword |
 | opencanary.ssh.remote_version |  | keyword |
 | opencanary.tcp_banner.banner_id |  | keyword |
 | opencanary.tcp_banner.data |  | keyword |
 | opencanary.tcp_banner.function |  | keyword |
 | opencanary.tcp_banner.secret_string |  | keyword |
+| opencanary.tftp.filename |  | keyword |
+| opencanary.tftp.node |  | keyword |
+| opencanary.tftp.opcode |  | keyword |
+| opencanary.utc_time |  | keyword |
 
