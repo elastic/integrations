@@ -2445,9 +2445,9 @@ An example event for `vulnerability` looks as following:
 {
     "@timestamp": "2025-02-25T13:33:23.000Z",
     "agent": {
-        "ephemeral_id": "fe5535e1-88e8-438b-9377-6fda12be80c6",
-        "id": "860699be-9224-4c60-9ed2-02c539b7d20e",
-        "name": "elastic-agent-33728",
+        "ephemeral_id": "bb413f03-2979-4f7a-b437-6bcc01711fe5",
+        "id": "c6ff4cb3-29f0-4dc1-94fc-cebba0379fd8",
+        "name": "elastic-agent-94828",
         "type": "filebeat",
         "version": "8.18.0"
     },
@@ -2612,24 +2612,30 @@ An example event for `vulnerability` looks as following:
     },
     "data_stream": {
         "dataset": "crowdstrike.vulnerability",
-        "namespace": "12638",
+        "namespace": "74228",
         "type": "logs"
     },
     "ecs": {
         "version": "8.17.0"
     },
     "elastic_agent": {
-        "id": "860699be-9224-4c60-9ed2-02c539b7d20e",
+        "id": "c6ff4cb3-29f0-4dc1-94fc-cebba0379fd8",
         "snapshot": true,
         "version": "8.18.0"
     },
     "event": {
         "agent_id_status": "verified",
+        "category": [
+            "vulnerability"
+        ],
         "dataset": "crowdstrike.vulnerability",
         "id": "897580adb4ab4540a457536faa42de18_eda961728a22320da280bd9d181a798b",
-        "ingested": "2025-03-05T08:05:47Z",
+        "ingested": "2025-03-07T12:49:35Z",
         "kind": "event",
-        "original": "{\"aid\":\"897580adb4ab4540a357536faa41de18\",\"app\":{\"product_name_normalized\":\"openssh\",\"product_name_version\":\"openssh 1:9.6p1-3ubuntu13.4\",\"vendor_normalized\":\"Ubuntu\"},\"apps\":[{\"evaluation_logic\":{\"aid\":\"897580adb4ab4540a357536faa41de18\",\"cid\":\"2cd98db1a47b4c98b913c94d43bfab70\",\"complex_check_operator\":\"AND\",\"created_timestamp\":\"2025-02-20T10:15:30Z\",\"id\":\"138bd6a67791327ab367838079b4d786\",\"logic\":[{\"comparison_check\":\"equals\",\"comparisons\":{\"state_comparisons\":[{\"entity_comparisons\":[{\"actual_value_field\":\"version\",\"operation\":\"equals\",\"value_datatype\":\"string\"}],\"entity_operator\":\"AND\"}],\"state_operator\":\"OR\"},\"determined_by_comparison\":true,\"existence_check\":\"Yes\",\"id\":\"logic-12345\",\"negate\":false,\"status\":\"active\",\"title\":\"Evaluation Logic for OpenSSH\",\"type\":\"comparison\"}],\"updated_timestamp\":\"2025-02-25T13:33:23Z\"},\"patch_publication_date\":\"2025-02-19T00:00:00Z\",\"product_name_normalized\":\"openssh\",\"product_name_version\":\"openssh 1:9.6p1-3ubuntu13.4\",\"remediation\":{\"ids\":[\"4688299d204b35a192828bdaf556ecf8\"]},\"remediation_info\":{\"minimum_id\":\"df1af7df1d33382398fb0dc268109a4d\",\"patch_publication_date\":\"2025-02-19T00:00:00Z\",\"recommended_id\":\"4688299d207b35a192828bdaf556ecf8\"},\"sub_status\":\"open\",\"vendor_normalized\":\"Ubuntu\"}],\"cid\":\"2cd98db1a47b4c98b913c94d43bfab70\",\"closed_timestamp\":\"2025-02-26T10:00:00Z\",\"confidence\":\"confirmed\",\"created_timestamp\":\"2025-02-20T10:10:24Z\",\"cve\":{\"base_score\":6.8,\"cisa_info\":{\"due_date\":\"2025-03-01\",\"is_cisa_kev\":false},\"cwes\":[\"CWE-123\"],\"description\":\"A vulnerability was found in OpenSSH...\",\"exploit_status\":30,\"exploitability_score\":1.6,\"exprt_rating\":\"MEDIUM\",\"id\":\"CVE-2025-26465\",\"impact_score\":5.2,\"published_date\":\"2025-02-18T19:15:00Z\",\"references\":[\"https://ubuntu.com/security/CVE-2025-26465\"],\"remediation_level\":\"O\",\"severity\":\"MEDIUM\",\"spotlight_published_date\":\"2025-02-19T05:32:00Z\",\"types\":[\"Vulnerability\"],\"vector\":\"CVSS:3.1/AV:N/AC:H/PR:N/UI:R/S:U/C:H/I:H/A:N\"},\"data_providers\":[{\"ports\":[22,80],\"provider\":\"Falcon sensor\",\"rating\":\"high\",\"scan_id\":\"scan-123456\",\"scan_time\":\"2025-02-20T12:00:00Z\",\"scanner_id\":\"scanner-xyz\"}],\"host_info\":{\"asset_criticality\":\"Critical\",\"groups\":[{\"id\":\"group-123\",\"name\":\"Production\"}],\"has_run_container\":false,\"host_last_seen_timestamp\":\"2025-02-18T00:00:00Z\",\"hostname\":\"ub24-50-10-154\",\"internet_exposure\":\"No\",\"local_ip\":\"1.128.0.0\",\"machine_domain\":\"example.local\",\"managed_by\":\"Falcon sensor\",\"os_version\":\"Ubuntu 24.04\",\"platform\":\"Linux\",\"product_type_desc\":\"Server\",\"service_provider\":\"AWS\",\"service_provider_account_id\":\"123456789012\",\"system_manufacturer\":\"Dell\",\"tags\":[\"production\",\"security\"]},\"id\":\"897580adb4ab4540a457536faa42de18_eda961728a22320da280bd9d181a798b\",\"remediation\":{\"entities\":[{\"action\":\"Update ubuntu openssh to version 1:9.6p1-3ubuntu13.8 or newer\",\"id\":\"4688299d207b35a192828bdaf556ecf8\",\"link\":\"https://ubuntu.com/security/CVE-2025-26465\",\"recommendation_type\":\"recommended\",\"reference\":\"1:9.6p1-3ubuntu13.8\",\"title\":\"Update ubuntu openssh\",\"vendor_url\":\"https://www.openssh.com\"}],\"ids\":[\"4688299d207b35a192828bdaf556ecf8\",\"df1af7df1d33382398fb0dc268109a4d\"]},\"status\":\"open\",\"suppression_info\":{\"is_suppressed\":false,\"reason\":\"Not applicable\"},\"updated_timestamp\":\"2025-02-25T13:33:23Z\",\"vulnerability_id\":\"CVE-2025-26465\"}"
+        "original": "{\"aid\":\"897580adb4ab4540a357536faa41de18\",\"app\":{\"product_name_normalized\":\"openssh\",\"product_name_version\":\"openssh 1:9.6p1-3ubuntu13.4\",\"vendor_normalized\":\"Ubuntu\"},\"apps\":[{\"evaluation_logic\":{\"aid\":\"897580adb4ab4540a357536faa41de18\",\"cid\":\"2cd98db1a47b4c98b913c94d43bfab70\",\"complex_check_operator\":\"AND\",\"created_timestamp\":\"2025-02-20T10:15:30Z\",\"id\":\"138bd6a67791327ab367838079b4d786\",\"logic\":[{\"comparison_check\":\"equals\",\"comparisons\":{\"state_comparisons\":[{\"entity_comparisons\":[{\"actual_value_field\":\"version\",\"operation\":\"equals\",\"value_datatype\":\"string\"}],\"entity_operator\":\"AND\"}],\"state_operator\":\"OR\"},\"determined_by_comparison\":true,\"existence_check\":\"Yes\",\"id\":\"logic-12345\",\"negate\":false,\"status\":\"active\",\"title\":\"Evaluation Logic for OpenSSH\",\"type\":\"comparison\"}],\"updated_timestamp\":\"2025-02-25T13:33:23Z\"},\"patch_publication_date\":\"2025-02-19T00:00:00Z\",\"product_name_normalized\":\"openssh\",\"product_name_version\":\"openssh 1:9.6p1-3ubuntu13.4\",\"remediation\":{\"ids\":[\"4688299d204b35a192828bdaf556ecf8\"]},\"remediation_info\":{\"minimum_id\":\"df1af7df1d33382398fb0dc268109a4d\",\"patch_publication_date\":\"2025-02-19T00:00:00Z\",\"recommended_id\":\"4688299d207b35a192828bdaf556ecf8\"},\"sub_status\":\"open\",\"vendor_normalized\":\"Ubuntu\"}],\"cid\":\"2cd98db1a47b4c98b913c94d43bfab70\",\"closed_timestamp\":\"2025-02-26T10:00:00Z\",\"confidence\":\"confirmed\",\"created_timestamp\":\"2025-02-20T10:10:24Z\",\"cve\":{\"base_score\":6.8,\"cisa_info\":{\"due_date\":\"2025-03-01\",\"is_cisa_kev\":false},\"cwes\":[\"CWE-123\"],\"description\":\"A vulnerability was found in OpenSSH...\",\"exploit_status\":30,\"exploitability_score\":1.6,\"exprt_rating\":\"MEDIUM\",\"id\":\"CVE-2025-26465\",\"impact_score\":5.2,\"published_date\":\"2025-02-18T19:15:00Z\",\"references\":[\"https://ubuntu.com/security/CVE-2025-26465\"],\"remediation_level\":\"O\",\"severity\":\"MEDIUM\",\"spotlight_published_date\":\"2025-02-19T05:32:00Z\",\"types\":[\"Vulnerability\"],\"vector\":\"CVSS:3.1/AV:N/AC:H/PR:N/UI:R/S:U/C:H/I:H/A:N\"},\"data_providers\":[{\"ports\":[22,80],\"provider\":\"Falcon sensor\",\"rating\":\"high\",\"scan_id\":\"scan-123456\",\"scan_time\":\"2025-02-20T12:00:00Z\",\"scanner_id\":\"scanner-xyz\"}],\"host_info\":{\"asset_criticality\":\"Critical\",\"groups\":[{\"id\":\"group-123\",\"name\":\"Production\"}],\"has_run_container\":false,\"host_last_seen_timestamp\":\"2025-02-18T00:00:00Z\",\"hostname\":\"ub24-50-10-154\",\"internet_exposure\":\"No\",\"local_ip\":\"1.128.0.0\",\"machine_domain\":\"example.local\",\"managed_by\":\"Falcon sensor\",\"os_version\":\"Ubuntu 24.04\",\"platform\":\"Linux\",\"product_type_desc\":\"Server\",\"service_provider\":\"AWS\",\"service_provider_account_id\":\"123456789012\",\"system_manufacturer\":\"Dell\",\"tags\":[\"production\",\"security\"]},\"id\":\"897580adb4ab4540a457536faa42de18_eda961728a22320da280bd9d181a798b\",\"remediation\":{\"entities\":[{\"action\":\"Update ubuntu openssh to version 1:9.6p1-3ubuntu13.8 or newer\",\"id\":\"4688299d207b35a192828bdaf556ecf8\",\"link\":\"https://ubuntu.com/security/CVE-2025-26465\",\"recommendation_type\":\"recommended\",\"reference\":\"1:9.6p1-3ubuntu13.8\",\"title\":\"Update ubuntu openssh\",\"vendor_url\":\"https://www.openssh.com\"}],\"ids\":[\"4688299d207b35a192828bdaf556ecf8\",\"df1af7df1d33382398fb0dc268109a4d\"]},\"status\":\"open\",\"suppression_info\":{\"is_suppressed\":false,\"reason\":\"Not applicable\"},\"updated_timestamp\":\"2025-02-25T13:33:23Z\",\"vulnerability_id\":\"CVE-2025-26465\"}",
+        "type": [
+            "info"
+        ]
     },
     "host": {
         "ip": [
@@ -2645,6 +2651,14 @@ An example event for `vulnerability` looks as following:
         "type": "cel"
     },
     "message": "A vulnerability was found in OpenSSH...",
+    "observer": {
+        "product": "Falcon sensor",
+        "type": "Sensor",
+        "vendor": "Crowdstrike"
+    },
+    "package": {
+        "name": "openssh"
+    },
     "related": {
         "hosts": [
             "ub24-50-10-154"
@@ -2659,26 +2673,25 @@ An example event for `vulnerability` looks as following:
         "forwarded",
         "crowdstrike-vulnerability"
     ],
-    "threat": {
-        "indicator": {
-            "provider": [
-                "Falcon sensor"
-            ]
-        },
-        "software": {
-            "name": "openssh"
-        }
-    },
     "vulnerability": {
         "description": "A vulnerability was found in OpenSSH...",
+        "enumeration": "CVE",
         "id": "CVE-2025-26465",
         "reference": [
             "https://ubuntu.com/security/CVE-2025-26465"
         ],
+        "report_id": [
+            "scan-123456"
+        ],
+        "scanner": {
+            "vendor": [
+                "Falcon sensor"
+            ]
+        },
         "score": {
             "base": 6.8
         },
-        "severity": "MEDIUM"
+        "severity": "Medium"
     }
 }
 ```
@@ -2798,14 +2811,8 @@ An example event for `vulnerability` looks as following:
 | data_stream.dataset | Data stream dataset. | constant_keyword |
 | data_stream.namespace | Data stream namespace. | constant_keyword |
 | data_stream.type | Data stream type. | constant_keyword |
-| event.category |  | constant_keyword |
 | event.dataset | Event dataset. | constant_keyword |
 | event.module | Event module. | constant_keyword |
-| event.type |  | constant_keyword |
 | input.type | Type of filebeat input. | keyword |
-| labels.is_transform_source | Distinguishes between documents that are a source for a transform and documents that are an output of a transform, to facilitate easier filtering. | constant_keyword |
 | log.offset | Log offset. | long |
-| observer.product |  | constant_keyword |
-| observer.type |  | constant_keyword |
-| observer.vendor |  | constant_keyword |
 
