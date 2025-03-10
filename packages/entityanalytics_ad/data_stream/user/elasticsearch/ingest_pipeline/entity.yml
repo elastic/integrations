@@ -98,13 +98,13 @@ processors:
         }
         String sid(String text) {
             def bytes = Base64.getDecoder().decode(text);
-            int subauths = Byte.toUnsignedInt(bytes[1]);
             def uid = "S-"+Byte.toString(bytes[0])+"-";
             int auth = 0;
             for (int i = 2; i < 8; i++) {
                 auth |= Byte.toUnsignedInt(bytes[i])<<(8*(5-(i-2)));
             }
             uid += Integer.toString(auth);
+            int subauths = Byte.toUnsignedInt(bytes[1]);
             int off = 8;
             for (int i = 0; i < subauths; i++) {
                 int subauth = 0;
