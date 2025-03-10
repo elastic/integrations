@@ -74,6 +74,23 @@ processors:
       field: json.ClientRequestMethod
       target_field: cloudflare_logpush.firewall_event.client.request.method
       ignore_missing: true
+  - rename:
+      field: json.ContentScanObjResults
+      target_field: cloudflare_logpush.firewall_event.content_scan.results
+      ignore_missing: true
+  - convert:
+      field: json.ContentScanObjSizes
+      target_field: cloudflare_logpush.firewall_event.content_scan.sizes
+      type: long
+      ignore_missing: true
+      on_failure:
+        - append:
+            field: error.message
+            value: '{{{_ingest.on_failure_message}}}'
+  - rename:
+      field: json.ContentScanObjTypes
+      target_field: cloudflare_logpush.firewall_event.content_scan.types
+      ignore_missing: true
   - set:
       field: http.request.method
       copy_from: cloudflare_logpush.firewall_event.client.request.method
@@ -229,6 +246,10 @@ processors:
       field: json.Kind
       target_field: cloudflare_logpush.firewall_event.kind
       ignore_missing: true
+  - rename:
+      field: json.LeakedCredentialCheckResult
+      target_field: cloudflare_logpush.firewall_event.leaked_credential_check
+      ignore_missing: true
   - convert:
       field: json.MatchIndex
       target_field: cloudflare_logpush.firewall_event.match_index
@@ -256,6 +277,10 @@ processors:
   - rename:
       field: json.OriginatorRayID
       target_field: cloudflare_logpush.firewall_event.origin.ray.id
+      ignore_missing: true
+  - rename:
+      field: json.Ref
+      target_field: cloudflare_logpush.firewall_event.ref
       ignore_missing: true
   - rename:
       field: json.RayID

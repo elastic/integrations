@@ -2,18 +2,63 @@
   type: group
   description: Integration for parsing Cloudflare Logpush Gateway DNS logs.
   fields:
+    - name: account_id
+      type: keyword
+      description: Cloudflare account ID.
     - name: application_id
       type: long
       description: ID of the application the domain belongs to.
+    - name: application_name
+      type: keyword
+      description: Name of the application the domain belongs to.
+    - name: authoritative_name_server_ip
+      type: ip
+      description: The IPs of the authoritative nameservers that provided the answers, if any.
+    - name: cname_category
+      type: group
+      fields:
+        - name: ids
+          type: keyword
+          description: ID or IDs of category that the intermediate cname domains belongs to.
+        - name: names
+          type: keyword
+          description: Name or names of category that the intermediate cname domains belongs to.
+    - name: cname
+      type: keyword
+      description: Resolved intermediate cname domains.
+    - name: cname_reversed
+      type: keyword
+      description: Resolved intermediate cname domains in reverse.
     - name: colo
       type: group
       fields:
         - name: code
           type: keyword
-          description: The name of the colo that received the DNS query .
+          description: The name of the colo that received the DNS query.
         - name: id
           type: long
           description: The ID of the colo that received the DNS query.
+    - name: custom_resolver
+      type: group
+      fields:
+        - name: duration_milli
+          type: long
+          description: The time it took for the custom resolver to respond in milliseconds.
+        - name: address
+          type: keyword
+          description: IP and port combo used to resolve the custom dns resolver query, if any.
+        - name: policy
+          type: group
+          fields:
+            - name: ids
+              type: keyword
+              description: Custom resolver policy UUID, if matched.
+            - name: names
+              type: keyword
+              description: Custom resolver policy name, if matched.
+        - name: response
+          type: keyword
+          description: Status of the custom resolver response.
     - name: timestamp
       type: date
       description: The date and time the corresponding DNS request was made.
@@ -35,6 +80,27 @@
         - name: port
           type: long
           description: The destination port used at the edge. The port changes based on the protocol used by the DNS query.
+    - name: doh_subdomain
+      type: keyword
+      description: The destination DoH subdomain the DNS query was made to.
+    - name: dot_subdomain
+      type: keyword
+      description: The destination DoT subdomain the DNS query was made to.
+    - name: extended_dns_error_codes
+      type: keyword
+      description: List of returned Extended DNS Error Codes.
+    - name: initial_category
+      type: group
+      fields:
+        - name: ids
+          type: keyword
+          description: ID or IDs of category that the queried domains belongs to.
+        - name: names
+          type: keyword
+          description: Name or names of category that the queried domains belongs to.
+    - name: is_response_cached
+      type: boolean
+      description: Response comes from cache or not.
     - name: location
       type: group
       fields:
@@ -56,6 +122,15 @@
             - name: names
               type: keyword
               description: Name or names of category that the domain was matched with the policy.
+        - name: indicator_feed
+          type: group
+          fields:
+            - name: ids
+              type: keyword
+              description: ID or IDs of indicator feed(s) that the domain was matched with the policy.
+            - name: names
+              type: keyword
+              description: Name or names of indicator feed(s) that the domain was matched with the policy.
     - name: policy
       type: group
       fields:
@@ -71,6 +146,9 @@
     - name: question
       type: group
       fields:
+        - name: id
+          type: keyword
+          description: Globally unique identifier of the query.
         - name: name
           type: keyword
           description: The query name.
@@ -83,6 +161,15 @@
             - name: names
               type: keyword
               description: Name or names of category that the domain belongs to.
+        - name: indicator_feed
+          type: group
+          fields:
+            - name: ids
+              type: long
+              description: ID or IDs of indicator feed(s) that the domain belongs to.
+            - name: names
+              type: keyword
+              description: Name or names of indicator feed(s) that the domain belongs to.
         - name: reversed
           type: keyword
           description: Query name in reverse.
@@ -95,6 +182,48 @@
         - name: type_id
           type: long
           description: ID of the type of DNS query.
+    - name: resolved_ip_details
+      type: group
+      fields:
+        - name: category
+          type: group
+          fields:
+            - name: ids
+              type: keyword
+              description: ID or IDs of category that the IPs in the response belongs to.
+            - name: names
+              type: keyword
+              description: Name or names of category that the IPs in the response belongs to.
+        - name: continent_codes
+          type: keyword
+          description: Continent code of each resolved IP, if any.
+        - name: country_codes
+          type: keyword
+          description: Country code of each resolved IP, if any.
+        - name: ips
+          type: ip
+          description: The resolved IPs in the response, if any.
+    - name: resolver
+      type: group
+      fields:
+        - name: policy
+          type: group
+          fields:
+            - name: id
+              type: keyword
+              description: Resolver policy UUID, if any matched.
+            - name: names
+              type: keyword
+              description: Resolver policy name, if any matched.
+    - name: resource_records
+      type: group
+      fields:
+        - name: object
+          type: flattened
+          description: The rdata objects.
+        - name: json
+          type: match_only_text
+          description: String that represents the JSON array with the returned resource records.
     - name: response_code
       type: keyword
       description: The return code sent back by the DNS resolver.
@@ -116,6 +245,15 @@
         - name: port
           type: long
           description: The port used by the client when they sent the DNS request.
+    - name: source_id
+      type: group
+      fields:
+        - name: continent_code
+          type: keyword
+          description: Continent code of the source IP address making the DNS query.
+        - name: country_code
+          type: keyword
+          description: Country code of the source IP address making the DNS query.
     - name: timezone
       type: keyword
       description: Time zone used to calculate the current time, if a matched rule was scheduled with it.

@@ -191,6 +191,18 @@ processors:
       target_field: cloudflare_logpush.network_analytics.attack.id
       ignore_missing: true
   - rename:
+      field: json.AttackVector
+      target_field: cloudflare_logpush.network_analytics.attack.vector
+      ignore_missing: true
+  - rename:
+      field: json.ColoCity
+      target_field: cloudflare_logpush.network_analytics.colo.city
+      ignore_missing: true
+  - rename:
+      field: json.ColoCode
+      target_field: cloudflare_logpush.network_analytics.colo.code
+      ignore_missing: true
+  - rename:
       field: json.ColoCountry
       target_field: cloudflare_logpush.network_analytics.colo.country
       ignore_missing: true
@@ -219,6 +231,10 @@ processors:
   - rename:
       field: json.DestinationASNDescription
       target_field: cloudflare_logpush.network_analytics.destination.as.number.description
+      ignore_missing: true
+  - rename:
+      field: json.DestinationASNName
+      target_field: cloudflare_logpush.network_analytics.destination.as.number.name
       ignore_missing: true
   - rename:
       field: json.DestinationCountry
@@ -390,20 +406,48 @@ processors:
         - append:
             field: error.message
             value: '{{{_ingest.on_failure_message}}}'
-  - convert:
+  - rename:
+      field: json.IPTTL
+      target_field: cloudflare_logpush.network_analytics.ip.ttl.value
+      if: ctx.json?.IPTTL != null && ctx.json.IPTTL != ''
+      ignore_missing: true
+  - append:
+      field: cloudflare_logpush.network_analytics.ip.ttl.value
+      value: '{{{json.IPTtl}}}'
+      if: ctx.cloudflare_logpush?.network_analytics?.ip?.ttl?.value != null && ctx.json?.IPTtl != ctx.cloudflare_logpush?.network_analytics?.ip?.ttl?.value
+      allow_duplicates: false
+  - rename:
       field: json.IPTtl
       target_field: cloudflare_logpush.network_analytics.ip.ttl.value
-      if: ctx.json?.IPTtl != ''
+      if: ctx.cloudflare_logpush?.network_analytics?.ip?.ttl?.value == null && ctx.json?.IPTtl != null && ctx.json.IPTtl != ''
+      ignore_missing: true
+  - convert:
+      field: cloudflare_logpush.network_analytics.ip.ttl.value
+      if: ctx.cloudflare_logpush?.network_analytics?.ip?.ttl?.value != null
       type: long
       ignore_missing: true
       on_failure:
         - append:
             field: error.message
             value: '{{{_ingest.on_failure_message}}}'
-  - convert:
+  - rename:
+      field: json.IPTTLBuckets
+      target_field: cloudflare_logpush.network_analytics.ip.ttl.buckets
+      if: ctx.json?.IPTTLBuckets != null && ctx.json.IPTTLBuckets != ''
+      ignore_missing: true
+  - append:
+      field: cloudflare_logpush.network_analytics.ip.ttl.buckets
+      value: '{{{json.IPTtlBuckets}}}'
+      if: ctx.cloudflare_logpush?.network_analytics?.ip?.ttl?.buckets != null && ctx.json?.IPTtlBuckets != ctx.cloudflare_logpush?.network_analytics?.ip?.ttl?.buckets
+      allow_duplicates: false
+  - rename:
       field: json.IPTtlBuckets
       target_field: cloudflare_logpush.network_analytics.ip.ttl.buckets
-      if: ctx.json?.IPTtlBuckets != ''
+      if: ctx.cloudflare_logpush?.network_analytics?.ip?.ttl?.buckets == null && ctx.json?.IPTtlBuckets != null && ctx.json.IPTtlBuckets != ''
+      ignore_missing: true
+  - convert:
+      field: cloudflare_logpush.network_analytics.ip.ttl.buckets
+      if: ctx.cloudflare_logpush?.network_analytics?.ip?.ttl?.buckets != null
       type: long
       ignore_missing: true
       on_failure:
@@ -430,20 +474,48 @@ processors:
         - append:
             field: error.message
             value: '{{{_ingest.on_failure_message}}}'
-  - convert:
+  - rename:
+      field: json.IPv4DSCP
+      target_field: cloudflare_logpush.network_analytics.ipv4.dscp
+      if: ctx.json?.IPv4DSCP != null && ctx.json.IPv4DSCP != ''
+      ignore_missing: true
+  - append:
+      field: cloudflare_logpush.network_analytics.ipv4.dscp
+      value: '{{{json.IPv4Dscp}}}'
+      if: ctx.cloudflare_logpush?.network_analytics?.ipv4?.dscp != null && ctx.json?.IPv4Dscp != ctx.cloudflare_logpush?.network_analytics?.ipv4?.dscp
+      allow_duplicates: false
+  - rename:
       field: json.IPv4Dscp
       target_field: cloudflare_logpush.network_analytics.ipv4.dscp
-      if: ctx.json?.IPv4Dscp != ''
+      if: ctx.cloudflare_logpush?.network_analytics?.ipv4?.dscp == null && ctx.json?.IPv4Dscp != null && ctx.json.IPv4Dscp != ''
+      ignore_missing: true
+  - convert:
+      field: cloudflare_logpush.network_analytics.ipv4.dscp
+      if: ctx.cloudflare_logpush?.network_analytics?.ipv4?.dscp != null
       type: long
       ignore_missing: true
       on_failure:
         - append:
             field: error.message
             value: '{{{_ingest.on_failure_message}}}'
-  - convert:
+  - rename:
+      field: json.IPv4ECN
+      target_field: cloudflare_logpush.network_analytics.ipv4.ecn
+      if: ctx.json?.IPv4ECN != null && ctx.json.IPv4ECN != ''
+      ignore_missing: true
+  - append:
+      field: cloudflare_logpush.network_analytics.ipv4.ecn
+      value: '{{{json.IPv4Ecn}}}'
+      if: ctx.cloudflare_logpush?.network_analytics?.ipv4?.ecn != null && ctx.json?.IPv4Ecn != ctx.cloudflare_logpush?.network_analytics?.ipv4?.ecn
+      allow_duplicates: false
+  - rename:
       field: json.IPv4Ecn
       target_field: cloudflare_logpush.network_analytics.ipv4.ecn
-      if: ctx.json?.IPv4Ecn != ''
+      if: ctx.cloudflare_logpush?.network_analytics?.ipv4?.ecn == null && ctx.json?.IPv4Ecn != null && ctx.json.IPv4Ecn != ''
+      ignore_missing: true
+  - convert:
+      field: cloudflare_logpush.network_analytics.ipv4.ecn
+      if: ctx.cloudflare_logpush?.network_analytics?.ipv4?.ecn != null
       type: long
       ignore_missing: true
       on_failure:
@@ -470,20 +542,48 @@ processors:
         - append:
             field: error.message
             value: '{{{_ingest.on_failure_message}}}'
-  - convert:
+  - rename:
+      field: json.IPv6DSCP
+      target_field: cloudflare_logpush.network_analytics.ipv6.dscp
+      if: ctx.json?.IPv6DSCP != null && ctx.json.IPv6DSCP != ''
+      ignore_missing: true
+  - append:
+      field: cloudflare_logpush.network_analytics.ipv6.dscp
+      value: '{{{json.IPv6Dscp}}}'
+      if: ctx.cloudflare_logpush?.network_analytics?.ipv6?.dscp != null && ctx.json?.IPv6Dscp != ctx.cloudflare_logpush?.network_analytics?.ipv6?.dscp
+      allow_duplicates: false
+  - rename:
       field: json.IPv6Dscp
       target_field: cloudflare_logpush.network_analytics.ipv6.dscp
-      if: ctx.json?.IPv6Dscp != ''
+      if: ctx.cloudflare_logpush?.network_analytics?.ipv6?.dscp == null && ctx.json?.IPv6Dscp != null && ctx.json.IPv6Dscp != ''
+      ignore_missing: true
+  - convert:
+      field: cloudflare_logpush.network_analytics.ipv6.dscp
+      if: ctx.cloudflare_logpush?.network_analytics?.ipv6?.dscp != null
       type: long
       ignore_missing: true
       on_failure:
         - append:
             field: error.message
             value: '{{{_ingest.on_failure_message}}}'
-  - convert:
+  - rename:
+      field: json.IPv6ECN
+      target_field: cloudflare_logpush.network_analytics.ipv6.ecn
+      if: ctx.json?.IPv6ECN != null && ctx.json.IPv6ECN != ''
+      ignore_missing: true
+  - append:
+      field: cloudflare_logpush.network_analytics.ipv6.ecn
+      value: '{{{json.IPv6Ecn}}}'
+      if: ctx.cloudflare_logpush?.network_analytics?.ipv6?.ecn != null && ctx.json?.IPv6Ecn != ctx.cloudflare_logpush?.network_analytics?.ipv6?.ecn
+      allow_duplicates: false
+  - rename:
       field: json.IPv6Ecn
       target_field: cloudflare_logpush.network_analytics.ipv6.ecn
-      if: ctx.json?.IPv6Ecn != ''
+      if: ctx.cloudflare_logpush?.network_analytics?.ipv6?.ecn == null && ctx.json?.IPv6Ecn != null && ctx.json.IPv6Ecn != ''
+      ignore_missing: true
+  - convert:
+      field: cloudflare_logpush.network_analytics.ipv6.ecn
+      if: ctx.cloudflare_logpush?.network_analytics?.ipv6?.ecn != null
       type: long
       ignore_missing: true
       on_failure:
@@ -531,6 +631,10 @@ processors:
       target_field: cloudflare_logpush.network_analytics.protocol_state
       ignore_missing: true
   - rename:
+      field: json.RuleName
+      target_field: cloudflare_logpush.network_analytics.rule.name
+      ignore_missing: true
+  - rename:
       field: json.RulesetID
       target_field: cloudflare_logpush.network_analytics.rule.set.id
       ignore_missing: true
@@ -548,6 +652,10 @@ processors:
         - append:
             field: error.message
             value: '{{{_ingest.on_failure_message}}}'
+  - rename:
+      field: json.SourceASNName
+      target_field: cloudflare_logpush.network_analytics.source.as.number.name
+      ignore_missing: true
   - rename:
       field: json.SourceASNDescription
       target_field: cloudflare_logpush.network_analytics.source.as.number.description
@@ -608,6 +716,30 @@ processors:
       field: json.TCPFlagsString
       target_field: cloudflare_logpush.network_analytics.tcp.flags.string
       ignore_missing: true
+  - rename:
+      field: json.TCPMSS
+      target_field: cloudflare_logpush.network_analytics.tcp.mss
+      if: ctx.json?.TCPMSS != null && ctx.json.TCPMSS != ''
+      ignore_missing: true
+  - append:
+      field: cloudflare_logpush.network_analytics.tcp.mss
+      value: '{{{json.TCPMss}}}'
+      if: ctx.cloudflare_logpush?.network_analytics?.tcp?.mss != null && ctx.json?.TCPMss != ctx.cloudflare_logpush?.network_analytics?.tcp?.mss
+      allow_duplicates: false
+  - rename:
+      field: json.TCPMss
+      target_field: cloudflare_logpush.network_analytics.tcp.mss
+      if: ctx.cloudflare_logpush?.network_analytics?.tcp?.mss == null && ctx.json?.TCPMss != null && ctx.json.TCPMss != ''
+      ignore_missing: true
+  - convert:
+      field: cloudflare_logpush.network_analytics.tcp.mss
+      if: ctx.cloudflare_logpush?.network_analytics?.tcp?.mss != null
+      type: long
+      ignore_missing: true
+      on_failure:
+        - append:
+            field: error.message
+            value: '{{{_ingest.on_failure_message}}}'
   - convert:
       field: json.TCPMss
       target_field: cloudflare_logpush.network_analytics.tcp.mss
@@ -622,20 +754,48 @@ processors:
       field: json.TCPOptions
       target_field: cloudflare_logpush.network_analytics.tcp.options
       ignore_missing: true
-  - convert:
+  - rename:
+      field: json.TCPSACKBlocks
+      target_field: cloudflare_logpush.network_analytics.tcp.sack.blocks
+      if: ctx.json?.TCPSACKBlocks != null && ctx.json.TCPSACKBlocks != ''
+      ignore_missing: true
+  - append:
+      field: cloudflare_logpush.network_analytics.tcp.sack.blocks
+      value: '{{{json.TCPSackBlocks}}}'
+      if: ctx.cloudflare_logpush?.network_analytics?.tcp?.sack?.blocks != null && ctx.json?.TCPSackBlocks != ctx.cloudflare_logpush?.network_analytics?.tcp?.sack?.blocks
+      allow_duplicates: false
+  - rename:
       field: json.TCPSackBlocks
       target_field: cloudflare_logpush.network_analytics.tcp.sack.blocks
-      if: ctx.json?.TCPSackBlocks != ''
+      if: ctx.cloudflare_logpush?.network_analytics?.tcp?.sack?.blocks == null && ctx.json?.TCPSackBlocks != null && ctx.json.TCPSackBlocks != ''
+      ignore_missing: true
+  - convert:
+      field: cloudflare_logpush.network_analytics.tcp.sack.blocks
+      if: ctx.cloudflare_logpush?.network_analytics?.tcp?.sack?.blocks != null
       type: long
       ignore_missing: true
       on_failure:
         - append:
             field: error.message
             value: '{{{_ingest.on_failure_message}}}'
-  - convert:
+  - rename:
+      field: json.TCPSACKPermitted
+      target_field: cloudflare_logpush.network_analytics.tcp.sack.permitted
+      if: ctx.json?.TCPSACKPermitted != null && ctx.json.TCPSACKPermitted != ''
+      ignore_missing: true
+  - append:
+      field: cloudflare_logpush.network_analytics.tcp.sack.permitted
+      value: '{{{json.TCPSacksPermitted}}}'
+      if: ctx.cloudflare_logpush?.network_analytics?.tcp?.sack?.permitted != null && ctx.json?.TCPSacksPermitted != ctx.cloudflare_logpush?.network_analytics?.tcp?.sack?.permitted
+      allow_duplicates: false
+  - rename:
       field: json.TCPSacksPermitted
       target_field: cloudflare_logpush.network_analytics.tcp.sack.permitted
-      if: ctx.json?.TCPSacksPermitted != ''
+      if: ctx.cloudflare_logpush?.network_analytics?.tcp?.sack?.permitted == null && ctx.json?.TCPSacksPermitted != null && ctx.json.TCPSacksPermitted != ''
+      ignore_missing: true
+  - convert:
+      field: cloudflare_logpush.network_analytics.tcp.sack.permitted
+      if: ctx.cloudflare_logpush?.network_analytics?.tcp?.sack?.permitted != null
       type: long
       ignore_missing: true
       on_failure:
@@ -652,10 +812,24 @@ processors:
         - append:
             field: error.message
             value: '{{{_ingest.on_failure_message}}}'
-  - convert:
+  - rename:
+      field: json.TCPTimestampECR
+      target_field: cloudflare_logpush.network_analytics.tcp.timestamp.ecr
+      if: ctx.json?.TCPTimestampECR != null && ctx.json.TCPTimestampECR != ''
+      ignore_missing: true
+  - append:
+      field: cloudflare_logpush.network_analytics.tcp.timestamp.ecr
+      value: '{{{json.TCPTimestampEcr}}}'
+      if: ctx.cloudflare_logpush?.network_analytics?.tcp?.timestamp?.ecr != null && ctx.json?.TCPTimestampEcr != ctx.cloudflare_logpush?.network_analytics?.tcp?.timestamp?.ecr
+      allow_duplicates: false
+  - rename:
       field: json.TCPTimestampEcr
       target_field: cloudflare_logpush.network_analytics.tcp.timestamp.ecr
-      if: ctx.json?.TCPTimestampEcr != ''
+      if: ctx.cloudflare_logpush?.network_analytics?.tcp?.timestamp?.ecr == null && ctx.json?.TCPTimestampEcr != null && ctx.json.TCPTimestampEcr != ''
+      ignore_missing: true
+  - convert:
+      field: cloudflare_logpush.network_analytics.tcp.timestamp.ecr
+      if: ctx.cloudflare_logpush?.network_analytics?.tcp?.timestamp?.ecr != null
       type: long
       ignore_missing: true
       on_failure:
