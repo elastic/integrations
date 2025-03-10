@@ -51,7 +51,14 @@ The logs collected using the API Management services for the enterprise customer
 ##### Content Filtered Results
 
 Azure OpenAI Content Filter's sophisticated algorithms analyze text and multimedia content to identify potential issues related to violence, explicit language, or other sensitive topics.
+This process includes monitoring key metrics such as false positives, false negatives, precision, recall, and overall model performance. By continuously monitoring the content filtering data, organizations can identify any potential biases, errors, or gaps in the AI model's decision-making process and make necessary adjustments to improve the overall content filtering accuracy and compliance with regulatory requirements.
+
+In Azure OpenAI content filtering, users can create a custom blocklist to specify specific words, phrases, or content that they want the AI model to filter out. Users can now monitor the custom blocklists by blocklist id.
+
 It provides a robust system for filtering content based on predefined categories and severity levels such as safe, low, medium, and high.
+
+
+
 
 Check [Azure OpenAI Content Filter's](https://learn.microsoft.com/en-us/azure/ai-services/openai/concepts/content-filter?tabs=warning%2Cuser-prompt%2Cpython-new) for more details.
 
@@ -140,10 +147,10 @@ For more details on ECS fields, check the [ECS Field Reference](https://www.elas
 | azure.open_ai.properties.backend_response_body.choices.content_filter_results.profanity.detected | The profanity detected. | boolean |
 | azure.open_ai.properties.backend_response_body.choices.content_filter_results.profanity.filtered | Filtered by profanity. | boolean |
 | azure.open_ai.properties.backend_response_body.choices.content_filter_results.protected_material_code.citation.license | The license of the repository | keyword |
-| azure.open_ai.properties.backend_response_body.choices.content_filter_results.protected_material_code.citation.url | Example citation of public GitHub repository where code snippet was found | keyword |
+| azure.open_ai.properties.backend_response_body.choices.content_filter_results.protected_material_code.citation.url | Example citation of public GitHub repository where code snippet was found. | keyword |
 | azure.open_ai.properties.backend_response_body.choices.content_filter_results.protected_material_code.detected | The protected material code detected. | boolean |
 | azure.open_ai.properties.backend_response_body.choices.content_filter_results.protected_material_code.filtered | Filtered by protected material code. | boolean |
-| azure.open_ai.properties.backend_response_body.choices.content_filter_results.protected_material_text.detected | The protected material code detected. | boolean |
+| azure.open_ai.properties.backend_response_body.choices.content_filter_results.protected_material_text.detected | The protected material text detected. | boolean |
 | azure.open_ai.properties.backend_response_body.choices.content_filter_results.protected_material_text.filtered | Filtered by protected material text. | boolean |
 | azure.open_ai.properties.backend_response_body.choices.content_filter_results.self_harm.filtered | True if the content filtered based on severity level. | boolean |
 | azure.open_ai.properties.backend_response_body.choices.content_filter_results.self_harm.severity | The severity levels (safe, low, medium, and high) for self-harm category. | keyword |

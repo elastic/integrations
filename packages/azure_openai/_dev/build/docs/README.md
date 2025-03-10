@@ -51,7 +51,14 @@ The logs collected using the API Management services for the enterprise customer
 ##### Content Filtered Results
 
 Azure OpenAI Content Filter's sophisticated algorithms analyze text and multimedia content to identify potential issues related to violence, explicit language, or other sensitive topics.
+This process includes monitoring key metrics such as false positives, false negatives, precision, recall, and overall model performance. By continuously monitoring the content filtering data, organizations can identify any potential biases, errors, or gaps in the AI model's decision-making process and make necessary adjustments to improve the overall content filtering accuracy and compliance with regulatory requirements.
+
+In Azure OpenAI content filtering, users can create a custom blocklist to specify specific words, phrases, or content that they want the AI model to filter out. Users can now monitor the custom blocklists by blocklist id.
+
 It provides a robust system for filtering content based on predefined categories and severity levels such as safe, low, medium, and high.
+
+
+
 
 Check [Azure OpenAI Content Filter's](https://learn.microsoft.com/en-us/azure/ai-services/openai/concepts/content-filter?tabs=warning%2Cuser-prompt%2Cpython-new) for more details.
 
