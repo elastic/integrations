@@ -3,16 +3,26 @@ description: Pipeline for processing sample logs
 processors:
   ## Message decoding.
   - rename:
-      tag: message-to-original
       field: message
+      tag: rename_message_to_event_original
       target_field: event.original
       ignore_missing: true
+      description: Renames the original `message` field to `event.original` to store a copy of the original message. The `event.original` field is not touched if the document already has one; it may happen when Logstash sends the document.
       if: ctx.event?.original == null
+  - remove:
+      field: message
+      tag: remove_message
+      ignore_missing: true
+      description: The `message` field is no longer required if the document has an `event.original` field.
+      if: ctx.event?.original != null
   - json:
-      tag: json-decoding
-      description: Decodes original JSON into `crowdstrike` field.
       field: event.original
+      tag: json_event_original
       target_field: crowdstrike
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - remove:
       tag: remove-metadata-aid
       field: metadata.host.aid
@@ -231,7 +241,7 @@ processors:
   ## ECS fields.
   - set:
       field: ecs.version
-      value: '8.11.0'
+      value: '8.17.0'
 
   ## Categorization.
   - script:
@@ -1749,6 +1759,24 @@ processors:
           ctx.process.uptime = (long) ((e-s)/1000L);
         }
       if: ctx.crowdstrike?.ProcessStartTime != null && ctx.crowdstrike?.ProcessStartTime != "" && ctx.crowdstrike?.ProcessEndTime != null && ctx.crowdstrike?.ProcessEndTime != ""
+  - script:
+      tag: parse-raw-pids
+      lang: painless
+      description: Parse raw process id's so that they roll over if out of 32-bit range
+      source: |-
+        def parsePid(String pid) {
+          try {
+            return Long.parseUnsignedLong(pid);
+          } catch (Exception e) {
+            return pid;
+          }
+        }
+        if (ctx.crowdstrike?.RawProcessId != null) {
+          ctx.crowdstrike.RawProcessId = parsePid(ctx.crowdstrike.RawProcessId);
+        }
+        if (ctx.crowdstrike?.EtwRawProcessId != null) {
+          ctx.crowdstrike.EtwRawProcessId = parsePid(ctx.crowdstrike.EtwRawProcessId);
+        }
   - date:
       field: crowdstrike.ProcessStartTime
       target_field: crowdstrike.ProcessStartTime
@@ -1771,10 +1799,6 @@ processors:
       target_field: process.end
       ignore_missing: true
       if: ctx.crowdstrike?.ProcessEndTime != ""
-  - convert:
-      field: crowdstrike.RawProcessId
-      type: long
-      ignore_missing: true
   - rename:
       field: crowdstrike.RawProcessId
       target_field: process.pid
@@ -1824,10 +1848,6 @@ processors:
       ignore_missing: true
       ignore_failure: true
       if: ctx.process?.thread?.id == null
-  - convert:
-      field: crowdstrike.EtwRawProcessId
-      type: long
-      ignore_missing: true
   - rename:
       field: crowdstrike.EtwRawProcessId
       target_field: process.pid
@@ -2114,7 +2134,7 @@ processors:
   - set:
       field: url.scheme
       value: http
-      if: ctx.crowdstrike?.DownloadPort != 443
+      if: ctx.crowdstrike?.DownloadPort != null && ctx.crowdstrike.DownloadPort != 443
   - set:
       field: url.full
       value: "{{{url.scheme}}}://{{{server.address}}}{{{url.path}}}"
@@ -2183,17 +2203,22 @@ processors:
   - set:
       field: dns.type
       value: query
-      if: ctx.event?.action == "DnsRequest"
+      if: ctx.event?.action != null && ctx.event.action.contains("DnsRequest")
   - registered_domain:
       field: crowdstrike.DomainName
       target_field: dns.question
       ignore_missing: true
-      if: ctx.event?.action == "DnsRequest"
+      if: ctx.event?.action != null && ctx.event.action.contains("DnsRequest")
   - rename:
       field: dns.question.domain
       target_field: dns.question.name
       ignore_missing: true
-      if: ctx.event?.action == "DnsRequest"
+      if: ctx.event?.action != null && ctx.event.action.contains("DnsRequest")
+  - rename:
+      field: crowdstrike.DomainName
+      target_field: dns.question.name
+      ignore_missing: true
+      if: ctx.event?.action != null && ctx.dns?.question?.name == null && ctx.event.action.contains("DnsRequest")
   - script:
       tag: dns-request-type-to-name
       description: Map decimal DNS request type to its name.
@@ -2246,7 +2271,7 @@ processors:
         "257": CAA
         "32768": TA
         "32769": DLV
-      if: ctx.event?.action == "DnsRequest" && ctx.crowdstrike?.RequestType != null && !ctx.crowdstrike.RequestType.isEmpty()
+      if: ctx.event?.action != null && ctx.crowdstrike?.RequestType != null && !ctx.crowdstrike.RequestType.isEmpty() && ctx.event.action.contains("DnsRequest")
       source: |-
         def t = params[ctx.crowdstrike.RequestType];
         if (t != null) {
@@ -2256,6 +2281,18 @@ processors:
           ctx.dns.question.type = t;
           ctx.crowdstrike.remove("RequestType");
         }
+
+  # SMB fields.
+  - registered_domain:
+      field: crowdstrike.DomainName
+      target_field: destination
+      ignore_missing: true
+      if: ctx.event?.action != null && ctx.event.action.contains("SmbServerShareOpenedEtw")
+  - rename:
+      field: crowdstrike.DomainName
+      target_field: destination.domain
+      ignore_missing: true
+      if: ctx.event?.action != null && ctx.destination?.domain == null && ctx.event.action.contains("SmbServerShareOpenedEtw")
 
   ## File fields.
   - convert:

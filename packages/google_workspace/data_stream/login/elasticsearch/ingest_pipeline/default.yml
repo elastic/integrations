@@ -9,6 +9,11 @@ processors:
       target_field: event.original
       ignore_missing: true
       if: ctx.event?.original == null
+  - remove:
+      field: message
+      ignore_missing: true
+      if: 'ctx.event?.original != null'
+      description: 'The `message` field is no longer required if the document has an `event.original` field.'
   - json:
       field: event.original
       target_field: json
@@ -191,6 +196,9 @@ processors:
           if (ctx["json"]["events"]["parameters"][i]["multiValue"] != null) {
             ctx.google_workspace.login[ctx["json"]["events"]["parameters"][i]["name"]] = ctx["json"]["events"]["parameters"][i]["multiValue"];
           }
+          if (ctx["json"]["events"]["parameters"][i]["boolValue"] != null) {
+            ctx.google_workspace.login[ctx["json"]["events"]["parameters"][i]["name"]] = ctx["json"]["events"]["parameters"][i]["boolValue"];
+          }    
         }
   - script:
       lang: painless
