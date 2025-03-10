@@ -47,7 +47,6 @@ Once the secret is created and permissions are granted:
 
 This setup enables secure access to Microsoft Entra ID logs via the Microsoft Graph API.
 
-
 ## Logs
 
 ### Directory Audit Logs
@@ -57,19 +56,3 @@ Uses the Microsoft Graph APIs (v1) to fetch directory audit logs
 {{event "directory_audit"}}
 
 {{fields "directory_audit"}}
-
-### Signin Logs
-
-Uses the Microsoft Graph APIs (v1) to fetch  signin logs
-
-{{event "signin"}}
-
-{{fields "signin"}}
-
-### Provisioning Logs
-
-Uses the Microsoft Graph APIs (v1) to fetch provisioning logs
-
-{{event "provisioning"}}
-
-{{fields "provisioning"}}

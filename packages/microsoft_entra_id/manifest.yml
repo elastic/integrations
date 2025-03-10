@@ -1,7 +1,7 @@
 name: microsoft_entra_id
 title: Microsoft Entra ID (CEL)
-version: "2.10.0"
-description: Collect logs from Microsoft Office 365 with Elastic Agent.
+version: 0.1.0
+description: Collect Microsoft Entra ID logs using Microsoft Graph APIs (v1) via Elastic Agent
 type: integration
 format_version: "3.0.2"
 categories: [security, productivity_security]
@@ -25,11 +25,55 @@ screenshots:
 policy_templates:
   - name: microsoft_entra_id
     title: Microsoft Entra ID (CEL)
-    description: Collect Microsoft Entra ID logs from Microsoft Graph APIs (v1) via Elastic Agent.
+    description: Collect Microsoft Entra ID logs using Microsoft Graph APIs (v1) via Elastic Agent
     inputs:
       - type: cel
-        title: "Collect Microsoft Entra ID logs from Microsoft Graph APIs (v1) via Elastic Agent"
-        description: "Collecting Microsoft Entra ID logs from Microsoft Graph APIs (v1) via Elastic Agent"
+        title: Collect Microsoft Entra ID logs using Microsoft Graph APIs (v1) via Elastic Agent
+        description: Collecting Microsoft Entra ID logs using Microsoft Graph APIs (v1) via Elastic Agent
+        vars:
+          - name: base_url
+            type: text
+            title: Base URL for Microsoft Graph API
+            show_user: true
+            required: true
+            default: https://graph.microsoft.com
+          - name: azure_tenant_id
+            type: text
+            title: Directory (tenant) ID
+            description: Directory (tenant) ID
+            show_user: true
+            multi: false
+            required: true
+          - name: client_id
+            type: text
+            title: Application (client) ID
+            description: Client ID used for Oauth2 authentication
+            show_user: true
+            required: true
+          - name: client_secret
+            type: password
+            title: Client Secret
+            description: Client secret used for Oauth2 authentication
+            show_user: true
+            required: true
+            secret: true
+          - name: token_url
+            type: text
+            title: Oauth2 Token URL
+            description: The Base URL endpoint that will be used to generate the tokens during the oauth2 flow. The default value is `https://login.microsoftonline.com`.
+            show_user: true
+            required: true
+            default: https://login.microsoftonline.com
+          - name: token_scopes
+            type: text
+            title: Token Scopes
+            multi: true
+            default:
+              - https://graph.microsoft.com/.default
+            description: Scopes for OAuth2 token.
+            required: true
+            show_user: false
+            secret: false
 owner:
   github: elastic/security-service-integrations
   type: elastic

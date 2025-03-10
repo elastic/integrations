@@ -3,43 +3,17 @@ title: Microsoft directory audit logs
 streams:
   - input: cel
     enabled: true
-    title: "Collect directory audit logs via Microsoft Graph API using CEL Input"
-    description: "Collect directory audit logs via Microsoft Graph API using CEL Input"
+    title: Collect directory audit logs via Microsoft Graph API using CEL Input
+    description: Collect directory audit logs via Microsoft Graph API using CEL Input
     template_path: cel.yml.hbs
     vars:
-      - name: url
-        type: text
-        title: Base URL of Microsoft Graph API
-        show_user: true
-        required: false
-        default: https://graph.microsoft.com
       - name: interval
         type: text
         title: Interval
         description: How often the API is polled, supports seconds, minutes and hours.
         show_user: true
         required: true
-        default: 3m
-      - name: azure_tenant_id
-        type: text
-        title: Directory (tenant) ID
-        description: Directory (tenant) ID
-        show_user: true
-        multi: false
-        required: true
-      - name: client_id
-        type: text
-        title: Application (client) ID
-        description: Client ID used for Oauth2 authentication
-        show_user: true
-        required: true
-      - name: client_secret
-        type: password
-        title: Client Secret
-        description: Client secret used for Oauth2 authentication
-        show_user: true
-        required: true
-        secret: true
+        default: 5m
       - name: page_size
         type: text
         title: Page Size
@@ -48,23 +22,6 @@ streams:
         show_user: true
         required: true
         default: 100
-      - name: token_url
-        type: text
-        title: Oauth2 Token URL
-        description: The Base URL endpoint that will be used to generate the tokens during the oauth2 flow. The default value is `https://login.microsoftonline.com`.
-        show_user: true
-        required: true
-        default: https://login.microsoftonline.com
-      - name: token_scopes
-        type: text
-        title: Token Scopes
-        multi: true
-        default:
-          - https://graph.microsoft.com/.default
-        description: Scopes for OAuth2 token.
-        required: true
-        show_user: false
-        secret: false
       - name: start_date_time
         type: text
         title: Start Date Time
@@ -165,8 +122,8 @@ streams:
         show_user: false
         default:
           - forwarded
-          - o365-cel
-          - o365-directory-audit-cel
+          - microsoft-entra-id-cel
+          - microsoft-entra-id-directory-audit-cel
       - name: preserve_original_event
         required: true
         show_user: true
