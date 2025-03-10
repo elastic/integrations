@@ -96,8 +96,8 @@ Please note, there are minimum requirements for running Elastic Agent. For more 
 | threatq.expires_calculated_at | Expiration calculation time. | date |
 | threatq.generated_score |  | long |
 | threatq.hash |  | keyword |
-| threatq.id | Indicator ID. `id`, `indicator_id` or both could be present in the dataset. | keyword |
-| threatq.indicator_id | Indicator ID. `id`, `indicator_id` or both could be present in the dataset. | keyword |
+| threatq.id | Indicator ID. `id`, `indicator_id` or both could be present in the dataset. | long |
+| threatq.indicator_id | Indicator ID. `id`, `indicator_id` or both could be present in the dataset. | long |
 | threatq.indicator_value | Original indicator value. | keyword |
 | threatq.ioc_expiration_reason |  | keyword |
 | threatq.ioc_expired_at | Expiration time given by the API. Either `expires_at` or `expired_at` are present in the data. | date |
@@ -167,22 +167,22 @@ An example event for `threat` looks as following:
 {
     "@timestamp": "2019-11-15T00:00:02.000Z",
     "agent": {
-        "ephemeral_id": "7306321b-e658-4ec0-872a-573e0c53c1d3",
-        "id": "0ca86c83-f033-4174-b5ca-db42f1c18c8b",
-        "name": "elastic-agent-67651",
+        "ephemeral_id": "9a712322-e1db-4c10-83ca-98367165b78f",
+        "id": "9f6207b8-4f40-48ae-8492-5f718d9badc4",
+        "name": "elastic-agent-17898",
         "type": "filebeat",
         "version": "8.18.0"
     },
     "data_stream": {
         "dataset": "ti_threatq.threat",
-        "namespace": "35062",
+        "namespace": "21919",
         "type": "logs"
     },
     "ecs": {
         "version": "8.17.0"
     },
     "elastic_agent": {
-        "id": "0ca86c83-f033-4174-b5ca-db42f1c18c8b",
+        "id": "9f6207b8-4f40-48ae-8492-5f718d9badc4",
         "snapshot": true,
         "version": "8.18.0"
     },
@@ -191,9 +191,9 @@ An example event for `threat` looks as following:
         "category": [
             "threat"
         ],
-        "created": "2025-03-06T11:02:09.560Z",
+        "created": "2025-03-08T19:49:39.348Z",
         "dataset": "ti_threatq.threat",
-        "ingested": "2025-03-06T11:02:10Z",
+        "ingested": "2025-03-08T19:49:40Z",
         "kind": "enrichment",
         "original": "{\"adversaries\":[],\"attributes\":[{\"attribute_id\":3,\"created_at\":\"2020-09-11 14:35:53\",\"id\":1877,\"indicator_id\":336,\"name\":\"Description\",\"touched_at\":\"2020-10-15 14:36:00\",\"updated_at\":\"2020-10-15 14:36:00\",\"value\":\"Malicious Host\"},{\"attribute_id\":4,\"created_at\":\"2020-09-11 14:35:53\",\"id\":1878,\"indicator_id\":336,\"name\":\"Country\",\"touched_at\":\"2020-10-15 14:36:00\",\"updated_at\":\"2020-10-15 14:36:00\",\"value\":\"MP\"}],\"class\":\"network\",\"created_at\":\"2020-09-11 14:35:51\",\"expires_calculated_at\":\"2020-10-15 14:40:03\",\"hash\":\"1ece659dcec98b1e1141160b55655c96\",\"id\":336,\"published_at\":\"2020-09-11 14:35:51\",\"score\":4,\"sources\":[{\"created_at\":\"2020-09-11 14:35:53\",\"creator_source_id\":12,\"id\":336,\"indicator_id\":336,\"indicator_status_id\":2,\"indicator_type_id\":15,\"name\":\"AlienVault OTX\",\"published_at\":\"2020-09-11 14:35:53\",\"reference_id\":1,\"source_expire_days\":\"30\",\"source_id\":12,\"source_score\":1,\"source_type\":\"connectors\",\"updated_at\":\"2020-10-15 14:36:00\"}],\"status\":{\"description\":\"Poses a threat\",\"id\":2,\"name\":\"Active\"},\"status_id\":2,\"touched_at\":\"2021-06-07 19:47:27\",\"type\":{\"class\":\"network\",\"id\":15,\"name\":\"IP Address\"},\"type_id\":15,\"updated_at\":\"2019-11-15 00:00:02\",\"value\":\"89.160.20.156\"}",
         "type": [
@@ -250,7 +250,7 @@ An example event for `threat` looks as following:
         "created_at": "2020-09-11T14:35:51.000Z",
         "expires_calculated_at": "2020-10-15T14:40:03.000Z",
         "hash": "1ece659dcec98b1e1141160b55655c96",
-        "id": "336",
+        "id": 336,
         "indicator_value": "89.160.20.156",
         "ioc_expiration_reason": "Expiration set by Elastic from the integration's parameter `IOC Expiration Duration`",
         "ioc_expired_at": "2019-11-20T00:00:02.000Z",
