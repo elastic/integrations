@@ -201,4 +201,7 @@ An example event for `events` looks as following:
 | opencanary.tftp.node |  | keyword |
 | opencanary.tftp.opcode |  | keyword |
 | opencanary.utc_time |  | keyword |
+| opencanary.vnc.client_response |  | keyword |
+| opencanary.vnc.password |  | keyword |
+| opencanary.vnc.server_challenge |  | keyword |
 
