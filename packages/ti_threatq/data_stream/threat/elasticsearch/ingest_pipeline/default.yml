@@ -263,13 +263,13 @@ processors:
 # Set threatq.ioc_expired_at from threatq.expires_at or threatq.expired_at (if present). Either `expires_at` or `expired_at` are available in the data.
 # When the datetime threatq.ioc_expired_at is reached, the indicator is deleted using transform's retention policy in the destination index.
   - set:
-      field: threatq.ioc_expires_at
-      tag: set_ioc_expires_at
+      field: threatq.ioc_expired_at
+      tag: set_ioc_expired_at_from_expires_at
       copy_from: threatq.expires_at
       if: ctx.threatq?.expires_at != null
   - set:
       field: threatq.ioc_expired_at
-      tag: set_ioc_expired_at
+      tag: set_ioc_expired_at_from_expired_at
       copy_from: threatq.expired_at
       if: ctx.threatq?.expired_at != null
       override: true
