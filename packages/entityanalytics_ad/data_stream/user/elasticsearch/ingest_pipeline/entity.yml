@@ -166,8 +166,8 @@ processors:
       ignore_failure: false
       tag: Set User Account Control
       description: Set User Account Control
-      # User Account Control Attributes Table
-      # https://learn.microsoft.com/en-us/openspecs/windows_protocols/ms-samr/4df07fab-1bbc-452f-8e92-7853a3c7e380
+      # USER_ACCOUNT Codes
+      # https://learn.microsoft.com/en-us/openspecs/windows_protocols/ms-samr/b10cfda1-f24f-441b-8f43-80cb93e786ec
       params:
         "0x00000001": USER_ACCOUNT_DISABLED
         "0x00000002": USER_HOME_DIRECTORY_REQUIRED
@@ -192,21 +192,17 @@ processors:
         "0x00100000": USER_PARTIAL_SECRETS_ACCOUNT
         "0x00200000": USER_USE_AES_KEYS
       source: |-
-        if (ctx.activedirectory?.user?.user_account_control == null) {
-          return;
-        }
         Long newUacValue = Long.decode(ctx.activedirectory.user.user_account_control);
         ArrayList uacResult = new ArrayList();
         for (entry in params.entrySet()) {
           Long flag = Long.decode(entry.getKey());
-          if ((newUacValue.longValue() & flag.longValue()) == flag.longValue()) {
+          if ((newUacValue.longValue() & flag.longValue()) != 0) {
             uacResult.add(entry.getValue());
           }
         }
-        if (uacResult.length == 0) {
-          return;
+        if (uacResult.length != 0) {
+          ctx.activedirectory.user.uac_list = uacResult;
         }
-        ctx.activedirectory.user.put("uac_list", uacResult);
 
   - date:
       field: activedirectory.user.when_created
