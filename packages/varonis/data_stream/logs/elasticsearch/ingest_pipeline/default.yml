@@ -1,0 +1,166 @@
+---
+description: Ingest pipeline for Varonis DatAdvantage syslog messages
+processors:
+####################
+# Syslog Fields #
+####################
+  # PART 1: Parse the Syslog Header
+  - grok:
+      field: message
+      tag: grok_syslog_header
+      patterns:
+        - "^<%{NONNEGINT:varonis.logs.priority:int}>%{SYSLOG_DATE:syslog.timestamp} %{DATA:host.name} %{GREEDYDATA:syslog.body}"
+      pattern_definitions:
+        SYSLOG_DATE: "%{MONTH} %{MONTHDAY} %{TIME}"
+      ignore_failure: true
+
+  # PART 2: Parse the Common Event Format (CEF) Header
+  - grok:
+      field: syslog.body
+      tag: grok_cef_header
+      if: ctx.syslog?.body != null
+      patterns:
+        - "^CEF:0\\|%{DATA:cef.vendor}\\|%{DATA:cef.product}\\|%{DATA:cef.product_version}\\|%{DATA:varonis.logs.action_code}\\|%{DATA:varonis.logs.action}\\|%{DATA:varonis.logs.event_severity:int}\\|%{GREEDYDATA:cef.extension}"
+      ignore_failure: true
+
+  # PART 3: Parse the CEF Extension Fields
+  - grok:
+      field: cef.extension
+      tag: grok_cef_extension
+      if: ctx.cef?.extension != null
+      patterns:
+        - "rt=%{DATA:varonis.logs.alert_time} cat=%{DATA:varonis.logs.category} cs2=%{DATA:varonis.logs.rule_name} cs2Label=RuleName cn1=%{NUMBER:varonis.logs.rule_id:int} cn1Label=RuleID end=%{DATA:varonis.logs.end} duser=%{DATA:varonis.logs.user} dhost=%{IP:varonis.logs.host} filePath=%{DATA:varonis.logs.file_path} fname=%{DATA:varonis.logs.file_name} act=%{DATA:varonis.logs.action} dvchost=%{DATA:varonis.logs.device_host} outcome=%{DATA:varonis.logs.outcome} msg=%{GREEDYDATA:varonis.logs.message} cs6=%{GREEDYDATA:varonis.logs.changed_permissions} cs6Label=ChangedPermissions oldFilePermission=%{DATA:varonis.logs.old_file_permission} filePermission=%{DATA:varonis.logs.file_permission} dpriv=%{DATA:varonis.logs.dpriv}"
+
+  # PART 4: Convert and Normalize Datetime Fields to Elasticsearch Standard (ISO 8601)
+  - date:
+      field: varonis.logs.alert_time
+      target_field: varonis.logs.alert_time
+      formats:
+        - "MMM dd yyyy HH:mm:ss"
+      timezone: "UTC"
+      output_format: "yyyy-MM-dd'T'HH:mm:ss.SSSZ"
+
+  - date:
+      field: varonis.logs.end
+      target_field: varonis.logs.end
+      formats:
+        - "MMM dd yyyy HH:mm:ss"
+      timezone: "UTC"
+      output_format: "yyyy-MM-dd'T'HH:mm:ss.SSSZ"
+
+  - date:
+      field: varonis.logs.start
+      target_field: varonis.logs.start
+      formats:
+        - "MMM dd yyyy HH:mm:ss"
+      timezone: "UTC"
+      output_format: "yyyy-MM-dd'T'HH:mm:ss.SSSZ"
+      ignore_failure: true
+
+  # PART 5: Drop Null/Empty Values Recursively
+  - script:
+      description: Drops null/empty values recursively.
+      lang: painless
+      source: |
+        boolean dropEmptyFields(Object object) {
+          if (object == null || object == "") {
+            return true;
+          } else if (object instanceof Map) {
+            ((Map) object).values().removeIf(value -> dropEmptyFields(value));
+            return (((Map) object).size() == 0);
+          } else if (object instanceof List) {
+            ((List) object).removeIf(value -> dropEmptyFields(value));
+            return (((List) object).length == 0);
+          }
+          return false;
+        }
+        dropEmptyFields(ctx);
+
+
+####################
+# ECS Fields #
+####################
+  - set:
+      field: ecs.version
+      value: '8.11.0'
+
+  - set:
+      field: event.kind
+      value: event
+
+  - append:
+      field: event.category
+      value: configuration
+
+  - append:
+      field: event.type
+      value: info
+
+  - set:
+      field: event.dataset
+      value: varonis.logs
+
+  - set:
+      field: event.module
+      value: varonis
+
+  - set:
+      field: "@timestamp"
+      value: "{{{varonis.logs.alert_time}}}"
+
+  - set:
+      field: event.start
+      value: "{{{varonis.logs.start}}}"
+      ignore_empty_value: true
+
+  - set:
+      field: event.end
+      value: "{{{varonis.logs.end}}}"
+      ignore_empty_value: true
+
+  - set:
+      field: user.name
+      value: "{{{varonis.logs.user}}}"
+
+  - append:
+      field: host.ip
+      value: "{{{varonis.logs.host}}}"
+
+  - geoip:
+      field: host.ip
+      target_field: host.geo
+      ignore_missing: true
+      ignore_failure: true
+
+  - set:
+      field: file.path
+      value: "{{{varonis.logs.file_path}}}"
+
+  - set:
+      field: file.name
+      value: "{{{varonis.logs.file_name}}}"
+
+  - set:
+      field: event.action
+      value: "{{{varonis.logs.action}}}"
+
+  - set:
+      field: host.domain
+      value: "{{{varonis.logs.device_host}}}"
+      ignore_empty_value: true
+
+
+  - remove:
+      field:
+        - message
+        - syslog
+        - cef
+      ignore_missing: true
+
+on_failure:
+  - append:
+      field: error.message
+      value: '{{{_ingest.on_failure_message}}}'
+  - set:
+      field: event.kind
+      value: pipeline_error
