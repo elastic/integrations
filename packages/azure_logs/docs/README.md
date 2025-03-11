@@ -13,12 +13,12 @@ The Custom Azure Logs integration offers a new processor v2 starting with versio
 
 The processor v2 introduces several changes:
 
-* It uses the latest Event Hubs SDK from Azure.
+* Azure's most recent Event Hubs SDK is utilized.
 * It uses a more efficient checkpoint store based on Azure Blob Storage metadata.
 
 The processor v2 is in preview. Processor v1 is still the default and is recommended for typical use cases.
 
-See the "Event Hub Processor v2 only" section in the integration settings for more details about enabling the processor v2.
+Refer to the "Event Hub Processor v2 only" section in the integration settings for additional information on how to enable processor v2.
 
 ## Data streams
 
