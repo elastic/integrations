@@ -143,6 +143,7 @@ An example event for `user` looks as following:
 | entityanalytics_ad.groups.distinguished_name |  | keyword |
 | entityanalytics_ad.groups.ds_core_propagation_data |  | date |
 | entityanalytics_ad.groups.group_type |  | keyword |
+| entityanalytics_ad.groups.id |  | keyword |
 | entityanalytics_ad.groups.instance_type |  | keyword |
 | entityanalytics_ad.groups.is_critical_system_object |  | boolean |
 | entityanalytics_ad.groups.member |  | keyword |
@@ -180,6 +181,7 @@ An example event for `user` looks as following:
 | entityanalytics_ad.user.name |  | keyword |
 | entityanalytics_ad.user.object_category |  | keyword |
 | entityanalytics_ad.user.object_class |  | keyword |
+| entityanalytics_ad.user.object_dn |  | keyword |
 | entityanalytics_ad.user.object_guid |  | keyword |
 | entityanalytics_ad.user.object_sid |  | keyword |
 | entityanalytics_ad.user.primary_group_id |  | keyword |
@@ -188,6 +190,7 @@ An example event for `user` looks as following:
 | entityanalytics_ad.user.sam_account_type |  | keyword |
 | entityanalytics_ad.user.service_principal_name |  | keyword |
 | entityanalytics_ad.user.show_in_advanced_view_only |  | boolean |
+| entityanalytics_ad.user.uac_list |  | keyword |
 | entityanalytics_ad.user.user_account_control |  | keyword |
 | entityanalytics_ad.user.usn_changed |  | keyword |
 | entityanalytics_ad.user.usn_created |  | keyword |
