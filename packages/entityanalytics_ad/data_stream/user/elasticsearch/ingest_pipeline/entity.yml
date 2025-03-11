@@ -203,6 +203,7 @@ processors:
         if (uacResult.length != 0) {
           ctx.activedirectory.user.uac_list = uacResult;
         }
+      if: ctx.activedirectory?.user?.user_account_control != null && ctx.activedirectory.user.user_account_control != 0
 
   - date:
       field: activedirectory.user.when_created
@@ -288,6 +289,18 @@ processors:
       tag: append_name_into_related_user
       allow_duplicates: false
       if: ctx.activedirectory?.user?.name != null
+  - append:
+      field: related.user
+      value: "{{{activedirectory.id}}}"
+      tag: append_id_into_related_user
+      allow_duplicates: false
+      if: ctx.activedirectory?.id != null
+  - append:
+      field: related.user
+      value: "{{{activedirectory.user.object_guid}}}"
+      tag: append_object_guid_into_related_user
+      allow_duplicates: false
+      if: ctx.activedirectory?.user?.object_guid != null
 
   - rename:
       field: activedirectory.id
