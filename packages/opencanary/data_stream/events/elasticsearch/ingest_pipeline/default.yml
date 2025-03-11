@@ -23,7 +23,7 @@ processors:
   ## Parse JSON message to opencanary ##
   ######################################
   - json:
-      if: ctx.json != null && ctx.json?.message != null && ctx.json?.message instanceof String
+      if: ctx.json?.message instanceof String
       description: "Parse JSON from json.message to json as it appears opencanary webhooks are in use"
       tag: json_message_to_json
       field: json.message
@@ -66,7 +66,7 @@ processors:
       ignore_failure: true
 
   - set:
-      if: ctx.opencanary?.logtype != null && ctx.opencanary?.logtype >= 2000
+      if: ctx.opencanary?.logtype >= 2000
       description: Set event.kind as alert if it is of an approriate logtype
       tag: set_event_kind
       field: event.kind
@@ -82,7 +82,7 @@ processors:
       ignore_failure: true
 
   - set:
-      if: ctx.opencanary?.logtype != null && ctx.opencanary?.logtype >= 2000
+      if: ctx.opencanary?.logtype >= 2000
       description: Set event.category as a network/IDS event if it is of an approriate logtype
       tag: set_event_category
       field: event.category
@@ -99,7 +99,7 @@ processors:
         - info
 
   - set:
-      if: ctx.opencanary?.logtype != null && ctx.opencanary?.logtype >= 2000
+      if: ctx.opencanary?.logtype >= 2000
       description: Set event.type as a connection event if it is of an approriate logtype
       tag: set_event_type
       field: event.type
@@ -297,7 +297,7 @@ processors:
       field: event.action
       ignore_empty_value: true
   - rename:
-      if: ctx.log.logger == 'LOG_SMB_FILE_OPEN'
+      if: ctx.log?.logger == 'LOG_SMB_FILE_OPEN'
       description: Rename opencanary.logdata.FILENAME to opencanary.smb.filename
       tag: rename_opencanary_logdata_FILENAME
       field: opencanary.logdata.FILENAME
@@ -766,7 +766,8 @@ processors:
   - redact:
       description: Redact any passwords in the log data
       tag: redact_event_original
-      if: 'ctx.tags != null && ctx.tags.contains("redact_passwords") && ctx.event?.original =~ /\"PASSWORD\": \"/'
+      if: >-
+        ctx.tags != null && ctx.tags.contains("redact_passwords") && ctx.event?.original =~ /"PASSWORD": "/
       field: event.original
       patterns:
         - '"PASSWORD": "%{DATA:REDACTED}"'
@@ -778,7 +779,7 @@ processors:
   ## Clean Up ##
   ##############
   - remove:
-      if: ctx?.tags == null || !(ctx.tags.contains('preserve_duplicate_custom_fields'))
+      if: ctx.tags == null || !ctx.tags.contains('preserve_duplicate_custom_fields')
       description: "Remove ECS mapped fields, duplicated data, and those that have no meaningful value to the events"
       tag: remove_fields_if_not_preserve_duplicate_custom_fields
       field:
