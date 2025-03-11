@@ -1445,7 +1445,7 @@ Please refer to the following [document](https://www.elastic.co/guide/en/ecs/cur
 
 ### SharePoint Site Usage Storage
 
-Get details about SharePoint Site Usage Storage from [Microsoft Graph API](https://learn.microsoft.com/en-us/graph/api/reportroot-getsharepointsiteusagedetail?view=graph-rest-1.0&tabs=http).
+Get details about SharePoint Site Usage Storage from [Microsoft Graph API](https://learn.microsoft.com/en-us/graph/api/reportroot-getsharepointsiteusagestorage?view=graph-rest-1.0&tabs=http).
 
 An example event for `sharepoint_site_usage_storage` looks as following:
 

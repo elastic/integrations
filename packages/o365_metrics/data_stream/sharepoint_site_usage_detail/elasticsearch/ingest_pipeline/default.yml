@@ -35,8 +35,11 @@ processors:
       if: ctx.o365.metrics?.sharepoint?.site?.usage?.detail instanceof Map
       source: |
         String underscore(String s) {
+          def regex = /_?([a-z])([A-Z]+)/;
+          s = regex.matcher(s).replaceAll('$1_$2').toLowerCase();
           String result = /[ -]/.matcher(s).replaceAll('_').toLowerCase();
-          return /[\ufeff]/.matcher(result).replaceAll('')
+          String result1 = /[\ufeff]/.matcher(result).replaceAll('');
+          return /[()]/.matcher(result1).replaceAll('')
         }
         
         def out = [:];
@@ -45,7 +48,7 @@ processors:
         }
         ctx.o365.metrics.sharepoint.site.usage.detail = out;
   - rename:
-      field: o365.metrics.sharepoint.site.usage.detail.storageallocated(byte)
+      field: o365.metrics.sharepoint.site.usage.detail.storage_allocatedbyte
       target_field: o365.metrics.sharepoint.site.usage.detail.storage_allocated.byte
       ignore_missing: true
   - convert:
@@ -60,7 +63,7 @@ processors:
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - rename:
-      field: o365.metrics.sharepoint.site.usage.detail.storageusedbyte
+      field: o365.metrics.sharepoint.site.usage.detail.storage_used_byte
       target_field: o365.metrics.sharepoint.site.usage.detail.storage_used.byte
       ignore_missing: true
   - convert:
@@ -75,7 +78,7 @@ processors:
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - rename:
-      field: o365.metrics.sharepoint.site.usage.detail.activefilecount
+      field: o365.metrics.sharepoint.site.usage.detail.active_file_count
       target_field: o365.metrics.sharepoint.site.usage.detail.active_file.count
       ignore_missing: true
   - convert:
@@ -90,7 +93,7 @@ processors:
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - rename:
-      field: o365.metrics.sharepoint.site.usage.detail.filecount
+      field: o365.metrics.sharepoint.site.usage.detail.file_count
       target_field: o365.metrics.sharepoint.site.usage.detail.file.count
       ignore_missing: true
   - convert:
@@ -105,7 +108,7 @@ processors:
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - rename:
-      field: o365.metrics.sharepoint.site.usage.detail.pageviewcount
+      field: o365.metrics.sharepoint.site.usage.detail.page_view_count
       target_field: o365.metrics.sharepoint.site.usage.detail.page_view.count
       ignore_missing: true
   - convert:
@@ -120,11 +123,11 @@ processors:
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - rename:
-      field: o365.metrics.sharepoint.site.usage.detail.reportperiod
+      field: o365.metrics.sharepoint.site.usage.detail.report_period
       target_field: o365.metrics.sharepoint.site.usage.detail.report.period.day
       ignore_missing: true
   - rename:
-      field: o365.metrics.sharepoint.site.usage.detail.reportrefreshdate
+      field: o365.metrics.sharepoint.site.usage.detail.report_refresh_date
       target_field: o365.metrics.sharepoint.site.usage.detail.report.refresh_date
       ignore_missing: true
   - set:
@@ -137,7 +140,7 @@ processors:
         - o365.metrics.sharepoint.site.usage.detail.report.refresh_date
       target_field: _id     
   - rename:
-      field: o365.metrics.sharepoint.site.usage.detail.visitedpagecount
+      field: o365.metrics.sharepoint.site.usage.detail.visited_page_count
       target_field: o365.metrics.sharepoint.site.usage.detail.visited_page.count
       ignore_missing: true
   - convert:
@@ -151,10 +154,6 @@ processors:
         - append:
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
-  - rename:
-      field: o365.metrics.sharepoint.site.usage.detail.isdeleted
-      target_field: o365.metrics.sharepoint.site.usage.detail.is_deleted
-      ignore_missing: true
   - lowercase:
       field: o365.metrics.sharepoint.site.usage.detail.is_deleted
       tag: lowercase_o365.metrics.sharepoint.site.usage.detail.is_deleted
@@ -171,31 +170,6 @@ processors:
         - append:
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
-  - rename:
-      field: o365.metrics.sharepoint.site.usage.detail.lastactivitydate
-      target_field: o365.metrics.sharepoint.site.usage.detail.last_activity_date
-      if: ctx.o365.metrics?.sharepoint?.site?.usage?.detail?.lastactivitydate != null && ctx.o365.metrics?.sharepoint?.site?.usage?.detail?.lastactivitydate != ''
-      ignore_missing: true
-  - rename:
-      field: o365.metrics.sharepoint.site.usage.detail.ownerdisplayname
-      target_field: o365.metrics.sharepoint.site.usage.detail.owner_display_name
-      ignore_missing: true
-  - rename:
-      field: o365.metrics.sharepoint.site.usage.detail.owner_principal_name
-      target_field: o365.metrics.sharepoint.site.usage.detail.owner_principal_name
-      ignore_missing: true
-  - rename:
-      field: o365.metrics.sharepoint.site.usage.detail.siteid
-      target_field: o365.metrics.sharepoint.site.usage.detail.site_id
-      ignore_missing: true
-  - rename:
-      field: o365.metrics.sharepoint.site.usage.detail.site_url
-      target_field: o365.metrics.sharepoint.site.usage.detail.site_url
-      ignore_missing: true
-  - rename:
-      field: o365.metrics.sharepoint.site.usage.detail.rootwebtemplate
-      target_field: o365.metrics.sharepoint.site.usage.detail.root_web_template
-      ignore_missing: true
 
   - script:
       lang: painless
