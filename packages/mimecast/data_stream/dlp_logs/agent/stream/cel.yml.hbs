@@ -1,9 +1,9 @@
 config_version: 2
 interval: {{interval}}
-{{#if enable_request_tracer}}
-resource.tracer.filename: "../../logs/cel/http-request-trace-*.ndjson"
-resource.tracer.maxbackups: 5
-{{/if}}
+resource.tracer:
+  enabled: {{enable_request_tracer}}
+  filename: "../../logs/cel/http-request-trace-*.ndjson"
+  maxbackups: 5
 resource.url: {{api_url}}
 fields_under_root: true
 keep_null: true
@@ -90,7 +90,7 @@ program: |
           }
         }).do_request().as(resp, resp.StatusCode == 200 ?
           bytes(resp.Body).decode_json().as(body, body.?fail.orValue([]).size() == 0 ?
-            {
+            (has(body.?meta.pagination.next) && size(body.data) != 0).as(want_more, {
               "events": body.data.map(e, e[state.data_path].map(l, {"message": l.encode_json()})).flatten(),
               "cursor": {
                 "last": (
@@ -106,19 +106,19 @@ program: |
                   ).format(time_layout.RFC3339)
                 ),
               },
-              ?"last_page": has(body.?meta.pagination.next) && size(body.data) != 0 ?
-                optional.of({
+              "last_page": want_more ?
+                dyn({
                   ?"next": body.?meta.pagination.next,
-                  "data": req.data,
+                  ?"data": req.?data,
                 })
               :
-                optional.none(),
+                dyn(null), // required to clear the incoming state
               "token": {
                 "access_token": token.access_token,
                 "expires": token.expires,
               },
-              "want_more": has(body.?meta.pagination.next) && size(body.data) != 0,
-            }
+              "want_more": want_more,
+            })
           :
             // Mimecast can return failure states with a 200. This
             // is detected by a non-empty fail array at the root
@@ -155,6 +155,13 @@ program: |
       )
     )
   )
+{{#if alerting}}
+_conf:
+  alerting:
+{{#each alerting as |a|}}
+    - {{a}}
+{{/each}}
+{{/if}}
 tags:
 {{#if preserve_original_event}}
   - preserve_original_event
