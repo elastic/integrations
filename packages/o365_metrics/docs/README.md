@@ -231,30 +231,30 @@ Please refer to the following [document](https://www.elastic.co/guide/en/ecs/cur
 
 **Exported fields**
 
-| Field | Description | Type | Unit |
-|---|---|---|---|
-| @timestamp | Event timestamp. | date |  |
-| cloud.image.id | Image ID for the cloud instance. | keyword |  |
-| data_stream.dataset | Data stream dataset. | constant_keyword |  |
-| data_stream.namespace | Data stream namespace. | constant_keyword |  |
-| data_stream.type | Data stream type. | constant_keyword |  |
-| host.containerized | If the host is a container. | boolean |  |
-| host.os.build | OS build information. | keyword |  |
-| host.os.codename | OS codename, if any. | keyword |  |
-| o365.metrics.active.users.services.user.counts.exchange.active.count | Number of Exchange active users. | integer |  |
-| o365.metrics.active.users.services.user.counts.exchange.inactive.count | Number of Exchange inactive users. | integer |  |
-| o365.metrics.active.users.services.user.counts.office365.active.count | Number of Office 365 active users. | integer |  |
-| o365.metrics.active.users.services.user.counts.office365.inactive.count | Number of Office 365 inactive users. | integer |  |
-| o365.metrics.active.users.services.user.counts.onedrive.active.count | Number of OneDrive active users. | integer |  |
-| o365.metrics.active.users.services.user.counts.onedrive.inactive.count | Number of OneDrive inactive users. | integer |  |
-| o365.metrics.active.users.services.user.counts.report.period.day | The reporting period over which the data is aggregated (in days). | integer | d |
-| o365.metrics.active.users.services.user.counts.report.refresh_date | The date when the report data was last updated. | date |  |
-| o365.metrics.active.users.services.user.counts.sharepoint.active.count | Number of SharePoint active users. | integer |  |
-| o365.metrics.active.users.services.user.counts.sharepoint.inactive.count | Number of SharePoint inactive users. | integer |  |
-| o365.metrics.active.users.services.user.counts.teams.active.count | Number of Teams active users. | integer |  |
-| o365.metrics.active.users.services.user.counts.teams.inactive.count | Number of Teams inactive users. | integer |  |
-| o365.metrics.active.users.services.user.counts.yammer.active.count | Number of Yammer active users. | integer |  |
-| o365.metrics.active.users.services.user.counts.yammer.inactive.count | Number of Yammer inactive users. | integer |  |
+| Field | Description | Type | Unit | Metric Type |
+|---|---|---|---|---|
+| @timestamp | Event timestamp. | date |  |  |
+| cloud.image.id | Image ID for the cloud instance. | keyword |  |  |
+| data_stream.dataset | Data stream dataset. | constant_keyword |  |  |
+| data_stream.namespace | Data stream namespace. | constant_keyword |  |  |
+| data_stream.type | Data stream type. | constant_keyword |  |  |
+| host.containerized | If the host is a container. | boolean |  |  |
+| host.os.build | OS build information. | keyword |  |  |
+| host.os.codename | OS codename, if any. | keyword |  |  |
+| o365.metrics.active.users.services.user.counts.exchange.active.count | Number of Exchange active users. | integer |  | gauge |
+| o365.metrics.active.users.services.user.counts.exchange.inactive.count | Number of Exchange inactive users. | integer |  | gauge |
+| o365.metrics.active.users.services.user.counts.office365.active.count | Number of Office 365 active users. | integer |  | gauge |
+| o365.metrics.active.users.services.user.counts.office365.inactive.count | Number of Office 365 inactive users. | integer |  | gauge |
+| o365.metrics.active.users.services.user.counts.onedrive.active.count | Number of OneDrive active users. | integer |  | gauge |
+| o365.metrics.active.users.services.user.counts.onedrive.inactive.count | Number of OneDrive inactive users. | integer |  | gauge |
+| o365.metrics.active.users.services.user.counts.report.period.day | The reporting period over which the data is aggregated (in days). | integer | d |  |
+| o365.metrics.active.users.services.user.counts.report.refresh_date | The date when the report data was last updated. | date |  |  |
+| o365.metrics.active.users.services.user.counts.sharepoint.active.count | Number of SharePoint active users. | integer |  | gauge |
+| o365.metrics.active.users.services.user.counts.sharepoint.inactive.count | Number of SharePoint inactive users. | integer |  | gauge |
+| o365.metrics.active.users.services.user.counts.teams.active.count | Number of Teams active users. | integer |  | gauge |
+| o365.metrics.active.users.services.user.counts.teams.inactive.count | Number of Teams inactive users. | integer |  | gauge |
+| o365.metrics.active.users.services.user.counts.yammer.active.count | Number of Yammer active users. | integer |  | gauge |
+| o365.metrics.active.users.services.user.counts.yammer.inactive.count | Number of Yammer inactive users. | integer |  | gauge |
 
 
 ### Mailbox Usage Quota Status
@@ -357,24 +357,24 @@ Please refer to the following [document](https://www.elastic.co/guide/en/ecs/cur
 
 **Exported fields**
 
-| Field | Description | Type | Unit |
-|---|---|---|---|
-| @timestamp | Event timestamp. | date |  |
-| cloud.image.id | Image ID for the cloud instance. | keyword |  |
-| data_stream.dataset | Data stream dataset. | constant_keyword |  |
-| data_stream.namespace | Data stream namespace. | constant_keyword |  |
-| data_stream.type | Data stream type. | constant_keyword |  |
-| host.containerized | If the host is a container. | boolean |  |
-| host.os.build | OS build information. | keyword |  |
-| host.os.codename | OS codename, if any. | keyword |  |
-| o365.metrics.mailbox.usage.quota.status.indeterminate.count | The number of mailboxes where the quota status could not be determined. | long |  |
-| o365.metrics.mailbox.usage.quota.status.report.date | The specific date for which the report data applies. | date |  |
-| o365.metrics.mailbox.usage.quota.status.report.period.day | The duration (e.g., 7 days) over which the quota status data is aggregated. | integer | d |
-| o365.metrics.mailbox.usage.quota.status.report.refresh_date | The date when the report data was last updated. | date |  |
-| o365.metrics.mailbox.usage.quota.status.send_prohibited.count | The number of mailboxes restricted from sending emails due to exceeding their send quota during the reporting period. | long |  |
-| o365.metrics.mailbox.usage.quota.status.send_receive_prohibited.count | The number of mailboxes restricted from both sending and receiving emails due to exceeding their total quota during the reporting period. | long |  |
-| o365.metrics.mailbox.usage.quota.status.under_limit.count | The number of mailboxes operating within their assigned quota limits during the reporting period. | long |  |
-| o365.metrics.mailbox.usage.quota.status.warning_issued.count | The number of mailboxes that have exceeded their warning threshold quota during the reporting period. | long |  |
+| Field | Description | Type | Unit | Metric Type |
+|---|---|---|---|---|
+| @timestamp | Event timestamp. | date |  |  |
+| cloud.image.id | Image ID for the cloud instance. | keyword |  |  |
+| data_stream.dataset | Data stream dataset. | constant_keyword |  |  |
+| data_stream.namespace | Data stream namespace. | constant_keyword |  |  |
+| data_stream.type | Data stream type. | constant_keyword |  |  |
+| host.containerized | If the host is a container. | boolean |  |  |
+| host.os.build | OS build information. | keyword |  |  |
+| host.os.codename | OS codename, if any. | keyword |  |  |
+| o365.metrics.mailbox.usage.quota.status.indeterminate.count | The number of mailboxes where the quota status could not be determined. | long |  | gauge |
+| o365.metrics.mailbox.usage.quota.status.report.date | The specific date for which the report data applies. | date |  |  |
+| o365.metrics.mailbox.usage.quota.status.report.period.day | The duration (e.g., 7 days) over which the quota status data is aggregated. | integer | d |  |
+| o365.metrics.mailbox.usage.quota.status.report.refresh_date | The date when the report data was last updated. | date |  |  |
+| o365.metrics.mailbox.usage.quota.status.send_prohibited.count | The number of mailboxes restricted from sending emails due to exceeding their send quota during the reporting period. | long |  | gauge |
+| o365.metrics.mailbox.usage.quota.status.send_receive_prohibited.count | The number of mailboxes restricted from both sending and receiving emails due to exceeding their total quota during the reporting period. | long |  | gauge |
+| o365.metrics.mailbox.usage.quota.status.under_limit.count | The number of mailboxes operating within their assigned quota limits during the reporting period. | long |  | gauge |
+| o365.metrics.mailbox.usage.quota.status.warning_issued.count | The number of mailboxes that have exceeded their warning threshold quota during the reporting period. | long |  | gauge |
 
 
 ### Mailbox Usage Detail
@@ -488,33 +488,33 @@ Please refer to the following [document](https://www.elastic.co/guide/en/ecs/cur
 
 **Exported fields**
 
-| Field | Description | Type | Unit |
-|---|---|---|---|
-| @timestamp | Event timestamp. | date |  |
-| cloud.image.id | Image ID for the cloud instance. | keyword |  |
-| data_stream.dataset | Data stream dataset. | constant_keyword |  |
-| data_stream.namespace | Data stream namespace. | constant_keyword |  |
-| data_stream.type | Data stream type. | constant_keyword |  |
-| host.containerized | If the host is a container. | boolean |  |
-| host.os.build | OS build information. | keyword |  |
-| host.os.codename | OS codename, if any. | keyword |  |
-| o365.metrics.mailbox.usage.detail.created_date | The date the mailbox was created. | date |  |
-| o365.metrics.mailbox.usage.detail.deleted_date | The date the mailbox was deleted. | date |  |
-| o365.metrics.mailbox.usage.detail.deleted_item.count | The number of items in the deleted items folder. | long |  |
-| o365.metrics.mailbox.usage.detail.deleted_item_quota.byte | The quota limit for the deleted items folder (in bytes). | long | byte |
-| o365.metrics.mailbox.usage.detail.deleted_item_size.byte | The total size of items in the deleted items folder (in bytes). | long | byte |
-| o365.metrics.mailbox.usage.detail.display_name | The full name of the user. | keyword |  |
-| o365.metrics.mailbox.usage.detail.has_archive | Indicates if the user has an archive mailbox. | boolean |  |
-| o365.metrics.mailbox.usage.detail.is_deleted | Indicates if the mailbox is deleted. | boolean |  |
-| o365.metrics.mailbox.usage.detail.issue_warning_quota.byte | The mailbox size limit at which a warning is issued (in bytes). | long | byte |
-| o365.metrics.mailbox.usage.detail.item.count | The total number of items in the mailbox. | long |  |
-| o365.metrics.mailbox.usage.detail.last_activity_date | The most recent activity date for the mailbox. | date |  |
-| o365.metrics.mailbox.usage.detail.prohibit_send_quota.byte | The mailbox size limit at which sending messages is prohibited (in bytes). | long | byte |
-| o365.metrics.mailbox.usage.detail.prohibit_send_receive_quota.byte | The mailbox size limit at which sending and receiving messages is prohibited (in bytes). | long | byte |
-| o365.metrics.mailbox.usage.detail.report.period.day | The reporting period over which the data is aggregated (in days). | integer | d |
-| o365.metrics.mailbox.usage.detail.report.refresh_date | The date when the report data was last updated. | date |  |
-| o365.metrics.mailbox.usage.detail.storage_used.byte | The total storage used in the mailbox (in bytes). | long | byte |
-| o365.metrics.mailbox.usage.detail.user_principal_name | The email or principal username of the user. | keyword |  |
+| Field | Description | Type | Unit | Metric Type |
+|---|---|---|---|---|
+| @timestamp | Event timestamp. | date |  |  |
+| cloud.image.id | Image ID for the cloud instance. | keyword |  |  |
+| data_stream.dataset | Data stream dataset. | constant_keyword |  |  |
+| data_stream.namespace | Data stream namespace. | constant_keyword |  |  |
+| data_stream.type | Data stream type. | constant_keyword |  |  |
+| host.containerized | If the host is a container. | boolean |  |  |
+| host.os.build | OS build information. | keyword |  |  |
+| host.os.codename | OS codename, if any. | keyword |  |  |
+| o365.metrics.mailbox.usage.detail.created_date | The date the mailbox was created. | date |  |  |
+| o365.metrics.mailbox.usage.detail.deleted_date | The date the mailbox was deleted. | date |  |  |
+| o365.metrics.mailbox.usage.detail.deleted_item.count | The number of items in the deleted items folder. | long |  | gauge |
+| o365.metrics.mailbox.usage.detail.deleted_item_quota.byte | The quota limit for the deleted items folder (in bytes). | long | byte | gauge |
+| o365.metrics.mailbox.usage.detail.deleted_item_size.byte | The total size of items in the deleted items folder (in bytes). | long | byte | gauge |
+| o365.metrics.mailbox.usage.detail.display_name | The full name of the user. | keyword |  |  |
+| o365.metrics.mailbox.usage.detail.has_archive | Indicates if the user has an archive mailbox. | boolean |  |  |
+| o365.metrics.mailbox.usage.detail.is_deleted | Indicates if the mailbox is deleted. | boolean |  |  |
+| o365.metrics.mailbox.usage.detail.issue_warning_quota.byte | The mailbox size limit at which a warning is issued (in bytes). | long | byte | gauge |
+| o365.metrics.mailbox.usage.detail.item.count | The total number of items in the mailbox. | long |  | gauge |
+| o365.metrics.mailbox.usage.detail.last_activity_date | The most recent activity date for the mailbox. | date |  |  |
+| o365.metrics.mailbox.usage.detail.prohibit_send_quota.byte | The mailbox size limit at which sending messages is prohibited (in bytes). | long | byte | gauge |
+| o365.metrics.mailbox.usage.detail.prohibit_send_receive_quota.byte | The mailbox size limit at which sending and receiving messages is prohibited (in bytes). | long | byte | gauge |
+| o365.metrics.mailbox.usage.detail.report.period.day | The reporting period over which the data is aggregated (in days). | integer | d |  |
+| o365.metrics.mailbox.usage.detail.report.refresh_date | The date when the report data was last updated. | date |  |  |
+| o365.metrics.mailbox.usage.detail.storage_used.byte | The total storage used in the mailbox (in bytes). | long | byte | gauge |
+| o365.metrics.mailbox.usage.detail.user_principal_name | The email or principal username of the user. | keyword |  |  |
 
 
 ### Microsoft 365 Groups Activity Group Detail
@@ -606,36 +606,36 @@ Please refer to the following [document](https://www.elastic.co/guide/en/ecs/cur
 
 **Exported fields**
 
-| Field | Description | Type | Unit |
-|---|---|---|---|
-| @timestamp | Date/time when the event originated. This is the date/time extracted from the event, typically representing when the event was generated by the source. If the event source has no original timestamp, this value is typically populated by the first time the event was received by the pipeline. Required field for all events. | date |  |
-| data_stream.dataset | The field can contain anything that makes sense to signify the source of the data. Examples include `nginx.access`, `prometheus`, `endpoint` etc. For data streams that otherwise fit, but that do not have dataset set we use the value "generic" for the dataset value. `event.dataset` should have the same value as `data_stream.dataset`. Beyond the Elasticsearch data stream naming criteria noted above, the `dataset` value has additional restrictions:   \* Must not contain `-`   \* No longer than 100 characters | constant_keyword |  |
-| data_stream.namespace | A user defined namespace. Namespaces are useful to allow grouping of data. Many users already organize their indices this way, and the data stream naming scheme now provides this best practice as a default. Many users will populate this field with `default`. If no value is used, it falls back to `default`. Beyond the Elasticsearch index naming criteria noted above, `namespace` value has the additional restrictions:   \* Must not contain `-`   \* No longer than 100 characters | constant_keyword |  |
-| data_stream.type | An overarching type for the data stream. Currently allowed values are "logs" and "metrics". We expect to also add "traces" and "synthetics" in the near future. | constant_keyword |  |
-| event.dataset | Name of the dataset. If an event source publishes more than one type of log or events (e.g. access log, error log), the dataset is used to specify which one the event comes from. It's recommended but not required to start the dataset name with the module name, followed by a dot, then the dataset name. | constant_keyword |  |
-| event.module | Name of the module this data is coming from. If your monitoring agent supports the concept of modules or plugins to process events of a given source (e.g. Apache logs), `event.module` should contain the name of this module. | constant_keyword |  |
-| labels.is_transform_source | Distinguishes between documents that are a source for a transform and documents that are an output of a transform, to facilitate easier filtering. | constant_keyword |  |
-| o365.metrics.groups.activity.group.detail.exchange_mailbox_storage_used.byte | The storage used by the group's mailbox. | long |  |
-| o365.metrics.groups.activity.group.detail.exchange_mailbox_total_item.count | The total number of items in the group's mailbox. | long |  |
-| o365.metrics.groups.activity.group.detail.exchange_received_email.count | The number of messages received by the group. | long |  |
-| o365.metrics.groups.activity.group.detail.external_member.count | The number of external users in the group. | long |  |
-| o365.metrics.groups.activity.group.detail.group_display_name | The name of the group. | keyword |  |
-| o365.metrics.groups.activity.group.detail.group_id | The id of the group. | keyword |  |
-| o365.metrics.groups.activity.group.detail.group_type | The type of group. This can be private or public group. | keyword |  |
-| o365.metrics.groups.activity.group.detail.is_deleted | If the group is deleted, but had activity in the reporting period it will show up in the grid with this flag set to true. | boolean |  |
-| o365.metrics.groups.activity.group.detail.last_activity_date | The latest date a message was received by the group. This is the latest date an activity happened in an email conversation, Viva Engage, or the Site. | date |  |
-| o365.metrics.groups.activity.group.detail.member.count | The number of members in the group. | long |  |
-| o365.metrics.groups.activity.group.detail.owner_principal_name | The name of the group owner. | keyword |  |
-| o365.metrics.groups.activity.group.detail.report.period.day | The reporting period over which the data is aggregated (in days). | integer | d |
-| o365.metrics.groups.activity.group.detail.report.refresh_date | The date when the report data was last updated. | date |  |
-| o365.metrics.groups.activity.group.detail.sharepoint_active_file.count | The number of files in the SharePoint group site that were acted on (viewed or modified, synched, shared internally or externally) during the reporting period. | long |  |
-| o365.metrics.groups.activity.group.detail.sharepoint_site_storage_used.byte | The amount of storage in MB used during the reporting period. | long |  |
-| o365.metrics.groups.activity.group.detail.sharepoint_total_file.count | The number of files stored in SharePoint group sites. | long |  |
-| o365.metrics.groups.activity.group.detail.yammer_liked_message.count | The number of messages liked in the Viva Engage group over the reporting period. | long |  |
-| o365.metrics.groups.activity.group.detail.yammer_posted_message.count | The number of messages posted in the Viva Engage group over the reporting period. | long |  |
-| o365.metrics.groups.activity.group.detail.yammer_read_message.count | The number of conversations read in the Viva Engage group over the reporting period. | long |  |
-| o365.metrics.report.api_path | Microsoft Graph API path used to pull the report. | keyword |  |
-| o365.metrics.report.name | Name of the report. | keyword |  |
+| Field | Description | Type | Unit | Metric Type |
+|---|---|---|---|---|
+| @timestamp | Date/time when the event originated. This is the date/time extracted from the event, typically representing when the event was generated by the source. If the event source has no original timestamp, this value is typically populated by the first time the event was received by the pipeline. Required field for all events. | date |  |  |
+| data_stream.dataset | The field can contain anything that makes sense to signify the source of the data. Examples include `nginx.access`, `prometheus`, `endpoint` etc. For data streams that otherwise fit, but that do not have dataset set we use the value "generic" for the dataset value. `event.dataset` should have the same value as `data_stream.dataset`. Beyond the Elasticsearch data stream naming criteria noted above, the `dataset` value has additional restrictions:   \* Must not contain `-`   \* No longer than 100 characters | constant_keyword |  |  |
+| data_stream.namespace | A user defined namespace. Namespaces are useful to allow grouping of data. Many users already organize their indices this way, and the data stream naming scheme now provides this best practice as a default. Many users will populate this field with `default`. If no value is used, it falls back to `default`. Beyond the Elasticsearch index naming criteria noted above, `namespace` value has the additional restrictions:   \* Must not contain `-`   \* No longer than 100 characters | constant_keyword |  |  |
+| data_stream.type | An overarching type for the data stream. Currently allowed values are "logs" and "metrics". We expect to also add "traces" and "synthetics" in the near future. | constant_keyword |  |  |
+| event.dataset | Name of the dataset. If an event source publishes more than one type of log or events (e.g. access log, error log), the dataset is used to specify which one the event comes from. It's recommended but not required to start the dataset name with the module name, followed by a dot, then the dataset name. | constant_keyword |  |  |
+| event.module | Name of the module this data is coming from. If your monitoring agent supports the concept of modules or plugins to process events of a given source (e.g. Apache logs), `event.module` should contain the name of this module. | constant_keyword |  |  |
+| labels.is_transform_source | Distinguishes between documents that are a source for a transform and documents that are an output of a transform, to facilitate easier filtering. | constant_keyword |  |  |
+| o365.metrics.groups.activity.group.detail.exchange_mailbox_storage_used.byte | The storage used by the group's mailbox. | long |  | gauge |
+| o365.metrics.groups.activity.group.detail.exchange_mailbox_total_item.count | The total number of items in the group's mailbox. | long |  | gauge |
+| o365.metrics.groups.activity.group.detail.exchange_received_email.count | The number of messages received by the group. | long |  | gauge |
+| o365.metrics.groups.activity.group.detail.external_member.count | The number of external users in the group. | long |  | gauge |
+| o365.metrics.groups.activity.group.detail.group_display_name | The name of the group. | keyword |  |  |
+| o365.metrics.groups.activity.group.detail.group_id | The id of the group. | keyword |  |  |
+| o365.metrics.groups.activity.group.detail.group_type | The type of group. This can be private or public group. | keyword |  |  |
+| o365.metrics.groups.activity.group.detail.is_deleted | If the group is deleted, but had activity in the reporting period it will show up in the grid with this flag set to true. | boolean |  |  |
+| o365.metrics.groups.activity.group.detail.last_activity_date | The latest date a message was received by the group. This is the latest date an activity happened in an email conversation, Viva Engage, or the Site. | date |  |  |
+| o365.metrics.groups.activity.group.detail.member.count | The number of members in the group. | long |  | gauge |
+| o365.metrics.groups.activity.group.detail.owner_principal_name | The name of the group owner. | keyword |  |  |
+| o365.metrics.groups.activity.group.detail.report.period.day | The reporting period over which the data is aggregated (in days). | integer | d |  |
+| o365.metrics.groups.activity.group.detail.report.refresh_date | The date when the report data was last updated. | date |  |  |
+| o365.metrics.groups.activity.group.detail.sharepoint_active_file.count | The number of files in the SharePoint group site that were acted on (viewed or modified, synched, shared internally or externally) during the reporting period. | long |  | gauge |
+| o365.metrics.groups.activity.group.detail.sharepoint_site_storage_used.byte | The amount of storage in MB used during the reporting period. | long |  | gauge |
+| o365.metrics.groups.activity.group.detail.sharepoint_total_file.count | The number of files stored in SharePoint group sites. | long |  | gauge |
+| o365.metrics.groups.activity.group.detail.yammer_liked_message.count | The number of messages liked in the Viva Engage group over the reporting period. | long |  | gauge |
+| o365.metrics.groups.activity.group.detail.yammer_posted_message.count | The number of messages posted in the Viva Engage group over the reporting period. | long |  | gauge |
+| o365.metrics.groups.activity.group.detail.yammer_read_message.count | The number of conversations read in the Viva Engage group over the reporting period. | long |  | gauge |
+| o365.metrics.report.api_path | Microsoft Graph API path used to pull the report. | keyword |  |  |
+| o365.metrics.report.name | Name of the report. | keyword |  |  |
 
 
 ### OneDrive Usage Account Detail
@@ -714,29 +714,29 @@ Please refer to the following [document](https://www.elastic.co/guide/en/ecs/cur
 
 **Exported fields**
 
-| Field | Description | Type | Unit |
-|---|---|---|---|
-| @timestamp | Date/time when the event originated. This is the date/time extracted from the event, typically representing when the event was generated by the source. If the event source has no original timestamp, this value is typically populated by the first time the event was received by the pipeline. Required field for all events. | date |  |
-| data_stream.dataset | The field can contain anything that makes sense to signify the source of the data. Examples include `nginx.access`, `prometheus`, `endpoint` etc. For data streams that otherwise fit, but that do not have dataset set we use the value "generic" for the dataset value. `event.dataset` should have the same value as `data_stream.dataset`. Beyond the Elasticsearch data stream naming criteria noted above, the `dataset` value has additional restrictions:   \* Must not contain `-`   \* No longer than 100 characters | constant_keyword |  |
-| data_stream.namespace | A user defined namespace. Namespaces are useful to allow grouping of data. Many users already organize their indices this way, and the data stream naming scheme now provides this best practice as a default. Many users will populate this field with `default`. If no value is used, it falls back to `default`. Beyond the Elasticsearch index naming criteria noted above, `namespace` value has the additional restrictions:   \* Must not contain `-`   \* No longer than 100 characters | constant_keyword |  |
-| data_stream.type | An overarching type for the data stream. Currently allowed values are "logs" and "metrics". We expect to also add "traces" and "synthetics" in the near future. | constant_keyword |  |
-| event.dataset | Name of the dataset. If an event source publishes more than one type of log or events (e.g. access log, error log), the dataset is used to specify which one the event comes from. It's recommended but not required to start the dataset name with the module name, followed by a dot, then the dataset name. | constant_keyword |  |
-| event.module | Name of the module this data is coming from. If your monitoring agent supports the concept of modules or plugins to process events of a given source (e.g. Apache logs), `event.module` should contain the name of this module. | constant_keyword |  |
-| labels.is_transform_source | Distinguishes between documents that are a source for a transform and documents that are an output of a transform, to facilitate easier filtering. | constant_keyword |  |
-| o365.metrics.onedrive.usage.account.detail.active_file.count | The number of active files within the time period. | long |  |
-| o365.metrics.onedrive.usage.account.detail.file.count | The number of files in the OneDrive. | long |  |
-| o365.metrics.onedrive.usage.account.detail.is_deleted | The deletion status of the OneDrive. It takes at least seven days for accounts to be marked as deleted. | boolean |  |
-| o365.metrics.onedrive.usage.account.detail.last_activity_date | The latest date a file activity was performed in the OneDrive. If the OneDrive has had no file activity, the value will be blank. | date |  |
-| o365.metrics.onedrive.usage.account.detail.owner_display_name | The username of the primary administrator of the OneDrive. | keyword |  |
-| o365.metrics.onedrive.usage.account.detail.owner_principal_name | The email address of the owner of the OneDrive. | keyword |  |
-| o365.metrics.onedrive.usage.account.detail.report.period.day | The reporting period over which the data is aggregated (in days). | integer | d |
-| o365.metrics.onedrive.usage.account.detail.report.refresh_date | The date when the report data was last updated. | date |  |
-| o365.metrics.onedrive.usage.account.detail.site_id | The site ID of the site. | keyword |  |
-| o365.metrics.onedrive.usage.account.detail.site_url | The web address for the user's OneDrive. Note: URL will be empty temporarily. | keyword |  |
-| o365.metrics.onedrive.usage.account.detail.storage_allocated.byte | The amount of storage the OneDrive is allocated. | long |  |
-| o365.metrics.onedrive.usage.account.detail.storage_used.byte | The amount of storage the OneDrive uses. | long |  |
-| o365.metrics.report.api_path | Microsoft Graph API path used to pull the report. | keyword |  |
-| o365.metrics.report.name | Name of the report. | keyword |  |
+| Field | Description | Type | Unit | Metric Type |
+|---|---|---|---|---|
+| @timestamp | Date/time when the event originated. This is the date/time extracted from the event, typically representing when the event was generated by the source. If the event source has no original timestamp, this value is typically populated by the first time the event was received by the pipeline. Required field for all events. | date |  |  |
+| data_stream.dataset | The field can contain anything that makes sense to signify the source of the data. Examples include `nginx.access`, `prometheus`, `endpoint` etc. For data streams that otherwise fit, but that do not have dataset set we use the value "generic" for the dataset value. `event.dataset` should have the same value as `data_stream.dataset`. Beyond the Elasticsearch data stream naming criteria noted above, the `dataset` value has additional restrictions:   \* Must not contain `-`   \* No longer than 100 characters | constant_keyword |  |  |
+| data_stream.namespace | A user defined namespace. Namespaces are useful to allow grouping of data. Many users already organize their indices this way, and the data stream naming scheme now provides this best practice as a default. Many users will populate this field with `default`. If no value is used, it falls back to `default`. Beyond the Elasticsearch index naming criteria noted above, `namespace` value has the additional restrictions:   \* Must not contain `-`   \* No longer than 100 characters | constant_keyword |  |  |
+| data_stream.type | An overarching type for the data stream. Currently allowed values are "logs" and "metrics". We expect to also add "traces" and "synthetics" in the near future. | constant_keyword |  |  |
+| event.dataset | Name of the dataset. If an event source publishes more than one type of log or events (e.g. access log, error log), the dataset is used to specify which one the event comes from. It's recommended but not required to start the dataset name with the module name, followed by a dot, then the dataset name. | constant_keyword |  |  |
+| event.module | Name of the module this data is coming from. If your monitoring agent supports the concept of modules or plugins to process events of a given source (e.g. Apache logs), `event.module` should contain the name of this module. | constant_keyword |  |  |
+| labels.is_transform_source | Distinguishes between documents that are a source for a transform and documents that are an output of a transform, to facilitate easier filtering. | constant_keyword |  |  |
+| o365.metrics.onedrive.usage.account.detail.active_file.count | The number of active files within the time period. | long |  | gauge |
+| o365.metrics.onedrive.usage.account.detail.file.count | The number of files in the OneDrive. | long |  | gauge |
+| o365.metrics.onedrive.usage.account.detail.is_deleted | The deletion status of the OneDrive. It takes at least seven days for accounts to be marked as deleted. | boolean |  |  |
+| o365.metrics.onedrive.usage.account.detail.last_activity_date | The latest date a file activity was performed in the OneDrive. If the OneDrive has had no file activity, the value will be blank. | date |  |  |
+| o365.metrics.onedrive.usage.account.detail.owner_display_name | The username of the primary administrator of the OneDrive. | keyword |  |  |
+| o365.metrics.onedrive.usage.account.detail.owner_principal_name | The email address of the owner of the OneDrive. | keyword |  |  |
+| o365.metrics.onedrive.usage.account.detail.report.period.day | The reporting period over which the data is aggregated (in days). | integer | d |  |
+| o365.metrics.onedrive.usage.account.detail.report.refresh_date | The date when the report data was last updated. | date |  |  |
+| o365.metrics.onedrive.usage.account.detail.site_id | The site ID of the site. | keyword |  |  |
+| o365.metrics.onedrive.usage.account.detail.site_url | The web address for the user's OneDrive. Note: URL will be empty temporarily. | keyword |  |  |
+| o365.metrics.onedrive.usage.account.detail.storage_allocated.byte | The amount of storage the OneDrive is allocated. | long |  | gauge |
+| o365.metrics.onedrive.usage.account.detail.storage_used.byte | The amount of storage the OneDrive uses. | long |  | gauge |
+| o365.metrics.report.api_path | Microsoft Graph API path used to pull the report. | keyword |  |  |
+| o365.metrics.report.name | Name of the report. | keyword |  |  |
 
 
 ### OneDrive Usage Account Counts
@@ -832,21 +832,21 @@ Please refer to the following [document](https://www.elastic.co/guide/en/ecs/cur
 
 **Exported fields**
 
-| Field | Description | Type | Unit |
-|---|---|---|---|
-| @timestamp | Event timestamp. | date |  |
-| cloud.image.id | Image ID for the cloud instance. | keyword |  |
-| data_stream.dataset | Data stream dataset. | constant_keyword |  |
-| data_stream.namespace | Data stream namespace. | constant_keyword |  |
-| data_stream.type | Data stream type. | constant_keyword |  |
-| host.containerized | If the host is a container. | boolean |  |
-| host.os.build | OS build information. | keyword |  |
-| host.os.codename | OS codename, if any. | keyword |  |
-| o365.metrics.onedrive.usage.account.counts.active.count | The number of OneDrive accounts that were active during the reporting period. | long |  |
-| o365.metrics.onedrive.usage.account.counts.report.date | The date the report was generated. | date |  |
-| o365.metrics.onedrive.usage.account.counts.report.period.day | The reporting period over which the data is aggregated (in days). | integer | d |
-| o365.metrics.onedrive.usage.account.counts.report.refresh_date | The date when the report data was last updated. | date |  |
-| o365.metrics.onedrive.usage.account.counts.total.count | The total number of OneDrive accounts evaluated in the report. | long |  |
+| Field | Description | Type | Unit | Metric Type |
+|---|---|---|---|---|
+| @timestamp | Event timestamp. | date |  |  |
+| cloud.image.id | Image ID for the cloud instance. | keyword |  |  |
+| data_stream.dataset | Data stream dataset. | constant_keyword |  |  |
+| data_stream.namespace | Data stream namespace. | constant_keyword |  |  |
+| data_stream.type | Data stream type. | constant_keyword |  |  |
+| host.containerized | If the host is a container. | boolean |  |  |
+| host.os.build | OS build information. | keyword |  |  |
+| host.os.codename | OS codename, if any. | keyword |  |  |
+| o365.metrics.onedrive.usage.account.counts.active.count | The number of OneDrive accounts that were active during the reporting period. | long |  | gauge |
+| o365.metrics.onedrive.usage.account.counts.report.date | The date the report was generated. | date |  |  |
+| o365.metrics.onedrive.usage.account.counts.report.period.day | The reporting period over which the data is aggregated (in days). | integer | d |  |
+| o365.metrics.onedrive.usage.account.counts.report.refresh_date | The date when the report data was last updated. | date |  |  |
+| o365.metrics.onedrive.usage.account.counts.total.count | The total number of OneDrive accounts evaluated in the report. | long |  | gauge |
 
 
 ### OneDrive Usage File Counts
@@ -942,21 +942,21 @@ Please refer to the following [document](https://www.elastic.co/guide/en/ecs/cur
 
 **Exported fields**
 
-| Field | Description | Type | Unit |
-|---|---|---|---|
-| @timestamp | Event timestamp. | date |  |
-| cloud.image.id | Image ID for the cloud instance. | keyword |  |
-| data_stream.dataset | Data stream dataset. | constant_keyword |  |
-| data_stream.namespace | Data stream namespace. | constant_keyword |  |
-| data_stream.type | Data stream type. | constant_keyword |  |
-| host.containerized | If the host is a container. | boolean |  |
-| host.os.build | OS build information. | keyword |  |
-| host.os.codename | OS codename, if any. | keyword |  |
-| o365.metrics.onedrive.usage.file.counts.active.count | The number of OneDrive accounts with active file usage during the reporting period. | long |  |
-| o365.metrics.onedrive.usage.file.counts.report.date | The date the report was generated. | date |  |
-| o365.metrics.onedrive.usage.file.counts.report.period.day | The reporting period over which the data is aggregated (in days). | integer | d |
-| o365.metrics.onedrive.usage.file.counts.report.refresh_date | The date when the report data was last updated. | date |  |
-| o365.metrics.onedrive.usage.file.counts.total.count | The total number of OneDrive accounts evaluated in the report. | long |  |
+| Field | Description | Type | Unit | Metric Type |
+|---|---|---|---|---|
+| @timestamp | Event timestamp. | date |  |  |
+| cloud.image.id | Image ID for the cloud instance. | keyword |  |  |
+| data_stream.dataset | Data stream dataset. | constant_keyword |  |  |
+| data_stream.namespace | Data stream namespace. | constant_keyword |  |  |
+| data_stream.type | Data stream type. | constant_keyword |  |  |
+| host.containerized | If the host is a container. | boolean |  |  |
+| host.os.build | OS build information. | keyword |  |  |
+| host.os.codename | OS codename, if any. | keyword |  |  |
+| o365.metrics.onedrive.usage.file.counts.active.count | The number of OneDrive accounts with active file usage during the reporting period. | long |  | gauge |
+| o365.metrics.onedrive.usage.file.counts.report.date | The date the report was generated. | date |  |  |
+| o365.metrics.onedrive.usage.file.counts.report.period.day | The reporting period over which the data is aggregated (in days). | integer | d |  |
+| o365.metrics.onedrive.usage.file.counts.report.refresh_date | The date when the report data was last updated. | date |  |  |
+| o365.metrics.onedrive.usage.file.counts.total.count | The total number of OneDrive accounts evaluated in the report. | long |  | gauge |
 
 
 ### OneDrive Usage Storage
@@ -1047,20 +1047,20 @@ Please refer to the following [document](https://www.elastic.co/guide/en/ecs/cur
 
 **Exported fields**
 
-| Field | Description | Type | Unit |
-|---|---|---|---|
-| @timestamp | Event timestamp. | date |  |
-| cloud.image.id | Image ID for the cloud instance. | keyword |  |
-| data_stream.dataset | Data stream dataset. | constant_keyword |  |
-| data_stream.namespace | Data stream namespace. | constant_keyword |  |
-| data_stream.type | Data stream type. | constant_keyword |  |
-| host.containerized | If the host is a container. | boolean |  |
-| host.os.build | OS build information. | keyword |  |
-| host.os.codename | OS codename, if any. | keyword |  |
-| o365.metrics.onedrive.usage.storage.report.date | The date the report was generated. | date |  |
-| o365.metrics.onedrive.usage.storage.report.period.day | The reporting period over which the data is aggregated (in days). | integer | d |
-| o365.metrics.onedrive.usage.storage.report.refresh_date | The date when the report data was last updated. | date |  |
-| o365.metrics.onedrive.usage.storage.used.byte | The total storage used across OneDrive accounts during the reporting period, in bytes. | long | byte |
+| Field | Description | Type | Unit | Metric Type |
+|---|---|---|---|---|
+| @timestamp | Event timestamp. | date |  |  |
+| cloud.image.id | Image ID for the cloud instance. | keyword |  |  |
+| data_stream.dataset | Data stream dataset. | constant_keyword |  |  |
+| data_stream.namespace | Data stream namespace. | constant_keyword |  |  |
+| data_stream.type | Data stream type. | constant_keyword |  |  |
+| host.containerized | If the host is a container. | boolean |  |  |
+| host.os.build | OS build information. | keyword |  |  |
+| host.os.codename | OS codename, if any. | keyword |  |  |
+| o365.metrics.onedrive.usage.storage.report.date | The date the report was generated. | date |  |  |
+| o365.metrics.onedrive.usage.storage.report.period.day | The reporting period over which the data is aggregated (in days). | integer | d |  |
+| o365.metrics.onedrive.usage.storage.report.refresh_date | The date when the report data was last updated. | date |  |  |
+| o365.metrics.onedrive.usage.storage.used.byte | The total storage used across OneDrive accounts during the reporting period, in bytes. | long | byte | gauge |
 
 
 ### Outlook Activity
@@ -1159,24 +1159,24 @@ Please refer to the following [document](https://www.elastic.co/guide/en/ecs/cur
 
 **Exported fields**
 
-| Field | Description | Type | Unit |
-|---|---|---|---|
-| @timestamp | Event timestamp. | date |  |
-| cloud.image.id | Image ID for the cloud instance. | keyword |  |
-| data_stream.dataset | Data stream dataset. | constant_keyword |  |
-| data_stream.namespace | Data stream namespace. | constant_keyword |  |
-| data_stream.type | Data stream type. | constant_keyword |  |
-| host.containerized | If the host is a container. | boolean |  |
-| host.os.build | OS build information. | keyword |  |
-| host.os.codename | OS codename, if any. | keyword |  |
-| o365.metrics.outlook.activity.emails_read.count | The count of email messages read by users during the reporting period. | long |  |
-| o365.metrics.outlook.activity.emails_received.count | The count of email messages received by users during the reporting period. | long |  |
-| o365.metrics.outlook.activity.emails_sent.count | The count of email messages sent by users during the reporting period. | long |  |
-| o365.metrics.outlook.activity.meeting_created.count | The count of calendar meetings created by users during the reporting period. | long |  |
-| o365.metrics.outlook.activity.meeting_interacted.count | The count of meetings where users interacted (e.g., accepted, declined, or modified) during the reporting period. | long |  |
-| o365.metrics.outlook.activity.report.date | The specific date for which the report data applies. | date |  |
-| o365.metrics.outlook.activity.report.period.day | The duration (e.g., 7 days) over which the report data is aggregated. | integer | d |
-| o365.metrics.outlook.activity.report.refresh_date | The date when the report data was last updated. | date |  |
+| Field | Description | Type | Unit | Metric Type |
+|---|---|---|---|---|
+| @timestamp | Event timestamp. | date |  |  |
+| cloud.image.id | Image ID for the cloud instance. | keyword |  |  |
+| data_stream.dataset | Data stream dataset. | constant_keyword |  |  |
+| data_stream.namespace | Data stream namespace. | constant_keyword |  |  |
+| data_stream.type | Data stream type. | constant_keyword |  |  |
+| host.containerized | If the host is a container. | boolean |  |  |
+| host.os.build | OS build information. | keyword |  |  |
+| host.os.codename | OS codename, if any. | keyword |  |  |
+| o365.metrics.outlook.activity.emails_read.count | The count of email messages read by users during the reporting period. | long |  | gauge |
+| o365.metrics.outlook.activity.emails_received.count | The count of email messages received by users during the reporting period. | long |  | gauge |
+| o365.metrics.outlook.activity.emails_sent.count | The count of email messages sent by users during the reporting period. | long |  | gauge |
+| o365.metrics.outlook.activity.meeting_created.count | The count of calendar meetings created by users during the reporting period. | long |  | gauge |
+| o365.metrics.outlook.activity.meeting_interacted.count | The count of meetings where users interacted (e.g., accepted, declined, or modified) during the reporting period. | long |  | gauge |
+| o365.metrics.outlook.activity.report.date | The specific date for which the report data applies. | date |  |  |
+| o365.metrics.outlook.activity.report.period.day | The duration (e.g., 7 days) over which the report data is aggregated. | integer | d |  |
+| o365.metrics.outlook.activity.report.refresh_date | The date when the report data was last updated. | date |  |  |
 
 
 ### Outlook App Usage Version Counts
@@ -1286,25 +1286,25 @@ Please refer to the following [document](https://www.elastic.co/guide/en/ecs/cur
 
 **Exported fields**
 
-| Field | Description | Type | Unit |
-|---|---|---|---|
-| @timestamp | Event timestamp. | date |  |
-| cloud.image.id | Image ID for the cloud instance. | keyword |  |
-| data_stream.dataset | Data stream dataset. | constant_keyword |  |
-| data_stream.namespace | Data stream namespace. | constant_keyword |  |
-| data_stream.type | Data stream type. | constant_keyword |  |
-| host.containerized | If the host is a container. | boolean |  |
-| host.os.build | OS build information. | keyword |  |
-| host.os.codename | OS codename, if any. | keyword |  |
-| o365.metrics.outlook.app.usage.version.counts.outlook_2007.count | The count of unique users using Outlook 2007 during the reporting period. | long |  |
-| o365.metrics.outlook.app.usage.version.counts.outlook_2010.count | The count of unique users using Outlook 2010 during the reporting period. | long |  |
-| o365.metrics.outlook.app.usage.version.counts.outlook_2013.count | The count of unique users using Outlook 2013 during the reporting period. | long |  |
-| o365.metrics.outlook.app.usage.version.counts.outlook_2016.count | The count of unique users using Outlook 2016 during the reporting period. | long |  |
-| o365.metrics.outlook.app.usage.version.counts.outlook_2019.count | The count of unique users using Outlook 2019 during the reporting period. | long |  |
-| o365.metrics.outlook.app.usage.version.counts.outlook_m365.count | The count of unique users using the Outlook Microsoft 365 version during the reporting period. | long |  |
-| o365.metrics.outlook.app.usage.version.counts.report.period.day | The duration (e.g., 7 days) over which the report data is aggregated. | integer | d |
-| o365.metrics.outlook.app.usage.version.counts.report.refresh_date | The date when the report data was last updated. | date |  |
-| o365.metrics.outlook.app.usage.version.counts.undetermined.count | The count of unique users whose Outlook version could not be identified. | long |  |
+| Field | Description | Type | Unit | Metric Type |
+|---|---|---|---|---|
+| @timestamp | Event timestamp. | date |  |  |
+| cloud.image.id | Image ID for the cloud instance. | keyword |  |  |
+| data_stream.dataset | Data stream dataset. | constant_keyword |  |  |
+| data_stream.namespace | Data stream namespace. | constant_keyword |  |  |
+| data_stream.type | Data stream type. | constant_keyword |  |  |
+| host.containerized | If the host is a container. | boolean |  |  |
+| host.os.build | OS build information. | keyword |  |  |
+| host.os.codename | OS codename, if any. | keyword |  |  |
+| o365.metrics.outlook.app.usage.version.counts.outlook_2007.count | The count of unique users using Outlook 2007 during the reporting period. | long |  | gauge |
+| o365.metrics.outlook.app.usage.version.counts.outlook_2010.count | The count of unique users using Outlook 2010 during the reporting period. | long |  | gauge |
+| o365.metrics.outlook.app.usage.version.counts.outlook_2013.count | The count of unique users using Outlook 2013 during the reporting period. | long |  | gauge |
+| o365.metrics.outlook.app.usage.version.counts.outlook_2016.count | The count of unique users using Outlook 2016 during the reporting period. | long |  | gauge |
+| o365.metrics.outlook.app.usage.version.counts.outlook_2019.count | The count of unique users using Outlook 2019 during the reporting period. | long |  | gauge |
+| o365.metrics.outlook.app.usage.version.counts.outlook_m365.count | The count of unique users using the Outlook Microsoft 365 version during the reporting period. | long |  | gauge |
+| o365.metrics.outlook.app.usage.version.counts.report.period.day | The duration (e.g., 7 days) over which the report data is aggregated. | integer | d |  |
+| o365.metrics.outlook.app.usage.version.counts.report.refresh_date | The date when the report data was last updated. | date |  |  |
+| o365.metrics.outlook.app.usage.version.counts.undetermined.count | The count of unique users whose Outlook version could not be identified. | long |  | gauge |
 
 
 ### SharePoint Site Usage Detail
@@ -1416,31 +1416,31 @@ Please refer to the following [document](https://www.elastic.co/guide/en/ecs/cur
 
 **Exported fields**
 
-| Field | Description | Type | Unit |
-|---|---|---|---|
-| @timestamp | Event timestamp. | date |  |
-| cloud.image.id | Image ID for the cloud instance. | keyword |  |
-| data_stream.dataset | Data stream dataset. | constant_keyword |  |
-| data_stream.namespace | Data stream namespace. | constant_keyword |  |
-| data_stream.type | Data stream type. | constant_keyword |  |
-| host.containerized | If the host is a container. | boolean |  |
-| host.os.build | OS build information. | keyword |  |
-| host.os.codename | OS codename, if any. | keyword |  |
-| o365.metrics.sharepoint.site.usage.detail.active_file.count | The number of active files in the SharePoint site during the reporting period. | long |  |
-| o365.metrics.sharepoint.site.usage.detail.file.count | The total number of files in the SharePoint site. | long |  |
-| o365.metrics.sharepoint.site.usage.detail.is_deleted | Indicates whether the SharePoint site is deleted. | boolean |  |
-| o365.metrics.sharepoint.site.usage.detail.last_activity_date | The last date of activity in the SharePoint site. | date |  |
-| o365.metrics.sharepoint.site.usage.detail.owner_display_name | The display name of the SharePoint site owner. | keyword |  |
-| o365.metrics.sharepoint.site.usage.detail.owner_principal_name | The principal name of the SharePoint site owner. | keyword |  |
-| o365.metrics.sharepoint.site.usage.detail.page_view.count | The number of page views in the SharePoint site during the reporting period. | long |  |
-| o365.metrics.sharepoint.site.usage.detail.report.period.day | The reporting period over which the data is aggregated (in days). | integer | d |
-| o365.metrics.sharepoint.site.usage.detail.report.refresh_date | The date when the report data was last updated. | date |  |
-| o365.metrics.sharepoint.site.usage.detail.root_web_template | The template used for the root web of the SharePoint site. | keyword |  |
-| o365.metrics.sharepoint.site.usage.detail.site_id | The unique identifier of the SharePoint site. | keyword |  |
-| o365.metrics.sharepoint.site.usage.detail.site_url | The URL of the SharePoint site. | keyword |  |
-| o365.metrics.sharepoint.site.usage.detail.storage_allocated.byte | The amount of storage allocated to the SharePoint site, in bytes. | long | byte |
-| o365.metrics.sharepoint.site.usage.detail.storage_used.byte | The amount of storage used in the SharePoint site, in bytes. | long | byte |
-| o365.metrics.sharepoint.site.usage.detail.visited_page.count | The number of visited pages in the SharePoint site during the reporting period. | long |  |
+| Field | Description | Type | Unit | Metric Type |
+|---|---|---|---|---|
+| @timestamp | Event timestamp. | date |  |  |
+| cloud.image.id | Image ID for the cloud instance. | keyword |  |  |
+| data_stream.dataset | Data stream dataset. | constant_keyword |  |  |
+| data_stream.namespace | Data stream namespace. | constant_keyword |  |  |
+| data_stream.type | Data stream type. | constant_keyword |  |  |
+| host.containerized | If the host is a container. | boolean |  |  |
+| host.os.build | OS build information. | keyword |  |  |
+| host.os.codename | OS codename, if any. | keyword |  |  |
+| o365.metrics.sharepoint.site.usage.detail.active_file.count | The number of active files in the SharePoint site during the reporting period. | long |  | gauge |
+| o365.metrics.sharepoint.site.usage.detail.file.count | The total number of files in the SharePoint site. | long |  | gauge |
+| o365.metrics.sharepoint.site.usage.detail.is_deleted | Indicates whether the SharePoint site is deleted. | boolean |  |  |
+| o365.metrics.sharepoint.site.usage.detail.last_activity_date | The last date of activity in the SharePoint site. | date |  |  |
+| o365.metrics.sharepoint.site.usage.detail.owner_display_name | The display name of the SharePoint site owner. | keyword |  |  |
+| o365.metrics.sharepoint.site.usage.detail.owner_principal_name | The principal name of the SharePoint site owner. | keyword |  |  |
+| o365.metrics.sharepoint.site.usage.detail.page_view.count | The number of page views in the SharePoint site during the reporting period. | long |  | gauge |
+| o365.metrics.sharepoint.site.usage.detail.report.period.day | The reporting period over which the data is aggregated (in days). | integer | d |  |
+| o365.metrics.sharepoint.site.usage.detail.report.refresh_date | The date when the report data was last updated. | date |  |  |
+| o365.metrics.sharepoint.site.usage.detail.root_web_template | The template used for the root web of the SharePoint site. | keyword |  |  |
+| o365.metrics.sharepoint.site.usage.detail.site_id | The unique identifier of the SharePoint site. | keyword |  |  |
+| o365.metrics.sharepoint.site.usage.detail.site_url | The URL of the SharePoint site. | keyword |  |  |
+| o365.metrics.sharepoint.site.usage.detail.storage_allocated.byte | The amount of storage allocated to the SharePoint site, in bytes. | long | byte | gauge |
+| o365.metrics.sharepoint.site.usage.detail.storage_used.byte | The amount of storage used in the SharePoint site, in bytes. | long | byte | gauge |
+| o365.metrics.sharepoint.site.usage.detail.visited_page.count | The number of visited pages in the SharePoint site during the reporting period. | long |  | gauge |
 
 
 ### SharePoint Site Usage Storage
@@ -1534,20 +1534,20 @@ Please refer to the following [document](https://www.elastic.co/guide/en/ecs/cur
 
 **Exported fields**
 
-| Field | Description | Type | Unit |
-|---|---|---|---|
-| @timestamp | Event timestamp. | date |  |
-| cloud.image.id | Image ID for the cloud instance. | keyword |  |
-| data_stream.dataset | Data stream dataset. | constant_keyword |  |
-| data_stream.namespace | Data stream namespace. | constant_keyword |  |
-| data_stream.type | Data stream type. | constant_keyword |  |
-| host.containerized | If the host is a container. | boolean |  |
-| host.os.build | OS build information. | keyword |  |
-| host.os.codename | OS codename, if any. | keyword |  |
-| o365.metrics.sharepoint.site.usage.storage.report.date | The date the report was generated. | date |  |
-| o365.metrics.sharepoint.site.usage.storage.report.period.day | The reporting period over which the data is aggregated (in days). | integer | d |
-| o365.metrics.sharepoint.site.usage.storage.report.refresh_date | The date when the report data was last updated. | date |  |
-| o365.metrics.sharepoint.site.usage.storage.storage_used.byte | The total storage used across SharePoint sites during the reporting period, in bytes. | long | byte |
+| Field | Description | Type | Unit | Metric Type |
+|---|---|---|---|---|
+| @timestamp | Event timestamp. | date |  |  |
+| cloud.image.id | Image ID for the cloud instance. | keyword |  |  |
+| data_stream.dataset | Data stream dataset. | constant_keyword |  |  |
+| data_stream.namespace | Data stream namespace. | constant_keyword |  |  |
+| data_stream.type | Data stream type. | constant_keyword |  |  |
+| host.containerized | If the host is a container. | boolean |  |  |
+| host.os.build | OS build information. | keyword |  |  |
+| host.os.codename | OS codename, if any. | keyword |  |  |
+| o365.metrics.sharepoint.site.usage.storage.report.date | The date the report was generated. | date |  |  |
+| o365.metrics.sharepoint.site.usage.storage.report.period.day | The reporting period over which the data is aggregated (in days). | integer | d |  |
+| o365.metrics.sharepoint.site.usage.storage.report.refresh_date | The date when the report data was last updated. | date |  |  |
+| o365.metrics.sharepoint.site.usage.storage.storage_used.byte | The total storage used across SharePoint sites during the reporting period, in bytes. | long | byte | gauge |
 
 
 ### Teams User Activity User Counts
@@ -1652,24 +1652,24 @@ Please refer to the following [document](https://www.elastic.co/guide/en/ecs/cur
 
 **Exported fields**
 
-| Field | Description | Type | Unit |
-|---|---|---|---|
-| @timestamp | Event timestamp. | date |  |
-| cloud.image.id | Image ID for the cloud instance. | keyword |  |
-| data_stream.dataset | Data stream dataset. | constant_keyword |  |
-| data_stream.namespace | Data stream namespace. | constant_keyword |  |
-| data_stream.type | Data stream type. | constant_keyword |  |
-| host.containerized | If the host is a container. | boolean |  |
-| host.os.build | OS build information. | keyword |  |
-| host.os.codename | OS codename, if any. | keyword |  |
-| o365.metrics.teams.user.activity.user.counts.calls.count | The number of calls made by Teams users. | long |  |
-| o365.metrics.teams.user.activity.user.counts.meetings.count | The number of meetings attended or organized by Teams users. | long |  |
-| o365.metrics.teams.user.activity.user.counts.other_actions.count | The count of other user actions within Teams. | long |  |
-| o365.metrics.teams.user.activity.user.counts.private_chat_messages.count | The number of messages sent in private 1:1 or group chats. | long |  |
-| o365.metrics.teams.user.activity.user.counts.report.date | The specific date for which the report data applies. | date |  |
-| o365.metrics.teams.user.activity.user.counts.report.period.day | The duration (e.g., 7 days) over which the report data is aggregated. | integer | d |
-| o365.metrics.teams.user.activity.user.counts.report.refresh_date | The date when the report data was last updated. | date |  |
-| o365.metrics.teams.user.activity.user.counts.team_chat_messages.count | The number of messages sent in Teams channels. | long |  |
+| Field | Description | Type | Unit | Metric Type |
+|---|---|---|---|---|
+| @timestamp | Event timestamp. | date |  |  |
+| cloud.image.id | Image ID for the cloud instance. | keyword |  |  |
+| data_stream.dataset | Data stream dataset. | constant_keyword |  |  |
+| data_stream.namespace | Data stream namespace. | constant_keyword |  |  |
+| data_stream.type | Data stream type. | constant_keyword |  |  |
+| host.containerized | If the host is a container. | boolean |  |  |
+| host.os.build | OS build information. | keyword |  |  |
+| host.os.codename | OS codename, if any. | keyword |  |  |
+| o365.metrics.teams.user.activity.user.counts.calls.count | The number of calls made by Teams users. | long |  | gauge |
+| o365.metrics.teams.user.activity.user.counts.meetings.count | The number of meetings attended or organized by Teams users. | long |  | gauge |
+| o365.metrics.teams.user.activity.user.counts.other_actions.count | The count of other user actions within Teams. | long |  | gauge |
+| o365.metrics.teams.user.activity.user.counts.private_chat_messages.count | The number of messages sent in private 1:1 or group chats. | long |  | gauge |
+| o365.metrics.teams.user.activity.user.counts.report.date | The specific date for which the report data applies. | date |  |  |
+| o365.metrics.teams.user.activity.user.counts.report.period.day | The duration (e.g., 7 days) over which the report data is aggregated. | integer | d |  |
+| o365.metrics.teams.user.activity.user.counts.report.refresh_date | The date when the report data was last updated. | date |  |  |
+| o365.metrics.teams.user.activity.user.counts.team_chat_messages.count | The number of messages sent in Teams channels. | long |  | gauge |
 
 
 ### Teams User Activity User Detail
@@ -1800,50 +1800,50 @@ Please refer to the following [document](https://www.elastic.co/guide/en/ecs/cur
 
 **Exported fields**
 
-| Field | Description | Type | Unit |
-|---|---|---|---|
-| @timestamp | Date/time when the event originated. This is the date/time extracted from the event, typically representing when the event was generated by the source. If the event source has no original timestamp, this value is typically populated by the first time the event was received by the pipeline. Required field for all events. | date |  |
-| data_stream.dataset | The field can contain anything that makes sense to signify the source of the data. Examples include `nginx.access`, `prometheus`, `endpoint` etc. For data streams that otherwise fit, but that do not have dataset set we use the value "generic" for the dataset value. `event.dataset` should have the same value as `data_stream.dataset`. Beyond the Elasticsearch data stream naming criteria noted above, the `dataset` value has additional restrictions:   \* Must not contain `-`   \* No longer than 100 characters | constant_keyword |  |
-| data_stream.namespace | A user defined namespace. Namespaces are useful to allow grouping of data. Many users already organize their indices this way, and the data stream naming scheme now provides this best practice as a default. Many users will populate this field with `default`. If no value is used, it falls back to `default`. Beyond the Elasticsearch index naming criteria noted above, `namespace` value has the additional restrictions:   \* Must not contain `-`   \* No longer than 100 characters | constant_keyword |  |
-| data_stream.type | An overarching type for the data stream. Currently allowed values are "logs" and "metrics". We expect to also add "traces" and "synthetics" in the near future. | constant_keyword |  |
-| event.dataset | Name of the dataset. If an event source publishes more than one type of log or events (e.g. access log, error log), the dataset is used to specify which one the event comes from. It's recommended but not required to start the dataset name with the module name, followed by a dot, then the dataset name. | constant_keyword |  |
-| event.module | Name of the module this data is coming from. If your monitoring agent supports the concept of modules or plugins to process events of a given source (e.g. Apache logs), `event.module` should contain the name of this module. | constant_keyword |  |
-| labels.is_transform_source | Distinguishes between documents that are a source for a transform and documents that are an output of a transform, to facilitate easier filtering. | constant_keyword |  |
-| o365.metrics.report.api_path | Microsoft Graph API path used to pull the report. | keyword |  |
-| o365.metrics.report.name | Name of the report. | keyword |  |
-| o365.metrics.teams.user.activity.user.detail.ad_hoc_meetings_attended.count | The number of ad hoc meetings a user participated in during the specified time period. | long |  |
-| o365.metrics.teams.user.activity.user.detail.ad_hoc_meetings_organized.count | The number of ad hoc meetings a user organized during the specified time period. | long |  |
-| o365.metrics.teams.user.activity.user.detail.assigned_products | Microsoft products the user is assigned to. | keyword |  |
-| o365.metrics.teams.user.activity.user.detail.audio_duration.formatted | The sum of the audio duration of a user used during the specified time period and formatted by ISO 8601. | keyword |  |
-| o365.metrics.teams.user.activity.user.detail.audio_duration.seconds | The sum of the audio duration of a user used during the specified time period. | long |  |
-| o365.metrics.teams.user.activity.user.detail.call.count | The number of 1:1 calls that the user participated in during the specified time period. | long |  |
-| o365.metrics.teams.user.activity.user.detail.deleted_date | The deleted date of the user. | date |  |
-| o365.metrics.teams.user.activity.user.detail.has_other_action | The User is active but has performed other activities than exposed action types offered in the report. | keyword |  |
-| o365.metrics.teams.user.activity.user.detail.is_deleted | The deletion status of the user. | boolean |  |
-| o365.metrics.teams.user.activity.user.detail.is_licensed | Selected if the user is licensed to use Teams. | boolean |  |
-| o365.metrics.teams.user.activity.user.detail.last_activity_date | The last date that the user participated in a Microsoft Teams activity. | date |  |
-| o365.metrics.teams.user.activity.user.detail.meeting.count | Refer to the 'meetings_attended.count' metric as defined below, as the current metric and 'meetings_attended.count' share the same definition. Microsoft intends to gradually phase out the current metric with 'meetings_attended.count'. | long |  |
-| o365.metrics.teams.user.activity.user.detail.meetings_attended.count | The sum of the one-time scheduled, recurring, ad hoc and unclassified meetings a user participated in during the specified time period. | long |  |
-| o365.metrics.teams.user.activity.user.detail.meetings_organized.count | The sum of one-time scheduled, Recurring, ad hoc and unclassified meetings a user organized during the specified time period. | long |  |
-| o365.metrics.teams.user.activity.user.detail.post_messages.count | The number of post messages in all channels during the specified time period. A post is the original message in a teams chat. | long |  |
-| o365.metrics.teams.user.activity.user.detail.private_chat_message.count | The number of unique messages that the user posted in a private chat during the specified time period. | long |  |
-| o365.metrics.teams.user.activity.user.detail.reply_messages.count | The number of replied messages in all channels during the specified time period. | long |  |
-| o365.metrics.teams.user.activity.user.detail.report.period.day | The reporting period over which the data is aggregated (in days). | integer | d |
-| o365.metrics.teams.user.activity.user.detail.report.refresh_date | The date when the report data was last updated. | date |  |
-| o365.metrics.teams.user.activity.user.detail.scheduled_one_time_meetings_attended.count | The number of the one-time scheduled meetings a user participated in during the specified time period. | long |  |
-| o365.metrics.teams.user.activity.user.detail.scheduled_one_time_meetings_organized.count | The number of one-time scheduled meetings a user organized during the specified time period. | long |  |
-| o365.metrics.teams.user.activity.user.detail.scheduled_recurring_meetings_attended.count | The number of the recurring meetings a user participated in during the specified time period. | long |  |
-| o365.metrics.teams.user.activity.user.detail.scheduled_recurring_meetings_organized.count | The number of recurring meetings a user organized during the specified time period. | long |  |
-| o365.metrics.teams.user.activity.user.detail.screen_share_duration.formatted | The sum of the screen share duration of a user used during the specified time period and formatted by ISO 8601. | keyword |  |
-| o365.metrics.teams.user.activity.user.detail.screen_share_duration.seconds | The sum of the screen share duration of a user used during the specified time period. | long |  |
-| o365.metrics.teams.user.activity.user.detail.shared_channel_tenant_display_names | The names of internal or external tenants of shared channels where the user participated. | keyword |  |
-| o365.metrics.teams.user.activity.user.detail.team_chat_message.count | The number of unique messages that the user posted in a team chat during the specified time period. This includes original posts and replies. | long |  |
-| o365.metrics.teams.user.activity.user.detail.tenant_display_name | The name of an internal or external tenant where a user belongs. | keyword |  |
-| o365.metrics.teams.user.activity.user.detail.urgent_messages.count | The number of urgent messages during the specified time period. | long |  |
-| o365.metrics.teams.user.activity.user.detail.user_id | The ID of the user. | keyword |  |
-| o365.metrics.teams.user.activity.user.detail.user_principal_name | The email address of the user. You can display the actual email address or make this field anonymous. See https://learn.microsoft.com/en-us/microsoft-365/admin/activity-reports/microsoft-teams-user-activity-preview?view=o365-worldwide#make-the-user-specific-data-anonymous for more details. | keyword |  |
-| o365.metrics.teams.user.activity.user.detail.video_duration.formatted | The sum of the video duration of a user used during the specified time period and formatted by ISO 8601. | keyword |  |
-| o365.metrics.teams.user.activity.user.detail.video_duration.seconds | The sum of the video duration of a user used during the specified time period. | long |  |
+| Field | Description | Type | Unit | Metric Type |
+|---|---|---|---|---|
+| @timestamp | Date/time when the event originated. This is the date/time extracted from the event, typically representing when the event was generated by the source. If the event source has no original timestamp, this value is typically populated by the first time the event was received by the pipeline. Required field for all events. | date |  |  |
+| data_stream.dataset | The field can contain anything that makes sense to signify the source of the data. Examples include `nginx.access`, `prometheus`, `endpoint` etc. For data streams that otherwise fit, but that do not have dataset set we use the value "generic" for the dataset value. `event.dataset` should have the same value as `data_stream.dataset`. Beyond the Elasticsearch data stream naming criteria noted above, the `dataset` value has additional restrictions:   \* Must not contain `-`   \* No longer than 100 characters | constant_keyword |  |  |
+| data_stream.namespace | A user defined namespace. Namespaces are useful to allow grouping of data. Many users already organize their indices this way, and the data stream naming scheme now provides this best practice as a default. Many users will populate this field with `default`. If no value is used, it falls back to `default`. Beyond the Elasticsearch index naming criteria noted above, `namespace` value has the additional restrictions:   \* Must not contain `-`   \* No longer than 100 characters | constant_keyword |  |  |
+| data_stream.type | An overarching type for the data stream. Currently allowed values are "logs" and "metrics". We expect to also add "traces" and "synthetics" in the near future. | constant_keyword |  |  |
+| event.dataset | Name of the dataset. If an event source publishes more than one type of log or events (e.g. access log, error log), the dataset is used to specify which one the event comes from. It's recommended but not required to start the dataset name with the module name, followed by a dot, then the dataset name. | constant_keyword |  |  |
+| event.module | Name of the module this data is coming from. If your monitoring agent supports the concept of modules or plugins to process events of a given source (e.g. Apache logs), `event.module` should contain the name of this module. | constant_keyword |  |  |
+| labels.is_transform_source | Distinguishes between documents that are a source for a transform and documents that are an output of a transform, to facilitate easier filtering. | constant_keyword |  |  |
+| o365.metrics.report.api_path | Microsoft Graph API path used to pull the report. | keyword |  |  |
+| o365.metrics.report.name | Name of the report. | keyword |  |  |
+| o365.metrics.teams.user.activity.user.detail.ad_hoc_meetings_attended.count | The number of ad hoc meetings a user participated in during the specified time period. | long |  | gauge |
+| o365.metrics.teams.user.activity.user.detail.ad_hoc_meetings_organized.count | The number of ad hoc meetings a user organized during the specified time period. | long |  | gauge |
+| o365.metrics.teams.user.activity.user.detail.assigned_products | Microsoft products the user is assigned to. | keyword |  |  |
+| o365.metrics.teams.user.activity.user.detail.audio_duration.formatted | The sum of the audio duration of a user used during the specified time period and formatted by ISO 8601. | keyword |  |  |
+| o365.metrics.teams.user.activity.user.detail.audio_duration.seconds | The sum of the audio duration of a user used during the specified time period. | long |  | gauge |
+| o365.metrics.teams.user.activity.user.detail.call.count | The number of 1:1 calls that the user participated in during the specified time period. | long |  | gauge |
+| o365.metrics.teams.user.activity.user.detail.deleted_date | The deleted date of the user. | date |  |  |
+| o365.metrics.teams.user.activity.user.detail.has_other_action | The User is active but has performed other activities than exposed action types offered in the report. | keyword |  |  |
+| o365.metrics.teams.user.activity.user.detail.is_deleted | The deletion status of the user. | boolean |  |  |
+| o365.metrics.teams.user.activity.user.detail.is_licensed | Selected if the user is licensed to use Teams. | boolean |  |  |
+| o365.metrics.teams.user.activity.user.detail.last_activity_date | The last date that the user participated in a Microsoft Teams activity. | date |  |  |
+| o365.metrics.teams.user.activity.user.detail.meeting.count | Refer to the 'meetings_attended.count' metric as defined below, as the current metric and 'meetings_attended.count' share the same definition. Microsoft intends to gradually phase out the current metric with 'meetings_attended.count'. | long |  | gauge |
+| o365.metrics.teams.user.activity.user.detail.meetings_attended.count | The sum of the one-time scheduled, recurring, ad hoc and unclassified meetings a user participated in during the specified time period. | long |  | gauge |
+| o365.metrics.teams.user.activity.user.detail.meetings_organized.count | The sum of one-time scheduled, Recurring, ad hoc and unclassified meetings a user organized during the specified time period. | long |  | gauge |
+| o365.metrics.teams.user.activity.user.detail.post_messages.count | The number of post messages in all channels during the specified time period. A post is the original message in a teams chat. | long |  | gauge |
+| o365.metrics.teams.user.activity.user.detail.private_chat_message.count | The number of unique messages that the user posted in a private chat during the specified time period. | long |  | gauge |
+| o365.metrics.teams.user.activity.user.detail.reply_messages.count | The number of replied messages in all channels during the specified time period. | long |  | gauge |
+| o365.metrics.teams.user.activity.user.detail.report.period.day | The reporting period over which the data is aggregated (in days). | integer | d |  |
+| o365.metrics.teams.user.activity.user.detail.report.refresh_date | The date when the report data was last updated. | date |  |  |
+| o365.metrics.teams.user.activity.user.detail.scheduled_one_time_meetings_attended.count | The number of the one-time scheduled meetings a user participated in during the specified time period. | long |  | gauge |
+| o365.metrics.teams.user.activity.user.detail.scheduled_one_time_meetings_organized.count | The number of one-time scheduled meetings a user organized during the specified time period. | long |  | gauge |
+| o365.metrics.teams.user.activity.user.detail.scheduled_recurring_meetings_attended.count | The number of the recurring meetings a user participated in during the specified time period. | long |  | gauge |
+| o365.metrics.teams.user.activity.user.detail.scheduled_recurring_meetings_organized.count | The number of recurring meetings a user organized during the specified time period. | long |  | gauge |
+| o365.metrics.teams.user.activity.user.detail.screen_share_duration.formatted | The sum of the screen share duration of a user used during the specified time period and formatted by ISO 8601. | keyword |  |  |
+| o365.metrics.teams.user.activity.user.detail.screen_share_duration.seconds | The sum of the screen share duration of a user used during the specified time period. | long |  | gauge |
+| o365.metrics.teams.user.activity.user.detail.shared_channel_tenant_display_names | The names of internal or external tenants of shared channels where the user participated. | keyword |  |  |
+| o365.metrics.teams.user.activity.user.detail.team_chat_message.count | The number of unique messages that the user posted in a team chat during the specified time period. This includes original posts and replies. | long |  | gauge |
+| o365.metrics.teams.user.activity.user.detail.tenant_display_name | The name of an internal or external tenant where a user belongs. | keyword |  |  |
+| o365.metrics.teams.user.activity.user.detail.urgent_messages.count | The number of urgent messages during the specified time period. | long |  | gauge |
+| o365.metrics.teams.user.activity.user.detail.user_id | The ID of the user. | keyword |  |  |
+| o365.metrics.teams.user.activity.user.detail.user_principal_name | The email address of the user. You can display the actual email address or make this field anonymous. See https://learn.microsoft.com/en-us/microsoft-365/admin/activity-reports/microsoft-teams-user-activity-preview?view=o365-worldwide#make-the-user-specific-data-anonymous for more details. | keyword |  |  |
+| o365.metrics.teams.user.activity.user.detail.video_duration.formatted | The sum of the video duration of a user used during the specified time period and formatted by ISO 8601. | keyword |  |  |
+| o365.metrics.teams.user.activity.user.detail.video_duration.seconds | The sum of the video duration of a user used during the specified time period. | long |  | gauge |
 
 
 ### Viva Engage Groups Activity Group Detail
@@ -1917,29 +1917,29 @@ Please refer to the following [document](https://www.elastic.co/guide/en/ecs/cur
 
 **Exported fields**
 
-| Field | Description | Type | Unit |
-|---|---|---|---|
-| @timestamp | Date/time when the event originated. This is the date/time extracted from the event, typically representing when the event was generated by the source. If the event source has no original timestamp, this value is typically populated by the first time the event was received by the pipeline. Required field for all events. | date |  |
-| data_stream.dataset | The field can contain anything that makes sense to signify the source of the data. Examples include `nginx.access`, `prometheus`, `endpoint` etc. For data streams that otherwise fit, but that do not have dataset set we use the value "generic" for the dataset value. `event.dataset` should have the same value as `data_stream.dataset`. Beyond the Elasticsearch data stream naming criteria noted above, the `dataset` value has additional restrictions:   \* Must not contain `-`   \* No longer than 100 characters | constant_keyword |  |
-| data_stream.namespace | A user defined namespace. Namespaces are useful to allow grouping of data. Many users already organize their indices this way, and the data stream naming scheme now provides this best practice as a default. Many users will populate this field with `default`. If no value is used, it falls back to `default`. Beyond the Elasticsearch index naming criteria noted above, `namespace` value has the additional restrictions:   \* Must not contain `-`   \* No longer than 100 characters | constant_keyword |  |
-| data_stream.type | An overarching type for the data stream. Currently allowed values are "logs" and "metrics". We expect to also add "traces" and "synthetics" in the near future. | constant_keyword |  |
-| event.dataset | Name of the dataset. If an event source publishes more than one type of log or events (e.g. access log, error log), the dataset is used to specify which one the event comes from. It's recommended but not required to start the dataset name with the module name, followed by a dot, then the dataset name. | constant_keyword |  |
-| event.module | Name of the module this data is coming from. If your monitoring agent supports the concept of modules or plugins to process events of a given source (e.g. Apache logs), `event.module` should contain the name of this module. | constant_keyword |  |
-| labels.is_transform_source | Distinguishes between documents that are a source for a transform and documents that are an output of a transform, to facilitate easier filtering. | constant_keyword |  |
-| o365.metrics.report.api_path | Microsoft Graph API path used to pull the report. | keyword |  |
-| o365.metrics.report.name | Name of the report. | keyword |  |
-| o365.metrics.viva_engage.groups.activity.group.detail.group_display_name | The name of the group. | keyword |  |
-| o365.metrics.viva_engage.groups.activity.group.detail.group_type | The type of group, public or private. | keyword |  |
-| o365.metrics.viva_engage.groups.activity.group.detail.is_deleted | If the group is deleted, but had activity in the reporting period it will show up in the grid with this flag set to true. | boolean |  |
-| o365.metrics.viva_engage.groups.activity.group.detail.last_activity_date | The latest date a message was read, posted or liked by the group. | date |  |
-| o365.metrics.viva_engage.groups.activity.group.detail.liked.count | The number of messages liked in the Viva Engage group over the reporting period. | long |  |
-| o365.metrics.viva_engage.groups.activity.group.detail.member.count | The number of members in the group. | long |  |
-| o365.metrics.viva_engage.groups.activity.group.detail.office_365_connected | Indicates whether the Viva Engage group is also a Microsoft 365 group. | boolean |  |
-| o365.metrics.viva_engage.groups.activity.group.detail.owner_principal_name | The name of the group administrator, or owner. | keyword |  |
-| o365.metrics.viva_engage.groups.activity.group.detail.posted.count | The number of messages posted in the Viva Engage group over the reporting period. | long |  |
-| o365.metrics.viva_engage.groups.activity.group.detail.read.count | The number of conversations read in the Viva Engage group over the reporting period. | long |  |
-| o365.metrics.viva_engage.groups.activity.group.detail.report.period.day | The reporting period over which the data is aggregated (in days). | integer | d |
-| o365.metrics.viva_engage.groups.activity.group.detail.report.refresh_date | The date when the report data was last updated. | date |  |
+| Field | Description | Type | Unit | Metric Type |
+|---|---|---|---|---|
+| @timestamp | Date/time when the event originated. This is the date/time extracted from the event, typically representing when the event was generated by the source. If the event source has no original timestamp, this value is typically populated by the first time the event was received by the pipeline. Required field for all events. | date |  |  |
+| data_stream.dataset | The field can contain anything that makes sense to signify the source of the data. Examples include `nginx.access`, `prometheus`, `endpoint` etc. For data streams that otherwise fit, but that do not have dataset set we use the value "generic" for the dataset value. `event.dataset` should have the same value as `data_stream.dataset`. Beyond the Elasticsearch data stream naming criteria noted above, the `dataset` value has additional restrictions:   \* Must not contain `-`   \* No longer than 100 characters | constant_keyword |  |  |
+| data_stream.namespace | A user defined namespace. Namespaces are useful to allow grouping of data. Many users already organize their indices this way, and the data stream naming scheme now provides this best practice as a default. Many users will populate this field with `default`. If no value is used, it falls back to `default`. Beyond the Elasticsearch index naming criteria noted above, `namespace` value has the additional restrictions:   \* Must not contain `-`   \* No longer than 100 characters | constant_keyword |  |  |
+| data_stream.type | An overarching type for the data stream. Currently allowed values are "logs" and "metrics". We expect to also add "traces" and "synthetics" in the near future. | constant_keyword |  |  |
+| event.dataset | Name of the dataset. If an event source publishes more than one type of log or events (e.g. access log, error log), the dataset is used to specify which one the event comes from. It's recommended but not required to start the dataset name with the module name, followed by a dot, then the dataset name. | constant_keyword |  |  |
+| event.module | Name of the module this data is coming from. If your monitoring agent supports the concept of modules or plugins to process events of a given source (e.g. Apache logs), `event.module` should contain the name of this module. | constant_keyword |  |  |
+| labels.is_transform_source | Distinguishes between documents that are a source for a transform and documents that are an output of a transform, to facilitate easier filtering. | constant_keyword |  |  |
+| o365.metrics.report.api_path | Microsoft Graph API path used to pull the report. | keyword |  |  |
+| o365.metrics.report.name | Name of the report. | keyword |  |  |
+| o365.metrics.viva_engage.groups.activity.group.detail.group_display_name | The name of the group. | keyword |  |  |
+| o365.metrics.viva_engage.groups.activity.group.detail.group_type | The type of group, public or private. | keyword |  |  |
+| o365.metrics.viva_engage.groups.activity.group.detail.is_deleted | If the group is deleted, but had activity in the reporting period it will show up in the grid with this flag set to true. | boolean |  |  |
+| o365.metrics.viva_engage.groups.activity.group.detail.last_activity_date | The latest date a message was read, posted or liked by the group. | date |  |  |
+| o365.metrics.viva_engage.groups.activity.group.detail.liked.count | The number of messages liked in the Viva Engage group over the reporting period. | long |  | gauge |
+| o365.metrics.viva_engage.groups.activity.group.detail.member.count | The number of members in the group. | long |  | gauge |
+| o365.metrics.viva_engage.groups.activity.group.detail.office_365_connected | Indicates whether the Viva Engage group is also a Microsoft 365 group. | boolean |  |  |
+| o365.metrics.viva_engage.groups.activity.group.detail.owner_principal_name | The name of the group administrator, or owner. | keyword |  |  |
+| o365.metrics.viva_engage.groups.activity.group.detail.posted.count | The number of messages posted in the Viva Engage group over the reporting period. | long |  | gauge |
+| o365.metrics.viva_engage.groups.activity.group.detail.read.count | The number of conversations read in the Viva Engage group over the reporting period. | long |  | gauge |
+| o365.metrics.viva_engage.groups.activity.group.detail.report.period.day | The reporting period over which the data is aggregated (in days). | integer | d |  |
+| o365.metrics.viva_engage.groups.activity.group.detail.report.refresh_date | The date when the report data was last updated. | date |  |  |
 
 
 ### Viva Engage Device Usage User Counts
@@ -2049,25 +2049,25 @@ Please refer to the following [document](https://www.elastic.co/guide/en/ecs/cur
 
 **Exported fields**
 
-| Field | Description | Type | Unit |
-|---|---|---|---|
-| @timestamp | Event timestamp. | date |  |
-| cloud.image.id | Image ID for the cloud instance. | keyword |  |
-| data_stream.dataset | Data stream dataset. | constant_keyword |  |
-| data_stream.namespace | Data stream namespace. | constant_keyword |  |
-| data_stream.type | Data stream type. | constant_keyword |  |
-| host.containerized | If the host is a container. | boolean |  |
-| host.os.build | OS build information. | keyword |  |
-| host.os.codename | OS codename, if any. | keyword |  |
-| o365.metrics.viva.engage.device.usage.user.counts.android_phone.count | The count of users accessing Yammer on Android phones. | long |  |
-| o365.metrics.viva.engage.device.usage.user.counts.ipad.count | The count of users accessing Yammer on iPads. | long |  |
-| o365.metrics.viva.engage.device.usage.user.counts.iphone.count | The count of users accessing Yammer on iPhones. | long |  |
-| o365.metrics.viva.engage.device.usage.user.counts.other.count | The count of users accessing Yammer on devices not listed. | long |  |
-| o365.metrics.viva.engage.device.usage.user.counts.report.date | The specific date for which the report data applies. | date |  |
-| o365.metrics.viva.engage.device.usage.user.counts.report.period.day | The duration (e.g., 7 days) over which the quota status data is aggregated. | integer | d |
-| o365.metrics.viva.engage.device.usage.user.counts.report.refresh_date | The date when the report data was last updated. | date |  |
-| o365.metrics.viva.engage.device.usage.user.counts.web.count | The count of users accessing Yammer via web browsers. | long |  |
-| o365.metrics.viva.engage.device.usage.user.counts.windows_phone.count | The count of users accessing Yammer on Windows Phone devices. | long |  |
+| Field | Description | Type | Unit | Metric Type |
+|---|---|---|---|---|
+| @timestamp | Event timestamp. | date |  |  |
+| cloud.image.id | Image ID for the cloud instance. | keyword |  |  |
+| data_stream.dataset | Data stream dataset. | constant_keyword |  |  |
+| data_stream.namespace | Data stream namespace. | constant_keyword |  |  |
+| data_stream.type | Data stream type. | constant_keyword |  |  |
+| host.containerized | If the host is a container. | boolean |  |  |
+| host.os.build | OS build information. | keyword |  |  |
+| host.os.codename | OS codename, if any. | keyword |  |  |
+| o365.metrics.viva.engage.device.usage.user.counts.android_phone.count | The count of users accessing Yammer on Android phones. | long |  | gauge |
+| o365.metrics.viva.engage.device.usage.user.counts.ipad.count | The count of users accessing Yammer on iPads. | long |  | gauge |
+| o365.metrics.viva.engage.device.usage.user.counts.iphone.count | The count of users accessing Yammer on iPhones. | long |  | gauge |
+| o365.metrics.viva.engage.device.usage.user.counts.other.count | The count of users accessing Yammer on devices not listed. | long |  | gauge |
+| o365.metrics.viva.engage.device.usage.user.counts.report.date | The specific date for which the report data applies. | date |  |  |
+| o365.metrics.viva.engage.device.usage.user.counts.report.period.day | The duration (e.g., 7 days) over which the quota status data is aggregated. | integer | d |  |
+| o365.metrics.viva.engage.device.usage.user.counts.report.refresh_date | The date when the report data was last updated. | date |  |  |
+| o365.metrics.viva.engage.device.usage.user.counts.web.count | The count of users accessing Yammer via web browsers. | long |  | gauge |
+| o365.metrics.viva.engage.device.usage.user.counts.windows_phone.count | The count of users accessing Yammer on Windows Phone devices. | long |  | gauge |
 
 
 
@@ -2182,27 +2182,27 @@ Please refer to the following [document](https://www.elastic.co/guide/en/ecs/cur
 
 **Exported fields**
 
-| Field | Description | Type | Unit |
-|---|---|---|---|
-| @timestamp | Event timestamp. | date |  |
-| cloud.image.id | Image ID for the cloud instance. | keyword |  |
-| data_stream.dataset | Data stream dataset. | constant_keyword |  |
-| data_stream.namespace | Data stream namespace. | constant_keyword |  |
-| data_stream.type | Data stream type. | constant_keyword |  |
-| host.containerized | If the host is a container. | boolean |  |
-| host.os.build | OS build information. | keyword |  |
-| host.os.codename | OS codename, if any. | keyword |  |
-| o365.metrics.teams.device.usage.user.counts.android_phone.count | The number of active Teams users on Android devices. | long |  |
-| o365.metrics.teams.device.usage.user.counts.chrome_os.count | The number of active Teams users on Chrome OS devices. | long |  |
-| o365.metrics.teams.device.usage.user.counts.ios.count | The number of active Teams users on iOS devices (iPhone and iPad). | long |  |
-| o365.metrics.teams.device.usage.user.counts.linux.count | The number of active Teams users on Linux devices. | long |  |
-| o365.metrics.teams.device.usage.user.counts.mac.count | The number of active Teams users on macOS devices. | long |  |
-| o365.metrics.teams.device.usage.user.counts.report.date | The specific date for which the report data applies. | date |  |
-| o365.metrics.teams.device.usage.user.counts.report.period.day | The duration (e.g., 7 days) over which the report data is aggregated. | integer | d |
-| o365.metrics.teams.device.usage.user.counts.report.refresh_date | The date when the report data was last updated. | date |  |
-| o365.metrics.teams.device.usage.user.counts.web.count | The number of active Teams users accessing via web browsers. | long |  |
-| o365.metrics.teams.device.usage.user.counts.windows.count | The number of active Teams users on Windows devices. | long |  |
-| o365.metrics.teams.device.usage.user.counts.windows_phone.count | The number of active Teams users on Windows Phone devices. | long |  |
+| Field | Description | Type | Unit | Metric Type |
+|---|---|---|---|---|
+| @timestamp | Event timestamp. | date |  |  |
+| cloud.image.id | Image ID for the cloud instance. | keyword |  |  |
+| data_stream.dataset | Data stream dataset. | constant_keyword |  |  |
+| data_stream.namespace | Data stream namespace. | constant_keyword |  |  |
+| data_stream.type | Data stream type. | constant_keyword |  |  |
+| host.containerized | If the host is a container. | boolean |  |  |
+| host.os.build | OS build information. | keyword |  |  |
+| host.os.codename | OS codename, if any. | keyword |  |  |
+| o365.metrics.teams.device.usage.user.counts.android_phone.count | The number of active Teams users on Android devices. | long |  | gauge |
+| o365.metrics.teams.device.usage.user.counts.chrome_os.count | The number of active Teams users on Chrome OS devices. | long |  | gauge |
+| o365.metrics.teams.device.usage.user.counts.ios.count | The number of active Teams users on iOS devices (iPhone and iPad). | long |  | gauge |
+| o365.metrics.teams.device.usage.user.counts.linux.count | The number of active Teams users on Linux devices. | long |  | gauge |
+| o365.metrics.teams.device.usage.user.counts.mac.count | The number of active Teams users on macOS devices. | long |  | gauge |
+| o365.metrics.teams.device.usage.user.counts.report.date | The specific date for which the report data applies. | date |  |  |
+| o365.metrics.teams.device.usage.user.counts.report.period.day | The duration (e.g., 7 days) over which the report data is aggregated. | integer | d |  |
+| o365.metrics.teams.device.usage.user.counts.report.refresh_date | The date when the report data was last updated. | date |  |  |
+| o365.metrics.teams.device.usage.user.counts.web.count | The number of active Teams users accessing via web browsers. | long |  | gauge |
+| o365.metrics.teams.device.usage.user.counts.windows.count | The number of active Teams users on Windows devices. | long |  | gauge |
+| o365.metrics.teams.device.usage.user.counts.windows_phone.count | The number of active Teams users on Windows Phone devices. | long |  | gauge |
 
 
 ### Service Health
@@ -2411,34 +2411,34 @@ Please refer to the following [document](https://www.elastic.co/guide/en/ecs/cur
 
 **Exported fields**
 
-| Field | Description | Type |
-|---|---|---|
-| @timestamp | Event timestamp. | date |
-| cloud.image.id | Image ID for the cloud instance. | keyword |
-| data_stream.dataset | Data stream dataset. | constant_keyword |
-| data_stream.namespace | Data stream namespace. | constant_keyword |
-| data_stream.type | Data stream type. | constant_keyword |
-| host.containerized | If the host is a container. | boolean |
-| host.os.build | OS build information. | keyword |
-| host.os.codename | OS codename, if any. | keyword |
-| o365.metrics.subscriptions.account_id | Unique identifier for the account. | keyword |
-| o365.metrics.subscriptions.account_name | Name of the account. | text |
-| o365.metrics.subscriptions.applies_to | Type of entity the subscription applies to (e.g. User or Company). | keyword |
-| o365.metrics.subscriptions.capability_status | Status of the capability (e.g. Enabled, Suspended). | keyword |
-| o365.metrics.subscriptions.consumed_units.count | Number of consumed units. | long |
-| o365.metrics.subscriptions.id | Unique identifier for the subscription entry. | keyword |
-| o365.metrics.subscriptions.prepaid_units.enabled.count | Number of enabled prepaid units. | long |
-| o365.metrics.subscriptions.prepaid_units.locked_out.count | Number of locked-out prepaid units. | long |
-| o365.metrics.subscriptions.prepaid_units.suspended.count | Number of suspended prepaid units. | long |
-| o365.metrics.subscriptions.prepaid_units.warning.count | Number of prepaid units in warning state. | long |
-| o365.metrics.subscriptions.service_plans.applies_to | Type of entity the service plan applies to. | keyword |
-| o365.metrics.subscriptions.service_plans.provisioning_status | Status of the service plan provisioning. | keyword |
-| o365.metrics.subscriptions.service_plans.service_plan_id | Unique identifier for the service plan. | keyword |
-| o365.metrics.subscriptions.service_plans.service_plan_name | Name of the service plan. | keyword |
-| o365.metrics.subscriptions.sku_id | Unique identifier for the SKU. | keyword |
-| o365.metrics.subscriptions.sku_part_number | SKU part number. | keyword |
-| o365.metrics.subscriptions.subscription_ids | Array of subscription IDs. | keyword |
-| o365.metrics.subscriptions.surplus_units.count | Number of unused units which indicates if you oversubscribed to any SKUs. | long |
+| Field | Description | Type | Metric Type |
+|---|---|---|---|
+| @timestamp | Event timestamp. | date |  |
+| cloud.image.id | Image ID for the cloud instance. | keyword |  |
+| data_stream.dataset | Data stream dataset. | constant_keyword |  |
+| data_stream.namespace | Data stream namespace. | constant_keyword |  |
+| data_stream.type | Data stream type. | constant_keyword |  |
+| host.containerized | If the host is a container. | boolean |  |
+| host.os.build | OS build information. | keyword |  |
+| host.os.codename | OS codename, if any. | keyword |  |
+| o365.metrics.subscriptions.account_id | Unique identifier for the account. | keyword |  |
+| o365.metrics.subscriptions.account_name | Name of the account. | text |  |
+| o365.metrics.subscriptions.applies_to | Type of entity the subscription applies to (e.g. User or Company). | keyword |  |
+| o365.metrics.subscriptions.capability_status | Status of the capability (e.g. Enabled, Suspended). | keyword |  |
+| o365.metrics.subscriptions.consumed_units.count | Number of consumed units. | long | gauge |
+| o365.metrics.subscriptions.id | Unique identifier for the subscription entry. | keyword |  |
+| o365.metrics.subscriptions.prepaid_units.enabled.count | Number of enabled prepaid units. | long | gauge |
+| o365.metrics.subscriptions.prepaid_units.locked_out.count | Number of locked-out prepaid units. | long | gauge |
+| o365.metrics.subscriptions.prepaid_units.suspended.count | Number of suspended prepaid units. | long | gauge |
+| o365.metrics.subscriptions.prepaid_units.warning.count | Number of prepaid units in warning state. | long | gauge |
+| o365.metrics.subscriptions.service_plans.applies_to | Type of entity the service plan applies to. | keyword |  |
+| o365.metrics.subscriptions.service_plans.provisioning_status | Status of the service plan provisioning. | keyword |  |
+| o365.metrics.subscriptions.service_plans.service_plan_id | Unique identifier for the service plan. | keyword |  |
+| o365.metrics.subscriptions.service_plans.service_plan_name | Name of the service plan. | keyword |  |
+| o365.metrics.subscriptions.sku_id | Unique identifier for the SKU. | keyword |  |
+| o365.metrics.subscriptions.sku_part_number | SKU part number. | keyword |  |
+| o365.metrics.subscriptions.subscription_ids | Array of subscription IDs. | keyword |  |
+| o365.metrics.subscriptions.surplus_units.count | Number of unused units which indicates if you oversubscribed to any SKUs. | long |  |
 
 
 
