@@ -57,7 +57,7 @@ As part of the field definition, there are two settings that add metadata which 
 * `unit` applies to all data types, defines the units of the field. Examples of units are `byte` and `ms`. When using `percent` for percentages, the convention is to use 1 for 100%. You can find the full list of supported units in the [package spec](https://github.com/elastic/package-spec/blob/ff8286d0c40ad76bb082e9c8ea78f4551c2519c1/spec/integration/data_stream/fields/fields.spec.yml#L103).
 * `metric_type` applies to metric events only, to be added to metric fields. It defines their metric type. It can be of type `gauge` or `counter`. Counters are used for metrics that always increase over time, such as number of page visits. Gauges are used for amounts that can increase or decrease over time, such as the amount of memory being used.
 
-The Elasticsearch documentation details the [expected values for these two fields](elasticsearch://docs/reference/elasticsearch/mapping-reference/mapping-field-meta.md).
+The Elasticsearch documentation details the [expected values for these two fields](elasticsearch://reference/elasticsearch/mapping-reference/mapping-field-meta.md).
 
 Other applications, including Kibana, can use the information provided by this metadata when accessing these fields. The `unit` is used when formatting the values of the field, and the `metric_type` can be used to provide better defaults when quering the data.
 
@@ -106,7 +106,7 @@ Potential candidates to remove:
 
 This is probably the most important and hardest one of the guidelinesto satisfy, as it requires knowledge of every target system. Identifying relevant metrics should be considered case by case.
 
-There are no well defined guidelines for this exercise. It can be as simple as finding everything in one place (for example the [RabbitMQ documentation](https://www.rabbitmq.com/monitoring.md)) or as difficult as reviewing multiple sources including documentation, blog posts, and other integrations, and consolidating the discovered information in one place for revision. A recommendation is to only collect the metrics that are needed for dashboards and visualizations in general.
+There are no well defined guidelines for this exercise. It can be as simple as finding everything in one place (for example the [RabbitMQ documentation](https://www.rabbitmq.com/monitoring.html)) or as difficult as reviewing multiple sources including documentation, blog posts, and other integrations, and consolidating the discovered information in one place for revision. A recommendation is to only collect the metrics that are needed for dashboards and visualizations in general.
 
 
 ## Keep the original message field [_keep_the_original_message_field]
