@@ -2,9 +2,9 @@
 
 The Rubrik integration allows you to monitor your Rubrik Security Cloud (RSC) and Rubrik Cloud Data Management (CDM) environments. Rubrik provides a data security and protection platform that delivers backup, recovery, and threat detection across hybrid and multi-cloud environments.
 
-Use the Rubrik integration to collect metrics and logs related to snapshots, backups, SLA domains, storage usage, protection status, and RSC-managed clusters. The integration helps monitor a wide range of protected objects such as virtual machines, databases, filesets, and physical hosts. Then visualize that data in Kibana, create alerts to notify you if something goes wrong, and reference metrics and logs when troubleshooting an issue
+Use the Rubrik integration to collect metrics and logs related to snapshots, backups, SLA domains, storage usage, protection status, and RSC-managed clusters. The integration helps monitor a wide range of protected objects such as virtual machines, databases, filesets, and physical hosts. Then visualize that data in Kibana, create alerts to notify you if something goes wrong, and reference metrics and logs when troubleshooting an issue.
 
-For example, you could use the data from this integration to detect SLA non-compliance, track the number of protected or unprotected objects, monitor backup job status, or investigate storage trends across clusters. You can also troubleshoot failed backup jobs, identify under-protected assets, and proactively respond to anomalies across your Rubrik-managed infrastructure
+For example, you could use the data from this integration to detect SLA non-compliance, track the number of protected or unprotected objects, monitor backup job status, or investigate storage trends across clusters. You can also troubleshoot failed backup jobs, identify under-protected assets, and proactively respond to anomalies across your Rubrik-managed infrastructure.
 
 ## Compatibility
 This integration has been tested with:
