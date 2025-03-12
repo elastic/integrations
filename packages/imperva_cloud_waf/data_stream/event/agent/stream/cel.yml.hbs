@@ -65,7 +65,7 @@ program: |
   : v.next < size(v.worklist) ?
     (
       request("GET",
-        state.url.trim_right("/") + v.worklist[v.next].filename
+        state.url.trim_right("/") + "/" + v.worklist[v.next].filename
       ).with({
         "Header":{
           "Authorization": ["Basic "+string(base64(state.user + ":" + state.password))],
@@ -99,7 +99,7 @@ program: |
             "error": {
               "code": string(resp.StatusCode),
               "id": string(resp.Status),
-              "message": "GET " + state.url.trim_right("/") + v.worklist[v.next].filename + ": " +(
+              "message": "GET " + state.url.trim_right("/") + "/" + v.worklist[v.next].filename + ": " +(
                 size(resp.Body) != 0 ?
                   string(resp.Body)
                 :
