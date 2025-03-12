@@ -54,6 +54,10 @@ processors:
       tag: script_append_related_entity
       if: "ctx?.json?.eventName != null && ctx?.tags != null && ctx.tags.contains('actor_target_mapping')"
       on_failure:
+        - append:
+            field: tags
+            value: preserve_original_event
+            allow_duplicates: false
         - set:
             description: Add error reason
             field: error.message
