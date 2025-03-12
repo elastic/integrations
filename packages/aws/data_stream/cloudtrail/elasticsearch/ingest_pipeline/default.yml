@@ -51,12 +51,16 @@ processors:
   - script:
       description: Appends any relevant entity to `related.entity` for all events
       lang: painless
+      tag: script_append_related_entity
       if: "ctx?.json?.eventName != null && ctx?.tags != null && ctx.tags.contains('actor_target_mapping')"
-      on_failure: 
+      on_failure:
         - set:
             description: Add error reason
             field: error.message
-            value: "{{{ _ingest.on_failure_message }}}"
+            value: |
+              Processor '{{{ _ingest.on_failure_processor_type }}}'
+              {{#_ingest.on_failure_processor_tag}}with tag '{{{ _ingest.on_failure_processor_tag }}}'
+              {{/_ingest.on_failure_processor_tag}}failed with message '{{{ _ingest.on_failure_message }}}'
       source: |
         void addFields(Set entities, List fields) {
             for (String field : fields) {
