@@ -1,9 +1,13 @@
 # Rubrik RSC Metrics Integration
 
-This integration periodically collects health and performance metrics from Rubrik Security Cloud and Rubrik cluster hosts using the [Rubrik APIs](https://www.rubrik.com/resources/api-integration). It leverages the [CEL input](https://www.elastic.co/guide/en/beats/filebeat/current/filebeat-input-cel.html) to retrieve data from both REST and GraphQL endpoints, ensuring comprehensive data coverage.
+The Rubrik integration allows you to monitor your Rubrik Security Cloud (RSC) and Rubrik Cloud Data Management (CDM) environments. Rubrik provides a data security and protection platform that delivers backup, recovery, and threat detection across hybrid and multi-cloud environments.
+
+Use the Rubrik integration to collect metrics and logs related to snapshots, backups, SLA domains, storage usage, protection status, and RSC-managed clusters. The integration helps monitor a wide range of protected objects such as virtual machines, databases, filesets, and physical hosts. Then visualize that data in Kibana, create alerts to notify you if something goes wrong, and reference metrics and logs when troubleshooting an issue
+
+For example, you could use the data from this integration to detect SLA non-compliance, track the number of protected or unprotected objects, monitor backup job status, or investigate storage trends across clusters. You can also troubleshoot failed backup jobs, identify under-protected assets, and proactively respond to anomalies across your Rubrik-managed infrastructure
 
 ## Compatibility
-This integration has been tested to be compatible with:
+This integration has been tested with:
 - Rubrik Security Cloud(RSC)
 - Rubrik CDM 6.0x API
 - Rubrik CDM 9.1x API
@@ -13,7 +17,7 @@ This integration has been tested to be compatible with:
 You need Elasticsearch for storing and searching your data and Kibana for visualizing and managing it.
 You can use our hosted Elasticsearch Service on Elastic Cloud, which is recommended, or self-manage the Elastic Stack on your own hardware.
 
-## Configuration
+## Setup
 
 To configure this integration in Elastic, you need the following information:
 
@@ -34,7 +38,7 @@ For more details on these settings, refer to the [Rubrik official documentation]
 3. Click on "Rubrik RSC Metrics" integration from the search results
 4. Click on the **Add Rubrik RSC Metrics Integration** button to add the integration
 
-## Metrics
+## Metrics Reference
 
 ### Managed Volumes
 
