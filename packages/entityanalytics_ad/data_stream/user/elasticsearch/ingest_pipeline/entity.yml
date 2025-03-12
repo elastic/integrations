@@ -247,11 +247,11 @@ processors:
 
   - set:
       field: asset.name
-      copy_from: activedirectory.user.name
+      copy_from: activedirectory.user.sam_account_name
       ignore_empty_value: true
   - set:
       field: user.name
-      copy_from: activedirectory.user.name
+      copy_from: activedirectory.user.sam_account_name
       ignore_empty_value: true
   - gsub:
       tag: gsub_user_dn
@@ -285,10 +285,10 @@ processors:
 
   - append:
       field: related.user
-      value: "{{{activedirectory.user.name}}}"
+      value: "{{{activedirectory.user.sam_account_name}}}"
       tag: append_name_into_related_user
       allow_duplicates: false
-      if: ctx.activedirectory?.user?.name != null
+      if: ctx.activedirectory?.user?.sam_account_name != null
   - append:
       field: related.user
       value: "{{{activedirectory.id}}}"
