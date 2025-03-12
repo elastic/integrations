@@ -220,6 +220,10 @@ processors:
     target_field: url
     keep_original: false
     if: ctx.fortinet?.firewall?.url != null
+    on_failure:
+      - append:
+          field: error.message
+          value: "url parsing failed with message {{ _ingest.on_failure_message }}"
 - remove:
     field: fortinet.firewall.url
     ignore_missing: true
