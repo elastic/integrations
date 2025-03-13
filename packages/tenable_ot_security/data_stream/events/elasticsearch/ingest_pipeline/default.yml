@@ -1,10 +1,163 @@
 ---
-description: Pipeline for processing sample logs
+description: Pipeline for processing tenable ot security cloud events
 processors:
-- set:
-    field: sample_field
-    value: "1"
+  - rename:
+      field: message
+      target_field: tenable_ot_security.events
+
+  - fingerprint:
+      fields:
+        - tenable_ot_security.events
+      tag: fingerprinting
+      target_field: "_id"
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'    
+
+##################### Scripts for processing input #####################
+  - script:
+      description: Drops null/empty values recursively.
+      lang: painless
+      source: |
+        boolean dropEmptyFields(Object object) {
+          if (object == null || object == "") {
+            return true;
+          } else if (object instanceof Map) {
+            ((Map) object).values().removeIf(value -> dropEmptyFields(value));
+            return (((Map) object).size() == 0);
+          } else if (object instanceof List) {
+            ((List) object).removeIf(value -> dropEmptyFields(value));
+            return (((List) object).length == 0);
+          }
+          return false;
+        }
+        dropEmptyFields(ctx);
+        
+  - script:
+      description: Convert Additional Info keys to snake case.
+      tag: additional-info-keys-to-snake-case
+      lang: painless
+      source: |
+        Map keysToSnakeCase(Map m) {
+          def regex = /_?([a-z])([A-Z]+)/;
+          def snakeCaseMap = [:];
+          for (entry in m.entrySet()) {
+            def k = entry.getKey();
+            def v = entry.getValue();
+            if (v instanceof Map) {
+              v = keysToSnakeCase(v);
+            } else if (v instanceof List) {
+              for (int i = 0; i < v.size(); i++) {
+                def item = v.get(i);
+                if (item instanceof Map) {
+                  v.set(i, keysToSnakeCase(item));
+                }
+              }
+            }
+            k = regex.matcher(k).replaceAll('$1_$2').toLowerCase();
+            snakeCaseMap.put(k, v);
+          }
+          return snakeCaseMap;
+        }
+        if (ctx.tenable_ot_security.assets != null) {
+          ctx.tenable_ot_security.assets = keysToSnakeCase(ctx.tenable_ot_security.assets);
+        }
+##################### ECS Fields #####################
+  - set:
+      field: event.kind
+      value: event
+
+  - set:
+      field: ecs.version
+      value: "8.11.0"
+
+  - append:
+      field: event.category
+      value: iam
+
+  - set:
+      field: event.module
+      value: tenable_ot_security
+
+  - set:
+      field: event.type
+      value: ["info"]
+
+  - set:
+      field: event.dataset
+      value: tenable_ot_security.events
+
+  - set:
+     field: "@timestamp"
+     copy_from: tenable_ot_security.events.time
+     ignore_empty_value: true
+
+  - set:
+      field: event.id
+      copy_from: tenable_ot_security.events.id
+      ignore_empty_value: true
+
+  - append:
+      field: related.hosts
+      value: '{{{tenable_ot_security.events.srcIP}}}'
+      allow_duplicates: false
+
+  - append:
+      field: related.hosts
+      value: '{{{tenable_ot_security.events.dstIP}}}'    
+      allow_duplicates: false 
+  
+  - append:
+      field: related.hosts
+      value: '{{{tenable_ot_security.events.srcMac}}}'
+      allow_duplicates: false
+
+  - append:
+      field: related.hosts
+      value: '{{{tenable_ot_security.events.dstMac}}}'    
+      allow_duplicates: false 
+
+  - append:
+      field: network.protocol
+      value: '{{{tenable_ot_security.events.protocolRaw}}}'
+      allow_duplicates: false
+
+  - append:
+      field: "related.user"
+      value: "{{{tenable_ot_security.events.resolvedUser}}}"
+      allow_duplicates: false
+
+  - gsub:
+      field: "related.hosts"
+      pattern: "^\\{\\d+=(.+)\\}$"
+      replacement: "$1"    
+  
+# #################### Override host.ip ######################
+  - convert:
+      field: tenable_ot_security.events.srcIP
+      type: ip
+      if: ctx.tenable_ot_security.events?.srcIP != null && ctx.tenable_ot_security.events.srcIP != ''
+      ignore_missing: true
+
+  - append:
+      field: host.ip
+      value: "{{{tenable_ot_security.events.srcIP}}}"    
+      allow_duplicates: false 
+      if: ctx.tenable_ot_security.events?.srcIP != null && ctx.tenable_ot_security.events.srcIP != '' 
+
+  - geoip:
+      field: host.ip
+      target_field: host.geo
+      ignore_missing: true
+      ignore_failure: true      
+
+ ################### Error Log fields ###################
 on_failure:
-- set:
-    field: error.message
-    value: '{{ _ingest.on_failure_message }}'
+  - append:
+      field: error.message
+      value: '{{{_ingest.on_failure_message}}}'
+
+  - set:
+      field: event.kind
+      value: pipeline_error
