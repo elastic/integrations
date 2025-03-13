@@ -54,24 +54,25 @@ processors:
   - split:
       field: json.source
       separator: ","
-      target_field: source.ip_list
+      target_field: _tmp_ip
       ignore_missing: true
   - script:
       lang: painless
-      description: "Extract first IP and remaining IPs."
-      if: ctx.source?.ip_list instanceof List
+      description: Extract first IP and remaining IPs.
+      if: ctx._tmp_ip instanceof List
       source: >
-        int ip_list_size = ctx.source.ip_list.size();
+        int ip_list_size = ctx._tmp_ip.size();
+        ctx.source = new HashMap();
         if (ip_list_size > 0) {
-          ctx.source.address = ctx.source.ip_list[0];
+          ctx.source.address = ctx._tmp_ip[0];
 
           if (ip_list_size > 1) {
-            ctx.jira.audit.additional_ips = new ArrayList(ctx.source.ip_list.subList(1, ip_list_size));
+            ctx.jira.audit.additional_source_ips = ctx._tmp_ip.subList(1, ip_list_size);
           }
         }
   - foreach:
-      field: jira.audit.additional_ips
-      if: ctx.jira.audit?.additional_ips instanceof List
+      field: jira.audit.additional_source_ips
+      if: ctx.jira.audit?.additional_source_ips instanceof List
       processor:
         convert:
           field: '{{{_ingest._value}}}'
@@ -428,8 +429,8 @@ processors:
       allow_duplicates: false
       if: ctx.source?.ip != null
   - foreach:
-      field: jira.audit.additional_ips
-      if: ctx.jira.audit?.additional_ips instanceof List
+      field: jira.audit.additional_source_ips
+      if: ctx.jira.audit?.additional_source_ips instanceof List
       processor:
         append:
           field: related.ip
@@ -445,7 +446,7 @@ processors:
         - json
         - _tmp
         - _config
-        - source.ip_list
+        - _tmp_ip
       ignore_missing: true
   - script:
       lang: painless
