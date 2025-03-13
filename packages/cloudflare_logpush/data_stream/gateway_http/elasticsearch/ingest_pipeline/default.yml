@@ -287,8 +287,20 @@ processors:
       target_field: cloudflare_logpush.gateway_http.downloaded_files
       ignore_missing: true
   - rename:
+      field: json.DownloadMatchedDlpProfileEntries
+      target_field: cloudflare_logpush.gateway_http.download_matched_dlp.profile_entries
+      ignore_missing: true
+  - rename:
+      field: json.DownloadMatchedDlpProfiles
+      target_field: cloudflare_logpush.gateway_http.download_matched_dlp.profiles
+      ignore_missing: true
+  - rename:
       field: json.FileInfo
       target_field: cloudflare_logpush.gateway_http.file_info
+      ignore_missing: true
+  - rename:
+      field: json.ForensicCopyStatus
+      target_field: cloudflare_logpush.gateway_http.forensic_copy_status
       ignore_missing: true
   - rename:
       field: json.HTTPHost
@@ -307,9 +319,22 @@ processors:
       target_field: cloudflare_logpush.gateway_http.policy.name
       ignore_missing: true
   - rename:
+      field: json.PrivateAppAUD
+      target_field: cloudflare_logpush.gateway_http.private_app_aud
+      ignore_missing: true
+  - rename:
       field: json.ProxyEndpoint
       target_field: cloudflare_logpush.gateway_http.proxy_endpoint
       ignore_missing: true
+  - convert:
+      field: json.Quarantined
+      target_field: cloudflare_logpush.gateway_http.quarantined
+      type: boolean
+      ignore_missing: true
+      on_failure:
+      - append:
+          field: error.message
+          value: "{{{_ingest.on_failure_message}}}"
   - rename:
       field: json.RequestID
       target_field: cloudflare_logpush.gateway_http.request_id
@@ -333,6 +358,14 @@ processors:
   - rename:
       field: json.UntrustedCertificateAction
       target_field: cloudflare_logpush.gateway_http.untrusted_certificate_action
+      ignore_missing: true
+  - rename:
+      field: json.UploadMatchedDlpProfileEntries
+      target_field: cloudflare_logpush.gateway_http.upload_matched_dlp.profile_entries
+      ignore_missing: true
+  - rename:
+      field: json.UploadMatchedDlpProfiles
+      target_field: cloudflare_logpush.gateway_http.upload_matched_dlp.profiles
       ignore_missing: true
   - rename:
       field: json.UploadedFileNames
