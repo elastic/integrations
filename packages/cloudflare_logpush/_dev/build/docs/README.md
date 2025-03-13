@@ -27,7 +27,7 @@ The Cloudflare Logpush integration collects logs for the following types of even
 
 **DLP Forensic Copies**: See Example Schema [here](https://developers.cloudflare.com/logs/reference/log-fields/account/dlp_forensic_copies/).
 
-**Email Securtity Alerts**: See Example Schema [here](https://developers.cloudflare.com/logs/reference/log-fields/account/email_security_alerts/).
+**Email Security Alerts**: See Example Schema [here](https://developers.cloudflare.com/logs/reference/log-fields/account/email_security_alerts/).
 
 **Gateway DNS**: See Example Schema [here](https://developers.cloudflare.com/logs/reference/log-fields/account/gateway_dns/).
 
