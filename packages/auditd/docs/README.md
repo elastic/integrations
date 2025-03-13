@@ -16,58 +16,59 @@ An example event for `log` looks as following:
 {
     "@timestamp": "2016-01-03T00:37:51.394Z",
     "agent": {
-        "ephemeral_id": "4948283b-ae19-4913-b625-f18d574838dd",
-        "id": "0e729d36-7ce3-4bd5-885c-ec10bc843703",
-        "name": "docker-fleet-agent",
+        "ephemeral_id": "53541396-a320-4477-b6d9-a2a7d072269b",
+        "id": "2b104c8f-2997-496b-ae72-508caa53046e",
+        "name": "elastic-agent-28605",
         "type": "filebeat",
-        "version": "8.6.0"
+        "version": "8.17.3"
     },
     "auditd": {
         "log": {
             "proctitle": "bash",
+            "record_type": "PROCTITLE",
             "sequence": 194438
         }
     },
     "data_stream": {
         "dataset": "auditd.log",
-        "namespace": "ep",
+        "namespace": "69581",
         "type": "logs"
     },
     "ecs": {
-        "version": "8.11.0"
+        "version": "8.17.0"
     },
     "elastic_agent": {
-        "id": "0e729d36-7ce3-4bd5-885c-ec10bc843703",
-        "snapshot": true,
-        "version": "8.6.0"
+        "id": "2b104c8f-2997-496b-ae72-508caa53046e",
+        "snapshot": false,
+        "version": "8.17.3"
     },
     "event": {
         "action": "proctitle",
         "agent_id_status": "verified",
         "dataset": "auditd.log",
-        "ingested": "2023-01-13T11:42:40Z",
+        "ingested": "2025-03-13T12:15:48Z",
         "kind": "event"
     },
     "host": {
         "architecture": "x86_64",
-        "containerized": false,
-        "hostname": "docker-fleet-agent",
-        "id": "4547978d96e74314a1c62b73cc5cad86",
+        "containerized": true,
+        "hostname": "elastic-agent-28605",
         "ip": [
-            "172.22.0.4"
+            "172.20.0.2",
+            "172.18.0.7"
         ],
         "mac": [
-            "02-42-AC-16-00-04"
+            "02-42-AC-12-00-07",
+            "02-42-AC-14-00-02"
         ],
-        "name": "docker-fleet-agent",
+        "name": "elastic-agent-28605",
         "os": {
-            "codename": "focal",
-            "family": "debian",
-            "kernel": "5.15.49-linuxkit",
-            "name": "Ubuntu",
-            "platform": "ubuntu",
+            "family": "",
+            "kernel": "5.15.153.1-microsoft-standard-WSL2",
+            "name": "Wolfi",
+            "platform": "wolfi",
             "type": "linux",
-            "version": "20.04.5 LTS (Focal Fossa)"
+            "version": "20230201"
         }
     },
     "input": {
