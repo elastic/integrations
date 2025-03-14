@@ -79,6 +79,7 @@ Please refer to the following [document](https://www.elastic.co/guide/en/ecs/cur
 | Field | Description | Type |
 |---|---|---|
 | @timestamp | Event timestamp. | date |
+| actor.entity.id |  | keyword |
 | aws.cloudtrail.additional_eventdata | Additional data about the event that was not part of the request or response. | keyword |
 | aws.cloudtrail.additional_eventdata.text | Multi-field of `aws.cloudtrail.additional_eventdata`. | text |
 | aws.cloudtrail.api_version | Identifies the API version associated with the AwsApiCall eventType value. | keyword |
@@ -136,6 +137,7 @@ Please refer to the following [document](https://www.elastic.co/guide/en/ecs/cur
 | input.type | Input type | keyword |
 | log.offset | Log offset | long |
 | related.entity | A collection of all entity identifiers associated with the document.  If the document  contains multiple entities, identifiers for each will be included. Example identifiers include(but not limited to) cloud resource IDs, ARNs,  email addresses, and hostnames. | keyword |
+| target.entity.id |  | keyword |
 
 
 An example event for `cloudtrail` looks as following:
