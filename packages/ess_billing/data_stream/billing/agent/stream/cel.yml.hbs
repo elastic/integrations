@@ -16,21 +16,23 @@ resource.timeout: {{http_client_timeout}}
 resource.url: {{url}}/api/v2/billing/organizations/{{organization_id}}/costs/instances
 state:
   api_key: {{api_key}}
-  organization_id: "{{organization_id}}"
-  lookbehind: "{{lookbehind}}h"
+  organization_id: {{organization_id}}
+  lookbehind: {{lookbehind}}
 redact:
   fields:
     - api_key
 program: |
   state.with({
-    "from": has(state.?cursor.last_to) ?
+    "from": (has(state.?cursor.last_to) ?
         timestamp(state.cursor.last_to)
       :
-        (now().format(time_layout.DateOnly).parse_time(time_layout.DateOnly) - duration(state.lookbehind)),
-    "to": has(state.?cursor.last_to) ?
+        (now() - duration(string(int(state.lookbehind)*24) + "h"))
+    ).format(time_layout.DateOnly).parse_time(time_layout.DateOnly),
+    "to": (has(state.?cursor.last_to) ?
         (timestamp(state.cursor.last_to) + duration("24h"))
       :
-        (now().format(time_layout.DateOnly).parse_time(time_layout.DateOnly) - duration(state.lookbehind) + duration("24h")),
+        (now() - duration(string(int(state.lookbehind)*24) + "h") + duration("24h"))
+    ).format(time_layout.DateOnly).parse_time(time_layout.DateOnly),
   }.as(req, (req.to > now()) ?
     // We would fetch data in the future, back off
     {
