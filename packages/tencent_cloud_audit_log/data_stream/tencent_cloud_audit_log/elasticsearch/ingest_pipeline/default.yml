@@ -1,0 +1,183 @@
+---
+description: Pipeline to process tencent_cloud_audit_log logs
+processors:
+  - set:
+      tag: set_ecs_version
+      field: ecs.version
+      value: 8.11.0
+  - set:
+      tag: copy_original_message
+      field: originalMessage
+      copy_from: message
+  - rename:
+      ignore_missing: true
+      if: ctx.event?.original == null
+      tag: rename_message
+      field: originalMessage
+      target_field: event.original
+  - remove:
+      ignore_missing: true
+      if: ctx.event?.original != null
+      tag: remove_copied_message
+      field: originalMessage
+  - remove:
+      ignore_missing: true
+      tag: remove_message
+      field: message
+  - json:
+      tag: json_original
+      field: event.original
+      target_field: audit_log
+  - rename:
+      ignore_missing: true
+      field: audit_log.userIdentity.accountId
+      target_field: cloud.account.id
+  - rename:
+      ignore_missing: true
+      field: audit_log.userIdentity.userName
+      target_field: user.name
+  - rename:
+      ignore_missing: true
+      ignore_failure: true
+      field: audit_log.eventRegion
+      target_field: cloud.region
+  - rename:
+      ignore_missing: true
+      field: audit_log.errorCode
+      target_field: error.code
+  - rename:
+      ignore_missing: true
+      field: audit_log.requestID
+      target_field: event.id
+  - rename:
+      ignore_missing: true
+      field: audit_log.httpMethod
+      target_field: http.request.method
+  - rename:
+      ignore_missing: true
+      field: audit_log.userAgent
+      target_field: user_agent.original
+  - script:
+      tag: script_convert_array_to_string
+      description: Ensures the date processor does not receive an array value.
+      lang: painless
+      source: >
+        if (ctx.audit_log?.eventTime !=
+        null &&
+            ctx.audit_log.eventTime instanceof ArrayList){
+            ctx.audit_log.eventTime = ctx.audit_log.eventTime[0];
+        }
+  - date:
+      if: ctx.audit_log?.eventTime != null
+      tag: date_processor_audit_log.eventTime
+      field: audit_log.eventTime
+      target_field: '@timestamp'
+      formats:
+        - UNIX
+  - rename:
+      ignore_missing: true
+      field: audit_log.sourceIPAddress
+      target_field: source.ip
+  - rename:
+      ignore_missing: true
+      field: audit_log.eventName
+      target_field: event.action
+  - rename:
+      ignore_missing: true
+      field: audit_log.eventSource
+      target_field: event.provider
+  - script:
+      tag: script_drop_null_empty_values
+      description: Drops null/empty values recursively.
+      lang: painless
+      source: |
+        boolean dropEmptyFields(Object object) {
+          if (object == null || object == "") {
+            return true;
+          } else if (object instanceof Map) {
+            ((Map) object).values().removeIf(value -> dropEmptyFields(value));
+            return (((Map) object).size() == 0);
+          } else if (object instanceof List) {
+            ((List) object).removeIf(value -> dropEmptyFields(value));
+            return (((List) object).length == 0);
+          }
+          return false;
+        }
+        dropEmptyFields(ctx);
+  - geoip:
+      ignore_missing: true
+      tag: geoip_source_ip
+      field: source.ip
+      target_field: source.geo
+  - geoip:
+      ignore_missing: true
+      tag: geoip_source_asn
+      database_file: GeoLite2-ASN.mmdb
+      field: source.ip
+      target_field: source.as
+      properties:
+        - asn
+        - organization_name
+  - rename:
+      ignore_missing: true
+      tag: rename_source_as_asn
+      field: source.as.asn
+      target_field: source.as.number
+  - rename:
+      ignore_missing: true
+      tag: rename_source_as_organization_name
+      field: source.as.organization_name
+      target_field: source.as.organization.name
+  - geoip:
+      ignore_missing: true
+      tag: geoip_destination_ip
+      field: destination.ip
+      target_field: destination.geo
+  - geoip:
+      ignore_missing: true
+      tag: geoip_destination_asn
+      database_file: GeoLite2-ASN.mmdb
+      field: destination.ip
+      target_field: destination.as
+      properties:
+        - asn
+        - organization_name
+  - rename:
+      ignore_missing: true
+      tag: rename_destination_as_asn
+      field: destination.as.asn
+      target_field: destination.as.number
+  - rename:
+      ignore_missing: true
+      tag: rename_destination_as_organization_name
+      field: destination.as.organization_name
+      target_field: destination.as.organization.name
+  - json:
+      ignore_failure: true
+      field: audit_log.requestParameters
+      target_field: audit_log.requestParameters
+  - json:
+      ignore_failure: true
+      field: audit_log.userIdentity
+      target_field: audit_log.userIdentity
+  - remove:
+      ignore_failure: true
+      ignore_missing: true
+      if: ctx?.tags == null || !(ctx.tags.contains("preserve_original_event"))
+      tag: remove_original_event
+      field:       
+        - "event.original"
+        - "host"
+        - "agent"
+
+on_failure:
+  - append:
+      field: error.message
+      value: >-
+        Processor {{{_ingest.on_failure_processor_type}}} with tag
+        {{{_ingest.on_failure_processor_tag}}} in pipeline
+        {{{_ingest.on_failure_pipeline}}} failed with message:
+        {{{_ingest.on_failure_message}}}
+  - set:
+      field: event.kind
+      value: pipeline_error
