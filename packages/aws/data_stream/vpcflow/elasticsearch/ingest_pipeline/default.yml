@@ -114,6 +114,18 @@ processors:
       field: event.outcome
       value: failure
       if: ctx.aws?.vpcflow?.action == "REJECT"
+  - append:
+      field: event.type
+      value: allowed
+      if: ctx.aws?.vpcflow?.action == "ACCEPT"
+  - append:
+      field: event.type
+      value: denied
+      if: ctx.aws?.vpcflow?.action == "REJECT"
+  - set:
+      field: event.action
+      copy_from: aws.vpcflow.action
+      ignore_empty_value: true
   - rename:
       field: aws.vpcflow.srcaddr
       target_field: source.address
