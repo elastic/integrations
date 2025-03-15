@@ -1326,6 +1326,17 @@ and/or `session_token`.
     Please see[Create Shared Credentials File](https://docs.aws.amazon.com/ses/latest/DeveloperGuide/create-shared-credentials-file.html)
     for more details.
 
+#### Troubleshooting
+
+##### Duplicate Events
+
+The option `Enable Data Deduplication` allows you to avoid consuming duplicate events. By default, this option is set to `false` hence duplicate events may be ingested. When this option is enabled, a [fingerprint processor](https://www.elastic.co/guide/en/elasticsearch/reference/current/fingerprint-processor.html) is used to calculate hash from a set of crowdstrike fields that uniquely identifies the event. The hash is fed to Elasticsearch [`_id`](https://www.elastic.co/guide/en/elasticsearch/reference/current/mapping-id-field.html) field that makes the document unique, thus avoiding duplicates.
+
+If duplicate events are ingested, to help find them, the integration `event.id` field is populated by concatenating few crowdstrike fields that uniquely identifies the event. These fields are `id`, `aid`, and `cid` from crowdstrike event. The fields are seperated with pipe `|`.
+For example, if your crowdsrike event contains `id: 123`, `aid: 456`, and `cid: 789` then the `event.id` is derived as `123|456|789`.
+
+#### Example
+
 **Exported fields**
 
 | Field | Description | Type |
@@ -1731,6 +1742,7 @@ and/or `session_token`.
 | crowdstrike.discoverer_aid |  | keyword |
 | crowdstrike.eid |  | integer |
 | crowdstrike.hostname |  | keyword |
+| crowdstrike.id |  | keyword |
 | crowdstrike.info.host.\* | Host information enriched from aidmaster data. | object |
 | crowdstrike.info.user.\* | User information enriched from userinfo data. | object |
 | crowdstrike.localipCount |  | integer |
@@ -1892,9 +1904,9 @@ An example event for `fdr` looks as following:
 {
     "@timestamp": "2020-10-01T09:58:32.519Z",
     "agent": {
-        "ephemeral_id": "2bc0c57f-0753-469b-ab9b-eba29ce220cb",
-        "id": "f3446352-ed21-4068-884d-ee794906a542",
-        "name": "elastic-agent-28231",
+        "ephemeral_id": "9151b3a9-d1a0-4945-a309-15e6528f5ac2",
+        "id": "b33294e1-6d92-4d6d-8fc5-e472edd17c0d",
+        "name": "elastic-agent-45098",
         "type": "filebeat",
         "version": "8.18.0"
     },
@@ -1921,6 +1933,7 @@ An example event for `fdr` looks as following:
         "TokenType": "2",
         "WindowFlags": "128",
         "cid": "ffffffff30a3407dae27d0503611022d",
+        "id": "ffffffff-1111-11eb-8462-02ade3b2f949",
         "info": {
             "host": {
                 "AgentLoadFlags": "1",
@@ -1973,14 +1986,14 @@ An example event for `fdr` looks as following:
     },
     "data_stream": {
         "dataset": "crowdstrike.fdr",
-        "namespace": "14866",
+        "namespace": "50994",
         "type": "logs"
     },
     "ecs": {
         "version": "8.17.0"
     },
     "elastic_agent": {
-        "id": "f3446352-ed21-4068-884d-ee794906a542",
+        "id": "b33294e1-6d92-4d6d-8fc5-e472edd17c0d",
         "snapshot": true,
         "version": "8.18.0"
     },
@@ -1992,8 +2005,8 @@ An example event for `fdr` looks as following:
         ],
         "created": "2020-10-01T09:58:32.519Z",
         "dataset": "crowdstrike.fdr",
-        "id": "ffffffff-1111-11eb-8462-02ade3b2f949",
-        "ingested": "2025-03-06T07:45:11Z",
+        "id": "ffffffff-1111-11eb-8462-02ade3b2f949|ffffffff655344736aca58d17fb570f0|ffffffff30a3407dae27d0503611022d",
+        "ingested": "2025-03-13T16:10:17Z",
         "kind": "event",
         "original": "{\"AuthenticationId\":\"3783389\",\"CommandLine\":\"\\\"C:\\\\WINDOWS\\\\system32\\\\backgroundTaskHost.exe\\\" -ServerName:App.AppXnme9zjyebb2xnyygh6q9ev6p5d234br2.mca\",\"ConfigBuild\":\"1007.3.0012309.1\",\"ConfigStateHash\":\"3998263252\",\"EffectiveTransmissionClass\":\"3\",\"Entitlements\":\"15\",\"ImageFileName\":\"\\\\Device\\\\HarddiskVolume3\\\\Windows\\\\System32\\\\backgroundTaskHost.exe\",\"ImageSubsystem\":\"2\",\"IntegrityLevel\":\"4096\",\"MD5HashData\":\"50d5fd1290d94d46acca0585311e74d5\",\"ParentAuthenticationId\":\"3783389\",\"ParentBaseFileName\":\"svchost.exe\",\"ParentProcessId\":\"2439558094566\",\"ProcessCreateFlags\":\"525332\",\"ProcessEndTime\":\"\",\"ProcessParameterFlags\":\"16385\",\"ProcessStartTime\":\"1604855181.648\",\"ProcessSxsFlags\":\"1600\",\"RawProcessId\":\"22272\",\"RpcClientProcessId\":\"2439558094566\",\"SHA1HashData\":\"0000000000000000000000000000000000000000\",\"SHA256HashData\":\"b8e176fe76a1454a00c4af0f8bf8870650d9c33d3e333239a59445c5b35c9a37\",\"SessionId\":\"1\",\"SourceProcessId\":\"2439558094566\",\"SourceThreadId\":\"77538684027214\",\"Tags\":\"41, 12094627905582, 12094627906234\",\"TargetProcessId\":\"2450046082233\",\"TokenType\":\"2\",\"UserSid\":\"S-1-12-1-3697283754-1083485977-2164330645-2516515886\",\"WindowFlags\":\"128\",\"aid\":\"ffffffff655344736aca58d17fb570f0\",\"aip\":\"67.43.156.14\",\"cid\":\"ffffffff30a3407dae27d0503611022d\",\"event_platform\":\"Win\",\"event_simpleName\":\"ProcessRollup2\",\"id\":\"ffffffff-1111-11eb-8462-02ade3b2f949\",\"name\":\"ProcessRollup2V18\",\"timestamp\":\"1601546312519\"}",
         "outcome": "success",
@@ -2016,7 +2029,7 @@ An example event for `fdr` looks as following:
     },
     "log": {
         "file": {
-            "path": "https://elastic-package-crowdstrike-fdr-32493.s3.us-east-1.amazonaws.com/data"
+            "path": "https://elastic-package-crowdstrike-fdr-55008.s3.us-east-1.amazonaws.com/data"
         },
         "offset": 107991
     },

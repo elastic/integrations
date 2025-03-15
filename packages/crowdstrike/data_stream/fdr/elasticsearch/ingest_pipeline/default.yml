@@ -235,6 +235,11 @@ processors:
         - crowdstrike.id
         - crowdstrike.aid
         - crowdstrike.cid
+      tag: fingerprint_crowdstrike_fdr
+      description: >
+        When deduplication is enabled, fingerprint the a set of crowdstrike fields 
+        in attempt to prevent the same event from being indexed more than once.
+      if: ctx._conf?.enable_deduplication == true
       target_field: _id
       ignore_missing: true
 
@@ -1397,10 +1402,12 @@ processors:
         }
 
   ## Event fields.
-  - rename:
-      field: crowdstrike.id
-      target_field: event.id
-      ignore_missing: true
+  - set:
+      field: event.id
+      description: Concat the fields used in fingerprint.
+      tag: set_event_id
+      value: >-
+        {{{#crowdstrike.id}}}{{{ crowdstrike.id }}}{{{/crowdstrike.id}}}|{{{#crowdstrike.aid}}}{{{ crowdstrike.aid }}}{{{/crowdstrike.aid}}}|{{{#crowdstrike.cid}}}{{{ crowdstrike.cid }}}{{{/crowdstrike.cid}}}
   - rename:
       field: crowdstrike.event_simpleName
       target_field: event.action
@@ -2547,6 +2554,7 @@ processors:
         - crowdstrike.UTCTimestamp
         - crowdstrike.TargetDirectoryName
         - aws
+        - _conf
       ignore_missing: true
       ignore_failure: true
   - script:
