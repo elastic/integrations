@@ -85,6 +85,11 @@ processors:
       field: host.name
       copy_from: cloudflare_logpush.page_shield_events.host
       ignore_empty_value: true
+  - append:
+      field: related.hosts
+      value: '{{{host.name}}}'
+      if: ctx.host?.name != null && ctx.host.name != ''
+      allow_duplicates: false
   - rename:
       field: json.PageURL
       target_field: cloudflare_logpush.page_shield_events.page_url
