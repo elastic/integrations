@@ -878,7 +878,7 @@ An example event for `dlp_forensic_copies` looks as following:
         "preserve_original_event",
         "preserve_duplicate_custom_fields",
         "forwarded",
-        "cloudflare_logpush-firewall_event"
+        "cloudflare_logpush-dlp_forensic_copies"
     ]
 }
 ```
@@ -1352,7 +1352,7 @@ An example event for `email_security_alerts` looks as following:
         "preserve_original_event",
         "preserve_duplicate_custom_fields",
         "forwarded",
-        "cloudflare_logpush-firewall_event"
+        "cloudflare_logpush-email_security_alerts"
     ]
 }
 ```
@@ -3806,7 +3806,7 @@ An example event for `page_shield_events` looks as following:
         "preserve_original_event",
         "preserve_duplicate_custom_fields",
         "forwarded",
-        "cloudflare_logpush-firewall_event"
+        "cloudflare_logpush-page_sheild_events"
     ],
     "url": {
         "domain": "example.com",
