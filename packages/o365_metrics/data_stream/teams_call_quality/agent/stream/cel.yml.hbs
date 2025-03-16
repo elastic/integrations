@@ -53,37 +53,37 @@ redact:
 
 program: |
   (
-    has(state.worklist) && size(state.worklist) > 0 ?
+    has(state.worklist) && size(state.worklist) > 0 ? 
       state
     :
       state.with(
-          request(
-            "GET",
-            state.url.trim_right("/") + "/communications/callRecords"
-          ).do_request().as(resp, resp.StatusCode == 200 ?
-            bytes(resp.Body).decode_json().as(body, {
-              "worklist": body.value.collate("id"),
-              "next": 0,
-            })
-          :
-            {
-              "events": {
-                "error": {
-                  "code": string(resp.StatusCode),
-                  "id": string(resp.Status),
-                  "message": "GET /callRecords:"+ (
-                    size(resp.Body) != 0 ?
-                      string(resp.Body)
-                    :
-                      string(resp.Status) + ' (' + string(resp.StatusCode) + ')'
-                  ),
-                },
+        request(
+          "GET",
+          has(state.next_page) && state.next_page != "" ? state.next_page 
+          : state.url.trim_right("/") + "/communications/callRecords"
+        ).do_request().as(resp, resp.StatusCode == 200 ?
+          bytes(resp.Body).decode_json().as(body, {
+            "worklist": has(state.worklist) ? state.worklist + body.value.collate("id") : body.value.collate("id"),
+            "next_page": "@odata.nextLink" in body ? body["@odata.nextLink"] : "",
+            "want_more": "@odata.nextLink" in body
+          })
+        :
+          {
+            "events": {
+              "error": {
+                "code": string(resp.StatusCode),
+                "id": string(resp.Status),
+                "message": "GET /callRecords failed: " + (
+                  size(resp.Body) != 0 ? string(resp.Body) : string(resp.Status) + ' (' + string(resp.StatusCode) + ')'
+                ),
               },
-              "want_more": false,
-            }
-        ))
+            },
+            "want_more": false,
+          }
+        )
+      )
   ).as(state, state.with(
-    !has(state.worklist) ? state : // Exit early due to GET failure.
+    !has(state.worklist) ? state :  // Exit early if GET request failed
       state.worklist[?state.?next.orValue(-1)].hasValue() ?
         request(
           "GET",
@@ -92,17 +92,17 @@ program: |
           :
           state.url + "/communications/callRecords/" + state.worklist[state.next] + "/sessions?$expand=segments"
         ).do_request().as(resp, resp.StatusCode == 200 ?
-          bytes(resp.Body).decode_json().as(body,{
+          bytes(resp.Body).decode_json().as(body, {
             "events": (
               has(body.value) && size(body.value) > 0 ?
                 body.value.map(e, {
                   "message": e.encode_json()
                 })
               :
-                [{"message":"retry"}]
+                [{"message": "retry"}]
             ),
             "worklist": int(state.next) + 1 < size(state.worklist) ? state.worklist : [],
-            "next": int(state.next) + 1 < size(state.worklist) ? (has(state.next_page) && state.next_page != "" ?  int(state.next) : int(state.next) + 1) : 0,
+            "next": int(state.next) + 1 < size(state.worklist) ? (has(state.next_page) && state.next_page != "" ? int(state.next) : int(state.next) + 1) : 0,
             "want_more": int(state.next) + 1 < size(state.worklist) || "@odata.nextLink" in body,
             "next_page": "@odata.nextLink" in body ? body["@odata.nextLink"] : "",     
           })
@@ -112,11 +112,8 @@ program: |
               "error": {
                 "code": string(resp.StatusCode),
                 "id": string(resp.Status),
-                "message": "GET /communications/callRecords/"+state.worklist[state.next].name+"/alerts:"+(
-                  size(resp.Body) != 0 ?
-                    string(resp.Body)
-                  :
-                    string(resp.Status) + ' (' + string(resp.StatusCode) + ')'
+                "message": "GET /communications/callRecords/"+state.worklist[state.next].name+"/alerts: "+(
+                  size(resp.Body) != 0 ? string(resp.Body) : string(resp.Status) + ' (' + string(resp.StatusCode) + ')'
                 ),
               },
             },
