@@ -54,20 +54,20 @@ processors:
   - split:
       field: json.source
       separator: ","
-      target_field: _tmp_ip
+      target_field: _tmp.source_ip
       ignore_missing: true
   - script:
       lang: painless
       description: Extract first IP and remaining IPs.
-      if: ctx._tmp_ip instanceof List
+      if: ctx._tmp?.source_ip instanceof List
       source: >
-        int ip_list_size = ctx._tmp_ip.size();
+        int ip_list_size = ctx._tmp.source_ip.size();
         ctx.source = new HashMap();
         if (ip_list_size > 0) {
-          ctx.source.address = ctx._tmp_ip[0];
+          ctx.source.address = ctx._tmp.source_ip[0];
 
           if (ip_list_size > 1) {
-            ctx.jira.audit.additional_source_ips = ctx._tmp_ip.subList(1, ip_list_size);
+            ctx.jira.audit.additional_source_ips = ctx._tmp.source_ip.subList(1, ip_list_size);
           }
         }
   - foreach:
@@ -446,7 +446,6 @@ processors:
         - json
         - _tmp
         - _config
-        - _tmp_ip
       ignore_missing: true
   - script:
       lang: painless
