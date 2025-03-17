@@ -43,9 +43,12 @@ processors:
 
 state:
   want_more: false
+  worklist: []
+  next: 0
   base:
     tenant_id: "{{azure_tenant_id}}"
     period: "{{period}}"
+  next_link: ""
 
 redact:
   fields:
@@ -59,11 +62,15 @@ program: |
       state.with(
           request(
             "GET",
+            has(state.next_page) && state.next_page != "" ?
+            state.next_page
+            :
             state.url.trim_right("/") + "/communications/callRecords"
           ).do_request().as(resp, resp.StatusCode == 200 ?
             bytes(resp.Body).decode_json().as(body, {
               "worklist": body.value.collate("id"),
-              "next": 0,
+              "want_more": "@odata.nextLink" in body,
+              "next_page": "@odata.nextLink" in body ? body["@odata.nextLink"] : ""
             })
           :
             {
@@ -79,11 +86,10 @@ program: |
                   ),
                 },
               },
-              "want_more": false,
+            "want_more": false
             }
         ))
   ).as(state, state.with(
-      size(state.worklist) > 0 ?
         request(
           "GET",
           has(state.next_page) && state.next_page != "" ?
