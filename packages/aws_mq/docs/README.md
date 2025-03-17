@@ -15,9 +15,9 @@ The Amazon MQ integration allows you to efficiently collect and monitor broker p
 
 To enable the `activemq_general_logs` integration, you must configure your ActiveMQ broker to publish general logs to Amazon CloudWatch Logs. Follow these steps:
 
-1. **Assign Necessary Permissions**: Ensure the IAM user creating or managing the broker has the `logs:CreateLogGroup permission`. This allows Amazon MQ to create the required log groups in CloudWatch.
+1. **Assign Necessary Permissions**: Ensure the IAM user creating or managing the broker has the `logs:CreateLogGroup` permission. This allows Amazon MQ to create the required log groups in CloudWatch.
 
-2. **Set Up a Resource-Based Policy**: Configure a policy that permits Amazon MQ to publish logs to your CloudWatch log groups. This involves granting `logs:CreateLogStream` and `logs:PutLogEvents permissions` permissions.
+2. **Set Up a Resource-Based Policy**: Configure a policy that permits Amazon MQ to publish logs to your CloudWatch log groups. This involves granting `logs:CreateLogStream` and `logs:PutLogEvents` permissions.
 
 3. **Enable Logging on the Broker**:
 
