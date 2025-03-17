@@ -73,26 +73,26 @@ An example event for `action_history` looks as following:
 
 ```json
 {
-    "@timestamp": "2023-02-16T06:48:27.439Z",
+    "@timestamp": "2025-03-14T15:27:28.630Z",
     "agent": {
-        "ephemeral_id": "b09b3fe4-45a1-4d81-b64d-075be6cac5d6",
-        "id": "2cc42030-c8c1-410b-8cef-c2db3ff157ec",
-        "name": "docker-fleet-agent",
+        "ephemeral_id": "2da37302-4f80-4c24-ada8-583e50a11fe7",
+        "id": "613dde37-3274-4ac1-8b2b-4a85885c6622",
+        "name": "elastic-agent-30062",
         "type": "filebeat",
-        "version": "8.3.0"
+        "version": "8.16.5"
     },
     "data_stream": {
         "dataset": "tanium.action_history",
-        "namespace": "ep",
+        "namespace": "92264",
         "type": "logs"
     },
     "ecs": {
         "version": "8.11.0"
     },
     "elastic_agent": {
-        "id": "2cc42030-c8c1-410b-8cef-c2db3ff157ec",
+        "id": "613dde37-3274-4ac1-8b2b-4a85885c6622",
         "snapshot": false,
-        "version": "8.3.0"
+        "version": "8.16.5"
     },
     "event": {
         "action": "Deploy Client Configuration and Support [Mac](universal)",
@@ -102,11 +102,11 @@ An example event for `action_history` looks as following:
         ],
         "dataset": "tanium.action_history",
         "end": "2022-10-04T17:38:42.000Z",
-        "ingested": "2023-02-16T06:48:28Z",
+        "ingested": "2025-03-14T15:27:29Z",
         "kind": [
             "event"
         ],
-        "original": "{\"Issuer\": \"tanium\",\"SourceId\": 10,\"Expiration\": \"2022-10-04T17:38:42\",\"ActionName\": \"Deploy Client Configuration and Support [Mac](universal)\",\"Command\": \"/bin/sh -c 'chmod u+x TaniumCX && ./TaniumCX bootstrap --zip bootstrap.zip'\",\"Approver\": \"tanium\",\"Status\": \"Closed\",\"DistributeOver\": \"1 minutes\",\"PackageName\": \"Client Configuration and Support [Mac](universal)\",\"Comment\": \"\",\"StartTime\": \"2022-10-04T16:38:42\",\"InsertTime\": \"2022-10-04T16:38:48\",\"ActionId\": 6058}",
+        "original": "{\"ActionId\":6058,\"ActionName\":\"Deploy Client Configuration and Support [Mac](universal)\",\"Approver\":\"tanium\",\"Command\":\"/bin/sh -c 'chmod u+x TaniumCX \\u0026\\u0026 ./TaniumCX bootstrap --zip bootstrap.zip'\",\"Comment\":\"\",\"DistributeOver\":\"1 minutes\",\"Expiration\":\"2022-10-04T17:38:42\",\"InsertTime\":\"2022-10-04T16:38:48\",\"Issuer\":\"tanium\",\"PackageName\":\"Client Configuration and Support [Mac](universal)\",\"SourceId\":10,\"StartTime\":\"2022-10-04T16:38:42\",\"Status\":\"Closed\"}",
         "provider": "tanium",
         "start": "2022-10-04T16:38:42.000Z",
         "type": [
@@ -114,12 +114,7 @@ An example event for `action_history` looks as following:
         ]
     },
     "input": {
-        "type": "tcp"
-    },
-    "log": {
-        "source": {
-            "address": "192.168.32.4:39418"
-        }
+        "type": "http_endpoint"
     },
     "process": {
         "command_line": "/bin/sh -c 'chmod u+x TaniumCX && ./TaniumCX bootstrap --zip bootstrap.zip'"
@@ -191,54 +186,61 @@ An example event for `client_status` looks as following:
 
 ```json
 {
-    "@timestamp": "2023-02-16T06:50:20.629Z",
+    "@timestamp": "2025-03-14T15:30:29.725Z",
     "agent": {
-        "ephemeral_id": "e74d0cdf-30ac-42e8-823d-ec02753950a5",
-        "id": "2cc42030-c8c1-410b-8cef-c2db3ff157ec",
-        "name": "docker-fleet-agent",
+        "ephemeral_id": "a2827411-593d-49b7-ad72-a5d557aaec37",
+        "id": "ffee010e-0aca-45bf-9b02-b2466f8d575a",
+        "name": "elastic-agent-76166",
         "type": "filebeat",
-        "version": "8.3.0"
+        "version": "8.16.5"
+    },
+    "client": {
+        "ip": "67.43.156.0"
     },
     "data_stream": {
         "dataset": "tanium.client_status",
-        "namespace": "ep",
+        "namespace": "81168",
         "type": "logs"
     },
     "ecs": {
         "version": "8.11.0"
     },
     "elastic_agent": {
-        "id": "2cc42030-c8c1-410b-8cef-c2db3ff157ec",
+        "id": "ffee010e-0aca-45bf-9b02-b2466f8d575a",
         "snapshot": false,
-        "version": "8.3.0"
+        "version": "8.16.5"
     },
     "event": {
         "agent_id_status": "verified",
         "dataset": "tanium.client_status",
-        "ingested": "2023-02-16T06:50:21Z",
+        "ingested": "2025-03-14T15:30:30Z",
         "kind": [
             "state"
         ],
-        "original": "{\"id\": 1,\"MacAddress\": \"00-51-58-91-62-41\",\"MacOrganization\": \"VMware, Inc.\",\"IpAddress\": \"89.160.20.112\",\"NatIpAddress\": \"\",\"HostName\": \"otelco7_46.test.local\",\"Labels\": \"\",\"Locations\": \"\",\"TaniumComputerId\": 1558885994,\"Ports\": \"22,41000\",\"Os\": \"linux\",\"OsGeneration\": null,\"Managed\": 1,\"Unmanageable\": 0,\"Arp\": 0,\"Nmap\": 0,\"Ping\": 0,\"Connected\": 0,\"AwsApi\": 0,\"CentralizedNmap\": 0,\"SatelliteNmap\": 0,\"CreatedAt\": \"2022-11-18 09:30:26 +00:00\",\"UpdatedAt\": \"2022-11-18 10:10:57 +00:00\",\"FirstManagedAt\": null,\"LastManagedAt\": \"2022-11-18 10:10:57 +00:00\",\"LastDiscoveredAt\": null,\"Profile\": null,\"SatelliteDecId\": null,\"SatelliteName\": null}",
+        "original": "{\"ClientNetworkLocation\":\"67.43.156.0\",\"ComputerId\":\"4008511043\",\"FullVersion\":\"7.4.9.1046\",\"HostName\":\"dhcp-client02.local\",\"LastRegistration\":\"2022-10-07T09:20:08\",\"ProtocolVersion\":315,\"ReceiveState\":\"None\",\"RegisteredWithTLS\":1,\"SendState\":\"None\",\"ServerNetworkLocation\":\"81.2.69.192\",\"Status\":\"Leader\",\"ValidKey\":1}",
         "type": [
             "info"
         ]
     },
     "host": {
-        "hostname": "otelco7_46.test.local"
+        "id": "4008511043",
+        "name": "dhcp-client02.local"
     },
     "input": {
-        "type": "tcp"
-    },
-    "log": {
-        "source": {
-            "address": "192.168.32.4:45582"
-        }
+        "type": "http_endpoint"
     },
     "related": {
         "hosts": [
-            "otelco7_46.test.local"
+            "dhcp-client02.local",
+            "4008511043"
+        ],
+        "ip": [
+            "67.43.156.0",
+            "81.2.69.192"
         ]
+    },
+    "server": {
+        "ip": "81.2.69.192"
     },
     "tags": [
         "preserve_original_event",
@@ -248,7 +250,18 @@ An example event for `client_status` looks as following:
     ],
     "tanium": {
         "client_status": {
-            "host_name": "otelco7_46.test.local"
+            "client_network_location": "67.43.156.0",
+            "computer_id": "4008511043",
+            "full_version": "7.4.9.1046",
+            "host_name": "dhcp-client02.local",
+            "last_registration": "2022-10-07T09:20:08.000Z",
+            "protocol_version": 315,
+            "receive_state": "None",
+            "registered_with_tLS": 1,
+            "send_state": "None",
+            "server_network_location": "81.2.69.192",
+            "valid_key": 1,
+            "value": "Leader"
         }
     }
 }
@@ -293,54 +306,61 @@ An example event for `discover` looks as following:
 
 ```json
 {
-    "@timestamp": "2023-02-20T09:20:45.673Z",
+    "@timestamp": "2022-11-18T10:10:57.000Z",
     "agent": {
-        "ephemeral_id": "2e16390e-7187-4f16-b2a9-597a20f08567",
-        "id": "c43758c9-08d7-42f2-b258-f39e4373d45a",
-        "name": "docker-fleet-agent",
+        "ephemeral_id": "84713cdb-5fa9-4fdd-a983-b0107bc77e85",
+        "id": "4f7f2983-c7e6-4cd4-8e0c-ba2f48aef939",
+        "name": "elastic-agent-74263",
         "type": "filebeat",
-        "version": "8.3.0"
+        "version": "8.16.5"
     },
     "data_stream": {
         "dataset": "tanium.discover",
-        "namespace": "ep",
+        "namespace": "40617",
         "type": "logs"
     },
     "ecs": {
         "version": "8.11.0"
     },
     "elastic_agent": {
-        "id": "c43758c9-08d7-42f2-b258-f39e4373d45a",
+        "id": "4f7f2983-c7e6-4cd4-8e0c-ba2f48aef939",
         "snapshot": false,
-        "version": "8.3.0"
+        "version": "8.16.5"
     },
     "event": {
         "agent_id_status": "verified",
         "dataset": "tanium.discover",
-        "ingested": "2023-02-20T09:20:46Z",
+        "id": "1",
+        "ingested": "2025-03-14T15:33:29Z",
         "kind": [
             "event"
         ],
-        "original": "{\"Status\": \"Leader\",\"LastRegistration\": \"2022-10-07T09:20:08\",\"ProtocolVersion\": 315,\"ValidKey\": 1,\"ComputerId\": \"4008511043\",\"HostName\": \"dhcp-client02.local\",\"ClientNetworkLocation\": \"67.43.156.0\",\"ServerNetworkLocation\": \"81.2.69.192\",\"RegisteredWithTLS\": 1,\"SendState\": \"None\",\"ReceiveState\": \"None\",\"FullVersion\": \"7.4.9.1046\"}",
+        "original": "{\"Arp\":0,\"AwsApi\":0,\"CentralizedNmap\":0,\"Connected\":0,\"CreatedAt\":\"2022-11-18 09:30:26 +00:00\",\"FirstManagedAt\":null,\"HostName\":\"otelco7_46.test.local\",\"IpAddress\":\"89.160.20.112\",\"Labels\":\"\",\"LastDiscoveredAt\":null,\"LastManagedAt\":\"2022-11-18 10:10:57 +00:00\",\"Locations\":\"\",\"MacAddress\":\"00-51-58-91-62-41\",\"MacOrganization\":\"VMware, Inc.\",\"Managed\":1,\"NatIpAddress\":\"\",\"Nmap\":0,\"Os\":\"linux\",\"OsGeneration\":null,\"Ping\":0,\"Ports\":\"22,41000\",\"Profile\":null,\"SatelliteDecId\":null,\"SatelliteName\":null,\"SatelliteNmap\":0,\"TaniumComputerId\":1558885994,\"Unmanageable\":0,\"UpdatedAt\":\"2022-11-18 10:10:57 +00:00\",\"id\":1}",
+        "start": "2022-11-18T09:30:26.000Z",
         "type": [
             "info"
         ]
     },
     "host": {
-        "hostname": "dhcp-client02.local"
+        "name": "otelco7_46.test.local"
     },
     "input": {
-        "type": "tcp"
+        "type": "http_endpoint"
     },
-    "log": {
-        "source": {
-            "address": "172.24.0.5:43366"
-        }
+    "os": {
+        "type": "linux"
     },
     "related": {
         "hosts": [
-            "dhcp-client02.local"
+            "otelco7_46.test.local"
+        ],
+        "ip": [
+            "89.160.20.112"
         ]
+    },
+    "source": {
+        "ip": "89.160.20.112",
+        "mac": "00-51-58-91-62-41"
     },
     "tags": [
         "preserve_original_event",
@@ -350,7 +370,30 @@ An example event for `discover` looks as following:
     ],
     "tanium": {
         "discover": {
-            "host_name": "dhcp-client02.local"
+            "arp": 0,
+            "aws_api": 0,
+            "centralized_nmap": 0,
+            "computer_id": 1558885994,
+            "connected": 0,
+            "created_at": "2022-11-18T09:30:26.000Z",
+            "host_name": "otelco7_46.test.local",
+            "id": "1",
+            "ip_address": "89.160.20.112",
+            "last": {
+                "managed_at": "2022-11-18T10:10:57.000Z"
+            },
+            "mac_address": "00-51-58-91-62-41",
+            "mac_organization": "VMware, Inc.",
+            "managed": 1,
+            "nmap": 0,
+            "os": "linux",
+            "ping": 0,
+            "ports": "22,41000",
+            "satellite": {
+                "nmap": 0
+            },
+            "unmanageable": 0,
+            "updated_at": "2022-11-18T10:10:57.000Z"
         }
     }
 }
@@ -412,26 +455,26 @@ An example event for `endpoint_config` looks as following:
 
 ```json
 {
-    "@timestamp": "2023-02-28T11:55:45.989Z",
+    "@timestamp": "2025-03-14T15:34:51.887Z",
     "agent": {
-        "ephemeral_id": "06f3036e-23f0-4d9d-a3c9-2d967e4878f1",
-        "id": "7ac2bc6a-9f9b-4289-82db-ee2a0a7e6ef8",
-        "name": "docker-fleet-agent",
+        "ephemeral_id": "97f2c3df-5dc5-4f97-9223-fa1f5ac8c72b",
+        "id": "2ab9e4ff-beb2-4dc4-9a0c-48c6a22fbd7a",
+        "name": "elastic-agent-44696",
         "type": "filebeat",
-        "version": "8.3.0"
+        "version": "8.16.5"
     },
     "data_stream": {
         "dataset": "tanium.endpoint_config",
-        "namespace": "ep",
+        "namespace": "13469",
         "type": "logs"
     },
     "ecs": {
         "version": "8.11.0"
     },
     "elastic_agent": {
-        "id": "7ac2bc6a-9f9b-4289-82db-ee2a0a7e6ef8",
+        "id": "2ab9e4ff-beb2-4dc4-9a0c-48c6a22fbd7a",
         "snapshot": false,
-        "version": "8.3.0"
+        "version": "8.16.5"
     },
     "event": {
         "action": "AUDIT_ACTION_CREATED",
@@ -440,22 +483,17 @@ An example event for `endpoint_config` looks as following:
             "host"
         ],
         "dataset": "tanium.endpoint_config",
-        "ingested": "2023-02-28T11:55:47Z",
+        "ingested": "2025-03-14T15:34:52Z",
         "kind": [
             "state"
         ],
-        "original": "{\"timestamp\":\"2022-11-02T13:49:03.993426735Z\",\"action\":\"AUDIT_ACTION_CREATED\",\"user\":{\"user_id\":1,\"persona_id\":0},\"config_item\":{\"id\":9,\"domain\":\"endpoint-config\",\"data_category\":\"tools\",\"description\":\"Threat Response Stream Toolset\"}}",
+        "original": "{\"action\":\"AUDIT_ACTION_CREATED\",\"config_item\":{\"data_category\":\"tools\",\"description\":\"Threat Response Stream Toolset\",\"domain\":\"endpoint-config\",\"id\":9},\"timestamp\":\"2022-11-02T13:49:03.993426735Z\",\"user\":{\"persona_id\":0,\"user_id\":1}}",
         "type": [
             "info"
         ]
     },
     "input": {
-        "type": "tcp"
-    },
-    "log": {
-        "source": {
-            "address": "172.20.0.6:44106"
-        }
+        "type": "http_endpoint"
     },
     "related": {
         "user": [
@@ -534,49 +572,44 @@ An example event for `reporting` looks as following:
 
 ```json
 {
-    "@timestamp": "2023-02-16T06:56:06.805Z",
+    "@timestamp": "2025-03-14T15:36:29.944Z",
     "agent": {
-        "ephemeral_id": "3e94d921-228f-463b-9de4-4b217fc4a648",
-        "id": "2cc42030-c8c1-410b-8cef-c2db3ff157ec",
-        "name": "docker-fleet-agent",
+        "ephemeral_id": "244333f0-5003-4cee-8448-d09828459c0b",
+        "id": "11d08a69-cb83-48b8-8cab-3acd84d27b2a",
+        "name": "elastic-agent-91112",
         "type": "filebeat",
-        "version": "8.3.0"
+        "version": "8.16.5"
     },
     "data_stream": {
         "dataset": "tanium.reporting",
-        "namespace": "ep",
+        "namespace": "27499",
         "type": "logs"
     },
     "ecs": {
         "version": "8.11.0"
     },
     "elastic_agent": {
-        "id": "2cc42030-c8c1-410b-8cef-c2db3ff157ec",
+        "id": "11d08a69-cb83-48b8-8cab-3acd84d27b2a",
         "snapshot": false,
-        "version": "8.3.0"
+        "version": "8.16.5"
     },
     "event": {
         "agent_id_status": "verified",
         "dataset": "tanium.reporting",
-        "ingested": "2023-02-16T06:56:07Z",
+        "ingested": "2025-03-14T15:36:30Z",
         "kind": [
             "event"
         ],
-        "original": "{\"Computer Name\":\"localhost\",\"OS Platform\":\"Linux\",\"Operating System\":\"CentOS Linux release 7.9.2009 (Core)\",\"Virtual Platform\":\"VMware Virtual Platform\",\"Is Virtual\":\"Yes\",\"Manufacturer\":\"VMware, Inc.\",\"Model\":\"VMware Virtual Platform\",\"Count\":3}",
+        "original": "{\"Computer Name\":\"localhost\",\"Count\":3,\"Is Virtual\":\"Yes\",\"Manufacturer\":\"VMware, Inc.\",\"Model\":\"VMware Virtual Platform\",\"OS Platform\":\"Linux\",\"Operating System\":\"CentOS Linux release 7.9.2009 (Core)\",\"Virtual Platform\":\"VMware Virtual Platform\"}",
         "type": [
             "info"
         ]
     },
     "host": {
-        "hostname": "localhost"
+        "name": "localhost"
     },
     "input": {
-        "type": "tcp"
-    },
-    "log": {
-        "source": {
-            "address": "192.168.32.4:37856"
-        }
+        "type": "http_endpoint"
     },
     "os": {
         "name": "CentOS Linux release 7.9.2009 (Core)",
@@ -647,24 +680,24 @@ An example event for `threat_response` looks as following:
 {
     "@timestamp": "2023-01-18T10:13:28.000Z",
     "agent": {
-        "ephemeral_id": "b6bc41aa-f31e-4699-b16e-eda428357e2a",
-        "id": "821978e9-8609-487f-8e3f-011a710a7a13",
-        "name": "elastic-agent-20104",
+        "ephemeral_id": "7e8766b7-9e94-4b15-8535-99b9276327a3",
+        "id": "26fcf138-4f2c-4d7f-a6bb-0bae76263446",
+        "name": "elastic-agent-42606",
         "type": "filebeat",
-        "version": "8.13.0"
+        "version": "8.16.5"
     },
     "data_stream": {
         "dataset": "tanium.threat_response",
-        "namespace": "41588",
+        "namespace": "13807",
         "type": "logs"
     },
     "ecs": {
         "version": "8.11.0"
     },
     "elastic_agent": {
-        "id": "821978e9-8609-487f-8e3f-011a710a7a13",
+        "id": "26fcf138-4f2c-4d7f-a6bb-0bae76263446",
         "snapshot": false,
-        "version": "8.13.0"
+        "version": "8.16.5"
     },
     "event": {
         "agent_id_status": "verified",
@@ -673,17 +706,15 @@ An example event for `threat_response` looks as following:
         ],
         "dataset": "tanium.threat_response",
         "id": "00000000-0000-0000-5389-4a274d06f4ec",
-        "ingested": "2024-12-02T16:57:13Z",
-        "kind": [
-            "event"
-        ],
+        "ingested": "2025-03-14T15:38:11Z",
+        "kind": "event",
         "original": "{\"Computer IP\":\"81.2.69.192\",\"Computer Name\":\"worker-2\",\"Event Id\":\"00000000-0000-0000-5389-4a274d06f4ec\",\"Event Name\":\"detect.unmatch\",\"Other Parameters\":\"payload=eyJpbnRlbF9pZCI6MTM1LCJjb25maWdfaWQiOjMsImNvbmZpZ19yZXZfaWQiOjEsImZpbmRpbmciOnsid2hhdHMiOlt7ImludGVsX2ludHJhX2lkcyI6W3siaWQiOjg1MDM5NDU4Mn0seyJpZCI6OTgzOTYyMTkzfSx7ImlkIjoyNjY3MDYyMDA2fSx7ImlkIjozMzk4NDE2ODc4fSx7ImlkIjozOTk5MDE0NDY1fV0sInNvdXJjZV9uYW1lIjoicmVjb3JkZXIiLCJhcnRpZmFjdF9hY3Rpdml0eSI6eyJyZWxldmFudF9hY3Rpb25zIjpbeyJ2ZXJiIjo2LCJ0YXJnZXQiOnsiZmlsZSI6eyJwYXRoIjoiL3Zhci9saWIvZG9ja2VyL292ZXJsYXkyLzJiY2ZmYjdmMGQ2YTNmMzdhNjE5OWNhNjkxNjQ5ZWE0OTM1OGEyYzJlODdmMzkyMDI1NjJlNTBlYjVjZDI4MDUvZGlmZi9ldGMvaG9zdHMiLCJoYXNoIjp7Im1kNSI6IjRkMWYxMjU3Yjg0NmJkYTgyZDAzMzhmYjU0MWU3MzAxIiwic2hhMSI6IjA0M2ViMzI0YTY1MzQ1NmNhYTFhNzNlMmUyZDQ5Zjc3NzkyYmIwYzUiLCJzaGEyNTYiOiJlMzk5OGRiZTAyYjUxZGFkYTMzZGU4N2FlNDNkMThhOTNhYjY5MTViOWUzNGY1YTc1MWJmMmI5YjI1YTU1NDkyIn0sInNpemVfYnl0ZXMiOiI3OSIsIm1vZGlmaWNhdGlvbl90aW1lIjoiMjAyMi0wOS0xMVQyMDowODoyNi4wMDBaIiwiaW5zdGFuY2VfaGFzaF9zYWx0IjoiMzAxNDc2NyIsIm1hZ2ljX251bWJlcl9oZXgiOiIzMTMyMzcyZSJ9LCJpbnN0YW5jZV9oYXNoIjoiOTY2NzAxNzM0NTE1MDk2ODM0MiIsImFydGlmYWN0X2hhc2giOiIxMDUzODAwNDU2MTA2MjQ5MDYifSwidGltZXN0YW1wIjoiMjAyMy0wMS0xOFQxMDozNzoxOC4wMDBaIiwidGFuaXVtX3JlY29yZGVyX2V2ZW50X3RhYmxlX2lkIjoiNDYxMTY4NjAxODQ3NTg1NTY3MiIsInRhbml1bV9yZWNvcmRlcl9jb250ZXh0Ijp7ImZpbGUiOnsidW5pcXVlX2V2ZW50X2lkIjoiNDYxMTY4NjAxODQ3NTg1NTY3MiJ9LCJldmVudCI6eyJ0aW1lc3RhbXBfbXMiOiIxNjc0MDM4MjM4NzgwIiwiZmlsZV9jcmVhdGUiOnsicGF0aCI6Ii92YXIvbGliL2RvY2tlci9vdmVybGF5Mi8yYmNmZmI3ZjBkNmEzZjM3YTYxOTljYTY5MTY0OWVhNDkzNThhMmMyZTg3ZjM5MjAyNTYyZTUwZWI1Y2QyODA1L2RpZmYvZXRjL2hvc3RzIn19fX1dLCJhY3RpbmdfYXJ0aWZhY3QiOnsicHJvY2VzcyI6eyJoYW5kbGVzIjpbXSwicGlkIjo0MzE4MSwiYXJndW1lbnRzIjoiZG9ja2VyLXVudGFyIC8gL3Zhci9saWIvZG9ja2VyL292ZXJsYXkyLzJiY2ZmYjdmMGQ2YTNmMzdhNjE5OWNhNjkxNjQ5ZWE0OTM1OGEyYzJlODdmMzkyMDI1NjJlNTBlYjVjZDI4MDUvZGlmZiIsImZpbGUiOnsiZmlsZSI6eyJwYXRoIjoiL3Byb2Mvc2VsZi9leGUifSwiaW5zdGFuY2VfaGFzaCI6IjEzMTY0NjgzMDA4MzA4NzMzMjM2IiwiYXJ0aWZhY3RfaGFzaCI6IjEzMTY0NjgzMDA4MzA4NzMzMjM2In0sInVzZXIiOnsidXNlciI6eyJuYW1lIjoicm9vdCIsImRvbWFpbiI6InJvb3QiLCJ1c2VyX2lkIjoiMCIsImdyb3VwX2lkIjoiMCJ9fSwicGFyZW50Ijp7InByb2Nlc3MiOnsiaGFuZGxlcyI6W10sInBpZCI6MjA1OCwiYXJndW1lbnRzIjoiL3Vzci9iaW4vZG9ja2VyZCAtSCBmZDovLyAtLWNvbnRhaW5lcmQ9L3J1bi9jb250YWluZXJkL2NvbnRhaW5lcmQuc29jayIsImZpbGUiOnsiZmlsZSI6eyJwYXRoIjoiL3Vzci9iaW4vZG9ja2VyZCJ9LCJpbnN0YW5jZV9oYXNoIjoiMTY3ODgxMjYwMTcwOTA1NzEyOTEiLCJhcnRpZmFjdF9oYXNoIjoiMTY3ODgxMjYwMTcwOTA1NzEyOTEifSwidXNlciI6eyJ1c2VyIjp7Im5hbWUiOiJyb290IiwiZG9tYWluIjoicm9vdCIsInVzZXJfaWQiOiI2MDE4ODI2MzA1ODc2NzIzMjY5In19LCJwYXJlbnQiOnsicHJvY2VzcyI6eyJoYW5kbGVzIjpbXSwicGlkIjoxLCJhcmd1bWVudHMiOiIvc2Jpbi9pbml0IiwiZmlsZSI6eyJmaWxlIjp7InBhdGgiOiIvbGliL3N5c3RlbWQvc3lzdGVtZCIsImhhc2giOnsibWQ1IjoiYWM4YjI3Y2U2NjQxY2JhNGVkMmM1ZTc2MmYwNDE5ODYifX0sImluc3RhbmNlX2hhc2giOiIxMzE4Nzc2NjQ1NjAwNzA3MjAxOSIsImFydGlmYWN0X2hhc2giOiIxMzE4Nzc2NjQ1NjAwNzA3MjAxOSJ9LCJ1c2VyIjp7InVzZXIiOnsibmFtZSI6InJvb3QiLCJkb21haW4iOiJyb290IiwidXNlcl9pZCI6IjYwMTg4MjYzMDU4NzY3MjMyNjkifX0sInN0YXJ0X3RpbWUiOiIyMDIzLTAxLTExVDA4OjQ0OjAyLjAwMFoiLCJ0YW5pdW1fdW5pcXVlX2lkIjoiMTE1MjkyNTY2NDI4MjY3MzE1MjEifSwiaW5zdGFuY2VfaGFzaCI6IjMxOTY5NjQ4NTI4NTE4ODUzOSIsImFydGlmYWN0X2hhc2giOiI0NzE0OTAwMTk0MTgwNTMxODM2In0sInN0YXJ0X3RpbWUiOiIyMDIzLTAxLTExVDA4OjQ2OjI0LjAwMFoiLCJ0YW5pdW1fdW5pcXVlX2lkIjoiMTE1Mjk4NjQzMjkxNTk1MTAwMjYifSwiaW5zdGFuY2VfaGFzaCI6IjE3MTMyMTc2Mjk2OTI2MTcwMDY4IiwiYXJ0aWZhY3RfaGFzaCI6IjExNzE1NTUyOTUwODYxMDU3MTc3In0sInN0YXJ0X3RpbWUiOiIyMDIzLTAxLTE4VDEwOjM3OjE4LjAwMFoiLCJ0YW5pdW1fdW5pcXVlX2lkIjoiMTQxNTYwNDI1NzY5OTM0OTUyMTMifSwiaW5zdGFuY2VfaGFzaCI6IjExODg2MzgxNjYzMjk0ODAzMDg2IiwiYXJ0aWZhY3RfaGFzaCI6IjQwMDE0NTA1MTc3OTQzNzAzMjAiLCJpc19pbnRlbF90YXJnZXQiOnRydWV9fX1dLCJkb21haW4iOiJ0aHJlYXRyZXNwb25zZSIsImludGVsX2lkIjoiMTM1OjE6N2I4OWFjMzUtM2U5My00MGZjLWIxNDItYjE5OTk0ZjI4NDMwIiwiaHVudF9pZCI6IjQiLCJ0aHJlYXRfaWQiOiI4NTAzOTQ1ODIsOTgzOTYyNzY1LDI2NjcwNjIwMDYsMjY2NzA2Mjc2OCwyNjY3MDYyNDM1Iiwic291cmNlX25hbWUiOiJyZWNvcmRlcjEiLCJzeXN0ZW1faW5mbyI6eyJvcyI6IlwiVWJ1bnR1IDE4LjA0LjYgTFRTXCIiLCJiaXRzIjo2NCwicGxhdGZvcm0iOiJMaW51eCJ9LCJmaXJzdF9zZWVuIjoiMjAyMy0wMS0xOFQxMDozNzozNi4wMDBaIiwibGFzdF9zZWVuIjoiMjAyMy0wMS0xOFQxMDozNzozNi4wMDBaIiwiZmluZGluZ19pZCI6IjY3ODc5ODcwMTE1MzE3NTYxNjUiLCJyZXBvcnRpbmdfaWQiOiJyZXBvcnRpbmctaWQtcGxhY2Vob2xkZXIifSwibWF0Y2giOnsidmVyc2lvbiI6MSwidHlwZSI6InByb2Nlc3MiLCJzb3VyY2UiOiJyZWNvcmRlciIsImhhc2giOiI0MDAxNDUwNTE3Nzk0MzcwMzIwIiwicHJvcGVydGllcyI6eyJwaWQiOjQzMTgxLCJhcmdzIjoiZG9ja2VyLXVudGFyIC8gL3Zhci9saWIvZG9ja2VyL292ZXJsYXkyLzJiY2ZmYjdmMGQ2YTNmMzdhNjE5OWNhNjkxNjQ5ZWE0OTM1OGEyYzJlODdmMzkyMDI1NjJlNTBlYjVjZDI4MDUvZGlmZiIsInJlY29yZGVyX3VuaXF1ZV9pZCI6IjE0MTU2MDQyNTc2OTkzNDk1MjEzIiwic3RhcnRfdGltZSI6IjIwMjMtMDEtMThUMTA6Mzc6MTguMDAwWiIsInBwaWQiOjIwNTgsInVzZXIiOiJyb290XFxyb290IiwiZmlsZSI6eyJmdWxscGF0aCI6Ii9wcm9jL3NlbGYvZXhlIn0sIm5hbWUiOiIvcHJvYy9zZWxmL2V4ZSIsInBhcmVudCI6eyJwaWQiOjIwNTgsImFyZ3MiOiIvdXNyL2Jpbi9kb2NrZXJkIC1IIGZkOi8vIC0tY29udGFpbmVyZD0vcnVuL2NvbnRhaW5lcmQvY29udGFpbmVyZC5zb2NrIiwicmVjb3JkZXJfdW5pcXVlX2lkIjoiMTE1Mjk4NjQzMjkxNTk1MTAwMjYiLCJzdGFydF90aW1lIjoiMjAyMy0wMS0xMVQwODo0NjoyNC4wMDBaIiwicHBpZCI6MSwidXNlciI6InJvb3RcXHJvb3QiLCJmaWxlIjp7ImZ1bGxwYXRoIjoiL3Vzci9iaW4vZG9ja2VyZCJ9LCJuYW1lIjoiL3Vzci9iaW4vZG9ja2VyZCIsInBhcmVudCI6eyJwaWQiOjEsImFyZ3MiOiIvc2Jpbi9pbml0IiwicmVjb3JkZXJfdW5pcXVlX2lkIjoiMTE1MjkyNTY2NDI4MjY3MzE1MjEiLCJzdGFydF90aW1lIjoiMjAyMy0wMS0xMVQwODo0NDowMi4wMDBaIiwidXNlciI6InJvb3RcXHJvb3QiLCJmaWxlIjp7Im1kNSI6ImFjOGIyN2NlNjY0MWNiYTRlZDJjNWU3NjJmMDQxOTg2IiwiZnVsbHBhdGgiOiIvbGliL3N5c3RlbWQvc3lzdGVtZCJ9LCJuYW1lIjoiL2xpYi9zeXN0ZW1kL3N5c3RlbWQifX19LCJjb250ZXh0cyI6W3siZmlsZSI6eyJ1bmlxdWVFdmVudElkIjoiNDYxMTY4NjAxODQ3NTg1NTY3MiJ9LCJldmVudCI6eyJ0aW1lc3RhbXBNcyI6IjE2NzQwMzgyMzg3ODAiLCJmaWxlQ3JlYXRlIjp7InBhdGgiOiIvdmFyL2xpYi9kb2NrZXIvb3ZlcmxheTIvMmJjZmZiN2YwZDZhM2YzN2E2MTk5Y2E2OTE2NDllYTQ5MzU4YTJjMmU4N2YzOTIwMjU2MmU1MGViNWNkMjgwNS9kaWZmL2V0Yy9ob3N0cyJ9fX1dfX0=\",\"Priority\":\"high\",\"Severity\":\"info\",\"Timestamp\":\"2023-01-18T10:13:28.000Z\",\"User Domain\":\"xyz\",\"User Id\":\"\",\"User Name\":\"\"}",
         "type": [
             "info"
         ]
     },
     "host": {
-        "hostname": "worker-2"
+        "name": "worker-2"
     },
     "input": {
         "type": "http_endpoint"
