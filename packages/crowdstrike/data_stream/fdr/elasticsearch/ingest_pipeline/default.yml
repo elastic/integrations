@@ -2527,7 +2527,33 @@ processors:
       value: "{{{crowdstrike.info.user.LastLoggedOnHost}}}"
       allow_duplicates: false
       if: ctx.crowdstrike?.info?.user?.LastLoggedOnHost != null
-
+  - script:
+      tag: remove-lengthy-fields
+      if: ctx._conf?.lengthy_fields == 'delete_lengthy_fields' && ctx._conf?.lengthy_fields_max_length != null
+      description: Remove lengthy fields based on user input stored in _conf.lengthy_fields*.
+      lang: painless
+      source: |
+        void lengthyFieldsMap(Map map) {
+          for (def x : map.values()) {
+            if (x instanceof Map) {
+                lengthyFieldsMap(x);
+            } else if (x instanceof List) {
+                lengthyFieldsList(x);
+            }
+          }
+          map.values().removeIf(v -> v.size() > Integer.parseInt(ctx._conf.lengthy_fields_max_length));
+        }
+        void lengthyFieldsList(List list) {
+          for (def x : list) {
+              if (x instanceof Map) {
+                  lengthyFieldsMap(x);
+              } else if (x instanceof List) {
+                  lengthyFieldsList(x);
+              }
+          }
+          list.removeIf(v -> v.size() > Integer.parseInt(ctx._conf.lengthy_fields_max_length));
+        }
+        lengthyFieldsMap(ctx);
   ## Cleanup.
   - remove:
       field: crowdstrike.event_platform
