@@ -34,6 +34,7 @@ processors:
       ignore_missing: true
   - date:
       field: github.created_at
+      tag: date_created_at
       formats:
         - UNIX_MS
       timezone: UTC
@@ -47,6 +48,7 @@ processors:
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - date:
       field: github.@timestamp
+      tag: date_@timestamp
       formats:
         - UNIX_MS
       timezone: UTC
@@ -85,6 +87,7 @@ processors:
   - convert:
       field: github.repository_public
       target_field: github.repository_public
+      tag: convert_repository_public_to_boolean
       type: boolean
       ignore_missing: true
       on_failure:
@@ -134,6 +137,7 @@ processors:
   - convert:
       field: github.actor_ip
       target_field: github.actor_ip
+      tag: convert_actor_ip_to_ip
       type: ip
       ignore_missing: true
       if: ctx.github?.actor_ip != null && ctx.github.actor_ip != ''
@@ -225,7 +229,7 @@ processors:
   - append:
       field: related.user
       tag: append_actor_id_to_related_user
-      value: '{{{github.event.actor_id}}}'
+      value: '{{{github.actor_id}}}'
       allow_duplicates: false
   - convert:
       field: github.business_id
@@ -255,7 +259,7 @@ processors:
   - append:
       field: related.user
       tag: append_user_id_to_related_user
-      value: '{{{github.event.user_id}}}'
+      value: '{{{github.user_id}}}'
       allow_duplicates: false
   - script:
       lang: painless
@@ -386,6 +390,11 @@ processors:
       tag: convert_audit_log_stream_id_to_string
       type: string
       ignore_missing: true
+  - append:
+      field: related.user
+      tag: append_blocked_user_to_related_user
+      value: '{{{github.blocked_user}}}'
+      allow_duplicates: false
   - append:
       field: related.hash
       tag: append_data_head_sha_to_related_hash

@@ -44,7 +44,7 @@ To collect audit log events from Azure Event Hubs, follow the [guide](https://do
 | event.dataset | Event dataset | constant_keyword |
 | event.module | Event module | constant_keyword |
 | github.active |  | boolean |
-| github.actor_id |  | keyword |
+| github.actor_id | The id of the actor who performed the action. | keyword |
 | github.actor_ip | The IP address of the entity performing the action. | ip |
 | github.actor_is_bot |  | boolean |
 | github.actor_location.country_name |  | keyword |
@@ -53,6 +53,7 @@ To collect audit log events from Azure Event Hubs, follow the [guide](https://do
 | github.audit_log_stream_id |  | keyword |
 | github.audit_log_stream_sink |  | keyword |
 | github.audit_log_stream_sink_details |  | keyword |
+| github.blocked_user | The username of the account being blocked. | keyword |
 | github.business |  | keyword |
 | github.business_id |  | keyword |
 | github.category | GitHub action category. | keyword |
@@ -68,6 +69,7 @@ To collect audit log events from Azure Event Hubs, follow the [guide](https://do
 | github.data.workflow_run_id |  | keyword |
 | github.device |  | keyword |
 | github.events |  | keyword |
+| github.events_object |  | object |
 | github.forked_repository |  | keyword |
 | github.hashed_token | SHA-256 hash of the token used for authentication. | keyword |
 | github.hook_id |  | keyword |
@@ -94,7 +96,7 @@ To collect audit log events from Azure Event Hubs, follow the [guide](https://do
 | github.repositories_added_names | The name of the repository added to a GitHub App installation. | keyword |
 | github.repositories_removed |  | keyword |
 | github.repositories_removed_names | The name of the repository removed from a GitHub App installation. | keyword |
-| github.repository |  | keyword |
+| github.repository | The name of the repository. | keyword |
 | github.repository_public | Whether the GitHub repository is publicly visible. | boolean |
 | github.repository_selection | Whether all repositories have been selected or there's a selection involved. | keyword |
 | github.request_category |  | keyword |
@@ -105,12 +107,12 @@ To collect audit log events from Azure Event Hubs, follow the [guide](https://do
 | github.token_id |  | keyword |
 | github.token_scopes |  | keyword |
 | github.topic |  | keyword |
-| github.transport_protocol |  | long |
-| github.transport_protocol_name |  | keyword |
+| github.transport_protocol | The type of protocol (for example, HTTP or SSH) used to transfer Git data. | long |
+| github.transport_protocol_name | A human readable name for the protocol (for example, HTTP or SSH) used to transfer Git data. | keyword |
 | github.user_agent | The user agent of the entity performing the action. | keyword |
 | github.user_id |  | keyword |
 | github.version |  | keyword |
-| github.visibility |  | keyword |
+| github.visibility | The repository visibility, for example `public` or `private`. | keyword |
 | host.containerized | If the host is a container. | boolean |
 | host.os.build | OS build information. | keyword |
 | host.os.codename | OS codename, if any. | keyword |
@@ -123,22 +125,22 @@ An example event for `audit` looks as following:
 {
     "@timestamp": "2020-11-18T17:05:48.837Z",
     "agent": {
-        "ephemeral_id": "deb09de7-2aea-4a99-95ac-11ccd0a705c8",
-        "id": "762fb610-97dc-4177-95a5-39aa05663fdb",
-        "name": "elastic-agent-65388",
+        "ephemeral_id": "00ee9264-c5fd-4eb4-ba61-2650d7b10b86",
+        "id": "c513f872-2125-47f8-92f4-e79f206aeaf7",
+        "name": "elastic-agent-20844",
         "type": "filebeat",
         "version": "8.13.0"
     },
     "data_stream": {
         "dataset": "github.audit",
-        "namespace": "88186",
+        "namespace": "80528",
         "type": "logs"
     },
     "ecs": {
         "version": "8.11.0"
     },
     "elastic_agent": {
-        "id": "762fb610-97dc-4177-95a5-39aa05663fdb",
+        "id": "c513f872-2125-47f8-92f4-e79f206aeaf7",
         "snapshot": false,
         "version": "8.13.0"
     },
@@ -149,10 +151,10 @@ An example event for `audit` looks as following:
             "configuration",
             "web"
         ],
-        "created": "2025-03-12T10:58:15.858Z",
+        "created": "2025-03-18T07:21:56.275Z",
         "dataset": "github.audit",
         "id": "LwW2vpJZCDS-WUmo9Z-ifw",
-        "ingested": "2025-03-12T10:58:16Z",
+        "ingested": "2025-03-18T07:21:57Z",
         "kind": "event",
         "original": "{\"@timestamp\":1605719148837,\"_document_id\":\"LwW2vpJZCDS-WUmo9Z-ifw\",\"action\":\"repo.destroy\",\"actor\":\"monalisa\",\"created_at\":1605719148837,\"org\":\"mona-org\",\"repo\":\"mona-org/mona-test-repo\",\"visibility\":\"private\"}",
         "type": [
