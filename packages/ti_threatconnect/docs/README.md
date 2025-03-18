@@ -510,12 +510,12 @@ An example event for `indicator` looks as following:
 | threat_connect.indicator.source | The Indicators source. | keyword |
 | threat_connect.indicator.subject | The subject line of the email associated with the Email Subject Indicator. | keyword |
 | threat_connect.indicator.summary | Summary or description of the indicator. | keyword |
-| threat_connect.indicator.tags.data.last_used | Date and time when tag was last used. | date |
-| threat_connect.indicator.tags.data.name | Name of tag. | keyword |
-| threat_connect.indicator.tags.data.owner | The Organization, Community, or Source to which the Tag belongs. | keyword |
+| threat_connect.indicator.tags.data.last_used | Date and time when the tag was last used. | date |
+| threat_connect.indicator.tags.data.name | Name of the tag. | keyword |
+| threat_connect.indicator.tags.data.owner | The Organization, Community, or Source to which the tag belongs. | keyword |
 | threat_connect.indicator.tags.data.platforms.count | Count of platforms. | long |
 | threat_connect.indicator.tags.data.platforms.data | Platform on which tag is added. | keyword |
-| threat_connect.indicator.tags.data.tactics | Attack tactics associated with the tag technique. | keyword |
+| threat_connect.indicator.tags.data.tactics | Attack tactics associated with the tag. | keyword |
 | threat_connect.indicator.tags.data.technique.id | Unique Identifier of tag technique. | keyword |
 | threat_connect.indicator.text | The URL associated with the URL Indicator. | keyword |
 | threat_connect.indicator.threat_assess.confidence | The confidence level associated with the threat assessment. | double |
