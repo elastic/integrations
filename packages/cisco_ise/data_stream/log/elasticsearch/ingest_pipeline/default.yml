@@ -68,9 +68,9 @@ processors:
       ignore_missing: true
   - date:
       field: _tmp.timestamp
-      formats:
-        - MMM [ ]d HH:mm:ss[.SSSSSS]
-        - MMM [ ]d HH:mm:ss[.SSS]
+      tag: default-tmp-timestamp parsing
+      formats: &formats
+        - MMM [ ]d[d] HH:mm:ss[.SSSSSS][.SSS]
         - ISO8601
       on_failure:
         - remove:
@@ -78,22 +78,20 @@ processors:
             ignore_missing: true
         - append:
             field: error.message
-            value: '{{{_ingest.on_failure_message}}}'
+            value: '{{{ _ingest.on_failure_processor_tag }}}: {{{_ingest.on_failure_message}}}'
   - date:
       if: ctx.event?.timezone != null && ctx.event.timezone != ''
       field: _tmp.timestamp
       timezone: '{{{event.timezone}}}'
-      formats:
-        - MMM [ ]d HH:mm:ss[.SSSSSS]
-        - MMM [ ]d HH:mm:ss[.SSS]
-        - ISO8601
+      tag: default-tmp-timestamp-with timezone parsing
+      formats: *formats
       on_failure:
         - remove:
             field: _tmp.timestamp
             ignore_missing: true
         - append:
             field: error.message
-            value: '{{{_ingest.on_failure_message}}}'
+            value: '{{{ _ingest.on_failure_processor_tag }}}: {{{_ingest.on_failure_message}}}'
   - pipeline:
       name: '{{ IngestPipeline "pipeline_policy_diagnostics" }}'
       if: ctx.cisco_ise?.log?.category?.name == 'CISE_Policy_Diagnostics'
