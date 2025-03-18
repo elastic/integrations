@@ -33,7 +33,7 @@ This integration presently supports Amazon MQ for [Apache ActiveMQ](http://activ
 
 ## Data streams
 
-The Amazon MQ integration collects Apache ActiveMQ and RabbitMQ metrics. 
+The Amazon MQ integration collects metrics and logs from Apache ActiveMQ and metrics from RabbitMQ.
 
 
 Data streams:
@@ -71,6 +71,7 @@ documentation](https://docs.elastic.co/integrations/aws#requirements).
 
 When general logging is enabled for your Amazon MQ ActiveMQ broker, it publishes the `activemq.log` file at the default `INFO` logging level to a designated log group. Please note that `DEBUG` logging is not supported.
 
+{{event "activemq_general_logs"}}
 {{fields "activemq_general_logs"}}
 
 ## Metrics

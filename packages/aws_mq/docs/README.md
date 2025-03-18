@@ -33,7 +33,7 @@ This integration presently supports Amazon MQ for [Apache ActiveMQ](http://activ
 
 ## Data streams
 
-The Amazon MQ integration collects Apache ActiveMQ and RabbitMQ metrics. 
+The Amazon MQ integration collects metrics and logs from Apache ActiveMQ and metrics from RabbitMQ.
 
 
 Data streams:
@@ -71,6 +71,81 @@ documentation](https://docs.elastic.co/integrations/aws#requirements).
 
 When general logging is enabled for your Amazon MQ ActiveMQ broker, it publishes the `activemq.log` file at the default `INFO` logging level to a designated log group. Please note that `DEBUG` logging is not supported.
 
+An example event for `activemq_general` looks as following:
+
+```json
+{
+    "@timestamp": "2025-03-18T06:54:23.715Z",
+    "activemq": {
+        "log": {
+            "caller": "org.apache.activemq.broker.TransportConnection",
+            "thread": "ActiveMQ Transport: ssl:///127.0.0.1:62632"
+        }
+    },
+    "agent": {
+        "ephemeral_id": "7adf2695-0359-49f4-b6c5-a791109899a6",
+        "id": "b94228f7-76d4-46b9-b9a2-957d0dd91a33",
+        "name": "elastic-agent-81303",
+        "type": "filebeat",
+        "version": "8.16.5"
+    },
+    "aws.cloudwatch": {
+        "ingestion_time": "2025-03-18T06:54:30.000Z",
+        "log_group": "arn:aws:logs:ap-south-1:627286350134:log-group:/aws/amazonmq/broker/b-cfab2617-b6fb-4a44-bd7a-052aa4cd96f4/general",
+        "log_stream": "activemq-b-cfab2617-b6fb-4a44-bd7a-052aa4cd96f4-1.log"
+    },
+    "awscloudwatch": {
+        "ingestion_time": "2025-03-18T06:54:30.000Z",
+        "log_group": "arn:aws:logs:ap-south-1:627286350134:log-group:/aws/amazonmq/broker/b-cfab2617-b6fb-4a44-bd7a-052aa4cd96f4/general",
+        "log_stream": "activemq-b-cfab2617-b6fb-4a44-bd7a-052aa4cd96f4-1.log"
+    },
+    "cloud": {
+        "provider": "aws",
+        "region": "ap-south-1",
+        "service": {
+            "name": "amazonmq_activemq"
+        }
+    },
+    "data_stream": {
+        "dataset": "aws_mq.activemq_general_logs",
+        "namespace": "97943",
+        "type": "logs"
+    },
+    "ecs": {
+        "version": "8.11.0"
+    },
+    "elastic_agent": {
+        "id": "b94228f7-76d4-46b9-b9a2-957d0dd91a33",
+        "snapshot": false,
+        "version": "8.16.5"
+    },
+    "event": {
+        "agent_id_status": "verified",
+        "dataset": "aws_mq.activemq_general_logs",
+        "id": "38854161605984073238018306252722744375730240239659646976",
+        "ingested": "2025-03-18T06:54:33Z",
+        "original": "2025-03-18 06:54:23,715 | WARN  | Failed to add Connection id=ID:b-cfab2617-b6fb-4a44-bd7a-052aa4cd96f4-1-45943-1741903831778-5:27, clientId=ID:b-cfab2617-b6fb-4a44-bd7a-052aa4cd96f4-1-45943-1741903831778-5:27, clientIP=tcp://127.0.0.1:62632 due to User name [elastic] or password is invalid. | org.apache.activemq.broker.TransportConnection | ActiveMQ Transport: ssl:///127.0.0.1:62632",
+        "type": [
+            "error"
+        ]
+    },
+    "input": {
+        "type": "aws-cloudwatch"
+    },
+    "log": {
+        "file": {
+            "path": "arn:aws:logs:ap-south-1:627286350134:log-group:/aws/amazonmq/broker/b-cfab2617-b6fb-4a44-bd7a-052aa4cd96f4/general/activemq-b-cfab2617-b6fb-4a44-bd7a-052aa4cd96f4-1.log"
+        },
+        "level": "WARN"
+    },
+    "message": "Failed to add Connection id=ID:b-cfab2617-b6fb-4a44-bd7a-052aa4cd96f4-1-45943-1741903831778-5:27, clientId=ID:b-cfab2617-b6fb-4a44-bd7a-052aa4cd96f4-1-45943-1741903831778-5:27, clientIP=tcp://127.0.0.1:62632 due to User name [elastic] or password is invalid.",
+    "tags": [
+        "preserve_original_event",
+        "forwarded",
+        "aws_mq-activemq-general-logs"
+    ]
+}
+```
 **Exported fields**
 
 | Field | Description | Type |
