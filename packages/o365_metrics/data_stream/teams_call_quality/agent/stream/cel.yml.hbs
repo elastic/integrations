@@ -65,7 +65,7 @@ program: |
             has(state.next_page) && state.next_page != "" ?
             state.next_page
             :
-            state.url.trim_right("/") + "/communications/callRecords?" + "$filter=startDateTime%20ge%20"+ string(now - duration(state.base.period) - state.sync_delay)
+            state.url.trim_right("/") + "/communications/callRecords?" + "$filter=startDateTime%20ge%20"+ string(now - duration(state.base.period) - duration(state.sync_delay))
           ).do_request().as(resp, resp.StatusCode == 200 ?
             bytes(resp.Body).decode_json().as(body, {
               "worklist": body.value.collate("id"),
