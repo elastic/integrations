@@ -273,6 +273,59 @@ processors:
       field: user.id
       copy_from: activedirectory.user.object_sid
 
+  - set:
+      field: activedirectory.user.logon_script_enabled
+      value: true
+      if: "ctx.activedirectory?.user?.uac_list?.contains('SCRIPT')"
+  - set:
+      field: activedirectory.user.enabled
+      value: true
+      if: "!ctx.activedirectory?.user?.uac_list?.contains('ACCOUNTDISABLE')"
+  - set:
+      field: activedirectory.user.enabled
+      value: false
+      if: "ctx.activedirectory?.user?.uac_list?.contains('ACCOUNTDISABLE')"
+
+  - set:
+      field: activedirectory.user.locked
+      value: true
+      if: "ctx.activedirectory?.user?.uac_list?.contains('LOCKOUT')"
+
+  - set:
+      field: activedirectory.user.password_not_required
+      value: true
+      if: "ctx.activedirectory?.user?.uac_list?.contains('PASSWD_NOTREQD')"
+
+  - set:
+      field: activedirectory.user.reversible_encryption_password
+      value: true
+      if: "ctx.activedirectory?.user?.uac_list?.contains('ENCRYPTED_TEXT_PWD_ALLOWED')"
+
+  - set:
+      field: activedirectory.user.unconstrained_delegation
+      value: true
+      if: "ctx.activedirectory?.user?.uac_list?.contains('TRUSTED_FOR_DELEGATION')"
+
+  - set:
+      field: activedirectory.user.sensitive_object
+      value: true
+      if: "ctx.activedirectory?.user?.uac_list?.contains('NOT_DELEGATED')"
+
+  - set:
+      field: activedirectory.user.use_des_key_only
+      value: true
+      if: "ctx.activedirectory?.user?.uac_list?.contains('USE_DES_KEY_ONLY')"
+
+  - set:
+      field: activedirectory.user.dont_require_preauth
+      value: true
+      if: "ctx.activedirectory?.user?.uac_list?.contains('DONT_REQUIRE_PREAUTH')"
+
+  - set:
+      field: activedirectory.user.constrained_delegation
+      value: true
+      if: "ctx.activedirectory?.user?.uac_list?.contains('TRUSTED_TO_AUTHENTICATE_FOR_DELEGATION')"
+
   - foreach:
       tag: foreach_group_id
       field: activedirectory.groups
@@ -282,6 +335,54 @@ processors:
           tag: set_group_id
           field: "_ingest._value.id"
           value: "{{{_ingest._value.object_sid}}}"
+
+  - script:
+      lang: painless
+      ignore_failure: true
+      tag: set_privileged_group_member
+      description: Set privileged_group_member flag based on group membership.
+      # Well-known SIDs - Name to SID mapping
+      # https://learn.microsoft.com/en-us/windows-server/identity/ad-ds/manage/understand-security-identifiers#well-known-sids
+      source: >
+        if (ctx.activedirectory?.groups == null) {
+          return;
+        }
+        ctx.activedirectory.user.privileged_group_member = false;
+        for (def group : ctx.activedirectory?.groups) {
+          if (group?.object_sid != null && (
+            // Domain Admins
+            group.object_sid.endsWith('-512') ||
+            // Domain Controllers
+            group.object_sid.endsWith('-516') ||
+            // Schema Admins
+            group.object_sid.endsWith('-518') ||
+            // Enterprise Admins
+            group.object_sid.endsWith('-519') ||
+            // Group Policy Creator Owners
+            group.object_sid.endsWith('-520') ||
+            // Protected Users
+            group.object_sid.endsWith('-525') ||
+            // Key Admins
+            group.object_sid.endsWith('-526') ||
+            // Enterprise Key Admins
+            group.object_sid.endsWith('-527') ||
+            // Administrators
+            group.object_sid.endsWith('-544') ||
+            // Account Operators
+            group.object_sid.endsWith('-548') ||
+            // Server Operators
+            group.object_sid.endsWith('-549') ||
+            // Backup Operators
+            group.object_sid.endsWith('-551'))) {
+              ctx.activedirectory.user.privileged_group_member = true;
+              break; // Stop at a match
+          }
+        }
+
+  - set:
+      field: activedirectory.user.account_never_expires
+      value: true
+      if: ctx.activedirectory?.user?.account_expires == "0" || ctx.activedirectory?.user?.account_expires == "9223372036854775807"
 
   - append:
       field: related.user
