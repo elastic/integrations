@@ -258,10 +258,10 @@ and/or `session_token`.
 
 ##### Duplicate Events
 
-The option `Enable Data Deduplication` allows you to avoid consuming duplicate events. By default, this option is set to `false` hence duplicate events may be ingested. When this option is enabled, a [fingerprint processor](https://www.elastic.co/guide/en/elasticsearch/reference/current/fingerprint-processor.html) is used to calculate hash from a set of crowdstrike fields that uniquely identifies the event. The hash is fed to Elasticsearch [`_id`](https://www.elastic.co/guide/en/elasticsearch/reference/current/mapping-id-field.html) field that makes the document unique, thus avoiding duplicates.
+The option `Enable Data Deduplication` allows you to avoid consuming duplicate events. By default, this option is set to `false`, and so duplicate events may be ingested. When this option is enabled, a [fingerprint processor](https://www.elastic.co/guide/en/elasticsearch/reference/current/fingerprint-processor.html) is used to calculate a hash from a set of Crowdstrike fields that uniquely identifies the event. The hash is assigned to the Elasticsearch [`_id`](https://www.elastic.co/guide/en/elasticsearch/reference/current/mapping-id-field.html) field that makes the document unique, thus avoiding duplicates.
 
-If duplicate events are ingested, to help find them, the integration `event.id` field is populated by concatenating few crowdstrike fields that uniquely identifies the event. These fields are `id`, `aid`, and `cid` from crowdstrike event. The fields are seperated with pipe `|`.
-For example, if your crowdsrike event contains `id: 123`, `aid: 456`, and `cid: 789` then the `event.id` is derived as `123|456|789`.
+If duplicate events are ingested, to help find them, the integration `event.id` field is populated by concatenating a few Crowdstrike fields that uniquely identifies the event. These fields are `id`, `aid`, and `cid` from the Crowdstrike event. The fields are separated with pipe `|`.
+For example, if your Crowdstrike event contains `id: 123`, `aid: 456`, and `cid: 789` then the `event.id` would be `123|456|789`.
 
 #### Example
 
