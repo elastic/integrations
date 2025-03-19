@@ -2,9 +2,6 @@
 
 The VMware Carbon Black Cloud integration collects and parses data from the Carbon Black Cloud REST APIs and AWS S3 bucket.
 
-## Version 2.0.0+ Update Disclaimer
-Carbon Black Cloud `Alerts API (v6)` [will be deactivated on July 31, 2024](https://developer.carbonblack.com/reference/carbon-black-cloud/api-migration/#migration-summary). After this, the current alert data stream will become unusable. To enable a smooth transition we have introduced a new data stream named `alert_v7` based on the major `Alerts API (v7)` schema changes and `Data Forwarder 2.0` schema changes. This data stream has significant changes compared to the original data stream and is only available for our new `CEL input` which is currently tagged as `[Beta]`. Please consult the official docs [Alerts v7](https://developer.carbonblack.com/reference/carbon-black-cloud/guides/api-migration/alerts-migration) and [Data Forwarder 2.0](https://developer.carbonblack.com/reference/carbon-black-cloud/data-forwarder/schema/latest/alert-2.0.0/) for further info. After July 31, 2024, the old alerts v6 data stream will be deprecated and removed from the HTTPJSON input and only the new `alert_v7` data stream will exist under the `CEL input`.
-
 ## Version 1.21+ Update Disclaimer
 Starting from version 1.21, if using multiple AWS data streams simultaneously configured to use AWS SQS, separate SQS queues should be configured per
 data stream. The default values of file selector regexes have been commented out for this reason. The only reason the global queue now exists is to avoid
@@ -12,19 +9,13 @@ a breaking change while upgrading to version 1.21 and above. A separate SQS queu
 older versions.
 
 ## HTTPJSON vs CEL 
-Version 2.0.0 introduces the use of the CEL input. This input method is currently marked as [Beta] while the older HTTPJSON input method has been
-marked as [Legacy]. The HTTPJSON input method will not receive enhancement changes and will not support the new `alert_v7` data stream.
+Version 2.0.0 introduces the use of the CEL input. The HTTPJSON input method has been marked as [Legacy], it will not receive enhancement changes and will not support the new `alert_v7` data stream.
 
 ## Note (Important)
 1. Do not enable both the HTTPJSON and CEL input methods within a single data stream; having both enabled simultaneously can cause unexpected/duplicated results, as they operate on the same data streams.
 
-2. When using the AWS-S3 input, use either the old alert data stream or the new [Beta] alert_v7 data stream that supports the Data Forwarder 2.0 schema.
-
-3. The `alert_v7` data stream is supported by our new `Alert V7` dashboards. The old `Alert` dashboards will not reflect the new changes.
-
-
 ## Compatibility
-This module has been tested against `Alerts API (v7) [Beta]`, `Alerts API (v6)`, `Audit Log Events (v3)` and `Vulnerability Assessment (v1)`.
+This module has been tested against `Alerts API (v7)`, `Audit Log Events (v3)` and `Vulnerability Assessment (v1)`.
 
 ## Requirements
 
@@ -36,7 +27,6 @@ This module has been tested against `Alerts API (v7) [Beta]`, `Alerts API (v6)`,
   | Data Stream Name  | Bucket List Prefix     |
   | ----------------- | ---------------------- |
   | Alert_v7          | alert_logs_v7          |
-  | Alert             | alert_logs             |
   | Endpoint Event    | endpoint_event_logs    |
   | Watchlist Hit     | watchlist_hit_logs     |
 
@@ -49,7 +39,7 @@ This module has been tested against `Alerts API (v7) [Beta]`, `Alerts API (v6)`,
      2. Setup event notification from the S3 bucket using the instructions [here](https://docs.aws.amazon.com/AmazonS3/latest/userguide/enable-event-notifications.html). Use the following settings:
         - Event type: `All object create events` (`s3:ObjectCreated:*`)
          - Destination: SQS Queue
-         - Prefix (filter): enter the prefix for this data stream, e.g. `alert_logs/`
+         - Prefix (filter): enter the prefix for this data stream, e.g. `alert_logs_v7/`
          - Select the SQS queue that has been created for this data stream
 
 **Note**:
@@ -74,7 +64,7 @@ This module has been tested against `Alerts API (v7) [Beta]`, `Alerts API (v6)`,
 | Data stream                 | Access Level and Permissions               |
 | --------------------------- | ------------------------------------------ |
 | Audit   	                  | API                                        |
-| Alert                       | Custom orgs.alerts (Read)                  |
+| Alert v7                    | Custom orgs.alerts (Read)                  |
 | Asset Vulnerability Summary | Custom vulnerabilityAssessment.data (Read) |
 
 
@@ -158,192 +148,6 @@ An example event for `audit` looks as following:
 | @timestamp | Event timestamp. | date |
 | carbon_black_cloud.audit.flagged | true if action is failed otherwise false. | boolean |
 | carbon_black_cloud.audit.verbose | true if verbose audit log otherwise false. | boolean |
-| cloud.image.id | Image ID for the cloud instance. | keyword |
-| data_stream.dataset | Data stream dataset. | constant_keyword |
-| data_stream.namespace | Data stream namespace. | constant_keyword |
-| data_stream.type | Data stream type. | constant_keyword |
-| event.dataset | Event dataset. | constant_keyword |
-| event.module | Event module. | constant_keyword |
-| host.containerized | If the host is a container. | boolean |
-| host.os.build | OS build information. | keyword |
-| host.os.codename | OS codename, if any. | keyword |
-| input.type | Input type | keyword |
-| log.offset | Log offset | long |
-
-
-### Alert
-
-This is the `alert` dataset.
-
-An example event for `alert` looks as following:
-
-```json
-{
-    "@timestamp": "2020-11-17T22:05:13.000Z",
-    "agent": {
-        "ephemeral_id": "0c34bcbb-0fe1-4219-a711-8a44cb9e8b75",
-        "id": "c073dde3-4d37-4b40-8161-a008a04d551f",
-        "name": "docker-fleet-agent",
-        "type": "filebeat",
-        "version": "8.8.0"
-    },
-    "carbon_black_cloud": {
-        "alert": {
-            "category": "warning",
-            "device": {
-                "location": "UNKNOWN",
-                "os": "WINDOWS"
-            },
-            "last_update_time": "2020-11-17T22:05:13.000Z",
-            "legacy_alert_id": "C8EB7306-AF26-4A9A-B677-814B3AF69720",
-            "organization_key": "ABCD6X3T",
-            "policy": {
-                "applied": "APPLIED",
-                "id": 6997287,
-                "name": "Standard"
-            },
-            "product_id": "0x5406",
-            "product_name": "U3 Cruzer Micro",
-            "reason_code": "6D578342-9DE5-4353-9C25-1D3D857BFC5B:DCAEB1FA-513C-4026-9AB6-37A935873FBC",
-            "run_state": "DID_NOT_RUN",
-            "sensor_action": "DENY",
-            "serial_number": "0875920EF7C2A304",
-            "target_value": "MEDIUM",
-            "threat_cause": {
-                "cause_event_id": "FCEE2AF0-D832-4C9F-B988-F11B46028C9E",
-                "threat_category": "NON_MALWARE",
-                "vector": "REMOVABLE_MEDIA"
-            },
-            "threat_id": "t5678",
-            "type": "DEVICE_CONTROL",
-            "vendor_id": "0x0781",
-            "vendor_name": "SanDisk",
-            "workflow": {
-                "changed_by": "Carbon Black",
-                "last_update_time": "2020-11-17T22:02:16.000Z",
-                "state": "OPEN"
-            }
-        }
-    },
-    "data_stream": {
-        "dataset": "carbon_black_cloud.alert",
-        "namespace": "ep",
-        "type": "logs"
-    },
-    "ecs": {
-        "version": "8.11.0"
-    },
-    "elastic_agent": {
-        "id": "c073dde3-4d37-4b40-8161-a008a04d551f",
-        "snapshot": true,
-        "version": "8.8.0"
-    },
-    "event": {
-        "agent_id_status": "verified",
-        "created": "2023-04-19T16:35:34.619Z",
-        "dataset": "carbon_black_cloud.alert",
-        "end": "2020-11-17T22:02:16.000Z",
-        "id": "test1",
-        "ingested": "2023-04-19T16:35:38Z",
-        "kind": "alert",
-        "original": "{\"category\":\"WARNING\",\"create_time\":\"2020-11-17T22:05:13Z\",\"device_id\":2,\"device_location\":\"UNKNOWN\",\"device_name\":\"DESKTOP-002\",\"device_os\":\"WINDOWS\",\"device_os_version\":\"Windows 10 x64\",\"device_username\":\"test34@demo.com\",\"first_event_time\":\"2020-11-17T22:02:16Z\",\"id\":\"test1\",\"last_event_time\":\"2020-11-17T22:02:16Z\",\"last_update_time\":\"2020-11-17T22:05:13Z\",\"legacy_alert_id\":\"C8EB7306-AF26-4A9A-B677-814B3AF69720\",\"org_key\":\"ABCD6X3T\",\"policy_applied\":\"APPLIED\",\"policy_id\":6997287,\"policy_name\":\"Standard\",\"product_id\":\"0x5406\",\"product_name\":\"U3 Cruzer Micro\",\"reason\":\"Access attempted on unapproved USB device SanDisk U3 Cruzer Micro (SN: 0875920EF7C2A304). A Deny Policy Action was applied.\",\"reason_code\":\"6D578342-9DE5-4353-9C25-1D3D857BFC5B:DCAEB1FA-513C-4026-9AB6-37A935873FBC\",\"run_state\":\"DID_NOT_RUN\",\"sensor_action\":\"DENY\",\"serial_number\":\"0875920EF7C2A304\",\"severity\":3,\"target_value\":\"MEDIUM\",\"threat_cause_cause_event_id\":\"FCEE2AF0-D832-4C9F-B988-F11B46028C9E\",\"threat_cause_threat_category\":\"NON_MALWARE\",\"threat_cause_vector\":\"REMOVABLE_MEDIA\",\"threat_id\":\"t5678\",\"type\":\"DEVICE_CONTROL\",\"vendor_id\":\"0x0781\",\"vendor_name\":\"SanDisk\",\"workflow\":{\"changed_by\":\"Carbon Black\",\"comment\":\"\",\"last_update_time\":\"2020-11-17T22:02:16Z\",\"remediation\":\"\",\"state\":\"OPEN\"}}",
-        "reason": "Access attempted on unapproved USB device SanDisk U3 Cruzer Micro (SN: 0875920EF7C2A304). A Deny Policy Action was applied.",
-        "severity": 3,
-        "start": "2020-11-17T22:02:16.000Z"
-    },
-    "host": {
-        "hostname": "DESKTOP-002",
-        "id": "2",
-        "name": "DESKTOP-002",
-        "os": {
-            "type": "windows",
-            "version": "Windows 10 x64"
-        }
-    },
-    "input": {
-        "type": "httpjson"
-    },
-    "related": {
-        "hosts": [
-            "DESKTOP-002"
-        ],
-        "user": [
-            "test34@demo.com"
-        ]
-    },
-    "tags": [
-        "preserve_original_event",
-        "forwarded",
-        "carbon_black_cloud-alert"
-    ],
-    "user": {
-        "name": "test34@demo.com"
-    }
-}
-```
-
-**Exported fields**
-
-| Field | Description | Type |
-|---|---|---|
-| @timestamp | Event timestamp. | date |
-| carbon_black_cloud.alert.blocked_threat_category | The category of threat which we were able to take action on. | keyword |
-| carbon_black_cloud.alert.category | The category of the alert. | keyword |
-| carbon_black_cloud.alert.count |  | long |
-| carbon_black_cloud.alert.created_by_event_id | Event identifier that initiated the alert. | keyword |
-| carbon_black_cloud.alert.device.location | The Location of device. | keyword |
-| carbon_black_cloud.alert.device.os | OS of the device. | keyword |
-| carbon_black_cloud.alert.document_guid | Unique ID of document. | keyword |
-| carbon_black_cloud.alert.ioc.field | The field the indicator of comprise (IOC) hit contains. | keyword |
-| carbon_black_cloud.alert.ioc.hit | IOC field value or IOC query that matches. | keyword |
-| carbon_black_cloud.alert.ioc.id | The identifier of the IOC that cause the hit. | keyword |
-| carbon_black_cloud.alert.kill_chain_status | The stage within the Cyber Kill Chain sequence most closely associated with the attributes of the alert. | keyword |
-| carbon_black_cloud.alert.last_update_time | The last time the alert was updated as an ISO 8601 UTC timestamp. | date |
-| carbon_black_cloud.alert.legacy_alert_id | The legacy identifier for the alert. | keyword |
-| carbon_black_cloud.alert.not_blocked_threat_category | Other potentially malicious activity involved in the threat that we weren't able to take action on (either due to policy config, or not having a relevant rule). | keyword |
-| carbon_black_cloud.alert.notes_present | Indicates if notes are associated with the threat_id. | boolean |
-| carbon_black_cloud.alert.organization_key | The unique identifier for the organization associated with the alert. | keyword |
-| carbon_black_cloud.alert.policy.applied | Whether a policy was applied. | keyword |
-| carbon_black_cloud.alert.policy.id | The identifier for the policy associated with the device at the time of the alert. | long |
-| carbon_black_cloud.alert.policy.name | The name of the policy associated with the device at the time of the alert. | keyword |
-| carbon_black_cloud.alert.product_id | The hexadecimal id of the USB device's product. | keyword |
-| carbon_black_cloud.alert.product_name | The name of the USB device’s vendor. | keyword |
-| carbon_black_cloud.alert.reason_code | Shorthand enum for the full-text reason. | keyword |
-| carbon_black_cloud.alert.report.id | The identifier of the report that contains the IOC. | keyword |
-| carbon_black_cloud.alert.report.name | The name of the report that contains the IOC. | keyword |
-| carbon_black_cloud.alert.run_state | Whether the threat in the alert ran. | keyword |
-| carbon_black_cloud.alert.sensor_action | The action taken by the sensor, according to the rule of the policy. | keyword |
-| carbon_black_cloud.alert.serial_number | The serial number of the USB device. | keyword |
-| carbon_black_cloud.alert.status | status of alert. | keyword |
-| carbon_black_cloud.alert.tags | Tags associated with the alert. | keyword |
-| carbon_black_cloud.alert.target_value | The priority of the device assigned by the policy. | keyword |
-| carbon_black_cloud.alert.threat_activity.c2 | Whether the alert involved a command and control (c2) server. | keyword |
-| carbon_black_cloud.alert.threat_activity.dlp | Whether the alert involved data loss prevention (DLP). | keyword |
-| carbon_black_cloud.alert.threat_activity.phish | Whether the alert involved phishing. | keyword |
-| carbon_black_cloud.alert.threat_cause.actor.md5 | MD5 of the threat cause actor. | keyword |
-| carbon_black_cloud.alert.threat_cause.actor.name | The name can be one of the following: process commandline, process name, or analytic matched threat. Analytic matched threats are Exploit, Malware, PUP, or Trojan. | keyword |
-| carbon_black_cloud.alert.threat_cause.actor.process_pid | Process identifier (PID) of the actor process. | keyword |
-| carbon_black_cloud.alert.threat_cause.actor.sha256 | SHA256 of the threat cause actor. | keyword |
-| carbon_black_cloud.alert.threat_cause.cause_event_id | ID of the Event that triggered the threat. | keyword |
-| carbon_black_cloud.alert.threat_cause.process.guid | The global unique identifier of the process. | keyword |
-| carbon_black_cloud.alert.threat_cause.process.parent.guid | The global unique identifier of the process. | keyword |
-| carbon_black_cloud.alert.threat_cause.reputation | Reputation of the threat cause. | keyword |
-| carbon_black_cloud.alert.threat_cause.threat_category | Category of the threat cause. | keyword |
-| carbon_black_cloud.alert.threat_cause.vector | The source of the threat cause. | keyword |
-| carbon_black_cloud.alert.threat_id | The identifier of a threat which this alert belongs. Threats are comprised of a combination of factors that can be repeated across devices. | keyword |
-| carbon_black_cloud.alert.threat_indicators.process_name | Process name associated with threat. | keyword |
-| carbon_black_cloud.alert.threat_indicators.sha256 | Sha256 associated with threat. | keyword |
-| carbon_black_cloud.alert.threat_indicators.ttps | Tactics, techniques and procedures associated with threat. | keyword |
-| carbon_black_cloud.alert.type | Type of alert. | keyword |
-| carbon_black_cloud.alert.vendor_id | The hexadecimal id of the USB device's vendor. | keyword |
-| carbon_black_cloud.alert.vendor_name | The name of the USB device’s vendor. | keyword |
-| carbon_black_cloud.alert.watchlists.id | The identifier of watchlist. | keyword |
-| carbon_black_cloud.alert.watchlists.name | The name of the watchlist. | keyword |
-| carbon_black_cloud.alert.workflow.changed_by | The name of user who changed the workflow. | keyword |
-| carbon_black_cloud.alert.workflow.comment | Comment associated with workflow. | keyword |
-| carbon_black_cloud.alert.workflow.last_update_time | The last update time of workflow. | date |
-| carbon_black_cloud.alert.workflow.remediation | N/A. | keyword |
-| carbon_black_cloud.alert.workflow.state | The state of workflow. | keyword |
 | cloud.image.id | Image ID for the cloud instance. | keyword |
 | data_stream.dataset | Data stream dataset. | constant_keyword |
 | data_stream.namespace | Data stream namespace. | constant_keyword |
