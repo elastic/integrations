@@ -42,7 +42,7 @@ There are some minimum requirements for running Elastic Agent and for more infor
 5. Click Test connection to perform a full testing cycle in which a test file will be transferred to your designated folder. The test file does not contain real data, and will be removed by Incapsula when the transfer is complete.
 6. Configure the additional options:
     - Format. Select the format for the log files: CEF
-    - Compress logs. By default, log files are compressed. Clear this option to keep the logs uncompressed.
+    - Compress logs. By default, log files are compressed. Set the option to not compress files.
 
 ### Steps to obtain API URL, API Key and API ID(Pull Mode):
 
@@ -53,7 +53,7 @@ There are some minimum requirements for running Elastic Agent and for more infor
 5. Copy **API ID** and **Log Server URI**.
 6. Configure the additional options:
     - Format. Select the format for the log files: CEF
-    - Compress logs. By default, log files are compressed. Clear this option to keep the logs uncompressed.
+    - Compress logs. By default, log files are compressed. Set the option to not compress files.
 
 ### Enabling the integration in Elastic:
 
