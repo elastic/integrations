@@ -63,7 +63,7 @@ This module has been tested against `Alerts API (v7)`, `Audit Log Events (v3)` a
 
 | Data stream                 | Access Level and Permissions               |
 | --------------------------- | ------------------------------------------ |
-| Audit   	                  | API                                        |
+| Audit                       | API                                        |
 | Alert v7                    | Custom orgs.alerts (Read)                  |
 | Asset Vulnerability Summary | Custom vulnerabilityAssessment.data (Read) |
 
