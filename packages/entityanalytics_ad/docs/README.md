@@ -177,7 +177,7 @@ An example event for `user` looks as following:
 | entityanalytics_ad.user.last_logon_timestamp |  | date |
 | entityanalytics_ad.user.logon_count |  | keyword |
 | entityanalytics_ad.user.member_of |  | keyword |
-| entityanalytics_ad.user.msds-supported_encryption_types |  | keyword |
+| entityanalytics_ad.user.msDS-\* |  | keyword |
 | entityanalytics_ad.user.name |  | keyword |
 | entityanalytics_ad.user.object_category |  | keyword |
 | entityanalytics_ad.user.object_class |  | keyword |
