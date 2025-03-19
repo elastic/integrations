@@ -55,21 +55,21 @@ processors:
       value:
         - network
         - intrusion_detection
-      if: ctx.opencanary?.logtype != null && ![1000, 1001, 1002, 1003, 1004, 1005, 1006].contains(ctx.opencanary.logtype)
+      if: ctx.opencanary?.logtype != null && (ctx.opencanary.logtype < 1000 || 1006 < ctx.opencanary.logtype)
   - set:
       description: Set event.type
       tag: set_event_type
       field: event.type
       value:
         - connection
-      if: ctx.opencanary?.logtype != null && ![1000, 1001, 1002, 1003, 1004, 1005, 1006].contains(ctx.opencanary.logtype)
+      if: ctx.opencanary?.logtype != null && (ctx.opencanary.logtype < 1000 || 1006 < ctx.opencanary.logtype)
   - set:
       description: Set event.kind
       tag: set_event_kind
       field: event.kind
       value:
         - alert
-      if: ctx.opencanary?.logtype != null && ![1000, 1001, 1002, 1003, 1004, 1005, 1006].contains(ctx.opencanary.logtype)
+      if: ctx.opencanary?.logtype != null && (ctx.opencanary.logtype < 1000 || 1006 < ctx.opencanary.logtype)
   - script:
       # https://github.com/thinkst/opencanary/blob/bcb83f99058398b4e4d29523851fc96143d6feaa/opencanary/logger.py#L56-L103
       description: Translate numeric opencanary.logtype to log.logger string
