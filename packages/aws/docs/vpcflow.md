@@ -129,17 +129,17 @@ An example event for `vpcflow` looks as following:
 {
     "@timestamp": "2014-12-14T04:07:50.000Z",
     "agent": {
-        "ephemeral_id": "1ffa6099-2893-4e54-8f41-e84bf2244161",
-        "id": "acba78ef-1401-4689-977c-d8c2e5d6a8fa",
-        "name": "docker-fleet-agent",
+        "ephemeral_id": "884f01cb-3cd3-4f05-a4c3-c97c0eccb33d",
+        "id": "6f7e7793-7439-41de-9909-93ced0496b71",
+        "name": "elastic-agent-64848",
         "type": "filebeat",
-        "version": "8.10.1"
+        "version": "8.18.0"
     },
     "aws": {
         "s3": {
             "bucket": {
-                "arn": "arn:aws:s3:::elastic-package-aws-bucket-63461",
-                "name": "elastic-package-aws-bucket-63461"
+                "arn": "arn:aws:s3:::elastic-package-aws-bucket-51558",
+                "name": "elastic-package-aws-bucket-51558"
             },
             "object": {
                 "key": "extra-samples.log"
@@ -162,7 +162,7 @@ An example event for `vpcflow` looks as following:
     },
     "data_stream": {
         "dataset": "aws.vpcflow",
-        "namespace": "ep",
+        "namespace": "18794",
         "type": "logs"
     },
     "destination": {
@@ -192,24 +192,26 @@ An example event for `vpcflow` looks as following:
         "version": "8.11.0"
     },
     "elastic_agent": {
-        "id": "acba78ef-1401-4689-977c-d8c2e5d6a8fa",
-        "snapshot": false,
-        "version": "8.10.1"
+        "id": "6f7e7793-7439-41de-9909-93ced0496b71",
+        "snapshot": true,
+        "version": "8.18.0"
     },
     "event": {
+        "action": "ACCEPT",
         "agent_id_status": "verified",
         "category": [
             "network"
         ],
         "dataset": "aws.vpcflow",
         "end": "2014-12-14T04:07:50.000Z",
-        "ingested": "2023-11-07T14:31:30Z",
+        "ingested": "2025-03-13T10:01:27Z",
         "kind": "event",
         "original": "2 123456789010 eni-1235b8ca123456789 89.160.20.156 89.160.20.156 20641 22 6 20 4249 1418530010 1418530070 ACCEPT OK",
         "outcome": "success",
         "start": "2014-12-14T04:06:50.000Z",
         "type": [
-            "connection"
+            "connection",
+            "allowed"
         ]
     },
     "input": {
@@ -217,7 +219,7 @@ An example event for `vpcflow` looks as following:
     },
     "log": {
         "file": {
-            "path": "https://elastic-package-aws-bucket-63461.s3.us-east-1.amazonaws.com/extra-samples.log"
+            "path": "https://elastic-package-aws-bucket-51558.s3.us-east-1.amazonaws.com/extra-samples.log"
         },
         "offset": 338
     },
