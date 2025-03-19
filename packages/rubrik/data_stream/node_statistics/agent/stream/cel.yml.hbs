@@ -3,7 +3,7 @@ interval: {{interval}}
 auth.oauth2:
   client.id: {{client_id}}
   client.secret: {{client_secret}}
-  token_url: {{token_url}}
+  token_url: https://{{hostname}}.my.rubrik.com/api/client_token
 
 resource.url: https://{{hostname}}.my.rubrik.com/api/graphql
 {{#if ssl}}
@@ -35,17 +35,18 @@ processors:
 
 state:
     index: 0
+    period: {{interval}}
     pageSize: {{pageSize}}
     queries:
       - |
-        query ClusterNodeStatistics($first: Int, $after: String) {
+        query ClusterNodeStatistics($first: Int, $after: String, $range: TimeRangeInput) {
           allClusterConnection(first: $first, after: $after) {
             count
             nodes {
               name
               type
               id
-              clusterNodeStats {
+              clusterNodeStats(timeRange: $range) {
                 nodeId
                 clusterPhysicalDataIngest
                 networkBytesReceived
@@ -81,6 +82,10 @@ program: |-
           "variables": {
             "first": has(state.pageSize) ? state.pageSize : null,
             "after": has(state.cursor) ? state.cursor.after : null,
+            "range": {
+              "start": now - duration(state.period),
+              "end": now.format(time_layout.RFC3339),
+            }
           }
         }.encode_json()
       }
@@ -132,7 +137,7 @@ program: |-
           "index": body.data.allClusterConnection.pageInfo.hasNextPage ? int(state.index) : (int(state.index) + 1) % size(state.queries),
           "cursor": {
             "after": body.data.allClusterConnection.pageInfo.hasNextPage ? body.data.allClusterConnection.pageInfo.endCursor : null
-          }
+          },
         }
       )
       :
