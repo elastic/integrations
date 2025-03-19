@@ -1,0 +1,50 @@
+rules:
+  - path: /1234/oauth2/v2.0/token
+    methods: ['POST']
+    responses: 
+      - status_code: 200
+        headers: 
+          Content-Type: 
+            'application/json'
+        body: |-
+          {"token_type":"Bearer","expires_in":3599,"ext_expires_in":3599,"access_token":"xxxx"}
+  - path: /admin/reportSettings
+    methods: ['GET']
+    request_headers:
+      Authorization:
+        - "Bearer xxxx"
+    responses:
+      - status_code: 200
+        headers:
+          Content-Type:
+            - 'application/json'
+        body: |-
+          { 
+              "value": {
+                  "@odata.type": "#microsoft.graph.adminReportSettings", 
+                  "displayConcealedNames": true 
+              }
+          }
+  - path: /organization
+    methods: ['GET']
+    query_params:
+      '$select': 'id,displayName,tenantType'
+    request_headers:
+      Authorization:
+        - "Bearer xxxx"
+    responses:
+      - status_code: 200
+        headers:
+          Content-Type:
+            - 'application/json'
+        body: |-
+          {
+              "@odata.context": "https://graph.microsoft.com/v1.0/$metadata#organization(id,displayName,tenantType)",
+              "value": [
+                  {
+                      "id": "aa40685b-417d-4664-b4ec-8f7640719adb",
+                      "displayName": "azure2",
+                      "tenantType": "AAD"
+                  }
+              ]
+          }
