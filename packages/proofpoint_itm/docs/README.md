@@ -23,11 +23,13 @@ This integration collects the following logs:
 ## Requirements
 
 ### Agentless Enabled Integration
+
 Agentless integrations allow you to collect data without having to manage Elastic Agent in your cloud. They make manual agent deployment unnecessary, so you can focus on your data instead of the agent that collects it. For more information, refer to [Agentless integrations](https://www.elastic.co/guide/en/serverless/current/security-agentless-integrations.html) and the [Agentless integrations FAQ](https://www.elastic.co/guide/en/serverless/current/agentless-integration-troubleshooting.html).
 
 Agentless deployments are only supported in Elastic Serverless and Elastic Cloud environments.  This functionality is in beta and is subject to change. Beta features are not subject to the support SLA of official GA features.
 
 ### Agent Based Installation
+
 - Elastic Agent must be installed
 - You can install only one Elastic Agent per host.
 - Elastic Agent is required to stream data from the GCP Pub/Sub or REST API and ship the data to Elastic, where the events will then be processed via the integration's ingest pipelines.
@@ -77,22 +79,22 @@ An example event for `report` looks as following:
 {
     "@timestamp": "2025-03-01T12:00:00.000Z",
     "agent": {
-        "ephemeral_id": "8321a5b5-7a89-4685-9a77-82afaffce569",
-        "id": "42126d6c-b3a0-4477-a09c-c66aa5d94fc6",
-        "name": "elastic-agent-38942",
+        "ephemeral_id": "21371fb2-b2f6-4e44-9190-9101dc7e5255",
+        "id": "a03c6d38-076c-4e32-b916-95e3714d0afb",
+        "name": "elastic-agent-49265",
         "type": "filebeat",
         "version": "8.18.0"
     },
     "data_stream": {
         "dataset": "proofpoint_itm.report",
-        "namespace": "80643",
+        "namespace": "23398",
         "type": "logs"
     },
     "ecs": {
         "version": "8.17.0"
     },
     "elastic_agent": {
-        "id": "42126d6c-b3a0-4477-a09c-c66aa5d94fc6",
+        "id": "a03c6d38-076c-4e32-b916-95e3714d0afb",
         "snapshot": true,
         "version": "8.18.0"
     },
@@ -104,9 +106,9 @@ An example event for `report` looks as following:
         "created": "2025-02-25T16:08:11.000Z",
         "dataset": "proofpoint_itm.report",
         "id": "7340EB6D-A8BB-4F25-9408-2BD807FB7B13",
-        "ingested": "2025-03-12T07:07:14Z",
+        "ingested": "2025-03-19T06:52:06Z",
         "kind": "alert",
-        "original": "{\"_time\":\"2025-02-25T16:08:11Z\",\"accessedSiteName\":\"c-awfi.top\",\"accessedUrl\":\"http://c-awfi.top/\",\"applicationName\":\"Windows Shell Experience Host\",\"collectorId\":\"C2C1C429-C002-4FB8-99F4-7F1005ED9889\",\"collectorUrl\":\"https://code1.preview.observeit.net//\",\"command\":\"example_command\",\"commandParams\":\"--example --params\",\"createdAt\":\"2025-02-25T16:08:11Z\",\"databaseName\":\"example_database\",\"details\":\"Detailed description of the event.\",\"detailsUrl\":\"https://details.example.com/event/abcde\",\"domainName\":\"code1.observeit.net\",\"endpointId\":\"E035BBC2-1D72-4F25-9408-2BD807FB7B13\",\"endpointName\":\"Example Endpoint\",\"eventPlaybackUrl\":\"https://playback.example.com/event/abcde\",\"host\":\"host.example.com\",\"id\":\"7340EB6D-A8BB-4F25-9408-2BD807FB7B13\",\"loginName\":\"Administrator\",\"observedAt\":\"2025-02-25T16:08:11Z\",\"operationKind\":\"Read\",\"originFileName\":\"confidential.docx\",\"originSiteName\":\"Internal SharePoint\",\"os\":\"Windows\",\"playbackUrl\":\"https://code1.preview.observeit.net/ObserveIT/SlideViewer.aspx?SessionID=1A8B5249-EDAC-A8BB-4F25-9408-2BD807FB7B13\",\"processExecutable\":\"shellexexperiencehost\",\"remoteAddress\":\"175.16.199.0\",\"remoteHostName\":\"Dake-WinX\",\"risingValue\":\"2025-03-01T12:00:00Z\",\"ruleCategoryName\":\"Security\",\"ruleDesc\":\"Description of the security rule.\",\"ruleName\":\"Invalid User Asstempt\",\"secondaryDomainName\":\"n/a\",\"secondaryLoginName\":\"n/a\",\"sessionId\":\"1A8B52A9-EDAC-448E-9871-79DB21D53C28\",\"sessionUrl\":\"https://session.example.com/abc123\",\"severity\":\"High\",\"sqlCommand\":\"SELECT * FROM users;\",\"sqlUserName\":\"db_user\",\"targetFileName\":\"confidential_copy.docx\",\"targetSiteName\":\"External Drive\",\"timezoneOffset\":\"0\",\"userActivityEventId\":9876543210,\"userActivityObservedAt\":\"2025-02-25T16:08:11Z\",\"windowTitle\":\"Start\"}",
+        "original": "{\"_time\":\"2025-02-25T16:08:11Z\",\"accessedSiteName\":\"c-awfi.top\",\"accessedUrl\":\"http://c-awfi.top/\",\"applicationName\":\"Windows Shell Experience Host\",\"collectorId\":\"C2C1C429-C002-4FB8-99F4-7F1005ED9889\",\"collectorUrl\":\"https://code1.preview.observeit.net/\",\"command\":\"example_command\",\"commandParams\":\"--example --params\",\"createdAt\":\"2025-02-25T16:08:11Z\",\"databaseName\":\"example_database\",\"details\":\"Detailed description of the event.\",\"detailsUrl\":\"https://details.example.com/event/abcde\",\"domainName\":\"code1.observeit.net\",\"endpointId\":\"E035BBC2-1D72-4F25-9408-2BD807FB7B13\",\"endpointName\":\"Example Endpoint\",\"eventPlaybackUrl\":\"https://playback.example.com/event/abcde\",\"host\":\"host.example.com\",\"id\":\"7340EB6D-A8BB-4F25-9408-2BD807FB7B13\",\"loginName\":\"Administrator\",\"observedAt\":\"2025-02-25T16:08:11Z\",\"operationKind\":\"Read\",\"originFileName\":\"confidential.docx\",\"originSiteName\":\"Internal SharePoint\",\"os\":\"Windows\",\"playbackUrl\":\"https://code1.preview.observeit.net/ObserveIT/SlideViewer.aspx?SessionID=1A8B5249-EDAC-A8BB-4F25-9408-2BD807FB7B13\",\"processExecutable\":\"shellexexperiencehost\",\"remoteAddress\":\"175.16.199.0\",\"remoteHostName\":\"Dake-WinX\",\"risingValue\":\"2025-03-01T12:00:00Z\",\"ruleCategoryName\":\"Security\",\"ruleDesc\":\"Description of the security rule.\",\"ruleName\":\"Invalid User Asstempt\",\"secondaryDomainName\":\"n/a\",\"secondaryLoginName\":\"n/a\",\"sessionId\":\"1A8B52A9-EDAC-448E-9871-79DB21D53C28\",\"sessionUrl\":\"https://session.example.com/abc123\",\"severity\":\"High\",\"sqlCommand\":\"SELECT * FROM users;\",\"sqlUserName\":\"db_user\",\"targetFileName\":\"confidential_copy.docx\",\"targetSiteName\":\"External Drive\",\"timezoneOffset\":\"0\",\"userActivityEventId\":9876543210,\"userActivityObservedAt\":\"2025-02-25T16:08:11Z\",\"windowTitle\":\"Start\"}",
         "type": [
             "info"
         ]
@@ -146,7 +148,7 @@ An example event for `report` looks as following:
             "application_name": "Windows Shell Experience Host",
             "collector": {
                 "id": "C2C1C429-C002-4FB8-99F4-7F1005ED9889",
-                "url": "https://code1.preview.observeit.net//"
+                "url": "https://code1.preview.observeit.net/"
             },
             "command": {
                 "params": "--example --params",
