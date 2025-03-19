@@ -12,7 +12,19 @@ tags:
 publisher_pipeline.disable_host: true
 {{/contains}}
 
-{{#if processors}}
 processors:
+- replace:
+    fields:
+      - field: "message"
+        pattern: '\\'
+        replacement: "\\\\"
+- rename:
+    fields:
+      - {from: "message", to: "event.original"}
+
+- decode_cef:
+    field: event.original
+
+{{#if processors}}
 {{processors}}
 {{/if}}
