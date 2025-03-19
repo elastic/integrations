@@ -10,7 +10,7 @@ The OpenAI integration leverages the [OpenAI Usage API](https://platform.openai.
 
 ## Data streams
 
-The OpenAI integration collects the following logs data streams:
+The OpenAI integration collects the following data streams:
 
 - `audio_speeches`: Collects audio speeches usage metrics.
 - `audio_transcriptions`: Collects audio transcriptions usage metrics.
@@ -21,7 +21,7 @@ The OpenAI integration collects the following logs data streams:
 - `moderations`: Collects moderations usage metrics.
 - `vector_stores`: Collects vector stores usage metrics.
 
-See more details for data streams in the [Logs](#logs-reference).
+> Note: Users can view OpenAI metrics in the `logs-*` index pattern using Kibana Discover.
 
 ## Requirements
 
@@ -99,7 +99,7 @@ With default settings (Interval: `5m`, Bucket width: `1m`, Initial interval: `24
 
 The integration starts at 10:00 AM, collects data from 10:00 AM the previous day, and continues until 9:59 AM the current day. The next collection starts at 10:05 AM, collecting from the 10:00 AM bucket to the 10:04 AM bucket, as the "Interval" is 5 minutes.
 
-## Logs reference
+## Metrics reference
 
 **ECS Field Reference**
 
