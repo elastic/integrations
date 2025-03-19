@@ -60,8 +60,8 @@ processors:
           }
           return snakeCaseMap;
         }
-        if (ctx.tenable_ot_security.assets != null) {
-          ctx.tenable_ot_security.assets = keysToSnakeCase(ctx.tenable_ot_security.assets);
+        if (ctx.tenable_ot_security.events != null) {
+          ctx.tenable_ot_security.events = keysToSnakeCase(ctx.tenable_ot_security.events);
         }
 ##################### ECS Fields #####################
   - set:
@@ -100,32 +100,32 @@ processors:
 
   - append:
       field: related.hosts
-      value: '{{{tenable_ot_security.events.srcIP}}}'
+      value: '{{{tenable_ot_security.events.src_ip}}}'
       allow_duplicates: false
 
   - append:
       field: related.hosts
-      value: '{{{tenable_ot_security.events.dstIP}}}'    
+      value: '{{{tenable_ot_security.events.dst_ip}}}'    
       allow_duplicates: false 
   
   - append:
       field: related.hosts
-      value: '{{{tenable_ot_security.events.srcMac}}}'
+      value: '{{{tenable_ot_security.events.src_mac}}}'
       allow_duplicates: false
 
   - append:
       field: related.hosts
-      value: '{{{tenable_ot_security.events.dstMac}}}'    
+      value: '{{{tenable_ot_security.events.dst_mac}}}'    
       allow_duplicates: false 
 
   - append:
       field: network.protocol
-      value: '{{{tenable_ot_security.events.protocolRaw}}}'
+      value: '{{{tenable_ot_security.events.protocol_raw}}}'
       allow_duplicates: false
 
   - append:
       field: "related.user"
-      value: "{{{tenable_ot_security.events.resolvedUser}}}"
+      value: "{{{tenable_ot_security.events.resolved_user}}}"
       allow_duplicates: false
 
   - gsub:
@@ -135,16 +135,16 @@ processors:
   
 # #################### Override host.ip ######################
   - convert:
-      field: tenable_ot_security.events.srcIP
+      field: tenable_ot_security.events.src_ip
       type: ip
-      if: ctx.tenable_ot_security.events?.srcIP != null && ctx.tenable_ot_security.events.srcIP != ''
+      if: ctx.tenable_ot_security.events?.src_ip != null && ctx.tenable_ot_security.events.src_ip != ''
       ignore_missing: true
 
   - append:
       field: host.ip
-      value: "{{{tenable_ot_security.events.srcIP}}}"    
+      value: "{{{tenable_ot_security.events.src_ip}}}"    
       allow_duplicates: false 
-      if: ctx.tenable_ot_security.events?.srcIP != null && ctx.tenable_ot_security.events.srcIP != '' 
+      if: ctx.tenable_ot_security.events?.src_ip != null && ctx.tenable_ot_security.events.src_ip != '' 
 
   - geoip:
       field: host.ip
