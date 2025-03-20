@@ -33,64 +33,65 @@ processors:
 ############
 # syslog Fields
 ############
-  - convert:
-      field: cef.extensions.deviceCustomNumber1
-      type: integer
-      target_field: varonis.logs.rule_id
-      ignore_missing: true
-      if: ctx.cef?.extensions?.deviceCustomNumber1Label == "RuleID"
+  - script:
+      lang: painless
+      description: Create new fields for the custom string label and its value only if value is present
+      source: >
+        void changeLabelsToKeys(Map input) {
+            List keys = new ArrayList(input.keySet()); // To avoid conflicts
+            for (String key : keys) {
+                if (key.endsWith("Label")) {
+                    String valueKey = key.substring(0, key.length() - 5);
+                    if (input.containsKey(valueKey) && input.get(valueKey) != null && !input.get(valueKey).toString().isEmpty()) {
+                        input.put(input.get(key), input.get(valueKey));
+                        input.remove(valueKey);
+                        input.remove(key);
+                    } else {
+                        input.remove(key);
+                    }
+                }
+            }
+        }
 
-  - convert:
-      field: cef.extensions.deviceCustomString1
-      type: string
-      target_field: varonis.logs.mail_recipient
-      ignore_missing: true
-      if: ctx.cef?.extensions?.deviceCustomString1Label == "MailRecipient"
-
-  - convert:
-      field: cef.extensions.deviceCustomString2
-      type: string
-      target_field: varonis.logs.rule_name
-      ignore_missing: true
-      if: ctx.cef?.extensions?.deviceCustomString2Label == "RuleName"
-
-  - convert:
-      field: cef.extensions.deviceCustomString3
-      type: string
-      target_field: varonis.logs.attachment_name
-      ignore_missing: true
-      if: ctx.cef?.extensions?.deviceCustomString3Label == "AttachmentName"
-
-  - convert:
-      field: cef.extensions.deviceCustomString4
-      type: string
-      target_field: varonis.logs.client_access_type
-      ignore_missing: true
-      if: ctx.cef?.extensions?.deviceCustomString4Label == "ClientAccessType"
-
-  - convert:
-      field: cef.extensions.deviceCustomString5
-      type: string
-      target_field: varonis.logs.mailbox_access_type
-      ignore_missing: true
-      if: ctx.cef?.extensions?.deviceCustomString5Label == "MailboxAccessType"
-
-  - convert:
-      field: cef.extensions.deviceCustomString6
-      type: string
-      target_field: varonis.logs.changed_permissions
-      ignore_missing: true
-      if: ctx.cef?.extensions?.deviceCustomString6Label == "ChangedPermissions"
+        changeLabelsToKeys(ctx.cef.extensions);
 
   - rename:
-      field: cef.extensions.deviceEventCategory
-      target_field: varonis.logs.event_category
-      ignore_missing: true
+      field: cef.extensions
+      target_field: varonis.logs
 
-  - rename:
-      field: cef.extensions.oldFilePermission
-      target_field: varonis.logs.old_file_permission
-      ignore_missing: true
+  - script:
+      description: Convert Additional Info keys to snake case.
+      tag: additional-info-keys-to-snake-case
+      lang: painless
+      source: |
+        Map keysToSnakeCase(Map m) {
+          def regex = /_?([a-z])([A-Z]+)/;
+          def snakeCaseMap = [:];
+
+          for (entry in m.entrySet()) {
+            def k = entry.getKey();
+            def v = entry.getValue();
+
+            if (v instanceof Map) {
+              v = keysToSnakeCase(v);
+            } else if (v instanceof List) {
+              for (int i = 0; i < v.size(); i++) {
+                def item = v.get(i);
+                if (item instanceof Map) {
+                  v.set(i, keysToSnakeCase(item));
+                }
+              }
+            }
+
+            k = regex.matcher(k).replaceAll('$1_$2').toLowerCase();
+            snakeCaseMap.put(k, v);
+          }
+          return snakeCaseMap;
+        }
+
+        if (ctx.varonis.logs != null) {
+          ctx.varonis.logs = keysToSnakeCase(ctx.varonis.logs);
+        }
 
   # write a processor to lowercase the value of event.outcome
   - lowercase:
@@ -105,6 +106,17 @@ processors:
       field:
         - cef
         - log
+        - varonis.logs.destination_host_name
+        - varonis.logs.destination_user_name
+        - varonis.logs.destination_user_privileges
+        - varonis.logs.device_action
+        - varonis.logs.end_time
+        - varonis.logs.start_time
+        - varonis.logs.event_outcome
+        - varonis.logs.file_path
+        - varonis.logs.file_permission
+        - varonis.logs.filename
+        - varonis.logs.message
       ignore_failure: true
       ignore_missing: true
 
