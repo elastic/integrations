@@ -646,12 +646,14 @@ processors:
       field: "message"
       description: "313009"
       pattern: "Denied invalid %{network.transport} code %{_temp_.cisco.icmp_code}, for %{_temp_.cisco.source_interface}:%{source.address}/%{source.port} (%{_temp_.natsrcip}/%{_temp_.cisco.mapped_source_port}) to %{_temp_.cisco.destination_interface}:%{destination.address}/%{destination.port} (%{_temp_.natdstip}/%{_temp_.cisco.mapped_destination_port})%{}"
-  - dissect:
+  - grok:
       if: "ctx._temp_.cisco.message_id == '315011'"
       tag: parse_315011
       field: "message"
       description: "315011"
-      pattern: 'SSH session from %{source.ip} on interface %{_temp_.cisco.source_interface} for user %{source.user.name} disconnected by SSH server, reason: %{event.reason}'
+      patterns:
+        - 'SSH session from %{IP:source.ip} on interface %{WORD:_temp_.cisco.source_interface} for user "?%{USERNAME:source.user.name}"? disconnected by SSH server, reason: %{GREEDYDATA:event.reason}'
+        - 'SSH session from %{IP:source.ip} on interface %{WORD:_temp_.cisco.source_interface} for user "?%{USERNAME:source.user.name}"? terminated normally'
   - dissect:
       if: "ctx._temp_.cisco.message_id == '322001'"
       tag: parse_322001
