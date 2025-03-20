@@ -197,7 +197,7 @@ An example event for `user` looks as following:
 | entityanalytics_ad.user.reversible_encryption_password | True if the user password is stored with reversible encryption. | boolean |
 | entityanalytics_ad.user.sam_account_name |  | keyword |
 | entityanalytics_ad.user.sam_account_type |  | keyword |
-| entityanalytics_ad.user.sensitive_object | True if the account cannot be delegated | boolean |
+| entityanalytics_ad.user.sensitive_object | True if the account cannot be delegated. | boolean |
 | entityanalytics_ad.user.service_principal_name |  | keyword |
 | entityanalytics_ad.user.show_in_advanced_view_only |  | boolean |
 | entityanalytics_ad.user.uac_list |  | keyword |
