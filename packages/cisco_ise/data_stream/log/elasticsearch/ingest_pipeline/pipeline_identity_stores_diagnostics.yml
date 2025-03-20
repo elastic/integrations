@@ -15,11 +15,10 @@ processors:
         - "^%{GREEDYDATA:cisco_ise.log.log_details_raw},"
   - date:
       field: _tmp.timestamp
-      formats: &formats
+      formats:
         - yyyy-MM-dd HH:mm:ss.SSS
         - yyyy-MM-dd HH:mm:ss.SSSSSS
-        - MMM [ ]d HH:mm:ss[.SSS]
-        - MMM [ ]d HH:mm:ss[.SSSSSS]
+        - MMM [ ]d HH:mm:ss[.SSSSSS][.SSS]
       on_failure:
         - remove:
             field: _tmp.timestamp
@@ -30,7 +29,10 @@ processors:
   - date:
       if: ctx.event?.timezone != null && ctx.event.timezone != ''
       field: _tmp.timestamp
-      formats: *formats
+      formats:
+        - yyyy-MM-dd HH:mm:ss.SSS
+        - yyyy-MM-dd HH:mm:ss.SSSSSS
+        - MMM [ ]d HH:mm:ss[.SSSSSS][.SSS]
       timezone: '{{{event.timezone}}}'
       on_failure:
         - remove:
