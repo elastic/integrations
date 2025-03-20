@@ -13,7 +13,7 @@ The Amazon MQ integration allows you to efficiently collect and monitor broker p
 
 ### ActiveMQ
 
-To enable the `activemq_general_logs` integration, you must configure your ActiveMQ broker to publish general logs to Amazon CloudWatch Logs. Follow these steps:
+To enable the `activemq_general_logs` integration, you must configure your ActiveMQ broker to publish general logs and audit logs to Amazon CloudWatch Logs. Follow these steps:
 
 1. **Assign Necessary Permissions**: Ensure the IAM user creating or managing the broker has the `logs:CreateLogGroup` permission. This allows Amazon MQ to create the required log groups in CloudWatch.
 
@@ -23,7 +23,7 @@ To enable the `activemq_general_logs` integration, you must configure your Activ
 
     - Navigate to the [Amazon MQ console](https://console.aws.amazon.com/amazon-mq/).
     - During broker creation or by editing an existing broker, expand the **Additional settings** section.
-    - In the **Logs** section, select the option to publish **General logs** to Amazon CloudWatch Logs.
+    - In the **Logs** section, select the option to publish **General logs** and **Audit logs** to Amazon CloudWatch Logs.
 
 For detailed instructions, refer to the [Amazon MQ Developer Guide](https://docs.aws.amazon.com/amazon-mq/latest/developer-guide/configure-logging-monitoring-activemq.html#security-logging-monitoring-configure-cloudwatch-structure).
 
@@ -38,6 +38,7 @@ The Amazon MQ integration collects metrics and logs from Apache ActiveMQ and met
 
 Data streams:
  - `activemq_general_logs`: Collects ActiveMQ general logs, including system events, warnings, and errors, which are published to a designated Amazon CloudWatch log group. 
+ - `activemq_audit_logs`: Collects ActiveMQ audit logs, including management actions performed via JMX or the Web Console
  - `activemq_metrics`: Collects broker metrics and destination (queue and topic) metrics.
  - `rabbitmq_metrics`: Collects broker, queue and node metrics.
 
@@ -67,12 +68,21 @@ documentation](https://docs.elastic.co/integrations/aws#requirements).
 
 ## Logs
 
-### Collecting Amazon MQ ActiveMQ General Logs from CloudWatch
+### Collecting Amazon MQ ActiveMQ general logs and audit logs from CloudWatch
+
+### ActiveMQ general logs
 
 When general logging is enabled for your Amazon MQ ActiveMQ broker, it publishes the `activemq.log` file at the default `INFO` logging level to a designated log group. Please note that `DEBUG` logging is not supported.
 
 {{event "activemq_general_logs"}}
 {{fields "activemq_general_logs"}}
+
+### ActiveMQ audit logs
+
+When audit logging is enabled, ActiveMQ logs management actions performed via JMX or the ActiveMQ Web Console to a designated log group.
+
+{{event "activemq_audit_logs"}}
+{{fields "activemq_audit_logs"}}
 
 ## Metrics
 
