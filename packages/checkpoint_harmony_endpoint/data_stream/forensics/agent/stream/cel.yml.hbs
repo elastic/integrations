@@ -69,9 +69,10 @@ program: |
   			"startTime": state.?cursor.next_startTime.orValue(
   				timestamp(now() - duration(state.initial_interval)).format(time_layout.RFC3339)
   			),
-  			"endTime": state.?cursor.next_endTime.orValue(
-  				timestamp(now() - duration("1m")).format(time_layout.RFC3339)
-  			),
+  			"endTime": state.?cursor.next_endTime.orValue(null) == null ?
+  				optional.of(timestamp(now() - duration("1m")).format(time_layout.RFC3339))
+  			:
+  				optional.of(state.cursor.next_endTime),
   		}.as(timeframe,
   			request("POST", state.url.trim_right("/") + "/app/laas-logs-api/api/logs_query").with(
   				{
