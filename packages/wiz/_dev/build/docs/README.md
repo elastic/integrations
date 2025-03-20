@@ -57,6 +57,7 @@ Agentless deployments are only supported in Elastic Serverless and Elastic Cloud
     | Issue         | read:issues   |
     | Vulnerability | read:vulnerabilities |
     | Cloud Configuration Finding | read:cloud_configuration |
+    | Cloud Configuration Finding Full Posture | read:cloud_configuration |
 
 ### To obtain the Wiz URL
 1. Navigate to your user profile and copy the API Endpoint URL.
@@ -104,6 +105,16 @@ This is the `Cloud Configuration Finding` dataset.
 {{event "cloud_configuration_finding"}}
 
 {{fields "cloud_configuration_finding"}}
+
+### Cloud Configuration Finding Full Posture
+
+This is the `Cloud Configuration Finding Full Posture` dataset.
+
+#### Example
+
+{{event "cloud_configuration_finding_full_posture"}}
+
+{{fields "cloud_configuration_finding__full_posture"}}
 
 ### Issue
 
