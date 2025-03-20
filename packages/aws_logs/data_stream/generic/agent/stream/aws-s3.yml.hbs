@@ -6,6 +6,11 @@ pipeline: {{pipeline}}
 
 {{! The aws-s3 input can be configured to read from an SQS queue or an S3 bucket. }}
 
+{{! allows number of workers to be configured for SQS queue and S3 buckets}}
+{{#if number_of_workers}}
+number_of_workers: {{number_of_workers}}
+{{/if}}
+
 {{! start SQS queue }}
 {{#unless bucket_arn}}
 {{#unless non_aws_bucket_name}}
@@ -25,11 +30,6 @@ When using an S3 bucket, you can specify only one of the following options:
 - An AWS bucket ARN
 - A non-AWS bucket name
 }}
-
-{{! shared S3 bucket polling options }}
-{{#if number_of_workers }}
-number_of_workers: {{ number_of_workers }}
-{{/if}}
 
 {{#if start_timestamp}}
 start_timestamp: {{start_timestamp}}
