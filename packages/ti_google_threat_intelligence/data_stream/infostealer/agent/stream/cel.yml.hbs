@@ -1,0 +1,100 @@
+config_version: 2
+interval: {{interval}}
+{{#if enable_request_tracer}}
+resource.tracer.filename: "../../logs/cel/http-request-trace-*.ndjson"
+resource.tracer.maxbackups: 5
+{{/if}}
+{{#if proxy_url}}
+resource.proxy_url: {{proxy_url}}
+{{/if}}
+{{#if ssl}}
+resource.ssl: {{ssl}}
+{{/if}}
+{{#if http_client_timeout}}
+resource.timeout: {{http_client_timeout}}
+{{/if}}
+resource.url: {{url}}
+state:
+  initial_interval: {{initial_interval}}
+  access_token: {{access_token}}
+{{#if query}}
+  query: {{query}}
+{{/if}}
+redact:
+  fields:
+    - access_token
+program: |
+  (
+    state.?want_more.orValue(false) ?
+      state
+    :
+      state.with({
+        "start_time": state.?cursor.last_timestamp.orValue((now - duration(state.initial_interval)).format("2006010215")),
+        "end_time": now.format("2006010215"),
+      })
+  ).as(state, state.with(
+    request(
+      "GET",
+      state.url.trim_right("/") + "/api/v3/threat_lists/infostealer/"+state.start_time+"?"+{
+        ?"query": has(state.query) && state.query != null ? optional.of([state.query]) : optional.none(),
+        "limit": ["2000"]
+      }.format_query()
+    ).with({
+      "Header": {
+        "x-apikey": [string(state.access_token)]
+      }
+    }).do_request().as(resp, resp.StatusCode == 200 ?
+      bytes(resp.Body).decode_json().as(body, {
+        "events": (
+            has(body.iocs) && size(body.iocs) > 0
+          ?
+            body.iocs.map(e, {
+              "message": e.encode_json(),
+            })
+          :
+            [{"message": "retry"}]
+        ),
+        "cursor": {
+          "last_timestamp": (state.start_time.parse_time("2006010215") + duration("1h")).format("2006010215"),
+        },
+        "start_time": (state.start_time.parse_time("2006010215") + duration("1h")).format("2006010215"),
+        "want_more": state.start_time.parse_time("2006010215") + duration("1h") < state.end_time.parse_time("2006010215")
+      })
+    :
+      {
+        "events": {
+          "error": {
+            "code": string(resp.StatusCode),
+            "id": string(resp.Status),
+            "message": resp.StatusCode == 403 ?
+              "Permission denied. Infostealer event collection is restricted to Enterprise Plus subscriptions. Contact your administrator or upgrade your subscription to enable this feature."
+            :
+              "GET:"+(
+                size(resp.Body) != 0 ?
+                  string(resp.Body)
+                :
+                  string(resp.Status) + ' (' + string(resp.StatusCode) + ')'
+              ),
+          },
+        },
+        "want_more": false,
+      }
+    )
+  ))
+tags:
+{{#if preserve_original_event}}
+  - preserve_original_event
+{{/if}}
+{{#if preserve_duplicate_custom_fields}}
+  - preserve_duplicate_custom_fields
+{{/if}}
+{{#each tags as |tag|}}
+  - {{tag}}
+{{/each}}
+{{#contains "forwarded" tags}}
+publisher_pipeline.disable_host: true
+{{/contains}}
+{{#if processors}}
+processors:
+{{processors}}
+{{/if}}
