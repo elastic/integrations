@@ -276,55 +276,55 @@ processors:
   - set:
       field: activedirectory.user.logon_script_enabled
       value: true
-      if: "ctx.activedirectory?.user?.uac_list?.contains('SCRIPT')"
+      if: ctx.activedirectory?.user?.uac_list?.contains('SCRIPT') == true
   - set:
       field: activedirectory.user.enabled
       value: true
-      if: "!ctx.activedirectory?.user?.uac_list?.contains('ACCOUNTDISABLE')"
+      if: ctx.activedirectory?.user?.uac_list?.contains('ACCOUNTDISABLE') == false
   - set:
       field: activedirectory.user.enabled
       value: false
-      if: "ctx.activedirectory?.user?.uac_list?.contains('ACCOUNTDISABLE')"
+      if: ctx.activedirectory?.user?.uac_list?.contains('ACCOUNTDISABLE') == true
 
   - set:
       field: activedirectory.user.locked
       value: true
-      if: "ctx.activedirectory?.user?.uac_list?.contains('LOCKOUT')"
+      if: ctx.activedirectory?.user?.uac_list?.contains('LOCKOUT') == true
 
   - set:
       field: activedirectory.user.password_not_required
       value: true
-      if: "ctx.activedirectory?.user?.uac_list?.contains('PASSWD_NOTREQD')"
+      if: ctx.activedirectory?.user?.uac_list?.contains('PASSWD_NOTREQD') == true
 
   - set:
       field: activedirectory.user.reversible_encryption_password
       value: true
-      if: "ctx.activedirectory?.user?.uac_list?.contains('ENCRYPTED_TEXT_PWD_ALLOWED')"
+      if: ctx.activedirectory?.user?.uac_list?.contains('ENCRYPTED_TEXT_PWD_ALLOWED') == true
 
   - set:
       field: activedirectory.user.unconstrained_delegation
       value: true
-      if: "ctx.activedirectory?.user?.uac_list?.contains('TRUSTED_FOR_DELEGATION')"
+      if: ctx.activedirectory?.user?.uac_list?.contains('TRUSTED_FOR_DELEGATION') == true
 
   - set:
       field: activedirectory.user.sensitive_object
       value: true
-      if: "ctx.activedirectory?.user?.uac_list?.contains('NOT_DELEGATED')"
+      if: ctx.activedirectory?.user?.uac_list?.contains('NOT_DELEGATED') == true
 
   - set:
       field: activedirectory.user.use_des_key_only
       value: true
-      if: "ctx.activedirectory?.user?.uac_list?.contains('USE_DES_KEY_ONLY')"
+      if: ctx.activedirectory?.user?.uac_list?.contains('USE_DES_KEY_ONLY') == true
 
   - set:
       field: activedirectory.user.dont_require_preauth
       value: true
-      if: "ctx.activedirectory?.user?.uac_list?.contains('DONT_REQUIRE_PREAUTH')"
+      if: ctx.activedirectory?.user?.uac_list?.contains('DONT_REQUIRE_PREAUTH') == true
 
   - set:
       field: activedirectory.user.constrained_delegation
       value: true
-      if: "ctx.activedirectory?.user?.uac_list?.contains('TRUSTED_TO_AUTHENTICATE_FOR_DELEGATION')"
+      if: ctx.activedirectory?.user?.uac_list?.contains('TRUSTED_TO_AUTHENTICATE_FOR_DELEGATION') == true
 
   - foreach:
       tag: foreach_group_id
@@ -341,43 +341,38 @@ processors:
       ignore_failure: true
       tag: set_privileged_group_member
       description: Set privileged_group_member flag based on group membership.
+      if: ctx.activedirectory?.groups instanceof List
       # Well-known SIDs - Name to SID mapping
       # https://learn.microsoft.com/en-us/windows-server/identity/ad-ds/manage/understand-security-identifiers#well-known-sids
-      source: >
-        if (ctx.activedirectory?.groups == null) {
-          return;
-        }
-        ctx.activedirectory.user.privileged_group_member = false;
-        for (def group : ctx.activedirectory?.groups) {
-          if (group?.object_sid != null && (
-            // Domain Admins
-            group.object_sid.endsWith('-512') ||
-            // Domain Controllers
-            group.object_sid.endsWith('-516') ||
-            // Schema Admins
-            group.object_sid.endsWith('-518') ||
-            // Enterprise Admins
-            group.object_sid.endsWith('-519') ||
-            // Group Policy Creator Owners
-            group.object_sid.endsWith('-520') ||
-            // Protected Users
-            group.object_sid.endsWith('-525') ||
-            // Key Admins
-            group.object_sid.endsWith('-526') ||
-            // Enterprise Key Admins
-            group.object_sid.endsWith('-527') ||
-            // Administrators
-            group.object_sid.endsWith('-544') ||
-            // Account Operators
-            group.object_sid.endsWith('-548') ||
-            // Server Operators
-            group.object_sid.endsWith('-549') ||
-            // Backup Operators
-            group.object_sid.endsWith('-551'))) {
-              ctx.activedirectory.user.privileged_group_member = true;
-              break; // Stop at a match
+      params:
+        '512': true
+        '516': true
+        '518': true
+        '519': true
+        '520': true
+        '525': true
+        '526': true
+        '527': true
+        '544': true
+        '548': true
+        '549': true
+        '551': true
+      source: |-
+        for (def group : ctx.activedirectory.groups) {
+          if (group?.object_sid == null) {
+            continue;
+          }
+          int idx = group.object_sid.lastIndexOf('-');
+          if (idx < 0) {
+            continue;
+          }
+          def priv = params.get(group.object_sid.substring(idx+1));
+          if (priv != null) {
+            ctx.activedirectory.user.privileged_group_member = priv;
+            return;
           }
         }
+        ctx.activedirectory.user.privileged_group_member = false;
 
   - set:
       field: activedirectory.user.account_never_expires
