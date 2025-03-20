@@ -1,5 +1,4 @@
----
-description: Pipeline for processing tenable ot security cloud assets
+description: Pipeline for processing tenable OT security cloud assets
 processors:
   - rename:
       field: message
@@ -28,7 +27,7 @@ processors:
             return (((Map) object).size() == 0);
           } else if (object instanceof List) {
             ((List) object).removeIf(value -> dropEmptyFields(value));
-            return (((List) object).length == 0);
+            return (((List) object).size() == 0);
           }
           return false;
         }
@@ -63,6 +62,44 @@ processors:
         if (ctx.tenable_ot_security.assets != null) {
           ctx.tenable_ot_security.assets = keysToSnakeCase(ctx.tenable_ot_security.assets);
         }
+  
+  - script:
+      description: "Recursively normalize every occurrence of 'nodes' in the assets structure."
+      lang: painless
+      source: |
+        def normalize(def obj) {
+          if (obj instanceof Map) {
+                Map newObj = new HashMap();
+                for (entry in obj.entrySet()) {
+                    def key = entry.getKey();
+                    def value = entry.getValue();
+        
+                    // If the value is a map with a single key "nodes", replace it with its contents
+                    if (value instanceof Map && value.containsKey("nodes")) {
+                        value = value.get("nodes");
+                    }
+        
+                    // Recursively process if value is a map or list
+                    newObj.put(key, normalize(value));
+                }
+                return newObj;
+            } else if (obj instanceof List) {
+                List newList = new ArrayList();
+                for (item in obj) {
+                    newList.add(normalize(item));
+                }
+                return newList;
+            } else {
+                return obj;
+            }
+           }    
+        // Apply normalization to every occurrence of "nodes" in assets.
+        if (ctx.containsKey("tenable_ot_security") && ctx.tenable_ot_security.containsKey("assets")) {
+          ctx.tenable_ot_security.assets = normalize(ctx.tenable_ot_security.assets);
+        }
+
+
+
 ##################### ECS Fields #####################
   - set:
       field: event.kind
@@ -89,56 +126,48 @@ processors:
       value: tenable_ot_security.assets
 
   - set:
-     field: "@timestamp"
-     copy_from: tenable_ot_security.assets.first_seen
-     ignore_empty_value: true
+      field: "@timestamp"
+      copy_from: tenable_ot_security.assets.first_seen
+      ignore_empty_value: true
 
   - set:
       field: event.id
       copy_from: tenable_ot_security.assets.id
       ignore_empty_value: true
 
-  - append:
-      field: related.hosts
-      value: '{{{tenable_ot_security.assets.ips.nodes}}}'
-      allow_duplicates: false
+  - foreach:
+      field: tenable_ot_security.assets.direct_ips
+      processor:
+        append:
+          field: related.hosts
+          value: "{{_ingest._value}}"
+          allow_duplicates: false
 
-  - gsub:
-      field: "related.hosts"
-      pattern: "^\\{\\d+=(.+)\\}$"
-      replacement: "$1"
+  - foreach:
+      field: tenable_ot_security.assets.direct_macs
+      processor:
+        append:
+          field: related.hosts
+          value: "{{_ingest._value}}"
+          allow_duplicates: false
 
-  - append:
-      field: related.hosts
-      value: '{{{tenable_ot_security.assets.direct_macs.nodes}}}'    
-      allow_duplicates: false
-       
-  - gsub:
-      field: "related.hosts"
-      pattern: "^\\{\\d+=(.+)\\}$"
-      replacement: "$1"    
-  
 # #################### Override host.ip ######################
-  - convert:
-      field: tenable_ot_security.assets.direct_ips.nodes[0]
-      type: ip
-      if: ctx.tenable_ot_security.assets?.direct_ips?.nodes[0] != null && ctx.tenable_ot_security.assets.direct_ips.nodes[0] != ''
-      ignore_missing: true
-  
-  - gsub:
-      field: "tenable_ot_security.assets.direct_ips.nodes"
-      pattern: "^\\{\\d+=(.+)\\}$"
-      replacement: "$1"  
+  - foreach:
+      field: tenable_ot_security.assets.direct_ips
+      processor:
+        convert:
+          field: _ingest._value
+          type: ip
+          ignore_missing: true
 
-  - append:
-      field: host.ip
-      value: "{{{tenable_ot_security.assets.direct_ips.nodes}}}"    
-      allow_duplicates: false 
-      if: ctx.tenable_ot_security.assets?.direct_ips?.nodes != null && ctx.tenable_ot_security.assets.direct_ips.nodes != ''
-  - gsub:
-      field: "host.ip"
-      pattern: "^\\{\\d+=(.+)\\}$"
-      replacement: "$1"  
+  - foreach:
+      field: tenable_ot_security.assets.direct_ips
+      processor:
+        append:
+          field: host.ip
+          value: "{{_ingest._value}}"
+          allow_duplicates: false
+  
   - geoip:
       field: host.ip
       target_field: host.geo

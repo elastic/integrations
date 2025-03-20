@@ -19,7 +19,7 @@ resource.url: {{api_host}}
 state:
   want_more: false
   key: {{key}}
-  batch_size: {{batch_size}}
+  limit: {{limit}}
   query: >-
     query getAssets($first: Int, $after: String) {
       assets(first: $first, after: $after) {
@@ -67,7 +67,7 @@ program: |-
   		"Body": {
   			"query": state.query,
   			"variables": {
-  				"first": state.batch_size,
+  				"first": state.limit,
   				"after": state.?cursor.end_cursor.orValue(null),
   			},
   		}.encode_json(),
