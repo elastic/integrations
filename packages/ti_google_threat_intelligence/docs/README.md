@@ -35,7 +35,7 @@ Customers can access a subset of the available threat lists based on their **Goo
 
 ## Data Streams
 
-The Google Threat Intelligence Integration allows data collection for all 14 feed types, each with a separate data stream. By default, **Ransomware** and **Malicious Network Infrastructure** are enabled. Users can enable additional data streams based on their GTI subscription tier. If a user enables data collection for a data stream they do not have access to, it will result in an error log on the **Discover** page.
+The Google Threat Intelligence Integration allows data collection for all 14 feed types. Users can enable additional data streams based on their GTI subscription tier. If a user enables data collection for a data stream they do not have access to, it will result in an error log on the **Discover** page.
 
 ## Requirements
 
