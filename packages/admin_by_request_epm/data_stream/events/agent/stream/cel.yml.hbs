@@ -1,0 +1,89 @@
+config_version: 2
+interval: {{interval}}
+resource.tracer:
+  enabled: {{enable_request_tracer}}
+  filename: "../../logs/cel/http-request-trace-*.ndjson"
+  maxbackups: 5
+{{#if proxy_url}}
+resource.proxy_url: {{proxy_url}}
+{{/if}}
+{{#if http_client_timeout}}
+resource.timeout: {{http_client_timeout}}
+{{/if}}
+resource.url: {{url}}
+{{#if ssl}}
+resource.ssl: {{ssl}}
+{{/if}}
+state:
+  apikey: {{apikey}}
+  page_size: {{page_size}}
+  initial_interval_days: {{initial_interval_days}}
+redact:
+  fields:
+    - apikey
+program: |-
+  
+  (
+  	(state.?cursor.start_id.orValue(null) == null) ?
+  		// pulling first page
+  		{
+  			"take": [string(state.page_size)],
+  			"days": [string(state.initial_interval_days)],
+  		}
+  	:
+  		// pulling next page
+  		{
+  			"take": [string(state.page_size)],
+  			"startid": [state.cursor.start_id.encode_json()],
+  		}
+  ).as(query,
+  	request("GET", state.url.trim_suffix("/") + "/events?" + query.format_query()).with(
+  		{
+  			"Header": {
+  				"apikey": [state.apikey],
+  			},
+  		}
+  	).do_request().as(resp,
+  		(resp.StatusCode == 200) ?
+  			bytes(resp.Body).decode_json().as(body,
+  				state.with(
+  					{
+  						"events": body.map(e,
+  							{
+  								"message": e.encode_json(),
+  								?"event.original": state.?preserve_original_event.orValue(false) ? optional.of(e.encode_json()) : optional.none(),
+  							}
+  						),
+  						"want_more": size(body) == state.page_size,
+  						"cursor": {
+  							"start_id": (size(body) > 0) ? (int(body[size(body) - 1].id) + 1) : state.?cursor.start_id.orValue(null),
+  						},
+  					}
+  				)
+  			)
+  		:
+  			state.with(
+  				{
+  					"events": {"error": {"message": "Failed to fetch events. Clearing and retrying..", "statuscode": string(resp.StatusCode)}},
+  					"want_more": false,
+  					"cursor": {
+  						"start_id": state.?cursor.start_id.orValue(null),
+  					},
+  				}
+  			)
+  	)
+  )
+tags:
+{{#if preserve_original_event}}
+  - preserve_original_event
+{{/if}}
+{{#each tags as |tag|}}
+  - {{tag}}
+{{/each}}
+{{#contains "forwarded" tags}}
+publisher_pipeline.disable_host: true
+{{/contains}}
+{{#if processors}}
+processors:
+{{processors}}
+{{/if}}
