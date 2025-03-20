@@ -1,9 +1,9 @@
 config_version: 2
 interval: {{interval}}
-{{#if enable_request_tracer}}
-resource.tracer.filename: "../../logs/cel/http-request-trace-*.ndjson"
-resource.tracer.maxbackups: 5
-{{/if}}
+resource.tracer:
+  enabled: {{enable_request_tracer}}
+  filename: "../../logs/cel/http-request-trace-*.ndjson"
+  maxbackups: 5
 {{#if proxy_url}}
 resource.proxy_url: {{proxy_url}}
 {{/if}}
@@ -39,20 +39,21 @@ program: |
             "end_time": now.format(time_layout.RFC3339),
           })
       ).as(state, state.with(
+        // To perform search and get search id.
         post_request(
           state.url.trim_right("/") + "/services/search/v2/jobs",
           "application/x-www-form-urlencoded",
           {
-          "output_mode":["json"],
-          "search":[string(state.search)],
-          "earliest_time": [string(state.start_time)],
-          "latest_time": [string(state.end_time)],
+            "output_mode":["json"],
+            "search":[state.search],
+            "earliest_time": [state.start_time],
+            "latest_time": [state.end_time],
           }.format_query()
-          ).with({
-             "Header":{
-               "Authorization": ["Basic "+string(base64(state.user+":"+state.password))],
-             }
-           }).do_request().as(resp, resp.StatusCode == 201 ?
+        ).with({
+          "Header":{
+            "Authorization": ["Basic "+base64(state.user+":"+state.password)],
+          }
+        }).do_request().as(resp, resp.StatusCode == 201 ?
             bytes(resp.Body).decode_json().as(body, {
               "sid": body.sid,
             })
@@ -62,7 +63,7 @@ program: |
                 "error": {
                   "code": string(resp.StatusCode),
                   "id": string(resp.Status),
-                  "message": "GET:"+(
+                  "message": "POST " + state.url.trim_right("/") + "/services/search/v2/jobs: " + (
                     size(resp.Body) != 0 ?
                       string(resp.Body)
                     :
@@ -76,20 +77,21 @@ program: |
         )
       ))
   ).as(state, state.with(
+      // If more pages are still needs to be fetched.
     state.?dispatchState.orValue("") == "DONE" || !has(state.sid) ?
-    {
-      "batch_size": state.batch_size,
-      "offset": state.offset,
-      "dispatchState": state.?dispatchState.orValue(""),
-    }
-     : // Exit early due to GET failure.
-        request("GET",
-          state.url.trim_right("/") + "/services/search/v2/jobs/" + state.sid + "?output_mode=json"
-          ).with({
-             "Header":{
-               "Authorization": ["Basic "+string(base64(state.user+":"+state.password))],
-             }
-           }).do_request().as(resp, resp.StatusCode == 200 ?
+      {
+        "batch_size": state.batch_size,
+        "offset": state.offset,
+        ?"dispatchState": state.?dispatchState,
+      }
+    : // To check the status of the search id if it is completed or not.
+      request("GET",
+        state.url.trim_right("/") + "/services/search/v2/jobs/" + state.sid + "?output_mode=json"
+      ).with({
+        "Header":{
+          "Authorization": ["Basic "+base64(state.user+":"+state.password)],
+        }
+      }).do_request().as(resp, resp.StatusCode == 200 ?
           bytes(resp.Body).decode_json().as(body,{
             "dispatchState": body.entry.size() == 0 ? "" : body.entry[0].content.dispatchState,
             "batch_size": state.batch_size,
@@ -101,7 +103,7 @@ program: |
               "error": {
                 "code": string(resp.StatusCode),
                 "id": string(resp.Status),
-                "message": "GET:"+(
+                "message": "GET " + state.url.trim_right("/") + "/services/search/v2/jobs/" + state.sid + ":" + (
                   size(resp.Body) != 0 ?
                     string(resp.Body)
                   :
@@ -112,26 +114,28 @@ program: |
             "want_more": false,
             "offset": 0,
           }
-        )
+      )
     )
   ).as(state, state.with(
-    !has(state.sid) || state.?dispatchState.orValue("") == "" ? state :
-      state.?dispatchState.orValue("") == "DONE" ?
-          request("GET",
-            state.url.trim_right("/") + "/services/search/v2/jobs/" + state.sid + "/events?"+ {
-              "output_mode": ["json"],
-              "count": [string(state.batch_size)],
-              "offset": [string(state.offset)],
-            }.format_query()
-            ).with({
-               "Header":{
-                 "Authorization": ["Basic "+string(base64(state.user+":"+state.password))],
-               }
-             }).do_request().as(resp, resp.StatusCode == 200 ?
+    has(state.?events.error) ?
+    	state
+    : (state.?dispatchState.orValue("") == "DONE") ?
+      // To fetch the events from the respective search id.
+        request("GET",
+          state.url.trim_right("/") + "/services/search/v2/jobs/" + state.sid + "/events?"+ {
+            "output_mode": ["json"],
+            "count": [string(state.batch_size)],
+            "offset": [string(state.offset)],
+          }.format_query()
+        ).with({
+          "Header":{
+            "Authorization": ["Basic "+base64(state.user+":"+state.password)],
+          }
+        }).do_request().as(resp, resp.StatusCode == 200 ?
             bytes(resp.Body).decode_json().as(body,{
               "events": body.results.map(e,{
                 "message": e.encode_json(),
-              }),
+               }),
               "cursor": {
                 ?"last_timestamp": has(body.results) && body.results.size() > 0 ?
                   (
@@ -143,11 +147,11 @@ program: |
                 :
                   state.?cursor.last_timestamp
               },
-              "sid": body.results.size() == int(state.batch_size) ? state.sid : "",
-              "dispatchState": body.results.size() == int(state.batch_size) ? state.dispatchState : "",
+              "sid": body.results.size() == state.batch_size ? state.sid : "",
+              "dispatchState": body.results.size() == state.batch_size ? state.dispatchState : "",
               "batch_size": state.batch_size,
-              "offset": body.results.size() == int(state.batch_size) ? int(state.offset) + body.results.size() : 0,
-              "want_more": body.results.size() == int(state.batch_size),
+              "offset": body.results.size() == state.batch_size ? int(state.offset) + body.results.size() : 0,
+              "want_more": body.results.size() == state.batch_size,
             })
           :
             {
@@ -155,7 +159,7 @@ program: |
                 "error": {
                   "code": string(resp.StatusCode),
                   "id": string(resp.Status),
-                  "message": "GET:"+(
+                  "message": "GET " + state.url.trim_right("/") + "/services/search/v2/jobs/" + state.sid + "/events:"+ (
                     size(resp.Body) != 0 ?
                       string(resp.Body)
                     :
@@ -166,17 +170,17 @@ program: |
               "want_more": false,
               "offset": 0,
             }
-          )
+        )
         :
-        {
-          "events": [{}],
-          "want_more": true,
-          "sid": state.?sid.orValue(""),
-          "batch_size": state.batch_size,
-          "offset": state.offset,
-          "dispatchState": state.?dispatchState.orValue(""),
-        }
-      )
+          {
+            "events": [{}],
+            "want_more": true,
+            "sid": state.?sid.orValue(""),
+            "batch_size": state.batch_size,
+            "offset": state.offset,
+            "dispatchState": state.?dispatchState.orValue(""),
+          }
+    )
   )
 tags:
 {{#if preserve_original_event}}

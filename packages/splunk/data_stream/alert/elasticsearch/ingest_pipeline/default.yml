@@ -5,6 +5,10 @@ processors:
       field: ecs.version
       tag: set_ecs_version
       value: 8.17.0
+  - fail:
+      tag: data_collection_error
+      if: ctx.error?.message != null && ctx.message == null && ctx.event?.original == null
+      message: error message set and no data to process.
   - rename:
       field: message
       tag: rename_message_to_event_original
@@ -12,16 +16,17 @@ processors:
       ignore_missing: true
       description: Renames the original `message` field to `event.original` to store a copy of the original message. The `event.original` field is not touched if the document already has one; it may happen when Logstash sends the document.
       if: ctx.event?.original == null
-  - fail:
-      tag: data_collection_error
-      if: ctx.error?.message != null && ctx.message == null && ctx.event?.original == null
-      message: error message set and no data to process.
   - remove:
       field: message
       tag: remove_message
       ignore_missing: true
       description: The `message` field is no longer required if the document has an `event.original` field.
       if: ctx.event?.original != null
+  - fingerprint:
+      fields:
+        - event.original
+      target_field: _id
+      ignore_missing: true
   - json:
       field: event.original
       tag: json_event_original
@@ -31,27 +36,40 @@ processors:
         - append:
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
-  - fingerprint:
-      fields:
-        - splunk.alert._time
-        - splunk.alert._raw
-      target_field: _id
-      ignore_missing: true
   - dissect:
       field: splunk.alert._raw
-      pattern: "%{splunk.alert.raw_timestamp}, %{_temp}"
+      pattern: "%{splunk.alert.raw_timestamp}, %{_temp.alert}"
       ignore_failure: true
   - kv:
-      field: _temp
+      field: _temp.alert
       target_field: splunk.alert
       field_split: ', '
+      exclude_keys: [annotations.mitre_attack]
+      value_split: '='
+      trim_value: '\\\"'
+      ignore_failure: true
+  - kv:
+      field: _temp.alert
+      target_field: _temp.key
+      field_split: ', '
+      include_keys: [annotations.mitre_attack]
       value_split: '='
       trim_value: \\\"
       ignore_failure: true
+  - rename:
+      field: _temp.key.annotations.mitre_attack
+      tag: rename_temp_key
+      target_field: splunk.alert.annotations.mitre_attack.value
+      ignore_missing: true
   - set:
       field: event.kind
       tag: set_event_kind
       value: alert
+  - append:
+      field: event.type
+      tag: append_event_type
+      value: info
+      allow_duplicates: false
   - date:
       field: splunk.alert.raw_timestamp
       tag: date_raw_timestamp
@@ -184,7 +202,7 @@ processors:
   - split:
       field: event.action
       tag: split_event_action
-      separator: \s+
+      separator: '\s+'
       ignore_missing: true
       if: ctx.event?.action != ''
       on_failure:
@@ -242,12 +260,12 @@ processors:
       if: ctx.splunk?.alert?.annotations?.mitre_attack?.mitre_technique_id instanceof String
   - convert:
       field: splunk.alert.app_session_id
-      tag: convert_app_session_id_to_long
+      tag: convert_app_session_id_to_string
       type: string
       ignore_missing: true
   - convert:
       field: splunk.alert.attackid
-      tag: convert_attackid_to_long
+      tag: convert_attackid_to_string
       type: string
       ignore_missing: true
   - date:
@@ -268,17 +286,17 @@ processors:
             field: splunk.alert.breach_date
   - convert:
       field: splunk.alert.breach_id
-      tag: convert_breach_id_to_long
+      tag: convert_breach_id_to_string
       type: string
       ignore_missing: true
   - convert:
       field: splunk.alert.browser_session_id
-      tag: convert_browser_session_id_to_long
+      tag: convert_browser_session_id_to_string
       type: string
       ignore_missing: true
   - convert:
       field: splunk.alert.category_id
-      tag: convert_category_id_to_long
+      tag: convert_category_id_to_string
       type: string
       ignore_missing: true
   - convert:
@@ -292,14 +310,13 @@ processors:
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
         - remove:
             field: splunk.alert.cci
-  - set:
-      field: host.geo.city_name
-      tag: set_host_geo_city_name_from_alert_city
-      copy_from: splunk.alert.city
-      ignore_empty_value: true
+  - geoip:
+      field: host.ip
+      target_field: host.geo
+      ignore_missing: true
   - convert:
       field: splunk.alert.connection_id
-      tag: convert_connection_id_to_long
+      tag: convert_connection_id_to_string
       type: string
       ignore_missing: true
   - convert:
@@ -479,14 +496,14 @@ processors:
       if: ctx.splunk?.alert?.dest != ''
       on_failure:
         - set:
-            field: _temp_dest
+            field: _temp.dest
             value: splunk.alert.dest
   - append:
       field: destination.ip
       tag: append_splunk_alert_dest_into_destination_ip
       value: '{{{splunk.alert.dest}}}'
       allow_duplicates: false
-      if: ctx.splunk?.alert?.dest instanceof String && ctx._temp_dest == null
+      if: ctx.splunk?.alert?.dest instanceof String && ctx._temp?.dest == null
   - convert:
       field: splunk.alert.dest_count
       tag: convert_dest_count_to_long
@@ -545,12 +562,12 @@ processors:
       ignore_empty_value: true
   - convert:
       field: splunk.alert.dlp_incident_id
-      tag: convert_dlp_incident_id_to_long
+      tag: convert_dlp_incident_id_to_string
       type: string
       ignore_missing: true
   - convert:
       field: splunk.alert.dlp_parent_id
-      tag: convert_dlp_parent_id_to_long
+      tag: convert_dlp_parent_id_to_string
       type: string
       ignore_missing: true
   - convert:
@@ -763,12 +780,17 @@ processors:
             field: splunk.alert.firstTime
   - convert:
       field: splunk.alert.gef_meta._tenant_id
-      tag: convert_gef_meta_tenant_id_to_long
+      tag: convert_gef_meta_tenant_id_to_string
       type: string
       ignore_missing: true
   - set:
       field: splunk.alert.friendly_name
       tag: set_friendly_name_from_source
+      copy_from: splunk.alert.source
+      ignore_empty_value: true
+  - set:
+      field: rule.name
+      tag: set_rule_name
       copy_from: splunk.alert.source
       ignore_empty_value: true
   - convert:
@@ -801,14 +823,14 @@ processors:
   - convert:
       field: splunk.alert.host
       type: ip
-      target_field: temp_ip
+      target_field: _temp.host_ip
       ignore_failure: true
   - append:
       field: host.ip
-      value: '{{{temp_ip}}}'
-      tag: append_temp_ip_into_host_ip
+      value: '{{{_temp.host_ip}}}'
+      tag: append_temp_host_ip_into_host_ip
       allow_duplicates: false
-      if: ctx.temp_ip instanceof String
+      if: ctx._temp?.host_ip instanceof String
   - set:
       field: host.name
       tag: set_host_name_from_alert_host
@@ -855,7 +877,7 @@ processors:
       ignore_empty_value: true
   - convert:
       field: splunk.alert.incident_id
-      tag: convert_incident_id_to_long
+      tag: convert_incident_id_to_string
       type: string
       ignore_missing: true
   - convert:
@@ -941,7 +963,6 @@ processors:
             - remove:
                 field: _ingest._value
                 ignore_missing: true
-# info_max_time may contain "infinity".
   - date:
       field: splunk.alert.info_max_time
       tag: date_info_max_time
@@ -952,7 +973,7 @@ processors:
         - MM/dd/yy HH:mm:ss
         - HH:mm:ss
       if: ctx.splunk?.alert?.info_max_time instanceof String && ctx.splunk.alert.info_max_time != ''
-      on_failure:
+      on_failure: # info_max_time may contain "infinity".
         - remove:
             field: splunk.alert.info_max_time
   - foreach:
@@ -973,7 +994,6 @@ processors:
             - remove:
                 field: _ingest._value
                 ignore_missing: true
-# info_min_time may contain "infinity".
   - date:
       field: splunk.alert.info_min_time
       tag: date_info_min_time
@@ -984,7 +1004,7 @@ processors:
         - MM/dd/yy HH:mm:ss
         - HH:mm:ss
       if: ctx.splunk?.alert?.info_min_time instanceof String && ctx.splunk.alert.info_min_time != ''
-      on_failure:
+      on_failure: # info_min_time may contain "infinity".
         - remove:
             field: splunk.alert.info_min_time
   - date:
@@ -1099,7 +1119,7 @@ processors:
             field: splunk.alert.linecount
   - convert:
       field: splunk.alert.logid
-      tag: convert_logid_to_long
+      tag: convert_logid_to_string
       type: string
       ignore_missing: true
   - append:
@@ -1152,12 +1172,12 @@ processors:
       if: ctx.splunk?.alert?.orig_host instanceof String
   - convert:
       field: splunk.alert.orig_rid
-      tag: convert_orig_rid_to_long
+      tag: convert_orig_rid_to_string
       type: string
       ignore_missing: true
   - convert:
       field: splunk.alert.orig_rule_id
-      tag: convert_orig_rule_id_to_long
+      tag: convert_orig_rule_id_to_string
       type: string
       ignore_missing: true
   - date:
@@ -1226,7 +1246,7 @@ processors:
             field: splunk.alert.outer_doc_type
   - convert:
       field: splunk.alert.policyid
-      tag: convert_policyid_to_long
+      tag: convert_policyid_to_string
       type: string
       ignore_missing: true
   - convert:
@@ -1242,7 +1262,7 @@ processors:
             field: splunk.alert.port
   - convert:
       field: splunk.alert.product_version
-      tag: convert_product_version_to_long
+      tag: convert_product_version_to_string
       type: string
       ignore_missing: true
   - convert:
@@ -1293,7 +1313,7 @@ processors:
       ignore_empty_value: true
   - convert:
       field: splunk.alert.request_id
-      tag: convert_request_id_to_long
+      tag: convert_request_id_to_string
       type: string
       ignore_missing: true
   - convert:
@@ -1309,12 +1329,12 @@ processors:
             field: splunk.alert.risk_score
   - convert:
       field: splunk.alert.session_id
-      tag: convert_session_id_to_long
+      tag: convert_session_id_to_string
       type: string
       ignore_missing: true
   - convert:
       field: splunk.alert.sessionid
-      tag: convert_sessionid_to_long
+      tag: convert_sessionid_to_string
       type: string
       ignore_missing: true
   - script:
@@ -1323,7 +1343,28 @@ processors:
       tag: set_event_severity
       if: ctx.splunk?.alert?.severity instanceof String
       source: |-
-        def severity = ctx.splunk.alert.severity.toLowerCase();
+        ctx.event = ctx.event ?: [:];
+        String name = ctx.splunk.alert.severity;
+        if (name.equalsIgnoreCase("low") || name.equalsIgnoreCase("informational")) {
+          ctx.event.severity = 21;
+        } else if (name.equalsIgnoreCase("medium")) {
+          ctx.event.severity = 47;
+        } else if (name.equalsIgnoreCase("high")) {
+          ctx.event.severity = 73;
+        } else if (name.equalsIgnoreCase("critical")) {
+          ctx.event.severity = 99;
+        }
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - script:
+      lang: painless
+      description: Script to set event.severity.
+      tag: set_event_severity
+      if: ctx.splunk?.alert?.event?.SeverityName instanceof String && ctx.event?.severity == null
+      source: |-
+        def severity = ctx.splunk.alert.event.SeverityName.toLowerCase();
           if (severity == 'critical') {
             ctx.event.severity = 99;
           } else if (severity == 'high') {
@@ -1356,7 +1397,7 @@ processors:
           allow_duplicates: false
   - convert:
       field: splunk.alert.signature_id
-      tag: convert_signature_id_to_long
+      tag: convert_signature_id_to_string
       type: string
       ignore_missing: true
   - set:
@@ -1367,24 +1408,31 @@ processors:
   - convert:
       field: source.address
       type: ip
+      target_field: _temp.ip
       ignore_missing: true
       if: ctx.source?.address != ''
       on_failure:
-          - set:
-              field: tmp_host
-              copy_from: source.address
+        - set:
+            field: _temp.host
+            copy_from: source.address
   - append:
       field: related.hosts
       tag: append_source_address_into_related_hosts
       value: '{{{source.address}}}'
       allow_duplicates: false
-      if: ctx.tmp_host instanceof String
+      if: ctx._temp?.host instanceof String
+  - append:
+      field: source.ip
+      tag: append_temp_ip_into_source_ip
+      value: '{{{_temp.ip}}}'
+      allow_duplicates: false
+      if: ctx._temp?.ip instanceof String
   - append:
       field: related.ip
       tag: append_host_name_into_related_ip
-      value: '{{{source.address}}}'
+      value: '{{{_temp.ip}}}'
       allow_duplicates: false
-      if: ctx.tmp_host == null && ctx.source?.address instanceof String
+      if: ctx._temp?.ip instanceof String
   - convert:
       field: splunk.alert.src_employee_no
       tag: convert_src_employee_no_to_long
@@ -1596,12 +1644,12 @@ processors:
             field: splunk.alert.timestartpos
   - convert:
       field: splunk.alert.transaction_id
-      tag: convert_transaction_id_to_long
+      tag: convert_transaction_id_to_string
       type: string
       ignore_missing: true
   - convert:
       field: splunk.alert.true_type_id
-      tag: convert_true_type_id_to_long
+      tag: convert_true_type_id_to_string
       type: string
       ignore_missing: true
   - convert:
@@ -1790,7 +1838,6 @@ processors:
         - splunk.alert.annotations.mitre_attack.mitre_tactic_id
         - splunk.alert.annotations.mitre_attack.mitre_technique
         - splunk.alert.annotations.mitre_attack.mitre_technique_id
-        - splunk.alert.city
         - splunk.alert.creation_timestamp
         - splunk.alert.dest
         - splunk.alert.dest_ip
@@ -1838,11 +1885,7 @@ processors:
       ignore_missing: true
       if: ctx.tags == null || !(ctx.tags.contains('preserve_duplicate_custom_fields'))
   - remove:
-      field:
-        - _temp
-        - tmp_host
-        - temp_ip
-        - _temp_dest
+      field: _temp
       tag: remove_temp
       ignore_missing: true
   - script:
@@ -1867,6 +1910,11 @@ processors:
       field: event.kind
       tag: set_pipeline_error_to_event_kind
       value: pipeline_error
+      if: ctx.error?.message != null
+  - append:
+      field: tags
+      value: preserve_original_event
+      allow_duplicates: false
       if: ctx.error?.message != null
 on_failure:
   - append:

@@ -4,17 +4,18 @@
 
 ## Compatibility
 
-This module has been tested against the Splunk API version **v2** and instance version **9.4.0**.
+This module has been tested against the Splunk [API](https://docs.splunk.com/Documentation/Splunk/9.4.0/RESTREF/RESTsearch) version **v2** and instance version **9.4.0**.
 
 ## Data streams
 
 This integration collects the following logs:
 
-- **Alerts** - This method enables users to retrieve alerts from the Splunk.
+- **Alerts** - Retrieve alerts from Splunk.
 
 ## Requirements
 
 ### Agentless Enabled Integration
+
 Agentless integrations allow you to collect data without having to manage Elastic Agent in your cloud. They make manual agent deployment unnecessary, so you can focus on your data instead of the agent that collects it. For more information, refer to [Agentless integrations](https://www.elastic.co/guide/en/serverless/current/security-agentless-integrations.html) and the [Agentless integrations FAQ](https://www.elastic.co/guide/en/serverless/current/agentless-integration-troubleshooting.html).
 
 Agentless deployments are only supported in Elastic Serverless and Elastic Cloud environments.  This functionality is in beta and is subject to change. Beta features are not subject to the support SLA of official GA features.
@@ -50,9 +51,7 @@ Please note, there are minimum requirements for running Elastic Agent. For more 
 To collect data from the Splunk API, you will need the following information:
 
 1. The username and password for the Splunk instance.
-2. The name of the search index from which you want to retrieve the alerts.
-
-
+2. The name of the search index from which you want to retrieve alerts, and the user should have permission to access that index.
 
 ### Enabling the integration in Elastic:
 

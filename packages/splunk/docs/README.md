@@ -4,17 +4,18 @@
 
 ## Compatibility
 
-This module has been tested against the Splunk API version **v2** and instance version **9.4.0**.
+This module has been tested against the Splunk [API](https://docs.splunk.com/Documentation/Splunk/9.4.0/RESTREF/RESTsearch) version **v2** and instance version **9.4.0**.
 
 ## Data streams
 
 This integration collects the following logs:
 
-- **Alerts** - This method enables users to retrieve alerts from the Splunk.
+- **Alerts** - Retrieve alerts from Splunk.
 
 ## Requirements
 
 ### Agentless Enabled Integration
+
 Agentless integrations allow you to collect data without having to manage Elastic Agent in your cloud. They make manual agent deployment unnecessary, so you can focus on your data instead of the agent that collects it. For more information, refer to [Agentless integrations](https://www.elastic.co/guide/en/serverless/current/security-agentless-integrations.html) and the [Agentless integrations FAQ](https://www.elastic.co/guide/en/serverless/current/agentless-integration-troubleshooting.html).
 
 Agentless deployments are only supported in Elastic Serverless and Elastic Cloud environments.  This functionality is in beta and is subject to change. Beta features are not subject to the support SLA of official GA features.
@@ -50,9 +51,7 @@ Please note, there are minimum requirements for running Elastic Agent. For more 
 To collect data from the Splunk API, you will need the following information:
 
 1. The username and password for the Splunk instance.
-2. The name of the search index from which you want to retrieve the alerts.
-
-
+2. The name of the search index from which you want to retrieve alerts, and the user should have permission to access that index.
 
 ### Enabling the integration in Elastic:
 
@@ -81,31 +80,34 @@ An example event for `alert` looks as following:
 {
     "@timestamp": "2025-02-10T06:20:16.000Z",
     "agent": {
-        "ephemeral_id": "2003409c-f9a9-4bdb-8634-4bfd3d143b44",
-        "id": "1f2444f6-116a-41e8-a4b2-a2ee349a2b9f",
-        "name": "elastic-agent-20861",
+        "ephemeral_id": "22c3cd73-2447-4671-925b-fedccef07686",
+        "id": "416dc6bc-66ed-4c92-9943-09c641651ad5",
+        "name": "elastic-agent-88020",
         "type": "filebeat",
         "version": "8.18.0"
     },
     "data_stream": {
         "dataset": "splunk.alert",
-        "namespace": "12716",
+        "namespace": "48422",
         "type": "logs"
     },
     "ecs": {
         "version": "8.17.0"
     },
     "elastic_agent": {
-        "id": "1f2444f6-116a-41e8-a4b2-a2ee349a2b9f",
+        "id": "416dc6bc-66ed-4c92-9943-09c641651ad5",
         "snapshot": true,
         "version": "8.18.0"
     },
     "event": {
         "agent_id_status": "verified",
         "dataset": "splunk.alert",
-        "ingested": "2025-03-12T06:58:27Z",
+        "ingested": "2025-03-20T12:44:00Z",
         "kind": "alert",
-        "original": "{\"_bkt\":\"notable~70~E10E99CE-2B29-4D28-B797-57BEABF6E876\",\"_cd\":\"70:13771\",\"_indextime\":\"1739168416\",\"_raw\":\"1739168412, search_name=\\\"Access - Excessive Failed Logins - Rule\\\", app=\\\"ssl-web\\\", count=\\\"5\\\", ip=\\\"127.0.0.1\\\", dest_count=\\\"1\\\", info_max_time=\\\"1739168100.000000000\\\", info_min_time=\\\"1739164500.000000000\\\", info_search_time=\\\"1739168403.176027000\\\", src=\\\"89.160.20.112\\\", orig_tag=\\\"authentication\\\", orig_tag=\\\"default\\\", orig_tag=\\\"error\\\", orig_tag=\\\"failure\\\", user_count=\\\"1\\\"\",\"_serial\":\"476\",\"_si\":[\"89.160.20.156\",\"notable\"],\"_sourcetype\":\"stash\",\"_time\":\"2025-02-10T11:50:16.000+05:30\",\"host\":\"89.160.20.156\",\"index\":\"notable\",\"linecount\":\"1\",\"source\":\"Access - Excessive Failed Logins - Rule\",\"sourcetype\":\"stash\",\"splunk_server\":\"89.160.20.156\"}"
+        "original": "{\"_bkt\":\"notable~70~E10E99CE-2B29-4D28-B797-57BEABF6E876\",\"_cd\":\"70:13771\",\"_indextime\":\"1739168416\",\"_raw\":\"1739168412, search_name=\\\"Access - Excessive Failed Logins - Rule\\\", app=\\\"ssl-web\\\", count=\\\"5\\\", ip=\\\"127.0.0.1\\\", dest_count=\\\"1\\\", info_max_time=\\\"1739168100.000000000\\\", info_min_time=\\\"1739164500.000000000\\\", info_search_time=\\\"1739168403.176027000\\\", src=\\\"89.160.20.112\\\", orig_tag=\\\"authentication\\\", orig_tag=\\\"default\\\", orig_tag=\\\"error\\\", orig_tag=\\\"failure\\\", user_count=\\\"1\\\"\",\"_serial\":\"476\",\"_si\":[\"89.160.20.156\",\"notable\"],\"_sourcetype\":\"stash\",\"_time\":\"2025-02-10T11:50:16.000+05:30\",\"host\":\"89.160.20.156\",\"index\":\"notable\",\"linecount\":\"1\",\"source\":\"Access - Excessive Failed Logins - Rule\",\"sourcetype\":\"stash\",\"splunk_server\":\"89.160.20.156\"}",
+        "type": [
+            "info"
+        ]
     },
     "host": {
         "ip": [
@@ -123,10 +125,14 @@ An example event for `alert` looks as following:
             "127.0.0.1"
         ]
     },
+    "rule": {
+        "name": "Access - Excessive Failed Logins - Rule"
+    },
     "source": {
         "address": "89.160.20.112",
         "ip": [
-            "127.0.0.1"
+            "127.0.0.1",
+            "89.160.20.112"
         ]
     },
     "splunk": {
