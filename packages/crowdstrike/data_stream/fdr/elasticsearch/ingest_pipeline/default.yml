@@ -2535,12 +2535,12 @@ processors:
       allow_duplicates: false
       if: ctx.crowdstrike?.info?.user?.LastLoggedOnHost != null
   - script:
-      tag: remove-lengthy-fields
-      if: ctx._conf?.lengthy_fields == 'delete_lengthy_fields' && ctx._conf?.lengthy_fields_max_length != null
-      description: Remove lengthy fields based on user input stored in _conf.lengthy_fields*.
+      tag: remove-long-fields
+      if: ctx._conf?.long_fields == 'delete_long_fields' && ctx._conf?.long_fields_max_length != null
+      description: Remove long fields based on user input stored in _conf.long_fields*.
       lang: painless
       source: |
-        def potential_lengthy_fields = new ArrayList(['DylibPath',
+        def potential_long_fields = new ArrayList(['DylibPath',
                                                   'EnvironmentVariablesString',
                                                   'TaskXml',
                                                   'ScriptContentBytes',
@@ -2709,8 +2709,8 @@ processors:
                                                   'StorageUsageInfo',
                                                   'SystemProcessCount',
                                                   'UninstallPendingUpdateIds']);
-        for (String field: potential_lengthy_fields) {
-          if (ctx.crowdstrike.get(field) != null && ctx.crowdstrike[field].length() > ctx._conf.lengthy_fields_max_length) {
+        for (String field: potential_long_fields) {
+          if (ctx.crowdstrike.get(field) != null && ctx.crowdstrike[field].length() > ctx._conf.long_fields_max_length) {
             ctx.crowdstrike.remove(field);
           }
         }
