@@ -21,28 +21,26 @@ processors:
         - "^%{GREEDYDATA:cisco_ise.log.log_details_raw},"
   - date:
       field: _tmp.timestamp
+      tag: guest-first-date
       formats:
         - yyyy-MM-dd HH:mm:ss.SSS
         - yyyy-MM-dd HH:mm:ss.SSSSSS
-        - MMM  d HH:mm:ss
-        - MMM dd HH:mm:ss
-        - MMM d HH:mm:ss
+        - MMM [ ]d[d] HH:mm:ss[.SSSSSS][.SSS]
       on_failure:
         - remove:
             field: _tmp.timestamp
             ignore_missing: true
         - append:
             field: error.message
-            value: '{{{_ingest.on_failure_message}}}'
+            value: '{{{ _ingest.on_failure_processor_tag }}}: {{{_ingest.on_failure_message}}}'
   - date:
       if: ctx.event?.timezone != null && ctx.event.timezone != ''
       field: _tmp.timestamp
+      tag: guest-second-date
       formats:
         - yyyy-MM-dd HH:mm:ss.SSS
         - yyyy-MM-dd HH:mm:ss.SSSSSS
-        - MMM  d HH:mm:ss
-        - MMM dd HH:mm:ss
-        - MMM d HH:mm:ss
+        - MMM [ ]d[d] HH:mm:ss[.SSSSSS][.SSS]
       timezone: '{{{event.timezone}}}'
       on_failure:
         - remove:
@@ -50,7 +48,7 @@ processors:
             ignore_missing: true
         - append:
             field: error.message
-            value: '{{{_ingest.on_failure_message}}}'
+            value: '{{{ _ingest.on_failure_processor_tag }}}: {{{_ingest.on_failure_message}}}'
   - kv:
       field: cisco_ise.log.log_details_raw
       field_split: ', '
