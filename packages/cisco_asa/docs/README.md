@@ -165,6 +165,7 @@ An example event for `log` looks as following:
 | cisco.asa.mapped_source_port | The translated source port. | long |
 | cisco.asa.message | The message associated with SIP and Skinny VoIP events | keyword |
 | cisco.asa.message_id | The Cisco ASA message identifier. | keyword |
+| cisco.asa.message_repeats | The number of times the message has been repeated. | short |
 | cisco.asa.original_iana_number | IANA Protocol Number of the original IP payload. | short |
 | cisco.asa.peer_type | The peer type. | keyword |
 | cisco.asa.pool_address | The pool address. | ip |
