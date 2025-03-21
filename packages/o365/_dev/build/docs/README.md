@@ -28,6 +28,7 @@ Agentless integrations allow you to collect data without having to manage Elasti
 Agentless deployments are only supported in Elastic Serverless and Elastic Cloud environments.  This functionality is in beta and is subject to change. Beta features are not subject to the support SLA of official GA features.
 
 ### Agent and Agentless Setup
+
 Once the secret is created and permissions are granted by admin, setup Elastic Agent's Microsoft O365 integration:
 - Click `Add Microsoft Office 365`.
 - Enable `Collect Office 365 audit logs via Management Activity API using CEL Input`.
