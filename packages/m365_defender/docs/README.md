@@ -4,7 +4,7 @@
 
 The [Microsoft 365 Defender](https://learn.microsoft.com/en-us/microsoft-365/security/defender) integration allows you to monitor Alert, Incident (Microsoft Graph Security API) and Event (Streaming API) Logs. Microsoft 365 Defender is a unified pre and post-breach enterprise defense suite that natively coordinates detection, prevention, investigation, and response across endpoints, identities, email, and applications to provide integrated protection against sophisticated attacks.
 
-Use the Microsoft 365 Defender integration to collect and parse data from the Microsoft Azure Event Hub, Microsoft Graph Security v1.0 REST API and Microsoft 365 Defender API. Then visualise that data in Kibana.
+Use the Microsoft 365 Defender integration to collect and parse data from the Microsoft Azure Event Hub, and the Microsoft Graph Security v1.0 REST API. Then visualise that data in Kibana.
 
 For example, you could use the data from this integration to consolidate and correlate security alerts from multiple sources. Also, by looking into the alert and incident, a user can take an appropriate action in the Microsoft 365 Defender Portal.
 
@@ -15,7 +15,7 @@ Agentless deployments are only supported in Elastic Serverless and Elastic Cloud
 
 ## Data streams
 
-The Microsoft 365 Defender integration collects logs for four types of events: Alert, Event, Incident and Log.
+The Microsoft 365 Defender integration collects logs for three types of events: Alert, Event, and Incident.
 
 **Alert:** This data streams leverages the [Microsoft Graph Security API](https://learn.microsoft.com/en-us/graph/api/resources/security-alert?view=graph-rest-1.0) to collect alerts including suspicious activities in a customer's tenant that Microsoft or partner security providers have identified and flagged for action.
 
@@ -23,13 +23,11 @@ The Microsoft 365 Defender integration collects logs for four types of events: A
 
 **Incidents and Alerts (Recommended):** This data streams leverages the [Microsoft Graph Security API](https://learn.microsoft.com/en-us/graph/api/resources/security-api-overview?view=graph-rest-1.0) to ingest a collection of correlated alert instances and associated metadata that reflects the story of an attack in M365D. Incidents stemming from Microsoft 365 Defender, Microsoft Defender for Endpoint, Microsoft Defender for Office 365, Microsoft Defender for Identity, Microsoft Defender for Cloud Apps, and Microsoft Purview Data Loss Prevention are supported by this integration.
 
-**Log (Deprecated):** This data stream is not recommend as it collects incidents from the SIEM API that Microsoft plans to deprecate. The data stream will be removed when Microsoft has deprecated the SIEM API. If you are currently using this data stream, we recommend moving to the Incident data stream which supports Microsoft's Graph Security API. The incidents data stream collects the same data as the log data stream. Please see Microsoft's [documentation](https://learn.microsoft.com/en-us/microsoft-365/security/defender-endpoint/configure-siem?view=o365-worldwide) on migration from SIEM API to Graph Security API for more information.
-
 ## Requirements
 
 You need Elasticsearch for storing and searching your data and Kibana for visualizing and managing it. You can use our hosted Elasticsearch Service on Elastic Cloud, which is recommended, or self-manage the Elastic Stack on your own hardware.
 
-This module has used **Microsoft Azure Event Hub** for Streaming Event, **Microsoft Graph Security v1.0 REST API** for Incident and **Microsoft 365 Defender API** for Log data streams.
+This module has used **Microsoft Azure Event Hub** for Streaming Event, and **Microsoft Graph Security v1.0 REST API** for Incident data stream.
 
 For **Event**, using filebeat's [Azure Event Hub](https://www.elastic.co/guide/en/beats/filebeat/current/filebeat-input-azure-eventhub.html) input, state such as leases on partitions and checkpoints in the event stream are shared between receivers using an Azure Storage container. For this reason, as a prerequisite to using this input, users will have to create or use an existing storage account.
 
@@ -72,12 +70,6 @@ For **Event**, using filebeat's [Azure Event Hub](https://www.elastic.co/guide/e
 1. [Register a new Azure Application](https://learn.microsoft.com/en-us/graph/auth-register-app-v2?view=graph-rest-1.0).
 2. Permission required for accessing Incident API would be **SecurityIncident.Read.All**. See more details [here](https://learn.microsoft.com/en-us/graph/auth-v2-service?view=graph-rest-1.0)
 3. After the application has been created, it will generate Client ID, Client Secret and Tenant ID values that are required for alert and incident data collection.
-
-### To collect data from Microsoft 365 Defender REST API, follow the below steps:
-
-1. [Register a new Azure Application](https://learn.microsoft.com/en-us/microsoft-365/security/defender/api-create-app-web?view=o365-worldwide#create-an-app).
-2. Permission required for accessing Log API would be **Incident.Read.All**.
-3. After the application has been created, it will generate Client ID, Client Secret and Tenant ID values that are required for log data collection.
 
 ## Logs reference
 
@@ -1441,192 +1433,4 @@ An example event for `incident` looks as following:
 | m365_defender.incident.web_url.query |  | keyword |
 | m365_defender.incident.web_url.scheme |  | keyword |
 | m365_defender.incident.web_url.username |  | keyword |
-
-
-### log
-
-This is the `log` dataset.
-
-#### Example
-
-An example event for `log` looks as following:
-
-```json
-{
-    "@timestamp": "2020-09-06T12:07:55.32Z",
-    "agent": {
-        "ephemeral_id": "571b38ef-95af-4907-bf8c-d71e58ceab1c",
-        "id": "912deb3a-7d2a-4182-ae54-60cfe94346f0",
-        "name": "elastic-agent-92686",
-        "type": "filebeat",
-        "version": "8.18.0"
-    },
-    "cloud": {
-        "provider": "azure"
-    },
-    "data_stream": {
-        "dataset": "m365_defender.log",
-        "namespace": "88195",
-        "type": "logs"
-    },
-    "ecs": {
-        "version": "8.11.0"
-    },
-    "elastic_agent": {
-        "id": "912deb3a-7d2a-4182-ae54-60cfe94346f0",
-        "snapshot": true,
-        "version": "8.18.0"
-    },
-    "event": {
-        "action": "InitialAccess",
-        "agent_id_status": "verified",
-        "category": [
-            "host"
-        ],
-        "created": "2020-09-06T12:07:55.1366667Z",
-        "dataset": "m365_defender.log",
-        "duration": 0,
-        "end": "2020-09-06T12:04:00Z",
-        "id": "faf8edc936-85f8-a603-b800-08d8525cf099",
-        "ingested": "2025-03-19T06:26:39Z",
-        "kind": "alert",
-        "original": "{\"alerts\":{\"actorName\":null,\"alertId\":\"faf8edc936-85f8-a603-b800-08d8525cf099\",\"assignedTo\":\"Automation\",\"category\":\"InitialAccess\",\"classification\":null,\"creationTime\":\"2020-09-06T12:07:54.3716642Z\",\"description\":\"This alert is triggered when any email message is reported as malware or phish by users -V1.0.0.2\",\"detectionSource\":\"OfficeATP\",\"determination\":null,\"devices\":[],\"entities\":{\"aadUserId\":null,\"accountName\":null,\"clusterBy\":null,\"deliveryAction\":null,\"deviceId\":null,\"domainName\":null,\"entityType\":\"MailBox\",\"fileName\":null,\"filePath\":null,\"ipAddress\":null,\"mailboxAddress\":\"testUser3@contoso.com\",\"mailboxDisplayName\":\"test User3\",\"parentProcessCreationTime\":null,\"parentProcessId\":null,\"processCommandLine\":null,\"processCreationTime\":null,\"processId\":null,\"recipient\":null,\"registryHive\":null,\"registryKey\":null,\"registryValue\":null,\"registryValueType\":null,\"securityGroupId\":null,\"securityGroupName\":null,\"sender\":null,\"sha1\":null,\"sha256\":null,\"subject\":null,\"url\":null,\"userPrincipalName\":\"testUser3@contoso.com\",\"userSid\":null},\"firstActivity\":\"2020-09-06T12:04:00Z\",\"incidentId\":924518,\"investigationId\":null,\"investigationState\":\"Queued\",\"lastActivity\":\"2020-09-06T12:04:00Z\",\"lastUpdatedTime\":\"2020-09-06T12:37:40.88Z\",\"mitreTechniques\":[],\"resolvedTime\":null,\"serviceSource\":\"OfficeATP\",\"severity\":\"Informational\",\"status\":\"InProgress\",\"threatFamilyName\":null,\"title\":\"Email reported by user as malware or phish\"},\"assignedTo\":null,\"classification\":\"Unknown\",\"comments\":[],\"createdTime\":\"2020-09-06T12:07:55.1366667Z\",\"determination\":\"NotAvailable\",\"incidentId\":924518,\"incidentName\":\"Email reported by user as malware or phish\",\"lastUpdateTime\":\"2020-09-06T12:07:55.32Z\",\"redirectIncidentId\":null,\"severity\":\"Informational\",\"status\":\"Active\",\"tags\":[]}",
-        "provider": "OfficeATP",
-        "severity": 1,
-        "start": "2020-09-06T12:04:00Z",
-        "timezone": "UTC",
-        "type": [
-            "info"
-        ]
-    },
-    "file": {
-        "hash": {}
-    },
-    "input": {
-        "type": "httpjson"
-    },
-    "m365_defender": {
-        "alerts": {
-            "assignedTo": "Automation",
-            "creationTime": "2020-09-06T12:07:54.3716642Z",
-            "detectionSource": "OfficeATP",
-            "entities": {
-                "entityType": "MailBox",
-                "mailboxAddress": "testUser3@contoso.com",
-                "mailboxDisplayName": "test User3"
-            },
-            "incidentId": "924518",
-            "investigationState": "Queued",
-            "lastUpdatedTime": "2020-09-06T12:37:40.88Z",
-            "severity": "Informational",
-            "status": "InProgress"
-        },
-        "classification": "Unknown",
-        "determination": "NotAvailable",
-        "incidentId": "924518",
-        "incidentName": "Email reported by user as malware or phish",
-        "status": "Active"
-    },
-    "message": "Email reported by user as malware or phish",
-    "observer": {
-        "name": "OfficeATP",
-        "product": "365 Defender",
-        "vendor": "Microsoft"
-    },
-    "process": {
-        "parent": {}
-    },
-    "related": {
-        "user": [
-            "testUser3@contoso.com"
-        ]
-    },
-    "rule": {
-        "description": "This alert is triggered when any email message is reported as malware or phish by users -V1.0.0.2"
-    },
-    "tags": [
-        "preserve_original_event",
-        "m365_defender",
-        "forwarded"
-    ],
-    "threat": {
-        "framework": "MITRE ATT&CK",
-        "technique": {
-            "name": [
-                "InitialAccess"
-            ]
-        }
-    },
-    "user": {
-        "name": "testUser3@contoso.com"
-    }
-}
-```
-
-**Exported fields**
-
-| Field | Description | Type |
-|---|---|---|
-| @timestamp | Event timestamp. | date |
-| cloud.image.id | Image ID for the cloud instance. | keyword |
-| data_stream.dataset | Data stream dataset. | constant_keyword |
-| data_stream.namespace | Data stream namespace. | constant_keyword |
-| data_stream.type | Data stream type. | constant_keyword |
-| event.dataset | Event dataset | constant_keyword |
-| event.module | Event module | constant_keyword |
-| host.containerized | If the host is a container. | boolean |
-| host.os.build | OS build information. | keyword |
-| host.os.codename | OS codename, if any. | keyword |
-| input.type | Input type | keyword |
-| log.offset | Log offset | long |
-| m365_defender.alerts.actorName | The activity group, if any, the associated with this alert. | keyword |
-| m365_defender.alerts.assignedTo | Owner of the incident, or null if no owner is assigned. | keyword |
-| m365_defender.alerts.classification | The specification for the incident. The property values are: Unknown, FalsePositive, TruePositive or null. | keyword |
-| m365_defender.alerts.creationTime | Time when alert was first created. | date |
-| m365_defender.alerts.detectionSource | The service that initially detected the threat. | keyword |
-| m365_defender.alerts.detectorId | The detector id. | keyword |
-| m365_defender.alerts.determination | Specifies the determination of the incident. The property values are: NotAvailable, Apt, Malware, SecurityPersonnel, SecurityTesting, UnwantedSoftware, Other or null. | keyword |
-| m365_defender.alerts.devices | The devices related to the investigation. | flattened |
-| m365_defender.alerts.entities.accountName | Account name of the related user. | keyword |
-| m365_defender.alerts.entities.clusterBy | A list of metadata if the entityType is MailCluster. | keyword |
-| m365_defender.alerts.entities.deliveryAction | The delivery status for the related email message. | keyword |
-| m365_defender.alerts.entities.deviceId | The unique ID of the device related to the event. | keyword |
-| m365_defender.alerts.entities.entityType | Entities that have been identified to be part of, or related to, a given alert. The properties values are: User, Ip, Url, File, Process, MailBox, MailMessage, MailCluster, Registry. | keyword |
-| m365_defender.alerts.entities.evidenceCreationTime | The evidence creation time. | date |
-| m365_defender.alerts.entities.ipAddress | The related IP address to the event. | keyword |
-| m365_defender.alerts.entities.mailboxAddress | The mail address of the related mailbox. | keyword |
-| m365_defender.alerts.entities.mailboxDisplayName | The display name of the related mailbox. | keyword |
-| m365_defender.alerts.entities.recipient | The recipient for the related email message. | keyword |
-| m365_defender.alerts.entities.registryHive | Reference to which Hive in registry the event is related to, if eventType is registry. Example: HKEY_LOCAL_MACHINE. | keyword |
-| m365_defender.alerts.entities.registryKey | Reference to the related registry key to the event. | keyword |
-| m365_defender.alerts.entities.registryValueType | Value type of the registry key/value pair related to the event. | keyword |
-| m365_defender.alerts.entities.remediationStatus | The remediation status. | keyword |
-| m365_defender.alerts.entities.securityGroupId | The Security Group ID for the user related to the email message. | keyword |
-| m365_defender.alerts.entities.securityGroupName | The Security Group Name for the user related to the email message. | keyword |
-| m365_defender.alerts.entities.sender | The sender for the related email message. | keyword |
-| m365_defender.alerts.entities.subject | The subject for the related email message. | keyword |
-| m365_defender.alerts.entities.userSid | The event user Sid. | keyword |
-| m365_defender.alerts.entities.verdict | The event verdict. | keyword |
-| m365_defender.alerts.incidentId | Unique identifier to represent the incident this alert is associated with. | keyword |
-| m365_defender.alerts.investigationId | The automated investigation id triggered by this alert. | keyword |
-| m365_defender.alerts.investigationState | Information on the investigation's current status. | keyword |
-| m365_defender.alerts.lastUpdatedTime | Time when alert was last updated. | date |
-| m365_defender.alerts.mitreTechniques | The attack techniques, as aligned with the MITRE ATT&CK™ framework. | keyword |
-| m365_defender.alerts.providerAlertId | The provider alert id. | keyword |
-| m365_defender.alerts.resolvedTime | Time when alert was resolved. | date |
-| m365_defender.alerts.severity | The severity of the related alert. | keyword |
-| m365_defender.alerts.status | Categorize alerts (as New, Active, or Resolved). | keyword |
-| m365_defender.alerts.threatFamilyName | Threat family associated with this alert. | keyword |
-| m365_defender.alerts.userSid | The SID of the related user. | keyword |
-| m365_defender.assignedTo | Owner of the alert. | keyword |
-| m365_defender.classification | Specification of the alert. Possible values are: 'Unknown', 'FalsePositive', 'TruePositive'. | keyword |
-| m365_defender.comments | Comments attached to the related incident. | flattened |
-| m365_defender.determination | Specifies the determination of the incident. The property values are: NotAvailable, Apt, Malware, SecurityPersonnel, SecurityTesting, UnwantedSoftware, Other. | keyword |
-| m365_defender.incidentId | Unique identifier to represent the incident. | keyword |
-| m365_defender.incidentName | Name of the Incident. | keyword |
-| m365_defender.incidentUri | The incident URI. | keyword |
-| m365_defender.investigationState | The current state of the Investigation. | keyword |
-| m365_defender.redirectIncidentId | Only populated in case an incident is being grouped together with another incident, as part of the incident processing logic. | keyword |
-| m365_defender.status | Specifies the current status of the alert. Possible values are: 'Unknown', 'New', 'InProgress' and 'Resolved'. | keyword |
-| m365_defender.tags | Array of custom tags associated with an incident, for example to flag a group of incidents with a common characteristic. | keyword |
 
