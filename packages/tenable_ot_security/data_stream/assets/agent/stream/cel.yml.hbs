@@ -15,44 +15,6 @@ resource.timeout: {{http_client_timeout}}
 {{/if}}
 max_executions: {{max_executions}}
 resource.url: {{api_host}}
- 
-state:
-  want_more: false
-  key: {{key}}
-  limit: {{limit}}
-  query: >-
-    query getAssets($first: Int, $after: String) {
-      assets(first: $first, after: $after) {
-        nodes {
-          id
-          name
-          firstSeen
-          lastSeen
-          lastHit
-          lastSnapshot
-          macs{nodes}
-          ips{nodes}
-          segments{nodes{id} }
-          type
-          superType
-          category
-          purdueLevel
-          runStatus
-          runStatusTime
-          risk{totalRisk}
-          criticality
-          hidden
-          lastUpdate
-          directIps{nodes}
-          directMacs{nodes} 
-        }
-        pageInfo {
-          hasNextPage
-          endCursor
-        }
-      }
-    }
- 
 program: |-
   request(
   	"POST",
@@ -104,3 +66,41 @@ publisher_pipeline.disable_host: true
 processors:
 {{processors}}
 {{/if}}
+
+state:
+  want_more: false
+  key: {{key}}
+  limit: {{limit}}
+  query: >-
+    query getAssets($first: Int, $after: String) {
+      assets(first: $first, after: $after) {
+        nodes {
+          id
+          name
+          firstSeen
+          lastSeen
+          lastHit
+          lastSnapshot
+          macs{nodes}
+          ips{nodes}
+          segments{nodes{id} }
+          type
+          superType
+          category
+          purdueLevel
+          runStatus
+          runStatusTime
+          risk{totalRisk}
+          criticality
+          hidden
+          lastUpdate
+          directIps{nodes}
+          directMacs{nodes} 
+        }
+        pageInfo {
+          hasNextPage
+          endCursor
+        }
+      }
+    }
+ 

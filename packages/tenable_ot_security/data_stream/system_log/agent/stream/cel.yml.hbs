@@ -15,26 +15,6 @@ resource.timeout: {{http_client_timeout}}
 {{/if}}
 max_executions: {{max_executions}}
 resource.url: {{api_host}}
- 
-state:
-  want_more: false
-  key: {{key}}
-  limit: {{limit}}
-  query: >-
-    query getSystemLogs($first: Int, $after: String) {
-      systemLog(first: $first, after: $after) {
-        pageInfo {
-          hasNextPage
-          endCursor
-        }
-        nodes {
-          message
-          timeStamp
-          userName
-        }
-      }
-    }
- 
 program: |-
   request(
   	"POST",
@@ -86,3 +66,23 @@ publisher_pipeline.disable_host: true
 processors:
 {{processors}}
 {{/if}}
+
+state:
+  want_more: false
+  key: {{key}}
+  limit: {{limit}}
+  query: >-
+    query getSystemLogs($first: Int, $after: String) {
+      systemLog(first: $first, after: $after) {
+        pageInfo {
+          hasNextPage
+          endCursor
+        }
+        nodes {
+          message
+          timeStamp
+          userName
+        }
+      }
+    }
+ 
