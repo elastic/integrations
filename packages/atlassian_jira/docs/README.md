@@ -29,6 +29,7 @@ The Jira integration collects audit logs from the audit log files or the audit A
 | host.os.build | OS build information. | keyword |
 | host.os.codename | OS codename, if any. | keyword |
 | input.type | Input type | keyword |
+| jira.audit.additional_source_ips | List of IP address | ip |
 | jira.audit.affected_objects | Affected Objects | flattened |
 | jira.audit.changed_values | Changed Values | flattened |
 | jira.audit.extra_attributes | Extra Attributes | flattened |
