@@ -34,11 +34,14 @@ When in Elastic Security users are able to quickly lookup information about IPs 
 ```
 POST kbn:/api/kibana/settings
 {"changes":{"securitySolution:ipReputationLinks": """[
-  { "name": "Endace", "url_template": "https://<Your Endace appliance url>/vision2/v1/pivotintovision/?datasources=tag:all&title=Untitled&reltime=12h&sip={{ip}}&tools=conversations_by_ipaddress" },
+  { "name": "Endace Pivot-to-Vision", "url_template": "name": "Endace Pivot-to-Vision", "url_template": "https://<your EndaceProbe FQDN>/vision2/v1/pivotintovision/?datasources=tag:rotation-file&title=Pivot%20from%Elastic%20Security&reltime=6h&sip={{ip}}&tools=trafficOverTime_by_app%2Cconversations_by_ipaddress" }
   { "name": "virustotal.com", "url_template": "https://www.virustotal.com/gui/search/{{ip}}" },
   { "name": "talosIntelligence.com", "url_template": "https://talosintelligence.com/reputation_center/lookup?search={{ip}}" }
 ]"""}}
 ```
+
+Note that the default time range over which to search is six hours.  This time range can be manually altered once EndaceVision Investigation has 
+been opened.
 
 
 ## Integration Variables
@@ -418,7 +421,6 @@ An example event for `flow` looks as following:
     },
     "type": "flow"
 }
-
 ```
 
 ## Licensing for Windows Systems
