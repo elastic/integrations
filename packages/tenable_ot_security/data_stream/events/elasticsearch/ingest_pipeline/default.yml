@@ -63,6 +63,40 @@ processors:
         if (ctx.tenable_ot_security.events != null) {
           ctx.tenable_ot_security.events = keysToSnakeCase(ctx.tenable_ot_security.events);
         }
+  - script:
+      description: "Recursively normalize every occurrence of 'nodes' in the assets structure."
+      lang: painless
+      source: |
+        def normalize(def obj) {
+          if (obj instanceof Map) {
+                Map newObj = new HashMap();
+                for (entry in obj.entrySet()) {
+                    def key = entry.getKey();
+                    def value = entry.getValue();
+        
+                    // If the value is a map with a single key "nodes", replace it with its contents
+                    if (value instanceof Map && value.containsKey("nodes")) {
+                        value = value.get("nodes");
+                    }
+        
+                    // Recursively process if value is a map or list
+                    newObj.put(key, normalize(value));
+                }
+                return newObj;
+            } else if (obj instanceof List) {
+                List newList = new ArrayList();
+                for (item in obj) {
+                    newList.add(normalize(item));
+                }
+                return newList;
+            } else {
+                return obj;
+            }
+           }    
+        // Apply normalization to every occurrence of "nodes" in events.
+        if (ctx.containsKey("tenable_ot_security") && ctx.tenable_ot_security.containsKey("events")) {
+          ctx.tenable_ot_security.events = normalize(ctx.tenable_ot_security.events);
+        }        
 ##################### ECS Fields #####################
   - set:
       field: event.kind
@@ -101,21 +135,25 @@ processors:
   - append:
       field: related.hosts
       value: '{{{tenable_ot_security.events.src_ip}}}'
+      if: ctx.tenable_ot_security.events?.src_ip != null || ctx.tenable_ot_security.events.src_ip != ''  
       allow_duplicates: false
 
   - append:
       field: related.hosts
-      value: '{{{tenable_ot_security.events.dst_ip}}}'    
+      value: '{{{tenable_ot_security.events.dst_ip}}}'
+      if: ctx.tenable_ot_security.events?.dst_ip != null || ctx.tenable_ot_security.events?.dst_ip != ''   
       allow_duplicates: false 
   
   - append:
       field: related.hosts
       value: '{{{tenable_ot_security.events.src_mac}}}'
+      if: ctx.tenable_ot_security.events?.src_mac != null || ctx.tenable_ot_security.events?.src_mac != ''
       allow_duplicates: false
 
   - append:
       field: related.hosts
-      value: '{{{tenable_ot_security.events.dst_mac}}}'    
+      value: '{{{tenable_ot_security.events.dst_mac}}}'  
+      if: ctx.tenable_ot_security.events?.dst_mac != null || ctx.tenable_ot_security?.events.dst_mac != ''   
       allow_duplicates: false 
 
   - append:
@@ -126,12 +164,7 @@ processors:
   - append:
       field: "related.user"
       value: "{{{tenable_ot_security.events.resolved_user}}}"
-      allow_duplicates: false
-
-  - gsub:
-      field: "related.hosts"
-      pattern: "^\\{\\d+=(.+)\\}$"
-      replacement: "$1"    
+      allow_duplicates: false  
   
 # #################### Override host.ip ######################
   - convert:
