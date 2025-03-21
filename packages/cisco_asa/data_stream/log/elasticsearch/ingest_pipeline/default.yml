@@ -74,10 +74,10 @@ processors:
       field: _temp_.full_message
       patterns:
         - "(?<_temp_.message_prefix>.*)message repeated (?<INT:_temp_.cisco.message_repeats:int>\\d+) times: \\[\\s(?<_temp_.extracted_message>.*)\\]"
-      if: ctx?._temp_?.full_message != null && ctx._temp_.full_message.contains('message repeated')
+      if: ctx._temp_?.full_message != null && ctx._temp_.full_message.contains('message repeated')
   - script:
       tag: script_message_repeats
-      if: ctx?._temp_?.message_prefix != null && ctx?._temp_?.extracted_message != null
+      if: ctx._temp_?.message_prefix != null && ctx._temp_?.extracted_message != null
       source: ctx._temp_.full_message = ctx._temp_.message_prefix + ctx._temp_.extracted_message;
 
   #
