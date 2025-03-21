@@ -75,9 +75,12 @@ processors:
 
 state:
   want_more: false
+  worklist: []
+  next: 0
+  sync_delay: "5s"
   base:
     tenant_id: "{{azure_tenant_id}}"
-    period: "{{period}}"
+    interval: "{{interval}}"
 
 redact:
   fields:
@@ -91,11 +94,15 @@ program: |
       state.with(
           request(
             "GET",
-            state.url.trim_right("/") + "/communications/callRecords"
+            has(state.next_page) && state.next_page != "" ?
+            state.next_page
+            :
+            state.url.trim_right("/") + "/communications/callRecords?" + "$filter=startDateTime%20ge%20"+ string(now - duration(state.base.interval) - duration(state.sync_delay))
           ).do_request().as(resp, resp.StatusCode == 200 ?
             bytes(resp.Body).decode_json().as(body, {
               "worklist": body.value.collate("id"),
-              "next": 0,
+              "want_more": "@odata.nextLink" in body,
+              "next_page": "@odata.nextLink" in body ? body["@odata.nextLink"] : "",
             })
           :
             {
@@ -111,12 +118,10 @@ program: |
                   ),
                 },
               },
-              "want_more": false,
+            "want_more": false
             }
         ))
   ).as(state, state.with(
-    !has(state.worklist) ? state : // Exit early due to GET failure.
-      state.worklist[?state.?next.orValue(-1)].hasValue() ?
         request(
           "GET",
           has(state.next_page) && state.next_page != "" ?
@@ -136,7 +141,7 @@ program: |
             "worklist": int(state.next) + 1 < size(state.worklist) ? state.worklist : [],
             "next": int(state.next) + 1 < size(state.worklist) ? (has(state.next_page) && state.next_page != "" ?  int(state.next) : int(state.next) + 1) : 0,
             "want_more": int(state.next) + 1 < size(state.worklist) || "@odata.nextLink" in body,
-            "next_page": "@odata.nextLink" in body ? body["@odata.nextLink"] : "",     
+            "next_page": "@odata.nextLink" in body ? body["@odata.nextLink"] : "",
           })
         :
           {
@@ -144,7 +149,7 @@ program: |
               "error": {
                 "code": string(resp.StatusCode),
                 "id": string(resp.Status),
-                "message": "GET /communications/callRecords/"+state.worklist[state.next].name+"/alerts:"+(
+                "message": "GET "+ "state.next_page"+(
                   size(resp.Body) != 0 ?
                     string(resp.Body)
                   :
@@ -155,11 +160,5 @@ program: |
             "want_more": false,
           }
         )
-      :
-        {
-          "events": [],
-          "want_more": false,
-          "next_page": {},
-        }
     )
   )
