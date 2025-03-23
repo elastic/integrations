@@ -785,6 +785,7 @@ Current supported event types are:
 | crowdstrike.event.AdditionalLocationCountryCode | Additional involved country code. | keyword |
 | crowdstrike.event.AdditionalSsoApplicationIdentifier | Additional application identifier. | keyword |
 | crowdstrike.event.AgentIdString |  | keyword |
+| crowdstrike.event.AggregateId |  | keyword |
 | crowdstrike.event.AnomalousTicketContentClassification | Ticket signature analysis. | keyword |
 | crowdstrike.event.AssociatedFile | The file associated with the triggering indicator. | keyword |
 | crowdstrike.event.Attributes | JSON objects containing additional information about the event. | flattened |
@@ -799,9 +800,11 @@ Current supported event types are:
 | crowdstrike.event.CloudProvider |  | keyword |
 | crowdstrike.event.CloudService |  | keyword |
 | crowdstrike.event.Commands | Commands run in a remote session. | keyword |
+| crowdstrike.event.CompositeId | Global unique identifier that identifies a unique alert. | keyword |
 | crowdstrike.event.ComputerName | Name of the computer where the detection occurred. | keyword |
 | crowdstrike.event.CustomerId | Customer identifier. | keyword |
 | crowdstrike.event.DataDomains | Data domains of the event that was the primary indicator or created it. | keyword |
+| crowdstrike.event.Description |  | keyword |
 | crowdstrike.event.DetectId | Unique ID associated with the detection. | keyword |
 | crowdstrike.event.DetectName | Name of the detection. | keyword |
 | crowdstrike.event.DeviceId | Device on which the event occurred. | keyword |
@@ -822,6 +825,9 @@ Current supported event types are:
 | crowdstrike.event.ExecutionMetadata.ResultID |  | keyword |
 | crowdstrike.event.ExecutionMetadata.SearchWindowEnd |  | date |
 | crowdstrike.event.ExecutionMetadata.SearchWindowStart |  | date |
+| crowdstrike.event.FilesWritten.FileName |  | keyword |
+| crowdstrike.event.FilesWritten.FilePath |  | keyword |
+| crowdstrike.event.FilesWritten.Timestamp |  | date |
 | crowdstrike.event.Finding | The details of the finding. | keyword |
 | crowdstrike.event.FineScore | The highest incident score reached as of the time the event was sent. | float |
 | crowdstrike.event.Flags.Audit | CrowdStrike audit flag. | boolean |
@@ -829,6 +835,7 @@ Current supported event types are:
 | crowdstrike.event.Flags.Monitor | CrowdStrike monitor flag. | boolean |
 | crowdstrike.event.GrandparentCommandLine | Grandparent process command line arguments. | keyword |
 | crowdstrike.event.GrandparentImageFileName | Path to the grandparent process. | keyword |
+| crowdstrike.event.GrandparentImageFilePath |  | keyword |
 | crowdstrike.event.Highlights | Sections of content that matched the monitoring rule. | text |
 | crowdstrike.event.HostGroups | Array of related Host Group IDs. | keyword |
 | crowdstrike.event.ICMPCode | RFC2780 ICMP Code field. | keyword |
@@ -850,6 +857,7 @@ Current supported event types are:
 | crowdstrike.event.LdapSearchQueryAttack | Detected LDAP tool attack. | keyword |
 | crowdstrike.event.LoadedObjects | Provides one or more JSON objects describing the loaded objects related to the detection. | nested |
 | crowdstrike.event.LocalIP | IP address of the host associated with the detection. | keyword |
+| crowdstrike.event.LocalIPv6 |  | ip |
 | crowdstrike.event.MACAddress | MAC address of the host associated with the detection. | keyword |
 | crowdstrike.event.MD5String | MD5 sum of the executable associated with the detection. | keyword |
 | crowdstrike.event.MachineDomain | Domain for the machine associated with the detection. | keyword |
@@ -887,6 +895,7 @@ Current supported event types are:
 | crowdstrike.event.ObjectiveCRuntimesAltered | Provides one or more JSON objects describing the obj-c methods related to the malware. | nested |
 | crowdstrike.event.OperationName | Event subtype. | keyword |
 | crowdstrike.event.ParentImageFileName | The parent image file name involved. | keyword |
+| crowdstrike.event.ParentImageFilePath |  | keyword |
 | crowdstrike.event.PatternDispositionFlags.BlockingUnsupportedOrDisabled |  | boolean |
 | crowdstrike.event.PatternDispositionFlags.BootupSafeguardEnabled |  | boolean |
 | crowdstrike.event.PatternDispositionFlags.CriticalProcessDisabled |  | boolean |
@@ -978,6 +987,7 @@ Current supported event types are:
 | crowdstrike.event.Timestamp | Firewall rule triggered timestamp. | date |
 | crowdstrike.event.Trampolines | Provides one or more JSON objects describing the relevant functions and processes performing inline API hooks. | nested |
 | crowdstrike.event.TreeID | CrowdStrike tree id. | keyword |
+| crowdstrike.event.Type | The endpoint detection type ("ldt": Legacy Endpoint Detection, or "ofp": Office Prevention Macro Detection). | keyword |
 | crowdstrike.event.UserId | Email address or user ID associated with the event. | keyword |
 | crowdstrike.event.UserUUID |  | keyword |
 | crowdstrike.event.VerifiedBootState | Provides the device’s current boot state. | keyword |
