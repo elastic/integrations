@@ -1,84 +1,699 @@
-<!-- Use this template language as a starting point, replacing {placeholder text} with details about the integration. -->
-<!-- Find more detailed documentation guidelines in https://github.com/elastic/integrations/blob/main/docs/documentation_guidelines.md -->
+# Tenable OT Security 
 
-# Tenable OT Security
+The Elastic integration for [Tenable OT Security](https://www.sailpoint.com/products/identity-security-cloud) enables real-time monitoring and analysis of identity security events within the Tenable OT Security platform. This integration collects, processes, and visualizes data related to industrial networks from cyber threats, malicious insiders, and human error. From threat detection and mitigation to asset tracking, vulnerability management, configuration control and Active Query checks
 
-<!-- The Tenable OT Security integration allows you to monitor {name of service}. {name of service} is {describe service}.
+## Data Streams
 
-Use the Tenable OT Security integration to {purpose}. Then visualize that data in Kibana, create alerts to notify you if something goes wrong, and reference {data stream type} when troubleshooting an issue.
+- **`events`**: Assets data stream supports listing all the assets of the network that include laptops, desktops, servers, routers, mobile phones, virtual machines, software containers, and cloud instances.
+- [Events](https://docs.tenable.com/OT-security/4_1/Content/Inventory/ViewAssetDetails.htm) are records that a user took action in an [Tenable OT Security](https://ot.tenalab.online/)Assets.
+- This data stream leverages the Tenable OT Security graphql API's `/graphql` endpoint to retrieve assets logs.
 
-For example, if you wanted to {sample use case} you could {action}. Then you can {visualize|alert|troubleshoot} by {action}. -->
+- **`events`**: Events are notifications generated in the system to call attention to potentially harmful activity in the network. Policies that you set up in the OT Security system generate events in one of the following categories: Configuration Events, SCADA Events, Network Threats, or Network Events. OT Security assigns a severity level to each policy, indicating the severity of the event and more.
+- [Events](https://docs.tenable.com/OT-security/4_1/Content/Events/Events.htm) are records that a user took action in an [Tenable OT Security](https://ot.tenalab.online/)Events.
+- This data stream leverages the Tenable OT Security graphql API's `/graphql` endpoint to retrieve event logs.
 
-## Data streams
-
-<!-- The Tenable OT Security integration collects {one|two} type{s} of data streams: {logs and/or metrics}. -->
-
-<!-- If applicable -->
-<!-- **Logs** help you keep a record of events happening in {service}.
-Log data streams collected by the {name} integration include {sample data stream(s)} and more. See more details in the [Logs](#logs-reference). -->
-
-<!-- If applicable -->
-<!-- **Metrics** give you insight into the state of {service}.
-Metric data streams collected by the {name} integration include {sample data stream(s)} and more. See more details in the [Metrics](#metrics-reference). -->
-
-<!-- Optional: Any additional notes on data streams -->
+- **`system logs`**: SystemLogs data stream provides detailed records of events, activities, and changes occurring within the OT environment. These logs are critical for monitoring, auditing, and investigating security incidents. They capture data from various OT assets, such as PLCs (Programmable Logic Controllers), RTUs (Remote Terminal Units), HMIs (Human-Machine Interfaces), and other industrial devices.
+- [System_Logs](https://docs.tenable.com/OT-security/4_1/Content/Events/Events.htm) are records that a user took action in an [Tenable OT Security](https://ot.tenalab.online/)Events.
+- This data stream leverages the Tenable OT Security graphql API's `/graphql` endpoint to retrieve system logs.
 
 ## Requirements
 
-You need Elasticsearch for storing and searching your data and Kibana for visualizing and managing it.
-You can use our hosted Elasticsearch Service on Elastic Cloud, which is recommended, or self-manage the Elastic Stack on your own hardware.
+### Access, setup and data
+Login into Tenable's cloud platform to generate a unique set of API keys for each user account. These keys allow applications to authenticate to Tenable's API without creating a session.
 
-<!--
-	Optional: Other requirements including:
-	* System compatibility
-	* Supported versions of third-party products
-	* Permissions needed
-	* Anything else that could block a user from successfully using the integration
--->
+Once you have created the Api key and you know its access key and secret key, you have everything you need to generate an access_token. You will need this access_token to authenticate your requests to the APIs.
 
-## Setup
+Fore more details on generating access_token, please check the API documentation [here](https://developer.tenable.com/docs/ot-generate-an-api-key)
 
-<!-- Any prerequisite instructions -->
+### Authentication
+A fast, simple way to authenticate to the APIs is to generate an access token and pass that token.
+To generate an API key in [Tenable OT Security](https://developer.tenable.com/docs/ot-generate-an-api-key):
 
-For step-by-step instructions on how to set up an integration, see the
-[Getting started](https://www.elastic.co/guide/en/welcome-to-elastic/current/getting-started-observability.html) guide.
+ 1. Sign in to Tenable OT Security.
+ 2. In the left navigation plane, click `Local Settings`.
+    The `Local Settings` submenu expands.
+3. In the `Local Settings` submenu, click `System Configuration`.
+    The `System Configuration` submenu expands.
+4. In the `System Configuration` submenu, click `API Keys`.
+   The `API Keys` page appears along with a table of existing API keys.
+5. On the API Keys page, in the top right corner, click the `Generate Key` button.
+   The `Generate Key` side pane appears.
+6. In the `Expiration Period` area, choose the expiration period in days. The maximum expiration period is 365 days.
+7. In the `Description` text box, enter a description explaining what the API key will be used for.
+8. Click the `Generate` button.
+    The `Generate Key` side pane appears with the `API Key` and `API Secret`.
+    `Note`: The generated API key has the same permissions as the user that created it according to their role.
+Use the `Copy` buttons to copy the API key and API secret, Save them in a secure location for later use. The API key and API secret are shown only once.
 
-<!-- Additional set up instructions -->
+9. To authorize your application to use the Tenable's API, you must include the `X-ApiKeys` header element in your HTTP request messages.
+ For more details on Authentication check [here](https://developer.tenable.com/docs/authorization).
+## Logs
 
-<!-- If applicable -->
-<!-- ## Logs reference -->
+### Assets
 
-<!-- Repeat for each data stream of the current type -->
-<!-- ### {Data stream name}
+Assets documents can be found by setting the following filter: 
+`event.dataset : "tenable_ot_security.assets"`
 
-The `{data stream name}` data stream provides events from {source} of the following types: {list types}. -->
+An example event for `assets` looks as following:
 
-<!-- Optional -->
-<!-- #### Example
+```json
+{
+    "@timestamp": "2024-06-25T17:05:14.23377Z",
+    "agent": {
+        "ephemeral_id": "fa0df5ff-2612-4ed7-8fe6-9c903db856e4",
+        "id": "7edc7be7-d734-4036-a330-237a1cd38f6d",
+        "name": "elastic-agent-19662",
+        "type": "filebeat",
+        "version": "8.15.0"
+    },
+    "data_stream": {
+        "dataset": "tenable_ot_security.assets",
+        "namespace": "56436",
+        "type": "logs"
+    },
+    "ecs": {
+        "version": "8.11.0"
+    },
+    "elastic_agent": {
+        "id": "7edc7be7-d734-4036-a330-237a1cd38f6d",
+        "snapshot": false,
+        "version": "8.15.0"
+    },
+    "event": {
+        "agent_id_status": "verified",
+        "category": [
+            "iam"
+        ],
+        "dataset": "tenable_ot_security.assets",
+        "id": "00b1e0a5-31ce-4b30-9af7-a6e1aa4616b8",
+        "ingested": "2025-03-21T11:57:37Z",
+        "kind": "event",
+        "module": "tenable_ot_security",
+        "type": [
+            "info"
+        ]
+    },
+    "host": {
+        "ip": [
+            "10.100.101.150"
+        ]
+    },
+    "input": {
+        "type": "cel"
+    },
+    "related": {
+        "hosts": [
+            "10.100.101.150",
+            "00:1d:9c:d4:c3:95"
+        ]
+    },
+    "tags": [
+        "preserve_original_event",
+        "forwarded",
+        "tenable_ot_security"
+    ],
+    "tenable_ot_security": {
+        "assets": {
+            "category": "ControllersCategory",
+            "criticality": "HighCriticality",
+            "direct_ips": [
+                "10.100.101.150"
+            ],
+            "direct_macs": [
+                "00:1d:9c:d4:c3:95"
+            ],
+            "first_seen": "2024-06-25T17:05:14.23377Z",
+            "hidden": false,
+            "id": "00b1e0a5-31ce-4b30-9af7-a6e1aa4616b8",
+            "ips": [
+                "10.100.101.151",
+                "10.100.101.155",
+                "10.100.101.150"
+            ],
+            "last_hit": "2025-03-06T11:13:29.933248Z",
+            "last_seen": "2025-03-09T05:02:19.186828Z",
+            "last_update": "2024-06-25T17:07:00.687828Z",
+            "name": "DeviceNet_L81",
+            "purdue_level": "Level1",
+            "risk": {
+                "total_risk": "72.8374829734034"
+            },
+            "run_status": "Unknown",
+            "run_status_time": "0001-01-01T00:00:00Z",
+            "segments": [
+                {
+                    "id": "663dab4a-1d09-4f0d-b455-4a52d1964f0d"
+                }
+            ],
+            "super_type": "Controller",
+            "type": "Plc"
+        }
+    }
+}
+```
 
-An example event for `{data stream name}` looks as following:
+**ECS Field Reference**
 
-{code block with example} -->
+Please refer to the following [document](https://www.elastic.co/guide/en/ecs/current/ecs-field-reference.html) for detailed information on ECS fields.
 
-<!-- #### Exported fields
+The following non-ECS fields are used in assets documents:
 
-{insert table} -->
+**Exported fields**
 
-<!-- If applicable -->
-<!-- ## Metrics reference -->
+| Field | Description | Type |
+|---|---|---|
+| @timestamp | Event timestamp. | date |
+| data_stream.dataset | Data stream dataset. | constant_keyword |
+| data_stream.namespace | Data stream namespace. | constant_keyword |
+| data_stream.type | Data stream type. | constant_keyword |
+| input.type | Input type. | keyword |
+| tenable_ot_security.assets.category | The category of the asset. | keyword |
+| tenable_ot_security.assets.criticality | The criticality level of the asset. | keyword |
+| tenable_ot_security.assets.direct_ips | A list of directly assigned IP addresses for the asset. | keyword |
+| tenable_ot_security.assets.direct_macs | A list of directly assigned MAC addresses for the asset. | keyword |
+| tenable_ot_security.assets.first_seen | The ISO 8601 timestamp when the asset was first detected. | date |
+| tenable_ot_security.assets.hidden | Indicates whether the asset is hidden. | boolean |
+| tenable_ot_security.assets.id | The UUID of the asset. Use this value as the unique key for the asset. | keyword |
+| tenable_ot_security.assets.ips | A list of IP addresses associated with the asset. | keyword |
+| tenable_ot_security.assets.last_hit | The ISO 8601 timestamp when the asset was last accessed. | date |
+| tenable_ot_security.assets.last_seen | The ISO 8601 timestamp when the asset was last seen. | date |
+| tenable_ot_security.assets.last_snapshot | The ISO 8601 timestamp of the last asset snapshot. | date |
+| tenable_ot_security.assets.last_update | The timestamp of the last update for the asset. | date |
+| tenable_ot_security.assets.macs | A list of MAC addresses associated with the asset. | keyword |
+| tenable_ot_security.assets.name | The name of the asset. | keyword |
+| tenable_ot_security.assets.purdue_level | The Purdue level classification of the asset. | keyword |
+| tenable_ot_security.assets.risk.total_risk | The overall risk score of the asset. | keyword |
+| tenable_ot_security.assets.run_status | The current operational status of the asset. | keyword |
+| tenable_ot_security.assets.run_status_time | The timestamp when the run status was last updated. | date |
+| tenable_ot_security.assets.segments.archived | Indicates whether the segment is archived. | boolean |
+| tenable_ot_security.assets.segments.id | The UUID of the segment. | keyword |
+| tenable_ot_security.assets.segments.key | The key associated with the segment. | keyword |
+| tenable_ot_security.assets.segments.last_modified_by | The user who last modified the segment. | keyword |
+| tenable_ot_security.assets.segments.last_modified_date | The timestamp of the last modification to the segment. | date |
+| tenable_ot_security.assets.segments.name | The name of the segment. | keyword |
+| tenable_ot_security.assets.segments.policies | A list of policies associated with the segment. | keyword |
+| tenable_ot_security.assets.segments.queries | A list of queries associated with the segment. | keyword |
+| tenable_ot_security.assets.segments.system | Indicates whether the segment is system-defined. | boolean |
+| tenable_ot_security.assets.segments.type | The type of segment. | keyword |
+| tenable_ot_security.assets.super_type | The higher-level classification of the asset. | keyword |
+| tenable_ot_security.assets.type | The type of asset. | keyword |
 
-<!-- Repeat for each data stream of the current type -->
-<!-- ### {Data stream name}
 
-The `{data stream name}` data stream provides events from {source} of the following types: {list types}. -->
+### Events
 
-<!-- Optional -->
-<!-- #### Example
+Event documents can be found by setting the following filter: 
+`event.dataset : "tenable_ot_security.events"`
 
-An example event for `{data stream name}` looks as following:
+An example event for `events` looks as following:
 
-{code block with example} -->
+```json
+{
+    "@timestamp": "2024-12-18T06:20:30.293664Z",
+    "agent": {
+        "ephemeral_id": "5abb69a8-ddf6-4183-85e6-4c5dc16b40c8",
+        "id": "96096f94-2c43-4deb-8ef2-292de44aaa2c",
+        "name": "elastic-agent-58235",
+        "type": "filebeat",
+        "version": "8.15.0"
+    },
+    "data_stream": {
+        "dataset": "tenable_ot_security.events",
+        "namespace": "61781",
+        "type": "logs"
+    },
+    "ecs": {
+        "version": "8.11.0"
+    },
+    "elastic_agent": {
+        "id": "96096f94-2c43-4deb-8ef2-292de44aaa2c",
+        "snapshot": false,
+        "version": "8.15.0"
+    },
+    "event": {
+        "agent_id_status": "verified",
+        "category": [
+            "iam"
+        ],
+        "dataset": "tenable_ot_security.events",
+        "id": "f84bb6c7-464c-4fa8-b177-69ed2f328696",
+        "ingested": "2025-03-21T11:56:21Z",
+        "kind": "event",
+        "module": "tenable_ot_security",
+        "type": [
+            "info"
+        ]
+    },
+    "host": {
+        "ip": [
+            "172.26.22.1"
+        ]
+    },
+    "input": {
+        "type": "cel"
+    },
+    "network": {
+        "protocol": [
+            "UNKNOWN"
+        ]
+    },
+    "related": {
+        "hosts": [
+            "172.26.22.1",
+            "",
+            "00:50:56:bd:65:66"
+        ],
+        "user": [
+            ""
+        ]
+    },
+    "tags": [
+        "preserve_original_event",
+        "forwarded",
+        "tenable_ot_security"
+    ],
+    "tenable_ot_security": {
+        "events": {
+            "category": "NetworkEvents",
+            "completion": "CompletionUnknown",
+            "continuous": false,
+            "event_type": {
+                "actions": [
+                    "Syslog",
+                    "Email"
+                ],
+                "can_capture": false,
+                "category": "NetworkEvents",
+                "description": "Asset Not Seen for 1 Hour",
+                "exclusion": "Asset",
+                "group": "InactiveNetworkInterfaceEvent",
+                "schema": "AssetSchema",
+                "type": "InactiveAssetOneHour"
+            },
+            "has_details": true,
+            "hit_id": "f84bb6c7-464c-4fa8-b177-69ed2f328696",
+            "id": "f84bb6c7-464c-4fa8-b177-69ed2f328696",
+            "log_id": 4165781,
+            "payload_size": 0,
+            "policy": {
+                "aggregated_events_count": {
+                    "last24h": 0,
+                    "last30d": 20059,
+                    "last7d": 3458
+                },
+                "archived": false,
+                "continuous": false,
+                "disable_after_hit": false,
+                "disabled": false,
+                "event_type_details": {
+                    "actions": [
+                        "Syslog",
+                        "Email"
+                    ],
+                    "can_capture": false,
+                    "category": "NetworkEvents",
+                    "description": "Asset Not Seen for 1 Hour",
+                    "exclusion": "Asset",
+                    "group": "InactiveNetworkInterfaceEvent",
+                    "schema": "AssetSchema",
+                    "type": "InactiveAssetOneHour"
+                },
+                "id": "bd04e427-3af1-4111-87b0-60ecfffa516b",
+                "index": 164,
+                "key": "P3-1",
+                "level": "Low",
+                "paused": false,
+                "schedule": {
+                    "group": {
+                        "archived": false,
+                        "id": "d9342125-4728-43da-9e12-3b96661d40f5",
+                        "key": "PG4-2",
+                        "name": "Any Time",
+                        "system": true,
+                        "type": "Function",
+                        "usage_info": {
+                            "editable": false,
+                            "used": true
+                        },
+                        "used_in_restrictions": false
+                    },
+                    "negate": false
+                },
+                "schema": "AssetSchema",
+                "snapshot": false,
+                "system": true,
+                "title": "Asset Not Seen for 1 Hour"
+            },
+            "protocol": "Unknown",
+            "protocol_raw": "UNKNOWN",
+            "resolved": false,
+            "severity": "Low",
+            "src_interface": {
+                "family": "VMware",
+                "first_seen": "2024-06-25T17:19:17.949295Z",
+                "id": "349bd5ea-59f8-4585-b407-601cb7f55ec7",
+                "ip_trail": [
+                    {
+                        "ip": "172.26.22.1",
+                        "is_active": true,
+                        "start_time": "2024-06-25T17:19:17.949295Z"
+                    }
+                ],
+                "ips": [
+                    {
+                        "ip": "172.26.22.1",
+                        "open_ports": {
+                            "in_on_demand_scan": false,
+                            "scanned_once": false
+                        }
+                    }
+                ],
+                "last_seen": "2025-03-08T05:00:03.145012Z",
+                "mac": "00:50:56:bd:65:66"
+            },
+            "src_ip": "172.26.22.1",
+            "src_mac": "00:50:56:bd:65:66",
+            "src_names": [
+                "NPW-PT1-WINXP32"
+            ],
+            "time": "2024-12-18T06:20:30.293664Z",
+            "type": "InactiveAssetOneHour"
+        }
+    }
+}
+```
 
-<!-- #### Exported fields
+**ECS Field Reference**
 
-{insert table} -->
+Please refer to the following [document](https://www.elastic.co/guide/en/ecs/current/ecs-field-reference.html) for detailed information on ECS fields.
+
+The following non-ECS fields are used in events documents:
+
+**Exported fields**
+
+| Field | Description | Type |
+|---|---|---|
+| @timestamp | Event timestamp. | date |
+| data_stream.dataset | Data stream dataset. | constant_keyword |
+| data_stream.namespace | Data stream namespace. | constant_keyword |
+| data_stream.type | Data stream type. | constant_keyword |
+| input.type | Input type. | keyword |
+| tenable_ot_security.events.category | Category classification of the event. | keyword |
+| tenable_ot_security.events.comment | Comments or notes related to the event. | text |
+| tenable_ot_security.events.completion | Completion status of the event. | keyword |
+| tenable_ot_security.events.continuous | Indicates if the traffic is continuous. | boolean |
+| tenable_ot_security.events.dst_interface.dns_names | List of DNS names. | keyword |
+| tenable_ot_security.events.dst_interface.family | The family of the destination interface. | keyword |
+| tenable_ot_security.events.dst_interface.first_seen | The first time the interface was observed. | date |
+| tenable_ot_security.events.dst_interface.id | The unique identifier of the destination interface. | keyword |
+| tenable_ot_security.events.dst_interface.ip_trail.end_time | The end time of the IP trail. | date |
+| tenable_ot_security.events.dst_interface.ip_trail.ip | The IP address in the history trail. | keyword |
+| tenable_ot_security.events.dst_interface.ip_trail.is_active | Indicates if the IP is currently active. | boolean |
+| tenable_ot_security.events.dst_interface.ip_trail.start_time | The start time of the IP trail. | date |
+| tenable_ot_security.events.dst_interface.ips.dns_names | List of DNS names. | keyword |
+| tenable_ot_security.events.dst_interface.ips.ip | The IP address of the destination interface. | keyword |
+| tenable_ot_security.events.dst_interface.ips.open_ports.in_on_demand_scan | Indicates if the port was part of an on-demand scan. | boolean |
+| tenable_ot_security.events.dst_interface.ips.open_ports.ports.description | The description of the open port. | text |
+| tenable_ot_security.events.dst_interface.ips.open_ports.ports.name | The name of the open port. | keyword |
+| tenable_ot_security.events.dst_interface.ips.open_ports.ports.port | The port number. | integer |
+| tenable_ot_security.events.dst_interface.ips.open_ports.ports.scan_time | The time the port was scanned. | date |
+| tenable_ot_security.events.dst_interface.ips.open_ports.ports.source | The source of the scan. | keyword |
+| tenable_ot_security.events.dst_interface.ips.open_ports.scanned_once | Indicates if the port was scanned once. | boolean |
+| tenable_ot_security.events.dst_interface.last_seen | The last time the interface was observed. | date |
+| tenable_ot_security.events.dst_interface.mac | The MAC address of the destination interface. | keyword |
+| tenable_ot_security.events.dst_ip | The destination IP address associated with the event. | ip |
+| tenable_ot_security.events.dst_mac | Destination MAC address associated with the event. | keyword |
+| tenable_ot_security.events.dst_names | List of destination names. | keyword |
+| tenable_ot_security.events.event_type.actions | List of actions associated with the event. | keyword |
+| tenable_ot_security.events.event_type.can_capture | Indicates whether this event can be captured. | boolean |
+| tenable_ot_security.events.event_type.category | The category this event falls under. | keyword |
+| tenable_ot_security.events.event_type.description | A textual description of the event type. | text |
+| tenable_ot_security.events.event_type.exclusion | Any exclusions that apply to this event type. | keyword |
+| tenable_ot_security.events.event_type.family | The family classification of the event. | keyword |
+| tenable_ot_security.events.event_type.group | The group classification of the event. | keyword |
+| tenable_ot_security.events.event_type.schema | The schema associated with the event type. | keyword |
+| tenable_ot_security.events.event_type.type | The specific type of the event. | keyword |
+| tenable_ot_security.events.has_details | Indicates if the network traffic has additional details. | boolean |
+| tenable_ot_security.events.hit_id | Unique identifier for the hit event. | keyword |
+| tenable_ot_security.events.id | The unique identifier of the event. | keyword |
+| tenable_ot_security.events.log_id | Unique identifier for the log entry. | double |
+| tenable_ot_security.events.payload_size | Size of the network payload in bytes. | long |
+| tenable_ot_security.events.policy.actions.aid | Unique identifier for the action. | keyword |
+| tenable_ot_security.events.policy.actions.type | Type of action executed. | keyword |
+| tenable_ot_security.events.policy.aggregated_events_count.last24h | The number of events in the last 24 hours. | integer |
+| tenable_ot_security.events.policy.aggregated_events_count.last30d | The number of events in the last 30 days. | integer |
+| tenable_ot_security.events.policy.aggregated_events_count.last7d | The number of events in the last 7 days. | integer |
+| tenable_ot_security.events.policy.archived | Indicates whether the policy is archived. | boolean |
+| tenable_ot_security.events.policy.continuous | Indicates whether the policy is continuous. | boolean |
+| tenable_ot_security.events.policy.disable_after_hit | Indicates whether the policy should be disabled after a hit. | boolean |
+| tenable_ot_security.events.policy.disabled | Indicates whether the policy is disabled. | boolean |
+| tenable_ot_security.events.policy.event_type_details.actions | Actions associated with the event type. | keyword |
+| tenable_ot_security.events.policy.event_type_details.can_capture | Indicates whether the event type can be captured. | boolean |
+| tenable_ot_security.events.policy.event_type_details.category | The category of the event type. | keyword |
+| tenable_ot_security.events.policy.event_type_details.description | A description of the event type. | text |
+| tenable_ot_security.events.policy.event_type_details.exclusion | Exclusion rules related to the event type. | keyword |
+| tenable_ot_security.events.policy.event_type_details.family | The family classification of the event type. | keyword |
+| tenable_ot_security.events.policy.event_type_details.group | The group classification of the event type. | keyword |
+| tenable_ot_security.events.policy.event_type_details.schema | The schema associated with the event type. | keyword |
+| tenable_ot_security.events.policy.event_type_details.type | The type of event related to the policy. | keyword |
+| tenable_ot_security.events.policy.exclusions.comment | Additional comments about the exclusion. | text |
+| tenable_ot_security.events.policy.exclusions.count | The count of occurrences for the exclusion. | integer |
+| tenable_ot_security.events.policy.exclusions.created | The creation date of the exclusion. | date |
+| tenable_ot_security.events.policy.exclusions.created_by | The user who created the exclusion. | keyword |
+| tenable_ot_security.events.policy.exclusions.id | The unique identifier of the exclusion. | keyword |
+| tenable_ot_security.events.policy.exclusions.type | The type of exclusion. | keyword |
+| tenable_ot_security.events.policy.id | The unique identifier of the policy. | keyword |
+| tenable_ot_security.events.policy.index | The index position of the policy. | integer |
+| tenable_ot_security.events.policy.key | The unique key associated with the policy. | keyword |
+| tenable_ot_security.events.policy.last_modified_by | The user who last modified the policy. | keyword |
+| tenable_ot_security.events.policy.last_modified_date | The last modified date of the policy. | date |
+| tenable_ot_security.events.policy.level | The severity level of the policy. | keyword |
+| tenable_ot_security.events.policy.paused | Indicates whether the process is paused. | boolean |
+| tenable_ot_security.events.policy.port_group.group.archived | Indicates if the port group is archived. | boolean |
+| tenable_ot_security.events.policy.port_group.group.id | The unique identifier of the port group. | keyword |
+| tenable_ot_security.events.policy.port_group.group.items.end_port | The end port of the port range. | integer |
+| tenable_ot_security.events.policy.port_group.group.items.start_port | The start port of the port range. | integer |
+| tenable_ot_security.events.policy.port_group.group.key | A key associated with the port group. | keyword |
+| tenable_ot_security.events.policy.port_group.group.last_modified_by | The user who last modified the port group. | keyword |
+| tenable_ot_security.events.policy.port_group.group.last_modified_date | The last modification date of the port group. | date |
+| tenable_ot_security.events.policy.port_group.group.name | The name of the port group. | keyword |
+| tenable_ot_security.events.policy.port_group.group.system | Indicates if the port group is system-managed. | boolean |
+| tenable_ot_security.events.policy.port_group.group.type | The type of port group. | keyword |
+| tenable_ot_security.events.policy.port_group.group.usage_info.editable | Indicates if the port group is editable. | boolean |
+| tenable_ot_security.events.policy.port_group.group.usage_info.used | Indicates if the port group is in use. | boolean |
+| tenable_ot_security.events.policy.port_group.negate | Indicates if the port group is negated. | boolean |
+| tenable_ot_security.events.policy.protocol_group.group.archived | Indicates if the protocol group is archived. | boolean |
+| tenable_ot_security.events.policy.protocol_group.group.id | The unique identifier of the protocol group. | keyword |
+| tenable_ot_security.events.policy.protocol_group.group.items.end_port | The end port of the protocol range. | integer |
+| tenable_ot_security.events.policy.protocol_group.group.items.protocol | The protocol associated with the group item. | keyword |
+| tenable_ot_security.events.policy.protocol_group.group.items.start_port | The start port of the protocol range. | integer |
+| tenable_ot_security.events.policy.protocol_group.group.key | A key associated with the protocol group. | keyword |
+| tenable_ot_security.events.policy.protocol_group.group.last_modified_by | The user who last modified the protocol group. | keyword |
+| tenable_ot_security.events.policy.protocol_group.group.last_modified_date | The last modification date of the protocol group. | date |
+| tenable_ot_security.events.policy.protocol_group.group.name | The name of the protocol group. | keyword |
+| tenable_ot_security.events.policy.protocol_group.group.system | Indicates if the protocol group is system-managed. | boolean |
+| tenable_ot_security.events.policy.protocol_group.group.type | The type of protocol group. | keyword |
+| tenable_ot_security.events.policy.protocol_group.group.usage_info.editable | Indicates if the protocol group is editable. | boolean |
+| tenable_ot_security.events.policy.protocol_group.group.usage_info.used | Indicates if the protocol group is in use. | boolean |
+| tenable_ot_security.events.policy.protocol_group.negate | Indicates if the protocol group is negated. | boolean |
+| tenable_ot_security.events.policy.rule_group.group.archived | Indicates if the rule group is archived. | boolean |
+| tenable_ot_security.events.policy.rule_group.group.id | The unique identifier of the rule group. | keyword |
+| tenable_ot_security.events.policy.rule_group.group.items.bidirectional | Indicates if the rule applies bidirectionally. | boolean |
+| tenable_ot_security.events.policy.rule_group.group.items.category | The category of the rule. | keyword |
+| tenable_ot_security.events.policy.rule_group.group.items.classification | The classification of the rule. | keyword |
+| tenable_ot_security.events.policy.rule_group.group.items.created_at | The creation timestamp of the rule. | date |
+| tenable_ot_security.events.policy.rule_group.group.items.dst_ips | Destination IP addresses for the rule. | keyword |
+| tenable_ot_security.events.policy.rule_group.group.items.dst_ports | Destination ports for the rule. | keyword |
+| tenable_ot_security.events.policy.rule_group.group.items.enabled | Indicates if the rule is enabled. | boolean |
+| tenable_ot_security.events.policy.rule_group.group.items.msg | Message or description of the rule. | text |
+| tenable_ot_security.events.policy.rule_group.group.items.payload | The payload of the rule. | text |
+| tenable_ot_security.events.policy.rule_group.group.items.protocol | The protocol associated with the rule. | keyword |
+| tenable_ot_security.events.policy.rule_group.group.items.references.rev | The revision number of the reference. | integer |
+| tenable_ot_security.events.policy.rule_group.group.items.references.sid | The security identifier of the reference. | keyword |
+| tenable_ot_security.events.policy.rule_group.group.items.references.type | The type of reference. | keyword |
+| tenable_ot_security.events.policy.rule_group.group.items.references.value | The value of the reference. | text |
+| tenable_ot_security.events.policy.rule_group.group.items.references_by_type.arachnids | Arachnids reference ID. | keyword |
+| tenable_ot_security.events.policy.rule_group.group.items.references_by_type.bid | BID reference ID. | keyword |
+| tenable_ot_security.events.policy.rule_group.group.items.references_by_type.bugtraq | Bugtraq reference ID. | keyword |
+| tenable_ot_security.events.policy.rule_group.group.items.references_by_type.cve | CVE reference ID. | keyword |
+| tenable_ot_security.events.policy.rule_group.group.items.references_by_type.et | ET reference ID. | keyword |
+| tenable_ot_security.events.policy.rule_group.group.items.references_by_type.etpro | ETPro reference ID. | keyword |
+| tenable_ot_security.events.policy.rule_group.group.items.references_by_type.exploitdb | ExploitDB reference ID. | keyword |
+| tenable_ot_security.events.policy.rule_group.group.items.references_by_type.mcafee | McAfee reference ID. | keyword |
+| tenable_ot_security.events.policy.rule_group.group.items.references_by_type.md5 | MD5 reference ID. | keyword |
+| tenable_ot_security.events.policy.rule_group.group.items.references_by_type.msft | Microsoft Security reference ID. | keyword |
+| tenable_ot_security.events.policy.rule_group.group.items.references_by_type.nessus | Nessus reference ID. | keyword |
+| tenable_ot_security.events.policy.rule_group.group.items.references_by_type.openpacket | OpenPacket reference ID. | keyword |
+| tenable_ot_security.events.policy.rule_group.group.items.references_by_type.osvdb | OSVDB reference ID. | keyword |
+| tenable_ot_security.events.policy.rule_group.group.items.references_by_type.secunia | Secunia reference ID. | keyword |
+| tenable_ot_security.events.policy.rule_group.group.items.references_by_type.securitytracker | SecurityTracker reference ID. | keyword |
+| tenable_ot_security.events.policy.rule_group.group.items.references_by_type.telus | Telus reference ID. | keyword |
+| tenable_ot_security.events.policy.rule_group.group.items.references_by_type.threatexpert | ThreatExpert reference ID. | keyword |
+| tenable_ot_security.events.policy.rule_group.group.items.references_by_type.url | URL reference ID. | keyword |
+| tenable_ot_security.events.policy.rule_group.group.items.references_by_type.xforce | X-Force reference ID. | keyword |
+| tenable_ot_security.events.policy.rule_group.group.items.rev | The revision number of the rule. | integer |
+| tenable_ot_security.events.policy.rule_group.group.items.sid | The security identifier of the rule. | keyword |
+| tenable_ot_security.events.policy.rule_group.group.items.src_ips | Source IP addresses for the rule. | keyword |
+| tenable_ot_security.events.policy.rule_group.group.items.src_ports | Source ports for the rule. | keyword |
+| tenable_ot_security.events.policy.rule_group.group.items.updated_at | The last update timestamp of the rule. | date |
+| tenable_ot_security.events.policy.rule_group.group.key | A key associated with the rule group. | keyword |
+| tenable_ot_security.events.policy.rule_group.group.last_modified_by | The user who last modified the rule group. | keyword |
+| tenable_ot_security.events.policy.rule_group.group.last_modified_date | The last modification date of the rule group. | date |
+| tenable_ot_security.events.policy.rule_group.group.name | The name of the rule group. | keyword |
+| tenable_ot_security.events.policy.rule_group.group.system | Indicates if the rule group is system-managed. | boolean |
+| tenable_ot_security.events.policy.rule_group.group.type | The type of rule group. | keyword |
+| tenable_ot_security.events.policy.rule_group.group.usage_info.editable | Indicates if the rule group is editable. | boolean |
+| tenable_ot_security.events.policy.rule_group.group.usage_info.used | Indicates if the rule group is in use. | boolean |
+| tenable_ot_security.events.policy.rule_group.negate | Indicates if the rule group is negated. | boolean |
+| tenable_ot_security.events.policy.schedule.group.archived | Indicates if the schedule group is archived. | boolean |
+| tenable_ot_security.events.policy.schedule.group.id | The unique identifier of the schedule group. | keyword |
+| tenable_ot_security.events.policy.schedule.group.key | A key associated with the schedule group. | keyword |
+| tenable_ot_security.events.policy.schedule.group.last_modified_by | The user who last modified the schedule group. | keyword |
+| tenable_ot_security.events.policy.schedule.group.last_modified_date | The last modification date of the schedule group. | date |
+| tenable_ot_security.events.policy.schedule.group.name | The name of the schedule group. | keyword |
+| tenable_ot_security.events.policy.schedule.group.system | Indicates if the schedule group is system-managed. | boolean |
+| tenable_ot_security.events.policy.schedule.group.type | The type of schedule group. | keyword |
+| tenable_ot_security.events.policy.schedule.group.usage_info.editable | Indicates if the schedule group is editable. | boolean |
+| tenable_ot_security.events.policy.schedule.group.usage_info.used | Indicates if the schedule group is in use. | boolean |
+| tenable_ot_security.events.policy.schedule.group.used_in_restrictions | Indicates if the schedule group is used in restrictions. | boolean |
+| tenable_ot_security.events.policy.schedule.negate | Indicates if the schedule group is negated. | boolean |
+| tenable_ot_security.events.policy.schema | The schema associated with the policy. | keyword |
+| tenable_ot_security.events.policy.snapshot | Indicates whether the policy is a snapshot. | boolean |
+| tenable_ot_security.events.policy.system | Indicates whether the policy is a system policy. | boolean |
+| tenable_ot_security.events.policy.tag_group.group.archived | Indicates if the tag group is archived. | boolean |
+| tenable_ot_security.events.policy.tag_group.group.id | The unique identifier of the tag group. | keyword |
+| tenable_ot_security.events.policy.tag_group.group.items.tag_id | The ID of the tag. | keyword |
+| tenable_ot_security.events.policy.tag_group.group.items.tag_type | The type of the tag. | keyword |
+| tenable_ot_security.events.policy.tag_group.group.key | A key associated with the tag group. | keyword |
+| tenable_ot_security.events.policy.tag_group.group.last_modified_by | The user who last modified the tag group. | keyword |
+| tenable_ot_security.events.policy.tag_group.group.last_modified_date | The last modification date of the tag group. | date |
+| tenable_ot_security.events.policy.tag_group.group.name | The name of the tag group. | keyword |
+| tenable_ot_security.events.policy.tag_group.group.system | Indicates if the tag group is system-managed. | boolean |
+| tenable_ot_security.events.policy.tag_group.group.tag_type | The type of tags used in the group. | keyword |
+| tenable_ot_security.events.policy.tag_group.group.type | The type of tag group. | keyword |
+| tenable_ot_security.events.policy.tag_group.group.usage_info.editable | Indicates if the tag group is editable. | boolean |
+| tenable_ot_security.events.policy.tag_group.group.usage_info.used | Indicates if the tag group is in use. | boolean |
+| tenable_ot_security.events.policy.tag_group.negate | Indicates if the tag group is negated. | boolean |
+| tenable_ot_security.events.policy.title | The title of the policy. | text |
+| tenable_ot_security.events.policy.value_group.group.any | Indicates if any value is allowed in the group. | boolean |
+| tenable_ot_security.events.policy.value_group.group.id | The unique identifier of the value group. | keyword |
+| tenable_ot_security.events.policy.value_group.group.max | The maximum value in the group. | double |
+| tenable_ot_security.events.policy.value_group.group.min | The minimum value in the group. | double |
+| tenable_ot_security.events.policy.value_group.group.type | The type of value group. | keyword |
+| tenable_ot_security.events.port | Network port associated with the traffic. | integer |
+| tenable_ot_security.events.protocol | Network protocol used in the traffic. | keyword |
+| tenable_ot_security.events.protocol_nice_name | User-friendly name of the protocol used. | keyword |
+| tenable_ot_security.events.protocol_raw | The raw protocol information for the event. | keyword |
+| tenable_ot_security.events.resolved | Indicates if the event has been resolved. | boolean |
+| tenable_ot_security.events.resolved_ts | Timestamp of when the event was resolved. | date |
+| tenable_ot_security.events.resolved_user | User who resolved the event. | keyword |
+| tenable_ot_security.events.severity | Severity level of the event. | keyword |
+| tenable_ot_security.events.src_interface.dns_names | A DNS name associated with the source interface. | keyword |
+| tenable_ot_security.events.src_interface.family | The network family of the source interface. | keyword |
+| tenable_ot_security.events.src_interface.first_seen | The first time the source interface was seen. | date |
+| tenable_ot_security.events.src_interface.id | The unique identifier of the source interface. | keyword |
+| tenable_ot_security.events.src_interface.ip_trail.end_time | The end time of this IP address usage. | date |
+| tenable_ot_security.events.src_interface.ip_trail.ip | An IP address in the trail. | ip |
+| tenable_ot_security.events.src_interface.ip_trail.is_active | Indicates if this IP address is currently active. | boolean |
+| tenable_ot_security.events.src_interface.ip_trail.start_time | The start time of this IP address usage. | date |
+| tenable_ot_security.events.src_interface.ips.dns_names | A DNS name associated with the IP address. | keyword |
+| tenable_ot_security.events.src_interface.ips.ip | The IP address associated with the source interface. | ip |
+| tenable_ot_security.events.src_interface.ips.open_ports.in_on_demand_scan | Indicates if the port was scanned as part of an on-demand scan. | boolean |
+| tenable_ot_security.events.src_interface.ips.open_ports.ports.description | A description of the open port service. | text |
+| tenable_ot_security.events.src_interface.ips.open_ports.ports.name | The name of the service running on the port. | keyword |
+| tenable_ot_security.events.src_interface.ips.open_ports.ports.port | The open port number. | integer |
+| tenable_ot_security.events.src_interface.ips.open_ports.ports.scan_time | The time the port was scanned. | date |
+| tenable_ot_security.events.src_interface.ips.open_ports.ports.source | The source of the scan. | keyword |
+| tenable_ot_security.events.src_interface.ips.open_ports.scanned_once | Indicates if the port has been scanned at least once. | boolean |
+| tenable_ot_security.events.src_interface.last_seen | The last time the source interface was seen. | date |
+| tenable_ot_security.events.src_interface.mac | The MAC address of the source interface. | keyword |
+| tenable_ot_security.events.src_ip | The source IP address associated with the event. | ip |
+| tenable_ot_security.events.src_mac | Source MAC address associated with the event. | keyword |
+| tenable_ot_security.events.src_names | List of source names. | keyword |
+| tenable_ot_security.events.time | Timestamp of the event. | date |
+| tenable_ot_security.events.type | Type of the event. | keyword |
+
+
+### System Log
+
+System Log documents can be found by setting the following filter: 
+`event.dataset : "tenable_ot_security.system_log"`
+
+An example event for `system_log` looks as following:
+
+```json
+{
+    "@timestamp": "2024-06-24T22:03:44.998273Z",
+    "agent": {
+        "ephemeral_id": "20d97574-97ec-42e4-a36f-c46bcd495f48",
+        "id": "e0074c5e-8ca6-4ab2-acd3-ea519ca6fb5a",
+        "name": "elastic-agent-59630",
+        "type": "filebeat",
+        "version": "8.15.0"
+    },
+    "data_stream": {
+        "dataset": "tenable_ot_security.system_log",
+        "namespace": "69917",
+        "type": "logs"
+    },
+    "ecs": {
+        "version": "8.11.0"
+    },
+    "elastic_agent": {
+        "id": "e0074c5e-8ca6-4ab2-acd3-ea519ca6fb5a",
+        "snapshot": false,
+        "version": "8.15.0"
+    },
+    "event": {
+        "agent_id_status": "verified",
+        "category": [
+            "iam"
+        ],
+        "dataset": "tenable_ot_security.system_log",
+        "ingested": "2025-03-21T12:00:04Z",
+        "kind": "event",
+        "module": "tenable_ot_security",
+        "type": [
+            "info"
+        ]
+    },
+    "input": {
+        "type": "cel"
+    },
+    "related": {
+        "user": [
+            "admin"
+        ]
+    },
+    "tags": [
+        "preserve_original_event",
+        "forwarded",
+        "tenable_ot_security"
+    ],
+    "tenable_ot_security": {
+        "system_log": {
+            "message": "Login by local user \"admin\" failed",
+            "time_stamp": "2024-06-24T22:03:44.998273Z",
+            "user_name": "admin"
+        }
+    }
+}
+```
+
+**ECS Field Reference**
+
+Please refer to the following [document](https://www.elastic.co/guide/en/ecs/current/ecs-field-reference.html) for detailed information on ECS fields.
+
+The following non-ECS fields are used in system log documents:
+
+**Exported fields**
+
+| Field | Description | Type |
+|---|---|---|
+| @timestamp | Event timestamp. | date |
+| data_stream.dataset | Data stream dataset. | constant_keyword |
+| data_stream.namespace | Data stream namespace. | constant_keyword |
+| data_stream.type | Data stream type. | constant_keyword |
+| input.type | Input type. | keyword |
+| tenable_ot_security.system_log.message | The detailed message of the log. | keyword |
+| tenable_ot_security.system_log.time_stamp | The timestamp of the log. | date |
+| tenable_ot_security.system_log.user_name | The username in the log. | keyword |
