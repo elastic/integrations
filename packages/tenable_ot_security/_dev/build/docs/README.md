@@ -29,9 +29,8 @@ Fore more details on generating access_token, please check the API documentation
 A fast, simple way to authenticate to the APIs is to generate an access token and pass that token.
 To generate an API key in [Tenable OT Security](https://developer.tenable.com/docs/ot-generate-an-api-key):
 
-# Tenable OT Security - API Key Generation Guide
 
-## Steps to Generate an API Key
+### Steps to Generate an API Key
 
 1. **Sign in** to **Tenable OT Security**.
 2. In the left navigation pane, click `Local Settings`.
