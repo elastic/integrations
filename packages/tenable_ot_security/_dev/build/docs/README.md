@@ -29,24 +29,34 @@ Fore more details on generating access_token, please check the API documentation
 A fast, simple way to authenticate to the APIs is to generate an access token and pass that token.
 To generate an API key in [Tenable OT Security](https://developer.tenable.com/docs/ot-generate-an-api-key):
 
- 1. Sign in to Tenable OT Security.
- 2. In the left navigation plane, click `Local Settings`.
-    The `Local Settings` submenu expands.
+# Tenable OT Security - API Key Generation Guide
+
+## Steps to Generate an API Key
+
+1. **Sign in** to **Tenable OT Security**.
+2. In the left navigation pane, click `Local Settings`.
+   - The `Local Settings` submenu expands.
 3. In the `Local Settings` submenu, click `System Configuration`.
-    The `System Configuration` submenu expands.
+   - The `System Configuration` submenu expands.
 4. In the `System Configuration` submenu, click `API Keys`.
-   The `API Keys` page appears along with a table of existing API keys.
-5. On the API Keys page, in the top right corner, click the `Generate Key` button.
-   The `Generate Key` side pane appears.
-6. In the `Expiration Period` area, choose the expiration period in days. The maximum expiration period is 365 days.
+   - The `API Keys` page appears along with a table of existing API keys.
+5. On the `API Keys` page, in the top right corner, click the `Generate Key` button.
+   - The `Generate Key` side pane appears.
+6. In the `Expiration Period` area, choose the expiration period in days.
+   - The maximum expiration period is **365 days**.
 7. In the `Description` text box, enter a description explaining what the API key will be used for.
 8. Click the `Generate` button.
-    The `Generate Key` side pane appears with the `API Key` and `API Secret`.
-    `Note`: The generated API key has the same permissions as the user that created it according to their role.
-Use the `Copy` buttons to copy the API key and API secret, Save them in a secure location for later use. The API key and API secret are shown only once.
+   - The `Generate Key` side pane appears with the `API Key` and `API Secret`.
+9. **Note:** The generated API key has the same permissions as the user that created it according to their role.
+10. Use the `Copy` buttons to copy the API key and API secret.
+    - Save them in a secure location for later use. The API key and API secret are shown only once.
 
-9. To authorize your application to use the Tenable's API, you must include the `X-ApiKeys` header element in your HTTP request messages.
- For more details on Authentication check [here](https://developer.tenable.com/docs/authorization).
+## API Authorization
+
+To authorize your application to use Tenable's API, you must include the `X-ApiKeys` header element in your HTTP request messages.
+
+For more details on Authentication, check [here](https://developer.tenable.com/docs/authorization).
+
 ## Logs
 
 ### Assets
