@@ -949,6 +949,7 @@ Current supported event types are:
 | crowdstrike.event.SensorId | Unique ID associated with the Falcon sensor. | keyword |
 | crowdstrike.event.ServiceName | Description of which related service was involved in the event. | keyword |
 | crowdstrike.event.SessionId | Session ID of the remote response session. | keyword |
+| crowdstrike.event.Severity | The integer severity level using Crowdstrike scaling. | integer |
 | crowdstrike.event.SeverityName | The severity level of the detection, as a string (High/Medium/Informational). | keyword |
 | crowdstrike.event.SourceAccountUpn | Source user UPN. | keyword |
 | crowdstrike.event.SourceEndpointAccountObjectGuid | Source endpoint object GUID | keyword |
