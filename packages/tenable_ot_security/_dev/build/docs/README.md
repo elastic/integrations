@@ -4,8 +4,8 @@ The Elastic integration for [Tenable OT Security](https://www.sailpoint.com/prod
 
 ## Data Streams
 
-- **`events`**: Assets data stream supports listing all the assets of the network that include laptops, desktops, servers, routers, mobile phones, virtual machines, software containers, and cloud instances.
-- [Events](https://docs.tenable.com/OT-security/4_1/Content/Inventory/ViewAssetDetails.htm) are records that a user took action in an [Tenable OT Security](https://ot.tenalab.online/)Assets.
+- **`assets`**: Assets data stream supports listing all the assets of the network that include laptops, desktops, servers, routers, mobile phones, virtual machines, software containers, and cloud instances.
+- [Assets](https://docs.tenable.com/OT-security/4_1/Content/Inventory/ViewAssetDetails.htm) are records that a user took action in an [Tenable OT Security](https://ot.tenalab.online/)Assets.
 - This data stream leverages the Tenable OT Security graphql API's `/graphql` endpoint to retrieve assets logs.
 
 - **`events`**: Events are notifications generated in the system to call attention to potentially harmful activity in the network. Policies that you set up in the OT Security system generate events in one of the following categories: Configuration Events, SCADA Events, Network Threats, or Network Events. OT Security assigns a severity level to each policy, indicating the severity of the event and more.
