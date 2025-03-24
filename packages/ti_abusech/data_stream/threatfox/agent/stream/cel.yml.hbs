@@ -16,7 +16,9 @@ resource.timeout: {{http_client_timeout}}
 resource.url: {{url}}
 state:
   initial_interval: "{{initial_interval}}"
+{{#if auth_key}}
   auth_key: {{auth_key}}
+{{/if}}
 redact:
   fields:
     - auth_key
@@ -26,7 +28,7 @@ program: |
     ).with({
         "Header":{
           "Content-Type": ["application/json"],
-          ?"Auth-Key": has(state.auth_key) && !(state.auth_key == "") ? 
+          ?"Auth-Key": has(state.auth_key) ? 
             optional.of([state.auth_key]) 
           :
             optional.none(),
