@@ -243,11 +243,6 @@ processors:
       target_field: _id
       ignore_missing: true
 
-  ## ECS fields.
-  - set:
-      field: ecs.version
-      value: '8.17.0'
-
   ## Categorization.
   - script:
       tag: script-categorize-events
@@ -1507,12 +1502,6 @@ processors:
       target_field: observer.version
       ignore_missing: true
       ignore_failure: true
-  - set:
-      field: observer.vendor
-      value: crowdstrike
-  - set:
-      field: observer.type
-      value: agent
   - foreach:
       if: ctx.observer?.ip != null && ctx.observer.ip instanceof List
       field: observer.ip
@@ -2543,6 +2532,22 @@ processors:
       if: ctx.host?.os?.type != null
   - remove:
       field:
+        - log.file.path
+        - log.offset
+      if: ctx.aws?.s3?.bucket != null && ctx.aws.s3.object != null
+      ignore_missing: true
+      ignore_failure: true
+  - remove:
+      field:
+        - agent.ephemeral_id
+        - ecs.version
+        - event.timezone
+        - log.offset
+      if: ctx._conf?.prune_fields == true
+      ignore_missing: true
+      ignore_failure: true
+  - remove:
+      field:
         - _temp
         - crowdstrike.timestamp
         - crowdstrike._time
@@ -2553,7 +2558,6 @@ processors:
         - crowdstrike.UserIsAdmin
         - crowdstrike.UTCTimestamp
         - crowdstrike.TargetDirectoryName
-        - aws
         - _conf
       ignore_missing: true
       ignore_failure: true

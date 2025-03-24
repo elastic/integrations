@@ -1342,6 +1342,9 @@ For example, if your Crowdstrike event contains `id: 123`, `aid: 456`, and `cid:
 | Field | Description | Type |
 |---|---|---|
 | @timestamp | Event timestamp. | date |
+| aws.s3.bucket.arn | The AWS S3 bucket ARN. | keyword |
+| aws.s3.bucket.name | The AWS S3 bucket name. | keyword |
+| aws.s3.object.key | The AWS S3 Object key. | keyword |
 | crowdstrike.AccountType |  | keyword |
 | crowdstrike.ActiveDirectoryAuthenticationMethod |  | keyword |
 | crowdstrike.ActivityId |  | keyword |
@@ -1829,8 +1832,8 @@ For example, if your Crowdstrike event contains `id: 123`, `aid: 456`, and `cid:
 | observer.geo.region_name | Region name. | keyword |
 | observer.ip | IP addresses of the observer. | ip |
 | observer.serial_number | Observer serial number. | keyword |
-| observer.type | The type of the observer the data is coming from. There is no predefined list of observer types. Some examples are `forwarder`, `firewall`, `ids`, `ips`, `proxy`, `poller`, `sensor`, `APM server`. | keyword |
-| observer.vendor | Vendor name of the observer. | keyword |
+| observer.type | The type of the observer the data is coming from. There is no predefined list of observer types. Some examples are `forwarder`, `firewall`, `ids`, `ips`, `proxy`, `poller`, `sensor`, `APM server`. | constant_keyword |
+| observer.vendor | Vendor name of the observer. | constant_keyword |
 | observer.version | Observer version. | keyword |
 | process.args | Array of process arguments, starting with the absolute path to the executable. May be filtered to protect sensitive information. | keyword |
 | process.args_count | Length of the process.args array. This field can be useful for querying or performing bucket analysis on how many arguments were provided to start a process. More arguments may be an indication of suspicious activity. | long |
@@ -1904,11 +1907,20 @@ An example event for `fdr` looks as following:
 {
     "@timestamp": "2020-10-01T09:58:32.519Z",
     "agent": {
-        "ephemeral_id": "9151b3a9-d1a0-4945-a309-15e6528f5ac2",
-        "id": "b33294e1-6d92-4d6d-8fc5-e472edd17c0d",
-        "name": "elastic-agent-45098",
+        "id": "c29a18c6-3a73-4cb2-811f-b942d5353ea8",
+        "name": "elastic-agent-56971",
         "type": "filebeat",
-        "version": "8.18.0"
+        "version": "8.17.3"
+    },
+    "aws": {
+        "s3": {
+            "bucket": {
+                "name": "elastic-package-crowdstrike-fdr-57094"
+            },
+            "object": {
+                "key": "data"
+            }
+        }
     },
     "crowdstrike": {
         "AuthenticationId": "3783389",
@@ -1986,16 +1998,13 @@ An example event for `fdr` looks as following:
     },
     "data_stream": {
         "dataset": "crowdstrike.fdr",
-        "namespace": "50994",
+        "namespace": "21250",
         "type": "logs"
     },
-    "ecs": {
-        "version": "8.17.0"
-    },
     "elastic_agent": {
-        "id": "b33294e1-6d92-4d6d-8fc5-e472edd17c0d",
-        "snapshot": true,
-        "version": "8.18.0"
+        "id": "c29a18c6-3a73-4cb2-811f-b942d5353ea8",
+        "snapshot": false,
+        "version": "8.17.3"
     },
     "event": {
         "action": "ProcessRollup2",
@@ -2006,11 +2015,10 @@ An example event for `fdr` looks as following:
         "created": "2020-10-01T09:58:32.519Z",
         "dataset": "crowdstrike.fdr",
         "id": "ffffffff-1111-11eb-8462-02ade3b2f949|ffffffff655344736aca58d17fb570f0|ffffffff30a3407dae27d0503611022d",
-        "ingested": "2025-03-13T16:10:17Z",
+        "ingested": "2025-03-24T04:36:49Z",
         "kind": "event",
         "original": "{\"AuthenticationId\":\"3783389\",\"CommandLine\":\"\\\"C:\\\\WINDOWS\\\\system32\\\\backgroundTaskHost.exe\\\" -ServerName:App.AppXnme9zjyebb2xnyygh6q9ev6p5d234br2.mca\",\"ConfigBuild\":\"1007.3.0012309.1\",\"ConfigStateHash\":\"3998263252\",\"EffectiveTransmissionClass\":\"3\",\"Entitlements\":\"15\",\"ImageFileName\":\"\\\\Device\\\\HarddiskVolume3\\\\Windows\\\\System32\\\\backgroundTaskHost.exe\",\"ImageSubsystem\":\"2\",\"IntegrityLevel\":\"4096\",\"MD5HashData\":\"50d5fd1290d94d46acca0585311e74d5\",\"ParentAuthenticationId\":\"3783389\",\"ParentBaseFileName\":\"svchost.exe\",\"ParentProcessId\":\"2439558094566\",\"ProcessCreateFlags\":\"525332\",\"ProcessEndTime\":\"\",\"ProcessParameterFlags\":\"16385\",\"ProcessStartTime\":\"1604855181.648\",\"ProcessSxsFlags\":\"1600\",\"RawProcessId\":\"22272\",\"RpcClientProcessId\":\"2439558094566\",\"SHA1HashData\":\"0000000000000000000000000000000000000000\",\"SHA256HashData\":\"b8e176fe76a1454a00c4af0f8bf8870650d9c33d3e333239a59445c5b35c9a37\",\"SessionId\":\"1\",\"SourceProcessId\":\"2439558094566\",\"SourceThreadId\":\"77538684027214\",\"Tags\":\"41, 12094627905582, 12094627906234\",\"TargetProcessId\":\"2450046082233\",\"TokenType\":\"2\",\"UserSid\":\"S-1-12-1-3697283754-1083485977-2164330645-2516515886\",\"WindowFlags\":\"128\",\"aid\":\"ffffffff655344736aca58d17fb570f0\",\"aip\":\"67.43.156.14\",\"cid\":\"ffffffff30a3407dae27d0503611022d\",\"event_platform\":\"Win\",\"event_simpleName\":\"ProcessRollup2\",\"id\":\"ffffffff-1111-11eb-8462-02ade3b2f949\",\"name\":\"ProcessRollup2V18\",\"timestamp\":\"1601546312519\"}",
         "outcome": "success",
-        "timezone": "+00:00",
         "type": [
             "start"
         ]
@@ -2026,12 +2034,6 @@ An example event for `fdr` looks as following:
     },
     "input": {
         "type": "aws-s3"
-    },
-    "log": {
-        "file": {
-            "path": "https://elastic-package-crowdstrike-fdr-55008.s3.us-east-1.amazonaws.com/data"
-        },
-        "offset": 107991
     },
     "observer": {
         "address": [
@@ -2050,8 +2052,6 @@ An example event for `fdr` looks as following:
             "67.43.156.14"
         ],
         "serial_number": "ffffffff655344736aca58d17fb570f0",
-        "type": "agent",
-        "vendor": "crowdstrike",
         "version": "1007.3.0012309.1"
     },
     "process": {
