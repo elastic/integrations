@@ -25,11 +25,10 @@ processors:
       tag: grok_event_original
       patterns:
       - 'Detection type: %{DATA:json.threat_name} Detection name: %{DATA:json.threat_name}
-        Computer name: %{DATA:json.hostname} Logged user: %{DATA:user.domain}\\%{DATA:json.user}
+        Computer name: %{HOSTNAME:json.hostname} Logged user: %{DATA:user.domain}\\%{DATA:json.user}
         Time of occurrence: %{ESET_TIMESTAMP:json.occured_plaintext} Scanner: %{DATA:json.scanner_id}
         Action performed: %{DATA:json.action_taken}$'
-      - '^%{DATA:eset.alert_message} %{DATA:json.hostname} %{ESET_TIMESTAMP:json.occured_plaintext}
-        %{DATA:message} File %{GREEDYDATA:json.object_uri}$'
+      - '^%{DATA:message} %{HOSTNAME:json.hostname} %{ESET_TIMESTAMP:json.occured_plaintext} %{GREEDYDATA:message}'
       pattern_definitions:
         ESET_TIMESTAMP: "%{MONTHNUM}/%{MONTHDAY}/%{YEAR}, %{HOUR}:%{MINUTE}:%{SECOND} (?:AM|PM) UTC\\+%{INT}"
       if: "! ctx.event?.original.startsWith(\"{\\\"\")"
