@@ -47,7 +47,7 @@ This module has been tested against the **ESET PROTECT (version: 5.0.9.1)**.
 ### To collect data from ESET PROTECT via Syslog, follow the below steps:
 
 1. Follow the steps to [configure syslog server](https://help.eset.com/protect_cloud/en-US/admin_server_settings_export_to_syslog.html?admin_server_settings_syslog.html).
-   - Set the format of the payload to **JSON**.
+   - Set the format of the payload to **JSON** (Hint: ESET Notifications are sent as plain text, regardless of the selection made https://help.eset.com/protect_admin/12.0/en-US/events-exported-to-json-format.html).
    - Set the format of the envelope to **Syslog**.
    - Set the minimal log level to **Information** to collect all data.
    - Select all checkboxes to collect logs for all event types.
