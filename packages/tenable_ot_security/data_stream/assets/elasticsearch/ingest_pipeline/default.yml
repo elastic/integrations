@@ -3,7 +3,17 @@ description: Pipeline for processing tenable OT security cloud assets
 processors:
   - rename:
       field: message
-      target_field: tenable_ot_security.assets   
+      target_field: tenable_ot_security.assets
+
+  - fingerprint:
+      fields:
+        - tenable_ot_security.assets
+      tag: fingerprinting
+      target_field: "_id"
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
 
 ##################### Scripts for processing input #####################
   - script:
@@ -88,17 +98,7 @@ processors:
         if (ctx.containsKey("tenable_ot_security") && ctx.tenable_ot_security.containsKey("assets")) {
           ctx.tenable_ot_security.assets = normalize(ctx.tenable_ot_security.assets);
         }
-
-
-  - fingerprint:
-      fields:
-        - tenable_ot_security.assets
-      tag: fingerprinting
-      target_field: "_id"
-      on_failure:
-        - append:
-            field: error.message
-            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}' 
+ 
 ##################### ECS Fields #####################
   - set:
       field: event.kind
