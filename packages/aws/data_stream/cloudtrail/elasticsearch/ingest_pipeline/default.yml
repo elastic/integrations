@@ -716,7 +716,11 @@ processors:
         Map enrichCtx = [:];
         enrichCtx.related = new TreeSet();
         enrichCtx.target = new TreeSet();
+
         enrichCtx.actor = field("json.userIdentity.arn").get(null); // default actor value
+        if (enrichCtx.actor == null) {
+          enrichCtx.actor = field("json.userIdentity.onBehalfOf.userId").get(null);
+        }
 
         addFields(enrichCtx.related, [
           "json.userIdentity.accessKeyId",
