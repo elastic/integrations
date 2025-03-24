@@ -15,6 +15,7 @@ processors:
       patterns:
       - (?m)%{TIMESTAMP_ISO8601:kafka.log.timestamp}. %{LOGLEVEL:log.level} +%{JAVALOGMESSAGE:message}
         \(%{JAVACLASS:kafka.log.class}\)$[ \n]*(?'kafka.log.trace.full'.*)
+      - "(?m)%{TIMESTAMP_ISO8601:kafka.log.timestamp} %{LOGLEVEL:log.level} %{JAVACLASS:kafka.log.class}: \\[%{NOTSPACE:kafka.log.thread}\\]: %{GREEDYDATA:message}"
       - (?m)\[%{TIMESTAMP_ISO8601:kafka.log.timestamp}\] \[%{LOGLEVEL:log.level} ?\]
         \[%{NOTSPACE:kafka.log.thread}\] \[%{NOTSPACE:kafka.log.class}\] \- %{GREEDYDATA:message}
   - grok:
