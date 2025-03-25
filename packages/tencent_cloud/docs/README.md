@@ -104,7 +104,8 @@ Tencent Cloud 集成旨在将腾讯云的日志无缝接入 Elastic Stack，帮�
 
 有关 ECS 字段的详细信息，请参见以下[文档](https://www.elastic.co/guide/en/ecs/current/ecs-field-reference.html)。
 
-**导出字段**
+
+**Exported fields**
 
 | Field | Description | Type |
 |---|---|---|
