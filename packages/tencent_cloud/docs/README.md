@@ -106,34 +106,40 @@ Tencent Cloud 集成旨在将腾讯云的日志无缝接入 Elastic Stack，帮�
 
 **导出字段**
 
-| Field                                                     | Description                                              | Type    |
-| --------------------------------------------------------- | -------------------------------------------------------- | ------- |
-| tencent_cloud.audit                                       |                                                          | group   |
-| tencent_cloud.audit.ecs.version                           | ECS version set by the ingest pipeline                   | keyword |
-| tencent_cloud.audit.event.original                        | Original message stored as a copy                        | text    |
-| tencent_cloud.audit.cloud.account.id                      | Account ID from the audit log                            | keyword |
-| tencent_cloud.audit.user.name                             | User name from the audit log                             | keyword |
-| tencent_cloud.audit.cloud.region                          | Event region from the audit log                          | keyword |
-| tencent_cloud.audit.error.code                            | Error code from the audit log                            | keyword |
-| tencent_cloud.audit.event.id                              | Request ID from the audit log                            | keyword |
-| tencent_cloud.audit.http.request.method                   | HTTP request method from the audit log                   | keyword |
-| tencent_cloud.audit.user_agent.original                   | User agent from the audit log                            | keyword |
-| tencent_cloud.audit.@timestamp                            | Event time from the audit log, converted to a date       | date    |
-| tencent_cloud.audit.source.ip                             | Source IP address from the audit log                     | ip      |
-| tencent_cloud.audit.event.action                          | Event name from the audit log                            | keyword |
-| tencent_cloud.audit.event.provider                        | Event source from the audit log                          | keyword |
-| tencent_cloud.audit.source.geo                            | GeoIP information for the source IP address              | object  |
-| tencent_cloud.audit.source.as                             | ASN information for the source IP address                | object  |
-| tencent_cloud.audit.source.as.number                      | ASN number for the source IP address                     | long    |
-| tencent_cloud.audit.source.as.organization.name           | Organization name for the source IP address              | keyword |
-| tencent_cloud.audit.destination.ip                        | Destination IP address from the audit log                | ip      |
-| tencent_cloud.audit.destination.geo                       | GeoIP information for the destination IP address         | object  |
-| tencent_cloud.audit.destination.as                        | ASN information for the destination IP address           | object  |
-| tencent_cloud.audit.destination.as.number                 | ASN number for the destination IP address                | long    |
-| tencent_cloud.audit.destination.as.organization.name      | Organization name for the destination IP address         | keyword |
-| tencent_cloud.audit.tencent_cloud.audit                   | Parsed JSON data from the original audit log             | object  |
-| tencent_cloud.audit.tencent_cloud.audit.requestParameters | Request parameters from the audit log, parsed as JSON    | object  |
-| tencent_cloud.audit.tencent_cloud.audit.userIdentity      | User identity from the audit log, parsed as JSON         | object  |
-| tencent_cloud.audit.tags                                  | Tags associated with the document                        | keyword |
-| tencent_cloud.audit.error.message                         | Error message if the ingest pipeline fails               | text    |
-| tencent_cloud.audit.event.kind                            | Event kind, set to 'pipeline_error' if there is an error | keyword |
+| Field | Description | Type |
+|---|---|---|
+| @timestamp | Event timestamp. | date |
+| data_stream.dataset | Data stream dataset name. | constant_keyword |
+| data_stream.namespace | Data stream namespace. | constant_keyword |
+| data_stream.type | Data stream type. | constant_keyword |
+| event.dataset | Event dataset | constant_keyword |
+| event.module | Event module | constant_keyword |
+| input.type | Type of Filebeat input. | keyword |
+| tencent_cloud.audit.@timestamp | Event time from the audit log, converted to a date | date |
+| tencent_cloud.audit.cloud.account.id | Account ID from the audit log | keyword |
+| tencent_cloud.audit.cloud.region | Event region from the audit log | keyword |
+| tencent_cloud.audit.destination.as | ASN information for the destination IP address | object |
+| tencent_cloud.audit.destination.as.number | ASN number for the destination IP address | long |
+| tencent_cloud.audit.destination.as.organization.name | Organization name for the destination IP address | keyword |
+| tencent_cloud.audit.destination.geo | GeoIP information for the destination IP address | object |
+| tencent_cloud.audit.destination.ip | Destination IP address from the audit log | ip |
+| tencent_cloud.audit.ecs.version | ECS version set by the ingest pipeline | keyword |
+| tencent_cloud.audit.error.code | Error code from the audit log | keyword |
+| tencent_cloud.audit.error.message | Error message if the ingest pipeline fails | text |
+| tencent_cloud.audit.event.action | Event name from the audit log | keyword |
+| tencent_cloud.audit.event.id | Request ID from the audit log | keyword |
+| tencent_cloud.audit.event.kind | Event kind, set to 'pipeline_error' if there is an error | keyword |
+| tencent_cloud.audit.event.original | Original message stored as a copy | text |
+| tencent_cloud.audit.event.provider | Event source from the audit log | keyword |
+| tencent_cloud.audit.http.request.method | HTTP request method from the audit log | keyword |
+| tencent_cloud.audit.source.as | ASN information for the source IP address | object |
+| tencent_cloud.audit.source.as.number | ASN number for the source IP address | long |
+| tencent_cloud.audit.source.as.organization.name | Organization name for the source IP address | keyword |
+| tencent_cloud.audit.source.geo | GeoIP information for the source IP address | object |
+| tencent_cloud.audit.source.ip | Source IP address from the audit log | ip |
+| tencent_cloud.audit.tags | Tags associated with the document | keyword |
+| tencent_cloud.audit.tencent_cloud.audit | Parsed JSON data from the original audit log | object |
+| tencent_cloud.audit.tencent_cloud.audit.requestParameters | Request parameters from the audit log, parsed as JSON | object |
+| tencent_cloud.audit.tencent_cloud.audit.userIdentity | User identity from the audit log, parsed as JSON | object |
+| tencent_cloud.audit.user.name | User name from the audit log | keyword |
+| tencent_cloud.audit.user_agent.original | User agent from the audit log | keyword |
