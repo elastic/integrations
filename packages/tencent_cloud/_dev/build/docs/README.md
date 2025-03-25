@@ -106,4 +106,4 @@ Tencent Cloud 集成旨在将腾讯云的日志无缝接入 Elastic Stack，帮�
 
 **导出字段**
 
-{{fields "tencent_cloud_audit"}}
+{{fields "audit"}}
