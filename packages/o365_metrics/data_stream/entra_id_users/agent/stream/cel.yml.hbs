@@ -74,30 +74,28 @@ program: |
           bytes(users_resp.Body).decode_json().as(users_json,
             {
               "events": users_json.value.map(user,
-                user.with(
-                  request(
-                    "GET", 
-                    state.url.trim_right("/") + state.risk_detections_path + "'" + user.id + "'"
-                  ).do_request().as(risk_detections_resp,
-                    risk_detections_resp.StatusCode == 200
-                    ?
-                      bytes(risk_detections_resp.Body).decode_json().value.as(risk_detections,
-                        size(risk_detections) == 0 ? {} : risk_detections[0]
-                      )
-                    :
-                      {
-                        "risk_detections_error": [string(risk_detections_resp.StatusCode), string(risk_detections_resp.Body)].join(" ")
-                      }
-                  )
-                ).as(user_with_risk, 
+                request(
+                  "GET", 
+                  state.url.trim_right("/") + state.risk_detections_path + "'" + user.id + "'"
+                ).do_request().as(risk_detections_resp,
+                  risk_detections_resp.StatusCode == 200
+                  ?
+                    bytes(risk_detections_resp.Body).decode_json().value.as(risk_detections,
+                      size(risk_detections) == 0 ? {} : risk_detections[0]
+                    )
+                  :
+                    {
+                      "risk_detections_error": [string(risk_detections_resp.StatusCode), string(risk_detections_resp.Body)].join(" ")
+                    }
+                ).as(risk, 
                   {
                     "o365": {
                       "metrics": {
                         "entra_id_users": {
                           "user": {
-                            "id": user_with_risk.id,
-                            "upn": user_with_risk.userPrincipalName,
-                            "type": user_with_risk.userType,
+                            "id": user.id,
+                            "upn": user.userPrincipalName,
+                            "type": user.userType,
                           },
                           "on_premises_provisioning_errors": user.onPremisesProvisioningErrors.map(err,
                             {
@@ -107,19 +105,19 @@ program: |
                               "value": err.value
                             }
                           ),
-                          "on_premises_sync_enabled": user_with_risk.onPremisesSyncEnabled,
-                          "risk": has(user_with_risk.risk_detections_error) 
+                          "on_premises_sync_enabled": user.onPremisesSyncEnabled,
+                          "risk": has(risk.risk_detections_error) 
                           ?
                             {
-                              "error": user_with_risk.risk_detections_error
+                              "error": risk.risk_detections_error
                             }
-                          : has(user_with_risk.riskLevel)
+                          : has(risk.riskLevel)
                             ?
                               {
-                                "event_type": user_with_risk.riskEventType,
-                                "level": user_with_risk.riskLevel,
-                                "state": user_with_risk.riskState,
-                                "detail": user_with_risk.riskDetail
+                                "event_type": risk.riskEventType,
+                                "level": risk.riskLevel,
+                                "state": risk.riskState,
+                                "detail": risk.riskDetail
                               }
                             :
                               {}
