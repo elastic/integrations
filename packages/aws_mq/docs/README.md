@@ -38,7 +38,7 @@ The Amazon MQ integration collects metrics and logs from Apache ActiveMQ and met
 
 Data streams:
  - `activemq_general_logs`: Collects ActiveMQ general logs, including system events, warnings, and errors, which are published to a designated Amazon CloudWatch log group. 
- - `activemq_audit_logs`: Collects ActiveMQ audit logs, including management actions performed via JMX or the Web Console
+ - `activemq_audit_logs`: Collects ActiveMQ audit logs, including management actions performed via JMX or the Web Console.
  - `activemq_metrics`: Collects broker metrics and destination (queue and topic) metrics.
  - `rabbitmq_metrics`: Collects broker, queue and node metrics.
 
