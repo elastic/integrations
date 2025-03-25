@@ -58,22 +58,55 @@ auth.oauth2:
   azure.tenant_id: {{azure_tenant_id}}
 {{/if}}
 redact:
-  fields: ~
+  fields: null
+state: 
+  users_path: /users?$select=id,userPrincipalName,userType
+  next_link: null
 program: |
     state.with(
-      {
-        "events": [{
-          "o365": {
-            "metrics": {
-              "entra_id_users": {
-                "user": {
-                  "id": "something"
+      request(
+        "GET", 
+        has(state.next_link) ? state.next_link : state.url.trim_right("/") + state.users_path
+      ).do_request().as(users_resp,
+        users_resp.StatusCode == 200
+        ?
+          bytes(users_resp.Body).decode_json().as(users_json,
+            {
+              "events": users_json.value.map(user,
+                {
+                  "o365": {
+                    "metrics": {
+                      "entra_id_users": {
+                        "user_id": user.id,
+                        "user_principal_name": user.userPrincipalName,
+                        "user_type": user.userType
+                      }
+                    }
+                  }
                 }
-              }
+              ),
+              "want_more": "@odata.nextLink" in users_json,
+              "next_link": "@odata.nextLink" in users_json ? users_json["@odata.nextLink"] : null
             }
-          }
-        }]
-      }
+          )
+        :
+          {
+              "events": {
+                "error": {
+                  "code": string(users_resp.StatusCode),
+                  "id": string(users_resp.Status),
+                  "message": "GET " + state.orgs_path + ": " + (
+                    size(users_resp.Body) != 0 ?
+                      string(users_resp.Body)
+                    :
+                      string(users_resp.Status) + ' (' + string(users_resp.StatusCode) + ')'
+                  ),
+                },
+              },
+              "want_more": false,
+              "next_link": null
+            }
+      )
     )
 tags:
 {{#each tags as |tag|}}

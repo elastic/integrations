@@ -1,11 +1,10 @@
 rules:
   - path: /1234/oauth2/v2.0/token
     methods: ['POST']
-    responses: 
+    responses:
       - status_code: 200
-        headers: 
-          Content-Type: 
-            'application/json'
+        headers:
+          Content-Type: 'application/json'
         body: |-
           {"token_type":"Bearer","expires_in":3599,"ext_expires_in":3599,"access_token":"xxxx"}
   - path: /communications/callRecords
@@ -281,6 +280,76 @@ rules:
                               ]
                           }
                       ]
+                  }
+              ]
+          }
+  - path: /users
+    methods: ['GET']
+    query_params:
+      '$select': 'id,userPrincipalName,userType'
+    request_headers:
+      Authorization:
+        - "Bearer xxxx"
+    responses:
+      - status_code: 200
+        headers:
+          Content-Type:
+            - 'applciation/json'
+        body: |-
+          {
+              "@odata.context": "https://graph.microsoft.com/v1.0/$metadata#users(id,userPrincipalName,userType)",
+              "@odata.nextLink": "{{ env "SERVER_ADDRESS" }}/users?$select=id%2cuserPrincipalName%2cuserType",
+              "value": [
+                  {
+                      "id": "6e7b768e-07e2-4810-8459-485f84f8f204",
+                      "userPrincipalName": "Adams@M365x214355.onmicrosoft.com",
+                      "userType": "Member"
+                  },
+                  {
+                      "id": "87d349ed-44d7-43e1-9a83-5f2406dee5bd",
+                      "userPrincipalName": "AdeleV@M365x214355.onmicrosoft.com",
+                      "userType": "Member"
+                  }
+              ]
+          }
+      - status_code: 200
+        headers:
+          Content-Type:
+            - 'applciation/json'
+        body: |-
+          {
+              "@odata.context": "https://graph.microsoft.com/v1.0/$metadata#users(id,userPrincipalName,userType)",
+              "@odata.nextLink": "{{ env "SERVER_ADDRESS" }}/users?$select=id%2cuserPrincipalName%2cuserType",
+              "value": [
+                  {
+                      "id": "5bde3e51-d13b-4db1-9948-fe4b109d11a7",
+                      "userPrincipalName": "admin@M365x214355.onmicrosoft.com",
+                      "userType": "Member"
+                  },
+                  {
+                      "id": "4782e723-f4f4-4af3-a76e-25e3bab0d896",
+                      "userPrincipalName": "AlexW@M365x214355.onmicrosoft.com",
+                      "userType": "Member"
+                  }
+              ]
+          }
+      - status_code: 200
+        headers:
+          Content-Type:
+            - 'applciation/json'
+        body: |-
+          {
+              "@odata.context": "https://graph.microsoft.com/v1.0/$metadata#users(id,userPrincipalName,userType)",
+              "value": [
+                  {
+                      "id": "c03e6eaa-b6ab-46d7-905b-73ec7ea1f755",
+                      "userPrincipalName": "AllanD@M365x214355.onmicrosoft.com",
+                      "userType": "Member"
+                  },
+                  {
+                      "id": "013b7b1b-5411-4e6e-bdc9-c4790dae1051",
+                      "userPrincipalName": "Baker@M365x214355.onmicrosoft.com",
+                      "userType": "Member"
                   }
               ]
           }
