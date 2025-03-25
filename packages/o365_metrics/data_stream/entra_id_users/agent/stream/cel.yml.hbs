@@ -60,7 +60,7 @@ auth.oauth2:
 redact:
   fields: null
 state: 
-  users_path: '/users?$select=id,userPrincipalName,userType'
+  users_path: '/users?$select=id,userPrincipalName,userType,onPremisesProvisioningErrors,onPremisesSyncEnabled'
   risk_detections_path: '/identityProtection/riskDetections?$select=riskEventType,riskState,riskLevel,riskDetail&$filter=userId%20eq%20'
   next_link: null
 program: |
@@ -97,8 +97,17 @@ program: |
                           "user": {
                             "id": user_with_risk.id,
                             "upn": user_with_risk.userPrincipalName,
-                            "type": user_with_risk.userType
+                            "type": user_with_risk.userType,
                           },
+                          "on_premises_provisioning_errors": user.onPremisesProvisioningErrors.map(err,
+                            {
+                              "category": err.category,
+                              "occurred": err.occurredDateTime,
+                              "property_causing_error": err.propertyCausingError,
+                              "value": err.value
+                            }
+                          ),
+                          "on_premises_sync_enabled": user_with_risk.onPremisesSyncEnabled,
                           "risk": has(user_with_risk.risk_detections_error) 
                           ?
                             {
@@ -130,7 +139,7 @@ program: |
                 "error": {
                   "code": string(users_resp.StatusCode),
                   "id": string(users_resp.Status),
-                  "message": "GET " + state.orgs_path + ": " + (
+                  "message": "GET " + state.users_path + ": " + (
                     size(users_resp.Body) != 0 ?
                       string(users_resp.Body)
                     :
