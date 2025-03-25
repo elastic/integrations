@@ -37,8 +37,9 @@ response.pagination:
     target: body.data
 - set:
     target: body.meta.pagination.pageToken
-    value: '[[.last_response.body.meta.pagination.next]]'
+    value: '[[if (eq (len .last_response.body.fail) 0)]][[.last_response.body.meta.pagination.next]][[end]]'
     fail_on_template_error: true
+    do_not_log_failure: true
 cursor:
   next_date:
     value: '[[.first_event.eventTime]]'
