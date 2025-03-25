@@ -121,7 +121,6 @@ Tencent Cloud 集成旨在将腾讯云的日志无缝接入 Elastic Stack，帮�
 | host.os.codename | OS codename, if any. | keyword |
 | input.type | Input type | keyword |
 | log.offset | Log offset | long |
-| input.type | Type of Filebeat input. | keyword |
 | tencent_cloud.audit.@timestamp | Event time from the audit log, converted to a date | date |
 | tencent_cloud.audit.cloud.account.id | Account ID from the audit log | keyword |
 | tencent_cloud.audit.cloud.region | Event region from the audit log | keyword |
