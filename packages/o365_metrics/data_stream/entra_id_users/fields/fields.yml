@@ -1,15 +1,41 @@
 - name: o365.metrics.entra_id_users
   type: group
   fields:
-    - name: user_id
-      type: keyword
-      description: |
-        The unique identifier for the user. Should be treated as an opaque identifier.
-    - name: user_principal_name
-      type: keyword
-      description: |
-        The user principal name (UPN) of the user. The UPN is an Internet-style sign-in name for the user based on the Internet standard RFC 822. By convention, this value should map to the user's email name. The general format is alias@domain, where the domain must be present in the tenant's collection of verified domains.
-    - name: user_type
-      type: keyword
-      description: |
-        A string value that can be used to classify user types in your directory. The possible values are Member and Guest. 
+    - name: user
+      type: group
+      fields:
+      - name: id
+        type: keyword
+        description: |
+          The unique identifier for the user. Should be treated as an opaque identifier.
+      - name: upn
+        type: keyword
+        description: |
+          The user principal name (UPN) of the user. The UPN is an Internet-style sign-in name for the user based on the Internet standard RFC 822. By convention, this value should map to the user's email name. The general format is alias@domain, where the domain must be present in the tenant's collection of verified domains.
+      - name: type
+        type: keyword
+        description: |
+          A string value that can be used to classify user types in your directory. The possible values are Member and Guest. 
+    - name: risk
+      type: group
+      fields:
+      - name: error
+        type: text
+        description: |
+          An error if the risk data is unavailable for this user.
+      - name: last_updated
+        type: date
+        description: |
+          The date and time that the risky user was last updated. 
+      - name: level
+        type: keyword
+        description: |
+          Level of the detected risky user. Possible values are: low, medium, high, hidden, none, unknownFutureValue.
+      - name: state
+        type: keyword
+        description: |
+          State of the user's risk. Possible values are: none, confirmedSafe, remediated, dismissed, atRisk, confirmedCompromised, unknownFutureValue.
+      - name: detail
+        type: keyword
+        description: |
+          The possible values are none, adminGeneratedTemporaryPassword, userPerformedSecuredPasswordChange, userPerformedSecuredPasswordReset, adminConfirmedSigninSafe, aiConfirmedSigninSafe, userPassedMFADrivenByRiskBasedPolicy, adminDismissedAllRiskForUser, adminConfirmedSigninCompromised, hidden, adminConfirmedUserCompromised, unknownFutureValue, adminConfirmedServicePrincipalCompromised, adminDismissedAllRiskForServicePrincipal, m365DAdminDismissedDetection, userChangedPasswordOnPremises, adminDismissedRiskForSignIn, adminConfirmedAccountSafe.

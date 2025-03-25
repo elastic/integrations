@@ -353,3 +353,54 @@ rules:
                   }
               ]
           }
+  - path: /identityProtection/riskyUsers/{id:[0-9a-z-]+}
+    methods: ['GET']
+    request_headers:
+      Authorization:
+        - "Bearer xxxx"
+    responses:
+      - status_code: 200
+        headers:
+          Content-Type:
+            - 'applciation/json'
+        body: |-
+          {
+            "@odata.context": "https://graph.microsoft.com/v1.0/$metadata#identityProtection/riskyUsers/$entity",
+            "id": "{{ .request.vars.id }}",
+            "riskLevel": "none",
+            "riskState": "remediated",
+            "riskDetail": "userPerformedSecuredPasswordReset",
+            "riskLastUpdatedDateTime": "2025-03-24T11:38:31.6778344Z"
+          }
+      - status_code: 404
+        headers:
+          Content-Type:
+            - 'applciation/json'
+        body: |-
+          {
+              "error": {
+                  "code": "UnknownError",
+                  "message": "",
+                  "innerError": {
+                      "date": "2025-03-25T20:34:22",
+                      "request-id": "8e131167-e20c-4685-94ab-95dfcba60732",
+                      "client-request-id": "8e131167-e20c-4685-94ab-95dfcba60732"
+                  }
+              }
+          }
+      - status_code: 401
+        headers:
+          Content-Type:
+            - 'applciation/json'
+        body: |-
+          {
+              "error": {
+                  "code": "InvalidAuthenticationToken",
+                  "message": "Lifetime validation failed, the token is expired.",
+                  "innerError": {
+                      "date": "2025-03-25T14:33:19",
+                      "request-id": "61d323d8-abba-4f69-8ab5-660e86160ec4",
+                      "client-request-id": "61d323d8-abba-4f69-8ab5-660e86160ec4"
+                  }
+              }
+          }

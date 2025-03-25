@@ -61,6 +61,7 @@ redact:
   fields: null
 state: 
   users_path: /users?$select=id,userPrincipalName,userType
+  risky_users_path: /identityProtection/riskyUsers/
   next_link: null
 program: |
     state.with(
@@ -73,17 +74,53 @@ program: |
           bytes(users_resp.Body).decode_json().as(users_json,
             {
               "events": users_json.value.map(user,
-                {
-                  "o365": {
-                    "metrics": {
-                      "entra_id_users": {
-                        "user_id": user.id,
-                        "user_principal_name": user.userPrincipalName,
-                        "user_type": user.userType
+                user.with(
+                  request(
+                    "GET", 
+                    state.url.trim_right("/") + state.risky_users_path + user.id
+                  ).do_request().as(risky_users_resp,
+                    risky_users_resp.StatusCode == 200
+                    ?
+                      bytes(risky_users_resp.Body).decode_json()
+                    :
+                      risky_users_resp.StatusCode == 404
+                      ?
+                        {}
+                      :
+                        {
+                          "risky_users_error": [string(risky_users_resp.StatusCode), string(risky_users_resp.Body)].join(" ")
+                        }
+                  )
+                ).as(user_with_risk, 
+                  {
+                    "o365": {
+                      "metrics": {
+                        "entra_id_users": {
+                          "user": {
+                            "id": user_with_risk.id,
+                            "upn": user_with_risk.userPrincipalName,
+                            "type": user_with_risk.userType
+                          },
+                          "risk": has(user_with_risk.risky_users_error) 
+                          ?
+                            {
+                              "error": user_with_risk.risky_users_error
+                            }
+                          : has(user_with_risk.riskLevel)
+                            ?
+                              {
+                                "last_updated": user_with_risk.riskLastUpdatedDateTime,
+                                "level": user_with_risk.riskLevel,
+                                "state": user_with_risk.riskState,
+                                "detail": user_with_risk.riskDetail
+                              }
+                            :
+                              {}
+                        }
                       }
                     }
                   }
-                }
+                )
               ),
               "want_more": "@odata.nextLink" in users_json,
               "next_link": "@odata.nextLink" in users_json ? users_json["@odata.nextLink"] : null
