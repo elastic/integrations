@@ -60,8 +60,8 @@ auth.oauth2:
 redact:
   fields: null
 state: 
-  users_path: /users?$select=id,userPrincipalName,userType
-  risky_users_path: /identityProtection/riskyUsers/
+  users_path: '/users?$select=id,userPrincipalName,userType'
+  risk_detections_path: '/identityProtection/riskDetections?$select=riskEventType,riskState,riskLevel,riskDetail&$filter=userId%20eq%20'
   next_link: null
 program: |
     state.with(
@@ -77,19 +77,17 @@ program: |
                 user.with(
                   request(
                     "GET", 
-                    state.url.trim_right("/") + state.risky_users_path + user.id
-                  ).do_request().as(risky_users_resp,
-                    risky_users_resp.StatusCode == 200
+                    state.url.trim_right("/") + state.risk_detections_path + "'" + user.id + "'"
+                  ).do_request().as(risk_detections_resp,
+                    risk_detections_resp.StatusCode == 200
                     ?
-                      bytes(risky_users_resp.Body).decode_json()
+                      bytes(risk_detections_resp.Body).decode_json().value.as(risk_detections,
+                        size(risk_detections) == 0 ? {} : risk_detections[0]
+                      )
                     :
-                      risky_users_resp.StatusCode == 404
-                      ?
-                        {}
-                      :
-                        {
-                          "risky_users_error": [string(risky_users_resp.StatusCode), string(risky_users_resp.Body)].join(" ")
-                        }
+                      {
+                        "risk_detections_error": [string(risk_detections_resp.StatusCode), string(risk_detections_resp.Body)].join(" ")
+                      }
                   )
                 ).as(user_with_risk, 
                   {
@@ -101,15 +99,15 @@ program: |
                             "upn": user_with_risk.userPrincipalName,
                             "type": user_with_risk.userType
                           },
-                          "risk": has(user_with_risk.risky_users_error) 
+                          "risk": has(user_with_risk.risk_detections_error) 
                           ?
                             {
-                              "error": user_with_risk.risky_users_error
+                              "error": user_with_risk.risk_detections_error
                             }
                           : has(user_with_risk.riskLevel)
                             ?
                               {
-                                "last_updated": user_with_risk.riskLastUpdatedDateTime,
+                                "event_type": user_with_risk.riskEventType,
                                 "level": user_with_risk.riskLevel,
                                 "state": user_with_risk.riskState,
                                 "detail": user_with_risk.riskDetail
