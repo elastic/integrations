@@ -148,8 +148,12 @@ An example event for `stats` looks as following:
         "containerized": true,
         "hostname": "docker-fleet-agent",
         "id": "8259e024976a406e8a54cdbffeb84fec",
-        "ip": "192.168.252.5",
-        "mac": "02-42-C0-A8-FC-05",
+        "ip": [
+            "192.168.252.5"
+        ],
+        "mac": [
+            "02-42-C0-A8-FC-05"
+        ],
         "name": "docker-fleet-agent",
         "os": {
             "codename": "focal",
@@ -264,8 +268,12 @@ An example event for `channels` looks as following:
         "containerized": true,
         "hostname": "docker-fleet-agent",
         "id": "8259e024976a406e8a54cdbffeb84fec",
-        "ip": "192.168.252.5",
-        "mac": "02-42-C0-A8-FC-05",
+        "ip": [
+            "192.168.252.5"
+        ],
+        "mac": [
+            "02-42-C0-A8-FC-05"
+        ],
         "name": "docker-fleet-agent",
         "os": {
             "codename": "focal",
@@ -379,8 +387,12 @@ An example event for `subscriptions` looks as following:
         "containerized": true,
         "hostname": "docker-fleet-agent",
         "id": "8259e024976a406e8a54cdbffeb84fec",
-        "ip": "192.168.252.5",
-        "mac": "02-42-C0-A8-FC-05",
+        "ip": [
+            "192.168.252.5"
+        ],
+        "mac": [
+            "02-42-C0-A8-FC-05"
+        ],
         "name": "docker-fleet-agent",
         "os": {
             "codename": "focal",
