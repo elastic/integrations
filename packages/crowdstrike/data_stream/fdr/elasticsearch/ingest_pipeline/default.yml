@@ -235,13 +235,13 @@ processors:
         - crowdstrike.id
         - crowdstrike.aid
         - crowdstrike.cid
+      tag: fingerprint_crowdstrike_fdr
+      description: >
+        When deduplication is enabled, fingerprint the a set of crowdstrike fields 
+        in attempt to prevent the same event from being indexed more than once.
+      if: ctx._conf?.enable_deduplication == true
       target_field: _id
       ignore_missing: true
-
-  ## ECS fields.
-  - set:
-      field: ecs.version
-      value: '8.17.0'
 
   ## Categorization.
   - script:
@@ -1397,10 +1397,12 @@ processors:
         }
 
   ## Event fields.
-  - rename:
-      field: crowdstrike.id
-      target_field: event.id
-      ignore_missing: true
+  - set:
+      field: event.id
+      description: Concat the fields used in fingerprint.
+      tag: set_event_id
+      value: >-
+        {{{#crowdstrike.id}}}{{{ crowdstrike.id }}}{{{/crowdstrike.id}}}|{{{#crowdstrike.aid}}}{{{ crowdstrike.aid }}}{{{/crowdstrike.aid}}}|{{{#crowdstrike.cid}}}{{{ crowdstrike.cid }}}{{{/crowdstrike.cid}}}
   - rename:
       field: crowdstrike.event_simpleName
       target_field: event.action
@@ -1500,12 +1502,6 @@ processors:
       target_field: observer.version
       ignore_missing: true
       ignore_failure: true
-  - set:
-      field: observer.vendor
-      value: crowdstrike
-  - set:
-      field: observer.type
-      value: agent
   - foreach:
       if: ctx.observer?.ip != null && ctx.observer.ip instanceof List
       field: observer.ip
@@ -2536,6 +2532,21 @@ processors:
       if: ctx.host?.os?.type != null
   - remove:
       field:
+        - log.file.path
+        - log.offset
+      if: ctx.aws?.s3?.bucket != null && ctx.aws.s3.object != null
+      ignore_missing: true
+      ignore_failure: true
+  - remove:
+      field:
+        - agent.ephemeral_id
+        - event.timezone
+        - log.offset
+      if: ctx._conf?.prune_fields == true
+      ignore_missing: true
+  - remove:
+      field:
+        - ecs.version
         - _temp
         - crowdstrike.timestamp
         - crowdstrike._time
@@ -2546,9 +2557,8 @@ processors:
         - crowdstrike.UserIsAdmin
         - crowdstrike.UTCTimestamp
         - crowdstrike.TargetDirectoryName
-        - aws
+        - _conf
       ignore_missing: true
-      ignore_failure: true
   - script:
       tag: remove-nulls
       lang: painless
