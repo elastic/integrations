@@ -2868,79 +2868,73 @@ An example event for `entra_app_registrations` looks as following:
 
 ```json
 {
-    "_index": ".ds-metrics-o365_metrics.entra_app_registrations-default-2025.03.25-000001",
-    "_id": "vWz_zJUBz1frJ1OdtIln",
-    "_version": 1,
-    "_score": 0,
-    "_source": {
-        "o365": {
-            "metrics": {
-                "entra_app": {
-                    "key_credentials": [
-                        {
-                            "end_date_time": "2024-11-09T13:55:10Z",
-                            "key_id": "20d576ea23c6a9a4",
-                            "usage": "Verify",
-                            "type": "AsymmetricX509Cert",
-                            "display_name": "CN=EXert"
-                        }
-                    ],
-                    "id": "64d86-56cb-4877-acc2-89a874bc",
-                    "display_name": "EXVVO_Appq2",
-                    "app_id": "7db25d-9a16-4b80-b48c-1352a2c7b0"
-                }
+    "o365": {
+        "metrics": {
+            "entra_app": {
+                "key_credentials": [
+                    {
+                        "end_date_time": "2024-11-09T13:55:10Z",
+                        "key_id": "20d576ea23c6a9a4",
+                        "usage": "Verify",
+                        "type": "AsymmetricX509Cert",
+                        "display_name": "CN=EXert"
+                    }
+                ],
+                "id": "64d86-56cb-4877-acc2-89a874bc",
+                "display_name": "EXVVO_Appq2",
+                "app_id": "7db25d-9a16-4b80-b48c-1352a2c7b0"
             }
+        }
+    },
+    "agent": {
+        "name": "docker-fleet-agent",
+        "id": "254cb83f-8607-4e3d-9335-62c3347b6bb7",
+        "ephemeral_id": "8649d56f-6a0e-4511-8b34-b6a52851a0a5",
+        "type": "filebeat",
+        "version": "8.16.0"
+    },
+    "@timestamp": "2025-03-25T11:11:03.475Z",
+    "ecs": {
+        "version": "8.16.0"
+    },
+    "data_stream": {
+        "namespace": "default",
+        "type": "metrics",
+        "dataset": "o365_metrics.entra_app_registrations"
+    },
+    "host": {
+        "hostname": "docker-fleet-agent",
+        "os": {
+            "kernel": "5.10.104-linuxkit",
+            "name": "Wolfi",
+            "type": "linux",
+            "version": "20230201",
+            "platform": "wolfi"
         },
-        "agent": {
-            "name": "docker-fleet-agent",
-            "id": "254cb83f-8607-4e3d-9335-62c3347b6bb7",
-            "ephemeral_id": "8649d56f-6a0e-4511-8b34-b6a52851a0a5",
-            "type": "filebeat",
-            "version": "8.16.0"
-        },
-        "@timestamp": "2025-03-25T11:11:03.475Z",
-        "ecs": {
-            "version": "8.16.0"
-        },
-        "data_stream": {
-            "namespace": "default",
-            "type": "metrics",
-            "dataset": "o365_metrics.entra_app_registrations"
-        },
-        "host": {
-            "hostname": "docker-fleet-agent",
-            "os": {
-                "kernel": "5.10.104-linuxkit",
-                "name": "Wolfi",
-                "type": "linux",
-                "version": "20230201",
-                "platform": "wolfi"
-            },
-            "containerized": false,
-            "ip": [
-                "172.26.0.7"
-            ],
-            "name": "docker-fleet-agent",
-            "mac": [
-                "02-42-AC-1A-00-07"
-            ],
-            "architecture": "aarch64"
-        },
-        "elastic_agent": {
-            "id": "254cb83f-8607-4e3d-9335-62c3347b6bb7",
-            "version": "8.16.0",
-            "snapshot": false
-        },
-        "event": {
-            "agent_id_status": "verified",
-            "ingested": "2025-03-25T11:11:04Z",
-            "kind": "metric",
-            "dataset": "o365_metrics.entra_app_registrations"
-        },
-        "tags": [
-            "o365.metrics.entra.app.registrations"
-        ]
-    }
+        "containerized": false,
+        "ip": [
+            "172.26.0.7"
+        ],
+        "name": "docker-fleet-agent",
+        "mac": [
+            "02-42-AC-1A-00-07"
+        ],
+        "architecture": "aarch64"
+    },
+    "elastic_agent": {
+        "id": "254cb83f-8607-4e3d-9335-62c3347b6bb7",
+        "version": "8.16.0",
+        "snapshot": false
+    },
+    "event": {
+        "agent_id_status": "verified",
+        "ingested": "2025-03-25T11:11:04Z",
+        "kind": "metric",
+        "dataset": "o365_metrics.entra_app_registrations"
+    },
+    "tags": [
+        "o365.metrics.entra.app.registrations"
+    ]
 }
 ```
 
