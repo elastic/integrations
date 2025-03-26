@@ -18,8 +18,7 @@ This integration is automatically installed when users visit the **Security Solu
 ## Usage
 
 1. Navigate to **Security Solution** in Kibana.
-2. Open **Elastic Assistant** and select a Security AI Prompt.
-3. Use AI-generated security prompts to assist in investigations and threat analysis.
+2. AI-generated security prompts will be used in AI Assistant, Attack Discovery, and other security AI features to assist in investigations and threat analysis.
 
 ## Developer Guide
 
