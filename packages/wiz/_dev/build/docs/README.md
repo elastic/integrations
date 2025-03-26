@@ -114,7 +114,7 @@ This is the `Cloud Configuration Finding Full Posture` dataset.
 
 {{event "cloud_configuration_finding_full_posture"}}
 
-{{fields "cloud_configuration_finding__full_posture"}}
+{{fields "cloud_configuration_finding_full_posture"}}
 
 ### Issue
 
