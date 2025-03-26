@@ -93,11 +93,33 @@ processors:
           ctx.varonis.logs = keysToSnakeCase(ctx.varonis.logs);
         }
 
-  # write a processor to lowercase the value of event.outcome
+  # processor to lowercase the value of event.outcome
   - lowercase:
       field: event.outcome
       target_field: event.outcome
       ignore_missing: true
+
+  # script to create a new field to assign label to event.severity
+  - script:
+      description: Convert event severity to their text meaning using params
+      lang: painless
+      params:
+        descriptions:
+          "0": "emergency"
+          "1": "alert"
+          "2": "critical"
+          "3": "error"
+          "4": "warning"
+          "5": "notice"
+          "6": "informational"
+          "7": "debug"
+      if: ctx.event?.severity != null
+      source: |
+        String severity = String.valueOf(ctx.event.severity);
+        ctx.event.severity_label = params.descriptions.getOrDefault(
+          severity,
+          "unknown"
+        );
 
   ####################
   ## Cleanup Fields ##
