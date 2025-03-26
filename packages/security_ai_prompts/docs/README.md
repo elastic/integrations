@@ -1,86 +1,48 @@
-<!-- Use this template language as a starting point, replacing {placeholder text} with details about the integration. -->
-<!-- Find more detailed documentation guidelines in https://github.com/elastic/integrations/blob/main/docs/documentation_guidelines.md -->
+# Security AI Prompts Integration (Beta)
 
-# Security AI Prompts
+## Overview
 
-test revision 9, latest fork, using real and placeholder osquery_pack_asset, and manifest changes
+The **Security AI Prompts** integration provides pre-configured AI-driven security prompts that enhance automated threat detection and response in Elastic Security. These prompts help security analysts generate AI-assisted insights and streamline their investigative workflows.
 
-<!-- The Security AI Prompts integration allows you to monitor {name of service}. {name of service} is {describe service}.
-
-Use the Security AI Prompts integration to {purpose}. Then visualize that data in Kibana, create alerts to notify you if something goes wrong, and reference {data stream type} when troubleshooting an issue.
-
-For example, if you wanted to {sample use case} you could {action}. Then you can {visualize|alert|troubleshoot} by {action}. -->
-
-## Data streams
-
-<!-- The Security AI Prompts integration collects {one|two} type{s} of data streams: {logs and/or metrics}. -->
-
-<!-- If applicable -->
-<!-- **Logs** help you keep a record of events happening in {service}.
-Log data streams collected by the {name} integration include {sample data stream(s)} and more. See more details in the [Logs](#logs-reference). -->
-
-<!-- If applicable -->
-<!-- **Metrics** give you insight into the state of {service}.
-Metric data streams collected by the {name} integration include {sample data stream(s)} and more. See more details in the [Metrics](#metrics-reference). -->
-
-<!-- Optional: Any additional notes on data streams -->
+This integration is in **beta** and subject to changes. Feedback and contributions are welcome.
 
 ## Requirements
 
-You need Elasticsearch for storing and searching your data and Kibana for visualizing and managing it.
-You can use our hosted Elasticsearch Service on Elastic Cloud, which is recommended, or self-manage the Elastic Stack on your own hardware.
+- Elastic Stack **8.x** or later.
+- Kibana with the **Elastic Assistant** plugin enabled.
 
-<!--
-	Optional: Other requirements including:
-	* System compatibility
-	* Supported versions of third-party products
-	* Permissions needed
-	* Anything else that could block a user from successfully using the integration
--->
+## Installation
 
-## Setup
+This integration is automatically installed when users visit the **Security Solution** in Kibana. No manual setup is required.
 
-<!-- Any prerequisite instructions -->
+## Usage
 
-For step-by-step instructions on how to set up an integration, see the
-[Getting started](https://www.elastic.co/guide/en/welcome-to-elastic/current/getting-started-observability.html) guide.
+1. Navigate to **Security Solution** in Kibana.
+2. Open **Elastic Assistant** and select a Security AI Prompt.
+3. Use AI-generated security prompts to assist in investigations and threat analysis.
 
-<!-- Additional set up instructions -->
+## Developer Guide
 
-<!-- If applicable -->
-<!-- ## Logs reference -->
+Developers updating this integration must regenerate and update the AI prompts in the package:
 
-<!-- Repeat for each data stream of the current type -->
-<!-- ### {Data stream name}
+1. Generate the Security AI Prompts in the Kibana repository:
+   ```sh
+   cd x-pack/solutions/security/plugins/elastic_assistant
+   yarn generate-security-ai-prompts
+   ```
+2. Copy the updated prompt files to this package:
+   ```sh
+   cd packages/security_ai_prompts/kibana/security_ai_prompt
+   rm ./*.json
+   cp $KIBANA_HOME/target/security_ai_prompts/*.json .
+   ```
 
-The `{data stream name}` data stream provides events from {source} of the following types: {list types}. -->
+## Known Issues & Limitations
+This integration is currently in beta and subject to change.
+Future versions may include automatic prompt synchronization.
 
-<!-- Optional -->
-<!-- #### Example
+## Contributing
+Contributions are welcome! If you encounter issues or have suggestions, please open an issue or submit a pull request.
 
-An example event for `{data stream name}` looks as following:
-
-{code block with example} -->
-
-<!-- #### Exported fields
-
-{insert table} -->
-
-<!-- If applicable -->
-<!-- ## Metrics reference -->
-
-<!-- Repeat for each data stream of the current type -->
-<!-- ### {Data stream name}
-
-The `{data stream name}` data stream provides events from {source} of the following types: {list types}. -->
-
-<!-- Optional -->
-<!-- #### Example
-
-An example event for `{data stream name}` looks as following:
-
-{code block with example} -->
-
-<!-- #### Exported fields
-
-{insert table} -->
+## License
+This integration is subject to the Elastic License.
