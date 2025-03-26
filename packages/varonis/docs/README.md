@@ -8,27 +8,6 @@ The Elastic integration for [Varonis](https://www.varonis.com/) enables real-tim
 
 ## Requirements
 
-Elastic Agent must be installed. For more details and installation instructions, please refer to the [Elastic Agent Installation Guide](https://www.elastic.co/guide/en/fleet/current/elastic-agent-installation.html).
-
-### Installing and managing an Elastic Agent:
-
-There are several options for installing and managing Elastic Agent:
-
-### Install a Fleet-managed Elastic Agent (recommended):
-
-With this approach, you install Elastic Agent and use Fleet in Kibana to define, configure, and manage your agents in a central location. We recommend using Fleet management because it makes the management and upgrade of your agents considerably easier.
-
-### Install Elastic Agent in standalone mode (advanced users):
-
-With this approach, you install Elastic Agent and manually configure the agent locally on the system where it’s installed. You are responsible for managing and upgrading the agents. This approach is reserved for advanced users only.
-
-### Install Elastic Agent in a containerized environment:
-
-You can run Elastic Agent inside a container, either with Fleet Server or standalone. Docker images for all versions of Elastic Agent are available from the Elastic Docker registry, and we provide deployment manifests for running on Kubernetes.
-
-Please note, there are minimum requirements for running Elastic Agent. For more information, refer to the  [Elastic Agent Minimum Requirements](https://www.elastic.co/guide/en/fleet/current/elastic-agent-installation.html#elastic-agent-installation-minimum-requirements).
-
-
 ### Configure Varonis DatAlert for Syslog forwarding:
 
 Users can configure the syslog server address in DatAlert so that alerts can be sent to elasticsearch integration. 
@@ -175,6 +154,7 @@ The following non-ECS fields are used in events documents:
 | data_stream.type | Data stream type. | constant_keyword |
 | event.dataset |  | constant_keyword |
 | event.module |  | constant_keyword |
+| event.severity_label |  | keyword |
 | input.type | Input type | keyword |
 | varonis.logs.attachment_name | The name of the attachment involved in the event. | keyword |
 | varonis.logs.changed_permissions | The permissions that were changed. | keyword |
@@ -184,7 +164,7 @@ The following non-ECS fields are used in events documents:
 | varonis.logs.event_category | The category of the event. | keyword |
 | varonis.logs.mail_recipient | The mail recipient involved in the event. | keyword |
 | varonis.logs.mailbox_access_type | The type of mailbox access involved in the event. | keyword |
-| varonis.logs.old_file_permission | The previous permissions of the file. | keyword |
+| varonis.logs.old_file_permission | The file permissions before the change. | keyword |
 | varonis.logs.rule_id | The ID of the rule that triggered the event. | integer |
 | varonis.logs.rule_name | The name of the rule that triggered the event. | keyword |
 

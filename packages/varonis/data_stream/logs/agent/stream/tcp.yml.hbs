@@ -1,0 +1,34 @@
+host: "{{tcp_host}}:{{tcp_port}}"
+
+tags:
+{{#if preserve_original_event}}
+  - preserve_original_event
+{{/if}}
+{{#each tags as |tag i|}}
+  - {{tag}}
+{{/each}}
+
+{{#if ssl}}
+ssl: {{ssl}}
+{{/if}}
+
+{{#contains "forwarded" tags}}
+publisher_pipeline.disable_host: true
+{{/contains}}
+
+processors:
+- replace:
+    fields:
+      - field: "message"
+        pattern: '\\'
+        replacement: "\\\\"
+- rename:
+    fields:
+      - {from: "message", to: "event.original"}
+
+- decode_cef:
+    field: event.original
+
+{{#if processors}}
+{{processors}}
+{{/if}}
