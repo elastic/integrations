@@ -27,6 +27,8 @@ Users can configure the syslog server address in DatAlert so that alerts can be 
 4. **Apply to alert methods**: Select `Syslog message`.
 5. Click `OK`.
 
+This integration expects to use `External system default template (CEF)` for alert forwarding in Varonis DatAlert tool. In case any custom template is used, all the fields in `External system default template (CEF)` should also be present in custom template along with the other additional fields. Additional fields will be part of `varonis.logs` object and such fields will be indexed only if dynamic mapping is enabled in Elasticsearch.
+
 ## Logs reference
 
 ### varonis.logs

@@ -27,6 +27,8 @@ Users can configure the syslog server address in DatAlert so that alerts can be 
 4. **Apply to alert methods**: Select `Syslog message`.
 5. Click `OK`.
 
+This integration expects to use `External system default template (CEF)` for alert forwarding in Varonis DatAlert tool. In case any custom template is used, all the fields in `External system default template (CEF)` should also be present in custom template along with the other additional fields. Additional fields will be part of `varonis.logs` object and such fields will be indexed only if dynamic mapping is enabled in Elasticsearch.
+
 ## Logs reference
 
 ### varonis.logs
@@ -40,15 +42,15 @@ An example event for `logs` looks as following:
 {
     "@timestamp": "2024-11-22T16:19:09.000Z",
     "agent": {
-        "ephemeral_id": "63d7a2da-97de-4817-adef-96fe834ecdc0",
-        "id": "fdbf9754-803e-41f6-90fb-7a6c2e0b3fe0",
-        "name": "elastic-agent-49283",
+        "ephemeral_id": "795c9691-25d9-48db-937d-d472191327da",
+        "id": "2f1c27af-7c5f-4b98-ba2f-c7e7f9879f04",
+        "name": "elastic-agent-38341",
         "type": "filebeat",
         "version": "8.15.3"
     },
     "data_stream": {
         "dataset": "varonis.logs",
-        "namespace": "47112",
+        "namespace": "97194",
         "type": "logs"
     },
     "destination": {
@@ -64,7 +66,7 @@ An example event for `logs` looks as following:
         "version": "8.11.0"
     },
     "elastic_agent": {
-        "id": "fdbf9754-803e-41f6-90fb-7a6c2e0b3fe0",
+        "id": "2f1c27af-7c5f-4b98-ba2f-c7e7f9879f04",
         "snapshot": false,
         "version": "8.15.3"
     },
@@ -77,11 +79,12 @@ An example event for `logs` looks as following:
         "code": "6000",
         "dataset": "varonis.logs",
         "end": "2024-11-22T16:19:05.000Z",
-        "ingested": "2025-03-21T09:54:45Z",
+        "ingested": "2025-03-26T07:29:42Z",
         "kind": "event",
         "module": "varonis",
         "outcome": "success",
         "severity": 3,
+        "severity_label": "error",
         "type": [
             "info"
         ]
@@ -94,7 +97,7 @@ An example event for `logs` looks as following:
     "host": {
         "architecture": "x86_64",
         "containerized": true,
-        "hostname": "elastic-agent-49283",
+        "hostname": "elastic-agent-38341",
         "id": "328e5cd3dfd442488a3dd49bf596f391",
         "ip": [
             "172.20.0.2",
@@ -104,7 +107,7 @@ An example event for `logs` looks as following:
             "02-42-AC-13-00-07",
             "02-42-AC-14-00-02"
         ],
-        "name": "elastic-agent-49283",
+        "name": "elastic-agent-38341",
         "os": {
             "codename": "focal",
             "family": "debian",
