@@ -72,7 +72,12 @@ processors:
         if (ctx.o365?.metrics?.teams?.call?.quality != null) {
           ctx.o365.metrics.teams.call.quality = convertToSnakeCase(ctx.o365.metrics.teams.call.quality);
         }
-
+  - script:
+      description: Populate o365.metrics.teams.call.quality.call_record_id
+      lang: painless
+      ignore_failure: true
+      source: >
+          ctx.o365.metrics.teams.call.quality.call_record_id = ctx.call_record;
   - rename:
       field: o365.metrics.teams.call.quality.callee.cpu_processor_speed_in_mhz
       target_field: o365.metrics.teams.call.quality.callee.cpu_processor_speed.mhz
@@ -165,6 +170,10 @@ processors:
   - remove:
       if: ctx.message != null
       field: message
+      ignore_missing: true
+  - remove:
+      if: ctx.call_record != null
+      field: call_record
       ignore_missing: true
 
 on_failure:

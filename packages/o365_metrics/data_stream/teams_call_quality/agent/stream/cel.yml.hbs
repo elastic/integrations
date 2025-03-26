@@ -78,6 +78,7 @@ state:
   worklist: []
   next: 0
   sync_delay: "5s"
+  call_record: ""
   base:
     tenant_id: "{{azure_tenant_id}}"
     interval: "{{interval}}"
@@ -133,7 +134,8 @@ program: |
             "events": (
               has(body.value) && size(body.value) > 0 ?
                 body.value.map(e, {
-                  "message": e.encode_json()
+                  "message": e.encode_json(),
+                  "call_record": string(state.worklist[state.next])
                 })
               :
                 [{"message":"retry"}]
