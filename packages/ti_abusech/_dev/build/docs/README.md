@@ -7,6 +7,12 @@ This integration is for [AbuseCH](https://urlhaus.abuse.ch/) logs. It includes t
 - `malwarebazaar` dataset: Supports indicators from the MalwareBazaar from AbuseCH.
 - `threatfox` dataset: Supports indicators from AbuseCH Threat Fox API.
 
+## Note:
+
+From February 2025, AbuseCH recommends using an optional `Auth Key` (API Key) in the requests to avoid rate limiting issues.
+More details on this topic can be found [here](https://abuse.ch/blog/community-first/). In version 2.8.0, we have added an optional `Auth Key`
+configuration option that can be used to avoid rate limiting.
+
 ## Agentless Enabled Integration
 
 Agentless integrations allow you to collect data without having to manage Elastic Agent in your cloud. They make manual agent deployment unnecessary, so you can focus on your data instead of the agent that collects it. For more information, refer to [Agentless integrations](https://www.elastic.co/guide/en/serverless/current/security-agentless-integrations.html) and the [Agentless integrations FAQ](https://www.elastic.co/guide/en/serverless/current/agentless-integration-troubleshooting.html).
