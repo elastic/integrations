@@ -127,29 +127,29 @@ Tencent Cloud 集成旨在将腾讯云的日志无缝接入 Elastic Stack，帮�
 | tencent_cloud.audit.eventTime | Event time from the audit log | long |
 | tencent_cloud.audit.eventType | Event type from the audit log | keyword |
 | tencent_cloud.audit.eventVersion | Event version from the audit log | long |
-| tencent_cloud.audit.requestParameters.requestParameters.AccountArea | Account area from the request parameters | keyword |
-| tencent_cloud.audit.requestParameters.requestParameters.Conditions.requestParameters.Conditions.Key | Key in the request conditions | keyword |
-| tencent_cloud.audit.requestParameters.requestParameters.Conditions.requestParameters.Conditions.Operator | Operator in the request conditions | keyword |
-| tencent_cloud.audit.requestParameters.requestParameters.Conditions.requestParameters.Conditions.Value | Value in the request conditions | keyword |
-| tencent_cloud.audit.requestParameters.requestParameters.DiskChargeType | Disk charge type from the request parameters | keyword |
-| tencent_cloud.audit.requestParameters.requestParameters.EndTime | End time in the request parameters | keyword |
-| tencent_cloud.audit.requestParameters.requestParameters.InquiryType | Inquiry type from the request parameters | keyword |
-| tencent_cloud.audit.requestParameters.requestParameters.InstanceIds | Instance IDs from the request parameters | keyword |
-| tencent_cloud.audit.requestParameters.requestParameters.Limit | Limit value from the request parameters | long |
-| tencent_cloud.audit.requestParameters.requestParameters.MetricNames | Metric names in the request parameters | keyword |
-| tencent_cloud.audit.requestParameters.requestParameters.Module | Module in the request parameters | keyword |
-| tencent_cloud.audit.requestParameters.requestParameters.Namespace | Namespace in the request parameters | keyword |
-| tencent_cloud.audit.requestParameters.requestParameters.Period | Period in the request parameters | long |
-| tencent_cloud.audit.requestParameters.requestParameters.Region | Region in the request parameters | keyword |
-| tencent_cloud.audit.requestParameters.requestParameters.StartTime | Start time in the request parameters | keyword |
-| tencent_cloud.audit.requestParameters.requestParameters.Version | Version in the request parameters | keyword |
-| tencent_cloud.audit.requestParameters.requestParameters.Zones | Zones from the request parameters | keyword |
+| tencent_cloud.audit.requestParameters.AccountArea | Account area from the request parameters | keyword |
+| tencent_cloud.audit.requestParameters.Conditions.requestParameters.Conditions.Key | Key in the request conditions | keyword |
+| tencent_cloud.audit.requestParameters.Conditions.requestParameters.Conditions.Operator | Operator in the request conditions | keyword |
+| tencent_cloud.audit.requestParameters.Conditions.requestParameters.Conditions.Value | Value in the request conditions | keyword |
+| tencent_cloud.audit.requestParameters.DiskChargeType | Disk charge type from the request parameters | keyword |
+| tencent_cloud.audit.requestParameters.EndTime | End time in the request parameters | keyword |
+| tencent_cloud.audit.requestParameters.InquiryType | Inquiry type from the request parameters | keyword |
+| tencent_cloud.audit.requestParameters.InstanceIds | Instance IDs from the request parameters | keyword |
+| tencent_cloud.audit.requestParameters.Limit | Limit value from the request parameters | long |
+| tencent_cloud.audit.requestParameters.MetricNames | Metric names in the request parameters | keyword |
+| tencent_cloud.audit.requestParameters.Module | Module in the request parameters | keyword |
+| tencent_cloud.audit.requestParameters.Namespace | Namespace in the request parameters | keyword |
+| tencent_cloud.audit.requestParameters.Period | Period in the request parameters | long |
+| tencent_cloud.audit.requestParameters.Region | Region in the request parameters | keyword |
+| tencent_cloud.audit.requestParameters.StartTime | Start time in the request parameters | keyword |
+| tencent_cloud.audit.requestParameters.Version | Version in the request parameters | keyword |
+| tencent_cloud.audit.requestParameters.Zones | Zones from the request parameters | keyword |
 | tencent_cloud.audit.resourceName | Resource name from the audit log | keyword |
 | tencent_cloud.audit.resourceType | Resource type from the audit log | keyword |
 | tencent_cloud.audit.responseElements | Response elements from the audit log | keyword |
 | tencent_cloud.audit.sensitiveAction | Sensitive action from the audit log | keyword |
-| tencent_cloud.audit.userIdentity.userIdentity.principalId | Principal ID from the user identity | keyword |
-| tencent_cloud.audit.userIdentity.userIdentity.roleSessionName | Role session name from the user identity | keyword |
-| tencent_cloud.audit.userIdentity.userIdentity.secretId | Secret ID from the user identity | keyword |
-| tencent_cloud.audit.userIdentity.userIdentity.sessionContext | Session context from the user identity | text |
-| tencent_cloud.audit.userIdentity.userIdentity.type | User identity type | keyword |
+| tencent_cloud.audit.userIdentity.principalId | Principal ID from the user identity | keyword |
+| tencent_cloud.audit.userIdentity.roleSessionName | Role session name from the user identity | keyword |
+| tencent_cloud.audit.userIdentity.secretId | Secret ID from the user identity | keyword |
+| tencent_cloud.audit.userIdentity.sessionContext | Session context from the user identity | text |
+| tencent_cloud.audit.userIdentity.type | User identity type | keyword |
