@@ -227,6 +227,12 @@ program: |
   							},
   						},
   						"want_more": false,
+  						"cursor": state.cursor.with(
+  							{
+  								"auth_data": auth_data,
+  								"task_id": null,
+  							}
+  						),
   					}
   				)
   		)
@@ -252,6 +258,24 @@ program: |
   						"events": [{"message": {"event": {"reason": "polling"}}.encode_json()}],
   						"want_more": true,
   						"cursor": state.cursor.with({"auth_data": null}),
+  					}
+  				)
+  			:
+  			(resp.StatusCode == 404) ?
+  				// 404 Not Found - Resubmit the task ID query for the same timeframe.
+  				state.with(
+  					{
+  						"events": [{"message": {"event": {"reason": "polling"}}.encode_json()}],
+  						"want_more": true,
+  						"cursor": state.cursor.with(
+  							{
+  								"auth_data": auth_data,
+  								"task_id": null,
+  								"page_token": null,
+  								"next_startTime": state.cursor.current_startTime,
+  								"next_endTime": state.cursor.current_endTime,
+  							}
+  						),
   					}
   				)
   			:
@@ -330,6 +354,13 @@ program: |
   							},
   						},
   						"want_more": false,
+  						"cursor": state.cursor.with(
+  							{
+  								"auth_data": auth_data,
+  								"task_id": null,
+  								"page_token": null,
+  							}
+  						),
   					}
   				)
   		)
