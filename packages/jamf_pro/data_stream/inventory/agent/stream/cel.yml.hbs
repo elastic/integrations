@@ -29,6 +29,8 @@ publisher_pipeline.disable_host: true
 {{/contains}}
 
 keep_null: true
+redact:
+    fields: ~
 program: |-
   request(
   	"GET",
@@ -36,7 +38,10 @@ program: |-
   		"section": state.sections,
   		"page-size": [string(state.page_size)],
   		"sort": ["general.reportDate:asc"],
-  		?"filter": state.?cursor.last_report_date.optMap(d, ["general.reportDate>=\"" + d + "\""]),
+  		?"filter": (has(state.?cursor.last_report_date) && state.cursor.last_report_date.orValue("") != "") ?
+   			optional.of(["general.reportDate>=\"" + state.cursor.last_report_date + "\""])
+   		:
+   			optional.none(),
   	}.format_query()
   ).with(
   	{
