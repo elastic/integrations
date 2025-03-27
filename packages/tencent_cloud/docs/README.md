@@ -153,4 +153,3 @@ Tencent Cloud 集成旨在将腾讯云的日志无缝接入 Elastic Stack，帮�
 | tencent_cloud.audit.userIdentity.userIdentity.secretId | Secret ID from the user identity | keyword |
 | tencent_cloud.audit.userIdentity.userIdentity.sessionContext | Session context from the user identity | text |
 | tencent_cloud.audit.userIdentity.userIdentity.type | User identity type | keyword |
-
