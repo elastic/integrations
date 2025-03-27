@@ -128,9 +128,9 @@ Tencent Cloud 集成旨在将腾讯云的日志无缝接入 Elastic Stack，帮�
 | tencent_cloud.audit.eventType | Event type from the audit log | keyword |
 | tencent_cloud.audit.eventVersion | Event version from the audit log | long |
 | tencent_cloud.audit.requestParameters.AccountArea | Account area from the request parameters | keyword |
-| tencent_cloud.audit.requestParameters.Conditions.Conditions.Key | Key in the request conditions | keyword |
-| tencent_cloud.audit.requestParameters.Conditions.Conditions.Operator | Operator in the request conditions | keyword |
-| tencent_cloud.audit.requestParameters.Conditions.Conditions.Value | Value in the request conditions | keyword |
+| tencent_cloud.audit.requestParameters.Conditions.Key | Key in the request conditions | keyword |
+| tencent_cloud.audit.requestParameters.Conditions.Operator | Operator in the request conditions | keyword |
+| tencent_cloud.audit.requestParameters.Conditions.Value | Value in the request conditions | keyword |
 | tencent_cloud.audit.requestParameters.DiskChargeType | Disk charge type from the request parameters | keyword |
 | tencent_cloud.audit.requestParameters.EndTime | End time in the request parameters | keyword |
 | tencent_cloud.audit.requestParameters.InquiryType | Inquiry type from the request parameters | keyword |
