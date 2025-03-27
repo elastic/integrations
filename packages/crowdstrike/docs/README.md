@@ -785,6 +785,7 @@ Current supported event types are:
 | crowdstrike.event.AdditionalLocationCountryCode | Additional involved country code. | keyword |
 | crowdstrike.event.AdditionalSsoApplicationIdentifier | Additional application identifier. | keyword |
 | crowdstrike.event.AgentIdString |  | keyword |
+| crowdstrike.event.AggregateId |  | keyword |
 | crowdstrike.event.AnomalousTicketContentClassification | Ticket signature analysis. | keyword |
 | crowdstrike.event.AssociatedFile | The file associated with the triggering indicator. | keyword |
 | crowdstrike.event.Attributes | JSON objects containing additional information about the event. | flattened |
@@ -799,9 +800,11 @@ Current supported event types are:
 | crowdstrike.event.CloudProvider |  | keyword |
 | crowdstrike.event.CloudService |  | keyword |
 | crowdstrike.event.Commands | Commands run in a remote session. | keyword |
+| crowdstrike.event.CompositeId | Global unique identifier that identifies a unique alert. | keyword |
 | crowdstrike.event.ComputerName | Name of the computer where the detection occurred. | keyword |
 | crowdstrike.event.CustomerId | Customer identifier. | keyword |
 | crowdstrike.event.DataDomains | Data domains of the event that was the primary indicator or created it. | keyword |
+| crowdstrike.event.Description |  | keyword |
 | crowdstrike.event.DetectId | Unique ID associated with the detection. | keyword |
 | crowdstrike.event.DetectName | Name of the detection. | keyword |
 | crowdstrike.event.DeviceId | Device on which the event occurred. | keyword |
@@ -822,6 +825,9 @@ Current supported event types are:
 | crowdstrike.event.ExecutionMetadata.ResultID |  | keyword |
 | crowdstrike.event.ExecutionMetadata.SearchWindowEnd |  | date |
 | crowdstrike.event.ExecutionMetadata.SearchWindowStart |  | date |
+| crowdstrike.event.FilesWritten.FileName |  | keyword |
+| crowdstrike.event.FilesWritten.FilePath |  | keyword |
+| crowdstrike.event.FilesWritten.Timestamp |  | date |
 | crowdstrike.event.Finding | The details of the finding. | keyword |
 | crowdstrike.event.FineScore | The highest incident score reached as of the time the event was sent. | float |
 | crowdstrike.event.Flags.Audit | CrowdStrike audit flag. | boolean |
@@ -829,6 +835,7 @@ Current supported event types are:
 | crowdstrike.event.Flags.Monitor | CrowdStrike monitor flag. | boolean |
 | crowdstrike.event.GrandparentCommandLine | Grandparent process command line arguments. | keyword |
 | crowdstrike.event.GrandparentImageFileName | Path to the grandparent process. | keyword |
+| crowdstrike.event.GrandparentImageFilePath |  | keyword |
 | crowdstrike.event.Highlights | Sections of content that matched the monitoring rule. | text |
 | crowdstrike.event.HostGroups | Array of related Host Group IDs. | keyword |
 | crowdstrike.event.ICMPCode | RFC2780 ICMP Code field. | keyword |
@@ -850,6 +857,7 @@ Current supported event types are:
 | crowdstrike.event.LdapSearchQueryAttack | Detected LDAP tool attack. | keyword |
 | crowdstrike.event.LoadedObjects | Provides one or more JSON objects describing the loaded objects related to the detection. | nested |
 | crowdstrike.event.LocalIP | IP address of the host associated with the detection. | keyword |
+| crowdstrike.event.LocalIPv6 |  | ip |
 | crowdstrike.event.MACAddress | MAC address of the host associated with the detection. | keyword |
 | crowdstrike.event.MD5String | MD5 sum of the executable associated with the detection. | keyword |
 | crowdstrike.event.MachineDomain | Domain for the machine associated with the detection. | keyword |
@@ -887,6 +895,7 @@ Current supported event types are:
 | crowdstrike.event.ObjectiveCRuntimesAltered | Provides one or more JSON objects describing the obj-c methods related to the malware. | nested |
 | crowdstrike.event.OperationName | Event subtype. | keyword |
 | crowdstrike.event.ParentImageFileName | The parent image file name involved. | keyword |
+| crowdstrike.event.ParentImageFilePath |  | keyword |
 | crowdstrike.event.PatternDispositionFlags.BlockingUnsupportedOrDisabled |  | boolean |
 | crowdstrike.event.PatternDispositionFlags.BootupSafeguardEnabled |  | boolean |
 | crowdstrike.event.PatternDispositionFlags.CriticalProcessDisabled |  | boolean |
@@ -949,6 +958,7 @@ Current supported event types are:
 | crowdstrike.event.SensorId | Unique ID associated with the Falcon sensor. | keyword |
 | crowdstrike.event.ServiceName | Description of which related service was involved in the event. | keyword |
 | crowdstrike.event.SessionId | Session ID of the remote response session. | keyword |
+| crowdstrike.event.Severity | The integer severity level using Crowdstrike scaling. | integer |
 | crowdstrike.event.SeverityName | The severity level of the detection, as a string (High/Medium/Informational). | keyword |
 | crowdstrike.event.SourceAccountUpn | Source user UPN. | keyword |
 | crowdstrike.event.SourceEndpointAccountObjectGuid | Source endpoint object GUID | keyword |
@@ -977,6 +987,7 @@ Current supported event types are:
 | crowdstrike.event.Timestamp | Firewall rule triggered timestamp. | date |
 | crowdstrike.event.Trampolines | Provides one or more JSON objects describing the relevant functions and processes performing inline API hooks. | nested |
 | crowdstrike.event.TreeID | CrowdStrike tree id. | keyword |
+| crowdstrike.event.Type | The endpoint detection type ("ldt": Legacy Endpoint Detection, or "ofp": Office Prevention Macro Detection). | keyword |
 | crowdstrike.event.UserId | Email address or user ID associated with the event. | keyword |
 | crowdstrike.event.UserUUID |  | keyword |
 | crowdstrike.event.VerifiedBootState | Provides the device’s current boot state. | keyword |
@@ -1342,6 +1353,9 @@ For example, if your Crowdstrike event contains `id: 123`, `aid: 456`, and `cid:
 | Field | Description | Type |
 |---|---|---|
 | @timestamp | Event timestamp. | date |
+| aws.s3.bucket.arn | The AWS S3 bucket ARN. | keyword |
+| aws.s3.bucket.name | The AWS S3 bucket name. | keyword |
+| aws.s3.object.key | The AWS S3 Object key. | keyword |
 | crowdstrike.AccountType |  | keyword |
 | crowdstrike.ActiveDirectoryAuthenticationMethod |  | keyword |
 | crowdstrike.ActivityId |  | keyword |
@@ -1350,6 +1364,7 @@ For example, if your Crowdstrike event contains `id: 123`, `aid: 456`, and `cid:
 | crowdstrike.AgentLocalTime |  | date |
 | crowdstrike.AgentTimeOffset |  | float |
 | crowdstrike.AgentVersion |  | keyword |
+| crowdstrike.AggregateId |  | keyword |
 | crowdstrike.AllocateVirtualMemoryCount |  | long |
 | crowdstrike.ApiReturnValue |  | keyword |
 | crowdstrike.ArchiveFileWrittenCount |  | long |
@@ -1382,6 +1397,7 @@ For example, if your Crowdstrike event contains `id: 123`, `aid: 456`, and `cid:
 | crowdstrike.CommandHistory |  | keyword |
 | crowdstrike.CommandHistory.text | Multi-field of `crowdstrike.CommandHistory`. | match_only_text |
 | crowdstrike.CompletionEventId |  | keyword |
+| crowdstrike.CompositeId | Global unique identifier that identifies a unique alert. | keyword |
 | crowdstrike.ConHostId |  | keyword |
 | crowdstrike.ConHostProcessId |  | keyword |
 | crowdstrike.ConfigBuild |  | keyword |
@@ -1408,6 +1424,8 @@ For example, if your Crowdstrike event contains `id: 123`, `aid: 456`, and `cid:
 | crowdstrike.CurrentLocalIP |  | ip |
 | crowdstrike.CustomerIdString |  | keyword |
 | crowdstrike.CycleTime |  | long |
+| crowdstrike.DataDomains |  | keyword |
+| crowdstrike.Description |  | keyword |
 | crowdstrike.DesiredAccess |  | keyword |
 | crowdstrike.DetectDescription |  | keyword |
 | crowdstrike.DetectId |  | keyword |
@@ -1449,6 +1467,9 @@ For example, if your Crowdstrike event contains `id: 123`, `aid: 456`, and `cid:
 | crowdstrike.FileName |  | keyword |
 | crowdstrike.FileObject |  | keyword |
 | crowdstrike.FilePath |  | keyword |
+| crowdstrike.FilesWritten.FileName |  | keyword |
+| crowdstrike.FilesWritten.FilePath |  | keyword |
+| crowdstrike.FilesWritten.Timestamp |  | date |
 | crowdstrike.FirmwareAnalysisEclConsumerInterfaceVersion |  | keyword |
 | crowdstrike.FirmwareAnalysisEclControlInterfaceVersion |  | keyword |
 | crowdstrike.FirstDiscoveredDate |  | date |
@@ -1459,6 +1480,7 @@ For example, if your Crowdstrike event contains `id: 123`, `aid: 456`, and `cid:
 | crowdstrike.GrandparentCommandLine |  | keyword |
 | crowdstrike.GrandparentCommandLine.text | Multi-field of `crowdstrike.GrandparentCommandLine`. | match_only_text |
 | crowdstrike.GrandparentImageFileName |  | keyword |
+| crowdstrike.GrandparentImageFilePath |  | keyword |
 | crowdstrike.HostGroups |  | keyword |
 | crowdstrike.HostHiddenStatus |  | keyword |
 | crowdstrike.IOCType |  | keyword |
@@ -1497,6 +1519,7 @@ For example, if your Crowdstrike event contains `id: 123`, `aid: 456`, and `cid:
 | crowdstrike.LocalAddressIP6 |  | ip |
 | crowdstrike.LocalAdminAccess |  | keyword |
 | crowdstrike.LocalIP |  | ip |
+| crowdstrike.LocalIPv6 |  | ip |
 | crowdstrike.LogicalCoreCount |  | long |
 | crowdstrike.LoginSessionId |  | keyword |
 | crowdstrike.LogoffTime |  | date |
@@ -1556,6 +1579,7 @@ For example, if your Crowdstrike event contains `id: 123`, `aid: 456`, and `cid:
 | crowdstrike.ParentCommandLine |  | keyword |
 | crowdstrike.ParentCommandLine.text | Multi-field of `crowdstrike.ParentCommandLine`. | match_only_text |
 | crowdstrike.ParentImageFileName |  | keyword |
+| crowdstrike.ParentImageFilePath |  | keyword |
 | crowdstrike.PasswordLastSet |  | keyword |
 | crowdstrike.PatternDispositionDescription |  | keyword |
 | crowdstrike.PatternDispositionFlags.BlockingUnsupportedOrDisabled |  | boolean |
@@ -1581,6 +1605,7 @@ For example, if your Crowdstrike event contains `id: 123`, `aid: 456`, and `cid:
 | crowdstrike.PatternDispositionFlags.SuspendParent |  | boolean |
 | crowdstrike.PatternDispositionFlags.SuspendProcess |  | boolean |
 | crowdstrike.PatternDispositionValue |  | long |
+| crowdstrike.PatternId |  | keyword |
 | crowdstrike.PciAttachmentState |  | keyword |
 | crowdstrike.PhysicalAddress |  | keyword |
 | crowdstrike.PhysicalAddressLength |  | long |
@@ -1649,7 +1674,9 @@ For example, if your Crowdstrike event contains `id: 123`, `aid: 456`, and `cid:
 | crowdstrike.SourceEndpointNetworkType |  | keyword |
 | crowdstrike.SourceFileName |  | keyword |
 | crowdstrike.SourceProcessId |  | keyword |
+| crowdstrike.SourceProducts |  | keyword |
 | crowdstrike.SourceThreadId |  | keyword |
+| crowdstrike.SourceVendors |  | keyword |
 | crowdstrike.StartTime |  | date |
 | crowdstrike.Status |  | keyword |
 | crowdstrike.SubStatus |  | keyword |
@@ -1674,6 +1701,7 @@ For example, if your Crowdstrike event contains `id: 123`, `aid: 456`, and `cid:
 | crowdstrike.Technique |  | keyword |
 | crowdstrike.Timeout |  | long |
 | crowdstrike.TokenType |  | keyword |
+| crowdstrike.Type | The endpoint detection type ("ldt": Legacy Endpoint Detection, or "ofp": Office Prevention Macro Detection). | keyword |
 | crowdstrike.USN |  | keyword |
 | crowdstrike.UnixMode |  | keyword |
 | crowdstrike.UnsignedModuleLoadCount |  | long |
@@ -1779,7 +1807,7 @@ For example, if your Crowdstrike event contains `id: 123`, `aid: 456`, and `cid:
 | dns.question.top_level_domain | The effective top level domain (eTLD), also known as the domain suffix, is the last part of the domain name. For example, the top level domain for example.com is "com". This value can be determined precisely with a list like the public suffix list (https://publicsuffix.org). Trying to approximate this by simply taking the last label will not work well for effective TLDs such as "co.uk". | keyword |
 | dns.question.type | The type of record being queried. | keyword |
 | dns.type | The type of DNS event captured, query or answer. If your source of DNS events only gives you DNS queries, you should only create dns events of type `dns.type:query`. If your source of DNS events gives you answers as well, you should create one event per query (optionally as soon as the query is seen). And a second event containing all query details as well as an array of answers. | keyword |
-| ecs.version | ECS version this event conforms to. `ecs.version` is a required field and must exist in all events. When querying across multiple indices -- which may conform to slightly different ECS versions -- this field lets integrations adjust to the schema version of the events. | keyword |
+| ecs.version | ECS version this event conforms to. `ecs.version` is a required field and must exist in all events. When querying across multiple indices -- which may conform to slightly different ECS versions -- this field lets integrations adjust to the schema version of the events. | constant_keyword |
 | event.action | The action captured by the event. This describes the information in the event. It is more specific than `event.category`. Examples are `group-add`, `process-started`, `file-created`. The value is normally defined by the implementer. | keyword |
 | event.category | This is one of four ECS Categorization Fields, and indicates the second level in the ECS category hierarchy. `event.category` represents the "big buckets" of ECS categories. For example, filtering on `event.category:process` yields all events relating to process activity. This field is closely related to `event.type`, which is used as a subcategory. This field is an array. This will allow proper categorization of some events that fall in multiple categories. | keyword |
 | event.created | `event.created` contains the date/time when the event was first read by an agent, or by your pipeline. This field is distinct from `@timestamp` in that `@timestamp` typically contain the time extracted from the original event. In most situations, these two timestamps will be slightly different. The difference can be used to calculate the delay between your source generating an event, and the time when your agent first processed it. This can be used to monitor your agent's or pipeline's ability to keep up with your event source. In case the two timestamps are identical, `@timestamp` should be used. | date |
@@ -1829,8 +1857,8 @@ For example, if your Crowdstrike event contains `id: 123`, `aid: 456`, and `cid:
 | observer.geo.region_name | Region name. | keyword |
 | observer.ip | IP addresses of the observer. | ip |
 | observer.serial_number | Observer serial number. | keyword |
-| observer.type | The type of the observer the data is coming from. There is no predefined list of observer types. Some examples are `forwarder`, `firewall`, `ids`, `ips`, `proxy`, `poller`, `sensor`, `APM server`. | keyword |
-| observer.vendor | Vendor name of the observer. | keyword |
+| observer.type | The type of the observer the data is coming from. There is no predefined list of observer types. Some examples are `forwarder`, `firewall`, `ids`, `ips`, `proxy`, `poller`, `sensor`, `APM server`. | constant_keyword |
+| observer.vendor | Vendor name of the observer. | constant_keyword |
 | observer.version | Observer version. | keyword |
 | process.args | Array of process arguments, starting with the absolute path to the executable. May be filtered to protect sensitive information. | keyword |
 | process.args_count | Length of the process.args array. This field can be useful for querying or performing bucket analysis on how many arguments were provided to start a process. More arguments may be an indication of suspicious activity. | long |
@@ -1904,11 +1932,20 @@ An example event for `fdr` looks as following:
 {
     "@timestamp": "2020-10-01T09:58:32.519Z",
     "agent": {
-        "ephemeral_id": "9151b3a9-d1a0-4945-a309-15e6528f5ac2",
-        "id": "b33294e1-6d92-4d6d-8fc5-e472edd17c0d",
-        "name": "elastic-agent-45098",
+        "id": "c29a18c6-3a73-4cb2-811f-b942d5353ea8",
+        "name": "elastic-agent-56971",
         "type": "filebeat",
-        "version": "8.18.0"
+        "version": "8.17.3"
+    },
+    "aws": {
+        "s3": {
+            "bucket": {
+                "name": "elastic-package-crowdstrike-fdr-57094"
+            },
+            "object": {
+                "key": "data"
+            }
+        }
     },
     "crowdstrike": {
         "AuthenticationId": "3783389",
@@ -1986,16 +2023,13 @@ An example event for `fdr` looks as following:
     },
     "data_stream": {
         "dataset": "crowdstrike.fdr",
-        "namespace": "50994",
+        "namespace": "21250",
         "type": "logs"
     },
-    "ecs": {
-        "version": "8.17.0"
-    },
     "elastic_agent": {
-        "id": "b33294e1-6d92-4d6d-8fc5-e472edd17c0d",
-        "snapshot": true,
-        "version": "8.18.0"
+        "id": "c29a18c6-3a73-4cb2-811f-b942d5353ea8",
+        "snapshot": false,
+        "version": "8.17.3"
     },
     "event": {
         "action": "ProcessRollup2",
@@ -2006,11 +2040,10 @@ An example event for `fdr` looks as following:
         "created": "2020-10-01T09:58:32.519Z",
         "dataset": "crowdstrike.fdr",
         "id": "ffffffff-1111-11eb-8462-02ade3b2f949|ffffffff655344736aca58d17fb570f0|ffffffff30a3407dae27d0503611022d",
-        "ingested": "2025-03-13T16:10:17Z",
+        "ingested": "2025-03-24T04:36:49Z",
         "kind": "event",
         "original": "{\"AuthenticationId\":\"3783389\",\"CommandLine\":\"\\\"C:\\\\WINDOWS\\\\system32\\\\backgroundTaskHost.exe\\\" -ServerName:App.AppXnme9zjyebb2xnyygh6q9ev6p5d234br2.mca\",\"ConfigBuild\":\"1007.3.0012309.1\",\"ConfigStateHash\":\"3998263252\",\"EffectiveTransmissionClass\":\"3\",\"Entitlements\":\"15\",\"ImageFileName\":\"\\\\Device\\\\HarddiskVolume3\\\\Windows\\\\System32\\\\backgroundTaskHost.exe\",\"ImageSubsystem\":\"2\",\"IntegrityLevel\":\"4096\",\"MD5HashData\":\"50d5fd1290d94d46acca0585311e74d5\",\"ParentAuthenticationId\":\"3783389\",\"ParentBaseFileName\":\"svchost.exe\",\"ParentProcessId\":\"2439558094566\",\"ProcessCreateFlags\":\"525332\",\"ProcessEndTime\":\"\",\"ProcessParameterFlags\":\"16385\",\"ProcessStartTime\":\"1604855181.648\",\"ProcessSxsFlags\":\"1600\",\"RawProcessId\":\"22272\",\"RpcClientProcessId\":\"2439558094566\",\"SHA1HashData\":\"0000000000000000000000000000000000000000\",\"SHA256HashData\":\"b8e176fe76a1454a00c4af0f8bf8870650d9c33d3e333239a59445c5b35c9a37\",\"SessionId\":\"1\",\"SourceProcessId\":\"2439558094566\",\"SourceThreadId\":\"77538684027214\",\"Tags\":\"41, 12094627905582, 12094627906234\",\"TargetProcessId\":\"2450046082233\",\"TokenType\":\"2\",\"UserSid\":\"S-1-12-1-3697283754-1083485977-2164330645-2516515886\",\"WindowFlags\":\"128\",\"aid\":\"ffffffff655344736aca58d17fb570f0\",\"aip\":\"67.43.156.14\",\"cid\":\"ffffffff30a3407dae27d0503611022d\",\"event_platform\":\"Win\",\"event_simpleName\":\"ProcessRollup2\",\"id\":\"ffffffff-1111-11eb-8462-02ade3b2f949\",\"name\":\"ProcessRollup2V18\",\"timestamp\":\"1601546312519\"}",
         "outcome": "success",
-        "timezone": "+00:00",
         "type": [
             "start"
         ]
@@ -2026,12 +2059,6 @@ An example event for `fdr` looks as following:
     },
     "input": {
         "type": "aws-s3"
-    },
-    "log": {
-        "file": {
-            "path": "https://elastic-package-crowdstrike-fdr-55008.s3.us-east-1.amazonaws.com/data"
-        },
-        "offset": 107991
     },
     "observer": {
         "address": [
@@ -2050,8 +2077,6 @@ An example event for `fdr` looks as following:
             "67.43.156.14"
         ],
         "serial_number": "ffffffff655344736aca58d17fb570f0",
-        "type": "agent",
-        "vendor": "crowdstrike",
         "version": "1007.3.0012309.1"
     },
     "process": {
