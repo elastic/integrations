@@ -2726,6 +2726,7 @@ Please refer to the following [document](https://www.elastic.co/guide/en/ecs/cur
 | host.os.build | OS build information. | keyword |
 | host.os.codename | OS codename, if any. | keyword |
 | input.type | Type of Filebeat input. | keyword |
+| o365.metrics.teams.call.quality.call_record_id | Unique identifier for the call record | keyword |
 | o365.metrics.teams.call.quality.callee.cpu_cores.count | The number of CPU cores on the callee's device | long |
 | o365.metrics.teams.call.quality.callee.cpu_name | The name of the CPU on the callee's device | keyword |
 | o365.metrics.teams.call.quality.callee.cpu_processor_speed.mhz | The processor speed in MHz on the callee's CPU | long |
