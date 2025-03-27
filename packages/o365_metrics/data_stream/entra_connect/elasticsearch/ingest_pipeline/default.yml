@@ -22,10 +22,10 @@ processors:
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - script:
       lang: painless
-      description: Replace spaces, dashes and bom character in field names under o365.metrics.entra.connect.
+      description: Replace spaces, dashes and bom character in field names under o365.metrics.entra.connect.features.
       tag: painless_purge_spaces_and_dashes
       ignore_failure: true
-      if: ctx.o365.metrics?.entra?.connect instanceof Map
+      if: ctx.o365.metrics?.entra?.connect?.features instanceof Map
       source: |
         String underscore(String s) {
           def regex = /_?([a-z])([A-Z]+)/;
@@ -35,11 +35,16 @@ processors:
           return /[()]/.matcher(result1).replaceAll('')
         }
         
-        def out = [:];
-        for (def item : ctx.o365.metrics.entra.connect.entrySet()) {
-          out[underscore(item.getKey())] = item.getValue();
+        def newFields = [:];
+        for (def item : ctx.o365.metrics.entra.connect.features.entrySet()) {
+            newFields[underscore(item.getKey())] = item.getValue();
         }
-        ctx.o365.metrics.entra.connect = out;
+        
+        // Merge new fields directly into ctx.o365.metrics.entra.connect
+        ctx.o365.metrics.entra.connect.putAll(newFields);
+        
+        // Remove the original `features` field
+        ctx.o365.metrics.entra.connect.remove("features");
 
   - remove:
       if: ctx.message != null
