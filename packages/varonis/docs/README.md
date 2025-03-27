@@ -1,6 +1,6 @@
 # Varonis integration
 
-The Elastic integration for [Varonis](https://www.varonis.com/) enables real-time monitoring and analysis of Varonis syslog alert data. The integration collects alert data from Varonis syslog and ships it to the Elastic Stack, where it can be analyzed and visualized.
+[Varonis](https://www.varonis.com/) is a data security platform that helps organizations protect their sensitive data from insider threats and cyberattacks. This integration collects and analyzes security alerts from Varonis, enabling real-time threat monitoring, compliance reporting, and incident response.
 
 ## Data Streams
 
