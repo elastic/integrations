@@ -7,6 +7,12 @@ This integration is for [AbuseCH](https://urlhaus.abuse.ch/) logs. It includes t
 - `malwarebazaar` dataset: Supports indicators from the MalwareBazaar from AbuseCH.
 - `threatfox` dataset: Supports indicators from AbuseCH Threat Fox API.
 
+## Note:
+
+From February 2025, AbuseCH recommends using an optional `Auth Key` (API Key) in the requests to avoid rate limiting issues.
+More details on this topic can be found [here](https://abuse.ch/blog/community-first/). In version 2.6.1, we have added an optional `Auth Key`
+configuration option that can be used to avoid rate limiting.
+
 ## Expiration of Indicators of Compromise (IOCs)
 All AbuseCH datasets now support indicator expiration. For `URL` dataset, a full list of active indicators are ingested every interval. For other datasets namely `Malware`, `MalwareBazaar`, and `ThreatFox`, the indicators are expired after duration `IOC Expiration Duration` configured in the integration setting. An [Elastic Transform](https://www.elastic.co/guide/en/elasticsearch/reference/current/transforms.html) is created for every source index to facilitate only active indicators be available to the end users. Each transform creates a destination index named `logs-ti_abusech_latest.dest_*` which only contains active and unexpired indicators. The indiator match rules and dashboards are updated to list only active indicators.
 Destinations indices are aliased to `logs-ti_abusech_latest.<datastream_name>`.
