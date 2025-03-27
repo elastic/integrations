@@ -54,6 +54,7 @@ This module has been tested against the **CrowdStrike Falcon Intelligence API Ve
     | ------------- | ------------- |
     | Intel         | read:intel    |
     | IOC           | read:iocs     |
+    |               | read:ioc-management      |
 
 Follow the [documentation](https://www.crowdstrike.com/blog/tech-center/consume-ioc-and-threat-feeds/) for enabling the scopes from the CrowdStrike console.
 
