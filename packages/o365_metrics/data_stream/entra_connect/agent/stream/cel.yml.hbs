@@ -88,25 +88,56 @@ program: |
       request(
         "GET",
         state.url + "directory/onPremisesSynchronization"
-      ).do_request().as(resp,
-        resp.StatusCode == 200
+      ).do_request().as(sync_resp,
+        sync_resp.StatusCode == 200
         ?
-          bytes(resp.Body).decode_json().as(body, {
-                 "events": body.value.map(e,{"message": e.encode_json()}),                   
-          })
+          bytes(sync_resp.Body).decode_json().as(sync_body, 
+            request(
+              "GET",
+              state.url + "/organization"
+            ).do_request().as(org_resp,
+              org_resp.StatusCode == 200
+              ?
+                bytes(org_resp.Body).decode_json().as(org_body,
+                  {
+                    "events": {
+                      "onPremisesSync": sync_body.value.map(e, {"message": e.encode_json()}),
+                      "onPremisesLastSyncDateTime": org_body.value[0].onPremisesLastSyncDateTime
+                      "onPremisesSyncEnabled": org_body.value[0].onPremisesSyncEnabled
+                    }
+                  }
+                )
+              :
+                {
+                  "events": {
+                    "error": {
+                      "code": string(org_resp.StatusCode),
+                      "id": string(org_resp.Status),
+                      "message": "GET /organization: " + (
+                        size(org_resp.Body) != 0 ? 
+                          string(org_resp.Body)
+                        :
+                          string(org_resp.Status) + ' (' + string(org_resp.StatusCode) + ')'
+                      ),
+                    }
+                  },
+                  "want_more": false,
+                }
+            )
+          )
         :
           {
             "events": {
               "error": {
-                "code": string(resp.StatusCode),
-                "id": string(resp.Status),
-                "message": "GET:"+(
-                  size(resp.Body) != 0 ?
-                    string(resp.Body)
+                "code": string(sync_resp.StatusCode),
+                "id": string(sync_resp.Status),
+                "message": "GET /directory/onPremisesSynchronization: " + (
+                  size(sync_resp.Body) != 0 ? 
+                    string(sync_resp.Body)
                   :
-                    string(resp.Status) + ' (' + string(resp.StatusCode) + ')'
+                    string(sync_resp.Status) + ' (' + string(sync_resp.StatusCode) + ')'
                 ),
-              },
+              }
             },
             "want_more": false,
           }
