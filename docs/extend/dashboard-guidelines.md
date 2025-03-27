@@ -66,13 +66,13 @@ Keep the following guidelines in mind when positioning your elements on dashboar
 
 * Keep related visualizations close to each other.
 
-    :::{image} ../images/grouping-in-visualizations.png
+    :::{image} images/grouping-in-visualizations.png
     :alt: Closely grouped visualizations
     :::
 
 * Use Markdown to create blocks of related content.
 
-    :::{image} ../images/markdown-grouping.png
+    :::{image} images/markdown-grouping.png
     :alt: Markdown grouping in visualizations
     :::
 
@@ -84,7 +84,7 @@ Keep the following guidelines in mind when positioning your elements on dashboar
 
     Placing a big chart at the center of a dashboard, especially one with prominent visual shapes such as rectangles, helps to reinforce a natural visual focal point that lies in the center of the interface.
 
-    :::{image} ../images/rows-in-visualizations.png
+    :::{image} images/rows-in-visualizations.png
     :alt: Central focal point in visualization
     :::
 
@@ -117,7 +117,7 @@ As much as possible, avoid using general filters, that is filters with `-*`.  Co
 
 Example:
 
-:::{image} ../images/filter-in-visualization.png
+:::{image} images/filter-in-visualization.png
 :alt: Filter in a visualization
 :::
 
@@ -142,7 +142,7 @@ Use color to distinguish categories, represent quantity/density, and highlight d
 
 If your dashboard is made to identify specific behaviors, it might be interesting to consider a color setting that could help to point those out. Use a neutral color for generic elements and an accented color for the things that you want to highlight.
 
-:::{image} ../images/colors-in-visualizations.png
+:::{image} images/colors-in-visualizations.png
 :alt: Colors in visualizations
 :::
 
@@ -154,6 +154,6 @@ Titles can have a strong visual impact on dashboards, especially when there are 
 * Remove unnecessary or repetitive titles when the information is already explained or written within the chart.
 * When a title is needed, make it self explanatory and exhaustive. This way, you will be able to remove axis titles and other specifications leaving more space for the chart itself.
 
-:::{image} ../images/titles-in-visualizations.png
+:::{image} images/titles-in-visualizations.png
 :alt: Titles in visualizations
 :::

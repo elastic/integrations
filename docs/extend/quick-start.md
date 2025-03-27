@@ -114,7 +114,7 @@ You’ll need to have a few requirements in place to run this tutorial:
 
 3. After the command runs, check that your new package appears in Kibana under **Management > Integrations > Installed integrations**.
 
-    :::{image} ../images/package-installed.png
+    :::{image} images/package-installed.png
     :alt: Kibana installed integrations tab with a card for my sample package
     :::
 
@@ -417,7 +417,7 @@ To run these steps using {{fleet}}-managed {{agent}}, you just need to update th
     2. In the search field, enter `log.file.path.text : *`. The search should return a couple of log entries.
     3. Hover over an entry and click `Enter` to view the cell contents.
 
-        :::{image} ../images/datastream-log-message.png
+        :::{image} images/datastream-log-message.png
         :alt: Data stream showing log message: "this is a nice day"
         :::
 
