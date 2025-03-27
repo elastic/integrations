@@ -1,95 +1,215 @@
-- name: tencent_cloud.audit
+- name: cloud
+  type: group
+  fields:
+    - name: cloud.account.id
+      type: keyword
+      description: Account ID from the audit log
+    - name: cloud.region
+      type: keyword
+      description: Event region from the audit log
+- name: ecs
   type: group
   fields:
     - name: ecs.version
       type: keyword
       description: ECS version set by the ingest pipeline
-    - name: event.original
-      type: text
-      description: Original message stored as a copy
-    - name: cloud.account.id
-      type: keyword
-      description: Account ID from the audit log
-    - name: user.name
-      type: keyword
-      description: User name from the audit log
-    - name: cloud.region
-      type: keyword
-      description: Event region from the audit log
+- name: error
+  type: group
+  fields:
     - name: error.code
       type: keyword
       description: Error code from the audit log
-    - name: event.id
-      type: keyword
-      description: Request ID from the audit log
-    - name: http.request.method
-      type: keyword
-      description: HTTP request method from the audit log
-    - name: user_agent.original
-      type: keyword
-      description: User agent from the audit log
-    - name: '@timestamp'
-      type: date
-      description: Event time from the audit log, converted to a date
-    - name: source.ip
-      type: ip
-      description: Source IP address from the audit log
+- name: event
+  type: group
+  fields:
     - name: event.action
       type: keyword
       description: Event name from the audit log
+    - name: event.id
+      type: keyword
+      description: Request ID from the audit log
+    - name: event.original
+      type: text
+      description: Original message stored as a copy
     - name: event.provider
       type: keyword
       description: Event source from the audit log
-    - name: source.geo
-      type: group
-      description: GeoIP information for the source IP address
-      fields: []
+- name: http
+  type: group
+  fields:
+    - name: http.request.method
+      type: keyword
+      description: HTTP request method from the audit log
+- name: source
+  type: group
+  fields:
     - name: source.as
       type: group
       description: ASN information for the source IP address
       fields:
-        - name: number
+        - name: source.as.number
           type: long
           description: ASN number for the source IP address
-        - name: organization.name
+        - name: source.as.organization.name
           type: keyword
           description: Organization name for the source IP address
-    - name: destination.ip
-      type: ip
-      description: Destination IP address from the audit log
-    - name: destination.geo
+    - name: source.geo
       type: group
-      description: GeoIP information for the destination IP address
-      fields: []
-    - name: destination.as
-      type: group
-      description: ASN information for the destination IP address
+      description: GeoIP information for the source IP address
       fields:
-        - name: number
-          type: long
-          description: ASN number for the destination IP address
-        - name: organization.name
+        - name: source.geo.city_name
           type: keyword
-          description: Organization name for the destination IP address
-    - name: tencent_cloud.audit
-      type: group
-      description: Parsed JSON data from the original audit log
-      fields: []
+          description: City name for the source IP address
+        - name: source.geo.continent_name
+          type: keyword
+          description: Continent name for the source IP address
+        - name: source.geo.country_iso_code
+          type: keyword
+          description: Country ISO code for the source IP address
+        - name: source.geo.country_name
+          type: keyword
+          description: Country name for the source IP address
+        - name: source.geo.location.lat
+          type: float
+          description: Latitude for the source IP address
+        - name: source.geo.location.lon
+          type: float
+          description: Longitude for the source IP address
+        - name: source.geo.region_iso_code
+          type: keyword
+          description: Region ISO code for the source IP address
+        - name: source.geo.region_name
+          type: keyword
+          description: Region name for the source IP address
+    - name: source.ip
+      type: ip
+      description: Source IP address from the audit log
+- name: tags
+  type: keyword
+  description: Tags from the audit log
+- name: tencent_cloud.audit
+  type: group
+  fields:
+    - name: tencent_cloud.audit.actionType
+      type: keyword
+      description: Action type from the audit log
+    - name: tencent_cloud.audit.apiErrorCode
+      type: keyword
+      description: API error code from the audit log
+    - name: tencent_cloud.audit.errorMessage
+      type: keyword
+      description: Error message from the audit log
+    - name: tencent_cloud.audit.eventTime
+      type: long
+      description: Event time from the audit log
+    - name: tencent_cloud.audit.eventType
+      type: keyword
+      description: Event type from the audit log
+    - name: tencent_cloud.audit.eventVersion
+      type: long
+      description: Event version from the audit log
+    - name: tencent_cloud.audit.resourceName
+      type: keyword
+      description: Resource name from the audit log
     - name: tencent_cloud.audit.requestParameters
       type: group
-      description: Request parameters from the audit log, parsed as JSON
-      fields: []
+      description: Request parameters from the audit log
+      fields:
+        - name: tencent_cloud.audit.requestParameters.AccountArea
+          type: keyword
+          description: Account area from the request parameters
+        - name: tencent_cloud.audit.requestParameters.DiskChargeType
+          type: keyword
+          description: Disk charge type from the request parameters
+        - name: tencent_cloud.audit.requestParameters.InquiryType
+          type: keyword
+          description: Inquiry type from the request parameters
+        - name: tencent_cloud.audit.requestParameters.InstanceIds
+          type: keyword
+          description: Instance IDs from the request parameters
+        - name: tencent_cloud.audit.requestParameters.Limit
+          type: long
+          description: Limit value from the request parameters
+        - name: tencent_cloud.audit.requestParameters.Zones
+          type: keyword
+          description: Zones from the request parameters
+        - name: tencent_cloud.audit.requestParameters.Conditions
+          type: group
+          description: Conditions in the request parameters
+          fields:
+            - name: tencent_cloud.audit.requestParameters.Conditions.Key
+              type: keyword
+              description: Key in the request conditions
+            - name: tencent_cloud.audit.requestParameters.Conditions.Operator
+              type: keyword
+              description: Operator in the request conditions
+            - name: tencent_cloud.audit.requestParameters.Conditions.Value
+              type: keyword
+              description: Value in the request conditions
+        - name: tencent_cloud.audit.requestParameters.EndTime
+          type: keyword
+          description: End time in the request parameters
+        - name: tencent_cloud.audit.requestParameters.MetricNames
+          type: keyword
+          description: Metric names in the request parameters
+        - name: tencent_cloud.audit.requestParameters.Module
+          type: keyword
+          description: Module in the request parameters
+        - name: tencent_cloud.audit.requestParameters.Namespace
+          type: keyword
+          description: Namespace in the request parameters
+        - name: tencent_cloud.audit.requestParameters.Period
+          type: long
+          description: Period in the request parameters
+        - name: tencent_cloud.audit.requestParameters.Region
+          type: keyword
+          description: Region in the request parameters
+        - name: tencent_cloud.audit.requestParameters.StartTime
+          type: keyword
+          description: Start time in the request parameters
+        - name: tencent_cloud.audit.requestParameters.Version
+          type: keyword
+          description: Version in the request parameters
+    - name: tencent_cloud.audit.resourceType
+      type: keyword
+      description: Resource type from the audit log
+    - name: tencent_cloud.audit.responseElements
+      type: keyword
+      description: Response elements from the audit log
+    - name: tencent_cloud.audit.sensitiveAction
+      type: keyword
+      description: Sensitive action from the audit log
     - name: tencent_cloud.audit.userIdentity
       type: group
-      description: User identity from the audit log, parsed as JSON
-      fields: []
-    - name: tags
+      description: User identity from the audit log
+      fields:
+        - name: tencent_cloud.audit.userIdentity.principalId
+          type: keyword
+          description: Principal ID from the user identity
+        - name: tencent_cloud.audit.userIdentity.roleSessionName
+          type: keyword
+          description: Role session name from the user identity
+        - name: tencent_cloud.audit.userIdentity.secretId
+          type: keyword
+          description: Secret ID from the user identity
+        - name: tencent_cloud.audit.userIdentity.sessionContext
+          type: text
+          description: Session context from the user identity
+        - name: tencent_cloud.audit.userIdentity.type
+          type: keyword
+          description: User identity type
+- name: user
+  type: group
+  fields:
+    - name: user.name
       type: keyword
-      description: Tags associated with the document
-    - name: error.message
-      type: text
-      description: Error message if the ingest pipeline fails
-    - name: event.kind
+      description: User name from the audit log
+- name: user_agent
+  type: group
+  fields:
+    - name: user_agent.original
       type: keyword
-      description: Event kind, set to 'pipeline_error' if there is an error
-    
+      description: User agent from the audit log
+- name: '@timestamp'
+  type: date
+  description: Event time from the audit log, converted to a date    

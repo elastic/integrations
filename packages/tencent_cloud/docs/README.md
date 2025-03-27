@@ -109,36 +109,59 @@ Tencent Cloud 集成旨在将腾讯云的日志无缝接入 Elastic Stack，帮�
 
 | Field | Description | Type |
 |---|---|---|
-| @timestamp | Event timestamp. | date |
-| cloud.image.id | Image ID for the cloud instance. | keyword |
-| data_stream.dataset | Data stream dataset name. | constant_keyword |
-| data_stream.namespace | Data stream namespace. | constant_keyword |
-| data_stream.type | Data stream type. | constant_keyword |
-| event.dataset | Event dataset | constant_keyword |
-| event.module | Event module | constant_keyword |
-| host.containerized | If the host is a container. | boolean |
-| host.os.build | OS build information. | keyword |
-| host.os.codename | OS codename, if any. | keyword |
-| input.type | Input type | keyword |
-| log.offset | Log offset | long |
-| tencent_cloud.audit.@timestamp | Event time from the audit log, converted to a date | date |
-| tencent_cloud.audit.cloud.account.id | Account ID from the audit log | keyword |
-| tencent_cloud.audit.cloud.region | Event region from the audit log | keyword |
-| tencent_cloud.audit.destination.as.number | ASN number for the destination IP address | long |
-| tencent_cloud.audit.destination.as.organization.name | Organization name for the destination IP address | keyword |
-| tencent_cloud.audit.destination.ip | Destination IP address from the audit log | ip |
-| tencent_cloud.audit.ecs.version | ECS version set by the ingest pipeline | keyword |
-| tencent_cloud.audit.error.code | Error code from the audit log | keyword |
-| tencent_cloud.audit.error.message | Error message if the ingest pipeline fails | text |
-| tencent_cloud.audit.event.action | Event name from the audit log | keyword |
-| tencent_cloud.audit.event.id | Request ID from the audit log | keyword |
-| tencent_cloud.audit.event.kind | Event kind, set to 'pipeline_error' if there is an error | keyword |
-| tencent_cloud.audit.event.original | Original message stored as a copy | text |
-| tencent_cloud.audit.event.provider | Event source from the audit log | keyword |
-| tencent_cloud.audit.http.request.method | HTTP request method from the audit log | keyword |
-| tencent_cloud.audit.source.as.number | ASN number for the source IP address | long |
-| tencent_cloud.audit.source.as.organization.name | Organization name for the source IP address | keyword |
-| tencent_cloud.audit.source.ip | Source IP address from the audit log | ip |
-| tencent_cloud.audit.tags | Tags associated with the document | keyword |
-| tencent_cloud.audit.user.name | User name from the audit log | keyword |
-| tencent_cloud.audit.user_agent.original | User agent from the audit log | keyword |
+| @timestamp | Event time from the audit log, converted to a date | date |
+| cloud.account.id | Account ID from the audit log | keyword |
+| cloud.region | Event region from the audit log | keyword |
+| ecs.version | ECS version set by the ingest pipeline | keyword |
+| error.code | Error code from the audit log | keyword |
+| event.action | Event name from the audit log | keyword |
+| event.id | Request ID from the audit log | keyword |
+| event.original | Original message stored as a copy | text |
+| event.provider | Event source from the audit log | keyword |
+| http.request.method | HTTP request method from the audit log | keyword |
+| source.as.number | ASN number for the source IP address | long |
+| source.as.organization.name | Organization name for the source IP address | keyword |
+| source.geo.city_name | City name for the source IP address | keyword |
+| source.geo.continent_name | Continent name for the source IP address | keyword |
+| source.geo.country_iso_code | Country ISO code for the source IP address | keyword |
+| source.geo.country_name | Country name for the source IP address | keyword |
+| source.geo.location.lat | Latitude for the source IP address | float |
+| source.geo.location.lon | Longitude for the source IP address | float |
+| source.geo.region_iso_code | Region ISO code for the source IP address | keyword |
+| source.geo.region_name | Region name for the source IP address | keyword |
+| source.ip | Source IP address from the audit log | ip |
+| tags | Tags from the audit log | keyword |
+| tencent_cloud.audit.actionType | Action type from the audit log | keyword |
+| tencent_cloud.audit.apiErrorCode | API error code from the audit log | keyword |
+| tencent_cloud.audit.errorMessage | Error message from the audit log | keyword |
+| tencent_cloud.audit.eventTime | Event time from the audit log | long |
+| tencent_cloud.audit.eventType | Event type from the audit log | keyword |
+| tencent_cloud.audit.eventVersion | Event version from the audit log | long |
+| tencent_cloud.audit.requestParameters.AccountArea | Account area from the request parameters | keyword |
+| tencent_cloud.audit.requestParameters.Conditions.Key | Key in the request conditions | keyword |
+| tencent_cloud.audit.requestParameters.Conditions.Operator | Operator in the request conditions | keyword |
+| tencent_cloud.audit.requestParameters.Conditions.Value | Value in the request conditions | keyword |
+| tencent_cloud.audit.requestParameters.DiskChargeType | Disk charge type from the request parameters | keyword |
+| tencent_cloud.audit.requestParameters.EndTime | End time in the request parameters | keyword |
+| tencent_cloud.audit.requestParameters.InquiryType | Inquiry type from the request parameters | keyword |
+| tencent_cloud.audit.requestParameters.InstanceIds | Instance IDs from the request parameters | keyword |
+| tencent_cloud.audit.requestParameters.Limit | Limit value from the request parameters | long |
+| tencent_cloud.audit.requestParameters.MetricNames | Metric names in the request parameters | keyword |
+| tencent_cloud.audit.requestParameters.Module | Module in the request parameters | keyword |
+| tencent_cloud.audit.requestParameters.Namespace | Namespace in the request parameters | keyword |
+| tencent_cloud.audit.requestParameters.Period | Period in the request parameters | long |
+| tencent_cloud.audit.requestParameters.Region | Region in the request parameters | keyword |
+| tencent_cloud.audit.requestParameters.StartTime | Start time in the request parameters | keyword |
+| tencent_cloud.audit.requestParameters.Version | Version in the request parameters | keyword |
+| tencent_cloud.audit.requestParameters.Zones | Zones from the request parameters | keyword |
+| tencent_cloud.audit.resourceName | Resource name from the audit log | keyword |
+| tencent_cloud.audit.resourceType | Resource type from the audit log | keyword |
+| tencent_cloud.audit.responseElements | Response elements from the audit log | keyword |
+| tencent_cloud.audit.sensitiveAction | Sensitive action from the audit log | keyword |
+| tencent_cloud.audit.userIdentity.principalId | Principal ID from the user identity | keyword |
+| tencent_cloud.audit.userIdentity.roleSessionName | Role session name from the user identity | keyword |
+| tencent_cloud.audit.userIdentity.secretId | Secret ID from the user identity | keyword |
+| tencent_cloud.audit.userIdentity.sessionContext | Session context from the user identity | text |
+| tencent_cloud.audit.userIdentity.type | User identity type | keyword |
+| user.name | User name from the audit log | keyword |
+| user_agent.original | User agent from the audit log | keyword |
