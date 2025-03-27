@@ -109,6 +109,18 @@ Tencent Cloud 集成旨在将腾讯云的日志无缝接入 Elastic Stack，帮�
 
 | Field | Description | Type |
 |---|---|---|
+| @timestamp | Event timestamp. | date |
+| cloud.image.id | Image ID for the cloud instance. | keyword |
+| data_stream.dataset | Data stream dataset name. | constant_keyword |
+| data_stream.namespace | Data stream namespace. | constant_keyword |
+| data_stream.type | Data stream type. | constant_keyword |
+| event.dataset | Event dataset | constant_keyword |
+| event.module | Event module | constant_keyword |
+| host.containerized | If the host is a container. | boolean |
+| host.os.build | OS build information. | keyword |
+| host.os.codename | OS codename, if any. | keyword |
+| input.type | Input type | keyword |
+| log.offset | Log offset | long |
 | tencent_cloud.audit.actionType | Action type from the audit log | keyword |
 | tencent_cloud.audit.apiErrorCode | API error code from the audit log | keyword |
 | tencent_cloud.audit.errorMessage | Error message from the audit log | keyword |
@@ -141,5 +153,4 @@ Tencent Cloud 集成旨在将腾讯云的日志无缝接入 Elastic Stack，帮�
 | tencent_cloud.audit.userIdentity.userIdentity.secretId | Secret ID from the user identity | keyword |
 | tencent_cloud.audit.userIdentity.userIdentity.sessionContext | Session context from the user identity | text |
 | tencent_cloud.audit.userIdentity.userIdentity.type | User identity type | keyword |
-| user.user.name | User name from the audit log | keyword |
-| user_agent.user_agent.original | User agent from the audit log | keyword |
+
