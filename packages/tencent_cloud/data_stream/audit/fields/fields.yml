@@ -1,219 +1,112 @@
 - name: tencent_cloud.audit
   type: group
   fields:
-    - name: '@timestamp'
-      type: date
-      description: Event time from the audit log, converted to a date
-    - name: cloud
-      type: group
-      fields:
-        - name: cloud.account.id
-          type: keyword
-          description: Account ID from the audit log
-        - name: cloud.region
-          type: keyword
-          description: Event region from the audit log
-    - name: ecs
-      type: group
-      fields:
-        - name: ecs.version
-          type: keyword
-          description: ECS version set by the ingest pipeline
-    - name: error
-      type: group
-      fields:
-        - name: error.code
-          type: keyword
-          description: Error code from the audit log
-    - name: event
-      type: group
-      fields:
-        - name: event.action
-          type: keyword
-          description: Event name from the audit log
-        - name: event.id
-          type: keyword
-          description: Request ID from the audit log
-        - name: event.original
-          type: text
-          description: Original message stored as a copy
-        - name: event.provider
-          type: keyword
-          description: Event source from the audit log
-    - name: http
-      type: group
-      fields:
-        - name: http.request.method
-          type: keyword
-          description: HTTP request method from the audit log
-    - name: source
-      type: group
-      fields:
-        - name: source.as
-          type: group
-          description: ASN information for the source IP address
-          fields:
-            - name: source.as.number
-              type: long
-              description: ASN number for the source IP address
-            - name: source.as.organization.name
-              type: keyword
-              description: Organization name for the source IP address
-        - name: source.geo
-          type: group
-          description: GeoIP information for the source IP address
-          fields:
-            - name: source.geo.city_name
-              type: keyword
-              description: City name for the source IP address
-            - name: source.geo.continent_name
-              type: keyword
-              description: Continent name for the source IP address
-            - name: source.geo.country_iso_code
-              type: keyword
-              description: Country ISO code for the source IP address
-            - name: source.geo.country_name
-              type: keyword
-              description: Country name for the source IP address
-            - name: source.geo.location.lat
-              type: float
-              description: Latitude for the source IP address
-            - name: source.geo.location.lon
-              type: float
-              description: Longitude for the source IP address
-            - name: source.geo.region_iso_code
-              type: keyword
-              description: Region ISO code for the source IP address
-            - name: source.geo.region_name
-              type: keyword
-              description: Region name for the source IP address
-        - name: source.ip
-          type: ip
-          description: Source IP address from the audit log
-    - name: tags
+    - name: actionType
       type: keyword
-      description: Tags from the audit log
-    - name: tencent_cloud.audit
+      description: Action type from the audit log
+    - name: apiErrorCode
+      type: keyword
+      description: API error code from the audit log
+    - name: errorMessage
+      type: keyword
+      description: Error message from the audit log
+    - name: eventTime
+      type: long
+      description: Event time from the audit log
+    - name: eventType
+      type: keyword
+      description: Event type from the audit log
+    - name: eventVersion
+      type: long
+      description: Event version from the audit log
+    - name: requestParameters
       type: group
+      description: Request parameters from the audit log
       fields:
-        - name: actionType
+        - name: requestParameters.AccountArea
           type: keyword
-          description: Action type from the audit log
-        - name: apiErrorCode
-          type: keyword
-          description: API error code from the audit log
-        - name: errorMessage
-          type: keyword
-          description: Error message from the audit log
-        - name: eventTime
-          type: long
-          description: Event time from the audit log
-        - name: eventType
-          type: keyword
-          description: Event type from the audit log
-        - name: eventVersion
-          type: long
-          description: Event version from the audit log
-        - name: requestParameters
+          description: Account area from the request parameters
+        - name: requestParameters.Conditions
           type: group
-          description: Request parameters from the audit log
+          description: Conditions in the request parameters
           fields:
-            - name: requestParameters.AccountArea
+            - name: requestParameters.Conditions.Key
               type: keyword
-              description: Account area from the request parameters
-            - name: requestParameters.Conditions
-              type: group
-              description: Conditions in the request parameters
-              fields:
-                - name: requestParameters.Conditions.Key
-                  type: keyword
-                  description: Key in the request conditions
-                - name: requestParameters.Conditions.Operator
-                  type: keyword
-                  description: Operator in the request conditions
-                - name: requestParameters.Conditions.Value
-                  type: keyword
-                  description: Value in the request conditions
-            - name: requestParameters.DiskChargeType
+              description: Key in the request conditions
+            - name: requestParameters.Conditions.Operator
               type: keyword
-              description: Disk charge type from the request parameters
-            - name: requestParameters.EndTime
+              description: Operator in the request conditions
+            - name: requestParameters.Conditions.Value
               type: keyword
-              description: End time in the request parameters
-            - name: requestParameters.InquiryType
-              type: keyword
-              description: Inquiry type from the request parameters
-            - name: requestParameters.InstanceIds
-              type: keyword
-              description: Instance IDs from the request parameters
-            - name: requestParameters.Limit
-              type: long
-              description: Limit value from the request parameters
-            - name: requestParameters.MetricNames
-              type: keyword
-              description: Metric names in the request parameters
-            - name: requestParameters.Module
-              type: keyword
-              description: Module in the request parameters
-            - name: requestParameters.Namespace
-              type: keyword
-              description: Namespace in the request parameters
-            - name: requestParameters.Period
-              type: long
-              description: Period in the request parameters
-            - name: requestParameters.Region
-              type: keyword
-              description: Region in the request parameters
-            - name: requestParameters.StartTime
-              type: keyword
-              description: Start time in the request parameters
-            - name: requestParameters.Version
-              type: keyword
-              description: Version in the request parameters
-            - name: requestParameters.Zones
-              type: keyword
-              description: Zones from the request parameters
-        - name: resourceName
+              description: Value in the request conditions
+        - name: requestParameters.DiskChargeType
           type: keyword
-          description: Resource name from the audit log
-        - name: resourceType
+          description: Disk charge type from the request parameters
+        - name: requestParameters.EndTime
           type: keyword
-          description: Resource type from the audit log
-        - name: responseElements
+          description: End time in the request parameters
+        - name: requestParameters.InquiryType
           type: keyword
-          description: Response elements from the audit log
-        - name: sensitiveAction
+          description: Inquiry type from the request parameters
+        - name: requestParameters.InstanceIds
           type: keyword
-          description: Sensitive action from the audit log
-        - name: userIdentity
-          type: group
-          description: User identity from the audit log
-          fields:
-            - name: userIdentity.principalId
-              type: keyword
-              description: Principal ID from the user identity
-            - name: userIdentity.roleSessionName
-              type: keyword
-              description: Role session name from the user identity
-            - name: userIdentity.secretId
-              type: keyword
-              description: Secret ID from the user identity
-            - name: userIdentity.sessionContext
-              type: text
-              description: Session context from the user identity
-            - name: userIdentity.type
-              type: keyword
-              description: User identity type
-    - name: user
+          description: Instance IDs from the request parameters
+        - name: requestParameters.Limit
+          type: long
+          description: Limit value from the request parameters
+        - name: requestParameters.MetricNames
+          type: keyword
+          description: Metric names in the request parameters
+        - name: requestParameters.Module
+          type: keyword
+          description: Module in the request parameters
+        - name: requestParameters.Namespace
+          type: keyword
+          description: Namespace in the request parameters
+        - name: requestParameters.Period
+          type: long
+          description: Period in the request parameters
+        - name: requestParameters.Region
+          type: keyword
+          description: Region in the request parameters
+        - name: requestParameters.StartTime
+          type: keyword
+          description: Start time in the request parameters
+        - name: requestParameters.Version
+          type: keyword
+          description: Version in the request parameters
+        - name: requestParameters.Zones
+          type: keyword
+          description: Zones from the request parameters
+    - name: resourceName
+      type: keyword
+      description: Resource name from the audit log
+    - name: resourceType
+      type: keyword
+      description: Resource type from the audit log
+    - name: responseElements
+      type: keyword
+      description: Response elements from the audit log
+    - name: sensitiveAction
+      type: keyword
+      description: Sensitive action from the audit log
+    - name: userIdentity
       type: group
+      description: User identity from the audit log
       fields:
-        - name: user.name
+        - name: userIdentity.principalId
           type: keyword
-          description: User name from the audit log
-    - name: user_agent
-      type: group
-      fields:
-        - name: user_agent.original
+          description: Principal ID from the user identity
+        - name: userIdentity.roleSessionName
           type: keyword
-          description: User agent from the audit log
-        
+          description: Role session name from the user identity
+        - name: userIdentity.secretId
+          type: keyword
+          description: Secret ID from the user identity
+        - name: userIdentity.sessionContext
+          type: text
+          description: Session context from the user identity
+        - name: userIdentity.type
+          type: keyword
+          description: User identity type
+          
