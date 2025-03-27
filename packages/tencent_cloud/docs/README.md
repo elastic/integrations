@@ -151,8 +151,8 @@ Tencent Cloud 集成旨在将腾讯云的日志无缝接入 Elastic Stack，帮�
 | tencent_cloud.audit.tencent_cloud.audit.eventVersion | Event version from the audit log | long |
 | tencent_cloud.audit.tencent_cloud.audit.requestParameters.requestParameters.AccountArea | Account area from the request parameters | keyword |
 | tencent_cloud.audit.tencent_cloud.audit.requestParameters.requestParameters.Conditions.requestParameters.Conditions.Key | Key in the request conditions | keyword |
-| tencent_cloud.audit.tencent_cloud.audit.requestParameters.requestParameters.Conditions.requestParameters.Conditions.Operator | Operator in the request conditions | eyword |
-| tencent_cloud.audit.tencent_cloud.audit.requestParameters.requestParameters.Conditions.requestParameters.Conditions.Value | Value in the request conditions | eyword |
+| tencent_cloud.audit.tencent_cloud.audit.requestParameters.requestParameters.Conditions.requestParameters.Conditions.Operator | Operator in the request conditions | keyword |
+| tencent_cloud.audit.tencent_cloud.audit.requestParameters.requestParameters.Conditions.requestParameters.Conditions.Value | Value in the request conditions | keyword |
 | tencent_cloud.audit.tencent_cloud.audit.requestParameters.requestParameters.DiskChargeType | Disk charge type from the request parameters | keyword |
 | tencent_cloud.audit.tencent_cloud.audit.requestParameters.requestParameters.EndTime | End time in the request parameters | keyword |
 | tencent_cloud.audit.tencent_cloud.audit.requestParameters.requestParameters.InquiryType | Inquiry type from the request parameters | keyword |
