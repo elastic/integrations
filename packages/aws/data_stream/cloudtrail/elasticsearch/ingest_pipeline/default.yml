@@ -968,6 +968,9 @@ processors:
       field: aws.cloudtrail.insight_details
       target_field: aws.cloudtrail.flattened.insight_details
       ignore_missing: true
+  - remove:
+      field: json.tlsDetails
+      if: ctx?.json?.tlsDetails?.tlsVersion == 'tlsVersion'
   - dissect:
       field: json.tlsDetails.tlsVersion
       pattern: "%{tls.version_protocol}v%{tls.version}"
