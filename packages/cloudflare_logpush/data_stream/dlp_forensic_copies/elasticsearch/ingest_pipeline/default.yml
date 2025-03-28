@@ -1,0 +1,149 @@
+---
+description: Pipeline for parsing Cloudflare DLP Forensic Copies logs.
+processors:
+  - set:
+      field: ecs.version
+      value: '8.11.0'
+  - rename:
+      field: message
+      target_field: event.original
+      ignore_missing: true
+      if: ctx.event?.original == null
+  - json:
+      field: event.original
+      target_field: json
+      ignore_failure: true
+  - set:
+      field: event.category
+      value: [network]
+  - set:
+      field: event.kind
+      value: event
+  - set:
+      field: event.type
+      value: [info]
+  - script:
+      lang: painless
+      tag: painless_datetime_to_milli
+      if: ctx.json?.Datetime != null
+      source: |
+        try {
+          long t;
+          if (ctx.json.Datetime instanceof String) {
+            t = Long.parseLong(ctx.json.Datetime);
+          } else if (ctx.json.Datetime instanceof Number) {
+            t = (long)(ctx.json.Datetime);
+          } else {
+            return;
+          }
+          if (t > (long)(1e18)) {
+            ctx.json.Datetime = t/(long)(1e6)
+          } else if (t < (long)(1e10))  {
+            ctx.json.Datetime = t*(long)(1e3)
+          }
+        }
+        catch (Exception e) {}
+  - date:
+      field: json.Datetime
+      if: ctx.json?.Datetime != null && ctx.json.Datetime != ''
+      formats:
+        - UNIX_MS
+        - ISO8601
+        - yyyy-MM-dd'T'HH:mm:ssZ
+      timezone: UTC
+      on_failure:
+      - append:
+          field: error.message
+          value: >-
+            Processor '{{{ _ingest.on_failure_processor_type }}}'
+            {{{#_ingest.on_failure_processor_tag}}}with tag '{{{ _ingest.on_failure_processor_tag }}}'
+            {{{/_ingest.on_failure_processor_tag}}}failed with message '{{{ _ingest.on_failure_message }}}'
+  - set:
+      field: cloudflare_logpush.dlp_forensic_copies.datetime
+      copy_from: '@timestamp'
+      ignore_empty_value: true
+  - rename:
+      field: json.AccountID
+      target_field: cloudflare_logpush.dlp_forensic_copies.account_id
+      ignore_missing: true
+  - rename:
+      field: json.ForensicCopyID
+      target_field: cloudflare_logpush.dlp_forensic_copies.forensic_copy_id
+      ignore_missing: true
+  - rename:
+      field: json.GatewayRequestID
+      target_field: cloudflare_logpush.dlp_forensic_copies.gateway_request_id
+      ignore_missing: true
+  - rename:
+      field: json.Headers
+      target_field: cloudflare_logpush.dlp_forensic_copies.headers
+      ignore_missing: true
+  - rename:
+      field: json.Payload
+      target_field: cloudflare_logpush.dlp_forensic_copies.payload
+      ignore_missing: true
+  - rename:
+      field: json.Phase
+      target_field: cloudflare_logpush.dlp_forensic_copies.phase
+      ignore_missing: true
+  - rename:
+      field: json.TriggeredRuleID
+      target_field: cloudflare_logpush.dlp_forensic_copies.triggered_rule_id
+      ignore_missing: true
+  - set:
+      field: rule.id
+      copy_from: cloudflare_logpush.dlp_forensic_copies.triggered_rule_id
+      ignore_empty_value: true
+  - remove:
+      field: json
+      ignore_missing: true
+  - remove:
+      field:
+        - cloudflare_logpush.dlp_forensic_copies.action
+        - cloudflare_logpush.dlp_forensic_copies.host
+        - cloudflare_logpush.dlp_forensic_copies.url
+        - cloudflare_logpush.dlp_forensic_copies.timestamp
+      if: ctx.tags == null || !ctx.tags.contains('preserve_duplicate_custom_fields')
+      ignore_failure: true
+      ignore_missing: true
+  - script:
+        description: Drops null/empty values recursively.
+        lang: painless
+        source: |
+          boolean dropEmptyFields(Object object) {
+            if (object == null || object == "") {
+              return true;
+            } else if (object instanceof Map) {
+              ((Map) object).values().removeIf(value -> dropEmptyFields(value));
+              return (((Map) object).size() == 0);
+            } else if (object instanceof List) {
+              ((List) object).removeIf(value -> dropEmptyFields(value));
+              return (((List) object).length == 0);
+            }
+            return false;
+          }
+          dropEmptyFields(ctx);
+  - set:
+      field: event.kind
+      value: pipeline_error
+      tag: set_pipeline_error_into_event_kind
+      if: ctx.error?.message != null
+  - append:
+      field: tags
+      value: preserve_original_event
+      allow_duplicates: false
+      if: ctx.error?.message != null
+on_failure:
+  - append:
+      field: error.message
+      value: >-
+        Processor '{{{ _ingest.on_failure_processor_type }}}'
+        {{{#_ingest.on_failure_processor_tag}}}with tag '{{{ _ingest.on_failure_processor_tag }}}'
+        {{{/_ingest.on_failure_processor_tag}}}failed with message '{{{ _ingest.on_failure_message }}}'
+  - set:
+      field: event.kind
+      value: pipeline_error
+  - append:
+      field: tags
+      value: preserve_original_event
+      allow_duplicates: false
