@@ -88,7 +88,7 @@
         hardware_events.action - Remove, insert, change properties, etc
         ntfs_journal_events.action - Change action (Write, Delete, etc)
         scheduled_tasks.action - Actions executed by the scheduled task
-        socket_events.action - The socket action (bind, listen, close)
+        socket_events.action - The socket action (bind, connect, accept)
         windows_firewall_rules.action - Action for the rule or default setting
         yara_events.action - Change action (UPDATE, REMOVE, etc)
       type: keyword
@@ -154,7 +154,7 @@
           type: long
           default_field: false
     - name: add_reason
-      description: "wifi_networks.add_reason - Shows why this network was added, via menubar or command line or something else "
+      description: 'wifi_networks.add_reason - Shows why this network was added, via menubar or command line or something else '
       type: keyword
       ignore_above: 1024
       multi_fields:
@@ -263,7 +263,7 @@
           norms: false
           default_field: false
     - name: allow_signed_enabled
-      description: alf.allow_signed_enabled - 1 If allow signed mode is enabled else 0
+      description: alf.allow_signed_enabled - 1 If allow signed mode is enabled else 0 (not supported on macOS 15+)
       type: keyword
       ignore_above: 1024
       multi_fields:
@@ -479,7 +479,7 @@
           type: long
           default_field: false
     - name: attributes
-      description: "file.attributes - File attrib string. See: https://ss64.com/nt/attrib.html"
+      description: 'file.attributes - File attrib string. See: https://ss64.com/nt/attrib.html'
       type: keyword
       ignore_above: 1024
       multi_fields:
@@ -601,7 +601,6 @@
         chrome_extensions.author - Optional extension author
         npm_packages.author - Package-supplied author
         python_packages.author - Optional package author
-        safari_extensions.author - Optional extension author
       type: keyword
       ignore_above: 1024
       multi_fields:
@@ -1041,7 +1040,7 @@
           norms: false
           default_field: false
     - name: bsd_flags
-      description: "file.bsd_flags - The BSD file flags (chflags). Possible values: NODUMP, UF_IMMUTABLE, UF_APPEND, OPAQUE, HIDDEN, ARCHIVED, SF_IMMUTABLE, SF_APPEND"
+      description: 'file.bsd_flags - The BSD file flags (chflags). Possible values: NODUMP, UF_IMMUTABLE, UF_APPEND, OPAQUE, HIDDEN, ARCHIVED, SF_IMMUTABLE, SF_APPEND'
       type: keyword
       ignore_above: 1024
       multi_fields:
@@ -1255,7 +1254,7 @@
           type: long
           default_field: false
     - name: ca
-      description: "certificates.ca - 1 if CA: true (certificate is an authority) else 0"
+      description: 'certificates.ca - 1 if CA: true (certificate is an authority) else 0'
       type: keyword
       ignore_above: 1024
       multi_fields:
@@ -1425,7 +1424,7 @@
           norms: false
           default_field: false
     - name: change_type
-      description: "docker_container_fs_changes.change_type - Type of change: C:Modified, A:Added, D:Deleted"
+      description: 'docker_container_fs_changes.change_type - Type of change: C:Modified, A:Added, D:Deleted'
       type: keyword
       ignore_above: 1024
       multi_fields:
@@ -1650,7 +1649,7 @@
           norms: false
           default_field: false
     - name: code_integrity_policy_enforcement_status
-      description: hvci_status.code_integrity_policy_enforcement_status - The status of the code integrity policy enforcement settings. Returns UNKNOWN if an error is encountered.
+      description: deviceguard_status.code_integrity_policy_enforcement_status - The status of the code integrity policy enforcement settings. Returns UNKNOWN if an error is encountered.
       type: keyword
       ignore_above: 1024
       multi_fields:
@@ -1668,7 +1667,7 @@
           norms: false
           default_field: false
     - name: codesigning_flags
-      description: "es_process_events.codesigning_flags - Codesigning flags matching one of these options, in a comma separated list: NOT_VALID, ADHOC, NOT_RUNTIME, INSTALLER. See kern/cs_blobs.h in XNU for descriptions."
+      description: 'es_process_events.codesigning_flags - Codesigning flags matching one of these options, in a comma separated list: NOT_VALID, ADHOC, NOT_RUNTIME, INSTALLER. See kern/cs_blobs.h in XNU for descriptions.'
       type: keyword
       ignore_above: 1024
       multi_fields:
@@ -1987,6 +1986,15 @@
       multi_fields:
         - name: number
           type: long
+          default_field: false
+    - name: configured_security_services
+      description: deviceguard_status.configured_security_services - The list of configured Device Guard services. Returns UNKNOWN if an error is encountered.
+      type: keyword
+      ignore_above: 1024
+      multi_fields:
+        - name: text
+          type: text
+          norms: false
           default_field: false
     - name: configured_voltage
       description: memory_devices.configured_voltage - Configured operating voltage of device in millivolts
@@ -2774,9 +2782,7 @@
           type: long
           default_field: false
     - name: developer_id
-      description: |-
-        safari_extensions.developer_id - Optional developer identifier
-        xprotect_meta.developer_id - Developer identity (SHA1) of extension
+      description: xprotect_meta.developer_id - Developer identity (SHA1) of extension
       type: keyword
       ignore_above: 1024
       multi_fields:
@@ -3421,7 +3427,7 @@
           norms: false
           default_field: false
     - name: encryption_status
-      description: "disk_encryption.encryption_status - Disk encryption status with one of following values: encrypted | not encrypted | undefined"
+      description: 'disk_encryption.encryption_status - Disk encryption status with one of following values: encrypted | not encrypted | undefined'
       type: keyword
       ignore_above: 1024
       multi_fields:
@@ -3797,15 +3803,6 @@
           type: text
           norms: false
           default_field: false
-    - name: extension_type
-      description: "safari_extensions.extension_type - Extension Type: WebOrAppExtension or LegacyExtension"
-      type: keyword
-      ignore_above: 1024
-      multi_fields:
-        - name: text
-          type: text
-          norms: false
-          default_field: false
     - name: extensions
       description: osquery_info.extensions - osquery extensions status
       type: keyword
@@ -4043,7 +4040,7 @@
           norms: false
           default_field: false
     - name: filevault_status
-      description: "disk_encryption.filevault_status - FileVault status with one of following values: on | off | unknown"
+      description: 'disk_encryption.filevault_status - FileVault status with one of following values: on | off | unknown'
       type: keyword
       ignore_above: 1024
       multi_fields:
@@ -4097,7 +4094,7 @@
           norms: false
           default_field: false
     - name: firewall_unload
-      description: alf.firewall_unload - 1 If firewall unloading enabled else 0
+      description: alf.firewall_unload - 1 If firewall unloading enabled else 0 (not supported on macOS 15+)
       type: keyword
       ignore_above: 1024
       multi_fields:
@@ -4432,7 +4429,7 @@
           type: long
           default_field: false
     - name: guest_nice
-      description: "cpu_time.guest_nice - Time spent running a niced guest "
+      description: 'cpu_time.guest_nice - Time spent running a niced guest '
       type: keyword
       ignore_above: 1024
       multi_fields:
@@ -4554,6 +4551,14 @@
         - name: text
           type: text
           norms: false
+          default_field: false
+    - name: hash_executable
+      description: signature.hash_executable - Set to 1 to also hash the executable, or 0 otherwise. Default is 1
+      type: keyword
+      ignore_above: 1024
+      multi_fields:
+        - name: number
+          type: long
           default_field: false
     - name: hash_resources
       description: signature.hash_resources - Set to 1 to also hash resources, or 0 otherwise. Default is 1
@@ -4972,7 +4977,7 @@
           type: long
           default_field: false
     - name: include_remote
-      description: "users.include_remote - 1 to include remote (LDAP/AD) accounts (default 0). Warning: without any uid/username filtering it may list whole LDAP directories"
+      description: 'users.include_remote - 1 to include remote (LDAP/AD) accounts (default 0). Warning: without any uid/username filtering it may list whole LDAP directories'
       type: keyword
       ignore_above: 1024
       multi_fields:
@@ -5196,7 +5201,7 @@
           norms: false
           default_field: false
     - name: instance_identifier
-      description: hvci_status.instance_identifier - The instance ID of Device Guard.
+      description: deviceguard_status.instance_identifier - The instance ID of Device Guard.
       type: keyword
       ignore_above: 1024
       multi_fields:
@@ -6184,7 +6189,7 @@
           type: long
           default_field: false
     - name: logging_option
-      description: alf.logging_option - Firewall logging option
+      description: alf.logging_option - Firewall logging option (not supported on macOS 15+)
       type: keyword
       ignore_above: 1024
       multi_fields:
@@ -6307,7 +6312,7 @@
           norms: false
           default_field: false
     - name: magic_db_files
-      description: "magic.magic_db_files - Colon(:) separated list of files where the magic db file can be found. By default one of the following is used: /usr/share/file/magic/magic, /usr/share/misc/magic or /usr/share/misc/magic.mgc"
+      description: 'magic.magic_db_files - Colon(:) separated list of files where the magic db file can be found. By default one of the following is used: /usr/share/file/magic/magic, /usr/share/misc/magic or /usr/share/misc/magic.mgc'
       type: keyword
       ignore_above: 1024
       multi_fields:
@@ -8011,6 +8016,14 @@
         processes.parent - Process parent's PID
       type: keyword
       ignore_above: 1024
+    - name: parent_pidversion
+      description: es_process_events.parent_pidversion - The pidversion of the parent process.
+      type: keyword
+      ignore_above: 1024
+      multi_fields:
+        - name: number
+          type: long
+          default_field: false
     - name: parent_process_sequence_number
       description: process_etw_events.parent_process_sequence_number - Parent Process Sequence Number - Present only on ProcessStart events
       type: keyword
@@ -8155,7 +8168,7 @@
           default_field: false
     - name: path
       description: |-
-        alf_exceptions.path - Path to the executable that is excepted
+        alf_exceptions.path - Path to the executable that is excepted. On macOS 15+ this can also be a bundle identifier
         apparmor_profiles.path - Unique, aa-status compatible, policy identifier.
         appcompat_shims.path - This is the path to the SDB database.
         apps.path - Absolute and full Name.app path
@@ -8219,7 +8232,7 @@
         quicklook_cache.path - Path of file
         registry.path - Full path to the value
         rpm_package_files.path - File path within the package
-        safari_extensions.path - Path to extension XAR bundle
+        safari_extensions.path - Path to the Info.plist describing the extension
         sandboxes.path - Path to sandbox container directory
         scheduled_tasks.path - Path to the executable to be run
         services.path - Path to Service Executable
@@ -8556,6 +8569,14 @@
           default_field: false
     - name: pids
       description: docker_container_stats.pids - Number of processes
+      type: keyword
+      ignore_above: 1024
+      multi_fields:
+        - name: number
+          type: long
+          default_field: false
+    - name: pidversion
+      description: es_process_events.pidversion - Process ID version
       type: keyword
       ignore_above: 1024
       multi_fields:
@@ -9401,7 +9422,7 @@
           norms: false
           default_field: false
     - name: refreshes
-      description: "osquery_events.refreshes - Publisher only: number of runloop restarts"
+      description: 'osquery_events.refreshes - Publisher only: number of runloop restarts'
       type: keyword
       ignore_above: 1024
       multi_fields:
@@ -9688,6 +9709,22 @@
           type: text
           norms: false
           default_field: false
+    - name: responsible_pid
+      description: es_process_events.responsible_pid - The pid of the process responsible for this process.
+      type: keyword
+      ignore_above: 1024
+      multi_fields:
+        - name: number
+          type: long
+          default_field: false
+    - name: responsible_pidversion
+      description: es_process_events.responsible_pidversion - The pidversion of the process responsible for this process.
+      type: keyword
+      ignore_above: 1024
+      multi_fields:
+        - name: number
+          type: long
+          default_field: false
     - name: result
       description: |-
         authenticode.result - The signature check result
@@ -9880,6 +9917,15 @@
         - name: number
           type: long
           default_field: false
+    - name: running_security_services
+      description: deviceguard_status.running_security_services - The list of running Device Guard services. Returns UNKNOWN if an error is encountered.
+      type: keyword
+      ignore_above: 1024
+      multi_fields:
+        - name: text
+          type: text
+          norms: false
+          default_field: false
     - name: rw
       description: docker_container_mounts.rw - 1 if read/write. 0 otherwise
       type: keyword
@@ -10044,7 +10090,7 @@
           type: long
           default_field: false
     - name: secure_mode
-      description: "secureboot.secure_mode - (Intel) Secure mode: 0 disabled, 1 full security, 2 medium security"
+      description: 'secureboot.secure_mode - (Intel) Secure mode: 0 disabled, 1 full security, 2 medium security'
       type: keyword
       ignore_above: 1024
       multi_fields:
@@ -10276,7 +10322,7 @@
           norms: false
           default_field: false
     - name: service_type
-      description: "services.service_type - Service Type: OWN_PROCESS, SHARE_PROCESS and maybe Interactive (can interact with the desktop)"
+      description: 'services.service_type - Service Type: OWN_PROCESS, SHARE_PROCESS and maybe Interactive (can interact with the desktop)'
       type: keyword
       ignore_above: 1024
       multi_fields:
@@ -10294,6 +10340,7 @@
           default_field: false
     - name: session_id
       description: |-
+        es_process_events.session_id - The identifier of the session that contains the process group.
         logon_sessions.session_id - The Terminal Services session identifier.
         process_etw_events.session_id - Session ID
         winbaseobj.session_id - Terminal Services Session Id
@@ -10918,7 +10965,7 @@
           type: long
           default_field: false
     - name: start_type
-      description: "services.start_type - Service start type: BOOT_START, SYSTEM_START, AUTO_START, DEMAND_START, DISABLED"
+      description: 'services.start_type - Service start type: BOOT_START, SYSTEM_START, AUTO_START, DEMAND_START, DISABLED'
       type: keyword
       ignore_above: 1024
       multi_fields:
@@ -10948,7 +10995,7 @@
           default_field: false
     - name: state
       description: |-
-        alf_exceptions.state - Firewall exception state
+        alf_exceptions.state - Firewall exception state. 0 if the application is configured to allow incoming connections, 2 if the application is configured to block incoming connections and 3 if the application is configuted to allow incoming connections but with additional restrictions.
         battery.state - One of the following: "AC Power" indicates the battery is connected to an external power source, "Battery Power" indicates that the battery is drawing internal power, "Off Line" indicates the battery is off-line or no longer connected
         chrome_extensions.state - 1 if this extension is enabled
         docker_container_processes.state - Process state
@@ -11665,6 +11712,15 @@
           type: text
           norms: false
           default_field: false
+    - name: timestamp_double
+      description: unified_log.timestamp_double - floating point timestamp associated with the entry
+      type: keyword
+      ignore_above: 1024
+      multi_fields:
+        - name: text
+          type: text
+          norms: false
+          default_field: false
     - name: timestamp_ms
       description: prometheus_metrics.timestamp_ms - Unix timestamp of collected data in MS
       type: keyword
@@ -11916,7 +11972,7 @@
           type: long
           default_field: false
     - name: umci_policy_status
-      description: hvci_status.umci_policy_status - The status of the User Mode Code Integrity security settings. Returns UNKNOWN if an error is encountered.
+      description: deviceguard_status.umci_policy_status - The status of the User Mode Code Integrity security settings. Returns UNKNOWN if an error is encountered.
       type: keyword
       ignore_above: 1024
       multi_fields:
@@ -12038,9 +12094,7 @@
           norms: false
           default_field: false
     - name: update_url
-      description: |-
-        chrome_extensions.update_url - Extension-supplied update URI
-        safari_extensions.update_url - Extension-supplied update URI
+      description: chrome_extensions.update_url - Extension-supplied update URI
       type: keyword
       ignore_above: 1024
       multi_fields:
@@ -12364,7 +12418,7 @@
           norms: false
           default_field: false
     - name: vbs_status
-      description: hvci_status.vbs_status - The status of the virtualization based security settings. Returns UNKNOWN if an error is encountered.
+      description: deviceguard_status.vbs_status - The status of the virtualization based security settings. Returns UNKNOWN if an error is encountered.
       type: keyword
       ignore_above: 1024
       multi_fields:
@@ -12425,6 +12479,7 @@
         curl_certificate.version - Version Number
         deb_packages.version - Package version
         device_firmware.version - Firmware version
+        deviceguard_status.version - The version number of the Device Guard build.
         docker_version.version - Docker version
         drivers.version - Driver version
         es_process_events.version - Version of EndpointSecurity event
@@ -12432,7 +12487,6 @@
         firefox_addons.version - Addon-supplied version string
         gatekeeper.version - Version of Gatekeeper's gke.bundle
         homebrew_packages.version - Current 'linked' version
-        hvci_status.version - The version number of the Device Guard build.
         ie_extensions.version - Version of the executable
         intel_me_info.version - Intel ME version
         kernel_extensions.version - Extension version
@@ -12570,6 +12624,15 @@
       multi_fields:
         - name: number
           type: long
+          default_field: false
+    - name: vscode_edition
+      description: vscode_extensions.vscode_edition - VSCode or VSCode Insiders
+      type: keyword
+      ignore_above: 1024
+      multi_fields:
+        - name: text
+          type: text
+          norms: false
           default_field: false
     - name: wall_time
       description: osquery_schedule.wall_time - Total wall time in seconds spent executing (deprecated), hidden=True
