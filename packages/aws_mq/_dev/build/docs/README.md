@@ -29,16 +29,17 @@ For detailed instructions, refer to the [Amazon MQ Developer Guide](https://docs
 
 ## Compatibility
 
-This integration presently supports Amazon MQ for [Apache ActiveMQ](http://activemq.apache.org/) and [RabbitMQ](https://www.rabbitmq.com/) metrics.
+This integration presently supports Amazon MQ for [Apache ActiveMQ](http://activemq.apache.org/) and [RabbitMQ](https://www.rabbitmq.com/).
 
 ## Data streams
 
-The Amazon MQ integration collects metrics and logs from Apache ActiveMQ and metrics from RabbitMQ.
+The Amazon MQ integration collects metrics and logs from Apache ActiveMQ and RabbitMQ.
 
 
 Data streams:
  - `activemq_general_logs`: Collects ActiveMQ general logs, including system events, warnings, and errors, which are published to a designated Amazon CloudWatch log group. 
  - `activemq_audit_logs`: Collects ActiveMQ audit logs, including management actions performed via JMX or the Web Console.
+ - `rabbitmq_general_logs`: Collects RabbitMQ general logs, including system events, warnings, errors, which are published to a designated Amazon CloudWatch log group.
  - `activemq_metrics`: Collects broker metrics and destination (queue and topic) metrics.
  - `rabbitmq_metrics`: Collects broker, queue and node metrics.
 
@@ -83,6 +84,15 @@ When audit logging is enabled, ActiveMQ logs management actions performed via JM
 
 {{event "activemq_audit_logs"}}
 {{fields "activemq_audit_logs"}}
+
+### RabbitMQ general logs
+
+RabbitMQ logs messages across various categories, including connection lifecycle events, channel and queue logs, federation plugin activity, and upgrade details. These logs can have different levels.
+
+For more details, refer to [RabbitMQ Logging Categories](https://www.rabbitmq.com/docs/logging#log-message-categories).
+
+{{event "rabbitmq_general_logs"}}
+{{fields "rabbitmq_general_logs"}}
 
 ## Metrics
 
