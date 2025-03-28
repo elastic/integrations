@@ -248,9 +248,9 @@ An example event for `activemq_audit` looks as following:
 
 ### RabbitMQ general logs
 
-RabbitMQ logs messages across various categories, including connection lifecycle events, channel and queue logs, federation plugin activity, and upgrade details. These logs can have different levels.
+When you enable CloudWatch logging for your RabbitMQ brokers, Amazon MQ uses a service-linked role to publish general logs to CloudWatch. If no Amazon MQ service-linked role exists when you first create a broker, Amazon MQ will automatically create one. All subsequent RabbitMQ brokers will use the same service-linked role to publish logs to CloudWatch
 
-For more details, refer to [RabbitMQ Logging Categories](https://www.rabbitmq.com/docs/logging#log-message-categories).
+For more details, refer to [Configuring Amazon MQ for RabbitMQ logs](https://docs.aws.amazon.com/amazon-mq/latest/developer-guide/rabbitmq-logging-monitoring.html?utm_source=chatgpt.com#security-logging-monitoring-rabbitmq).
 
 An example event for `rabbitmq_general` looks as following:
 
