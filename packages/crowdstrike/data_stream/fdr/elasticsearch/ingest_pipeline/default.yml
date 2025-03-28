@@ -204,6 +204,101 @@ processors:
       ignore_missing: true
       if: ctx.crowdstrike?.HostHiddenStatus == null
 
+# Handle case changes.
+  - rename:
+      tag: rename_GrandParentCommandLine_GrandparentCommandLine
+      field: crowdstrike.GrandParentCommandLine
+      target_field: crowdstrike.GrandparentCommandLine
+      ignore_failure: true
+  - rename:
+      tag: rename_GrandParentImageFileName_GrandparentImageFileName
+      field: crowdstrike.GrandParentImageFileName
+      target_field: crowdstrike.GrandparentImageFileName
+      ignore_failure: true
+  - rename:
+      tag: rename_GrandParentImageFilePath_GrandparentImageFilePath
+      field: crowdstrike.GrandParentImageFilePath
+      target_field: crowdstrike.GrandparentImageFilePath
+      ignore_failure: true
+
+  # Assign severities to conform to security rules values
+  #
+  # 21 = Low
+  # 47 = Medium
+  # 73 = High
+  # 99 = Critical
+  #
+  # Leave crowdstrike values in place, since they have their own semantics.
+  - script:
+      lang: painless
+      if: ctx.crowdstrike?.SeverityName instanceof String
+      source: |-
+        ctx.event = ctx.event ?: [:];
+        String name = ctx.crowdstrike.SeverityName;
+        if (name.equalsIgnoreCase("low")) {
+          ctx.event.severity = 21;
+        } else if (name.equalsIgnoreCase("medium")) {
+          ctx.event.severity = 47;
+        } else if (name.equalsIgnoreCase("high")) {
+          ctx.event.severity = 73;
+        } else if (name.equalsIgnoreCase("critical")) {
+          ctx.event.severity = 99;
+        }
+# EppDetectionSummaryEvent renames
+  - rename:
+      tag: rename_Hostname_ComputerName
+      field: crowdstrike.Hostname
+      target_field: crowdstrike.ComputerName
+      ignore_failure: true
+  - rename:
+      tag: rename_LogonDomain_MachineDomain
+      field: crowdstrike.LogonDomain
+      target_field: crowdstrike.MachineDomain
+      ignore_failure: true
+  - rename:
+      tag: rename_AgentId_SensorId
+      field: crowdstrike.AgentId
+      target_field: crowdstrike.SensorId
+      ignore_failure: true
+  - rename:
+      tag: rename_Name_DetectName
+      field: crowdstrike.Name
+      target_field: crowdstrike.DetectName
+      ignore_failure: true
+
+# EppDetectionSummaryEvent converts
+  - convert:
+      field: crowdstrike.LocalIPv6
+      tag: convert_crowdstrike_LocalIPv6_ip
+      type: ip
+      if: ctx.crowdstrike?.LocalIPv6 != null && ctx.crowdstrike.LocalIPv6 != ''
+      on_failure:
+        - remove:
+            field: crowdstrike.LocalIPv6
+            ignore_failure: true
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - foreach:
+      field: crowdstrike.FilesWritten
+      tag: convert_crowdstrike_fileswritten_timestamp_array
+      if: ctx.crowdstrike?.FilesWritten instanceof List
+      ignore_failure: true
+      processor:
+        date:
+          field: _ingest._value.Timestamp
+          target_field: _ingest._value.Timestamp
+          formats:
+            - UNIX
+          tag: convert_crowdstrike_fileswritten_timestamp
+          on_failure:
+            - remove:
+                field: _ingest._value.Timestamp
+                ignore_failure: true
+            - append:
+                field: error.message
+                value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+
 # Handle additional added fields. 
   - convert:
       tag: convert_CurrentLocalIP_ip
@@ -235,13 +330,13 @@ processors:
         - crowdstrike.id
         - crowdstrike.aid
         - crowdstrike.cid
+      tag: fingerprint_crowdstrike_fdr
+      description: >
+        When deduplication is enabled, fingerprint the a set of crowdstrike fields 
+        in attempt to prevent the same event from being indexed more than once.
+      if: ctx._conf?.enable_deduplication == true
       target_field: _id
       ignore_missing: true
-
-  ## ECS fields.
-  - set:
-      field: ecs.version
-      value: '8.17.0'
 
   ## Categorization.
   - script:
@@ -1397,10 +1492,13 @@ processors:
         }
 
   ## Event fields.
-  - rename:
-      field: crowdstrike.id
-      target_field: event.id
-      ignore_missing: true
+  - set:
+      field: event.id
+      description: Concat the fields used in fingerprint.
+      tag: set_event_id
+      if: ctx.crowdstrike?.id != null || ctx.crowdstrike?.aid != null || ctx.crowdstrike?.cid != null
+      value: >-
+        {{{#crowdstrike.id}}}{{{ crowdstrike.id }}}{{{/crowdstrike.id}}}|{{{#crowdstrike.aid}}}{{{ crowdstrike.aid }}}{{{/crowdstrike.aid}}}|{{{#crowdstrike.cid}}}{{{ crowdstrike.cid }}}{{{/crowdstrike.cid}}}
   - rename:
       field: crowdstrike.event_simpleName
       target_field: event.action
@@ -1500,12 +1598,6 @@ processors:
       target_field: observer.version
       ignore_missing: true
       ignore_failure: true
-  - set:
-      field: observer.vendor
-      value: crowdstrike
-  - set:
-      field: observer.type
-      value: agent
   - foreach:
       if: ctx.observer?.ip != null && ctx.observer.ip instanceof List
       field: observer.ip
@@ -2536,6 +2628,21 @@ processors:
       if: ctx.host?.os?.type != null
   - remove:
       field:
+        - log.file.path
+        - log.offset
+      if: ctx.aws?.s3?.bucket != null && ctx.aws.s3.object != null
+      ignore_missing: true
+      ignore_failure: true
+  - remove:
+      field:
+        - agent.ephemeral_id
+        - event.timezone
+        - log.offset
+      if: ctx._conf?.prune_fields == true
+      ignore_missing: true
+  - remove:
+      field:
+        - ecs.version
         - _temp
         - crowdstrike.timestamp
         - crowdstrike._time
@@ -2546,9 +2653,8 @@ processors:
         - crowdstrike.UserIsAdmin
         - crowdstrike.UTCTimestamp
         - crowdstrike.TargetDirectoryName
-        - aws
+        - _conf
       ignore_missing: true
-      ignore_failure: true
   - script:
       tag: remove-nulls
       lang: painless
