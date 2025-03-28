@@ -584,6 +584,17 @@ processors:
         - append:
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - date:
+      field: json.PATCH_PUBLISHED_DATE
+      tag: date_PATCH_PUBLISHED_DATE
+      target_field: qualys_vmdr.knowledge_base.patch_published_date
+      formats:
+        - ISO8601
+      if: ctx.json?.PATCH_PUBLISHED_DATE != null && ctx.json.PATCH_PUBLISHED_DATE != ''
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   # Handle case when CHANGE_LOG_LIST.CHANGE_LOG_INFO is an object
   - rename:
       field: json.CHANGE_LOG_LIST.CHANGE_LOG_INFO
