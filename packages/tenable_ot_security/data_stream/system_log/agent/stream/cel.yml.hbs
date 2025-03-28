@@ -30,7 +30,13 @@ program: |-
   			"query": state.query,
   			"variables": {
   				"first": state.limit,
-  				"after": state.?cursor.end_cursor.orValue(null),
+  				"filter": {
+  					"field": "timeStamp",
+  					"op": "GreaterEqual",
+  					"values": state.?cursor.end_time.orValue(
+  						timestamp(now() - duration(state.initial_interval)).format(time_layout.RFC3339)
+  					),
+  				},
   			},
   		}.encode_json(),
   	}
@@ -42,10 +48,13 @@ program: |-
   					"events": nodes.map(e,
   						{
   							"message": e,
-  							?"event.original": state.?preserve_original_event.orValue(false) ? optional.of(e.encode_json()) : optional.none(),
+  							?"event.original": state.?preserve_original_event.orValue(false) ?
+  								optional.of(e.encode_json())
+  							:
+  								optional.none(),
   						}
   					),
-  					"cursor": {"end_cursor": (size(nodes) > 0) ? body.data.systemLog.pageInfo.endCursor : state.?cursor.end_cursor},
+  					"cursor": {"end_time": nodes[size(nodes) - 1].timeStamp},
   					"want_more": body.data.systemLog.pageInfo.hasNextPage,
   				}
   			)
@@ -71,9 +80,10 @@ state:
   want_more: false
   key: {{key}}
   limit: {{limit}}
+  initial_interval: {{initial_interval}}
   query: >-
-    query getSystemLogs($first: Int, $after: String) {
-      systemLog(first: $first, after: $after) {
+    query getSystemLogs($first: Int, $filter: SystemLogExpressionsParams) {
+      systemLog(first: $first, filter: $filter) {
         pageInfo {
           hasNextPage
           endCursor
@@ -85,4 +95,3 @@ state:
         }
       }
     }
- 
