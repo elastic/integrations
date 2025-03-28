@@ -189,16 +189,6 @@ processors:
                 value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - foreach:
       field: prisma_cloud.host.all_compliance.data
-      if: ctx.prisma_cloud?.host?.all_compliance?.data instanceof List
-      ignore_failure: true
-      processor:
-        append:
-          field: vulnerability.description
-          tag: append_description_to_vulnerability_description
-          value: '{{{_ingest._value.description}}}'
-          allow_duplicates: false
-  - foreach:
-      field: prisma_cloud.host.all_compliance.data
       if: ctx.prisma_cloud?.host?.all_compliance?.data instanceof List && (ctx.tags == null || !(ctx.tags.contains('preserve_duplicate_custom_fields')))
       ignore_failure: true
       processor:
@@ -917,16 +907,6 @@ processors:
             - append:
                 field: error.message
                 value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
-  - foreach:
-      field: prisma_cloud.host.compliance_issues.data
-      if: ctx.prisma_cloud?.host?.compliance_issues?.data instanceof List
-      ignore_failure: true
-      processor:
-        append:
-          field: vulnerability.description
-          tag: append_prisma_cloud_host_compliance_issues_data_description
-          value: '{{{_ingest._value.description}}}'
-          allow_duplicates: false
   - foreach:
       field: prisma_cloud.host.compliance_issues.data
       if: ctx.prisma_cloud?.host?.compliance_issues?.data instanceof List && (ctx.tags == null || !(ctx.tags.contains('preserve_duplicate_custom_fields')))
@@ -1667,20 +1647,6 @@ processors:
                     value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - foreach:
       field: prisma_cloud.host.history
-      if: ctx.prisma_cloud?.host?.history instanceof List
-      ignore_failure: true
-      processor:
-        foreach:
-          field: _ingest._value.vulnerabilities
-          ignore_failure: true
-          processor:
-            append:
-              field: vulnerability.description
-              tag: append_description_2
-              value: '{{{_ingest._value.description}}}'
-              allow_duplicates: false
-  - foreach:
-      field: prisma_cloud.host.history
       if: ctx.prisma_cloud?.host?.history instanceof List && (ctx.tags == null || !(ctx.tags.contains('preserve_duplicate_custom_fields')))
       ignore_failure: true
       processor:
@@ -2332,20 +2298,6 @@ processors:
                 - append:
                     field: error.message
                     value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
-  - foreach:
-      field: prisma_cloud.host.image.history
-      if: ctx.prisma_cloud?.host?.image?.history instanceof List
-      ignore_failure: true
-      processor:
-        foreach:
-          field: _ingest._value.vulnerabilities
-          ignore_failure: true
-          processor:
-            append:
-              field: vulnerability.description
-              tag: append__image_history_vulnerabilities_description
-              value: '{{{_ingest._value.description}}}'
-              allow_duplicates: false
   - foreach:
       field: prisma_cloud.host.image.history
       if: ctx.prisma_cloud?.host?.image?.history instanceof List && (ctx.tags == null || !(ctx.tags.contains('preserve_duplicate_custom_fields')))
@@ -3799,16 +3751,6 @@ processors:
             - append:
                 field: error.message
                 value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
-  - foreach:
-      field: prisma_cloud.host.vulnerabilities.data
-      if: ctx.prisma_cloud?.host?.vulnerabilities?.data instanceof List
-      ignore_failure: true
-      processor:
-        append:
-          field: vulnerability.description
-          tag: append_vulnerabilities_data_description
-          value: '{{{_ingest._value.description}}}'
-          allow_duplicates: false
   - foreach:
       field: prisma_cloud.host.vulnerabilities.data
       if: ctx.prisma_cloud?.host?.vulnerabilities?.data instanceof List && (ctx.tags == null || !(ctx.tags.contains('preserve_duplicate_custom_fields')))
