@@ -8,9 +8,6 @@ processors:
       tag: data_collection_error
       if: ctx.error?.message != null && ctx.message == null && ctx.event?.original == null
       message: error message set and no data to process.
-  - drop:
-      tag: drop_retry_events
-      if: ctx.message != null && ctx.message == 'retry'
   - rename:
       field: message
       tag: rename_message_to_event_original
@@ -319,14 +316,80 @@ processors:
       tag: script_fields_object
       source: |-
         def fields = new HashMap();
-        for( f in ctx.tenable_io.audit.fields ) {
-          fields.put(f.key, f.value);
+        for (f in ctx.tenable_io.audit.fields) {
+          fields.put(f.key.toLowerCase(), f.value);
         }
         ctx.tenable_io.audit.fields = fields;
       on_failure:
         - append:
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - split:
+      field: tenable_io.audit.fields.x-forwarded-for
+      tag: split_x-forwarded-for
+      separator: ','
+      target_field: tenable_io.audit.fields.x_forwarded_for
+      ignore_missing: true
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - trim:
+      field: tenable_io.audit.fields.x_forwarded_for
+      tag: trim_x_forwarded_for
+      ignore_missing: true
+  - foreach:
+      field: tenable_io.audit.fields.x_forwarded_for
+      if: ctx.tenable_io?.audit?.fields?.x_forwarded_for instanceof List
+      processor:
+        convert:
+          field: _ingest._value
+          tag: convert_x_forwarded_for_to_ip
+          type: ip
+          ignore_missing: true
+          on_failure:
+            - remove:
+                field: _ingest._value
+                ignore_missing: true
+            - append:
+                field: error.message
+                value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - script:
+      lang: painless
+      if: ctx.tenable_io?.audit?.fields?.x_forwarded_for instanceof List
+      description: Map source.ip field.
+      tag: script_map_source_ip
+      source: |-
+        if (ctx.tenable_io?.audit?.fields?.x_forwarded_for.size() > 0) {
+          def source_ip = ctx.tenable_io.audit.fields.x_forwarded_for.get(0);
+          if (ctx.source == null) {
+            ctx.source = new HashMap();
+            ctx.source.ip = source_ip;
+          }
+        }
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - geoip:
+      field: source.ip
+      target_field: source.geo
+      tag: geoip_source_ip
+      ignore_missing: true
+  - foreach:
+      field: tenable_io.audit.fields.x_forwarded_for
+      if: ctx.tenable_io?.audit?.fields?.x_forwarded_for instanceof List
+      processor:
+        append:
+          field: related.ip
+          tag: append_x_forwarded_for_into_related_ip
+          value: '{{{_ingest._value}}}'
+          allow_duplicates: false
+  - remove:
+      field:
+        - tenable_io.audit.fields.x-forwarded-for
+      tag: remove_x-forwarded-for
+      ignore_missing: true
   - remove:
       field:
         - tenable_io.audit.id
