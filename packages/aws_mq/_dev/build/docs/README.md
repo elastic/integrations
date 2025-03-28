@@ -87,7 +87,7 @@ When audit logging is enabled, ActiveMQ logs management actions performed via JM
 
 ### RabbitMQ general logs
 
-When you enable CloudWatch logging for your RabbitMQ brokers, Amazon MQ uses a service-linked role to publish general logs to CloudWatch. If no Amazon MQ service-linked role exists when you first create a broker, Amazon MQ will automatically create one. All subsequent RabbitMQ brokers will use the same service-linked role to publish logs to CloudWatch
+When you enable CloudWatch logging for your RabbitMQ brokers, Amazon MQ uses a service-linked role to publish general logs to CloudWatch. If no Amazon MQ service-linked role exists when you first create a broker, Amazon MQ will automatically create one. All subsequent RabbitMQ brokers will use the same service-linked role to publish logs to CloudWatch.
 
 For more details, refer to [Configuring Amazon MQ for RabbitMQ logs](https://docs.aws.amazon.com/amazon-mq/latest/developer-guide/rabbitmq-logging-monitoring.html?utm_source=chatgpt.com#security-logging-monitoring-rabbitmq).
 
