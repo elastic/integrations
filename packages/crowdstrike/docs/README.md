@@ -784,6 +784,7 @@ Current supported event types are:
 | crowdstrike.event.AdditionalEndpointSensorId | Additional involved endpoint agent ID. | keyword |
 | crowdstrike.event.AdditionalLocationCountryCode | Additional involved country code. | keyword |
 | crowdstrike.event.AdditionalSsoApplicationIdentifier | Additional application identifier. | keyword |
+| crowdstrike.event.AgentId |  | keyword |
 | crowdstrike.event.AgentIdString |  | keyword |
 | crowdstrike.event.AggregateId |  | keyword |
 | crowdstrike.event.AnomalousTicketContentClassification | Ticket signature analysis. | keyword |
@@ -825,6 +826,9 @@ Current supported event types are:
 | crowdstrike.event.ExecutionMetadata.ResultID |  | keyword |
 | crowdstrike.event.ExecutionMetadata.SearchWindowEnd |  | date |
 | crowdstrike.event.ExecutionMetadata.SearchWindowStart |  | date |
+| crowdstrike.event.FalconHostLink |  | keyword |
+| crowdstrike.event.FileName |  | keyword |
+| crowdstrike.event.FilePath |  | keyword |
 | crowdstrike.event.FilesWritten.FileName |  | keyword |
 | crowdstrike.event.FilesWritten.FilePath |  | keyword |
 | crowdstrike.event.FilesWritten.Timestamp |  | date |
@@ -833,13 +837,19 @@ Current supported event types are:
 | crowdstrike.event.Flags.Audit | CrowdStrike audit flag. | boolean |
 | crowdstrike.event.Flags.Log | CrowdStrike log flag. | boolean |
 | crowdstrike.event.Flags.Monitor | CrowdStrike monitor flag. | boolean |
+| crowdstrike.event.GrandParentCommandLine |  | keyword |
+| crowdstrike.event.GrandParentImageFileName |  | keyword |
+| crowdstrike.event.GrandParentImageFilePath |  | keyword |
 | crowdstrike.event.GrandparentCommandLine | Grandparent process command line arguments. | keyword |
 | crowdstrike.event.GrandparentImageFileName | Path to the grandparent process. | keyword |
 | crowdstrike.event.GrandparentImageFilePath |  | keyword |
 | crowdstrike.event.Highlights | Sections of content that matched the monitoring rule. | text |
 | crowdstrike.event.HostGroups | Array of related Host Group IDs. | keyword |
+| crowdstrike.event.Hostname |  | keyword |
 | crowdstrike.event.ICMPCode | RFC2780 ICMP Code field. | keyword |
 | crowdstrike.event.ICMPType | RFC2780 ICMP Type field. | keyword |
+| crowdstrike.event.IOARuleGroupName |  | keyword |
+| crowdstrike.event.IOARuleInstanceID |  | keyword |
 | crowdstrike.event.IOARuleInstanceVersion | Version number of the InstanceID that triggered. | long |
 | crowdstrike.event.IOARuleName | Name given to the custom IOA rule that triggered. | keyword |
 | crowdstrike.event.IOCType | CrowdStrike type for indicator of compromise. | keyword |
@@ -858,6 +868,7 @@ Current supported event types are:
 | crowdstrike.event.LoadedObjects | Provides one or more JSON objects describing the loaded objects related to the detection. | nested |
 | crowdstrike.event.LocalIP | IP address of the host associated with the detection. | keyword |
 | crowdstrike.event.LocalIPv6 |  | ip |
+| crowdstrike.event.LogonDomain |  | keyword |
 | crowdstrike.event.MACAddress | MAC address of the host associated with the detection. | keyword |
 | crowdstrike.event.MD5String | MD5 sum of the executable associated with the detection. | keyword |
 | crowdstrike.event.MachineDomain | Domain for the machine associated with the detection. | keyword |
@@ -876,6 +887,7 @@ Current supported event types are:
 | crowdstrike.event.MobileNetworkConnections | Provides one or more JSON objects describing the related network connections from the mobile device. | nested |
 | crowdstrike.event.MostRecentActivityTimeStamp | The timestamp of the latest activity performed by the account. | date |
 | crowdstrike.event.MountedVolumes | Provides one or more JSON objects describing mounted volumes on the mobile device. | nested |
+| crowdstrike.event.Name |  | keyword |
 | crowdstrike.event.NetworkAccesses | Detected Network traffic done by a process. | nested |
 | crowdstrike.event.NetworkAccesses.AccessTimestamp |  | keyword |
 | crowdstrike.event.NetworkAccesses.AccessType |  | keyword |
@@ -896,8 +908,11 @@ Current supported event types are:
 | crowdstrike.event.OperationName | Event subtype. | keyword |
 | crowdstrike.event.ParentImageFileName | The parent image file name involved. | keyword |
 | crowdstrike.event.ParentImageFilePath |  | keyword |
+| crowdstrike.event.ParentProcessId |  | long |
+| crowdstrike.event.PatternDispositionDescription |  | keyword |
 | crowdstrike.event.PatternDispositionFlags.BlockingUnsupportedOrDisabled |  | boolean |
 | crowdstrike.event.PatternDispositionFlags.BootupSafeguardEnabled |  | boolean |
+| crowdstrike.event.PatternDispositionFlags.ContainmentFileSystem |  | boolean |
 | crowdstrike.event.PatternDispositionFlags.CriticalProcessDisabled |  | boolean |
 | crowdstrike.event.PatternDispositionFlags.Detect |  | boolean |
 | crowdstrike.event.PatternDispositionFlags.FsOperationBlocked |  | boolean |
@@ -925,6 +940,7 @@ Current supported event types are:
 | crowdstrike.event.PolicyName | CrowdStrike policy name. | keyword |
 | crowdstrike.event.PrecedingActivityTimeStamp | The timestamp of the activity before the most recent activity was performed. | date |
 | crowdstrike.event.PreviousPrivileges | A list of the source account's privileges before privilege changes were made. | keyword |
+| crowdstrike.event.ProcessId |  | long |
 | crowdstrike.event.Protocol | CrowdStrike provided protocol. | keyword |
 | crowdstrike.event.ProtocolAnomalyClassification | Authentication signature analysis. | keyword |
 | crowdstrike.event.Region |  | keyword |
@@ -989,6 +1005,7 @@ Current supported event types are:
 | crowdstrike.event.TreeID | CrowdStrike tree id. | keyword |
 | crowdstrike.event.Type | The endpoint detection type ("ldt": Legacy Endpoint Detection, or "ofp": Office Prevention Macro Detection). | keyword |
 | crowdstrike.event.UserId | Email address or user ID associated with the event. | keyword |
+| crowdstrike.event.UserName |  | keyword |
 | crowdstrike.event.UserUUID |  | keyword |
 | crowdstrike.event.VerifiedBootState | Provides the device’s current boot state. | keyword |
 | crowdstrike.event.XdrType | Type of detection: xdr or xdr-scheduled-search. | keyword |
