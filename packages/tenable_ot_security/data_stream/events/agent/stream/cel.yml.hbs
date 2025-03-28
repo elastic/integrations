@@ -16,7 +16,7 @@ resource.timeout: {{http_client_timeout}}
 max_executions: {{max_executions}}
 resource.url: {{api_host}}
 program: |-
-  {"startTime": timestamp(now() - duration(state.initial_interval)).format(time_layout.RFC3339)}.as(timeframe,
+  {"startTime": state.?cursor.end_time.orValue(timestamp(now() - duration(state.initial_interval)).format(time_layout.RFC3339))}.as(timeframe,
   	request(
   		"POST",
   		state.url.trim_right("/") + "/graphql"
@@ -31,7 +31,6 @@ program: |-
   				"query": state.query,
   				"variables": {
   					"first": state.limit,
-  					"after": state.?cursor.end_cursor.orValue(null),
   					"filter": {
   						"field": "time",
   						"op": "GreaterEqual",
@@ -51,7 +50,7 @@ program: |-
   								?"event.original": state.?preserve_original_event.orValue(false) ? optional.of(e.encode_json()) : optional.none(),
   							}
   						),
-  						"cursor": {"end_cursor": (size(nodes) > 0) ? body.data.events.pageInfo.endCursor : state.?cursor.end_cursor},
+  						"cursor": {"end_time": (size(nodes) > 0) ? nodes[size(nodes) - 1].time : state.?cursor.end_time},
   						"want_more": body.data.events.pageInfo.hasNextPage,
   					}
   				)
@@ -79,8 +78,8 @@ state:
   limit: {{limit}}
   initial_interval: {{initial_interval}}
   query: >-
-    query getEvents($first: Int, $after: String, $filter: EventsExpressionsParams){
-      events(first: $first, after: $after, filter: $filter ) {
+    query getEvents($first: Int, $filter: EventsExpressionsParams){
+      events(first: $first, filter: $filter ) {
         pageInfo {
           hasNextPage
           endCursor
