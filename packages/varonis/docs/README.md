@@ -42,15 +42,15 @@ An example event for `logs` looks as following:
 {
     "@timestamp": "2024-11-22T16:19:09.000Z",
     "agent": {
-        "ephemeral_id": "795c9691-25d9-48db-937d-d472191327da",
-        "id": "2f1c27af-7c5f-4b98-ba2f-c7e7f9879f04",
-        "name": "elastic-agent-38341",
+        "ephemeral_id": "f28bac60-35fa-48d8-b419-8a3d4bc448ad",
+        "id": "b35046ee-1922-4696-a5da-4b7707edcb04",
+        "name": "elastic-agent-33039",
         "type": "filebeat",
         "version": "8.15.3"
     },
     "data_stream": {
         "dataset": "varonis.logs",
-        "namespace": "97194",
+        "namespace": "51466",
         "type": "logs"
     },
     "destination": {
@@ -66,7 +66,7 @@ An example event for `logs` looks as following:
         "version": "8.11.0"
     },
     "elastic_agent": {
-        "id": "2f1c27af-7c5f-4b98-ba2f-c7e7f9879f04",
+        "id": "b35046ee-1922-4696-a5da-4b7707edcb04",
         "snapshot": false,
         "version": "8.15.3"
     },
@@ -79,7 +79,7 @@ An example event for `logs` looks as following:
         "code": "6000",
         "dataset": "varonis.logs",
         "end": "2024-11-22T16:19:05.000Z",
-        "ingested": "2025-03-26T07:29:42Z",
+        "ingested": "2025-03-28T09:58:41Z",
         "kind": "event",
         "module": "varonis",
         "outcome": "success",
@@ -97,7 +97,7 @@ An example event for `logs` looks as following:
     "host": {
         "architecture": "x86_64",
         "containerized": true,
-        "hostname": "elastic-agent-38341",
+        "hostname": "elastic-agent-33039",
         "id": "328e5cd3dfd442488a3dd49bf596f391",
         "ip": [
             "172.20.0.2",
@@ -107,7 +107,7 @@ An example event for `logs` looks as following:
             "02-42-AC-13-00-07",
             "02-42-AC-14-00-02"
         ],
-        "name": "elastic-agent-38341",
+        "name": "elastic-agent-33039",
         "os": {
             "codename": "focal",
             "family": "debian",
@@ -131,7 +131,6 @@ An example event for `logs` looks as following:
         "logs": {
             "changed_permissions": "Read & Execute",
             "device_event_category": "Alert",
-            "device_receipt_time": "2024-11-22T16:19:09.000Z",
             "old_file_permission": "None",
             "rule_id": 132,
             "rule_name": "Permissions granted to Global Access Groups"
@@ -160,8 +159,10 @@ The following non-ECS fields are used in events documents:
 | event.severity_label |  | keyword |
 | input.type | Input type | keyword |
 | varonis.logs.attachment_name | The name of the attachment involved in the event. | keyword |
+| varonis.logs.base_event_count | The threshold value for number of events. |  |
 | varonis.logs.changed_permissions | The permissions that were changed. | keyword |
 | varonis.logs.client_access_type | The type of client access involved in the event. | keyword |
+| varonis.logs.device_custom_date1 | A custom date field from varonis syslog. |  |
 | varonis.logs.device_event_category | The category of the device event. | keyword |
 | varonis.logs.device_receipt_time | The time the device received the event. |  |
 | varonis.logs.event_category | The category of the event. | keyword |
