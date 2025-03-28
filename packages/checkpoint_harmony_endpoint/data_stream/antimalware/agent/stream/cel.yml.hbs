@@ -150,23 +150,6 @@ program: |
   					}
   				)
   			:
-  			(resp.StatusCode == 404) ?
-  				// 404 Not Found - Resubmit the task ID query for the same timeframe.
-  				state.with(
-  					{
-  						"events": [{"message": {"event": {"reason": "polling"}}.encode_json()}],
-  						"want_more": true,
-  						"cursor": state.cursor.with(
-  							{
-  								"auth_data": auth_data,
-  								"task_id": null,
-  								"next_startTime": state.cursor.current_startTime,
-  								"next_endTime": state.cursor.current_endTime,
-  							}
-  						),
-  					}
-  				)
-  			:
   			(resp.StatusCode == 200) ?
   				bytes(resp.Body).decode_json().as(body,
   					(body.data.state == "Ready") ?
@@ -212,6 +195,7 @@ program: |
   						)
   				)
   			:
+  				// Clear the task ID, and reset the sequence for the same timeframe.
   				state.with(
   					{
   						"events": {
@@ -231,6 +215,8 @@ program: |
   							{
   								"auth_data": auth_data,
   								"task_id": null,
+  								"next_startTime": state.cursor.current_startTime,
+  								"next_endTime": state.cursor.current_endTime,
   							}
   						),
   					}
@@ -258,24 +244,6 @@ program: |
   						"events": [{"message": {"event": {"reason": "polling"}}.encode_json()}],
   						"want_more": true,
   						"cursor": state.cursor.with({"auth_data": null}),
-  					}
-  				)
-  			:
-  			(resp.StatusCode == 404) ?
-  				// 404 Not Found - Resubmit the task ID query for the same timeframe.
-  				state.with(
-  					{
-  						"events": [{"message": {"event": {"reason": "polling"}}.encode_json()}],
-  						"want_more": true,
-  						"cursor": state.cursor.with(
-  							{
-  								"auth_data": auth_data,
-  								"task_id": null,
-  								"page_token": null,
-  								"next_startTime": state.cursor.current_startTime,
-  								"next_endTime": state.cursor.current_endTime,
-  							}
-  						),
   					}
   				)
   			:
@@ -339,6 +307,7 @@ program: |
   						)
   				)
   			:
+  				// Clear the task ID and page token, and reset the sequence for the same timeframe.
   				state.with(
   					{
   						"events": {
@@ -359,6 +328,8 @@ program: |
   								"auth_data": auth_data,
   								"task_id": null,
   								"page_token": null,
+  								"next_startTime": state.cursor.current_startTime,
+  								"next_endTime": state.cursor.current_endTime,
   							}
   						),
   					}
