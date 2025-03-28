@@ -42,15 +42,15 @@ An example event for `logs` looks as following:
 {
     "@timestamp": "2024-11-22T16:19:09.000Z",
     "agent": {
-        "ephemeral_id": "51d77d9c-d6f1-49d1-81f3-b5fa0fc3b4ac",
-        "id": "030cfe8c-6848-48d2-968c-24e6ed57e85a",
-        "name": "elastic-agent-92221",
+        "ephemeral_id": "97d1a7b2-9413-428f-8969-4f5f62d5432f",
+        "id": "d1133e80-f6c0-4944-b3c2-426cddf483b7",
+        "name": "elastic-agent-18048",
         "type": "filebeat",
         "version": "8.15.3"
     },
     "data_stream": {
         "dataset": "varonis.logs",
-        "namespace": "98814",
+        "namespace": "72531",
         "type": "logs"
     },
     "destination": {
@@ -59,14 +59,14 @@ An example event for `logs` looks as following:
             "group": {
                 "name": "Everyone"
             },
-            "name": "zta.local\\\\Dani Lulli (ADMIN)"
+            "name": "zta.local\\Dani Lulli (ADMIN)"
         }
     },
     "ecs": {
         "version": "8.11.0"
     },
     "elastic_agent": {
-        "id": "030cfe8c-6848-48d2-968c-24e6ed57e85a",
+        "id": "d1133e80-f6c0-4944-b3c2-426cddf483b7",
         "snapshot": false,
         "version": "8.15.3"
     },
@@ -79,10 +79,10 @@ An example event for `logs` looks as following:
         "code": "6000",
         "dataset": "varonis.logs",
         "end": "2024-11-22T16:19:05.000Z",
-        "ingested": "2025-03-28T13:02:33Z",
+        "ingested": "2025-03-28T17:00:05Z",
         "kind": "event",
         "module": "varonis",
-        "original": "CEF:0|Varonis Inc.|DatAdvantage|8.6.51|6000|Folder permissions added|3|rt=Nov 22 2024 16:19:09 cat=Alert cs2=Permissions granted to Global Access Groups cs2Label=RuleName cn1=132 cn1Label=RuleID end=Nov 22 2024 16:19:05 duser=zta.local\\\\\\\\Dani Lulli (ADMIN) dhost=10.100.20.12 filePath=E:\\\\\\\\Share\\\\\\\\Share\\\\\\\\Finance fname=Finance act=Folder permissions added dvchost= outcome=Success msg=Read & Execute permissions for This folder, subfolders and files (not inherited) was added to  Everyone on E:\\\\\\\\Share\\\\\\\\Share\\\\\\\\Finance cs3= cs3Label=AttachmentName cs4=test cs4Label=ClientAccessType deviceCustomDate1= fileType=csv cs1=admin@test.com cs1Label=MailRecipient suser=Admin cs5=test cs5Label=MailboxAccessType cnt=10 cs6=Read & Execute cs6Label=ChangedPermissions oldFilePermission=Read filePermission=Read & Execute dpriv=Everyone start=",
+        "original": "CEF:0|Varonis Inc.|DatAdvantage|8.6.51|6000|Folder permissions added|3|rt=Nov 22 2024 16:19:09 cat=Alert cs2=Permissions granted to Global Access Groups cs2Label=RuleName cn1=132 cn1Label=RuleID end=Nov 22 2024 16:19:05 duser=zta.local\\\\Dani Lulli (ADMIN) dhost=10.100.20.12 filePath=E:\\\\Share\\\\Share\\\\Finance fname=Finance act=Folder permissions added dvchost= outcome=Success msg=Read & Execute permissions for This folder, subfolders and files (not inherited) was added to  Everyone on E:\\\\Share\\\\Share\\\\Finance cs3= cs3Label=AttachmentName cs4=test cs4Label=ClientAccessType deviceCustomDate1= fileType=csv cs1=admin@test.com cs1Label=MailRecipient suser=Admin cs5=test cs5Label=MailboxAccessType cnt=10 cs6=Read & Execute cs6Label=ChangedPermissions oldFilePermission=Read filePermission=Read & Execute dpriv=Everyone start=",
         "outcome": "success",
         "severity": 3,
         "severity_label": "error",
@@ -93,13 +93,13 @@ An example event for `logs` looks as following:
     "file": {
         "group": "Read & Execute",
         "name": "Finance",
-        "path": "E:\\\\Share\\\\Share\\\\Finance",
+        "path": "E:\\Share\\Share\\Finance",
         "type": "csv"
     },
     "input": {
         "type": "udp"
     },
-    "message": "Read & Execute permissions for This folder, subfolders and files (not inherited) was added to  Everyone on E:\\\\Share\\\\Share\\\\Finance",
+    "message": "Read & Execute permissions for This folder, subfolders and files (not inherited) was added to  Everyone on E:\\Share\\Share\\Finance",
     "observer": {
         "product": "DatAdvantage",
         "vendor": "Varonis Inc.",
