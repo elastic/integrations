@@ -2,19 +2,20 @@
 
 ## 概述
 
-Tencent Cloud 集成旨在将腾讯云的日志无缝接入 Elastic Stack，帮助用户统一存储、分析和可视化云环境中的关键操作数据。
+Tencent Cloud 集成旨在将腾讯云的各种信息无缝接入 Elastic Stack，帮助用户统一存储、分析和可视化云环境中的关键操作数据。
 
-腾讯云审计服务（Tencent Cloud Audit）作为第三方数据源，记录了用户在腾讯云控制台、API 或 SDK 中的所有操作行为，包括创建资源、修改配置、删除实例等。通过此集成，这些审计日志将被 Elastic Agent 采集，并通过 Elasticsearch 进行高效存储与检索，最终在 Kibana 中呈现直观的可视化分析，助力用户实现以下目标：
-- **实时监控云操作**：追踪用户行为，及时发现异常操作或潜在安全风险。
-- **合规性审计**：满足行业合规要求，快速回溯操作历史以应对审计需求。
-- **故障排查与优化**：通过分析操作日志，定位云资源配置或使用中的问题，优化运维流程。
-此集成建立了腾讯云审计服务与 Elastic Stack 的直接连接，利用 Elastic 的可观测性能力，将分散的云审计数据转化为可行动的洞察，帮助用户提升云环境的安全性、可靠性和可管理性。
 
 更多信息，请查看[概述指南](https://www.elastic.co/guide/en/integrations-developer/current/documentation-guidelines.html#idg-docs-guidelines-overview)。
 
 ## 数据流
 
 ### tencent_cloud.audit
+
+该数据流将[腾讯云审计服务](https://cloud.tencent.com/product/cloudaudit)（Tencent Cloud Audit）作为第三方数据源，记录了用户在腾讯云控制台、API 或 SDK 中的所有操作行为，包括创建资源、修改配置、删除实例等。通过此集成，这些审计日志将被 Elastic Agent 采集，并通过 Elasticsearch 进行高效存储与检索，最终在 Kibana 中呈现直观的可视化分析，助力用户实现以下目标：
+- **实时监控云操作**：追踪用户行为，及时发现异常操作或潜在安全风险。
+- **合规性审计**：满足行业合规要求，快速回溯操作历史以应对审计需求。
+- **故障排查与优化**：通过分析操作日志，定位云资源配置或使用中的问题，优化运维流程。
+此集成建立了腾讯云审计服务与 Elastic Stack 的直接连接，利用 Elastic 的可观测性能力，将分散的云审计数据转化为可行动的洞察，帮助用户提升云环境的安全性、可靠性和可管理性。
 
 ## 系统要求
 

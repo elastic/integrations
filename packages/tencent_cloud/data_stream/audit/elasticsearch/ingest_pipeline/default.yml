@@ -129,20 +129,6 @@ processors:
       tag: rename_source_as_organization_name
       field: source.as.organization_name
       target_field: source.as.organization.name
-  - geoip:
-      ignore_missing: true
-      tag: geoip_destination_ip
-      field: destination.ip
-      target_field: destination.geo
-  - geoip:
-      ignore_missing: true
-      tag: geoip_destination_asn
-      database_file: GeoLite2-ASN.mmdb
-      field: destination.ip
-      target_field: destination.as
-      properties:
-        - asn
-        - organization_name
   - rename:
       ignore_missing: true
       tag: rename_destination_as_asn
@@ -161,13 +147,6 @@ processors:
       ignore_failure: true
       field: tencent_cloud.audit.userIdentity
       target_field: tencent_cloud.audit.userIdentity
-  - remove:
-      ignore_failure: true
-      ignore_missing: true
-      if: ctx?.tags == null || !(ctx.tags.contains("preserve_original_event"))
-      tag: remove_original_event
-      field:       
-        - "event.original"
   - set:
       field: event.kind
       tag: set_pipeline_error_in_event_kind
