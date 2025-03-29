@@ -197,22 +197,22 @@ An example event for `events` looks as following:
 {
     "@timestamp": "2024-12-18T06:20:30.293664Z",
     "agent": {
-        "ephemeral_id": "5abb69a8-ddf6-4183-85e6-4c5dc16b40c8",
-        "id": "96096f94-2c43-4deb-8ef2-292de44aaa2c",
-        "name": "elastic-agent-58235",
+        "ephemeral_id": "920f9920-8f63-4e75-8954-c607677767db",
+        "id": "7162dd52-4341-4ce2-982e-fbb07184d1b5",
+        "name": "elastic-agent-23914",
         "type": "filebeat",
         "version": "8.15.0"
     },
     "data_stream": {
         "dataset": "tenable_ot_security.events",
-        "namespace": "61781",
+        "namespace": "72817",
         "type": "logs"
     },
     "ecs": {
         "version": "8.11.0"
     },
     "elastic_agent": {
-        "id": "96096f94-2c43-4deb-8ef2-292de44aaa2c",
+        "id": "7162dd52-4341-4ce2-982e-fbb07184d1b5",
         "snapshot": false,
         "version": "8.15.0"
     },
@@ -223,7 +223,7 @@ An example event for `events` looks as following:
         ],
         "dataset": "tenable_ot_security.events",
         "id": "f84bb6c7-464c-4fa8-b177-69ed2f328696",
-        "ingested": "2025-03-21T11:56:21Z",
+        "ingested": "2025-03-29T20:16:19Z",
         "kind": "event",
         "module": "tenable_ot_security",
         "type": [
@@ -611,22 +611,22 @@ An example event for `system_log` looks as following:
 {
     "@timestamp": "2024-06-24T22:03:44.998273Z",
     "agent": {
-        "ephemeral_id": "20d97574-97ec-42e4-a36f-c46bcd495f48",
-        "id": "e0074c5e-8ca6-4ab2-acd3-ea519ca6fb5a",
-        "name": "elastic-agent-59630",
+        "ephemeral_id": "5d11323c-2cde-42c4-9a82-2a558bc0c3bf",
+        "id": "90539c43-4a14-4dba-ad9f-7738d03e5f46",
+        "name": "elastic-agent-60082",
         "type": "filebeat",
         "version": "8.15.0"
     },
     "data_stream": {
         "dataset": "tenable_ot_security.system_log",
-        "namespace": "69917",
+        "namespace": "50314",
         "type": "logs"
     },
     "ecs": {
         "version": "8.11.0"
     },
     "elastic_agent": {
-        "id": "e0074c5e-8ca6-4ab2-acd3-ea519ca6fb5a",
+        "id": "90539c43-4a14-4dba-ad9f-7738d03e5f46",
         "snapshot": false,
         "version": "8.15.0"
     },
@@ -636,7 +636,7 @@ An example event for `system_log` looks as following:
             "iam"
         ],
         "dataset": "tenable_ot_security.system_log",
-        "ingested": "2025-03-21T12:00:04Z",
+        "ingested": "2025-03-29T20:29:56Z",
         "kind": "event",
         "module": "tenable_ot_security",
         "type": [

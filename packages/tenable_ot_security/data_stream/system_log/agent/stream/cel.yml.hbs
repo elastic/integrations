@@ -30,7 +30,11 @@ program: |-
   			"query": state.query,
   			"variables": {
   				"first": state.limit,
-  				"filter": {"field": "timestamp", "op": "GreaterEqual", "values": state.?cursor.end_time.orValue(timestamp(now() - duration(state.initial_interval)).format(time_layout.RFC3339))},
+  				"filter": {
+  					"field": "timestamp",
+  					"op": "GreaterEqual",
+  					"values": state.?cursor.end_time.orValue(timestamp(now() - duration(state.initial_interval)).format(time_layout.RFC3339)),
+  				},
   				"sort": {"field": "timestamp", "direction": "AscNullFirst"},
   			},
   		}.encode_json(),
@@ -49,7 +53,9 @@ program: |-
   								optional.none(),
   						}
   					),
-  					"cursor": {"end_time": (size(nodes) > 0) ? nodes[size(nodes) - 1].timeStamp : state.?cursor.end_time},
+  					"cursor": {
+  						"end_time": (size(nodes) > 0) ? nodes[size(nodes) - 1].timeStamp : state.?cursor.end_time,
+  					},
   					"want_more": body.data.systemLog.pageInfo.hasNextPage,
   				}
   			)
@@ -76,8 +82,8 @@ state:
   limit: {{limit}}
   initial_interval: {{initial_interval}}
   query: >-
-    query getSystemLogs($first: Int, $after: String, $filter: SystemLogExpressionsParams, $sort: [SystemLogSortParams!]) {
-      systemLog(first: $first, after: $after, filter: $filter, sort: $sort) {
+    query getSystemLogs($first: Int, $filter: SystemLogExpressionsParams, $sort: [SystemLogSortParams!]) {
+      systemLog(first: $first, filter: $filter, sort: $sort) {
         pageInfo {
           hasNextPage
           endCursor
