@@ -14,7 +14,7 @@ The Elastic integration for [Tenable OT Security](https://www.tenable.com/produc
 ## Requirements
 
 ### Access, setup and data
-Login into Tenable's cloud platform to generate a unique set of API keys for each user account. These keys allow applications to authenticate to Tenable's API without creating a session.
+Log in to Tenable's cloud platform to generate an API key. This key allows applications to authenticate with Tenable's API without requiring a session.
 
 
 ### Steps to Generate an API Key
