@@ -625,7 +625,6 @@ An example event for `organization` looks as following:
     },
     "mongodb_atlas": {
         "organization": {
-            "access_list_entry": "sample.user@example.com",
             "additional_info": {
                 "_t": "RESOURCE_AUDIT",
                 "cid": "663087fcc4818d301a53af06",
@@ -742,7 +741,6 @@ Please refer to the following [document](https://www.elastic.co/guide/en/ecs/cur
 | data_stream.namespace | Data stream namespace. | constant_keyword |
 | data_stream.type | Data stream type. | constant_keyword |
 | input.type | Type of Filebeat input. | keyword |
-| mongodb_atlas.organization.access_list_entry | Access list entry of the API Key targeted by the event. | keyword |
 | mongodb_atlas.organization.additional_info | Additional meta information about the event. Only present when includeRaw query parameter is true. | flattened |
 | mongodb_atlas.organization.alert.config.id | Unique identifier for the alert configuration associated with the alertId. | keyword |
 | mongodb_atlas.organization.alert.id | Unique identifier for the alert associated with this event. | keyword |
@@ -767,6 +765,7 @@ Please refer to the following [document](https://www.elastic.co/guide/en/ecs/cur
 | mongodb_atlas.organization.target.username | Username for the Cloud Manager user targeted by this event. | keyword |
 | mongodb_atlas.organization.target_public_key | Public key of the API Key targeted by the event. | keyword |
 | mongodb_atlas.organization.team.id | Unique identifier for the Cloud Manager team associated with this event. | keyword |
+| mongodb_atlas.organization.whitelist_entry | Entry in the list of source host addresses that the API key accepts and this event targets. | keyword |
 
 
 ### Project
@@ -952,7 +951,7 @@ Please refer to the following [document](https://www.elastic.co/guide/en/ecs/cur
 | mongodb_atlas.project.target_public_key | Public key of the API Key targeted by the event. | keyword |
 | mongodb_atlas.project.target_user.email | Email address for the console user that this event targets. | keyword |
 | mongodb_atlas.project.team.id | Unique identifier for the Cloud Manager team associated with this event. | keyword |
-| mongodb_atlas.project.white_list_entry | Entry in the list of source host addresses that the API key accepts and this event targets. | keyword |
+| mongodb_atlas.project.whitelist_entry | Entry in the list of source host addresses that the API key accepts and this event targets. | keyword |
 
 
 ## Metrics reference

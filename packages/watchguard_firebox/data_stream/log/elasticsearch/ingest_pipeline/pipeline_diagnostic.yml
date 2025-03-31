@@ -600,8 +600,8 @@ processors:
   - grok:
       field: watchguard_firebox.log.body
       patterns:
-        - '^%{DATA:watchguard_firebox.log.vpn_user_type} %{WORD:watchguard_firebox.log.user_name} logged in. Virtual IP address is %{IP:watchguard_firebox.log.virtual_ip_address}. Real IP address is %{IP:watchguard_firebox.log.real_ip_address}.$'
-        - '^%{DATA:watchguard_firebox.log.vpn_user_type} %{WORD:watchguard_firebox.log.user_name} logged off. Virtual IP address is %{IP:watchguard_firebox.log.virtual_ip_address}.$'
+        - '^%{DATA:watchguard_firebox.log.vpn_user_type} (?:%{USERNAME:watchguard_firebox.log.user_name}|%{EMAILADDRESS:watchguard_firebox.log.user_email}) logged in. Virtual IP address is %{IP:watchguard_firebox.log.virtual_ip_address}. Real IP address is %{IP:watchguard_firebox.log.real_ip_address}.$'
+        - '^%{DATA:watchguard_firebox.log.vpn_user_type} (?:%{USERNAME:watchguard_firebox.log.user_name}|%{EMAILADDRESS:watchguard_firebox.log.user_email}) logged off. Virtual IP address is %{IP:watchguard_firebox.log.virtual_ip_address}.$'
       if: ctx.watchguard_firebox?.log?.msg_id != null && ['2500-0000','2500-0001'].contains(ctx.watchguard_firebox.log.msg_id)
       tag: grok_for_message_id_2500-0000_2500-0001
       ignore_failure: true
@@ -1177,6 +1177,11 @@ processors:
       tag: set_destination_ip_from_log_virtual_ip_address
       copy_from: watchguard_firebox.log.virtual_ip_address
       ignore_empty_value: true
+  - set:
+      field: user.email
+      tag: set_user_email_from_log_user_email
+      copy_from: watchguard_firebox.log.user_email
+      ignore_empty_value: true
   - gsub:
       field: watchguard_firebox.log.mac
       tag: gsub_watchguard_firebox_log_mac
@@ -1283,6 +1288,12 @@ processors:
       value: '{{{watchguard_firebox.log.user_name}}}'
       allow_duplicates: false
       if: ctx.watchguard_firebox?.log?.user_name != null
+  - append:
+      field: related.user
+      tag: append_log_user_email_into_related_user
+      value: '{{{watchguard_firebox.log.user_email}}}'
+      allow_duplicates: false
+      if: ctx.watchguard_firebox?.log?.user_email != null
   - date:
       field: watchguard_firebox.log.next_update_time
       target_field: watchguard_firebox.log.next_update_time
@@ -1336,6 +1347,7 @@ processors:
         - watchguard_firebox.log.server_name
         - watchguard_firebox.log.source_ip
         - watchguard_firebox.log.source_port
+        - watchguard_firebox.log.user_email
         - watchguard_firebox.log.user_name
         - watchguard_firebox.log.virtual_ip_address
       tag: remove_custom_duplicate_fields

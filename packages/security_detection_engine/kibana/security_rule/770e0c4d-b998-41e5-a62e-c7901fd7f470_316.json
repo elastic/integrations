@@ -1,0 +1,164 @@
+{
+    "attributes": {
+        "author": [
+            "Elastic"
+        ],
+        "description": "Identifies native Windows host and network enumeration commands spawned by the Windows Management Instrumentation Provider Service (WMIPrvSE).",
+        "from": "now-9m",
+        "index": [
+            "endgame-*",
+            "logs-crowdstrike.fdr*",
+            "logs-endpoint.events.process-*",
+            "logs-m365_defender.event-*",
+            "logs-sentinel_one_cloud_funnel.*",
+            "logs-system.security*",
+            "logs-windows.forwarded*",
+            "logs-windows.sysmon_operational-*",
+            "winlogbeat-*"
+        ],
+        "language": "eql",
+        "license": "Elastic License v2",
+        "name": "Enumeration Command Spawned via WMIPrvSE",
+        "note": "## Triage and analysis\n\n> **Disclaimer**:\n> This investigation guide was created using generative AI technology and has been reviewed to improve its accuracy and relevance. While every effort has been made to ensure its quality, we recommend validating the content and adapting it to suit your specific environment and operational needs.\n\n### Investigating Enumeration Command Spawned via WMIPrvSE\n\nWindows Management Instrumentation (WMI) is a powerful framework for managing data and operations on Windows systems. Adversaries exploit WMI to execute enumeration commands stealthily, leveraging the WMI Provider Service (WMIPrvSE) to gather system and network information. The detection rule identifies suspicious command executions initiated by WMIPrvSE, focusing on common enumeration tools while excluding benign use cases, thus highlighting potential malicious activity.\n\n### Possible investigation steps\n\n- Review the process command line details to understand the specific enumeration command executed and its arguments, focusing on the process.command_line field.\n- Investigate the parent process to confirm it is indeed WMIPrvSE by examining the process.parent.name field, ensuring the execution context aligns with potential misuse of WMI.\n- Check the user context under which the process was executed to determine if it aligns with expected administrative activity or if it suggests unauthorized access.\n- Correlate the event with other logs or alerts from the same host to identify any preceding or subsequent suspicious activities, such as lateral movement or privilege escalation attempts.\n- Assess the network activity from the host around the time of the alert to identify any unusual outbound connections or data exfiltration attempts.\n- Verify if the process execution is part of a known and legitimate administrative task or script by consulting with system administrators or reviewing change management records.\n\n### False positive analysis\n\n- Routine administrative tasks using WMI may trigger the rule, such as network configuration checks or system diagnostics. To manage this, identify and exclude specific command patterns or arguments that are part of regular maintenance.\n- Security tools like Tenable may use WMI for legitimate scans, which can be mistaken for malicious activity. Exclude processes with arguments related to known security tools, such as \"tenable_mw_scan\".\n- Automated scripts or scheduled tasks that perform system enumeration for inventory or monitoring purposes can cause false positives. Review and whitelist these scripts by excluding their specific command lines or parent processes.\n- Certain enterprise applications may use WMI for legitimate operations, such as querying system information. Identify these applications and create exceptions based on their process names or command line arguments.\n- Regular use of network utilities by IT staff for troubleshooting can be flagged. Implement exclusions for known IT user accounts or specific command line patterns used during these activities.\n\n### Response and remediation\n\n- Isolate the affected system from the network to prevent further unauthorized access or data exfiltration.\n- Terminate any suspicious processes identified as being spawned by WMIPrvSE, especially those matching the enumeration tools listed in the detection query.\n- Conduct a thorough review of recent WMI activity on the affected system to identify any additional unauthorized or suspicious commands executed.\n- Reset credentials for any accounts that may have been compromised or used in the suspicious activity to prevent further unauthorized access.\n- Restore the system from a known good backup if any malicious activity is confirmed and cannot be remediated through other means.\n- Implement additional monitoring on the affected system and network to detect any recurrence of similar suspicious activities.\n- Escalate the incident to the security operations center (SOC) or incident response team for further investigation and to determine if the threat has spread to other systems.",
+        "query": "process where host.os.type == \"windows\" and event.type == \"start\" and process.command_line != null and\n  process.name:\n  (\n    \"arp.exe\", \"dsquery.exe\", \"dsget.exe\", \"gpresult.exe\", \"hostname.exe\", \"ipconfig.exe\", \"nbtstat.exe\",\n    \"net.exe\", \"net1.exe\", \"netsh.exe\", \"netstat.exe\", \"nltest.exe\", \"ping.exe\", \"qprocess.exe\", \"quser.exe\",\n    \"qwinsta.exe\", \"reg.exe\", \"sc.exe\", \"systeminfo.exe\", \"tasklist.exe\", \"tracert.exe\", \"whoami.exe\"\n  ) and\n  process.parent.name:\"wmiprvse.exe\" and\n  not (\n    process.name : \"sc.exe\" and process.args : \"RemoteRegistry\" and process.args : \"start=\" and\n    process.args : (\"demand\", \"disabled\")\n  ) and\n  not process.args : \"tenable_mw_scan\"\n",
+        "related_integrations": [
+            {
+                "package": "endpoint",
+                "version": "^8.2.0"
+            },
+            {
+                "package": "windows",
+                "version": "^2.0.0"
+            },
+            {
+                "package": "system",
+                "version": "^1.6.4"
+            },
+            {
+                "package": "m365_defender",
+                "version": "^2.0.0"
+            },
+            {
+                "package": "sentinel_one_cloud_funnel",
+                "version": "^1.0.0"
+            },
+            {
+                "package": "crowdstrike",
+                "version": "^1.1.0"
+            }
+        ],
+        "required_fields": [
+            {
+                "ecs": true,
+                "name": "event.type",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "host.os.type",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "process.args",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "process.command_line",
+                "type": "wildcard"
+            },
+            {
+                "ecs": true,
+                "name": "process.name",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "process.parent.name",
+                "type": "keyword"
+            }
+        ],
+        "risk_score": 21,
+        "rule_id": "770e0c4d-b998-41e5-a62e-c7901fd7f470",
+        "severity": "low",
+        "tags": [
+            "Domain: Endpoint",
+            "OS: Windows",
+            "Use Case: Threat Detection",
+            "Tactic: Execution",
+            "Data Source: Elastic Endgame",
+            "Data Source: Elastic Defend",
+            "Data Source: Windows Security Event Logs",
+            "Data Source: Microsoft Defender for Endpoint",
+            "Data Source: Sysmon",
+            "Data Source: SentinelOne",
+            "Data Source: Crowdstrike",
+            "Resources: Investigation Guide"
+        ],
+        "threat": [
+            {
+                "framework": "MITRE ATT&CK",
+                "tactic": {
+                    "id": "TA0002",
+                    "name": "Execution",
+                    "reference": "https://attack.mitre.org/tactics/TA0002/"
+                },
+                "technique": [
+                    {
+                        "id": "T1047",
+                        "name": "Windows Management Instrumentation",
+                        "reference": "https://attack.mitre.org/techniques/T1047/"
+                    }
+                ]
+            },
+            {
+                "framework": "MITRE ATT&CK",
+                "tactic": {
+                    "id": "TA0007",
+                    "name": "Discovery",
+                    "reference": "https://attack.mitre.org/tactics/TA0007/"
+                },
+                "technique": [
+                    {
+                        "id": "T1016",
+                        "name": "System Network Configuration Discovery",
+                        "reference": "https://attack.mitre.org/techniques/T1016/",
+                        "subtechnique": [
+                            {
+                                "id": "T1016.001",
+                                "name": "Internet Connection Discovery",
+                                "reference": "https://attack.mitre.org/techniques/T1016/001/"
+                            }
+                        ]
+                    },
+                    {
+                        "id": "T1018",
+                        "name": "Remote System Discovery",
+                        "reference": "https://attack.mitre.org/techniques/T1018/"
+                    },
+                    {
+                        "id": "T1057",
+                        "name": "Process Discovery",
+                        "reference": "https://attack.mitre.org/techniques/T1057/"
+                    },
+                    {
+                        "id": "T1087",
+                        "name": "Account Discovery",
+                        "reference": "https://attack.mitre.org/techniques/T1087/"
+                    },
+                    {
+                        "id": "T1518",
+                        "name": "Software Discovery",
+                        "reference": "https://attack.mitre.org/techniques/T1518/"
+                    }
+                ]
+            }
+        ],
+        "timestamp_override": "event.ingested",
+        "type": "eql",
+        "version": 316
+    },
+    "id": "770e0c4d-b998-41e5-a62e-c7901fd7f470_316",
+    "type": "security-rule"
+}

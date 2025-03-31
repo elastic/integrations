@@ -261,6 +261,16 @@ processors:
       target_field: ti_crowdstrike.ioc.tags
       ignore_missing: true
   - rename:
+      field: json.value
+      tag: rename_value
+      target_field: ti_crowdstrike.ioc.value
+      ignore_missing: true
+  - set:
+      field: threat.indicator.name
+      tag: set_threat_indicator_name
+      copy_from: ti_crowdstrike.ioc.value
+      ignore_empty_value: true
+  - rename:
       field: json.type
       tag: rename_type
       target_field: ti_crowdstrike.ioc.type
@@ -280,22 +290,27 @@ processors:
       source: >
         String mapping = params[ctx.ti_crowdstrike.ioc.type];
         if (mapping != null) {
-           ctx.threat.indicator.type = mapping;
+          ctx.threat.indicator.type = mapping;
+          // IP values are handled below to allow conversion checks.
+          if (ctx.ti_crowdstrike.ioc.type == 'domain') {
+            ctx.threat.indicator.url = ctx.threat.indicator.url ?: [:];
+            ctx.threat.indicator.url.domain = ctx.ti_crowdstrike?.ioc.value;
+          } else if (mapping == 'file') {
+            ctx.threat.indicator.file = ctx.threat.indicator.file ?: [:];
+            ctx.threat.indicator.file.hash = ctx.threat.indicator.file.hash ?: [:];
+            if (ctx.ti_crowdstrike.ioc.type == 'md5') {
+              ctx.threat.indicator.file.hash.md5 = ctx.ti_crowdstrike?.ioc.value;
+            } else if (ctx.ti_crowdstrike.ioc.type == 'sha256') {
+              ctx.threat.indicator.file.hash.sha256 = ctx.ti_crowdstrike?.ioc.value;
+            } else if (ctx.ti_crowdstrike.ioc.type == 'sha1') {
+              ctx.threat.indicator.file.hash.sha1 = ctx.ti_crowdstrike?.ioc.value;
+            }
+          }
         }
       on_failure:
         - append:
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
-  - rename:
-      field: json.value
-      tag: rename_value
-      target_field: ti_crowdstrike.ioc.value
-      ignore_missing: true
-  - set:
-      field: threat.indicator.name
-      tag: set_threat_indicator_name
-      copy_from: ti_crowdstrike.ioc.value
-      ignore_empty_value: true
   - convert:
       field: ti_crowdstrike.ioc.value
       tag: convert_ioc_value_to_ip

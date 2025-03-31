@@ -2,6 +2,11 @@
 
 This integration is for [Microsoft Defender for Endpoint](https://docs.microsoft.com/en-us/microsoft-365/security/defender-endpoint/microsoft-defender-endpoint?view=o365-worldwide) logs.
 
+## Agentless Enabled Integration
+Agentless integrations allow you to collect data without having to manage Elastic Agent in your cloud. They make manual agent deployment unnecessary, so you can focus on your data instead of the agent that collects it. For more information, refer to [Agentless integrations](https://www.elastic.co/guide/en/serverless/current/security-agentless-integrations.html) and the [Agentless integrations FAQ](https://www.elastic.co/guide/en/serverless/current/agentless-integration-troubleshooting.html).
+
+Agentless deployments are only supported in Elastic Serverless and Elastic Cloud environments.  This functionality is in beta and is subject to change. Beta features are not subject to the support SLA of official GA features.
+
 ## Setting up
 
 To allow the integration to ingest data from the Microsoft Defender API, you need to create a new application on your Azure domain. The procedure to create an application is found on the [Create a new Azure Application](https://docs.microsoft.com/en-us/windows/security/threat-protection/microsoft-defender-atp/exposed-apis-create-app-webapp) documentation page.
@@ -47,13 +52,13 @@ An example event for `log` looks as following:
 
 ```json
 {
-    "@timestamp": "2023-09-22T03:31:55.887Z",
+    "@timestamp": "2025-03-19T19:13:02.402Z",
     "agent": {
-        "ephemeral_id": "20bd2ad7-6c7e-4d34-9d55-57edc09ba1a6",
-        "id": "a4d1a8b2-b45c-4d97-a37a-bd371f13111b",
-        "name": "docker-fleet-agent",
+        "ephemeral_id": "3e8ae4b7-8216-4fd8-bc19-3eb5c290bac7",
+        "id": "90e1e801-62b8-4384-b68e-7f872dddc25c",
+        "name": "elastic-agent-57921",
         "type": "filebeat",
-        "version": "8.8.1"
+        "version": "8.17.0"
     },
     "cloud": {
         "account": {
@@ -66,16 +71,16 @@ An example event for `log` looks as following:
     },
     "data_stream": {
         "dataset": "microsoft_defender_endpoint.log",
-        "namespace": "ep",
+        "namespace": "61508",
         "type": "logs"
     },
     "ecs": {
         "version": "8.11.0"
     },
     "elastic_agent": {
-        "id": "a4d1a8b2-b45c-4d97-a37a-bd371f13111b",
+        "id": "90e1e801-62b8-4384-b68e-7f872dddc25c",
         "snapshot": false,
-        "version": "8.8.1"
+        "version": "8.17.0"
     },
     "event": {
         "action": "Execution",
@@ -88,7 +93,7 @@ An example event for `log` looks as following:
         "duration": 101466100,
         "end": "2021-01-26T20:31:33.0577322Z",
         "id": "da637472900382838869_1364969609",
-        "ingested": "2023-09-22T03:31:58Z",
+        "ingested": "2025-03-19T19:13:05Z",
         "kind": "alert",
         "provider": "defender_endpoint",
         "severity": 2,
@@ -109,6 +114,7 @@ An example event for `log` looks as following:
     "message": "Low-reputation arbitrary code executed by signed executable",
     "microsoft": {
         "defender_endpoint": {
+            "assignedTo": "elastic@elasticuser.com",
             "evidence": {
                 "aadUserId": "11118379-2a59-1111-ac3c-a51eb4a3c627",
                 "accountName": "name",

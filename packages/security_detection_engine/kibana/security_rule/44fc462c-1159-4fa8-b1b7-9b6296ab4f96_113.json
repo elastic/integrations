@@ -1,0 +1,109 @@
+{
+    "attributes": {
+        "author": [
+            "Elastic"
+        ],
+        "description": "Windows Credential Manager allows you to create, view, or delete saved credentials for signing into websites, connected applications, and networks. An adversary may abuse this to list or dump credentials stored in the Credential Manager for saved usernames and passwords. This may also be performed in preparation of lateral movement.",
+        "from": "now-9m",
+        "index": [
+            "logs-system.security*",
+            "logs-windows.forwarded*",
+            "winlogbeat-*"
+        ],
+        "language": "eql",
+        "license": "Elastic License v2",
+        "name": "Multiple Vault Web Credentials Read",
+        "note": "## Triage and analysis\n\n> **Disclaimer**:\n> This investigation guide was created using generative AI technology and has been reviewed to improve its accuracy and relevance. While every effort has been made to ensure its quality, we recommend validating the content and adapting it to suit your specific environment and operational needs.\n\n### Investigating Multiple Vault Web Credentials Read\n\nWindows Credential Manager stores credentials for web logins, apps, and networks, facilitating seamless user access. Adversaries exploit this by extracting stored credentials, potentially aiding lateral movement within networks. The detection rule identifies suspicious activity by flagging consecutive credential reads from the same process, excluding benign actions like localhost access, thus highlighting potential credential dumping attempts.\n\n### Possible investigation steps\n\n- Review the process associated with the flagged PID to determine if it is a legitimate application or potentially malicious. Check for known software or unusual executables.\n- Investigate the source and destination of the web credentials read by examining the winlog.event_data.Resource field to identify any suspicious or unexpected URLs.\n- Check the winlog.computer_name to identify the affected system and assess whether it is a high-value target or has been involved in previous suspicious activities.\n- Analyze the timeline of events around the alert to identify any preceding or subsequent suspicious activities that may indicate a broader attack pattern.\n- Verify the user context by examining the winlog.event_data.SubjectLogonId to ensure the activity was not performed by a privileged or administrative account without proper authorization.\n- Cross-reference the event with other security logs or alerts to identify any correlated activities that might suggest a coordinated attack or compromise.\n\n### False positive analysis\n\n- Localhost access is a common false positive since the rule excludes localhost reads. Ensure that any legitimate applications accessing credentials via localhost are properly whitelisted to prevent unnecessary alerts.\n- Automated scripts or applications that frequently access web credentials for legitimate purposes may trigger the rule. Identify these processes and create exceptions for them to reduce noise.\n- System maintenance or updates might involve credential reads that are benign. Coordinate with IT teams to schedule these activities and temporarily adjust the rule sensitivity or add exceptions during these periods.\n- Security tools or monitoring software that perform regular checks on credential integrity could be flagged. Verify these tools and add them to an exception list if they are part of the organization's security infrastructure.\n- User behavior such as frequent password changes or credential updates might cause alerts. Educate users on the impact of their actions and consider adjusting the rule to accommodate expected behavior patterns.\n\n### Response and remediation\n\n- Isolate the affected system from the network to prevent potential lateral movement by the adversary.\n- Terminate the suspicious process identified by the process ID (pid) involved in the credential reads to stop further credential access.\n- Conduct a thorough review of the affected system for any additional signs of compromise, such as unauthorized user accounts or scheduled tasks.\n- Change passwords for any accounts that may have been exposed, focusing on those stored in the Windows Credential Manager.\n- Implement network segmentation to limit access to critical systems and data, reducing the risk of lateral movement.\n- Escalate the incident to the security operations center (SOC) or incident response team for further investigation and to determine the scope of the breach.\n- Enhance monitoring and logging on the affected system and similar endpoints to detect any future attempts at credential dumping or unauthorized access.",
+        "query": "sequence by winlog.computer_name, winlog.process.pid with maxspan=1s\n\n /* 2 consecutive vault reads from same pid for web creds */\n\n [any where event.code : \"5382\" and\n  (winlog.event_data.SchemaFriendlyName : \"Windows Web Password Credential\" and winlog.event_data.Resource : \"http*\") and\n  not winlog.event_data.SubjectLogonId : \"0x3e7\" and\n  not winlog.event_data.Resource : \"http://localhost/\"]\n\n [any where event.code : \"5382\" and\n  (winlog.event_data.SchemaFriendlyName : \"Windows Web Password Credential\" and winlog.event_data.Resource : \"http*\") and\n  not winlog.event_data.SubjectLogonId : \"0x3e7\" and\n  not winlog.event_data.Resource : \"http://localhost/\"]\n",
+        "references": [
+            "https://www.ultimatewindowssecurity.com/securitylog/encyclopedia/event.aspx?eventid=5382",
+            "https://www.elastic.co/security-labs/detect-credential-access"
+        ],
+        "related_integrations": [
+            {
+                "package": "system",
+                "version": "^1.6.4"
+            },
+            {
+                "package": "windows",
+                "version": "^2.0.0"
+            }
+        ],
+        "required_fields": [
+            {
+                "ecs": true,
+                "name": "event.code",
+                "type": "keyword"
+            },
+            {
+                "ecs": false,
+                "name": "winlog.computer_name",
+                "type": "keyword"
+            },
+            {
+                "ecs": false,
+                "name": "winlog.event_data.Resource",
+                "type": "unknown"
+            },
+            {
+                "ecs": false,
+                "name": "winlog.event_data.SchemaFriendlyName",
+                "type": "unknown"
+            },
+            {
+                "ecs": false,
+                "name": "winlog.event_data.SubjectLogonId",
+                "type": "keyword"
+            },
+            {
+                "ecs": false,
+                "name": "winlog.process.pid",
+                "type": "long"
+            }
+        ],
+        "risk_score": 47,
+        "rule_id": "44fc462c-1159-4fa8-b1b7-9b6296ab4f96",
+        "severity": "medium",
+        "tags": [
+            "Domain: Endpoint",
+            "OS: Windows",
+            "Use Case: Threat Detection",
+            "Tactic: Credential Access",
+            "Data Source: Windows Security Event Logs",
+            "Resources: Investigation Guide"
+        ],
+        "threat": [
+            {
+                "framework": "MITRE ATT&CK",
+                "tactic": {
+                    "id": "TA0006",
+                    "name": "Credential Access",
+                    "reference": "https://attack.mitre.org/tactics/TA0006/"
+                },
+                "technique": [
+                    {
+                        "id": "T1003",
+                        "name": "OS Credential Dumping",
+                        "reference": "https://attack.mitre.org/techniques/T1003/"
+                    },
+                    {
+                        "id": "T1555",
+                        "name": "Credentials from Password Stores",
+                        "reference": "https://attack.mitre.org/techniques/T1555/",
+                        "subtechnique": [
+                            {
+                                "id": "T1555.004",
+                                "name": "Windows Credential Manager",
+                                "reference": "https://attack.mitre.org/techniques/T1555/004/"
+                            }
+                        ]
+                    }
+                ]
+            }
+        ],
+        "type": "eql",
+        "version": 113
+    },
+    "id": "44fc462c-1159-4fa8-b1b7-9b6296ab4f96_113",
+    "type": "security-rule"
+}

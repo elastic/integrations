@@ -1,8 +1,6 @@
 ---
 description: Pipeline for processing self-hosted Atlassian Confluence audit logs.
 processors:
-- drop:
-    if: ctx.json?.entities instanceof List && ctx.json.entities.length == 0
 - set:
     field: _tmp.timestamp
     copy_from: json.timestamp
@@ -83,4 +81,8 @@ on_failure:
     value: pipeline_error
 - append:
     field: error.message
-    value: '{{{ _ingest.on_failure_message }}}'
+    value: >
+      Processor "{{{ _ingest.on_failure_processor_type }}}"
+      with tag "{{{ _ingest.on_failure_processor_tag }}}"
+      in pipeline "{{{ _ingest.on_failure_pipeline }}}"
+      failed with message "{{{ _ingest.on_failure_message }}}"

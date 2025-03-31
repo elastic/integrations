@@ -9,10 +9,14 @@ processors:
       target_field: event.original
       ignore_missing: true
       if: ctx.event?.original == null
+  - remove:
+      field: message
+      ignore_missing: true
+      if: 'ctx.event?.original != null'
+      description: 'The `message` field is no longer required if the document has an `event.original` field.'
   - json:
       field: event.original
       target_field: json
-      ignore_failure: true
   - set:
       field: event.kind
       value: event
@@ -211,11 +215,11 @@ processors:
   - set: 
       field: event.outcome
       value: success
-      if: 'ctx?.google_workspace?.login?.challenge_status != null && ctx?.event?.outcome == null && ctx?.google_workspace?.login?.challenge_status == "Challenge Passed"'
+      if: ctx.event?.outcome == null && ctx.google_workspace?.login?.challenge_status?.toLowerCase()?.contains('passed') == true
   - set: 
       field: event.outcome
       value: failure
-      if: 'ctx?.google_workspace?.login?.challenge_status != null && ctx?.event?.outcome == null'
+      if: 'ctx.google_workspace?.login?.challenge_status != null && ctx.event?.outcome == null'
   - script:
       lang: painless
       if: 'ctx?.google_workspace?.login?.affected_email_address != null && ctx?.google_workspace?.login?.affected_email_address.contains("@")'
@@ -274,4 +278,7 @@ on_failure:
       allow_duplicates: false
   - append:
       field: error.message
-      value: '{{{ _ingest.on_failure_message }}}'
+      value: >-
+        Processor '{{{ _ingest.on_failure_processor_type }}}'
+        {{{#_ingest.on_failure_processor_tag}}}with tag '{{{ _ingest.on_failure_processor_tag }}}'
+        {{{/_ingest.on_failure_processor_tag}}}failed with message '{{{ _ingest.on_failure_message }}}'

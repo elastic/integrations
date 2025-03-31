@@ -91,6 +91,12 @@ processors:
       field: azure.platformlogs.resourceId
       target_field: azure.resource_id
       ignore_missing: true
+      if : ctx?.azure?.resource_id == null
+  - rename:
+      field: azure.platformlogs.ResourceId
+      target_field: azure.resource_id
+      ignore_missing: true
+      if : ctx?.azure?.resource_id == null
   - rename:
       field: azure.platformlogs.Region
       target_field: cloud.region
@@ -148,8 +154,9 @@ processors:
   - convert:
       field: azure.platformlogs.durationMs
       target_field: event.duration
-      type: integer
+      type: long
       ignore_missing: true
+      ignore_failure: true
       if: "ctx?.azure?.platformlogs?.durationMs != null && ctx?.azure?.platformlogs?.durationMs instanceof String"
   - remove:
       field: azure.platformlogs.durationMs
@@ -284,6 +291,7 @@ processors:
   - set:
       field: event.kind
       value: event
+      ignore_failure: true
   - pipeline:
       name: '{{ IngestPipeline "azure-shared-pipeline" }}'
   - pipeline:

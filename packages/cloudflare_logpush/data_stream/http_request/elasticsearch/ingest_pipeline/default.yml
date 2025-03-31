@@ -338,6 +338,8 @@ processors:
       field: cloudflare_logpush.http_request.client.request.protocol
       patterns:
         - "^%{DATA:network.protocol}/%{DATA:http.version}$"
+      ignore_missing: true
+      ignore_failure: true
   - lowercase:
       field: network.protocol
       ignore_missing: true
@@ -374,10 +376,10 @@ processors:
       target_field: cloudflare_logpush.http_request.client.ssl.protocol
       ignore_missing: true
   - grok:
-      if: ctx.json?.cloudflare_logpush?.http_request?.client?.ssl?.protocol != 'none'
       field: cloudflare_logpush.http_request.client.ssl.protocol
       patterns:
         - "^%{DATA:tls.version_protocol}v%{DATA:tls.version}$"
+      ignore_missing: true
       ignore_failure: true
   - lowercase:
       field: tls.version_protocol

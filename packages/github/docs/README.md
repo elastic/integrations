@@ -1,6 +1,6 @@
 # GitHub Integration
 
-The GitHub integration collects events from the [GitHub API](https://docs.github.com/en/rest ).
+The GitHub integration collects events from the [GitHub API](https://docs.github.com/en/rest) and Azure Eventhub.
 
 ## Logs
 
@@ -23,10 +23,14 @@ For Organizations:
   - You must be using GitHub Enterprise Cloud.
   - The organization must be part of an enterprise plan that includes audit log functionality.
 
-Required scopes:
+Github integration can collect audit logs from 2 sources: [Github API](https://docs.github.com/en/enterprise-cloud@latest/admin/monitoring-activity-in-your-enterprise/reviewing-audit-logs-for-your-enterprise/using-the-audit-log-api-for-your-enterprise) and [Azure Event Hubs](https://docs.github.com/en/enterprise-cloud@latest/admin/monitoring-activity-in-your-enterprise/reviewing-audit-logs-for-your-enterprise/streaming-the-audit-log-for-your-enterprise#setting-up-streaming-to-azure-event-hubs).
+
+When using Github API to collect audit log events, below requirements must be met for Personal Access Token (PAT):
  - You must use a Personal Access Token with `read:audit_log` scope. This applies to both organization and enterprise admins.
- - If you're an enterprise admin, ensure your token also includes `admin:enterprise` to access enterprise-wide logs.
- 
+ - If you're an enterprise admin, ensure your token also includes `admin:enterprise` scope to access enterprise-wide logs.
+
+To collect audit log events from Azure Event Hubs, follow the [guide](https://docs.github.com/en/enterprise-cloud@latest/admin/monitoring-activity-in-your-enterprise/reviewing-audit-logs-for-your-enterprise/streaming-the-audit-log-for-your-enterprise#setting-up-streaming-to-azure-event-hubs) to setup audit log streaming. For more details, see [documentation](https://docs.github.com/en/enterprise-cloud@latest/admin/monitoring-activity-in-your-enterprise/reviewing-audit-logs-for-your-enterprise/streaming-the-audit-log-for-your-enterprise).
+
 *This integration is not compatible with GitHub Enterprise server.*
 
 **Exported fields**
@@ -39,20 +43,76 @@ Required scopes:
 | data_stream.type | Data stream type. | constant_keyword |
 | event.dataset | Event dataset | constant_keyword |
 | event.module | Event module | constant_keyword |
+| github.active |  | boolean |
+| github.actor_id | The id of the actor who performed the action. | keyword |
 | github.actor_ip | The IP address of the entity performing the action. | ip |
+| github.actor_is_bot |  | boolean |
+| github.actor_location.country_name |  | keyword |
+| github.actor_location.ip |  | ip |
+| github.audit_log_stream_enabled |  | boolean |
+| github.audit_log_stream_id |  | keyword |
+| github.audit_log_stream_sink |  | keyword |
+| github.audit_log_stream_sink_details |  | keyword |
+| github.blocked_user | The username of the account being blocked. | keyword |
+| github.business |  | keyword |
+| github.business_id |  | keyword |
 | github.category | GitHub action category. | keyword |
+| github.changes.billing_plan |  | keyword |
+| github.changes.roles |  | keyword |
+| github.commit_id |  | keyword |
+| github.data.event |  | keyword |
+| github.data.head_branch |  | keyword |
+| github.data.head_sha |  | keyword |
+| github.data.started_at |  | date |
+| github.data.trigger_id |  | keyword |
+| github.data.workflow_id |  | keyword |
+| github.data.workflow_run_id |  | keyword |
+| github.device |  | keyword |
+| github.events |  | keyword |
+| github.events_object |  | object |
+| github.forked_repository |  | keyword |
 | github.hashed_token | SHA-256 hash of the token used for authentication. | keyword |
+| github.hook_id |  | keyword |
 | github.integration | The GitHub App that triggered the event. | keyword |
+| github.login_method |  | keyword |
+| github.logout_reason |  | keyword |
+| github.message |  | keyword |
+| github.name |  | keyword |
+| github.new_role |  | keyword |
+| github.old_role |  | keyword |
+| github.operation_type |  | keyword |
 | github.org | GitHub organization name. | keyword |
+| github.org_id |  | keyword |
 | github.permission | GitHub user permissions for the event. | keyword |
 | github.programmatic_access_type | Type of authentication used. | keyword |
+| github.public_repo |  | boolean |
+| github.pull_request_id |  | keyword |
+| github.pull_request_title |  | keyword |
+| github.pull_request_url |  | keyword |
+| github.reason |  | keyword |
 | github.repo | GitHub repository name. | keyword |
+| github.repo_id |  | keyword |
+| github.repositories_added |  | keyword |
 | github.repositories_added_names | The name of the repository added to a GitHub App installation. | keyword |
+| github.repositories_removed |  | keyword |
 | github.repositories_removed_names | The name of the repository removed from a GitHub App installation. | keyword |
+| github.repository | The name of the repository. | keyword |
 | github.repository_public | Whether the GitHub repository is publicly visible. | boolean |
 | github.repository_selection | Whether all repositories have been selected or there's a selection involved. | keyword |
+| github.request_category |  | keyword |
+| github.secrets_updated |  | keyword |
+| github.source_branch |  | keyword |
+| github.target_branch |  | keyword |
 | github.team | GitHub team name. | keyword |
+| github.token_id |  | keyword |
+| github.token_scopes |  | keyword |
+| github.topic |  | keyword |
+| github.transport_protocol | The type of protocol (for example, HTTP or SSH) used to transfer Git data. | long |
+| github.transport_protocol_name | A human readable name for the protocol (for example, HTTP or SSH) used to transfer Git data. | keyword |
 | github.user_agent | The user agent of the entity performing the action. | keyword |
+| github.user_id |  | keyword |
+| github.version |  | keyword |
+| github.visibility | The repository visibility, for example `public` or `private`. | keyword |
 | host.containerized | If the host is a container. | boolean |
 | host.os.build | OS build information. | keyword |
 | host.os.codename | OS codename, if any. | keyword |
@@ -65,24 +125,24 @@ An example event for `audit` looks as following:
 {
     "@timestamp": "2020-11-18T17:05:48.837Z",
     "agent": {
-        "ephemeral_id": "9246e7d9-fcc1-46ab-b3fd-2d0888f2a94d",
-        "id": "ad5c3ec8-3015-4cd2-a269-a2f3df062a2c",
-        "name": "docker-fleet-agent",
+        "ephemeral_id": "00ee9264-c5fd-4eb4-ba61-2650d7b10b86",
+        "id": "c513f872-2125-47f8-92f4-e79f206aeaf7",
+        "name": "elastic-agent-20844",
         "type": "filebeat",
-        "version": "8.12.0"
+        "version": "8.13.0"
     },
     "data_stream": {
         "dataset": "github.audit",
-        "namespace": "ep",
+        "namespace": "80528",
         "type": "logs"
     },
     "ecs": {
         "version": "8.11.0"
     },
     "elastic_agent": {
-        "id": "ad5c3ec8-3015-4cd2-a269-a2f3df062a2c",
+        "id": "c513f872-2125-47f8-92f4-e79f206aeaf7",
         "snapshot": false,
-        "version": "8.12.0"
+        "version": "8.13.0"
     },
     "event": {
         "action": "repo.destroy",
@@ -91,10 +151,10 @@ An example event for `audit` looks as following:
             "configuration",
             "web"
         ],
-        "created": "2024-01-18T15:58:09.826Z",
+        "created": "2025-03-18T07:21:56.275Z",
         "dataset": "github.audit",
         "id": "LwW2vpJZCDS-WUmo9Z-ifw",
-        "ingested": "2024-01-18T15:58:19Z",
+        "ingested": "2025-03-18T07:21:57Z",
         "kind": "event",
         "original": "{\"@timestamp\":1605719148837,\"_document_id\":\"LwW2vpJZCDS-WUmo9Z-ifw\",\"action\":\"repo.destroy\",\"actor\":\"monalisa\",\"created_at\":1605719148837,\"org\":\"mona-org\",\"repo\":\"mona-org/mona-test-repo\",\"visibility\":\"private\"}",
         "type": [
@@ -104,7 +164,8 @@ An example event for `audit` looks as following:
     "github": {
         "category": "repo",
         "org": "mona-org",
-        "repo": "mona-org/mona-test-repo"
+        "repo": "mona-org/mona-test-repo",
+        "visibility": "private"
     },
     "input": {
         "type": "httpjson"

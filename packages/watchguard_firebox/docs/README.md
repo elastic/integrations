@@ -555,6 +555,7 @@ An example event for `log` looks as following:
 | watchguard_firebox.log.updated_role |  | keyword |
 | watchguard_firebox.log.user_auth_protocol |  | keyword |
 | watchguard_firebox.log.user_domain |  | keyword |
+| watchguard_firebox.log.user_email |  | keyword |
 | watchguard_firebox.log.user_name |  | keyword |
 | watchguard_firebox.log.user_response_time |  | date |
 | watchguard_firebox.log.user_type |  | keyword |

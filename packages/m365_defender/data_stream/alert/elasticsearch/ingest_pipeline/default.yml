@@ -15,6 +15,11 @@ processors:
       target_field: event.original
       ignore_missing: true
       if: ctx.event?.original == null
+  - remove:
+      field: message
+      ignore_missing: true
+      if: 'ctx.event?.original != null'
+      description: 'The `message` field is no longer required if the document has an `event.original` field.'
   - json:
       field: event.original
       tag: json_event_original
@@ -643,24 +648,24 @@ processors:
           ignore_missing: true
   - foreach:
       field: json.evidence
-      tag: foreach_rename_evidence_internetMessageId
+      tag: foreach_append_evidence_internetMessageId
       if: ctx.json?.evidence instanceof List
       processor:
-        rename:
-          field: _ingest._value.internetMessageId
-          tag: rename_foreach_evidence_internetMessageId
-          target_field: _ingest._value.internet_message_id
-          ignore_missing: true
+        append:
+          field: email.message_id
+          tag: append_foreach_evidence_email_message_id
+          value: '{{{_ingest._value.internetMessageId}}}'
+          allow_duplicates: false
   - foreach:
       field: json.evidence
-      tag: foreach_rename_evidence_networkMessageId
+      tag: foreach_append_evidence_networkMessageId
       if: ctx.json?.evidence instanceof List
       processor:
-        rename:
-          field: _ingest._value.networkMessageId
-          tag: rename_foreach_evidence_networkMessageId
-          target_field: _ingest._value.network_message_id
-          ignore_missing: true
+        append:
+          field: email.local_id
+          tag: append_foreach_evidence_email_local_id
+          value: '{{{_ingest._value.networkMessageId}}}'
+          allow_duplicates: false
   - foreach:
       field: json.evidence
       tag: foreach_dot_expander_evidence_p1Sender
@@ -763,6 +768,16 @@ processors:
           allow_duplicates: false
   - foreach:
       field: json.evidence
+      tag: foreach_evidence_append_email_sender_address
+      if: ctx.json?.evidence instanceof List
+      processor:
+        append:
+          field: email.sender.address
+          tag: append_foreach_evidence_email_sender_address
+          value: '{{{_ingest._value.p1_sender.email_address}}}'
+          allow_duplicates: false
+  - foreach:
+      field: json.evidence
       tag: foreach_append_evidence_related_user_p1sender_emailaddress
       if: ctx.json?.evidence instanceof List
       processor:
@@ -858,6 +873,16 @@ processors:
             - append:
                 field: error.message
                 value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - foreach:
+      field: json.evidence
+      tag: foreach_evidence_append_source_ip_sender_ip
+      if: ctx.json?.evidence instanceof List
+      processor:
+        append:
+          field: source.ip
+          tag: append_foreach_evidence_source_ip_sender_ip
+          value: '{{{_ingest._value.sender_ip}}}'
+          allow_duplicates: false
   - foreach:
       field: json.evidence
       tag: foreach_evidence_append_related_ip_sender_ip
@@ -2447,6 +2472,8 @@ processors:
             - _ingest._value.processId
             - _ingest._value.imageFile.fileSize
             - _ingest._value.parentProcessImageFile.fileSize
+            - _ingest._value.internetMessageId
+            - _ingest._value.networkMessageId
           ignore_missing: true
   - rename:
       field: json.evidence

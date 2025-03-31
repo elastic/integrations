@@ -20,26 +20,26 @@ processors:
         - append:
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
-
-  - rename:
-      field: o365.metrics.subscriptions.accountId
-      target_field: o365.metrics.subscriptions.account_id
-      ignore_missing: true
-
-  - rename:
-      field: o365.metrics.subscriptions.accountName
-      target_field: o365.metrics.subscriptions.account_name
-      ignore_missing: true
-
-  - rename:
-      field: o365.metrics.subscriptions.appliesTo
-      target_field: o365.metrics.subscriptions.applies_to
-      ignore_missing: true
-
-  - rename:
-      field: o365.metrics.subscriptions.capabilityStatus
-      target_field: o365.metrics.subscriptions.capability_status
-      ignore_missing: true
+  - script:
+      lang: painless
+      description: Replace spaces, dashes and bom character in field names under o365.metrics.subscriptions.
+      tag: painless_purge_spaces_and_dashes
+      ignore_failure: true
+      if: ctx.o365.metrics?.subscriptions instanceof Map
+      source: |
+        String underscore(String s) {
+          def regex = /_?([a-z])([A-Z]+)/;
+          s = regex.matcher(s).replaceAll('$1_$2').toLowerCase();
+          String result = /[ -]/.matcher(s).replaceAll('_').toLowerCase();
+          String result1 = /[\ufeff]/.matcher(result).replaceAll('');
+          return /[()]/.matcher(result1).replaceAll('')
+        }
+        
+        def out = [:];
+        for (def item : ctx.o365.metrics.subscriptions.entrySet()) {
+          out[underscore(item.getKey())] = item.getValue();
+        }
+        ctx.o365.metrics.subscriptions = out;
 
 # Convert consumedUnits to long
   - convert:
@@ -55,23 +55,8 @@ processors:
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
 
   - rename:
-      field: o365.metrics.subscriptions.consumedUnits
+      field: o365.metrics.subscriptions.consumed_units
       target_field: o365.metrics.subscriptions.consumed_units.count
-      ignore_missing: true
-
-  - rename:
-      field: o365.metrics.subscriptions.skuId
-      target_field: o365.metrics.subscriptions.sku_id
-      ignore_missing: true
-
-  - rename:
-      field: o365.metrics.subscriptions.skuPartNumber
-      target_field: o365.metrics.subscriptions.sku_part_number
-      ignore_missing: true
-
-  - rename:
-      field: o365.metrics.subscriptions.subscriptionIds
-      target_field: o365.metrics.subscriptions.subscription_ids
       ignore_missing: true
 
 # Convert prepaidUnits.enabled to long
@@ -115,22 +100,22 @@ processors:
 
 # Rename fields under prepaidUnits
   - rename:
-      field: o365.metrics.subscriptions.prepaidUnits.enabled
+      field: o365.metrics.subscriptions.prepaid_units.enabled
       target_field: o365.metrics.subscriptions.prepaid_units.enabled.count
       ignore_missing: true
 
   - rename:
-      field: o365.metrics.subscriptions.prepaidUnits.lockedOut
+      field: o365.metrics.subscriptions.prepaid_units.lockedOut
       target_field: o365.metrics.subscriptions.prepaid_units.locked_out.count
       ignore_missing: true
 
   - rename:
-      field: o365.metrics.subscriptions.prepaidUnits.suspended
+      field: o365.metrics.subscriptions.prepaid_units.suspended
       target_field: o365.metrics.subscriptions.prepaid_units.suspended.count
       ignore_missing: true
 
   - rename:
-      field: o365.metrics.subscriptions.prepaidUnits.warning
+      field: o365.metrics.subscriptions.prepaid_units.warning
       target_field: o365.metrics.subscriptions.prepaid_units.warning.count
       ignore_missing: true
 
@@ -139,10 +124,6 @@ processors:
       ignore_missing: true
 
 # Rename fields under servicePlans
-  - rename:
-      field: o365.metrics.subscriptions.servicePlans
-      target_field: o365.metrics.subscriptions.service_plans
-      ignore_missing: true
 
   - foreach:
      field: o365.metrics.subscriptions.service_plans

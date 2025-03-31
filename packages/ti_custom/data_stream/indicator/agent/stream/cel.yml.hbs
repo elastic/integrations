@@ -50,6 +50,10 @@ state:
   password: {{password}}
 {{/if}}
 {{/if}}
+  accept_header: {{accept_header}}
+{{#if content_header}}
+  content_header: {{content_header}}
+{{/if}}
 {{#if limit}}
   limit: {{limit}}
 {{/if}}
@@ -82,8 +86,8 @@ program: |
         ).with(
             {
                 "Header": {
-                    "Content-Type": ["application/taxii+json;version=2.1"],
-                    "Accept": ["application/taxii+json;version=2.1"],
+                    "Accept": [string(state.accept_header)],
+                    ?"Content-Type": state.?content_header.orValue("") != "" ? optional.of([state.content_header]) : optional.none(),
                     "Authorization": (has(state.api_key) && state.api_key != "") ?
                         ["Bearer " + string(state.api_key)]
                     : (state.?username.orValue("") != "" && state.?password.orValue("") != "") ?
@@ -100,6 +104,8 @@ program: |
                             "message": e.encode_json(),
                         }
                     ),
+                    "accept_header": state.accept_header,
+                    "content_header": state.?content_header.orValue(""),
                     "url": state.url,
                     "api_key": state.?api_key.orValue(""),
                     "username": state.?username.orValue(""),

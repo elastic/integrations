@@ -7,7 +7,7 @@ processors:
       ignore_missing: true
   - pipeline:
       name: '{{ IngestPipeline "standard" }}'
-      if: 'ctx?.winlog?.provider_name != null && ["Microsoft-Windows-Eventlog", "Microsoft-Windows-Security-Auditing"].contains(ctx.winlog.provider_name)'
+      if: 'ctx.winlog?.provider_name != null && ["Microsoft-Windows-Eventlog", "Microsoft-Windows-Security-Auditing"].contains(ctx.winlog.provider_name)'
   - gsub:
       field: source.ip
       pattern: '^\[?::ffff:([0-9]+\.[0-9]+\.[0-9]+\.[0-9]+)(?:\](?::[0-9]+)?)?$'
@@ -38,7 +38,7 @@ processors:
       value: '{{source.ip}}'
       allow_duplicates: false
       if: |-
-        ctx?.source?.ip != null &&
+        ctx.source?.ip != null &&
         ctx.source.ip != "-"
   - convert:
       field: winlog.record_id
@@ -56,7 +56,7 @@ processors:
       copy_from: winlog.level
       ignore_empty_value: true
       ignore_failure: true
-      if: ctx?.winlog?.level != ""
+      if: ctx.winlog?.level != ""
   - date:
       field: winlog.time_created
       tag: "time_created_date"
