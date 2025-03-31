@@ -189,18 +189,6 @@ processors:
                 value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - foreach:
       field: prisma_cloud.host.all_compliance.data
-      if: ctx.prisma_cloud?.host?.all_compliance?.data instanceof List && (ctx.tags == null || !(ctx.tags.contains('preserve_duplicate_custom_fields')))
-      ignore_failure: true
-      processor:
-        remove:
-          field:
-            -  _ingest._value.cve
-            -  _ingest._value.severity
-            -  _ingest._value.description
-          tag: remove_prisma_cloud_host_all_compliance_data_fields_ecs_mapped
-          ignore_missing: true
-  - foreach:
-      field: prisma_cloud.host.all_compliance.data
       if: ctx.prisma_cloud?.host?.all_compliance?.data instanceof List
       ignore_failure: true
       processor:
@@ -389,6 +377,20 @@ processors:
             - _ingest._value.layerTime
           tag: foreach_remove_prisma_cloud_host_all_compliance_data_fields
           ignore_missing: true
+  - script:
+      lang: painless
+      tag: remove_prisma_cloud_host_all_compliance_data_except_cve
+      description: Remove generic vulnerability information
+      if: ctx.prisma_cloud?.host?.all_compliance?.data instanceof List
+      source: |-
+        def cves = [];
+        def data = ctx.prisma_cloud.host.all_compliance.data;
+        ctx.prisma_cloud.host.all_compliance.data = ["cve": cves];
+        for (item in data) {
+          if (item.cve != null && item.cve != "") {
+            cves.add(item.cve)
+          }
+        }
   - convert:
       field: prisma_cloud.host.all_compliance.enabled
       tag: convert_prisma_cloud_host_all_compliance_enabled
@@ -909,18 +911,6 @@ processors:
                 value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - foreach:
       field: prisma_cloud.host.compliance_issues.data
-      if: ctx.prisma_cloud?.host?.compliance_issues?.data instanceof List && (ctx.tags == null || !(ctx.tags.contains('preserve_duplicate_custom_fields')))
-      ignore_failure: true
-      processor:
-        remove:
-          field:
-            -  _ingest._value.cve
-            -  _ingest._value.severity
-            -  _ingest._value.description
-          ignore_missing: true
-          tag: remove_compliance_issues_ecs_duplicated_fields
-  - foreach:
-      field: prisma_cloud.host.compliance_issues.data
       if: ctx.prisma_cloud?.host?.compliance_issues?.data instanceof List
       ignore_failure: true
       processor:
@@ -1109,6 +1099,20 @@ processors:
             - _ingest._value.layerTime
           ignore_missing: true
           tag: foreach_prisma_cloud_host_compliance_issues_data_remove
+  - script:
+      lang: painless
+      tag: remove_compliance_issues_data_except_cve
+      description: Remove generic vulnerability information
+      if: ctx.prisma_cloud?.host?.compliance_issues?.data instanceof List
+      source: |-
+        def cves = [];
+        def data = ctx.prisma_cloud.host.compliance_issues.data;
+        ctx.prisma_cloud.host.compliance_issues.data = ["cve": cves];
+        for (item in data) {
+          if (item.cve != null && item.cve != "") {
+            cves.add(item.cve)
+          }
+        }
   - convert:
       field: json.complianceIssuesCount
       tag: convert_complianceIssueCount
@@ -1647,22 +1651,6 @@ processors:
                     value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - foreach:
       field: prisma_cloud.host.history
-      if: ctx.prisma_cloud?.host?.history instanceof List && (ctx.tags == null || !(ctx.tags.contains('preserve_duplicate_custom_fields')))
-      ignore_failure: true
-      processor:
-        foreach:
-          field: _ingest._value.vulnerabilities
-          ignore_failure: true
-          processor:
-            remove:
-              field:
-                -  _ingest._value.cve
-                -  _ingest._value.severity
-                -  _ingest._value.description
-              ignore_missing: true
-              tag: remove_cve_severity_description_fields
-  - foreach:
-      field: prisma_cloud.host.history
       if: ctx.prisma_cloud?.host?.history instanceof List
       ignore_failure: true
       processor:
@@ -1913,6 +1901,22 @@ processors:
                 - _ingest._value.layerTime
               ignore_missing: true
               tag: remove_history_vulnerability_duplicate_fields
+  - script:
+      lang: painless
+      tag: remove_host_history_vulnerabilities_except_cve
+      description: Remove generic vulnerability information
+      if: ctx.prisma_cloud?.host?.history instanceof List
+      source: |-
+        for (historyItem in ctx.prisma_cloud.host.history) {
+          def cves = [];
+          def data = historyItem.vulnerabilities;
+          historyItem.vulnerabilities = ["cve": cves];
+          for (item in data) {
+            if (item.cve != null && item.cve != "") {
+              cves.add(item.cve)
+            }
+          }
+        }
   - rename:
       field: json.hostDevices
       tag: rename_hostDevices
@@ -2300,22 +2304,6 @@ processors:
                     value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - foreach:
       field: prisma_cloud.host.image.history
-      if: ctx.prisma_cloud?.host?.image?.history instanceof List && (ctx.tags == null || !(ctx.tags.contains('preserve_duplicate_custom_fields')))
-      ignore_failure: true
-      processor:
-        foreach:
-          field: _ingest._value.vulnerabilities
-          ignore_failure: true
-          processor:
-            remove:
-              field:
-                -  _ingest._value.cve
-                -  _ingest._value.severity
-                -  _ingest._value.description
-              ignore_missing: true
-              tag: remove_image_history_vulnerabilites_ecs_duplicate_fields
-  - foreach:
-      field: prisma_cloud.host.image.history
       if: ctx.prisma_cloud?.host?.image?.history instanceof List
       ignore_failure: true
       processor:
@@ -2566,6 +2554,22 @@ processors:
                 - _ingest._value.layerTime
               ignore_missing: true
               tag: remove_custom_ecs_mapped_fields
+  - script:
+      lang: painless
+      tag: remove_image_history_vulnerabilites_except_cve
+      description: Remove generic vulnerability information
+      if: ctx.prisma_cloud?.host?.image?.history instanceof List
+      source: |-
+        for (historyItem in ctx.prisma_cloud.host.image.history) {
+          def cves = [];
+          def data = historyItem.vulnerabilities;
+          historyItem.vulnerabilities = ["cve": cves];
+          for (item in data) {
+            if (item.cve != null && item.cve != "") {
+              cves.add(item.cve)
+            }
+          }
+        }
   - rename:
       field: json.image.id
       tag: rename_image_id
@@ -3753,18 +3757,6 @@ processors:
                 value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - foreach:
       field: prisma_cloud.host.vulnerabilities.data
-      if: ctx.prisma_cloud?.host?.vulnerabilities?.data instanceof List && (ctx.tags == null || !(ctx.tags.contains('preserve_duplicate_custom_fields')))
-      ignore_failure: true
-      processor:
-        remove:
-          field:
-            -  _ingest._value.cve
-            -  _ingest._value.severity
-            -  _ingest._value.description
-          ignore_missing: true
-          tag: foreach_remove_ecs_mapped_vulnerabilities_data_fields
-  - foreach:
-      field: prisma_cloud.host.vulnerabilities.data
       if: ctx.prisma_cloud?.host?.vulnerabilities?.data instanceof List
       ignore_failure: true
       processor:
@@ -3953,6 +3945,20 @@ processors:
             - _ingest._value.layerTime
           ignore_missing: true
           tag: foreach_remove_ecs_dupliacte_fields
+  - script:
+      lang: painless
+      tag: remove_host_vulnerabilities_data_except_cve
+      description: Remove generic vulnerability information
+      if: ctx.prisma_cloud?.host?.vulnerabilities?.data instanceof List
+      source: |-
+        def cves = [];
+        def data = ctx.prisma_cloud.host.vulnerabilities.data;
+        ctx.prisma_cloud.host.vulnerabilities.data = ["cve": cves];
+        for (item in data) {
+          if (item.cve != null && item.cve != "") {
+            cves.add(item.cve)
+          }
+        }
   - convert:
       field: json.vulnerabilitiesCount
       tag: convert_vulnerabilitiesCount
