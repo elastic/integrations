@@ -93,41 +93,41 @@ program: |
         }
       }.encode_json()
     ).do_request().as(resp, resp.StatusCode == 200 ?
-        resp.Body.decode_json().as(body, body.?data.configurationFindings.nodes.orValue(null) != null ?
-          {
-            "events": body.data.configurationFindings.nodes.map(e, {
-              "message": e.encode_json(),
-            }),
-            "end_cursor": {
-              ?"value": body.?data.configurationFindings.pageInfo.hasNextPage.orValue(false) ?
-                  body.?data.configurationFindings.pageInfo.endCursor
-                :
-                  optional.none()
-            },
-            "want_more": body.?data.configurationFindings.pageInfo.hasNextPage.orValue(false),
-          }
-        :
-          {
-            "events": [],
-            "want_more": false,
-          }
-        )
+      resp.Body.decode_json().as(body, body.?data.configurationFindings.nodes.orValue(null) != null ?
+        {
+          "events": body.data.configurationFindings.nodes.map(e, {
+            "message": e.encode_json(),
+          }),
+          "end_cursor": {
+            ?"value": body.?data.configurationFindings.pageInfo.hasNextPage.orValue(false) ?
+                body.?data.configurationFindings.pageInfo.endCursor
+              :
+                optional.none()
+          },
+          "want_more": body.?data.configurationFindings.pageInfo.hasNextPage.orValue(false),
+        }
       :
         {
-          "events": {
-            "error": {
-              "code": string(resp.StatusCode),
-              "id": string(resp.Status),
-              "message": "POST " + state.url.trim_right("/") + "/graphql:" + (
-                size(resp.Body) != 0 ?
-                  string(resp.Body)
-                :
-                  string(resp.Status) + ' (' + string(resp.StatusCode) + ')'
-              ),
-            },
-          },
+          "events": [],
           "want_more": false,
         }
+      )
+    :
+      {
+        "events": {
+          "error": {
+            "code": string(resp.StatusCode),
+            "id": string(resp.Status),
+            "message": "POST " + state.url.trim_right("/") + "/graphql:" + (
+              size(resp.Body) != 0 ?
+                string(resp.Body)
+              :
+                string(resp.Status) + ' (' + string(resp.StatusCode) + ')'
+            ),
+          },
+        },
+        "want_more": false,
+      }
     )
   )
 tags:
