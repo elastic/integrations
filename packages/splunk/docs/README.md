@@ -59,11 +59,12 @@ To collect data from the Splunk API, you will need the following information:
 2. In "Search for integrations" top bar, search for `Splunk`.
 3. Select the "Splunk" integration from the search results.
 4. Select "Add Splunk" to add the integration.
-5. Add all the required integration configuration parameters, including the URL, Username, Password, and Search Index, to enable data collection.
+5. Add all the required integration configuration parameters, including the URL, Username, Password, and Splunk Search String, to enable data collection.
 6. Select "Save and continue" to save the integration.
 
 NOTE:
-- The default search index for pulling data from Splunk is set to "notable".
+- Fetching alerts is only supported from the Splunk 'notable' index, which stores security findings.
+- The Splunk search string must begin with the prefix "search".
 - Enable SSL for the Splunk REST API to ensure secure communication when interacting with the API.
 
 ## Logs reference
@@ -80,29 +81,34 @@ An example event for `alert` looks as following:
 {
     "@timestamp": "2025-02-10T06:20:16.000Z",
     "agent": {
-        "ephemeral_id": "22c3cd73-2447-4671-925b-fedccef07686",
-        "id": "416dc6bc-66ed-4c92-9943-09c641651ad5",
-        "name": "elastic-agent-88020",
+        "ephemeral_id": "a8df60c9-368f-4050-9cd2-a5b5ec9ecf9d",
+        "id": "5df62982-7a0a-4415-9c72-0e695c9a4e04",
+        "name": "elastic-agent-81490",
         "type": "filebeat",
         "version": "8.18.0"
     },
     "data_stream": {
         "dataset": "splunk.alert",
-        "namespace": "48422",
+        "namespace": "47839",
         "type": "logs"
+    },
+    "destination": {
+        "ip": [
+            "127.0.0.1"
+        ]
     },
     "ecs": {
         "version": "8.17.0"
     },
     "elastic_agent": {
-        "id": "416dc6bc-66ed-4c92-9943-09c641651ad5",
+        "id": "5df62982-7a0a-4415-9c72-0e695c9a4e04",
         "snapshot": true,
         "version": "8.18.0"
     },
     "event": {
         "agent_id_status": "verified",
         "dataset": "splunk.alert",
-        "ingested": "2025-03-20T12:44:00Z",
+        "ingested": "2025-03-31T09:35:09Z",
         "kind": "alert",
         "original": "{\"_bkt\":\"notable~70~E10E99CE-2B29-4D28-B797-57BEABF6E876\",\"_cd\":\"70:13771\",\"_indextime\":\"1739168416\",\"_raw\":\"1739168412, search_name=\\\"Access - Excessive Failed Logins - Rule\\\", app=\\\"ssl-web\\\", count=\\\"5\\\", ip=\\\"127.0.0.1\\\", dest_count=\\\"1\\\", info_max_time=\\\"1739168100.000000000\\\", info_min_time=\\\"1739164500.000000000\\\", info_search_time=\\\"1739168403.176027000\\\", src=\\\"89.160.20.112\\\", orig_tag=\\\"authentication\\\", orig_tag=\\\"default\\\", orig_tag=\\\"error\\\", orig_tag=\\\"failure\\\", user_count=\\\"1\\\"\",\"_serial\":\"476\",\"_si\":[\"89.160.20.156\",\"notable\"],\"_sourcetype\":\"stash\",\"_time\":\"2025-02-10T11:50:16.000+05:30\",\"host\":\"89.160.20.156\",\"index\":\"notable\",\"linecount\":\"1\",\"source\":\"Access - Excessive Failed Logins - Rule\",\"sourcetype\":\"stash\",\"splunk_server\":\"89.160.20.156\"}",
         "type": [
@@ -110,6 +116,18 @@ An example event for `alert` looks as following:
         ]
     },
     "host": {
+        "geo": {
+            "city_name": "Linköping",
+            "continent_name": "Europe",
+            "country_iso_code": "SE",
+            "country_name": "Sweden",
+            "location": {
+                "lat": 58.4167,
+                "lon": 15.6167
+            },
+            "region_iso_code": "SE-E",
+            "region_name": "Östergötland County"
+        },
         "ip": [
             "89.160.20.156"
         ]
@@ -121,8 +139,7 @@ An example event for `alert` looks as following:
     "related": {
         "ip": [
             "89.160.20.156",
-            "89.160.20.112",
-            "127.0.0.1"
+            "89.160.20.112"
         ]
     },
     "rule": {
@@ -130,8 +147,25 @@ An example event for `alert` looks as following:
     },
     "source": {
         "address": "89.160.20.112",
+        "as": {
+            "number": 29518,
+            "organization": {
+                "name": "Bredband2 AB"
+            }
+        },
+        "geo": {
+            "city_name": "Linköping",
+            "continent_name": "Europe",
+            "country_iso_code": "SE",
+            "country_name": "Sweden",
+            "location": {
+                "lat": 58.4167,
+                "lon": 15.6167
+            },
+            "region_iso_code": "SE-E",
+            "region_name": "Östergötland County"
+        },
         "ip": [
-            "127.0.0.1",
             "89.160.20.112"
         ]
     },
@@ -440,7 +474,7 @@ An example event for `alert` looks as following:
 | splunk.alert.request_id |  | keyword |
 | splunk.alert.result |  | keyword |
 | splunk.alert.risk_other |  | keyword |
-| splunk.alert.risk_score |  | long |
+| splunk.alert.risk_score |  | float |
 | splunk.alert.search_name |  | keyword |
 | splunk.alert.search_title |  | keyword |
 | splunk.alert.service |  | keyword |

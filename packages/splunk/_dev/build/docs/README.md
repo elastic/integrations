@@ -59,11 +59,12 @@ To collect data from the Splunk API, you will need the following information:
 2. In "Search for integrations" top bar, search for `Splunk`.
 3. Select the "Splunk" integration from the search results.
 4. Select "Add Splunk" to add the integration.
-5. Add all the required integration configuration parameters, including the URL, Username, Password, and Search Index, to enable data collection.
+5. Add all the required integration configuration parameters, including the URL, Username, Password, and Splunk Search String, to enable data collection.
 6. Select "Save and continue" to save the integration.
 
 NOTE:
-- The default search index for pulling data from Splunk is set to "notable".
+- Fetching alerts is only supported from the Splunk 'notable' index, which stores security findings.
+- The Splunk search string must begin with the prefix "search".
 - Enable SSL for the Splunk REST API to ensure secure communication when interacting with the API.
 
 ## Logs reference

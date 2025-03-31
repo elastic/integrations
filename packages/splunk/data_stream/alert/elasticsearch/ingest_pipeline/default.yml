@@ -5,6 +5,9 @@ processors:
       field: ecs.version
       tag: set_ecs_version
       value: 8.17.0
+  - drop:
+      description: Ignore want_more placeholder message.
+      if: ctx.message == "want_more"
   - fail:
       tag: data_collection_error
       if: ctx.error?.message != null && ctx.message == null && ctx.event?.original == null
@@ -310,10 +313,6 @@ processors:
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
         - remove:
             field: splunk.alert.cci
-  - geoip:
-      field: host.ip
-      target_field: host.geo
-      ignore_missing: true
   - convert:
       field: splunk.alert.connection_id
       tag: convert_connection_id_to_string
@@ -831,6 +830,32 @@ processors:
       tag: append_temp_host_ip_into_host_ip
       allow_duplicates: false
       if: ctx._temp?.host_ip instanceof String
+  - geoip:
+      field: host.ip
+      target_field: host.geo
+      ignore_missing: true
+  - set:
+      field: source.geo
+      tag: set_source_geo
+      copy_from: host.geo
+      ignore_empty_value: true
+      if: ctx.host?.geo != null
+  - geoip:
+      database_file: GeoLite2-ASN.mmdb
+      field: host.ip
+      target_field: source.as
+      properties:
+        - asn
+        - organization_name
+      ignore_missing: true
+  - rename:
+      field: source.as.asn
+      target_field: source.as.number
+      ignore_missing: true
+  - rename:
+      field: source.as.organization_name
+      target_field: source.as.organization.name
+      ignore_missing: true
   - set:
       field: host.name
       tag: set_host_name_from_alert_host
@@ -1052,11 +1077,31 @@ processors:
         - remove:
             field: splunk.alert.ip
   - append:
-      field: source.ip
-      tag: append_splunk_alert_ip_into_source_ip
+      field: destination.ip
+      tag: append_splunk_alert_ip_into_destination_ip
       value: '{{{splunk.alert.ip}}}'
       allow_duplicates: false
       if: ctx.splunk?.alert?.ip instanceof String
+  - geoip:
+      field: destination.ip
+      target_field: destination.geo
+      ignore_missing: true
+  - geoip:
+      database_file: GeoLite2-ASN.mmdb
+      field: destination.ip
+      target_field: destination.as
+      properties:
+        - asn
+        - organization_name
+      ignore_missing: true
+  - rename:
+      field: destination.as.asn
+      target_field: destination.as.number
+      ignore_missing: true
+  - rename:
+      field: destination.as.organization_name
+      target_field: destination.as.organization.name
+      ignore_missing: true
   - date:
       field: splunk.alert.isotimestamp
       tag: date_isotimestamp
@@ -1319,7 +1364,7 @@ processors:
   - convert:
       field: splunk.alert.risk_score
       tag: convert_risk_score_to_long
-      type: long
+      type: float
       ignore_missing: true
       on_failure:
         - append:
@@ -1327,6 +1372,11 @@ processors:
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
         - remove:
             field: splunk.alert.risk_score
+  - set:
+      field: event.risk_score
+      tag: set_event_risk_score
+      copy_from: splunk.alert.risk_score
+      ignore_empty_value: true
   - convert:
       field: splunk.alert.session_id
       tag: convert_session_id_to_string

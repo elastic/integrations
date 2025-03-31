@@ -27,7 +27,7 @@ redact:
     - password
 program: |
   (
-    state.?sid.orValue("") != "" ?
+    has(state.?next.sid) ?
       state
     :
       (
@@ -54,8 +54,10 @@ program: |
             "Authorization": ["Basic "+base64(state.user+":"+state.password)],
           }
         }).do_request().as(resp, resp.StatusCode == 201 ?
-            bytes(resp.Body).decode_json().as(body, {
-              "sid": body.sid,
+            resp.Body.decode_json().as(body, {
+              "next": {
+                "sid": body.sid,
+              }
             })
           :
             {
@@ -77,23 +79,30 @@ program: |
         )
       ))
   ).as(state, state.with(
-      // If more pages are still needs to be fetched.
-    state.?dispatchState.orValue("") == "DONE" || !has(state.sid) ?
+    // If more pages are still needs to be fetched.
+    state.?next.dispatchState == optional.of("DONE") || !has(state.?next.sid) ?
       {
         "batch_size": state.batch_size,
         "offset": state.offset,
-        ?"dispatchState": state.?dispatchState,
+        "next": {
+          ?"dispatchState": state.?next.dispatchState,
+          ?"sid": state.?next.sid,
+        }
       }
-    : // To check the status of the search id if it is completed or not.
+    :
+      // To check the status of the search id if it is completed or not.
       request("GET",
-        state.url.trim_right("/") + "/services/search/v2/jobs/" + state.sid + "?output_mode=json"
+        state.url.trim_right("/") + "/services/search/v2/jobs/" + string(state.next.sid) + "?output_mode=json"
       ).with({
         "Header":{
           "Authorization": ["Basic "+base64(state.user+":"+state.password)],
         }
       }).do_request().as(resp, resp.StatusCode == 200 ?
-          bytes(resp.Body).decode_json().as(body,{
-            "dispatchState": body.entry.size() == 0 ? "" : body.entry[0].content.dispatchState,
+          resp.Body.decode_json().as(body,{
+            "next": {
+              ?"dispatchState": body.entry[?0].content.dispatchState,
+              ?"sid": state.?next.sid,
+            },
             "batch_size": state.batch_size,
             "offset": state.offset,
           })
@@ -103,7 +112,7 @@ program: |
               "error": {
                 "code": string(resp.StatusCode),
                 "id": string(resp.Status),
-                "message": "GET " + state.url.trim_right("/") + "/services/search/v2/jobs/" + state.sid + ":" + (
+                "message": "GET " + state.url.trim_right("/") + "/services/search/v2/jobs/" + string(state.next.sid) + ":" + (
                   size(resp.Body) != 0 ?
                     string(resp.Body)
                   :
@@ -119,10 +128,9 @@ program: |
   ).as(state, state.with(
     has(state.?events.error) ?
     	state
-    : (state.?dispatchState.orValue("") == "DONE") ?
-      // To fetch the events from the respective search id.
+    : (state.?next.dispatchState == optional.of("DONE")) ? // To fetch the events from the respective search id.
         request("GET",
-          state.url.trim_right("/") + "/services/search/v2/jobs/" + state.sid + "/events?"+ {
+          state.url.trim_right("/") + "/services/search/v2/jobs/" + string(state.next.sid) + "/events?"+ {
             "output_mode": ["json"],
             "count": [string(state.batch_size)],
             "offset": [string(state.offset)],
@@ -147,8 +155,10 @@ program: |
                 :
                   state.?cursor.last_timestamp
               },
-              "sid": body.results.size() == state.batch_size ? state.sid : "",
-              "dispatchState": body.results.size() == state.batch_size ? state.dispatchState : "",
+              "next": {
+                ?"sid": body.results.size() == state.batch_size ? optional.of(state.next.sid) : optional.none(),
+                ?"dispatchState": body.results.size() == state.batch_size ? optional.of(state.next.dispatchState) : optional.none(),
+              },
               "batch_size": state.batch_size,
               "offset": body.results.size() == state.batch_size ? int(state.offset) + body.results.size() : 0,
               "want_more": body.results.size() == state.batch_size,
@@ -173,12 +183,14 @@ program: |
         )
         :
           {
-            "events": [{}],
+            "events": [{"message": "want_more"}],
             "want_more": true,
-            "sid": state.?sid.orValue(""),
+            "next": {
+              ?"sid": state.?next.sid,
+              ?"dispatchState": state.?next.dispatchState,
+            },
             "batch_size": state.batch_size,
             "offset": state.offset,
-            "dispatchState": state.?dispatchState.orValue(""),
           }
     )
   )
