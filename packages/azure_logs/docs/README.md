@@ -7,7 +7,7 @@ Use the integration to collect logs from:
 * Azure services that support exporting logs to Event Hubs
 * Any other source that can send logs to an Event Hubs
 
-## Event Hub Processor v2 ✨
+## Event Hub Processor v2
 
 The Custom Azure Logs integration offers a new processor v2 starting with version 0.3.0.
 
