@@ -80,7 +80,7 @@ _Managers_, _Unit Managers_, _Scanners_, _Readers_ have permission to download v
 ### To collect data through REST API, follow the below steps:
 
 - Considering you already have a Qualys user account, to identify your Qualys platform and get the API URL, refer this [link](https://www.qualys.com/platform-identification/).
-- Alternative way to get the API URL is to log in to your Qualys account and go to Help > About. You’ll find your URL under Security Operations Center (SOC).
+- Alternative way to get the API URL is to log in to your Qualys account and go to Help > About. You’ll find your URL under Security Operations Center (SOC). 
 
 ### Enabling the integration in Elastic:
 
