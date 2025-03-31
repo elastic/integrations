@@ -64,7 +64,7 @@ processors:
           ctx.tenable_ot_security.events = keysToSnakeCase(ctx.tenable_ot_security.events);
         }
   - script:
-      description: "Recursively normalize every occurrence of 'nodes' in the assets structure."
+      description: "Recursively normalize every occurrence of 'nodes'."
       lang: painless
       source: |
         def normalize(def obj) {
@@ -132,28 +132,55 @@ processors:
       copy_from: tenable_ot_security.events.id
       ignore_empty_value: true
 
+  - convert:
+      field: tenable_ot_security.events.src_ip
+      type: ip
+      if: ctx.tenable_ot_security.events?.src_ip != null && ctx.tenable_ot_security.events.src_ip != ''
+      ignore_missing: true
+
   - append:
-      field: related.hosts
+      field: source.ip
       value: '{{{tenable_ot_security.events.src_ip}}}'
       if: ctx.tenable_ot_security.events?.src_ip != null || ctx.tenable_ot_security.events.src_ip != ''  
       allow_duplicates: false
 
+  - convert:
+      field: tenable_ot_security.events.dst_ip
+      type: ip
+      if: ctx.tenable_ot_security.events?.dst_ip != null && ctx.tenable_ot_security.events.dst_ip != ''
+      ignore_missing: true
+
   - append:
-      field: related.hosts
+      field: destination.ip
       value: '{{{tenable_ot_security.events.dst_ip}}}'
       if: ctx.tenable_ot_security.events?.dst_ip != null || ctx.tenable_ot_security.events?.dst_ip != ''   
       allow_duplicates: false 
   
+
+  - script:
+      source: |
+        def events = ctx?.tenable_ot_security?.events;
+        if (events != null) {
+          if (events.dst_mac != null) {
+            events.dst_mac = events.dst_mac.replace(":", "-").toUpperCase();
+          }
+          if (events.src_mac != null) {
+            events.src_mac = events.src_mac.replace(":", "-").toUpperCase();
+          }
+          def srcInterface = events.src_interface;
+          if (srcInterface?.mac != null) {
+            srcInterface.mac = srcInterface.mac.replace(":", "-").toUpperCase();
+          }
+        }
+
   - append:
-      field: related.hosts
-      value: '{{{tenable_ot_security.events.src_mac}}}'
-      if: ctx.tenable_ot_security.events?.src_mac != null || ctx.tenable_ot_security.events?.src_mac != ''
+      field: destination.mac
+      value: '{{{tenable_ot_security.events.dst_mac}}}'
       allow_duplicates: false
 
   - append:
-      field: related.hosts
-      value: '{{{tenable_ot_security.events.dst_mac}}}'  
-      if: ctx.tenable_ot_security.events?.dst_mac != null || ctx.tenable_ot_security?.events.dst_mac != ''   
+      field: source.mac
+      value: '{{{tenable_ot_security.events.src_mac}}}'
       allow_duplicates: false 
 
   - append:
@@ -167,11 +194,7 @@ processors:
       allow_duplicates: false  
   
 # #################### Override host.ip ######################
-  - convert:
-      field: tenable_ot_security.events.src_ip
-      type: ip
-      if: ctx.tenable_ot_security.events?.src_ip != null && ctx.tenable_ot_security.events.src_ip != ''
-      ignore_missing: true
+
 
   - append:
       field: host.ip

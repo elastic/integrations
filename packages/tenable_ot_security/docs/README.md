@@ -189,22 +189,30 @@ An example event for `events` looks as following:
 {
     "@timestamp": "2024-12-18T06:20:30.293664Z",
     "agent": {
-        "ephemeral_id": "920f9920-8f63-4e75-8954-c607677767db",
-        "id": "7162dd52-4341-4ce2-982e-fbb07184d1b5",
-        "name": "elastic-agent-23914",
+        "ephemeral_id": "334e0119-bece-4fad-8b95-13cfc5d18d08",
+        "id": "359ca9fb-3ffd-4b3d-a3e2-1a4f9c2199cc",
+        "name": "elastic-agent-64799",
         "type": "filebeat",
         "version": "8.15.0"
     },
     "data_stream": {
         "dataset": "tenable_ot_security.events",
-        "namespace": "72817",
+        "namespace": "78671",
         "type": "logs"
+    },
+    "destination": {
+        "ip": [
+            ""
+        ],
+        "mac": [
+            "00-50-56-BD-67-66"
+        ]
     },
     "ecs": {
         "version": "8.11.0"
     },
     "elastic_agent": {
-        "id": "7162dd52-4341-4ce2-982e-fbb07184d1b5",
+        "id": "359ca9fb-3ffd-4b3d-a3e2-1a4f9c2199cc",
         "snapshot": false,
         "version": "8.15.0"
     },
@@ -215,13 +223,14 @@ An example event for `events` looks as following:
         ],
         "dataset": "tenable_ot_security.events",
         "id": "f84bb6c7-464c-4fa8-b177-69ed2f328696",
-        "ingested": "2025-03-29T20:16:19Z",
+        "ingested": "2025-03-31T18:04:38Z",
         "kind": "event",
         "module": "tenable_ot_security",
         "type": [
             "info"
         ]
     },
+    "event.original": "{\"category\":\"NetworkEvents\",\"comment\":null,\"completion\":\"CompletionUnknown\",\"continuous\":false,\"dstIP\":null,\"dstInterface\":null,\"dstMac\":\"00:50:56:BD:67:66\",\"dstNames\":{\"nodes\":[]},\"eventType\":{\"actions\":[\"Syslog\",\"Email\"],\"canCapture\":false,\"category\":\"NetworkEvents\",\"description\":\"Asset Not Seen for 1 Hour\",\"exclusion\":\"Asset\",\"family\":null,\"group\":\"InactiveNetworkInterfaceEvent\",\"schema\":\"AssetSchema\",\"type\":\"InactiveAssetOneHour\"},\"hasDetails\":true,\"hitId\":\"f84bb6c7-464c-4fa8-b177-69ed2f328696\",\"id\":\"f84bb6c7-464c-4fa8-b177-69ed2f328696\",\"logId\":4165781,\"payloadSize\":0,\"policy\":{\"actions\":{\"nodes\":[]},\"aggregatedEventsCount\":{\"last24h\":0,\"last30d\":20059,\"last7d\":3458},\"archived\":false,\"continuous\":false,\"disableAfterHit\":false,\"disabled\":false,\"eventTypeDetails\":{\"actions\":[\"Syslog\",\"Email\"],\"canCapture\":false,\"category\":\"NetworkEvents\",\"description\":\"Asset Not Seen for 1 Hour\",\"exclusion\":\"Asset\",\"family\":null,\"group\":\"InactiveNetworkInterfaceEvent\",\"schema\":\"AssetSchema\",\"type\":\"InactiveAssetOneHour\"},\"exclusions\":{\"nodes\":[]},\"id\":\"bd04e427-3af1-4111-87b0-60ecfffa516b\",\"index\":164,\"key\":\"P3-1\",\"lastModifiedBy\":null,\"lastModifiedDate\":null,\"level\":\"Low\",\"paused\":false,\"portGroup\":null,\"protocolGroup\":null,\"ruleGroup\":null,\"schedule\":{\"group\":{\"archived\":false,\"id\":\"d9342125-4728-43da-9e12-3b96661d40f5\",\"key\":\"PG4-2\",\"lastModifiedBy\":null,\"lastModifiedDate\":null,\"name\":\"Any Time\",\"system\":true,\"type\":\"Function\",\"usageInfo\":{\"editable\":false,\"used\":true},\"usedInRestrictions\":false},\"negate\":false},\"schema\":\"AssetSchema\",\"snapshot\":false,\"system\":true,\"tagGroup\":null,\"title\":\"Asset Not Seen for 1 Hour\",\"valueGroup\":null},\"port\":null,\"protocol\":\"Unknown\",\"protocolNiceName\":null,\"protocolRaw\":\"UNKNOWN\",\"resolved\":false,\"resolvedTs\":null,\"resolvedUser\":null,\"severity\":\"Low\",\"srcIP\":\"172.26.22.1\",\"srcInterface\":{\"dnsNames\":{\"nodes\":[]},\"family\":\"VMware\",\"firstSeen\":\"2024-06-25T17:19:17.949295Z\",\"id\":\"349bd5ea-59f8-4585-b407-601cb7f55ec7\",\"ipTrail\":{\"nodes\":[{\"endTime\":null,\"ip\":\"172.26.22.1\",\"isActive\":true,\"startTime\":\"2024-06-25T17:19:17.949295Z\"}]},\"ips\":{\"nodes\":[{\"dnsNames\":{\"nodes\":[]},\"ip\":\"172.26.22.1\",\"openPorts\":{\"inOnDemandScan\":false,\"ports\":{\"nodes\":[]},\"scannedOnce\":false}}]},\"lastSeen\":\"2025-03-08T05:00:03.145012Z\",\"mac\":\"00:50:56:bd:65:66\"},\"srcMac\":\"00:50:56:bd:65:66\",\"srcNames\":{\"nodes\":[\"NPW-PT1-WINXP32\"]},\"time\":\"2024-12-18T06:20:30.293664Z\",\"type\":\"InactiveAssetOneHour\"}",
     "host": {
         "ip": [
             "172.26.22.1"
@@ -236,13 +245,16 @@ An example event for `events` looks as following:
         ]
     },
     "related": {
-        "hosts": [
-            "172.26.22.1",
-            "",
-            "00:50:56:bd:65:66"
-        ],
         "user": [
             ""
+        ]
+    },
+    "source": {
+        "ip": [
+            "172.26.22.1"
+        ],
+        "mac": [
+            "00-50-56-BD-65-66"
         ]
     },
     "tags": [
@@ -255,6 +267,7 @@ An example event for `events` looks as following:
             "category": "NetworkEvents",
             "completion": "CompletionUnknown",
             "continuous": false,
+            "dst_mac": "00-50-56-BD-67-66",
             "event_type": {
                 "actions": [
                     "Syslog",
@@ -347,10 +360,10 @@ An example event for `events` looks as following:
                     }
                 ],
                 "last_seen": "2025-03-08T05:00:03.145012Z",
-                "mac": "00:50:56:bd:65:66"
+                "mac": "00-50-56-BD-65-66"
             },
             "src_ip": "172.26.22.1",
-            "src_mac": "00:50:56:bd:65:66",
+            "src_mac": "00-50-56-BD-65-66",
             "src_names": [
                 "NPW-PT1-WINXP32"
             ],

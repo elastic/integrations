@@ -89,8 +89,18 @@ processors:
       value: tenable_ot_security.system_log
 
   - set:
+     field: "message"
+     copy_from: tenable_ot_security.system_log.message
+     ignore_empty_value: true
+
+  - set:
      field: "@timestamp"
      copy_from: tenable_ot_security.system_log.time_stamp
+     ignore_empty_value: true
+
+  - set:
+     field: "user.name"
+     value: "{{{tenable_ot_security.system_log.user_name}}}"
      ignore_empty_value: true
      
   - append:
