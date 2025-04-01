@@ -29,7 +29,8 @@ Following Microsoft 365 Graph Reports can be collected by Microsoft Office 365 M
 | [Subscriptions](https://learn.microsoft.com/en-us/graph/api/resources/subscribedsku?view=graph-rest-1.0?view=o365-worldwide)                                                 |    [reportRoot: subscribedSkus](https://learn.microsoft.com/en-us/graph/api/subscribedsku-list?view=graph-rest-1.0&tabs=http)    |   Microsoft 365 Subscriptions metrics   |   No aggregation  |
 | [Teamms Call Quality](https://learn.microsoft.com/en-us/graph/api/resources/communications-api-overview?view=graph-rest-1.0?view=o365-worldwide)                                                 |    [reportRoot: callRecords](https://learn.microsoft.com/en-us/graph/api/callrecords-callrecord-list-sessions?view=graph-rest-1.0&tabs=http)    |   Microsoft 365 Teams Call Quality metrics   |   No aggregation  |
 | Tenant Settings | [organization](https://learn.microsoft.com/en-us/graph/api/resources/organization?view=graph-rest-1.0), [adminReportSettings](https://learn.microsoft.com/en-us/graph/api/resources/adminreportsettings?view=graph-rest-1.0) | Microsoft 365 Tenant Settings | No aggregation | Organization.Read.All, ReportSettings.Read.All
-| Entra App Registrations                                                |    [applications](https://learn.microsoft.com/en-us/graph/api/application-list?view=graph-rest-1.0&tabs=http)    |   Microsoft 365 Entra App Registrations   |   No aggregation  |
+| [Entra App Registrations](https://learn.microsoft.com/en-us/graph/api/resources/application?view=graph-rest-1.0) |    [List Applications](https://learn.microsoft.com/en-us/graph/api/application-list?view=graph-rest-1.0&tabs=http)    |   Microsoft 365 Entra App Registrations   |   No aggregation  | Application.Read.All, User.Read
+
 
 ## Setup
 
@@ -2861,47 +2862,53 @@ Please refer to the following [document](https://www.elastic.co/guide/en/ecs/cur
 | o365.metrics.teams.call.quality.start_date_time | The start date and time of the call | date |
 
 
-### Entra App Registrations
+### App Registrations
 
 Get details about apps registered in Microsoft Entra ID. [Microsoft API](https://learn.microsoft.com/en-us/graph/api/application-list?view=graph-rest-1.0&tabs=http).
 
-An example event for `entra_app_registrations` looks as following:
+An example event for `app_registrations` looks as following:
 
 ```json
 {
     "o365": {
         "metrics": {
-            "entra_app": {
+            "app_registrations": {
+                "password_credentials": [],
                 "key_credentials": [
                     {
-                        "end_date_time": "2024-11-09T13:55:10Z",
-                        "key_id": "20d576ea23c6a9a4",
+                        "end_date_time": "2025-12-11T16:00:58Z",
+                        "key_id": "3ed58-9891-4e90-9bff-79c53f",
                         "usage": "Verify",
                         "type": "AsymmetricX509Cert",
-                        "display_name": "CN=EXert"
+                        "display_name": "CN=EXO_Crt"
                     }
                 ],
-                "id": "64d86-56cb-4877-acc2-89a874bc",
-                "display_name": "EXVVO_Appq2",
-                "app_id": "7db25d-9a16-4b80-b48c-1352a2c7b0"
+                "display_name": "EXO_App25",
+                "app_id": "1751-f2ed-40c6-a377-e99f9",
+                "object_id": "e80-e1f8-403d-82c1-e9731"
             }
         }
     },
     "agent": {
         "name": "docker-fleet-agent",
         "id": "254cb83f-8607-4e3d-9335-62c3347b6bb7",
-        "ephemeral_id": "8649d56f-6a0e-4511-8b34-b6a52851a0a5",
         "type": "filebeat",
+        "ephemeral_id": "666b1531-7008-48d7-8fcd-232e0975d75a",
         "version": "8.16.0"
     },
-    "@timestamp": "2025-03-25T11:11:03.475Z",
+    "@timestamp": "2025-04-01T07:35:54.313Z",
     "ecs": {
         "version": "8.16.0"
     },
     "data_stream": {
         "namespace": "default",
         "type": "metrics",
-        "dataset": "o365_metrics.entra_app_registrations"
+        "dataset": "o365_metrics.app_registrations"
+    },
+    "elastic_agent": {
+        "id": "254cb83f-8607-4e3d-9335-62c3347b6bb7",
+        "version": "8.16.0",
+        "snapshot": false
     },
     "host": {
         "hostname": "docker-fleet-agent",
@@ -2909,6 +2916,7 @@ An example event for `entra_app_registrations` looks as following:
             "kernel": "5.10.104-linuxkit",
             "name": "Wolfi",
             "type": "linux",
+            "family": "",
             "version": "20230201",
             "platform": "wolfi"
         },
@@ -2922,16 +2930,11 @@ An example event for `entra_app_registrations` looks as following:
         ],
         "architecture": "aarch64"
     },
-    "elastic_agent": {
-        "id": "254cb83f-8607-4e3d-9335-62c3347b6bb7",
-        "version": "8.16.0",
-        "snapshot": false
-    },
     "event": {
         "agent_id_status": "verified",
-        "ingested": "2025-03-25T11:11:04Z",
+        "ingested": "2025-04-01T07:35:55Z",
         "kind": "metric",
-        "dataset": "o365_metrics.entra_app_registrations"
+        "dataset": "o365_metrics.app_registrations"
     },
     "tags": [
         "o365.metrics.entra.app.registrations"
@@ -2955,14 +2958,14 @@ Please refer to the following [document](https://www.elastic.co/guide/en/ecs/cur
 | host.containerized | If the host is a container. | boolean |
 | host.os.build | OS build information. | keyword |
 | host.os.codename | OS codename, if any. | keyword |
-| o365.metrics.entra_app.app_id | The unique identifier for the application that is assigned to an application by Microsoft Entra ID. | keyword |
-| o365.metrics.entra_app.display_name | The display name for the application. | keyword |
-| o365.metrics.entra_app.id | Unique identifier for the application object. | keyword |
-| o365.metrics.entra_app.key_credentials.display_name | The friendly name for the key. | keyword |
-| o365.metrics.entra_app.key_credentials.end_date_time | The date and time at which the credential expires. | date |
-| o365.metrics.entra_app.key_credentials.key_id | The unique identifier for the key. | keyword |
-| o365.metrics.entra_app.key_credentials.type | The type of key credential; for example, Symmetric, AsymmetricX509Cert. | keyword |
-| o365.metrics.entra_app.key_credentials.usage | A string that describes the purpose for which the key can be used; for example, Verify. | keyword |
-| o365.metrics.entra_app.password_credentials.display_name | Friendly name for the password. | keyword |
-| o365.metrics.entra_app.password_credentials.end_date_time | The date and time at which the password expires. | date |
-| o365.metrics.entra_app.password_credentials.key_id | The unique identifier for the password. | keyword |
+| o365.metrics.app_registrations.app_id | The unique identifier for the application that is assigned to an application by Microsoft Entra ID. | keyword |
+| o365.metrics.app_registrations.display_name | The display name for the application. | keyword |
+| o365.metrics.app_registrations.key_credentials.display_name | The friendly name for the key. | keyword |
+| o365.metrics.app_registrations.key_credentials.end_date_time | The date and time at which the credential expires. | date |
+| o365.metrics.app_registrations.key_credentials.key_id | The unique identifier for the key. | keyword |
+| o365.metrics.app_registrations.key_credentials.type | The type of key credential; for example, Symmetric, AsymmetricX509Cert. | keyword |
+| o365.metrics.app_registrations.key_credentials.usage | A string that describes the purpose for which the key can be used; for example, Verify. | keyword |
+| o365.metrics.app_registrations.object_id | Unique identifier for the application object. | keyword |
+| o365.metrics.app_registrations.password_credentials.display_name | Friendly name for the password. | keyword |
+| o365.metrics.app_registrations.password_credentials.end_date_time | The date and time at which the password expires. | date |
+| o365.metrics.app_registrations.password_credentials.key_id | The unique identifier for the password. | keyword |

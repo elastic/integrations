@@ -88,15 +88,34 @@ program: |
         resp.StatusCode == 200
         ?
           bytes(resp.Body).decode_json().as(body, {
-          "events": body.value.map(app,
-              {
-                "id": app.id,
+          "events": body.value.map(app,{
+             "o365": {
+               "metrics": {
+                 "app_registrations": {
+                "object_id": app.id,
                 "display_name": app.displayName,
                 "app_id": app.appId,
-                "password_credentials":app.passwordCredentials,
-                "key_credentials": app.keyCredentials
-              } 
-          ).flatten().map(event, { "message": event.encode_json() })
+                "password_credentials": app.passwordCredentials.map(pc,
+                  {
+                    "display_name": pc.displayName,
+                    "key_id": pc.keyId,
+                    "end_date_time": pc.endDateTime
+                  }
+                ),
+                "key_credentials": app.keyCredentials.map(kc,
+                   {
+                    "display_name": kc.displayName,
+                    "key_id": kc.keyId,
+                    "end_date_time": kc.endDateTime,
+                    "type": kc.type,
+                    "usage": kc.usage
+                   } 
+                 )
+                }
+              }
+            }
+          } 
+          )
         })  
         :
           {
