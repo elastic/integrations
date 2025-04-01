@@ -11,13 +11,6 @@ import (
 	"github.com/elastic/integrations/dev/codeowners"
 )
 
-type errorLinks struct {
-	currentIssueURL string
-	firstBuild      string
-	previousBuilds  []string
-	closedIssueURL  string
-}
-
 type packageError struct {
 	testCase
 	dataError
@@ -110,13 +103,10 @@ func (p *packageError) SummaryData() map[string]any {
 }
 
 func (p *packageError) DescriptionData() map[string]any {
-	return map[string]any{
-		"failure":        truncateText(p.Failure, defaultMaxLengthMessages),
-		"error":          truncateText(p.Error, defaultMaxLengthMessages),
-		"firstBuild":     p.errorLinks.firstBuild,
-		"closedIssueURL": p.errorLinks.closedIssueURL,
-		"previousBuilds": p.errorLinks.previousBuilds,
-	}
+	data := p.errorLinks.Data()
+	data["failure"] = truncateText(p.Failure, defaultMaxLengthMessages)
+	data["error"] = truncateText(p.Error, defaultMaxLengthMessages)
+	return data
 }
 
 func (p *packageError) Labels() []string {

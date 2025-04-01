@@ -5,7 +5,6 @@
 package testsreporter
 
 import (
-	"fmt"
 	"strings"
 )
 
@@ -13,47 +12,6 @@ const (
 	buildReportingTeam      = "@elastic/ecosystem"
 	buildReportingTeamLabel = "Team:Ecosystem"
 )
-
-type dataError struct {
-	errorLinks
-	serverless        bool
-	serverlessProject string
-	logsDB            bool
-	stackVersion      string
-	subscription      string
-}
-
-func (d *dataError) String() string {
-	var sb strings.Builder
-
-	if d.logsDB {
-		sb.WriteString("[LogsDB] ")
-	}
-	if d.serverless {
-		sb.WriteString(fmt.Sprintf("[Serverless %s] ", d.serverlessProject))
-	}
-	if d.stackVersion != "" {
-		sb.WriteString("[Stack ")
-		sb.WriteString(d.stackVersion)
-		sb.WriteString("] ")
-	}
-	if d.subscription != "" {
-		sb.WriteString("[Subscription ")
-		sb.WriteString(d.subscription)
-		sb.WriteString("] ")
-	}
-	return sb.String()
-}
-
-func (d *dataError) SummaryData() map[string]any {
-	return map[string]any{
-		"stackVersion":      d.stackVersion,
-		"serverless":        d.serverless,
-		"serverlessProject": d.serverlessProject,
-		"logsDB":            d.logsDB,
-		"subscription":      d.subscription,
-	}
-}
 
 type buildError struct {
 	dataError
@@ -126,11 +84,7 @@ func (b *buildError) SummaryData() map[string]any {
 }
 
 func (b *buildError) DescriptionData() map[string]any {
-	return map[string]any{
-		"firstBuild":     b.errorLinks.firstBuild,
-		"closedIssueURL": b.errorLinks.closedIssueURL,
-		"previousBuilds": b.errorLinks.previousBuilds,
-	}
+	return b.errorLinks.Data()
 }
 
 func (b *buildError) Labels() []string {
