@@ -132,10 +132,31 @@ processors:
       field: json.agentRealtimeInfo.os
       target_field: sentinel_one.alert.agent.os.type
       ignore_missing: true
-  - set:
-      field: host.os.type
-      copy_from: sentinel_one.alert.agent.os.type
+  - script:
+      description: Dynamically set host.os.type values.
+      tag: script_map_host_os_type
+      lang: painless
       if: ctx.sentinel_one?.alert?.agent?.os?.type != null
+      params:
+        os_type:
+          - linux
+          - macos
+          - unix
+          - windows
+          - ios
+          - android
+      source: |
+        if (ctx.host == null) {
+          ctx.put('host', new HashMap());
+        }
+        if (ctx.host.os == null) {
+          ctx.host.put('os', new HashMap());
+        }
+        for (String os: params.os_type) {
+          if (ctx.sentinel_one.alert.agent.os.type.toLowerCase().contains(os)) {
+            ctx.host.os.put('type', os);
+          }
+        }
   - date:
       field: json.alertInfo.createdAt
       if: ctx.json?.alertInfo?.createdAt != null

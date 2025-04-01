@@ -618,10 +618,31 @@ processors:
         - append:
             field: error.message
             value: '{{{_ingest.on_failure_message}}}'
-  - lowercase:
-      field: json.osType
-      target_field: host.os.type
-      ignore_failure: true
+  - script:
+      description: Dynamically set host.os.type values.
+      tag: script_map_host_os_type
+      lang: painless
+      if: ctx.json?.osType != null
+      params:
+        os_type:
+          - linux
+          - macos
+          - unix
+          - windows
+          - ios
+          - android
+      source: |
+        if (ctx.host == null) {
+          ctx.put('host', new HashMap());
+        }
+        if (ctx.host.os == null) {
+          ctx.host.put('os', new HashMap());
+        }
+        for (String os: params.os_type) {
+          if (ctx.json.osType.toLowerCase().contains(os)) {
+            ctx.host.os.put('type', os);
+          }
+        }
   - rename:
       field: json.osUsername
       target_field: user.name

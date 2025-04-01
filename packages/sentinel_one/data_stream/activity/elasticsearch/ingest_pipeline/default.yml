@@ -149,6 +149,10 @@ processors:
       field: json.agentId
       target_field: sentinel_one.activity.agent.id
       ignore_missing: true
+  - set:
+      field: host.id
+      copy_from: sentinel_one.activity.agent.id
+      ignore_empty_value: true
   - rename:
       field: json.comments
       target_field: sentinel_one.activity.comments
@@ -421,6 +425,25 @@ processors:
       field: json.data.osFamily
       target_field: host.os.family
       ignore_missing: true
+  - script:
+      description: Dynamically set host.os.type values.
+      tag: script_map_host_os_type
+      lang: painless
+      if: ctx.host?.os?.family != null
+      params:
+        os_type:
+          - linux
+          - macos
+          - unix
+          - windows
+          - ios
+          - android
+      source: |
+        for (String os: params.os_type) {
+          if (ctx.host.os.family.toLowerCase().contains(os)) {
+            ctx.host.os.put('type', os);
+          }
+        }
   - rename:
       field: json.data.confidenceLevel
       target_field: sentinel_one.activity.data.confidence.level
