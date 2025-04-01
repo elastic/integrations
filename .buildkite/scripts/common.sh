@@ -512,6 +512,10 @@ prepare_stack() {
         args="${args} -U stack.logsdb_enabled=true"
     fi
 
+    if [ "${ELASTIC_SUBSCRIPTION:-""}" != "" ]; then
+        args="${args} -U stack.elastic_subscription=${ELASTIC_SUBSCRIPTION}"
+    fi
+
     if [[ "${STACK_VERSION}" =~ ^7\.17 ]]; then
         # Required starting with STACK_VERSION 7.17.21
         export ELASTIC_AGENT_IMAGE_REF_OVERRIDE="docker.elastic.co/beats/elastic-agent-complete:${STACK_VERSION}-amd64"
@@ -570,9 +574,9 @@ prepare_serverless_stack() {
 }
 
 is_spec_3_0_0() {
-    local pkg_spec
+    local pkg_spec=""
     pkg_spec=$(cat manifest.yml | yq '.format_version')
-    local major_version
+    local major_version=""
     major_version=$(echo "$pkg_spec" | cut -d '.' -f 1)
 
     if [ "${major_version}" -ge 3 ]; then
@@ -668,6 +672,49 @@ get_to_changeset() {
     echo "${to}"
 }
 
+subscription_package() {
+    local default="basic"
+    local subscription=""
+    subscription="$(cat "./manifest.yml" |yq -r '.conditions.elastic.subscription')"
+    if [[ "${subscription}" == "null" ]]; then
+        subscription="$(cat "./manifest.yml" |yq -r '.conditions."elastic.subscription"')"
+    fi
+    # Is it using the deprecated setting license ?
+    if [[ "${subscription}" == "null" ]]; then
+        subscription="$(cat "./manifest.yml" |yq -r '.license')"
+    fi
+    # if there is no value
+    if [[ "${subscription}" == "null" ]]; then
+        subscription="${default}"
+    fi
+    echo "${subscription}"
+}
+
+is_compatible_subscription() {
+    if [[ "${ELASTIC_SUBSCRIPTION:-""}" == "" ]]; then
+        return 0
+    fi
+
+    local subscription=""
+    subscription="$(subscription_package)"
+    echo "Subscription package=$subscription"
+
+    if [[ "${ELASTIC_SUBSCRIPTION}" == "trial" ]]; then
+        # All subscriptions are supported
+        return 0
+    fi
+
+    if [[ "${ELASTIC_SUBSCRIPTION}" == "basic" ]]; then
+        if [[ "${subscription}" != "basic" ]]; then
+            return 1
+        fi
+        return 0
+    fi
+
+    # Unknown subscription
+    return 1
+}
+
 is_pr_affected() {
     local package="${1}"
     local from=${2:-""}
@@ -689,6 +736,11 @@ is_pr_affected() {
             echo "[${package}] PR is not affected: capabilities not mached with the project (${SERVERLESS_PROJECT})"
             return 1
         fi
+    fi
+
+    if ! is_compatible_subscription; then
+        echo "[${package}] PR is not affected: subscription not compatible with ${ELASTIC_SUBSCRIPTION}"
+        return 1
     fi
 
     if [[ "${FORCE_CHECK_ALL}" == "true" ]];then
