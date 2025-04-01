@@ -15,6 +15,21 @@ resource.timeout: {{http_client_timeout}}
 {{/if}}
 max_executions: {{max_executions}}
 resource.url: {{api_host}}
+tags:
+{{#if preserve_original_event}}
+  - preserve_original_event
+{{/if}}
+{{#each tags as |tag|}}
+  - {{tag}}
+{{/each}}
+{{#contains "forwarded" tags}}
+publisher_pipeline.disable_host: true
+{{/contains}}
+{{#if processors}}
+processors:
+{{processors}}
+{{/if}}
+
 program: |-
   request(
   	"POST",
@@ -62,20 +77,6 @@ program: |-
   		)
   	)
   )
-tags:
-{{#if preserve_original_event}}
-  - preserve_original_event
-{{/if}}
-{{#each tags as |tag|}}
-  - {{tag}}
-{{/each}}
-{{#contains "forwarded" tags}}
-publisher_pipeline.disable_host: true
-{{/contains}}
-{{#if processors}}
-processors:
-{{processors}}
-{{/if}}
 
 state:
   key: {{key}}
