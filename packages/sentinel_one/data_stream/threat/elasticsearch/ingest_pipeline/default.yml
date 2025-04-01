@@ -354,13 +354,31 @@ processors:
       field: json.agentRealtimeInfo.agentOsRevision
       target_field: sentinel_one.threat.agent.os.version
       ignore_missing: true
-  - rename:
-      field: json.agentRealtimeInfo.agentOsType
-      target_field: host.os.type
-      ignore_missing: true
-  - lowercase:
-      field: host.os.type
-      ignore_missing: true
+  - script:
+      description: Dynamically set host.os.type values.
+      tag: script_map_host_os_type
+      lang: painless
+      if: ctx.json?.agentRealtimeInfo?.agentOsType != null
+      params:
+        os_type:
+          - linux
+          - macos
+          - unix
+          - windows
+          - ios
+          - android
+      source: |
+        if (ctx.host == null) {
+          ctx.put('host', new HashMap());
+        }
+        if (ctx.host.os == null) {
+          ctx.host.put('os', new HashMap());
+        }
+        for (String os: params.os_type) {
+          if (ctx.json.agentRealtimeInfo.agentOsType.toLowerCase().contains(os)) {
+            ctx.host.os.put('type', os);
+          }
+        }
   - rename:
       field: json.agentRealtimeInfo.agentUuid
       target_field: sentinel_one.threat.agent.uuid
