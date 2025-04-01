@@ -2958,6 +2958,7 @@ Please refer to the following [document](https://www.elastic.co/guide/en/ecs/cur
 | host.containerized | If the host is a container. | boolean |
 | host.os.build | OS build information. | keyword |
 | host.os.codename | OS codename, if any. | keyword |
+| input.type | Input type. | keyword |
 | o365.metrics.app_registrations.app_id | The unique identifier for the application that is assigned to an application by Microsoft Entra ID. | keyword |
 | o365.metrics.app_registrations.display_name | The display name for the application. | keyword |
 | o365.metrics.app_registrations.key_credentials.display_name | The friendly name for the key. | keyword |
