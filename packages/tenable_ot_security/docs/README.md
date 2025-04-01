@@ -656,11 +656,6 @@ An example event for `system_log` looks as following:
         "forwarded",
         "tenable_ot_security"
     ],
-    "tenable_ot_security": {
-        "system_log": {
-            "time_stamp": "2024-06-24T22:03:44.998273Z"
-        }
-    },
     "user": {
         "name": "admin"
     }

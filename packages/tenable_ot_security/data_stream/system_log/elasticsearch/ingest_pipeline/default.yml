@@ -100,6 +100,9 @@ processors:
      field: "@timestamp"
      copy_from: tenable_ot_security.system_log.time_stamp
      ignore_empty_value: true
+  - remove:
+     field: tenable_ot_security.system_log.time_stamp
+     ignore_missing: true
 
   - rename:
      target_field: user.name
@@ -109,6 +112,14 @@ processors:
       field: related.user
       value: "{{{user.name}}}"
       allow_duplicates: false
+
+  - remove:
+      if: ctx.tenable_ot_security.system_log.isEmpty()
+      field: tenable_ot_security.system_log
+
+  - remove:
+      if: ctx.tenable_ot_security.isEmpty()
+      field: tenable_ot_security
 
 #################### Error Log fields ####################
 
