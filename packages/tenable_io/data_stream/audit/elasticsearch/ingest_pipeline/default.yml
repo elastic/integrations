@@ -354,27 +354,35 @@ processors:
             - append:
                 field: error.message
                 value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
-  - script:
-      lang: painless
-      if: ctx.tenable_io?.audit?.fields?.x_forwarded_for instanceof List
-      description: Map source.ip field.
-      tag: script_map_source_ip
-      source: |-
-        if (ctx.tenable_io?.audit?.fields?.x_forwarded_for.size() > 0) {
-          def source_ip = ctx.tenable_io.audit.fields.x_forwarded_for.get(0);
-          if (ctx.source == null) {
-            ctx.source = new HashMap();
-            ctx.source.ip = source_ip;
-          }
-        }
-      on_failure:
-        - append:
-            field: error.message
-            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - set:
+      field: source.ip
+      value: "{{{tenable_io.audit.fields.x_forwarded_for.0}}}"
+      ignore_failure: true
+      ignore_empty_value: true
+      if: ctx.tenable_io?.audit?.fields?.x_forwarded_for instanceof List && ctx.tenable_io.audit.fields.x_forwarded_for.size() > 0
   - geoip:
       field: source.ip
       target_field: source.geo
-      tag: geoip_source_ip
+      tag: geoip_source_geo
+      ignore_missing: true
+  - geoip:
+      database_file: GeoLite2-ASN.mmdb
+      field: source.ip
+      tag: geoip_source_as
+      target_field: source.as
+      properties:
+        - asn
+        - organization_name
+      ignore_missing: true
+  - rename:
+      field: source.as.asn
+      tag: rename_source_as_asn
+      target_field: source.as.number
+      ignore_missing: true
+  - rename:
+      field: source.as.organization_name
+      tag: rename_source_as_organization_name
+      target_field: source.as.organization.name
       ignore_missing: true
   - foreach:
       field: tenable_io.audit.fields.x_forwarded_for

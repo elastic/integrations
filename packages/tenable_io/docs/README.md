@@ -364,22 +364,22 @@ An example event for `audit` looks as following:
 {
     "@timestamp": "2018-12-31T01:40:07.000Z",
     "agent": {
-        "ephemeral_id": "ce5bd0b2-f56b-409e-bea5-0e66f148219d",
-        "id": "4938bdfb-89bb-49ae-aafe-2a56baaaef17",
-        "name": "elastic-agent-66665",
+        "ephemeral_id": "38f06019-8401-4ccf-b22e-a32a3c92782a",
+        "id": "50882574-d579-4b3a-a674-50631e963312",
+        "name": "elastic-agent-35966",
         "type": "filebeat",
         "version": "8.18.0"
     },
     "data_stream": {
         "dataset": "tenable_io.audit",
-        "namespace": "73856",
+        "namespace": "73246",
         "type": "logs"
     },
     "ecs": {
         "version": "8.11.0"
     },
     "elastic_agent": {
-        "id": "4938bdfb-89bb-49ae-aafe-2a56baaaef17",
+        "id": "50882574-d579-4b3a-a674-50631e963312",
         "snapshot": true,
         "version": "8.18.0"
     },
@@ -391,7 +391,7 @@ An example event for `audit` looks as following:
         ],
         "dataset": "tenable_io.audit",
         "id": "eaac53481de04f67bc7eeea07d2fb0f5",
-        "ingested": "2025-03-28T07:50:24Z",
+        "ingested": "2025-04-01T11:02:14Z",
         "kind": "event",
         "original": "{\"action\":\"session.delete\",\"actor\":{\"id\":\"d2667922-5a27-4c4a-9207-f591fbdc9d23\",\"name\":\"user2@example.com\"},\"crud\":\"d\",\"description\":null,\"fields\":[{\"key\":\"message\",\"value\":\"session timeout\"}],\"id\":\"eaac53481de04f67bc7eeea07d2fb0f5\",\"is_anonymous\":null,\"is_failure\":false,\"received\":\"2018-12-31T01:40:07Z\",\"target\":{\"id\":\"12d024e\",\"name\":null,\"type\":\"Session\"}}",
         "outcome": "success",
