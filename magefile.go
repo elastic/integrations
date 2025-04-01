@@ -155,6 +155,7 @@ func ReportFailedTests(ctx context.Context, testResultsFolder string) error {
 	dryRunEnv := os.Getenv("DRY_RUN")
 	serverlessProjectEnv := os.Getenv("SERVERLESS_PROJECT")
 	buildURL := os.Getenv("BUILDKITE_BUILD_URL")
+	subscription := os.Getenv("ELASTIC_SUBSCRIPTION")
 
 	serverless := false
 	if serverlessEnv != "" {
@@ -197,6 +198,7 @@ func ReportFailedTests(ctx context.Context, testResultsFolder string) error {
 		ServerlessProject: serverlessProjectEnv,
 		LogsDB:            logsDBEnabled,
 		StackVersion:      stackVersion,
+		Subscription:      subscription,
 		BuildURL:          buildURL,
 		MaxPreviousLinks:  defaultPreviousLinksNumber,
 		MaxTestsReported:  maxIssues,

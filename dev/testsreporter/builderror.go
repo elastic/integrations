@@ -20,6 +20,7 @@ type dataError struct {
 	serverlessProject string
 	logsDB            bool
 	stackVersion      string
+	subscription      string
 }
 
 type buildError struct {
@@ -33,6 +34,7 @@ type buildErrorOptions struct {
 	ServerlessProject string
 	LogsDB            bool
 	StackVersion      string
+	Subscription      string
 	Packages          []string
 	BuildURL          string
 	PreviousBuilds    []string
@@ -49,6 +51,7 @@ func newBuildError(options buildErrorOptions) (*buildError, error) {
 			serverlessProject: options.ServerlessProject,
 			logsDB:            options.LogsDB,
 			stackVersion:      options.StackVersion,
+			subscription:      options.Subscription,
 			errorLinks: errorLinks{
 				firstBuild:     options.BuildURL,
 				closedIssueURL: options.ClosedIssueURL,
@@ -76,6 +79,11 @@ func (b *buildError) String() string {
 		sb.WriteString(b.stackVersion)
 		sb.WriteString("] ")
 	}
+	if b.subscription != "" {
+		sb.WriteString("[Subscription ")
+		sb.WriteString(b.subscription)
+		sb.WriteString("] ")
+	}
 	sb.WriteString("Too many packages failing in daily job")
 
 	return sb.String()
@@ -101,6 +109,7 @@ func (p *buildError) SummaryData() map[string]any {
 		"logsDB":            p.logsDB,
 		"packages":          p.packages,
 		"owners":            p.teams,
+		"subscription":      p.subscription,
 	}
 }
 

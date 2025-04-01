@@ -36,7 +36,7 @@ func TestSummary(t *testing.T) {
 `,
 		},
 		{
-			title: "summary stack version with owners wihtout data stream",
+			title: "summary stack version with owners without data stream",
 			resultError: &packageError{
 				dataError: dataError{
 					stackVersion: "8.14",
@@ -163,6 +163,30 @@ func TestSummary(t *testing.T) {
     - team1
 `,
 		},
+		{
+			title: "summary with basic license",
+			resultError: &buildError{
+				dataError: dataError{
+					logsDB:       false,
+					serverless:   false,
+					subscription: "basic",
+					stackVersion: "8.16",
+				},
+				packages: []string{
+					"foo",
+					"bar",
+				},
+				teams: []string{"team1"},
+			},
+			expected: `- Stack version: 8.16
+- Subscription: basic
+- Packages:
+    - foo
+    - bar
+- Owners:
+    - team1
+`,
+		},
 	}
 
 	for _, c := range cases {
@@ -181,14 +205,12 @@ func TestSummary(t *testing.T) {
 func TestDescription(t *testing.T) {
 	cases := []struct {
 		title       string
-		summary     string
 		resultError failureObserver
 		maxLinks    int
 		expected    string
 	}{
 		{
-			title:   "description error all fields",
-			summary: "summary",
+			title: "description error all fields",
 			resultError: &packageError{
 				dataError: dataError{
 					stackVersion: "8.14",
@@ -226,8 +248,7 @@ Latest failed builds:
 `,
 		},
 		{
-			title:   "description failure all fields",
-			summary: "summary",
+			title: "description failure all fields",
 			resultError: &packageError{
 				dataError: dataError{
 					stackVersion: "8.14",
@@ -265,8 +286,7 @@ Latest failed builds:
 `,
 		},
 		{
-			title:   "description no closed issue",
-			summary: "summary",
+			title: "description no closed issue",
 			resultError: &packageError{
 				dataError: dataError{
 					stackVersion: "8.14",
@@ -302,7 +322,6 @@ Latest failed builds:
 		},
 		{
 			title:    "description max links",
-			summary:  "summary",
 			maxLinks: 2,
 			resultError: &packageError{
 				dataError: dataError{
