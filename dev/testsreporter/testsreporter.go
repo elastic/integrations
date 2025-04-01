@@ -27,7 +27,8 @@ type CheckOptions struct {
 	MaxPreviousLinks int
 	MaxTestsReported int
 
-	DryRun bool
+	DryRun  bool
+	Verbose bool
 }
 
 func Check(ctx context.Context, resultsPath string, options CheckOptions) error {
@@ -50,7 +51,11 @@ func Check(ctx context.Context, resultsPath string, options CheckOptions) error 
 		DryRun: options.DryRun,
 	})
 
-	aReporter := newReporter(ghCli, options.MaxPreviousLinks)
+	aReporter := newReporter(reporterOptions{
+		GhCli:            ghCli,
+		MaxPreviousLinks: options.MaxPreviousLinks,
+		Verbose:          options.Verbose,
+	})
 
 	if len(packageErrors) > options.MaxTestsReported {
 		fmt.Printf("Skip creating GitHub issues, hit the maximum number (%d) of tests to be reported. Total failing tests: %d.\n", options.MaxTestsReported, len(packageErrors))
