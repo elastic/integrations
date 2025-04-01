@@ -7,7 +7,7 @@ Use the integration to collect logs from:
 * Azure services that support exporting logs to Event Hubs
 * Any other source that can send logs to an Event Hubs
 
-## Event Hub Processor v2 ✨
+## Event Hub Processor v2
 
 The Custom Azure Logs integration offers a new processor v2 starting with version 0.3.0.
 
@@ -18,7 +18,7 @@ The processor v2 introduces several changes:
 
 The processor v2 is in preview. Processor v1 is still the default and is recommended for typical use cases.
 
-Refer to the "Event Hub Processor v2 only" section in the integration settings for additional information on how to enable processor v2.
+Refer to the "Event Hub Processor Options" section in the integration settings for additional information on how to enable processor v2.
 
 ## Data streams
 
@@ -394,13 +394,13 @@ Examples:
 
 This setting can also define your endpoints, like for hybrid cloud models.
 
-### Event Hub Processor v2 only
+### Event Hub Processor Options
 
-The following settings are **event hub processor v2 only** and available in the advanced section of the integration.
+The following event hub processor options are available in the advanced section of the integration.
 
 `processor_version` :
 _string_
-(processor v2 only) The processor version that the integration should use. Possible values are `v1` and `v2` (preview). The processor v2 is in preview. Using the processor v1 is recommended for typical use cases. Default is `v1`.
+The processor version that the integration should use. Possible values are `v1` and `v2` (preview). The processor v2 is in preview. Using the processor v1 is recommended for typical use cases. Default is `v1`.
 
 `processor_update_interval` :
 _string_
