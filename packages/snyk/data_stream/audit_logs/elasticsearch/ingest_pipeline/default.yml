@@ -127,6 +127,17 @@ processors:
           value: '{{{ _ingest.on_failure_message }}}'
   - script:
       lang: painless
+      tag: rename_blank_notSupported
+      if: ctx.snyk?.audit_logs?.content?.notSupported instanceof Map
+      source: |-
+        def blank = ctx.snyk.audit_logs.content.notSupported[''];
+        if (blank == null) {
+          return;
+        }
+        ctx.snyk.audit_logs.content.notSupported.no_extension = ctx.snyk.audit_logs.content.notSupported[''];
+        ctx.snyk.audit_logs.content.notSupported.remove('');
+  - script:
+      lang: painless
       description: This script processor iterates over the whole document to remove fields with null values.
       source: |
         void handleMap(Map map) {

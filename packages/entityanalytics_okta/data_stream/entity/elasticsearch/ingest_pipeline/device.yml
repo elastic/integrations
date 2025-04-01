@@ -1,0 +1,255 @@
+---
+description: Pipeline for processing Okta Device logs.
+processors:
+  - script:
+      tag: script_add_event_original
+      lang: painless
+      description: Add "event.original"
+      if: ctx.tags != null && ctx.tags.contains('preserve_original_event')
+      source: |
+        def stringified_orig = Json.dump(ctx);
+        if (stringified_orig != null) {
+          if (ctx.event == null) {
+            ctx.event = new HashMap();
+          }
+          ctx.event.original = stringified_orig;
+        }
+  - remove:
+      field: event.action
+      if: ctx.event?.action != "started" && ctx.event?.action != "completed"
+      ignore_missing: true
+  - set:
+      field: event.kind
+      tag: set_event_kind
+      value: asset
+  - set:
+      field: event.category
+      tag: set_event_category
+      value: ['host']
+  - set:
+      field: event.type
+      tag: set_event_type
+      value: ['info']
+  - set:
+      field: asset.category
+      tag: set_asset_category
+      value: entity
+  - set:
+      field: asset.type
+      tag: set_asset_type
+      value: okta_device
+  - rename:
+      field: okta.id
+      target_field: entityanalytics_okta.device.id
+      tag: rename_device_id
+      ignore_missing: true
+  - set:
+      field: asset.id
+      copy_from: entityanalytics_okta.device.id
+      tag: set_asset_id
+      ignore_empty_value: true
+  - rename:
+      field: okta.status
+      target_field: entityanalytics_okta.device.status
+      tag: rename_device_status
+      ignore_missing: true
+  - set:
+      field: asset.status
+      copy_from: entityanalytics_okta.device.status
+      tag: set_asset_status
+      ignore_empty_value: true
+  - date:
+      field: okta.created
+      target_field: entityanalytics_okta.device.created
+      tag: date_device_created
+      formats:
+        - ISO8601
+      if: ctx.okta?.created != null && ctx.okta.created != ''
+      on_failure:
+        - remove:
+            field: okta.created
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - set:
+      field: asset.create_date
+      copy_from: entityanalytics_okta.device.created
+      tag: set_asset_create_date
+      ignore_empty_value: true
+  - date:
+      field: okta.activated
+      target_field: entityanalytics_okta.device.activated
+      tag: date_device_activated
+      formats:
+        - ISO8601
+      if: ctx.okta?.activated != null && ctx.okta.activated != ''
+      on_failure:
+        - remove:
+            field: okta.activated
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - date:
+      field: okta.statusChanged
+      target_field: entityanalytics_okta.device.status_changed
+      tag: date_device_status_changed
+      formats:
+        - ISO8601
+      if: ctx.okta?.statusChanged != null && ctx.okta.statusChanged != ''
+      on_failure:
+        - remove:
+            field: okta.statusChanged
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - set:
+      field: asset.last_status_change_date
+      copy_from: entityanalytics_okta.device.status_changed
+      tag: set_asset_last_status_change_date
+      ignore_empty_value: true
+  - date:
+      field: okta.lastUpdated
+      target_field: entityanalytics_okta.device.last_updated
+      tag: date_device_last_updated
+      formats:
+        - ISO8601
+      if: ctx.okta?.lastUpdated != null && ctx.okta.lastUpdated != ''
+      on_failure:
+        - remove:
+            field: okta.lastUpdated
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - set:
+      field: asset.last_updated
+      copy_from: entityanalytics_okta.device.last_updated
+      tag: set_asset_last_seen
+      ignore_empty_value: true
+  - rename:
+      field: okta.transitioningToStatus
+      target_field: entityanalytics_okta.device.transitioning_to_status
+      tag: user_transitioning_to_status
+      ignore_missing: true
+  - foreach:
+      field: okta.users
+      tag: foreach_okta_user_id
+      if: ctx.okta?.users instanceof List
+      ignore_failure: true
+      processor:
+        append:
+          field: related.user
+          value: '{{{_ingest._value.id}}}'
+          allow_duplicates: false
+          ignore_failure: true
+  - foreach:
+      field: okta.users
+      tag: foreach_okta_user_login
+      if: ctx.okta?.users instanceof List
+      ignore_failure: true
+      processor:
+        append:
+          field: related.user
+          value: '{{{_ingest._value.profile.login}}}'
+          allow_duplicates: false
+          ignore_failure: true
+  - foreach:
+      field: okta.users
+      tag: foreach_okta_user_nickName
+      if: ctx.okta?.users instanceof List
+      ignore_failure: true
+      processor:
+        append:
+          field: related.user
+          value: '{{{_ingest._value.profile.nickName}}}'
+          allow_duplicates: false
+          ignore_failure: true
+  - foreach:
+      field: okta.users
+      tag: foreach_okta_user_displayName
+      if: ctx.okta?.users instanceof List
+      ignore_failure: true
+      processor:
+        append:
+          field: related.user
+          value: '{{{_ingest._value.profile.displayName}}}'
+          allow_duplicates: false
+          ignore_failure: true
+  - lowercase:
+      field: okta.profile.platform
+      target_field: os.platform
+      tag: rename_device_profile_platform
+      ignore_missing: true
+  - rename:
+      field: okta.profile.displayName
+      target_field: entityanalytics_okta.device.profile.display_name
+      tag: rename_device_profile_display_name
+      ignore_missing: true
+  - rename:
+      field: okta.profile.sid
+      target_field: entityanalytics_okta.device.profile.sid
+      tag: rename_device_profile_sid
+      ignore_missing: true
+  - rename:
+      field: okta.profile.serialNumber
+      target_field: device.serial_number
+      tag: rename_device_profile_serial_number
+      ignore_missing: true
+  - rename:
+      field: okta.profile.diskEncryptionType
+      target_field: entityanalytics_okta.device.profile.disk_encryption_type
+      tag: rename_device_profile_display_name
+      ignore_missing: true
+  - convert:
+      field: okta.profile.registered
+      target_field: entityanalytics_okta.device.profile.registered
+      type: boolean
+      tag: convert_device_profile_registered
+      ignore_missing: true
+      on_failure:
+        - remove:
+            field: okta.profile.registered
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - convert:
+      field: okta.profile.secureHardwarePresent
+      target_field: entityanalytics_okta.device.profile.secure_hardware_present
+      type: boolean
+      tag: convert_device_profile_secure_hardware_present
+      ignore_missing: true
+      on_failure:
+        - remove:
+            field: okta.profile.secure_hardware_present
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - set:
+      field: asset.name
+      copy_from: entityanalytics_okta.device.profile.display_name
+      tag: set_asset_name
+      ignore_empty_value: true
+  - rename:
+      field: okta._links
+      target_field: entityanalytics_okta.device._links
+      tag: rename_device_links
+      ignore_missing: true
+  - rename:
+      field: okta._embedded
+      target_field: entityanalytics_okta.device._embedded
+      tag: rename_device_embedded
+      ignore_missing: true
+  - remove:
+      field:
+        - okta
+      tag: remove_okta
+      ignore_missing: true
+  - remove:
+      field:
+        - entityanalytics_okta.device.status
+        - entityanalytics_okta.device.activated
+        - entityanalytics_okta.device.status_changed
+        - entityanalytics_okta.device.created
+        - entityanalytics_okta.device.id
+      tag: remove_duplicate_custom_fields
+      ignore_missing: true
+      if: ctx.tags == null || !(ctx.tags.contains('preserve_duplicate_custom_fields'))

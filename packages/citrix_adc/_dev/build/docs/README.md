@@ -66,6 +66,8 @@ Example Host Configuration: `http://localhost:9080`
   
 For step-by-step instructions on how to set up an integration, see the [Getting started](https://www.elastic.co/guide/en/starting-with-the-elasticsearch-platform-and-its-solutions/current/getting-started-observability.html) guide.
 
+**Note**: It is recommended to configure the application firewall to enable CEF-formatted logs.
+
 ### Steps for configuring CEF format:
 
 1. Navigate to **Security** the NetScaler GUI.
@@ -73,11 +75,11 @@ For step-by-step instructions on how to set up an integration, see the [Getting 
 3. Select Change Engine Settings.
 4. Enable CEF Logging.
 
-**Note**: It is recommended to configure the application firewall to enable CEF-formatted logs.
-
 ### Steps for configuring Syslog format:
 
 The Citrix WAF GUI can be used to configure syslog servers and WAF message types to be sent to the syslog servers. Refer to [How to Send Application Firewall Messages to a Separate Syslog Server](https://support.citrix.com/s/article/CTX138973-how-to-send-application-firewall-messages-to-a-separate-syslog-server) and [How to Send NetScaler Application Firewall Logs to Syslog Server and NS.log](https://support.citrix.com/s/article/CTX483235-send-logs-to-external-syslog-server?language=en_US) for details.
+
+**Note:** Using RFC 5424 compliant syslog messages is recommended when using syslog, if supported by NetScaler. Support for RFC 5424 was added in NetScaler 14.1. Refer to [Configuring audit log action](https://docs.netscaler.com/en-us/citrix-adc/current-release/system/audit-logging/configuring-audit-logging.html#configuring-audit-log-action).
 
 ## Validation
 

@@ -35,8 +35,11 @@ with_kubernetes
 use_elastic_package
 
 pushd packages > /dev/null
+exit_code=0
 if ! process_package "${package}" "${from}" "${to}"; then
     echo "[${package}] failed"
-    exit 1
+    exit_code=1
 fi
 popd > /dev/null
+
+exit "${exit_code}"

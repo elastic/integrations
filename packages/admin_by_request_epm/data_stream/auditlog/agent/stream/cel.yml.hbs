@@ -1,0 +1,107 @@
+config_version: 2
+interval: {{interval}}
+resource.tracer:
+  enabled: {{enable_request_tracer}}
+  filename: "../../logs/cel/http-request-trace-*.ndjson"
+  maxbackups: 5
+{{#if proxy_url}}
+resource.proxy_url: {{proxy_url}}
+{{/if}}
+{{#if ssl}}
+resource.ssl: {{ssl}}
+{{/if}}
+{{#if http_client_timeout}}
+resource.timeout: {{http_client_timeout}}
+{{/if}}
+resource.url: {{url}}
+state:
+  apikey: {{apikey}}
+  username: {{username}}
+  page_size: {{page_size}}
+  initial_interval_days: {{initial_interval_days}}
+redact:
+  fields:
+    - apikey
+program: |-
+  
+  (
+  	state.?cursor.?is_historic_data_fetched.orValue(false) ?
+  		{
+  			"deltaTime": [state.cursor.delta_time.encode_json()],
+  			"wantscandetails": ["1"],
+  		}
+  	:
+  		{
+  			"take": [string(state.page_size)],
+  			"startid": [state.?cursor.startid.orValue(0).encode_json()],
+  			"days": [string(state.initial_interval_days)],
+  			"wantscandetails": ["1"],
+  		}
+  ).as(params,
+  	request("GET", state.url.trim_suffix("/") + "/auditlog/delta?" + params.format_query()).with(
+  		{
+  			"Header": {
+  				"apikey": [state.apikey],
+  				"Content-Type": ["application/json"],
+  			},
+  		}
+  	).do_request().as(resp,
+  		(resp.StatusCode == 200) ?
+  			bytes(resp.Body).decode_json().as(body,
+  				(size(body.entries) > 0) ?
+  					state.with(
+  						{
+  							"events": body.entries.map(e,
+  								{
+  									"message": e.encode_json(),
+  									?"event.original": state.?preserve_original_event.orValue(false) ? optional.of(e.encode_json()) : optional.none(),
+  								}
+  							),
+  							"want_more": true,
+  							"cursor": {
+  								"startid": int(body.entries[size(body.entries) - 1].id) + 1,
+  								"delta_time": state.?want_more.orValue(false) ? state.cursor.delta_time : body.timeNow,
+  								"is_historic_data_fetched": false,
+  							},
+  						}
+  					)
+  				:
+  					state.with(
+  						{
+  							"events": [],
+  							"want_more": false,
+  							"cursor": {
+  								"delta_time": state.?want_more.orValue(false) ? state.cursor.delta_time : body.timeNow,
+  								"is_historic_data_fetched": true,
+  							},
+  						}
+  					)
+  			)
+  		:
+  			state.with(
+  				{
+  					"events": [
+  						{
+  							"error": {"message": "Failed to fetch data from the API. Retrying.", "statuscode": resp.StatusCode},
+  						},
+  					],
+  					"want_more": false,
+  					"cursor": {},
+  				}
+  			)
+  	)
+  )
+tags:
+{{#if preserve_original_event}}
+  - preserve_original_event
+{{/if}}
+{{#each tags as |tag|}}
+  - {{tag}}
+{{/each}}
+{{#contains "forwarded" tags}}
+publisher_pipeline.disable_host: true
+{{/contains}}
+{{#if processors}}
+processors:
+{{processors}}
+{{/if}}

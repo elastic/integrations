@@ -385,6 +385,16 @@ processors:
       tag: rename_event
       target_field: eset_protect.event.name
       ignore_missing: true
+  - rename:
+      field: json.trigger_event
+      tag: rename_trigger_event
+      target_field: eset_protect.event.trigger_event
+      ignore_missing: true
+  - rename:
+      field: json.detection_uuid
+      tag: rename_detection_uuid
+      target_field: eset_protect.event.detection_uuid
+      ignore_missing: true
   - set:
       field: message
       tag: set_message_from_event_name
@@ -527,6 +537,11 @@ processors:
       tag: set_process_executable_from_event_processname
       copy_from: eset_protect.event.processname
       ignore_empty_value: true
+  - rename:
+      field: json.command_line
+      tag: rename_command_line
+      target_field: eset_protect.event.command_line
+      ignore_missing: true
   - grok:
       field: eset_protect.event.processname
       tag: grok_processname

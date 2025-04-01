@@ -19,6 +19,8 @@
       type: keyword
     - name: AgentTimeOffset
       type: float
+    - name: AggregateId
+      type: keyword
     - name: AllocateVirtualMemoryCount
       type: long
     - name: ApiReturnValue
@@ -27,7 +29,7 @@
       type: long
     - name: AsepWrittenCount
       type: long
-    - name: assessments.*
+    - name: assessments
       type: flattened
     - name: AssociatedFile
       type: keyword
@@ -58,6 +60,9 @@
           type: match_only_text
     - name: CompletionEventId
       type: keyword
+    - name: CompositeId
+      type: keyword
+      description: Global unique identifier that identifies a unique alert.
     - name: ConfigBuild
       type: keyword
     - name: ConHostId
@@ -67,6 +72,8 @@
     - name: ConfigStateHash
       type: keyword
     - name: ConnectionFlags
+      type: keyword
+    - name: ContextBaseFileName
       type: keyword
     - name: ContextProcessId
       type: keyword
@@ -83,6 +90,10 @@
       type: keyword
     - name: CycleTime
       type: long
+    - name: DataDomains
+      type: keyword
+    - name: Description
+      type: keyword
     - name: DesiredAccess
       type: keyword
     - name: DetectDescription
@@ -115,6 +126,8 @@
       type: date
     - name: Entitlements
       type: keyword
+    - name: EventOrigin
+      type: integer
     - name: EventType
       type: keyword
     - name: EventUUID
@@ -141,6 +154,15 @@
       type: keyword
     - name: FilePath
       type: keyword
+    - name: FilesWritten
+      type: group
+      fields:
+        - name: FileName
+          type: keyword
+        - name: FilePath
+          type: keyword
+        - name: Timestamp
+          type: date
     - name: FirstDiscoveredDate
       type: date
     - name: FirstSeen
@@ -157,6 +179,8 @@
         - name: text
           type: match_only_text
     - name: GrandparentImageFileName
+      type: keyword
+    - name: GrandparentImageFilePath
       type: keyword
     - name: HostGroups
       type: keyword
@@ -201,6 +225,8 @@
     - name: LocalAdminAccess
       type: keyword
     - name: LocalIP
+      type: ip
+    - name: LocalIPv6
       type: ip
     - name: LogoffTime
       type: date
@@ -275,6 +301,8 @@
           type: match_only_text
     - name: ParentImageFileName
       type: keyword
+    - name: ParentImageFilePath
+      type: keyword
     - name: PasswordLastSet
       type: keyword
     - name: PatternDispositionDescription
@@ -328,6 +356,8 @@
           type: boolean
     - name: PatternDispositionValue
       type: long
+    - name: PatternId
+      type: keyword
     - name: PhysicalAddress
       type: keyword
     - name: PhysicalAddressLength
@@ -451,7 +481,11 @@
       type: keyword
     - name: SourceProcessId
       type: keyword
+    - name: SourceProducts
+      type: keyword
     - name: SourceThreadId
+      type: keyword
+    - name: SourceVendors
       type: keyword
     - name: StartTime
       type: date
@@ -729,11 +763,15 @@
       type: keyword
     - name: PupAdwareDecisionValue
       type: keyword
+    - name: QueryStatus
+      type: integer
     - name: RFMState
       type: keyword
     - name: ReasonOfFunctionalityLevel
       type: keyword
     - name: SensorStateBitMap
+      type: keyword
+    - name: SmbShareName
       type: keyword
     - name: SuppressType
       type: keyword
@@ -751,6 +789,9 @@
       type: long
     - name: TargetFileName
       type: keyword
+    - name: Type
+      type: keyword
+      description: 'The endpoint detection type ("ldt": Legacy Endpoint Detection, or "ofp": Office Prevention Macro Detection).'
     - name: USN
       type: keyword
     - name: UploadId
@@ -821,6 +862,8 @@
       type: keyword
     - name: eid
       type: integer
+    - name: id
+      type: keyword
     - name: localipCount
       type: integer
     - name: monthsincereset

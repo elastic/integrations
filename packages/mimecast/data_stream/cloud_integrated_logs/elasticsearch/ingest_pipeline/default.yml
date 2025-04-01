@@ -34,6 +34,10 @@ processors:
       field: event.created
       copy_from: '@timestamp'
       if: ctx['@timestamp'] != null
+  - set:
+      field: event.kind
+      value: alert
+      if: ctx.mimecast?.tags instanceof List && ctx.mimecast.tags.length != 0
 
   ### NOTE LOG TYPE
   - rename:
