@@ -23,6 +23,38 @@ type dataError struct {
 	subscription      string
 }
 
+func (d *dataError) String() string {
+	var sb strings.Builder
+
+	if d.logsDB {
+		sb.WriteString("[LogsDB] ")
+	}
+	if d.serverless {
+		sb.WriteString(fmt.Sprintf("[Serverless %s] ", d.serverlessProject))
+	}
+	if d.stackVersion != "" {
+		sb.WriteString("[Stack ")
+		sb.WriteString(d.stackVersion)
+		sb.WriteString("] ")
+	}
+	if d.subscription != "" {
+		sb.WriteString("[Subscription ")
+		sb.WriteString(d.subscription)
+		sb.WriteString("] ")
+	}
+	return sb.String()
+}
+
+func (d *dataError) SummaryData() map[string]any {
+	return map[string]any{
+		"stackVersion":      d.stackVersion,
+		"serverless":        d.serverless,
+		"serverlessProject": d.serverlessProject,
+		"logsDB":            d.logsDB,
+		"subscription":      d.subscription,
+	}
+}
+
 type buildError struct {
 	dataError
 	teams    []string
@@ -68,59 +100,39 @@ func newBuildError(options buildErrorOptions) (*buildError, error) {
 func (b *buildError) String() string {
 	var sb strings.Builder
 
-	if b.logsDB {
-		sb.WriteString("[LogsDB] ")
-	}
-	if b.serverless {
-		sb.WriteString(fmt.Sprintf("[Serverless %s] ", b.serverlessProject))
-	}
-	if b.stackVersion != "" {
-		sb.WriteString("[Stack ")
-		sb.WriteString(b.stackVersion)
-		sb.WriteString("] ")
-	}
-	if b.subscription != "" {
-		sb.WriteString("[Subscription ")
-		sb.WriteString(b.subscription)
-		sb.WriteString("] ")
-	}
+	sb.WriteString(b.dataError.String())
 	sb.WriteString("Too many packages failing in daily job")
 
 	return sb.String()
 }
 
-func (p *buildError) FirstBuild() string {
-	return p.errorLinks.firstBuild
+func (b *buildError) FirstBuild() string {
+	return b.errorLinks.firstBuild
 }
 
-func (p *buildError) UpdateLinks(links errorLinks) {
-	p.errorLinks = links
+func (b *buildError) UpdateLinks(links errorLinks) {
+	b.errorLinks = links
 }
 
-func (p *buildError) Teams() []string {
-	return p.teams
+func (b *buildError) Teams() []string {
+	return b.teams
 }
 
-func (p *buildError) SummaryData() map[string]any {
+func (b *buildError) SummaryData() map[string]any {
+	data := b.dataError.SummaryData()
+	data["packages"] = b.packages
+	data["owners"] = b.teams
+	return data
+}
+
+func (b *buildError) DescriptionData() map[string]any {
 	return map[string]any{
-		"stackVersion":      p.stackVersion,
-		"serverless":        p.serverless,
-		"serverlessProject": p.serverlessProject,
-		"logsDB":            p.logsDB,
-		"packages":          p.packages,
-		"owners":            p.teams,
-		"subscription":      p.subscription,
+		"firstBuild":     b.errorLinks.firstBuild,
+		"closedIssueURL": b.errorLinks.closedIssueURL,
+		"previousBuilds": b.errorLinks.previousBuilds,
 	}
 }
 
-func (p *buildError) DescriptionData() map[string]any {
-	return map[string]any{
-		"firstBuild":     p.errorLinks.firstBuild,
-		"closedIssueURL": p.errorLinks.closedIssueURL,
-		"previousBuilds": p.errorLinks.previousBuilds,
-	}
-}
-
-func (p *buildError) Labels() []string {
+func (b *buildError) Labels() []string {
 	return []string{buildReportingTeamLabel}
 }

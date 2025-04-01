@@ -90,22 +90,7 @@ func (p *packageError) Teams() []string {
 func (p *packageError) String() string {
 	var sb strings.Builder
 
-	if p.logsDB {
-		sb.WriteString("[LogsDB] ")
-	}
-	if p.serverless {
-		sb.WriteString(fmt.Sprintf("[Serverless %s] ", p.serverlessProject))
-	}
-	if p.stackVersion != "" {
-		sb.WriteString("[Stack ")
-		sb.WriteString(p.stackVersion)
-		sb.WriteString("] ")
-	}
-	if p.subscription != "" {
-		sb.WriteString("[Subscription ")
-		sb.WriteString(p.subscription)
-		sb.WriteString("] ")
-	}
+	sb.WriteString(p.dataError.String())
 	sb.WriteString("[")
 	sb.WriteString(p.packageName)
 	sb.WriteString("] ")
@@ -116,17 +101,12 @@ func (p *packageError) String() string {
 }
 
 func (p *packageError) SummaryData() map[string]any {
-	return map[string]any{
-		"stackVersion":      p.stackVersion,
-		"serverless":        p.serverless,
-		"serverlessProject": p.serverlessProject,
-		"logsDB":            p.logsDB,
-		"subscription":      p.subscription,
-		"packageName":       p.packageName,
-		"testName":          p.Name,
-		"dataStream":        p.dataStream,
-		"owners":            p.teams,
-	}
+	data := p.dataError.SummaryData()
+	data["packageName"] = p.packageName
+	data["testName"] = p.Name
+	data["dataStream"] = p.dataStream
+	data["owners"] = p.teams
+	return data
 }
 
 func (p *packageError) DescriptionData() map[string]any {
