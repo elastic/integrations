@@ -1,0 +1,193 @@
+---
+description: Pipeline for processing tenable OT security cloud assets
+processors:
+
+  - rename:
+      field: message
+      target_field: tenable_ot_security.assets
+
+  - fingerprint:
+      fields:
+        - tenable_ot_security.assets
+      tag: fingerprinting
+      target_field: "_id"
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+
+  ##################### Scripts for processing input #####################
+
+  - script:
+      description: Drops null/empty values recursively.
+      lang: painless
+      source: |
+        boolean dropEmptyFields(Object object) {
+          if (object == null || object == "") {
+            return true;
+          } else if (object instanceof Map) {
+            ((Map) object).values().removeIf(value -> dropEmptyFields(value));
+            return (((Map) object).size() == 0);
+          } else if (object instanceof List) {
+            ((List) object).removeIf(value -> dropEmptyFields(value));
+            return (((List) object).size() == 0);
+          }
+          return false;
+        }
+        dropEmptyFields(ctx);
+
+  - script:
+      description: Convert Additional Info keys to snake case.
+      tag: additional-info-keys-to-snake-case
+      lang: painless
+      source: |
+        Map keysToSnakeCase(Map m) {
+          def regex = /_?([a-z])([A-Z]+)/;
+          def snakeCaseMap = [:];
+          for (entry in m.entrySet()) {
+            def k = entry.getKey();
+            def v = entry.getValue();
+            if (v instanceof Map) {
+              v = keysToSnakeCase(v);
+            } else if (v instanceof List) {
+              for (int i = 0; i < v.size(); i++) {
+                def item = v.get(i);
+                if (item instanceof Map) {
+                  v.set(i, keysToSnakeCase(item));
+                }
+              }
+            }
+            k = regex.matcher(k).replaceAll('$1_$2').toLowerCase();
+            snakeCaseMap.put(k, v);
+          }
+          return snakeCaseMap;
+        }
+        if (ctx.tenable_ot_security.assets != null) {
+          ctx.tenable_ot_security.assets = keysToSnakeCase(ctx.tenable_ot_security.assets);
+        }
+
+  - script:
+      description: Recursively normalize every occurrence of 'nodes'.
+      lang: painless
+      source: |
+        def normalize(def obj) {
+          if (obj instanceof Map) {
+                Map newObj = new HashMap();
+                for (entry in obj.entrySet()) {
+                    def key = entry.getKey();
+                    def value = entry.getValue();
+
+                    // If the value is a map with a single key "nodes", replace it with its contents
+                    if (value instanceof Map && value.containsKey("nodes")) {
+                        value = value.get("nodes");
+                    }
+
+                    // Recursively process if value is a map or list
+                    newObj.put(key, normalize(value));
+                }
+                return newObj;
+            } else if (obj instanceof List) {
+                List newList = new ArrayList();
+                for (item in obj) {
+                    newList.add(normalize(item));
+                }
+                return newList;
+            } else {
+                return obj;
+            }
+           }
+        // Apply normalization to every occurrence of "nodes" in assets.
+        if (ctx.containsKey("tenable_ot_security") && ctx.tenable_ot_security.containsKey("assets")) {
+          ctx.tenable_ot_security.assets = normalize(ctx.tenable_ot_security.assets);
+        }
+
+  ##################### ECS Fields #####################
+
+  - set:
+      field: event.kind
+      value: event
+
+  - set:
+      field: ecs.version
+      value: "8.11.0"
+
+  - append:
+      field: event.category
+      value: iam
+
+  - set:
+      field: event.module
+      value: tenable_ot_security
+
+  - set:
+      field: event.type
+      value: ["info"]
+
+  - set:
+      field: event.dataset
+      value: tenable_ot_security.assets
+
+  - set:
+      field: "@timestamp"
+      copy_from: tenable_ot_security.assets.first_seen
+      ignore_empty_value: true
+
+  - set:
+      field: event.id
+      copy_from: tenable_ot_security.assets.id
+      ignore_empty_value: true
+
+  - foreach:
+      field: tenable_ot_security.assets.direct_ips
+      if: ctx.tenable_ot_security.assets.direct_ips instanceof List && ctx.tenable_ot_security.assets.direct_ips.length > 0
+      processor:
+        append:
+          field: related.hosts
+          value: "{{_ingest._value}}"
+          allow_duplicates: false
+
+  - foreach:
+      field: tenable_ot_security.assets.direct_macs
+      if: ctx.tenable_ot_security.assets.direct_macs instanceof List && ctx.tenable_ot_security.assets.direct_macs.length > 0
+      processor:
+        append:
+          field: related.hosts
+          value: "{{_ingest._value}}"
+          allow_duplicates: false
+
+  #################### Override host.ip ####################
+
+  - foreach:
+      field: tenable_ot_security.assets.direct_ips
+      if: ctx.tenable_ot_security.assets.direct_ips instanceof List && ctx.tenable_ot_security.assets.direct_ips.length > 0
+      processor:
+        convert:
+          field: _ingest._value
+          type: ip
+          ignore_missing: true
+
+  - foreach:
+      field: tenable_ot_security.assets.direct_ips
+      if: ctx.tenable_ot_security.assets.direct_ips instanceof List && ctx.tenable_ot_security.assets.direct_ips.length > 0
+      processor:
+        append:
+          field: host.ip
+          value: "{{_ingest._value}}"
+          allow_duplicates: false
+
+  - geoip:
+      field: host.ip
+      target_field: host.geo
+      ignore_missing: true
+      ignore_failure: true
+
+#################### Error Log fields ####################
+
+on_failure:
+  - append:
+      field: error.message
+      value: '{{{_ingest.on_failure_message}}}'
+
+  - set:
+      field: event.kind
+      value: pipeline_error
