@@ -1373,6 +1373,9 @@ For example, if your Crowdstrike event contains `id: 123`, `aid: 456`, and `cid:
 | aws.s3.bucket.arn | The AWS S3 bucket ARN. | keyword |
 | aws.s3.bucket.name | The AWS S3 bucket name. | keyword |
 | aws.s3.object.key | The AWS S3 Object key. | keyword |
+| crowdstrike.AccountDomain |  | match_only_text |
+| crowdstrike.AccountObjectGuid |  | match_only_text |
+| crowdstrike.AccountObjectSid |  | match_only_text |
 | crowdstrike.AccountType |  | keyword |
 | crowdstrike.ActiveDirectoryAuthenticationMethod |  | keyword |
 | crowdstrike.ActivityId |  | keyword |
@@ -1471,6 +1474,8 @@ For example, if your Crowdstrike event contains `id: 123`, `aid: 456`, and `cid:
 | crowdstrike.CustomerIdString |  | keyword |
 | crowdstrike.CycleTime |  | long |
 | crowdstrike.DataDomains |  | keyword |
+| crowdstrike.DcNumAttachments |  | match_only_text |
+| crowdstrike.DcNumBlockingPolicies |  | match_only_text |
 | crowdstrike.Description |  | keyword |
 | crowdstrike.DesiredAccess |  | keyword |
 | crowdstrike.DetectDescription |  | keyword |
@@ -1534,6 +1539,7 @@ For example, if your Crowdstrike event contains `id: 123`, `aid: 456`, and `cid:
 | crowdstrike.FileName |  | keyword |
 | crowdstrike.FileObject |  | keyword |
 | crowdstrike.FilePath |  | keyword |
+| crowdstrike.FileVaultIsEnabled |  | match_only_text |
 | crowdstrike.FilesWritten.FileName |  | keyword |
 | crowdstrike.FilesWritten.FilePath |  | keyword |
 | crowdstrike.FilesWritten.Timestamp |  | date |
@@ -1719,6 +1725,7 @@ For example, if your Crowdstrike event contains `id: 123`, `aid: 456`, and `cid:
 | crowdstrike.PatternDispositionFlags.SuspendProcess |  | boolean |
 | crowdstrike.PatternDispositionValue |  | long |
 | crowdstrike.PatternId |  | keyword |
+| crowdstrike.PatternIdList |  | match_only_text |
 | crowdstrike.PciAttachmentState |  | keyword |
 | crowdstrike.PciConfigDataBdsm |  | match_only_text |
 | crowdstrike.PciConfigDataBiosCntl |  | match_only_text |
@@ -1829,7 +1836,22 @@ For example, if your Crowdstrike event contains `id: 123`, `aid: 456`, and `cid:
 | crowdstrike.SourceProcessId |  | keyword |
 | crowdstrike.SourceProducts |  | keyword |
 | crowdstrike.SourceThreadId |  | keyword |
+| crowdstrike.SourceThreadModule |  | match_only_text |
 | crowdstrike.SourceVendors |  | keyword |
+| crowdstrike.SpibarDataBfpr |  | match_only_text |
+| crowdstrike.SpibarDataFreg0 |  | match_only_text |
+| crowdstrike.SpibarDataFreg1 |  | match_only_text |
+| crowdstrike.SpibarDataFreg2 |  | match_only_text |
+| crowdstrike.SpibarDataFreg3 |  | match_only_text |
+| crowdstrike.SpibarDataFreg4 |  | match_only_text |
+| crowdstrike.SpibarDataHsfs |  | match_only_text |
+| crowdstrike.SpibarDataPr0 |  | match_only_text |
+| crowdstrike.SpibarDataPr1 |  | match_only_text |
+| crowdstrike.SpibarDataPr2 |  | match_only_text |
+| crowdstrike.SpibarDataPr3 |  | match_only_text |
+| crowdstrike.SpibarDataPr4 |  | match_only_text |
+| crowdstrike.SpibarDataVscc0 |  | match_only_text |
+| crowdstrike.SpibarDataVscc1 |  | match_only_text |
 | crowdstrike.StartTime |  | date |
 | crowdstrike.Status |  | keyword |
 | crowdstrike.StorageUsageInfo |  | match_only_text |
