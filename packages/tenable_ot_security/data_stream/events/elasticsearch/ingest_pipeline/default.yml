@@ -153,7 +153,7 @@ processors:
   - append:
       field: destination.ip
       value: '{{{tenable_ot_security.events.dst_ip}}}'
-      if: ctx.tenable_ot_security.events?.dst_ip != null || ctx.tenable_ot_security.events?.dst_ip != ''   
+      if: ctx.tenable_ot_security.events?.dst_ip != null || ctx.tenable_ot_security.events?.dst_ip != ''  
       allow_duplicates: false 
   
 
@@ -176,20 +176,24 @@ processors:
   - append:
       field: destination.mac
       value: '{{{tenable_ot_security.events.dst_mac}}}'
+      if: ctx.tenable_ot_security.events?.dst_mac != null && ctx.tenable_ot_security.events.dst_mac != ''
       allow_duplicates: false
 
   - append:
       field: source.mac
       value: '{{{tenable_ot_security.events.src_mac}}}'
       allow_duplicates: false 
+      if: ctx.tenable_ot_security.events?.src_mac != null && ctx.tenable_ot_security.events.src_mac != ''
 
   - append:
       field: network.protocol
       value: '{{{tenable_ot_security.events.protocol_raw}}}'
       allow_duplicates: false
+      if: ctx.tenable_ot_security.events?.protocol_raw != null && ctx.tenable_ot_security.events.protocol_raw != ''
 
   - append:
-      field: "related.user"
+      field: related.user
+      if: ctx.tenable_ot_security.events?.resolved_user != null && ctx.tenable_ot_security.events.resolved_user != ''
       value: "{{{tenable_ot_security.events.resolved_user}}}"
       allow_duplicates: false  
   

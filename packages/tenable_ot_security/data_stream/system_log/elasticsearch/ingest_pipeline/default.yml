@@ -88,24 +88,22 @@ processors:
       field: event.dataset
       value: tenable_ot_security.system_log
 
-  - set:
-     field: "message"
-     copy_from: tenable_ot_security.system_log.message
-     ignore_empty_value: true
+  - rename:
+     target_field: message
+     field: tenable_ot_security.system_log.message
 
   - set:
      field: "@timestamp"
      copy_from: tenable_ot_security.system_log.time_stamp
      ignore_empty_value: true
 
-  - set:
-     field: "user.name"
-     value: "{{{tenable_ot_security.system_log.user_name}}}"
-     ignore_empty_value: true
-     
+  - rename:
+     target_field: user.name
+     field: tenable_ot_security.system_log.user_name
+
   - append:
-      field: "related.user"
-      value: "{{{tenable_ot_security.system_log.user_name}}}"
+      field: related.user
+      value: "{{{user.name}}}"
       allow_duplicates: false
       
  ################### Error Log fields ###################
