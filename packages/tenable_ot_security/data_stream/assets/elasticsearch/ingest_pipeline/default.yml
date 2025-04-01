@@ -33,7 +33,7 @@ processors:
           return false;
         }
         dropEmptyFields(ctx);
-        
+
   - script:
       description: Convert Additional Info keys to snake case.
       tag: additional-info-keys-to-snake-case
@@ -63,7 +63,7 @@ processors:
         if (ctx.tenable_ot_security.assets != null) {
           ctx.tenable_ot_security.assets = keysToSnakeCase(ctx.tenable_ot_security.assets);
         }
-  
+
   - script:
       description: "Recursively normalize every occurrence of 'nodes'."
       lang: painless
@@ -74,12 +74,12 @@ processors:
                 for (entry in obj.entrySet()) {
                     def key = entry.getKey();
                     def value = entry.getValue();
-        
+
                     // If the value is a map with a single key "nodes", replace it with its contents
                     if (value instanceof Map && value.containsKey("nodes")) {
                         value = value.get("nodes");
                     }
-        
+
                     // Recursively process if value is a map or list
                     newObj.put(key, normalize(value));
                 }
@@ -93,12 +93,12 @@ processors:
             } else {
                 return obj;
             }
-           }    
+           }
         // Apply normalization to every occurrence of "nodes" in assets.
         if (ctx.containsKey("tenable_ot_security") && ctx.tenable_ot_security.containsKey("assets")) {
           ctx.tenable_ot_security.assets = normalize(ctx.tenable_ot_security.assets);
         }
- 
+
 ##################### ECS Fields #####################
   - set:
       field: event.kind
@@ -171,12 +171,12 @@ processors:
           field: host.ip
           value: "{{_ingest._value}}"
           allow_duplicates: false
-  
+
   - geoip:
       field: host.ip
       target_field: host.geo
       ignore_missing: true
-      ignore_failure: true      
+      ignore_failure: true
  ################### Error Log fields ###################
 on_failure:
   - append:

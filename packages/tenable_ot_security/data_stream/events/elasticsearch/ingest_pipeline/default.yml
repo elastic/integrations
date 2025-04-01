@@ -13,7 +13,7 @@ processors:
       on_failure:
         - append:
             field: error.message
-            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'    
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
 
 ##################### Scripts for processing input #####################
   - script:
@@ -33,7 +33,7 @@ processors:
           return false;
         }
         dropEmptyFields(ctx);
-        
+
   - script:
       description: Convert Additional Info keys to snake case.
       tag: additional-info-keys-to-snake-case
@@ -73,12 +73,12 @@ processors:
                 for (entry in obj.entrySet()) {
                     def key = entry.getKey();
                     def value = entry.getValue();
-        
+
                     // If the value is a map with a single key "nodes", replace it with its contents
                     if (value instanceof Map && value.containsKey("nodes")) {
                         value = value.get("nodes");
                     }
-        
+
                     // Recursively process if value is a map or list
                     newObj.put(key, normalize(value));
                 }
@@ -92,11 +92,11 @@ processors:
             } else {
                 return obj;
             }
-           }    
+           }
         // Apply normalization to every occurrence of "nodes" in events.
         if (ctx.containsKey("tenable_ot_security") && ctx.tenable_ot_security.containsKey("events")) {
           ctx.tenable_ot_security.events = normalize(ctx.tenable_ot_security.events);
-        }        
+        }
 ##################### ECS Fields #####################
   - set:
       field: event.kind
@@ -141,7 +141,7 @@ processors:
   - append:
       field: source.ip
       value: '{{{tenable_ot_security.events.src_ip}}}'
-      if: ctx.tenable_ot_security.events?.src_ip != null || ctx.tenable_ot_security.events.src_ip != ''  
+      if: ctx.tenable_ot_security.events?.src_ip != null || ctx.tenable_ot_security.events.src_ip != ''
       allow_duplicates: false
 
   - convert:
@@ -153,9 +153,9 @@ processors:
   - append:
       field: destination.ip
       value: '{{{tenable_ot_security.events.dst_ip}}}'
-      if: ctx.tenable_ot_security.events?.dst_ip != null || ctx.tenable_ot_security.events?.dst_ip != ''  
-      allow_duplicates: false 
-  
+      if: ctx.tenable_ot_security.events?.dst_ip != null || ctx.tenable_ot_security.events?.dst_ip != ''
+      allow_duplicates: false
+
 
   - script:
       source: |
@@ -182,7 +182,7 @@ processors:
   - append:
       field: source.mac
       value: '{{{tenable_ot_security.events.src_mac}}}'
-      allow_duplicates: false 
+      allow_duplicates: false
       if: ctx.tenable_ot_security.events?.src_mac != null && ctx.tenable_ot_security.events.src_mac != ''
 
   - append:
@@ -195,22 +195,22 @@ processors:
       field: related.user
       if: ctx.tenable_ot_security.events?.resolved_user != null && ctx.tenable_ot_security.events.resolved_user != ''
       value: "{{{tenable_ot_security.events.resolved_user}}}"
-      allow_duplicates: false  
-  
+      allow_duplicates: false
+
 # #################### Override host.ip ######################
 
 
   - append:
       field: host.ip
-      value: "{{{tenable_ot_security.events.src_ip}}}"    
-      allow_duplicates: false 
-      if: ctx.tenable_ot_security.events?.src_ip != null && ctx.tenable_ot_security.events.src_ip != '' 
+      value: "{{{tenable_ot_security.events.src_ip}}}"
+      allow_duplicates: false
+      if: ctx.tenable_ot_security.events?.src_ip != null && ctx.tenable_ot_security.events.src_ip != ''
 
   - geoip:
       field: host.ip
       target_field: host.geo
       ignore_missing: true
-      ignore_failure: true      
+      ignore_failure: true
 
  ################### Error Log fields ###################
 on_failure:
