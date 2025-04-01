@@ -1,6 +1,7 @@
 ---
 description: Pipeline for processing tenable ot security cloud events
 processors:
+
   - rename:
       field: message
       target_field: tenable_ot_security.events
@@ -15,7 +16,8 @@ processors:
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
 
-##################### Scripts for processing input #####################
+  #################### Scripts for processing input ####################
+
   - script:
       description: Drops null/empty values recursively.
       lang: painless
@@ -63,8 +65,9 @@ processors:
         if (ctx.tenable_ot_security.events != null) {
           ctx.tenable_ot_security.events = keysToSnakeCase(ctx.tenable_ot_security.events);
         }
+
   - script:
-      description: "Recursively normalize every occurrence of 'nodes'."
+      description: Recursively normalize every occurrence of 'nodes'.
       lang: painless
       source: |
         def normalize(def obj) {
@@ -97,7 +100,9 @@ processors:
         if (ctx.containsKey("tenable_ot_security") && ctx.tenable_ot_security.containsKey("events")) {
           ctx.tenable_ot_security.events = normalize(ctx.tenable_ot_security.events);
         }
-##################### ECS Fields #####################
+
+  #################### ECS Fields ####################
+
   - set:
       field: event.kind
       value: event
@@ -156,8 +161,9 @@ processors:
       if: ctx.tenable_ot_security.events?.dst_ip != null || ctx.tenable_ot_security.events?.dst_ip != ''
       allow_duplicates: false
 
-
   - script:
+      description: Convert MAC addresses to standard notation.
+      lang: painless
       source: |
         def events = ctx?.tenable_ot_security?.events;
         if (events != null) {
@@ -197,8 +203,7 @@ processors:
       value: "{{{tenable_ot_security.events.resolved_user}}}"
       allow_duplicates: false
 
-# #################### Override host.ip ######################
-
+  #################### Override host.ip ####################
 
   - append:
       field: host.ip
@@ -212,7 +217,8 @@ processors:
       ignore_missing: true
       ignore_failure: true
 
- ################### Error Log fields ###################
+#################### Error Log fields ####################
+
 on_failure:
   - append:
       field: error.message

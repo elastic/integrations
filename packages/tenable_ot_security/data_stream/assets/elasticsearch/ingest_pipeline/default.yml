@@ -1,6 +1,7 @@
 ---
 description: Pipeline for processing tenable OT security cloud assets
 processors:
+
   - rename:
       field: message
       target_field: tenable_ot_security.assets
@@ -15,7 +16,8 @@ processors:
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
 
-##################### Scripts for processing input #####################
+  ##################### Scripts for processing input #####################
+
   - script:
       description: Drops null/empty values recursively.
       lang: painless
@@ -65,7 +67,7 @@ processors:
         }
 
   - script:
-      description: "Recursively normalize every occurrence of 'nodes'."
+      description: Recursively normalize every occurrence of 'nodes'.
       lang: painless
       source: |
         def normalize(def obj) {
@@ -99,7 +101,8 @@ processors:
           ctx.tenable_ot_security.assets = normalize(ctx.tenable_ot_security.assets);
         }
 
-##################### ECS Fields #####################
+  ##################### ECS Fields #####################
+
   - set:
       field: event.kind
       value: event
@@ -152,8 +155,8 @@ processors:
           value: "{{_ingest._value}}"
           allow_duplicates: false
 
+  #################### Override host.ip ####################
 
-# #################### Override host.ip ######################
   - foreach:
       field: tenable_ot_security.assets.direct_ips
       if: ctx.tenable_ot_security.assets.direct_ips != null && ctx.tenable_ot_security.assets.direct_ips!= '' && ctx.tenable_ot_security.assets.direct_ips.length > 0
@@ -177,7 +180,9 @@ processors:
       target_field: host.geo
       ignore_missing: true
       ignore_failure: true
- ################### Error Log fields ###################
+
+#################### Error Log fields ####################
+
 on_failure:
   - append:
       field: error.message
