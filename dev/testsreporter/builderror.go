@@ -77,7 +77,7 @@ func (b *buildError) Teams() []string {
 }
 
 func (b *buildError) SummaryData() map[string]any {
-	data := b.dataError.SummaryData()
+	data := b.dataError.Data()
 	data["packages"] = b.packages
 	data["owners"] = b.teams
 	return data

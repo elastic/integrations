@@ -40,7 +40,7 @@ func (d *dataError) String() string {
 	return sb.String()
 }
 
-func (d *dataError) SummaryData() map[string]any {
+func (d *dataError) Data() map[string]any {
 	return map[string]any{
 		"stackVersion":      d.stackVersion,
 		"serverless":        d.serverless,

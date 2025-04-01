@@ -94,7 +94,7 @@ func (p *packageError) String() string {
 }
 
 func (p *packageError) SummaryData() map[string]any {
-	data := p.dataError.SummaryData()
+	data := p.dataError.Data()
 	data["packageName"] = p.packageName
 	data["testName"] = p.Name
 	data["dataStream"] = p.dataStream
