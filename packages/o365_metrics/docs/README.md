@@ -2951,13 +2951,9 @@ Please refer to the following [document](https://www.elastic.co/guide/en/ecs/cur
 | Field | Description | Type |
 |---|---|---|
 | @timestamp | Event timestamp. | date |
-| cloud.image.id | Image ID for the cloud instance. | keyword |
 | data_stream.dataset | Data stream dataset. | constant_keyword |
 | data_stream.namespace | Data stream namespace. | constant_keyword |
 | data_stream.type | Data stream type. | constant_keyword |
-| host.containerized | If the host is a container. | boolean |
-| host.os.build | OS build information. | keyword |
-| host.os.codename | OS codename, if any. | keyword |
 | input.type | Input type. | keyword |
 | o365.metrics.app_registrations.app_id | The unique identifier for the application that is assigned to an application by Microsoft Entra ID. | keyword |
 | o365.metrics.app_registrations.display_name | The display name for the application. | keyword |
