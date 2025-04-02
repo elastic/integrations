@@ -18,9 +18,9 @@ Follow these detailed steps to release a fix for a given package version:
         * Look for the merge commit of the PR
 
             * [https://github.com/elastic/integrations/commit/aa63e1f6a61d2a017e1f88af2735db129cc68e0c](https://github.com/elastic/integrations/commit/aa63e1f6a61d2a017e1f88af2735db129cc68e0c)
-            * It can be found as one of the last messages in the PR ![merged commit](../images/merge_commit_message.png "")
+            * It can be found as one of the last messages in the PR ![merged commit](images/merge_commit_message.png "")
             * And then show the previous commits for that changeset inside the package folder (e.g. `packages/aws`):
-            * [https://github.com/elastic/integrations/commits/aa63e1f6a61d2a017e1f88af2735db129cc68e0c/packages/aws/](https://github.com/elastic/integrations/commits/aa63e1f6a61d2a017e1f88af2735db129cc68e0c/packages/aws/) ![commits from package](../images/browse_package_commits.png "")
+            * [https://github.com/elastic/integrations/commits/aa63e1f6a61d2a017e1f88af2735db129cc68e0c/packages/aws/](https://github.com/elastic/integrations/commits/aa63e1f6a61d2a017e1f88af2735db129cc68e0c/packages/aws/) ![commits from package](images/browse_package_commits.png "")
 
     * Using the command line:
 
@@ -55,11 +55,11 @@ Follow these detailed steps to release a fix for a given package version:
             Move lightweight manifest to integration for EBS data stream (#3856)
         ```
 
-2. Run the **integrations-backport** pipeline [https://buildkite.com/elastic/integrations-backport](https://buildkite.com/elastic/integrations-backport) for creating the backport branch. ![buildkite buid](../images/build.png "")
+2. Run the **integrations-backport** pipeline [https://buildkite.com/elastic/integrations-backport](https://buildkite.com/elastic/integrations-backport) for creating the backport branch. ![buildkite buid](images/build.png "")
 
     **Please, pay attention!**, if you just run the pipeline it’ll wait for your inputs, nothing will happen without that.
 
-    :::{image} ../images/backport_input_step.png
+    :::{image} images/backport_input_step.png
     :alt: waiting input step
     :::
 

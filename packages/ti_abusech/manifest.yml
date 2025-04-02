@@ -1,13 +1,13 @@
 name: ti_abusech
 title: AbuseCH
-version: "2.6.0"
+version: "2.8.0"
 description: Ingest threat intelligence indicators from URL Haus, Malware Bazaar, and Threat Fox feeds with Elastic Agent.
 type: integration
-format_version: "3.0.3"
+format_version: "3.2.3"
 categories: ["security", "threat_intel"]
 conditions:
   kibana:
-    version: "^8.13.0 || ^9.0.0"
+    version: "^8.18.0 || ^9.0.0"
 icons:
   - src: /img/abusech2.svg
     title: AbuseCH
@@ -30,11 +30,27 @@ policy_templates:
   - name: ti_abusech
     title: AbuseCH API
     description: Ingest threat intelligence indicators from URL Haus, Malware Bazaar, and Threat Fox feeds with Elastic Agent.
+    deployment_modes:
+      default:
+        enabled: true
+      agentless:
+        enabled: true
+        organization: security
+        division: engineering
+        team: security-service-integrations
     inputs:
       - type: cel
         title: "Collect AbuseCH logs via API using Elastic Agent"
         description: "Ingest threat intelligence indicators from URL Haus, Malware Bazaar, and Threat Fox feeds with Elastic Agent."
         vars:
+          - name: auth_key
+            type: password
+            title: Auth Key
+            multi: false
+            required: false
+            show_user: true
+            secret: true
+            description: AbuseCH API key. This is optional but recommended to avoid rate limiting.
           - name: enable_request_tracer
             type: bool
             title: Enable request tracing

@@ -198,7 +198,7 @@ with_kubernetes() {
     which kind
 
     echo "--- Install kubectl"
-    retry 5 curl -sSLo "${BIN_FOLDER}/kubectl" "https://storage.googleapis.com/kubernetes-release/release/${K8S_VERSION}/bin/${platform_type_lowercase}/${arch_type}/kubectl"
+    retry 5 curl -sSLo "${BIN_FOLDER}/kubectl" "https://dl.k8s.io/release/${K8S_VERSION}/bin/${platform_type_lowercase}/${arch_type}/kubectl"
     chmod +x "${BIN_FOLDER}/kubectl"
     kubectl version --client
     which kubectl

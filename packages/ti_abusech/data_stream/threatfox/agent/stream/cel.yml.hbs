@@ -16,14 +16,23 @@ resource.timeout: {{http_client_timeout}}
 resource.url: {{url}}
 state:
   initial_interval: "{{initial_interval}}"
+{{#if auth_key}}
+  auth_key: {{auth_key}}
+{{/if}}
 redact:
-  fields: ~
+  fields:
+    - auth_key
 program: |
+  state.with(
     request("POST", state.url, '{ "query": "get_iocs", "days": ' + state.?cursor.days.orValue(state.initial_interval) + ' }' 
     ).with({
         "Header":{
           "Content-Type": ["application/json"],
-        }
+          ?"Auth-Key": has(state.auth_key) ? 
+            optional.of([state.auth_key]) 
+          :
+            optional.none(),
+          }
     }).as(req, req.do_request().as(resp, 
       bytes(resp.Body).decode_json().as(body, {
         "events": body.data.map(ind, {
@@ -36,6 +45,7 @@ program: |
         "url": state.url
       })
     ))
+  )
 
 {{#if ioc_expiration_duration}}
 fields_under_root: true
