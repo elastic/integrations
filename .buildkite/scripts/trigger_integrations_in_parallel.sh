@@ -6,6 +6,7 @@ set -euo pipefail
 
 add_bin_path
 with_yq
+with_mage
 
 pushd packages > /dev/null
 PACKAGE_LIST=$(list_all_directories)
