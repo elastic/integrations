@@ -4,6 +4,7 @@ resource.tracer:
   enabled: {{enable_request_tracer}}
   filename: "../../logs/cel/http-request-trace-*.ndjson"
   maxbackups: 5
+  maxsize: 5
 {{#if proxy_url}}
 resource.proxy_url: {{proxy_url}}
 {{/if}}
@@ -25,7 +26,7 @@ resource.url: {{api_host}}
 state:
   user_key: {{user_key}}
   initial_interval: {{initial_interval}}
-  page_size: {{page_size}}
+  batch_size: {{batch_size}}
 redact:
   fields: ~
 program: |
@@ -41,10 +42,10 @@ program: |
     request(
       "GET",
       state.url.trim_right("/") + "/admin/reports/v1/activity/users/" + state.user_key + "/applications/data_studio?"+ {
-        "maxResults": [string(state.page_size)],
+        "maxResults": [string(state.batch_size)],
         "endTime": [string(state.end_time)],
         "startTime": [string(state.start_time)],
-        ?"pageToken": has(state.next_page_token) ? optional.of([string(state.next_page_token)]) : optional.none(),
+        ?"pageToken": state.?cursor.next_page_token.optMap(v, [string(v)]),
       }.format_query()
     ).do_request().as(resp, resp.StatusCode == 200 ?
       bytes(resp.Body).decode_json().as(body,{
@@ -59,9 +60,9 @@ program: |
           ),
         "cursor": {
            "last_timestamp": state.end_time,
+           ?"next_page_token": body.?nextPageToken,
          },
         "want_more": has(body.nextPageToken),
-        ?"next_page_token": body.?nextPageToken,
       })
     :
       {
@@ -69,7 +70,7 @@ program: |
           "error": {
             "code": string(resp.StatusCode),
             "id": string(resp.Status),
-            "message": "GET:"+(
+            "message": "GET "+state.url.trim_right("/")+"/admin/reports/v1/activity/users/"+state.user_key+"/applications/data_studio:"+(
               size(resp.Body) != 0 ?
                 string(resp.Body)
               :
