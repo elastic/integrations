@@ -12,6 +12,8 @@ pushd packages > /dev/null
 PACKAGE_LIST=$(list_all_directories)
 popd > /dev/null
 
+SKIPPED_PACKAGES_FILE_PATH="${WORKSPACE}/skipped_packages.txt"
+
 PIPELINE_FILE="packages_pipeline.yml"
 touch packages_pipeline.yml
 
@@ -49,6 +51,7 @@ for package in ${PACKAGE_LIST}; do
     if ! reason=$(is_pr_affected "${package}" "${from}" "${to}") ; then
         skip_package="true"
     fi
+    echo "- ${reason}" >> "${SKIPPED_PACKAGES_FILE_PATH}"
     echoerr "${reason}"
     popd > /dev/null
 
@@ -78,6 +81,12 @@ for package in ${PACKAGE_LIST}; do
         - build/elastic-stack-dump/*/logs/fleet-server-internal/**/*
 EOF
 done
+
+if running_on_buildkite ; then
+    if [ -f "${fKIPPED_PACKAGES_FILE_PATH}" ]; then
+        create_collapsed_annotation "Skipped packages" "${SKIPPED_PACKAGES_FILE_PATH}" "info" "ctx-skipped-packages"
+    fi
+fi
 
 if [ ${packages_to_test} -eq 0 ]; then
     buildkite-agent annotate "No packages to be tested" --context "ctx-no-packages" --style "warning"
