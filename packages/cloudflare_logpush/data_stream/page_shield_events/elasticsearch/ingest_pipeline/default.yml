@@ -1,0 +1,194 @@
+---
+description: Pipeline for parsing Cloudflare Page Shield Event logs.
+processors:
+  - set:
+      field: ecs.version
+      value: '8.11.0'
+  - rename:
+      field: message
+      target_field: event.original
+      ignore_missing: true
+      if: ctx.event?.original == null
+  - json:
+      field: event.original
+      target_field: json
+      ignore_failure: true
+  - set:
+      field: event.category
+      value: [network]
+  - set:
+      field: event.kind
+      value: event
+  - set:
+      field: event.type
+      value: [info]
+  - script:
+      lang: painless
+      tag: painless_Timestamp_to_milli
+      if: ctx.json?.Timestamp != null
+      source: |
+        try {
+          long t;
+          if (ctx.json.Timestamp instanceof String) {
+            t = Long.parseLong(ctx.json.Timestamp);
+          } else if (ctx.json.Timestamp instanceof Number) {
+            t = (long)(ctx.json.Timestamp);
+          } else {
+            return;
+          }
+          if (t > (long)(1e18)) {
+            ctx.json.Timestamp = t/(long)(1e6)
+          } else if (t < (long)(1e10))  {
+            ctx.json.Timestamp = t*(long)(1e3)
+          }
+        }
+        catch (Exception e) {}
+  - date:
+      field: json.Timestamp
+      if: ctx.json?.Timestamp != null && ctx.json.Timestamp != ''
+      formats:
+        - UNIX_MS
+        - ISO8601
+        - yyyy-MM-dd'T'HH:mm:ssZ
+      timezone: UTC
+      on_failure:
+      - append:
+          field: error.message
+          value: >-
+            Processor '{{{ _ingest.on_failure_processor_type }}}'
+            {{{#_ingest.on_failure_processor_tag}}}with tag '{{{ _ingest.on_failure_processor_tag }}}'
+            {{{/_ingest.on_failure_processor_tag}}}failed with message '{{{ _ingest.on_failure_message }}}'
+  - set:
+      field: cloudflare_logpush.page_shield_events.timestamp
+      copy_from: '@timestamp'
+      ignore_empty_value: true
+  - rename:
+      field: json.Action
+      target_field: cloudflare_logpush.page_shield_events.action
+      ignore_missing: true
+  - set:
+      field: event.action
+      copy_from: cloudflare_logpush.page_shield_events.action
+      ignore_empty_value: true
+  - lowercase:
+      field: event.action
+      ignore_missing: true
+  - rename:
+      field: json.CSPDirective
+      target_field: cloudflare_logpush.page_shield_events.csp_directive
+      ignore_missing: true
+  - rename:
+      field: json.Host
+      target_field: cloudflare_logpush.page_shield_events.host
+      ignore_missing: true
+  - set:
+      field: host.name
+      copy_from: cloudflare_logpush.page_shield_events.host
+      ignore_empty_value: true
+  - append:
+      field: related.hosts
+      value: '{{{host.name}}}'
+      if: ctx.host?.name != null && ctx.host.name != ''
+      allow_duplicates: false
+  - rename:
+      field: json.PageURL
+      target_field: cloudflare_logpush.page_shield_events.page_url
+      ignore_missing: true
+  - rename:
+      field: json.URL
+      target_field: cloudflare_logpush.page_shield_events.url
+      ignore_missing: true
+  - uri_parts:
+      tag: uri_parts_url
+      field: cloudflare_logpush.page_shield_events.url
+      target_field: url
+      ignore_missing: true
+      on_failure:
+        - append:
+            field: error.message
+            value: >-
+              Processor '{{{ _ingest.on_failure_processor_type }}}'
+              {{{#_ingest.on_failure_processor_tag}}}with tag '{{{ _ingest.on_failure_processor_tag }}}'
+              {{{/_ingest.on_failure_processor_tag}}}failed with message '{{{ _ingest.on_failure_message }}}'
+  - rename:
+      field: json.PolicyID
+      target_field: cloudflare_logpush.page_shield_events.policy_id
+      ignore_missing: true
+  - rename:
+      field: json.ResourceType
+      target_field: cloudflare_logpush.page_shield_events.resource_type
+      ignore_missing: true
+  - convert:
+      field: json.URLContainsCDNCGIPath
+      target_field: cloudflare_logpush.page_shield_events.url_contains_cdn_cgi_path
+      tag: convert_url_contains_cdn_cgi_path_bool
+      type: boolean
+      ignore_missing: true
+      on_failure:
+        - append:
+            field: error.message
+            value: >-
+              Processor '{{{ _ingest.on_failure_processor_type }}}'
+              {{{#_ingest.on_failure_processor_tag}}}with tag '{{{ _ingest.on_failure_processor_tag }}}'
+              {{{/_ingest.on_failure_processor_tag}}}failed with message '{{{ _ingest.on_failure_message }}}'
+  - rename:
+      field: json.URLHost
+      target_field: cloudflare_logpush.page_shield_events.url_host
+      ignore_missing: true
+  - set:
+      field: url.domain
+      copy_from: cloudflare_logpush.page_shield_events.url_host
+      ignore_empty_value: true
+  - remove:
+      field: json
+      ignore_missing: true
+  - remove:
+      field:
+        - cloudflare_logpush.page_shield_events.action
+        - cloudflare_logpush.page_shield_events.host
+        - cloudflare_logpush.page_shield_events.url
+        - cloudflare_logpush.page_shield_events.timestamp
+      if: ctx.tags == null || !ctx.tags.contains('preserve_duplicate_custom_fields')
+      ignore_failure: true
+      ignore_missing: true
+  - script:
+        description: Drops null/empty values recursively.
+        lang: painless
+        source: |
+          boolean dropEmptyFields(Object object) {
+            if (object == null || object == "") {
+              return true;
+            } else if (object instanceof Map) {
+              ((Map) object).values().removeIf(value -> dropEmptyFields(value));
+              return (((Map) object).size() == 0);
+            } else if (object instanceof List) {
+              ((List) object).removeIf(value -> dropEmptyFields(value));
+              return (((List) object).length == 0);
+            }
+            return false;
+          }
+          dropEmptyFields(ctx);
+  - set:
+      field: event.kind
+      value: pipeline_error
+      tag: set_pipeline_error_into_event_kind
+      if: ctx.error?.message != null
+  - append:
+      field: tags
+      value: preserve_original_event
+      allow_duplicates: false
+      if: ctx.error?.message != null
+on_failure:
+  - append:
+      field: error.message
+      value: >-
+        Processor '{{{ _ingest.on_failure_processor_type }}}'
+        {{{#_ingest.on_failure_processor_tag}}}with tag '{{{ _ingest.on_failure_processor_tag }}}'
+        {{{/_ingest.on_failure_processor_tag}}}failed with message '{{{ _ingest.on_failure_message }}}'
+  - set:
+      field: event.kind
+      value: pipeline_error
+  - append:
+      field: tags
+      value: preserve_original_event
+      allow_duplicates: false
