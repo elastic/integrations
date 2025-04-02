@@ -1998,6 +1998,11 @@ processors:
       field: crowdstrike.ParentProcessId
       target_field: process.parent.entity_id
       ignore_missing: true
+  - set:
+      field: process.name
+      copy_from: crowdstrike.ContextBaseFileName
+      if: ctx._temp?.isNetwork == true
+      ignore_empty_value: true
   - rename:
       field: crowdstrike.ParentBaseFileName
       target_field: process.parent.name
@@ -2652,11 +2657,6 @@ processors:
       target_field: dns.question.name
       ignore_missing: true
       if: ctx.event?.action != null && ctx.dns?.question?.name == null && ctx.event.action.contains("DnsRequest")
-  - set:
-      field: process.name
-      copy_from: crowdstrike.ContextBaseFileName
-      if: ctx.event?.action != null && ctx.event.action.contains("DnsRequest")
-      ignore_empty_value: true
   - script:
       tag: dns-request-type-to-name
       description: Map decimal DNS request type to its name.
