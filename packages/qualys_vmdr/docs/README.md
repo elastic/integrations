@@ -498,6 +498,7 @@ An example event for `asset_host_detection` looks as following:
 | qualys_vmdr.asset_host_detection.knowledge_base.last.customization.datetime |  | date |
 | qualys_vmdr.asset_host_detection.knowledge_base.last.customization.user_login |  | keyword |
 | qualys_vmdr.asset_host_detection.knowledge_base.last.service_modification_datetime |  | date |
+| qualys_vmdr.asset_host_detection.knowledge_base.patch_published_date |  | date |
 | qualys_vmdr.asset_host_detection.knowledge_base.patchable |  | boolean |
 | qualys_vmdr.asset_host_detection.knowledge_base.pci_flag |  | boolean |
 | qualys_vmdr.asset_host_detection.knowledge_base.pci_reasons.value |  | keyword |
@@ -765,6 +766,7 @@ An example event for `knowledge_base` looks as following:
 | qualys_vmdr.knowledge_base.last.customization.datetime |  | date |
 | qualys_vmdr.knowledge_base.last.customization.user_login |  | keyword |
 | qualys_vmdr.knowledge_base.last.service_modification_datetime |  | date |
+| qualys_vmdr.knowledge_base.patch_published_date |  | date |
 | qualys_vmdr.knowledge_base.patchable |  | boolean |
 | qualys_vmdr.knowledge_base.pci_flag |  | boolean |
 | qualys_vmdr.knowledge_base.pci_reasons.value |  | keyword |

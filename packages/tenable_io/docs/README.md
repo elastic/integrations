@@ -2,15 +2,17 @@
 
 ## Overview
 
-The [Tenable Vulnerability Management](https://www.tenable.com/products/tenable-io) integration allows users to monitor asset, plugin, scan and vulnerability activity. It provides the industry's most comprehensive vulnerability coverage with the ability to predict which security issues to remediate first. Tenable Vulnerability Management is the user's complete end-to-end vulnerability management solution.
+The [Tenable Vulnerability Management](https://www.tenable.com/products/tenable-io) integration allows users to monitor asset, audit, plugin, scan and vulnerability activity. It provides the industry's most comprehensive vulnerability coverage with the ability to predict which security issues to remediate first. Tenable Vulnerability Management is the user's complete end-to-end vulnerability management solution.
 
 Use the Tenable Vulnerability Management integration to collects and parses data from the REST APIs. Then visualize that data in Kibana.
 
 ## Data streams
 
-The Tenable Vulnerability Management integration collects logs for four types of events: Asset, Plugin, Scan, and Vulnerability.
+The Tenable Vulnerability Management integration collects logs for five types of events: Asset, Audit, Plugin, Scan, and Vulnerability.
 
 **Asset** is used to get details related to assets that belong to the user's organization. See more details in the API documentation [here](https://developer.tenable.com/reference/exports-assets-request-export).
+
+**Audit** is used to obtain details about when each activity occurred, the actions taken, the individuals involved, and other relevant information. See more details in the API documentation [here](https://developer.tenable.com/reference/audit-log-events).
 
 **Plugin** is used to get detailed plugin information. See more details in the API documentation [here](https://developer.tenable.com/reference/io-plugins-list).
 
@@ -46,8 +48,6 @@ You can run Elastic Agent inside a container, either with Fleet Server or standa
 
 There are some minimum requirements for running Elastic Agent and for more information, refer to the link [here](https://www.elastic.co/guide/en/fleet/current/elastic-agent-installation.html).
 
-The minimum **kibana.version** required is **8.12.0**.
-
 **Note:**
   - In this integration, export and plugin endpoints of vulnerability management are used to fetch data.
   - The default value is the recommended value for a batch size by Tenable. Using a smaller batch size can improve performance. A very large value might not work as intended depending on the API and instance limitations.
@@ -69,6 +69,7 @@ Agentless deployments are only supported in Elastic Serverless and Elastic Cloud
 **Note:**
   - For the Tenable Vulnerability Management asset and vulnerability API, **ADMINISTRATOR [64]** and **Can View** access control is required in  created user's access key and secret key.
   - For the Tenable Vulnerability Management plugin, **BASIC [16]** user permissions are required in created user's access key and secret key.
+  - For the Tenable Vulnerability Management audit, **ADMINISTRATOR [64]** user permissions are required in created user's access key and secret key.
   - For more details related to permissions, refer to the link [here](https://developer.tenable.com/docs/permissions).
 
 ### Enabling the integration in Elastic:
@@ -349,6 +350,122 @@ An example event for `asset` looks as following:
 | tenable_io.asset.terminated_at | The time and date when a user terminated the Amazon Web Service (AWS) virtual machine instance of the asset. | date |
 | tenable_io.asset.terminated_by | The user who terminated the AWS instance of the asset. | keyword |
 | tenable_io.asset.updated_at | The time and date when the asset record was last updated. | date |
+
+
+### audit
+
+This is the `audit` dataset.
+
+#### Example
+
+An example event for `audit` looks as following:
+
+```json
+{
+    "@timestamp": "2018-12-31T01:40:07.000Z",
+    "agent": {
+        "ephemeral_id": "38f06019-8401-4ccf-b22e-a32a3c92782a",
+        "id": "50882574-d579-4b3a-a674-50631e963312",
+        "name": "elastic-agent-35966",
+        "type": "filebeat",
+        "version": "8.18.0"
+    },
+    "data_stream": {
+        "dataset": "tenable_io.audit",
+        "namespace": "73246",
+        "type": "logs"
+    },
+    "ecs": {
+        "version": "8.11.0"
+    },
+    "elastic_agent": {
+        "id": "50882574-d579-4b3a-a674-50631e963312",
+        "snapshot": true,
+        "version": "8.18.0"
+    },
+    "event": {
+        "action": "session-delete",
+        "agent_id_status": "verified",
+        "category": [
+            "session"
+        ],
+        "dataset": "tenable_io.audit",
+        "id": "eaac53481de04f67bc7eeea07d2fb0f5",
+        "ingested": "2025-04-01T11:02:14Z",
+        "kind": "event",
+        "original": "{\"action\":\"session.delete\",\"actor\":{\"id\":\"d2667922-5a27-4c4a-9207-f591fbdc9d23\",\"name\":\"user2@example.com\"},\"crud\":\"d\",\"description\":null,\"fields\":[{\"key\":\"message\",\"value\":\"session timeout\"}],\"id\":\"eaac53481de04f67bc7eeea07d2fb0f5\",\"is_anonymous\":null,\"is_failure\":false,\"received\":\"2018-12-31T01:40:07Z\",\"target\":{\"id\":\"12d024e\",\"name\":null,\"type\":\"Session\"}}",
+        "outcome": "success",
+        "type": [
+            "end"
+        ]
+    },
+    "input": {
+        "type": "cel"
+    },
+    "related": {
+        "user": [
+            "d2667922-5a27-4c4a-9207-f591fbdc9d23",
+            "user2@example.com"
+        ]
+    },
+    "tags": [
+        "preserve_original_event",
+        "preserve_duplicate_custom_fields",
+        "forwarded",
+        "tenable_io-audit"
+    ],
+    "tenable_io": {
+        "audit": {
+            "action": "session.delete",
+            "actor": {
+                "id": "d2667922-5a27-4c4a-9207-f591fbdc9d23",
+                "name": "user2@example.com"
+            },
+            "crud": "d",
+            "fields": {
+                "message": "session timeout"
+            },
+            "id": "eaac53481de04f67bc7eeea07d2fb0f5",
+            "is_failure": false,
+            "received": "2018-12-31T01:40:07.000Z",
+            "target": {
+                "id": "12d024e",
+                "type": "Session"
+            }
+        }
+    },
+    "user": {
+        "id": "d2667922-5a27-4c4a-9207-f591fbdc9d23",
+        "name": "user2@example.com"
+    }
+}
+```
+
+**Exported fields**
+
+| Field | Description | Type |
+|---|---|---|
+| @timestamp | Event timestamp. | date |
+| data_stream.dataset | Data stream dataset. | constant_keyword |
+| data_stream.namespace | Data stream namespace. | constant_keyword |
+| data_stream.type | Data stream type. | constant_keyword |
+| event.dataset | Event dataset. | constant_keyword |
+| event.module | Event module. | constant_keyword |
+| input.type | Type of filebeat input. | keyword |
+| log.offset | Log offset. | long |
+| tenable_io.audit.action | The action that was taken by the user. | keyword |
+| tenable_io.audit.actor.id | The UUID of the user that took the action. | keyword |
+| tenable_io.audit.actor.name | The username of the user that took the action. | keyword |
+| tenable_io.audit.crud | Indicates whether the action taken was creating (c), reading (r), updating (u), or deleting (d) an entity. | keyword |
+| tenable_io.audit.description | A description of the event. | keyword |
+| tenable_io.audit.fields |  | object |
+| tenable_io.audit.id | The unique ID of the event. | keyword |
+| tenable_io.audit.is_anonymous | Indicates whether the action was performed anonymously. | boolean |
+| tenable_io.audit.is_failure | Indicates whether the action the user took succeeded or failed. Every event is logged regardless of whether a user action succeeds. | boolean |
+| tenable_io.audit.received | The date and time the event occurred in ISO 8601 format. | date |
+| tenable_io.audit.target.id | The UUID of the target entity. For example, a user UUID. | keyword |
+| tenable_io.audit.target.name | The name of the target entity. For example, a username. | keyword |
+| tenable_io.audit.target.type | The type of entity that was the target of the action. For example, a user. | keyword |
 
 
 ### plugin
