@@ -763,12 +763,12 @@ is_pr_affected() {
 
     echo "[${package}] git-diff: check non-package files"
     commit_merge=$(git merge-base "${from}" "${to}")
-    if git diff --name-only "${commit_merge}" "${to}" | grep -E -v '^(packages/|\.github/(CODEOWNERS|ISSUE_TEMPLATE|PULL_REQUEST_TEMPLATE)|README\.md|docs/)' ; then
+    if git diff --name-only "${commit_merge}" "${to}" | grep -q -E -v '^(packages/|\.github/(CODEOWNERS|ISSUE_TEMPLATE|PULL_REQUEST_TEMPLATE)|README\.md|docs/)' ; then
         echo "[${package}] PR is affected: found non-package files"
         return 0
     fi
     echo "[${package}] git-diff: check package files"
-    if git diff --name-only "${commit_merge}" "${to}" | grep -E "^packages/${package}/" ; then
+    if git diff --name-only "${commit_merge}" "${to}" | grep -q -E "^packages/${package}/" ; then
         echo "[${package}] PR is affected: found package files"
         return 0
     fi
