@@ -49,7 +49,11 @@ processors:
         - UNIX_MS
         - ISO8601
       ignore_failure: true
-      if: ctx.event?.created == null
+      if: >
+        ctx.event?.created == null &&
+        ctx.crowdstrike?.UTCTimestamp != null &&
+        ctx.crowdstrike?.UTCTimestamp != "" &&
+        ctx.crowdstrike?.UTCTimestamp != "none"
   - date:
       tag: date-timestamp
       description: Parse timestamp from event.
@@ -59,7 +63,11 @@ processors:
         - UNIX_MS
         - ISO8601
       ignore_failure: true
-      if: ctx.event?.created == null
+      if: >
+        ctx.event?.created == null &&
+        ctx.crowdstrike?.timestamp != null &&
+        ctx.crowdstrike?.timestamp != "" &&
+        ctx.crowdstrike?.timestamp != "none"
   - date:
       tag: date-event-created
       description: Parse timestamp from event.
@@ -69,7 +77,11 @@ processors:
         - UNIX
         - ISO8601
       ignore_failure: true
-      if: ctx.event?.created == null
+      if: >
+        ctx.event?.created == null &&
+        ctx.crowdstrike?.CreationTimeStamp != null &&
+        ctx.crowdstrike?.CreationTimeStamp != "" &&
+        ctx.crowdstrike?.CreationTimeStamp != "none"
   - date:
       tag: date-Time
       description: Parse Time from event.
@@ -79,7 +91,11 @@ processors:
         - ISO8601
         - UNIX
       ignore_failure: true
-      if: ctx.event?.created == null
+      if: >
+        ctx.event?.created == null &&
+        ctx.crowdstrike?.Time != null &&
+        ctx.crowdstrike?.Time != "" &&
+        ctx.crowdstrike?.Time != "none"
   - date:
       tag: date-_time
       description: Parse _time from event.
@@ -89,7 +105,11 @@ processors:
         - ISO8601
         - UNIX
       ignore_failure: true
-      if: ctx.event?.created == null
+      if: >
+        ctx.event?.created == null &&
+        ctx.crowdstrike?._time != null &&
+        ctx.crowdstrike?._time != "" &&
+        ctx.crowdstrike?._time != "none"
   - set:
       tag: set-timestamp
       field: "@timestamp"
@@ -138,12 +158,14 @@ processors:
         }
   - date:
       tag: date-start-timestamp
-      if: ctx.crowdstrike?.StartTime != null
       field: crowdstrike.StartTime
       target_field: crowdstrike.StartTime
       formats:
         - UNIX
-      ignore_failure: true
+      if: >
+        ctx.crowdstrike?.StartTime != null &&
+        ctx.crowdstrike?.StartTime != "" &&
+        ctx.crowdstrike?.StartTime != "none"
   - script:
       tag: date-end-timestamp-from-nt
       description: Conditionally convert EndTime from Windows NT timestamp format to UNIX.
@@ -165,20 +187,25 @@ processors:
         }
   - date:
       tag: date-end-timestamp
-      if: ctx.crowdstrike?.EndTime != null
       field: crowdstrike.EndTime
       target_field: crowdstrike.EndTime
       formats:
         - UNIX
-      ignore_failure: true
+      if: >
+        ctx.crowdstrike?.EndTime != null &&
+        ctx.crowdstrike?.EndTime != "" &&
+        ctx.crowdstrike?.EndTime != "none"
   - date:
       tag: date-scores-modified_time
-      if: ctx.crowdstrike?.scores?.modified_time != null
       field: crowdstrike.scores.modified_time
       target_field: crowdstrike.scores.modified_time
       formats:
         - ISO8601
         - yyyy-MM-dd'T'HH:mm:ss.SSS'Z'
+      if: >
+        ctx.crowdstrike?.scores?.modified_time != null &&
+        ctx.crowdstrike?.scores?.modified_time != "" &&
+        ctx.crowdstrike?.scores?.modified_time != "none"
       on_failure:
         - remove:
             field: crowdstrike.scores.modified_time
@@ -306,11 +333,15 @@ processors:
       type: ip
       if: (ctx.crowdstrike?.CurrentLocalIP != null && ctx.crowdstrike?.CurrentLocalIP != "")
   - date:
+      tag: date-first-discovery-date
       field: crowdstrike.FirstDiscoveredDate
       target_field: crowdstrike.FirstDiscoveredDate
       formats:
         - UNIX
-      if: ctx.crowdstrike?.FirstDiscoveredDate != null && ctx.crowdstrike?.FirstDiscoveredDate != ""
+      if: >
+        ctx.crowdstrike?.FirstDiscoveredDate != null &&
+        ctx.crowdstrike?.FirstDiscoveredDate != "" &&
+        ctx.crowdstrike?.FirstDiscoveredDate != "none"
   - convert:
       field: crowdstrike.aipCount
       type: integer
@@ -1705,6 +1736,10 @@ processors:
       field: host.os.type
       value: windows
       if: ctx.crowdstrike?.event_platform != null && ctx.crowdstrike?.event_platform == "Win"
+  - set:
+      field: host.os.type
+      value: ios
+      if: ctx.crowdstrike?.event_platform != null && ctx.crowdstrike?.event_platform == "iOS"
   - rename:
       field: crowdstrike.OSVersionString
       target_field: host.os.version
@@ -1874,22 +1909,30 @@ processors:
           ctx.crowdstrike.EtwRawProcessId = parsePid(ctx.crowdstrike.EtwRawProcessId);
         }
   - date:
+      tag: date-process-start-time
       field: crowdstrike.ProcessStartTime
       target_field: crowdstrike.ProcessStartTime
       formats:
         - UNIX
-      if: ctx.crowdstrike?.ProcessStartTime != null && ctx.crowdstrike?.ProcessStartTime != ""
+      if: >
+        ctx.crowdstrike?.ProcessStartTime != null &&
+        ctx.crowdstrike?.ProcessStartTime != "" &&
+        ctx.crowdstrike?.ProcessStartTime != "none"
   - rename:
       field: crowdstrike.ProcessStartTime
       target_field: process.start
       ignore_missing: true
       if: ctx.crowdstrike?.ProcessStartTime != ""
   - date:
+      tag: date-process-end-time
       field: crowdstrike.ProcessEndTime
       target_field: crowdstrike.ProcessEndTime
       formats:
         - UNIX
-      if: ctx.crowdstrike?.ProcessEndTime != null && ctx.crowdstrike?.ProcessEndTime != ""
+      if: >
+        ctx.crowdstrike?.ProcessEndTime != null &&
+        ctx.crowdstrike?.ProcessEndTime != "" &&
+        ctx.crowdstrike?.ProcessEndTime != "none"
   - rename:
       field: crowdstrike.ProcessEndTime
       target_field: process.end
@@ -2523,54 +2566,87 @@ processors:
       separator: '\s+'
       ignore_missing: true
   - date:
+      tag: date-LogonTime
       field: crowdstrike.LogonTime
       target_field: crowdstrike.LogonTime
       formats:
         - UNIX
-      if: ctx.crowdstrike?.LogonTime != null && ctx.crowdstrike?.LogonTime != ""
+      if: >
+        ctx.crowdstrike?.LogonTime != null &&
+        ctx.crowdstrike?.LogonTime != "" &&
+        ctx.crowdstrike?.LogonTime != "none"
   - date:
+      tag: date-LogoffTime
       field: crowdstrike.LogoffTime
       target_field: crowdstrike.LogoffTime
       formats:
         - UNIX
-      if: ctx.crowdstrike?.LogoffTime != null && ctx.crowdstrike?.LogoffTime != ""
+      if: >
+        ctx.crowdstrike?.LogoffTime != null &&
+        ctx.crowdstrike?.LogoffTime != "" &&
+        ctx.crowdstrike?.LogoffTime != "none"
   - date:
+      tag: date-ConnectTime
       field: crowdstrike.ConnectTime
       target_field: crowdstrike.ConnectTime
       formats:
         - UNIX
-      if: ctx.crowdstrike?.ConnectTime != null && ctx.crowdstrike?.ConnectTime != ""
+      if: >
+        ctx.crowdstrike?.ConnectTime != null &&
+        ctx.crowdstrike?.ConnectTime != "" &&
+        ctx.crowdstrike?.ConnectTime != "none"
   - date:
+      tag: date-PreviousConnectTime
       field: crowdstrike.PreviousConnectTime
       target_field: crowdstrike.PreviousConnectTime
       formats:
         - UNIX
-      if: ctx.crowdstrike?.PreviousConnectTime != null && ctx.crowdstrike?.PreviousConnectTime != ""
+      if: >
+        ctx.crowdstrike?.PreviousConnectTime != null &&
+        ctx.crowdstrike?.PreviousConnectTime != "" &&
+        ctx.crowdstrike?.PreviousConnectTime != "none"
   - date:
+      tag: date-AgentLocalTime
       field: crowdstrike.AgentLocalTime
       target_field: crowdstrike.AgentLocalTime
       formats:
         - UNIX
-      if: ctx.crowdstrike?.AgentLocalTime != null && ctx.crowdstrike?.AgentLocalTime != ""
+      if: >
+        ctx.crowdstrike?.AgentLocalTime != null &&
+        ctx.crowdstrike?.AgentLocalTime != "" &&
+        ctx.crowdstrike?.AgentLocalTime != "none"
+      ignore_failure: true
   - date:
+      tag: date-FirstSeen
       field: crowdstrike.FirstSeen
       target_field: crowdstrike.FirstSeen
       formats:
         - UNIX
-      if: ctx.crowdstrike?.FirstSeen != null && ctx.crowdstrike?.FirstSeen != ""
+      if: >
+        ctx.crowdstrike?.FirstSeen != null &&
+        ctx.crowdstrike?.FirstSeen != "" &&
+        ctx.crowdstrike?.FirstSeen != "none"
   - date:
+      tag: date-ContextTimeStamp
       field: crowdstrike.ContextTimeStamp
       target_field: crowdstrike.ContextTimeStamp
       formats:
         - UNIX
-      if: ctx.crowdstrike?.ContextTimeStamp != null && ctx.crowdstrike?.ContextTimeStamp != ""
+      if: >
+        ctx.crowdstrike?.ContextTimeStamp != null &&
+        ctx.crowdstrike?.ContextTimeStamp != "" &&
+        ctx.crowdstrike?.ContextTimeStamp != "none"
   - date:
+      tag: date-BiosReleaseDate
       field: crowdstrike.BiosReleaseDate
       target_field: crowdstrike.BiosReleaseDate
       formats:
         - MM/dd/yyyy
-        - strict_date_optional_time
-      if: ctx.crowdstrike?.BiosReleaseDate != null && ctx.crowdstrike?.BiosReleaseDate != ""
+        - strict_date
+      if: >
+        ctx.crowdstrike?.BiosReleaseDate != null &&
+        ctx.crowdstrike?.BiosReleaseDate != "" &&
+        ctx.crowdstrike?.BiosReleaseDate != "none"
   - convert:
       field: crowdstrike.AgentTimeOffset
       target_field: crowdstrike.AgentTimeOffset
