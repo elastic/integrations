@@ -81,15 +81,15 @@ An example event for `alert` looks as following:
 {
     "@timestamp": "2025-02-10T06:20:16.000Z",
     "agent": {
-        "ephemeral_id": "a8df60c9-368f-4050-9cd2-a5b5ec9ecf9d",
-        "id": "5df62982-7a0a-4415-9c72-0e695c9a4e04",
-        "name": "elastic-agent-81490",
+        "ephemeral_id": "b390b729-c7f0-44da-9060-a95036420e4a",
+        "id": "755da24d-f44a-4079-95ee-25199198a4fc",
+        "name": "elastic-agent-55040",
         "type": "filebeat",
         "version": "8.18.0"
     },
     "data_stream": {
         "dataset": "splunk.alert",
-        "namespace": "47839",
+        "namespace": "92283",
         "type": "logs"
     },
     "destination": {
@@ -101,14 +101,14 @@ An example event for `alert` looks as following:
         "version": "8.17.0"
     },
     "elastic_agent": {
-        "id": "5df62982-7a0a-4415-9c72-0e695c9a4e04",
+        "id": "755da24d-f44a-4079-95ee-25199198a4fc",
         "snapshot": true,
         "version": "8.18.0"
     },
     "event": {
         "agent_id_status": "verified",
         "dataset": "splunk.alert",
-        "ingested": "2025-03-31T09:35:09Z",
+        "ingested": "2025-04-02T09:25:10Z",
         "kind": "alert",
         "original": "{\"_bkt\":\"notable~70~E10E99CE-2B29-4D28-B797-57BEABF6E876\",\"_cd\":\"70:13771\",\"_indextime\":\"1739168416\",\"_raw\":\"1739168412, search_name=\\\"Access - Excessive Failed Logins - Rule\\\", app=\\\"ssl-web\\\", count=\\\"5\\\", ip=\\\"127.0.0.1\\\", dest_count=\\\"1\\\", info_max_time=\\\"1739168100.000000000\\\", info_min_time=\\\"1739164500.000000000\\\", info_search_time=\\\"1739168403.176027000\\\", src=\\\"89.160.20.112\\\", orig_tag=\\\"authentication\\\", orig_tag=\\\"default\\\", orig_tag=\\\"error\\\", orig_tag=\\\"failure\\\", user_count=\\\"1\\\"\",\"_serial\":\"476\",\"_si\":[\"89.160.20.156\",\"notable\"],\"_sourcetype\":\"stash\",\"_time\":\"2025-02-10T11:50:16.000+05:30\",\"host\":\"89.160.20.156\",\"index\":\"notable\",\"linecount\":\"1\",\"source\":\"Access - Excessive Failed Logins - Rule\",\"sourcetype\":\"stash\",\"splunk_server\":\"89.160.20.156\"}",
         "type": [

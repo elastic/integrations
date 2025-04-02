@@ -54,7 +54,7 @@ program: |
             "Authorization": ["Basic "+base64(state.user+":"+state.password)],
           }
         }).do_request().as(resp, resp.StatusCode == 201 ?
-            resp.Body.decode_json().as(body, {
+            resp.Body.decode_json().as(body,{
               "next": {
                 "sid": body.sid,
               }
@@ -79,8 +79,7 @@ program: |
         )
       ))
   ).as(state, state.with(
-    // If more pages are still needs to be fetched.
-    state.?next.dispatchState == optional.of("DONE") || !has(state.?next.sid) ?
+    state.?next.dispatchState == optional.of("DONE") || !has(state.?next.sid) ? // If more pages are still needs to be fetched.
       {
         "batch_size": state.batch_size,
         "offset": state.offset,
@@ -89,8 +88,7 @@ program: |
           ?"sid": state.?next.sid,
         }
       }
-    :
-      // To check the status of the search id if it is completed or not.
+    : // To check the status of the search id if it is completed or not.
       request("GET",
         state.url.trim_right("/") + "/services/search/v2/jobs/" + string(state.next.sid) + "?output_mode=json"
       ).with({
@@ -140,20 +138,17 @@ program: |
             "Authorization": ["Basic "+base64(state.user+":"+state.password)],
           }
         }).do_request().as(resp, resp.StatusCode == 200 ?
-            bytes(resp.Body).decode_json().as(body,{
+            resp.Body.decode_json().as(body,{
               "events": body.results.map(e,{
                 "message": e.encode_json(),
                }),
               "cursor": {
-                ?"last_timestamp": has(body.results) && body.results.size() > 0 ?
-                  (
-                    has(state.?cursor.last_timestamp) && body.results.map(e, e._time).max() < state.cursor.last_timestamp ?
-                      optional.of(state.cursor.last_timestamp)
-                    :
-                      optional.of(body.results.map(e, e._time).max())
-                  )
-                :
+                ?"last_timestamp": (!has(body.results) || body.results.size() == 0) ?
                   state.?cursor.last_timestamp
+                : has(state.?cursor.last_timestamp) && body.results.map(e, e._time).max() < state.cursor.last_timestamp ?
+                  optional.of(state.cursor.last_timestamp)
+                :
+                  optional.of(body.results.map(e, e._time).max())
               },
               "next": {
                 ?"sid": body.results.size() == state.batch_size ? optional.of(state.next.sid) : optional.none(),
