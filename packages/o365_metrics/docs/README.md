@@ -258,6 +258,121 @@ Please refer to the following [document](https://www.elastic.co/guide/en/ecs/cur
 | o365.metrics.active.users.services.user.counts.yammer.inactive.count | Number of Yammer inactive users. | integer |  | gauge |
 
 
+### Entra ID users
+
+Get details about users in Microsoft Entra ID.
+
+An example event for `entra_id_users` looks as following:
+
+```json
+{
+    "o365": {
+        "metrics": {
+            "entra_id_users": {
+                "on_premises_sync_enabled": true,
+                "on_premises_provisioning_errors": [
+                    {
+                        "occurred_date_time": "2025-03-25T14:33:19Z",
+                        "category": "PropertyConflict",
+                        "property_causing_error": "UserPrincipalName",
+                        "value": "alex@contoso.com"
+                    }
+                ],
+                "risk": {
+                    "event_type": "passwordSpray",
+                    "level": "high",
+                    "detail": "userPerformedSecuredPasswordReset",
+                    "state": "remediated"
+                },
+                "user": {
+                    "upn": "AlexW@M365x214355.onmicrosoft.com",
+                    "id": "4782e723-f4f4-4af3-a76e-25e3bab0d896",
+                    "type": "Member"
+                }
+            }
+        }
+    },
+    "input": {
+        "type": "cel"
+    },
+    "agent": {
+        "name": "elastic-agent-74940",
+        "id": "4dba66ec-f72a-41f6-bdac-69c44c9323d8",
+        "ephemeral_id": "a41ad417-aa53-441c-a549-da581020df08",
+        "type": "filebeat",
+        "version": "8.17.3"
+    },
+    "@timestamp": "2025-03-26T09:41:36.166Z",
+    "ecs": {
+        "version": "8.17.0"
+    },
+    "data_stream": {
+        "namespace": "72200",
+        "type": "metrics",
+        "dataset": "o365_metrics.entra_id_users"
+    },
+    "host": {
+        "hostname": "elastic-agent-74940",
+        "os": {
+            "kernel": "6.12.5-linuxkit",
+            "name": "Wolfi",
+            "type": "linux",
+            "family": "",
+            "version": "20230201",
+            "platform": "wolfi"
+        },
+        "containerized": false,
+        "ip": [
+            "172.29.0.2",
+            "172.18.0.9"
+        ],
+        "name": "elastic-agent-74940",
+        "mac": [
+            "02-42-AC-12-00-09",
+            "02-42-AC-1D-00-02"
+        ],
+        "architecture": "aarch64"
+    },
+    "elastic_agent": {
+        "id": "4dba66ec-f72a-41f6-bdac-69c44c9323d8",
+        "version": "8.17.3",
+        "snapshot": false
+    },
+    "event": {
+        "agent_id_status": "verified",
+        "ingested": "2025-03-26T09:41:37Z",
+        "dataset": "o365_metrics.entra_id_users"
+    },
+    "tags": [
+        "o365.metrics.entra_id_users"
+    ]
+}
+```
+
+**Exported fields**
+
+| Field | Description | Type |
+|---|---|---|
+| @timestamp | Event timestamp. | date |
+| data_stream.dataset | Data stream dataset. | constant_keyword |
+| data_stream.namespace | Data stream namespace. | constant_keyword |
+| data_stream.type | Data stream type. | constant_keyword |
+| input.type | Input type. | keyword |
+| o365.metrics.entra_id_users.on_premises_provisioning_errors.category | Category of the provisioning error. | keyword |
+| o365.metrics.entra_id_users.on_premises_provisioning_errors.occurred_date_time | The date and time at which the error occurred. | date |
+| o365.metrics.entra_id_users.on_premises_provisioning_errors.property_causing_error | Name of the directory property causing the error. | keyword |
+| o365.metrics.entra_id_users.on_premises_provisioning_errors.value | Value of the property causing the error. | keyword |
+| o365.metrics.entra_id_users.on_premises_sync_enabled | true if this user object is currently being synced from an on-premises Active Directory (AD); otherwise the user isn't being synced and can be managed in Microsoft Entra ID. | boolean |
+| o365.metrics.entra_id_users.risk.detail | The possible values are none, adminGeneratedTemporaryPassword, userPerformedSecuredPasswordChange, userPerformedSecuredPasswordReset, adminConfirmedSigninSafe, aiConfirmedSigninSafe, userPassedMFADrivenByRiskBasedPolicy, adminDismissedAllRiskForUser, adminConfirmedSigninCompromised, hidden, adminConfirmedUserCompromised, unknownFutureValue, adminConfirmedServicePrincipalCompromised, adminDismissedAllRiskForServicePrincipal, m365DAdminDismissedDetection, userChangedPasswordOnPremises, adminDismissedRiskForSignIn, adminConfirmedAccountSafe. | keyword |
+| o365.metrics.entra_id_users.risk.error | An error if the risk data is unavailable for this user. | text |
+| o365.metrics.entra_id_users.risk.event_type | The type of risk event detected. The possible values are adminConfirmedUserCompromised, anomalousToken, anomalousUserActivity, anonymizedIPAddress, generic, impossibleTravel, investigationsThreatIntelligence, suspiciousSendingPatterns, leakedCredentials, maliciousIPAddress,malwareInfectedIPAddress, mcasSuspiciousInboxManipulationRules, newCountry, passwordSpray,riskyIPAddress, suspiciousAPITraffic, suspiciousBrowser,suspiciousInboxForwarding, suspiciousIPAddress, tokenIssuerAnomaly, unfamiliarFeatures, unlikelyTravel. If the risk detection is a premium detection, will show generic. | keyword |
+| o365.metrics.entra_id_users.risk.level | Level of the detected risky user. Possible values are: low, medium, high, hidden, none, unknownFutureValue. | keyword |
+| o365.metrics.entra_id_users.risk.state | State of the user's risk. Possible values are: none, confirmedSafe, remediated, dismissed, atRisk, confirmedCompromised, unknownFutureValue. | keyword |
+| o365.metrics.entra_id_users.user.id | The unique identifier for the user. Should be treated as an opaque identifier. | keyword |
+| o365.metrics.entra_id_users.user.type | A string value that can be used to classify user types in your directory. The possible values are Member and Guest. | keyword |
+| o365.metrics.entra_id_users.user.upn | The user principal name (UPN) of the user. The UPN is an Internet-style sign-in name for the user based on the Internet standard RFC 822. By convention, this value should map to the user's email name. The general format is alias@domain, where the domain must be present in the tenant's collection of verified domains. | keyword |
+
+
 ### Mailbox Usage Quota Status
 
 Get details about Mailbox Usage Quota Status from [Microsoft Graph API](https://learn.microsoft.com/en-us/graph/api/reportroot-getmailboxusagequotastatusmailboxcounts?view=graph-rest-1.0&tabs=http).

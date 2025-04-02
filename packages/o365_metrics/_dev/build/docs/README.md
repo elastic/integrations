@@ -108,6 +108,14 @@ Please refer to the following [document](https://www.elastic.co/guide/en/ecs/cur
 
 {{fields "active_users_services_user_counts"}}
 
+### Entra ID users
+
+Get details about users in Microsoft Entra ID.
+
+{{ event "entra_id_users" }}
+
+{{ fields "entra_id_users" }}
+
 ### Mailbox Usage Quota Status
 
 Get details about Mailbox Usage Quota Status from [Microsoft Graph API](https://learn.microsoft.com/en-us/graph/api/reportroot-getmailboxusagequotastatusmailboxcounts?view=graph-rest-1.0&tabs=http).
