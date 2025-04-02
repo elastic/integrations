@@ -18,6 +18,7 @@ import (
 	"github.com/magefile/mage/sh"
 	"github.com/pkg/errors"
 
+	"github.com/elastic/integrations/dev/citools"
 	"github.com/elastic/integrations/dev/codeowners"
 	"github.com/elastic/integrations/dev/coverage"
 	"github.com/elastic/integrations/dev/testsreporter"
@@ -211,4 +212,13 @@ func ReportFailedTests(ctx context.Context, testResultsFolder string) error {
 		Verbose:           verboseMode,
 	}
 	return testsreporter.Check(ctx, testResultsFolder, options)
+}
+
+func IsSubscriptionCompatible() error {
+	subscription := os.Getenv("ELASTIC_SUBSCRIPTION")
+	if subscription == "" {
+		return nil
+	}
+
+	return citools.IsSubscriptionCompatible(subscription, "manifest.yml")
 }

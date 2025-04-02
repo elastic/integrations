@@ -691,28 +691,32 @@ subscription_package() {
 }
 
 is_compatible_subscription() {
-    if [[ "${ELASTIC_SUBSCRIPTION:-""}" == "" ]]; then
+    if mage -v -d ${WORKSPACE} -w . isSubscriptionCompatible ; then
         return 0
     fi
-
-    local subscription=""
-    subscription="$(subscription_package)"
-    echo "Subscription package=$subscription"
-
-    if [[ "${ELASTIC_SUBSCRIPTION}" == "trial" ]]; then
-        # All subscriptions are supported
-        return 0
-    fi
-
-    if [[ "${ELASTIC_SUBSCRIPTION}" == "basic" ]]; then
-        if [[ "${subscription}" != "basic" ]]; then
-            return 1
-        fi
-        return 0
-    fi
-
-    # Unknown subscription
     return 1
+    # if [[ "${ELASTIC_SUBSCRIPTION:-""}" == "" ]]; then
+    #     return 0
+    # fi
+
+    # if [[ "${ELASTIC_SUBSCRIPTION}" == "trial" ]]; then
+    #     # All subscriptions are supported
+    #     return 0
+    # fi
+
+    # local subscription=""
+    # subscription="$(subscription_package)"
+    # echo "Subscription package=$subscription"
+
+    # if [[ "${ELASTIC_SUBSCRIPTION}" == "basic" ]]; then
+    #     if [[ "${subscription}" != "basic" ]]; then
+    #         return 1
+    #     fi
+    #     return 0
+    # fi
+
+    # # Unknown subscription
+    # return 1
 }
 
 is_pr_affected() {
