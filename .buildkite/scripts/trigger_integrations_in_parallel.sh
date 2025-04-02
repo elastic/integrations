@@ -83,7 +83,7 @@ EOF
 done
 
 if running_on_buildkite ; then
-    if [ -f "${fKIPPED_PACKAGES_FILE_PATH}" ]; then
+    if [ -f "${SKIPPED_PACKAGES_FILE_PATH}" ]; then
         create_collapsed_annotation "Skipped packages" "${SKIPPED_PACKAGES_FILE_PATH}" "info" "ctx-skipped-packages"
     fi
 fi
