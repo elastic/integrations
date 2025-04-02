@@ -50,10 +50,11 @@ This module has been tested against the **CrowdStrike Falcon Intelligence API Ve
 4. API Endpoint url
 5. Required scopes for each data stream :
 
-    | Data Stream   | Scope         |
-    | ------------- | ------------- |
-    | Intel         | read:intel    |
-    | IOC           | read:iocs     |
+    | Data Stream   | Scope                 |
+    | ------------- | --------------------- |
+    | Intel         | read:intel            |
+    | IOC           | read:iocs             |
+    |               | read:ioc-management   |
 
 Follow the [documentation](https://www.crowdstrike.com/blog/tech-center/consume-ioc-and-threat-feeds/) for enabling the scopes from the CrowdStrike console.
 
@@ -455,3 +456,4 @@ An example event for `ioc` looks as following:
 | ti_crowdstrike.ioc.tags | Tags associated with the IOC. | keyword |
 | ti_crowdstrike.ioc.type | The type of indicator. | keyword |
 | ti_crowdstrike.ioc.value | The specific value of the indicator. | keyword |
+
