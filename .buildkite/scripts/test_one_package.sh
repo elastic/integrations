@@ -4,16 +4,8 @@ source .buildkite/scripts/common.sh
 
 set -euo pipefail
 
-
-# used in common.sh
-FAILED_PACKAGES_FILE_PATH="${WORKSPACE}/failed_packages.txt"
-
 # package name
 package="$1"
-# changesets
-from=${2:-""}
-to=${3:-""}
-
 
 if [ ! -d packages ]; then
     echo "Missing packages folder"
@@ -35,7 +27,7 @@ use_elastic_package
 
 pushd packages > /dev/null
 exit_code=0
-if ! process_package "${package}" "${from}" "${to}"; then
+if ! process_package "${package}" ; then
     echo "[${package}] failed"
     exit_code=1
 fi

@@ -61,7 +61,15 @@ echo "Done."
 
 # setting range of changesets to check differences
 from="$(get_from_changeset)"
+if [[ "${from}" == "" ]]; then
+    echo "Missing \"from\" changset".
+    exit 1
+fi
 to="$(get_to_changeset)"
+if [[ "${to}" == "" ]]; then
+    echo "Missing \"to\" changset".
+    exit 1
+fi
 
 any_package_failing=0
 
@@ -77,7 +85,7 @@ for package in $(list_all_directories); do
     echo "${reason}"
     popd > /dev/null
 
-    if ! process_package "${package}" "${from}" "${to}" "${FAILED_PACKAGES_FILE_PATH}" ; then
+    if ! process_package "${package}" "${FAILED_PACKAGES_FILE_PATH}" ; then
         any_package_failing=1
     fi
 done

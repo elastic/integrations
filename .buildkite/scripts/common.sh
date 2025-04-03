@@ -670,8 +670,8 @@ get_to_changeset() {
 
 is_pr_affected() {
     local package="${1}"
-    local from=${2:-""}
-    local to=${3:-""}
+    local from="${2}"
+    local to="${3}"
 
     if ! is_supported_stack ; then
         echo "[${package}] PR is not affected: unsupported stack (${STACK_VERSION})"
@@ -702,13 +702,6 @@ is_pr_affected() {
     if [[ "${FORCE_CHECK_ALL}" == "true" ]];then
         echo "[${package}] PR is affected: \"force_check_all\" parameter enabled"
         return 0
-    fi
-
-    if [[ "${from}" == ""  || "${to}" == "" ]]; then
-        echoerr "[${package}] Calculating commits: from '${from}' - to: '${to}'"
-        # setting range of changesets to check differences
-        from="$(get_from_changeset)"
-        to="$(get_to_changeset)"
     fi
 
     echoerr "[${package}]: commits: from: '${from}' - to: '${to}'"
@@ -963,9 +956,7 @@ upload_safe_logs_from_package() {
 # Helper to run all tests and checks for a package
 process_package() {
     local package="${1}"
-    local from="${2}"
-    local to="${3}"
-    local failed_packages_file="${4:-""}"
+    local failed_packages_file="${2:-""}"
     local exit_code=0
 
     echo "--- Package ${package}: check"

@@ -25,7 +25,15 @@ EOF
 
 # setting range of changesets to check differences
 from="$(get_from_changeset)"
+if [[ "${from}" == "" ]]; then
+    echo "Missing \"from\" changset".
+    exit 1
+fi
 to="$(get_to_changeset)"
+if [[ "${to}" == "" ]]; then
+    echo "Missing \"to\" changset".
+    exit 1
+fi
 
 echo "[DEBUG] Checking with commits: from: '${from}' to: '${to}'"
 
