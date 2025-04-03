@@ -6,7 +6,6 @@ set -euo pipefail
 
 
 # used in common.sh
-SKIPPED_PACKAGES_FILE_PATH="${WORKSPACE}/skipped_packages.txt"
 FAILED_PACKAGES_FILE_PATH="${WORKSPACE}/failed_packages.txt"
 
 # package name
