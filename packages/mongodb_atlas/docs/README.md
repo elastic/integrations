@@ -701,7 +701,7 @@ An example event for `organization` looks as following:
             "team": {
                 "id": "sample_team_id"
             },
-            "white_list_entry": "sample.user@example.com"
+            "whitelist_entry": "sample.user@example.com"
         }
     },
     "organization": {
@@ -954,7 +954,7 @@ An example event for `project` looks as following:
             "team": {
                 "id": "sample_team_id"
             },
-            "white_list_entry": "sample.user@example.com"
+            "whitelist_entry": "sample.user@example.com"
         }
     },
     "organization": {
