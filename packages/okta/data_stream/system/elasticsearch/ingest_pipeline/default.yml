@@ -176,12 +176,10 @@ processors:
       target_field: okta.actor.alternate_id
       ignore_missing: true
       ignore_failure: true
-  - grok:
-      field: okta.actor.alternate_id
-      patterns:
-        - "%{USER:user.name}"
-      ignore_missing: true
-      ignore_failure: true
+  - set:
+      field: user.name
+      copy_from: okta.actor.alternate_id
+      ignore_empty_value: true
   - set:
       field: source.user.name
       copy_from: user.name
