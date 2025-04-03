@@ -2,15 +2,17 @@
 
 ## Overview
 
-The [Tenable Vulnerability Management](https://www.tenable.com/products/tenable-io) integration allows users to monitor asset, plugin, scan and vulnerability activity. It provides the industry's most comprehensive vulnerability coverage with the ability to predict which security issues to remediate first. Tenable Vulnerability Management is the user's complete end-to-end vulnerability management solution.
+The [Tenable Vulnerability Management](https://www.tenable.com/products/tenable-io) integration allows users to monitor asset, audit, plugin, scan and vulnerability activity. It provides the industry's most comprehensive vulnerability coverage with the ability to predict which security issues to remediate first. Tenable Vulnerability Management is the user's complete end-to-end vulnerability management solution.
 
 Use the Tenable Vulnerability Management integration to collects and parses data from the REST APIs. Then visualize that data in Kibana.
 
 ## Data streams
 
-The Tenable Vulnerability Management integration collects logs for four types of events: Asset, Plugin, Scan, and Vulnerability.
+The Tenable Vulnerability Management integration collects logs for five types of events: Asset, Audit, Plugin, Scan, and Vulnerability.
 
 **Asset** is used to get details related to assets that belong to the user's organization. See more details in the API documentation [here](https://developer.tenable.com/reference/exports-assets-request-export).
+
+**Audit** is used to obtain details about when each activity occurred, the actions taken, the individuals involved, and other relevant information. See more details in the API documentation [here](https://developer.tenable.com/reference/audit-log-events).
 
 **Plugin** is used to get detailed plugin information. See more details in the API documentation [here](https://developer.tenable.com/reference/io-plugins-list).
 
@@ -46,8 +48,6 @@ You can run Elastic Agent inside a container, either with Fleet Server or standa
 
 There are some minimum requirements for running Elastic Agent and for more information, refer to the link [here](https://www.elastic.co/guide/en/fleet/current/elastic-agent-installation.html).
 
-The minimum **kibana.version** required is **8.12.0**.
-
 **Note:**
   - In this integration, export and plugin endpoints of vulnerability management are used to fetch data.
   - The default value is the recommended value for a batch size by Tenable. Using a smaller batch size can improve performance. A very large value might not work as intended depending on the API and instance limitations.
@@ -69,6 +69,7 @@ Agentless deployments are only supported in Elastic Serverless and Elastic Cloud
 **Note:**
   - For the Tenable Vulnerability Management asset and vulnerability API, **ADMINISTRATOR [64]** and **Can View** access control is required in  created user's access key and secret key.
   - For the Tenable Vulnerability Management plugin, **BASIC [16]** user permissions are required in created user's access key and secret key.
+  - For the Tenable Vulnerability Management audit, **ADMINISTRATOR [64]** user permissions are required in created user's access key and secret key.
   - For more details related to permissions, refer to the link [here](https://developer.tenable.com/docs/permissions).
 
 ### Enabling the integration in Elastic:
@@ -91,6 +92,16 @@ This is the `asset` dataset.
 {{event "asset"}}
 
 {{fields "asset"}}
+
+### audit
+
+This is the `audit` dataset.
+
+#### Example
+
+{{event "audit"}}
+
+{{fields "audit"}}
 
 ### plugin
 
