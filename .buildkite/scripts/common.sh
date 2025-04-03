@@ -724,8 +724,6 @@ is_pr_affected() {
     local from=${2:-""}
     local to=${3:-""}
 
-    echoerr "[${package}] Original commits: from '${from}' - to: '${to}'"
-
     if ! is_supported_stack ; then
         echo "[${package}] PR is not affected: unsupported stack (${STACK_VERSION})"
         return 1
@@ -753,21 +751,21 @@ is_pr_affected() {
     fi
 
     if [[ "${from}" == ""  || "${to}" == "" ]]; then
-        echo "[${package}] Calculating commits: from '${from}' - to: '${to}'"
+        echoerr "[${package}] Calculating commits: from '${from}' - to: '${to}'"
         # setting range of changesets to check differences
         from="$(get_from_changeset)"
         to="$(get_to_changeset)"
     fi
 
-    echo "[${package}]: commits: from: '${from}' - to: '${to}'"
+    echoerr "[${package}]: commits: from: '${from}' - to: '${to}'"
 
-    echo "[${package}] git-diff: check non-package files"
+    echoerr "[${package}] git-diff: check non-package files"
     commit_merge=$(git merge-base "${from}" "${to}")
     if git diff --name-only "${commit_merge}" "${to}" | grep -q -E -v '^(packages/|\.github/(CODEOWNERS|ISSUE_TEMPLATE|PULL_REQUEST_TEMPLATE)|README\.md|docs/)' ; then
         echo "[${package}] PR is affected: found non-package files"
         return 0
     fi
-    echo "[${package}] git-diff: check package files"
+    echoerr "[${package}] git-diff: check package files"
     if git diff --name-only "${commit_merge}" "${to}" | grep -q -E "^packages/${package}/" ; then
         echo "[${package}] PR is affected: found package files"
         return 0
@@ -813,8 +811,8 @@ teardown_test_package() {
 }
 
 list_all_directories() {
-    # find . -maxdepth 1 -mindepth 1 -type d | xargs -I {} basename {} | sort |grep -E '^(elastic_package_registry|cloud_defend|beaconing|statsd_input|juniper_junos|juniper_netscreen|kibana|haproxy)$'
-    find . -maxdepth 1 -mindepth 1 -type d | xargs -I {} basename {} | sort
+    find . -maxdepth 1 -mindepth 1 -type d | xargs -I {} basename {} | sort |grep -E '^(elastic_package_registry|cloud_defend|beaconing|statsd_input|juniper_junos|juniper_netscreen|kibana|haproxy)$'
+    # find . -maxdepth 1 -mindepth 1 -type d | xargs -I {} basename {} | sort
 }
 
 check_package() {
