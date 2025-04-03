@@ -706,7 +706,7 @@ is_pr_affected() {
 
     commit_merge=$(git merge-base "${from}" "${to}")
     echoerr "[${package}] git-diff: check non-package files (${commit_merge}..${to})"
-    if git diff --name-only "${commit_merge}" "${to}" | grep -q -E -v '^(packages/|\.github/(CODEOWNERS|ISSUE_TEMPLATE|PULL_REQUEST_TEMPLATE)|README\.md|docs/|.buildkite/)' ; then
+    if git diff --name-only "${commit_merge}" "${to}" | grep -q -E -v '^(packages/|\.github/(CODEOWNERS|ISSUE_TEMPLATE|PULL_REQUEST_TEMPLATE)|README\.md|docs/)' ; then
         echo "[${package}] PR is affected: found non-package files"
         return 0
     fi
@@ -760,7 +760,7 @@ teardown_test_package() {
 }
 
 list_all_directories() {
-    find . -maxdepth 1 -mindepth 1 -type d | xargs -I {} basename {} | sort |grep -E '^(elastic_package_registry|cloud_defend|haproxy|beaconing|statsd_input|juniper_junos|bitwarden|fleet_server|kubernetes)$'
+    find . -maxdepth 1 -mindepth 1 -type d | xargs -I {} basename {} | sort
 }
 
 check_package() {
