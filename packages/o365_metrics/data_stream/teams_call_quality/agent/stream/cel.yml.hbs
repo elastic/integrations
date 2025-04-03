@@ -75,6 +75,8 @@ processors:
 
 state:
   want_more: false
+  next_page: ""
+  next_page_sessions: ""
   worklist: []
   next: 0
   sync_delay: "5s"
@@ -125,8 +127,8 @@ program: |
   ).as(state, state.with(
         request(
           "GET",
-          has(state.next_page) && state.next_page != "" ?
-          state.next_page
+          has(state.next_page_sessions) && state.next_page_sessions != "" ?
+          state.next_page_sessions
           :
           state.url + "/communications/callRecords/" + state.worklist[state.next] + "/sessions?$expand=segments"
         ).do_request().as(resp, resp.StatusCode == 200 ?
@@ -135,15 +137,15 @@ program: |
               has(body.value) && size(body.value) > 0 ?
                 body.value.map(e, {
                   "message": e.encode_json(),
-                  "call_record": string(state.worklist[state.next])
+                  "call_record": string(state.worklist[state.next]),
                 })
               :
                 [{"message":"retry"}]
             ),
             "worklist": int(state.next) + 1 < size(state.worklist) ? state.worklist : [],
-            "next": int(state.next) + 1 < size(state.worklist) ? (has(state.next_page) && state.next_page != "" ?  int(state.next) : int(state.next) + 1) : 0,
+            "next": int(state.next) + 1 < size(state.worklist) ? (has(state.next_page_sessions) && state.next_page_sessions != "" ?  int(state.next) : int(state.next) + 1) : 0,
             "want_more": int(state.next) + 1 < size(state.worklist) || "@odata.nextLink" in body,
-            "next_page": "@odata.nextLink" in body ? body["@odata.nextLink"] : "",
+            "next_page_sessions": "@odata.nextLink" in body ? body["@odata.nextLink"] : "",
           })
         :
           {
