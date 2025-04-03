@@ -8,7 +8,6 @@ env:
   YQ_VERSION: 'v4.35.2'
   JQ_VERSION: '1.7'
   GH_CLI_VERSION: "2.29.0"
-  STACK_VERSION: 8.19.0-SNAPSHOT
 
   # Agent images used in pipeline steps
   LINUX_AGENT_IMAGE: "golang:${GO_VERSION}"
@@ -104,8 +103,6 @@ steps:
     key: report-failed-tests
     command: ".buildkite/scripts/report_issues.sh"
     env:
-      DRY_RUN: "true"
-      TESTSREPORTER_VERBOSE_MODE_ENABLED: "true"
       CI_MAX_TESTS_REPORTED: 30
     agents:
       image: "${LINUX_AGENT_IMAGE}"
@@ -114,7 +111,7 @@ steps:
     # not fail build if this step fails
     soft_fail: true
     # run this step when if it is triggered by the daily job
-    # if: |
-    #   build.source == "trigger_job" &&
-    #   build.env('BUILDKITE_PIPELINE_SLUG') == "integrations" &&
-    #   build.env('BUILDKITE_TRIGGERED_FROM_BUILD_PIPELINE_SLUG') == "integrations-schedule-daily"
+    if: |
+      build.source == "trigger_job" &&
+      build.env('BUILDKITE_PIPELINE_SLUG') == "integrations" &&
+      build.env('BUILDKITE_TRIGGERED_FROM_BUILD_PIPELINE_SLUG') == "integrations-schedule-daily"

@@ -174,7 +174,7 @@ func ReportFailedTests(ctx context.Context, testResultsFolder string) error {
 	}
 
 	verboseMode := false
-	if v, found := os.LookupEnv("TESTSREPORTER_VERBOSE_MODE_ENABLED"); found && v == "true" {
+	if v, found := os.LookupEnv("VERBOSE_MODE_ENABLED"); found && v == "true" {
 		verboseMode = true
 	}
 
