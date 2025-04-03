@@ -67,12 +67,16 @@ any_package_failing=0
 
 pushd packages > /dev/null
 for package in $(list_all_directories); do
+    pushd "${package}" > /dev/null
     if ! reason=$(is_pr_affected "${package}" "${from}" "${to}") ; then
         echo "${reason}"
         echo "- ${reason}" >> "${SKIPPED_PACKAGES_FILE_PATH}"
+        popd > /dev/null
         continue
     fi
     echo "${reason}"
+    popd > /dev/null
+
     if ! process_package "${package}" "${from}" "${to}" "${FAILED_PACKAGES_FILE_PATH}" ; then
         any_package_failing=1
     fi
