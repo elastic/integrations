@@ -1,8 +1,6 @@
 module github.com/elastic/integrations
 
-go 1.23.0
-
-toolchain go1.23.4
+go 1.24.2
 
 require (
 	github.com/blang/semver v3.5.1+incompatible
@@ -232,4 +230,4 @@ require (
 	sigs.k8s.io/yaml v1.4.0 // indirect
 )
 
-replace github.com/elastic/elastic-package => github.com/mrodm/elastic-package v0.53.1-0.20250331162022-9bc501b3678a
+replace github.com/elastic/elastic-package => github.com/mrodm/elastic-package v0.53.1-0.20250403155003-62704d871a02
