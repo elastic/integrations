@@ -29,7 +29,7 @@ Following Microsoft 365 Graph Reports can be collected by Microsoft Office 365 M
 | [Subscriptions](https://learn.microsoft.com/en-us/graph/api/resources/subscribedsku?view=graph-rest-1.0?view=o365-worldwide)                                                 |    [reportRoot: subscribedSkus](https://learn.microsoft.com/en-us/graph/api/subscribedsku-list?view=graph-rest-1.0&tabs=http)    |   Microsoft 365 Subscriptions metrics   |   No aggregation  |   LicenseAssignment.Read.All  |
 | [Teamms Call Quality](https://learn.microsoft.com/en-us/graph/api/resources/communications-api-overview?view=graph-rest-1.0?view=o365-worldwide)                                                 |    [reportRoot: callRecords](https://learn.microsoft.com/en-us/graph/api/callrecords-callrecord-list-sessions?view=graph-rest-1.0&tabs=http)    |   Microsoft 365 Teams Call Quality metrics   |   No aggregation  |   CallRecords.Read.All    |
 | Tenant Settings | [organization](https://learn.microsoft.com/en-us/graph/api/resources/organization?view=graph-rest-1.0), [adminReportSettings](https://learn.microsoft.com/en-us/graph/api/resources/adminreportsettings?view=graph-rest-1.0) | Microsoft 365 Tenant Settings | No aggregation | Organization.Read.All, ReportSettings.Read.All, Directory.Read.All  |
-| [App Registrations](https://learn.microsoft.com/en-us/graph/api/resources/application?view=graph-rest-1.0) |    [List Applications](https://learn.microsoft.com/en-us/graph/api/application-list?view=graph-rest-1.0&tabs=http)    |   Microsoft 365 App Registrations   |   No aggregation  | Application.Read.All, User.Read(delegated)
+| [App Registrations](https://learn.microsoft.com/en-us/graph/api/resources/application?view=graph-rest-1.0) |    [List Applications](https://learn.microsoft.com/en-us/graph/api/application-list?view=graph-rest-1.0&tabs=http)    |   Microsoft 365 App Registrations   |   No aggregation  | Application.Read.All, User.Read(delegated) |
 
 
 ## Setup
@@ -42,7 +42,7 @@ Once the application is registered, configure and/or note the following to setup
     - Navigate to `Certificates & Secrets` section.
     - Click `New client secret` and provide some description to create new secret.
     - Note the `Value` which is required for the integration setup.
-3. Add permissions to your registered application. Please check [O365 Graph API permissions](https://learn.microsoft.com/en-us/graph/reportroot-authorization) for more details.
+3. Add permissions to your registered application.
     - Navigate to `API permissions` page and click `Add a permission`
     - Select `Office 365 Management APIs` tile from the listed tiles.
     - Click `Application permissions`.
