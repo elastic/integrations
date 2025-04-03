@@ -50,8 +50,8 @@ for package in ${PACKAGE_LIST}; do
     skip_package="false"
     if ! reason=$(is_pr_affected "${package}" "${from}" "${to}") ; then
         skip_package="true"
+        echo "- ${reason}" >> "${SKIPPED_PACKAGES_FILE_PATH}"
     fi
-    echo "- ${reason}" >> "${SKIPPED_PACKAGES_FILE_PATH}"
     echoerr "${reason}"
     popd > /dev/null
 
