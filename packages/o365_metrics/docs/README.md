@@ -29,6 +29,8 @@ Following Microsoft 365 Graph Reports can be collected by Microsoft Office 365 M
 | [Subscriptions](https://learn.microsoft.com/en-us/graph/api/resources/subscribedsku?view=graph-rest-1.0?view=o365-worldwide)                                                 |    [reportRoot: subscribedSkus](https://learn.microsoft.com/en-us/graph/api/subscribedsku-list?view=graph-rest-1.0&tabs=http)    |   Microsoft 365 Subscriptions metrics   |   No aggregation  |   LicenseAssignment.Read.All  |
 | [Teamms Call Quality](https://learn.microsoft.com/en-us/graph/api/resources/communications-api-overview?view=graph-rest-1.0?view=o365-worldwide)                                                 |    [reportRoot: callRecords](https://learn.microsoft.com/en-us/graph/api/callrecords-callrecord-list-sessions?view=graph-rest-1.0&tabs=http)    |   Microsoft 365 Teams Call Quality metrics   |   No aggregation  |   CallRecords.Read.All    |
 | Tenant Settings | [organization](https://learn.microsoft.com/en-us/graph/api/resources/organization?view=graph-rest-1.0), [adminReportSettings](https://learn.microsoft.com/en-us/graph/api/resources/adminreportsettings?view=graph-rest-1.0) | Microsoft 365 Tenant Settings | No aggregation | Organization.Read.All, ReportSettings.Read.All
+| [App Registrations](https://learn.microsoft.com/en-us/graph/api/resources/application?view=graph-rest-1.0) |    [List Applications](https://learn.microsoft.com/en-us/graph/api/application-list?view=graph-rest-1.0&tabs=http)    |   Microsoft 365 App Registrations   |   No aggregation  | Application.Read.All, User.Read(delegated)
+
 
 ## Setup
 
@@ -2859,3 +2861,126 @@ Please refer to the following [document](https://www.elastic.co/guide/en/ecs/cur
 | o365.metrics.teams.call.quality.segments.start_date_time | Start time of the segment | date |
 | o365.metrics.teams.call.quality.start_date_time | The start date and time of the call | date |
 
+
+### App Registrations
+
+Get details about apps registered in Microsoft Entra ID. [Microsoft API](https://learn.microsoft.com/en-us/graph/api/application-list?view=graph-rest-1.0&tabs=http).
+
+An example event for `app_registrations` looks as following:
+
+```json
+{
+    "@timestamp": "2025-04-03T07:01:21.020Z",
+    "agent": {
+        "ephemeral_id": "a2de3e9c-7fd2-4cb1-8ce5-9bb66e5a4670",
+        "id": "ee4e3654-ca4a-42f5-bd62-e493fc339455",
+        "name": "elastic-agent-67281",
+        "type": "filebeat",
+        "version": "8.16.0"
+    },
+    "data_stream": {
+        "dataset": "o365_metrics.app_registrations",
+        "namespace": "75903",
+        "type": "metrics"
+    },
+    "ecs": {
+        "version": "8.17.0"
+    },
+    "elastic_agent": {
+        "id": "ee4e3654-ca4a-42f5-bd62-e493fc339455",
+        "snapshot": false,
+        "version": "8.16.0"
+    },
+    "event": {
+        "agent_id_status": "verified",
+        "dataset": "o365_metrics.app_registrations",
+        "ingested": "2025-04-03T07:01:24Z",
+        "kind": "metric"
+    },
+    "host": {
+        "architecture": "aarch64",
+        "containerized": false,
+        "hostname": "elastic-agent-67281",
+        "ip": [
+            "172.31.0.2",
+            "172.26.0.4"
+        ],
+        "mac": [
+            "02-42-AC-1A-00-04",
+            "02-42-AC-1F-00-02"
+        ],
+        "name": "elastic-agent-67281",
+        "os": {
+            "family": "",
+            "kernel": "5.10.104-linuxkit",
+            "name": "Wolfi",
+            "platform": "wolfi",
+            "type": "linux",
+            "version": "20230201"
+        }
+    },
+    "input": {
+        "type": "cel"
+    },
+    "o365": {
+        "metrics": {
+            "app_registrations": {
+                "app_id": "166f-4179-44-aeb-801cf53a",
+                "display_name": "App1",
+                "key_credentials": [],
+                "object_id": "7eaf2-b2f6-4fb0-b9f-f171aa69",
+                "password_credentials": [
+                    {
+                        "display_name": "test token",
+                        "end_date_time": "2025-08-08T16:46:54.729Z",
+                        "key_id": "3468e-f34c-485f-9754-b47161a"
+                    },
+                    {
+                        "display_name": "token",
+                        "end_date_time": "2025-08-06T09:23:49.935Z",
+                        "key_id": "7b1c7-4aea-421e-abd4-1c48188"
+                    },
+                    {
+                        "display_name": "1234",
+                        "end_date_time": "2025-07-30T05:10:48.334Z",
+                        "key_id": "cb7b-ab9c-4aa2-9ad4-6fda517"
+                    },
+                    {
+                        "display_name": "123",
+                        "end_date_time": "2025-07-29T13:31:41.601Z",
+                        "key_id": "d413b-c6db-4cb3-967e-793d1"
+                    }
+                ]
+            }
+        }
+    },
+    "tags": [
+        "o365.metrics.app_registrations"
+    ]
+}
+```
+
+**ECS Field Reference**
+
+Please refer to the following [document](https://www.elastic.co/guide/en/ecs/current/ecs-field-reference.html) for detailed information on ECS fields.
+
+**Exported fields**
+
+| Field | Description | Type |
+|---|---|---|
+| @timestamp | Event timestamp. | date |
+| data_stream.dataset | Data stream dataset. | constant_keyword |
+| data_stream.namespace | Data stream namespace. | constant_keyword |
+| data_stream.type | Data stream type. | constant_keyword |
+| input.type | Input type. | keyword |
+| o365.metrics.app_registrations.app_id | The unique identifier for the application that is assigned to an application by Microsoft Entra ID. | keyword |
+| o365.metrics.app_registrations.display_name | The display name for the application. | keyword |
+| o365.metrics.app_registrations.key_credentials.display_name | The friendly name for the key. | keyword |
+| o365.metrics.app_registrations.key_credentials.end_date_time | The date and time at which the credential expires. | date |
+| o365.metrics.app_registrations.key_credentials.key_id | The unique identifier for the key. | keyword |
+| o365.metrics.app_registrations.key_credentials.type | The type of key credential; for example, Symmetric, AsymmetricX509Cert. | keyword |
+| o365.metrics.app_registrations.key_credentials.usage | A string that describes the purpose for which the key can be used; for example, Verify. | keyword |
+| o365.metrics.app_registrations.object_id | Unique identifier for the application object. | keyword |
+| o365.metrics.app_registrations.password_credentials.display_name | Friendly name for the password. | keyword |
+| o365.metrics.app_registrations.password_credentials.end_date_time | The date and time at which the password expires. | date |
+| o365.metrics.app_registrations.password_credentials.key_id | The unique identifier for the password. | keyword |
