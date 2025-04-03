@@ -35,7 +35,7 @@ if [[ "${to}" == "" ]]; then
     exit 1
 fi
 
-echo "[DEBUG] Checking with commits: from: '${from}' to: '${to}'"
+echo "Checking with commits: from: '${from}' to: '${to}'"
 
 # This variable does not exist in builds triggered automatically
 GITHUB_PR_TRIGGER_COMMENT="${GITHUB_PR_TRIGGER_COMMENT:-""}"

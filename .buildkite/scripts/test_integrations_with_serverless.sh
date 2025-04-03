@@ -70,6 +70,7 @@ if [[ "${to}" == "" ]]; then
     echo "Missing \"to\" changset".
     exit 1
 fi
+echo "Checking with commits: from: '${from}' to: '${to}'"
 
 any_package_failing=0
 
