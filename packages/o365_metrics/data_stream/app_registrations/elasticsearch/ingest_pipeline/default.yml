@@ -3,21 +3,12 @@ description: Pipeline for parsing O365 Entra Application Registration metrics
 processors:
   - set:
       field: ecs.version
-      value: 8.16.0
-  - fail:
-      tag: cel_failure
-      if: ctx.error?.message != null && ctx.message == null && ctx.event?.original == null
-      message: error message set and no data to process     
+      value: 8.17.0
   - set:
       field: event.kind
       value: metric
-on_failure:
   - set:
       field: event.kind
-      value: pipeline_error
-  - append:
-      field: error.message
-      value: >-
-        Processor '{{{ _ingest.on_failure_processor_type }}}'
-        {{{#_ingest.on_failure_processor_tag}}}with tag '{{{ _ingest.on_failure_processor_tag }}}'
-        {{{/_ingest.on_failure_processor_tag}}}failed with message '{{{ _ingest.on_failure_message }}}'
+      value: error
+      tag: set_error_into_event_kind
+      if: ctx.error?.message != null
