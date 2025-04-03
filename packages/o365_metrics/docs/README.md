@@ -2958,7 +2958,6 @@ An example event for `app_registrations` looks as following:
         "o365.metrics.app_registrations"
     ]
 }
-
 ```
 
 **ECS Field Reference**
