@@ -756,7 +756,7 @@ teardown_test_package() {
 }
 
 list_all_directories() {
-    find . -maxdepth 1 -mindepth 1 -type d | xargs -I {} basename {} | sort |grep -E '^(elastic_package_registry|cloud_defend|haproxy|beaconing|statsd_input|juniper_junos|bitwarden|fleet_server)$'
+    find . -maxdepth 1 -mindepth 1 -type d | xargs -I {} basename {} | sort |grep -E '^(elastic_package_registry|cloud_defend|haproxy|beaconing|statsd_input|juniper_junos|bitwarden|fleet_server|kubernetes)$'
 }
 
 check_package() {
