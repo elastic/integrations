@@ -727,7 +727,11 @@ is_pr() {
 }
 
 kubernetes_service_deployer_used() {
-    find . -type d | grep -q -E '_dev/deploy/k8s$'
+    # Not able to use -q in parameter
+    # as set -o pipefail is defined, when adding "-q" parameter, grep finishes with its first match
+    # but find still is writing to the pipe causing the SIGPIPE
+    # https://tldp.org/LDP/lpg/node20.html
+    find . -type d | grep -E "_dev/deploy/k8s$" > /dev/null
 }
 
 teardown_serverless_test_package() {
