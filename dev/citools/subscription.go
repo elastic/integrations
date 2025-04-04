@@ -1,0 +1,49 @@
+// Copyright Elasticsearch B.V. and/or licensed to Elasticsearch B.V. under one
+// or more contributor license agreements. Licensed under the Elastic License;
+// you may not use this file except in compliance with the Elastic License.
+
+package citools
+
+import (
+	"fmt"
+	"log"
+)
+
+func packageSubscription(path string) (string, error) {
+	manifest, err := readPackageManifest(path)
+	if err != nil {
+		return "", err
+	}
+
+	packageSubscription := manifest.Conditions.Elastic.Subscription
+	if packageSubscription == "" {
+		packageSubscription = manifest.License
+	}
+	if packageSubscription == "" {
+		packageSubscription = "basic"
+	}
+
+	return packageSubscription, nil
+}
+
+func IsSubscriptionCompatible(stackSubscription, path string) error {
+	pkgSubscription, err := packageSubscription(path)
+	if err != nil {
+		return err
+	}
+	log.Println("Package subscription:", pkgSubscription)
+
+	if stackSubscription == "trial" {
+		// All subscriptions supported
+		return nil
+	}
+
+	if stackSubscription == "basic" {
+		if pkgSubscription != "basic" {
+			return fmt.Errorf("unsupported subscription package %q with stack subscription %q", pkgSubscription, stackSubscription)
+		}
+		return nil
+	}
+
+	return fmt.Errorf("unknown subscription %s", stackSubscription)
+}

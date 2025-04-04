@@ -512,6 +512,10 @@ prepare_stack() {
         args="${args} -U stack.logsdb_enabled=true"
     fi
 
+    if [ "${ELASTIC_SUBSCRIPTION:-""}" != "" ]; then
+        args="${args} -U stack.elastic_subscription=${ELASTIC_SUBSCRIPTION}"
+    fi
+
     if [[ "${STACK_VERSION}" =~ ^7\.17 ]]; then
         # Required starting with STACK_VERSION 7.17.21
         export ELASTIC_AGENT_IMAGE_REF_OVERRIDE="docker.elastic.co/beats/elastic-agent-complete:${STACK_VERSION}-amd64"
@@ -668,12 +672,57 @@ get_to_changeset() {
     echo "${to}"
 }
 
+subscription_package() {
+    local default="basic"
+    local subscription=""
+    subscription="$(cat "./manifest.yml" |yq -r '.conditions.elastic.subscription')"
+    if [[ "${subscription}" == "null" ]]; then
+        subscription="$(cat "./manifest.yml" |yq -r '.conditions."elastic.subscription"')"
+    fi
+    # Is it using the deprecated setting license ?
+    if [[ "${subscription}" == "null" ]]; then
+        subscription="$(cat "./manifest.yml" |yq -r '.license')"
+    fi
+    # if there is no value
+    if [[ "${subscription}" == "null" ]]; then
+        subscription="${default}"
+    fi
+    echo "${subscription}"
+}
+
+is_compatible_subscription() {
+    if mage -v -d ${WORKSPACE} -w . isSubscriptionCompatible ; then
+        return 0
+    fi
+    return 1
+    # if [[ "${ELASTIC_SUBSCRIPTION:-""}" == "" ]]; then
+    #     return 0
+    # fi
+
+    # if [[ "${ELASTIC_SUBSCRIPTION}" == "trial" ]]; then
+    #     # All subscriptions are supported
+    #     return 0
+    # fi
+
+    # local subscription=""
+    # subscription="$(subscription_package)"
+    # echo "Subscription package=$subscription"
+
+    # if [[ "${ELASTIC_SUBSCRIPTION}" == "basic" ]]; then
+    #     if [[ "${subscription}" != "basic" ]]; then
+    #         return 1
+    #     fi
+    #     return 0
+    # fi
+
+    # # Unknown subscription
+    # return 1
+}
+
 is_pr_affected() {
     local package="${1}"
     local from=${2:-""}
     local to=${3:-""}
-
-    echoerr "[${package}] Original commits: from '${from}' - to: '${to}'"
 
     if ! is_supported_stack ; then
         echo "[${package}] PR is not affected: unsupported stack (${STACK_VERSION})"
@@ -691,28 +740,33 @@ is_pr_affected() {
         fi
     fi
 
+    if ! is_compatible_subscription; then
+        echo "[${package}] PR is not affected: subscription not compatible with ${ELASTIC_SUBSCRIPTION}"
+        return 1
+    fi
+
     if [[ "${FORCE_CHECK_ALL}" == "true" ]];then
         echo "[${package}] PR is affected: \"force_check_all\" parameter enabled"
         return 0
     fi
 
     if [[ "${from}" == ""  || "${to}" == "" ]]; then
-        echo "[${package}] Calculating commits: from '${from}' - to: '${to}'"
+        echoerr "[${package}] Calculating commits: from '${from}' - to: '${to}'"
         # setting range of changesets to check differences
         from="$(get_from_changeset)"
         to="$(get_to_changeset)"
     fi
 
-    echo "[${package}]: commits: from: '${from}' - to: '${to}'"
+    echoerr "[${package}]: commits: from: '${from}' - to: '${to}'"
 
-    echo "[${package}] git-diff: check non-package files"
+    echoerr "[${package}] git-diff: check non-package files"
     commit_merge=$(git merge-base "${from}" "${to}")
-    if git diff --name-only "${commit_merge}" "${to}" | grep -E -v '^(packages/|\.github/(CODEOWNERS|ISSUE_TEMPLATE|PULL_REQUEST_TEMPLATE)|README\.md|docs/)' ; then
+    if git diff --name-only "${commit_merge}" "${to}" | grep -q -E -v '^(packages/|\.github/(CODEOWNERS|ISSUE_TEMPLATE|PULL_REQUEST_TEMPLATE)|README\.md|docs/)' ; then
         echo "[${package}] PR is affected: found non-package files"
         return 0
     fi
-    echo "[${package}] git-diff: check package files"
-    if git diff --name-only "${commit_merge}" "${to}" | grep -E "^packages/${package}/" ; then
+    echoerr "[${package}] git-diff: check package files"
+    if git diff --name-only "${commit_merge}" "${to}" | grep -q -E "^packages/${package}/" ; then
         echo "[${package}] PR is affected: found package files"
         return 0
     fi
@@ -757,6 +811,7 @@ teardown_test_package() {
 }
 
 list_all_directories() {
+    # find . -maxdepth 1 -mindepth 1 -type d | xargs -I {} basename {} | sort |grep -E '^(elastic_package_registry|cloud_defend|beaconing|statsd_input|juniper_junos|juniper_netscreen|kibana|haproxy)$'
     find . -maxdepth 1 -mindepth 1 -type d | xargs -I {} basename {} | sort
 }
 

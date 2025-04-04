@@ -16,10 +16,10 @@ type reporter struct {
 	maxPreviousLinks int
 }
 
-func newReporter(ghCli *ghCli, maxPreviousLinks int) reporter {
+func newReporter(ghCli *ghCli, maxPreviousLInks int) reporter {
 	return reporter{
 		ghCli:            ghCli,
-		maxPreviousLinks: maxPreviousLinks,
+		maxPreviousLinks: maxPreviousLInks,
 	}
 }
 
@@ -55,6 +55,11 @@ func (r reporter) Report(ctx context.Context, issue *githubIssue, resultError fa
 	fmt.Printf("Teams: %q\n", strings.Join(formatter.Owners(), ", "))
 	fmt.Printf("Labels: %s\n", strings.Join(nextIssue.Labels(), ", "))
 	fmt.Printf("Summary:\n%s", summary)
+	fmt.Println("----")
+	fmt.Println()
+	// TODO: remove
+	fmt.Println("---- Full Description ----")
+	fmt.Print(description)
 	fmt.Println("----")
 	fmt.Println()
 

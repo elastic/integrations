@@ -36,7 +36,7 @@ func TestSummary(t *testing.T) {
 `,
 		},
 		{
-			title: "summary stack version with owners wihtout data stream",
+			title: "summary stack version with owners without data stream",
 			resultError: &packageError{
 				dataError: dataError{
 					stackVersion: "8.14",
@@ -156,6 +156,30 @@ func TestSummary(t *testing.T) {
 				teams: []string{"team1"},
 			},
 			expected: `- Stack version: 8.16
+- Packages:
+    - foo
+    - bar
+- Owners:
+    - team1
+`,
+		},
+		{
+			title: "summary with basic license",
+			resultError: &buildError{
+				dataError: dataError{
+					logsDB:       false,
+					serverless:   false,
+					subscription: "basic",
+					stackVersion: "8.16",
+				},
+				packages: []string{
+					"foo",
+					"bar",
+				},
+				teams: []string{"team1"},
+			},
+			expected: `- Stack version: 8.16
+- Subscription: basic
 - Packages:
     - foo
     - bar
