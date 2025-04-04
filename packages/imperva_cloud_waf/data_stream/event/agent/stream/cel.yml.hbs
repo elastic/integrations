@@ -72,7 +72,22 @@ program: |
         }
       }).do_request().as(resp, resp.StatusCode == 200 ?
         bytes(resp.Body).as(body, {
-          "events": (string(body)+"|==|").split("|==|")[1].split("\n").filter(x,x!="").map(x,{"message":x}),
+          "events": try(string(body), "error").as(body, type(body) == type("") ?
+            dyn((body+"|==|").split("|==|")[1].split("\n").filter(x,x!="").map(x,{"message":x}))
+          :
+            // This is an unrecoverable error for the worklist element; it indicates
+            // most likely that the data was compressed, or was encrypted. We cannot
+            // handle this, so we step past it and log the failure. We are in an
+            // unfortunate position where ideally we would like this to cause a health
+            // status note in fleet to result, but we cannot do this since this would
+            // delete the cursor update and we would still be stuck here, so we just
+            // log into the index in the hope that someone will see it.
+            dyn([{"error":
+              {
+                "message": v.worklist[v.next].filename + ": " + body.error + ": check imperva waf logging is configured correctly",
+              },
+            }])
+          ),
           "cursor": {
             "log_file": (
               has(state.cursor) && has(state.cursor.log_file) && state.cursor.log_file != null
