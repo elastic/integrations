@@ -444,6 +444,115 @@ An example event for `case` looks as following:
 | log.offset | Log offset. | long |
 
 
+### Vendor Case
+
+This is the `vendor_case` dataset.
+
+#### Example
+
+An example event for `vendor_case` looks as following:
+
+```json
+{
+    "@timestamp": "2025-04-04T13:15:26.820Z",
+    "abnormal_security": {
+        "vendor_case": {
+            "domain": "domain1.com",
+            "first_observed_time": "2025-04-18T08:02:21.512Z",
+            "id": "1234",
+            "insights": [
+                {
+                    "description": "The language contained in the email body is consistent with fraud.",
+                    "highlight": "Fraud Language"
+                }
+            ],
+            "last_modified_time": "2025-03-15T03:02:21.512Z",
+            "timeline": [
+                {
+                    "event_timestamp": "2025-03-30T08:32:21.512849+05:30",
+                    "marked_as": "Malicious",
+                    "recipient_address": "recipient1@domain.com",
+                    "sender_address": "sender1@domain.com",
+                    "subject": "Subject",
+                    "threat_id": "threat1"
+                }
+            ]
+        }
+    },
+    "agent": {
+        "ephemeral_id": "6458e758-f9d1-4949-98bd-9efaae9e0b53",
+        "id": "3b24d5d3-6344-4f8a-81cd-29846dc47e1c",
+        "name": "elastic-agent-13136",
+        "type": "filebeat",
+        "version": "8.17.3"
+    },
+    "data_stream": {
+        "dataset": "abnormal_security.vendor_case",
+        "namespace": "84924",
+        "type": "logs"
+    },
+    "ecs": {
+        "version": "8.11.0"
+    },
+    "elastic_agent": {
+        "id": "3b24d5d3-6344-4f8a-81cd-29846dc47e1c",
+        "snapshot": false,
+        "version": "8.17.3"
+    },
+    "event": {
+        "agent_id_status": "verified",
+        "dataset": "abnormal_security.vendor_case",
+        "id": "1234",
+        "ingested": "2025-04-04T13:15:29Z",
+        "kind": "event",
+        "original": "{\"firstObservedTime\":\"2025-04-18T13:32:21.512848+05:30\",\"insights\":[{\"description\":\"The language contained in the email body is consistent with fraud.\",\"highlight\":\"Fraud Language\"}],\"lastModifiedTime\":\"2025-03-15T08:32:21.512849+05:30\",\"timeline\":[{\"eventTimestamp\":\"2025-03-30T08:32:21.512849+05:30\",\"markedAs\":\"Malicious\",\"recipientAddress\":\"recipient1@domain.com\",\"senderAddress\":\"sender1@domain.com\",\"subject\":\"Subject\",\"threatId\":\"threat1\"}],\"vendorCaseId\":1234,\"vendorDomain\":\"domain1.com\"}",
+        "start": "2025-04-18T08:02:21.512Z",
+        "type": [
+            "info"
+        ]
+    },
+    "input": {
+        "type": "cel"
+    },
+    "observer": {
+        "product": "Inbound Email Security",
+        "vendor": "Abnormal"
+    },
+    "tags": [
+        "preserve_original_event",
+        "preserve_duplicate_custom_fields",
+        "forwarded",
+        "abnormal_security-vendor-cases"
+    ]
+}
+```
+
+**Exported fields**
+
+| Field | Description | Type |
+|---|---|---|
+| @timestamp | Event timestamp. | date |
+| abnormal_security.vendor_case.domain | Domain associated with the vendor. | keyword |
+| abnormal_security.vendor_case.first_observed_time | Timestamp when the case was first observed. | date |
+| abnormal_security.vendor_case.id | Unique identifier for the vendor's case. | keyword |
+| abnormal_security.vendor_case.insights.description | Detailed description of the insight. | text |
+| abnormal_security.vendor_case.insights.highlight | Highlight or category of the insight. | keyword |
+| abnormal_security.vendor_case.last_modified_time | Timestamp when the case was last modified. | date |
+| abnormal_security.vendor_case.timeline.event_timestamp | Timestamp when the event occurred. | date |
+| abnormal_security.vendor_case.timeline.marked_as | Classification of the event (e.g., Malicious). | keyword |
+| abnormal_security.vendor_case.timeline.recipient_address | Email address of the recipient. | keyword |
+| abnormal_security.vendor_case.timeline.sender_address | Email address of the sender. | keyword |
+| abnormal_security.vendor_case.timeline.subject | Email subject line. | text |
+| abnormal_security.vendor_case.timeline.threat_id | Identifier for the associated threat. | keyword |
+| data_stream.dataset | Data stream dataset. | constant_keyword |
+| data_stream.namespace | Data stream namespace. | constant_keyword |
+| data_stream.type | Data stream type. | constant_keyword |
+| event.dataset | Event dataset. | constant_keyword |
+| event.module | Event module. | constant_keyword |
+| input.type | Type of filebeat input. | keyword |
+| log.offset | Log offset. | long |
+
+
 ### Threat
 
 This is the `threat` dataset.

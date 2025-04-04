@@ -96,6 +96,16 @@ This is the `case` dataset.
 
 {{fields "case"}}
 
+### Vendor Case
+
+This is the `vendor_case` dataset.
+
+#### Example
+
+{{event "vendor_case"}}
+
+{{fields "vendor_case"}}
+
 ### Threat
 
 This is the `threat` dataset.
