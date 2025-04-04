@@ -1,0 +1,146 @@
+config_version: 2
+interval: {{interval}}
+resource.tracer:
+  enabled: {{enable_request_tracer}}
+  filename: "../../logs/cel/http-request-trace-*.ndjson"
+  maxbackups: 5
+{{#if proxy_url}}
+resource.proxy_url: {{proxy_url}}
+{{/if}}
+{{#if ssl}}
+resource.ssl: {{ssl}}
+{{/if}}
+{{#if http_client_timeout}}
+resource.timeout: {{http_client_timeout}}
+{{/if}}
+resource.url: {{url}}
+state:
+  initial_interval: {{initial_interval}}
+  batch_size: {{batch_size}}
+  api_token: {{api_token}}
+redact:
+  fields:
+    - api_token
+program: |
+  (
+    state.?want_more.orValue(false) ?
+      state
+    :
+      state.with(
+        {
+          "start_time": state.?cursor.last_timestamp.orValue((now - duration(state.initial_interval)).format(time_layout.RFC3339)),
+          "offset": state.?offset.orValue(0),
+        }
+      )
+  ).as(state,
+    post_request(
+      state.url.trim_right("/") + "/api/v1/ot_activity_events/",
+      "application/json",
+      {
+        "offset": int(state.offset),
+        "limit": int(state.batch_size),
+        "filter_by": {
+          "field": "detection_time",
+          "operation": "greater",
+          "value": string(state.start_time)
+        },
+        "fields": [
+          "detection_time",
+          "event_type",
+          "related_alert_ids",
+          "description",
+          "dest_asset_id",
+          "dest_ip",
+          "dest_device_type",
+          "dest_device_name",
+          "dest_site_name",
+          "dest_network",
+          "protocol",
+          "dest_port",
+          "source_port",
+          "source_asset_id",
+          "source_ip",
+          "source_device_type",
+          "source_username",
+          "source_device_name",
+          "source_site_name",
+          "source_network",
+          "mode",
+          "event_id",
+          "ip_protocol"
+        ],
+        "sort_by": [
+          {
+            "field": "detection_time",
+            "order": "asc"
+          }
+        ]
+      }.encode_json()
+    ).with(
+      {
+        "Header": {
+          "Authorization": ["Bearer " + string(state.api_token)],
+        }
+      }
+    ).do_request().as(resp, (resp.StatusCode == 200) ?
+      resp.Body.decode_json().as(body,
+        {
+          "events": body.ot_activity_events.map(e,
+            {
+              "message": e.encode_json(),
+            }
+          ),
+          "offset": (size(body.ot_activity_events) > 0) ? (int(state.offset) + int(state.batch_size)) : 0,
+          "want_more": size(body.ot_activity_events) > 0,
+          "cursor": {
+            ?"last_timestamp": (has(body.ot_activity_events) && size(body.ot_activity_events) > 0) ?
+              optional.of(body.ot_activity_events[size(body.ot_activity_events) - 1].detection_time)
+            :
+              state.?cursor.last_timestamp,
+          },
+          "start_time": state.start_time,
+          "initial_interval": state.initial_interval,
+          "batch_size": state.batch_size,
+          "api_token": state.api_token,
+        }
+      )
+    :
+      {
+        "events": {
+          "error": {
+            "code": string(resp.StatusCode),
+            "id": string(resp.Status),
+            "message": "POST " + state.url.trim_right("/") + "/api/v1/ot_activity_events/" + 
+            (
+              (size(resp.Body) != 0) ?
+                string(resp.Body)
+              :
+                string(resp.Status) + " (" + string(resp.StatusCode) + ")"
+            ),
+          },
+        },
+        "want_more": false,
+        "offset": 0,
+        "initial_interval": state.initial_interval,
+        "batch_size": state.batch_size,
+        "api_token": state.api_token,
+      }
+    )
+  )
+tags:
+{{#if preserve_original_event}}
+  - preserve_original_event
+{{/if}}
+{{#if preserve_duplicate_custom_fields}}
+  - preserve_duplicate_custom_fields
+{{/if}}
+{{#each tags as |tag|}}
+  - {{tag}}
+{{/each}}
+{{#contains "forwarded" tags}}
+publisher_pipeline.disable_host: true
+{{/contains}}
+{{#if processors}}
+processors:
+{{processors}}
+{{/if}}
