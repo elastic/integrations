@@ -43,10 +43,11 @@ Once the application is registered, configure and/or note the following to setup
     - Click `New client secret` and provide some description to create new secret.
     - Note the `Value` which is required for the integration setup.
 3. Add permissions to your registered application.
-    - Navigate to `API permissions` page and click `Add a permission`
-    - Select `Office 365 Management APIs` tile from the listed tiles.
-    - Click `Application permissions`.
-    - If `User.Read` and `Reports.Read.All` permission under `Microsoft.Graph` tile is not added by default, add this permission. Additional permissions, such as `ServiceHealth.Read.All` for data streams like Service Health may be required. Refer to the API documentation under the Permissions section to determine the necessary permissions.
+    - Select and add the appropriate permissions from the available tiles.
+    - For this package, we primarily utilize Graph APIs, so you can choose `Microsoft Graph`, which will display the Delegated and Application permission sections.
+    - Select the permissions specified in each data stream section of this package. 
+    - Refer to the `Required Permission` column in the table to identify the permissions required for each data stream and select accordingly. You can also refer to the Permissions section in the API documentation for each data stream to determine the necessary permissions.
+    - If `User.Read` and `Reports.Read.All` permission under `Microsoft.Graph` tile is not added by default, add these permission as they are required for most data streams. Additional permissions, such as `ServiceHealth.Read.All` for data streams like Service Health may be required. 
     - After the permissions are added, the admin has to grant consent for these permissions.
 
 Once the secret is created and permissions are granted by admin, setup Elastic Agent's Microsoft O365 integration:
@@ -2958,6 +2959,7 @@ An example event for `app_registrations` looks as following:
         "o365.metrics.app_registrations"
     ]
 }
+
 ```
 
 **ECS Field Reference**
