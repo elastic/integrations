@@ -41,50 +41,50 @@ An example event for `intelligence` looks as following:
 
 ```json
 {
-    "@timestamp": "2025-02-12T10:26:45.318654640Z",
+    "@timestamp": "2025-04-04T11:44:07.880474718Z",
     "agent": {
-        "ephemeral_id": "434f328f-443d-4cd9-aad8-717d835a2312",
-        "id": "c48e3b22-841c-4ed3-ba7f-a039638b8e1b",
-        "name": "elastic-agent-54553",
+        "ephemeral_id": "35ff0c62-c4fc-4cfb-9455-6964c2bbd56e",
+        "id": "bdebf2ec-527b-43f5-abb5-78f3826c5e53",
+        "name": "elastic-agent-96548",
         "type": "filebeat",
         "version": "8.13.0"
     },
     "anomali": {
         "threatstream": {
             "can_add_public_tags": true,
-            "confidence": 12,
-            "deletion_scheduled_at": "2025-02-19T10:26:45.31865464Z",
+            "confidence": 60,
+            "deletion_scheduled_at": "2025-04-11T11:44:07.880474718Z",
             "expiration_ts": "9999-12-31T00:00:00.000Z",
             "feed_id": 0,
-            "id": "235548914",
+            "id": "232020126",
             "is_anonymous": false,
             "is_editable": false,
             "is_public": true,
-            "itype": "apt_email",
+            "itype": "apt_domain",
             "meta": {
-                "severity": "medium"
+                "severity": "very-high"
             },
-            "owner_organization_id": 70,
+            "owner_organization_id": 67,
             "retina_confidence": -1,
-            "source_reported_confidence": 12,
+            "source_reported_confidence": 60,
             "status": "active",
             "threat_type": "apt",
-            "type": "email",
-            "update_id": 100000002,
-            "uuid": "bc5a223e-f7a1-4acb-b50b-c81395e34218",
-            "value": "edc2@wsx.com"
+            "type": "domain",
+            "update_id": 100000001,
+            "uuid": "0921be47-9cc2-4265-b896-c62a7cb91042",
+            "value": "gen1xyz.com"
         }
     },
     "data_stream": {
         "dataset": "ti_anomali.intelligence",
-        "namespace": "29572",
+        "namespace": "62702",
         "type": "logs"
     },
     "ecs": {
         "version": "8.11.0"
     },
     "elastic_agent": {
-        "id": "c48e3b22-841c-4ed3-ba7f-a039638b8e1b",
+        "id": "bdebf2ec-527b-43f5-abb5-78f3826c5e53",
         "snapshot": false,
         "version": "8.13.0"
     },
@@ -93,12 +93,12 @@ An example event for `intelligence` looks as following:
         "category": [
             "threat"
         ],
-        "created": "2021-04-29T16:00:35.529Z",
+        "created": "2021-04-06T09:56:22.915Z",
         "dataset": "ti_anomali.intelligence",
-        "ingested": "2025-02-12T10:26:45Z",
+        "ingested": "2025-04-04T11:44:07Z",
         "kind": "enrichment",
-        "original": "{\"asn\":\"\",\"can_add_public_tags\":true,\"confidence\":12,\"created_by\":null,\"created_ts\":\"2021-04-29T16:00:35.529Z\",\"description\":null,\"expiration_ts\":\"9999-12-31T00:00:00.000Z\",\"feed_id\":0,\"id\":235548914,\"is_anonymous\":false,\"is_editable\":false,\"is_public\":true,\"itype\":\"apt_email\",\"locations\":[],\"meta\":{\"detail2\":\"imported by user 142\",\"severity\":\"medium\"},\"modified_ts\":\"2021-04-29T16:00:35.529Z\",\"org\":\"\",\"owner_organization_id\":70,\"rdns\":null,\"resource_uri\":\"/api/v2/intelligence/235548914/\",\"retina_confidence\":-1,\"sort\":[467407026],\"source\":\"Analyst\",\"source_locations\":[],\"source_reported_confidence\":12,\"status\":\"active\",\"subtype\":null,\"tags\":null,\"target_industry\":[],\"threat_type\":\"apt\",\"threatscore\":9,\"tlp\":null,\"trusted_circle_ids\":null,\"type\":\"email\",\"update_id\":100000002,\"uuid\":\"bc5a223e-f7a1-4acb-b50b-c81395e34218\",\"value\":\"edc2@wsx.com\",\"workgroups\":[]}",
-        "severity": 5,
+        "original": "{\"asn\":\"\",\"can_add_public_tags\":true,\"confidence\":60,\"created_by\":null,\"created_ts\":\"2021-04-06T09:56:22.915Z\",\"description\":null,\"expiration_ts\":\"9999-12-31T00:00:00.000Z\",\"feed_id\":0,\"id\":232020126,\"is_anonymous\":false,\"is_editable\":false,\"is_public\":true,\"itype\":\"apt_domain\",\"locations\":[],\"meta\":{\"detail2\":\"imported by user 136\",\"severity\":\"very-high\"},\"modified_ts\":\"2021-04-06T09:56:22.915Z\",\"org\":\"\",\"owner_organization_id\":67,\"rdns\":null,\"resource_uri\":\"/api/v2/intelligence/232020126/\",\"retina_confidence\":-1,\"sort\":[455403032],\"source\":\"Analyst\",\"source_locations\":[],\"source_reported_confidence\":60,\"status\":\"active\",\"subtype\":null,\"tags\":null,\"target_industry\":[],\"threat_type\":\"apt\",\"threatscore\":54,\"tlp\":null,\"trusted_circle_ids\":null,\"type\":\"domain\",\"update_id\":100000001,\"uuid\":\"0921be47-9cc2-4265-b896-c62a7cb91042\",\"value\":\"gen1xyz.com\",\"workgroups\":[]}",
+        "severity": 9,
         "type": [
             "indicator"
         ]
@@ -113,16 +113,16 @@ An example event for `intelligence` looks as following:
     ],
     "threat": {
         "indicator": {
-            "confidence": "Low",
-            "email": {
-                "address": "edc2@wsx.com"
-            },
+            "confidence": "Medium",
             "marking": {
                 "tlp": "WHITE"
             },
-            "modified_at": "2021-04-29T16:00:35.529Z",
+            "modified_at": "2021-04-06T09:56:22.915Z",
             "provider": "Analyst",
-            "type": "email-addr"
+            "type": "domain-name",
+            "url": {
+                "domain": "gen1xyz.com"
+            }
         }
     }
 }
