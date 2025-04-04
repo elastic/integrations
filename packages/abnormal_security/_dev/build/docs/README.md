@@ -16,6 +16,8 @@ The Abnormal Security integration collects four types of logs:
 
 - **[Threat](https://app.swaggerhub.com/apis-docs/abnormal-security/abx/1.4.3#/Threats)** - Get details of Abnormal Threat Logs.
 
+- **[Vendor Case](https://app.swaggerhub.com/apis-docs/abnormal-security/abx/1.4.3#/Vendors)** - Get details of Abnormal Vendor Cases.
+
 ## Requirements
 
 You need to have Elastic Agent installed. For detailed guidance, refer to the Elastic Agent [installation instructions](https://www.elastic.co/guide/en/fleet/current/elastic-agent-installation.html).
@@ -93,6 +95,16 @@ This is the `case` dataset.
 {{event "case"}}
 
 {{fields "case"}}
+
+### Vendor Case
+
+This is the `vendor_case` dataset.
+
+#### Example
+
+{{event "vendor_case"}}
+
+{{fields "vendor_case"}}
 
 ### Threat
 
