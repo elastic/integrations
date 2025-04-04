@@ -201,10 +201,7 @@ func TestReporterUpdateLinks(t *testing.T) {
 				Runner: &runner,
 			})
 
-			reporter := newReporter(reporterOptions{
-				GhCli:            ghCli,
-				MaxPreviousLinks: 5,
-			})
+			reporter := newReporter(ghCli, 5)
 
 			links, newIssue, err := reporter.updateLinks(context.Background(), c.issue, c.firstBuild)
 			require.NoError(t, err)

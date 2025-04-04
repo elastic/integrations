@@ -574,9 +574,9 @@ prepare_serverless_stack() {
 }
 
 is_spec_3_0_0() {
-    local pkg_spec=""
+    local pkg_spec
     pkg_spec=$(cat manifest.yml | yq '.format_version')
-    local major_version=""
+    local major_version
     major_version=$(echo "$pkg_spec" | cut -d '.' -f 1)
 
     if [ "${major_version}" -ge 3 ]; then

@@ -64,29 +64,29 @@ func (b *buildError) String() string {
 	return sb.String()
 }
 
-func (b *buildError) FirstBuild() string {
-	return b.errorLinks.firstBuild
+func (p *buildError) FirstBuild() string {
+	return p.errorLinks.firstBuild
 }
 
-func (b *buildError) UpdateLinks(links errorLinks) {
-	b.errorLinks = links
+func (p *buildError) UpdateLinks(links errorLinks) {
+	p.errorLinks = links
 }
 
-func (b *buildError) Teams() []string {
-	return b.teams
+func (p *buildError) Teams() []string {
+	return p.teams
 }
 
-func (b *buildError) SummaryData() map[string]any {
-	data := b.dataError.Data()
-	data["packages"] = b.packages
-	data["owners"] = b.teams
+func (p *buildError) SummaryData() map[string]any {
+	data := p.dataError.Data()
+	data["packages"] = p.packages
+	data["owners"] = p.teams
 	return data
 }
 
-func (b *buildError) DescriptionData() map[string]any {
-	return b.errorLinks.Data()
+func (p *buildError) DescriptionData() map[string]any {
+	return p.errorLinks.Data()
 }
 
-func (b *buildError) Labels() []string {
+func (p *buildError) Labels() []string {
 	return []string{buildReportingTeamLabel}
 }

@@ -14,20 +14,12 @@ import (
 type reporter struct {
 	ghCli            *ghCli
 	maxPreviousLinks int
-	verbose          bool
 }
 
-type reporterOptions struct {
-	GhCli            *ghCli
-	MaxPreviousLinks int
-	Verbose          bool
-}
-
-func newReporter(options reporterOptions) reporter {
+func newReporter(ghCli *ghCli, maxPreviousLInks int) reporter {
 	return reporter{
-		ghCli:            options.GhCli,
-		maxPreviousLinks: options.MaxPreviousLinks,
-		verbose:          options.Verbose,
+		ghCli:            ghCli,
+		maxPreviousLinks: maxPreviousLInks,
 	}
 }
 
@@ -65,12 +57,11 @@ func (r reporter) Report(ctx context.Context, issue *githubIssue, resultError fa
 	fmt.Printf("Summary:\n%s", summary)
 	fmt.Println("----")
 	fmt.Println()
-	if r.verbose {
-		fmt.Println("---- Full Description ----")
-		fmt.Print(description)
-		fmt.Println("----")
-		fmt.Println()
-	}
+	// TODO: remove
+	fmt.Println("---- Full Description ----")
+	fmt.Print(description)
+	fmt.Println("----")
+	fmt.Println()
 
 	return r.createOrUpdateIssue(ctx, nextIssue)
 }
