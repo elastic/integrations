@@ -45,7 +45,7 @@ Once the application is registered, configure and/or note the following to setup
 3. Add permissions to your registered application.
     - Select and add the appropriate permissions from the available tiles.
     - For this package, we primarily use Graph APIs, so you can choose `Microsoft Graph`, which will display the Delegated and Application permission sections.
-    - Refer to the `Required Permissions` column in the table under data stream section to identify the permissions required for each data stream and select accordingly. You can also refer to the Permissions section in the API documentation for each data stream to determine the necessary permissions.
+    - Refer to the `Required Permissions` column in the table under [Data streams](#data-streams) section to identify the permissions required for each data stream and select accordingly. You can also refer to the Permissions section in the API documentation for each data stream to determine the necessary permissions.
     - Ensure Reports.Read.All from Microsoft Graph is added, as most APIs are report-based.
     - After the permissions are added, the admin will need to grant consent for a few permissions.
 
