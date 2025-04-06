@@ -209,7 +209,7 @@
                         "id": "",
                         "params": {
                             "fontSize": 12,
-                            "markdown": "**Overview**\n\nThis dashboard provides a detailed overview of MongoDB Atlas process metrics, including database size, connections, CPU and memory usage, network throughput, and document operations. It visualizes key performance indicators such as assertion states, B-tree index efficiency, and cache utilization. By monitoring these metrics in real-time, users can gain insights into database performance, detect bottlenecks, and optimize resource allocation.",
+                            "markdown": "**Overview**\n\nThe MongoDB Atlas Process dashboard provides visibility into process-level performance and database activity. It provides key metrics including:\n  - Database size and connection trends\n  - Document operation rates and lock stats\n  - CPU and memory usage\n  - Cache utilization and disk I/O",
                             "openLinksInNewTab": false
                         },
                         "title": "",
@@ -236,13 +236,69 @@
                                 "id": "logs-*",
                                 "name": "indexpattern-datasource-layer-cd73b358-0ca8-41b8-98a1-376efe82ebeb",
                                 "type": "index-pattern"
+                            },
+                            {
+                                "id": "logs-*",
+                                "name": "indexpattern-datasource-layer-62a17a60-1976-4294-a8a1-b20619f16498",
+                                "type": "index-pattern"
                             }
                         ],
                         "state": {
                             "adHocDataViews": {},
                             "datasourceStates": {
                                 "formBased": {
+                                    "currentIndexPatternId": "logs-*",
                                     "layers": {
+                                        "62a17a60-1976-4294-a8a1-b20619f16498": {
+                                            "columnOrder": [
+                                                "40e63b9a-30a3-4424-a702-0deefbb51924",
+                                                "d4367cbd-2b8f-4a09-b597-264c6fce4581"
+                                            ],
+                                            "columns": {
+                                                "40e63b9a-30a3-4424-a702-0deefbb51924": {
+                                                    "dataType": "date",
+                                                    "isBucketed": true,
+                                                    "label": "@timestamp",
+                                                    "operationType": "date_histogram",
+                                                    "params": {
+                                                        "dropPartials": false,
+                                                        "includeEmptyRows": true,
+                                                        "interval": "auto"
+                                                    },
+                                                    "scale": "interval",
+                                                    "sourceField": "@timestamp"
+                                                },
+                                                "d4367cbd-2b8f-4a09-b597-264c6fce4581": {
+                                                    "customLabel": true,
+                                                    "dataType": "number",
+                                                    "filter": {
+                                                        "language": "kuery",
+                                                        "query": "\"mongodb_atlas.process.database.size.total.bytes\": *"
+                                                    },
+                                                    "isBucketed": false,
+                                                    "label": " Database total size",
+                                                    "operationType": "last_value",
+                                                    "params": {
+                                                        "format": {
+                                                            "id": "bytes",
+                                                            "params": {
+                                                                "decimals": 2
+                                                            }
+                                                        },
+                                                        "sortField": "@timestamp"
+                                                    },
+                                                    "scale": "ratio",
+                                                    "sourceField": "mongodb_atlas.process.database.size.total.bytes"
+                                                }
+                                            },
+                                            "ignoreGlobalFilters": false,
+                                            "incompleteColumns": {},
+                                            "indexPatternId": "logs-*",
+                                            "linkToLayers": [
+                                                "cd73b358-0ca8-41b8-98a1-376efe82ebeb"
+                                            ],
+                                            "sampling": 1
+                                        },
                                         "cd73b358-0ca8-41b8-98a1-376efe82ebeb": {
                                             "columnOrder": [
                                                 "fd8c7cd5-bf51-4b84-963e-02e291f76939"
@@ -256,7 +312,7 @@
                                                         "query": "\"mongodb_atlas.process.database.size.total.bytes\": *"
                                                     },
                                                     "isBucketed": false,
-                                                    "label": " Database Total Size",
+                                                    "label": " Database total size",
                                                     "operationType": "last_value",
                                                     "params": {
                                                         "format": {
@@ -272,6 +328,7 @@
                                                 }
                                             },
                                             "incompleteColumns": {},
+                                            "indexPatternId": "logs-*",
                                             "sampling": 1
                                         }
                                     }
@@ -290,12 +347,17 @@
                                 "query": ""
                             },
                             "visualization": {
+                                "color": "#54B399",
                                 "icon": "empty",
                                 "layerId": "cd73b358-0ca8-41b8-98a1-376efe82ebeb",
                                 "layerType": "data",
                                 "metricAccessor": "fd8c7cd5-bf51-4b84-963e-02e291f76939",
                                 "showBar": false,
-                                "subtitle": ""
+                                "subtitle": "",
+                                "trendlineLayerId": "62a17a60-1976-4294-a8a1-b20619f16498",
+                                "trendlineLayerType": "metricTrendline",
+                                "trendlineMetricAccessor": "d4367cbd-2b8f-4a09-b597-264c6fce4581",
+                                "trendlineTimeAccessor": "40e63b9a-30a3-4424-a702-0deefbb51924"
                             }
                         },
                         "title": "Database size [Metrics MongoDB Atlas]",
@@ -329,6 +391,7 @@
                             "adHocDataViews": {},
                             "datasourceStates": {
                                 "formBased": {
+                                    "currentIndexPatternId": "logs-*",
                                     "layers": {
                                         "4bae4135-aa8b-47ba-bbd7-6a22b4b3697c": {
                                             "columnOrder": [
@@ -388,6 +451,7 @@
                                                 }
                                             },
                                             "incompleteColumns": {},
+                                            "indexPatternId": "logs-*",
                                             "sampling": 1
                                         }
                                     }
@@ -408,7 +472,7 @@
                             "visualization": {
                                 "axisTitlesVisibilitySettings": {
                                     "x": true,
-                                    "yLeft": false,
+                                    "yLeft": true,
                                     "yRight": true
                                 },
                                 "curveType": "LINEAR",
@@ -452,7 +516,7 @@
                                 },
                                 "valueLabels": "hide",
                                 "valuesInLegend": true,
-                                "yTitle": "Average"
+                                "yTitle": "Throughput"
                             }
                         },
                         "title": "",
@@ -487,7 +551,6 @@
                             "adHocDataViews": {},
                             "datasourceStates": {
                                 "formBased": {
-                                    "currentIndexPatternId": "logs-*",
                                     "layers": {
                                         "d632a616-b51b-4039-af6c-a764c3635443": {
                                             "columnOrder": [
@@ -560,7 +623,6 @@
                                                 }
                                             },
                                             "incompleteColumns": {},
-                                            "indexPatternId": "logs-*",
                                             "sampling": 1
                                         }
                                     }
@@ -581,7 +643,7 @@
                             "visualization": {
                                 "axisTitlesVisibilitySettings": {
                                     "x": true,
-                                    "yLeft": false,
+                                    "yLeft": true,
                                     "yRight": true
                                 },
                                 "emphasizeFitting": true,
@@ -611,7 +673,6 @@
                                 ],
                                 "legend": {
                                     "isVisible": true,
-                                    "legendSize": "large",
                                     "position": "right",
                                     "showSingleSeries": true
                                 },
@@ -622,7 +683,8 @@
                                     "yRight": true
                                 },
                                 "valueLabels": "hide",
-                                "valuesInLegend": true
+                                "valuesInLegend": true,
+                                "yTitle": "Count"
                             }
                         },
                         "title": "",
@@ -658,6 +720,7 @@
                             "adHocDataViews": {},
                             "datasourceStates": {
                                 "formBased": {
+                                    "currentIndexPatternId": "logs-*",
                                     "layers": {
                                         "cd89a53e-75f8-4ccd-9234-05124250cc7b": {
                                             "columnOrder": [
@@ -713,6 +776,7 @@
                                                 }
                                             },
                                             "incompleteColumns": {},
+                                            "indexPatternId": "logs-*",
                                             "sampling": 1
                                         }
                                     }
@@ -733,7 +797,7 @@
                             "visualization": {
                                 "axisTitlesVisibilitySettings": {
                                     "x": true,
-                                    "yLeft": false,
+                                    "yLeft": true,
                                     "yRight": true
                                 },
                                 "curveType": "LINEAR",
@@ -764,7 +828,6 @@
                                 ],
                                 "legend": {
                                     "isVisible": true,
-                                    "legendSize": "large",
                                     "position": "right",
                                     "showSingleSeries": true
                                 },
@@ -776,7 +839,7 @@
                                 },
                                 "valueLabels": "hide",
                                 "valuesInLegend": true,
-                                "yTitle": "Count"
+                                "yTitle": "Operations"
                             }
                         },
                         "title": "Global lock Data",
@@ -795,6 +858,324 @@
                 },
                 "panelIndex": "d3f6c424-e228-438c-8b54-e7229f252220",
                 "title": "Number of operations queued and waiting for lock",
+                "type": "lens"
+            },
+            {
+                "embeddableConfig": {
+                    "attributes": {
+                        "description": "",
+                        "references": [
+                            {
+                                "id": "logs-*",
+                                "name": "indexpattern-datasource-layer-9e13bc03-ef64-4c17-aa85-6a64c035c2df",
+                                "type": "index-pattern"
+                            }
+                        ],
+                        "state": {
+                            "adHocDataViews": {},
+                            "datasourceStates": {
+                                "formBased": {
+                                    "layers": {
+                                        "9e13bc03-ef64-4c17-aa85-6a64c035c2df": {
+                                            "columnOrder": [
+                                                "f1ed6868-aad9-4cc3-bf78-a8cac859e7a5",
+                                                "c7e30443-618a-4cad-ab44-7c62c66cdaca",
+                                                "87067ba0-299a-4b37-8316-f98fab6e650b",
+                                                "8c2c5e55-bb96-4171-965e-5a9eb5f5beea",
+                                                "fe15665e-e65e-4670-a29c-819f913b0c73"
+                                            ],
+                                            "columns": {
+                                                "87067ba0-299a-4b37-8316-f98fab6e650b": {
+                                                    "customLabel": true,
+                                                    "dataType": "number",
+                                                    "isBucketed": false,
+                                                    "label": "regular",
+                                                    "operationType": "average",
+                                                    "params": {
+                                                        "emptyAsNull": true
+                                                    },
+                                                    "scale": "ratio",
+                                                    "sourceField": "mongodb_atlas.process.assert.regular"
+                                                },
+                                                "8c2c5e55-bb96-4171-965e-5a9eb5f5beea": {
+                                                    "customLabel": true,
+                                                    "dataType": "number",
+                                                    "isBucketed": false,
+                                                    "label": "user",
+                                                    "operationType": "average",
+                                                    "params": {
+                                                        "emptyAsNull": true
+                                                    },
+                                                    "scale": "ratio",
+                                                    "sourceField": "mongodb_atlas.process.assert.user"
+                                                },
+                                                "c7e30443-618a-4cad-ab44-7c62c66cdaca": {
+                                                    "customLabel": true,
+                                                    "dataType": "number",
+                                                    "isBucketed": false,
+                                                    "label": "msg",
+                                                    "operationType": "average",
+                                                    "params": {
+                                                        "emptyAsNull": true
+                                                    },
+                                                    "scale": "ratio",
+                                                    "sourceField": "mongodb_atlas.process.assert.msg"
+                                                },
+                                                "f1ed6868-aad9-4cc3-bf78-a8cac859e7a5": {
+                                                    "dataType": "date",
+                                                    "isBucketed": true,
+                                                    "label": "@timestamp",
+                                                    "operationType": "date_histogram",
+                                                    "params": {
+                                                        "dropPartials": false,
+                                                        "includeEmptyRows": false,
+                                                        "interval": "auto"
+                                                    },
+                                                    "scale": "interval",
+                                                    "sourceField": "@timestamp"
+                                                },
+                                                "fe15665e-e65e-4670-a29c-819f913b0c73": {
+                                                    "customLabel": true,
+                                                    "dataType": "number",
+                                                    "isBucketed": false,
+                                                    "label": "warning",
+                                                    "operationType": "average",
+                                                    "params": {
+                                                        "emptyAsNull": true
+                                                    },
+                                                    "scale": "ratio",
+                                                    "sourceField": "mongodb_atlas.process.assert.warning"
+                                                }
+                                            },
+                                            "incompleteColumns": {},
+                                            "indexPatternId": "logs-*",
+                                            "sampling": 1
+                                        }
+                                    }
+                                },
+                                "indexpattern": {
+                                    "layers": {}
+                                },
+                                "textBased": {
+                                    "layers": {}
+                                }
+                            },
+                            "filters": [],
+                            "internalReferences": [],
+                            "query": {
+                                "language": "kuery",
+                                "query": ""
+                            },
+                            "visualization": {
+                                "axisTitlesVisibilitySettings": {
+                                    "x": true,
+                                    "yLeft": false,
+                                    "yRight": true
+                                },
+                                "emphasizeFitting": true,
+                                "fittingFunction": "Linear",
+                                "gridlinesVisibilitySettings": {
+                                    "x": true,
+                                    "yLeft": true,
+                                    "yRight": true
+                                },
+                                "labelsOrientation": {
+                                    "x": 0,
+                                    "yLeft": 0,
+                                    "yRight": 0
+                                },
+                                "layers": [
+                                    {
+                                        "accessors": [
+                                            "c7e30443-618a-4cad-ab44-7c62c66cdaca",
+                                            "87067ba0-299a-4b37-8316-f98fab6e650b",
+                                            "8c2c5e55-bb96-4171-965e-5a9eb5f5beea",
+                                            "fe15665e-e65e-4670-a29c-819f913b0c73"
+                                        ],
+                                        "layerId": "9e13bc03-ef64-4c17-aa85-6a64c035c2df",
+                                        "layerType": "data",
+                                        "seriesType": "line",
+                                        "xAccessor": "f1ed6868-aad9-4cc3-bf78-a8cac859e7a5",
+                                        "yConfig": []
+                                    }
+                                ],
+                                "legend": {
+                                    "isVisible": true,
+                                    "legendSize": "large",
+                                    "position": "right",
+                                    "showSingleSeries": true
+                                },
+                                "preferredSeriesType": "line",
+                                "tickLabelsVisibilitySettings": {
+                                    "x": true,
+                                    "yLeft": true,
+                                    "yRight": true
+                                },
+                                "valueLabels": "hide",
+                                "valuesInLegend": true,
+                                "yTitle": ""
+                            }
+                        },
+                        "title": "mongodb_atlas-process",
+                        "type": "lens",
+                        "visualizationType": "lnsXY"
+                    },
+                    "enhancements": {},
+                    "hidePanelTitles": false
+                },
+                "gridData": {
+                    "h": 11,
+                    "i": "25051106-745b-4ba4-a8d9-49034e1f4abb",
+                    "w": 16,
+                    "x": 0,
+                    "y": 25
+                },
+                "panelIndex": "25051106-745b-4ba4-a8d9-49034e1f4abb",
+                "title": "Assert states over time",
+                "type": "lens"
+            },
+            {
+                "embeddableConfig": {
+                    "attributes": {
+                        "references": [
+                            {
+                                "id": "logs-*",
+                                "name": "indexpattern-datasource-layer-9cc9c8cf-8031-491d-ad68-65c9bee42961",
+                                "type": "index-pattern"
+                            }
+                        ],
+                        "state": {
+                            "adHocDataViews": {},
+                            "datasourceStates": {
+                                "formBased": {
+                                    "currentIndexPatternId": "logs-*",
+                                    "layers": {
+                                        "9cc9c8cf-8031-491d-ad68-65c9bee42961": {
+                                            "columnOrder": [
+                                                "74e8f796-789a-43d1-a887-f52ed019052c",
+                                                "14aaad1c-1caf-4a90-bc22-aeccb741fcfb"
+                                            ],
+                                            "columns": {
+                                                "14aaad1c-1caf-4a90-bc22-aeccb741fcfb": {
+                                                    "customLabel": true,
+                                                    "dataType": "number",
+                                                    "filter": {
+                                                        "language": "kuery",
+                                                        "query": "\"mongodb_atlas.process.connections\": *"
+                                                    },
+                                                    "isBucketed": false,
+                                                    "label": "connections",
+                                                    "operationType": "last_value",
+                                                    "params": {
+                                                        "sortField": "@timestamp"
+                                                    },
+                                                    "scale": "ratio",
+                                                    "sourceField": "mongodb_atlas.process.connections"
+                                                },
+                                                "74e8f796-789a-43d1-a887-f52ed019052c": {
+                                                    "dataType": "date",
+                                                    "isBucketed": true,
+                                                    "label": "@timestamp",
+                                                    "operationType": "date_histogram",
+                                                    "params": {
+                                                        "dropPartials": false,
+                                                        "includeEmptyRows": false,
+                                                        "interval": "auto"
+                                                    },
+                                                    "scale": "interval",
+                                                    "sourceField": "@timestamp"
+                                                }
+                                            },
+                                            "incompleteColumns": {},
+                                            "indexPatternId": "logs-*",
+                                            "sampling": 1
+                                        }
+                                    }
+                                },
+                                "indexpattern": {
+                                    "layers": {}
+                                },
+                                "textBased": {
+                                    "layers": {}
+                                }
+                            },
+                            "filters": [],
+                            "internalReferences": [],
+                            "query": {
+                                "language": "kuery",
+                                "query": ""
+                            },
+                            "visualization": {
+                                "axisTitlesVisibilitySettings": {
+                                    "x": true,
+                                    "yLeft": true,
+                                    "yRight": true
+                                },
+                                "emphasizeFitting": true,
+                                "fittingFunction": "Linear",
+                                "gridlinesVisibilitySettings": {
+                                    "x": true,
+                                    "yLeft": true,
+                                    "yRight": true
+                                },
+                                "labelsOrientation": {
+                                    "x": 0,
+                                    "yLeft": 0,
+                                    "yRight": 0
+                                },
+                                "layers": [
+                                    {
+                                        "accessors": [
+                                            "14aaad1c-1caf-4a90-bc22-aeccb741fcfb"
+                                        ],
+                                        "layerId": "9cc9c8cf-8031-491d-ad68-65c9bee42961",
+                                        "layerType": "data",
+                                        "position": "top",
+                                        "seriesType": "line",
+                                        "showGridlines": false,
+                                        "xAccessor": "74e8f796-789a-43d1-a887-f52ed019052c",
+                                        "yConfig": [
+                                            {
+                                                "axisMode": "auto",
+                                                "color": "#6092c0",
+                                                "forAccessor": "14aaad1c-1caf-4a90-bc22-aeccb741fcfb"
+                                            }
+                                        ]
+                                    }
+                                ],
+                                "legend": {
+                                    "isVisible": true,
+                                    "legendSize": "large",
+                                    "position": "right",
+                                    "showSingleSeries": true
+                                },
+                                "preferredSeriesType": "line",
+                                "tickLabelsVisibilitySettings": {
+                                    "x": true,
+                                    "yLeft": true,
+                                    "yRight": true
+                                },
+                                "valueLabels": "hide",
+                                "valuesInLegend": true,
+                                "yTitle": "Count"
+                            }
+                        },
+                        "title": "",
+                        "type": "lens",
+                        "visualizationType": "lnsXY"
+                    },
+                    "enhancements": {},
+                    "hidePanelTitles": false
+                },
+                "gridData": {
+                    "h": 11,
+                    "i": "68be7160-9c8d-46a7-9daa-ee2cf0337f45",
+                    "w": 16,
+                    "x": 16,
+                    "y": 25
+                },
+                "panelIndex": "68be7160-9c8d-46a7-9daa-ee2cf0337f45",
+                "title": "Number of connections over time",
                 "type": "lens"
             },
             {
@@ -906,7 +1287,7 @@
                             "visualization": {
                                 "axisTitlesVisibilitySettings": {
                                     "x": true,
-                                    "yLeft": false,
+                                    "yLeft": true,
                                     "yRight": true
                                 },
                                 "emphasizeFitting": true,
@@ -939,7 +1320,6 @@
                                 ],
                                 "legend": {
                                     "isVisible": true,
-                                    "legendSize": "large",
                                     "position": "right",
                                     "showSingleSeries": true
                                 },
@@ -951,7 +1331,7 @@
                                 },
                                 "valueLabels": "hide",
                                 "valuesInLegend": true,
-                                "yTitle": "Average"
+                                "yTitle": "Operations"
                             }
                         },
                         "title": "",
@@ -970,510 +1350,6 @@
                 },
                 "panelIndex": "20587478-8b77-4d72-ab6f-0e4781c04306",
                 "title": "Opcounter operations over time",
-                "type": "lens"
-            },
-            {
-                "embeddableConfig": {
-                    "attributes": {
-                        "description": "",
-                        "references": [
-                            {
-                                "id": "logs-*",
-                                "name": "indexpattern-datasource-layer-9e13bc03-ef64-4c17-aa85-6a64c035c2df",
-                                "type": "index-pattern"
-                            }
-                        ],
-                        "state": {
-                            "adHocDataViews": {},
-                            "datasourceStates": {
-                                "formBased": {
-                                    "layers": {
-                                        "9e13bc03-ef64-4c17-aa85-6a64c035c2df": {
-                                            "columnOrder": [
-                                                "f1ed6868-aad9-4cc3-bf78-a8cac859e7a5",
-                                                "c7e30443-618a-4cad-ab44-7c62c66cdaca",
-                                                "87067ba0-299a-4b37-8316-f98fab6e650b",
-                                                "8c2c5e55-bb96-4171-965e-5a9eb5f5beea",
-                                                "fe15665e-e65e-4670-a29c-819f913b0c73"
-                                            ],
-                                            "columns": {
-                                                "87067ba0-299a-4b37-8316-f98fab6e650b": {
-                                                    "customLabel": true,
-                                                    "dataType": "number",
-                                                    "isBucketed": false,
-                                                    "label": "regular",
-                                                    "operationType": "average",
-                                                    "params": {
-                                                        "emptyAsNull": true
-                                                    },
-                                                    "scale": "ratio",
-                                                    "sourceField": "mongodb_atlas.process.assert.regular"
-                                                },
-                                                "8c2c5e55-bb96-4171-965e-5a9eb5f5beea": {
-                                                    "customLabel": true,
-                                                    "dataType": "number",
-                                                    "isBucketed": false,
-                                                    "label": "user",
-                                                    "operationType": "average",
-                                                    "params": {
-                                                        "emptyAsNull": true
-                                                    },
-                                                    "scale": "ratio",
-                                                    "sourceField": "mongodb_atlas.process.assert.user"
-                                                },
-                                                "c7e30443-618a-4cad-ab44-7c62c66cdaca": {
-                                                    "customLabel": true,
-                                                    "dataType": "number",
-                                                    "isBucketed": false,
-                                                    "label": "msg",
-                                                    "operationType": "average",
-                                                    "params": {
-                                                        "emptyAsNull": true
-                                                    },
-                                                    "scale": "ratio",
-                                                    "sourceField": "mongodb_atlas.process.assert.msg"
-                                                },
-                                                "f1ed6868-aad9-4cc3-bf78-a8cac859e7a5": {
-                                                    "dataType": "date",
-                                                    "isBucketed": true,
-                                                    "label": "@timestamp",
-                                                    "operationType": "date_histogram",
-                                                    "params": {
-                                                        "dropPartials": false,
-                                                        "includeEmptyRows": false,
-                                                        "interval": "auto"
-                                                    },
-                                                    "scale": "interval",
-                                                    "sourceField": "@timestamp"
-                                                },
-                                                "fe15665e-e65e-4670-a29c-819f913b0c73": {
-                                                    "customLabel": true,
-                                                    "dataType": "number",
-                                                    "isBucketed": false,
-                                                    "label": "warning",
-                                                    "operationType": "average",
-                                                    "params": {
-                                                        "emptyAsNull": true
-                                                    },
-                                                    "scale": "ratio",
-                                                    "sourceField": "mongodb_atlas.process.assert.warning"
-                                                }
-                                            },
-                                            "incompleteColumns": {},
-                                            "sampling": 1
-                                        }
-                                    }
-                                },
-                                "indexpattern": {
-                                    "layers": {}
-                                },
-                                "textBased": {
-                                    "layers": {}
-                                }
-                            },
-                            "filters": [],
-                            "internalReferences": [],
-                            "query": {
-                                "language": "kuery",
-                                "query": ""
-                            },
-                            "visualization": {
-                                "axisTitlesVisibilitySettings": {
-                                    "x": true,
-                                    "yLeft": false,
-                                    "yRight": true
-                                },
-                                "emphasizeFitting": true,
-                                "fittingFunction": "Linear",
-                                "gridlinesVisibilitySettings": {
-                                    "x": true,
-                                    "yLeft": true,
-                                    "yRight": true
-                                },
-                                "labelsOrientation": {
-                                    "x": 0,
-                                    "yLeft": 0,
-                                    "yRight": 0
-                                },
-                                "layers": [
-                                    {
-                                        "accessors": [
-                                            "c7e30443-618a-4cad-ab44-7c62c66cdaca",
-                                            "87067ba0-299a-4b37-8316-f98fab6e650b",
-                                            "8c2c5e55-bb96-4171-965e-5a9eb5f5beea",
-                                            "fe15665e-e65e-4670-a29c-819f913b0c73"
-                                        ],
-                                        "layerId": "9e13bc03-ef64-4c17-aa85-6a64c035c2df",
-                                        "layerType": "data",
-                                        "seriesType": "line",
-                                        "xAccessor": "f1ed6868-aad9-4cc3-bf78-a8cac859e7a5",
-                                        "yConfig": []
-                                    }
-                                ],
-                                "legend": {
-                                    "isVisible": true,
-                                    "legendSize": "large",
-                                    "position": "right",
-                                    "showSingleSeries": true
-                                },
-                                "preferredSeriesType": "line",
-                                "tickLabelsVisibilitySettings": {
-                                    "x": true,
-                                    "yLeft": true,
-                                    "yRight": true
-                                },
-                                "valueLabels": "hide",
-                                "valuesInLegend": true,
-                                "yTitle": ""
-                            }
-                        },
-                        "title": "mongodb_atlas-process",
-                        "type": "lens",
-                        "visualizationType": "lnsXY"
-                    },
-                    "enhancements": {},
-                    "hidePanelTitles": false
-                },
-                "gridData": {
-                    "h": 11,
-                    "i": "25051106-745b-4ba4-a8d9-49034e1f4abb",
-                    "w": 16,
-                    "x": 0,
-                    "y": 25
-                },
-                "panelIndex": "25051106-745b-4ba4-a8d9-49034e1f4abb",
-                "title": "Assert states over time",
-                "type": "lens"
-            },
-            {
-                "embeddableConfig": {
-                    "attributes": {
-                        "references": [
-                            {
-                                "id": "logs-*",
-                                "name": "indexpattern-datasource-layer-9cc9c8cf-8031-491d-ad68-65c9bee42961",
-                                "type": "index-pattern"
-                            }
-                        ],
-                        "state": {
-                            "adHocDataViews": {},
-                            "datasourceStates": {
-                                "formBased": {
-                                    "layers": {
-                                        "9cc9c8cf-8031-491d-ad68-65c9bee42961": {
-                                            "columnOrder": [
-                                                "74e8f796-789a-43d1-a887-f52ed019052c",
-                                                "14aaad1c-1caf-4a90-bc22-aeccb741fcfb"
-                                            ],
-                                            "columns": {
-                                                "14aaad1c-1caf-4a90-bc22-aeccb741fcfb": {
-                                                    "customLabel": true,
-                                                    "dataType": "number",
-                                                    "filter": {
-                                                        "language": "kuery",
-                                                        "query": "\"mongodb_atlas.process.connections\": *"
-                                                    },
-                                                    "isBucketed": false,
-                                                    "label": "connections",
-                                                    "operationType": "last_value",
-                                                    "params": {
-                                                        "sortField": "@timestamp"
-                                                    },
-                                                    "scale": "ratio",
-                                                    "sourceField": "mongodb_atlas.process.connections"
-                                                },
-                                                "74e8f796-789a-43d1-a887-f52ed019052c": {
-                                                    "dataType": "date",
-                                                    "isBucketed": true,
-                                                    "label": "@timestamp",
-                                                    "operationType": "date_histogram",
-                                                    "params": {
-                                                        "dropPartials": false,
-                                                        "includeEmptyRows": false,
-                                                        "interval": "auto"
-                                                    },
-                                                    "scale": "interval",
-                                                    "sourceField": "@timestamp"
-                                                }
-                                            },
-                                            "incompleteColumns": {},
-                                            "sampling": 1
-                                        }
-                                    }
-                                },
-                                "indexpattern": {
-                                    "layers": {}
-                                },
-                                "textBased": {
-                                    "layers": {}
-                                }
-                            },
-                            "filters": [],
-                            "internalReferences": [],
-                            "query": {
-                                "language": "kuery",
-                                "query": ""
-                            },
-                            "visualization": {
-                                "axisTitlesVisibilitySettings": {
-                                    "x": true,
-                                    "yLeft": false,
-                                    "yRight": true
-                                },
-                                "emphasizeFitting": true,
-                                "fittingFunction": "Linear",
-                                "gridlinesVisibilitySettings": {
-                                    "x": true,
-                                    "yLeft": true,
-                                    "yRight": true
-                                },
-                                "labelsOrientation": {
-                                    "x": 0,
-                                    "yLeft": 0,
-                                    "yRight": 0
-                                },
-                                "layers": [
-                                    {
-                                        "accessors": [
-                                            "14aaad1c-1caf-4a90-bc22-aeccb741fcfb"
-                                        ],
-                                        "layerId": "9cc9c8cf-8031-491d-ad68-65c9bee42961",
-                                        "layerType": "data",
-                                        "position": "top",
-                                        "seriesType": "line",
-                                        "showGridlines": false,
-                                        "xAccessor": "74e8f796-789a-43d1-a887-f52ed019052c",
-                                        "yConfig": [
-                                            {
-                                                "axisMode": "auto",
-                                                "color": "#6092c0",
-                                                "forAccessor": "14aaad1c-1caf-4a90-bc22-aeccb741fcfb"
-                                            }
-                                        ]
-                                    }
-                                ],
-                                "legend": {
-                                    "isVisible": true,
-                                    "legendSize": "large",
-                                    "position": "right",
-                                    "showSingleSeries": true
-                                },
-                                "preferredSeriesType": "line",
-                                "tickLabelsVisibilitySettings": {
-                                    "x": true,
-                                    "yLeft": true,
-                                    "yRight": true
-                                },
-                                "valueLabels": "hide",
-                                "valuesInLegend": true,
-                                "yTitle": "count"
-                            }
-                        },
-                        "title": "",
-                        "type": "lens",
-                        "visualizationType": "lnsXY"
-                    },
-                    "enhancements": {},
-                    "hidePanelTitles": false
-                },
-                "gridData": {
-                    "h": 11,
-                    "i": "68be7160-9c8d-46a7-9daa-ee2cf0337f45",
-                    "w": 16,
-                    "x": 16,
-                    "y": 25
-                },
-                "panelIndex": "68be7160-9c8d-46a7-9daa-ee2cf0337f45",
-                "title": "Number of connections over time",
-                "type": "lens"
-            },
-            {
-                "embeddableConfig": {
-                    "attributes": {
-                        "references": [
-                            {
-                                "id": "logs-*",
-                                "name": "indexpattern-datasource-layer-55e0cd65-77ab-4f8e-8c15-fc729d143dc1",
-                                "type": "index-pattern"
-                            }
-                        ],
-                        "state": {
-                            "adHocDataViews": {},
-                            "datasourceStates": {
-                                "formBased": {
-                                    "layers": {
-                                        "55e0cd65-77ab-4f8e-8c15-fc729d143dc1": {
-                                            "columnOrder": [
-                                                "aff91a31-30ed-474c-80c6-0150677e5fe9",
-                                                "a1042f4d-c560-4aa6-9e4b-304f40f4761a",
-                                                "acab90b9-ff5d-489f-9aff-fc76e23a6091",
-                                                "ffc53296-5d32-4911-86b2-68bafbf4deab"
-                                            ],
-                                            "columns": {
-                                                "a1042f4d-c560-4aa6-9e4b-304f40f4761a": {
-                                                    "customLabel": true,
-                                                    "dataType": "number",
-                                                    "filter": {
-                                                        "language": "kuery",
-                                                        "query": "\"mongodb_atlas.process.memory.mapped.mb\": *"
-                                                    },
-                                                    "isBucketed": false,
-                                                    "label": "mapped",
-                                                    "operationType": "last_value",
-                                                    "params": {
-                                                        "format": {
-                                                            "id": "number",
-                                                            "params": {
-                                                                "decimals": 2,
-                                                                "suffix": "MB"
-                                                            }
-                                                        },
-                                                        "sortField": "@timestamp"
-                                                    },
-                                                    "scale": "ratio",
-                                                    "sourceField": "mongodb_atlas.process.memory.mapped.mb"
-                                                },
-                                                "acab90b9-ff5d-489f-9aff-fc76e23a6091": {
-                                                    "customLabel": true,
-                                                    "dataType": "number",
-                                                    "filter": {
-                                                        "language": "kuery",
-                                                        "query": "\"mongodb_atlas.process.memory.resident.mb\": *"
-                                                    },
-                                                    "isBucketed": false,
-                                                    "label": "resident",
-                                                    "operationType": "last_value",
-                                                    "params": {
-                                                        "format": {
-                                                            "id": "number",
-                                                            "params": {
-                                                                "decimals": 2,
-                                                                "suffix": "MB"
-                                                            }
-                                                        },
-                                                        "sortField": "@timestamp"
-                                                    },
-                                                    "scale": "ratio",
-                                                    "sourceField": "mongodb_atlas.process.memory.resident.mb"
-                                                },
-                                                "aff91a31-30ed-474c-80c6-0150677e5fe9": {
-                                                    "dataType": "date",
-                                                    "isBucketed": true,
-                                                    "label": "@timestamp",
-                                                    "operationType": "date_histogram",
-                                                    "params": {
-                                                        "dropPartials": false,
-                                                        "includeEmptyRows": true,
-                                                        "interval": "auto"
-                                                    },
-                                                    "scale": "interval",
-                                                    "sourceField": "@timestamp"
-                                                },
-                                                "ffc53296-5d32-4911-86b2-68bafbf4deab": {
-                                                    "customLabel": true,
-                                                    "dataType": "number",
-                                                    "filter": {
-                                                        "language": "kuery",
-                                                        "query": "\"mongodb_atlas.process.memory.virtual.mb\": *"
-                                                    },
-                                                    "isBucketed": false,
-                                                    "label": "virtual",
-                                                    "operationType": "last_value",
-                                                    "params": {
-                                                        "format": {
-                                                            "id": "number",
-                                                            "params": {
-                                                                "decimals": 2,
-                                                                "suffix": "MB"
-                                                            }
-                                                        },
-                                                        "sortField": "@timestamp"
-                                                    },
-                                                    "scale": "ratio",
-                                                    "sourceField": "mongodb_atlas.process.memory.virtual.mb"
-                                                }
-                                            },
-                                            "incompleteColumns": {},
-                                            "sampling": 1
-                                        }
-                                    }
-                                },
-                                "indexpattern": {
-                                    "layers": {}
-                                },
-                                "textBased": {
-                                    "layers": {}
-                                }
-                            },
-                            "filters": [],
-                            "internalReferences": [],
-                            "query": {
-                                "language": "kuery",
-                                "query": ""
-                            },
-                            "visualization": {
-                                "axisTitlesVisibilitySettings": {
-                                    "x": true,
-                                    "yLeft": false,
-                                    "yRight": true
-                                },
-                                "emphasizeFitting": true,
-                                "fittingFunction": "Linear",
-                                "gridlinesVisibilitySettings": {
-                                    "x": true,
-                                    "yLeft": true,
-                                    "yRight": true
-                                },
-                                "labelsOrientation": {
-                                    "x": 0,
-                                    "yLeft": 0,
-                                    "yRight": 0
-                                },
-                                "layers": [
-                                    {
-                                        "accessors": [
-                                            "a1042f4d-c560-4aa6-9e4b-304f40f4761a",
-                                            "acab90b9-ff5d-489f-9aff-fc76e23a6091",
-                                            "ffc53296-5d32-4911-86b2-68bafbf4deab"
-                                        ],
-                                        "layerId": "55e0cd65-77ab-4f8e-8c15-fc729d143dc1",
-                                        "layerType": "data",
-                                        "seriesType": "line",
-                                        "xAccessor": "aff91a31-30ed-474c-80c6-0150677e5fe9"
-                                    }
-                                ],
-                                "legend": {
-                                    "isVisible": true,
-                                    "legendSize": "large",
-                                    "position": "right",
-                                    "showSingleSeries": true
-                                },
-                                "preferredSeriesType": "line",
-                                "tickLabelsVisibilitySettings": {
-                                    "x": true,
-                                    "yLeft": true,
-                                    "yRight": true
-                                },
-                                "valueLabels": "hide",
-                                "valuesInLegend": true
-                            }
-                        },
-                        "title": "Memory usage[Metrics MongoDB Atlas]",
-                        "type": "lens",
-                        "visualizationType": "lnsXY"
-                    },
-                    "enhancements": {},
-                    "hidePanelTitles": false
-                },
-                "gridData": {
-                    "h": 11,
-                    "i": "e2e5e19d-83ad-4179-b868-69da9f4b3f4e",
-                    "w": 16,
-                    "x": 32,
-                    "y": 25
-                },
-                "panelIndex": "e2e5e19d-83ad-4179-b868-69da9f4b3f4e",
-                "title": "Memory usage over time",
                 "type": "lens"
             },
             {
@@ -1601,7 +1477,7 @@
                             "visualization": {
                                 "axisTitlesVisibilitySettings": {
                                     "x": true,
-                                    "yLeft": false,
+                                    "yLeft": true,
                                     "yRight": true
                                 },
                                 "curveType": "LINEAR",
@@ -1635,7 +1511,6 @@
                                 ],
                                 "legend": {
                                     "isVisible": true,
-                                    "legendSize": "large",
                                     "position": "right",
                                     "showSingleSeries": true
                                 },
@@ -1647,7 +1522,7 @@
                                 },
                                 "valueLabels": "hide",
                                 "valuesInLegend": true,
-                                "yTitle": ""
+                                "yTitle": "Operations"
                             }
                         },
                         "title": "",
@@ -1682,6 +1557,7 @@
                             "adHocDataViews": {},
                             "datasourceStates": {
                                 "formBased": {
+                                    "currentIndexPatternId": "logs-*",
                                     "layers": {
                                         "d9480e62-ff0a-47b5-b162-2374ef9a9ee0": {
                                             "columnOrder": [
@@ -1703,6 +1579,13 @@
                                                     "label": "normalized user",
                                                     "operationType": "last_value",
                                                     "params": {
+                                                        "format": {
+                                                            "id": "number",
+                                                            "params": {
+                                                                "decimals": 2,
+                                                                "suffix": "%"
+                                                            }
+                                                        },
                                                         "sortField": "@timestamp"
                                                     },
                                                     "scale": "ratio",
@@ -1719,6 +1602,13 @@
                                                     "label": "user",
                                                     "operationType": "last_value",
                                                     "params": {
+                                                        "format": {
+                                                            "id": "number",
+                                                            "params": {
+                                                                "decimals": 2,
+                                                                "suffix": "%"
+                                                            }
+                                                        },
                                                         "sortField": "@timestamp"
                                                     },
                                                     "scale": "ratio",
@@ -1748,6 +1638,13 @@
                                                     "label": "normalized kernel",
                                                     "operationType": "last_value",
                                                     "params": {
+                                                        "format": {
+                                                            "id": "number",
+                                                            "params": {
+                                                                "decimals": 2,
+                                                                "suffix": "%"
+                                                            }
+                                                        },
                                                         "sortField": "@timestamp"
                                                     },
                                                     "scale": "ratio",
@@ -1764,6 +1661,13 @@
                                                     "label": "kernel",
                                                     "operationType": "last_value",
                                                     "params": {
+                                                        "format": {
+                                                            "id": "number",
+                                                            "params": {
+                                                                "decimals": 2,
+                                                                "suffix": "%"
+                                                            }
+                                                        },
                                                         "sortField": "@timestamp"
                                                     },
                                                     "scale": "ratio",
@@ -1771,6 +1675,7 @@
                                                 }
                                             },
                                             "incompleteColumns": {},
+                                            "indexPatternId": "logs-*",
                                             "sampling": 1
                                         }
                                     }
@@ -1863,7 +1768,7 @@
                         "references": [
                             {
                                 "id": "logs-*",
-                                "name": "indexpattern-datasource-layer-579dbfe1-e5b4-47bd-9bd6-c913ca79a155",
+                                "name": "indexpattern-datasource-layer-55e0cd65-77ab-4f8e-8c15-fc729d143dc1",
                                 "type": "index-pattern"
                             }
                         ],
@@ -1871,37 +1776,63 @@
                             "adHocDataViews": {},
                             "datasourceStates": {
                                 "formBased": {
+                                    "currentIndexPatternId": "logs-*",
                                     "layers": {
-                                        "579dbfe1-e5b4-47bd-9bd6-c913ca79a155": {
+                                        "55e0cd65-77ab-4f8e-8c15-fc729d143dc1": {
                                             "columnOrder": [
-                                                "46d2a977-f1d8-4f65-a286-8bb794904047",
-                                                "2eb5bea0-f4a9-421b-afb8-3fd4f28d287f",
-                                                "db47f211-add2-4aa7-b0ec-827b5bd82c95"
+                                                "aff91a31-30ed-474c-80c6-0150677e5fe9",
+                                                "a1042f4d-c560-4aa6-9e4b-304f40f4761a",
+                                                "acab90b9-ff5d-489f-9aff-fc76e23a6091",
+                                                "ffc53296-5d32-4911-86b2-68bafbf4deab"
                                             ],
                                             "columns": {
-                                                "2eb5bea0-f4a9-421b-afb8-3fd4f28d287f": {
+                                                "a1042f4d-c560-4aa6-9e4b-304f40f4761a": {
                                                     "customLabel": true,
                                                     "dataType": "number",
                                                     "filter": {
                                                         "language": "kuery",
-                                                        "query": "\"mongodb_atlas.process.swap.usage.total.free\": *"
+                                                        "query": "\"mongodb_atlas.process.memory.mapped.mb\": *"
                                                     },
                                                     "isBucketed": false,
-                                                    "label": "free",
+                                                    "label": "mapped",
                                                     "operationType": "last_value",
                                                     "params": {
                                                         "format": {
-                                                            "id": "bytes",
+                                                            "id": "number",
                                                             "params": {
-                                                                "decimals": 2
+                                                                "decimals": 2,
+                                                                "suffix": "MB"
                                                             }
                                                         },
                                                         "sortField": "@timestamp"
                                                     },
                                                     "scale": "ratio",
-                                                    "sourceField": "mongodb_atlas.process.swap.usage.total.free"
+                                                    "sourceField": "mongodb_atlas.process.memory.mapped.mb"
                                                 },
-                                                "46d2a977-f1d8-4f65-a286-8bb794904047": {
+                                                "acab90b9-ff5d-489f-9aff-fc76e23a6091": {
+                                                    "customLabel": true,
+                                                    "dataType": "number",
+                                                    "filter": {
+                                                        "language": "kuery",
+                                                        "query": "\"mongodb_atlas.process.memory.resident.mb\": *"
+                                                    },
+                                                    "isBucketed": false,
+                                                    "label": "resident",
+                                                    "operationType": "last_value",
+                                                    "params": {
+                                                        "format": {
+                                                            "id": "number",
+                                                            "params": {
+                                                                "decimals": 2,
+                                                                "suffix": "MB"
+                                                            }
+                                                        },
+                                                        "sortField": "@timestamp"
+                                                    },
+                                                    "scale": "ratio",
+                                                    "sourceField": "mongodb_atlas.process.memory.resident.mb"
+                                                },
+                                                "aff91a31-30ed-474c-80c6-0150677e5fe9": {
                                                     "dataType": "date",
                                                     "isBucketed": true,
                                                     "label": "@timestamp",
@@ -1914,30 +1845,32 @@
                                                     "scale": "interval",
                                                     "sourceField": "@timestamp"
                                                 },
-                                                "db47f211-add2-4aa7-b0ec-827b5bd82c95": {
+                                                "ffc53296-5d32-4911-86b2-68bafbf4deab": {
                                                     "customLabel": true,
                                                     "dataType": "number",
                                                     "filter": {
                                                         "language": "kuery",
-                                                        "query": "\"mongodb_atlas.process.swap.usage.total.used\": *"
+                                                        "query": "\"mongodb_atlas.process.memory.virtual.mb\": *"
                                                     },
                                                     "isBucketed": false,
-                                                    "label": "used",
+                                                    "label": "virtual",
                                                     "operationType": "last_value",
                                                     "params": {
                                                         "format": {
-                                                            "id": "bytes",
+                                                            "id": "number",
                                                             "params": {
-                                                                "decimals": 2
+                                                                "decimals": 2,
+                                                                "suffix": "MB"
                                                             }
                                                         },
                                                         "sortField": "@timestamp"
                                                     },
                                                     "scale": "ratio",
-                                                    "sourceField": "mongodb_atlas.process.swap.usage.total.used"
+                                                    "sourceField": "mongodb_atlas.process.memory.virtual.mb"
                                                 }
                                             },
                                             "incompleteColumns": {},
+                                            "indexPatternId": "logs-*",
                                             "sampling": 1
                                         }
                                     }
@@ -1976,15 +1909,14 @@
                                 "layers": [
                                     {
                                         "accessors": [
-                                            "db47f211-add2-4aa7-b0ec-827b5bd82c95",
-                                            "2eb5bea0-f4a9-421b-afb8-3fd4f28d287f"
+                                            "a1042f4d-c560-4aa6-9e4b-304f40f4761a",
+                                            "acab90b9-ff5d-489f-9aff-fc76e23a6091",
+                                            "ffc53296-5d32-4911-86b2-68bafbf4deab"
                                         ],
-                                        "layerId": "579dbfe1-e5b4-47bd-9bd6-c913ca79a155",
+                                        "layerId": "55e0cd65-77ab-4f8e-8c15-fc729d143dc1",
                                         "layerType": "data",
-                                        "position": "top",
                                         "seriesType": "line",
-                                        "showGridlines": false,
-                                        "xAccessor": "46d2a977-f1d8-4f65-a286-8bb794904047"
+                                        "xAccessor": "aff91a31-30ed-474c-80c6-0150677e5fe9"
                                     }
                                 ],
                                 "legend": {
@@ -2001,10 +1933,10 @@
                                 },
                                 "valueLabels": "hide",
                                 "valuesInLegend": true,
-                                "yTitle": "Count"
+                                "yTitle": ""
                             }
                         },
-                        "title": "",
+                        "title": "Memory usage[Metrics MongoDB Atlas]",
                         "type": "lens",
                         "visualizationType": "lnsXY"
                     },
@@ -2013,13 +1945,13 @@
                 },
                 "gridData": {
                     "h": 11,
-                    "i": "fbc90d78-1b6b-4650-8840-c89d287cf3ca",
+                    "i": "e2e5e19d-83ad-4179-b868-69da9f4b3f4e",
                     "w": 16,
                     "x": 32,
-                    "y": 36
+                    "y": 25
                 },
-                "panelIndex": "fbc90d78-1b6b-4650-8840-c89d287cf3ca",
-                "title": "Swap space over time",
+                "panelIndex": "e2e5e19d-83ad-4179-b868-69da9f4b3f4e",
+                "title": "Memory usage over time",
                 "type": "lens"
             },
             {
@@ -2037,6 +1969,7 @@
                             "adHocDataViews": {},
                             "datasourceStates": {
                                 "formBased": {
+                                    "currentIndexPatternId": "logs-*",
                                     "layers": {
                                         "072715a7-2316-42ca-9272-7bac814074e3": {
                                             "columnOrder": [
@@ -2058,6 +1991,13 @@
                                                     "label": "normalized kernel",
                                                     "operationType": "last_value",
                                                     "params": {
+                                                        "format": {
+                                                            "id": "number",
+                                                            "params": {
+                                                                "decimals": 2,
+                                                                "suffix": "%"
+                                                            }
+                                                        },
                                                         "sortField": "@timestamp"
                                                     },
                                                     "scale": "ratio",
@@ -2074,6 +2014,13 @@
                                                     "label": "kernel",
                                                     "operationType": "last_value",
                                                     "params": {
+                                                        "format": {
+                                                            "id": "number",
+                                                            "params": {
+                                                                "decimals": 2,
+                                                                "suffix": "%"
+                                                            }
+                                                        },
                                                         "sortField": "@timestamp"
                                                     },
                                                     "scale": "ratio",
@@ -2090,6 +2037,13 @@
                                                     "label": "normalized user",
                                                     "operationType": "last_value",
                                                     "params": {
+                                                        "format": {
+                                                            "id": "number",
+                                                            "params": {
+                                                                "decimals": 2,
+                                                                "suffix": "%"
+                                                            }
+                                                        },
                                                         "sortField": "@timestamp"
                                                     },
                                                     "scale": "ratio",
@@ -2119,6 +2073,13 @@
                                                     "label": "user ",
                                                     "operationType": "last_value",
                                                     "params": {
+                                                        "format": {
+                                                            "id": "number",
+                                                            "params": {
+                                                                "decimals": 2,
+                                                                "suffix": "%"
+                                                            }
+                                                        },
                                                         "sortField": "@timestamp"
                                                     },
                                                     "scale": "ratio",
@@ -2126,6 +2087,7 @@
                                                 }
                                             },
                                             "incompleteColumns": {},
+                                            "indexPatternId": "logs-*",
                                             "sampling": 1
                                         }
                                     }
@@ -2224,6 +2186,7 @@
                             "adHocDataViews": {},
                             "datasourceStates": {
                                 "formBased": {
+                                    "currentIndexPatternId": "logs-*",
                                     "layers": {
                                         "66e5b503-2f90-4e9c-95ad-bafe27f2ebe3": {
                                             "columnOrder": [
@@ -2292,6 +2255,7 @@
                                                 }
                                             },
                                             "incompleteColumns": {},
+                                            "indexPatternId": "logs-*",
                                             "sampling": 1
                                         }
                                     }
@@ -2381,6 +2345,172 @@
                         "references": [
                             {
                                 "id": "logs-*",
+                                "name": "indexpattern-datasource-layer-579dbfe1-e5b4-47bd-9bd6-c913ca79a155",
+                                "type": "index-pattern"
+                            }
+                        ],
+                        "state": {
+                            "adHocDataViews": {},
+                            "datasourceStates": {
+                                "formBased": {
+                                    "currentIndexPatternId": "logs-*",
+                                    "layers": {
+                                        "579dbfe1-e5b4-47bd-9bd6-c913ca79a155": {
+                                            "columnOrder": [
+                                                "46d2a977-f1d8-4f65-a286-8bb794904047",
+                                                "2eb5bea0-f4a9-421b-afb8-3fd4f28d287f",
+                                                "db47f211-add2-4aa7-b0ec-827b5bd82c95"
+                                            ],
+                                            "columns": {
+                                                "2eb5bea0-f4a9-421b-afb8-3fd4f28d287f": {
+                                                    "customLabel": true,
+                                                    "dataType": "number",
+                                                    "filter": {
+                                                        "language": "kuery",
+                                                        "query": "\"mongodb_atlas.process.swap.usage.total.free\": *"
+                                                    },
+                                                    "isBucketed": false,
+                                                    "label": "free",
+                                                    "operationType": "last_value",
+                                                    "params": {
+                                                        "format": {
+                                                            "id": "bytes",
+                                                            "params": {
+                                                                "decimals": 2
+                                                            }
+                                                        },
+                                                        "sortField": "@timestamp"
+                                                    },
+                                                    "scale": "ratio",
+                                                    "sourceField": "mongodb_atlas.process.swap.usage.total.free"
+                                                },
+                                                "46d2a977-f1d8-4f65-a286-8bb794904047": {
+                                                    "dataType": "date",
+                                                    "isBucketed": true,
+                                                    "label": "@timestamp",
+                                                    "operationType": "date_histogram",
+                                                    "params": {
+                                                        "dropPartials": false,
+                                                        "includeEmptyRows": true,
+                                                        "interval": "auto"
+                                                    },
+                                                    "scale": "interval",
+                                                    "sourceField": "@timestamp"
+                                                },
+                                                "db47f211-add2-4aa7-b0ec-827b5bd82c95": {
+                                                    "customLabel": true,
+                                                    "dataType": "number",
+                                                    "filter": {
+                                                        "language": "kuery",
+                                                        "query": "\"mongodb_atlas.process.swap.usage.total.used\": *"
+                                                    },
+                                                    "isBucketed": false,
+                                                    "label": "used",
+                                                    "operationType": "last_value",
+                                                    "params": {
+                                                        "format": {
+                                                            "id": "bytes",
+                                                            "params": {
+                                                                "decimals": 2
+                                                            }
+                                                        },
+                                                        "sortField": "@timestamp"
+                                                    },
+                                                    "scale": "ratio",
+                                                    "sourceField": "mongodb_atlas.process.swap.usage.total.used"
+                                                }
+                                            },
+                                            "incompleteColumns": {},
+                                            "indexPatternId": "logs-*",
+                                            "sampling": 1
+                                        }
+                                    }
+                                },
+                                "indexpattern": {
+                                    "layers": {}
+                                },
+                                "textBased": {
+                                    "layers": {}
+                                }
+                            },
+                            "filters": [],
+                            "internalReferences": [],
+                            "query": {
+                                "language": "kuery",
+                                "query": ""
+                            },
+                            "visualization": {
+                                "axisTitlesVisibilitySettings": {
+                                    "x": true,
+                                    "yLeft": false,
+                                    "yRight": true
+                                },
+                                "emphasizeFitting": true,
+                                "fittingFunction": "Linear",
+                                "gridlinesVisibilitySettings": {
+                                    "x": true,
+                                    "yLeft": true,
+                                    "yRight": true
+                                },
+                                "labelsOrientation": {
+                                    "x": 0,
+                                    "yLeft": 0,
+                                    "yRight": 0
+                                },
+                                "layers": [
+                                    {
+                                        "accessors": [
+                                            "db47f211-add2-4aa7-b0ec-827b5bd82c95",
+                                            "2eb5bea0-f4a9-421b-afb8-3fd4f28d287f"
+                                        ],
+                                        "layerId": "579dbfe1-e5b4-47bd-9bd6-c913ca79a155",
+                                        "layerType": "data",
+                                        "position": "top",
+                                        "seriesType": "line",
+                                        "showGridlines": false,
+                                        "xAccessor": "46d2a977-f1d8-4f65-a286-8bb794904047"
+                                    }
+                                ],
+                                "legend": {
+                                    "isVisible": true,
+                                    "position": "right",
+                                    "showSingleSeries": true
+                                },
+                                "preferredSeriesType": "line",
+                                "tickLabelsVisibilitySettings": {
+                                    "x": true,
+                                    "yLeft": true,
+                                    "yRight": true
+                                },
+                                "valueLabels": "hide",
+                                "valuesInLegend": true,
+                                "yTitle": "Count"
+                            }
+                        },
+                        "title": "",
+                        "type": "lens",
+                        "visualizationType": "lnsXY"
+                    },
+                    "enhancements": {},
+                    "hidePanelTitles": false
+                },
+                "gridData": {
+                    "h": 11,
+                    "i": "fbc90d78-1b6b-4650-8840-c89d287cf3ca",
+                    "w": 16,
+                    "x": 32,
+                    "y": 36
+                },
+                "panelIndex": "fbc90d78-1b6b-4650-8840-c89d287cf3ca",
+                "title": "Swap space over time",
+                "type": "lens"
+            },
+            {
+                "embeddableConfig": {
+                    "attributes": {
+                        "references": [
+                            {
+                                "id": "logs-*",
                                 "name": "indexpattern-datasource-layer-a63e3a4f-5884-406a-b804-9462f72589c2",
                                 "type": "index-pattern"
                             }
@@ -2389,6 +2519,7 @@
                             "adHocDataViews": {},
                             "datasourceStates": {
                                 "formBased": {
+                                    "currentIndexPatternId": "logs-*",
                                     "layers": {
                                         "a63e3a4f-5884-406a-b804-9462f72589c2": {
                                             "columnOrder": [
@@ -2457,6 +2588,7 @@
                                                 }
                                             },
                                             "incompleteColumns": {},
+                                            "indexPatternId": "logs-*",
                                             "sampling": 1
                                         }
                                     }
@@ -2515,7 +2647,6 @@
                                 ],
                                 "legend": {
                                     "isVisible": true,
-                                    "legendSize": "large",
                                     "position": "right",
                                     "showSingleSeries": true
                                 },
@@ -2554,7 +2685,7 @@
         "version": 1
     },
     "coreMigrationVersion": "8.8.0",
-    "created_at": "2025-04-04T09:37:41.300Z",
+    "created_at": "2025-04-06T09:33:06.892Z",
     "id": "mongodb_atlas-b435ef26-546b-4e56-994e-90544e208c72",
     "managed": false,
     "references": [
@@ -2610,6 +2741,11 @@
         },
         {
             "id": "logs-*",
+            "name": "8f13f3ed-3700-4ea1-9f9a-396a1f1fe178:indexpattern-datasource-layer-62a17a60-1976-4294-a8a1-b20619f16498",
+            "type": "index-pattern"
+        },
+        {
+            "id": "logs-*",
             "name": "0ee6e613-07de-475e-b46c-4b10669be400:indexpattern-datasource-layer-4bae4135-aa8b-47ba-bbd7-6a22b4b3697c",
             "type": "index-pattern"
         },
@@ -2625,11 +2761,6 @@
         },
         {
             "id": "logs-*",
-            "name": "20587478-8b77-4d72-ab6f-0e4781c04306:indexpattern-datasource-layer-dec2bdc9-b28b-4737-b097-4784fc539a8e",
-            "type": "index-pattern"
-        },
-        {
-            "id": "logs-*",
             "name": "25051106-745b-4ba4-a8d9-49034e1f4abb:indexpattern-datasource-layer-9e13bc03-ef64-4c17-aa85-6a64c035c2df",
             "type": "index-pattern"
         },
@@ -2640,7 +2771,7 @@
         },
         {
             "id": "logs-*",
-            "name": "e2e5e19d-83ad-4179-b868-69da9f4b3f4e:indexpattern-datasource-layer-55e0cd65-77ab-4f8e-8c15-fc729d143dc1",
+            "name": "20587478-8b77-4d72-ab6f-0e4781c04306:indexpattern-datasource-layer-dec2bdc9-b28b-4737-b097-4784fc539a8e",
             "type": "index-pattern"
         },
         {
@@ -2655,7 +2786,7 @@
         },
         {
             "id": "logs-*",
-            "name": "fbc90d78-1b6b-4650-8840-c89d287cf3ca:indexpattern-datasource-layer-579dbfe1-e5b4-47bd-9bd6-c913ca79a155",
+            "name": "e2e5e19d-83ad-4179-b868-69da9f4b3f4e:indexpattern-datasource-layer-55e0cd65-77ab-4f8e-8c15-fc729d143dc1",
             "type": "index-pattern"
         },
         {
@@ -2666,6 +2797,11 @@
         {
             "id": "logs-*",
             "name": "2322e519-d472-4a4f-8fa5-adba86fd8eea:indexpattern-datasource-layer-66e5b503-2f90-4e9c-95ad-bafe27f2ebe3",
+            "type": "index-pattern"
+        },
+        {
+            "id": "logs-*",
+            "name": "fbc90d78-1b6b-4650-8840-c89d287cf3ca:indexpattern-datasource-layer-579dbfe1-e5b4-47bd-9bd6-c913ca79a155",
             "type": "index-pattern"
         },
         {

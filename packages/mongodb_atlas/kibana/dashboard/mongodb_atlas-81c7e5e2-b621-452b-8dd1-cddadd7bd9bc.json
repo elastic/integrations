@@ -180,7 +180,7 @@
                         "id": "",
                         "params": {
                             "fontSize": 12,
-                            "markdown": "**Overview**\n\nThis dashboard provides a detailed overview of MongoDB Atlas project activities, including event distribution, user interactions, and infrastructure changes. It visualizes key insights such as event trends over time, event count by user, and recent project-related activities. By monitoring these metrics, users can track project modifications, ensure security compliance, and optimize collaboration within the MongoDB Atlas environment.",
+                            "markdown": "**Overview**\n\nThe MongoDB Atlas Project dashboard helps track project-level activities for collaboration auditing and change visibility. It provides key insights including:\n  - Event types such as invites and project changes\n  - User actions over time\n  - Host and cluster-specific events\n  - Recent project-level activities",
                             "openLinksInNewTab": false
                         },
                         "title": "",
@@ -254,6 +254,7 @@
                                 "query": ""
                             },
                             "visualization": {
+                                "color": "#54B399",
                                 "layerId": "01406776-45da-4175-92c6-5a30509e73a5",
                                 "layerType": "data",
                                 "metricAccessor": "df29495e-95c3-4577-a480-b910226cb35f"
@@ -283,7 +284,7 @@
                         "references": [
                             {
                                 "id": "logs-*",
-                                "name": "indexpattern-datasource-layer-39992a18-fd2d-42b7-a53e-b90ce15efba8",
+                                "name": "indexpattern-datasource-layer-ad190fc9-4b59-441b-9dbc-a4825ee70ef4",
                                 "type": "index-pattern"
                             }
                         ],
@@ -291,28 +292,41 @@
                             "adHocDataViews": {},
                             "datasourceStates": {
                                 "formBased": {
+                                    "currentIndexPatternId": "logs-*",
                                     "layers": {
-                                        "39992a18-fd2d-42b7-a53e-b90ce15efba8": {
+                                        "ad190fc9-4b59-441b-9dbc-a4825ee70ef4": {
                                             "columnOrder": [
-                                                "59ad74c6-23f9-4e8a-bc6e-01e4de1c4b1d",
-                                                "6ef5bc6e-2928-4b81-a718-3aa526189307",
-                                                "8dab33be-b72f-4619-ad17-ceeb19430a08"
+                                                "f42dfc3b-1131-485a-89c2-1b67013aabde",
+                                                "957d4b49-0add-4ea6-b5b7-55ef8a340933"
                                             ],
                                             "columns": {
-                                                "59ad74c6-23f9-4e8a-bc6e-01e4de1c4b1d": {
+                                                "957d4b49-0add-4ea6-b5b7-55ef8a340933": {
+                                                    "dataType": "number",
+                                                    "isBucketed": false,
+                                                    "label": "Count of records",
+                                                    "operationType": "count",
+                                                    "params": {
+                                                        "emptyAsNull": false
+                                                    },
+                                                    "scale": "ratio",
+                                                    "sourceField": "___records___"
+                                                },
+                                                "f42dfc3b-1131-485a-89c2-1b67013aabde": {
                                                     "dataType": "string",
                                                     "isBucketed": true,
-                                                    "label": "Top 5 values of mongodb_atlas.project.host.name",
+                                                    "label": "Top 5 values of mongodb_atlas.project.event_type.name",
                                                     "operationType": "terms",
                                                     "params": {
                                                         "accuracyMode": true,
-                                                        "exclude": [],
+                                                        "exclude": [
+                                                            "MONGODB_LOGS_DOWNLOADED"
+                                                        ],
                                                         "excludeIsRegex": false,
                                                         "include": [],
                                                         "includeIsRegex": false,
                                                         "missingBucket": false,
                                                         "orderBy": {
-                                                            "columnId": "8dab33be-b72f-4619-ad17-ceeb19430a08",
+                                                            "columnId": "957d4b49-0add-4ea6-b5b7-55ef8a340933",
                                                             "type": "column"
                                                         },
                                                         "orderDirection": "desc",
@@ -320,40 +334,15 @@
                                                         "parentFormat": {
                                                             "id": "terms"
                                                         },
-                                                        "secondaryFields": [],
                                                         "size": 5
                                                     },
                                                     "scale": "ordinal",
-                                                    "sourceField": "mongodb_atlas.project.host.name"
-                                                },
-                                                "6ef5bc6e-2928-4b81-a718-3aa526189307": {
-                                                    "dataType": "date",
-                                                    "isBucketed": true,
-                                                    "label": "@timestamp",
-                                                    "operationType": "date_histogram",
-                                                    "params": {
-                                                        "dropPartials": false,
-                                                        "includeEmptyRows": true,
-                                                        "interval": "auto"
-                                                    },
-                                                    "scale": "interval",
-                                                    "sourceField": "@timestamp"
-                                                },
-                                                "8dab33be-b72f-4619-ad17-ceeb19430a08": {
-                                                    "customLabel": true,
-                                                    "dataType": "number",
-                                                    "isBucketed": false,
-                                                    "label": "Count",
-                                                    "operationType": "count",
-                                                    "params": {
-                                                        "emptyAsNull": false
-                                                    },
-                                                    "scale": "ratio",
-                                                    "sourceField": "___records___"
+                                                    "sourceField": "mongodb_atlas.project.event_type.name"
                                                 }
                                             },
                                             "ignoreGlobalFilters": false,
                                             "incompleteColumns": {},
+                                            "indexPatternId": "logs-*",
                                             "sampling": 1
                                         }
                                     }
@@ -372,18 +361,9 @@
                                 "query": ""
                             },
                             "visualization": {
-                                "axisTitlesVisibilitySettings": {
-                                    "x": true,
-                                    "yLeft": false,
-                                    "yRight": true
-                                },
-                                "emphasizeFitting": true,
-                                "fittingFunction": "Linear",
                                 "layers": [
                                     {
-                                        "accessors": [
-                                            "8dab33be-b72f-4619-ad17-ceeb19430a08"
-                                        ],
+                                        "categoryDisplay": "default",
                                         "colorMapping": {
                                             "assignments": [],
                                             "colorMode": {
@@ -402,42 +382,39 @@
                                                 }
                                             ]
                                         },
-                                        "layerId": "39992a18-fd2d-42b7-a53e-b90ce15efba8",
+                                        "layerId": "ad190fc9-4b59-441b-9dbc-a4825ee70ef4",
                                         "layerType": "data",
-                                        "position": "top",
-                                        "seriesType": "line",
-                                        "showGridlines": false,
-                                        "splitAccessor": "59ad74c6-23f9-4e8a-bc6e-01e4de1c4b1d",
-                                        "xAccessor": "6ef5bc6e-2928-4b81-a718-3aa526189307"
+                                        "legendDisplay": "show",
+                                        "legendSize": "xlarge",
+                                        "metrics": [
+                                            "957d4b49-0add-4ea6-b5b7-55ef8a340933"
+                                        ],
+                                        "nestedLegend": false,
+                                        "numberDisplay": "percent",
+                                        "primaryGroups": [
+                                            "f42dfc3b-1131-485a-89c2-1b67013aabde"
+                                        ],
+                                        "truncateLegend": true
                                     }
                                 ],
-                                "legend": {
-                                    "isVisible": true,
-                                    "legendSize": "xlarge",
-                                    "position": "right",
-                                    "showSingleSeries": true
-                                },
-                                "preferredSeriesType": "line",
-                                "title": "Empty XY chart",
-                                "valueLabels": "hide",
-                                "valuesInLegend": true
+                                "shape": "donut"
                             }
                         },
                         "title": "",
                         "type": "lens",
-                        "visualizationType": "lnsXY"
+                        "visualizationType": "lnsPie"
                     },
                     "enhancements": {}
                 },
                 "gridData": {
                     "h": 15,
-                    "i": "4aafc23c-5cff-4ac7-9e91-b4764a22b31f",
+                    "i": "34531a1b-bce6-417b-a739-514da346c7ca",
                     "w": 29,
                     "x": 19,
                     "y": 3
                 },
-                "panelIndex": "4aafc23c-5cff-4ac7-9e91-b4764a22b31f",
-                "title": "Events count by host",
+                "panelIndex": "34531a1b-bce6-417b-a739-514da346c7ca",
+                "title": "Events distribution by type",
                 "type": "lens"
             },
             {
@@ -495,6 +472,7 @@
                                 "query": ""
                             },
                             "visualization": {
+                                "color": "#6092C0",
                                 "layerId": "61e17005-aee3-4389-9891-56d4be0902ba",
                                 "layerType": "data",
                                 "metricAccessor": "cfc23228-563a-4310-8955-b48816378326"
@@ -573,6 +551,7 @@
                                 "query": ""
                             },
                             "visualization": {
+                                "color": "#D36086",
                                 "layerId": "d2bfa86a-29f5-4080-ac9c-428d570fe260",
                                 "layerType": "data",
                                 "metricAccessor": "d837b207-0bdd-43a6-9b78-3662c6c8ce63"
@@ -602,7 +581,7 @@
                         "references": [
                             {
                                 "id": "logs-*",
-                                "name": "indexpattern-datasource-layer-ad190fc9-4b59-441b-9dbc-a4825ee70ef4",
+                                "name": "indexpattern-datasource-layer-39992a18-fd2d-42b7-a53e-b90ce15efba8",
                                 "type": "index-pattern"
                             }
                         ],
@@ -610,40 +589,29 @@
                             "adHocDataViews": {},
                             "datasourceStates": {
                                 "formBased": {
+                                    "currentIndexPatternId": "logs-*",
                                     "layers": {
-                                        "ad190fc9-4b59-441b-9dbc-a4825ee70ef4": {
+                                        "39992a18-fd2d-42b7-a53e-b90ce15efba8": {
                                             "columnOrder": [
-                                                "f42dfc3b-1131-485a-89c2-1b67013aabde",
-                                                "957d4b49-0add-4ea6-b5b7-55ef8a340933"
+                                                "59ad74c6-23f9-4e8a-bc6e-01e4de1c4b1d",
+                                                "6ef5bc6e-2928-4b81-a718-3aa526189307",
+                                                "8dab33be-b72f-4619-ad17-ceeb19430a08"
                                             ],
                                             "columns": {
-                                                "957d4b49-0add-4ea6-b5b7-55ef8a340933": {
-                                                    "dataType": "number",
-                                                    "isBucketed": false,
-                                                    "label": "Count of records",
-                                                    "operationType": "count",
-                                                    "params": {
-                                                        "emptyAsNull": false
-                                                    },
-                                                    "scale": "ratio",
-                                                    "sourceField": "___records___"
-                                                },
-                                                "f42dfc3b-1131-485a-89c2-1b67013aabde": {
+                                                "59ad74c6-23f9-4e8a-bc6e-01e4de1c4b1d": {
                                                     "dataType": "string",
                                                     "isBucketed": true,
-                                                    "label": "Top 5 values of mongodb_atlas.project.event_type.name",
+                                                    "label": "Top 5 values of mongodb_atlas.project.host.name",
                                                     "operationType": "terms",
                                                     "params": {
                                                         "accuracyMode": true,
-                                                        "exclude": [
-                                                            "MONGODB_LOGS_DOWNLOADED"
-                                                        ],
+                                                        "exclude": [],
                                                         "excludeIsRegex": false,
                                                         "include": [],
                                                         "includeIsRegex": false,
                                                         "missingBucket": false,
                                                         "orderBy": {
-                                                            "columnId": "957d4b49-0add-4ea6-b5b7-55ef8a340933",
+                                                            "columnId": "8dab33be-b72f-4619-ad17-ceeb19430a08",
                                                             "type": "column"
                                                         },
                                                         "orderDirection": "desc",
@@ -651,149 +619,13 @@
                                                         "parentFormat": {
                                                             "id": "terms"
                                                         },
+                                                        "secondaryFields": [],
                                                         "size": 5
                                                     },
                                                     "scale": "ordinal",
-                                                    "sourceField": "mongodb_atlas.project.event_type.name"
-                                                }
-                                            },
-                                            "ignoreGlobalFilters": false,
-                                            "incompleteColumns": {},
-                                            "sampling": 1
-                                        }
-                                    }
-                                },
-                                "indexpattern": {
-                                    "layers": {}
-                                },
-                                "textBased": {
-                                    "layers": {}
-                                }
-                            },
-                            "filters": [],
-                            "internalReferences": [],
-                            "query": {
-                                "language": "kuery",
-                                "query": ""
-                            },
-                            "visualization": {
-                                "layers": [
-                                    {
-                                        "categoryDisplay": "default",
-                                        "colorMapping": {
-                                            "assignments": [],
-                                            "colorMode": {
-                                                "type": "categorical"
-                                            },
-                                            "paletteId": "eui_amsterdam_color_blind",
-                                            "specialAssignments": [
-                                                {
-                                                    "color": {
-                                                        "type": "loop"
-                                                    },
-                                                    "rule": {
-                                                        "type": "other"
-                                                    },
-                                                    "touched": false
-                                                }
-                                            ]
-                                        },
-                                        "layerId": "ad190fc9-4b59-441b-9dbc-a4825ee70ef4",
-                                        "layerType": "data",
-                                        "legendDisplay": "default",
-                                        "metrics": [
-                                            "957d4b49-0add-4ea6-b5b7-55ef8a340933"
-                                        ],
-                                        "nestedLegend": false,
-                                        "numberDisplay": "percent",
-                                        "primaryGroups": [
-                                            "f42dfc3b-1131-485a-89c2-1b67013aabde"
-                                        ]
-                                    }
-                                ],
-                                "shape": "donut"
-                            }
-                        },
-                        "title": "",
-                        "type": "lens",
-                        "visualizationType": "lnsPie"
-                    },
-                    "enhancements": {}
-                },
-                "gridData": {
-                    "h": 15,
-                    "i": "34531a1b-bce6-417b-a739-514da346c7ca",
-                    "w": 19,
-                    "x": 0,
-                    "y": 18
-                },
-                "panelIndex": "34531a1b-bce6-417b-a739-514da346c7ca",
-                "title": "Events distribution by type",
-                "type": "lens"
-            },
-            {
-                "embeddableConfig": {
-                    "attributes": {
-                        "references": [
-                            {
-                                "id": "logs-*",
-                                "name": "indexpattern-datasource-layer-a6195521-be48-4dca-8f2b-d79fb5f220c5",
-                                "type": "index-pattern"
-                            }
-                        ],
-                        "state": {
-                            "adHocDataViews": {},
-                            "datasourceStates": {
-                                "formBased": {
-                                    "layers": {
-                                        "a6195521-be48-4dca-8f2b-d79fb5f220c5": {
-                                            "columnOrder": [
-                                                "2929aba1-99a4-4703-8e00-ef00580a468e",
-                                                "ff681f04-dad6-47a8-b632-048de5805da8",
-                                                "f303a792-88d4-40e8-bf55-6f6205fbdd60"
-                                            ],
-                                            "columns": {
-                                                "2929aba1-99a4-4703-8e00-ef00580a468e": {
-                                                    "dataType": "string",
-                                                    "isBucketed": true,
-                                                    "label": "Top 10 values of mongodb_atlas.project.event_type.name",
-                                                    "operationType": "terms",
-                                                    "params": {
-                                                        "accuracyMode": true,
-                                                        "exclude": [
-                                                            "MONGODB_LOGS_DOWNLOADED"
-                                                        ],
-                                                        "excludeIsRegex": false,
-                                                        "include": [],
-                                                        "includeIsRegex": false,
-                                                        "missingBucket": false,
-                                                        "orderBy": {
-                                                            "columnId": "f303a792-88d4-40e8-bf55-6f6205fbdd60",
-                                                            "type": "column"
-                                                        },
-                                                        "orderDirection": "desc",
-                                                        "otherBucket": false,
-                                                        "parentFormat": {
-                                                            "id": "terms"
-                                                        },
-                                                        "size": 10
-                                                    },
-                                                    "scale": "ordinal",
-                                                    "sourceField": "mongodb_atlas.project.event_type.name"
+                                                    "sourceField": "mongodb_atlas.project.host.name"
                                                 },
-                                                "f303a792-88d4-40e8-bf55-6f6205fbdd60": {
-                                                    "customLabel": true,
-                                                    "dataType": "number",
-                                                    "isBucketed": false,
-                                                    "label": "Count",
-                                                    "operationType": "count",
-                                                    "params": {
-                                                        "emptyAsNull": false
-                                                    },
-                                                    "scale": "ratio",
-                                                    "sourceField": "___records___"
-                                                },
-                                                "ff681f04-dad6-47a8-b632-048de5805da8": {
+                                                "6ef5bc6e-2928-4b81-a718-3aa526189307": {
                                                     "dataType": "date",
                                                     "isBucketed": true,
                                                     "label": "@timestamp",
@@ -805,10 +637,23 @@
                                                     },
                                                     "scale": "interval",
                                                     "sourceField": "@timestamp"
+                                                },
+                                                "8dab33be-b72f-4619-ad17-ceeb19430a08": {
+                                                    "customLabel": true,
+                                                    "dataType": "number",
+                                                    "isBucketed": false,
+                                                    "label": "Count",
+                                                    "operationType": "count",
+                                                    "params": {
+                                                        "emptyAsNull": false
+                                                    },
+                                                    "scale": "ratio",
+                                                    "sourceField": "___records___"
                                                 }
                                             },
                                             "ignoreGlobalFilters": false,
                                             "incompleteColumns": {},
+                                            "indexPatternId": "logs-*",
                                             "sampling": 1
                                         }
                                     }
@@ -829,7 +674,7 @@
                             "visualization": {
                                 "axisTitlesVisibilitySettings": {
                                     "x": true,
-                                    "yLeft": false,
+                                    "yLeft": true,
                                     "yRight": true
                                 },
                                 "emphasizeFitting": true,
@@ -837,7 +682,7 @@
                                 "layers": [
                                     {
                                         "accessors": [
-                                            "f303a792-88d4-40e8-bf55-6f6205fbdd60"
+                                            "8dab33be-b72f-4619-ad17-ceeb19430a08"
                                         ],
                                         "colorMapping": {
                                             "assignments": [],
@@ -857,23 +702,25 @@
                                                 }
                                             ]
                                         },
-                                        "layerId": "a6195521-be48-4dca-8f2b-d79fb5f220c5",
+                                        "layerId": "39992a18-fd2d-42b7-a53e-b90ce15efba8",
                                         "layerType": "data",
                                         "position": "top",
                                         "seriesType": "line",
                                         "showGridlines": false,
-                                        "splitAccessor": "2929aba1-99a4-4703-8e00-ef00580a468e",
-                                        "xAccessor": "ff681f04-dad6-47a8-b632-048de5805da8"
+                                        "splitAccessor": "59ad74c6-23f9-4e8a-bc6e-01e4de1c4b1d",
+                                        "xAccessor": "6ef5bc6e-2928-4b81-a718-3aa526189307"
                                     }
                                 ],
                                 "legend": {
                                     "isVisible": true,
                                     "legendSize": "xlarge",
-                                    "position": "right"
+                                    "position": "right",
+                                    "showSingleSeries": true
                                 },
                                 "preferredSeriesType": "line",
                                 "title": "Empty XY chart",
-                                "valueLabels": "hide"
+                                "valueLabels": "hide",
+                                "valuesInLegend": true
                             }
                         },
                         "title": "",
@@ -884,13 +731,13 @@
                 },
                 "gridData": {
                     "h": 15,
-                    "i": "f8943210-fb27-4ad6-9563-4f1dd9204390",
-                    "w": 29,
-                    "x": 19,
-                    "y": 18
+                    "i": "4aafc23c-5cff-4ac7-9e91-b4764a22b31f",
+                    "w": 24,
+                    "x": 0,
+                    "y": 33
                 },
-                "panelIndex": "f8943210-fb27-4ad6-9563-4f1dd9204390",
-                "title": "Events count over time",
+                "panelIndex": "4aafc23c-5cff-4ac7-9e91-b4764a22b31f",
+                "title": "Events count by host",
                 "type": "lens"
             },
             {
@@ -1059,10 +906,174 @@
                     "i": "760e2718-46c6-494e-8435-f80b9d150f13",
                     "w": 48,
                     "x": 0,
-                    "y": 33
+                    "y": 18
                 },
                 "panelIndex": "760e2718-46c6-494e-8435-f80b9d150f13",
                 "title": "Events count by user",
+                "type": "lens"
+            },
+            {
+                "embeddableConfig": {
+                    "attributes": {
+                        "references": [
+                            {
+                                "id": "logs-*",
+                                "name": "indexpattern-datasource-layer-a6195521-be48-4dca-8f2b-d79fb5f220c5",
+                                "type": "index-pattern"
+                            }
+                        ],
+                        "state": {
+                            "adHocDataViews": {},
+                            "datasourceStates": {
+                                "formBased": {
+                                    "currentIndexPatternId": "logs-*",
+                                    "layers": {
+                                        "a6195521-be48-4dca-8f2b-d79fb5f220c5": {
+                                            "columnOrder": [
+                                                "2929aba1-99a4-4703-8e00-ef00580a468e",
+                                                "ff681f04-dad6-47a8-b632-048de5805da8",
+                                                "f303a792-88d4-40e8-bf55-6f6205fbdd60"
+                                            ],
+                                            "columns": {
+                                                "2929aba1-99a4-4703-8e00-ef00580a468e": {
+                                                    "dataType": "string",
+                                                    "isBucketed": true,
+                                                    "label": "Top 10 values of mongodb_atlas.project.event_type.name",
+                                                    "operationType": "terms",
+                                                    "params": {
+                                                        "accuracyMode": true,
+                                                        "exclude": [
+                                                            "MONGODB_LOGS_DOWNLOADED"
+                                                        ],
+                                                        "excludeIsRegex": false,
+                                                        "include": [],
+                                                        "includeIsRegex": false,
+                                                        "missingBucket": false,
+                                                        "orderBy": {
+                                                            "columnId": "f303a792-88d4-40e8-bf55-6f6205fbdd60",
+                                                            "type": "column"
+                                                        },
+                                                        "orderDirection": "desc",
+                                                        "otherBucket": false,
+                                                        "parentFormat": {
+                                                            "id": "terms"
+                                                        },
+                                                        "size": 10
+                                                    },
+                                                    "scale": "ordinal",
+                                                    "sourceField": "mongodb_atlas.project.event_type.name"
+                                                },
+                                                "f303a792-88d4-40e8-bf55-6f6205fbdd60": {
+                                                    "customLabel": true,
+                                                    "dataType": "number",
+                                                    "isBucketed": false,
+                                                    "label": "Count",
+                                                    "operationType": "count",
+                                                    "params": {
+                                                        "emptyAsNull": false
+                                                    },
+                                                    "scale": "ratio",
+                                                    "sourceField": "___records___"
+                                                },
+                                                "ff681f04-dad6-47a8-b632-048de5805da8": {
+                                                    "dataType": "date",
+                                                    "isBucketed": true,
+                                                    "label": "@timestamp",
+                                                    "operationType": "date_histogram",
+                                                    "params": {
+                                                        "dropPartials": false,
+                                                        "includeEmptyRows": true,
+                                                        "interval": "auto"
+                                                    },
+                                                    "scale": "interval",
+                                                    "sourceField": "@timestamp"
+                                                }
+                                            },
+                                            "ignoreGlobalFilters": false,
+                                            "incompleteColumns": {},
+                                            "indexPatternId": "logs-*",
+                                            "sampling": 1
+                                        }
+                                    }
+                                },
+                                "indexpattern": {
+                                    "layers": {}
+                                },
+                                "textBased": {
+                                    "layers": {}
+                                }
+                            },
+                            "filters": [],
+                            "internalReferences": [],
+                            "query": {
+                                "language": "kuery",
+                                "query": ""
+                            },
+                            "visualization": {
+                                "axisTitlesVisibilitySettings": {
+                                    "x": true,
+                                    "yLeft": true,
+                                    "yRight": true
+                                },
+                                "emphasizeFitting": true,
+                                "fittingFunction": "Linear",
+                                "layers": [
+                                    {
+                                        "accessors": [
+                                            "f303a792-88d4-40e8-bf55-6f6205fbdd60"
+                                        ],
+                                        "colorMapping": {
+                                            "assignments": [],
+                                            "colorMode": {
+                                                "type": "categorical"
+                                            },
+                                            "paletteId": "eui_amsterdam_color_blind",
+                                            "specialAssignments": [
+                                                {
+                                                    "color": {
+                                                        "type": "loop"
+                                                    },
+                                                    "rule": {
+                                                        "type": "other"
+                                                    },
+                                                    "touched": false
+                                                }
+                                            ]
+                                        },
+                                        "layerId": "a6195521-be48-4dca-8f2b-d79fb5f220c5",
+                                        "layerType": "data",
+                                        "position": "top",
+                                        "seriesType": "line",
+                                        "showGridlines": false,
+                                        "splitAccessor": "2929aba1-99a4-4703-8e00-ef00580a468e",
+                                        "xAccessor": "ff681f04-dad6-47a8-b632-048de5805da8"
+                                    }
+                                ],
+                                "legend": {
+                                    "isVisible": true,
+                                    "legendSize": "xlarge",
+                                    "position": "right"
+                                },
+                                "preferredSeriesType": "line",
+                                "title": "Empty XY chart",
+                                "valueLabels": "hide"
+                            }
+                        },
+                        "title": "",
+                        "type": "lens",
+                        "visualizationType": "lnsXY"
+                    },
+                    "enhancements": {}
+                },
+                "gridData": {
+                    "h": 15,
+                    "i": "f8943210-fb27-4ad6-9563-4f1dd9204390",
+                    "w": 24,
+                    "x": 24,
+                    "y": 33
+                },
+                "panelIndex": "f8943210-fb27-4ad6-9563-4f1dd9204390",
+                "title": "Events count over time",
                 "type": "lens"
             },
             {
@@ -1252,7 +1263,7 @@
                     "rowsPerPage": 10
                 },
                 "gridData": {
-                    "h": 29,
+                    "h": 17,
                     "i": "bc7cb8e4-7006-41df-93ce-3eeabda2e76a",
                     "w": 48,
                     "x": 0,
@@ -1268,7 +1279,7 @@
         "version": 1
     },
     "coreMigrationVersion": "8.8.0",
-    "created_at": "2025-04-04T09:39:27.336Z",
+    "created_at": "2025-04-06T09:46:26.968Z",
     "id": "mongodb_atlas-81c7e5e2-b621-452b-8dd1-cddadd7bd9bc",
     "managed": false,
     "references": [
@@ -1324,7 +1335,7 @@
         },
         {
             "id": "logs-*",
-            "name": "4aafc23c-5cff-4ac7-9e91-b4764a22b31f:indexpattern-datasource-layer-39992a18-fd2d-42b7-a53e-b90ce15efba8",
+            "name": "34531a1b-bce6-417b-a739-514da346c7ca:indexpattern-datasource-layer-ad190fc9-4b59-441b-9dbc-a4825ee70ef4",
             "type": "index-pattern"
         },
         {
@@ -1339,17 +1350,17 @@
         },
         {
             "id": "logs-*",
-            "name": "34531a1b-bce6-417b-a739-514da346c7ca:indexpattern-datasource-layer-ad190fc9-4b59-441b-9dbc-a4825ee70ef4",
-            "type": "index-pattern"
-        },
-        {
-            "id": "logs-*",
-            "name": "f8943210-fb27-4ad6-9563-4f1dd9204390:indexpattern-datasource-layer-a6195521-be48-4dca-8f2b-d79fb5f220c5",
+            "name": "4aafc23c-5cff-4ac7-9e91-b4764a22b31f:indexpattern-datasource-layer-39992a18-fd2d-42b7-a53e-b90ce15efba8",
             "type": "index-pattern"
         },
         {
             "id": "logs-*",
             "name": "760e2718-46c6-494e-8435-f80b9d150f13:indexpattern-datasource-layer-c6c7d35e-6bdd-463b-a132-168435fcf552",
+            "type": "index-pattern"
+        },
+        {
+            "id": "logs-*",
+            "name": "f8943210-fb27-4ad6-9563-4f1dd9204390:indexpattern-datasource-layer-a6195521-be48-4dca-8f2b-d79fb5f220c5",
             "type": "index-pattern"
         },
         {

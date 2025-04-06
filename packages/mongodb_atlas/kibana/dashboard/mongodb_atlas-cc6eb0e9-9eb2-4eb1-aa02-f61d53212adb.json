@@ -179,7 +179,7 @@
                         "id": "",
                         "params": {
                             "fontSize": 12,
-                            "markdown": "**Overview**\n\nThis dashboard provides an overview of MongoDB Atlas alerts, tracking total, open, and closed alerts over time. It visualizes alert distribution by hostname, event type, and metric name, helping identify trends and potential issues. The dashboard also includes a detailed log of recent alerts, enabling efficient monitoring and timely resolution of database performance and threshold breaches.",
+                            "markdown": "**Overview**\n\nThe MongoDB Atlas Alert dashboard enables proactive monitoring and incident response by tracking alert activity across the environment. It provides key insights including:\n  - Alert count and severity trends\n  - Triggered alert breakdown by type\n  - Alerts over time and per resource\n  - Host and project-specific alert visibility",
                             "openLinksInNewTab": false
                         },
                         "title": "",
@@ -188,7 +188,7 @@
                     }
                 },
                 "gridData": {
-                    "h": 18,
+                    "h": 15,
                     "i": "c4a711a7-c1ff-4a81-9300-3d124380e65c",
                     "w": 14,
                     "x": 0,
@@ -206,12 +206,18 @@
                                 "id": "logs-*",
                                 "name": "indexpattern-datasource-layer-6ccbb4c6-1f21-4185-8e86-213374f91515",
                                 "type": "index-pattern"
+                            },
+                            {
+                                "id": "logs-*",
+                                "name": "indexpattern-datasource-layer-a6a0382c-12d6-4c65-a657-3dda53fe20ef",
+                                "type": "index-pattern"
                             }
                         ],
                         "state": {
                             "adHocDataViews": {},
                             "datasourceStates": {
                                 "formBased": {
+                                    "currentIndexPatternId": "logs-*",
                                     "layers": {
                                         "6ccbb4c6-1f21-4185-8e86-213374f91515": {
                                             "columnOrder": [
@@ -233,6 +239,47 @@
                                             },
                                             "ignoreGlobalFilters": false,
                                             "incompleteColumns": {},
+                                            "indexPatternId": "logs-*",
+                                            "sampling": 1
+                                        },
+                                        "a6a0382c-12d6-4c65-a657-3dda53fe20ef": {
+                                            "columnOrder": [
+                                                "85161349-c176-4a98-86b7-3c1d492cdbeb",
+                                                "c9c83ad2-0f75-4c15-acef-71523cccf1fc"
+                                            ],
+                                            "columns": {
+                                                "85161349-c176-4a98-86b7-3c1d492cdbeb": {
+                                                    "dataType": "date",
+                                                    "isBucketed": true,
+                                                    "label": "@timestamp",
+                                                    "operationType": "date_histogram",
+                                                    "params": {
+                                                        "dropPartials": false,
+                                                        "includeEmptyRows": true,
+                                                        "interval": "auto"
+                                                    },
+                                                    "scale": "interval",
+                                                    "sourceField": "@timestamp"
+                                                },
+                                                "c9c83ad2-0f75-4c15-acef-71523cccf1fc": {
+                                                    "customLabel": true,
+                                                    "dataType": "number",
+                                                    "isBucketed": false,
+                                                    "label": "Total alerts",
+                                                    "operationType": "count",
+                                                    "params": {
+                                                        "emptyAsNull": false
+                                                    },
+                                                    "scale": "ratio",
+                                                    "sourceField": "___records___"
+                                                }
+                                            },
+                                            "ignoreGlobalFilters": false,
+                                            "incompleteColumns": {},
+                                            "indexPatternId": "logs-*",
+                                            "linkToLayers": [
+                                                "6ccbb4c6-1f21-4185-8e86-213374f91515"
+                                            ],
                                             "sampling": 1
                                         }
                                     }
@@ -251,9 +298,15 @@
                                 "query": ""
                             },
                             "visualization": {
+                                "color": "#54B399",
                                 "layerId": "6ccbb4c6-1f21-4185-8e86-213374f91515",
                                 "layerType": "data",
-                                "metricAccessor": "986b5671-b8e5-4c20-8f3d-86a1457d7e4c"
+                                "metricAccessor": "986b5671-b8e5-4c20-8f3d-86a1457d7e4c",
+                                "showBar": false,
+                                "trendlineLayerId": "a6a0382c-12d6-4c65-a657-3dda53fe20ef",
+                                "trendlineLayerType": "metricTrendline",
+                                "trendlineMetricAccessor": "c9c83ad2-0f75-4c15-acef-71523cccf1fc",
+                                "trendlineTimeAccessor": "85161349-c176-4a98-86b7-3c1d492cdbeb"
                             }
                         },
                         "title": "",
@@ -264,7 +317,7 @@
                     "hidePanelTitles": true
                 },
                 "gridData": {
-                    "h": 6,
+                    "h": 5,
                     "i": "969bf2ab-91a5-486b-95e9-e1be457ba039",
                     "w": 6,
                     "x": 14,
@@ -370,7 +423,7 @@
                             "visualization": {
                                 "axisTitlesVisibilitySettings": {
                                     "x": true,
-                                    "yLeft": false,
+                                    "yLeft": true,
                                     "yRight": true
                                 },
                                 "curveType": "LINEAR",
@@ -416,7 +469,8 @@
                                 "preferredSeriesType": "line",
                                 "title": "Empty XY chart",
                                 "valueLabels": "hide",
-                                "valuesInLegend": true
+                                "valuesInLegend": true,
+                                "yTitle": "Alerts"
                             }
                         },
                         "title": "",
@@ -426,7 +480,7 @@
                     "enhancements": {}
                 },
                 "gridData": {
-                    "h": 18,
+                    "h": 15,
                     "i": "a0747b08-3c54-4fa9-a4df-b38f2b1bb11e",
                     "w": 28,
                     "x": 20,
@@ -447,7 +501,7 @@
                             },
                             {
                                 "id": "logs-*",
-                                "name": "e016dcf1-8bef-4aaa-9dbe-ab534769d1d7",
+                                "name": "indexpattern-datasource-layer-8cc3672f-30fa-4ab3-8a35-cbaca57be8d8",
                                 "type": "index-pattern"
                             }
                         ],
@@ -455,6 +509,7 @@
                             "adHocDataViews": {},
                             "datasourceStates": {
                                 "formBased": {
+                                    "currentIndexPatternId": "logs-*",
                                     "layers": {
                                         "1617d5ba-92a9-4fb7-9895-d5fc917a4b07": {
                                             "columnOrder": [
@@ -476,6 +531,47 @@
                                             },
                                             "ignoreGlobalFilters": false,
                                             "incompleteColumns": {},
+                                            "indexPatternId": "logs-*",
+                                            "sampling": 1
+                                        },
+                                        "8cc3672f-30fa-4ab3-8a35-cbaca57be8d8": {
+                                            "columnOrder": [
+                                                "99e748ce-cfd3-4a20-82e6-1a21732a0170",
+                                                "c1c83678-b7ba-4ff4-8425-b549503044d7"
+                                            ],
+                                            "columns": {
+                                                "99e748ce-cfd3-4a20-82e6-1a21732a0170": {
+                                                    "dataType": "date",
+                                                    "isBucketed": true,
+                                                    "label": "@timestamp",
+                                                    "operationType": "date_histogram",
+                                                    "params": {
+                                                        "dropPartials": false,
+                                                        "includeEmptyRows": true,
+                                                        "interval": "auto"
+                                                    },
+                                                    "scale": "interval",
+                                                    "sourceField": "@timestamp"
+                                                },
+                                                "c1c83678-b7ba-4ff4-8425-b549503044d7": {
+                                                    "customLabel": true,
+                                                    "dataType": "number",
+                                                    "isBucketed": false,
+                                                    "label": "Open alerts",
+                                                    "operationType": "count",
+                                                    "params": {
+                                                        "emptyAsNull": false
+                                                    },
+                                                    "scale": "ratio",
+                                                    "sourceField": "___records___"
+                                                }
+                                            },
+                                            "ignoreGlobalFilters": false,
+                                            "incompleteColumns": {},
+                                            "indexPatternId": "logs-*",
+                                            "linkToLayers": [
+                                                "1617d5ba-92a9-4fb7-9895-d5fc917a4b07"
+                                            ],
                                             "sampling": 1
                                         }
                                     }
@@ -517,9 +613,15 @@
                                 "query": ""
                             },
                             "visualization": {
+                                "color": "#6092C0",
                                 "layerId": "1617d5ba-92a9-4fb7-9895-d5fc917a4b07",
                                 "layerType": "data",
-                                "metricAccessor": "5843535c-cfcc-4bd7-afd3-267059567c3e"
+                                "metricAccessor": "5843535c-cfcc-4bd7-afd3-267059567c3e",
+                                "showBar": false,
+                                "trendlineLayerId": "8cc3672f-30fa-4ab3-8a35-cbaca57be8d8",
+                                "trendlineLayerType": "metricTrendline",
+                                "trendlineMetricAccessor": "c1c83678-b7ba-4ff4-8425-b549503044d7",
+                                "trendlineTimeAccessor": "99e748ce-cfd3-4a20-82e6-1a21732a0170"
                             }
                         },
                         "title": "",
@@ -530,11 +632,11 @@
                     "hidePanelTitles": true
                 },
                 "gridData": {
-                    "h": 6,
+                    "h": 5,
                     "i": "e8d8a75d-29fa-4366-aa0e-82bb1ed2f5ed",
                     "w": 6,
                     "x": 14,
-                    "y": 9
+                    "y": 8
                 },
                 "panelIndex": "e8d8a75d-29fa-4366-aa0e-82bb1ed2f5ed",
                 "title": "",
@@ -548,6 +650,11 @@
                                 "id": "logs-*",
                                 "name": "indexpattern-datasource-layer-71c7ad51-dc14-4e5b-a2dd-49ee9797f23b",
                                 "type": "index-pattern"
+                            },
+                            {
+                                "id": "logs-*",
+                                "name": "indexpattern-datasource-layer-5743c909-7bb0-48dd-a32b-4866a660677c",
+                                "type": "index-pattern"
                             }
                         ],
                         "state": {
@@ -556,6 +663,46 @@
                                 "formBased": {
                                     "currentIndexPatternId": "logs-*",
                                     "layers": {
+                                        "5743c909-7bb0-48dd-a32b-4866a660677c": {
+                                            "columnOrder": [
+                                                "4231c561-f180-4785-985c-9fc547db8fc2",
+                                                "44616e89-ba2e-4e85-947c-9bea780ae751"
+                                            ],
+                                            "columns": {
+                                                "4231c561-f180-4785-985c-9fc547db8fc2": {
+                                                    "dataType": "date",
+                                                    "isBucketed": true,
+                                                    "label": "@timestamp",
+                                                    "operationType": "date_histogram",
+                                                    "params": {
+                                                        "dropPartials": false,
+                                                        "includeEmptyRows": true,
+                                                        "interval": "auto"
+                                                    },
+                                                    "scale": "interval",
+                                                    "sourceField": "@timestamp"
+                                                },
+                                                "44616e89-ba2e-4e85-947c-9bea780ae751": {
+                                                    "customLabel": true,
+                                                    "dataType": "number",
+                                                    "isBucketed": false,
+                                                    "label": "Closed alerts",
+                                                    "operationType": "count",
+                                                    "params": {
+                                                        "emptyAsNull": false
+                                                    },
+                                                    "scale": "ratio",
+                                                    "sourceField": "___records___"
+                                                }
+                                            },
+                                            "ignoreGlobalFilters": false,
+                                            "incompleteColumns": {},
+                                            "indexPatternId": "logs-*",
+                                            "linkToLayers": [
+                                                "71c7ad51-dc14-4e5b-a2dd-49ee9797f23b"
+                                            ],
+                                            "sampling": 1
+                                        },
                                         "71c7ad51-dc14-4e5b-a2dd-49ee9797f23b": {
                                             "columnOrder": [
                                                 "458ee72f-0b61-42b6-9ce4-d1cc78ead9c1"
@@ -618,9 +765,15 @@
                                 "query": ""
                             },
                             "visualization": {
+                                "color": "#D36086",
                                 "layerId": "71c7ad51-dc14-4e5b-a2dd-49ee9797f23b",
                                 "layerType": "data",
-                                "metricAccessor": "458ee72f-0b61-42b6-9ce4-d1cc78ead9c1"
+                                "metricAccessor": "458ee72f-0b61-42b6-9ce4-d1cc78ead9c1",
+                                "showBar": false,
+                                "trendlineLayerId": "5743c909-7bb0-48dd-a32b-4866a660677c",
+                                "trendlineLayerType": "metricTrendline",
+                                "trendlineMetricAccessor": "44616e89-ba2e-4e85-947c-9bea780ae751",
+                                "trendlineTimeAccessor": "4231c561-f180-4785-985c-9fc547db8fc2"
                             }
                         },
                         "title": "",
@@ -631,14 +784,148 @@
                     "hidePanelTitles": true
                 },
                 "gridData": {
-                    "h": 6,
+                    "h": 5,
                     "i": "c6c84572-8dbe-4beb-958e-fd4e0aa194cb",
                     "w": 6,
                     "x": 14,
-                    "y": 15
+                    "y": 13
                 },
                 "panelIndex": "c6c84572-8dbe-4beb-958e-fd4e0aa194cb",
                 "title": "",
+                "type": "lens"
+            },
+            {
+                "embeddableConfig": {
+                    "attributes": {
+                        "references": [
+                            {
+                                "id": "logs-*",
+                                "name": "indexpattern-datasource-layer-4cef41b8-3fd4-44b8-afb2-9373620da3ef",
+                                "type": "index-pattern"
+                            }
+                        ],
+                        "state": {
+                            "adHocDataViews": {},
+                            "datasourceStates": {
+                                "formBased": {
+                                    "layers": {
+                                        "4cef41b8-3fd4-44b8-afb2-9373620da3ef": {
+                                            "columnOrder": [
+                                                "8a5e45be-a717-45cf-b5d7-a23c13d7296a",
+                                                "ad5ac53c-6426-4082-a684-52d9f829b9a7"
+                                            ],
+                                            "columns": {
+                                                "8a5e45be-a717-45cf-b5d7-a23c13d7296a": {
+                                                    "dataType": "string",
+                                                    "isBucketed": true,
+                                                    "label": "Top 5 values of mongodb_atlas.alert.event_type.name",
+                                                    "operationType": "terms",
+                                                    "params": {
+                                                        "exclude": [],
+                                                        "excludeIsRegex": false,
+                                                        "include": [],
+                                                        "includeIsRegex": false,
+                                                        "missingBucket": false,
+                                                        "orderBy": {
+                                                            "columnId": "ad5ac53c-6426-4082-a684-52d9f829b9a7",
+                                                            "type": "column"
+                                                        },
+                                                        "orderDirection": "desc",
+                                                        "otherBucket": true,
+                                                        "parentFormat": {
+                                                            "id": "terms"
+                                                        },
+                                                        "size": 5
+                                                    },
+                                                    "scale": "ordinal",
+                                                    "sourceField": "mongodb_atlas.alert.event_type.name"
+                                                },
+                                                "ad5ac53c-6426-4082-a684-52d9f829b9a7": {
+                                                    "dataType": "number",
+                                                    "isBucketed": false,
+                                                    "label": "Count of records",
+                                                    "operationType": "count",
+                                                    "params": {
+                                                        "emptyAsNull": true
+                                                    },
+                                                    "scale": "ratio",
+                                                    "sourceField": "___records___"
+                                                }
+                                            },
+                                            "ignoreGlobalFilters": false,
+                                            "incompleteColumns": {},
+                                            "sampling": 1
+                                        }
+                                    }
+                                },
+                                "indexpattern": {
+                                    "layers": {}
+                                },
+                                "textBased": {
+                                    "layers": {}
+                                }
+                            },
+                            "filters": [],
+                            "internalReferences": [],
+                            "query": {
+                                "language": "kuery",
+                                "query": ""
+                            },
+                            "visualization": {
+                                "layers": [
+                                    {
+                                        "categoryDisplay": "default",
+                                        "colorMapping": {
+                                            "assignments": [],
+                                            "colorMode": {
+                                                "type": "categorical"
+                                            },
+                                            "paletteId": "eui_amsterdam_color_blind",
+                                            "specialAssignments": [
+                                                {
+                                                    "color": {
+                                                        "type": "loop"
+                                                    },
+                                                    "rule": {
+                                                        "type": "other"
+                                                    },
+                                                    "touched": false
+                                                }
+                                            ]
+                                        },
+                                        "layerId": "4cef41b8-3fd4-44b8-afb2-9373620da3ef",
+                                        "layerType": "data",
+                                        "legendDisplay": "show",
+                                        "legendSize": "large",
+                                        "metrics": [
+                                            "ad5ac53c-6426-4082-a684-52d9f829b9a7"
+                                        ],
+                                        "nestedLegend": false,
+                                        "numberDisplay": "percent",
+                                        "primaryGroups": [
+                                            "8a5e45be-a717-45cf-b5d7-a23c13d7296a"
+                                        ],
+                                        "truncateLegend": false
+                                    }
+                                ],
+                                "shape": "donut"
+                            }
+                        },
+                        "title": "",
+                        "type": "lens",
+                        "visualizationType": "lnsPie"
+                    },
+                    "enhancements": {}
+                },
+                "gridData": {
+                    "h": 15,
+                    "i": "ca3754b6-aac2-49b1-9c05-6f240b41014d",
+                    "w": 24,
+                    "x": 24,
+                    "y": 18
+                },
+                "panelIndex": "ca3754b6-aac2-49b1-9c05-6f240b41014d",
+                "title": "Alerts distribute by event type",
                 "type": "lens"
             },
             {
@@ -766,295 +1053,14 @@
                     "enhancements": {}
                 },
                 "gridData": {
-                    "h": 18,
+                    "h": 15,
                     "i": "9012d720-4149-420a-910b-2d3b5787892b",
                     "w": 24,
                     "x": 0,
-                    "y": 21
+                    "y": 18
                 },
                 "panelIndex": "9012d720-4149-420a-910b-2d3b5787892b",
                 "title": "Alerts by hostname",
-                "type": "lens"
-            },
-            {
-                "embeddableConfig": {
-                    "attributes": {
-                        "references": [
-                            {
-                                "id": "logs-*",
-                                "name": "indexpattern-datasource-layer-4cef41b8-3fd4-44b8-afb2-9373620da3ef",
-                                "type": "index-pattern"
-                            }
-                        ],
-                        "state": {
-                            "adHocDataViews": {},
-                            "datasourceStates": {
-                                "formBased": {
-                                    "layers": {
-                                        "4cef41b8-3fd4-44b8-afb2-9373620da3ef": {
-                                            "columnOrder": [
-                                                "8a5e45be-a717-45cf-b5d7-a23c13d7296a",
-                                                "ad5ac53c-6426-4082-a684-52d9f829b9a7"
-                                            ],
-                                            "columns": {
-                                                "8a5e45be-a717-45cf-b5d7-a23c13d7296a": {
-                                                    "dataType": "string",
-                                                    "isBucketed": true,
-                                                    "label": "Top 5 values of mongodb_atlas.alert.event_type.name",
-                                                    "operationType": "terms",
-                                                    "params": {
-                                                        "exclude": [],
-                                                        "excludeIsRegex": false,
-                                                        "include": [],
-                                                        "includeIsRegex": false,
-                                                        "missingBucket": false,
-                                                        "orderBy": {
-                                                            "columnId": "ad5ac53c-6426-4082-a684-52d9f829b9a7",
-                                                            "type": "column"
-                                                        },
-                                                        "orderDirection": "desc",
-                                                        "otherBucket": true,
-                                                        "parentFormat": {
-                                                            "id": "terms"
-                                                        },
-                                                        "size": 5
-                                                    },
-                                                    "scale": "ordinal",
-                                                    "sourceField": "mongodb_atlas.alert.event_type.name"
-                                                },
-                                                "ad5ac53c-6426-4082-a684-52d9f829b9a7": {
-                                                    "dataType": "number",
-                                                    "isBucketed": false,
-                                                    "label": "Count of records",
-                                                    "operationType": "count",
-                                                    "params": {
-                                                        "emptyAsNull": true
-                                                    },
-                                                    "scale": "ratio",
-                                                    "sourceField": "___records___"
-                                                }
-                                            },
-                                            "ignoreGlobalFilters": false,
-                                            "incompleteColumns": {},
-                                            "sampling": 1
-                                        }
-                                    }
-                                },
-                                "indexpattern": {
-                                    "layers": {}
-                                },
-                                "textBased": {
-                                    "layers": {}
-                                }
-                            },
-                            "filters": [],
-                            "internalReferences": [],
-                            "query": {
-                                "language": "kuery",
-                                "query": ""
-                            },
-                            "visualization": {
-                                "layers": [
-                                    {
-                                        "categoryDisplay": "default",
-                                        "colorMapping": {
-                                            "assignments": [],
-                                            "colorMode": {
-                                                "type": "categorical"
-                                            },
-                                            "paletteId": "eui_amsterdam_color_blind",
-                                            "specialAssignments": [
-                                                {
-                                                    "color": {
-                                                        "type": "loop"
-                                                    },
-                                                    "rule": {
-                                                        "type": "other"
-                                                    },
-                                                    "touched": false
-                                                }
-                                            ]
-                                        },
-                                        "layerId": "4cef41b8-3fd4-44b8-afb2-9373620da3ef",
-                                        "layerType": "data",
-                                        "legendDisplay": "show",
-                                        "legendSize": "large",
-                                        "metrics": [
-                                            "ad5ac53c-6426-4082-a684-52d9f829b9a7"
-                                        ],
-                                        "nestedLegend": false,
-                                        "numberDisplay": "percent",
-                                        "primaryGroups": [
-                                            "8a5e45be-a717-45cf-b5d7-a23c13d7296a"
-                                        ],
-                                        "truncateLegend": false
-                                    }
-                                ],
-                                "shape": "donut"
-                            }
-                        },
-                        "title": "",
-                        "type": "lens",
-                        "visualizationType": "lnsPie"
-                    },
-                    "enhancements": {}
-                },
-                "gridData": {
-                    "h": 18,
-                    "i": "ca3754b6-aac2-49b1-9c05-6f240b41014d",
-                    "w": 24,
-                    "x": 24,
-                    "y": 21
-                },
-                "panelIndex": "ca3754b6-aac2-49b1-9c05-6f240b41014d",
-                "title": "Alerts distribute by event type",
-                "type": "lens"
-            },
-            {
-                "embeddableConfig": {
-                    "attributes": {
-                        "references": [
-                            {
-                                "id": "logs-*",
-                                "name": "indexpattern-datasource-layer-e474649a-08f7-4c98-b654-d344fd24a1e5",
-                                "type": "index-pattern"
-                            }
-                        ],
-                        "state": {
-                            "adHocDataViews": {},
-                            "datasourceStates": {
-                                "formBased": {
-                                    "layers": {
-                                        "e474649a-08f7-4c98-b654-d344fd24a1e5": {
-                                            "columnOrder": [
-                                                "455a872f-c893-4d13-96fe-876c2640ce5f",
-                                                "1bc1bb66-4873-43be-abb3-31f8791f432d"
-                                            ],
-                                            "columns": {
-                                                "1bc1bb66-4873-43be-abb3-31f8791f432d": {
-                                                    "customLabel": true,
-                                                    "dataType": "number",
-                                                    "isBucketed": false,
-                                                    "label": "Count",
-                                                    "operationType": "count",
-                                                    "params": {
-                                                        "emptyAsNull": false
-                                                    },
-                                                    "scale": "ratio",
-                                                    "sourceField": "___records___"
-                                                },
-                                                "455a872f-c893-4d13-96fe-876c2640ce5f": {
-                                                    "dataType": "date",
-                                                    "isBucketed": true,
-                                                    "label": "@timestamp",
-                                                    "operationType": "date_histogram",
-                                                    "params": {
-                                                        "dropPartials": false,
-                                                        "includeEmptyRows": true,
-                                                        "interval": "auto"
-                                                    },
-                                                    "scale": "interval",
-                                                    "sourceField": "@timestamp"
-                                                }
-                                            },
-                                            "ignoreGlobalFilters": false,
-                                            "incompleteColumns": {},
-                                            "sampling": 1
-                                        }
-                                    }
-                                },
-                                "indexpattern": {
-                                    "layers": {}
-                                },
-                                "textBased": {
-                                    "layers": {}
-                                }
-                            },
-                            "filters": [],
-                            "internalReferences": [],
-                            "query": {
-                                "language": "kuery",
-                                "query": ""
-                            },
-                            "visualization": {
-                                "axisTitlesVisibilitySettings": {
-                                    "x": true,
-                                    "yLeft": false,
-                                    "yRight": true
-                                },
-                                "emphasizeFitting": true,
-                                "endValue": "None",
-                                "fittingFunction": "Linear",
-                                "gridlinesVisibilitySettings": {
-                                    "x": true,
-                                    "yLeft": true,
-                                    "yRight": true
-                                },
-                                "labelsOrientation": {
-                                    "x": 0,
-                                    "yLeft": 0,
-                                    "yRight": 0
-                                },
-                                "layers": [
-                                    {
-                                        "accessors": [
-                                            "1bc1bb66-4873-43be-abb3-31f8791f432d"
-                                        ],
-                                        "colorMapping": {
-                                            "assignments": [],
-                                            "colorMode": {
-                                                "type": "categorical"
-                                            },
-                                            "paletteId": "eui_amsterdam_color_blind",
-                                            "specialAssignments": [
-                                                {
-                                                    "color": {
-                                                        "type": "loop"
-                                                    },
-                                                    "rule": {
-                                                        "type": "other"
-                                                    },
-                                                    "touched": false
-                                                }
-                                            ]
-                                        },
-                                        "layerId": "e474649a-08f7-4c98-b654-d344fd24a1e5",
-                                        "layerType": "data",
-                                        "position": "top",
-                                        "seriesType": "line",
-                                        "showGridlines": false,
-                                        "xAccessor": "455a872f-c893-4d13-96fe-876c2640ce5f"
-                                    }
-                                ],
-                                "legend": {
-                                    "isVisible": true,
-                                    "position": "right"
-                                },
-                                "preferredSeriesType": "line",
-                                "tickLabelsVisibilitySettings": {
-                                    "x": true,
-                                    "yLeft": true,
-                                    "yRight": true
-                                },
-                                "valueLabels": "hide",
-                                "valuesInLegend": true
-                            }
-                        },
-                        "title": "",
-                        "type": "lens",
-                        "visualizationType": "lnsXY"
-                    },
-                    "enhancements": {}
-                },
-                "gridData": {
-                    "h": 15,
-                    "i": "2c451537-c47e-4b60-8afd-0aaf0eee3bfb",
-                    "w": 24,
-                    "x": 0,
-                    "y": 39
-                },
-                "panelIndex": "2c451537-c47e-4b60-8afd-0aaf0eee3bfb",
-                "title": "Alerts over time",
                 "type": "lens"
             },
             {
@@ -1153,7 +1159,7 @@
                             "visualization": {
                                 "axisTitlesVisibilitySettings": {
                                     "x": true,
-                                    "yLeft": false,
+                                    "yLeft": true,
                                     "yRight": true
                                 },
                                 "emphasizeFitting": true,
@@ -1199,7 +1205,8 @@
                                 "preferredSeriesType": "line",
                                 "title": "Empty XY chart",
                                 "valueLabels": "hide",
-                                "valuesInLegend": true
+                                "valuesInLegend": true,
+                                "yTitle": "Alerts"
                             }
                         },
                         "title": "",
@@ -1213,10 +1220,158 @@
                     "i": "73edf579-479d-4620-b03c-35e7f42687bd",
                     "w": 24,
                     "x": 24,
-                    "y": 39
+                    "y": 33
                 },
                 "panelIndex": "73edf579-479d-4620-b03c-35e7f42687bd",
                 "title": "Alerts by metric name",
+                "type": "lens"
+            },
+            {
+                "embeddableConfig": {
+                    "attributes": {
+                        "references": [
+                            {
+                                "id": "logs-*",
+                                "name": "indexpattern-datasource-layer-e474649a-08f7-4c98-b654-d344fd24a1e5",
+                                "type": "index-pattern"
+                            }
+                        ],
+                        "state": {
+                            "adHocDataViews": {},
+                            "datasourceStates": {
+                                "formBased": {
+                                    "layers": {
+                                        "e474649a-08f7-4c98-b654-d344fd24a1e5": {
+                                            "columnOrder": [
+                                                "455a872f-c893-4d13-96fe-876c2640ce5f",
+                                                "1bc1bb66-4873-43be-abb3-31f8791f432d"
+                                            ],
+                                            "columns": {
+                                                "1bc1bb66-4873-43be-abb3-31f8791f432d": {
+                                                    "customLabel": true,
+                                                    "dataType": "number",
+                                                    "isBucketed": false,
+                                                    "label": "Count",
+                                                    "operationType": "count",
+                                                    "params": {
+                                                        "emptyAsNull": false
+                                                    },
+                                                    "scale": "ratio",
+                                                    "sourceField": "___records___"
+                                                },
+                                                "455a872f-c893-4d13-96fe-876c2640ce5f": {
+                                                    "dataType": "date",
+                                                    "isBucketed": true,
+                                                    "label": "@timestamp",
+                                                    "operationType": "date_histogram",
+                                                    "params": {
+                                                        "dropPartials": false,
+                                                        "includeEmptyRows": true,
+                                                        "interval": "auto"
+                                                    },
+                                                    "scale": "interval",
+                                                    "sourceField": "@timestamp"
+                                                }
+                                            },
+                                            "ignoreGlobalFilters": false,
+                                            "incompleteColumns": {},
+                                            "sampling": 1
+                                        }
+                                    }
+                                },
+                                "indexpattern": {
+                                    "layers": {}
+                                },
+                                "textBased": {
+                                    "layers": {}
+                                }
+                            },
+                            "filters": [],
+                            "internalReferences": [],
+                            "query": {
+                                "language": "kuery",
+                                "query": ""
+                            },
+                            "visualization": {
+                                "axisTitlesVisibilitySettings": {
+                                    "x": true,
+                                    "yLeft": true,
+                                    "yRight": true
+                                },
+                                "emphasizeFitting": true,
+                                "endValue": "None",
+                                "fittingFunction": "Linear",
+                                "gridlinesVisibilitySettings": {
+                                    "x": true,
+                                    "yLeft": true,
+                                    "yRight": true
+                                },
+                                "labelsOrientation": {
+                                    "x": 0,
+                                    "yLeft": 0,
+                                    "yRight": 0
+                                },
+                                "layers": [
+                                    {
+                                        "accessors": [
+                                            "1bc1bb66-4873-43be-abb3-31f8791f432d"
+                                        ],
+                                        "colorMapping": {
+                                            "assignments": [],
+                                            "colorMode": {
+                                                "type": "categorical"
+                                            },
+                                            "paletteId": "eui_amsterdam_color_blind",
+                                            "specialAssignments": [
+                                                {
+                                                    "color": {
+                                                        "type": "loop"
+                                                    },
+                                                    "rule": {
+                                                        "type": "other"
+                                                    },
+                                                    "touched": false
+                                                }
+                                            ]
+                                        },
+                                        "layerId": "e474649a-08f7-4c98-b654-d344fd24a1e5",
+                                        "layerType": "data",
+                                        "position": "top",
+                                        "seriesType": "line",
+                                        "showGridlines": false,
+                                        "xAccessor": "455a872f-c893-4d13-96fe-876c2640ce5f"
+                                    }
+                                ],
+                                "legend": {
+                                    "isVisible": true,
+                                    "position": "right"
+                                },
+                                "preferredSeriesType": "line",
+                                "tickLabelsVisibilitySettings": {
+                                    "x": true,
+                                    "yLeft": true,
+                                    "yRight": true
+                                },
+                                "valueLabels": "hide",
+                                "valuesInLegend": true,
+                                "yTitle": "Alerts"
+                            }
+                        },
+                        "title": "",
+                        "type": "lens",
+                        "visualizationType": "lnsXY"
+                    },
+                    "enhancements": {}
+                },
+                "gridData": {
+                    "h": 15,
+                    "i": "2c451537-c47e-4b60-8afd-0aaf0eee3bfb",
+                    "w": 24,
+                    "x": 0,
+                    "y": 33
+                },
+                "panelIndex": "2c451537-c47e-4b60-8afd-0aaf0eee3bfb",
+                "title": "Alerts over time",
                 "type": "lens"
             },
             {
@@ -1410,7 +1565,7 @@
                     "i": "743a7d03-6ad2-4a42-810f-b32c67796096",
                     "w": 48,
                     "x": 0,
-                    "y": 54
+                    "y": 48
                 },
                 "panelIndex": "743a7d03-6ad2-4a42-810f-b32c67796096",
                 "title": "Recent alerts",
@@ -1422,7 +1577,7 @@
         "version": 1
     },
     "coreMigrationVersion": "8.8.0",
-    "created_at": "2025-04-04T09:11:19.601Z",
+    "created_at": "2025-04-06T10:04:20.895Z",
     "id": "mongodb_atlas-cc6eb0e9-9eb2-4eb1-aa02-f61d53212adb",
     "managed": false,
     "references": [
@@ -1478,6 +1633,11 @@
         },
         {
             "id": "logs-*",
+            "name": "969bf2ab-91a5-486b-95e9-e1be457ba039:indexpattern-datasource-layer-a6a0382c-12d6-4c65-a657-3dda53fe20ef",
+            "type": "index-pattern"
+        },
+        {
+            "id": "logs-*",
             "name": "a0747b08-3c54-4fa9-a4df-b38f2b1bb11e:indexpattern-datasource-layer-f3ffeda5-2679-4820-8386-c5b70f7ac743",
             "type": "index-pattern"
         },
@@ -1488,7 +1648,7 @@
         },
         {
             "id": "logs-*",
-            "name": "e8d8a75d-29fa-4366-aa0e-82bb1ed2f5ed:e016dcf1-8bef-4aaa-9dbe-ab534769d1d7",
+            "name": "e8d8a75d-29fa-4366-aa0e-82bb1ed2f5ed:indexpattern-datasource-layer-8cc3672f-30fa-4ab3-8a35-cbaca57be8d8",
             "type": "index-pattern"
         },
         {
@@ -1498,7 +1658,7 @@
         },
         {
             "id": "logs-*",
-            "name": "9012d720-4149-420a-910b-2d3b5787892b:indexpattern-datasource-layer-9c16dc9c-ba74-473a-99e2-3815db7b195f",
+            "name": "c6c84572-8dbe-4beb-958e-fd4e0aa194cb:indexpattern-datasource-layer-5743c909-7bb0-48dd-a32b-4866a660677c",
             "type": "index-pattern"
         },
         {
@@ -1508,12 +1668,17 @@
         },
         {
             "id": "logs-*",
-            "name": "2c451537-c47e-4b60-8afd-0aaf0eee3bfb:indexpattern-datasource-layer-e474649a-08f7-4c98-b654-d344fd24a1e5",
+            "name": "9012d720-4149-420a-910b-2d3b5787892b:indexpattern-datasource-layer-9c16dc9c-ba74-473a-99e2-3815db7b195f",
             "type": "index-pattern"
         },
         {
             "id": "logs-*",
             "name": "73edf579-479d-4620-b03c-35e7f42687bd:indexpattern-datasource-layer-44c0f999-bdfa-47fb-8d89-7b4139477736",
+            "type": "index-pattern"
+        },
+        {
+            "id": "logs-*",
+            "name": "2c451537-c47e-4b60-8afd-0aaf0eee3bfb:indexpattern-datasource-layer-e474649a-08f7-4c98-b654-d344fd24a1e5",
             "type": "index-pattern"
         },
         {
