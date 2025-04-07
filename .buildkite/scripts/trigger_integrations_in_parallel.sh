@@ -51,7 +51,6 @@ if [[ "${BUILDKITE_PIPELINE_SLUG}" == "integrations-test-stack" && "${GITHUB_PR_
     echo "Use Elastic stack version from Github comment: ${STACK_VERSION}"
 fi
 
-echo "--- Check packages to create trigger steps"
 packages_to_test=0
 
 for package in ${PACKAGE_LIST}; do
