@@ -43,7 +43,7 @@ You can store and search your data using Elasticsearch and visualize and manage 
 
 ## Compatibility
 
-This integration has been tested and verified against VMware ESXi and vCenter version 7.0.3.
+This integration has been tested and verified against VMware ESXi and vCenter versions 7.0.3 and 8.0.
 
 ## Setup
 
