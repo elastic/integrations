@@ -57,6 +57,7 @@ Agentless deployments are only supported in Elastic Serverless and Elastic Cloud
     | Issue         | read:issues   |
     | Vulnerability | read:vulnerabilities |
     | Cloud Configuration Finding | read:cloud_configuration |
+    | Cloud Configuration Finding Full Posture | read:cloud_configuration |
 
 ### To obtain the Wiz URL
 1. Navigate to your user profile and copy the API Endpoint URL.
@@ -355,6 +356,142 @@ An example event for `cloud_configuration_finding` looks as following:
 | wiz.cloud_configuration_finding.rule.short_id |  | keyword |
 
 
+### Cloud Configuration Finding Full Posture
+
+This is the `Cloud Configuration Finding Full Posture` dataset.
+
+#### Example
+
+An example event for `cloud_configuration_finding_full_posture` looks as following:
+
+```json
+{
+    "@timestamp": "2023-06-12T11:38:07.900Z",
+    "cloud": {
+        "account": {
+            "id": "cfd132be-3bc7-4f86-8efd-ed53ae498fec",
+            "name": "Wiz - DEV Outpost"
+        },
+        "provider": "azure"
+    },
+    "ecs": {
+        "version": "8.11.0"
+    },
+    "event": {
+        "category": [
+            "configuration"
+        ],
+        "created": "2023-06-12T11:38:07.900Z",
+        "id": "bdeba988-f41b-55e6-9b99-96b8d3dc67d4",
+        "kind": "state",
+        "original": "{\"id\":\"bdeba988-f41b-55e6-9b99-96b8d3dc67d4\",\"targetExternalId\":\"k8s/pod/da99fd668e64c2def251b1d48b7b69ad3129638787a0f9144a993fe30fd4554f/default/cluster-autoscaler-azure-cluster-autoscaler-8bc677d64-z2qfx\",\"targetObjectProviderUniqueId\":\"cd971d74-92db-495c-8244-82da9a988fd0\",\"firstSeenAt\":\"2023-06-12T11:38:07.900129Z\",\"analyzedAt\":\"2023-06-12T11:38:07.900129Z\",\"severity\":\"LOW\",\"result\":\"FAIL\",\"status\":\"OPEN\",\"remediation\":\"Follow the step below to ensure that each [Pod](https://kubernetes.io/docs/concepts/workloads/pods) should runs containers with allowed additional capabilities: \\r\\n* The following capabilities are not allowed : {{removeUnnecessaryCapabilities}} .  \\r\\n* `securityContext.capabilities.drop` key is set to `ALL`. \\r\\n\",\"resource\":{\"id\":\"0e814bb7-29e8-5c15-be9c-8da42c67ee99\",\"providerId\":\"provider-id-0e814bb7-29e8-5c15-be9c-8da42c67ee99\",\"name\":\"cluster-autoscaler-azure-cluster-autoscaler-8bc677d64-z2qfx\",\"nativeType\":\"Pod\",\"type\":\"POD\",\"region\":null,\"subscription\":{\"id\":\"a3a3cc43-1dfd-50f1-882e-692840d4a891\",\"name\":\"Wiz - DEV Outpost\",\"externalId\":\"cfd132be-3bc7-4f86-8efd-ed53ae498fec\",\"cloudProvider\":\"Azure\"},\"projects\":null,\"tags\":[{\"key\":\"pod-template-hash\",\"value\":\"8bc677d64\"},{\"key\":\"app.kubernetes.io/name\",\"value\":\"azure-cluster-autoscaler\"},{\"key\":\"app.kubernetes.io/instance\",\"value\":\"cluster-autoscaler\"}]},\"rule\":{\"id\":\"73553de7-f2ad-4ffb-b425-c69815033530\",\"shortId\":\"Pod-32\",\"graphId\":\"99ffeef7-75df-5c88-9265-5ab50ffbc2b9\",\"name\":\"Pod should run containers with authorized additional capabilities (PSS Restricted)\",\"description\":\"This rule is part of the Kubernetes [Pod Security Standards (PSS) restricted policies](https://kubernetes.io/docs/concepts/security/pod-security-standards/#restricted).   \\nThis rule checks whether the pod is running containers with authorized additional capabilities.     \\nThis rule fails if the `securityContext.capabilities.add` contains any capability beyond `NET_BIND_SERVICE` and if `securityContext.capabilities.drop` is not set to `ALL`.  \\nBy default, if the `securityContext.capabilities.add` key is not set, the pod will not run with additional capabilities, and the rule will pass.   \\nLinux capabilities allow granting certain privileges to a container without granting any unnecessary ones intended for the root user.\",\"remediationInstructions\":\"Follow the step below to ensure that each [Pod](https://kubernetes.io/docs/concepts/workloads/pods) should runs containers with allowed additional capabilities: \\r\\n* The following capabilities are not allowed : {{removeUnnecessaryCapabilities}} .  \\r\\n* `securityContext.capabilities.drop` key is set to `ALL`. \\r\\n\",\"functionAsControl\":false},\"securitySubCategories\":[{\"id\":\"wsct-id-5206\",\"title\":\"Container Security\",\"category\":{\"id\":\"wct-id-423\",\"name\":\"9 Container Security\",\"framework\":{\"id\":\"wf-id-1\",\"name\":\"Wiz\"}}},{\"id\":\"wsct-id-8176\",\"title\":\"5.1 Containers should not run with additional capabilities\",\"category\":{\"id\":\"wct-id-1295\",\"name\":\"5 Capabilities\",\"framework\":{\"id\":\"wf-id-57\",\"name\":\"Kubernetes Pod Security Standards (Restricted)\"}}},{\"id\":\"wsct-id-8344\",\"title\":\"Cluster misconfiguration\",\"category\":{\"id\":\"wct-id-1169\",\"name\":\"2 Container & Kubernetes Security\",\"framework\":{\"id\":\"wf-id-53\",\"name\":\"Wiz Detailed\"}}}]}",
+        "outcome": "failure",
+        "type": [
+            "info"
+        ]
+    },
+    "message": "This rule is part of the Kubernetes [Pod Security Standards (PSS) restricted policies](https://kubernetes.io/docs/concepts/security/pod-security-standards/#restricted).   \nThis rule checks whether the pod is running containers with authorized additional capabilities.     \nThis rule fails if the `securityContext.capabilities.add` contains any capability beyond `NET_BIND_SERVICE` and if `securityContext.capabilities.drop` is not set to `ALL`.  \nBy default, if the `securityContext.capabilities.add` key is not set, the pod will not run with additional capabilities, and the rule will pass.   \nLinux capabilities allow granting certain privileges to a container without granting any unnecessary ones intended for the root user.",
+    "observer": {
+        "vendor": "Wiz"
+    },
+    "resource": {
+        "id": "provider-id-0e814bb7-29e8-5c15-be9c-8da42c67ee99",
+        "name": "cluster-autoscaler-azure-cluster-autoscaler-8bc677d64-z2qfx",
+        "sub_type": "Pod",
+        "type": "POD"
+    },
+    "result": {
+        "evaluation": "FAILED"
+    },
+    "rule": {
+        "description": "This rule is part of the Kubernetes [Pod Security Standards (PSS) restricted policies](https://kubernetes.io/docs/concepts/security/pod-security-standards/#restricted).   \nThis rule checks whether the pod is running containers with authorized additional capabilities.     \nThis rule fails if the `securityContext.capabilities.add` contains any capability beyond `NET_BIND_SERVICE` and if `securityContext.capabilities.drop` is not set to `ALL`.  \nBy default, if the `securityContext.capabilities.add` key is not set, the pod will not run with additional capabilities, and the rule will pass.   \nLinux capabilities allow granting certain privileges to a container without granting any unnecessary ones intended for the root user.",
+        "id": "Pod-32",
+        "name": "Pod should run containers with authorized additional capabilities (PSS Restricted)",
+        "remediation": "Follow the step below to ensure that each [Pod](https://kubernetes.io/docs/concepts/workloads/pods) should runs containers with allowed additional capabilities: \r\n* The following capabilities are not allowed : {{removeUnnecessaryCapabilities}} .  \r\n* `securityContext.capabilities.drop` key is set to `ALL`. \r\n",
+        "uuid": "73553de7-f2ad-4ffb-b425-c69815033530"
+    },
+    "tags": [
+        "preserve_original_event",
+        "preserve_duplicate_custom_fields"
+    ],
+    "wiz": {
+        "cloud_configuration_finding_full_posture": {
+            "analyzed_at": "2023-06-12T11:38:07.900Z",
+            "id": "bdeba988-f41b-55e6-9b99-96b8d3dc67d4",
+            "resource": {
+                "id": "0e814bb7-29e8-5c15-be9c-8da42c67ee99",
+                "name": "cluster-autoscaler-azure-cluster-autoscaler-8bc677d64-z2qfx",
+                "native_type": "Pod",
+                "provider_id": "provider-id-0e814bb7-29e8-5c15-be9c-8da42c67ee99",
+                "subscription": {
+                    "cloud_provider": "Azure",
+                    "external_id": "cfd132be-3bc7-4f86-8efd-ed53ae498fec",
+                    "name": "Wiz - DEV Outpost"
+                },
+                "type": "POD"
+            },
+            "result": "FAIL",
+            "rule": {
+                "description": "This rule is part of the Kubernetes [Pod Security Standards (PSS) restricted policies](https://kubernetes.io/docs/concepts/security/pod-security-standards/#restricted).   \nThis rule checks whether the pod is running containers with authorized additional capabilities.     \nThis rule fails if the `securityContext.capabilities.add` contains any capability beyond `NET_BIND_SERVICE` and if `securityContext.capabilities.drop` is not set to `ALL`.  \nBy default, if the `securityContext.capabilities.add` key is not set, the pod will not run with additional capabilities, and the rule will pass.   \nLinux capabilities allow granting certain privileges to a container without granting any unnecessary ones intended for the root user.",
+                "id": "73553de7-f2ad-4ffb-b425-c69815033530",
+                "name": "Pod should run containers with authorized additional capabilities (PSS Restricted)",
+                "remediation_instructions": "Follow the step below to ensure that each [Pod](https://kubernetes.io/docs/concepts/workloads/pods) should runs containers with allowed additional capabilities: \r\n* The following capabilities are not allowed : {{removeUnnecessaryCapabilities}} .  \r\n* `securityContext.capabilities.drop` key is set to `ALL`. \r\n",
+                "short_id": "Pod-32"
+            }
+        }
+    }
+}
+```
+
+**Exported fields**
+
+| Field | Description | Type |
+|---|---|---|
+| @timestamp | Date/time when the event originated. This is the date/time extracted from the event, typically representing when the event was generated by the source. If the event source has no original timestamp, this value is typically populated by the first time the event was received by the pipeline. Required field for all events. | date |
+| data_stream.dataset | The field can contain anything that makes sense to signify the source of the data. Examples include `nginx.access`, `prometheus`, `endpoint` etc. For data streams that otherwise fit, but that do not have dataset set we use the value "generic" for the dataset value. `event.dataset` should have the same value as `data_stream.dataset`. Beyond the Elasticsearch data stream naming criteria noted above, the `dataset` value has additional restrictions:   \* Must not contain `-`   \* No longer than 100 characters | constant_keyword |
+| data_stream.namespace | A user defined namespace. Namespaces are useful to allow grouping of data. Many users already organize their indices this way, and the data stream naming scheme now provides this best practice as a default. Many users will populate this field with `default`. If no value is used, it falls back to `default`. Beyond the Elasticsearch index naming criteria noted above, `namespace` value has the additional restrictions:   \* Must not contain `-`   \* No longer than 100 characters | constant_keyword |
+| data_stream.type | An overarching type for the data stream. Currently allowed values are "logs" and "metrics". We expect to also add "traces" and "synthetics" in the near future. | constant_keyword |
+| event.dataset | Name of the dataset. If an event source publishes more than one type of log or events (e.g. access log, error log), the dataset is used to specify which one the event comes from. It's recommended but not required to start the dataset name with the module name, followed by a dot, then the dataset name. | constant_keyword |
+| event.module | Name of the module this data is coming from. If your monitoring agent supports the concept of modules or plugins to process events of a given source (e.g. Apache logs), `event.module` should contain the name of this module. | constant_keyword |
+| input.type | Type of filebeat input. | keyword |
+| log.offset | Log offset. | long |
+| resource.id |  | keyword |
+| resource.name |  | keyword |
+| resource.sub_type |  | keyword |
+| resource.type |  | keyword |
+| result.evaluation |  | keyword |
+| result.evidence.cloud_configuration_link |  | text |
+| result.evidence.configuration_path |  | text |
+| result.evidence.current_value |  | text |
+| result.evidence.expected_value |  | text |
+| rule.remediation |  | keyword |
+| tags | List of keywords used to tag each event. | keyword |
+| wiz.cloud_configuration_finding_full_posture.analyzed_at |  | date |
+| wiz.cloud_configuration_finding_full_posture.evidence.cloud_configuration_link |  | text |
+| wiz.cloud_configuration_finding_full_posture.evidence.configuration_path |  | text |
+| wiz.cloud_configuration_finding_full_posture.evidence.current_value |  | text |
+| wiz.cloud_configuration_finding_full_posture.evidence.expected_value |  | text |
+| wiz.cloud_configuration_finding_full_posture.id |  | keyword |
+| wiz.cloud_configuration_finding_full_posture.name |  | keyword |
+| wiz.cloud_configuration_finding_full_posture.resource.cloud_platform |  | keyword |
+| wiz.cloud_configuration_finding_full_posture.resource.id |  | keyword |
+| wiz.cloud_configuration_finding_full_posture.resource.name |  | keyword |
+| wiz.cloud_configuration_finding_full_posture.resource.native_type |  | keyword |
+| wiz.cloud_configuration_finding_full_posture.resource.provider_id |  | keyword |
+| wiz.cloud_configuration_finding_full_posture.resource.region |  | keyword |
+| wiz.cloud_configuration_finding_full_posture.resource.subscription.cloud_provider |  | keyword |
+| wiz.cloud_configuration_finding_full_posture.resource.subscription.external_id |  | keyword |
+| wiz.cloud_configuration_finding_full_posture.resource.subscription.name |  | keyword |
+| wiz.cloud_configuration_finding_full_posture.resource.type |  | keyword |
+| wiz.cloud_configuration_finding_full_posture.result |  | keyword |
+| wiz.cloud_configuration_finding_full_posture.rule.description |  | text |
+| wiz.cloud_configuration_finding_full_posture.rule.id |  | keyword |
+| wiz.cloud_configuration_finding_full_posture.rule.name |  | keyword |
+| wiz.cloud_configuration_finding_full_posture.rule.remediation_instructions |  | text |
+| wiz.cloud_configuration_finding_full_posture.rule.short_id |  | keyword |
+| wiz.cloud_configuration_finding_full_posture.status |  | keyword |
+
+
 ### Issue
 
 This is the `Issue` dataset.
@@ -633,11 +770,11 @@ An example event for `vulnerability` looks as following:
 {
     "@timestamp": "2023-08-16T18:40:57.000Z",
     "agent": {
-        "ephemeral_id": "124489e8-14a9-4120-9631-0c55ec182d07",
-        "id": "9f35182a-afaa-4788-859d-d523d976b90e",
-        "name": "elastic-agent-32792",
+        "ephemeral_id": "19d5ed25-e2f4-49cb-852c-a5f8f9ee00a9",
+        "id": "45e59d63-f461-4f3a-9aae-587e6b33e84a",
+        "name": "elastic-agent-94391",
         "type": "filebeat",
-        "version": "8.14.3"
+        "version": "8.17.0"
     },
     "cloud": {
         "account": {
@@ -648,7 +785,7 @@ An example event for `vulnerability` looks as following:
     },
     "data_stream": {
         "dataset": "wiz.vulnerability",
-        "namespace": "32071",
+        "namespace": "85547",
         "type": "logs"
     },
     "device": {
@@ -658,9 +795,9 @@ An example event for `vulnerability` looks as following:
         "version": "8.11.0"
     },
     "elastic_agent": {
-        "id": "9f35182a-afaa-4788-859d-d523d976b90e",
+        "id": "45e59d63-f461-4f3a-9aae-587e6b33e84a",
         "snapshot": false,
-        "version": "8.14.3"
+        "version": "8.17.0"
     },
     "event": {
         "agent_id_status": "verified",
@@ -668,7 +805,8 @@ An example event for `vulnerability` looks as following:
             "vulnerability"
         ],
         "dataset": "wiz.vulnerability",
-        "ingested": "2024-10-08T12:48:23Z",
+        "id": "5e95ff50-5490-514e-87f7-11e56f3230ff",
+        "ingested": "2025-03-20T17:51:16Z",
         "kind": "alert",
         "original": "{\"CVEDescription\":\"In LibTIFF, there is a memory malloc failure in tif_pixarlog.c. A crafted TIFF document can lead to an abort, resulting in a remote denial of service attack.\",\"CVSSSeverity\":\"MEDIUM\",\"dataSourceName\":\"data Source\",\"description\":\"Thepackage`libtiff`version`4.0.3-35.amzn2`wasdetectedin`YUMpackagemanager`onamachinerunning`Amazon2(Karoo)`isvulnerableto`CVE-2020-35522`,whichexistsinversions`\\u003c4.0.3-35.amzn2.0.1`.\\n\\nThevulnerabilitywasfoundinthe[OfficialAmazonLinuxSecurityAdvisories](https://alas.aws.amazon.com/AL2/ALAS-2022-1780.html)withvendorseverity:`Medium`([NVD](https://nvd.nist.gov/vuln/detail/CVE-2020-35522)severity:`Medium`).\\n\\nThevulnerabilitycanberemediatedbyupdatingthepackagetoversion`4.0.3-35.amzn2.0.1`orhigher,using`yumupdatelibtiff`.\",\"detailedName\":\"libtiff\",\"detectionMethod\":\"PACKAGE\",\"epssPercentile\":46.2,\"epssProbability\":0.1,\"epssSeverity\":\"LOW\",\"exploitabilityScore\":1.8,\"firstDetectedAt\":\"2022-05-01T11:36:10.063767Z\",\"fixedVersion\":\"4.0.3-35.amzn2.0.1\",\"hasCisaKevExploit\":false,\"hasExploit\":false,\"id\":\"5e95ff50-5490-514e-87f7-11e56f3230ff\",\"ignoreRules\":{\"enabled\":true,\"expiredAt\":\"2023-08-16T18:40:57Z\",\"id\":\"aj3jqtvnaf\",\"name\":\"abc\"},\"impactScore\":3.6,\"lastDetectedAt\":\"2023-08-16T18:40:57Z\",\"layerMetadata\":{\"details\":\"xxxx\",\"id\":\"5e95ff50-5490-514e-87f7-11e56f3230ff\",\"isBaseLayer\":true},\"link\":\"https://alas.aws.amazon.com/AL2/ALAS-2022-1780.html\",\"locationPath\":\"package/library/file\",\"name\":\"CVE-2020-3333\",\"portalUrl\":\"https://app.wiz.io/explorer/vulnerability-findings#~(entity~(~'xxx-xxx*2cSECURITY_TOOL_FINDING))\",\"projects\":[{\"businessUnit\":\"\",\"id\":\"83b76efe-a7b6-5762-8a53-8e8f59e68bd8\",\"name\":\"Project2\",\"riskProfile\":{\"businessImpact\":\"MBI\"},\"slug\":\"project-2\"},{\"businessUnit\":\"Dev\",\"id\":\"af52828c-4eb1-5c4e-847c-ebc3a5ead531\",\"name\":\"project4\",\"riskProfile\":{\"businessImpact\":\"MBI\"},\"slug\":\"project-4\"},{\"businessUnit\":\"Dev\",\"id\":\"d6ac50bb-aec0-52fc-80ab-bacd7b02f178\",\"name\":\"Project1\",\"riskProfile\":{\"businessImpact\":\"MBI\"},\"slug\":\"project1\"}],\"remediation\":\"yumupdatelibtiff\",\"resolutionReason\":\"resolutionReason\",\"resolvedAt\":\"2023-08-16T18:40:57Z\",\"score\":5.5,\"status\":\"OPEN\",\"validatedInRuntime\":true,\"vendorSeverity\":\"MEDIUM\",\"version\":\"4.0.3-35.amzn2\",\"vulnerableAsset\":{\"cloudPlatform\":\"AWS\",\"cloudProviderURL\":\"https://us-east-1.console.aws.amazon.com/ec2/v2/home?region=us-east-1#InstanceDetails:instanceId=i-0a0f7e1451da5f4a3\",\"hasLimitedInternetExposure\":true,\"hasWideInternetExposure\":true,\"id\":\"c828de0d-4c42-5b1c-946b-2edee094d0b3\",\"ipAddresses\":[\"89.160.20.112\",\"89.160.20.128\"],\"isAccessibleFromOtherSubscriptions\":false,\"isAccessibleFromOtherVnets\":false,\"isAccessibleFromVPN\":false,\"name\":\"test-4\",\"operatingSystem\":\"Linux\",\"providerUniqueId\":\"arn:aws:ec2:us-east-1:998231069301:instance/i-0a0f7e1451da5f4a3\",\"region\":\"us-east-1\",\"status\":\"Active\",\"subscriptionExternalId\":\"998231069301\",\"subscriptionId\":\"94e76baa-85fd-5928-b829-1669a2ca9660\",\"subscriptionName\":\"wiz-integrations\",\"tags\":{\"Name\":\"test-4\"},\"type\":\"VIRTUAL_MACHINE\"}}",
         "type": [

@@ -27,6 +27,7 @@ It is compatible with a subset of applications under the [Google Reports API v1]
 | [Context Aware Access](https://developers.google.com/admin-sdk/reports/v1/appendix/activity/context-aware-access) [help](https://support.google.com/a/answer/9394107?hl=en#zippy=) | The Context Aware Access activity report returns information about various types of Context-Aware Access Audit activity events. |
 | [GCP](https://developers.google.com/admin-sdk/reports/v1/appendix/activity/gcp) | The GCP activity report returns information about various types of Google Cloud Platform activity events. |
 | [Chrome](https://developers.google.com/admin-sdk/reports/v1/appendix/activity/chrome) | The Chrome activity reports return information about Chrome browser and Chrome OS events. |
+| [Data Studio](https://developers.google.com/admin-sdk/reports/v1/appendix/activity/data-studio) | Track and audit user interactions and changes made to Looker Studio assets. |
 
 ## Requirements
 
@@ -43,7 +44,7 @@ This integration will make use of the following *oauth2 scope*:
 
 Once you have downloaded your service account credentials as a JSON file, you are ready to set up your integration.
 
-Click the Advanced option of Google Workspace Audit Reports. The default value of "API Host" is `https://www.googleapis.com`. The API Host will be used for collecting `access_transparency`, `admin`, `chrome`, `context_aware_access`, `device`, `drive`, `gcp`, `groups`, `group_enterprise`, `login`, `rules`, `saml`, `token` and `user accounts` logs.
+Click the Advanced option of Google Workspace Audit Reports. The default value of "API Host" is `https://www.googleapis.com`. The API Host will be used for collecting `access_transparency`, `admin`, `chrome`, `context_aware_access`, `data_studio`, `device`, `drive`, `gcp`, `groups`, `group_enterprise`, `login`, `rules`, `saml`, `token` and `user accounts` logs.
 
 >  NOTE: The `Delegated Account` value in the configuration, is expected to be the email of the administrator account, and not the email of the ServiceAccount.
 
@@ -3006,6 +3007,171 @@ An example event for `chrome` looks as following:
 | google_workspace.chrome.user_agent | User agent event parameter. | keyword |
 | google_workspace.chrome.user_justification | A parameter that contains a justification message provided by users. | keyword |
 | google_workspace.chrome.virtual_device_id | Virtual device ID of the browser on which the event happened. | keyword |
+| input.type | Type of filebeat input. | keyword |
+| log.offset | Log offset. | long |
+
+
+### Data Studio
+
+This is the `data_studio` dataset.
+
+An example event for `data_studio` looks as following:
+
+```json
+{
+    "@timestamp": "2025-03-26T09:47:49.748Z",
+    "agent": {
+        "ephemeral_id": "a4d793df-cc20-4b91-b990-f8f13da50202",
+        "id": "51440eed-1bea-4a14-ba9e-5b47d1552102",
+        "name": "elastic-agent-38941",
+        "type": "filebeat",
+        "version": "8.18.0"
+    },
+    "data_stream": {
+        "dataset": "google_workspace.data_studio",
+        "namespace": "67784",
+        "type": "logs"
+    },
+    "ecs": {
+        "version": "8.16.0"
+    },
+    "elastic_agent": {
+        "id": "51440eed-1bea-4a14-ba9e-5b47d1552102",
+        "snapshot": true,
+        "version": "8.18.0"
+    },
+    "event": {
+        "action": "delete-distribution-content",
+        "agent_id_status": "verified",
+        "category": [
+            "configuration"
+        ],
+        "dataset": "google_workspace.data_studio",
+        "id": "1",
+        "ingested": "2025-04-02T06:52:12Z",
+        "kind": "event",
+        "original": "{\"actor\":{\"callerType\":\"USER\",\"email\":\"foo@bar.com\",\"profileId\":\"1\"},\"events\":{\"name\":\"DELETE_DISTRIBUTION_CONTENT\",\"parameters\":[{\"name\":\"ASSET_ID\",\"value\":\"abc-123\"},{\"name\":\"ASSET_NAME\",\"value\":\"[Sample]ReportName\"},{\"name\":\"OWNER_EMAIL\",\"value\":\"foo@bar.com\"},{\"name\":\"ASSET_TYPE\",\"value\":\"REPORT\"},{\"name\":\"VISIBILITY\",\"value\":\"PEOPLE_WITHIN_DOMAIN_WITH_LINK\"},{\"name\":\"PARENT_WORKSPACE_ID\",\"value\":\"\"},{\"name\":\"CONNECTOR_TYPE\",\"value\":\"\"},{\"name\":\"DISTRIBUTION_CONTENT_NAME\",\"value\":\"[Sample]ReportName\"},{\"name\":\"DISTRIBUTION_CONTENT_OWNER_EMAIL\",\"value\":\"foo@bar.com\"},{\"name\":\"DISTRIBUTION_CONTENT_ID\",\"value\":\"abc-123\"},{\"name\":\"DISTRIBUTION_CONTENT_TYPE\",\"value\":\"SCHEDULE\"}],\"type\":\"ACCESS\"},\"id\":{\"applicationName\":\"data_studio\",\"customerId\":\"1\",\"time\":\"2025-03-26T09:47:49.748Z\",\"uniqueQualifier\":\"1\"},\"ipAddress\":\"67.43.156.13\",\"kind\":\"admin#reports#activity\"}",
+        "provider": "data_studio",
+        "type": [
+            "deletion"
+        ]
+    },
+    "google_workspace": {
+        "actor": {
+            "caller_type": "USER"
+        },
+        "data_studio": {
+            "asset_id": "abc-123",
+            "asset_name": "[Sample]ReportName",
+            "asset_type": "REPORT",
+            "distribution_content_id": "abc-123",
+            "distribution_content_name": "[Sample]ReportName",
+            "distribution_content_owner_email": "foo@bar.com",
+            "distribution_content_type": "SCHEDULE",
+            "name": "DELETE_DISTRIBUTION_CONTENT",
+            "owner_email": "foo@bar.com",
+            "type": "ACCESS",
+            "visibility": "PEOPLE_WITHIN_DOMAIN_WITH_LINK"
+        },
+        "kind": "admin#reports#activity"
+    },
+    "input": {
+        "type": "cel"
+    },
+    "observer": {
+        "product": "Data Studio",
+        "vendor": "Google Workspace"
+    },
+    "organization": {
+        "id": "1"
+    },
+    "related": {
+        "ip": [
+            "67.43.156.13"
+        ],
+        "user": [
+            "foo@bar.com"
+        ]
+    },
+    "source": {
+        "as": {
+            "number": 35908
+        },
+        "geo": {
+            "continent_name": "Asia",
+            "country_iso_code": "BT",
+            "country_name": "Bhutan",
+            "location": {
+                "lat": 27.5,
+                "lon": 90.5
+            }
+        },
+        "ip": "67.43.156.13",
+        "user": {
+            "domain": "bar.com",
+            "email": "foo@bar.com",
+            "id": "1",
+            "name": "foo"
+        }
+    },
+    "tags": [
+        "preserve_original_event",
+        "forwarded",
+        "google_workspace-data_studio"
+    ],
+    "user": {
+        "domain": "bar.com",
+        "email": "foo@bar.com",
+        "id": "1",
+        "name": "foo"
+    }
+}
+```
+
+**Exported fields**
+
+| Field | Description | Type |
+|---|---|---|
+| @timestamp | Event timestamp. | date |
+| data_stream.dataset | Data stream dataset. | constant_keyword |
+| data_stream.namespace | Data stream namespace. | constant_keyword |
+| data_stream.type | Data stream type. | constant_keyword |
+| event.dataset | Event dataset. | constant_keyword |
+| event.module | Event module. | constant_keyword |
+| google_workspace.actor.caller_type | The type of actor. Values can be:   \*USER\*: Another user in the same domain.   \*EXTERNAL_USER\*: A user outside the domain.   \*KEY\*: A non-human actor. | keyword |
+| google_workspace.actor.email | The primary email address of the actor. May be absent if there is no email address associated with the actor. | keyword |
+| google_workspace.actor.key | Only present when `actor.type` is `KEY`. Can be the `consumer_key` of the requestor for OAuth 2LO API requests or an identifier for robot accounts. | keyword |
+| google_workspace.actor.profile_id | The unique Google Workspace profile ID of the actor. | keyword |
+| google_workspace.data_studio.asset_id | The id of the asset affected by the event. | keyword |
+| google_workspace.data_studio.asset_name | The name of the asset affected by the event. | keyword |
+| google_workspace.data_studio.asset_type | The type of the asset. Possible values are `DATA_SOURCE`, `EXPLORER`, `REPORT`, `WORKSPACE`. | keyword |
+| google_workspace.data_studio.connector_type | The type of connector used for data integration. This defines how Data Studio connects to and retrieves data from various sources, such as Google Analytics, Google Sheets, and BigQuery, for reporting and visualization. | keyword |
+| google_workspace.data_studio.current_value | The current value for the asset permission. For a list of possible values refer to https://developers.google.com/workspace/admin/reports/v1/appendix/activity/data-studio | keyword |
+| google_workspace.data_studio.data_export_type | The type of data export. Possible values are `CSV`, `CSV_EXCEL`, `EXTRACTED_DATA_SOURCE`, `SHEETS`. | keyword |
+| google_workspace.data_studio.distribution_content_id |  | keyword |
+| google_workspace.data_studio.distribution_content_name |  | keyword |
+| google_workspace.data_studio.distribution_content_owner_email |  | keyword |
+| google_workspace.data_studio.distribution_content_type |  | keyword |
+| google_workspace.data_studio.embedded_in_report_id | The ID of the report where the data source is embedded. | keyword |
+| google_workspace.data_studio.name |  | keyword |
+| google_workspace.data_studio.new_value | The new value for the asset permission. For a list of possible values refer to https://developers.google.com/workspace/admin/reports/v1/appendix/activity/data-studio | keyword |
+| google_workspace.data_studio.old_value | The old value for the asset permission. For a list of possible values refer to https://developers.google.com/workspace/admin/reports/v1/appendix/activity/data-studio | keyword |
+| google_workspace.data_studio.owner_email | The email address of the asset owner. | keyword |
+| google_workspace.data_studio.parent_workspace_id | The parent workspace ID of the asset. | keyword |
+| google_workspace.data_studio.previous_value | The previous value for the asset permission. For a list of possible values refer to https://developers.google.com/workspace/admin/reports/v1/appendix/activity/data-studio | keyword |
+| google_workspace.data_studio.prior_visibility | The prior Visibility. For a list of possible values refer to https://developers.google.com/workspace/admin/reports/v1/appendix/activity/data-studio | keyword |
+| google_workspace.data_studio.target_domain | The targeted domain for which the link sharing access type of the asset was changed. | keyword |
+| google_workspace.data_studio.target_user_email | The targeted user's email for which the sharing permission has been changed. | keyword |
+| google_workspace.data_studio.type |  | keyword |
+| google_workspace.data_studio.visibility | The visibility of an asset. For a list of possible values refer to https://developers.google.com/workspace/admin/reports/v1/appendix/activity/data-studio | keyword |
+| google_workspace.etag | ETag of the entry. | keyword |
+| google_workspace.id.application_name | Application name to which the event belongs. For possible values see the list of applications above in applicationName. | keyword |
+| google_workspace.id.customer_id | The unique identifier for a Google Workspace account. | keyword |
+| google_workspace.id.time | Time of occurrence of the activity. This is in UNIX epoch time in seconds. | date |
+| google_workspace.id.unique_qualifier | Unique qualifier if multiple events have the same time. | keyword |
+| google_workspace.ip_address | IP address of the user doing the action. This is the Internet Protocol (IP) address of the user when logging into Google Workspace, which may or may not reflect the user's physical location. For example, the IP address can be the user's proxy server's address or a virtual private network (VPN) address. The API supports IPv4 and IPv6. | ip |
+| google_workspace.kind | The type of API resource, mapped from `kind` in the original payload, more details can be found [here](https://developers.google.com/admin-sdk/reports/reference/rest/v1/activities/list#activity). | keyword |
+| google_workspace.organization.domain | The domain that is affected by the report's event. | keyword |
 | input.type | Type of filebeat input. | keyword |
 | log.offset | Log offset. | long |
 
