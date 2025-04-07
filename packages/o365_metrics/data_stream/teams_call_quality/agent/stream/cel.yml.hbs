@@ -142,10 +142,9 @@ program: |
               :
                 [{"message":"retry"}]
             ),
-            "worklist": int(state.next) + 1 < size(state.worklist) ? state.worklist : [],
-            "next": int(state.next) + 1 < size(state.worklist) ? (has(state.next_page_sessions) && state.next_page_sessions != "" ?  int(state.next) : int(state.next) + 1) : 0,
-            "want_more": int(state.next) + 1 < size(state.worklist) || "@odata.nextLink" in body,
-            "next_page_sessions": "@odata.nextLink" in body ? body["@odata.nextLink"] : "",
+            "next_page_sessions": "",
+            "next": int(state.next) + 1,
+            "want_more": int(state.next) < int(size(state.worklist)),
           })
         :
           {
@@ -153,7 +152,7 @@ program: |
               "error": {
                 "code": string(resp.StatusCode),
                 "id": string(resp.Status),
-                "message": "GET "+ "state.next_page"+(
+                "message": "GET "+ state.next_page_sessions +(
                   size(resp.Body) != 0 ?
                     string(resp.Body)
                   :
