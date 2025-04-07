@@ -103,7 +103,10 @@ func (p *packageError) SummaryData() map[string]any {
 }
 
 func (p *packageError) DescriptionData() map[string]any {
-	data := p.errorLinks.Data()
+	data := p.SummaryData()
+	for key, value := range p.errorLinks.Data() {
+		data[key] = value
+	}
 	data["failure"] = truncateText(p.Failure, defaultMaxLengthMessages)
 	data["error"] = truncateText(p.Error, defaultMaxLengthMessages)
 	return data

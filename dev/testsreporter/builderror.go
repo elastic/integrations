@@ -84,7 +84,11 @@ func (b *buildError) SummaryData() map[string]any {
 }
 
 func (b *buildError) DescriptionData() map[string]any {
-	return b.errorLinks.Data()
+	data := b.SummaryData()
+	for key, value := range b.errorLinks.Data() {
+		data[key] = value
+	}
+	return data
 }
 
 func (b *buildError) Labels() []string {
