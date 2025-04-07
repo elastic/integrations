@@ -2600,6 +2600,7 @@ Please refer to the following [document](https://www.elastic.co/guide/en/ecs/cur
 | o365.metrics.subscriptions.subscription_details.next_lifecycle_date_time | The date and time when the subscription will move to the next state (as defined by the status property) if not renewed by the tenant. | date |  |
 | o365.metrics.subscriptions.subscription_details.owner_tenant_id | The unique identifier for the Microsoft partner tenant that created the subscription on a customer tenant. | keyword |  |
 | o365.metrics.subscriptions.subscription_details.status | The status of this subscription. Possible values are, Enabled, Deleted, Suspended, Warning, LockedOut. | keyword |  |
+| o365.metrics.subscriptions.subscription_details.subscription_error | An error if the subscription data is not available. | text |  |
 | o365.metrics.subscriptions.subscription_details.total_licenses | The number of licenses included in this subscription. | long |  |
 | o365.metrics.subscriptions.subscription_ids | A list of all subscription IDs associated with the SKU. | keyword |  |
 | o365.metrics.subscriptions.surplus_units.count | Number of unused units which indicates if you oversubscribed to any SKUs. | long |  |
