@@ -84,62 +84,84 @@ redact:
     - base.tenant_id
 
 program: |
-    state.with(
-      request(
-        "GET",
-        state.url + "directory/onPremisesSynchronization"
-      ).do_request().as(sync_resp,
-        sync_resp.StatusCode == 200
-        ?
-          bytes(sync_resp.Body).decode_json().as(sync_body, 
-            request(
-              "GET",
-              state.url + "/organization"
-            ).do_request().as(org_resp,
-              org_resp.StatusCode == 200
-              ?
-                bytes(org_resp.Body).decode_json().as(org_body,
+    (
+      state.with(
+        request("GET", "https://graph.microsoft.com/v1.0/directory/onPremisesSynchronization").do_request().as(on_prem_resp,
+          on_prem_resp.StatusCode == 200
+          ?
+            bytes(on_prem_resp.Body).decode_json().as(onprem_json, 
+              request("GET", "https://graph.microsoft.com/v1.0/organization").do_request().as(orgs_resp, 
+                orgs_resp.StatusCode == 200
+                ?
+                  bytes(orgs_resp.Body).decode_json().as(orgs_json,
+                    {
+                      "events": [{
+                        "o365": {
+                          "metrics": {
+                            "entra": {
+                              "connect": {
+                                  "on_premises_sync_enabled": orgs_json.value[0].onPremisesSyncEnabled != null ? orgs_json.value[0].onPremisesSyncEnabled : false,
+                                  "on_premises_last_sync_datetime": orgs_json.value[0].onPremisesLastSyncDateTime,
+                                  "password_sync_enabled": onprem_json.value[0].features.passwordSyncEnabled != null ? onprem_json.value[0].features.passwordSyncEnabled : false,
+                                  "password_writeback_enabled": onprem_json.value[0].features.passwordWritebackEnabled != null ? onprem_json.value[0].features.passwordWritebackEnabled : false,
+                                  "directory_extensions_enabled": onprem_json.value[0].features.directoryExtensionsEnabled != null ? onprem_json.value[0].features.directoryExtensionsEnabled : false,
+                                  "quarantine_upon_upn_conflict_enabled": onprem_json.value[0].features.quarantineUponUpnConflictEnabled != null ? onprem_json.value[0].features.quarantineUponUpnConflictEnabled : false,
+                                  "quarantine_upon_proxy_addresses_conflict_enabled": onprem_json.value[0].features.quarantineUponProxyAddressesConflictEnabled != null ? onprem_json.value[0].features.quarantineUponProxyAddressesConflictEnabled : false,
+                                  "soft_match_on_upn_enabled": onprem_json.value[0].features.softMatchOnUpnEnabled != null ? onprem_json.value[0].features.softMatchOnUpnEnabled : false,
+                                  "cloud_password_policy_for_password_synced_users_enabled": onprem_json.value[0].features.cloudPasswordPolicyForPasswordSyncedUsersEnabled != null ? onprem_json.value[0].features.cloudPasswordPolicyForPasswordSyncedUsersEnabled : false,
+                                  "fope_conflict_resolution_enabled": onprem_json.value[0].features.fopeConflictResolutionEnabled != null ? onprem_json.value[0].features.fopeConflictResolutionEnabled : false,
+                                  "unified_group_writeback_enabled": onprem_json.value[0].features.unifiedGroupWritebackEnabled != null ? onprem_json.value[0].features.unifiedGroupWritebackEnabled : false,
+                                  "user_writeback_enabled": onprem_json.value[0].features.userWritebackEnabled != null ? onprem_json.value[0].features.userWritebackEnabled : false,
+                                  "device_writeback_enabled": onprem_json.value[0].features.deviceWritebackEnabled != null ? onprem_json.value[0].features.deviceWritebackEnabled : false,
+                                  "synchronize_upn_for_managed_users_enabled": onprem_json.value[0].features.synchronizeUpnForManagedUsersEnabled != null ? onprem_json.value[0].features.synchronizeUpnForManagedUsersEnabled : false,
+                                  "user_force_password_change_on_logon_enabled": onprem_json.value[0].features.userForcePasswordChangeOnLogonEnabled != null ? onprem_json.value[0].features.userForcePasswordChangeOnLogonEnabled : false,
+                                  "concurrent_org_id_provisioning_enabled": onprem_json.value[0].features.concurrentOrgIdProvisioningEnabled != null ? onprem_json.value[0].features.concurrentOrgIdProvisioningEnabled : false,
+                                  "concurrent_credential_update_enabled": onprem_json.value[0].features.concurrentCredentialUpdateEnabled != null ? onprem_json.value[0].features.concurrentCredentialUpdateEnabled : false,
+                                  "group_write_back_enabled": onprem_json.value[0].features.groupWriteBackEnabled != null ? onprem_json.value[0].features.groupWriteBackEnabled : false,
+                                  "block_soft_match_enabled": onprem_json.value[0].features.blockSoftMatchEnabled != null ? onprem_json.value[0].features.blockSoftMatchEnabled : false,
+                                  "block_cloud_object_takeover_through_hard_match_enabled": onprem_json.value[0].features.blockCloudObjectTakeoverThroughHardMatchEnabled != null ? onprem_json.value[0].features.blockCloudObjectTakeoverThroughHardMatchEnabled : false,
+                                  "bypass_dir_sync_overrides_enabled": onprem_json.value[0].features.bypassDirSyncOverridesEnabled != null ? onprem_json.value[0].features.bypassDirSyncOverridesEnabled : false
+                              }
+                            }
+                          }
+                        }
+                      }]
+                    }
+                  )
+                :
                   {
                     "events": {
-                      "onPremisesSync": sync_body.value.map(e, {"message": e.encode_json()}),
-                      "onPremisesLastSyncDateTime": org_body.value[0].onPremisesLastSyncDateTime
-                      "onPremisesSyncEnabled": org_body.value[0].onPremisesSyncEnabled
-                    }
+                      "error": {
+                        "code": string(orgs_resp.StatusCode),
+                        "id": string(orgs_resp.Status),
+                        "message": "GET " + "https://graph.microsoft.com/v1.0/organization" + ": " + (
+                          size(orgs_resp.Body) != 0 ?
+                            string(orgs_resp.Body)
+                          :
+                            string(orgs_resp.Status) + ' (' + string(orgs_resp.StatusCode) + ')'
+                        ),
+                      },
+                    },
+                    "want_more": false,
                   }
-                )
-              :
-                {
-                  "events": {
-                    "error": {
-                      "code": string(org_resp.StatusCode),
-                      "id": string(org_resp.Status),
-                      "message": "GET /organization: " + (
-                        size(org_resp.Body) != 0 ? 
-                          string(org_resp.Body)
-                        :
-                          string(org_resp.Status) + ' (' + string(org_resp.StatusCode) + ')'
-                      ),
-                    }
-                  },
-                  "want_more": false,
-                }
+              )
             )
-          )
-        :
-          {
-            "events": {
-              "error": {
-                "code": string(sync_resp.StatusCode),
-                "id": string(sync_resp.Status),
-                "message": "GET /directory/onPremisesSynchronization: " + (
-                  size(sync_resp.Body) != 0 ? 
-                    string(sync_resp.Body)
-                  :
-                    string(sync_resp.Status) + ' (' + string(sync_resp.StatusCode) + ')'
-                ),
-              }
-            },
-            "want_more": false,
-          }
+          : 
+            {
+              "events": {
+                "error": {
+                  "code": string(on_prem_resp.StatusCode),
+                  "id": string(on_prem_resp.Status),
+                  "message": "GET " + "https://graph.microsoft.com/v1.0/directory/onPremisesSynchronization" + ": " + (
+                    size(on_prem_resp.Body) != 0 ?
+                      string(on_prem_resp.Body)
+                    :
+                      string(on_prem_resp.Status) + ' (' + string(on_prem_resp.StatusCode) + ')'
+                  ),
+                },
+              },
+              "want_more": false,
+            }
+        )
       )
     )
