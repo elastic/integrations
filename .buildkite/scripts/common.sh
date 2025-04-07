@@ -672,51 +672,11 @@ get_to_changeset() {
     echo "${to}"
 }
 
-subscription_package() {
-    local default="basic"
-    local subscription=""
-    subscription="$(cat "./manifest.yml" |yq -r '.conditions.elastic.subscription')"
-    if [[ "${subscription}" == "null" ]]; then
-        subscription="$(cat "./manifest.yml" |yq -r '.conditions."elastic.subscription"')"
-    fi
-    # Is it using the deprecated setting license ?
-    if [[ "${subscription}" == "null" ]]; then
-        subscription="$(cat "./manifest.yml" |yq -r '.license')"
-    fi
-    # if there is no value
-    if [[ "${subscription}" == "null" ]]; then
-        subscription="${default}"
-    fi
-    echo "${subscription}"
-}
-
 is_compatible_subscription() {
-    if mage -v -d ${WORKSPACE} -w . isSubscriptionCompatible ; then
+    if mage -d "${WORKSPACE}" -w . isSubscriptionCompatible ; then
         return 0
     fi
     return 1
-    # if [[ "${ELASTIC_SUBSCRIPTION:-""}" == "" ]]; then
-    #     return 0
-    # fi
-
-    # if [[ "${ELASTIC_SUBSCRIPTION}" == "trial" ]]; then
-    #     # All subscriptions are supported
-    #     return 0
-    # fi
-
-    # local subscription=""
-    # subscription="$(subscription_package)"
-    # echo "Subscription package=$subscription"
-
-    # if [[ "${ELASTIC_SUBSCRIPTION}" == "basic" ]]; then
-    #     if [[ "${subscription}" != "basic" ]]; then
-    #         return 1
-    #     fi
-    #     return 0
-    # fi
-
-    # # Unknown subscription
-    # return 1
 }
 
 is_pr_affected() {
@@ -762,7 +722,7 @@ is_pr_affected() {
 
     commit_merge=$(git merge-base "${from}" "${to}")
     echoerr "[${package}] git-diff: check non-package files (${commit_merge}..${to})"
-        if git diff --name-only "${commit_merge}" "${to}" | grep -q -E -v '^(packages/|\.github/(CODEOWNERS|ISSUE_TEMPLATE|PULL_REQUEST_TEMPLATE)|README\.md|docs/|.buildkite/|.go-version|dev/|go.mod|go.sum|magefile.go)' ; then
+    if git diff --name-only "${commit_merge}" "${to}" | grep -q -E -v '^(packages/|\.github/(CODEOWNERS|ISSUE_TEMPLATE|PULL_REQUEST_TEMPLATE)|README\.md|docs/)' ; then
         echo "[${package}] PR is affected: found non-package files"
         return 0
     fi
