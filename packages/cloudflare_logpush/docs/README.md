@@ -1612,6 +1612,7 @@ An example event for `firewall_event` looks as following:
 | cloudflare_logpush.firewall_event.origin.response.status | The RayID of the request that issued the challenge/jschallenge. | long |
 | cloudflare_logpush.firewall_event.ray.id | The RayID of the request. | keyword |
 | cloudflare_logpush.firewall_event.ref | The user-defined identifier for the rule triggered by this request. | keyword |
+| cloudflare_logpush.firewall_event.rule.description | The Cloudflare security product-specific Description of the rule triggered by this request. | keyword |
 | cloudflare_logpush.firewall_event.rule.id | The Cloudflare security product-specific RuleID triggered by this request. | keyword |
 | cloudflare_logpush.firewall_event.source | The Cloudflare security product triggered by this request. | keyword |
 | cloudflare_logpush.firewall_event.timestamp | The date and time the event occurred at the edge. | date |
