@@ -556,25 +556,25 @@ An example event for `organization` looks as following:
 {
     "@timestamp": "2024-04-30T06:17:35.000Z",
     "agent": {
-        "ephemeral_id": "7b505da1-55ab-4310-90e8-78aea1b86cf0",
-        "id": "f80c53eb-1a2a-4a2d-b49d-1c20e8ca61e3",
-        "name": "elastic-agent-32761",
+        "ephemeral_id": "7075f3c4-b3d1-4132-9d0a-1655ef153d5c",
+        "id": "ed83379a-5439-447a-8a2b-a2b6435d18ca",
+        "name": "elastic-agent-97230",
         "type": "filebeat",
         "version": "8.13.0"
     },
     "client": {
-        "ip": "0.0.0.0"
+        "ip": "192.0.2.1"
     },
     "data_stream": {
         "dataset": "mongodb_atlas.organization",
-        "namespace": "74300",
+        "namespace": "89623",
         "type": "logs"
     },
     "ecs": {
         "version": "8.11.0"
     },
     "elastic_agent": {
-        "id": "f80c53eb-1a2a-4a2d-b49d-1c20e8ca61e3",
+        "id": "ed83379a-5439-447a-8a2b-a2b6435d18ca",
         "snapshot": false,
         "version": "8.13.0"
     },
@@ -586,7 +586,7 @@ An example event for `organization` looks as following:
         ],
         "dataset": "mongodb_atlas.organization",
         "id": "66308cff73a61b3c0633ad96",
-        "ingested": "2025-03-04T10:15:34Z",
+        "ingested": "2025-04-07T07:02:10Z",
         "kind": "event",
         "module": "mongodb_atlas",
         "type": [
@@ -601,17 +601,17 @@ An example event for `organization` looks as following:
     "host": {
         "architecture": "x86_64",
         "containerized": true,
-        "hostname": "elastic-agent-32761",
+        "hostname": "elastic-agent-97230",
         "id": "8259e024976a406e8a54cdbffeb84fec",
         "ip": [
-            "192.168.254.2",
-            "192.168.251.6"
+            "192.168.247.2",
+            "192.168.240.7"
         ],
         "mac": [
-            "02-42-C0-A8-FB-06",
-            "02-42-C0-A8-FE-02"
+            "02-42-C0-A8-F0-07",
+            "02-42-C0-A8-F7-02"
         ],
-        "name": "elastic-agent-32761",
+        "name": "elastic-agent-97230",
         "os": {
             "codename": "focal",
             "family": "debian",
@@ -639,7 +639,7 @@ An example event for `organization` looks as following:
                 "tags_added": [
                     "{key=test_123, value=test_123}"
                 ],
-                "un": "sample1.user@example.com",
+                "un": "john.doe@example.com",
                 "updated_tags_list": [
                     "{key=application, value=mongo_test}",
                     "{key=test_123, value=test_123}"
@@ -648,60 +648,60 @@ An example event for `organization` looks as following:
             },
             "alert": {
                 "config": {
-                    "id": "sample_alert_config_id"
+                    "id": "6588efgh"
                 },
-                "id": "sample_alert_id"
+                "id": "6578efgh"
             },
             "api_key": {
-                "id": "sample_api_key_id"
+                "id": "5678efgh"
             },
             "cluster": {
-                "id": "sample_cluster_id",
-                "name": "sample_cluster"
+                "id": "8765efgh",
+                "name": "example_cluster"
             },
             "collection": {
-                "name": "sample_collection"
+                "name": "example_collection"
             },
             "database": {
-                "name": "sample_db"
+                "name": "example_db"
             },
             "event_type": {
                 "name": "GROUP_TAGS_MODIFIED"
             },
             "host": {
-                "id": "sample_host_id",
-                "name": "sample_hostname"
+                "id": "8259e024976a407e8a54cdbffeb84fec",
+                "name": "atlas-ccx4uc-shard-00-00.q5ljb.mongodb.net"
             },
             "invoice": {
-                "id": "sample_invoice_id"
+                "id": "2678efgh"
             },
             "is_global_admin": false,
             "metric": {
-                "name": "sample_metric",
+                "name": "FTS_PROCESS_CPU_USER",
                 "unit": "RAW",
-                "value": 50
+                "value": 1
             },
             "operation": {
                 "type": "update"
             },
             "payment": {
-                "id": "sample_payment_id"
+                "id": "3678efgh"
             },
-            "public_key": "sample_public_key",
+            "public_key": "4678efgh",
             "replicaset": {
-                "name": "sample_replica_set"
+                "name": "atlas-ccx4uc-shard-0"
             },
             "shard": {
-                "name": "sample_shard"
+                "name": "ccx4uc-shard-0"
             },
             "target": {
-                "username": "sample.user@example.com"
+                "username": "jane.doe@example.com"
             },
-            "target_public_key": "sample_target_public_key",
+            "target_public_key": "mksfpbyq",
             "team": {
-                "id": "sample_team_id"
+                "id": "1678efgh"
             },
-            "whitelist_entry": "sample.user@example.com"
+            "whitelist_entry": "0.0.0.0/32"
         }
     },
     "organization": {
@@ -709,14 +709,14 @@ An example event for `organization` looks as following:
     },
     "related": {
         "hosts": [
-            "sample_hostname"
+            "atlas-ccx4uc-shard-00-00.q5ljb.mongodb.net"
         ],
         "ip": [
-            "0.0.0.0"
+            "192.0.2.1"
         ],
         "user": [
-            "sample1.user@example.com",
-            "sample.user@example.com"
+            "john.doe@example.com",
+            "jane.doe@example.com"
         ]
     },
     "server": {
@@ -726,8 +726,8 @@ An example event for `organization` looks as following:
         "mongodb_atlas-organization"
     ],
     "user": {
-        "id": "sample_user_id",
-        "name": "sample1.user@example.com"
+        "id": "7658efgh",
+        "name": "john.doe@example.com"
     }
 }
 ```
@@ -784,25 +784,25 @@ An example event for `project` looks as following:
 {
     "@timestamp": "2024-02-21T10:00:29.000Z",
     "agent": {
-        "ephemeral_id": "aa215c6f-ded3-4d6e-945c-f9f9a60dcd95",
-        "id": "a5d0069e-b102-4955-a9ca-5d7444e685c7",
-        "name": "elastic-agent-57763",
+        "ephemeral_id": "64709dfe-1629-4e90-80b1-31b74ed75367",
+        "id": "9f972286-96f7-4f54-a2ed-31bd886cebd6",
+        "name": "elastic-agent-30632",
         "type": "filebeat",
         "version": "8.13.0"
     },
     "client": {
-        "ip": "0.0.0.0"
+        "ip": "192.168.0.1"
     },
     "data_stream": {
         "dataset": "mongodb_atlas.project",
-        "namespace": "24763",
+        "namespace": "39156",
         "type": "logs"
     },
     "ecs": {
         "version": "8.11.0"
     },
     "elastic_agent": {
-        "id": "a5d0069e-b102-4955-a9ca-5d7444e685c7",
+        "id": "9f972286-96f7-4f54-a2ed-31bd886cebd6",
         "snapshot": false,
         "version": "8.13.0"
     },
@@ -814,7 +814,7 @@ An example event for `project` looks as following:
         ],
         "dataset": "mongodb_atlas.project",
         "id": "65d5c9bd2c86e3377aa5e5e4",
-        "ingested": "2025-03-04T10:41:01Z",
+        "ingested": "2025-04-07T07:03:18Z",
         "kind": "event",
         "module": "mongodb_atlas",
         "type": [
@@ -828,17 +828,17 @@ An example event for `project` looks as following:
     "host": {
         "architecture": "x86_64",
         "containerized": true,
-        "hostname": "elastic-agent-57763",
+        "hostname": "elastic-agent-30632",
         "id": "8259e024976a406e8a54cdbffeb84fec",
         "ip": [
-            "192.168.240.2",
-            "192.168.251.6"
+            "192.168.249.2",
+            "192.168.240.7"
         ],
         "mac": [
-            "02-42-C0-A8-F0-02",
-            "02-42-C0-A8-FB-06"
+            "02-42-C0-A8-F0-07",
+            "02-42-C0-A8-F9-02"
         ],
-        "name": "elastic-agent-57763",
+        "name": "elastic-agent-30632",
         "os": {
             "codename": "focal",
             "family": "debian",
@@ -866,51 +866,51 @@ An example event for `project` looks as following:
                 "remote_addr": "0.0.0.0",
                 "severity": "INFO",
                 "source": "USER",
-                "target_username": "sample.user@example.com",
-                "un": "sample1.user@example.com",
-                "user_id": "sample_user_id",
+                "target_username": "jane.doe@example.com",
+                "un": "jane.doe@example.com",
+                "user_id": "65d5c9bd2c877aa5e5e4",
                 "ut": "LOCAL"
             },
             "alert": {
                 "config": {
-                    "id": "sample_alert_config_id"
+                    "id": "alert_config_5678efgh"
                 },
-                "id": "sample_alert_id"
+                "id": "alert_5678efgh"
             },
             "api_key": {
-                "id": "sample_api_key_id"
+                "id": "api_key_5678efgh"
             },
             "application": {
-                "id": "647ef2c43a8a03710fbceda1",
-                "name": "Application-0"
+                "id": "application_5678efgh",
+                "name": "Application-1"
             },
             "cluster": {
-                "id": "sample_cluster_id",
-                "name": "sample_cluster"
+                "id": "cluster_5678efgh",
+                "name": "example_cluster"
             },
             "collection": {
-                "name": "sample_collection"
+                "name": "example_collection"
             },
             "database": {
-                "name": "sample_db",
-                "username": "atlas-sample-dataset-load-646f4e082084495b64d07ead"
+                "name": "example_db",
+                "username": "atlas-example-dataset-load-5678efgh"
             },
             "endpoint": {
-                "id": "123e4567-e89b-12d3-a456-426614174000"
+                "id": "123e4567-e89b-12d3-a456-426614174001"
             },
             "event_type": {
                 "name": "INVITED_TO_GROUP"
             },
             "host": {
-                "id": "sample_host_id",
-                "name": "sample_hostname"
+                "id": "host_5678efgh",
+                "name": "example_hostname"
             },
             "invoice": {
-                "id": "sample_invoice_id"
+                "id": "invoice_5678efgh"
             },
             "is_global_admin": false,
             "metric": {
-                "name": "sample_metric",
+                "name": "example_metric",
                 "unit": "RAW",
                 "value": 50
             },
@@ -918,29 +918,29 @@ An example event for `project` looks as following:
                 "type": "update"
             },
             "payment": {
-                "id": "sample_payment_id"
+                "id": "payment_5678efgh"
             },
             "processor": {
                 "error_msg": "Failed to connect to database instance due to timeout.",
                 "instance": {
-                    "name": "mongo-instance-01"
+                    "name": "mongo-instance-02"
                 },
                 "name": "eventProcessorService",
                 "state": "active"
             },
             "provider_endpoint": {
-                "id": "456f7890-f12a-34d5-b678-567890123456"
+                "id": "456f7890-f12a-34d5-b678-567890123457"
             },
-            "public_key": "sample_public_key",
+            "public_key": "public_key_5678efgh",
             "replicaset": {
-                "name": "sample_replica_set"
+                "name": "example_replica_set"
             },
             "resource": {
-                "id": "789g1011-h12i-34j5-k678-890123456789",
+                "id": "789g1011-h12i-34j5-k678-890123456790",
                 "type": "database"
             },
             "shard": {
-                "name": "sample_shard"
+                "name": "example_shard"
             },
             "snapshot": {
                 "completion_date": "2024-06-18T05:51:05Z",
@@ -948,29 +948,29 @@ An example event for `project` looks as following:
                 "scheduled_creation_date": "2024-06-18T05:47:05Z"
             },
             "target": {
-                "username": "sample.user@example.com"
+                "username": "jane.doe@example.com"
             },
-            "target_public_key": "sample_target_public_key",
+            "target_public_key": "target_public_key_5678efgh",
             "team": {
-                "id": "sample_team_id"
+                "id": "team_5678efgh"
             },
-            "whitelist_entry": "sample.user@example.com"
+            "whitelist_entry": "0.0.0.0/32"
         }
     },
     "organization": {
-        "id": "sample_org_id"
+        "id": "org_5678efgh"
     },
     "related": {
         "hosts": [
-            "sample_hostname"
+            "example_hostname"
         ],
         "ip": [
-            "0.0.0.0"
+            "192.168.0.1"
         ],
         "user": [
-            "sample1.user@example.com",
-            "atlas-sample-dataset-load-646f4e082084495b64d07ead",
-            "sample.user@example.com"
+            "john.doe@example.com",
+            "atlas-example-dataset-load-5678efgh",
+            "jane.doe@example.com"
         ]
     },
     "server": {
@@ -980,8 +980,8 @@ An example event for `project` looks as following:
         "mongodb_atlas-project"
     ],
     "user": {
-        "id": "sample_user_id",
-        "name": "sample1.user@example.com"
+        "id": "user_5678efgh",
+        "name": "john.doe@example.com"
     }
 }
 ```
