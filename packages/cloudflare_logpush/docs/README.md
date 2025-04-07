@@ -2777,6 +2777,7 @@ An example event for `http_request` looks as following:
 | cloudflare_logpush.http_request.content_scan.sizes | List of content object sizes. | long |
 | cloudflare_logpush.http_request.content_scan.types | List of content types. | keyword |
 | cloudflare_logpush.http_request.cookies | String key-value pairs for Cookies. | flattened |
+| cloudflare_logpush.http_request.datetime | Timestamp when the request was received | date |
 | cloudflare_logpush.http_request.edge.cf_connecting_o2o | True if the request looped through multiple zones on the Cloudflare edge. | boolean |
 | cloudflare_logpush.http_request.edge.colo.code | IATA airport code of data center that received the request. | keyword |
 | cloudflare_logpush.http_request.edge.colo.id | Cloudflare edge colo id. | long |
