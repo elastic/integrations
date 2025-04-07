@@ -86,11 +86,11 @@ redact:
 program: |
     (
       state.with(
-        request("GET", "https://graph.microsoft.com/v1.0/directory/onPremisesSynchronization").do_request().as(on_prem_resp,
+        request("GET", state.url + "/directory/onPremisesSynchronization").do_request().as(on_prem_resp,
           on_prem_resp.StatusCode == 200
           ?
             bytes(on_prem_resp.Body).decode_json().as(onprem_json, 
-              request("GET", "https://graph.microsoft.com/v1.0/organization").do_request().as(orgs_resp, 
+              request("GET", state.url + "/organization").do_request().as(orgs_resp, 
                 orgs_resp.StatusCode == 200
                 ?
                   bytes(orgs_resp.Body).decode_json().as(orgs_json,
