@@ -205,14 +205,12 @@ func TestSummary(t *testing.T) {
 func TestDescription(t *testing.T) {
 	cases := []struct {
 		title       string
-		summary     string
 		resultError failureObserver
 		maxLinks    int
 		expected    string
 	}{
 		{
-			title:   "description error all fields",
-			summary: "summary",
+			title: "description error all fields",
 			resultError: &packageError{
 				dataError: dataError{
 					stackVersion: "8.14",
@@ -250,8 +248,7 @@ Latest failed builds:
 `,
 		},
 		{
-			title:   "description failure all fields",
-			summary: "summary",
+			title: "description failure all fields",
 			resultError: &packageError{
 				dataError: dataError{
 					stackVersion: "8.14",
@@ -289,8 +286,7 @@ Latest failed builds:
 `,
 		},
 		{
-			title:   "description no closed issue",
-			summary: "summary",
+			title: "description no closed issue",
 			resultError: &packageError{
 				dataError: dataError{
 					stackVersion: "8.14",
@@ -326,7 +322,6 @@ Latest failed builds:
 		},
 		{
 			title:    "description max links",
-			summary:  "summary",
 			maxLinks: 2,
 			resultError: &packageError{
 				dataError: dataError{

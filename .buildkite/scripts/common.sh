@@ -198,7 +198,7 @@ with_kubernetes() {
     which kind
 
     echo "--- Install kubectl"
-    retry 5 curl -sSLo "${BIN_FOLDER}/kubectl" "https://storage.googleapis.com/kubernetes-release/release/${K8S_VERSION}/bin/${platform_type_lowercase}/${arch_type}/kubectl"
+    retry 5 curl -sSLo "${BIN_FOLDER}/kubectl" "https://dl.k8s.io/release/${K8S_VERSION}/bin/${platform_type_lowercase}/${arch_type}/kubectl"
     chmod +x "${BIN_FOLDER}/kubectl"
     kubectl version --client
     which kubectl
@@ -574,9 +574,9 @@ prepare_serverless_stack() {
 }
 
 is_spec_3_0_0() {
-    local pkg_spec
+    local pkg_spec=""
     pkg_spec=$(cat manifest.yml | yq '.format_version')
-    local major_version
+    local major_version=""
     major_version=$(echo "$pkg_spec" | cut -d '.' -f 1)
 
     if [ "${major_version}" -ge 3 ]; then
@@ -721,8 +721,8 @@ is_compatible_subscription() {
 
 is_pr_affected() {
     local package="${1}"
-    local from=${2:-""}
-    local to=${3:-""}
+    local from="${2}"
+    local to="${3}"
 
     if ! is_supported_stack ; then
         echo "[${package}] PR is not affected: unsupported stack (${STACK_VERSION})"
@@ -738,6 +738,16 @@ is_pr_affected() {
             echo "[${package}] PR is not affected: capabilities not mached with the project (${SERVERLESS_PROJECT})"
             return 1
         fi
+        if [[ "${package}" == "fleet_server" ]]; then
+            echoerr "fleet_server not supported. Skipped"
+            echo "[${package}] not supported"
+            return 1
+        fi
+        if ! is_spec_3_0_0 ; then
+            echoerr "Not v3 spec version. Skipped"
+            echo "[${package}] spec <3.0.0"
+            return 1
+        fi
     fi
 
     if ! is_compatible_subscription; then
@@ -750,22 +760,13 @@ is_pr_affected() {
         return 0
     fi
 
-    if [[ "${from}" == ""  || "${to}" == "" ]]; then
-        echoerr "[${package}] Calculating commits: from '${from}' - to: '${to}'"
-        # setting range of changesets to check differences
-        from="$(get_from_changeset)"
-        to="$(get_to_changeset)"
-    fi
-
-    echoerr "[${package}]: commits: from: '${from}' - to: '${to}'"
-
-    echoerr "[${package}] git-diff: check non-package files"
     commit_merge=$(git merge-base "${from}" "${to}")
+    echoerr "[${package}] git-diff: check non-package files (${commit_merge}..${to})"
     if git diff --name-only "${commit_merge}" "${to}" | grep -q -E -v '^(packages/|\.github/(CODEOWNERS|ISSUE_TEMPLATE|PULL_REQUEST_TEMPLATE)|README\.md|docs/)' ; then
         echo "[${package}] PR is affected: found non-package files"
         return 0
     fi
-    echoerr "[${package}] git-diff: check package files"
+    echoerr "[${package}] git-diff: check package files (${commit_merge}..${to})"
     if git diff --name-only "${commit_merge}" "${to}" | grep -q -E "^packages/${package}/" ; then
         echo "[${package}] PR is affected: found package files"
         return 0
@@ -782,7 +783,11 @@ is_pr() {
 }
 
 kubernetes_service_deployer_used() {
-    find . -type d | grep -E '_dev/deploy/k8s$'
+    # Not able to use -q in parameter
+    # as set -o pipefail is defined, when adding "-q" parameter, grep finishes with its first match
+    # but find still is writing to the pipe causing the SIGPIPE
+    # https://tldp.org/LDP/lpg/node20.html
+    find . -type d | grep -E "_dev/deploy/k8s$" > /dev/null
 }
 
 teardown_serverless_test_package() {
@@ -1009,9 +1014,8 @@ upload_safe_logs_from_package() {
 
 # Helper to run all tests and checks for a package
 process_package() {
-    local package="$1"
-    local from=${2:-""}
-    local to=${3:-""}
+    local package="${1}"
+    local failed_packages_file="${2:-""}"
     local exit_code=0
 
     echo "--- Package ${package}: check"
@@ -1019,44 +1023,26 @@ process_package() {
 
     clean_safe_logs
 
-    if is_serverless ; then
-        if [[ "${package}" == "fleet_server" ]]; then
-            echo "fleet_server not supported. Skipped"
-            echo "- [${package}] not supported" >> "${SKIPPED_PACKAGES_FILE_PATH}"
-            popd > /dev/null
-            return
-        fi
-        if ! is_spec_3_0_0 ; then
-            echo "Not v3 spec version. Skipped"
-            echo "- [${package}] spec <3.0.0" >> "${SKIPPED_PACKAGES_FILE_PATH}"
-            popd > /dev/null
-            return
-        fi
-    fi
-
-    if ! reason=$(is_pr_affected "${package}" "${from}" "${to}") ; then
-        echo "${reason}"
-        echo "- ${reason}" >> "${SKIPPED_PACKAGES_FILE_PATH}"
-        popd > /dev/null
-        return
-    fi
-
-    echo "${reason}"
-
     use_kind=0
-    if kubernetes_service_deployer_used ; then
-        echo "Kubernetes service deployer is used. Creating Kind cluster"
-        use_kind=1
-        if ! create_kind_cluster ; then
-            popd > /dev/null
-            return 1
+    if ! is_serverless ; then
+        # TODO: in serverless system tests are not triggered,
+        # there is no need to create the kind cluster in these CI builds.
+        if kubernetes_service_deployer_used ; then
+            echo "Kubernetes service deployer is used. Creating Kind cluster"
+            use_kind=1
+            if ! create_kind_cluster ; then
+                popd > /dev/null
+                return 1
+            fi
         fi
     fi
 
     if ! run_tests_package "${package}" ; then
         exit_code=1
         echo "[${package}] run_tests_package failed"
-        echo "- ${package}" >> "${FAILED_PACKAGES_FILE_PATH}"
+        if [[ "${failed_packages_file}" != "" ]]; then
+            echo "- ${package}" >> "${failed_packages_file}"
+        fi
     fi
 
     if ! is_serverless ; then

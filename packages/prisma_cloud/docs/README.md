@@ -612,13 +612,13 @@ An example event for `host` looks as following:
 
 ```json
 {
-    "@timestamp": "2024-04-03T23:20:14.863Z",
+    "@timestamp": "2025-03-31T09:42:30.622Z",
     "agent": {
-        "ephemeral_id": "a2e1faf9-a21e-4a2e-a964-e756be243ce0",
-        "id": "633dac72-aecd-41d9-88df-dd066a3b83ea",
-        "name": "docker-fleet-agent",
+        "ephemeral_id": "c34501c1-1570-4a32-a35a-657647ca6308",
+        "id": "4b33b450-e455-4d8c-948b-3d59e881949b",
+        "name": "elastic-agent-82059",
         "type": "filebeat",
-        "version": "8.13.0"
+        "version": "8.18.0"
     },
     "cloud": {
         "account": {
@@ -638,16 +638,16 @@ An example event for `host` looks as following:
     },
     "data_stream": {
         "dataset": "prisma_cloud.host",
-        "namespace": "ep",
+        "namespace": "10259",
         "type": "logs"
     },
     "ecs": {
         "version": "8.11.0"
     },
     "elastic_agent": {
-        "id": "633dac72-aecd-41d9-88df-dd066a3b83ea",
-        "snapshot": false,
-        "version": "8.13.0"
+        "id": "4b33b450-e455-4d8c-948b-3d59e881949b",
+        "snapshot": true,
+        "version": "8.18.0"
     },
     "event": {
         "agent_id_status": "verified",
@@ -656,7 +656,7 @@ An example event for `host` looks as following:
         ],
         "dataset": "prisma_cloud.host",
         "id": "DESKTOP-6PQXXMS",
-        "ingested": "2024-04-03T23:20:24Z",
+        "ingested": "2025-03-31T09:42:31Z",
         "kind": "event",
         "original": "{\"_id\":\"DESKTOP-6PQXXMS\",\"binaries\":[{\"altered\":true,\"cveCount\":0,\"deps\":[\"string\"],\"fileMode\":0,\"functionLayer\":\"string\",\"md5\":\"string\",\"missingPkg\":true,\"name\":\"string\",\"path\":\"string\",\"pkgRootDir\":\"string\",\"services\":[\"string\"],\"version\":\"string\"}],\"cloudMetadata\":{\"accountID\":\"Non-onboarded cloud accounts\",\"awsExecutionEnv\":\"string\",\"image\":\"string\",\"labels\":[{\"key\":\"string\",\"sourceName\":\"string\",\"sourceType\":[\"namespace\"],\"timestamp\":\"2023-09-08T04:01:49.949Z\",\"value\":\"string\"}],\"name\":\"string\",\"provider\":[\"aws\"],\"region\":\"string\",\"resourceID\":\"string\",\"resourceURL\":\"string\",\"type\":\"string\",\"vmID\":\"string\",\"vmImageID\":\"string\"},\"type\":\"host\",\"hostname\":\"DESKTOP-6PQXXMS\",\"scanTime\":\"2023-08-23T11:48:41.803Z\",\"Secrets\":[],\"osDistro\":\"windows\",\"osDistroVersion\":\"string\",\"osDistroRelease\":\"Windows\",\"distro\":\"Microsoft Windows [Version 10.0.19045.2006]\",\"packageManager\":true,\"packages\":[{\"pkgs\":[{\"binaryIdx\":[0],\"binaryPkgs\":[\"string\"],\"cveCount\":0,\"defaultGem\":true,\"files\":[{\"md5\":\"string\",\"path\":\"string\",\"sha1\":\"string\",\"sha256\":\"string\"}],\"functionLayer\":\"string\",\"goPkg\":true,\"jarIdentifier\":\"string\",\"layerTime\":0,\"license\":\"string\",\"name\":\"string\",\"osPackage\":true,\"path\":\"string\",\"version\":\"string\"}],\"pkgsType\":\"nodejs\"}],\"isARM64\":false,\"packageCorrelationDone\":true,\"redHatNonRPMImage\":false,\"image\":{\"created\":\"0001-01-01T00:00:00Z\",\"entrypoint\":[\"string\"],\"env\":[\"string\"],\"healthcheck\":true,\"id\":\"string\",\"labels\":{},\"layers\":[\"string\"],\"os\":\"string\",\"repoDigest\":[\"string\"],\"repoTags\":[\"string\"],\"user\":\"string\",\"workingDir\":\"string\"},\"allCompliance\":{\"compliance\":[{\"applicableRules\":[\"string\"],\"binaryPkgs\":[\"string\"],\"block\":true,\"cause\":\"string\",\"cri\":true,\"custom\":true,\"cve\":\"string\",\"cvss\":0,\"description\":\"string\",\"discovered\":\"2023-09-08T04:01:49.949Z\",\"exploit\":[\"exploit-db\"],\"fixDate\":0,\"fixLink\":\"string\",\"functionLayer\":\"string\",\"gracePeriodDays\":0,\"id\":0,\"layerTime\":0,\"link\":\"string\",\"packageName\":\"string\",\"packageVersion\":\"string\",\"published\":0,\"riskFactors\":{},\"severity\":\"string\",\"status\":\"string\",\"templates\":[[\"PCI\"]],\"text\":\"string\",\"title\":\"string\",\"twistlock\":true,\"type\":[\"container\"],\"vecStr\":\"string\",\"vulnTagInfos\":[{\"color\":\"string\",\"comment\":\"string\",\"name\":\"string\"}],\"wildfireMalware\":{\"md5\":\"string\",\"path\":\"string\",\"verdict\":\"string\"}}],\"enabled\":\"true\"},\"clusters\":[\"string\"],\"repoTag\":null,\"tags\":[{\"digest\":\"string\",\"id\":\"string\",\"registry\":\"string\",\"repo\":\"string\",\"tag\":\"string\"}],\"trustResult\":{\"hostsStatuses\":[{\"host\":\"string\",\"status\":\"trusted\"}]},\"repoDigests\":[],\"creationTime\":\"0001-01-01T00:00:00Z\",\"pushTime\":\"0001-01-01T00:00:00Z\",\"vulnerabilitiesCount\":0,\"complianceIssuesCount\":4,\"vulnerabilityDistribution\":{\"critical\":0,\"high\":0,\"medium\":0,\"low\":0,\"total\":0},\"complianceDistribution\":{\"critical\":4,\"high\":0,\"medium\":0,\"low\":0,\"total\":4},\"vulnerabilityRiskScore\":0,\"complianceRiskScore\":4000000,\"riskFactors\":{},\"firstScanTime\":\"2023-08-11T06:53:57.456Z\",\"history\":[{\"baseLayer\":true,\"created\":0,\"emptyLayer\":true,\"id\":\"string\",\"instruction\":\"string\",\"sizeBytes\":0,\"tags\":[\"string\"],\"vulnerabilities\":[{\"applicableRules\":[\"string\"],\"binaryPkgs\":[\"string\"],\"block\":true,\"cause\":\"string\",\"cri\":true,\"custom\":true,\"cve\":\"string\",\"cvss\":0,\"description\":\"string\",\"discovered\":\"2023-09-08T04:01:49.950Z\",\"exploit\":[\"exploit-db\"],\"exploits\":[{\"kind\":[\"poc\",\"in-the-wild\"],\"link\":\"string\",\"source\":[\"\",\"exploit-db\"]}],\"fixDate\":0,\"fixLink\":\"string\",\"functionLayer\":\"string\",\"gracePeriodDays\":0,\"id\":0,\"layerTime\":0,\"link\":\"string\",\"packageName\":\"string\",\"packageVersion\":\"string\",\"published\":0,\"riskFactors\":{},\"severity\":\"string\",\"status\":\"string\",\"templates\":[[\"PCI\"]],\"text\":\"string\",\"title\":\"string\",\"twistlock\":true,\"type\":[\"container\"],\"vecStr\":\"string\",\"vulnTagInfos\":[{\"color\":\"string\",\"comment\":\"string\",\"name\":\"string\"}],\"wildfireMalware\":{\"md5\":\"string\",\"path\":\"string\",\"verdict\":\"string\"}}]}],\"hostDevices\":[{\"ip\":\"0.0.0.0\",\"name\":\"string\"}],\"hosts\":{},\"id\":\"string\",\"err\":\"\",\"collections\":[\"All\"],\"instances\":[{\"host\":\"string\",\"image\":\"string\",\"modified\":\"2023-09-08T04:01:49.951Z\",\"registry\":\"string\",\"repo\":\"string\",\"tag\":\"string\"}],\"scanID\":0,\"trustStatus\":\"\",\"externalLabels\":[{\"key\":\"string\",\"sourceName\":\"string\",\"sourceType\":[\"namespace\"],\"timestamp\":\"2023-09-08T04:01:49.949Z\",\"value\":\"string\"}],\"files\":[{\"md5\":\"string\",\"path\":\"string\",\"sha1\":\"string\",\"sha256\":\"string\"}],\"firewallProtection\":{\"enabled\":false,\"supported\":false,\"outOfBandMode\":\"Observation\",\"ports\":[0],\"tlsPorts\":[0],\"unprotectedProcesses\":[{\"port\":0,\"process\":\"string\",\"tls\":true}]},\"applications\":[{\"installedFromPackage\":true,\"knownVulnerabilities\":0,\"layerTime\":0,\"name\":\"string\",\"path\":\"string\",\"service\":true,\"version\":\"string\"}],\"appEmbedded\":false,\"wildFireUsage\":null,\"agentless\":false,\"malwareAnalyzedTime\":\"0001-01-01T00:00:00Z\"}",
         "start": "0001-01-01T00:00:00.000Z",
@@ -688,11 +688,11 @@ An example event for `host` looks as following:
         "type": "host"
     },
     "input": {
-        "type": "tcp"
+        "type": "udp"
     },
     "log": {
         "source": {
-            "address": "172.18.0.4:60388"
+            "address": "172.16.32.3:33428"
         }
     },
     "os": {
@@ -722,63 +722,11 @@ An example event for `host` looks as following:
             "_id": "DESKTOP-6PQXXMS",
             "agentless": false,
             "all_compliance": {
-                "data": [
-                    {
-                        "applicable_rules": [
-                            "string"
-                        ],
-                        "binary_pkgs": [
-                            "string"
-                        ],
-                        "block": true,
-                        "cause": "string",
-                        "cri": true,
-                        "custom": true,
-                        "cve": "string",
-                        "cvss": 0,
-                        "description": "string",
-                        "discovered": "2023-09-08T04:01:49.949Z",
-                        "exploit": [
-                            "exploit-db"
-                        ],
-                        "fix_date": "1970-01-01T00:00:00.000Z",
-                        "fix_link": "string",
-                        "function_layer": "string",
-                        "grace_period_days": 0,
-                        "id": "0",
-                        "layer_time": "1970-01-01T00:00:00.000Z",
-                        "link": "string",
-                        "package": {
-                            "name": "string",
-                            "version": "string"
-                        },
-                        "published": "1970-01-01T00:00:00.000Z",
-                        "severity": "string",
-                        "status": "string",
-                        "templates": [
-                            "PCI"
-                        ],
-                        "text": "string",
-                        "title": "string",
-                        "twistlock": true,
-                        "type": [
-                            "container"
-                        ],
-                        "vec_str": "string",
-                        "vuln_tag_infos": [
-                            {
-                                "color": "string",
-                                "comment": "string",
-                                "name": "string"
-                            }
-                        ],
-                        "wild_fire_malware": {
-                            "md5": "string",
-                            "path": "string",
-                            "verdict": "string"
-                        }
-                    }
-                ],
+                "data": {
+                    "cve": [
+                        "string"
+                    ]
+                },
                 "enabled": true
             },
             "app_embedded": false,
@@ -921,75 +869,11 @@ An example event for `host` looks as following:
                     "tags": [
                         "string"
                     ],
-                    "vulnerabilities": [
-                        {
-                            "applicable_rules": [
-                                "string"
-                            ],
-                            "binary_pkgs": [
-                                "string"
-                            ],
-                            "block": true,
-                            "cause": "string",
-                            "cri": true,
-                            "custom": true,
-                            "cve": "string",
-                            "cvss": 0,
-                            "description": "string",
-                            "discovered": "2023-09-08T04:01:49.950Z",
-                            "exploit": [
-                                "exploit-db"
-                            ],
-                            "exploits": [
-                                {
-                                    "kind": [
-                                        "poc",
-                                        "in-the-wild"
-                                    ],
-                                    "link": "string",
-                                    "source": [
-                                        "exploit-db"
-                                    ]
-                                }
-                            ],
-                            "fix_date": "1970-01-01T00:00:00.000Z",
-                            "fix_link": "string",
-                            "function_layer": "string",
-                            "grace_period_days": 0,
-                            "id": "0",
-                            "layer_time": "1970-01-01T00:00:00.000Z",
-                            "link": "string",
-                            "package": {
-                                "name": "string",
-                                "version": "string"
-                            },
-                            "published": "1970-01-01T00:00:00.000Z",
-                            "severity": "string",
-                            "status": "string",
-                            "templates": [
-                                "PCI"
-                            ],
-                            "text": "string",
-                            "title": "string",
-                            "twistlock": true,
-                            "type": [
-                                "container"
-                            ],
-                            "vec_str": "string",
-                            "vuln_tag_infos": [
-                                {
-                                    "color": "string",
-                                    "comment": "string",
-                                    "name": "string"
-                                }
-                            ],
-                            "wild_fire_malware": {
-                                "md5": "string",
-                                "path": "string",
-                                "verdict": "string"
-                            }
-                        }
-                    ]
+                    "vulnerabilities": {
+                        "cve": [
+                            "string"
+                        ]
+                    }
                 }
             ],
             "hostname": "DESKTOP-6PQXXMS",
@@ -1131,9 +1015,6 @@ An example event for `host` looks as following:
         "prisma_cloud-host"
     ],
     "vulnerability": {
-        "description": [
-            "string"
-        ],
         "id": [
             "string"
         ],
@@ -1159,45 +1040,7 @@ An example event for `host` looks as following:
 | log.source.address | Source address from which the log event was read / sent from. | keyword |
 | prisma_cloud.host._id | Image identifier (image ID or repo:tag). | keyword |
 | prisma_cloud.host.agentless | Agentless indicates that the host was scanned with the agentless scanner. | boolean |
-| prisma_cloud.host.all_compliance.data.applicable_rules | Rules applied on the package. | keyword |
-| prisma_cloud.host.all_compliance.data.binary_pkgs | Names of the distro binary package names (packages which are built from the source of the package). | keyword |
-| prisma_cloud.host.all_compliance.data.block | Indicates if the vulnerability has a block effect (true) or not (false). | boolean |
-| prisma_cloud.host.all_compliance.data.cause | Additional information regarding the root cause for the vulnerability. | keyword |
-| prisma_cloud.host.all_compliance.data.cri | Indicates if this is a CRI-specific vulnerability (true) or not (false). | boolean |
-| prisma_cloud.host.all_compliance.data.custom | Indicates if the vulnerability is a custom vulnerability (e.g., openscap, sandbox) (true) or not (false). | boolean |
 | prisma_cloud.host.all_compliance.data.cve | CVE ID of the vulnerability (if applied). | keyword |
-| prisma_cloud.host.all_compliance.data.cvss | CVSS score of the vulnerability. | float |
-| prisma_cloud.host.all_compliance.data.description | Description of the vulnerability. | keyword |
-| prisma_cloud.host.all_compliance.data.discovered | Specifies the time of discovery for the vulnerability. | date |
-| prisma_cloud.host.all_compliance.data.exploit | ExploitType represents the source of an exploit. | keyword |
-| prisma_cloud.host.all_compliance.data.exploits.kind | ExploitKind represents the kind of the exploit. | keyword |
-| prisma_cloud.host.all_compliance.data.exploits.link | Link is a link to information about the exploit. | keyword |
-| prisma_cloud.host.all_compliance.data.exploits.source | ExploitType represents the source of an exploit. | keyword |
-| prisma_cloud.host.all_compliance.data.fix_date | Date/time when the vulnerability was fixed (in Unix time). | date |
-| prisma_cloud.host.all_compliance.data.fix_link | Link to the vendor's fixed-version information. | keyword |
-| prisma_cloud.host.all_compliance.data.function_layer | Specifies the serverless layer ID in which the vulnerability was discovered. | keyword |
-| prisma_cloud.host.all_compliance.data.grace_period_days | Number of grace days left for a vulnerability, based on the configured grace period. Nil if no block vulnerability rule applies. | long |
-| prisma_cloud.host.all_compliance.data.id | ID of the violation. | keyword |
-| prisma_cloud.host.all_compliance.data.layer_time | Date/time of the image layer to which the CVE belongs. | date |
-| prisma_cloud.host.all_compliance.data.link | Vendor link to the CVE. | keyword |
-| prisma_cloud.host.all_compliance.data.package.name | Name of the package that caused the vulnerability. | keyword |
-| prisma_cloud.host.all_compliance.data.package.version | Version of the package that caused the vulnerability (or null). | keyword |
-| prisma_cloud.host.all_compliance.data.published | Date/time when the vulnerability was published (in Unix time). | date |
-| prisma_cloud.host.all_compliance.data.risk_factors | RiskFactors maps the existence of vulnerability risk factors. | flattened |
-| prisma_cloud.host.all_compliance.data.severity | Textual representation of the vulnerability's severity. | keyword |
-| prisma_cloud.host.all_compliance.data.status | Vendor status for the vulnerability. | keyword |
-| prisma_cloud.host.all_compliance.data.templates | List of templates with which the vulnerability is associated. | keyword |
-| prisma_cloud.host.all_compliance.data.text | Description of the violation. | keyword |
-| prisma_cloud.host.all_compliance.data.title | Compliance title. | keyword |
-| prisma_cloud.host.all_compliance.data.twistlock | Indicates if this is a Twistlock-specific vulnerability (true) or not (false). | boolean |
-| prisma_cloud.host.all_compliance.data.type | Type represents the vulnerability type. | keyword |
-| prisma_cloud.host.all_compliance.data.vec_str | Textual representation of the metric values used to score the vulnerability. | keyword |
-| prisma_cloud.host.all_compliance.data.vuln_tag_infos.color | Color is a hexadecimal representation of color code value. | keyword |
-| prisma_cloud.host.all_compliance.data.vuln_tag_infos.comment | Tag comment in a specific vulnerability context. | keyword |
-| prisma_cloud.host.all_compliance.data.vuln_tag_infos.name | Name of the tag. | keyword |
-| prisma_cloud.host.all_compliance.data.wild_fire_malware.md5 | MD5 is the hash of the malicious binary. | keyword |
-| prisma_cloud.host.all_compliance.data.wild_fire_malware.path | Path is the path to malicious binary. | keyword |
-| prisma_cloud.host.all_compliance.data.wild_fire_malware.verdict | Verdict is the malicious source like grayware, malware and phishing. | keyword |
 | prisma_cloud.host.all_compliance.enabled | Enabled indicates whether passed compliance checks is enabled by policy. | boolean |
 | prisma_cloud.host.app_embedded | Indicates that this image was scanned by an App-Embedded Defender. | boolean |
 | prisma_cloud.host.applications.installed_from_package | Indicates that the app was installed as an OS package. | boolean |
@@ -1245,45 +1088,7 @@ An example event for `host` looks as following:
 | prisma_cloud.host.compliance_distribution.medium |  | long |
 | prisma_cloud.host.compliance_distribution.total |  | long |
 | prisma_cloud.host.compliance_issues.count | Number of compliance issues. | long |
-| prisma_cloud.host.compliance_issues.data.applicable_rules | Rules applied on the package. | keyword |
-| prisma_cloud.host.compliance_issues.data.binary_pkgs | Names of the distro binary package names (packages which are built from the source of the package). | keyword |
-| prisma_cloud.host.compliance_issues.data.block | Indicates if the vulnerability has a block effect (true) or not (false). | boolean |
-| prisma_cloud.host.compliance_issues.data.cause | Additional information regarding the root cause for the vulnerability. | keyword |
-| prisma_cloud.host.compliance_issues.data.cri | Indicates if this is a CRI-specific vulnerability (true) or not (false). | boolean |
-| prisma_cloud.host.compliance_issues.data.custom | Indicates if the vulnerability is a custom vulnerability (e.g., openscap, sandbox) (true) or not (false). | boolean |
 | prisma_cloud.host.compliance_issues.data.cve | CVE ID of the vulnerability (if applied). | keyword |
-| prisma_cloud.host.compliance_issues.data.cvss | CVSS score of the vulnerability. | float |
-| prisma_cloud.host.compliance_issues.data.description | Description of the vulnerability. | keyword |
-| prisma_cloud.host.compliance_issues.data.discovered | Specifies the time of discovery for the vulnerability. | date |
-| prisma_cloud.host.compliance_issues.data.exploit | ExploitType represents the source of an exploit. | keyword |
-| prisma_cloud.host.compliance_issues.data.exploits.kind | ExploitKind represents the kind of the exploit. | keyword |
-| prisma_cloud.host.compliance_issues.data.exploits.link | Link is a link to information about the exploit. | keyword |
-| prisma_cloud.host.compliance_issues.data.exploits.source | ExploitType represents the source of an exploit. | keyword |
-| prisma_cloud.host.compliance_issues.data.fix_date | Date/time when the vulnerability was fixed (in Unix time). | date |
-| prisma_cloud.host.compliance_issues.data.fix_link | Link to the vendor's fixed-version information. | keyword |
-| prisma_cloud.host.compliance_issues.data.function_layer | Specifies the serverless layer ID in which the vulnerability was discovered. | keyword |
-| prisma_cloud.host.compliance_issues.data.grace_period_days | Number of grace days left for a vulnerability, based on the configured grace period. Nil if no block vulnerability rule applies. | long |
-| prisma_cloud.host.compliance_issues.data.id | ID of the violation. | keyword |
-| prisma_cloud.host.compliance_issues.data.layer_time | Date/time of the image layer to which the CVE belongs. | date |
-| prisma_cloud.host.compliance_issues.data.link | Vendor link to the CVE. | keyword |
-| prisma_cloud.host.compliance_issues.data.package.name | Name of the package that caused the vulnerability. | keyword |
-| prisma_cloud.host.compliance_issues.data.package.version | Version of the package that caused the vulnerability (or null). | keyword |
-| prisma_cloud.host.compliance_issues.data.published | Date/time when the vulnerability was published (in Unix time). | date |
-| prisma_cloud.host.compliance_issues.data.risk_factors | RiskFactors maps the existence of vulnerability risk factors. | flattened |
-| prisma_cloud.host.compliance_issues.data.severity | Textual representation of the vulnerability's severity. | keyword |
-| prisma_cloud.host.compliance_issues.data.status | Vendor status for the vulnerability. | keyword |
-| prisma_cloud.host.compliance_issues.data.templates | List of templates with which the vulnerability is associated. | keyword |
-| prisma_cloud.host.compliance_issues.data.text | Description of the violation. | keyword |
-| prisma_cloud.host.compliance_issues.data.title | Compliance title. | keyword |
-| prisma_cloud.host.compliance_issues.data.twistlock | Indicates if this is a Twistlock-specific vulnerability (true) or not (false). | boolean |
-| prisma_cloud.host.compliance_issues.data.type | Type represents the vulnerability type. | keyword |
-| prisma_cloud.host.compliance_issues.data.vec_str | Textual representation of the metric values used to score the vulnerability. | keyword |
-| prisma_cloud.host.compliance_issues.data.vuln_tag_infos.color | Color is a hexadecimal representation of color code value. | keyword |
-| prisma_cloud.host.compliance_issues.data.vuln_tag_infos.comment | Tag comment in a specific vulnerability context. | keyword |
-| prisma_cloud.host.compliance_issues.data.vuln_tag_infos.name | Name of the tag. | keyword |
-| prisma_cloud.host.compliance_issues.data.wild_fire_malware.md5 | MD5 is the hash of the malicious binary. | keyword |
-| prisma_cloud.host.compliance_issues.data.wild_fire_malware.path | Path is the path to malicious binary. | keyword |
-| prisma_cloud.host.compliance_issues.data.wild_fire_malware.verdict | Verdict is the malicious source like grayware, malware and phishing. | keyword |
 | prisma_cloud.host.compliance_risk_score | Compliance risk score for the image. | float |
 | prisma_cloud.host.creation_time | Specifies the time of creation for the latest version of the image. | date |
 | prisma_cloud.host.devices.ip | Network device IPv4 address. | ip |
@@ -1316,45 +1121,7 @@ An example event for `host` looks as following:
 | prisma_cloud.host.history.instruction | Docker file instruction and arguments used to create this layer. | keyword |
 | prisma_cloud.host.history.size_bytes | Size of the layer (in bytes). | long |
 | prisma_cloud.host.history.tags | Holds the image tags. | keyword |
-| prisma_cloud.host.history.vulnerabilities.applicable_rules | Rules applied on the package. | keyword |
-| prisma_cloud.host.history.vulnerabilities.binary_pkgs | Names of the distro binary package names (packages which are built from the source of the package). | keyword |
-| prisma_cloud.host.history.vulnerabilities.block | Indicates if the vulnerability has a block effect (true) or not (false). | boolean |
-| prisma_cloud.host.history.vulnerabilities.cause | Additional information regarding the root cause for the vulnerability. | keyword |
-| prisma_cloud.host.history.vulnerabilities.cri | Indicates if this is a CRI-specific vulnerability (true) or not (false). | boolean |
-| prisma_cloud.host.history.vulnerabilities.custom | Indicates if the vulnerability is a custom vulnerability (e.g., openscap, sandbox) (true) or not (false). | boolean |
 | prisma_cloud.host.history.vulnerabilities.cve | CVE ID of the vulnerability (if applied). | keyword |
-| prisma_cloud.host.history.vulnerabilities.cvss | CVSS score of the vulnerability. | float |
-| prisma_cloud.host.history.vulnerabilities.description | Description of the vulnerability. | keyword |
-| prisma_cloud.host.history.vulnerabilities.discovered | Specifies the time of discovery for the vulnerability. | date |
-| prisma_cloud.host.history.vulnerabilities.exploit | ExploitType represents the source of an exploit. | keyword |
-| prisma_cloud.host.history.vulnerabilities.exploits.kind | ExploitKind represents the kind of the exploit. | keyword |
-| prisma_cloud.host.history.vulnerabilities.exploits.link | Link is a link to information about the exploit. | keyword |
-| prisma_cloud.host.history.vulnerabilities.exploits.source | ExploitType represents the source of an exploit. | keyword |
-| prisma_cloud.host.history.vulnerabilities.fix_date | Date/time when the vulnerability was fixed (in Unix time). | date |
-| prisma_cloud.host.history.vulnerabilities.fix_link | Link to the vendor's fixed-version information. | keyword |
-| prisma_cloud.host.history.vulnerabilities.function_layer | Specifies the serverless layer ID in which the vulnerability was discovered. | keyword |
-| prisma_cloud.host.history.vulnerabilities.grace_period_days | Number of grace days left for a vulnerability, based on the configured grace period. Nil if no block vulnerability rule applies. | long |
-| prisma_cloud.host.history.vulnerabilities.id | ID of the violation. | keyword |
-| prisma_cloud.host.history.vulnerabilities.layer_time | Date/time of the image layer to which the CVE belongs. | date |
-| prisma_cloud.host.history.vulnerabilities.link | Vendor link to the CVE. | keyword |
-| prisma_cloud.host.history.vulnerabilities.package.name | Name of the package that caused the vulnerability. | keyword |
-| prisma_cloud.host.history.vulnerabilities.package.version | Version of the package that caused the vulnerability (or null). | keyword |
-| prisma_cloud.host.history.vulnerabilities.published | Date/time when the vulnerability was published (in Unix time). | date |
-| prisma_cloud.host.history.vulnerabilities.risk_factors | RiskFactors maps the existence of vulnerability risk factors. | flattened |
-| prisma_cloud.host.history.vulnerabilities.severity | Textual representation of the vulnerability's severity. | keyword |
-| prisma_cloud.host.history.vulnerabilities.status | Vendor status for the vulnerability. | keyword |
-| prisma_cloud.host.history.vulnerabilities.templates | List of templates with which the vulnerability is associated. | keyword |
-| prisma_cloud.host.history.vulnerabilities.text | Description of the violation. | keyword |
-| prisma_cloud.host.history.vulnerabilities.title | Compliance title. | keyword |
-| prisma_cloud.host.history.vulnerabilities.twistlock | Indicates if this is a Twistlock-specific vulnerability (true) or not (false). | boolean |
-| prisma_cloud.host.history.vulnerabilities.type | Type represents the vulnerability type. | keyword |
-| prisma_cloud.host.history.vulnerabilities.vec_str | Textual representation of the metric values used to score the vulnerability. | keyword |
-| prisma_cloud.host.history.vulnerabilities.vuln_tag_infos.color | Color is a hexadecimal representation of color code value. | keyword |
-| prisma_cloud.host.history.vulnerabilities.vuln_tag_infos.comment | Tag comment in a specific vulnerability context. | keyword |
-| prisma_cloud.host.history.vulnerabilities.vuln_tag_infos.name | Name of the tag. | keyword |
-| prisma_cloud.host.history.vulnerabilities.wild_fire_malware.md5 | MD5 is the hash of the malicious binary. | keyword |
-| prisma_cloud.host.history.vulnerabilities.wild_fire_malware.path | Path is the path to malicious binary. | keyword |
-| prisma_cloud.host.history.vulnerabilities.wild_fire_malware.verdict | Verdict is the malicious source like grayware, malware and phishing. | keyword |
 | prisma_cloud.host.hostname | Name of the host that was scanned. | keyword |
 | prisma_cloud.host.hosts | ImageHosts is a fast index for image scan results metadata per host. | flattened |
 | prisma_cloud.host.id | Image ID. | keyword |
@@ -1369,45 +1136,7 @@ An example event for `host` looks as following:
 | prisma_cloud.host.image.history.instruction | Docker file instruction and arguments used to create this layer. | keyword |
 | prisma_cloud.host.image.history.size_bytes | Size of the layer (in bytes). | long |
 | prisma_cloud.host.image.history.tags | Holds the image tags. | keyword |
-| prisma_cloud.host.image.history.vulnerabilities.applicable_rules | Rules applied on the package. | keyword |
-| prisma_cloud.host.image.history.vulnerabilities.binary_pkgs | Names of the distro binary package names (packages which are built from the source of the package). | keyword |
-| prisma_cloud.host.image.history.vulnerabilities.block | Indicates if the vulnerability has a block effect (true) or not (false). | boolean |
-| prisma_cloud.host.image.history.vulnerabilities.cause | Additional information regarding the root cause for the vulnerability. | keyword |
-| prisma_cloud.host.image.history.vulnerabilities.cri | Indicates if this is a CRI-specific vulnerability (true) or not (false). | boolean |
-| prisma_cloud.host.image.history.vulnerabilities.custom | Indicates if the vulnerability is a custom vulnerability (e.g., openscap, sandbox) (true) or not (false). | boolean |
 | prisma_cloud.host.image.history.vulnerabilities.cve | CVE ID of the vulnerability (if applied). | keyword |
-| prisma_cloud.host.image.history.vulnerabilities.cvss | CVSS score of the vulnerability. | float |
-| prisma_cloud.host.image.history.vulnerabilities.description | Description of the vulnerability. | keyword |
-| prisma_cloud.host.image.history.vulnerabilities.discovered | Specifies the time of discovery for the vulnerability. | date |
-| prisma_cloud.host.image.history.vulnerabilities.exploit | ExploitType represents the source of an exploit. | keyword |
-| prisma_cloud.host.image.history.vulnerabilities.exploits.kind | ExploitKind represents the kind of the exploit. | keyword |
-| prisma_cloud.host.image.history.vulnerabilities.exploits.link | Link is a link to information about the exploit. | keyword |
-| prisma_cloud.host.image.history.vulnerabilities.exploits.source | ExploitType represents the source of an exploit. | keyword |
-| prisma_cloud.host.image.history.vulnerabilities.fix_date | Date/time when the vulnerability was fixed (in Unix time). | date |
-| prisma_cloud.host.image.history.vulnerabilities.fix_link | Link to the vendor's fixed-version information. | keyword |
-| prisma_cloud.host.image.history.vulnerabilities.function_layer | Specifies the serverless layer ID in which the vulnerability was discovered. | keyword |
-| prisma_cloud.host.image.history.vulnerabilities.grace_period_days | Number of grace days left for a vulnerability, based on the configured grace period. Nil if no block vulnerability rule applies. | long |
-| prisma_cloud.host.image.history.vulnerabilities.id | ID of the violation. | keyword |
-| prisma_cloud.host.image.history.vulnerabilities.layer_time | Date/time of the image layer to which the CVE belongs. | date |
-| prisma_cloud.host.image.history.vulnerabilities.link | Vendor link to the CVE. | keyword |
-| prisma_cloud.host.image.history.vulnerabilities.package.name | Name of the package that caused the vulnerability. | keyword |
-| prisma_cloud.host.image.history.vulnerabilities.package.version | Version of the package that caused the vulnerability (or null). | keyword |
-| prisma_cloud.host.image.history.vulnerabilities.published | Date/time when the vulnerability was published (in Unix time). | date |
-| prisma_cloud.host.image.history.vulnerabilities.risk_factors | RiskFactors maps the existence of vulnerability risk factors. | flattened |
-| prisma_cloud.host.image.history.vulnerabilities.severity | Textual representation of the vulnerability's severity. | keyword |
-| prisma_cloud.host.image.history.vulnerabilities.status | Vendor status for the vulnerability. | keyword |
-| prisma_cloud.host.image.history.vulnerabilities.templates | List of templates with which the vulnerability is associated. | keyword |
-| prisma_cloud.host.image.history.vulnerabilities.text | Description of the violation. | keyword |
-| prisma_cloud.host.image.history.vulnerabilities.title | Compliance title. | keyword |
-| prisma_cloud.host.image.history.vulnerabilities.twistlock | Indicates if this is a Twistlock-specific vulnerability (true) or not (false). | boolean |
-| prisma_cloud.host.image.history.vulnerabilities.type | Type represents the vulnerability type. | keyword |
-| prisma_cloud.host.image.history.vulnerabilities.vec_str | Textual representation of the metric values used to score the vulnerability. | keyword |
-| prisma_cloud.host.image.history.vulnerabilities.vuln_tag_infos.color | Color is a hexadecimal representation of color code value. | keyword |
-| prisma_cloud.host.image.history.vulnerabilities.vuln_tag_infos.comment | Tag comment in a specific vulnerability context. | keyword |
-| prisma_cloud.host.image.history.vulnerabilities.vuln_tag_infos.name | Name of the tag. | keyword |
-| prisma_cloud.host.image.history.vulnerabilities.wild_fire_malware.md5 | MD5 is the hash of the malicious binary. | keyword |
-| prisma_cloud.host.image.history.vulnerabilities.wild_fire_malware.path | Path is the path to malicious binary. | keyword |
-| prisma_cloud.host.image.history.vulnerabilities.wild_fire_malware.verdict | Verdict is the malicious source like grayware, malware and phishing. | keyword |
 | prisma_cloud.host.image.id | ID of the image. | keyword |
 | prisma_cloud.host.image.labels | Image labels. | flattened |
 | prisma_cloud.host.image.layers | Image filesystem layers. | keyword |
@@ -1530,45 +1259,7 @@ An example event for `host` looks as following:
 | prisma_cloud.host.twistlock_image | Indicates if the image is a Twistlock image (true) or not (false). | boolean |
 | prisma_cloud.host.type | ScanType displays the components for an ongoing scan. | keyword |
 | prisma_cloud.host.vulnerabilities.count | Total number of vulnerabilities. | long |
-| prisma_cloud.host.vulnerabilities.data.applicable_rules | Rules applied on the package. | keyword |
-| prisma_cloud.host.vulnerabilities.data.binary_pkgs | Names of the distro binary package names (packages which are built from the source of the package). | keyword |
-| prisma_cloud.host.vulnerabilities.data.block | Indicates if the vulnerability has a block effect (true) or not (false). | boolean |
-| prisma_cloud.host.vulnerabilities.data.cause | Additional information regarding the root cause for the vulnerability. | keyword |
-| prisma_cloud.host.vulnerabilities.data.cri | Indicates if this is a CRI-specific vulnerability (true) or not (false). | boolean |
-| prisma_cloud.host.vulnerabilities.data.custom | Indicates if the vulnerability is a custom vulnerability (e.g., openscap, sandbox) (true) or not (false). | boolean |
 | prisma_cloud.host.vulnerabilities.data.cve | CVE ID of the vulnerability (if applied). | keyword |
-| prisma_cloud.host.vulnerabilities.data.cvss | CVSS score of the vulnerability. | float |
-| prisma_cloud.host.vulnerabilities.data.description | Description of the vulnerability. | keyword |
-| prisma_cloud.host.vulnerabilities.data.discovered | Specifies the time of discovery for the vulnerability. | date |
-| prisma_cloud.host.vulnerabilities.data.exploit | ExploitType represents the source of an exploit. | keyword |
-| prisma_cloud.host.vulnerabilities.data.exploits.kind | ExploitKind represents the kind of the exploit. | keyword |
-| prisma_cloud.host.vulnerabilities.data.exploits.link | Link is a link to information about the exploit. | keyword |
-| prisma_cloud.host.vulnerabilities.data.exploits.source | ExploitType represents the source of an exploit. | keyword |
-| prisma_cloud.host.vulnerabilities.data.fix_date | Date/time when the vulnerability was fixed (in Unix time). | date |
-| prisma_cloud.host.vulnerabilities.data.fix_link | Link to the vendor's fixed-version information. | keyword |
-| prisma_cloud.host.vulnerabilities.data.function_layer | Specifies the serverless layer ID in which the vulnerability was discovered. | keyword |
-| prisma_cloud.host.vulnerabilities.data.grace_period_days | Number of grace days left for a vulnerability, based on the configured grace period. Nil if no block vulnerability rule applies. | long |
-| prisma_cloud.host.vulnerabilities.data.id | ID of the violation. | keyword |
-| prisma_cloud.host.vulnerabilities.data.layer_time | Date/time of the image layer to which the CVE belongs. | date |
-| prisma_cloud.host.vulnerabilities.data.link | Vendor link to the CVE. | keyword |
-| prisma_cloud.host.vulnerabilities.data.package.name | Name of the package that caused the vulnerability. | keyword |
-| prisma_cloud.host.vulnerabilities.data.package.version | Version of the package that caused the vulnerability (or null). | keyword |
-| prisma_cloud.host.vulnerabilities.data.published | Date/time when the vulnerability was published (in Unix time). | date |
-| prisma_cloud.host.vulnerabilities.data.risk_factors | RiskFactors maps the existence of vulnerability risk factors. | flattened |
-| prisma_cloud.host.vulnerabilities.data.severity | Textual representation of the vulnerability's severity. | keyword |
-| prisma_cloud.host.vulnerabilities.data.status | Vendor status for the vulnerability. | keyword |
-| prisma_cloud.host.vulnerabilities.data.templates | List of templates with which the vulnerability is associated. | keyword |
-| prisma_cloud.host.vulnerabilities.data.text | Description of the violation. | keyword |
-| prisma_cloud.host.vulnerabilities.data.title |  | keyword |
-| prisma_cloud.host.vulnerabilities.data.twistlock | Indicates if this is a Twistlock-specific vulnerability (true) or not (false). | boolean |
-| prisma_cloud.host.vulnerabilities.data.type | Type represents the vulnerability type. | keyword |
-| prisma_cloud.host.vulnerabilities.data.vec_str | Textual representation of the metric values used to score the vulnerability. | keyword |
-| prisma_cloud.host.vulnerabilities.data.vuln_tag_infos.color | Color is a hexadecimal representation of color code value. | keyword |
-| prisma_cloud.host.vulnerabilities.data.vuln_tag_infos.comment | Tag comment in a specific vulnerability context. | keyword |
-| prisma_cloud.host.vulnerabilities.data.vuln_tag_infos.name | Name of the tag. | keyword |
-| prisma_cloud.host.vulnerabilities.data.wild_fire_malware.md5 | MD5 is the hash of the malicious binary. | keyword |
-| prisma_cloud.host.vulnerabilities.data.wild_fire_malware.path | Path is the path to malicious binary. | keyword |
-| prisma_cloud.host.vulnerabilities.data.wild_fire_malware.verdict | Verdict is the malicious source like grayware, malware and phishing. | keyword |
 | prisma_cloud.host.vulnerability.distribution.critical |  | long |
 | prisma_cloud.host.vulnerability.distribution.high |  | long |
 | prisma_cloud.host.vulnerability.distribution.low |  | long |

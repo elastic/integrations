@@ -175,6 +175,11 @@ func ReportFailedTests(ctx context.Context, testResultsFolder string) error {
 		logsDBEnabled = true
 	}
 
+	verboseMode := false
+	if v, found := os.LookupEnv("VERBOSE_MODE_ENABLED"); found && v == "true" {
+		verboseMode = true
+	}
+
 	maxIssuesString := os.Getenv("CI_MAX_TESTS_REPORTED")
 	maxIssues := defaultMaximumTestsReported
 	if maxIssuesString != "" {
@@ -204,6 +209,7 @@ func ReportFailedTests(ctx context.Context, testResultsFolder string) error {
 		MaxPreviousLinks:  defaultPreviousLinksNumber,
 		MaxTestsReported:  maxIssues,
 		DryRun:            dryRun,
+		Verbose:           verboseMode,
 	}
 	return testsreporter.Check(ctx, testResultsFolder, options)
 }
