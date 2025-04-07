@@ -43,6 +43,7 @@ if [ ! -d packages ]; then
     exit 1
 fi
 
+echo "--- Install requirements"
 add_bin_path
 
 with_yq
@@ -60,6 +61,7 @@ sleep 120
 echo "Done."
 
 # setting range of changesets to check differences
+echo "--- Get from and to changesets"
 from="$(get_from_changeset)"
 if [[ "${from}" == "" ]]; then
     echo "Missing \"from\" changset".
@@ -76,6 +78,7 @@ any_package_failing=0
 
 pushd packages > /dev/null
 for package in $(list_all_directories); do
+    echo "--- [$package] check if it is required to be tested"
     pushd "${package}" > /dev/null
     if ! reason=$(is_pr_affected "${package}" "${from}" "${to}") ; then
         echo "${reason}"
@@ -94,10 +97,12 @@ popd > /dev/null
 
 if running_on_buildkite ; then
     if [ -f "${SKIPPED_PACKAGES_FILE_PATH}" ]; then
+        echo "--- Create Skip Buildkite annotation"
         create_collapsed_annotation "Skipped packages in ${SERVERLESS_PROJECT}" "${SKIPPED_PACKAGES_FILE_PATH}" "info" "ctx-skipped-packages-${SERVERLESS_PROJECT}"
     fi
 
     if [ -f "${FAILED_PACKAGES_FILE_PATH}" ]; then
+        echo "--- Create Failed Buildkite annotation"
         create_collapsed_annotation "Failed packages in ${SERVERLESS_PROJECT}" "${FAILED_PACKAGES_FILE_PATH}" "error" "ctx-failed-packages-${SERVERLESS_PROJECT}"
     fi
 fi

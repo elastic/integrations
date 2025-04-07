@@ -4,6 +4,7 @@ source .buildkite/scripts/common.sh
 
 set -euo pipefail
 
+echo "--- Install requirements"
 add_bin_path
 with_yq
 with_mage
@@ -25,8 +26,8 @@ steps:
 EOF
 
 # Get from and to changesets to avoid repeating the same queries for each package
-
 # setting range of changesets to check differences
+echo "--- Get from and to changesets"
 from="$(get_from_changeset)"
 if [[ "${from}" == "" ]]; then
     echo "Missing \"from\" changset".
@@ -50,10 +51,12 @@ if [[ "${BUILDKITE_PIPELINE_SLUG}" == "integrations-test-stack" && "${GITHUB_PR_
     echo "Use Elastic stack version from Github comment: ${STACK_VERSION}"
 fi
 
+echo "--- Check packages to create trigger steps"
 packages_to_test=0
 
 for package in ${PACKAGE_LIST}; do
     # check if needed to create an step for this package
+    echo "--- [$package] check if it is required to be tested"
     pushd "packages/${package}" > /dev/null
     skip_package="false"
     if ! reason=$(is_pr_affected "${package}" "${from}" "${to}") ; then
@@ -92,11 +95,13 @@ done
 
 if running_on_buildkite ; then
     if [ -f "${SKIPPED_PACKAGES_FILE_PATH}" ]; then
+        echo "--- Create Skip Buildkite annotation"
         create_collapsed_annotation "Skipped packages" "${SKIPPED_PACKAGES_FILE_PATH}" "info" "ctx-skipped-packages"
     fi
 fi
 
 if [ ${packages_to_test} -eq 0 ]; then
+    echo "--- Create Buildkite annotation no packages to be tested"
     buildkite-agent annotate "No packages to be tested" --context "ctx-no-packages" --style "warning"
     exit 0
 fi
