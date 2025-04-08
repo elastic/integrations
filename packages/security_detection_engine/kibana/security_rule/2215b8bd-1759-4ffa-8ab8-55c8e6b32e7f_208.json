@@ -1,0 +1,127 @@
+{
+    "attributes": {
+        "author": [
+            "Elastic"
+        ],
+        "description": "The Secure Shell (SSH) authorized_keys file specifies which users are allowed to log into a server using public key authentication. Adversaries may modify it to maintain persistence on a victim host by adding their own public key(s).",
+        "from": "now-9m",
+        "history_window_start": "now-10d",
+        "index": [
+            "auditbeat-*",
+            "logs-endpoint.events.*"
+        ],
+        "language": "kuery",
+        "license": "Elastic License v2",
+        "name": "SSH Authorized Keys File Modification",
+        "new_terms_fields": [
+            "host.id",
+            "process.executable"
+        ],
+        "note": "## Triage and analysis\n\n> **Disclaimer**:\n> This investigation guide was created using generative AI technology and has been reviewed to improve its accuracy and relevance. While every effort has been made to ensure its quality, we recommend validating the content and adapting it to suit your specific environment and operational needs.\n\n### Investigating SSH Authorized Keys File Modification\n\nSSH authorized_keys files are crucial for secure, password-less authentication, allowing users to log into servers using public keys. Adversaries exploit this by adding their keys, ensuring persistent access. The detection rule identifies unauthorized changes to these files, excluding benign processes, to flag potential threats, focusing on persistence and lateral movement tactics.\n\n### Possible investigation steps\n\n- Review the alert details to identify the specific file that was modified, focusing on \"authorized_keys\", \"authorized_keys2\", \"/etc/ssh/sshd_config\", or \"/root/.ssh\".\n- Examine the process that triggered the alert by checking the process executable path to ensure it is not one of the benign processes listed in the exclusion criteria.\n- Investigate the user account associated with the modification to determine if it is a legitimate user or potentially compromised.\n- Check the timestamp of the file modification to correlate with any known user activity or scheduled tasks that might explain the change.\n- Analyze recent login attempts and SSH connections to the server to identify any suspicious activity or unauthorized access.\n- Review the contents of the modified authorized_keys file to identify any unfamiliar or unauthorized public keys that have been added.\n- If unauthorized keys are found, remove them and consider resetting credentials or keys for affected accounts to prevent further unauthorized access.\n\n### False positive analysis\n\n- Development tools like git and maven may modify SSH authorized_keys files during legitimate operations. To prevent these from triggering alerts, add their paths to the exclusion list in the detection rule.\n- System utilities such as vim and touch are often used by administrators to manually update authorized_keys files. Consider excluding these processes if they are part of regular maintenance activities.\n- Automation tools like puppet and chef-client might update SSH configurations as part of their deployment scripts. Verify these changes are expected and exclude these processes if they are part of routine operations.\n- Docker-related processes may alter SSH configurations when containers are being managed. If these changes are part of standard container operations, include the relevant paths in the exclusion list.\n- Google Guest Agent and JumpCloud Agent might modify SSH settings as part of their management tasks. Confirm these actions are legitimate and exclude these processes if they align with normal system management activities.\n\n### Response and remediation\n\n- Immediately isolate the affected host from the network to prevent further unauthorized access or lateral movement.\n- Review the SSH authorized_keys file and remove any unauthorized or suspicious public keys that have been added.\n- Change the passwords for all user accounts on the affected host to prevent adversaries from regaining access using compromised credentials.\n- Conduct a thorough review of user accounts and permissions on the affected host to identify and disable any unauthorized accounts or privilege escalations.\n- Restore the affected system from a known good backup if unauthorized changes are extensive or if the integrity of the system is in question.\n- Implement additional monitoring on the affected host and network to detect any further unauthorized access attempts or suspicious activities.\n- Escalate the incident to the security operations team for further investigation and to determine if other systems may be affected.",
+        "query": "event.category:file and event.type:(change or creation) and\n file.name:(\"authorized_keys\" or \"authorized_keys2\" or \"/etc/ssh/sshd_config\" or \"/root/.ssh\") and\n not process.executable:\n             (/Library/Developer/CommandLineTools/usr/bin/git or\n              /usr/local/Cellar/maven/*/libexec/bin/mvn or\n              /Library/Java/JavaVirtualMachines/jdk*.jdk/Contents/Home/bin/java or\n              /usr/bin/vim or\n              /usr/local/Cellar/coreutils/*/bin/gcat or\n              /usr/bin/bsdtar or\n              /usr/bin/nautilus or\n              /usr/bin/scp or\n              /usr/bin/touch or\n              /var/lib/docker/* or\n              /usr/bin/google_guest_agent or\n              /opt/jc/bin/jumpcloud-agent or\n              /opt/puppetlabs/puppet/bin/puppet or\n              /usr/bin/chef-client\n)\n",
+        "related_integrations": [
+            {
+                "package": "endpoint",
+                "version": "^9.0.0"
+            }
+        ],
+        "required_fields": [
+            {
+                "ecs": true,
+                "name": "event.category",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "event.type",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "file.name",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "process.executable",
+                "type": "keyword"
+            }
+        ],
+        "risk_score": 47,
+        "rule_id": "2215b8bd-1759-4ffa-8ab8-55c8e6b32e7f",
+        "severity": "medium",
+        "tags": [
+            "Domain: Endpoint",
+            "OS: Linux",
+            "OS: macOS",
+            "Use Case: Threat Detection",
+            "Tactic: Lateral Movement",
+            "Tactic: Persistence",
+            "Data Source: Elastic Defend",
+            "Resources: Investigation Guide"
+        ],
+        "threat": [
+            {
+                "framework": "MITRE ATT&CK",
+                "tactic": {
+                    "id": "TA0003",
+                    "name": "Persistence",
+                    "reference": "https://attack.mitre.org/tactics/TA0003/"
+                },
+                "technique": [
+                    {
+                        "id": "T1098",
+                        "name": "Account Manipulation",
+                        "reference": "https://attack.mitre.org/techniques/T1098/",
+                        "subtechnique": [
+                            {
+                                "id": "T1098.004",
+                                "name": "SSH Authorized Keys",
+                                "reference": "https://attack.mitre.org/techniques/T1098/004/"
+                            }
+                        ]
+                    }
+                ]
+            },
+            {
+                "framework": "MITRE ATT&CK",
+                "tactic": {
+                    "id": "TA0008",
+                    "name": "Lateral Movement",
+                    "reference": "https://attack.mitre.org/tactics/TA0008/"
+                },
+                "technique": [
+                    {
+                        "id": "T1021",
+                        "name": "Remote Services",
+                        "reference": "https://attack.mitre.org/techniques/T1021/",
+                        "subtechnique": [
+                            {
+                                "id": "T1021.004",
+                                "name": "SSH",
+                                "reference": "https://attack.mitre.org/techniques/T1021/004/"
+                            }
+                        ]
+                    },
+                    {
+                        "id": "T1563",
+                        "name": "Remote Service Session Hijacking",
+                        "reference": "https://attack.mitre.org/techniques/T1563/",
+                        "subtechnique": [
+                            {
+                                "id": "T1563.001",
+                                "name": "SSH Hijacking",
+                                "reference": "https://attack.mitre.org/techniques/T1563/001/"
+                            }
+                        ]
+                    }
+                ]
+            }
+        ],
+        "timestamp_override": "event.ingested",
+        "type": "new_terms",
+        "version": 208
+    },
+    "id": "2215b8bd-1759-4ffa-8ab8-55c8e6b32e7f_208",
+    "type": "security-rule"
+}

@@ -1,0 +1,100 @@
+{
+    "attributes": {
+        "author": [
+            "Elastic",
+            "Austin Songer"
+        ],
+        "description": "Identifies when a transfer lock was removed from a Route 53 domain. It is recommended to refrain from performing this action unless intending to transfer the domain to a different registrar.",
+        "false_positives": [
+            "A domain transfer lock may be disabled by a system or network administrator. Verify whether the user identity, user agent, and/or hostname should be making changes in your environment. Activity from unfamiliar users or hosts should be investigated. If known behavior is causing false positives, it can be exempted from the rule."
+        ],
+        "from": "now-60m",
+        "index": [
+            "filebeat-*",
+            "logs-aws.cloudtrail-*"
+        ],
+        "interval": "10m",
+        "language": "kuery",
+        "license": "Elastic License v2",
+        "name": "AWS Route 53 Domain Transfer Lock Disabled",
+        "note": "## Triage and analysis\n\n> **Disclaimer**:\n> This investigation guide was created using generative AI technology and has been reviewed to improve its accuracy and relevance. While every effort has been made to ensure its quality, we recommend validating the content and adapting it to suit your specific environment and operational needs.\n\n### Investigating AWS Route 53 Domain Transfer Lock Disabled\n\nAWS Route 53's domain transfer lock is a security feature that prevents unauthorized domain transfers. Disabling this lock can expose domains to hijacking risks. Adversaries might exploit this by transferring domains to gain control over web traffic or disrupt services. The detection rule monitors successful lock disablement events, alerting analysts to potential unauthorized actions, thereby aiding in maintaining domain integrity.\n\n### Possible investigation steps\n\n- Review the AWS CloudTrail logs for the specific event.action: DisableDomainTransferLock to identify the user or service account responsible for the action.\n- Check the event.provider: route53.amazonaws.com logs to gather additional context about the domain affected and any related activities around the time of the lock disablement.\n- Verify the event.outcome: success to confirm that the lock was indeed successfully disabled and not just attempted.\n- Investigate the account activity of the user identified in the logs to determine if there are any other suspicious actions or patterns that could indicate unauthorized access.\n- Assess whether there was a legitimate business need for the domain transfer lock to be disabled, such as a planned domain transfer, by consulting with relevant stakeholders or reviewing change management records.\n- Evaluate the current security posture of the affected domain, ensuring that other security measures are in place to mitigate potential risks from the lock being disabled.\n\n### False positive analysis\n\n- Routine domain management activities by authorized personnel can trigger alerts when they intentionally disable the transfer lock for legitimate domain transfers. To manage this, maintain a list of authorized personnel and their expected activities, and cross-reference alerts with this list.\n- Scheduled domain transfers as part of business operations may result in false positives. Implement a process to document and pre-approve such transfers, allowing security teams to quickly verify and dismiss these alerts.\n- Automated scripts or tools used for domain management might inadvertently disable the transfer lock during updates or maintenance. Ensure these tools are configured correctly and include logging to track their actions, allowing for quick identification and exclusion of benign activities.\n- Changes in domain ownership or restructuring within the organization can lead to legitimate transfer lock disablement. Establish a communication protocol between IT and security teams to notify them of such changes in advance, reducing unnecessary alerts.\n\n### Response and remediation\n\n- Immediately verify the legitimacy of the domain transfer request by contacting the domain owner or the responsible team to confirm if the action was intentional.\n- If the transfer lock was disabled without authorization, re-enable the transfer lock on the affected domain to prevent any unauthorized transfer attempts.\n- Conduct a thorough review of AWS CloudTrail logs to identify any unauthorized access or suspicious activities related to the domain management account.\n- Reset credentials and enforce multi-factor authentication (MFA) for all accounts with access to AWS Route 53 to prevent further unauthorized actions.\n- Notify the security team and relevant stakeholders about the incident to ensure awareness and coordination for further investigation and response.\n- Escalate the incident to higher management and legal teams if there is evidence of malicious intent or if the domain is critical to business operations.\n- Implement additional monitoring and alerting for any future changes to domain transfer locks to ensure rapid detection and response to similar threats.",
+        "query": "event.dataset:aws.cloudtrail and event.provider:route53.amazonaws.com and event.action:DisableDomainTransferLock and event.outcome:success\n",
+        "references": [
+            "https://docs.aws.amazon.com/Route53/latest/APIReference/API_Operations_Amazon_Route_53.html",
+            "https://docs.aws.amazon.com/Route53/latest/APIReference/API_domains_DisableDomainTransferLock.html"
+        ],
+        "related_integrations": [
+            {
+                "integration": "cloudtrail",
+                "package": "aws",
+                "version": "^2.40.0"
+            }
+        ],
+        "required_fields": [
+            {
+                "ecs": true,
+                "name": "event.action",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "event.dataset",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "event.outcome",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "event.provider",
+                "type": "keyword"
+            }
+        ],
+        "risk_score": 21,
+        "rule_id": "12051077-0124-4394-9522-8f4f4db1d674",
+        "setup": "The AWS Fleet integration, Filebeat module, or similarly structured data is required to be compatible with this rule.",
+        "severity": "low",
+        "tags": [
+            "Domain: Cloud",
+            "Data Source: AWS",
+            "Data Source: Amazon Web Services",
+            "Data Source: AWS Route53",
+            "Use Case: Asset Visibility",
+            "Tactic: Persistence",
+            "Resources: Investigation Guide"
+        ],
+        "threat": [
+            {
+                "framework": "MITRE ATT&CK",
+                "tactic": {
+                    "id": "TA0003",
+                    "name": "Persistence",
+                    "reference": "https://attack.mitre.org/tactics/TA0003/"
+                },
+                "technique": [
+                    {
+                        "id": "T1098",
+                        "name": "Account Manipulation",
+                        "reference": "https://attack.mitre.org/techniques/T1098/"
+                    }
+                ]
+            },
+            {
+                "framework": "MITRE ATT&CK",
+                "tactic": {
+                    "id": "TA0006",
+                    "name": "Credential Access",
+                    "reference": "https://attack.mitre.org/tactics/TA0006/"
+                },
+                "technique": []
+            }
+        ],
+        "timestamp_override": "event.ingested",
+        "type": "query",
+        "version": 208
+    },
+    "id": "12051077-0124-4394-9522-8f4f4db1d674_208",
+    "type": "security-rule"
+}
