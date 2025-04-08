@@ -28,6 +28,7 @@ It is compatible with a subset of applications under the [Google Reports API v1]
 | [GCP](https://developers.google.com/admin-sdk/reports/v1/appendix/activity/gcp) | The GCP activity report returns information about various types of Google Cloud Platform activity events. |
 | [Chrome](https://developers.google.com/admin-sdk/reports/v1/appendix/activity/chrome) | The Chrome activity reports return information about Chrome browser and Chrome OS events. |
 | [Data Studio](https://developers.google.com/admin-sdk/reports/v1/appendix/activity/data-studio) | Track and audit user interactions and changes made to Looker Studio assets. |
+| [Calendar](https://developers.google.com/admin-sdk/reports/v1/appendix/activity/calendar) | The Calendar activity report returns information about how your account's users manage and modify their Google Calendar events. |
 
 ## Requirements
 
@@ -44,7 +45,7 @@ This integration will make use of the following *oauth2 scope*:
 
 Once you have downloaded your service account credentials as a JSON file, you are ready to set up your integration.
 
-Click the Advanced option of Google Workspace Audit Reports. The default value of "API Host" is `https://www.googleapis.com`. The API Host will be used for collecting `access_transparency`, `admin`, `chrome`, `context_aware_access`, `data_studio`, `device`, `drive`, `gcp`, `groups`, `group_enterprise`, `login`, `rules`, `saml`, `token` and `user accounts` logs.
+Click the Advanced option of Google Workspace Audit Reports. The default value of "API Host" is `https://www.googleapis.com`. The API Host will be used for collecting `access_transparency`, `admin`, `calendar`, `chrome`, `context_aware_access`, `data_studio`, `device`, `drive`, `gcp`, `groups`, `group_enterprise`, `login`, `rules`, `saml`, `token` and `user accounts` logs.
 
 >  NOTE: The `Delegated Account` value in the configuration, is expected to be the email of the administrator account, and not the email of the ServiceAccount.
 
@@ -3164,6 +3165,195 @@ An example event for `data_studio` looks as following:
 | google_workspace.data_studio.target_user_email | The targeted user's email for which the sharing permission has been changed. | keyword |
 | google_workspace.data_studio.type |  | keyword |
 | google_workspace.data_studio.visibility | The visibility of an asset. For a list of possible values refer to https://developers.google.com/workspace/admin/reports/v1/appendix/activity/data-studio | keyword |
+| google_workspace.etag | ETag of the entry. | keyword |
+| google_workspace.id.application_name | Application name to which the event belongs. For possible values see the list of applications above in applicationName. | keyword |
+| google_workspace.id.customer_id | The unique identifier for a Google Workspace account. | keyword |
+| google_workspace.id.time | Time of occurrence of the activity. This is in UNIX epoch time in seconds. | date |
+| google_workspace.id.unique_qualifier | Unique qualifier if multiple events have the same time. | keyword |
+| google_workspace.ip_address | IP address of the user doing the action. This is the Internet Protocol (IP) address of the user when logging into Google Workspace, which may or may not reflect the user's physical location. For example, the IP address can be the user's proxy server's address or a virtual private network (VPN) address. The API supports IPv4 and IPv6. | ip |
+| google_workspace.kind | The type of API resource, mapped from `kind` in the original payload, more details can be found [here](https://developers.google.com/admin-sdk/reports/reference/rest/v1/activities/list#activity). | keyword |
+| google_workspace.organization.domain | The domain that is affected by the report's event. | keyword |
+| input.type | Type of filebeat input. | keyword |
+| log.offset | Log offset. | long |
+
+
+### Calendar
+
+This is the `calendar` dataset.
+
+An example event for `calendar` looks as following:
+
+```json
+{
+    "@timestamp": "2025-04-01T07:10:14.651Z",
+    "agent": {
+        "ephemeral_id": "2a80e85b-1e05-4ff8-9eb1-11851b50a40a",
+        "id": "06d82100-0023-44b4-a7be-e7ec607d3f06",
+        "name": "elastic-agent-37473",
+        "type": "filebeat",
+        "version": "8.18.0"
+    },
+    "data_stream": {
+        "dataset": "google_workspace.calendar",
+        "namespace": "14648",
+        "type": "logs"
+    },
+    "ecs": {
+        "version": "8.16.0"
+    },
+    "elastic_agent": {
+        "id": "06d82100-0023-44b4-a7be-e7ec607d3f06",
+        "snapshot": true,
+        "version": "8.18.0"
+    },
+    "event": {
+        "action": "transfer-event-requested",
+        "agent_id_status": "verified",
+        "category": [
+            "configuration"
+        ],
+        "dataset": "google_workspace.calendar",
+        "id": "1",
+        "ingested": "2025-04-04T07:25:32Z",
+        "kind": "event",
+        "original": "{\"actor\":{\"email\":\"foo@bar.com\",\"profileId\":\"1\"},\"etag\":\"abcdefgh/cBsNSJx2A9Lg8kiQCGLddmq827A\",\"events\":{\"name\":\"transfer_event_requested\",\"parameters\":[{\"name\":\"event_id\",\"value\":\"abc123\"},{\"name\":\"organizer_calendar_id\",\"value\":\"foo@bar.com\"},{\"name\":\"calendar_id\",\"value\":\"foo@bar.com\"},{\"name\":\"event_title\",\"value\":\"TestEvent\"},{\"name\":\"recurring\",\"value\":\"no\"},{\"name\":\"client_side_encrypted\",\"value\":\"no\"},{\"name\":\"grantee_email\",\"value\":\"test@example.com\"},{\"name\":\"api_kind\",\"value\":\"web\"},{\"name\":\"user_agent\",\"value\":\"Mozilla/5.0\"}],\"type\":\"event_change\"},\"id\":{\"applicationName\":\"calendar\",\"customerId\":\"1\",\"time\":\"2025-04-01T07:10:14.651Z\",\"uniqueQualifier\":\"1\"},\"ipAddress\":\"67.43.156.13\",\"kind\":\"admin#reports#activity\",\"ownerDomain\":\"elastic.com\"}",
+        "provider": "calendar",
+        "type": [
+            "info"
+        ]
+    },
+    "google_workspace": {
+        "calendar": {
+            "api_kind": "web",
+            "event": {
+                "client_side_encrypted": "no",
+                "grantee_email": "test@example.com",
+                "id": "abc123",
+                "organizer_calendar_id": "foo@bar.com",
+                "recurring": "no",
+                "title": "TestEvent"
+            },
+            "name": "transfer_event_requested",
+            "type": "event_change"
+        },
+        "etag": "abcdefgh/cBsNSJx2A9Lg8kiQCGLddmq827A",
+        "kind": "admin#reports#activity",
+        "organization": {
+            "domain": "elastic.com"
+        }
+    },
+    "input": {
+        "type": "cel"
+    },
+    "observer": {
+        "product": "Calendar",
+        "vendor": "Google Workspace"
+    },
+    "organization": {
+        "id": "1"
+    },
+    "related": {
+        "ip": [
+            "67.43.156.13"
+        ],
+        "user": [
+            "foo@bar.com",
+            "test@example.com"
+        ]
+    },
+    "source": {
+        "as": {
+            "number": 35908
+        },
+        "geo": {
+            "continent_name": "Asia",
+            "country_iso_code": "BT",
+            "country_name": "Bhutan",
+            "location": {
+                "lat": 27.5,
+                "lon": 90.5
+            }
+        },
+        "ip": "67.43.156.13",
+        "user": {
+            "domain": "bar.com",
+            "email": "foo@bar.com",
+            "id": "1",
+            "name": "foo"
+        }
+    },
+    "tags": [
+        "preserve_original_event",
+        "forwarded",
+        "google_workspace-calendar"
+    ],
+    "user": {
+        "domain": "bar.com",
+        "email": "foo@bar.com",
+        "id": "1",
+        "name": "foo",
+        "target": {
+            "email": "test@example.com"
+        }
+    },
+    "user_agent": {
+        "device": {
+            "name": "Other"
+        },
+        "name": "Other",
+        "original": "Mozilla/5.0"
+    }
+}
+```
+
+**Exported fields**
+
+| Field | Description | Type |
+|---|---|---|
+| @timestamp | Event timestamp. | date |
+| data_stream.dataset | Data stream dataset. | constant_keyword |
+| data_stream.namespace | Data stream namespace. | constant_keyword |
+| data_stream.type | Data stream type. | constant_keyword |
+| event.dataset | Event dataset. | constant_keyword |
+| event.module | Event module. | constant_keyword |
+| google_workspace.actor.caller_type | The type of actor. Values can be:   \*USER\*: Another user in the same domain.   \*EXTERNAL_USER\*: A user outside the domain.   \*KEY\*: A non-human actor. | keyword |
+| google_workspace.actor.email | The primary email address of the actor. May be absent if there is no email address associated with the actor. | keyword |
+| google_workspace.actor.key | Only present when `actor.type` is `KEY`. Can be the `consumer_key` of the requestor for OAuth 2LO API requests or an identifier for robot accounts. | keyword |
+| google_workspace.actor.profile_id | The unique Google Workspace profile ID of the actor. | keyword |
+| google_workspace.calendar.access_level | The access level for calendar. | keyword |
+| google_workspace.calendar.api_kind | Indicates where a request for an action came from. | keyword |
+| google_workspace.calendar.country | The country of calendar. | keyword |
+| google_workspace.calendar.description | The description of calendar. | keyword |
+| google_workspace.calendar.event.appointment_schedule_title | The title of the calendar appointment schedule. | keyword |
+| google_workspace.calendar.event.client_side_encrypted | Whether the calendar event is client-side encrypted or not. | keyword |
+| google_workspace.calendar.event.end_time | The end time of the event in seconds, stored in unix time. | date |
+| google_workspace.calendar.event.grantee_email | The email address of the user for whom the request to transfer event ownership has been made. | keyword |
+| google_workspace.calendar.event.guest | The email address of a guest user for an event. | keyword |
+| google_workspace.calendar.event.id | The unique identification of an event. | keyword |
+| google_workspace.calendar.event.is_recurring | Whether the calendar event is a recurring event. | boolean |
+| google_workspace.calendar.event.old_title | If the title of a calendar event has been changed, this is the previous title of the event. | keyword |
+| google_workspace.calendar.event.organizer_calendar_id | The calendar Id of the organizer of an event. | keyword |
+| google_workspace.calendar.event.recurring | Whether the calendar event is a recurring event. | keyword |
+| google_workspace.calendar.event.response_status | The response status of event guest. For a list of possible values refer to https://developers.google.com/workspace/admin/reports/v1/appendix/activity/calendar#change_event_guest_response. | keyword |
+| google_workspace.calendar.event.start_time | The start time of the event in seconds, stored in unix time. | date |
+| google_workspace.calendar.event.title | The title of an event. | keyword |
+| google_workspace.calendar.id | Calendar Id of the relevant calendar in context of this action (e.g., the calendar that an event is on, or a calendar being subscribed to). | keyword |
+| google_workspace.calendar.interop.error_code | A short human-readable error code / error description in English. | keyword |
+| google_workspace.calendar.interop.remote_ews_url | URL of the remote Exchange server that Google Calendar EWS server has contacted. | keyword |
+| google_workspace.calendar.location | The location associated with the calendar event. | keyword |
+| google_workspace.calendar.name |  | keyword |
+| google_workspace.calendar.notification.message_id | The notification message ID. | keyword |
+| google_workspace.calendar.notification.method | The method used to trigger a notification. Possible values are `alert`, `default`, `email`, `sms`. | keyword |
+| google_workspace.calendar.notification.recipient_email | The notification recipient email address. | keyword |
+| google_workspace.calendar.notification.type | The type of a notification. For a list of possible values refer to https://developers.google.com/workspace/admin/reports/v1/appendix/activity/calendar#notification_triggered. | keyword |
+| google_workspace.calendar.requested_period_end | End of the time window for which the availability was requested. | date |
+| google_workspace.calendar.requested_period_start | Start of the time window for which the availability was requested. | date |
+| google_workspace.calendar.secs_in_advance |  | long |
+| google_workspace.calendar.subscriber_calendar_id | The calendar ID of subscriber. | keyword |
+| google_workspace.calendar.timezone | The timezone of calendar. | keyword |
+| google_workspace.calendar.title | The title of calendar. | keyword |
+| google_workspace.calendar.type |  | keyword |
+| google_workspace.calendar.user_agent | The user agent from the request that triggered this action. | keyword |
 | google_workspace.etag | ETag of the entry. | keyword |
 | google_workspace.id.application_name | Application name to which the event belongs. For possible values see the list of applications above in applicationName. | keyword |
 | google_workspace.id.customer_id | The unique identifier for a Google Workspace account. | keyword |
