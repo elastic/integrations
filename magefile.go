@@ -214,6 +214,7 @@ func ReportFailedTests(ctx context.Context, testResultsFolder string) error {
 	return testsreporter.Check(ctx, testResultsFolder, options)
 }
 
+// IsSubscriptionCompatible checks whether or not the package in the current directory allows to run with the given subscription (ELASTIC_SUBSCRIPTION env var).
 func IsSubscriptionCompatible() error {
 	subscription := os.Getenv("ELASTIC_SUBSCRIPTION")
 	if subscription == "" {
