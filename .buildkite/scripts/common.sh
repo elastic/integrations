@@ -511,10 +511,12 @@ prepare_stack() {
     fi
 
     if [ "${STACK_LOGSDB_ENABLED:-false}" == "true" ]; then
+        echoerr "- Enable LogsDB"
         args="${args} -U stack.logsdb_enabled=true"
     fi
 
     if [ "${ELASTIC_SUBSCRIPTION:-""}" != "" ]; then
+        echoerr "- Set Subscription ${ELASTIC_SUBSCRIPTION}"
         args="${args} -U stack.elastic_subscription=${ELASTIC_SUBSCRIPTION}"
     fi
 
