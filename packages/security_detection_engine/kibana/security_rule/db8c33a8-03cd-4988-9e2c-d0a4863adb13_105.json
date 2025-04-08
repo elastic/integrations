@@ -1,0 +1,85 @@
+{
+    "attributes": {
+        "author": [
+            "Elastic"
+        ],
+        "description": "Elastic Endgame prevented Credential Dumping. Click the Elastic Endgame icon in the event.module column or the link in the rule.reference column for additional information.",
+        "from": "now-2m",
+        "index": [
+            "endgame-*"
+        ],
+        "interval": "1m",
+        "language": "kuery",
+        "license": "Elastic License v2",
+        "max_signals": 1000,
+        "name": "Credential Dumping - Prevented - Elastic Endgame",
+        "note": "## Triage and analysis\n\n> **Disclaimer**:\n> This investigation guide was created using generative AI technology and has been reviewed to improve its accuracy and relevance. While every effort has been made to ensure its quality, we recommend validating the content and adapting it to suit your specific environment and operational needs.\n\n### Investigating Credential Dumping - Prevented - Elastic Endgame\n\nElastic Endgame is a security solution that proactively prevents credential dumping, a technique where attackers extract sensitive authentication data from systems. Adversaries exploit this to gain unauthorized access to networks. The detection rule identifies prevention alerts by monitoring specific event actions and metadata, signaling attempts to steal credentials, thus enabling timely threat mitigation.\n\n### Possible investigation steps\n\n- Review the alert details to confirm the presence of event.kind:alert and event.module:endgame, ensuring the alert is related to Elastic Endgame's prevention of credential dumping.\n- Examine the event.action and endgame.event_subtype_full fields for the value cred_theft_event to understand the specific credential theft attempt that was prevented.\n- Investigate the source and destination systems involved in the alert to identify potential points of compromise or targeted systems.\n- Check for any related alerts or events in the same timeframe that might indicate a coordinated attack or further attempts at credential access.\n- Assess the user accounts involved in the alert to determine if they have been compromised or if there are any unauthorized access attempts.\n- Review the risk score and severity to prioritize the investigation and response actions based on the potential impact on the organization.\n\n### False positive analysis\n\n- Routine administrative tools or scripts that access credential stores may trigger alerts. Review and whitelist these tools if they are verified as non-threatening.\n- Security software performing legitimate credential checks can be mistaken for credential dumping. Identify and exclude these processes from alert generation.\n- Automated backup systems accessing credential data for legitimate purposes might be flagged. Ensure these systems are recognized and excluded from the rule.\n- Regular system maintenance activities that involve credential verification could cause false positives. Document and exclude these activities if they are part of standard operations.\n- User behavior analytics might misinterpret legitimate user actions as credential theft. Implement user behavior baselines to reduce such false positives.\n\n### Response and remediation\n\n- Isolate the affected system immediately to prevent further unauthorized access or lateral movement within the network.\n- Terminate any suspicious processes identified as part of the credential dumping attempt to halt ongoing malicious activities.\n- Change all potentially compromised credentials, especially those with elevated privileges, to prevent unauthorized access using stolen credentials.\n- Conduct a thorough review of access logs and event data to identify any additional systems that may have been targeted or compromised.\n- Escalate the incident to the security operations center (SOC) or incident response team for further investigation and to ensure comprehensive remediation.\n- Implement additional monitoring on the affected system and related network segments to detect any further suspicious activities or attempts at credential theft.\n- Review and update endpoint protection configurations to ensure that similar threats are detected and prevented in the future, leveraging insights from the MITRE ATT&CK framework.",
+        "query": "event.kind:alert and event.module:endgame and endgame.metadata.type:prevention and (event.action:cred_theft_event or endgame.event_subtype_full:cred_theft_event)\n",
+        "required_fields": [
+            {
+                "ecs": false,
+                "name": "endgame.event_subtype_full",
+                "type": "unknown"
+            },
+            {
+                "ecs": false,
+                "name": "endgame.metadata.type",
+                "type": "unknown"
+            },
+            {
+                "ecs": true,
+                "name": "event.action",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "event.kind",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "event.module",
+                "type": "keyword"
+            }
+        ],
+        "risk_score": 47,
+        "rule_id": "db8c33a8-03cd-4988-9e2c-d0a4863adb13",
+        "setup": "## Setup\n\n### Additional notes\n\nFor information on troubleshooting the maximum alerts warning please refer to this [guide](https://www.elastic.co/guide/en/security/current/alerts-ui-monitor.html#troubleshoot-max-alerts).\n",
+        "severity": "medium",
+        "tags": [
+            "Data Source: Elastic Endgame",
+            "Use Case: Threat Detection",
+            "Tactic: Credential Access",
+            "Resources: Investigation Guide"
+        ],
+        "threat": [
+            {
+                "framework": "MITRE ATT&CK",
+                "tactic": {
+                    "id": "TA0006",
+                    "name": "Credential Access",
+                    "reference": "https://attack.mitre.org/tactics/TA0006/"
+                },
+                "technique": [
+                    {
+                        "id": "T1003",
+                        "name": "OS Credential Dumping",
+                        "reference": "https://attack.mitre.org/techniques/T1003/",
+                        "subtechnique": [
+                            {
+                                "id": "T1003.001",
+                                "name": "LSASS Memory",
+                                "reference": "https://attack.mitre.org/techniques/T1003/001/"
+                            }
+                        ]
+                    }
+                ]
+            }
+        ],
+        "timestamp_override": "event.ingested",
+        "type": "query",
+        "version": 105
+    },
+    "id": "db8c33a8-03cd-4988-9e2c-d0a4863adb13_105",
+    "type": "security-rule"
+}
