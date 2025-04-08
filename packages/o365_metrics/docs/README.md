@@ -3101,11 +3101,12 @@ Please refer to the following [document](https://www.elastic.co/guide/en/ecs/cur
 | o365.metrics.app_registrations.password_credentials.end_date_time | The date and time at which the password expires. | date |
 | o365.metrics.app_registrations.password_credentials.key_id | The unique identifier for the password. | keyword |
 
+
 ### Entra Connect
 
 Get details about apps registered in Microsoft Entra ID. [Microsoft API](https://learn.microsoft.com/en-us/graph/api/resources/organization?view=graph-rest-1.0).
 
-An example event for `app_registrations` looks as following:
+An example event for `entra_connect` looks as following:
 
 ```json
 {
@@ -3118,7 +3119,7 @@ An example event for `app_registrations` looks as following:
         "version": "8.16.0"
     },
     "data_stream": {
-        "dataset": "o365_metrics.app_registrations",
+        "dataset": "o365_metrics.entra_connect",
         "namespace": "75903",
         "type": "metrics"
     },
@@ -3132,7 +3133,7 @@ An example event for `app_registrations` looks as following:
     },
     "event": {
         "agent_id_status": "verified",
-        "dataset": "o365_metrics.app_registrations",
+        "dataset": "o365_metrics.entra_connect",
         "ingested": "2025-04-03T07:01:24Z",
         "kind": "metric"
     },
@@ -3163,38 +3164,35 @@ An example event for `app_registrations` looks as following:
     },
     "o365": {
         "metrics": {
-            "app_registrations": {
-                "app_id": "166f-4179-44-aeb-801cf53a",
-                "display_name": "App1",
-                "key_credentials": [],
-                "object_id": "7eaf2-b2f6-4fb0-b9f-f171aa69",
-                "password_credentials": [
-                    {
-                        "display_name": "test token",
-                        "end_date_time": "2025-08-08T16:46:54.729Z",
-                        "key_id": "3468e-f34c-485f-9754-b47161a"
-                    },
-                    {
-                        "display_name": "token",
-                        "end_date_time": "2025-08-06T09:23:49.935Z",
-                        "key_id": "7b1c7-4aea-421e-abd4-1c48188"
-                    },
-                    {
-                        "display_name": "1234",
-                        "end_date_time": "2025-07-30T05:10:48.334Z",
-                        "key_id": "cb7b-ab9c-4aa2-9ad4-6fda517"
-                    },
-                    {
-                        "display_name": "123",
-                        "end_date_time": "2025-07-29T13:31:41.601Z",
-                        "key_id": "d413b-c6db-4cb3-967e-793d1"
-                    }
-                ]
+            "entra": {
+                "connect": {
+                    "block_cloud_object_takeover_through_hard_match_enabled": false,
+                    "block_soft_match_enabled": false,
+                    "bypass_dir_sync_overrides_enabled": false,
+                    "cloud_password_policy_for_password_synced_users_enabled": false,
+                    "concurrent_credential_update_enabled": false,
+                    "concurrent_org_id_provisioning_enabled": false,
+                    "device_writeback_enabled": false,
+                    "directory_extensions_enabled": false,
+                    "fope_conflict_resolution_enabled": false,
+                    "group_write_back_enabled": false,
+                    "on_premises_last_sync_datetime": "2025-04-01T07:18:46.216Z",
+                    "on_premises_sync_enabled": false,
+                    "password_sync_enabled": false,
+                    "password_writeback_enabled": false,
+                    "quarantine_upon_proxy_addresses_conflict_enabled": false,
+                    "quarantine_upon_upn_conflict_enabled": false,
+                    "soft_match_on_upn_enabled": false,
+                    "synchronize_upn_for_managed_users_enabled": false,
+                    "unified_group_writeback_enabled": false,
+                    "user_force_password_change_on_logon_enabled": false,
+                    "user_writeback_enabled": false
+                }
             }
         }
     },
     "tags": [
-        "o365.metrics.app_registrations"
+        "o365.metrics.entra_connect"
     ]
 }
 ```
@@ -3206,19 +3204,32 @@ Please refer to the following [document](https://www.elastic.co/guide/en/ecs/cur
 | Field | Description | Type |
 |---|---|---|
 | @timestamp | Event timestamp. | date |
+| cloud.image.id | Image ID for the cloud instance. | keyword |
 | data_stream.dataset | Data stream dataset. | constant_keyword |
 | data_stream.namespace | Data stream namespace. | constant_keyword |
 | data_stream.type | Data stream type. | constant_keyword |
-| input.type | Input type. | keyword |
-| o365.metrics.app_registrations.app_id | The unique identifier for the application that is assigned to an application by Microsoft Entra ID. | keyword |
-| o365.metrics.app_registrations.display_name | The display name for the application. | keyword |
-| o365.metrics.app_registrations.key_credentials.display_name | The friendly name for the key. | keyword |
-| o365.metrics.app_registrations.key_credentials.end_date_time | The date and time at which the credential expires. | date |
-| o365.metrics.app_registrations.key_credentials.key_id | The unique identifier for the key. | keyword |
-| o365.metrics.app_registrations.key_credentials.type | The type of key credential; for example, Symmetric, AsymmetricX509Cert. | keyword |
-| o365.metrics.app_registrations.key_credentials.usage | A string that describes the purpose for which the key can be used; for example, Verify. | keyword |
-| o365.metrics.app_registrations.object_id | Unique identifier for the application object. | keyword |
-| o365.metrics.app_registrations.password_credentials.display_name | Friendly name for the password. | keyword |
-| o365.metrics.app_registrations.password_credentials.end_date_time | The date and time at which the password expires. | date |
-| o365.metrics.app_registrations.password_credentials.key_id | The unique identifier for the password. | keyword |
+| host.containerized | If the host is a container. | boolean |
+| host.os.build | OS build information. | keyword |
+| host.os.codename | OS codename, if any. | keyword |
+| o365.metrics.entra.connect.block_cloud_object_takeover_through_hard_match_enabled | Indicates whether cloud object takeover through hard match is blocked. | boolean |
+| o365.metrics.entra.connect.block_soft_match_enabled | Indicates whether soft match is blocked. | boolean |
+| o365.metrics.entra.connect.bypass_dir_sync_overrides_enabled | Indicates whether directory sync overrides are bypassed. | boolean |
+| o365.metrics.entra.connect.cloud_password_policy_for_password_synced_users_enabled | Indicates if cloud password policy is enabled for password-synced users. | boolean |
+| o365.metrics.entra.connect.concurrent_credential_update_enabled | Indicates if concurrent credential updates are allowed. | boolean |
+| o365.metrics.entra.connect.concurrent_org_id_provisioning_enabled | Indicates if concurrent Org ID provisioning is enabled. | boolean |
+| o365.metrics.entra.connect.device_writeback_enabled | Indicates if device writeback is enabled. | boolean |
+| o365.metrics.entra.connect.directory_extensions_enabled | Indicates if directory extensions are enabled. | boolean |
+| o365.metrics.entra.connect.fope_conflict_resolution_enabled | Indicates if FOPE conflict resolution is enabled. | boolean |
+| o365.metrics.entra.connect.group_write_back_enabled | Indicates if group write-back is enabled. | boolean |
+| o365.metrics.entra.connect.on_premises_last_sync_datetime | Indicates the last on premises sync date. | date |
+| o365.metrics.entra.connect.on_premises_sync_enabled | Indicates if the on premises sync is enabled. | boolean |
+| o365.metrics.entra.connect.password_sync_enabled | Indicates if password sync is enabled. | boolean |
+| o365.metrics.entra.connect.password_writeback_enabled | Indicates if password writeback is enabled. | boolean |
+| o365.metrics.entra.connect.quarantine_upon_proxy_addresses_conflict_enabled | Indicates if quarantine is applied upon proxy address conflict. | boolean |
+| o365.metrics.entra.connect.quarantine_upon_upn_conflict_enabled | Indicates if quarantine is applied upon UPN conflict. | boolean |
+| o365.metrics.entra.connect.soft_match_on_upn_enabled | Indicates if soft match on UPN is enabled. | boolean |
+| o365.metrics.entra.connect.synchronize_upn_for_managed_users_enabled | Indicates if UPN synchronization for managed users is enabled. | boolean |
+| o365.metrics.entra.connect.unified_group_writeback_enabled | Indicates if unified group write-back is enabled. | boolean |
+| o365.metrics.entra.connect.user_force_password_change_on_logon_enabled | Indicates if users are forced to change passwords on logon. | boolean |
+| o365.metrics.entra.connect.user_writeback_enabled | Indicates if user writeback is enabled. | boolean |
 

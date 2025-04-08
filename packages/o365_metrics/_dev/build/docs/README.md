@@ -366,8 +366,8 @@ Please refer to the following [document](https://www.elastic.co/guide/en/ecs/cur
 
 Get details about apps registered in Microsoft Entra ID. [Microsoft API](https://learn.microsoft.com/en-us/graph/api/resources/organization?view=graph-rest-1.0).
 
-{{event "app_registrations"}}
+{{event "entra_connect"}}
 
 Please refer to the following [document](https://www.elastic.co/guide/en/ecs/current/ecs-field-reference.html) for detailed information on ECS fields.
 
-{{fields "app_registrations"}}
+{{fields "entra_connect"}}
