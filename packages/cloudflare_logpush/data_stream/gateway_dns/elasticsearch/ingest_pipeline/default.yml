@@ -21,7 +21,7 @@ processors:
   - set:
       field: event.type
       value: [info]
-# ECS fields
+# ECS fields
   - script:
       lang: painless
       tag: painless_datetime_to_milli
@@ -90,10 +90,11 @@ processors:
       field: destination.ip
       copy_from: cloudflare_logpush.gateway_dns.destination.ip
       ignore_empty_value: true
-# Geo enrichment (destination IP)
+# Geo enrichment (destination IP)
   - geoip:
       field: destination.ip
       target_field: destination.geo
+      ignore_missing: true
   - geoip:
       database_file: GeoLite2-ASN.mmdb
       field: destination.ip
@@ -142,7 +143,7 @@ processors:
       field: dns.question.type
       copy_from: cloudflare_logpush.gateway_dns.question.type
       ignore_empty_value: true
-# Set event.outcome based on the response code
+# Set event.outcome based on the response code
   - set:
       field: event.outcome
       value: success
@@ -188,10 +189,11 @@ processors:
       field: source.ip
       copy_from: cloudflare_logpush.gateway_dns.source.ip
       ignore_empty_value: true
-# Geo enrichment (source IP)
+# Geo enrichment (source IP)
   - geoip:
       field: source.ip
       target_field: source.geo
+      ignore_missing: true
   - geoip:
       database_file: GeoLite2-ASN.mmdb
       field: source.ip
