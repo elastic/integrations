@@ -784,7 +784,9 @@ Current supported event types are:
 | crowdstrike.event.AdditionalEndpointSensorId | Additional involved endpoint agent ID. | keyword |
 | crowdstrike.event.AdditionalLocationCountryCode | Additional involved country code. | keyword |
 | crowdstrike.event.AdditionalSsoApplicationIdentifier | Additional application identifier. | keyword |
+| crowdstrike.event.AgentId |  | keyword |
 | crowdstrike.event.AgentIdString |  | keyword |
+| crowdstrike.event.AggregateId |  | keyword |
 | crowdstrike.event.AnomalousTicketContentClassification | Ticket signature analysis. | keyword |
 | crowdstrike.event.AssociatedFile | The file associated with the triggering indicator. | keyword |
 | crowdstrike.event.Attributes | JSON objects containing additional information about the event. | flattened |
@@ -799,9 +801,11 @@ Current supported event types are:
 | crowdstrike.event.CloudProvider |  | keyword |
 | crowdstrike.event.CloudService |  | keyword |
 | crowdstrike.event.Commands | Commands run in a remote session. | keyword |
+| crowdstrike.event.CompositeId | Global unique identifier that identifies a unique alert. | keyword |
 | crowdstrike.event.ComputerName | Name of the computer where the detection occurred. | keyword |
 | crowdstrike.event.CustomerId | Customer identifier. | keyword |
 | crowdstrike.event.DataDomains | Data domains of the event that was the primary indicator or created it. | keyword |
+| crowdstrike.event.Description |  | keyword |
 | crowdstrike.event.DetectId | Unique ID associated with the detection. | keyword |
 | crowdstrike.event.DetectName | Name of the detection. | keyword |
 | crowdstrike.event.DeviceId | Device on which the event occurred. | keyword |
@@ -822,17 +826,30 @@ Current supported event types are:
 | crowdstrike.event.ExecutionMetadata.ResultID |  | keyword |
 | crowdstrike.event.ExecutionMetadata.SearchWindowEnd |  | date |
 | crowdstrike.event.ExecutionMetadata.SearchWindowStart |  | date |
+| crowdstrike.event.FalconHostLink |  | keyword |
+| crowdstrike.event.FileName |  | keyword |
+| crowdstrike.event.FilePath |  | keyword |
+| crowdstrike.event.FilesWritten.FileName |  | keyword |
+| crowdstrike.event.FilesWritten.FilePath |  | keyword |
+| crowdstrike.event.FilesWritten.Timestamp |  | date |
 | crowdstrike.event.Finding | The details of the finding. | keyword |
 | crowdstrike.event.FineScore | The highest incident score reached as of the time the event was sent. | float |
 | crowdstrike.event.Flags.Audit | CrowdStrike audit flag. | boolean |
 | crowdstrike.event.Flags.Log | CrowdStrike log flag. | boolean |
 | crowdstrike.event.Flags.Monitor | CrowdStrike monitor flag. | boolean |
+| crowdstrike.event.GrandParentCommandLine |  | keyword |
+| crowdstrike.event.GrandParentImageFileName |  | keyword |
+| crowdstrike.event.GrandParentImageFilePath |  | keyword |
 | crowdstrike.event.GrandparentCommandLine | Grandparent process command line arguments. | keyword |
 | crowdstrike.event.GrandparentImageFileName | Path to the grandparent process. | keyword |
+| crowdstrike.event.GrandparentImageFilePath |  | keyword |
 | crowdstrike.event.Highlights | Sections of content that matched the monitoring rule. | text |
 | crowdstrike.event.HostGroups | Array of related Host Group IDs. | keyword |
+| crowdstrike.event.Hostname |  | keyword |
 | crowdstrike.event.ICMPCode | RFC2780 ICMP Code field. | keyword |
 | crowdstrike.event.ICMPType | RFC2780 ICMP Type field. | keyword |
+| crowdstrike.event.IOARuleGroupName |  | keyword |
+| crowdstrike.event.IOARuleInstanceID |  | keyword |
 | crowdstrike.event.IOARuleInstanceVersion | Version number of the InstanceID that triggered. | long |
 | crowdstrike.event.IOARuleName | Name given to the custom IOA rule that triggered. | keyword |
 | crowdstrike.event.IOCType | CrowdStrike type for indicator of compromise. | keyword |
@@ -850,6 +867,8 @@ Current supported event types are:
 | crowdstrike.event.LdapSearchQueryAttack | Detected LDAP tool attack. | keyword |
 | crowdstrike.event.LoadedObjects | Provides one or more JSON objects describing the loaded objects related to the detection. | nested |
 | crowdstrike.event.LocalIP | IP address of the host associated with the detection. | keyword |
+| crowdstrike.event.LocalIPv6 |  | ip |
+| crowdstrike.event.LogonDomain |  | keyword |
 | crowdstrike.event.MACAddress | MAC address of the host associated with the detection. | keyword |
 | crowdstrike.event.MD5String | MD5 sum of the executable associated with the detection. | keyword |
 | crowdstrike.event.MachineDomain | Domain for the machine associated with the detection. | keyword |
@@ -868,6 +887,7 @@ Current supported event types are:
 | crowdstrike.event.MobileNetworkConnections | Provides one or more JSON objects describing the related network connections from the mobile device. | nested |
 | crowdstrike.event.MostRecentActivityTimeStamp | The timestamp of the latest activity performed by the account. | date |
 | crowdstrike.event.MountedVolumes | Provides one or more JSON objects describing mounted volumes on the mobile device. | nested |
+| crowdstrike.event.Name |  | keyword |
 | crowdstrike.event.NetworkAccesses | Detected Network traffic done by a process. | nested |
 | crowdstrike.event.NetworkAccesses.AccessTimestamp |  | keyword |
 | crowdstrike.event.NetworkAccesses.AccessType |  | keyword |
@@ -887,8 +907,12 @@ Current supported event types are:
 | crowdstrike.event.ObjectiveCRuntimesAltered | Provides one or more JSON objects describing the obj-c methods related to the malware. | nested |
 | crowdstrike.event.OperationName | Event subtype. | keyword |
 | crowdstrike.event.ParentImageFileName | The parent image file name involved. | keyword |
+| crowdstrike.event.ParentImageFilePath |  | keyword |
+| crowdstrike.event.ParentProcessId |  | long |
+| crowdstrike.event.PatternDispositionDescription |  | keyword |
 | crowdstrike.event.PatternDispositionFlags.BlockingUnsupportedOrDisabled |  | boolean |
 | crowdstrike.event.PatternDispositionFlags.BootupSafeguardEnabled |  | boolean |
+| crowdstrike.event.PatternDispositionFlags.ContainmentFileSystem |  | boolean |
 | crowdstrike.event.PatternDispositionFlags.CriticalProcessDisabled |  | boolean |
 | crowdstrike.event.PatternDispositionFlags.Detect |  | boolean |
 | crowdstrike.event.PatternDispositionFlags.FsOperationBlocked |  | boolean |
@@ -916,6 +940,7 @@ Current supported event types are:
 | crowdstrike.event.PolicyName | CrowdStrike policy name. | keyword |
 | crowdstrike.event.PrecedingActivityTimeStamp | The timestamp of the activity before the most recent activity was performed. | date |
 | crowdstrike.event.PreviousPrivileges | A list of the source account's privileges before privilege changes were made. | keyword |
+| crowdstrike.event.ProcessId |  | long |
 | crowdstrike.event.Protocol | CrowdStrike provided protocol. | keyword |
 | crowdstrike.event.ProtocolAnomalyClassification | Authentication signature analysis. | keyword |
 | crowdstrike.event.Region |  | keyword |
@@ -949,6 +974,7 @@ Current supported event types are:
 | crowdstrike.event.SensorId | Unique ID associated with the Falcon sensor. | keyword |
 | crowdstrike.event.ServiceName | Description of which related service was involved in the event. | keyword |
 | crowdstrike.event.SessionId | Session ID of the remote response session. | keyword |
+| crowdstrike.event.Severity | The integer severity level using Crowdstrike scaling. | integer |
 | crowdstrike.event.SeverityName | The severity level of the detection, as a string (High/Medium/Informational). | keyword |
 | crowdstrike.event.SourceAccountUpn | Source user UPN. | keyword |
 | crowdstrike.event.SourceEndpointAccountObjectGuid | Source endpoint object GUID | keyword |
@@ -977,7 +1003,9 @@ Current supported event types are:
 | crowdstrike.event.Timestamp | Firewall rule triggered timestamp. | date |
 | crowdstrike.event.Trampolines | Provides one or more JSON objects describing the relevant functions and processes performing inline API hooks. | nested |
 | crowdstrike.event.TreeID | CrowdStrike tree id. | keyword |
+| crowdstrike.event.Type | The endpoint detection type ("ldt": Legacy Endpoint Detection, or "ofp": Office Prevention Macro Detection). | keyword |
 | crowdstrike.event.UserId | Email address or user ID associated with the event. | keyword |
+| crowdstrike.event.UserName |  | keyword |
 | crowdstrike.event.UserUUID |  | keyword |
 | crowdstrike.event.VerifiedBootState | Provides the device’s current boot state. | keyword |
 | crowdstrike.event.XdrType | Type of detection: xdr or xdr-scheduled-search. | keyword |
@@ -1326,11 +1354,28 @@ and/or `session_token`.
     Please see[Create Shared Credentials File](https://docs.aws.amazon.com/ses/latest/DeveloperGuide/create-shared-credentials-file.html)
     for more details.
 
+#### Troubleshooting
+
+##### Duplicate Events
+
+The option `Enable Data Deduplication` allows you to avoid consuming duplicate events. By default, this option is set to `false`, and so duplicate events may be ingested. When this option is enabled, a [fingerprint processor](https://www.elastic.co/guide/en/elasticsearch/reference/current/fingerprint-processor.html) is used to calculate a hash from a set of Crowdstrike fields that uniquely identifies the event. The hash is assigned to the Elasticsearch [`_id`](https://www.elastic.co/guide/en/elasticsearch/reference/current/mapping-id-field.html) field that makes the document unique, thus avoiding duplicates.
+
+If duplicate events are ingested, to help find them, the integration `event.id` field is populated by concatenating a few Crowdstrike fields that uniquely identifies the event. These fields are `id`, `aid`, and `cid` from the Crowdstrike event. The fields are separated with pipe `|`.
+For example, if your Crowdstrike event contains `id: 123`, `aid: 456`, and `cid: 789` then the `event.id` would be `123|456|789`.
+
+#### Example
+
 **Exported fields**
 
 | Field | Description | Type |
 |---|---|---|
 | @timestamp | Event timestamp. | date |
+| aws.s3.bucket.arn | The AWS S3 bucket ARN. | keyword |
+| aws.s3.bucket.name | The AWS S3 bucket name. | keyword |
+| aws.s3.object.key | The AWS S3 Object key. | keyword |
+| crowdstrike.AccountDomain |  | match_only_text |
+| crowdstrike.AccountObjectGuid |  | match_only_text |
+| crowdstrike.AccountObjectSid |  | match_only_text |
 | crowdstrike.AccountType |  | keyword |
 | crowdstrike.ActiveDirectoryAuthenticationMethod |  | keyword |
 | crowdstrike.ActivityId |  | keyword |
@@ -1339,8 +1384,10 @@ and/or `session_token`.
 | crowdstrike.AgentLocalTime |  | date |
 | crowdstrike.AgentTimeOffset |  | float |
 | crowdstrike.AgentVersion |  | keyword |
+| crowdstrike.AggregateId |  | keyword |
 | crowdstrike.AllocateVirtualMemoryCount |  | long |
 | crowdstrike.ApiReturnValue |  | keyword |
+| crowdstrike.ApplicationName |  | match_only_text |
 | crowdstrike.ArchiveFileWrittenCount |  | long |
 | crowdstrike.AsepWrittenCount |  | long |
 | crowdstrike.AssociatedFile |  | keyword |
@@ -1351,9 +1398,31 @@ and/or `session_token`.
 | crowdstrike.AuthenticationUuid |  | keyword |
 | crowdstrike.AuthenticationUuidAsString |  | keyword |
 | crowdstrike.BinaryExecutableWrittenCount |  | long |
+| crowdstrike.BiosChanged |  | match_only_text |
 | crowdstrike.BiosManufacturer |  | keyword |
 | crowdstrike.BiosReleaseDate |  | date |
 | crowdstrike.BiosVersion |  | keyword |
+| crowdstrike.BluetoothClassOfDeviceValue |  | match_only_text |
+| crowdstrike.BluetoothDeviceAppearanceValue |  | match_only_text |
+| crowdstrike.BluetoothDeviceModelNumber |  | match_only_text |
+| crowdstrike.BluetoothDeviceName |  | match_only_text |
+| crowdstrike.BluetoothServiceName_1 |  | match_only_text |
+| crowdstrike.BluetoothServiceName_3 |  | match_only_text |
+| crowdstrike.BluetoothServiceName_4 |  | match_only_text |
+| crowdstrike.BluetoothServiceName_5 |  | match_only_text |
+| crowdstrike.BluetoothServiceName_6 |  | match_only_text |
+| crowdstrike.BluetoothServiceName_7 |  | match_only_text |
+| crowdstrike.BluetoothServiceName_8 |  | match_only_text |
+| crowdstrike.BluetoothServiceUuidArray |  | match_only_text |
+| crowdstrike.BluetoothServiceUuid_1 |  | match_only_text |
+| crowdstrike.BluetoothServiceUuid_2 |  | match_only_text |
+| crowdstrike.BluetoothServiceUuid_3 |  | match_only_text |
+| crowdstrike.BluetoothServiceUuid_4 |  | match_only_text |
+| crowdstrike.BluetoothServiceUuid_5 |  | match_only_text |
+| crowdstrike.BluetoothServiceUuid_6 |  | match_only_text |
+| crowdstrike.BluetoothServiceUuid_7 |  | match_only_text |
+| crowdstrike.BluetoothServiceUuid_8 |  | match_only_text |
+| crowdstrike.BluetoothVendorIdSource |  | match_only_text |
 | crowdstrike.BootArgs |  | keyword |
 | crowdstrike.BootTimeFunctionalityLevel |  | keyword |
 | crowdstrike.BoundedCount |  | long |
@@ -1361,6 +1430,7 @@ and/or `session_token`.
 | crowdstrike.CLICreationCount |  | long |
 | crowdstrike.CallStackModuleNames |  | keyword |
 | crowdstrike.CallStackModuleNamesVersion |  | version |
+| crowdstrike.ChangedPcrBitmap |  | match_only_text |
 | crowdstrike.ChannelDiffStatus |  | keyword |
 | crowdstrike.ChannelId |  | keyword |
 | crowdstrike.ChannelVersion |  | keyword |
@@ -1368,9 +1438,13 @@ and/or `session_token`.
 | crowdstrike.ChasisManufacturer |  | keyword |
 | crowdstrike.ChassisType |  | keyword |
 | crowdstrike.ClientComputerName |  | keyword |
+| crowdstrike.ClientId |  | match_only_text |
+| crowdstrike.CommandCount |  | match_only_text |
+| crowdstrike.CommandCountMax |  | match_only_text |
 | crowdstrike.CommandHistory |  | keyword |
 | crowdstrike.CommandHistory.text | Multi-field of `crowdstrike.CommandHistory`. | match_only_text |
 | crowdstrike.CompletionEventId |  | keyword |
+| crowdstrike.CompositeId | Global unique identifier that identifies a unique alert. | keyword |
 | crowdstrike.ConHostId |  | keyword |
 | crowdstrike.ConHostProcessId |  | keyword |
 | crowdstrike.ConfigBuild |  | keyword |
@@ -1379,9 +1453,11 @@ and/or `session_token`.
 | crowdstrike.ConfigIDPlatform |  | keyword |
 | crowdstrike.ConfigStateData |  | text |
 | crowdstrike.ConfigStateHash |  | keyword |
+| crowdstrike.ConfigurationDescriptorName |  | match_only_text |
 | crowdstrike.ConfigurationVersion |  | keyword |
 | crowdstrike.ConnectTime |  | date |
 | crowdstrike.ConnectType |  | keyword |
+| crowdstrike.ConnectionAddressIP6 |  | match_only_text |
 | crowdstrike.ConnectionFlags |  | keyword |
 | crowdstrike.ContextBaseFileName |  | keyword |
 | crowdstrike.ContextProcessId |  | keyword |
@@ -1397,11 +1473,18 @@ and/or `session_token`.
 | crowdstrike.CurrentLocalIP |  | ip |
 | crowdstrike.CustomerIdString |  | keyword |
 | crowdstrike.CycleTime |  | long |
+| crowdstrike.DataDomains |  | keyword |
+| crowdstrike.DcNumAttachments |  | match_only_text |
+| crowdstrike.DcNumBlockingPolicies |  | match_only_text |
+| crowdstrike.Description |  | keyword |
 | crowdstrike.DesiredAccess |  | keyword |
 | crowdstrike.DetectDescription |  | keyword |
 | crowdstrike.DetectId |  | keyword |
 | crowdstrike.DetectName |  | keyword |
 | crowdstrike.DeviceId |  | keyword |
+| crowdstrike.DevicePropertyClassGuid |  | match_only_text |
+| crowdstrike.DevicePropertyClassName |  | match_only_text |
+| crowdstrike.DevicePropertyLocationInformation |  | match_only_text |
 | crowdstrike.DirectoryCreatedCount |  | long |
 | crowdstrike.DirectoryEnumeratedCount |  | long |
 | crowdstrike.DnsRequestCount |  | long |
@@ -1410,11 +1493,25 @@ and/or `session_token`.
 | crowdstrike.DownloadPort |  | long |
 | crowdstrike.DownloadServer |  | keyword |
 | crowdstrike.DualRequest |  | keyword |
+| crowdstrike.DylibPath |  | match_only_text |
 | crowdstrike.ELFSubType |  | keyword |
 | crowdstrike.EffectiveTransmissionClass |  | keyword |
+| crowdstrike.EfiVariableCustomModeAttributes |  | match_only_text |
+| crowdstrike.EfiVariableDbAttributes |  | match_only_text |
+| crowdstrike.EfiVariableDbSha256Hash |  | match_only_text |
+| crowdstrike.EfiVariableKekAttributes |  | match_only_text |
+| crowdstrike.EfiVariableKekSha256Hash |  | match_only_text |
+| crowdstrike.EfiVariablePkAttributes |  | match_only_text |
+| crowdstrike.EfiVariablePkSha256Hash |  | match_only_text |
+| crowdstrike.EfiVariableSecureBootAttributes |  | match_only_text |
+| crowdstrike.EfiVariableSetupMode |  | match_only_text |
+| crowdstrike.EfiVariableSetupModeAttributes |  | match_only_text |
+| crowdstrike.EfiVariableSignatureSupport |  | match_only_text |
+| crowdstrike.EfiVariableSignatureSupportAttributes |  | match_only_text |
 | crowdstrike.EnabledPrivilegesBitmask |  | keyword |
 | crowdstrike.EndTime |  | date |
 | crowdstrike.Entitlements |  | keyword |
+| crowdstrike.EnvironmentVariablesString |  | match_only_text |
 | crowdstrike.ErrorCode |  | keyword |
 | crowdstrike.ErrorStatus |  | keyword |
 | crowdstrike.EtwRawThreadId |  | long |
@@ -1422,7 +1519,10 @@ and/or `session_token`.
 | crowdstrike.EventType |  | keyword |
 | crowdstrike.EventUUID |  | keyword |
 | crowdstrike.ExeAndServiceCount |  | long |
+| crowdstrike.ExecutableBytes |  | match_only_text |
 | crowdstrike.ExecutableDeletedCount |  | long |
+| crowdstrike.ExtendedAttributeValue |  | match_only_text |
+| crowdstrike.ExtendedAttributeValueReadable |  | match_only_text |
 | crowdstrike.ExternalApiType |  | keyword |
 | crowdstrike.FXFileSize |  | keyword |
 | crowdstrike.Facility |  | keyword |
@@ -1433,13 +1533,19 @@ and/or `session_token`.
 | crowdstrike.FeatureVector |  | match_only_text |
 | crowdstrike.File |  | keyword |
 | crowdstrike.FileAttributes |  | keyword |
+| crowdstrike.FileContent |  | match_only_text |
 | crowdstrike.FileDeletedCount |  | long |
 | crowdstrike.FileEcpBitmask |  | keyword |
 | crowdstrike.FileName |  | keyword |
 | crowdstrike.FileObject |  | keyword |
 | crowdstrike.FilePath |  | keyword |
+| crowdstrike.FileVaultIsEnabled |  | match_only_text |
+| crowdstrike.FilesWritten.FileName |  | keyword |
+| crowdstrike.FilesWritten.FilePath |  | keyword |
+| crowdstrike.FilesWritten.Timestamp |  | date |
 | crowdstrike.FirmwareAnalysisEclConsumerInterfaceVersion |  | keyword |
 | crowdstrike.FirmwareAnalysisEclControlInterfaceVersion |  | keyword |
+| crowdstrike.FirstCommand |  | match_only_text |
 | crowdstrike.FirstDiscoveredDate |  | date |
 | crowdstrike.FirstSeen |  | date |
 | crowdstrike.Flags |  | keyword |
@@ -1448,8 +1554,13 @@ and/or `session_token`.
 | crowdstrike.GrandparentCommandLine |  | keyword |
 | crowdstrike.GrandparentCommandLine.text | Multi-field of `crowdstrike.GrandparentCommandLine`. | match_only_text |
 | crowdstrike.GrandparentImageFileName |  | keyword |
+| crowdstrike.GrandparentImageFilePath |  | keyword |
 | crowdstrike.HostGroups |  | keyword |
 | crowdstrike.HostHiddenStatus |  | keyword |
+| crowdstrike.HttpInternalSource |  | match_only_text |
+| crowdstrike.HttpMethod |  | match_only_text |
+| crowdstrike.HttpRequestHeader |  | match_only_text |
+| crowdstrike.HttpUrl |  | match_only_text |
 | crowdstrike.IOCType |  | keyword |
 | crowdstrike.IOCValue |  | keyword |
 | crowdstrike.IOServiceClass |  | keyword |
@@ -1463,13 +1574,17 @@ and/or `session_token`.
 | crowdstrike.InOctets |  | keyword |
 | crowdstrike.InUcastPkts |  | keyword |
 | crowdstrike.InUnknownProtos |  | keyword |
+| crowdstrike.IndividualDiskInfo |  | match_only_text |
 | crowdstrike.Information |  | keyword |
 | crowdstrike.InjectedDllCount |  | long |
 | crowdstrike.InjectedThreadCount |  | long |
+| crowdstrike.InstanceMetadata |  | match_only_text |
+| crowdstrike.InstanceMetadataSignature |  | match_only_text |
 | crowdstrike.IntegrityLevel |  | keyword |
 | crowdstrike.InterfaceAlias |  | keyword |
 | crowdstrike.InterfaceGuid |  | keyword |
 | crowdstrike.InterfaceIndex |  | long |
+| crowdstrike.InterfaceKind |  | match_only_text |
 | crowdstrike.InterfaceType |  | keyword |
 | crowdstrike.InterfaceVersion |  | keyword |
 | crowdstrike.IrpFlags |  | keyword |
@@ -1477,8 +1592,15 @@ and/or `session_token`.
 | crowdstrike.IsOnRemovableDisk |  | keyword |
 | crowdstrike.IsTransactedFile |  | keyword |
 | crowdstrike.KernelTime |  | long |
+| crowdstrike.KeyObject |  | match_only_text |
+| crowdstrike.LastAdded |  | match_only_text |
 | crowdstrike.LastDiscoveredBy |  | keyword |
+| crowdstrike.LastDisplayed |  | match_only_text |
 | crowdstrike.LastLoggedOnHost |  | keyword |
+| crowdstrike.LastPendingUpdateInstalledTime |  | match_only_text |
+| crowdstrike.LaunchItemType |  | match_only_text |
+| crowdstrike.LaunchItemUrl |  | match_only_text |
+| crowdstrike.LdapSearchFilterSample |  | match_only_text |
 | crowdstrike.LfoUploadFlags |  | keyword |
 | crowdstrike.LightningLatencyState |  | keyword |
 | crowdstrike.Line |  | keyword |
@@ -1486,6 +1608,7 @@ and/or `session_token`.
 | crowdstrike.LocalAddressIP6 |  | ip |
 | crowdstrike.LocalAdminAccess |  | keyword |
 | crowdstrike.LocalIP |  | ip |
+| crowdstrike.LocalIPv6 |  | ip |
 | crowdstrike.LogicalCoreCount |  | long |
 | crowdstrike.LoginSessionId |  | keyword |
 | crowdstrike.LogoffTime |  | date |
@@ -1503,11 +1626,16 @@ and/or `session_token`.
 | crowdstrike.MajorFunction |  | keyword |
 | crowdstrike.MajorVersion |  | keyword |
 | crowdstrike.Malicious |  | keyword |
+| crowdstrike.ManagedPdbBuildPath |  | match_only_text |
 | crowdstrike.MaxThreadCount |  | long |
+| crowdstrike.MemoryAvailable |  | match_only_text |
 | crowdstrike.MemoryTotal |  | keyword |
 | crowdstrike.MicrocodeSignature |  | keyword |
 | crowdstrike.MinorFunction |  | keyword |
 | crowdstrike.MinorVersion |  | keyword |
+| crowdstrike.MmioDataGenPmconB |  | match_only_text |
+| crowdstrike.MmioDataSmiEn |  | match_only_text |
+| crowdstrike.MmioDataTco1Cnt |  | match_only_text |
 | crowdstrike.MoboManufacturer |  | keyword |
 | crowdstrike.MoboProductName |  | keyword |
 | crowdstrike.ModelPrediction |  | keyword |
@@ -1531,7 +1659,32 @@ and/or `session_token`.
 | crowdstrike.OSVersionFileData |  | match_only_text |
 | crowdstrike.OSVersionFileName |  | keyword |
 | crowdstrike.OU |  | keyword |
+| crowdstrike.ObjectNameEtw |  | match_only_text |
+| crowdstrike.ObjectTypeEtw |  | match_only_text |
 | crowdstrike.Objective |  | keyword |
+| crowdstrike.OciContainerAppName |  | match_only_text |
+| crowdstrike.OciContainerAppVersion |  | match_only_text |
+| crowdstrike.OciContainerConfigImage |  | match_only_text |
+| crowdstrike.OciContainerConfigLabels |  | match_only_text |
+| crowdstrike.OciContainerConfigTty |  | match_only_text |
+| crowdstrike.OciContainerConfigUser |  | match_only_text |
+| crowdstrike.OciContainerEngineType |  | match_only_text |
+| crowdstrike.OciContainerHostConfigCgroup |  | match_only_text |
+| crowdstrike.OciContainerHostConfigDevices |  | match_only_text |
+| crowdstrike.OciContainerHostConfigOomKillDisable |  | match_only_text |
+| crowdstrike.OciContainerHostConfigPrivileged |  | match_only_text |
+| crowdstrike.OciContainerHostConfigPublishAllPorts |  | match_only_text |
+| crowdstrike.OciContainerHostConfigReadOnlyRootfs |  | match_only_text |
+| crowdstrike.OciContainerImageId |  | match_only_text |
+| crowdstrike.OciContainerInfoRetransmitted |  | match_only_text |
+| crowdstrike.OciContainerMounts |  | match_only_text |
+| crowdstrike.OciContainerName |  | match_only_text |
+| crowdstrike.OciContainerNetworkSettingsIpAddress |  | match_only_text |
+| crowdstrike.OciContainerPhase |  | match_only_text |
+| crowdstrike.OciContainerStateOOMKilled |  | match_only_text |
+| crowdstrike.OciContainerStatePid |  | match_only_text |
+| crowdstrike.OciContainersStartedCount |  | match_only_text |
+| crowdstrike.OciContainersStoppedCount |  | match_only_text |
 | crowdstrike.OperationFlags |  | keyword |
 | crowdstrike.Options |  | keyword |
 | crowdstrike.OutErrors |  | keyword |
@@ -1545,6 +1698,7 @@ and/or `session_token`.
 | crowdstrike.ParentCommandLine |  | keyword |
 | crowdstrike.ParentCommandLine.text | Multi-field of `crowdstrike.ParentCommandLine`. | match_only_text |
 | crowdstrike.ParentImageFileName |  | keyword |
+| crowdstrike.ParentImageFilePath |  | keyword |
 | crowdstrike.PasswordLastSet |  | keyword |
 | crowdstrike.PatternDispositionDescription |  | keyword |
 | crowdstrike.PatternDispositionFlags.BlockingUnsupportedOrDisabled |  | boolean |
@@ -1570,7 +1724,30 @@ and/or `session_token`.
 | crowdstrike.PatternDispositionFlags.SuspendParent |  | boolean |
 | crowdstrike.PatternDispositionFlags.SuspendProcess |  | boolean |
 | crowdstrike.PatternDispositionValue |  | long |
+| crowdstrike.PatternId |  | keyword |
+| crowdstrike.PatternIdList |  | match_only_text |
 | crowdstrike.PciAttachmentState |  | keyword |
+| crowdstrike.PciConfigDataBdsm |  | match_only_text |
+| crowdstrike.PciConfigDataBiosCntl |  | match_only_text |
+| crowdstrike.PciConfigDataGenPmconA |  | match_only_text |
+| crowdstrike.PciConfigDataGgc |  | match_only_text |
+| crowdstrike.PciConfigDataHfsts1 |  | match_only_text |
+| crowdstrike.PciConfigDataMesegBase |  | match_only_text |
+| crowdstrike.PciConfigDataRemapbase |  | match_only_text |
+| crowdstrike.PciConfigDataRemaplimit |  | match_only_text |
+| crowdstrike.PciConfigDataSmramc |  | match_only_text |
+| crowdstrike.PciConfigDataTom |  | match_only_text |
+| crowdstrike.PciConfigDataTouud |  | match_only_text |
+| crowdstrike.PciConfigDataTsegmb |  | match_only_text |
+| crowdstrike.Pcr0 |  | match_only_text |
+| crowdstrike.Pcr1 |  | match_only_text |
+| crowdstrike.Pcr2 |  | match_only_text |
+| crowdstrike.Pcr3 |  | match_only_text |
+| crowdstrike.Pcr4 |  | match_only_text |
+| crowdstrike.Pcr5 |  | match_only_text |
+| crowdstrike.Pcr6 |  | match_only_text |
+| crowdstrike.Pcr7 |  | match_only_text |
+| crowdstrike.PendingUpdateIds |  | match_only_text |
 | crowdstrike.PhysicalAddress |  | keyword |
 | crowdstrike.PhysicalAddressLength |  | long |
 | crowdstrike.PhysicalCoreCount |  | long |
@@ -1578,6 +1755,7 @@ and/or `session_token`.
 | crowdstrike.PreviousConnectTime |  | date |
 | crowdstrike.PrivilegedProcessHandleCount |  | long |
 | crowdstrike.PrivilegesBitmask |  | keyword |
+| crowdstrike.ProcessAttributes |  | match_only_text |
 | crowdstrike.ProcessCount |  | long |
 | crowdstrike.ProcessCreateFlags |  | keyword |
 | crowdstrike.ProcessId |  | long |
@@ -1589,30 +1767,48 @@ and/or `session_token`.
 | crowdstrike.ProvisionState |  | keyword |
 | crowdstrike.PupAdwareConfidence |  | keyword |
 | crowdstrike.PupAdwareDecisionValue |  | keyword |
+| crowdstrike.QuarantinedFileExtendedState |  | match_only_text |
+| crowdstrike.QuarantinedFileName |  | match_only_text |
+| crowdstrike.QuarantinedFileState |  | match_only_text |
 | crowdstrike.QueryStatus |  | integer |
 | crowdstrike.QueueApcCount |  | long |
 | crowdstrike.RFMState |  | keyword |
 | crowdstrike.RGID |  | keyword |
+| crowdstrike.RPath |  | match_only_text |
 | crowdstrike.RUID |  | keyword |
 | crowdstrike.ReasonOfFunctionalityLevel |  | keyword |
+| crowdstrike.RegBinaryValue |  | match_only_text |
+| crowdstrike.RegCreateDisposition |  | match_only_text |
+| crowdstrike.RegCreateOptions |  | match_only_text |
 | crowdstrike.RegKeySecurityDecreasedCount |  | long |
+| crowdstrike.RegPostObjectName |  | match_only_text |
+| crowdstrike.RegRootObjectName |  | match_only_text |
+| crowdstrike.RegStringValue |  | match_only_text |
 | crowdstrike.RemoteAccount |  | keyword |
 | crowdstrike.RemovableDiskFileWrittenCount |  | long |
 | crowdstrike.RequestType |  | keyword |
 | crowdstrike.RpcClientProcessId |  | keyword |
 | crowdstrike.RpcClientThreadId |  | keyword |
 | crowdstrike.RpcNestingLevel |  | keyword |
+| crowdstrike.RpcOpClassification |  | match_only_text |
 | crowdstrike.RpcOpNum |  | keyword |
 | crowdstrike.RunDllInvocationCount |  | long |
 | crowdstrike.SHA1String |  | keyword |
 | crowdstrike.SHA256String |  | keyword |
 | crowdstrike.SVGID |  | keyword |
 | crowdstrike.SVUID |  | keyword |
+| crowdstrike.SamAccountName |  | match_only_text |
 | crowdstrike.ScreenshotsTakenCount |  | long |
+| crowdstrike.ScriptContent |  | match_only_text |
+| crowdstrike.ScriptContentBytes |  | match_only_text |
+| crowdstrike.ScriptContentScanId |  | match_only_text |
 | crowdstrike.ScriptEngineInvocationCount |  | long |
 | crowdstrike.SensorGroupingTags |  | keyword |
 | crowdstrike.SensorId |  | keyword |
 | crowdstrike.SensorStateBitMap |  | keyword |
+| crowdstrike.ServiceAccessPropertiesEtw |  | match_only_text |
+| crowdstrike.ServiceDelayedAutoStart |  | match_only_text |
+| crowdstrike.ServiceDependOnService |  | match_only_text |
 | crowdstrike.ServiceDisplayName |  | keyword |
 | crowdstrike.ServiceEventCount |  | long |
 | crowdstrike.ServicePackMajor |  | keyword |
@@ -1638,10 +1834,29 @@ and/or `session_token`.
 | crowdstrike.SourceEndpointNetworkType |  | keyword |
 | crowdstrike.SourceFileName |  | keyword |
 | crowdstrike.SourceProcessId |  | keyword |
+| crowdstrike.SourceProducts |  | keyword |
 | crowdstrike.SourceThreadId |  | keyword |
+| crowdstrike.SourceThreadModule |  | match_only_text |
+| crowdstrike.SourceVendors |  | keyword |
+| crowdstrike.SpibarDataBfpr |  | match_only_text |
+| crowdstrike.SpibarDataFreg0 |  | match_only_text |
+| crowdstrike.SpibarDataFreg1 |  | match_only_text |
+| crowdstrike.SpibarDataFreg2 |  | match_only_text |
+| crowdstrike.SpibarDataFreg3 |  | match_only_text |
+| crowdstrike.SpibarDataFreg4 |  | match_only_text |
+| crowdstrike.SpibarDataHsfs |  | match_only_text |
+| crowdstrike.SpibarDataPr0 |  | match_only_text |
+| crowdstrike.SpibarDataPr1 |  | match_only_text |
+| crowdstrike.SpibarDataPr2 |  | match_only_text |
+| crowdstrike.SpibarDataPr3 |  | match_only_text |
+| crowdstrike.SpibarDataPr4 |  | match_only_text |
+| crowdstrike.SpibarDataVscc0 |  | match_only_text |
+| crowdstrike.SpibarDataVscc1 |  | match_only_text |
 | crowdstrike.StartTime |  | date |
 | crowdstrike.Status |  | keyword |
+| crowdstrike.StorageUsageInfo |  | match_only_text |
 | crowdstrike.SubStatus |  | keyword |
+| crowdstrike.SubjectDomainNameEtw |  | match_only_text |
 | crowdstrike.SuppressType |  | keyword |
 | crowdstrike.SuspectStackCount |  | long |
 | crowdstrike.SuspiciousCredentialModuleLoadCount |  | long |
@@ -1650,6 +1865,7 @@ and/or `session_token`.
 | crowdstrike.SuspiciousRawDiskReadCount |  | long |
 | crowdstrike.SyntheticPR2Flags |  | keyword |
 | crowdstrike.SystemManufacturer |  | keyword |
+| crowdstrike.SystemProcessCount |  | match_only_text |
 | crowdstrike.SystemProductName |  | keyword |
 | crowdstrike.SystemSerialNumber |  | keyword |
 | crowdstrike.SystemSku |  | keyword |
@@ -1660,10 +1876,14 @@ and/or `session_token`.
 | crowdstrike.TargetDomainControllerObjectSid |  | keyword |
 | crowdstrike.TargetFileName |  | keyword |
 | crowdstrike.TargetThreadId |  | keyword |
+| crowdstrike.TaskXml |  | match_only_text |
 | crowdstrike.Technique |  | keyword |
+| crowdstrike.ThreadStartBytes |  | match_only_text |
 | crowdstrike.Timeout |  | long |
 | crowdstrike.TokenType |  | keyword |
+| crowdstrike.Type | The endpoint detection type ("ldt": Legacy Endpoint Detection, or "ofp": Office Prevention Macro Detection). | keyword |
 | crowdstrike.USN |  | keyword |
+| crowdstrike.UninstallPendingUpdateIds |  | match_only_text |
 | crowdstrike.UnixMode |  | keyword |
 | crowdstrike.UnsignedModuleLoadCount |  | long |
 | crowdstrike.UploadId |  | keyword |
@@ -1682,6 +1902,7 @@ and/or `session_token`.
 | crowdstrike.UserSid_readable |  | keyword |
 | crowdstrike.UserTime |  | long |
 | crowdstrike.VerifiedCertificate |  | keyword |
+| crowdstrike.VersionInfo |  | match_only_text |
 | crowdstrike.VnodeModificationType |  | keyword |
 | crowdstrike.VnodeType |  | keyword |
 | crowdstrike.VolumeAppearanceTime |  | keyword |
@@ -1695,6 +1916,7 @@ and/or `session_token`.
 | crowdstrike.VolumeDeviceProtocol |  | keyword |
 | crowdstrike.VolumeDeviceRevision |  | keyword |
 | crowdstrike.VolumeDeviceType |  | keyword |
+| crowdstrike.VolumeDeviceVendor |  | match_only_text |
 | crowdstrike.VolumeDriveLetter |  | keyword |
 | crowdstrike.VolumeFileSystemDevice |  | keyword |
 | crowdstrike.VolumeFileSystemDriver |  | keyword |
@@ -1716,8 +1938,11 @@ and/or `session_token`.
 | crowdstrike.VolumeMediaWritable |  | keyword |
 | crowdstrike.VolumeMountPoint |  | keyword |
 | crowdstrike.VolumeName |  | keyword |
+| crowdstrike.VolumeOriginPath |  | match_only_text |
 | crowdstrike.VolumeRealDeviceName |  | keyword |
 | crowdstrike.VolumeSectorSize |  | keyword |
+| crowdstrike.VolumeSnapshotName |  | match_only_text |
+| crowdstrike.VolumeSnapshotTimeStamp |  | match_only_text |
 | crowdstrike.VolumeType |  | keyword |
 | crowdstrike.VolumeUUID |  | keyword |
 | crowdstrike.WindowFlags |  | keyword |
@@ -1731,6 +1956,7 @@ and/or `session_token`.
 | crowdstrike.discoverer_aid |  | keyword |
 | crowdstrike.eid |  | integer |
 | crowdstrike.hostname |  | keyword |
+| crowdstrike.id |  | keyword |
 | crowdstrike.info.host.\* | Host information enriched from aidmaster data. | object |
 | crowdstrike.info.user.\* | User information enriched from userinfo data. | object |
 | crowdstrike.localipCount |  | integer |
@@ -1767,7 +1993,7 @@ and/or `session_token`.
 | dns.question.top_level_domain | The effective top level domain (eTLD), also known as the domain suffix, is the last part of the domain name. For example, the top level domain for example.com is "com". This value can be determined precisely with a list like the public suffix list (https://publicsuffix.org). Trying to approximate this by simply taking the last label will not work well for effective TLDs such as "co.uk". | keyword |
 | dns.question.type | The type of record being queried. | keyword |
 | dns.type | The type of DNS event captured, query or answer. If your source of DNS events only gives you DNS queries, you should only create dns events of type `dns.type:query`. If your source of DNS events gives you answers as well, you should create one event per query (optionally as soon as the query is seen). And a second event containing all query details as well as an array of answers. | keyword |
-| ecs.version | ECS version this event conforms to. `ecs.version` is a required field and must exist in all events. When querying across multiple indices -- which may conform to slightly different ECS versions -- this field lets integrations adjust to the schema version of the events. | keyword |
+| ecs.version | ECS version this event conforms to. `ecs.version` is a required field and must exist in all events. When querying across multiple indices -- which may conform to slightly different ECS versions -- this field lets integrations adjust to the schema version of the events. | constant_keyword |
 | event.action | The action captured by the event. This describes the information in the event. It is more specific than `event.category`. Examples are `group-add`, `process-started`, `file-created`. The value is normally defined by the implementer. | keyword |
 | event.category | This is one of four ECS Categorization Fields, and indicates the second level in the ECS category hierarchy. `event.category` represents the "big buckets" of ECS categories. For example, filtering on `event.category:process` yields all events relating to process activity. This field is closely related to `event.type`, which is used as a subcategory. This field is an array. This will allow proper categorization of some events that fall in multiple categories. | keyword |
 | event.created | `event.created` contains the date/time when the event was first read by an agent, or by your pipeline. This field is distinct from `@timestamp` in that `@timestamp` typically contain the time extracted from the original event. In most situations, these two timestamps will be slightly different. The difference can be used to calculate the delay between your source generating an event, and the time when your agent first processed it. This can be used to monitor your agent's or pipeline's ability to keep up with your event source. In case the two timestamps are identical, `@timestamp` should be used. | date |
@@ -1817,8 +2043,8 @@ and/or `session_token`.
 | observer.geo.region_name | Region name. | keyword |
 | observer.ip | IP addresses of the observer. | ip |
 | observer.serial_number | Observer serial number. | keyword |
-| observer.type | The type of the observer the data is coming from. There is no predefined list of observer types. Some examples are `forwarder`, `firewall`, `ids`, `ips`, `proxy`, `poller`, `sensor`, `APM server`. | keyword |
-| observer.vendor | Vendor name of the observer. | keyword |
+| observer.type | The type of the observer the data is coming from. There is no predefined list of observer types. Some examples are `forwarder`, `firewall`, `ids`, `ips`, `proxy`, `poller`, `sensor`, `APM server`. | constant_keyword |
+| observer.vendor | Vendor name of the observer. | constant_keyword |
 | observer.version | Observer version. | keyword |
 | process.args | Array of process arguments, starting with the absolute path to the executable. May be filtered to protect sensitive information. | keyword |
 | process.args_count | Length of the process.args array. This field can be useful for querying or performing bucket analysis on how many arguments were provided to start a process. More arguments may be an indication of suspicious activity. | long |
@@ -1892,11 +2118,20 @@ An example event for `fdr` looks as following:
 {
     "@timestamp": "2020-10-01T09:58:32.519Z",
     "agent": {
-        "ephemeral_id": "2bc0c57f-0753-469b-ab9b-eba29ce220cb",
-        "id": "f3446352-ed21-4068-884d-ee794906a542",
-        "name": "elastic-agent-28231",
+        "id": "c29a18c6-3a73-4cb2-811f-b942d5353ea8",
+        "name": "elastic-agent-56971",
         "type": "filebeat",
-        "version": "8.18.0"
+        "version": "8.17.3"
+    },
+    "aws": {
+        "s3": {
+            "bucket": {
+                "name": "elastic-package-crowdstrike-fdr-57094"
+            },
+            "object": {
+                "key": "data"
+            }
+        }
     },
     "crowdstrike": {
         "AuthenticationId": "3783389",
@@ -1921,6 +2156,7 @@ An example event for `fdr` looks as following:
         "TokenType": "2",
         "WindowFlags": "128",
         "cid": "ffffffff30a3407dae27d0503611022d",
+        "id": "ffffffff-1111-11eb-8462-02ade3b2f949",
         "info": {
             "host": {
                 "AgentLoadFlags": "1",
@@ -1973,16 +2209,13 @@ An example event for `fdr` looks as following:
     },
     "data_stream": {
         "dataset": "crowdstrike.fdr",
-        "namespace": "14866",
+        "namespace": "21250",
         "type": "logs"
     },
-    "ecs": {
-        "version": "8.17.0"
-    },
     "elastic_agent": {
-        "id": "f3446352-ed21-4068-884d-ee794906a542",
-        "snapshot": true,
-        "version": "8.18.0"
+        "id": "c29a18c6-3a73-4cb2-811f-b942d5353ea8",
+        "snapshot": false,
+        "version": "8.17.3"
     },
     "event": {
         "action": "ProcessRollup2",
@@ -1992,12 +2225,11 @@ An example event for `fdr` looks as following:
         ],
         "created": "2020-10-01T09:58:32.519Z",
         "dataset": "crowdstrike.fdr",
-        "id": "ffffffff-1111-11eb-8462-02ade3b2f949",
-        "ingested": "2025-03-06T07:45:11Z",
+        "id": "ffffffff-1111-11eb-8462-02ade3b2f949|ffffffff655344736aca58d17fb570f0|ffffffff30a3407dae27d0503611022d",
+        "ingested": "2025-03-24T04:36:49Z",
         "kind": "event",
         "original": "{\"AuthenticationId\":\"3783389\",\"CommandLine\":\"\\\"C:\\\\WINDOWS\\\\system32\\\\backgroundTaskHost.exe\\\" -ServerName:App.AppXnme9zjyebb2xnyygh6q9ev6p5d234br2.mca\",\"ConfigBuild\":\"1007.3.0012309.1\",\"ConfigStateHash\":\"3998263252\",\"EffectiveTransmissionClass\":\"3\",\"Entitlements\":\"15\",\"ImageFileName\":\"\\\\Device\\\\HarddiskVolume3\\\\Windows\\\\System32\\\\backgroundTaskHost.exe\",\"ImageSubsystem\":\"2\",\"IntegrityLevel\":\"4096\",\"MD5HashData\":\"50d5fd1290d94d46acca0585311e74d5\",\"ParentAuthenticationId\":\"3783389\",\"ParentBaseFileName\":\"svchost.exe\",\"ParentProcessId\":\"2439558094566\",\"ProcessCreateFlags\":\"525332\",\"ProcessEndTime\":\"\",\"ProcessParameterFlags\":\"16385\",\"ProcessStartTime\":\"1604855181.648\",\"ProcessSxsFlags\":\"1600\",\"RawProcessId\":\"22272\",\"RpcClientProcessId\":\"2439558094566\",\"SHA1HashData\":\"0000000000000000000000000000000000000000\",\"SHA256HashData\":\"b8e176fe76a1454a00c4af0f8bf8870650d9c33d3e333239a59445c5b35c9a37\",\"SessionId\":\"1\",\"SourceProcessId\":\"2439558094566\",\"SourceThreadId\":\"77538684027214\",\"Tags\":\"41, 12094627905582, 12094627906234\",\"TargetProcessId\":\"2450046082233\",\"TokenType\":\"2\",\"UserSid\":\"S-1-12-1-3697283754-1083485977-2164330645-2516515886\",\"WindowFlags\":\"128\",\"aid\":\"ffffffff655344736aca58d17fb570f0\",\"aip\":\"67.43.156.14\",\"cid\":\"ffffffff30a3407dae27d0503611022d\",\"event_platform\":\"Win\",\"event_simpleName\":\"ProcessRollup2\",\"id\":\"ffffffff-1111-11eb-8462-02ade3b2f949\",\"name\":\"ProcessRollup2V18\",\"timestamp\":\"1601546312519\"}",
         "outcome": "success",
-        "timezone": "+00:00",
         "type": [
             "start"
         ]
@@ -2013,12 +2245,6 @@ An example event for `fdr` looks as following:
     },
     "input": {
         "type": "aws-s3"
-    },
-    "log": {
-        "file": {
-            "path": "https://elastic-package-crowdstrike-fdr-32493.s3.us-east-1.amazonaws.com/data"
-        },
-        "offset": 107991
     },
     "observer": {
         "address": [
@@ -2037,8 +2263,6 @@ An example event for `fdr` looks as following:
             "67.43.156.14"
         ],
         "serial_number": "ffffffff655344736aca58d17fb570f0",
-        "type": "agent",
-        "vendor": "crowdstrike",
         "version": "1007.3.0012309.1"
     },
     "process": {

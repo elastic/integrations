@@ -13,7 +13,7 @@ The Amazon MQ integration allows you to efficiently collect and monitor broker p
 
 ### ActiveMQ
 
-To enable the `activemq_general_logs` integration, you must configure your ActiveMQ broker to publish general logs to Amazon CloudWatch Logs. Follow these steps:
+To enable the `activemq_general_logs` and `activemq_audit_logs` integrations, you must configure your ActiveMQ broker to publish general logs and audit logs to Amazon CloudWatch Logs. Follow these steps:
 
 1. **Assign Necessary Permissions**: Ensure the IAM user creating or managing the broker has the `logs:CreateLogGroup` permission. This allows Amazon MQ to create the required log groups in CloudWatch.
 
@@ -23,21 +23,23 @@ To enable the `activemq_general_logs` integration, you must configure your Activ
 
     - Navigate to the [Amazon MQ console](https://console.aws.amazon.com/amazon-mq/).
     - During broker creation or by editing an existing broker, expand the **Additional settings** section.
-    - In the **Logs** section, select the option to publish **General logs** to Amazon CloudWatch Logs.
+    - In the **Logs** section, select the option to publish **General logs** and **Audit logs** to Amazon CloudWatch Logs.
 
 For detailed instructions, refer to the [Amazon MQ Developer Guide](https://docs.aws.amazon.com/amazon-mq/latest/developer-guide/configure-logging-monitoring-activemq.html#security-logging-monitoring-configure-cloudwatch-structure).
 
 ## Compatibility
 
-This integration presently supports Amazon MQ for [Apache ActiveMQ](http://activemq.apache.org/) and [RabbitMQ](https://www.rabbitmq.com/) metrics.
+This integration presently supports Amazon MQ for [Apache ActiveMQ](http://activemq.apache.org/) and [RabbitMQ](https://www.rabbitmq.com/).
 
 ## Data streams
 
-The Amazon MQ integration collects metrics and logs from Apache ActiveMQ and metrics from RabbitMQ.
+The Amazon MQ integration collects metrics and logs from Apache ActiveMQ and RabbitMQ.
 
 
 Data streams:
  - `activemq_general_logs`: Collects ActiveMQ general logs, including system events, warnings, and errors, which are published to a designated Amazon CloudWatch log group. 
+ - `activemq_audit_logs`: Collects ActiveMQ audit logs, including management actions performed via JMX or the Web Console.
+ - `rabbitmq_general_logs`: Collects RabbitMQ general logs, including system events, warnings, errors, which are published to a designated Amazon CloudWatch log group.
  - `activemq_metrics`: Collects broker metrics and destination (queue and topic) metrics.
  - `rabbitmq_metrics`: Collects broker, queue and node metrics.
 
@@ -67,7 +69,9 @@ documentation](https://docs.elastic.co/integrations/aws#requirements).
 
 ## Logs
 
-### Collecting Amazon MQ ActiveMQ General Logs from CloudWatch
+### Collecting Amazon MQ ActiveMQ general logs and audit logs from CloudWatch
+
+### ActiveMQ general logs
 
 When general logging is enabled for your Amazon MQ ActiveMQ broker, it publishes the `activemq.log` file at the default `INFO` logging level to a designated log group. Please note that `DEBUG` logging is not supported.
 
@@ -152,6 +156,181 @@ An example event for `activemq_general` looks as following:
 | host.os.build | OS build information. | keyword |
 | host.os.codename | OS codename, if any. | keyword |
 | input.type | Type of Filebeat input. | keyword |
+
+
+### ActiveMQ audit logs
+
+When audit logging is enabled, ActiveMQ logs management actions performed via JMX or the ActiveMQ Web Console to a designated log group.
+
+An example event for `activemq_audit` looks as following:
+
+```json
+{
+    "@timestamp": "2025-03-19T14:09:28.434Z",
+    "activemq": {
+        "audit": {
+            "thread": "qtp1169933615-14635"
+        }
+    },
+    "agent": {
+        "ephemeral_id": "9d06c8c6-9789-4c8a-b10e-9b5f189a50f7",
+        "id": "e51aba85-fcc8-40fc-be18-b182b4122255",
+        "name": "elastic-agent-43514",
+        "type": "filebeat",
+        "version": "8.16.5"
+    },
+    "cloud": {
+        "provider": "aws",
+        "region": "ap-south-1",
+        "service": {
+            "name": "amazonmq_activemq"
+        }
+    },
+    "data_stream": {
+        "dataset": "aws_mq.activemq_audit_logs",
+        "namespace": "13109",
+        "type": "logs"
+    },
+    "ecs": {
+        "version": "8.11.0"
+    },
+    "elastic_agent": {
+        "id": "e51aba85-fcc8-40fc-be18-b182b4122255",
+        "snapshot": false,
+        "version": "8.16.5"
+    },
+    "event": {
+        "agent_id_status": "verified",
+        "dataset": "aws_mq.activemq_audit_logs",
+        "id": "38856670549337867603105755278009180321867411962028556288",
+        "ingested": "2025-03-19T14:10:17Z",
+        "type": [
+            "info"
+        ]
+    },
+    "input": {
+        "type": "aws-cloudwatch"
+    },
+    "log": {
+        "file": {
+            "path": "arn:aws:logs:ap-south-1:123445678907:log-group:/aws/amazonmq/broker/b-cfab2617-b6fb-4a44-bd7a-052aa4cd96f4/audit/audit-b-cfab2617-b6fb-4a44-bd7a-052aa4cd96f4-1.log"
+        },
+        "level": "INFO"
+    },
+    "message": "called org.apache.activemq.broker.jmx.ConnectorView.connectionCount[] on openwire",
+    "tags": [
+        "forwarded",
+        "aws_mq-activemq-audit-logs"
+    ],
+    "user": {
+        "name": "anonymous"
+    }
+}
+```
+**Exported fields**
+
+| Field | Description | Type |
+|---|---|---|
+| @timestamp | Date/time when the event originated. This is the date/time extracted from the event, typically representing when the event was generated by the source. If the event source has no original timestamp, this value is typically populated by the first time the event was received by the pipeline. Required field for all events. | date |
+| activemq.audit.thread | Thread that generated the logging event. | keyword |
+| aws.cloudwatch.message | CloudWatch log message. | text |
+| cloud.image.id | Image ID for the cloud instance. | keyword |
+| data_stream.dataset | The field can contain anything that makes sense to signify the source of the data. Examples include `nginx.access`, `prometheus`, `endpoint` etc. For data streams that otherwise fit, but that do not have dataset set we use the value "generic" for the dataset value. `event.dataset` should have the same value as `data_stream.dataset`. Beyond the Elasticsearch data stream naming criteria noted above, the `dataset` value has additional restrictions:   \* Must not contain `-`   \* No longer than 100 characters | constant_keyword |
+| data_stream.namespace | A user defined namespace. Namespaces are useful to allow grouping of data. Many users already organize their indices this way, and the data stream naming scheme now provides this best practice as a default. Many users will populate this field with `default`. If no value is used, it falls back to `default`. Beyond the Elasticsearch index naming criteria noted above, `namespace` value has the additional restrictions:   \* Must not contain `-`   \* No longer than 100 characters | constant_keyword |
+| data_stream.type | An overarching type for the data stream. Currently allowed values are "logs" and "metrics". We expect to also add "traces" and "synthetics" in the near future. | constant_keyword |
+| event.dataset | Event dataset | constant_keyword |
+| event.module | Name of the module this data is coming from. If your monitoring agent supports the concept of modules or plugins to process events of a given source (e.g. Apache logs), `event.module` should contain the name of this module. | constant_keyword |
+| host.containerized | If the host is a container. | boolean |
+| host.os.build | OS build information. | keyword |
+| host.os.codename | OS codename, if any. | keyword |
+| input.type | Type of Filebeat input. | keyword |
+
+
+### RabbitMQ general logs
+
+When you enable CloudWatch logging for your RabbitMQ brokers, Amazon MQ uses a service-linked role to publish general logs to CloudWatch. If no Amazon MQ service-linked role exists when you first create a broker, Amazon MQ will automatically create one. All subsequent RabbitMQ brokers will use the same service-linked role to publish logs to CloudWatch.
+
+For more details, refer to [Configuring Amazon MQ for RabbitMQ logs](https://docs.aws.amazon.com/amazon-mq/latest/developer-guide/rabbitmq-logging-monitoring.html?utm_source=chatgpt.com#security-logging-monitoring-rabbitmq).
+
+An example event for `rabbitmq_general` looks as following:
+
+```json
+{
+    "@timestamp": "2025-03-24T07:05:03.466Z",
+    "agent": {
+        "ephemeral_id": "a1907291-323c-468f-84e9-0d29e2fe66eb",
+        "id": "5a2e2df8-150a-4601-9c3a-e16c359b7f07",
+        "name": "elastic-agent-55927",
+        "type": "filebeat",
+        "version": "8.16.5"
+    },
+    "cloud": {
+        "provider": "aws",
+        "region": "ap-south-1",
+        "service": {
+            "name": "amazonmq_rabbitmq"
+        }
+    },
+    "data_stream": {
+        "dataset": "aws_mq.rabbitmq_general_logs",
+        "namespace": "70014",
+        "type": "logs"
+    },
+    "ecs": {
+        "version": "8.11.0"
+    },
+    "elastic_agent": {
+        "id": "5a2e2df8-150a-4601-9c3a-e16c359b7f07",
+        "snapshot": false,
+        "version": "8.16.5"
+    },
+    "event": {
+        "agent_id_status": "verified",
+        "dataset": "aws_mq.rabbitmq_general_logs",
+        "id": "38865736601051462567581671325129317224302733980316794880",
+        "ingested": "2025-03-24T07:06:06Z",
+        "type": [
+            "info"
+        ]
+    },
+    "input": {
+        "type": "aws-cloudwatch"
+    },
+    "log": {
+        "file": {
+            "path": "arn:aws:logs:ap-south-1:627286350134:log-group:/aws/amazonmq/broker/b-de6a011c-f307-4de0-acf0-e652e6005530/general/rabbit@localhost_general.log"
+        },
+        "level": "notice"
+    },
+    "message": "TLS server: In state hello at tls_handshake.erl:401 generated SERVER ALERT: Fatal - Protocol Version",
+    "rabbitmq": {
+        "log": {
+            "pid": "<0.12141597.0>"
+        }
+    },
+    "tags": [
+        "forwarded",
+        "aws_mq-rabbitmq-general-logs"
+    ]
+}
+```
+**Exported fields**
+
+| Field | Description | Type |
+|---|---|---|
+| @timestamp | Date/time when the event originated. This is the date/time extracted from the event, typically representing when the event was generated by the source. If the event source has no original timestamp, this value is typically populated by the first time the event was received by the pipeline. Required field for all events. | date |
+| aws.cloudwatch.message | CloudWatch log message. | text |
+| cloud.image.id | Image ID for the cloud instance. | keyword |
+| data_stream.dataset | The field can contain anything that makes sense to signify the source of the data. Examples include `nginx.access`, `prometheus`, `endpoint` etc. For data streams that otherwise fit, but that do not have dataset set we use the value "generic" for the dataset value. `event.dataset` should have the same value as `data_stream.dataset`. Beyond the Elasticsearch data stream naming criteria noted above, the `dataset` value has additional restrictions:   \* Must not contain `-`   \* No longer than 100 characters | constant_keyword |
+| data_stream.namespace | A user defined namespace. Namespaces are useful to allow grouping of data. Many users already organize their indices this way, and the data stream naming scheme now provides this best practice as a default. Many users will populate this field with `default`. If no value is used, it falls back to `default`. Beyond the Elasticsearch index naming criteria noted above, `namespace` value has the additional restrictions:   \* Must not contain `-`   \* No longer than 100 characters | constant_keyword |
+| data_stream.type | An overarching type for the data stream. Currently allowed values are "logs" and "metrics". We expect to also add "traces" and "synthetics" in the near future. | constant_keyword |
+| event.dataset | Event dataset | constant_keyword |
+| event.module | Name of the module this data is coming from. If your monitoring agent supports the concept of modules or plugins to process events of a given source (e.g. Apache logs), `event.module` should contain the name of this module. | constant_keyword |
+| host.containerized | If the host is a container. | boolean |
+| host.os.build | OS build information. | keyword |
+| host.os.codename | OS codename, if any. | keyword |
+| input.type | Type of Filebeat input. | keyword |
+| rabbitmq.log.pid | The Erlang process id | keyword |
 
 
 ## Metrics
