@@ -3332,10 +3332,7 @@ An example event for `entra_connect` looks as following:
                 }
             }
         }
-    },
-    "tags": [
-        "o365.metrics.entra_connect"
-    ]
+    }
 }
 ```
 
