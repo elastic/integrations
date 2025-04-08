@@ -3023,6 +3023,102 @@ Please refer to the following [document](https://www.elastic.co/guide/en/ecs/cur
 | o365.metrics.teams.call.quality.start_date_time | The start date and time of the call | date |
 
 
+### Tenant Settings
+
+Get details about tenant settings in Microsoft Entra ID.
+
+An example event for `tenant_settings` looks as following:
+
+```json
+{
+    "o365": {
+        "metrics": {
+            "tenant_settings": {
+                "display_concealed_names": true,
+                "tenant": {
+                    "id": "f99cbd5a-95d6-4767-9372-0d41ca2ead9d",
+                    "type": "AAD",
+                    "display_name": "azure2"
+                }
+            }
+        }
+    },
+    "input": {
+        "type": "cel"
+    },
+    "agent": {
+        "name": "elastic-agent-19515",
+        "id": "37f1ae71-1a03-4d62-82e0-59e440f35824",
+        "ephemeral_id": "b19c8d15-4089-4209-ad9e-fab4e4491827",
+        "type": "filebeat",
+        "version": "8.17.3"
+    },
+    "@timestamp": "2025-03-24T14:49:05.173Z",
+    "ecs": {
+        "version": "8.17.0"
+    },
+    "data_stream": {
+        "namespace": "62584",
+        "type": "metrics",
+        "dataset": "o365_metrics.tenant_settings"
+    },
+    "elastic_agent": {
+        "id": "37f1ae71-1a03-4d62-82e0-59e440f35824",
+        "version": "8.17.3",
+        "snapshot": false
+    },
+    "host": {
+        "hostname": "elastic-agent-19515",
+        "os": {
+            "kernel": "6.12.5-linuxkit",
+            "name": "Wolfi",
+            "family": "",
+            "type": "linux",
+            "version": "20230201",
+            "platform": "wolfi"
+        },
+        "containerized": false,
+        "ip": [
+            "172.20.0.2",
+            "172.18.0.5"
+        ],
+        "name": "elastic-agent-19515",
+        "mac": [
+            "02-42-AC-12-00-05",
+            "02-42-AC-14-00-02"
+        ],
+        "architecture": "aarch64"
+    },
+    "event": {
+        "agent_id_status": "verified",
+        "ingested": "2025-03-24T14:49:06Z",
+        "dataset": "o365_metrics.tenant_settings"
+    },
+    "tags": [
+        "o365.metrics.tenant_settings"
+    ]
+}
+```
+
+**ECS Field Reference**
+
+Please refer to the following [document](https://www.elastic.co/guide/en/ecs/current/ecs-field-reference.html) for detailed information on ECS fields.
+
+**Exported fields**
+
+| Field | Description | Type |
+|---|---|---|
+| @timestamp | Event timestamp. | date |
+| data_stream.dataset | Data stream dataset. | constant_keyword |
+| data_stream.namespace | Data stream namespace. | constant_keyword |
+| data_stream.type | Data stream type. | constant_keyword |
+| input.type | Input type. | keyword |
+| o365.metrics.tenant_settings.display_concealed_names | If set to true, all reports conceal user information such as usernames, groups, and sites. If false, all reports show identifiable information. This property represents a setting in the Microsoft 365 admin center. | boolean |
+| o365.metrics.tenant_settings.tenant.display_name | The display name for the tenant. | keyword |
+| o365.metrics.tenant_settings.tenant.id | The tenant ID, a unique identifier representing the organization (or tenant). | keyword |
+| o365.metrics.tenant_settings.tenant.type | Can be one of the following types:  \* AAD - An enterprise identity access management (IAM) service that serves business-to-employee and business-to-business (B2B) scenarios.  \* AAD B2C An identity access management (IAM) service that serves business-to-consumer (B2C) scenarios.  \* CIAM - A customer identity & access management (CIAM) solution that provides an integrated platform to serve consumers, partners, and citizen scenarios. | keyword |
+
+
 ### App Registrations
 
 Get details about apps registered in Microsoft Entra ID. [Microsoft API](https://learn.microsoft.com/en-us/graph/api/application-list?view=graph-rest-1.0&tabs=http).
