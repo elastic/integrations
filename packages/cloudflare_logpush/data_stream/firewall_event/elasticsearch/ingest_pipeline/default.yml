@@ -117,6 +117,14 @@ processors:
       field: rule.id
       copy_from: cloudflare_logpush.firewall_event.rule.id
       ignore_empty_value: true
+  - rename:
+      field: json.Description
+      target_field: cloudflare_logpush.firewall_event.rule.description
+      ignore_missing: true
+  - set:
+      field: rule.description
+      copy_from: cloudflare_logpush.firewall_event.rule.description
+      ignore_empty_value: true
   - convert:
       field: json.ClientASN
       target_field: cloudflare_logpush.firewall_event.client.asn.value
@@ -326,6 +334,7 @@ processors:
         - cloudflare_logpush.firewall_event.client.request.method
         - cloudflare_logpush.firewall_event.edge.response.status
         - cloudflare_logpush.firewall_event.rule.id
+        - cloudflare_logpush.firewall_event.rule.description
         - cloudflare_logpush.firewall_event.client.asn.value
         - cloudflare_logpush.firewall_event.client.country
         - cloudflare_logpush.firewall_event.client.ip
