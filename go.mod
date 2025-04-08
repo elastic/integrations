@@ -1,6 +1,7 @@
 module github.com/elastic/integrations
 
-go 1.23.0
+go 1.24.2
+
 require (
 	github.com/blang/semver v3.5.1+incompatible
 	github.com/cli/go-gh/v2 v2.12.0
