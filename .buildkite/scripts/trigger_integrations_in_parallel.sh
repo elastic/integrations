@@ -103,4 +103,5 @@ if [ ${packages_to_test} -eq 0 ]; then
     exit 0
 fi
 
+echo "--- Upload Buildkite pipeline"
 cat ${PIPELINE_FILE} | buildkite-agent pipeline upload
