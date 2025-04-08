@@ -3252,49 +3252,48 @@ An example event for `entra_connect` looks as following:
 
 ```json
 {
-    "@timestamp": "2025-04-03T07:01:21.020Z",
+    "@timestamp": "2025-04-08T13:53:17.461Z",
     "agent": {
-        "ephemeral_id": "a2de3e9c-7fd2-4cb1-8ce5-9bb66e5a4670",
-        "id": "ee4e3654-ca4a-42f5-bd62-e493fc339455",
-        "name": "elastic-agent-67281",
+        "ephemeral_id": "502467f2-d4ae-48bb-8a57-c828ead61126",
+        "id": "5b3761b2-e0a8-453d-9d7b-b3f6204af7cb",
+        "name": "elastic-agent-34185",
         "type": "filebeat",
         "version": "8.16.0"
     },
     "data_stream": {
         "dataset": "o365_metrics.entra_connect",
-        "namespace": "75903",
+        "namespace": "18364",
         "type": "metrics"
     },
     "ecs": {
         "version": "8.17.0"
     },
     "elastic_agent": {
-        "id": "ee4e3654-ca4a-42f5-bd62-e493fc339455",
+        "id": "5b3761b2-e0a8-453d-9d7b-b3f6204af7cb",
         "snapshot": false,
         "version": "8.16.0"
     },
     "event": {
         "agent_id_status": "verified",
         "dataset": "o365_metrics.entra_connect",
-        "ingested": "2025-04-03T07:01:24Z",
-        "kind": "metric"
+        "ingested": "2025-04-08T13:53:20Z"
     },
     "host": {
-        "architecture": "aarch64",
-        "containerized": false,
-        "hostname": "elastic-agent-67281",
+        "architecture": "x86_64",
+        "containerized": true,
+        "hostname": "elastic-agent-34185",
         "ip": [
-            "172.31.0.2",
-            "172.26.0.4"
+            "172.19.0.2",
+            "172.18.0.7"
         ],
         "mac": [
-            "02-42-AC-1A-00-04",
-            "02-42-AC-1F-00-02"
+            "02-42-AC-12-00-07",
+            "02-42-AC-13-00-02"
         ],
-        "name": "elastic-agent-67281",
+        "name": "elastic-agent-34185",
         "os": {
             "family": "",
-            "kernel": "5.10.104-linuxkit",
+            "kernel": "5.15.153.1-microsoft-standard-WSL2",
             "name": "Wolfi",
             "platform": "wolfi",
             "type": "linux",
@@ -3318,7 +3317,6 @@ An example event for `entra_connect` looks as following:
                     "directory_extensions_enabled": false,
                     "fope_conflict_resolution_enabled": false,
                     "group_write_back_enabled": false,
-                    "on_premises_last_sync_datetime": "2025-04-01T07:18:46.216Z",
                     "on_premises_sync_enabled": false,
                     "password_sync_enabled": false,
                     "password_writeback_enabled": false,
@@ -3332,7 +3330,10 @@ An example event for `entra_connect` looks as following:
                 }
             }
         }
-    }
+    },
+    "tags": [
+        "o365.metrics.entra_connect"
+    ]
 }
 ```
 
@@ -3350,6 +3351,7 @@ Please refer to the following [document](https://www.elastic.co/guide/en/ecs/cur
 | host.containerized | If the host is a container. | boolean |
 | host.os.build | OS build information. | keyword |
 | host.os.codename | OS codename, if any. | keyword |
+| input.type | Input type. | keyword |
 | o365.metrics.entra.connect.block_cloud_object_takeover_through_hard_match_enabled | Indicates whether cloud object takeover through hard match is blocked. | boolean |
 | o365.metrics.entra.connect.block_soft_match_enabled | Indicates whether soft match is blocked. | boolean |
 | o365.metrics.entra.connect.bypass_dir_sync_overrides_enabled | Indicates whether directory sync overrides are bypassed. | boolean |
