@@ -6,7 +6,6 @@ package citools
 
 import (
 	"fmt"
-	"log"
 )
 
 func packageSubscription(path string) (string, error) {
@@ -31,7 +30,6 @@ func IsSubscriptionCompatible(stackSubscription, path string) error {
 	if err != nil {
 		return err
 	}
-	log.Println("Package subscription:", pkgSubscription)
 
 	if stackSubscription == "trial" {
 		// All subscriptions supported

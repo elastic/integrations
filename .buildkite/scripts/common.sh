@@ -672,7 +672,7 @@ get_to_changeset() {
     echo "${to}"
 }
 
-is_compatible_subscription() {
+is_subscription_compatible() {
     if mage -d "${WORKSPACE}" -w . isSubscriptionCompatible ; then
         return 0
     fi
@@ -710,7 +710,7 @@ is_pr_affected() {
         fi
     fi
 
-    if ! is_compatible_subscription; then
+    if ! is_subscription_compatible; then
         echo "[${package}] PR is not affected: subscription not compatible with ${ELASTIC_SUBSCRIPTION}"
         return 1
     fi
