@@ -75,9 +75,7 @@ processors:
 
 state:
   want_more: false
-  next_page: ""
   next_page_sessions: ""
-  worklist: []
   next: 0
   sync_delay: "5s"
   call_record: ""
@@ -91,9 +89,6 @@ redact:
 
 program: |
   (
-    has(state.worklist) && size(state.worklist) > 0 ?
-      state
-    :
       state.with(
           request(
             "GET",
@@ -142,9 +137,9 @@ program: |
               :
                 [{"message":"retry"}]
             ),
-            "next_page_sessions": "",
-            "next": int(state.next) + 1,
-            "want_more": int(state.next) < int(size(state.worklist)),
+            "next": "@odata.nextLink" in body ? int(state.next) : int(state.next) + 1,
+            "want_more": int(state.next) + 1 < size(state.worklist),
+            "next_page_sessions": "@odata.nextLink" in body ? body["@odata.nextLink"] : "",
           })
         :
           {
@@ -152,7 +147,7 @@ program: |
               "error": {
                 "code": string(resp.StatusCode),
                 "id": string(resp.Status),
-                "message": "GET "+ state.next_page_sessions +(
+                "message": "GET "+ "state.next_page"+(
                   size(resp.Body) != 0 ?
                     string(resp.Body)
                   :
