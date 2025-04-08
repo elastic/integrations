@@ -32,7 +32,7 @@ conditions:
 			title: "Dotted Subscription field",
 			contents: `name: "subscription"
 conditions:
-  elastic.subscription: dotted 
+  elastic.subscription: dotted
 `,
 			expected: "dotted",
 		},
