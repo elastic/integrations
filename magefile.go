@@ -258,5 +258,4 @@ func IsVersionLessThanLogsDBGA(version string) error {
 		return fmt.Errorf("not supported LogsDB")
 	}
 	return nil
-
 }

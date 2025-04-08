@@ -696,11 +696,8 @@ is_subscription_compatible() {
 }
 
 is_logsdb_compatible() {
-    if [[ "${STACK_LOGSDB_ENABLED:-"false"}" == "false" ]]; then
-        return 0
-    fi
-
     if [[ "${STACK_VERSION:-""}" != "" ]]; then
+        # Assumption that if this variable is set, it is supported
         return 0
     fi
 
@@ -720,9 +717,11 @@ is_pr_affected() {
         return 1
     fi
 
-    if is_logsdb_compatible; then
-        echo "[${package}] PR is not affected: not supported LogsDB (${STACK_VERSION})"
-        return 1
+    if [[ "${STACK_LOGSDB_ENABLED:-"false"}" == "true" ]]; then
+        if is_logsdb_compatible; then
+            echo "[${package}] PR is not affected: not supported LogsDB (${STACK_VERSION})"
+            return 1
+        fi
     fi
 
     if is_serverless; then
