@@ -84,16 +84,15 @@ redact:
     - base.tenant_id
 
 program: |
-    (
       state.with(
-        request("GET", state.url + "/directory/onPremisesSynchronization").do_request().as(on_prem_resp,
-          on_prem_resp.StatusCode == 200
+        request("GET", state.url + "/organization").do_request().as(orgs_resp,
+          orgs_resp.StatusCode == 200
           ?
-            bytes(on_prem_resp.Body).decode_json().as(onprem_json, 
-              request("GET", state.url + "/organization").do_request().as(orgs_resp, 
-                orgs_resp.StatusCode == 200
+            bytes(orgs_resp.Body).decode_json().as(orgs_json, 
+              request("GET", state.url + "/directory/onPremisesSynchronization").do_request().as(onprem_resp, 
+                onprem_resp.StatusCode == 200
                 ?
-                  bytes(orgs_resp.Body).decode_json().as(orgs_json,
+                  bytes(onprem_resp.Body).decode_json().as(onprem_json,
                     {
                       "events": [{
                         "o365": {
@@ -125,21 +124,20 @@ program: |
                             }
                           }
                         }
-                      }],
-                      "want_more": false,
+                      }]
                     }
                   )
                 :
                   {
                     "events": {
                       "error": {
-                        "code": string(orgs_resp.StatusCode),
-                        "id": string(orgs_resp.Status),
-                        "message": "GET " + "https://graph.microsoft.com/v1.0/organization" + ": " + (
-                          size(orgs_resp.Body) != 0 ?
-                            string(orgs_resp.Body)
+                        "code": string(onprem_resp.StatusCode),
+                        "id": string(onprem_resp.Status),
+                        "message": "GET " + "https://graph.microsoft.com/v1.0/directory/onPremisesSynchronization"+ ": " + (
+                          size(onprem_resp.Body) != 0 ?
+                            string(onprem_resp.Body)
                           :
-                            string(orgs_resp.Status) + ' (' + string(orgs_resp.StatusCode) + ')'
+                            string(onprem_resp.Status) + ' (' + string(onprem_resp.StatusCode) + ')'
                         ),
                       },
                     },
@@ -151,13 +149,13 @@ program: |
             {
               "events": {
                 "error": {
-                  "code": string(on_prem_resp.StatusCode),
-                  "id": string(on_prem_resp.Status),
-                  "message": "GET " + "https://graph.microsoft.com/v1.0/directory/onPremisesSynchronization" + ": " + (
-                    size(on_prem_resp.Body) != 0 ?
-                      string(on_prem_resp.Body)
+                  "code": string(orgs_resp.StatusCode),
+                  "id": string(orgs_resp.Status),
+                  "message": "GET " + "https://graph.microsoft.com/v1.0/organization" + ": " + (
+                    size(orgs_resp.Body) != 0 ?
+                      string(orgs_resp.Body)
                     :
-                      string(on_prem_resp.Status) + ' (' + string(on_prem_resp.StatusCode) + ')'
+                      string(orgs_resp.Status) + ' (' + string(orgs_resp.StatusCode) + ')'
                   ),
                 },
               },
@@ -165,4 +163,3 @@ program: |
             }
         )
       )
-    )

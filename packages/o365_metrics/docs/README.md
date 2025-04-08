@@ -3368,6 +3368,7 @@ Please refer to the following [document](https://www.elastic.co/guide/en/ecs/cur
 | o365.metrics.entra.connect.quarantine_upon_upn_conflict_enabled | Indicates if quarantine is applied upon UPN conflict. | boolean |
 | o365.metrics.entra.connect.soft_match_on_upn_enabled | Indicates if soft match on UPN is enabled. | boolean |
 | o365.metrics.entra.connect.synchronize_upn_for_managed_users_enabled | Indicates if UPN synchronization for managed users is enabled. | boolean |
+| o365.metrics.entra.connect.tenant_id | The ID of the tenant. | keyword |
 | o365.metrics.entra.connect.unified_group_writeback_enabled | Indicates if unified group write-back is enabled. | boolean |
 | o365.metrics.entra.connect.user_force_password_change_on_logon_enabled | Indicates if users are forced to change passwords on logon. | boolean |
 | o365.metrics.entra.connect.user_writeback_enabled | Indicates if user writeback is enabled. | boolean |
