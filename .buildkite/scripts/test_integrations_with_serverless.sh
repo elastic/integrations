@@ -81,6 +81,11 @@ for package in $(list_all_directories); do
     echo "--- [$package] check if it is required to be tested"
     pushd "${package}" > /dev/null
     if ! reason=$(is_pr_affected "${package}" "${from}" "${to}") ; then
+        return_code=$?
+        if [ "${return_code}" -gt 1 ]; then
+            echo "Unexpected failure"
+            exit 1
+        fi
         echo "${reason}"
         echo "- ${reason}" >> "${SKIPPED_PACKAGES_FILE_PATH}"
         popd > /dev/null

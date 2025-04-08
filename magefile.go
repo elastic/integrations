@@ -218,8 +218,18 @@ func ReportFailedTests(ctx context.Context, testResultsFolder string) error {
 func IsSubscriptionCompatible() error {
 	subscription := os.Getenv("ELASTIC_SUBSCRIPTION")
 	if subscription == "" {
+		fmt.Println("supported")
 		return nil
 	}
 
-	return citools.IsSubscriptionCompatible(subscription, "manifest.yml")
+	supported, err := citools.IsSubscriptionCompatible(subscription, "manifest.yml")
+	if err != nil {
+		return err
+	}
+	if supported {
+		fmt.Println("supported")
+		return nil
+	}
+	fmt.Println("not supported")
+	return nil
 }

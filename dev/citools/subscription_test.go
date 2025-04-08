@@ -70,6 +70,7 @@ func TestIsSubscriptionCompatible(t *testing.T) {
 		contents          string
 		stackSubscription string
 		expectedError     bool
+		supported         bool
 	}{
 		{
 			title:             "Trial with Basic Subscription field",
@@ -80,6 +81,7 @@ conditions:
     subscription: basic
 `,
 			expectedError: false,
+			supported:     true,
 		},
 		{
 			title:             "Trial with Enterprise Subscription",
@@ -90,6 +92,7 @@ conditions:
     subscription: enterprise
 `,
 			expectedError: false,
+			supported:     true,
 		},
 		{
 			title:             "Trial with Platinum Subscription",
@@ -100,6 +103,7 @@ conditions:
     subscription: platinum
 `,
 			expectedError: false,
+			supported:     true,
 		},
 		{
 			title:             "Trial with Platinum Subscription",
@@ -110,6 +114,7 @@ conditions:
     subscription: platinum
 `,
 			expectedError: false,
+			supported:     true,
 		},
 		{
 			title:             "Basic with Basic Subscription field",
@@ -120,6 +125,7 @@ conditions:
     subscription: basic
 `,
 			expectedError: false,
+			supported:     true,
 		},
 		{
 			title:             "Basic with Enterprise Subscription",
@@ -129,7 +135,8 @@ conditions:
   elastic:
     subscription: enterprise
 `,
-			expectedError: true,
+			expectedError: false,
+			supported:     false,
 		},
 		{
 			title:             "Basic with Platinum Subscription",
@@ -139,7 +146,8 @@ conditions:
   elastic:
     subscription: platinum
 `,
-			expectedError: true,
+			expectedError: false,
+			supported:     false,
 		},
 		{
 			title:             "Unknown Stack Subscription",
@@ -150,6 +158,7 @@ conditions:
     subscription: platinum
 `,
 			expectedError: true,
+			supported:     false,
 		},
 	}
 
@@ -159,11 +168,12 @@ conditions:
 			pkgManifestPath := filepath.Join(directory, "manifest.yml")
 			err := os.WriteFile(pkgManifestPath, []byte(c.contents), 0o644)
 			require.NoError(t, err)
-			err = IsSubscriptionCompatible(c.stackSubscription, pkgManifestPath)
+			supported, err := IsSubscriptionCompatible(c.stackSubscription, pkgManifestPath)
 			if c.expectedError {
 				assert.Error(t, err)
 			} else {
 				assert.NoError(t, err)
+				assert.Equal(t, c.supported, supported)
 			}
 		})
 	}

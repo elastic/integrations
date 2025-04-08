@@ -57,6 +57,11 @@ for package in ${PACKAGE_LIST}; do
     pushd "packages/${package}" > /dev/null
     skip_package="false"
     if ! reason=$(is_pr_affected "${package}" "${from}" "${to}") ; then
+        return_code=$?
+        if [ "${return_code}" -gt 1 ]; then
+            echo "Unexpected failure"
+            exit 1
+        fi
         skip_package="true"
     fi
     echoerr "${reason}"

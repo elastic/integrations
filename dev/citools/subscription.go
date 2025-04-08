@@ -25,23 +25,23 @@ func packageSubscription(path string) (string, error) {
 	return packageSubscription, nil
 }
 
-func IsSubscriptionCompatible(stackSubscription, path string) error {
+func IsSubscriptionCompatible(stackSubscription, path string) (bool, error) {
 	pkgSubscription, err := packageSubscription(path)
 	if err != nil {
-		return err
+		return false, fmt.Errorf("failed to read subcription from manifest: %w", err)
 	}
 
 	if stackSubscription == "trial" {
 		// All subscriptions supported
-		return nil
+		return true, nil
 	}
 
 	if stackSubscription == "basic" {
 		if pkgSubscription != "basic" {
-			return fmt.Errorf("unsupported subscription package %q with stack subscription %q", pkgSubscription, stackSubscription)
+			return false, nil
 		}
-		return nil
+		return true, nil
 	}
 
-	return fmt.Errorf("unknown subscription %s", stackSubscription)
+	return false, fmt.Errorf("unknown subscription %s", stackSubscription)
 }
