@@ -4,49 +4,8 @@ processors:
   - set:
       field: ecs.version
       value: "8.17.0"
-  - fail:
-      tag: cel_failure
-      if: ctx.error?.message != null && ctx.message == null && ctx.event?.original == null
-      message: '{{{error.message}}}'
   - set:
       field: event.kind
-      value: metric
-
-  - rename:
-      field: o365.metrics.subscriptions.consumed_units
-      target_field: o365.metrics.subscriptions.consumed_units.count
-      ignore_missing: true
-
-  - rename:
-      field: o365.metrics.subscriptions.prepaid_units.enabled
-      target_field: o365.metrics.subscriptions.prepaid_units.enabled.count
-      ignore_missing: true
-
-  - rename:
-      field: o365.metrics.subscriptions.prepaid_units.locked_out
-      target_field: o365.metrics.subscriptions.prepaid_units.locked_out.count
-      ignore_missing: true
-
-  - rename:
-      field: o365.metrics.subscriptions.prepaid_units.suspended
-      target_field: o365.metrics.subscriptions.prepaid_units.suspended.count
-      ignore_missing: true
-
-  - rename:
-      field: o365.metrics.subscriptions.prepaid_units.warning
-      target_field: o365.metrics.subscriptions.prepaid_units.warning.count
-      ignore_missing: true
-
-  - rename:
-      field: o365.metrics.subscriptions.surplus_units
-      target_field: o365.metrics.subscriptions.surplus_units.count
-      ignore_missing: true
-
-on_failure:
-  - set:
-      field: error.message
-      value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
-  - set: 
-      field: event.kind 
-      value: error 
+      value: error
+      tag: set_error_into_event_kind
       if: ctx.error?.message != null

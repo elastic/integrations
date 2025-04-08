@@ -2427,46 +2427,45 @@ An example event for `subscriptions` looks as following:
 
 ```json
 {
-    "@timestamp": "2025-04-07T09:27:57.517Z",
+    "@timestamp": "2025-04-08T05:48:01.432Z",
     "agent": {
-        "ephemeral_id": "f2eb1388-f602-4d92-891c-e882184358ad",
-        "id": "846acc5e-3577-4ca5-91e0-288252304e1b",
-        "name": "elastic-agent-76968",
+        "ephemeral_id": "f4b88049-f56b-47e7-8ab6-35c3aca09766",
+        "id": "3dfd1b6b-ee1c-45ea-93a7-e4da0436f40f",
+        "name": "elastic-agent-93924",
         "type": "filebeat",
         "version": "8.16.0"
     },
     "data_stream": {
         "dataset": "o365_metrics.subscriptions",
-        "namespace": "79612",
+        "namespace": "90845",
         "type": "metrics"
     },
     "ecs": {
         "version": "8.17.0"
     },
     "elastic_agent": {
-        "id": "846acc5e-3577-4ca5-91e0-288252304e1b",
+        "id": "3dfd1b6b-ee1c-45ea-93a7-e4da0436f40f",
         "snapshot": false,
         "version": "8.16.0"
     },
     "event": {
         "agent_id_status": "verified",
         "dataset": "o365_metrics.subscriptions",
-        "ingested": "2025-04-07T09:28:00Z",
-        "kind": "metric"
+        "ingested": "2025-04-08T05:48:04Z"
     },
     "host": {
         "architecture": "aarch64",
         "containerized": false,
-        "hostname": "elastic-agent-76968",
+        "hostname": "elastic-agent-93924",
         "ip": [
-            "192.168.176.2",
+            "172.31.0.2",
             "172.26.0.4"
         ],
         "mac": [
             "02-42-AC-1A-00-04",
-            "02-42-C0-A8-B0-02"
+            "02-42-AC-1F-00-02"
         ],
-        "name": "elastic-agent-76968",
+        "name": "elastic-agent-93924",
         "os": {
             "family": "",
             "kernel": "5.10.104-linuxkit",
