@@ -180,6 +180,22 @@ program: |
   								),
   							}
   						)
+  					: (body.data.state == "Canceled") ?
+  						// 'Canceled' (Error or timeout) - Clear the task ID and reset the sequence for the same timeframe.
+  						state.with(
+  							{
+  								"events": [],
+  								"want_more": false,
+  								"cursor": state.cursor.with(
+  									{
+  										"auth_data": auth_data,
+  										"task_id": null,
+  										"next_startTime": state.cursor.current_startTime,
+  										"next_endTime": state.cursor.current_endTime,
+  									}
+  								),
+  							}
+  						)
   					:
   						// Not ready or done - Keep polling.
   						state.with(
