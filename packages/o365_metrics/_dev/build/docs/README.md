@@ -350,6 +350,18 @@ Please refer to the following [document](https://www.elastic.co/guide/en/ecs/cur
 
 {{fields "teams_call_quality"}}
 
+### Tenant Settings
+
+Get details about tenant settings in Microsoft Entra ID.
+
+{{event "tenant_settings"}}
+
+**ECS Field Reference**
+
+Please refer to the following [document](https://www.elastic.co/guide/en/ecs/current/ecs-field-reference.html) for detailed information on ECS fields.
+
+{{fields "tenant_settings"}}
+
 ### App Registrations
 
 Get details about apps registered in Microsoft Entra ID. [Microsoft API](https://learn.microsoft.com/en-us/graph/api/application-list?view=graph-rest-1.0&tabs=http).
