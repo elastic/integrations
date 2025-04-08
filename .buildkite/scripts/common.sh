@@ -499,25 +499,34 @@ create_elastic_package_profile() {
 prepare_stack() {
     echo "--- Prepare stack"
 
+    local requiredSubscription="${ELASTIC_SUBSCRIPTION:-""}"
+    local requiredLogsDB="${STACK_LOGSDB_ENABLED:-false}"
+
     local args="-v"
     if [ -n "${STACK_VERSION}" ]; then
         args="${args} --version ${STACK_VERSION}"
     else
         local version
         version=$(oldest_supported_version)
+        if [[ "${requiredLogsDB}" == "true" ]]; then
+            echo "mage -d \"${WORKSPACE}\" -w . isVersionLessThanLogsDBGA \"${version}\""
+            if ! mage -d "${WORKSPACE}" -w . isVersionLessThanLogsDBGA "${version}" ; then
+                version="8.17.0"
+            fi
+        fi
         if [[ "${version}" != "null" ]]; then
             args="${args} --version ${version}"
         fi
     fi
 
-    if [ "${STACK_LOGSDB_ENABLED:-false}" == "true" ]; then
+    if [ "${requiredLogsDB:-false}" == "true" ]; then
         echoerr "- Enable LogsDB"
         args="${args} -U stack.logsdb_enabled=true"
     fi
 
-    if [ "${ELASTIC_SUBSCRIPTION:-""}" != "" ]; then
+    if [ "${requiredSubscription}" != "" ]; then
         echoerr "- Set Subscription ${ELASTIC_SUBSCRIPTION}"
-        args="${args} -U stack.elastic_subscription=${ELASTIC_SUBSCRIPTION}"
+        args="${args} -U stack.elastic_subscription=${requiredSubscription}"
     fi
 
     if [[ "${STACK_VERSION}" =~ ^7\.17 ]]; then
@@ -686,6 +695,21 @@ is_subscription_compatible() {
     return 0
 }
 
+is_logsdb_compatible() {
+    if [[ "${STACK_LOGSDB_ENABLED:-"false"}" == "false" ]]; then
+        return 0
+    fi
+
+    if [[ "${STACK_VERSION:-""}" != "" ]]; then
+        return 0
+    fi
+
+    if mage -d "${WORKSPACE}" -w . isLogsDBSupportedInPackage; then
+        return 0
+    fi
+    return 1
+}
+
 is_pr_affected() {
     local package="${1}"
     local from="${2}"
@@ -693,6 +717,11 @@ is_pr_affected() {
 
     if ! is_supported_stack ; then
         echo "[${package}] PR is not affected: unsupported stack (${STACK_VERSION})"
+        return 1
+    fi
+
+    if is_logsdb_compatible; then
+        echo "[${package}] PR is not affected: not supported LogsDB (${STACK_VERSION})"
         return 1
     fi
 
@@ -787,7 +816,7 @@ teardown_test_package() {
 }
 
 list_all_directories() {
-    find . -maxdepth 1 -mindepth 1 -type d | xargs -I {} basename {} | sort |grep -E '^(elastic_package_registry|cloud_defend|beaconing|statsd_input|juniper_junos|juniper_netscreen|haproxy|opencanary|system|ti_misp|ti_domaintools)$'
+    find . -maxdepth 1 -mindepth 1 -type d | xargs -I {} basename {} | sort |grep -E '^(elastic_package_registry|cloud_defend|beaconing|statsd_input|juniper_junos|juniper_netscreen|haproxy|opencanary|ti_misp|ti_domaintools|linux|system)$'
 }
 
 check_package() {

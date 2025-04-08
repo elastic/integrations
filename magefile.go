@@ -14,6 +14,7 @@ import (
 	"path/filepath"
 	"strconv"
 
+	"github.com/Masterminds/semver/v3"
 	"github.com/magefile/mage/mg"
 	"github.com/magefile/mage/sh"
 	"github.com/pkg/errors"
@@ -232,4 +233,30 @@ func IsSubscriptionCompatible() error {
 	}
 	fmt.Println("false")
 	return nil
+}
+
+// IsLogsDBSupportedInPackage checks wheter or not the package in the current directory supports LogsDB
+func IsLogsDBSupportedInPackage() error {
+	supported, err := citools.IsLogsDBSupportedInPackage("manifest.yml")
+	if err != nil {
+		return err
+	}
+	if !supported {
+		return fmt.Errorf("kibana.version does not support LogsDB")
+	}
+	return nil
+}
+
+// IsVersionLessThanLogsDBGA checks wheter or not the given version supports LogsDB. Minimum version that supports LogsDB as GA 8.17.0.
+func IsVersionLessThanLogsDBGA(version string) error {
+	stackVersion, err := semver.NewVersion(version)
+	if err != nil {
+		return fmt.Errorf("failed to parse version %q: %w", version, err)
+	}
+	lessThan := citools.IsVersionLessThanLogsDBGA(stackVersion)
+	if lessThan {
+		return fmt.Errorf("not supported LogsDB")
+	}
+	return nil
+
 }
