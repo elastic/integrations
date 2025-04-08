@@ -18,6 +18,8 @@ API_BUILDKITE_PIPELINES_URL="https://api.buildkite.com/v2/organizations/elastic/
 COVERAGE_FORMAT="generic"
 COVERAGE_OPTIONS="--test-coverage --coverage-format=${COVERAGE_FORMAT}"
 
+FATAL_ERROR="Fatal Error"
+
 running_on_buildkite() {
     if [[ "${BUILDKITE:-"false"}" == "true" ]]; then
         return 0
@@ -674,17 +676,12 @@ get_to_changeset() {
 
 is_subscription_compatible() {
     local reason=""
-    local return_code=0
 
-    reason=$(mage -d "${WORKSPACE}" -w . isSubscriptionCompatible)
-    return_code=$?
-    if [ $return_code -ne 0 ]; then
-        return 2
+    if ! reason=$(mage -d "${WORKSPACE}" -w . isSubscriptionCompatible) ; then
+        return 1
     fi
-    if [[ $reason == "supported" ]]; then
-        return 0
-    fi
-    return 1
+    echo "${reason}"
+    return 0
 }
 
 is_pr_affected() {
@@ -717,15 +714,14 @@ is_pr_affected() {
             return 1
         fi
     fi
-
-    if ! is_subscription_compatible; then
-        return_code="$?"
-        if [ "${return_code}" -gt 1 ]; then
-            # Unexpected error
-            return "${return_code}"
-        fi
+    local compatible=""
+    if ! compatible=$(is_subscription_compatible); then
+        echo "${FATAL_ERROR}"
+        return 1
+    fi
+    if [[ "${compatible}" == "false" ]]; then
         echo "[${package}] PR is not affected: subscription not compatible with ${ELASTIC_SUBSCRIPTION}"
-        return "${return_code}"
+        return 1
     fi
 
     if [[ "${FORCE_CHECK_ALL}" == "true" ]];then

@@ -56,18 +56,21 @@ for package in ${PACKAGE_LIST}; do
     echo "--- [$package] check if it is required to be tested"
     pushd "packages/${package}" > /dev/null
     skip_package="false"
+    failure="false"
     if ! reason=$(is_pr_affected "${package}" "${from}" "${to}") ; then
-        return_code=$?
-        if [ "${return_code}" -gt 1 ]; then
-            echo "Unexpected failure"
-            exit 1
-        fi
         skip_package="true"
+        if [[ "${reason}" == "${FATAL_ERROR}" ]]; then
+            failure=true
+        fi
     fi
-    echoerr "${reason}"
     popd > /dev/null
+    if [[ "${failure}" == "true" ]]; then
+        echo "Unexpected failure checking ${package}"
+        exit 1
+    fi
 
-    if [[ "$skip_package" == "true" ]] ; then
+    echoerr "${reason}"
+    if [[ "${skip_package}" == "true" ]] ; then
         continue
     fi
 

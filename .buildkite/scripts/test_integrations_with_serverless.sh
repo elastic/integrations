@@ -80,19 +80,26 @@ pushd packages > /dev/null
 for package in $(list_all_directories); do
     echo "--- [$package] check if it is required to be tested"
     pushd "${package}" > /dev/null
+    skip_package=false
+    failure=false
     if ! reason=$(is_pr_affected "${package}" "${from}" "${to}") ; then
-        return_code=$?
-        if [ "${return_code}" -gt 1 ]; then
-            echo "Unexpected failure"
-            exit 1
+        skip_package=true
+        if [[ "${reason}" == "${FATAL_ERROR}" ]]; then
+            failure=true
         fi
-        echo "${reason}"
+    fi
+    popd > /dev/null
+    if [[ "${failure}" == "true" ]]; then
+        echo "Unexpected failure checking ${package}"
+        exit 1
+    fi
+
+    echo "${reason}"
+
+    if [[ "${skip_package}" == "true" ]]; then
         echo "- ${reason}" >> "${SKIPPED_PACKAGES_FILE_PATH}"
-        popd > /dev/null
         continue
     fi
-    echo "${reason}"
-    popd > /dev/null
 
     if ! process_package "${package}" "${FAILED_PACKAGES_FILE_PATH}" ; then
         any_package_failing=1

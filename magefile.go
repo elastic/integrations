@@ -218,7 +218,7 @@ func ReportFailedTests(ctx context.Context, testResultsFolder string) error {
 func IsSubscriptionCompatible() error {
 	subscription := os.Getenv("ELASTIC_SUBSCRIPTION")
 	if subscription == "" {
-		fmt.Println("supported")
+		fmt.Println("true")
 		return nil
 	}
 
@@ -227,9 +227,9 @@ func IsSubscriptionCompatible() error {
 		return err
 	}
 	if supported {
-		fmt.Println("supported")
+		fmt.Println("true")
 		return nil
 	}
-	fmt.Println("not supported")
+	fmt.Println("false")
 	return nil
 }
