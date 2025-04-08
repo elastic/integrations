@@ -28,7 +28,7 @@ func packageSubscription(path string) (string, error) {
 func IsSubscriptionCompatible(stackSubscription, path string) (bool, error) {
 	pkgSubscription, err := packageSubscription(path)
 	if err != nil {
-		return false, fmt.Errorf("failed to read subcription from manifest: %w", err)
+		return false, fmt.Errorf("failed to read subscription from manifest: %w", err)
 	}
 
 	if stackSubscription == "trial" {
