@@ -522,7 +522,7 @@ An example event for `vendor_case` looks as following:
         "preserve_original_event",
         "preserve_duplicate_custom_fields",
         "forwarded",
-        "abnormal_security-vendor-cases"
+        "abnormal_security-vendor_case"
     ]
 }
 ```
