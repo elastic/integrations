@@ -830,7 +830,7 @@ teardown_test_package() {
 }
 
 list_all_directories() {
-    find . -maxdepth 1 -mindepth 1 -type d | xargs -I {} basename {} | sort |grep -E '^(elastic_package_registry|cloud_defend|beaconing|statsd_input|juniper_junos|juniper_netscreen|haproxy|opencanary|ti_misp|ti_domaintools|linux|system|m365_defender)$'
+    find . -maxdepth 1 -mindepth 1 -type d | xargs -I {} basename {} | sort
 }
 
 check_package() {
