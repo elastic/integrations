@@ -21,6 +21,24 @@ processors:
       field: event.original
       target_field: json
       ignore_failure: true
+  - script:
+      description: Drops null/empty values from event recursively. Done to avoid work on empty values.
+      lang: painless
+      if: ctx.json != null
+      source: |
+        boolean dropEmptyFields(Object object) {
+          if (object == null || object == '') {
+            return true;
+          } else if (object instanceof Map) {
+            ((Map) object).values().removeIf(value -> dropEmptyFields(value));
+            return (((Map) object).size() == 0);
+          } else if (object instanceof List) {
+            ((List) object).removeIf(value -> dropEmptyFields(value));
+            return (((List) object).length == 0);
+          }
+          return false;
+        }
+        dropEmptyFields(ctx.json);
   - fingerprint:
       fields:
         - json.threatInfo.createdAt
