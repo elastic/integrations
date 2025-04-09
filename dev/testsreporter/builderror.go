@@ -24,6 +24,7 @@ type buildErrorOptions struct {
 	ServerlessProject string
 	LogsDB            bool
 	StackVersion      string
+	Subscription      string
 	Packages          []string
 	BuildURL          string
 	PreviousBuilds    []string
@@ -40,6 +41,7 @@ func newBuildError(options buildErrorOptions) (*buildError, error) {
 			serverlessProject: options.ServerlessProject,
 			logsDB:            options.LogsDB,
 			stackVersion:      options.StackVersion,
+			subscription:      options.Subscription,
 			errorLinks: errorLinks{
 				firstBuild:     options.BuildURL,
 				closedIssueURL: options.ClosedIssueURL,
@@ -82,7 +84,11 @@ func (b *buildError) SummaryData() map[string]any {
 }
 
 func (b *buildError) DescriptionData() map[string]any {
-	return b.errorLinks.Data()
+	data := b.SummaryData()
+	for key, value := range b.errorLinks.Data() {
+		data[key] = value
+	}
+	return data
 }
 
 func (b *buildError) Labels() []string {

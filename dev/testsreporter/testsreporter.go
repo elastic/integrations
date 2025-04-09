@@ -20,6 +20,7 @@ type CheckOptions struct {
 	ServerlessProject string
 	LogsDB            bool
 	StackVersion      string
+	Subscription      string
 	BuildURL          string
 	CodeownersPath    string
 
@@ -67,6 +68,7 @@ func Check(ctx context.Context, resultsPath string, options CheckOptions) error 
 			ServerlessProject: options.ServerlessProject,
 			LogsDB:            options.LogsDB,
 			StackVersion:      options.StackVersion,
+			Subscription:      options.Subscription,
 			BuildURL:          options.BuildURL,
 			Packages:          packages,
 		})
@@ -122,6 +124,7 @@ func errorsFromTests(resultsPath string, options CheckOptions) ([]*packageError,
 				ServerlessProject: options.ServerlessProject,
 				LogsDB:            options.LogsDB,
 				StackVersion:      options.StackVersion,
+				Subscription:      options.Subscription,
 				BuildURL:          options.BuildURL,
 				TestCase:          c,
 				CodeownersPath:    options.CodeownersPath,
