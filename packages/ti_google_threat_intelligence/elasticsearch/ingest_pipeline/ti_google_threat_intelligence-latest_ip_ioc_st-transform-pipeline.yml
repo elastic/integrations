@@ -1,0 +1,24 @@
+---
+description: Pipeline for processing IP IOC Stream events from Google Threat Intelligence Threat Feed events.
+processors:
+  - set:
+      field: gti.ip_ioc_stream
+      tag: set_gti_ioc_stream_from_ioc_stream
+      copy_from: gti.ioc_stream
+      if: ctx.gti?.ioc_stream != null
+      ignore_empty_value: true
+  - set:
+      field: data_stream.dataset
+      tag: set_data_stream_dataset
+      value: ti_google_threat_intelligence.ip_ioc_stream
+  - set:
+      field: event.dataset
+      tag: set_event_dataset
+      value: ti_google_threat_intelligence.ip_ioc_stream
+on_failure:
+  - set:
+      field: event.kind
+      value: pipeline_error
+  - append:
+      field: error.message
+      value: '{{{ _ingest.on_failure_message }}}'
