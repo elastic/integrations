@@ -1416,15 +1416,19 @@ processors:
           - android
       source: |
         if (ctx.crowdstrike?.alert?.device?.platform_name != null) {
+          String platform_name = ctx.crowdstrike.alert.device.platform_name.toLowerCase();
           for (String os: params.os_type) {
-            if (ctx.crowdstrike.alert.device.platform_name.toLowerCase().contains(os)) {
+            if (platform_name.contains(os)) {
               ctx.host.os.put('type', os);
+              return;
             }
           }
         } else if (ctx.crowdstrike?.alert?.operating_system != null) {
+          String operating_system = ctx.crowdstrike.alert.operating_system.toLowerCase();
           for (String os: params.os_type) {
-            if (ctx.crowdstrike.alert.operating_system.toLowerCase().contains(os)) {
+            if (operating_system.contains(os)) {
               ctx.host.os.put('type', os);
+              return;
             }
           }
         }

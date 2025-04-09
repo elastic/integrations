@@ -632,15 +632,13 @@ processors:
           - ios
           - android
       source: |
-        if (ctx.host == null) {
-          ctx.put('host', new HashMap());
-        }
-        if (ctx.host.os == null) {
-          ctx.host.put('os', new HashMap());
-        }
+        ctx.host = ctx.host ?: [:];
+        ctx.host.os = ctx.host.os ?: [:];
+        String os_type = ctx.json.osType.toLowerCase();
         for (String os: params.os_type) {
-          if (ctx.json.osType.toLowerCase().contains(os)) {
+          if (os_type.contains(os)) {
             ctx.host.os.put('type', os);
+            return;
           }
         }
   - rename:

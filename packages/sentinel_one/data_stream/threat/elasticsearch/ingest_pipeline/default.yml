@@ -368,15 +368,13 @@ processors:
           - ios
           - android
       source: |
-        if (ctx.host == null) {
-          ctx.put('host', new HashMap());
-        }
-        if (ctx.host.os == null) {
-          ctx.host.put('os', new HashMap());
-        }
+        ctx.host = ctx.host ?: [:];
+        ctx.host.os = ctx.host.os ?: [:];
+        String agent_os_type = ctx.json.agentRealtimeInfo.agentOsType.toLowerCase();
         for (String os: params.os_type) {
-          if (ctx.json.agentRealtimeInfo.agentOsType.toLowerCase().contains(os)) {
+          if (agent_os_type.contains(os)) {
             ctx.host.os.put('type', os);
+            return;
           }
         }
   - rename:
