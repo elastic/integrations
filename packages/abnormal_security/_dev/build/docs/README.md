@@ -6,7 +6,7 @@ The Abnormal Security integration collects data for AI Security Mailbox (formerl
 
 ## Data streams
 
-The Abnormal Security integration collects five types of logs:
+The Abnormal Security integration collects six types of logs:
 
 - **[AI Security Mailbox](https://app.swaggerhub.com/apis-docs/abnormal-security/abx/1.4.3#/AI%20Security%20Mailbox%20(formerly%20known%20as%20Abuse%20Mailbox))** - Get details of AI Security Mailbox.
 
