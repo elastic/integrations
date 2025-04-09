@@ -377,7 +377,7 @@ Please refer to the following [document](https://www.elastic.co/guide/en/ecs/cur
 
 ### Entra Connect
 
-Get details about apps registered in Microsoft Entra ID. [Microsoft API](https://learn.microsoft.com/en-us/graph/api/resources/organization?view=graph-rest-1.0).
+Get details about apps registered in Microsoft Entra Connect. [Microsoft API](https://learn.microsoft.com/en-us/graph/api/resources/organization?view=graph-rest-1.0).
 
 {{event "entra_connect"}}
 
