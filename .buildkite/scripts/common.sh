@@ -500,7 +500,7 @@ prepare_stack() {
     echo "--- Prepare stack"
 
     local requiredSubscription="${ELASTIC_SUBSCRIPTION:-""}"
-    local requiredLogsDB="${STACK_LOGSDB_ENABLED:-false}"
+    local requiredLogsDB="${STACK_LOGSDB_ENABLED:-"false"}"
 
     local args="-v"
     local version_set=""
@@ -511,6 +511,8 @@ prepare_stack() {
         local version
         version=$(oldest_supported_version)
         if [[ "${requiredLogsDB}" == "true" ]]; then
+            # If LogsDB index mode is enabled, the required Elastic stack should be at least 8.17.0
+            # In 8.17.0 LogsDB index mode was made GA.
             local less_than=""
             if ! less_than=$(mage -d "${WORKSPACE}" -w . isVersionLessThanLogsDBGA "${version}") ; then
                 echo "${FATAL_ERROR}"
@@ -728,6 +730,7 @@ is_pr_affected() {
     fi
 
     if [[ "${STACK_LOGSDB_ENABLED:-"false"}" == "true" ]]; then
+        # Packages require to support 8.17.0 or higher as part of their Kibana constraints (manifest)
         local logsdb_compatible=""
         if ! logsdb_compatible=$(is_logsdb_compatible); then
             echo "${FATAL_ERROR}"
