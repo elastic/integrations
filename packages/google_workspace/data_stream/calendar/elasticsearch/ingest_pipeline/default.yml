@@ -52,23 +52,23 @@ processors:
           ctx.google_workspace.calendar = new HashMap();
         }
         for (int i = 0; i < ctx.json.events.parameters.length; ++i) {
-          if (ctx["json"]["events"]["parameters"][i]["value"] != null) {
-            ctx.google_workspace.calendar[ctx["json"]["events"]["parameters"][i]["name"].toLowerCase()] = ctx["json"]["events"]["parameters"][i]["value"];
+          if (ctx.json.events.parameters[i].value != null) {
+            ctx.google_workspace.calendar[ctx.json.events.parameters[i].name.toLowerCase()] = ctx.json.events.parameters[i].value;
           }
-          if (ctx["json"]["events"]["parameters"][i]["boolValue"] != null) {
-            ctx.google_workspace.calendar[ctx["json"]["events"]["parameters"][i]["name"].toLowerCase()] = ctx["json"]["events"]["parameters"][i]["boolValue"];
+          if (ctx.json.events.parameters[i].boolValue != null) {
+            ctx.google_workspace.calendar[ctx.json.events.parameters[i].name.toLowerCase()] = ctx.json.events.parameters[i].boolValue;
           }
-          if (ctx["json"]["events"]["parameters"][i]["intValue"] != null) {
-            ctx.google_workspace.calendar[ctx["json"]["events"]["parameters"][i]["name"].toLowerCase()] = ctx["json"]["events"]["parameters"][i]["intValue"];
+          if (ctx.json.events.parameters[i].intValue != null) {
+            ctx.google_workspace.calendar[ctx.json.events.parameters[i].name.toLowerCase()] = ctx.json.events.parameters[i].intValue;
           }
-          if (ctx["json"]["events"]["parameters"][i]["multiValue"] != null) {
-            ctx.google_workspace.calendar[ctx["json"]["events"]["parameters"][i]["name"].toLowerCase()] = ctx["json"]["events"]["parameters"][i]["multiValue"];
+          if (ctx.json.events.parameters[i].multiValue != null) {
+            ctx.google_workspace.calendar[ctx.json.events.parameters[i].name.toLowerCase()] = ctx.json.events.parameters[i].multiValue;
           }
-          if (ctx["json"]["events"]["parameters"][i]["multiIntValue"] != null) {
-            ctx.google_workspace.calendar[ctx["json"]["events"]["parameters"][i]["name"].toLowerCase()] = ctx["json"]["events"]["parameters"][i]["multiIntValue"];
+          if (ctx.json.events.parameters[i].multiIntValue != null) {
+            ctx.google_workspace.calendar[ctx.json.events.parameters[i].name.toLowerCase()] = ctx.json.events.parameters[i].multiIntValue;
           }
-          if (ctx["json"]["events"]["parameters"][i]["multiBoolValue"] != null) {
-            ctx.google_workspace.calendar[ctx["json"]["events"]["parameters"][i]["name"].toLowerCase()] = ctx["json"]["events"]["parameters"][i]["multiBoolValue"];
+          if (ctx.json.events.parameters[i].multiBoolValue != null) {
+            ctx.google_workspace.calendar[ctx.json.events.parameters[i].name.toLowerCase()] = ctx.json.events.parameters[i].multiBoolValue;
           }
         }
       on_failure:
@@ -125,9 +125,9 @@ processors:
         transfer_event_requested: configuration
       source: |-
         ctx.event = ctx.event ?: [:];
-        def category = new ArrayList();
+        def category = [];
         category.add(params.get(ctx.google_workspace.calendar.name));
-        ctx.event.put('category', category);
+        ctx.event.category = category;
       on_failure:
         - append:
             field: error.message
@@ -178,9 +178,9 @@ processors:
         interop_exchange_resource_list_lookup_unsuccessful:	info
       source: |-
         ctx.event = ctx.event ?: [:];
-        def type = new ArrayList();
+        def type = [];
         type.add(params.get(ctx.google_workspace.calendar.name));
-        ctx.event.put('type', type);
+        ctx.event.type = type;
       on_failure:
         - append:
             field: error.message
@@ -214,11 +214,16 @@ processors:
       tag: set_source_user_email_from_actor_email
       copy_from: google_workspace.actor.email
       ignore_empty_value: true
+  - set:
+      field: source.user.name
+      tag: set_source_user_name_from_actor_email
+      copy_from: google_workspace.actor.email
+      ignore_empty_value: true
   - dissect:
       field: source.user.email
       tag: dissect_user_email
       if: ctx.source?.user?.email != null && ctx.source.user.email.contains('@')
-      pattern: '%{source.user.name}@%{source.user.domain}'
+      pattern: '%{}@%{source.user.domain}'
       on_failure:
         - append:
             field: error.message

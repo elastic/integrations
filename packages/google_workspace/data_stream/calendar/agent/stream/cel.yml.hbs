@@ -42,15 +42,14 @@ program: |
       "GET",
       state.url.trim_right("/") + "/admin/reports/v1/activity/users/" + state.user_key + "/applications/calendar?"+ {
         "maxResults": [string(state.batch_size)],
-        "endTime": [string(state.end_time)],
-        "startTime": [string(state.start_time)],
-        ?"pageToken": state.?cursor.next_page_token.optMap(v, [string(v)]),
+        "endTime": [state.end_time],
+        "startTime": [state.start_time],
+        ?"pageToken": state.?cursor.next_page_token.optMap(v, [v]),
       }.format_query()
     ).do_request().as(resp, resp.StatusCode == 200 ?
       bytes(resp.Body).decode_json().as(body,{
          "events": (
-            has(body.items)
-          ?
+            has(body.items) ?
             body.items.map(item, item.events.map(event, item.drop("events").as(root,
               {"message":root.with({"events": event}).encode_json()}
             ))).flatten()
