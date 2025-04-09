@@ -86,7 +86,7 @@ processors:
         UTC as before.
       if: ctx._temp_?.cisco_timestamp != null
       source: |-
-        String get_timezone(def ctx) { 
+        String get_timezone(def ctx) {
           if (ctx._temp_?.tz != null) {
             if (ctx._conf?.tz_map != null) {
               for (def item : ctx._conf.tz_map) {
@@ -95,24 +95,24 @@ processors:
                 }
               }
             }
-          
+
             if (ctx._temp_.tz.length() <= 4) {
               // all time zone abbreviations need to be uppercase
               return ctx._temp_.tz.toUpperCase();
             }
-              
+
             return ctx._temp_.tz;
           }
-          
+
           if (ctx._conf?.tz_offset != null) {
               ctx.event.timezone = ctx._conf.tz_offset;
               return ctx._conf.tz_offset;
           }
-        
+
           ctx.event.timezone = 'UTC';
           return 'UTC';
         }
-        
+
         def event_timezone = get_timezone(ctx);
         if (!event_timezone.contains('+') && !event_timezone.contains('-') && !(event_timezone.length() > 4)) {
           // timezone abbreviation e.g. CEST need to be put inside the timestamp
@@ -245,7 +245,7 @@ processors:
   - grok:
       field: message
       tag: grok_message_rp_join
-      patterns: 
+      patterns:
         - 'Received \(%{PIM_SOURCE}, %{DATA:cisco.ios.pim.group.ip}\) %{WORD:cisco.ios.action} from %{IP:source.address} for %{DATA:cisco.ios.outcome} %{IP:destination.address}'
       pattern_definitions:
         PIM_SOURCE: (%{IP:cisco.ios.pim.source.ip}|%{DATA})
@@ -422,7 +422,7 @@ processors:
       field: destination.as.asn
       target_field: destination.as.number
       ignore_missing: true
-  - rename: 
+  - rename:
       field: destination.as.organization_name
       target_field: destination.as.organization.name
       ignore_missing: true
