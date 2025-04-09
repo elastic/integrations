@@ -922,6 +922,7 @@ An example event for `onedrive_usage_account_counts` looks as following:
                             "active": {
                                 "count": 14
                             },
+                            "site_type": "All",
                             "report": {
                                 "date": "2024-11-23",
                                 "period": {
@@ -1033,6 +1034,7 @@ An example event for `onedrive_usage_file_counts` looks as following:
                             "active": {
                                 "count": 14
                             },
+                            "site_type": "All",
                             "report": {
                                 "date": "2024-11-23",
                                 "period": {
@@ -1140,6 +1142,7 @@ An example event for `onedrive_usage_storage` looks as following:
             "onedrive": {
                 "usage": {
                     "storage": {
+                        "site_type": "OneDrive",
                         "report": {
                             "date": "2024-12-16",
                             "period": {
