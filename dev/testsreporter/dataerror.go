@@ -15,6 +15,7 @@ type dataError struct {
 	serverlessProject string
 	logsDB            bool
 	stackVersion      string
+	subscription      string
 }
 
 func (d *dataError) String() string {
@@ -31,6 +32,11 @@ func (d *dataError) String() string {
 		sb.WriteString(d.stackVersion)
 		sb.WriteString("] ")
 	}
+	if d.subscription != "" {
+		sb.WriteString("[Subscription ")
+		sb.WriteString(d.subscription)
+		sb.WriteString("] ")
+	}
 	return sb.String()
 }
 
@@ -40,5 +46,6 @@ func (d *dataError) Data() map[string]any {
 		"serverless":        d.serverless,
 		"serverlessProject": d.serverlessProject,
 		"logsDB":            d.logsDB,
+		"subscription":      d.subscription,
 	}
 }
