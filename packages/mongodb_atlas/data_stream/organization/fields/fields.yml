@@ -28,15 +28,6 @@
     - name: collection.name
       type: keyword
       description: Name of the collection where the event occurred.
-    - name: current_value
-      type: group
-      fields:
-        - name: number
-          type: double
-          description: The value of the metric at the time of the event.
-        - name: units
-          type: keyword
-          description: Relevant units for the value.
     - name: database.name
       type: keyword
       description: Name of the database where the event occurred.
@@ -58,9 +49,18 @@
     - name: is_global_admin
       type: boolean
       description: Flag indicating whether the user who triggered this event is a MongoDB employee.
-    - name: metric.name
-      type: keyword
-      description: Name of the measurement whose value went outside the threshold.
+    - name: metric
+      type: group
+      fields:
+        - name: name
+          type: keyword
+          description: Name of the measurement whose value went outside the threshold.
+        - name: unit
+          type: keyword
+          description: Unit for the value.
+        - name: value
+          type: double
+          description: Value of the metric.
     - name: operation.type
       type: keyword
       description: Type of operation that generated the event.
@@ -76,6 +76,15 @@
     - name: replicaset.name
       type: keyword
       description: Name of the replica set.
+    - name: resource
+      type: group
+      fields:
+        - name: id
+          type: keyword
+          description: Unique 24-hexadecimal digit string that identifies the resource associated with the event.
+        - name: type
+          type: keyword
+          description: Unique identifier of resource type.
     - name: shard.name
       type: keyword
       description: The name of the shard associated with the event.

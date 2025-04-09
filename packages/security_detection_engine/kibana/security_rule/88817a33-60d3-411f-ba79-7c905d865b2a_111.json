@@ -1,0 +1,87 @@
+{
+    "attributes": {
+        "author": [
+            "Elastic"
+        ],
+        "description": "Adversaries may create or modify the Sublime application plugins or scripts to execute a malicious payload each time the Sublime application is started.",
+        "from": "now-9m",
+        "index": [
+            "logs-endpoint.events.file*"
+        ],
+        "language": "eql",
+        "license": "Elastic License v2",
+        "name": "Sublime Plugin or Application Script Modification",
+        "note": "## Triage and analysis\n\n> **Disclaimer**:\n> This investigation guide was created using generative AI technology and has been reviewed to improve its accuracy and relevance. While every effort has been made to ensure its quality, we recommend validating the content and adapting it to suit your specific environment and operational needs.\n\n### Investigating Sublime Plugin or Application Script Modification\n\nSublime Text, a popular text editor, supports plugins and scripts written in Python to enhance functionality. Adversaries may exploit this by altering these scripts to execute malicious code whenever the application launches, achieving persistence. The detection rule identifies suspicious modifications or creations of Python files in specific Sublime directories on macOS, excluding legitimate processes, to flag potential threats.\n\n### Possible investigation steps\n\n- Review the file path and name of the modified or created Python file to determine if it aligns with known Sublime Text plugin directories, specifically checking paths like \"/Users/*/Library/Application Support/Sublime Text*/Packages/*.py\" and \"/Applications/Sublime Text.app/Contents/MacOS/sublime.py\".\n- Examine the process that triggered the file change or creation event, ensuring it is not one of the excluded legitimate processes such as those from \"/Applications/Sublime Text*.app/Contents/*\" or \"/usr/local/Cellar/git/*/bin/git\".\n- Analyze the contents of the modified or newly created Python file for any suspicious or unauthorized code, focusing on scripts that may execute commands or connect to external networks.\n- Check the modification or creation timestamp of the file to correlate with any known user activity or other security events that occurred around the same time.\n- Investigate the user account associated with the file modification to determine if the activity aligns with their typical behavior or if it might indicate compromised credentials.\n- Look for any additional indicators of compromise on the host, such as unusual network connections or other file modifications, to assess the broader impact of the potential threat.\n\n### False positive analysis\n\n- Legitimate Sublime Text updates or installations may trigger the rule by modifying or creating Python files in the specified directories. Users can mitigate this by temporarily disabling the rule during known update periods or by verifying the update source.\n- Development activities involving Sublime Text plugins or scripts can cause false positives. Developers should consider excluding their specific user paths or processes from the rule to prevent unnecessary alerts.\n- Automated backup or synchronization tools that modify Sublime Text configuration files might be flagged. Users can exclude these tools' processes from the rule to avoid false positives.\n- System maintenance or cleanup scripts that interact with Sublime Text directories could trigger alerts. Identifying and excluding these scripts from the rule can help manage false positives.\n- Version control operations, such as those involving git, may modify files in the monitored directories. Users should ensure that legitimate git processes are included in the exclusion list to prevent false alerts.\n\n### Response and remediation\n\n- Immediately isolate the affected system from the network to prevent further spread of any potential malicious activity.\n- Terminate any suspicious processes related to Sublime Text that are not part of the legitimate process list provided in the detection rule.\n- Restore the modified or newly created Python files in the specified Sublime directories from a known good backup to ensure no malicious code persists.\n- Conduct a thorough scan of the affected system using updated antivirus or endpoint detection tools to identify and remove any additional malicious payloads.\n- Review system logs and the history of file changes to identify any unauthorized access or modifications, and document findings for further analysis.\n- Escalate the incident to the security operations team for a deeper investigation into potential compromise vectors and to assess the need for broader organizational response.\n- Implement additional monitoring on the affected system and similar environments to detect any recurrence of the threat, ensuring enhanced logging for the specified directories and processes.",
+        "query": "file where host.os.type == \"macos\" and event.type in (\"change\", \"creation\") and file.extension : \"py\" and\n  file.path :\n    (\n      \"/Users/*/Library/Application Support/Sublime Text*/Packages/*.py\",\n      \"/Applications/Sublime Text.app/Contents/MacOS/sublime.py\"\n    ) and\n  not process.executable :\n    (\n      \"/Applications/Sublime Text*.app/Contents/*\",\n      \"/usr/local/Cellar/git/*/bin/git\",\n      \"/Library/Developer/CommandLineTools/usr/bin/git\",\n      \"/usr/libexec/xpcproxy\",\n      \"/System/Library/PrivateFrameworks/DesktopServicesPriv.framework/Versions/A/Resources/DesktopServicesHelper\"\n    )\n",
+        "references": [
+            "https://posts.specterops.io/persistent-jxa-66e1c3cd1cf5"
+        ],
+        "related_integrations": [
+            {
+                "package": "endpoint",
+                "version": "^9.0.0"
+            }
+        ],
+        "required_fields": [
+            {
+                "ecs": true,
+                "name": "event.type",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "file.extension",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "file.path",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "host.os.type",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "process.executable",
+                "type": "keyword"
+            }
+        ],
+        "risk_score": 21,
+        "rule_id": "88817a33-60d3-411f-ba79-7c905d865b2a",
+        "setup": "## Setup\n\nThis rule requires data coming in from Elastic Defend.\n\n### Elastic Defend Integration Setup\nElastic Defend is integrated into the Elastic Agent using Fleet. Upon configuration, the integration allows the Elastic Agent to monitor events on your host and send data to the Elastic Security app.\n\n#### Prerequisite Requirements:\n- Fleet is required for Elastic Defend.\n- To configure Fleet Server refer to the [documentation](https://www.elastic.co/guide/en/fleet/current/fleet-server.html).\n\n#### The following steps should be executed in order to add the Elastic Defend integration on a macOS System:\n- Go to the Kibana home page and click \"Add integrations\".\n- In the query bar, search for \"Elastic Defend\" and select the integration to see more details about it.\n- Click \"Add Elastic Defend\".\n- Configure the integration name and optionally add a description.\n- Select the type of environment you want to protect, for MacOS it is recommended to select \"Traditional Endpoints\".\n- Select a configuration preset. Each preset comes with different default settings for Elastic Agent, you can further customize these later by configuring the Elastic Defend integration policy. [Helper guide](https://www.elastic.co/guide/en/security/current/configure-endpoint-integration-policy.html).\n- We suggest selecting \"Complete EDR (Endpoint Detection and Response)\" as a configuration setting, that provides \"All events; all preventions\"\n- Enter a name for the agent policy in \"New agent policy name\". If other agent policies already exist, you can click the \"Existing hosts\" tab and select an existing policy instead.\nFor more details on Elastic Agent configuration settings, refer to the [helper guide](https://www.elastic.co/guide/en/fleet/current/agent-policy.html).\n- Click \"Save and Continue\".\n- To complete the integration, select \"Add Elastic Agent to your hosts\" and continue to the next section to install the Elastic Agent on your hosts.\nFor more details on Elastic Defend refer to the [helper guide](https://www.elastic.co/guide/en/security/current/install-endpoint.html).\n",
+        "severity": "low",
+        "tags": [
+            "Domain: Endpoint",
+            "OS: macOS",
+            "Use Case: Threat Detection",
+            "Tactic: Persistence",
+            "Data Source: Elastic Defend",
+            "Resources: Investigation Guide"
+        ],
+        "threat": [
+            {
+                "framework": "MITRE ATT&CK",
+                "tactic": {
+                    "id": "TA0003",
+                    "name": "Persistence",
+                    "reference": "https://attack.mitre.org/tactics/TA0003/"
+                },
+                "technique": [
+                    {
+                        "id": "T1554",
+                        "name": "Compromise Host Software Binary",
+                        "reference": "https://attack.mitre.org/techniques/T1554/"
+                    }
+                ]
+            }
+        ],
+        "timestamp_override": "event.ingested",
+        "type": "eql",
+        "version": 111
+    },
+    "id": "88817a33-60d3-411f-ba79-7c905d865b2a_111",
+    "type": "security-rule"
+}
