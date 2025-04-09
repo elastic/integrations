@@ -242,8 +242,10 @@ func IsLogsDBSupportedInPackage() error {
 		return err
 	}
 	if !supported {
-		return fmt.Errorf("kibana.version does not support LogsDB")
+		fmt.Println("false")
+		return nil
 	}
+	fmt.Println("true")
 	return nil
 }
 
@@ -255,7 +257,9 @@ func IsVersionLessThanLogsDBGA(version string) error {
 	}
 	lessThan := citools.IsVersionLessThanLogsDBGA(stackVersion)
 	if lessThan {
-		return fmt.Errorf("not supported LogsDB")
+		fmt.Println("true")
+		return nil
 	}
+	fmt.Println("false")
 	return nil
 }

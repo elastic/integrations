@@ -509,8 +509,12 @@ prepare_stack() {
         local version
         version=$(oldest_supported_version)
         if [[ "${requiredLogsDB}" == "true" ]]; then
-            echo "mage -d \"${WORKSPACE}\" -w . isVersionLessThanLogsDBGA \"${version}\""
-            if ! mage -d "${WORKSPACE}" -w . isVersionLessThanLogsDBGA "${version}" ; then
+            local less_than=""
+            if ! less_than=$(mage -d "${WORKSPACE}" -w . isVersionLessThanLogsDBGA "${version}") ; then
+                echo "${FATAL_ERROR}"
+                return 1
+            fi
+            if [[ "${less_than}" == "true" ]]; then
                 version="8.17.0"
             fi
         fi
@@ -698,13 +702,15 @@ is_subscription_compatible() {
 is_logsdb_compatible() {
     if [[ "${STACK_VERSION:-""}" != "" ]]; then
         # Assumption that if this variable is set, it is supported
+        echo "true"
         return 0
     fi
 
-    if mage -d "${WORKSPACE}" -w . isLogsDBSupportedInPackage; then
-        return 0
+    if ! reason=$(mage -d "${WORKSPACE}" -w . isLogsDBSupportedInPackage); then
+        return 1
     fi
-    return 1
+    echo "${reason}"
+    return 0
 }
 
 is_pr_affected() {
@@ -718,7 +724,12 @@ is_pr_affected() {
     fi
 
     if [[ "${STACK_LOGSDB_ENABLED:-"false"}" == "true" ]]; then
-        if is_logsdb_compatible; then
+        local logsdb_compatible=""
+        if ! logsdb_compatible=$(is_logsdb_compatible); then
+            echo "${FATAL_ERROR}"
+            return 1
+        fi
+        if [[ "${logsdb_compatible}" == "false" ]]; then
             echo "[${package}] PR is not affected: not supported LogsDB (${STACK_VERSION})"
             return 1
         fi
