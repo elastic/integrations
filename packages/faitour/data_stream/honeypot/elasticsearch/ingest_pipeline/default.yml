@@ -1,0 +1,282 @@
+---
+description: Process events from Faitour honeypot
+processors:
+  ###################################
+  ## Parse JSON message to faitour ##
+  ###################################
+  - json:
+      description: Parse JSON from message to faitour
+      tag: json_message
+      field: message
+      target_field: faitour
+
+  ###########################
+  ## Handle ECS @timestamp ##
+  ###########################
+  - date:
+      description: Parse ISO8601 timestamp to @timestamp
+      tag: date_faitour_timestamp
+      if: ctx.faitour?.timestamp != null
+      field: faitour.timestamp
+      target_field: '@timestamp'
+      formats:
+        - ISO8601
+      ignore_failure: true
+
+  ###################################
+  ## Handle ECS Destination Fields ##
+  ###################################
+  - rename:
+      description: Rename faitour.destination to destination
+      tag: rename_faitour_destination
+      if: ctx.faitour?.destination != null
+      field: faitour.destination
+      target_field: destination
+      override: true
+      ignore_missing: true
+      ignore_failure: true
+
+  #############################
+  ## Handle ECS Event Fields ##
+  #############################
+  - rename:
+      description: Rename faitour.event to event
+      tag: rename_faitour_event
+      if: ctx.faitour?.event != null
+      field: faitour.event
+      target_field: event
+      override: true
+      ignore_missing: true
+      ignore_failure: true
+  # Since the rename above will overwrite the root `event.*` fields, copy the original message now
+  - set:
+      description: Set event.original from message
+      tag: set_event_original
+      field: event.original
+      copy_from: message
+  - redact:
+      description: Redact any passwords in the log data
+      tag: redact_event_original
+      if: 'ctx.tags != null && ctx.tags.contains("redact_passwords") && ctx.event?.original =~ /\"password\":\"/'
+      field: event.original
+      patterns:
+        - '"password":"%{DATA:REDACTED}"'
+      prefix: '"password":"<'
+      suffix: '>"'
+      ignore_missing: true
+      ignore_failure: true
+      trace_redact: true
+  - set:
+      description: Set time of event ingestion
+      tag: set_event_ingested
+      field: event.ingested
+      copy_from: _ingest.timestamp
+      ignore_failure: true
+
+  ############################
+  ## Handle ECS File Fields ##
+  ############################
+  - rename:
+      description: Rename faitour.file to file
+      tag: rename_faitour_file
+      if: ctx.faitour?.file != null
+      field: faitour.file
+      target_field: file
+      override: true
+      ignore_missing: true
+      ignore_failure: true
+  - gsub:
+      description: Parse file path from file name if available
+      tag: gsub_file_path
+      if: ctx.file?.name != null && ctx.file.name =~ /[\\\/]/
+      field: file.name
+      target_field: file.path
+      pattern: '[\\/][^\\/]*$'
+      replacement: ''
+      ignore_missing: true
+      ignore_failure: true
+  - gsub:
+      description: Remove file path from file name if available
+      tag: gsub_file_name
+      if: ctx.file?.name != null && ctx.file.name =~ /[\\\/]/
+      field: file.name
+      pattern: '^(.*)[\\/]'
+      replacement: ''
+      ignore_missing: true
+      ignore_failure: true
+  - gsub:
+      description: Parse file extension from file name if available
+      tag: gsub_file_extension
+      if: ctx.file?.name != null && ctx.file.name =~ /[\.]/
+      field: file.name
+      target_field: file.extension
+      pattern: '^.*[\.]'
+      replacement: ''
+      ignore_missing: true
+      ignore_failure: true
+
+  ############################
+  ## Handle ECS HTTP Fields ##
+  ############################
+  - rename:
+      description: Rename faitour.http to http
+      tag: rename_faitour_http
+      if: ctx.faitour?.http != null
+      field: faitour.http
+      target_field: http
+      override: true
+      ignore_missing: true
+      ignore_failure: true
+
+  ############################
+  ## Handle ECS Host Fields ##
+  ############################
+  - rename:
+      description: Rename faitour.host to host
+      tag: rename_faitour_host
+      if: ctx.faitour?.host != null
+      field: faitour.host
+      target_field: host
+      override: true
+      ignore_missing: true
+      ignore_failure: true
+  - split:
+      description: Split host.ip to array
+      tag: split_host_ip
+      if: ctx.host?.ip != null
+      field: host.ip
+      separator: ','
+      ignore_missing: true
+      ignore_failure: true
+
+  ###########################
+  ## Handle ECS Log Fields ##
+  ###########################
+  - rename:
+      description: Rename faitour.log to log
+      tag: rename_faitour_log
+      if: ctx.faitour?.log != null
+      field: faitour.log
+      target_field: log
+      override: true
+      ignore_missing: true
+      ignore_failure: true
+  - convert:
+      description: Convert log.origin.file.line to long
+      tag: convert_log_origin_file_line
+      if: ctx.log?.origin?.file?.line != null
+      field: log.origin.file.line
+      type: long
+      ignore_missing: true
+      ignore_failure: true
+
+  ##############################
+  ## Handle ECS Server Fields ##
+  ##############################
+  - rename:
+      description: Rename faitour.server to server
+      tag: rename_faitour_server
+      if: ctx.faitour?.server != null
+      field: faitour.server
+      target_field: server
+      override: true
+      ignore_missing: true
+      ignore_failure: true
+
+  ##############################
+  ## Handle ECS Source Fields ##
+  ##############################
+  - rename:
+      description: Rename faitour.source to source
+      tag: rename_faitour_source
+      if: ctx.faitour?.source != null
+      field: faitour.source
+      target_field: source
+      override: true
+      ignore_missing: true
+      ignore_failure: true
+
+  ############################
+  ## Handle ECS User Fields ##
+  ############################
+  - rename:
+      description: Rename faitour.user to user
+      tag: rename_faitour_user
+      if: ctx.faitour?.user != null
+      field: faitour.user
+      target_field: user
+      override: true
+      ignore_missing: true
+      ignore_failure: true
+  - remove:
+      description: Remove user.password if flagged for redaction
+      tag: remove_user_password
+      if: ctx.tags != null && ctx.tags.contains("redact_passwords") && ctx.user?.password != null
+      field: user.password
+      ignore_missing: true
+      ignore_failure: true
+
+  ###########################
+  ## Handle ECS URL Fields ##
+  ###########################
+  - uri_parts:
+      description: Parse all parts of the full URL
+      tag: uri_parts
+      if: ctx.faitour?.url?.full != null
+      field: faitour.url.full
+      keep_original: true
+      ignore_missing: true
+      ignore_failure: true
+  - rename:
+      description: Rename faitour.url.full to url.full
+      tag: rename_faitour_url_full
+      if: ctx.faitour?.url?.full != null
+      field: faitour.url.full
+      target_field: url.full
+      override: true
+      ignore_missing: true
+      ignore_failure: true
+  - rename:
+      description: Rename faitour.url.path to url.path if not parsed from uri_parts
+      tag: rename_faitour_url_path
+      if: ctx.faitour?.url?.path != null && ctx.url?.path == null
+      field: faitour.url.path
+      target_field: url.path
+      ignore_missing: true
+      ignore_failure: true
+
+  ##############
+  ## Clean Up ##
+  ##############
+  - remove:
+      description: Remove _temp fields that may have been used in processing
+      tag: remove__temp
+      field: _temp
+      ignore_missing: true
+  - remove:
+      description: Remove unused fields that may have been used in processing
+      tag: remove_unused
+      field:
+        - message
+        - timestamp
+        - faitour.timestamp
+        - faitour.url.path
+      ignore_missing: true
+  - remove:
+      description: Remove event.original if tags does not contain preserve_original_event
+      tag: remove_event_original
+      field: event.original
+      if: "ctx?.tags == null || !(ctx.tags.contains('preserve_original_event'))"
+      ignore_missing: true
+      ignore_failure: true
+
+##############################
+## Handle Pipeline Failures ##
+##############################
+on_failure:
+  - append:
+      field: event.kind
+      value: pipeline_error
+  - append:
+      field: error.message
+      value: 'Processor {{ _ingest.on_failure_processor_type }} with tag {{ _ingest.on_failure_processor_tag }} in pipeline {{ _ingest.on_failure_pipeline }} failed with message {{ _ingest.on_failure_message }}'
