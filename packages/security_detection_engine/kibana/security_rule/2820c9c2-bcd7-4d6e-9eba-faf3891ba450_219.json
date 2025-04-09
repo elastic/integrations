@@ -1,0 +1,133 @@
+{
+    "attributes": {
+        "author": [
+            "Elastic"
+        ],
+        "description": "Identifies an attempt to reset a potentially privileged account password remotely. Adversaries may manipulate account passwords to maintain access or evade password duration policies and preserve compromised credentials.",
+        "false_positives": [
+            "Legitimate remote account administration."
+        ],
+        "from": "now-9m",
+        "index": [
+            "logs-system.security*",
+            "logs-windows.forwarded*",
+            "winlogbeat-*"
+        ],
+        "language": "eql",
+        "license": "Elastic License v2",
+        "name": "Account Password Reset Remotely",
+        "note": "## Triage and analysis\n\n> **Disclaimer**:\n> This investigation guide was created using generative AI technology and has been reviewed to improve its accuracy and relevance. While every effort has been made to ensure its quality, we recommend validating the content and adapting it to suit your specific environment and operational needs.\n\n### Investigating Account Password Reset Remotely\n\nRemote password resets are crucial for managing user accounts, especially for privileged users. However, adversaries exploit this by resetting passwords to maintain unauthorized access or bypass security policies. The detection rule identifies suspicious remote password resets by monitoring successful network logins and subsequent password reset actions, focusing on privileged accounts to minimize noise and highlight potential threats.\n\n### Possible investigation steps\n\n- Review the source IP address from the authentication event to determine if it is from a known or trusted network. Investigate any unfamiliar or suspicious IP addresses.\n- Check the winlog.event_data.TargetUserName from the password reset event to confirm if it belongs to a privileged account and verify if the reset was authorized.\n- Correlate the winlog.event_data.SubjectLogonId from both the authentication and password reset events to ensure they are linked and identify the user or process responsible for the actions.\n- Investigate the timing and frequency of similar events to identify patterns or anomalies that may indicate malicious activity.\n- Examine any recent changes or activities associated with the account in question to assess if there are other signs of compromise or unauthorized access.\n\n### False positive analysis\n\n- Routine administrative tasks can trigger false positives when legitimate IT staff reset passwords for maintenance or support. To manage this, create exceptions for known IT personnel or service accounts that frequently perform these actions.\n- Automated scripts or tools used for account management might cause false alerts. Identify and exclude these scripts or tools by their specific account names or IP addresses.\n- Scheduled password resets for compliance or security policies may appear suspicious. Document and exclude these scheduled tasks by their timing and associated accounts.\n- Service accounts with naming conventions similar to privileged accounts might be flagged. Review and adjust the rule to exclude these specific service accounts by refining the naming patterns in the query.\n- Internal network devices or systems that perform regular password resets could be misinterpreted as threats. Whitelist these devices by their IP addresses or hostnames to reduce noise.\n\n### Response and remediation\n\n- Immediately isolate the affected system from the network to prevent further unauthorized access or lateral movement by the adversary.\n- Revoke any active sessions associated with the compromised account to disrupt any ongoing malicious activities.\n- Reset the password of the affected account using a secure method, ensuring it is done from a trusted and secure system.\n- Conduct a thorough review of recent account activities and system logs to identify any additional unauthorized changes or access attempts.\n- Escalate the incident to the security operations center (SOC) or incident response team for further investigation and to determine the scope of the breach.\n- Implement additional monitoring on the affected account and related systems to detect any further suspicious activities.\n- Review and update access controls and privileged account management policies to prevent similar incidents in the future.\n\n## Performance\nThis rule may cause medium to high performance impact due to logic scoping all remote Windows logon activity.\n",
+        "query": "sequence by winlog.computer_name with maxspan=1m\n  [authentication where event.action == \"logged-in\" and\n    /* event 4624 need to be logged */\n    winlog.logon.type : \"Network\" and event.outcome == \"success\" and source.ip != null and\n    source.ip != \"127.0.0.1\" and source.ip != \"::1\" and\n    not winlog.event_data.TargetUserName : (\"svc*\", \"PIM_*\", \"_*_\", \"*-*-*\", \"*$\")] by winlog.event_data.TargetLogonId\n   /* event 4724 need to be logged */\n  [iam where event.action == \"reset-password\" and\n   (\n    /*\n       This rule is very noisy if not scoped to privileged accounts, duplicate the\n       rule and add your own naming convention and accounts of interest here.\n     */\n    winlog.event_data.TargetUserName: (\"*Admin*\", \"*super*\", \"*SVC*\", \"*DC0*\", \"*service*\", \"*DMZ*\", \"*ADM*\") or\n    winlog.event_data.TargetSid : (\"S-1-5-21-*-500\", \"S-1-12-1-*-500\")\n    )\n  ] by winlog.event_data.SubjectLogonId\n",
+        "references": [
+            "https://docs.microsoft.com/en-us/windows/security/threat-protection/auditing/event-4724",
+            "https://stealthbits.com/blog/manipulating-user-passwords-with-mimikatz/",
+            "https://github.com/sbousseaden/EVTX-ATTACK-SAMPLES/blob/master/Credential%20Access/remote_pwd_reset_rpc_mimikatz_postzerologon_target_DC.evtx",
+            "https://www.elastic.co/security-labs/detect-credential-access"
+        ],
+        "related_integrations": [
+            {
+                "package": "system",
+                "version": "^1.64.0"
+            },
+            {
+                "package": "windows",
+                "version": "^2.5.0"
+            }
+        ],
+        "required_fields": [
+            {
+                "ecs": true,
+                "name": "event.action",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "event.outcome",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "source.ip",
+                "type": "ip"
+            },
+            {
+                "ecs": false,
+                "name": "winlog.computer_name",
+                "type": "keyword"
+            },
+            {
+                "ecs": false,
+                "name": "winlog.event_data.SubjectLogonId",
+                "type": "keyword"
+            },
+            {
+                "ecs": false,
+                "name": "winlog.event_data.TargetLogonId",
+                "type": "keyword"
+            },
+            {
+                "ecs": false,
+                "name": "winlog.event_data.TargetSid",
+                "type": "unknown"
+            },
+            {
+                "ecs": false,
+                "name": "winlog.event_data.TargetUserName",
+                "type": "keyword"
+            },
+            {
+                "ecs": false,
+                "name": "winlog.logon.type",
+                "type": "unknown"
+            }
+        ],
+        "risk_score": 47,
+        "rule_id": "2820c9c2-bcd7-4d6e-9eba-faf3891ba450",
+        "severity": "medium",
+        "tags": [
+            "Domain: Endpoint",
+            "OS: Windows",
+            "Use Case: Threat Detection",
+            "Tactic: Persistence",
+            "Tactic: Impact",
+            "Data Source: Windows Security Event Logs",
+            "Resources: Investigation Guide"
+        ],
+        "threat": [
+            {
+                "framework": "MITRE ATT&CK",
+                "tactic": {
+                    "id": "TA0003",
+                    "name": "Persistence",
+                    "reference": "https://attack.mitre.org/tactics/TA0003/"
+                },
+                "technique": [
+                    {
+                        "id": "T1098",
+                        "name": "Account Manipulation",
+                        "reference": "https://attack.mitre.org/techniques/T1098/"
+                    }
+                ]
+            },
+            {
+                "framework": "MITRE ATT&CK",
+                "tactic": {
+                    "id": "TA0040",
+                    "name": "Impact",
+                    "reference": "https://attack.mitre.org/tactics/TA0040/"
+                },
+                "technique": [
+                    {
+                        "id": "T1531",
+                        "name": "Account Access Removal",
+                        "reference": "https://attack.mitre.org/techniques/T1531/"
+                    }
+                ]
+            }
+        ],
+        "type": "eql",
+        "version": 219
+    },
+    "id": "2820c9c2-bcd7-4d6e-9eba-faf3891ba450_219",
+    "type": "security-rule"
+}

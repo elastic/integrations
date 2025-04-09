@@ -1,0 +1,114 @@
+{
+    "attributes": {
+        "author": [
+            "Elastic",
+            "Dennis Perto"
+        ],
+        "description": "Identifies a Windows trusted program that is known to be vulnerable to DLL Search Order Hijacking starting after being renamed or from a non-standard path. This is uncommon behavior and may indicate an attempt to evade defenses via side-loading a malicious DLL within the memory space of one of those processes.",
+        "false_positives": [
+            "Microsoft Antimalware Service Executable installed on non default installation path."
+        ],
+        "from": "now-9m",
+        "index": [
+            "winlogbeat-*",
+            "logs-endpoint.events.process-*",
+            "logs-windows.sysmon_operational-*",
+            "endgame-*",
+            "logs-m365_defender.event-*"
+        ],
+        "language": "eql",
+        "license": "Elastic License v2",
+        "name": "Potential DLL Side-Loading via Microsoft Antimalware Service Executable",
+        "note": "## Triage and analysis\n\n> **Disclaimer**:\n> This investigation guide was created using generative AI technology and has been reviewed to improve its accuracy and relevance. While every effort has been made to ensure its quality, we recommend validating the content and adapting it to suit your specific environment and operational needs.\n\n### Investigating Potential DLL Side-Loading via Microsoft Antimalware Service Executable\n\nThe Microsoft Antimalware Service Executable, a core component of Windows Defender, is crucial for real-time protection against malware. Adversaries exploit its trust by renaming it or executing it from non-standard paths to load malicious DLLs, bypassing security measures. The detection rule identifies such anomalies by monitoring process names and paths, flagging deviations from expected behavior to uncover potential threats.\n\n### Possible investigation steps\n\n- Review the process details to confirm if the process name is MsMpEng.exe but is executing from a non-standard path. Check the process.executable field to identify the exact path and verify if it deviates from the expected directories.\n- Investigate the parent process of the suspicious MsMpEng.exe instance to determine how it was initiated. This can provide insights into whether the process was started by a legitimate application or a potentially malicious one.\n- Examine the system for any recent file modifications or creations in the directory where the suspicious MsMpEng.exe is located. This can help identify if a malicious DLL was recently placed in the same directory.\n- Check for any network connections or communications initiated by the suspicious MsMpEng.exe process. This can help determine if the process is attempting to communicate with external servers, which may indicate malicious activity.\n- Look for any other processes or activities on the host that may indicate compromise, such as unusual user account activity or other processes running from unexpected locations. This can help assess the broader impact of the potential threat.\n\n### False positive analysis\n\n- Legitimate software updates or installations may temporarily rename or relocate the Microsoft Antimalware Service Executable. Users should verify if any software updates or installations occurred around the time of the alert and consider excluding these paths if they are known and trusted.\n- Custom security or IT management tools might execute the executable from non-standard paths for monitoring or testing purposes. Confirm with IT or security teams if such tools are in use and add these paths to the exclusion list if they are verified as safe.\n- Virtualization or sandbox environments may replicate the executable in different locations for testing or analysis. Check if the environment is part of a controlled setup and exclude these paths if they are part of legitimate operations.\n- Backup or recovery processes might involve copying the executable to alternate locations. Ensure these processes are legitimate and consider excluding these paths if they are part of routine operations.\n\n### Response and remediation\n\n- Immediately isolate the affected system from the network to prevent further spread of the potential threat.\n- Terminate any suspicious processes identified by the detection rule, specifically those involving MsMpEng.exe running from non-standard paths.\n- Conduct a thorough scan of the affected system using an updated antivirus or endpoint detection and response (EDR) tool to identify and remove any malicious DLLs or other malware.\n- Review and restore any altered or deleted system files from a known good backup to ensure system integrity.\n- Investigate the source of the DLL side-loading attempt to determine if it was part of a broader attack campaign, and gather forensic evidence for further analysis.\n- Escalate the incident to the security operations center (SOC) or incident response team for a deeper investigation and to assess the need for further containment measures.\n- Implement additional monitoring and alerting for similar anomalies in process execution paths to enhance detection capabilities and prevent recurrence.",
+        "query": "process where host.os.type == \"windows\" and event.type == \"start\" and\n(\n  (process.pe.original_file_name == \"MsMpEng.exe\" and not process.name : \"MsMpEng.exe\") or\n  (process.name : \"MsMpEng.exe\" and not\n        process.executable : (\"?:\\\\ProgramData\\\\Microsoft\\\\Windows Defender\\\\*.exe\",\n                              \"?:\\\\Program Files\\\\Windows Defender\\\\*.exe\",\n                              \"?:\\\\Program Files (x86)\\\\Windows Defender\\\\*.exe\",\n                              \"?:\\\\Program Files\\\\Microsoft Security Client\\\\*.exe\",\n                              \"?:\\\\Program Files (x86)\\\\Microsoft Security Client\\\\*.exe\"))\n)\n",
+        "references": [
+            "https://news.sophos.com/en-us/2021/07/04/independence-day-revil-uses-supply-chain-exploit-to-attack-hundreds-of-businesses/"
+        ],
+        "related_integrations": [
+            {
+                "package": "endpoint",
+                "version": "^9.0.0"
+            },
+            {
+                "package": "windows",
+                "version": "^2.5.0"
+            },
+            {
+                "package": "m365_defender",
+                "version": "^2.22.0"
+            }
+        ],
+        "required_fields": [
+            {
+                "ecs": true,
+                "name": "event.type",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "host.os.type",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "process.executable",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "process.name",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "process.pe.original_file_name",
+                "type": "keyword"
+            }
+        ],
+        "risk_score": 73,
+        "rule_id": "053a0387-f3b5-4ba5-8245-8002cca2bd08",
+        "setup": "## Setup\n\nIf enabling an EQL rule on a non-elastic-agent index (such as beats) for versions <8.2,\nevents will not define `event.ingested` and default fallback for EQL rules was not added until version 8.2.\nHence for this rule to work effectively, users will need to add a custom ingest pipeline to populate\n`event.ingested` to @timestamp.\nFor more details on adding a custom ingest pipeline refer - https://www.elastic.co/guide/en/fleet/current/data-streams-pipeline-tutorial.html\n",
+        "severity": "high",
+        "tags": [
+            "Domain: Endpoint",
+            "OS: Windows",
+            "Use Case: Threat Detection",
+            "Tactic: Defense Evasion",
+            "Data Source: Elastic Endgame",
+            "Tactic: Execution",
+            "Data Source: Elastic Defend",
+            "Data Source: Sysmon",
+            "Data Source: Microsoft Defender for Endpoint",
+            "Resources: Investigation Guide"
+        ],
+        "threat": [
+            {
+                "framework": "MITRE ATT&CK",
+                "tactic": {
+                    "id": "TA0005",
+                    "name": "Defense Evasion",
+                    "reference": "https://attack.mitre.org/tactics/TA0005/"
+                },
+                "technique": [
+                    {
+                        "id": "T1574",
+                        "name": "Hijack Execution Flow",
+                        "reference": "https://attack.mitre.org/techniques/T1574/",
+                        "subtechnique": [
+                            {
+                                "id": "T1574.002",
+                                "name": "DLL Side-Loading",
+                                "reference": "https://attack.mitre.org/techniques/T1574/002/"
+                            }
+                        ]
+                    }
+                ]
+            }
+        ],
+        "timestamp_override": "event.ingested",
+        "type": "eql",
+        "version": 213
+    },
+    "id": "053a0387-f3b5-4ba5-8245-8002cca2bd08_213",
+    "type": "security-rule"
+}

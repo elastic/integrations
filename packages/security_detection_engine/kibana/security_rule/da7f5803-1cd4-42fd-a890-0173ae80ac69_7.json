@@ -1,0 +1,87 @@
+{
+    "attributes": {
+        "author": [
+            "Elastic"
+        ],
+        "description": "A supervised machine learning model has identified a DNS question name with a high probability of sourcing from a Domain Generation Algorithm (DGA), which could indicate command and control network activity.",
+        "from": "now-10m",
+        "index": [
+            "logs-endpoint.events.*",
+            "logs-network_traffic.*"
+        ],
+        "language": "kuery",
+        "license": "Elastic License v2",
+        "name": "Machine Learning Detected a DNS Request With a High DGA Probability Score",
+        "note": "## Triage and analysis\n\n> **Disclaimer**:\n> This investigation guide was created using generative AI technology and has been reviewed to improve its accuracy and relevance. While every effort has been made to ensure its quality, we recommend validating the content and adapting it to suit your specific environment and operational needs.\n\n### Investigating Machine Learning Detected a DNS Request With a High DGA Probability Score\n\nMachine learning models analyze DNS requests to identify patterns indicative of Domain Generation Algorithms (DGAs), often used by attackers to establish command and control channels. These algorithms generate numerous domain names, making detection challenging. The detection rule leverages a model to flag DNS queries with high DGA probability, aiding in identifying potential malicious activity.\n\n### Possible investigation steps\n\n- Review the DNS query logs to identify the specific domain name associated with the high DGA probability score and gather additional context about the request, such as the timestamp and the source IP address.\n- Cross-reference the identified domain name with threat intelligence databases to determine if it is a known malicious domain or associated with any known threat actors or campaigns.\n- Investigate the source IP address to determine if it belongs to a legitimate user or system within the network, and check for any unusual or suspicious activity associated with this IP address.\n- Analyze network traffic logs to identify any additional communication attempts to the flagged domain or other suspicious domains, which may indicate further command and control activity.\n- Check endpoint security logs for any signs of compromise or suspicious behavior on the device that initiated the DNS request, such as unexpected processes or connections.\n- Consider isolating the affected system from the network if there is strong evidence of compromise, to prevent further potential malicious activity while conducting a deeper forensic analysis.\n\n### False positive analysis\n\n- Legitimate software updates or services may use domain generation techniques for load balancing or redundancy, leading to false positives. Users can create exceptions for known update services or trusted software to reduce these alerts.\n- Content delivery networks (CDNs) often use dynamically generated domains to optimize content delivery, which might be flagged. Identifying and whitelisting these CDN domains can help minimize unnecessary alerts.\n- Some security tools and applications use DGA-like patterns for legitimate purposes, such as generating unique identifiers. Users should verify the source and purpose of these requests and consider excluding them if they are confirmed to be non-threatening.\n- Internal testing environments or development tools might generate domains that resemble DGA activity. Users can exclude these environments from monitoring or adjust the rule to ignore specific internal IP ranges or domain patterns.\n\n### Response and remediation\n\n- Isolate the affected system from the network to prevent further potential command and control communication.\n- Conduct a thorough scan of the isolated system using updated antivirus and anti-malware tools to identify and remove any malicious software.\n- Review and block the identified suspicious domain names at the network perimeter to prevent any further communication attempts.\n- Analyze network traffic logs to identify any other systems that may have communicated with the flagged domains and apply similar containment measures.\n- Escalate the incident to the security operations center (SOC) for further investigation and to determine if the threat is part of a larger attack campaign.\n- Implement additional monitoring on the affected system and network segment to detect any signs of persistence or further malicious activity.\n- Update and reinforce endpoint protection measures, ensuring all systems have the latest security patches and configurations to prevent similar threats in the future.",
+        "query": "ml_is_dga.malicious_probability > 0.98\n",
+        "references": [
+            "https://www.elastic.co/guide/en/security/current/prebuilt-ml-jobs.html",
+            "https://docs.elastic.co/en/integrations/dga",
+            "https://www.elastic.co/security-labs/detect-domain-generation-algorithm-activity-with-new-kibana-integration"
+        ],
+        "related_integrations": [
+            {
+                "package": "dga",
+                "version": "^2.2.0"
+            },
+            {
+                "package": "endpoint",
+                "version": "^9.0.0"
+            },
+            {
+                "package": "network_traffic",
+                "version": "^1.33.0"
+            }
+        ],
+        "required_fields": [
+            {
+                "ecs": false,
+                "name": "ml_is_dga.malicious_probability",
+                "type": "unknown"
+            }
+        ],
+        "risk_score": 21,
+        "rule_id": "da7f5803-1cd4-42fd-a890-0173ae80ac69",
+        "setup": "## Setup\n\nThe rule requires the Domain Generation Algorithm (DGA) Detection integration assets to be installed, as well as DNS events collected by integrations such as Elastic Defend, Network Packet Capture, or Packetbeat.\n\n### DGA Detection Setup\nThe DGA Detection integration consists of an ML-based framework to detect DGA activity in DNS events.\n\n#### Prerequisite Requirements:\n- Fleet is required for DGA Detection.\n- To configure Fleet Server refer to the [documentation](https://www.elastic.co/guide/en/fleet/current/fleet-server.html).\n- DNS events collected by the [Elastic Defend](https://docs.elastic.co/en/integrations/endpoint), [Network Packet Capture](https://docs.elastic.co/integrations/network_traffic) integration, or [Packetbeat](https://www.elastic.co/guide/en/beats/packetbeat/current/packetbeat-overview.html).\n- To install Elastic Defend, refer to the [documentation](https://www.elastic.co/guide/en/security/current/install-endpoint.html).\n- To add the Network Packet Capture integration to an Elastic Agent policy, refer to [this](https://www.elastic.co/guide/en/fleet/current/add-integration-to-policy.html) guide.\n- To set up and run Packetbeat, follow [this](https://www.elastic.co/guide/en/beats/packetbeat/current/setting-up-and-running.html) guide.\n\n#### The following steps should be executed to install assets associated with the DGA Detection integration:\n- Go to the Kibana homepage. Under Management, click Integrations.\n- In the query bar, search for Domain Generation Algorithm Detection and select the integration to see more details about it.\n- Follow the instructions under the **Installation** section.\n- For this rule to work, complete the instructions through **Configure the ingest pipeline**.\n",
+        "severity": "low",
+        "tags": [
+            "Domain: Network",
+            "Domain: Endpoint",
+            "Data Source: Elastic Defend",
+            "Use Case: Domain Generation Algorithm Detection",
+            "Rule Type: ML",
+            "Rule Type: Machine Learning",
+            "Tactic: Command and Control",
+            "Resources: Investigation Guide"
+        ],
+        "threat": [
+            {
+                "framework": "MITRE ATT&CK",
+                "tactic": {
+                    "id": "TA0011",
+                    "name": "Command and Control",
+                    "reference": "https://attack.mitre.org/tactics/TA0011/"
+                },
+                "technique": [
+                    {
+                        "id": "T1568",
+                        "name": "Dynamic Resolution",
+                        "reference": "https://attack.mitre.org/techniques/T1568/",
+                        "subtechnique": [
+                            {
+                                "id": "T1568.002",
+                                "name": "Domain Generation Algorithms",
+                                "reference": "https://attack.mitre.org/techniques/T1568/002/"
+                            }
+                        ]
+                    }
+                ]
+            }
+        ],
+        "timestamp_override": "event.ingested",
+        "type": "query",
+        "version": 7
+    },
+    "id": "da7f5803-1cd4-42fd-a890-0173ae80ac69_7",
+    "type": "security-rule"
+}
