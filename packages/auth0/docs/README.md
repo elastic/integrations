@@ -118,118 +118,158 @@ An example event for `logs` looks as following:
 
 ```json
 {
-    "@timestamp": "2021-11-03T03:06:05.696Z",
+    "@timestamp": "2025-03-15T18:08:04.365Z",
     "agent": {
-        "ephemeral_id": "43a5c1c4-07f0-45c2-b500-d13f835a029b",
-        "id": "69cd4013-cce1-4df6-b3fb-6f59a9969e32",
-        "name": "elastic-agent-38349",
+        "ephemeral_id": "e052c974-795f-41ed-802f-69f92e97d682",
+        "id": "fb7f48ab-5817-4c31-8e7b-0d943895ca0d",
+        "name": "elastic-agent-79075",
         "type": "filebeat",
-        "version": "8.13.0"
+        "version": "8.17.3"
     },
     "auth0": {
         "logs": {
             "data": {
-                "classification": "Login - Failure",
-                "date": "2021-11-03T03:06:05.696Z",
-                "description": "Callback URL mismatch. http://localhost:3000/callback is not in the list of allowed callback URLs",
+                "classification": "Login - Success",
+                "client_id": "A123v04ZMgorp521yX4lIyeI9nYIuwGP",
+                "client_name": "XYZ",
+                "connection": "example-users",
+                "connection_id": "con_Abc4hRDDmVrZWomi",
+                "date": "2025-03-15T18:08:04.365Z",
                 "details": {
-                    "error": {
-                        "message": "Callback URL mismatch. http://localhost:3000/callback is not in the list of allowed callback URLs",
-                        "oauthError": "Callback URL mismatch. http://localhost:3000/callback is not in the list of allowed callback URLs. Please go to 'https://manage.auth0.com/#/applications/aI61p8I8aFjmYRliLWgvM9ev97kCCNDB/settings' and make sure you are sending the same callback url from your application.",
-                        "payload": {
-                            "attempt": "http://localhost:3000/callback",
-                            "client": {
-                                "clientID": "aI61p8I8aFjmYRliLWgvM9ev97kCCNDB"
-                            },
-                            "code": "unauthorized_client",
-                            "message": "Callback URL mismatch. http://localhost:3000/callback is not in the list of allowed callback URLs",
-                            "name": "CallbackMismatchError",
-                            "status": 403
-                        },
-                        "type": "callback-url-mismatch"
+                    "actions": {
+                        "executions": [
+                            "ABCnLEtG3EJGfIJMP2UZms1pMjAyNTAzMja25rxa3ZNFXYDkKlwulvVB"
+                        ]
                     },
-                    "qs": {
-                        "client_id": "aI61p8I8aFjmYRliLWgvM9ev97kCCNDB",
-                        "redirect_uri": "http://localhost:3000/callback",
-                        "response_type": "code",
-                        "scope": "openid profile",
-                        "state": "Vz6G2zZf95/FCOQALrpvd4bS6jx5xvRos2pVldFAiw4="
+                    "completedAt": 1743012484363,
+                    "elapsedTime": 63604,
+                    "initiatedAt": 1743012420759,
+                    "prompts": [
+                        {
+                            "completedAt": 1743012449133,
+                            "connection": "example-users",
+                            "connection_id": "con_Abc4hRDDmVrZWomi",
+                            "elapsedTime": 649,
+                            "identity": 12345,
+                            "initiatedAt": 1743012448484,
+                            "name": "lock-password-authenticate",
+                            "stats": {
+                                "loginsCount": 5
+                            },
+                            "strategy": "auth0"
+                        },
+                        {
+                            "completedAt": 1743012449137,
+                            "elapsedTime": 28376,
+                            "flow": "login",
+                            "initiatedAt": 1743012420761,
+                            "name": "login",
+                            "timers": {
+                                "rules": 626
+                            },
+                            "user_id": "auth0|12345",
+                            "user_name": "jdoe@example.com"
+                        },
+                        {
+                            "completedAt": 1743012484145,
+                            "elapsedTime": 34160,
+                            "flow": "mfa",
+                            "initiatedAt": 1743012449985,
+                            "name": "mfa",
+                            "performed_acr": [
+                                "http://schemas.openid.net/pape/policies/2007/06/multi-factor"
+                            ],
+                            "performed_amr": [
+                                "mfa"
+                            ],
+                            "provider": "guardian"
+                        }
+                    ],
+                    "session_id": "abcKFtsdFoVQqpf-a4gjQIXe1pMdM5kAH",
+                    "stats": {
+                        "loginsCount": 5
                     }
                 },
-                "hostname": "dev-yoj8axza.au.auth0.com",
-                "type": "Failed login",
-                "type_id": "f"
+                "hostname": "auth.example.com",
+                "is_mobile": false,
+                "login": {
+                    "completedAt": "2025-03-26T18:08:04.363Z",
+                    "elapsedTime": 63604,
+                    "initiatedAt": "2025-03-26T18:07:00.759Z",
+                    "stats": {
+                        "loginsCount": 5
+                    }
+                },
+                "strategy": "auth0",
+                "strategy_type": "database",
+                "tenant_name": "example-apps",
+                "type": "Successful login",
+                "type_id": "s"
             }
         }
     },
     "data_stream": {
         "dataset": "auth0.logs",
-        "namespace": "26539",
+        "namespace": "61704",
         "type": "logs"
     },
     "ecs": {
         "version": "8.11.0"
     },
     "elastic_agent": {
-        "id": "69cd4013-cce1-4df6-b3fb-6f59a9969e32",
+        "id": "fb7f48ab-5817-4c31-8e7b-0d943895ca0d",
         "snapshot": false,
-        "version": "8.13.0"
+        "version": "8.17.3"
     },
     "event": {
-        "action": "failed-login",
+        "action": "successful-login",
         "agent_id_status": "verified",
         "category": [
-            "authentication"
+            "authentication",
+            "session"
         ],
         "dataset": "auth0.logs",
-        "id": "90020211103030609732115389415260839021644201259064885298",
-        "ingested": "2025-02-18T00:59:52Z",
+        "id": "90020250315180807266045000000000000001223372126167226037",
+        "ingested": "2025-04-01T10:59:14Z",
         "kind": "event",
-        "original": "{\"data\":{\"connection_id\":\"\",\"date\":\"2021-11-03T03:06:05.696Z\",\"description\":\"Callback URL mismatch. http://localhost:3000/callback is not in the list of allowed callback URLs\",\"details\":{\"body\":{},\"error\":{\"message\":\"Callback URL mismatch. http://localhost:3000/callback is not in the list of allowed callback URLs\",\"oauthError\":\"Callback URL mismatch. http://localhost:3000/callback is not in the list of allowed callback URLs. Please go to 'https://manage.auth0.com/#/applications/aI61p8I8aFjmYRliLWgvM9ev97kCCNDB/settings' and make sure you are sending the same callback url from your application.\",\"payload\":{\"attempt\":\"http://localhost:3000/callback\",\"authorized\":[],\"client\":{\"clientID\":\"aI61p8I8aFjmYRliLWgvM9ev97kCCNDB\"},\"code\":\"unauthorized_client\",\"message\":\"Callback URL mismatch. http://localhost:3000/callback is not in the list of allowed callback URLs\",\"name\":\"CallbackMismatchError\",\"status\":403},\"type\":\"callback-url-mismatch\"},\"qs\":{\"client_id\":\"aI61p8I8aFjmYRliLWgvM9ev97kCCNDB\",\"redirect_uri\":\"http://localhost:3000/callback\",\"response_type\":\"code\",\"scope\":\"openid profile\",\"state\":\"Vz6G2zZf95/FCOQALrpvd4bS6jx5xvRos2pVldFAiw4=\"}},\"hostname\":\"dev-yoj8axza.au.auth0.com\",\"ip\":\"81.2.69.143\",\"log_id\":\"90020211103030609732115389415260839021644201259064885298\",\"type\":\"f\",\"user_agent\":\"Mozilla/5.0 (X11; Ubuntu; Linux x86_64; rv:93.0) Gecko/20100101 Firefox/93.0\"},\"log_id\":\"90020211103030609732115389415260839021644201259064885298\"}",
-        "outcome": "failure",
+        "outcome": "success",
         "type": [
-            "info"
+            "info",
+            "start"
         ]
     },
     "input": {
-        "type": "http_endpoint"
+        "type": "cel"
     },
     "log": {
-        "level": "error"
+        "level": "info"
     },
     "network": {
         "type": "ipv4"
     },
     "source": {
-        "geo": {
-            "city_name": "London",
-            "continent_name": "Europe",
-            "country_iso_code": "GB",
-            "country_name": "United Kingdom",
-            "location": {
-                "lat": 51.5142,
-                "lon": -0.0931
-            },
-            "region_iso_code": "GB-ENG",
-            "region_name": "England"
-        },
-        "ip": "81.2.69.143"
+        "ip": "192.168.1.1"
     },
     "tags": [
         "preserve_original_event",
         "forwarded",
         "auth0-logstream"
     ],
+    "user": {
+        "id": "auth0|12345",
+        "name": "jdoe@example.com"
+    },
     "user_agent": {
         "device": {
             "name": "Other"
         },
-        "name": "Firefox",
-        "original": "Mozilla/5.0 (X11; Ubuntu; Linux x86_64; rv:93.0) Gecko/20100101 Firefox/93.0",
+        "name": "Other",
+        "original": "Chrome 134.0.0 / Windows 10.0.0",
         "os": {
-            "name": "Ubuntu"
-        },
-        "version": "93.0."
+            "full": "Windows 10",
+            "name": "Windows",
+            "version": "10"
+        }
     }
 }
 ```
