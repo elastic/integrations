@@ -503,8 +503,10 @@ prepare_stack() {
     local requiredLogsDB="${STACK_LOGSDB_ENABLED:-false}"
 
     local args="-v"
+    local version_set=""
     if [ -n "${STACK_VERSION}" ]; then
         args="${args} --version ${STACK_VERSION}"
+        version_set="${STACK_VERSION}"
     else
         local version
         version=$(oldest_supported_version)
@@ -520,8 +522,10 @@ prepare_stack() {
         fi
         if [[ "${version}" != "null" ]]; then
             args="${args} --version ${version}"
+            version_set="${version}"
         fi
     fi
+    echoerr "- Stack Version: \"${version_set}\""
 
     if [ "${requiredLogsDB:-false}" == "true" ]; then
         echoerr "- Enable LogsDB"
