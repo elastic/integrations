@@ -11,16 +11,13 @@ import (
 )
 
 var (
-	semver_8_17_0 = semver.MustParse("8.17.0")
-	semver_8_19_0 = semver.MustParse("8.19.0")
-	semver_9_1_0  = semver.MustParse("9.1.0")
+	semver8_17_0  = semver.MustParse("8.17.0")
+	semver8_19_99 = semver.MustParse("8.19.99")
+	semver9_99_99 = semver.MustParse("9.99.99")
 )
 
 func IsVersionLessThanLogsDBGA(version *semver.Version) bool {
-	if version.LessThan(semver_8_17_0) {
-		return true
-	}
-	return false
+	return version.LessThan(semver8_17_0)
 }
 
 func packageKibanaConstraint(path string) (*semver.Constraints, error) {
@@ -40,7 +37,6 @@ func packageKibanaConstraint(path string) (*semver.Constraints, error) {
 	}
 
 	return constraints, nil
-
 }
 
 func IsLogsDBSupportedInPackage(path string) (bool, error) {
@@ -54,7 +50,9 @@ func IsLogsDBSupportedInPackage(path string) (bool, error) {
 		return true, nil
 	}
 
-	if constraint.Check(semver_8_19_0) || constraint.Check(semver_9_1_0) {
+	// Ensure that the package supports LogsDB mode
+	// It is not used here "semver8_17_0" since a constraint like "^8.18.0 || ^9.0.0" would return false
+	if constraint.Check(semver8_19_99) || constraint.Check(semver9_99_99) {
 		return true, nil
 	}
 	return false, nil
