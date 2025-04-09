@@ -18,6 +18,7 @@ import (
 	"github.com/magefile/mage/sh"
 	"github.com/pkg/errors"
 
+	"github.com/elastic/integrations/dev/citools"
 	"github.com/elastic/integrations/dev/codeowners"
 	"github.com/elastic/integrations/dev/coverage"
 	"github.com/elastic/integrations/dev/testsreporter"
@@ -155,6 +156,7 @@ func ReportFailedTests(ctx context.Context, testResultsFolder string) error {
 	dryRunEnv := os.Getenv("DRY_RUN")
 	serverlessProjectEnv := os.Getenv("SERVERLESS_PROJECT")
 	buildURL := os.Getenv("BUILDKITE_BUILD_URL")
+	subscription := os.Getenv("ELASTIC_SUBSCRIPTION")
 
 	serverless := false
 	if serverlessEnv != "" {
@@ -202,6 +204,7 @@ func ReportFailedTests(ctx context.Context, testResultsFolder string) error {
 		ServerlessProject: serverlessProjectEnv,
 		LogsDB:            logsDBEnabled,
 		StackVersion:      stackVersion,
+		Subscription:      subscription,
 		BuildURL:          buildURL,
 		MaxPreviousLinks:  defaultPreviousLinksNumber,
 		MaxTestsReported:  maxIssues,
@@ -209,4 +212,24 @@ func ReportFailedTests(ctx context.Context, testResultsFolder string) error {
 		Verbose:           verboseMode,
 	}
 	return testsreporter.Check(ctx, testResultsFolder, options)
+}
+
+// IsSubscriptionCompatible checks whether or not the package in the current directory allows to run with the given subscription (ELASTIC_SUBSCRIPTION env var).
+func IsSubscriptionCompatible() error {
+	subscription := os.Getenv("ELASTIC_SUBSCRIPTION")
+	if subscription == "" {
+		fmt.Println("true")
+		return nil
+	}
+
+	supported, err := citools.IsSubscriptionCompatible(subscription, "manifest.yml")
+	if err != nil {
+		return err
+	}
+	if supported {
+		fmt.Println("true")
+		return nil
+	}
+	fmt.Println("false")
+	return nil
 }
