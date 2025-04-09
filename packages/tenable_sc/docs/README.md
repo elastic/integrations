@@ -656,7 +656,7 @@ An example event for `vulnerability` looks as following:
 | host.os.codename | OS codename, if any. | keyword |
 | input.type | Input type | keyword |
 | log.offset | Log offset | long |
-| tenable_sc.vulnerability.accept_risk | N/A. | keyword |
+| tenable_sc.vulnerability.accept_risk |  | keyword |
 | tenable_sc.vulnerability.age | The time in days between the first and last time the vulnerability was seen. | long |
 | tenable_sc.vulnerability.base_score | Intrinsic and fundamental characteristics of a vulnerability that are constant over time and user environments. | keyword |
 | tenable_sc.vulnerability.bid | The Bugtraq ID. | keyword |
@@ -957,7 +957,7 @@ An example event for `vulnerability_patched` looks as following:
 | host.os.codename | OS codename, if any. | keyword |
 | input.type | Input type | keyword |
 | log.offset | Log offset | long |
-| tenable_sc.vulnerability.accept_risk | N/A. | keyword |
+| tenable_sc.vulnerability.accept_risk |  | keyword |
 | tenable_sc.vulnerability.age | The time in days between the first and last time the vulnerability was seen. | long |
 | tenable_sc.vulnerability.base_score | Intrinsic and fundamental characteristics of a vulnerability that are constant over time and user environments. | keyword |
 | tenable_sc.vulnerability.bid | The Bugtraq ID. | keyword |
