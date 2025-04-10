@@ -499,25 +499,44 @@ create_elastic_package_profile() {
 prepare_stack() {
     echo "--- Prepare stack"
 
+    local requiredSubscription="${ELASTIC_SUBSCRIPTION:-""}"
+    local requiredLogsDB="${STACK_LOGSDB_ENABLED:-"false"}"
+
     local args="-v"
+    local version_set=""
     if [ -n "${STACK_VERSION}" ]; then
         args="${args} --version ${STACK_VERSION}"
+        version_set="${STACK_VERSION}"
     else
         local version
         version=$(oldest_supported_version)
+        if [[ "${requiredLogsDB}" == "true" ]]; then
+            # If LogsDB index mode is enabled, the required Elastic stack should be at least 8.17.0
+            # In 8.17.0 LogsDB index mode was made GA.
+            local less_than=""
+            if ! less_than=$(mage -d "${WORKSPACE}" -w . isVersionLessThanLogsDBGA "${version}") ; then
+                echo "${FATAL_ERROR}"
+                return 1
+            fi
+            if [[ "${less_than}" == "true" ]]; then
+                version="8.17.0"
+            fi
+        fi
         if [[ "${version}" != "null" ]]; then
             args="${args} --version ${version}"
+            version_set="${version}"
         fi
     fi
+    echoerr "- Stack Version: \"${version_set}\""
 
-    if [ "${STACK_LOGSDB_ENABLED:-false}" == "true" ]; then
+    if [ "${requiredLogsDB:-false}" == "true" ]; then
         echoerr "- Enable LogsDB"
         args="${args} -U stack.logsdb_enabled=true"
     fi
 
-    if [ "${ELASTIC_SUBSCRIPTION:-""}" != "" ]; then
+    if [ "${requiredSubscription}" != "" ]; then
         echoerr "- Set Subscription ${ELASTIC_SUBSCRIPTION}"
-        args="${args} -U stack.elastic_subscription=${ELASTIC_SUBSCRIPTION}"
+        args="${args} -U stack.elastic_subscription=${requiredSubscription}"
     fi
 
     if [[ "${STACK_VERSION}" =~ ^7\.17 ]]; then
@@ -686,6 +705,20 @@ is_subscription_compatible() {
     return 0
 }
 
+is_logsdb_compatible() {
+    if [[ "${STACK_VERSION:-""}" != "" ]]; then
+        # Assumption that if this variable is set, it is supported
+        echo "true"
+        return 0
+    fi
+
+    if ! reason=$(mage -d "${WORKSPACE}" -w . isLogsDBSupportedInPackage); then
+        return 1
+    fi
+    echo "${reason}"
+    return 0
+}
+
 is_pr_affected() {
     local package="${1}"
     local from="${2}"
@@ -694,6 +727,19 @@ is_pr_affected() {
     if ! is_supported_stack ; then
         echo "[${package}] PR is not affected: unsupported stack (${STACK_VERSION})"
         return 1
+    fi
+
+    if [[ "${STACK_LOGSDB_ENABLED:-"false"}" == "true" ]]; then
+        # Packages require to support 8.17.0 or higher as part of their Kibana constraints (manifest)
+        local logsdb_compatible=""
+        if ! logsdb_compatible=$(is_logsdb_compatible); then
+            echo "${FATAL_ERROR}"
+            return 1
+        fi
+        if [[ "${logsdb_compatible}" == "false" ]]; then
+            echo "[${package}] PR is not affected: not supported LogsDB (${STACK_VERSION})"
+            return 1
+        fi
     fi
 
     if is_serverless; then
