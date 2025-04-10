@@ -1,0 +1,243 @@
+---
+description: Pipeline for Swimlane Turbine API Logs
+processors:
+
+    - set:
+        field: event.original
+        copy_from: message
+
+    - json:
+        field: message
+        target_field: json
+        ignore_failure: true
+
+    - drop:
+        if: ctx.json == null || !(ctx.json instanceof Map)
+
+    - json:
+        field: json.body
+        target_field: parsed_body
+        if: ctx.json.body != null
+
+    - remove:
+        field: ["message", "input", "stream", "log"]
+        ignore_missing: true
+
+    - fail:
+        if: ctx.json == null || !(ctx.json instanceof Map)
+        message: missing json object in input document
+
+    - rename:
+        field: json
+        target_field: swimlane.audit_log
+        ignore_missing: true
+
+    - drop:
+        if: 'ctx.swimlane.audit_log.LogType != "Audit"'
+
+    - json:
+        field: swimlane.audit_log.NewValue
+        target_field: swimlane.audit_log.NewValue
+        if: ctx.swimlane.audit_log.NewValue != null
+        ignore_failure: true
+
+    - rename:
+        field: swimlane.audit_log.User
+        target_field: user.name
+        ignore_missing: true
+
+    - rename:
+        field: swimlane.audit_log.AccountId
+        target_field: cloud.origin.account.id
+        ignore_missing: true
+
+    - rename:
+        field: swimlane.audit_log.TenantId
+        target_field: cloud.origin.tenant.id
+        ignore_missing: true
+        
+    - rename:
+        field: swimlane.audit_log.LogLevel
+        target_field: log.level
+        ignore_missing: true
+
+    - rename:
+        field: swimlane.audit_log.Message
+        target_field: message
+        ignore_missing: true
+
+    - rename:
+        field: swimlane.audit_log.Path
+        target_field: url.path
+        ignore_missing: true
+
+    - script:
+        if: ctx.swimlane.audit_log?.SourceIp != null
+        source: >-
+            if (ctx.source == null) {
+                ctx.source = [:]; // Create an empty map if ctx.source is null
+            }
+            if (ctx.swimlane?.audit_log?.SourceIp instanceof List) {
+                def ips = ctx.swimlane?.audit_log?.SourceIp[0];
+                ctx.source.ip = ips.replace("::ffff:", "");
+            } else {
+                def ips = ctx.swimlane?.audit_log?.SourceIp;
+                ctx.source.ip = ips.replace("::ffff:", "");
+            } 
+
+    - geoip:
+        field: source.ip
+        target_field: source.geo
+        ignore_missing: true
+            
+    - rename:
+        field: swimlane.audit_log.Tenant
+        target_field: cloud.origin.tenant.id
+        ignore_missing: true
+
+    - rename:
+        field: swimlane.audit_log.LogCategory
+        target_field: log.category
+        ignore_missing: true
+
+    - rename:
+        field: swimlane.audit_log.LogFeatureCategory
+        target_field: log.feature_category
+        ignore_missing: true
+
+    - rename:
+        field: swimlane.audit_log.LogSource
+        target_field: log.source
+        ignore_missing: true
+
+    - rename:
+        field: swimlane.audit_log.LogType
+        target_field: log.type
+        ignore_missing: true
+
+    - rename:
+        field: swimlane.audit_log.Description
+        target_field: message
+        ignore_missing: true
+
+    - set:
+        field: message
+        value: "{{message}}: {{swimlane.audit_log.NewValue.name}} with Id: {{swimlane.audit_log.NewValue.id}}"
+        if: 'ctx.swimlane.audit_log.NewValue != null && ctx.swimlane.audit_log.NewValue.name != null && ctx.swimlane.audit_log.NewValue.id != null'
+
+    - rename:
+        field: swimlane.audit_log.UserId
+        target_field: user.id
+        ignore_missing: true
+
+    - set:
+        field: event.type 
+        value: ["creation"]
+        if: 'ctx.swimlane.audit_log.ActionType == "Create"'
+
+    - set:
+        field: event.type 
+        value: ["access"]
+        if: 'ctx.swimlane.audit_log.ActionType == "Read"'
+
+    - set:
+        field: event.type
+        value: ["change"]
+        if: 'ctx.swimlane.audit_log.ActionType == "Update"'
+
+    - set:
+        field: event.type 
+        value: ["deletion"]
+        if: 'ctx.swimlane.audit_log.ActionType == "Delete"'
+
+    - set:
+        field: event.type
+        value: ["start"]
+        if: 'ctx.swimlane.audit_log.ActionType == "Login"'
+
+    - set:
+        field: event.type
+        value: ["end"]
+        if: 'ctx.swimlane.audit_log.ActionType == "Logout"'
+
+    - rename:
+        field: swimlane.audit_log.Category
+        target_field: log.category
+        ignore_missing: true
+
+    - rename:
+        field: swimlane.audit_log.Endpoint
+        target_field: url.path
+        ignore_missing: true
+
+    - rename:
+        field: swimlane.audit_log.EndPoint
+        target_field: url.path
+        ignore_missing: true
+
+    - script:
+        if: ctx.url.path != null
+        source: >-
+            def paths = ctx.url?.path.splitOnToken("/");
+            if (paths.length > 0) {
+                int firstSlash = ctx.url.path.indexOf('/');
+                if (firstSlash != -1 && firstSlash + 1 < ctx.url?.path.length()) {
+                    ctx.url.path = ctx.url.path.substring(firstSlash + 1);
+                } 
+            }
+
+    - rename:
+        field: swimlane.audit_log.EventOutcome
+        target_field: event.outcome
+        ignore_missing: true
+    
+    - lowercase:
+        field: event.outcome
+        ignore_missing: true
+
+    - set:
+        field: user.roles
+        value: ["administrator"]
+        if: 'ctx.swimlane.audit_log.isAdmin == "True"'
+
+    - rename:
+        field: swimlane.audit_log.AuthenticationType
+        target_field: user.authentication.type
+        ignore_missing: true
+
+    - lowercase:
+        field: user.authentication.type
+        ignore_missing: true
+
+    - rename:
+        field: swimlane.audit_log.NewValue.Id
+        target_field: destination.user.changes.id
+        ignore_missing: true
+
+    - rename:
+        field: swimlane.audit_log.NewValue.Name
+        target_field: destination.user.changes.name
+        ignore_missing: true
+
+    - rename:
+        field: swimlane.audit_log.NewValue.ModifiedByUser
+        target_field: source.user.changes.id
+        ignore_missing: true         
+        
+    - user_agent:
+        field: swimlane.audit_log.UserAgent
+        ignore_missing: true
+    
+    - date:
+        field: swimlane.audit_log.EventTime
+        target_field: "@timestamp"
+        formats: ["yyyy-MM-dd'T'HH:mm:ss.SSSSSSS'Z'", "yyyy-MM-dd'T'HH:mm:ss.SSSSS'Z'", "yyyy-MM-dd'T'HH:mm:ss.SSS'Z'"]
+
+    - remove:
+        field: swimlane
+        ignore_missing: false
+
+on_failure:
+    - set:
+        field: error.message
+        value: "{{ _ingest.on_failure_message }}"
