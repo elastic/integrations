@@ -3187,22 +3187,22 @@ An example event for `calendar` looks as following:
 {
     "@timestamp": "2025-04-01T07:00:40.262Z",
     "agent": {
-        "ephemeral_id": "e03b2d0b-744b-4909-b362-add8672052eb",
-        "id": "d0b574eb-7905-46e8-8230-9b06571e37f8",
-        "name": "elastic-agent-28352",
+        "ephemeral_id": "f3c83423-1e98-4097-a310-5e96f806e9fe",
+        "id": "4e6649f8-dc18-4804-a413-251260a7e344",
+        "name": "elastic-agent-70148",
         "type": "filebeat",
         "version": "8.18.0"
     },
     "data_stream": {
         "dataset": "google_workspace.calendar",
-        "namespace": "75760",
+        "namespace": "26814",
         "type": "logs"
     },
     "ecs": {
         "version": "8.16.0"
     },
     "elastic_agent": {
-        "id": "d0b574eb-7905-46e8-8230-9b06571e37f8",
+        "id": "4e6649f8-dc18-4804-a413-251260a7e344",
         "snapshot": true,
         "version": "8.18.0"
     },
@@ -3214,7 +3214,7 @@ An example event for `calendar` looks as following:
         ],
         "dataset": "google_workspace.calendar",
         "id": "1",
-        "ingested": "2025-04-09T07:44:53Z",
+        "ingested": "2025-04-10T05:31:54Z",
         "kind": "event",
         "original": "{\"actor\":{\"email\":\"foo@bar.com\",\"profileId\":\"1\"},\"etag\":\"abcdefgh/cBsNSJx2A9Lg8kiQCGLddmq827A\",\"events\":{\"name\":\"delete_calendar\",\"parameters\":[{\"name\":\"calendar_id\",\"value\":\"c_abc123@group.calendar.google.com\"},{\"name\":\"api_kind\",\"value\":\"web\"},{\"name\":\"user_agent\",\"value\":\"Mozilla/5.0\"}],\"type\":\"calendar_change\"},\"id\":{\"applicationName\":\"calendar\",\"customerId\":\"1\",\"time\":\"2025-04-01T07:00:40.262Z\",\"uniqueQualifier\":\"1\"},\"ipAddress\":\"67.43.156.13\",\"kind\":\"admin#reports#activity\",\"ownerDomain\":\"elastic.com\"}",
         "provider": "calendar",
@@ -3270,7 +3270,7 @@ An example event for `calendar` looks as following:
             "domain": "bar.com",
             "email": "foo@bar.com",
             "id": "1",
-            "name": "foo"
+            "name": "foo@bar.com"
         }
     },
     "tags": [
@@ -3282,7 +3282,7 @@ An example event for `calendar` looks as following:
         "domain": "bar.com",
         "email": "foo@bar.com",
         "id": "1",
-        "name": "foo"
+        "name": "foo@bar.com"
     },
     "user_agent": {
         "device": {
