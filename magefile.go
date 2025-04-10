@@ -233,3 +233,37 @@ func IsSubscriptionCompatible() error {
 	fmt.Println("false")
 	return nil
 }
+
+func KibanaConstraintPackage() error {
+	constraint, err := citools.KibanaConstraintPackage("manifest.yml")
+	if err != nil {
+		return fmt.Errorf("faile")
+
+	}
+	if constraint == nil {
+		fmt.Println("null")
+		return nil
+	}
+	fmt.Println(constraint)
+	return nil
+}
+
+// IsSupportedStack checks whether or not the package in the current directory is allowed to be installed in the given stack version
+func IsSupportedStack(stackVersion string) error {
+	if stackVersion == "" {
+		fmt.Println("true")
+		return nil
+	}
+
+	supported, err := citools.IsPackageSupportedInStackVersion(stackVersion, "manifest.yml")
+	if err != nil {
+		return err
+	}
+
+	if supported {
+		fmt.Println("true")
+		return nil
+	}
+	fmt.Println("false")
+	return nil
+}
