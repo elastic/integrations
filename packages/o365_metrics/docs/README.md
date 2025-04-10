@@ -30,7 +30,7 @@ Following Microsoft 365 Graph Reports can be collected by Microsoft Office 365 M
 | [Teamms Call Quality](https://learn.microsoft.com/en-us/graph/api/resources/communications-api-overview?view=graph-rest-1.0?view=o365-worldwide)                                                 |    [reportRoot: callRecords](https://learn.microsoft.com/en-us/graph/api/callrecords-callrecord-list-sessions?view=graph-rest-1.0&tabs=http)    |   Microsoft 365 Teams Call Quality metrics   |   No aggregation  |   CallRecords.Read.All    |
 | Tenant Settings | [organization](https://learn.microsoft.com/en-us/graph/api/resources/organization?view=graph-rest-1.0), [adminReportSettings](https://learn.microsoft.com/en-us/graph/api/resources/adminreportsettings?view=graph-rest-1.0) | Microsoft 365 Tenant Settings | No aggregation | Organization.Read.All, ReportSettings.Read.All, Directory.Read.All  |
 | [App Registrations](https://learn.microsoft.com/en-us/graph/api/resources/application?view=graph-rest-1.0) |    [List Applications](https://learn.microsoft.com/en-us/graph/api/application-list?view=graph-rest-1.0&tabs=http)    |   Microsoft 365 App Registrations   |   No aggregation  | Application.Read.All, User.Read(delegated) |
-| [Entra Connect](https://learn.microsoft.com/en-us/graph/api/organization-list?view=graph-rest-1.0&tabs=http) |    [Organization](https://learn.microsoft.com/en-us/graph/api/organization-list?view=graph-rest-1.0&tabs=http), [PremisesSync](https://graph.microsoft.com/v1.0/directory/onPremisesSynchronization)    |   Microsoft 365 Entra Connect  |   No aggregation  | Organization.Read.All, User.Read(delegated) |
+| [Entra Features](https://learn.microsoft.com/en-us/graph/api/organization-list?view=graph-rest-1.0&tabs=http) |    [Organization](https://learn.microsoft.com/en-us/graph/api/organization-list?view=graph-rest-1.0&tabs=http), [PremisesSync](https://graph.microsoft.com/v1.0/directory/onPremisesSynchronization)    |   Microsoft 365 Entra Connect  |   No aggregation  | Organization.Read.All, User.Read(delegated) |
 | Entra ID users | [user](https://learn.microsoft.com/en-us/graph/api/resources/user?view=graph-rest-1.0), [riskDetection](https://learn.microsoft.com/en-us/graph/api/resources/riskdetection?view=graph-rest-1.0) | Microsoft 365 Entra Connect User metrics | No aggregation | User.Read.All, IdentityRiskEvent.Read.All
 
 
@@ -3244,11 +3244,11 @@ Please refer to the following [document](https://www.elastic.co/guide/en/ecs/cur
 | o365.metrics.app_registrations.password_credentials.key_id | The unique identifier for the password. | keyword |
 
 
-### Entra Connect
+### Entra Features
 
-Get details about apps registered in Microsoft Entra Connect. [Microsoft API](https://learn.microsoft.com/en-us/graph/api/resources/organization?view=graph-rest-1.0).
+Get details about apps registered in Microsoft Entra Features. [Microsoft API](https://learn.microsoft.com/en-us/graph/api/resources/organization?view=graph-rest-1.0).
 
-An example event for `entra_connect` looks as following:
+An example event for `entra_features` looks as following:
 
 ```json
 {
@@ -3306,7 +3306,7 @@ An example event for `entra_connect` looks as following:
     "o365": {
         "metrics": {
             "entra": {
-                "connect": {
+                "features": {
                     "block_cloud_object_takeover_through_hard_match_enabled": false,
                     "block_soft_match_enabled": false,
                     "bypass_dir_sync_overrides_enabled": false,
@@ -3332,7 +3332,7 @@ An example event for `entra_connect` looks as following:
         }
     },
     "tags": [
-        "o365.metrics.entra_connect"
+        "o365.metrics.entra_features"
     ]
 }
 ```
@@ -3348,26 +3348,26 @@ Please refer to the following [document](https://www.elastic.co/guide/en/ecs/cur
 | data_stream.namespace | Data stream namespace. | constant_keyword |
 | data_stream.type | Data stream type. | constant_keyword |
 | input.type | Input type. | keyword |
-| o365.metrics.entra.connect.block_cloud_object_takeover_through_hard_match_enabled | Indicates whether cloud object takeover through hard match is blocked. | boolean |
-| o365.metrics.entra.connect.block_soft_match_enabled | Indicates whether soft match is blocked. | boolean |
-| o365.metrics.entra.connect.bypass_dir_sync_overrides_enabled | Indicates whether directory sync overrides are bypassed. | boolean |
-| o365.metrics.entra.connect.cloud_password_policy_for_password_synced_users_enabled | Indicates if cloud password policy is enabled for password-synced users. | boolean |
-| o365.metrics.entra.connect.concurrent_credential_update_enabled | Indicates if concurrent credential updates are allowed. | boolean |
-| o365.metrics.entra.connect.concurrent_org_id_provisioning_enabled | Indicates if concurrent Org ID provisioning is enabled. | boolean |
-| o365.metrics.entra.connect.device_writeback_enabled | Indicates if device writeback is enabled. | boolean |
-| o365.metrics.entra.connect.directory_extensions_enabled | Indicates if directory extensions are enabled. | boolean |
-| o365.metrics.entra.connect.fope_conflict_resolution_enabled | Indicates if FOPE conflict resolution is enabled. | boolean |
-| o365.metrics.entra.connect.group_write_back_enabled | Indicates if group write-back is enabled. | boolean |
-| o365.metrics.entra.connect.on_premises_last_sync_datetime | Indicates the last on premises sync date. | date |
-| o365.metrics.entra.connect.on_premises_sync_enabled | Indicates if the on premises sync is enabled. | boolean |
-| o365.metrics.entra.connect.password_sync_enabled | Indicates if password sync is enabled. | boolean |
-| o365.metrics.entra.connect.password_writeback_enabled | Indicates if password writeback is enabled. | boolean |
-| o365.metrics.entra.connect.quarantine_upon_proxy_addresses_conflict_enabled | Indicates if quarantine is applied upon proxy address conflict. | boolean |
-| o365.metrics.entra.connect.quarantine_upon_upn_conflict_enabled | Indicates if quarantine is applied upon UPN conflict. | boolean |
-| o365.metrics.entra.connect.soft_match_on_upn_enabled | Indicates if soft match on UPN is enabled. | boolean |
-| o365.metrics.entra.connect.synchronize_upn_for_managed_users_enabled | Indicates if UPN synchronization for managed users is enabled. | boolean |
-| o365.metrics.entra.connect.tenant_id | The ID of the tenant. | keyword |
-| o365.metrics.entra.connect.unified_group_writeback_enabled | Indicates if unified group write-back is enabled. | boolean |
-| o365.metrics.entra.connect.user_force_password_change_on_logon_enabled | Indicates if users are forced to change passwords on logon. | boolean |
-| o365.metrics.entra.connect.user_writeback_enabled | Indicates if user writeback is enabled. | boolean |
+| o365.metrics.entra.features.block_cloud_object_takeover_through_hard_match_enabled | Indicates whether cloud object takeover through hard match is blocked. | boolean |
+| o365.metrics.entra.features.block_soft_match_enabled | Indicates whether soft match is blocked. | boolean |
+| o365.metrics.entra.features.bypass_dir_sync_overrides_enabled | Indicates whether directory sync overrides are bypassed. | boolean |
+| o365.metrics.entra.features.cloud_password_policy_for_password_synced_users_enabled | Indicates if cloud password policy is enabled for password-synced users. | boolean |
+| o365.metrics.entra.features.concurrent_credential_update_enabled | Indicates if concurrent credential updates are allowed. | boolean |
+| o365.metrics.entra.features.concurrent_org_id_provisioning_enabled | Indicates if concurrent Org ID provisioning is enabled. | boolean |
+| o365.metrics.entra.features.device_writeback_enabled | Indicates if device writeback is enabled. | boolean |
+| o365.metrics.entra.features.directory_extensions_enabled | Indicates if directory extensions are enabled. | boolean |
+| o365.metrics.entra.features.fope_conflict_resolution_enabled | Indicates if FOPE conflict resolution is enabled. | boolean |
+| o365.metrics.entra.features.group_write_back_enabled | Indicates if group write-back is enabled. | boolean |
+| o365.metrics.entra.features.on_premises_last_sync_datetime | Indicates the last on premises sync date. | date |
+| o365.metrics.entra.features.on_premises_sync_enabled | Indicates if the on premises sync is enabled. | boolean |
+| o365.metrics.entra.features.password_sync_enabled | Indicates if password sync is enabled. | boolean |
+| o365.metrics.entra.features.password_writeback_enabled | Indicates if password writeback is enabled. | boolean |
+| o365.metrics.entra.features.quarantine_upon_proxy_addresses_conflict_enabled | Indicates if quarantine is applied upon proxy address conflict. | boolean |
+| o365.metrics.entra.features.quarantine_upon_upn_conflict_enabled | Indicates if quarantine is applied upon UPN conflict. | boolean |
+| o365.metrics.entra.features.soft_match_on_upn_enabled | Indicates if soft match on UPN is enabled. | boolean |
+| o365.metrics.entra.features.synchronize_upn_for_managed_users_enabled | Indicates if UPN synchronization for managed users is enabled. | boolean |
+| o365.metrics.entra.features.tenant_id | The ID of the tenant. | keyword |
+| o365.metrics.entra.features.unified_group_writeback_enabled | Indicates if unified group write-back is enabled. | boolean |
+| o365.metrics.entra.features.user_force_password_change_on_logon_enabled | Indicates if users are forced to change passwords on logon. | boolean |
+| o365.metrics.entra.features.user_writeback_enabled | Indicates if user writeback is enabled. | boolean |
 
