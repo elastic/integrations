@@ -14,6 +14,7 @@ import (
 	"path/filepath"
 	"strconv"
 
+	"github.com/Masterminds/semver/v3"
 	"github.com/magefile/mage/mg"
 	"github.com/magefile/mage/sh"
 	"github.com/pkg/errors"
@@ -234,11 +235,11 @@ func IsSubscriptionCompatible() error {
 	return nil
 }
 
+// KibanaConstraintPackage returns the Kibana version constraint defined in the package manifest
 func KibanaConstraintPackage() error {
 	constraint, err := citools.KibanaConstraintPackage("manifest.yml")
 	if err != nil {
 		return fmt.Errorf("faile")
-
 	}
 	if constraint == nil {
 		fmt.Println("null")
@@ -261,6 +262,35 @@ func IsSupportedStack(stackVersion string) error {
 	}
 
 	if supported {
+		fmt.Println("true")
+		return nil
+	}
+	fmt.Println("false")
+	return nil
+}
+
+// IsLogsDBSupportedInPackage checks whether or not the package in the current directory supports LogsDB
+func IsLogsDBSupportedInPackage() error {
+	supported, err := citools.IsLogsDBSupportedInPackage("manifest.yml")
+	if err != nil {
+		return err
+	}
+	if !supported {
+		fmt.Println("false")
+		return nil
+	}
+	fmt.Println("true")
+	return nil
+}
+
+// IsVersionLessThanLogsDBGA checks whether or not the given version supports LogsDB. Minimum version that supports LogsDB as GA 8.17.0.
+func IsVersionLessThanLogsDBGA(version string) error {
+	stackVersion, err := semver.NewVersion(version)
+	if err != nil {
+		return fmt.Errorf("failed to parse version %q: %w", version, err)
+	}
+	lessThan := citools.IsVersionLessThanLogsDBGA(stackVersion)
+	if lessThan {
 		fmt.Println("true")
 		return nil
 	}
