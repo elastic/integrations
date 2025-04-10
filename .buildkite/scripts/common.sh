@@ -18,6 +18,8 @@ API_BUILDKITE_PIPELINES_URL="https://api.buildkite.com/v2/organizations/elastic/
 COVERAGE_FORMAT="generic"
 COVERAGE_OPTIONS="--test-coverage --coverage-format=${COVERAGE_FORMAT}"
 
+FATAL_ERROR="Fatal Error"
+
 running_on_buildkite() {
     if [[ "${BUILDKITE:-"false"}" == "true" ]]; then
         return 0
@@ -509,7 +511,13 @@ prepare_stack() {
     fi
 
     if [ "${STACK_LOGSDB_ENABLED:-false}" == "true" ]; then
+        echoerr "- Enable LogsDB"
         args="${args} -U stack.logsdb_enabled=true"
+    fi
+
+    if [ "${ELASTIC_SUBSCRIPTION:-""}" != "" ]; then
+        echoerr "- Set Subscription ${ELASTIC_SUBSCRIPTION}"
+        args="${args} -U stack.elastic_subscription=${ELASTIC_SUBSCRIPTION}"
     fi
 
     if [[ "${STACK_VERSION}" =~ ^7\.17 ]]; then
@@ -668,6 +676,16 @@ get_to_changeset() {
     echo "${to}"
 }
 
+is_subscription_compatible() {
+    local reason=""
+
+    if ! reason=$(mage -d "${WORKSPACE}" -w . isSubscriptionCompatible) ; then
+        return 1
+    fi
+    echo "${reason}"
+    return 0
+}
+
 is_pr_affected() {
     local package="${1}"
     local from="${2}"
@@ -697,6 +715,15 @@ is_pr_affected() {
             echo "[${package}] spec <3.0.0"
             return 1
         fi
+    fi
+    local compatible=""
+    if ! compatible=$(is_subscription_compatible); then
+        echo "${FATAL_ERROR}"
+        return 1
+    fi
+    if [[ "${compatible}" == "false" ]]; then
+        echo "[${package}] PR is not affected: subscription not compatible with ${ELASTIC_SUBSCRIPTION}"
+        return 1
     fi
 
     if [[ "${FORCE_CHECK_ALL}" == "true" ]];then

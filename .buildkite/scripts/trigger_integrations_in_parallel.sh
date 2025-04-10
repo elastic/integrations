@@ -4,8 +4,10 @@ source .buildkite/scripts/common.sh
 
 set -euo pipefail
 
+echo "--- Install requirements"
 add_bin_path
 with_yq
+with_mage
 
 pushd packages > /dev/null
 PACKAGE_LIST=$(list_all_directories)
@@ -22,8 +24,8 @@ steps:
 EOF
 
 # Get from and to changesets to avoid repeating the same queries for each package
-
 # setting range of changesets to check differences
+echo "--- Get from and to changesets"
 from="$(get_from_changeset)"
 if [[ "${from}" == "" ]]; then
     echo "Missing \"from\" changset".
@@ -51,15 +53,24 @@ packages_to_test=0
 
 for package in ${PACKAGE_LIST}; do
     # check if needed to create an step for this package
+    echo "--- [$package] check if it is required to be tested"
     pushd "packages/${package}" > /dev/null
     skip_package="false"
+    failure="false"
     if ! reason=$(is_pr_affected "${package}" "${from}" "${to}") ; then
         skip_package="true"
+        if [[ "${reason}" == "${FATAL_ERROR}" ]]; then
+            failure=true
+        fi
     fi
-    echoerr "${reason}"
     popd > /dev/null
+    if [[ "${failure}" == "true" ]]; then
+        echo "Unexpected failure checking ${package}"
+        exit 1
+    fi
 
-    if [[ "$skip_package" == "true" ]] ; then
+    echoerr "${reason}"
+    if [[ "${skip_package}" == "true" ]] ; then
         continue
     fi
 
@@ -87,8 +98,10 @@ EOF
 done
 
 if [ ${packages_to_test} -eq 0 ]; then
+    echo "--- Create Buildkite annotation no packages to be tested"
     buildkite-agent annotate "No packages to be tested" --context "ctx-no-packages" --style "warning"
     exit 0
 fi
 
+echo "--- Upload Buildkite pipeline"
 cat ${PIPELINE_FILE} | buildkite-agent pipeline upload
