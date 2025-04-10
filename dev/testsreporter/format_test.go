@@ -124,7 +124,7 @@ func TestSummary(t *testing.T) {
 `,
 		},
 		{
-			title: "summary logsdb",
+			title: "summary logsdb without stack version defined",
 			resultError: &packageError{
 				dataError: dataError{
 					logsDB: true,
@@ -135,7 +135,7 @@ func TestSummary(t *testing.T) {
 				},
 				teams: []string{"team1", "team2"},
 			},
-			expected: `- Stack version: Same as in Pull Request builds
+			expected: `- Stack version: maximum of either the version used in PR builds or 8.17.0 (GA version for LogsDB index mode)
 - LogsDB: enabled
 - Package: foo
 - Failing test: mytest
