@@ -1,6 +1,6 @@
 # BeyondTrust PRA
 
-[BeyondTrust Priviledge Remote Access (PRA)](https://www.beyondtrust.com/products/privileged-remote-access) is a solution designed to securely manage and control remote access to critical systems for privileged users, such as administrators, IT personnel, and third-party vendors. PRA is part of our broader suite of Privileged Access Management (PAM) solutions. It provides real-time session monitoring, auditing, and recording, which helps you maintain compliance and detect any unauthorized or risky activities. By enforcing least-privilege access and supporting third-party vendor management, it reduces the attack surface and enhances overall security for remote operations.
+[BeyondTrust Privileged Remote Access (PRA)](https://www.beyondtrust.com/products/privileged-remote-access) is a solution designed to securely manage and control remote access to critical systems for privileged users, such as administrators, IT personnel, and third-party vendors. PRA is part of our broader suite of Privileged Access Management (PAM) solutions. It provides real-time session monitoring, auditing, and recording, which helps you maintain compliance and detect any unauthorized or risky activities. By enforcing least-privilege access and supporting third-party vendor management, it reduces the attack surface and enhances overall security for remote operations.
 
 ## Compatibility
 
@@ -10,7 +10,7 @@ This integration is compatible with **BeyondTrust PRA 24.1.x** and has been test
 
 This integration collects the following logs:
 
-- **[Access Session](https://docs.beyondtrust.com/pra/docs/reporting#accesssession)** - This method enables users to collect event logs occured during each AccessSession using the REST API.
+- **[Access Session](https://docs.beyondtrust.com/pra/docs/reporting#accesssession)** - Enables users to collect event logs occurred during each AccessSession using the REST API.
 
 ## Requirements
 
@@ -160,11 +160,11 @@ An example event for `access_session` looks as following:
 
 ```json
 {
-    "@timestamp": "2025-03-07T12:00:00.000Z",
+    "@timestamp": "2024-04-04T13:30:00.000Z",
     "agent": {
-        "ephemeral_id": "76b4a052-c38f-4877-8003-c10a6a462f6c",
-        "id": "68eed5b6-6dda-485c-b913-d8b3e92c2f13",
-        "name": "elastic-agent-52861",
+        "ephemeral_id": "6215c858-c129-46bd-ab86-d17442c2a675",
+        "id": "51c515e1-3b7e-4b1f-823b-9abd663a550f",
+        "name": "elastic-agent-37376",
         "type": "filebeat",
         "version": "8.17.0"
     },
@@ -175,8 +175,8 @@ An example event for `access_session` looks as following:
                 "gsnumber": "C12345",
                 "hostname": "remote-host",
                 "os": "Windows 10",
-                "private_ip": "10.0.0.1",
-                "public_ip": "192.0.2.1",
+                "private_ip": "1.128.0.1",
+                "public_ip": "81.2.69.192",
                 "type": "customer",
                 "username": "remote_user"
             },
@@ -198,8 +198,8 @@ An example event for `access_session` looks as following:
                 "id": "112233",
                 "invited": true,
                 "os": "Windows 11",
-                "private_ip": "10.0.0.2",
-                "public_ip": "203.0.113.1",
+                "private_ip": "1.128.0.2",
+                "public_ip": "175.16.199.0",
                 "seconds_involved": 3600,
                 "session_owner": "1",
                 "type": "representative",
@@ -231,8 +231,8 @@ An example event for `access_session` looks as following:
                 },
                 "duration": "01:00:00",
                 "end_time": {
-                    "text": "2023-01-01T13:00:00Z",
-                    "timestamp": "2023-11-14T23:13:20.000Z"
+                    "text": "2024-04-04T14:00:00Z",
+                    "timestamp": "2024-04-04T14:00:00.000Z"
                 },
                 "file_move_count": 1,
                 "file_transfer_count": 3,
@@ -261,8 +261,8 @@ An example event for `access_session` looks as following:
                 "session_recording_view_url": "https://example.com/recording_view/12345",
                 "session_type": "support2",
                 "start_time": {
-                    "text": "2023-01-01T12:00:00Z",
-                    "timestamp": "2023-11-14T22:13:20.000Z"
+                    "text": "2024-04-04T13:00:00Z",
+                    "timestamp": "2024-04-04T13:00:00.000Z"
                 }
             },
             "system_information": {
@@ -312,19 +312,31 @@ An example event for `access_session` looks as following:
                     }
                 ]
             },
-            "timestamp": "2025-03-07T12:00:00.000Z"
+            "timestamp": "2024-04-04T13:30:00.000Z"
         }
     },
     "data_stream": {
         "dataset": "beyondtrust_pra.access_session",
-        "namespace": "82840",
+        "namespace": "13256",
         "type": "logs"
     },
     "destination": {
         "domain": "remote-host",
-        "ip": "192.0.2.1",
+        "geo": {
+            "city_name": "London",
+            "continent_name": "Europe",
+            "country_iso_code": "GB",
+            "country_name": "United Kingdom",
+            "location": {
+                "lat": 51.5142,
+                "lon": -0.0931
+            },
+            "region_iso_code": "GB-ENG",
+            "region_name": "England"
+        },
+        "ip": "81.2.69.192",
         "nat": {
-            "ip": "10.0.0.1"
+            "ip": "1.128.0.1"
         },
         "user": {
             "name": "remote_user"
@@ -334,7 +346,7 @@ An example event for `access_session` looks as following:
         "version": "8.17.0"
     },
     "elastic_agent": {
-        "id": "68eed5b6-6dda-485c-b913-d8b3e92c2f13",
+        "id": "51c515e1-3b7e-4b1f-823b-9abd663a550f",
         "snapshot": false,
         "version": "8.17.0"
     },
@@ -345,19 +357,39 @@ An example event for `access_session` looks as following:
             "session"
         ],
         "dataset": "beyondtrust_pra.access_session",
-        "ingested": "2025-04-01T17:15:50Z",
+        "ingested": "2025-04-10T09:10:04Z",
         "kind": "event",
-        "original": "{\"body\":\"Session started by Admin\",\"destination\":{\"gsnumber\":\"C12345\",\"hostname\":\"remote-host\",\"os\":\"Windows 10\",\"private_ip\":\"10.0.0.1\",\"public_ip\":\"192.0.2.1\",\"type\":\"customer\",\"username\":\"remote_user\"},\"encoded_body\":\"U2Vzc2lvbiBzdGFydGVkIGJ5IEFkbWlu\",\"event_type\":\"Session Start\",\"filename\":\"logfile.txt\",\"files\":{\"file\":[{\"filename\":\"logfile.txt\",\"filesize\":1024}]},\"performed_by\":{\"display_name\":\"Admin\",\"gsnumber\":\"R56789\",\"hostname\":\"admin-host\",\"id\":\"112233\",\"invited\":1,\"os\":\"Windows 11\",\"private_ip\":\"10.0.0.2\",\"public_ip\":\"203.0.113.1\",\"seconds_involved\":3600,\"session_owner\":1,\"type\":\"representative\",\"username\":\"admin_user\"},\"session\":{\"command_shell_recordings\":{\"command_shell_recording\":[{\"download_url\":\"https://example.com/shell_download/12345\",\"instance\":\"0\",\"view_url\":\"https://example.com/shell_view/12345\"}]},\"custom_attributes\":{\"custom_attribute\":[{\"#text\":\"High\",\"code_name\":\"priority\",\"display_name\":\"priority\"},{\"#text\":\"High\",\"code_name\":\"priority\",\"display_name\":\"priority\"}]},\"duration\":\"01:00:00\",\"end_time\":{\"#text\":\"2023-01-01T13:00:00Z\",\"timestamp\":\"1700003600\"},\"file_delete_count\":0,\"file_move_count\":1,\"file_transfer_count\":3,\"jump_group\":{\"#text\":\"Support Team\",\"id\":\"56789\",\"type\":\"shared\"},\"jumpoint\":{\"#text\":\"Main Jumpoint\",\"id\":\"98765\"},\"lseq\":\"12345\",\"primary_customer\":{\"#text\":\"Remote PC\",\"gsnumber\":\"C12345\"},\"primary_rep\":{\"#text\":\"John Doe\",\"gsnumber\":\"R56789\",\"id\":\"112233\"},\"session_chat_download_url\":\"https://example.com/chat_download/12345\",\"session_chat_view_url\":\"https://example.com/chat_view/12345\",\"session_recording_download_url\":\"https://example.com/recording_download/12345\",\"session_recording_view_url\":\"https://example.com/recording_view/12345\",\"session_type\":\"support2\",\"start_time\":{\"#text\":\"2023-01-01T12:00:00Z\",\"timestamp\":\"1700000000\"}},\"system_information\":{\"category\":[{\"data\":{\"row\":[{\"field\":[{\"#text\":\"remote-host1\",\"name\":\"hostname\"},{\"#text\":\"h1234\",\"name\":\"hostname\"}]},{\"field\":[{\"#text\":\"remote-host2\",\"name\":\"hostname\"},{\"#text\":\"h5647\",\"name\":\"hostname\"}]}]},\"description\":{\"field\":[{\"#text\":\"Hostname\",\"name\":\"hostname\"},{\"#text\":\"Hostid\",\"name\":\"hostid\"}]},\"name\":\"OS Information\"}]},\"timestamp\":\"2025-03-07T12:00:00Z\"}"
+        "original": "{\"body\":\"Session started by Admin\",\"destination\":{\"gsnumber\":\"C12345\",\"hostname\":\"remote-host\",\"os\":\"Windows 10\",\"private_ip\":\"1.128.0.1\",\"public_ip\":\"81.2.69.192\",\"type\":\"customer\",\"username\":\"remote_user\"},\"encoded_body\":\"U2Vzc2lvbiBzdGFydGVkIGJ5IEFkbWlu\",\"event_type\":\"Session Start\",\"filename\":\"logfile.txt\",\"files\":{\"file\":[{\"filename\":\"logfile.txt\",\"filesize\":1024}]},\"performed_by\":{\"display_name\":\"Admin\",\"gsnumber\":\"R56789\",\"hostname\":\"admin-host\",\"id\":\"112233\",\"invited\":1,\"os\":\"Windows 11\",\"private_ip\":\"1.128.0.2\",\"public_ip\":\"175.16.199.0\",\"seconds_involved\":3600,\"session_owner\":1,\"type\":\"representative\",\"username\":\"admin_user\"},\"session\":{\"command_shell_recordings\":{\"command_shell_recording\":[{\"download_url\":\"https://example.com/shell_download/12345\",\"instance\":\"0\",\"view_url\":\"https://example.com/shell_view/12345\"}]},\"custom_attributes\":{\"custom_attribute\":[{\"#text\":\"High\",\"code_name\":\"priority\",\"display_name\":\"priority\"},{\"#text\":\"High\",\"code_name\":\"priority\",\"display_name\":\"priority\"}]},\"duration\":\"01:00:00\",\"end_time\":{\"#text\":\"2024-04-04T14:00:00Z\",\"timestamp\":\"1712239200\"},\"file_delete_count\":0,\"file_move_count\":1,\"file_transfer_count\":3,\"jump_group\":{\"#text\":\"Support Team\",\"id\":\"56789\",\"type\":\"shared\"},\"jumpoint\":{\"#text\":\"Main Jumpoint\",\"id\":\"98765\"},\"lseq\":\"12345\",\"primary_customer\":{\"#text\":\"Remote PC\",\"gsnumber\":\"C12345\"},\"primary_rep\":{\"#text\":\"John Doe\",\"gsnumber\":\"R56789\",\"id\":\"112233\"},\"session_chat_download_url\":\"https://example.com/chat_download/12345\",\"session_chat_view_url\":\"https://example.com/chat_view/12345\",\"session_recording_download_url\":\"https://example.com/recording_download/12345\",\"session_recording_view_url\":\"https://example.com/recording_view/12345\",\"session_type\":\"support2\",\"start_time\":{\"#text\":\"2024-04-04T13:00:00Z\",\"timestamp\":\"1712235600\"}},\"system_information\":{\"category\":[{\"data\":{\"row\":[{\"field\":[{\"#text\":\"remote-host1\",\"name\":\"hostname\"},{\"#text\":\"h1234\",\"name\":\"hostname\"}]},{\"field\":[{\"#text\":\"remote-host2\",\"name\":\"hostname\"},{\"#text\":\"h5647\",\"name\":\"hostname\"}]}]},\"description\":{\"field\":[{\"#text\":\"Hostname\",\"name\":\"hostname\"},{\"#text\":\"Hostid\",\"name\":\"hostid\"}]},\"name\":\"OS Information\"}]},\"timestamp\":\"2024-04-04T13:30:00Z\"}",
+        "type": [
+            "start"
+        ]
     },
     "file": {
         "name": "logfile.txt"
+    },
+    "host": {
+        "geo": {
+            "city_name": "Changchun",
+            "continent_name": "Asia",
+            "country_iso_code": "CN",
+            "country_name": "China",
+            "location": {
+                "lat": 43.88,
+                "lon": 125.3228
+            },
+            "region_iso_code": "CN-22",
+            "region_name": "Jilin Sheng"
+        },
+        "ip": [
+            "175.16.199.0"
+        ]
     },
     "input": {
         "type": "cel"
     },
     "message": "Session started by Admin",
     "observer": {
-        "product": "Priviledge Remote Access",
+        "product": "Privileged Remote Access",
         "type": "Proxy",
         "vendor": "BeyondTrust"
     },
@@ -367,10 +399,10 @@ An example event for `access_session` looks as following:
             "admin-host"
         ],
         "ip": [
-            "192.0.2.1",
-            "10.0.0.1",
-            "10.0.0.2",
-            "203.0.113.1"
+            "81.2.69.192",
+            "1.128.0.1",
+            "1.128.0.2",
+            "175.16.199.0"
         ],
         "user": [
             "remote_user",
@@ -381,9 +413,21 @@ An example event for `access_session` looks as following:
     },
     "source": {
         "domain": "admin-host",
-        "ip": "203.0.113.1",
+        "geo": {
+            "city_name": "Changchun",
+            "continent_name": "Asia",
+            "country_iso_code": "CN",
+            "country_name": "China",
+            "location": {
+                "lat": 43.88,
+                "lon": 125.3228
+            },
+            "region_iso_code": "CN-22",
+            "region_name": "Jilin Sheng"
+        },
+        "ip": "175.16.199.0",
         "nat": {
-            "ip": "10.0.0.2"
+            "ip": "1.128.0.2"
         },
         "user": {
             "id": "112233",

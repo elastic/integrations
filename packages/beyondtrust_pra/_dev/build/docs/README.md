@@ -1,6 +1,6 @@
 # BeyondTrust PRA
 
-[BeyondTrust Priviledge Remote Access (PRA)](https://www.beyondtrust.com/products/privileged-remote-access) is a solution designed to securely manage and control remote access to critical systems for privileged users, such as administrators, IT personnel, and third-party vendors. PRA is part of our broader suite of Privileged Access Management (PAM) solutions. It provides real-time session monitoring, auditing, and recording, which helps you maintain compliance and detect any unauthorized or risky activities. By enforcing least-privilege access and supporting third-party vendor management, it reduces the attack surface and enhances overall security for remote operations.
+[BeyondTrust Privileged Remote Access (PRA)](https://www.beyondtrust.com/products/privileged-remote-access) is a solution designed to securely manage and control remote access to critical systems for privileged users, such as administrators, IT personnel, and third-party vendors. PRA is part of our broader suite of Privileged Access Management (PAM) solutions. It provides real-time session monitoring, auditing, and recording, which helps you maintain compliance and detect any unauthorized or risky activities. By enforcing least-privilege access and supporting third-party vendor management, it reduces the attack surface and enhances overall security for remote operations.
 
 ## Compatibility
 
@@ -10,7 +10,7 @@ This integration is compatible with **BeyondTrust PRA 24.1.x** and has been test
 
 This integration collects the following logs:
 
-- **[Access Session](https://docs.beyondtrust.com/pra/docs/reporting#accesssession)** - This method enables users to collect event logs occured during each AccessSession using the REST API.
+- **[Access Session](https://docs.beyondtrust.com/pra/docs/reporting#accesssession)** - Enables users to collect event logs occurred during each AccessSession using the REST API.
 
 ## Requirements
 

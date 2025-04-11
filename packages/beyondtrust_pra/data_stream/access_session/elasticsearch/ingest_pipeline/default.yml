@@ -30,10 +30,6 @@ processors:
         - append:
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
-  - append:
-      field: event.category
-      tag: set_event_category
-      value: session
   - set:
       field: event.kind
       tag: set_event_kind
@@ -51,7 +47,7 @@ processors:
   - set:
       field: observer.product
       tag: set_observer_product
-      value: Priviledge Remote Access
+      value: Privileged Remote Access
   - set:
       field: observer.type
       tag: set_observer_type
@@ -146,6 +142,30 @@ processors:
       tag: set_destination_ip_from_access_session_destination_public_ip
       copy_from: beyondtrust_pra.access_session.destination.public_ip
       ignore_empty_value: true
+  - geoip:
+      field: destination.ip
+      tag: geoip_destination_ip
+      target_field: destination.geo
+      ignore_missing: true
+  - geoip:
+      database_file: GeoLite2-ASN.mmdb
+      field: destination.ip
+      tag: geoip_destination_as
+      target_field: destination.as
+      properties:
+        - asn
+        - organization_name
+      ignore_missing: true
+  - rename:
+      field: destination.as.asn
+      tag: rename_destination_as_asn
+      target_field: destination.as.number
+      ignore_missing: true
+  - rename:
+      field: destination.as.organization_name
+      tag: rename_destination_as_organization_name
+      target_field: destination.as.organization.name
+      ignore_missing: true
   - convert:
       field: json.destination.seconds_involved
       tag: convert_destination_seconds_involved_to_long
@@ -211,6 +231,171 @@ processors:
       tag: join_event_action
       separator: '-'
       if: ctx.event?.action instanceof List
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - script:
+      tag: map_event_category_and_event_type_from_event_action
+      lang: painless
+      description: Map event.category and event.type from event.action
+      if : ctx.event?.action != null
+      params:
+        'command-shell-session-started':
+          category:
+            - intrusion_detection
+          type:
+            - info
+        'conference-member-added':
+          category:
+            - iam
+          type:
+            - user
+        'conference-member-departed':
+          category:
+            -  iam
+          type:
+            -  user
+        'conference-member-state-changed':
+          category:
+            -  iam
+          type:
+            - user
+            - change
+        'conference-owner-changed':	
+          category:
+            -  iam
+          type:
+            - admin
+            - change
+        'credential-injection-attempt':
+            category:
+              - authentication
+              - intrusion_detection
+            type:
+              - info
+        'credential-injection-attempt-failed':
+            category:
+              - authentication
+              - intrusion_detection
+            type:
+              - info
+              - denied
+        'directory-created':
+          category:
+            - file
+          type:
+            - creation
+        'file-deleted':
+          category:
+            - file
+          type:
+            - deletion
+        'file-download':
+          category:
+            - file
+          type:
+            - access
+        'file-download-failed':
+          category:
+            - file
+          type:
+            - access
+        'file-moved':
+          category:
+            - file
+          type:
+            - change
+        'file-upload':
+          category:
+            - file
+          type:
+            - access
+        'file-upload-failed':
+          category:
+            - file
+          type:
+            - access
+        'registry-exported':
+          category:
+            - registry
+          type:
+            - access
+        'registry-imported':
+          category: 
+            - registry
+          type:
+            - access
+        'registry-key-added':
+          category:
+            - registry
+          type:
+            - creation
+        'registry-key-deleted':
+          category:
+            - registry
+          type:
+            - deletion
+        'registry-key-renamed':
+          category:
+            - registry
+          type:
+            - change
+        'registry-value-added':
+          category:
+            - registry
+          type:
+            - creation
+        'registry-value-deleted':
+          category:
+            - registry
+          type:
+            - deletion
+        'registry-value-modified':
+          category:
+            - registry
+          type:
+            - change
+        'registry-value-renamed':
+          category:
+            - registry
+          type:
+            - change
+        'service-access-allowed':
+          category:
+            - configuration
+            - iam
+          type: 
+            - access
+        'session-end':
+          type:
+            - end
+        'session-start':
+          type:
+            - start 
+        'system-information-retrieved':
+          category:
+            - intrusion_detection
+            - configuration
+          type:
+            - info
+            - access
+      source: >-
+        if (params.get(ctx.event.action) == null) {
+          ctx.event.category = ["session"]; // As each event belongs to a session
+          ctx.event.type = ["info"]; // Remaining are of type info
+          return;
+        }
+         // As each event belongs to a session
+        def event_category = new ArrayList(["session"]);
+        params.get(ctx.event.action).forEach((k, v) -> {
+            if (k.equals("category")) {
+              event_category.addAll(v);
+            }else{
+                ctx.event[k] = v;
+            }  
+        });
+        ctx.event.category = event_category
       on_failure:
         - append:
             field: error.message
@@ -333,6 +518,40 @@ processors:
       tag: set_source_ip_from_access_session_performed_by_public_ip
       copy_from: beyondtrust_pra.access_session.performed_by.public_ip
       ignore_empty_value: true
+  - geoip:
+      field: source.ip
+      tag: geoip_source_ip
+      target_field: source.geo
+      ignore_missing: true
+  - geoip:
+      database_file: GeoLite2-ASN.mmdb
+      field: source.ip
+      tag: geoip_source_as
+      target_field: source.as
+      properties:
+        - asn
+        - organization_name
+      ignore_missing: true
+  - rename:
+      field: source.as.asn
+      tag: rename_source_as_asn
+      target_field: source.as.number
+      ignore_missing: true
+  - rename:
+      field: source.as.organization_name
+      tag: rename_source_as_organization_name
+      target_field: source.as.organization.name
+      ignore_missing: true
+  - set:
+      field: host.geo
+      tag: set_host_geo_from_source_geo
+      copy_from: source.geo
+      ignore_empty_value: true
+  - append:
+      field: host.ip
+      value: "{{{source.ip}}}"
+      tag: append_host_ip_from_source_ip
+      if: ctx?.source?.ip != null
   - convert:
       field: json.performed_by.seconds_involved
       tag: convert_performed_by_seconds_involved_to_long
@@ -709,6 +928,32 @@ processors:
       tag: set_pipeline_error_into_event_kind
       value: pipeline_error
       if: ctx.error?.message != null
+  - script:
+      description: This script processor iterates over the whole document to remove fields with null values.
+      tag: script_to_drop_null_values
+      lang: painless
+      source: |
+        void handleMap(Map map) {
+          map.values().removeIf(v -> {
+            if (v instanceof Map) {
+                handleMap(v);
+            } else if (v instanceof List) {
+                handleList(v);
+            }
+            return v == null || v == '' || (v instanceof Map && v.size() == 0) || (v instanceof List && v.size() == 0)
+          });
+        }
+        void handleList(List list) {
+          list.removeIf(v -> {
+            if (v instanceof Map) {
+                handleMap(v);
+            } else if (v instanceof List) {
+                handleList(v);
+            }
+            return v == null || v == '' || (v instanceof Map && v.size() == 0) || (v instanceof List && v.size() == 0)
+          });
+        }
+        handleMap(ctx);
 on_failure:
   - append:
       field: error.message
