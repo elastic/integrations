@@ -365,6 +365,16 @@ processors:
       value: '{{{falco.hostname}}}'
       if: ctx.falco?.hostname != null
       allow_duplicates: false
+- append:
+      field: related.ip
+      value: '{{{source.ip}}}'
+      if: ctx.source?.ip != null
+      allow_duplicates: false
+- append:
+      field: related.ip
+      value: '{{{destination.ip}}}'
+      if: ctx.destination?.ip != null
+      allow_duplicates: false
 - set:
     field: process.executable
     copy_from: falco.output_fields.proc.exepath
