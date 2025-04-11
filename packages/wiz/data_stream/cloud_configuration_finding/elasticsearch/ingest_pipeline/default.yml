@@ -114,6 +114,13 @@ processors:
       tag: set_event_id
       copy_from: wiz.cloud_configuration_finding.id
       ignore_empty_value: true
+  - script:
+      tag: set_event_url
+      description: Generate an event URL from the event ID and rule ID; helps to investigate the Wiz events.
+      lang: painless
+      if: ctx.event?.id != null && ctx.json?.rule?.id != null
+      source: >
+        ctx.event.url = "https://app.wiz.io/findings/configuration-findings/cloud#~(filters~(status~()~rule~(equals~(~'" + ctx.json.rule.id + ")))~groupBy~(~)~entity~(~'" + ctx.event.id + "*2cCONFIGURATION_FINDING))";
   - set:
       field: event.kind
       value: state
