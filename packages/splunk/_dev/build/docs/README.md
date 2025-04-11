@@ -64,7 +64,7 @@ To collect data from the Splunk API, you will need the following information:
 
 NOTE:
 - Fetching alerts is only supported from the Splunk 'notable' index, which stores security findings.
-- The Splunk search string must begin with the prefix "search".
+- The Splunk search string should only contain the splunk query and must not mention the index name. Example - source="Access - Access - AD Account Disabled - Rule".
 - Enable SSL for the Splunk REST API to ensure secure communication when interacting with the API.
 
 ## Logs reference
