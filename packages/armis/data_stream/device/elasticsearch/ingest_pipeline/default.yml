@@ -56,6 +56,10 @@ processors:
       field: observer.vendor
       tag: set_observer_vendor
       value: Armis
+  - set:
+      field: observer.product
+      tag: set_observer_product
+      value: Asset Management and Security
   - rename:
       field: json.accessSwitch
       tag: rename_accessSwitch
@@ -325,29 +329,51 @@ processors:
       tag: set_@timestamp_from_device_last_seen
       copy_from: armis.device.last_seen
       ignore_empty_value: true
-  - uppercase:
+  - split:
       field: json.macAddress
-      tag: uppercase_mac_address
-      ignore_missing: true
-      if: ctx.json?.macAddress != null && ctx.json.macAddress != ''
+      separator: ', '
+      tag: split_mac_address
       target_field: armis.device.mac_address
-  - gsub:
-      field: armis.device.mac_address
-      if: ctx.armis?.device?.mac_address != ''
-      tag: gsub_mac_address
-      pattern: ':'
-      replacement: '-'
       ignore_missing: true
+      if: ctx.json?.macAddress instanceof String && ctx.json.macAddress != ''
       on_failure:
         - append:
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
-  - append:
+  - foreach:
+      field: armis.device.mac_address
+      if: ctx.armis?.device?.mac_address instanceof List
+      ignore_failure: true
+      processor:
+        append:
+          field: host.mac
+          tag: append_armis_device_mac_address_into_host_mac
+          value: '{{{_ingest._value}}}'
+          allow_duplicates: false
+  - foreach:
       field: host.mac
-      tag: append_armis_device_mac_address_into_host_mac
-      value: '{{{armis.device.mac_address}}}'
-      allow_duplicates: false
-      if: ctx.armis?.device?.mac_address != null
+      if: ctx.host?.mac instanceof List
+      ignore_failure: true
+      processor:
+        gsub:
+          field: _ingest._value
+          tag: gsub_host_mac_for_each_mac
+          pattern: ':'
+          replacement: '-'
+          ignore_missing: true
+          on_failure:
+            - append:
+                field: error.message
+                value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - foreach:
+      field: host.mac
+      if: ctx.host?.mac instanceof List
+      ignore_failure: true
+      processor:
+        uppercase:
+          field: _ingest._value
+          tag: uppercase_host_mac_for_each_mac
+          ignore_missing: true
   - rename:
       field: json.manufacturer
       tag: rename_manufacturer
@@ -384,6 +410,35 @@ processors:
         - append:
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - foreach:
+      field: armis.device.names
+      if: ctx.armis?.device?.names instanceof List
+      ignore_failure: true
+      processor:
+        append:
+          field: host.name
+          tag: append_armis_device_names_into_host_name
+          value: '{{{_ingest._value}}}'
+          allow_duplicates: false
+  - foreach:
+      field: host.name
+      tag: foreach_host_name
+      if: ctx.host?.name instanceof List
+      processor:
+        lowercase:
+          field: _ingest._value
+          tag: lowercase_host_name
+          ignore_missing: true
+  - foreach:
+      field: host.name
+      if: ctx.host?.name instanceof List
+      ignore_failure: true
+      processor:
+        append:
+          field: related.hosts
+          tag: append_host_name_into_related_hosts
+          value: '{{{_ingest._value}}}'
+          allow_duplicates: false
   - rename:
       field: json.operatingSystem
       tag: rename_operatingSystem
@@ -394,6 +449,10 @@ processors:
       tag: set_host_os_family_from_device_operating_system
       copy_from: armis.device.operating_system
       ignore_empty_value: true
+  - lowercase:
+      field: host.os.family
+      tag: lowercase_host_os_family
+      ignore_missing: true
   - rename:
       field: json.operatingSystemVersion
       tag: rename_operatingSystemVersion
@@ -582,6 +641,7 @@ processors:
         - armis.device.last_seen
         - armis.device.mac_address
         - armis.device.manufacturer
+        - armis.device.names
         - armis.device.model
         - armis.device.operating_system_version
         - armis.device.user_ids
@@ -595,23 +655,31 @@ processors:
       tag: remove_json
       ignore_missing: true
   - script:
+      description: This script processor iterates over the whole document to remove fields with null values.
       tag: script_to_drop_null_values
       lang: painless
-      description: Drops null/empty values recursively.
-      source: |-
-        boolean drop(Object object) {
-          if (object == null || object == '') {
-            return true;
-          } else if (object instanceof Map) {
-            ((Map) object).values().removeIf(v -> drop(v));
-            return (((Map) object).size() == 0);
-          } else if (object instanceof List) {
-            ((List) object).removeIf(v -> drop(v));
-            return (((List) object).length == 0);
-          }
-          return false;
+      source: |
+        void handleMap(Map map) {
+          map.values().removeIf(v -> {
+            if (v instanceof Map) {
+                handleMap(v);
+            } else if (v instanceof List) {
+                handleList(v);
+            }
+            return v == null || v == '' || (v instanceof Map && v.size() == 0) || (v instanceof List && v.size() == 0)
+          });
         }
-        drop(ctx);
+        void handleList(List list) {
+          list.removeIf(v -> {
+            if (v instanceof Map) {
+                handleMap(v);
+            } else if (v instanceof List) {
+                handleList(v);
+            }
+            return v == null || v == '' || (v instanceof Map && v.size() == 0) || (v instanceof List && v.size() == 0)
+          });
+        }
+        handleMap(ctx);
   - set:
       field: event.kind
       tag: set_pipeline_error_into_event_kind

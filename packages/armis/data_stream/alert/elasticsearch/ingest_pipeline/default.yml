@@ -48,6 +48,10 @@ processors:
       field: observer.vendor
       tag: set_observer_vendor
       value: Armis
+  - set:
+      field: observer.product
+      tag: set_observer_product
+      value: Asset Management and Security
   - rename:
       field: json.activityUUIDs
       tag: rename_activityUUIDs
@@ -113,6 +117,16 @@ processors:
         append:
           field: host.id
           tag: append_deviceIds_into_host_id
+          value: '{{{_ingest._value}}}'
+          allow_duplicates: false
+  - foreach:
+      field: armis.alert.device_ids
+      tag: foreach_deviceIds
+      if: ctx.armis?.alert?.device_ids instanceof List
+      processor:
+        append:
+          field: related.hosts
+          tag: append_deviceIds_into_related_hosts
           value: '{{{_ingest._value}}}'
           allow_duplicates: false
   - date:
@@ -263,23 +277,31 @@ processors:
       tag: remove_json
       ignore_missing: true
   - script:
+      description: This script processor iterates over the whole document to remove fields with null values.
       tag: script_to_drop_null_values
       lang: painless
-      description: Drops null/empty values recursively.
-      source: |-
-        boolean drop(Object object) {
-          if (object == null || object == '') {
-            return true;
-          } else if (object instanceof Map) {
-            ((Map) object).values().removeIf(v -> drop(v));
-            return (((Map) object).size() == 0);
-          } else if (object instanceof List) {
-            ((List) object).removeIf(v -> drop(v));
-            return (((List) object).length == 0);
-          }
-          return false;
+      source: |
+        void handleMap(Map map) {
+          map.values().removeIf(v -> {
+            if (v instanceof Map) {
+                handleMap(v);
+            } else if (v instanceof List) {
+                handleList(v);
+            }
+            return v == null || v == '' || (v instanceof Map && v.size() == 0) || (v instanceof List && v.size() == 0)
+          });
         }
-        drop(ctx);
+        void handleList(List list) {
+          list.removeIf(v -> {
+            if (v instanceof Map) {
+                handleMap(v);
+            } else if (v instanceof List) {
+                handleList(v);
+            }
+            return v == null || v == '' || (v instanceof Map && v.size() == 0) || (v instanceof List && v.size() == 0)
+          });
+        }
+        handleMap(ctx);
   - set:
       field: event.kind
       tag: set_pipeline_error_into_event_kind
