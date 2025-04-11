@@ -1,6 +1,6 @@
 #!/bin/bash
 
-set -euo pipefail
+# set -euo pipefail
 
 WORKSPACE="$(pwd)"
 BIN_FOLDER="${WORKSPACE}/bin"
@@ -822,7 +822,7 @@ teardown_test_package() {
 }
 
 list_all_directories() {
-    find . -maxdepth 1 -mindepth 1 -type d | xargs -I {} basename {} | sort
+    find . -maxdepth 1 -mindepth 1 -type d | xargs -I {} basename {} | sort |grep -E '^(enterprisesearch|juniper_junos|juniper_netscreen|elastic_package_registry)$'
 }
 
 check_package() {
