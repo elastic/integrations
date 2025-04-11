@@ -3246,7 +3246,7 @@ Please refer to the following [document](https://www.elastic.co/guide/en/ecs/cur
 
 ### Entra Features
 
-Get details about apps registered in Microsoft Entra Features. [Microsoft API](https://learn.microsoft.com/en-us/graph/api/resources/organization?view=graph-rest-1.0).
+Get details about Entra Features. [Microsoft API](https://learn.microsoft.com/en-us/graph/api/resources/organization?view=graph-rest-1.0).
 
 An example event for `entra_features` looks as following:
 
