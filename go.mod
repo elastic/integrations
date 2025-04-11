@@ -231,3 +231,5 @@ require (
 )
 
 replace github.com/elastic/elastic-package => github.com/mrodm/elastic-package v0.53.1-0.20250410223804-b6555972ebc0
+
+replace github.com/creack/pty => github.com/jsoriano/pty v0.0.0-20250411124702-7752825e1ea5
