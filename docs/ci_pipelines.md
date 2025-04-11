@@ -30,9 +30,10 @@ Special comments that can be added in the Pull Request (by Elastic employees):
 There are some environment variables that can be added into this pipeline:
 - **FORCE_CHECK_ALL**: If `true`, this forces the CI to check all packages even if those packages have no file updated/added/deleted. Default: `false`.
 - **STACK_VERSION**: Force the CI steps to spin up a specific Elastic stack version to run the tests. Default: unset.
-- **STACK_LOGSDB_ENABLED**: Enable LogsDB setting in Elasticsearch service. Default: false.
+- **STACK_LOGSDB_ENABLED**: Enable LogsDB setting in Elasticsearch service. Default: `false`.
+- **ELASTIC_SUBSCRIPTION**: Set the subscription to be used in the Elastic stack (`basic` or `trial`). Default: `trial`.
 - **PUBLISH_COVERAGE_REPORTS**: If `true`, it enables reporting coverage reports.
-Currently, it is just set for the build triggered with the current major Elastic stack from the daily job. Default: `false`.
+  Currently, it is just set for the build triggered with the current major Elastic stack from the daily job. Default: `false`.
 
 These environment variables can be defined in different locations:
 - In the [global `env` section](https://github.com/elastic/integrations/blob/5276ef63712f8f2311818770881688870e8422fe/.buildkite/pipeline.yml#L2).
@@ -131,19 +132,23 @@ Every night it is configured to run a daily job that will be in charge of testin
 
 The schedule of this job can be checked [here](https://github.com/elastic/integrations/blob/5714f5665bbe3bc29b9e2444c6a94dbc2d5eebe9/catalog-info.yaml#L93).
 
-The scenarios that are tested in this daily job are:
+The scenarios that are tested in this daily job testing all the affected packages are:
 
-- Test packages with a local Elastic stack running the latest 7.x version of the stack (7.17.X SNAPSHOT).
+- Local Elastic stack running the latest 7.x version of the stack (7.17.X SNAPSHOT).
     - Triggered pipeline: https://buildkite.com/elastic/integrations
-- Test packages with a local Elastic stack running the latest 8.x version of the stack (8.X.Y-SNAPSHOT).
+- Local Elastic stack running the latest 8.x version of the stack (8.X.Y-SNAPSHOT).
     - Triggered pipeline: https://buildkite.com/elastic/integrations
-- Test packages with a local Elastic stack running the latest 8.x version of the stack with LogsDB setting enabled (8.X.Y-SNAPSHOT).
+- Local Elastic stack running the latest 8.x version of the stack with LogsDB setting enabled (8.X.Y-SNAPSHOT).
     - Triggered pipeline: https://buildkite.com/elastic/integrations
-- Test packages with a local Elastic stack running the latest major version of the stack (currently 9.X.Y-SNAPSHOT).
+- Local Elastic stack running the latest major version of the stack (currently 9.X.Y-SNAPSHOT).
     - Triggered pipeline: https://buildkite.com/elastic/integrations
-- Test packages with an Elastic Serverless Observability project.
+- Local Elastic stack running the same stack version defined in the package manifest with "basic" subscription.
+    - Triggered pipeline: https://buildkite.com/elastic/integrations
+- Local Elastic stack running either the version used in PR builds or 8.17.0 (the GA version for LogsDB index mode), whichever is higher, with "basic" subscription and LogsDB index mode enabled.
+    - Triggered pipeline: https://buildkite.com/elastic/integrations
+- Elastic Serverless Observability project.
     - Triggered pipeline: https://buildkite.com/elastic/integration-serverless
-- Test packages with an Elastic Serverless Security project.
+- Elastic Serverless Security project.
     - Triggered pipeline: https://buildkite.com/elastic/integration-serverless
 
 Those tests that have failed in these scenarios will be reported as GitHub issues notifying the owner teams as defined in `.github/CODEOWNERS` file.
