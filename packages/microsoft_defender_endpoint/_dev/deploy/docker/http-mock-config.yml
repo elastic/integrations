@@ -143,3 +143,280 @@ rules:
                 ]
               }
           `}}
+  - path: /tenant-id/oauth2/v2.0/token
+    methods: [POST]
+    responses:
+      - status_code: 200
+        headers:
+          Content-Type:
+            - "application/json"
+        body: |-
+          {"token_type":"Bearer","expires_in":"3599","ext_expires_in":"3599","expires_on":"1924905600","not_before":"1730182638","resource":"https://management.azure.com/","access_token":"eyJ0eXAiOiJKV1QiLCJhbGciOiJSUzI1NiIsImtpZCI6Ilg1ZVhrN"}
+  - path: /api/machineactions
+    methods: ["GET"]
+    request_headers:
+      Authorization:
+        - 'Bearer eyJ0eXAiOiJKV1QiLCJhbGciOiJSUzI1NiIsImtpZCI6Ilg1ZVhrN'
+    query_params:
+      $filter: "{lastUpdateDateTimeUtc gt .*}"
+      $top: 1
+      $orderby: "lastUpdateDateTimeUtc asc"
+      $skip: 0
+    responses:
+      - status_code: 200
+        body: |-
+          {{ minify_json `
+          {
+            "@odata.context": "https://api.security.microsoft.com/api/$metadata#MachineActions",
+            "value": [
+              {
+                "id": "034e1b7b-1234-5678-abcd-abcdef7b1219",
+                "type": "Unisolate",
+                "title": null,
+                "requestor": "user1@example.com",
+                "requestorComment": "Isolation release",
+                "status": "Succeeded",
+                "machineId": "de693d7abcdefabcdefabcdef01f40b5bf2da1d8",
+                "computerDnsName": "c-lab-24",
+                "creationDateTimeUtc": "2024-11-25T12:59:35.8912364Z",
+                "lastUpdateDateTimeUtc": "2024-11-25T12:59:37.5532423Z",
+                "cancellationRequestor": null,
+                "cancellationComment": null,
+                "cancellationDateTimeUtc": null,
+                "errorHResult": 0,
+                "scope": null,
+                "externalId": null,
+                "requestSource": "Portal",
+                "relatedFileInfo": null,
+                "commands": [],
+                "troubleshootInfo": null
+              }
+            ]
+          }
+          `}}
+  - path: /api/machineactions
+    methods: ["GET"]
+    request_headers:
+      Authorization:
+        - 'Bearer eyJ0eXAiOiJKV1QiLCJhbGciOiJSUzI1NiIsImtpZCI6Ilg1ZVhrN'
+    query_params:
+      $filter: "{lastUpdateDateTimeUtc gt .*}"
+      $top: 1
+      $orderby: "lastUpdateDateTimeUtc asc"
+      $skip: 1
+    responses:
+      - status_code: 200
+        body: |-
+          {{ minify_json `
+          {
+            "@odata.context": "https://api.security.microsoft.com/api/$metadata#MachineActions",
+            "value": [
+              {
+                "id": "01f7d891-1234-5678-abcd-abcdefa2edf3",
+                "type": "RestrictCodeExecution",
+                "title": null,
+                "requestor": "alice@example.com",
+                "requestorComment": "Found suspicious process are running on the machine hence restricting app execution",
+                "status": "TimeOut",
+                "machineId": "dc909e4a81d1abcdefabcdef9bebe6f8ec7d3506",
+                "computerDnsName": "assettag-eid",
+                "creationDateTimeUtc": "2025-03-24T08:11:54.0392813Z",
+                "lastUpdateDateTimeUtc": "2025-03-27T08:25:59.9095244Z",
+                "cancellationRequestor": null,
+                "cancellationComment": null,
+                "cancellationDateTimeUtc": null,
+                "errorHResult": -2145844840,
+                "scope": null,
+                "externalId": null,
+                "requestSource": "PublicApi",
+                "relatedFileInfo": null,
+                "commands": [],
+                "troubleshootInfo": null
+              }
+            ]
+          }
+          `}}
+  - path: /api/machineactions
+    methods: ["GET"]
+    request_headers:
+      Authorization:
+        - 'Bearer eyJ0eXAiOiJKV1QiLCJhbGciOiJSUzI1NiIsImtpZCI6Ilg1ZVhrN'
+    query_params:
+      $filter: "{lastUpdateDateTimeUtc gt .*}"
+      $top: 1
+      $orderby: "lastUpdateDateTimeUtc asc"
+      $skip: 2
+    responses:
+      - status_code: 200
+        body: |-
+          {"@odata.context":"https://api.security.microsoft.com/api/$metadata#MachineActions","value":[]}
+  - path: /api/machines
+    methods: ["GET"]
+    request_headers:
+      Authorization:
+        - 'Bearer eyJ0eXAiOiJKV1QiLCJhbGciOiJSUzI1NiIsImtpZCI6Ilg1ZVhrN'
+    query_params:
+      $top: 1
+      $skip: 0
+    responses:
+      - status_code: 200
+        body: |-
+          {{ minify_json `
+          {
+            "@odata.context": "https://api.security.microsoft.com/api/$metadata#Machines",
+            "value": [
+              {
+                "id": "c114cb1c0b827fabcdefabcdef2b9cfd469c091b",
+                "mergedIntoMachineId": null,
+                "isPotentialDuplication": false,
+                "isExcluded": false,
+                "exclusionReason": null,
+                "computerDnsName": "dlp-win2k19",
+                "firstSeen": "2024-10-17T13:56:23.9412922Z",
+                "lastSeen": "2024-10-24T06:12:35.4409708Z",
+                "osPlatform": "WindowsServer2019",
+                "osVersion": null,
+                "osProcessor": "x64",
+                "version": "1809",
+                "lastIpAddress": "10.50.11.140",
+                "lastExternalIpAddress": "1.128.0.0",
+                "agentVersion": "10.8760.17763.6414",
+                "osBuild": 17763,
+                "healthStatus": "Inactive",
+                "deviceValue": "Normal",
+                "rbacGroupId": 0,
+                "rbacGroupName": null,
+                "riskScore": "None",
+                "exposureLevel": "High",
+                "isAadJoined": false,
+                "aadDeviceId": null,
+                "machineTags": [],
+                "onboardingStatus": "Onboarded",
+                "osArchitecture": "64-bit",
+                "managedBy": "MicrosoftDefenderForEndpoint",
+                "managedByStatus": "Success",
+                "ipAddresses": [
+                  {
+                    "ipAddress": "10.50.11.140",
+                    "macAddress": "00005E005301",
+                    "type": "Ethernet",
+                    "operationalStatus": "Up"
+                  },
+                  {
+                    "ipAddress": "1.128.0.0",
+                    "macAddress": "00005E00530A",
+                    "type": "Ethernet",
+                    "operationalStatus": "Up"
+                  },
+                  {
+                    "ipAddress": "2a02:cf40::",
+                    "macAddress": "00005E005302",
+                    "type": "Ethernet",
+                    "operationalStatus": "Up"
+                  },
+                  {
+                    "ipAddress": "127.0.0.1",
+                    "macAddress": null,
+                    "type": "SoftwareLoopback",
+                    "operationalStatus": "Up"
+                  },
+                  {
+                    "ipAddress": "::1",
+                    "macAddress": null,
+                    "type": "SoftwareLoopback",
+                    "operationalStatus": "Up"
+                  }
+                ],
+                "vmMetadata": null
+              }
+            ]
+          }
+          ` }}
+  - path: /api/machines
+    methods: ["GET"]
+    request_headers:
+      Authorization:
+        - 'Bearer eyJ0eXAiOiJKV1QiLCJhbGciOiJSUzI1NiIsImtpZCI6Ilg1ZVhrN'
+    query_params:
+       $top: 1
+       $skip: 1
+    responses:
+      - status_code: 200
+        body: |-
+          {{ minify_json `
+          {
+            "@odata.context": "https://api.security.microsoft.com/api/$metadata#Machines",
+            "value": [
+              {
+                "id": "1d29e91fabcdefabcdef5a03284c189cf20aa4c2",
+                "mergedIntoMachineId": null,
+                "isPotentialDuplication": false,
+                "isExcluded": false,
+                "exclusionReason": null,
+                "computerDnsName": "bdp3449-ub20-2-14033063-1234-5678-8f5d-abcdef7a097c",
+                "firstSeen": "2025-01-09T11:29:14.3456195Z",
+                "lastSeen": "2025-01-09T11:57:26.180904Z",
+                "osPlatform": "Ubuntu",
+                "osVersion": null,
+                "osProcessor": "x64",
+                "version": "20.4",
+                "lastIpAddress": "192.168.90.40",
+                "lastExternalIpAddress": "175.16.199.1",
+                "agentVersion": "30.124092.2.0",
+                "osBuild": 6,
+                "healthStatus": "Inactive",
+                "deviceValue": "Normal",
+                "rbacGroupId": 0,
+                "rbacGroupName": null,
+                "riskScore": "None",
+                "exposureLevel": "Low",
+                "isAadJoined": false,
+                "aadDeviceId": null,
+                "machineTags": [],
+                "onboardingStatus": "Onboarded",
+                "osArchitecture": "64-bit",
+                "managedBy": "MicrosoftDefenderForEndpoint",
+                "managedByStatus": "Success",
+                "ipAddresses": [
+                  {
+                    "ipAddress": "192.168.90.40",
+                    "macAddress": "00005E0053FF",
+                    "type": "Other",
+                    "operationalStatus": "Up"
+                  },
+                  {
+                    "ipAddress": "2a02:cf40::",
+                    "macAddress": "00005E005300",
+                    "type": "Other",
+                    "operationalStatus": "Up"
+                  },
+                  {
+                    "ipAddress": "127.0.0.1",
+                    "macAddress": "000000000000",
+                    "type": "Other",
+                    "operationalStatus": "Up"
+                  },
+                  {
+                    "ipAddress": "::1",
+                    "macAddress": "000000000000",
+                    "type": "Other",
+                    "operationalStatus": "Up"
+                  }
+                ],
+                "vmMetadata": null
+              }
+            ]
+          }
+          `}}
+  - path: /api/machines
+    methods: ["GET"]
+    request_headers:
+      Authorization:
+        - 'Bearer eyJ0eXAiOiJKV1QiLCJhbGciOiJSUzI1NiIsImtpZCI6Ilg1ZVhrN'
+    query_params:
+       $top: 1
+       $skip: 2
+    responses:
+      - status_code: 200
+        body: |-
+          {"@odata.context":"https://api.security.microsoft.com/api/$metadata#Machines","value": []}
