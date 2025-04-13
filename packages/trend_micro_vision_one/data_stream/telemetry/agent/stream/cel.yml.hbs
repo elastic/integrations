@@ -1,0 +1,248 @@
+config_version: 2
+resource.url: {{hostname}}
+{{#if ssl}}
+resource.ssl: {{ssl}}
+{{/if}}
+{{#if proxy_url}}
+resource.proxy_url: {{proxy_url}}
+{{/if}}
+interval: {{interval}}
+resource.timeout: {{http_client_timeout}}
+tags:
+{{#if preserve_original_event}}
+  - preserve_original_event
+{{/if}}
+{{#if preserve_duplicate_custom_fields}}
+  - preserve_duplicate_custom_fields
+{{/if}}
+{{#each tags as |tag|}}
+  - {{tag}}
+{{/each}}
+{{#contains "forwarded" tags}}
+publisher_pipeline.disable_host: true
+{{/contains}}
+{{#if enable_request_tracer}}
+resource.tracer.filename: "../../logs/cel/http-request-trace-*.ndjson"
+resource.tracer.maxbackups: 5
+{{/if}}
+{{#if processors}}
+processors:
+{{processors}}
+{{/if}}
+fields_under_root: true
+keep_null: true
+redact:
+  fields:
+    - api_token
+state:
+  api_token: {{api_token}}
+  initial_interval: {{initial_interval}}
+  top: {{top}}
+  max_recency: {{max_recency}}
+  min_time_range: {{min_time_range}}
+  max_time_range: {{max_time_range}}
+  managed_pipeline_description: {{managed_pipeline_description}}
+  want_more: false
+  registration_count: 0
+program: |
+
+  // assumptions: package listings are ordered by createdDateTime ASC, id ASC (API doc example shows this within a page. assume its the case across pages)
+  // assumptions: package listings are filtered for createdDateTime >= startDateTime (API doc calls it "the start of the data retrieval time range")
+  // assumptions: full pages (>= 500 packages/hour) will be rare. if they do happen, the package or packages with the last timestamp on a page will be received again on the following page and ingested twice
+  // assumptions: full pages with identical createdDateTime (>= 500 packages/second) will never happen. If they did happen, the integration would get stuck in a loop until those packages become unavailable.
+
+  (state.?cursor.packages_to_get.orValue([]).size() > 0) ?
+
+    //----------------------------------------------------------------------
+    // have a package to get -> get the package
+    //----------------------------------------------------------------------
+
+    request("GET", [
+      state.url.trim_suffix("/"),
+      "/v3.0/datalake/dataPipelines/", state.cursor.packages_to_get[0].pipeline_id,
+      "/packages/", state.cursor.packages_to_get[0].package_id,
+    ].join("")).with({
+      "Header": { "Authorization": ["Bearer " + state.api_token] }
+    }).do_request().as(resp,
+      (resp.StatusCode != 200 && resp.StatusCode != 404) ?
+        state.with({
+          "events": {
+            "error": {
+              "code": string(resp.StatusCode),
+              "id": string(resp.Status),
+              "message": "GET list available packages: "+(
+                size(resp.Body) != 0 ?  string(resp.Body) : string(resp.Status) + ' (' + string(resp.StatusCode) + ')'
+              ),
+            },
+          },
+          "cursor": state.cursor.with({ ?"pipeline_id": (resp.StatusCode == 404) ? optional.of(null) : optional.none() }),
+          "want_more": false,
+        })
+      : (resp.StatusCode == 404) ? // Not Found - skip this package and continue immediately
+        state.with({
+          "events": [{"event": {"reason": "want_more"}}],
+          "want_more": true,
+          "cursor": state.cursor.with({
+            "packages_to_get": state.cursor.packages_to_get.filter(p, p != state.cursor.packages_to_get[0]),
+          }),
+        })
+      :
+        state.with({
+          "events": string(resp.Body).split("\n").filter(i, i.size() > 0).map(i, dyn({ "message": i })).as(dataEvents,
+            (dataEvents.size() > 0) ? dataEvents : [{"event": {"reason": "want_more"}}]
+          ),
+          "want_more": (
+            // continue immediately if there's another package to get
+            state.cursor.packages_to_get.size() > 1 ||
+            // continue immediately if the next check for packages would cover the minimum time range
+            (now - duration(state.max_recency) - state.cursor.newStartDateTime.parse_time(time_layout.RFC3339) >= duration(state.min_time_range))
+          ),
+          "cursor": state.cursor.with({
+            "packages_to_get": state.cursor.packages_to_get.filter(p, p != state.cursor.packages_to_get[0]),
+          }),
+        })
+    )
+
+  :
+
+    //----------------------------------------------------------------------
+    // no package to get -> check or setup
+    //----------------------------------------------------------------------
+
+    (state.?cursor.pipeline_id.orValue(null) != null) ?
+
+      //--------------------------------------------------------------------
+      // have pipeline id -> check for packages, update list of packages to get
+      //--------------------------------------------------------------------
+
+      {
+        "startDateTime": [
+          state.?cursor.newStartDateTime.optMap(t, t.parse_time(time_layout.RFC3339)).orValue(now - duration(state.initial_interval)),
+          now - duration(string(7*24)+"h"), // now-7d is the oldest allowed start
+        ].max().format(time_layout.RFC3339),
+        "maxEndDateTime": (now-duration(state.max_recency)).format(time_layout.RFC3339),
+      }.as(t, t.with({
+        "endDateTime": [
+          (t.startDateTime.parse_time(time_layout.RFC3339) + duration(state.max_time_range)).format(time_layout.RFC3339),
+          t.maxEndDateTime,
+        ].min(),
+      })).as(t,
+        request("GET",
+          state.url.trim_suffix("/") +
+          "/v3.0/datalake/dataPipelines/" + state.cursor.pipeline_id + "/packages?" +
+          {
+             "startDateTime": [t.startDateTime],
+             "endDateTime": [t.endDateTime],
+             "top": [string(state.top)],
+          }.format_query()
+        ).with({ "Header": { "Authorization": ["Bearer " + state.api_token] } }).do_request().as(resp,
+          (resp.StatusCode != 200) ?
+            state.with({
+              "events": {
+                "error": {
+                  "code": string(resp.StatusCode),
+                  "id": string(resp.Status),
+                  "message": "GET list available packages: "+(
+                    size(resp.Body) != 0 ?  string(resp.Body) : string(resp.Status) + ' (' + string(resp.StatusCode) + ')'
+                  ),
+                },
+              },
+              "cursor": state.cursor.with({ ?"pipeline_id": (resp.StatusCode == 404) ? optional.of(null) : optional.none() }),
+              "want_more": false,
+            })
+          :
+            bytes(resp.Body).decode_json().as(body,
+              state.with({
+                "events": [{"event": {"reason": "want_more"}}],
+                "cursor": state.cursor.with({
+                  "packages_to_get": state.?cursor.packages_to_get.orValue([]) + body.items.map(i, {
+                    "pipeline_id": state.cursor.pipeline_id,
+                    "package_id": i.id,
+                  }),
+                  "newStartDateTime": (body.items.size() == int(state.top)) ?  body.items.map(i, i.createdDateTime).max() : t.endDateTime,
+                }),
+                "want_more": body.items.size() > 0 || t.endDateTime < t.maxEndDateTime, // continue if there's data or we're not up to date
+              })
+            )
+        )
+      )
+
+    :
+
+      //--------------------------------------------------------------------
+      // no pipeline id -> setup: try to get the pipeline id
+      //--------------------------------------------------------------------
+
+      request("GET", state.url.trim_suffix("/") + "/v3.0/datalake/dataPipelines").with({
+        "Header": { "Authorization": ["Bearer " + state.api_token] }
+      }).do_request().as(resp,
+        (resp.StatusCode != 200) ?
+          state.with({
+            "events": {
+              "error": {
+                "code": string(resp.StatusCode),
+                "id": string(resp.Status),
+                "message": "GET list available packages: "+(
+                  size(resp.Body) != 0 ?  string(resp.Body) : string(resp.Status) + ' (' + string(resp.StatusCode) + ')'
+                ),
+              },
+            },
+            "want_more": false,
+          })
+        :
+          bytes(resp.Body).decode_json().as(body,
+            body.items.filter(i, i.description == state.managed_pipeline_description)[?0].id.orValue(null).as(id,
+              (id != null) ?
+
+                //------------------------------------------------------------
+                // got the pipeline id -> return it in the cursor
+                //------------------------------------------------------------
+
+                state.with({
+                  "events": [{"event": {"reason": "want_more"}}],
+                  "cursor": state.?cursor.orValue({}).with({ "pipeline_id": id }),
+                  "want_more": true, // use the fetched pipeline id immediately
+                })
+
+              :
+
+                //------------------------------------------------------------
+                // no pipeline id found -> register a new pipeline
+                //------------------------------------------------------------
+
+                request("POST", state.url.trim_suffix("/") + "/v3.0/datalake/dataPipelines").with({
+                  "Header": {
+                    "Content-Type": ["application/json;charset=utf-8"],
+                    "Authorization": ["Bearer " + state.api_token],
+                  },
+                  "Body": {
+                    "type": "telemetry",
+                    "subType": ["all"],
+                    "description": state.managed_pipeline_description,
+                  }.encode_json(),
+                }).do_request().as(resp,
+                  (resp.StatusCode != 201) ?
+                    state.with({
+                      "events": {
+                        "error": {
+                          "code": string(resp.StatusCode),
+                          "id": string(resp.Status),
+                          "message": "GET list available packages: "+(
+                            size(resp.Body) != 0 ?  string(resp.Body) : string(resp.Status) + ' (' + string(resp.StatusCode) + ')'
+                          ),
+                        },
+                      },
+                      "want_more": false,
+                    })
+                  :
+                    // no pipeline id is returned, but it will be found next time
+                    state.with({
+                      "events": [{"event": {"reason": "want_more"}}],
+                      "want_more": int(state.registration_count) == 0, // avoid a busy loop by waiting if the registration was previously attempted
+                      "registration_count": int(state.registration_count) + 1,
+                    })
+                )
+
+            )
+          )
+      )

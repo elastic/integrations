@@ -2,19 +2,22 @@
 
 ## Overview
 
-The [Trend Micro Vision One](https://www.trendmicro.com/en_in/business/products/detection-response.html) integration allows you to monitor Alert, Audit, and Detection activity. Trend Micro Vision One refers to the ability to do detection and response across email, endpoints, servers, cloud workloads, and networks via a single Trend Micro Vision One platform or the managed Trend Micro Vision One service.
+The [Trend Micro Vision One](https://www.trendmicro.com/en_in/business/products/detection-response.html) integration allows you to monitor Alert, Audit, Detection and Telemetry activity. Trend Micro Vision One refers to the ability to do detection and response across email, endpoints, servers, cloud workloads, and networks via a single Trend Micro Vision One platform or the managed Trend Micro Vision One service.
 
 Use the Trend Micro Vision One integration to collects and parses data from the REST APIs. Then visualize that data in Kibana.
 
 ## Data streams
 
-The Trend Micro Vision One integration collects logs for three types of events: Alert, Audit, and Detection.
+The Trend Micro Vision One integration collects logs for four types of events: Alert, Audit, Detection and Telemetry.
 
 **Alert** Displays information about workbench alerts. See more details in the doc [here](https://automation.trendmicro.com/xdr/api-v3#tag/Workbench/paths/~1v3.0~1workbench~1alerts/get).
 
 **Audit** Displays log entries that match the specified search criteria. See more details in the doc [here](https://automation.trendmicro.com/xdr/api-v3#tag/Audit-Logs).
 
 **Detection** Displays search results from the Detection Data source. See more details in the doc [here](https://automation.trendmicro.com/xdr/api-v3#tag/Search/paths/~1v3.0~1search~1detections/get).
+
+**Telemetry** Displays telemetry events from the Datalake Pipeline API. See more details in the doc [here](https://automation.trendmicro.com/xdr/api-v3/#tag/Datalake-Pipeline).
+
 
 ## Requirements
 
@@ -34,14 +37,15 @@ This module has been tested against `Trend Micro Vision One API version 3.0`.
     - **Name**: A meaningful name that can help you identify the API key.
     - **Role**: The user role assigned to the key. API keys can use either predefined or custom user roles. Custom roles can be created by navigating to **Administration -> User Roles -> Add Role**. The role must have appropriate API access permission to fetch relevant data. The following table outlines the access permissions to apps and features needed to fetch relevant data from Trend Vision API.
 
-        |  Datastream  | App         | 	Permissions                                            |
-        |--------------|-------------|---------------------------------------------------------|
-        | Alert        | Workbench   | 	`View, filter, and search`.                            |
-        | Audit        | Audit Logs  | 	`View, filter, and search`, `Export and Download`.     |
-        | Detection    | Search      | 	`View, filter, and search`.                            |
-        
+        |  Datastream  | App         | Permissions                                            |
+        |--------------|-------------|--------------------------------------------------------|
+        | Alert        | Workbench   | `View, filter, and search`.                            |
+        | Audit        | Audit Logs  | `View, filter, and search`, `Export and Download`.     |
+        | Detection    | Search      | `View, filter, and search`.                            |
+        | Telemetry    |             |                                                        |
+
         Refer to [Account Role Permissions](https://automation.trendmicro.com/xdr/Guides/Authentication) for more details.
-    
+
     - **Expiration time**: The time the API key remains valid. By default, authentication tokens expire one year after creation. However, a master administrator can delete and re-generate tokens at any time.
     - **Status**: Whether the API key is enabled.
     - **Details**: Extra information about the API key.
@@ -82,3 +86,13 @@ This is the `detection` dataset.
 {{event "detection"}}
 
 {{fields "detection"}}
+
+### telemetry
+
+This is the `telemetry` dataset.
+
+#### Example
+
+{{event "telemetry"}}
+
+{{fields "telemetry"}}
