@@ -90,9 +90,9 @@ An example event for `alert` looks as following:
 {
     "@timestamp": "2025-03-29T00:12:57.306Z",
     "agent": {
-        "ephemeral_id": "36a8a223-11e7-4671-b8ee-8c36ab800fc2",
-        "id": "1cdb51ae-a647-4553-b238-f747b60d6813",
-        "name": "elastic-agent-78782",
+        "ephemeral_id": "5f29d070-5816-4bab-9279-6826f8cda815",
+        "id": "5c8a70db-0220-4643-a40e-a02f86cf91d9",
+        "name": "elastic-agent-35079",
         "type": "filebeat",
         "version": "8.17.0"
     },
@@ -118,14 +118,14 @@ An example event for `alert` looks as following:
     },
     "data_stream": {
         "dataset": "armis.alert",
-        "namespace": "38735",
+        "namespace": "76845",
         "type": "logs"
     },
     "ecs": {
         "version": "8.17.0"
     },
     "elastic_agent": {
-        "id": "1cdb51ae-a647-4553-b238-f747b60d6813",
+        "id": "5c8a70db-0220-4643-a40e-a02f86cf91d9",
         "snapshot": false,
         "version": "8.17.0"
     },
@@ -133,7 +133,7 @@ An example event for `alert` looks as following:
         "agent_id_status": "verified",
         "dataset": "armis.alert",
         "id": "61",
-        "ingested": "2025-04-11T07:19:05Z",
+        "ingested": "2025-04-14T10:56:48Z",
         "kind": "alert",
         "original": "{\"activityUUIDs\":[\"6f3d6d3a-6732-44cc-9d63-10a38277fb15\"],\"affectedDevicesCount\":1,\"alertId\":61,\"classification\":\"Security - Other\",\"connectionIds\":[],\"description\":\"The Armis security platform has detected a violation of a policy and generated an alert.\",\"destinationEndpoints\":[],\"deviceIds\":[854],\"lastAlertUpdateTime\":null,\"mitreAttackLabels\":null,\"policyId\":null,\"policyLabels\":null,\"policyTitle\":null,\"severity\":\"Critical\",\"sourceEndpoints\":[],\"status\":\"Unhandled\",\"statusChangeTime\":\"2025-03-29T00:12:57.306928+00:00\",\"time\":\"2025-03-29T00:12:57.306928+00:00\",\"title\":\"[Risk] Device Susceptible to Ransomware\",\"type\":\"System Policy Violation\"}",
         "severity": 99
@@ -216,9 +216,9 @@ An example event for `device` looks as following:
 {
     "@timestamp": "2025-03-29T10:43:55.988Z",
     "agent": {
-        "ephemeral_id": "0b1a61f1-9ca7-4081-addc-cf7fa5d5088e",
-        "id": "5105010a-bd0b-46ce-8b16-0231aa7897ff",
-        "name": "elastic-agent-11169",
+        "ephemeral_id": "4d267006-1376-4a66-9844-e9090592be2c",
+        "id": "907b8020-7691-4fcf-a5be-5891787c5063",
+        "name": "elastic-agent-29783",
         "type": "filebeat",
         "version": "8.17.0"
     },
@@ -276,7 +276,7 @@ An example event for `device` looks as following:
     },
     "data_stream": {
         "dataset": "armis.device",
-        "namespace": "99449",
+        "namespace": "73849",
         "type": "logs"
     },
     "device": {
@@ -289,7 +289,7 @@ An example event for `device` looks as following:
         "version": "8.17.0"
     },
     "elastic_agent": {
-        "id": "5105010a-bd0b-46ce-8b16-0231aa7897ff",
+        "id": "907b8020-7691-4fcf-a5be-5891787c5063",
         "snapshot": false,
         "version": "8.17.0"
     },
@@ -299,7 +299,7 @@ An example event for `device` looks as following:
             "host"
         ],
         "dataset": "armis.device",
-        "ingested": "2025-04-11T07:19:45Z",
+        "ingested": "2025-04-14T10:58:03Z",
         "kind": "event",
         "original": "{\"accessSwitch\":null,\"boundaries\":\"Corporate\",\"businessImpact\":\"Unassigned\",\"category\":\"Network Equipment\",\"customProperties\":{},\"dataSources\":[{\"firstSeen\":\"2024-10-09T05:09:02.988081+00:00\",\"instances\":[],\"lastSeen\":\"2025-03-29T10:43:55.988081+00:00\",\"name\":\"Knowledge Base\",\"types\":[\"Traffic Inspection\",\"Data Analysis\"]}],\"displayTitle\":\"Test\",\"firstSeen\":\"2024-10-09T05:09:02.988081+00:00\",\"id\":1154,\"ipAddress\":\"89.160.20.128\",\"ipv6\":[],\"lastSeen\":\"2025-03-29T10:43:55.988081+00:00\",\"macAddress\":\"50:76:AF:D3:3F:AB\",\"manufacturer\":\"Test Manufacturer\",\"model\":\"Test Model\",\"name\":\"Test Name\",\"names\":\"Test Names\",\"operatingSystem\":\"Windows\",\"operatingSystemVersion\":\"Server 2016\",\"protections\":[],\"purdueLevel\":4,\"riskLevel\":10,\"sensor\":{\"name\":\"test Enterprise\",\"type\":\"test LAN Controller\"},\"site\":{\"location\":\"Zurich\",\"name\":\"Zurich Enterprise\"},\"tags\":[\"Misconfigurations\"],\"type\":\"Switches\",\"typeEnum\":\"SWITCH\",\"userIds\":[],\"visibility\":\"Full\"}",
         "start": "2024-10-09T05:09:02.988Z",
@@ -422,9 +422,9 @@ An example event for `vulnerability` looks as following:
 {
     "@timestamp": "2025-04-03T10:38:59.297Z",
     "agent": {
-        "ephemeral_id": "1b92952e-00ec-4612-89d0-1e4253884d44",
-        "id": "a26e981b-acc3-4fcd-88bc-de7bef408de4",
-        "name": "elastic-agent-56345",
+        "ephemeral_id": "c9fcea9b-8067-48b4-87bc-f3e6222419f4",
+        "id": "3b94ac27-f28b-4465-b69d-61387fb89574",
+        "name": "elastic-agent-37469",
         "type": "filebeat",
         "version": "8.17.0"
     },
@@ -472,7 +472,7 @@ An example event for `vulnerability` looks as following:
     },
     "data_stream": {
         "dataset": "armis.vulnerability",
-        "namespace": "30445",
+        "namespace": "47722",
         "type": "logs"
     },
     "device": {
@@ -482,7 +482,7 @@ An example event for `vulnerability` looks as following:
         "version": "8.17.0"
     },
     "elastic_agent": {
-        "id": "a26e981b-acc3-4fcd-88bc-de7bef408de4",
+        "id": "3b94ac27-f28b-4465-b69d-61387fb89574",
         "snapshot": false,
         "version": "8.17.0"
     },
@@ -492,7 +492,7 @@ An example event for `vulnerability` looks as following:
             "vulnerability"
         ],
         "dataset": "armis.vulnerability",
-        "ingested": "2025-04-11T07:20:34Z",
+        "ingested": "2025-04-14T10:59:32Z",
         "kind": "event",
         "original": "{\"affectedDevicesCount\":13,\"attackComplexity\":\"Low\",\"attackVector\":\"Network\",\"availabilityImpact\":\"High\",\"avmRating\":null,\"avmRatingManualChangeReason\":null,\"avmRatingManualChangedBy\":\"\",\"avmRatingManualUpdateTime\":null,\"botnets\":null,\"cisaDueDate\":null,\"commonName\":null,\"confidentialityImpact\":\"High\",\"cveUid\":\"CVE-2024-44148\",\"cvssScore\":10,\"cvssScoreV4\":null,\"description\":\"This issue was addressed with improved validation of file attributes.\",\"epssPercentile\":0.31,\"epssScore\":0.00139,\"exploitabilityScore\":3.9,\"firstDetected\":\"2025-04-03T09:18:31.915543+00:00\",\"firstReferencePublishDate\":null,\"firstWeaponizedReferencePublishDate\":null,\"hasRansomware\":null,\"hasRemediationInfo\":\"No\",\"id\":\"CVE-2024-44148\",\"impactScore\":6,\"integrityImpact\":\"High\",\"isWeaponized\":null,\"lastDetected\":\"2025-04-03T10:38:59.372389+00:00\",\"latestExploitUpdate\":null,\"numOfExploits\":0,\"numberOfThreatActors\":0,\"privilegesRequired\":\"None\",\"publishedDate\":\"2024-09-17T00:15:50.617000+00:00\",\"reportedByGoogleZeroDays\":null,\"scope\":\"Changed\",\"score\":10,\"severity\":\"Critical\",\"status\":\"Open\",\"threatActors\":null,\"threatTags\":null,\"type\":\"OS\",\"userInteraction\":\"None\",\"vulnerability_match\":{\"advisoryId\":null,\"avmRating\":null,\"confidenceLevel\":\"High\",\"confidenceLevelDescription\":null,\"cveUid\":\"CVE-2024-44148\",\"deviceId\":109,\"firstDetected\":\"2025-04-03T10:38:59.297015+00:00\",\"hasRemediationInfo\":\"No\",\"lastDetected\":\"2025-04-03T10:38:59.297015+00:00\",\"matchCriteriaString\":\"OS\",\"recommendedSteps\":null,\"remediationTypes\":null,\"status\":\"Open\",\"statusChangeReason\":null,\"statusSource\":\"Discovered by Armis\"}}",
         "start": "2025-04-03T09:18:31.915Z",

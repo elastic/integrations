@@ -195,16 +195,16 @@ processors:
       tag: set_event_severity
       if: ctx.armis?.alert?.severity instanceof String
       source: |-
-        def severity = ctx.armis.alert.severity.toLowerCase();
-          if (severity == 'critical') {
-            ctx.event.severity = 99;
-          } else if (severity == 'high') {
-            ctx.event.severity = 73;
-          } else if (severity == 'medium') {
-            ctx.event.severity = 47;
-          } else if (severity == 'low') {
-            ctx.event.severity = 21;
-          }
+        String severity = ctx.armis.alert.severity;
+        if (severity.equalsIgnoreCase("low")) {
+          ctx.event.severity = 21;
+        } else if (severity.equalsIgnoreCase("medium")) {
+          ctx.event.severity = 47;
+        } else if (severity.equalsIgnoreCase("high")) {
+          ctx.event.severity = 73;
+        } else if (severity.equalsIgnoreCase("critical")) {
+          ctx.event.severity = 99;
+        }
       on_failure:
         - append:
             field: error.message

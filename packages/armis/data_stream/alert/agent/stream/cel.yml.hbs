@@ -74,7 +74,7 @@ program: |
             "length": [string(state.page_size)],
             "orderBy": ["time"],
             ?"from": has(state.offset) && state.offset != null ? optional.of([string(state.offset)]) : optional.none(),
-            "aql":["in:alerts " + "after:" + state.start_time]
+            "aql": ["in:alerts " + "after:" + state.start_time]
           }.format_query()
         ).with({
           "Header":{
@@ -95,7 +95,7 @@ program: |
                   :
                     state.?cursor.last_timestamp,
               },
-              "want_more": has(body.?data.next) && body.data.next != null,
+              "want_more": body.data.next != null,
             })
           :
             resp.StatusCode == 401 ?
@@ -105,6 +105,7 @@ program: |
                 "offset": has(state.offset) && state.offset != null ? state.offset : 0,
                 "want_more": true,
               }
+            // Armis doesn't support multiple sessions per token; generate a new token on 401 (expired)
             :
               {
                 "events": {
