@@ -8,28 +8,30 @@ Following Microsoft 365 Graph Reports can be collected by Microsoft Office 365 M
 
 | Report          | API | Data-stream Name | Aggregation Level | Required permissions
 |-----------------|-----|------------------|-------------------|--------------------|
-| [Microsoft 365 Active Users Service User Counts](https://learn.microsoft.com/en-us/microsoft-365/admin/activity-reports/active-users-ww?view=o365-worldwide)      |    [reportRoot: getOffice365ServicesUserCounts](https://learn.microsoft.com/en-us/graph/api/reportroot-getoffice365servicesusercounts?view=graph-rest-1.0&tabs=http)    |   Microsoft 365 Active Users metrics   |   `Period`-based   |
-| [Microsoft 365 Groups Activity Group Detail](https://learn.microsoft.com/en-us/microsoft-365/admin/activity-reports/office-365-groups-ww?view=o365-worldwide)      |    [reportRoot: getOffice365GroupsActivityDetail](https://learn.microsoft.com/en-us/graph/api/reportroot-getoffice365groupsactivitydetail?view=graph-rest-1.0&tabs=http)    |   Microsoft 365 Groups Activity Group Detail   |   `Day`-based   |
-| [OneDrive Usage Account Detail](https://learn.microsoft.com/en-us/microsoft-365/admin/activity-reports/onedrive-for-business-usage-ww?view=o365-worldwide)      |    [reportRoot: getOneDriveUsageAccountDetail](https://learn.microsoft.com/en-us/graph/api/reportroot-getonedriveusageaccountdetail?view=graph-rest-1.0&tabs=http)    |   Microsoft 365 OneDrive Usage Account Detail   |   `Day`-based   |
-| [OneDrive Usage Account Counts](https://learn.microsoft.com/en-us/microsoft-365/admin/activity-reports/onedrive-for-business-usage-ww?view=o365-worldwide)      |    [reportRoot: getOneDriveUsageAccountCounts](https://learn.microsoft.com/en-us/graph/api/reportroot-getonedriveusageaccountcounts?view=graph-rest-1.0&tabs=http)    |   Microsoft 365 One Drive Usage metrics   |   `Period`-based   |
-| [OneDrive Usage File Counts](https://learn.microsoft.com/en-us/microsoft-365/admin/activity-reports/onedrive-for-business-usage-ww?view=o365-worldwide)      |    [reportRoot: getOneDriveUsageFileCounts](https://learn.microsoft.com/en-us/graph/api/reportroot-getonedriveusagefilecounts?view=graph-rest-1.0&tabs=http)    |   Microsoft 365 One Drive Usage metrics   |   `Period`-based   |
-| [OneDrive Usage Storage](https://learn.microsoft.com/en-us/microsoft-365/admin/activity-reports/onedrive-for-business-usage-ww?view=o365-worldwide)      |    [reportRoot: getOneDriveUsageStorage](https://learn.microsoft.com/en-us/graph/api/reportroot-getonedriveusagestorage?view=graph-rest-1.0&tabs=http)    |   Microsoft 365 One Drive Usage metrics   |   `Period`-based   |
-| [Outlook Activity Counts](https://learn.microsoft.com/en-us/microsoft-365/admin/activity-reports/email-activity-ww?view=o365-worldwide)      |    [reportRoot: getEmailActivityCounts](https://learn.microsoft.com/en-us/graph/api/reportroot-getemailactivitycounts?view=graph-rest-1.0&tabs=http)    |   Microsoft 365 Outlook Activity metrics   |   `Period`-based   |
-| [Outlook App Usage Version Counts](https://learn.microsoft.com/en-us/microsoft-365/admin/activity-reports/email-apps-usage-ww?view=o365-worldwide)      |    [reportRoot: getEmailAppUsageVersionsUserCounts](https://learn.microsoft.com/en-us/graph/api/reportroot-getemailappusageversionsusercounts?view=graph-rest-1.0&tabs=http)    |   Microsoft 365 Outlook App Usage Version Counts metrics   |   `Period`-based   |
-| [Outlook Mailbox Usage Quota Status Mailbox Counts](https://learn.microsoft.com/en-us/microsoft-365/admin/activity-reports/mailbox-usage?view=o365-worldwide)      |    [reportRoot: getMailboxUsageQuotaStatusMailboxCounts](https://learn.microsoft.com/en-us/graph/api/reportroot-getmailboxusagequotastatusmailboxcounts?view=graph-rest-1.0&tabs=http)    |  Microsoft 365 mailbox usage quota status metrics   |   `Period`-based   |
-| [Outlook Mailbox Usage Detail](https://learn.microsoft.com/en-us/microsoft-365/admin/activity-reports/mailbox-usage?view=o365-worldwide)      |    [reportRoot: getMailboxUsageDetail](https://learn.microsoft.com/en-us/graph/api/reportroot-getmailboxusagedetail?view=graph-rest-1.0&tabs=http)    |   Microsoft 365 mailbox usage detail metrics   |   `Period`-based   |
-| [SharePoint Site Usage Storage](https://learn.microsoft.com/en-us/microsoft-365/admin/activity-reports/sharepoint-site-usage-ww?view=o365-worldwide)      |    [reportRoot: getSharePointSiteUsageStorage](https://learn.microsoft.com/en-us/graph/api/reportroot-getsharepointsiteusagestorage?view=graph-rest-1.0&tabs=http)    |   Microsoft 365 Sharepoint Site Usage metrics   |   `Period`-based   |
-| [SharePoint Site Usage Detail](https://learn.microsoft.com/en-us/microsoft-365/admin/activity-reports/sharepoint-site-usage-ww?view=o365-worldwide)      |    [reportRoot: getSharePointSiteUsageDetail](https://learn.microsoft.com/en-us/graph/api/reportroot-getsharepointsiteusagedetail?view=graph-rest-1.0&tabs=http)    |   Microsoft 365 Sharepoint Site Usage metrics   |   `Period`-based   |
-| [Teams Device Usage User Counts](https://learn.microsoft.com/en-us/microsoft-365/admin/activity-reports/microsoft-teams-device-usage-preview?view=o365-worldwide)      |    [reportRoot: getTeamsDeviceUsageUserCounts](https://learn.microsoft.com/en-us/graph/api/reportroot-getteamsdeviceusageusercounts?view=graph-rest-1.0&tabs=http)    |   Microsoft 365 Teams Device Usage User Counts metrics   |   `Period`-based   |
-| [Teams User Activity User Counts](https://learn.microsoft.com/en-us/microsoft-365/admin/activity-reports/microsoft-teams-user-activity-preview?view=o365-worldwide)      |    [reportRoot: getTeamsUserActivityUserCounts](https://learn.microsoft.com/en-us/graph/api/reportroot-getteamsuseractivityusercounts?view=graph-rest-1.0&tabs=http)    |   Microsoft 365 Teams User Activity User Counts metrics   |   `Period`-based   |
-| [Teams User Activity User Detail](https://learn.microsoft.com/en-us/microsoft-365/admin/activity-reports/microsoft-teams-user-activity-preview?view=o365-worldwide)      |    [reportRoot: getTeamsUserActivityUserDetail](https://learn.microsoft.com/en-us/graph/api/reportroot-getteamsuseractivityuserdetail?view=graph-rest-1.0&tabs=http)    |   Microsoft 365 Teams User Activity User Detail   |    `Day`-based   |
-| [Viva Engage Groups Activity Group Detail](https://learn.microsoft.com/en-us/microsoft-365/admin/activity-reports/viva-engage-groups-activity-report-ww?view=o365-worldwide)      |    [reportRoot: getYammerGroupsActivityDetail](https://learn.microsoft.com/en-us/graph/api/reportroot-getyammergroupsactivitydetail?view=graph-rest-1.0&tabs=http)    |   Microsoft 365 Viva Engage Groups Activity   |   `Day`-based   |
-| [Viva Engage Device Usage User Counts](https://learn.microsoft.com/en-us/microsoft-365/admin/activity-reports/viva-engage-device-usage-report-ww?view=o365-worldwide)      |    [reportRoot: getYammerDeviceUsageUserCounts](https://learn.microsoft.com/en-us/graph/api/reportroot-getyammerdeviceusageusercounts?view=graph-rest-1.0&tabs=http)    |   Microsoft 365 Viva Engage Device Usage User Counts metrics   |   `Period`-based   |
-| [Service Health](https://learn.microsoft.com/en-us/graph/service-communications-concept-overview?view=o365-worldwide)                                                 |    [reportRoot: getServiceHealth](https://learn.microsoft.com/en-us/graph/api/servicehealth-get?view=graph-rest-1.0&tabs=http)    |   Microsoft 365 Service Health metrics   |   No aggregation  |
-| [Subscriptions](https://learn.microsoft.com/en-us/graph/api/resources/subscribedsku?view=graph-rest-1.0?view=o365-worldwide)                                                 |    [reportRoot: subscribedSkus](https://learn.microsoft.com/en-us/graph/api/subscribedsku-list?view=graph-rest-1.0&tabs=http)    |   Microsoft 365 Subscriptions metrics   |   No aggregation  |
-| [Teamms Call Quality](https://learn.microsoft.com/en-us/graph/api/resources/communications-api-overview?view=graph-rest-1.0?view=o365-worldwide)                                                 |    [reportRoot: callRecords](https://learn.microsoft.com/en-us/graph/api/callrecords-callrecord-list-sessions?view=graph-rest-1.0&tabs=http)    |   Microsoft 365 Teams Call Quality metrics   |   No aggregation  |
-| Tenant Settings | [organization](https://learn.microsoft.com/en-us/graph/api/resources/organization?view=graph-rest-1.0), [adminReportSettings](https://learn.microsoft.com/en-us/graph/api/resources/adminreportsettings?view=graph-rest-1.0) | Microsoft 365 Tenant Settings | No aggregation | Organization.Read.All, ReportSettings.Read.All
-| [App Registrations](https://learn.microsoft.com/en-us/graph/api/resources/application?view=graph-rest-1.0) |    [List Applications](https://learn.microsoft.com/en-us/graph/api/application-list?view=graph-rest-1.0&tabs=http)    |   Microsoft 365 App Registrations   |   No aggregation  | Application.Read.All, User.Read(delegated)
+| [Microsoft 365 Active Users Service User Counts](https://learn.microsoft.com/en-us/microsoft-365/admin/activity-reports/active-users-ww?view=o365-worldwide)      |    [reportRoot: getOffice365ServicesUserCounts](https://learn.microsoft.com/en-us/graph/api/reportroot-getoffice365servicesusercounts?view=graph-rest-1.0&tabs=http)    |   Microsoft 365 Active Users metrics   |   `Period`-based   |   Reports.Read.All    |
+| [Microsoft 365 Groups Activity Group Detail](https://learn.microsoft.com/en-us/microsoft-365/admin/activity-reports/office-365-groups-ww?view=o365-worldwide)      |    [reportRoot: getOffice365GroupsActivityDetail](https://learn.microsoft.com/en-us/graph/api/reportroot-getoffice365groupsactivitydetail?view=graph-rest-1.0&tabs=http)    |   Microsoft 365 Groups Activity Group Detail   |   `Day`-based   |     Reports.Read.All    |
+| [OneDrive Usage Account Detail](https://learn.microsoft.com/en-us/microsoft-365/admin/activity-reports/onedrive-for-business-usage-ww?view=o365-worldwide)      |    [reportRoot: getOneDriveUsageAccountDetail](https://learn.microsoft.com/en-us/graph/api/reportroot-getonedriveusageaccountdetail?view=graph-rest-1.0&tabs=http)    |   Microsoft 365 OneDrive Usage Account Detail   |   `Day`-based   |     Reports.Read.All    |
+| [OneDrive Usage Account Counts](https://learn.microsoft.com/en-us/microsoft-365/admin/activity-reports/onedrive-for-business-usage-ww?view=o365-worldwide)      |    [reportRoot: getOneDriveUsageAccountCounts](https://learn.microsoft.com/en-us/graph/api/reportroot-getonedriveusageaccountcounts?view=graph-rest-1.0&tabs=http)    |   Microsoft 365 One Drive Usage metrics   |   `Period`-based   |    Reports.Read.All |
+| [OneDrive Usage File Counts](https://learn.microsoft.com/en-us/microsoft-365/admin/activity-reports/onedrive-for-business-usage-ww?view=o365-worldwide)      |    [reportRoot: getOneDriveUsageFileCounts](https://learn.microsoft.com/en-us/graph/api/reportroot-getonedriveusagefilecounts?view=graph-rest-1.0&tabs=http)    |   Microsoft 365 One Drive Usage metrics   |   `Period`-based   |     Reports.Read.All    |
+| [OneDrive Usage Storage](https://learn.microsoft.com/en-us/microsoft-365/admin/activity-reports/onedrive-for-business-usage-ww?view=o365-worldwide)      |    [reportRoot: getOneDriveUsageStorage](https://learn.microsoft.com/en-us/graph/api/reportroot-getonedriveusagestorage?view=graph-rest-1.0&tabs=http)    |   Microsoft 365 One Drive Usage metrics   |   `Period`-based   |       Reports.Read.All    |
+| [Outlook Activity Counts](https://learn.microsoft.com/en-us/microsoft-365/admin/activity-reports/email-activity-ww?view=o365-worldwide)      |    [reportRoot: getEmailActivityCounts](https://learn.microsoft.com/en-us/graph/api/reportroot-getemailactivitycounts?view=graph-rest-1.0&tabs=http)    |   Microsoft 365 Outlook Activity metrics   |   `Period`-based   |        Reports.Read.All    |
+| [Outlook App Usage Version Counts](https://learn.microsoft.com/en-us/microsoft-365/admin/activity-reports/email-apps-usage-ww?view=o365-worldwide)      |    [reportRoot: getEmailAppUsageVersionsUserCounts](https://learn.microsoft.com/en-us/graph/api/reportroot-getemailappusageversionsusercounts?view=graph-rest-1.0&tabs=http)    |   Microsoft 365 Outlook App Usage Version Counts metrics   |   `Period`-based   |     Reports.Read.All        |
+| [Outlook Mailbox Usage Quota Status Mailbox Counts](https://learn.microsoft.com/en-us/microsoft-365/admin/activity-reports/mailbox-usage?view=o365-worldwide)      |    [reportRoot: getMailboxUsageQuotaStatusMailboxCounts](https://learn.microsoft.com/en-us/graph/api/reportroot-getmailboxusagequotastatusmailboxcounts?view=graph-rest-1.0&tabs=http)    |  Microsoft 365 mailbox usage quota status metrics   |   `Period`-based   |   Reports.Read.All    |
+| [Outlook Mailbox Usage Detail](https://learn.microsoft.com/en-us/microsoft-365/admin/activity-reports/mailbox-usage?view=o365-worldwide)      |    [reportRoot: getMailboxUsageDetail](https://learn.microsoft.com/en-us/graph/api/reportroot-getmailboxusagedetail?view=graph-rest-1.0&tabs=http)    |   Microsoft 365 mailbox usage detail metrics   |   `Period`-based   |     Reports.Read.All    |
+| [SharePoint Site Usage Storage](https://learn.microsoft.com/en-us/microsoft-365/admin/activity-reports/sharepoint-site-usage-ww?view=o365-worldwide)      |    [reportRoot: getSharePointSiteUsageStorage](https://learn.microsoft.com/en-us/graph/api/reportroot-getsharepointsiteusagestorage?view=graph-rest-1.0&tabs=http)    |   Microsoft 365 Sharepoint Site Usage metrics   |   `Period`-based   |    Reports.Read.All    |
+| [SharePoint Site Usage Detail](https://learn.microsoft.com/en-us/microsoft-365/admin/activity-reports/sharepoint-site-usage-ww?view=o365-worldwide)      |    [reportRoot: getSharePointSiteUsageDetail](https://learn.microsoft.com/en-us/graph/api/reportroot-getsharepointsiteusagedetail?view=graph-rest-1.0&tabs=http)    |   Microsoft 365 Sharepoint Site Usage metrics   |   `Period`-based   |       Reports.Read.All    |
+| [Teams Device Usage User Counts](https://learn.microsoft.com/en-us/microsoft-365/admin/activity-reports/microsoft-teams-device-usage-preview?view=o365-worldwide)      |    [reportRoot: getTeamsDeviceUsageUserCounts](https://learn.microsoft.com/en-us/graph/api/reportroot-getteamsdeviceusageusercounts?view=graph-rest-1.0&tabs=http)    |   Microsoft 365 Teams Device Usage User Counts metrics   |   `Period`-based   |      Reports.Read.All    |
+| [Teams User Activity User Counts](https://learn.microsoft.com/en-us/microsoft-365/admin/activity-reports/microsoft-teams-user-activity-preview?view=o365-worldwide)      |    [reportRoot: getTeamsUserActivityUserCounts](https://learn.microsoft.com/en-us/graph/api/reportroot-getteamsuseractivityusercounts?view=graph-rest-1.0&tabs=http)    |   Microsoft 365 Teams User Activity User Counts metrics   |   `Period`-based   |     Reports.Read.All    |
+| [Teams User Activity User Detail](https://learn.microsoft.com/en-us/microsoft-365/admin/activity-reports/microsoft-teams-user-activity-preview?view=o365-worldwide)      |    [reportRoot: getTeamsUserActivityUserDetail](https://learn.microsoft.com/en-us/graph/api/reportroot-getteamsuseractivityuserdetail?view=graph-rest-1.0&tabs=http)    |   Microsoft 365 Teams User Activity User Detail   |    `Day`-based   |       Reports.Read.All    |
+| [Viva Engage Groups Activity Group Detail](https://learn.microsoft.com/en-us/microsoft-365/admin/activity-reports/viva-engage-groups-activity-report-ww?view=o365-worldwide)      |    [reportRoot: getYammerGroupsActivityDetail](https://learn.microsoft.com/en-us/graph/api/reportroot-getyammergroupsactivitydetail?view=graph-rest-1.0&tabs=http)    |   Microsoft 365 Viva Engage Groups Activity   |   `Day`-based   |     Reports.Read.All    |
+| [Viva Engage Device Usage User Counts](https://learn.microsoft.com/en-us/microsoft-365/admin/activity-reports/viva-engage-device-usage-report-ww?view=o365-worldwide)      |    [reportRoot: getYammerDeviceUsageUserCounts](https://learn.microsoft.com/en-us/graph/api/reportroot-getyammerdeviceusageusercounts?view=graph-rest-1.0&tabs=http)    |   Microsoft 365 Viva Engage Device Usage User Counts metrics   |   `Period`-based   |      Reports.Read.All    |
+| [Service Health](https://learn.microsoft.com/en-us/graph/service-communications-concept-overview?view=o365-worldwide)                                                 |    [reportRoot: getServiceHealth](https://learn.microsoft.com/en-us/graph/api/servicehealth-get?view=graph-rest-1.0&tabs=http)    |   Microsoft 365 Service Health metrics   |   No aggregation  |    ServiceHealth.Read.All  |
+| [Subscriptions](https://learn.microsoft.com/en-us/graph/api/resources/subscribedsku?view=graph-rest-1.0?view=o365-worldwide)                                                 |    [subscribedSkus](https://learn.microsoft.com/en-us/graph/api/resources/subscribedsku?view=graph-rest-1.0), [subscriptions](https://learn.microsoft.com/en-us/graph/api/resources/companysubscription?view=graph-rest-1.0)   |   Microsoft 365 Subscriptions metrics   |   No aggregation  | LicenseAssignment.Read.All  |
+| [Teamms Call Quality](https://learn.microsoft.com/en-us/graph/api/resources/communications-api-overview?view=graph-rest-1.0?view=o365-worldwide)                                                 |    [reportRoot: callRecords](https://learn.microsoft.com/en-us/graph/api/callrecords-callrecord-list-sessions?view=graph-rest-1.0&tabs=http)    |   Microsoft 365 Teams Call Quality metrics   |   No aggregation  |   CallRecords.Read.All    |
+| Tenant Settings | [organization](https://learn.microsoft.com/en-us/graph/api/resources/organization?view=graph-rest-1.0), [adminReportSettings](https://learn.microsoft.com/en-us/graph/api/resources/adminreportsettings?view=graph-rest-1.0) | Microsoft 365 Tenant Settings | No aggregation | Organization.Read.All, ReportSettings.Read.All, Directory.Read.All  |
+| [App Registrations](https://learn.microsoft.com/en-us/graph/api/resources/application?view=graph-rest-1.0) |    [List Applications](https://learn.microsoft.com/en-us/graph/api/application-list?view=graph-rest-1.0&tabs=http)    |   Microsoft 365 App Registrations   |   No aggregation  | Application.Read.All, User.Read(delegated) |
+| [Entra Features](https://learn.microsoft.com/en-us/graph/api/organization-list?view=graph-rest-1.0&tabs=http) |    [Organization](https://learn.microsoft.com/en-us/graph/api/organization-list?view=graph-rest-1.0&tabs=http), [PremisesSync](https://graph.microsoft.com/v1.0/directory/onPremisesSynchronization)    |   Microsoft 365 Entra Connect  |   No aggregation  | Organization.Read.All, User.Read(delegated) |
+| Entra ID users | [user](https://learn.microsoft.com/en-us/graph/api/resources/user?view=graph-rest-1.0), [riskDetection](https://learn.microsoft.com/en-us/graph/api/resources/riskdetection?view=graph-rest-1.0) | Microsoft 365 Entra Connect User metrics | No aggregation | User.Read.All, IdentityRiskEvent.Read.All
 
 
 ## Setup
@@ -42,12 +44,12 @@ Once the application is registered, configure and/or note the following to setup
     - Navigate to `Certificates & Secrets` section.
     - Click `New client secret` and provide some description to create new secret.
     - Note the `Value` which is required for the integration setup.
-3. Add permissions to your registered application. Please check [O365 Graph API permissions](https://learn.microsoft.com/en-us/graph/reportroot-authorization) for more details.
-    - Navigate to `API permissions` page and click `Add a permission`
-    - Select `Office 365 Management APIs` tile from the listed tiles.
-    - Click `Application permissions`.
-    - If `User.Read` and `Reports.Read.All` permission under `Microsoft.Graph` tile is not added by default, add this permission. Additional permissions, such as `ServiceHealth.Read.All` for data streams like Service Health may be required. Refer to the API documentation under the Permissions section to determine the necessary permissions.
-    - After the permissions are added, the admin has to grant consent for these permissions.
+3. Add permissions to your registered application.
+    - Select and add the appropriate permissions from the available tiles.
+    - For this package, we primarily use Graph APIs, so you can choose `Microsoft Graph`, which will display the Delegated and Application permission sections.
+    - Refer to the `Required Permissions` column in the table under [Data streams](#data-streams) section to identify the permissions required for each data stream and select accordingly. You can also refer to the Permissions section in the API documentation for each data stream to determine the necessary permissions.
+    - Ensure Reports.Read.All from Microsoft Graph is added, as most APIs are report-based.
+    - After the permissions are added, the admin will need to grant consent for a few permissions.
 
 Once the secret is created and permissions are granted by admin, setup Elastic Agent's Microsoft O365 integration:
 - Click `Add Microsoft Office 365`.
@@ -258,6 +260,121 @@ Please refer to the following [document](https://www.elastic.co/guide/en/ecs/cur
 | o365.metrics.active.users.services.user.counts.teams.inactive.count | Number of Teams inactive users. | integer |  | gauge |
 | o365.metrics.active.users.services.user.counts.yammer.active.count | Number of Yammer active users. | integer |  | gauge |
 | o365.metrics.active.users.services.user.counts.yammer.inactive.count | Number of Yammer inactive users. | integer |  | gauge |
+
+
+### Entra ID users
+
+Get details about users in Microsoft Entra ID.
+
+An example event for `entra_id_users` looks as following:
+
+```json
+{
+    "o365": {
+        "metrics": {
+            "entra_id_users": {
+                "on_premises_sync_enabled": true,
+                "on_premises_provisioning_errors": [
+                    {
+                        "occurred_date_time": "2025-03-25T14:33:19Z",
+                        "category": "PropertyConflict",
+                        "property_causing_error": "UserPrincipalName",
+                        "value": "alex@contoso.com"
+                    }
+                ],
+                "risk": {
+                    "event_type": "passwordSpray",
+                    "level": "high",
+                    "detail": "userPerformedSecuredPasswordReset",
+                    "state": "remediated"
+                },
+                "user": {
+                    "upn": "AlexW@M365x214355.onmicrosoft.com",
+                    "id": "4782e723-f4f4-4af3-a76e-25e3bab0d896",
+                    "type": "Member"
+                }
+            }
+        }
+    },
+    "input": {
+        "type": "cel"
+    },
+    "agent": {
+        "name": "elastic-agent-74940",
+        "id": "4dba66ec-f72a-41f6-bdac-69c44c9323d8",
+        "ephemeral_id": "a41ad417-aa53-441c-a549-da581020df08",
+        "type": "filebeat",
+        "version": "8.17.3"
+    },
+    "@timestamp": "2025-03-26T09:41:36.166Z",
+    "ecs": {
+        "version": "8.17.0"
+    },
+    "data_stream": {
+        "namespace": "72200",
+        "type": "metrics",
+        "dataset": "o365_metrics.entra_id_users"
+    },
+    "host": {
+        "hostname": "elastic-agent-74940",
+        "os": {
+            "kernel": "6.12.5-linuxkit",
+            "name": "Wolfi",
+            "type": "linux",
+            "family": "",
+            "version": "20230201",
+            "platform": "wolfi"
+        },
+        "containerized": false,
+        "ip": [
+            "172.29.0.2",
+            "172.18.0.9"
+        ],
+        "name": "elastic-agent-74940",
+        "mac": [
+            "02-42-AC-12-00-09",
+            "02-42-AC-1D-00-02"
+        ],
+        "architecture": "aarch64"
+    },
+    "elastic_agent": {
+        "id": "4dba66ec-f72a-41f6-bdac-69c44c9323d8",
+        "version": "8.17.3",
+        "snapshot": false
+    },
+    "event": {
+        "agent_id_status": "verified",
+        "ingested": "2025-03-26T09:41:37Z",
+        "dataset": "o365_metrics.entra_id_users"
+    },
+    "tags": [
+        "o365.metrics.entra_id_users"
+    ]
+}
+```
+
+**Exported fields**
+
+| Field | Description | Type |
+|---|---|---|
+| @timestamp | Event timestamp. | date |
+| data_stream.dataset | Data stream dataset. | constant_keyword |
+| data_stream.namespace | Data stream namespace. | constant_keyword |
+| data_stream.type | Data stream type. | constant_keyword |
+| input.type | Input type. | keyword |
+| o365.metrics.entra_id_users.on_premises_provisioning_errors.category | Category of the provisioning error. | keyword |
+| o365.metrics.entra_id_users.on_premises_provisioning_errors.occurred_date_time | The date and time at which the error occurred. | date |
+| o365.metrics.entra_id_users.on_premises_provisioning_errors.property_causing_error | Name of the directory property causing the error. | keyword |
+| o365.metrics.entra_id_users.on_premises_provisioning_errors.value | Value of the property causing the error. | keyword |
+| o365.metrics.entra_id_users.on_premises_sync_enabled | true if this user object is currently being synced from an on-premises Active Directory (AD); otherwise the user isn't being synced and can be managed in Microsoft Entra ID. | boolean |
+| o365.metrics.entra_id_users.risk.detail | The possible values are none, adminGeneratedTemporaryPassword, userPerformedSecuredPasswordChange, userPerformedSecuredPasswordReset, adminConfirmedSigninSafe, aiConfirmedSigninSafe, userPassedMFADrivenByRiskBasedPolicy, adminDismissedAllRiskForUser, adminConfirmedSigninCompromised, hidden, adminConfirmedUserCompromised, unknownFutureValue, adminConfirmedServicePrincipalCompromised, adminDismissedAllRiskForServicePrincipal, m365DAdminDismissedDetection, userChangedPasswordOnPremises, adminDismissedRiskForSignIn, adminConfirmedAccountSafe. | keyword |
+| o365.metrics.entra_id_users.risk.error | An error if the risk data is unavailable for this user. | text |
+| o365.metrics.entra_id_users.risk.event_type | The type of risk event detected. The possible values are adminConfirmedUserCompromised, anomalousToken, anomalousUserActivity, anonymizedIPAddress, generic, impossibleTravel, investigationsThreatIntelligence, suspiciousSendingPatterns, leakedCredentials, maliciousIPAddress,malwareInfectedIPAddress, mcasSuspiciousInboxManipulationRules, newCountry, passwordSpray,riskyIPAddress, suspiciousAPITraffic, suspiciousBrowser,suspiciousInboxForwarding, suspiciousIPAddress, tokenIssuerAnomaly, unfamiliarFeatures, unlikelyTravel. If the risk detection is a premium detection, will show generic. | keyword |
+| o365.metrics.entra_id_users.risk.level | Level of the detected risky user. Possible values are: low, medium, high, hidden, none, unknownFutureValue. | keyword |
+| o365.metrics.entra_id_users.risk.state | State of the user's risk. Possible values are: none, confirmedSafe, remediated, dismissed, atRisk, confirmedCompromised, unknownFutureValue. | keyword |
+| o365.metrics.entra_id_users.user.id | The unique identifier for the user. Should be treated as an opaque identifier. | keyword |
+| o365.metrics.entra_id_users.user.type | A string value that can be used to classify user types in your directory. The possible values are Member and Guest. | keyword |
+| o365.metrics.entra_id_users.user.upn | The user principal name (UPN) of the user. The UPN is an Internet-style sign-in name for the user based on the Internet standard RFC 822. By convention, this value should map to the user's email name. The general format is alias@domain, where the domain must be present in the tenant's collection of verified domains. | keyword |
 
 
 ### Mailbox Usage Quota Status
@@ -2311,99 +2428,135 @@ An example event for `subscriptions` looks as following:
 
 ```json
 {
+    "@timestamp": "2025-04-08T05:48:01.432Z",
+    "agent": {
+        "ephemeral_id": "f4b88049-f56b-47e7-8ab6-35c3aca09766",
+        "id": "3dfd1b6b-ee1c-45ea-93a7-e4da0436f40f",
+        "name": "elastic-agent-93924",
+        "type": "filebeat",
+        "version": "8.16.0"
+    },
+    "data_stream": {
+        "dataset": "o365_metrics.subscriptions",
+        "namespace": "90845",
+        "type": "metrics"
+    },
+    "ecs": {
+        "version": "8.17.0"
+    },
+    "elastic_agent": {
+        "id": "3dfd1b6b-ee1c-45ea-93a7-e4da0436f40f",
+        "snapshot": false,
+        "version": "8.16.0"
+    },
+    "event": {
+        "agent_id_status": "verified",
+        "dataset": "o365_metrics.subscriptions",
+        "ingested": "2025-04-08T05:48:04Z"
+    },
+    "host": {
+        "architecture": "aarch64",
+        "containerized": false,
+        "hostname": "elastic-agent-93924",
+        "ip": [
+            "172.31.0.2",
+            "172.26.0.4"
+        ],
+        "mac": [
+            "02-42-AC-1A-00-04",
+            "02-42-AC-1F-00-02"
+        ],
+        "name": "elastic-agent-93924",
+        "os": {
+            "family": "",
+            "kernel": "5.10.104-linuxkit",
+            "name": "Wolfi",
+            "platform": "wolfi",
+            "type": "linux",
+            "version": "20230201"
+        }
+    },
+    "input": {
+        "type": "cel"
+    },
     "o365": {
         "metrics": {
             "subscriptions": {
-                "account_id": "f97aeefc-af85-414d-8ae4-b457f90efc40",
-                "account_name": "Account1",
+                "account_id": "3f2c-bce5-42b7-8a68-1438af",
+                "account_name": "M365x00716596",
                 "applies_to": "User",
                 "capability_status": "Enabled",
                 "consumed_units": {
-                    "count": 14
+                    "count": 1
                 },
-                "id": "48a80680-7326-48cd-9935-b556b81d3a4e_c7df2760-2c81-4ef7-b578-5b5392b571df",
+                "id": "3f2c-bce5-42b7-8a68-1438af_f392-07e9-47e9-837c-803d",
                 "prepaid_units": {
                     "enabled": {
-                        "count": 25
+                        "count": 10000
                     },
                     "locked_out": {
-                        "count": 5
+                        "count": 0
                     },
                     "suspended": {
-                        "count": 13
+                        "count": 0
                     },
                     "warning": {
-                        "count": 7
+                        "count": 0
                     }
                 },
                 "service_plans": [
                     {
                         "applies_to": "Company",
                         "provisioning_status": "Success",
-                        "service_plan_id": "8c098270-9dd4-4350-9b30-ba4703f3b36b",
-                        "service_plan_name": "ADALLOM_S_O365"
+                        "service_plan_id": "113feb6c-3fe4-4440-bddc-54d774bf0318",
+                        "service_plan_name": "EXCHANGE_S_FOUNDATION"
+                    },
+                    {
+                        "applies_to": "User",
+                        "provisioning_status": "Success",
+                        "service_plan_id": "17ab22cd-a0b3-4536-910a-cb6eb12696c0",
+                        "service_plan_name": "DYN365_CDS_VIRAL"
+                    },
+                    {
+                        "applies_to": "User",
+                        "provisioning_status": "Success",
+                        "service_plan_id": "50e68c76-46c6-4674-81f9-75456511b170",
+                        "service_plan_name": "FLOW_P2_VIRAL"
                     }
                 ],
-                "sku_id": "c7df2760-2c81-4ef7-b578-5b5392b571df",
-                "sku_part_number": "ENTERPRISEPREMIUM",
+                "sku_id": "f392-07e9-47e9-837c-803d",
+                "sku_part_number": "Microsoft_Teams_Enterprise_New",
+                "subscription_details": [
+                    {
+                        "created_date_time": "2025-03-16T00:00:00Z",
+                        "id": "81209dcb-3bc7-475a-93c0-12b6db4e1429",
+                        "is_trial": false,
+                        "owner_tenant_id": "xyz",
+                        "status": "Enabled",
+                        "total_licenses": 10000
+                    },
+                    {
+                        "created_date_time": "2025-03-17T00:00:00Z",
+                        "id": "6a5cbbfd-b725-43f8-aae5-7999abf275d1",
+                        "is_trial": true,
+                        "next_lifecycle_date_time": "2025-07-17T00:00:00Z",
+                        "owner_tenant_id": "abc",
+                        "status": "Enabled",
+                        "total_licenses": 20
+                    }
+                ],
                 "subscription_ids": [
-                    "43d26afe-cb98-48b9-acc4-ae3ef2ac6c51"
+                    "81209dcb-3bc7-475a-93c0-12b6db4e1429",
+                    "6a5cbbfd-b725-43f8-aae5-7999abf275d1"
                 ],
                 "surplus_units": {
-                    "count": 11
+                    "count": 9999
                 }
             }
         }
     },
-    "agent": {
-        "name": "docker-fleet-agent",
-        "id": "abf38fab-f7b6-4e1c-a3b3-a70a64f9e5db",
-        "ephemeral_id": "08417a8d-9698-4c62-b7dc-e1b048647626",
-        "type": "filebeat",
-        "version": "8.16.0"
-    },
-    "@timestamp": "2025-01-29T12:36:44.408Z",
-    "ecs": {
-        "version": "8.16.0"
-    },
-    "data_stream": {
-        "namespace": "default",
-        "type": "metrics",
-        "dataset": "o365_metrics.subscriptions"
-    },
-    "host": {
-        "hostname": "docker-fleet-agent",
-        "os": {
-            "kernel": "5.10.104-linuxkit",
-            "name": "Wolfi",
-            "family": "",
-            "type": "linux",
-            "version": "20230201",
-            "platform": "wolfi"
-        },
-        "ip": [
-            "192.168.48.7"
-        ],
-        "containerized": false,
-        "name": "docker-fleet-agent",
-        "mac": [
-            "02-42-C0-A8-30-07"
-        ],
-        "architecture": "aarch64"
-    },
-    "elastic_agent": {
-        "id": "abf38fab-f7b6-4e1c-a3b3-a70a64f9e5db",
-        "version": "8.16.0",
-        "snapshot": false
-    },
-    "event": {
-        "agent_id_status": "verified",
-        "ingested": "2025-01-29T12:35:44.48Z",
-        "dataset": "o365_metrics.subscriptions",
-        "original": "{\"accountName\":\"Account1\",\"accountId\":\"f97aeefc-af85-414d-8ae4-b457f90efc40\",\"appliesTo\":\"User\",\"capabilityStatus\":\"Enabled\",\"consumedUnits\":14,\"id\":\"48a80680-7326-48cd-9935-b556b81d3a4e_c7df2760-2c81-4ef7-b578-5b5392b571df\",\"prepaidUnits\":{\"enabled\":25,\"lockedOut\":5,\"suspended\":13,\"warning\":7},\"servicePlans\":[{\"servicePlanId\":\"8c098270-9dd4-4350-9b30-ba4703f3b36b\",\"servicePlanName\":\"ADALLOM_S_O365\",\"provisioningStatus\":\"Success\",\"appliesTo\":\"Company\"}],\"skuId\":\"c7df2760-2c81-4ef7-b578-5b5392b571df\",\"skuPartNumber\":\"ENTERPRISEPREMIUM\",\"subscriptionIds\":[\"43d26afe-cb98-48b9-acc4-ae3ef2ac6c51\"]}"
-    },
     "tags": [
-        "o365metrics-subscriptions"
+        "o365.metrics.subscriptions"
     ]
 }
 ```
@@ -2424,23 +2577,32 @@ Please refer to the following [document](https://www.elastic.co/guide/en/ecs/cur
 | host.containerized | If the host is a container. | boolean |  |
 | host.os.build | OS build information. | keyword |  |
 | host.os.codename | OS codename, if any. | keyword |  |
-| o365.metrics.subscriptions.account_id | Unique identifier for the account. | keyword |  |
-| o365.metrics.subscriptions.account_name | Name of the account. | text |  |
-| o365.metrics.subscriptions.applies_to | Type of entity the subscription applies to (e.g. User or Company). | keyword |  |
+| input.type | Input type. | keyword |  |
+| o365.metrics.subscriptions.account_id | The unique ID of the account this SKU belongs to. | keyword |  |
+| o365.metrics.subscriptions.account_name | The name of the account this SKU belongs to. | text |  |
+| o365.metrics.subscriptions.applies_to | The target class for this SKU. Only SKUs with target class User are assignable. Possible values are (User, Company). | keyword |  |
 | o365.metrics.subscriptions.capability_status | Status of the capability (e.g. Enabled, Suspended). | keyword |  |
-| o365.metrics.subscriptions.consumed_units.count | Number of consumed units. | long | gauge |
-| o365.metrics.subscriptions.id | Unique identifier for the subscription entry. | keyword |  |
-| o365.metrics.subscriptions.prepaid_units.enabled.count | Number of enabled prepaid units. | long | gauge |
-| o365.metrics.subscriptions.prepaid_units.locked_out.count | Number of locked-out prepaid units. | long | gauge |
-| o365.metrics.subscriptions.prepaid_units.suspended.count | Number of suspended prepaid units. | long | gauge |
-| o365.metrics.subscriptions.prepaid_units.warning.count | Number of prepaid units in warning state. | long | gauge |
-| o365.metrics.subscriptions.service_plans.applies_to | Type of entity the service plan applies to. | keyword |  |
-| o365.metrics.subscriptions.service_plans.provisioning_status | Status of the service plan provisioning. | keyword |  |
+| o365.metrics.subscriptions.consumed_units.count | The number of licenses that have been assigned. | long | gauge |
+| o365.metrics.subscriptions.id | The unique identifier for the subscribed sku object. | keyword |  |
+| o365.metrics.subscriptions.prepaid_units.enabled.count | The number of units that are enabled for the active subscription of the service SKU. | long | gauge |
+| o365.metrics.subscriptions.prepaid_units.locked_out.count | The number of units that are locked out because the customer canceled their subscription of the service SKU. | long | gauge |
+| o365.metrics.subscriptions.prepaid_units.suspended.count | The number of units that are suspended because the subscription of the service SKU has been canceled. The units can't be assigned but can still be reactivated before they're deleted. | long | gauge |
+| o365.metrics.subscriptions.prepaid_units.warning.count | The number of units that are in warning status. When the subscription of the service SKU has expired, the customer has a grace period to renew their subscription before it's canceled (moved to a suspended state). | long | gauge |
+| o365.metrics.subscriptions.service_plans.applies_to | The object the service plan can be assigned to. | keyword |  |
+| o365.metrics.subscriptions.service_plans.provisioning_status | The provisioning status of the service plan. | keyword |  |
 | o365.metrics.subscriptions.service_plans.service_plan_id | Unique identifier for the service plan. | keyword |  |
 | o365.metrics.subscriptions.service_plans.service_plan_name | Name of the service plan. | keyword |  |
 | o365.metrics.subscriptions.sku_id | Unique identifier for the SKU. | keyword |  |
-| o365.metrics.subscriptions.sku_part_number | SKU part number. | keyword |  |
-| o365.metrics.subscriptions.subscription_ids | Array of subscription IDs. | keyword |  |
+| o365.metrics.subscriptions.sku_part_number | The SKU part number; for example, AAD_PREMIUM or RMSBASIC. | keyword |  |
+| o365.metrics.subscriptions.subscription_details.created_date_time | The date and time when this subscription was created. | date |  |
+| o365.metrics.subscriptions.subscription_details.id | The unique ID for the subscription. | keyword |  |
+| o365.metrics.subscriptions.subscription_details.is_trial | Whether the subscription is a free trial or purchased. | boolean |  |
+| o365.metrics.subscriptions.subscription_details.next_lifecycle_date_time | The date and time when the subscription will move to the next state (as defined by the status property) if not renewed by the tenant. | date |  |
+| o365.metrics.subscriptions.subscription_details.owner_tenant_id | The unique identifier for the Microsoft partner tenant that created the subscription on a customer tenant. | keyword |  |
+| o365.metrics.subscriptions.subscription_details.status | The status of this subscription. Possible values are, Enabled, Deleted, Suspended, Warning, LockedOut. | keyword |  |
+| o365.metrics.subscriptions.subscription_details.subscription_error | An error if the subscription data is not available. | text |  |
+| o365.metrics.subscriptions.subscription_details.total_licenses | The number of licenses included in this subscription. | long |  |
+| o365.metrics.subscriptions.subscription_ids | A list of all subscription IDs associated with the SKU. | keyword |  |
 | o365.metrics.subscriptions.surplus_units.count | Number of unused units which indicates if you oversubscribed to any SKUs. | long |  |
 
 
@@ -2862,6 +3024,102 @@ Please refer to the following [document](https://www.elastic.co/guide/en/ecs/cur
 | o365.metrics.teams.call.quality.start_date_time | The start date and time of the call | date |
 
 
+### Tenant Settings
+
+Get details about tenant settings in Microsoft Entra ID.
+
+An example event for `tenant_settings` looks as following:
+
+```json
+{
+    "o365": {
+        "metrics": {
+            "tenant_settings": {
+                "display_concealed_names": true,
+                "tenant": {
+                    "id": "f99cbd5a-95d6-4767-9372-0d41ca2ead9d",
+                    "type": "AAD",
+                    "display_name": "azure2"
+                }
+            }
+        }
+    },
+    "input": {
+        "type": "cel"
+    },
+    "agent": {
+        "name": "elastic-agent-19515",
+        "id": "37f1ae71-1a03-4d62-82e0-59e440f35824",
+        "ephemeral_id": "b19c8d15-4089-4209-ad9e-fab4e4491827",
+        "type": "filebeat",
+        "version": "8.17.3"
+    },
+    "@timestamp": "2025-03-24T14:49:05.173Z",
+    "ecs": {
+        "version": "8.17.0"
+    },
+    "data_stream": {
+        "namespace": "62584",
+        "type": "metrics",
+        "dataset": "o365_metrics.tenant_settings"
+    },
+    "elastic_agent": {
+        "id": "37f1ae71-1a03-4d62-82e0-59e440f35824",
+        "version": "8.17.3",
+        "snapshot": false
+    },
+    "host": {
+        "hostname": "elastic-agent-19515",
+        "os": {
+            "kernel": "6.12.5-linuxkit",
+            "name": "Wolfi",
+            "family": "",
+            "type": "linux",
+            "version": "20230201",
+            "platform": "wolfi"
+        },
+        "containerized": false,
+        "ip": [
+            "172.20.0.2",
+            "172.18.0.5"
+        ],
+        "name": "elastic-agent-19515",
+        "mac": [
+            "02-42-AC-12-00-05",
+            "02-42-AC-14-00-02"
+        ],
+        "architecture": "aarch64"
+    },
+    "event": {
+        "agent_id_status": "verified",
+        "ingested": "2025-03-24T14:49:06Z",
+        "dataset": "o365_metrics.tenant_settings"
+    },
+    "tags": [
+        "o365.metrics.tenant_settings"
+    ]
+}
+```
+
+**ECS Field Reference**
+
+Please refer to the following [document](https://www.elastic.co/guide/en/ecs/current/ecs-field-reference.html) for detailed information on ECS fields.
+
+**Exported fields**
+
+| Field | Description | Type |
+|---|---|---|
+| @timestamp | Event timestamp. | date |
+| data_stream.dataset | Data stream dataset. | constant_keyword |
+| data_stream.namespace | Data stream namespace. | constant_keyword |
+| data_stream.type | Data stream type. | constant_keyword |
+| input.type | Input type. | keyword |
+| o365.metrics.tenant_settings.display_concealed_names | If set to true, all reports conceal user information such as usernames, groups, and sites. If false, all reports show identifiable information. This property represents a setting in the Microsoft 365 admin center. | boolean |
+| o365.metrics.tenant_settings.tenant.display_name | The display name for the tenant. | keyword |
+| o365.metrics.tenant_settings.tenant.id | The tenant ID, a unique identifier representing the organization (or tenant). | keyword |
+| o365.metrics.tenant_settings.tenant.type | Can be one of the following types:  \* AAD - An enterprise identity access management (IAM) service that serves business-to-employee and business-to-business (B2B) scenarios.  \* AAD B2C An identity access management (IAM) service that serves business-to-consumer (B2C) scenarios.  \* CIAM - A customer identity & access management (CIAM) solution that provides an integrated platform to serve consumers, partners, and citizen scenarios. | keyword |
+
+
 ### App Registrations
 
 Get details about apps registered in Microsoft Entra ID. [Microsoft API](https://learn.microsoft.com/en-us/graph/api/application-list?view=graph-rest-1.0&tabs=http).
@@ -2984,3 +3242,132 @@ Please refer to the following [document](https://www.elastic.co/guide/en/ecs/cur
 | o365.metrics.app_registrations.password_credentials.display_name | Friendly name for the password. | keyword |
 | o365.metrics.app_registrations.password_credentials.end_date_time | The date and time at which the password expires. | date |
 | o365.metrics.app_registrations.password_credentials.key_id | The unique identifier for the password. | keyword |
+
+
+### Entra Features
+
+Get details about Entra Features. [Microsoft API](https://learn.microsoft.com/en-us/graph/api/resources/organization?view=graph-rest-1.0).
+
+An example event for `entra_features` looks as following:
+
+```json
+{
+    "@timestamp": "2025-04-10T10:40:03.447Z",
+    "agent": {
+        "ephemeral_id": "7852790c-2a34-413e-a94c-74c05f82e5f9",
+        "id": "f3fc8c0f-bd46-481e-bf2c-764831ee324c",
+        "name": "elastic-agent-67757",
+        "type": "filebeat",
+        "version": "8.16.0"
+    },
+    "data_stream": {
+        "dataset": "o365_metrics.entra_features",
+        "namespace": "21154",
+        "type": "metrics"
+    },
+    "ecs": {
+        "version": "8.17.0"
+    },
+    "elastic_agent": {
+        "id": "f3fc8c0f-bd46-481e-bf2c-764831ee324c",
+        "snapshot": false,
+        "version": "8.16.0"
+    },
+    "event": {
+        "agent_id_status": "verified",
+        "dataset": "o365_metrics.entra_features",
+        "ingested": "2025-04-10T10:40:06Z"
+    },
+    "host": {
+        "architecture": "x86_64",
+        "containerized": true,
+        "hostname": "elastic-agent-67757",
+        "ip": [
+            "172.20.0.2",
+            "172.18.0.7"
+        ],
+        "mac": [
+            "02-42-AC-12-00-07",
+            "02-42-AC-14-00-02"
+        ],
+        "name": "elastic-agent-67757",
+        "os": {
+            "family": "",
+            "kernel": "5.15.153.1-microsoft-standard-WSL2",
+            "name": "Wolfi",
+            "platform": "wolfi",
+            "type": "linux",
+            "version": "20230201"
+        }
+    },
+    "input": {
+        "type": "cel"
+    },
+    "o365": {
+        "metrics": {
+            "entra": {
+                "features": {
+                    "block_cloud_object_takeover_through_hard_match_enabled": true,
+                    "block_soft_match_enabled": true,
+                    "bypass_dir_sync_overrides_enabled": true,
+                    "cloud_password_policy_for_password_synced_users_enabled": true,
+                    "concurrent_credential_update_enabled": true,
+                    "concurrent_org_id_provisioning_enabled": true,
+                    "device_writeback_enabled": true,
+                    "directory_extensions_enabled": true,
+                    "fope_conflict_resolution_enabled": true,
+                    "group_write_back_enabled": true,
+                    "on_premises_sync_enabled": true,
+                    "password_sync_enabled": true,
+                    "password_writeback_enabled": true,
+                    "quarantine_upon_proxy_addresses_conflict_enabled": true,
+                    "quarantine_upon_upn_conflict_enabled": true,
+                    "soft_match_on_upn_enabled": true,
+                    "synchronize_upn_for_managed_users_enabled": true,
+                    "unified_group_writeback_enabled": true,
+                    "user_force_password_change_on_logon_enabled": true,
+                    "user_writeback_enabled": true
+                }
+            }
+        }
+    },
+    "tags": [
+        "o365.metrics.entra_features"
+    ]
+}
+```
+
+Please refer to the following [document](https://www.elastic.co/guide/en/ecs/current/ecs-field-reference.html) for detailed information on ECS fields.
+
+**Exported fields**
+
+| Field | Description | Type |
+|---|---|---|
+| @timestamp | Event timestamp. | date |
+| data_stream.dataset | Data stream dataset. | constant_keyword |
+| data_stream.namespace | Data stream namespace. | constant_keyword |
+| data_stream.type | Data stream type. | constant_keyword |
+| input.type | Input type. | keyword |
+| o365.metrics.entra.features.block_cloud_object_takeover_through_hard_match_enabled | Indicates whether cloud object takeover through hard match is blocked. | boolean |
+| o365.metrics.entra.features.block_soft_match_enabled | Indicates whether soft match is blocked. | boolean |
+| o365.metrics.entra.features.bypass_dir_sync_overrides_enabled | Indicates whether directory sync overrides are bypassed. | boolean |
+| o365.metrics.entra.features.cloud_password_policy_for_password_synced_users_enabled | Indicates if cloud password policy is enabled for password-synced users. | boolean |
+| o365.metrics.entra.features.concurrent_credential_update_enabled | Indicates if concurrent credential updates are allowed. | boolean |
+| o365.metrics.entra.features.concurrent_org_id_provisioning_enabled | Indicates if concurrent Org ID provisioning is enabled. | boolean |
+| o365.metrics.entra.features.device_writeback_enabled | Indicates if device writeback is enabled. | boolean |
+| o365.metrics.entra.features.directory_extensions_enabled | Indicates if directory extensions are enabled. | boolean |
+| o365.metrics.entra.features.fope_conflict_resolution_enabled | Indicates if FOPE conflict resolution is enabled. | boolean |
+| o365.metrics.entra.features.group_write_back_enabled | Indicates if group write-back is enabled. | boolean |
+| o365.metrics.entra.features.on_premises_last_sync_datetime | Indicates the last on premises sync date. | date |
+| o365.metrics.entra.features.on_premises_sync_enabled | Indicates if the on premises sync is enabled. | boolean |
+| o365.metrics.entra.features.password_sync_enabled | Indicates if password sync is enabled. | boolean |
+| o365.metrics.entra.features.password_writeback_enabled | Indicates if password writeback is enabled. | boolean |
+| o365.metrics.entra.features.quarantine_upon_proxy_addresses_conflict_enabled | Indicates if quarantine is applied upon proxy address conflict. | boolean |
+| o365.metrics.entra.features.quarantine_upon_upn_conflict_enabled | Indicates if quarantine is applied upon UPN conflict. | boolean |
+| o365.metrics.entra.features.soft_match_on_upn_enabled | Indicates if soft match on UPN is enabled. | boolean |
+| o365.metrics.entra.features.synchronize_upn_for_managed_users_enabled | Indicates if UPN synchronization for managed users is enabled. | boolean |
+| o365.metrics.entra.features.tenant_id | The ID of the tenant. | keyword |
+| o365.metrics.entra.features.unified_group_writeback_enabled | Indicates if unified group write-back is enabled. | boolean |
+| o365.metrics.entra.features.user_force_password_change_on_logon_enabled | Indicates if users are forced to change passwords on logon. | boolean |
+| o365.metrics.entra.features.user_writeback_enabled | Indicates if user writeback is enabled. | boolean |
+

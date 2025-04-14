@@ -180,6 +180,22 @@ program: |
   								),
   							}
   						)
+  					: (body.data.state == "Canceled") ?
+  						// 'Canceled' (Error or timeout) - Clear the task ID and reset the sequence for the same timeframe.
+  						state.with(
+  							{
+  								"events": [],
+  								"want_more": false,
+  								"cursor": state.cursor.with(
+  									{
+  										"auth_data": auth_data,
+  										"task_id": null,
+  										"next_startTime": state.cursor.current_startTime,
+  										"next_endTime": state.cursor.current_endTime,
+  									}
+  								),
+  							}
+  						)
   					:
   						// Not ready or done - Keep polling.
   						state.with(
@@ -292,6 +308,7 @@ program: |
   						)
   					:
   						// Last page - Clear the task ID and page token, and end the sequence.
+  						// Next sequence starts pulling data from the last timestamp received.
   						state.with(
   							{
   								"events": body.data.records.map(e, {"message": e.encode_json()}),
@@ -301,6 +318,11 @@ program: |
   										"auth_data": auth_data,
   										"task_id": null,
   										"page_token": null,
+  										"next_startTime": has(body.?data.results) && body.data.results.size() > 0 ?
+  											optional.of(body.data.results.map(t, timestamp(t.time)).max().format(time_layout.RFC3339))
+  										:
+  											state.cursor.current_endTime,
+  										"next_endTime": null,
   									}
   								),
   							}

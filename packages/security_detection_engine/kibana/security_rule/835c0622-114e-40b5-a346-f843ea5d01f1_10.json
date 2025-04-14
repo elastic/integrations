@@ -1,0 +1,105 @@
+{
+    "attributes": {
+        "author": [
+            "Elastic"
+        ],
+        "description": "Identifies multiple consecutive login attempts executed by one process targeting a local linux user account within a short time interval. Adversaries might brute force login attempts across different users with a default wordlist or a set of customly crafted passwords in an attempt to gain access to these accounts.",
+        "from": "now-9m",
+        "index": [
+            "logs-endpoint.events.process*"
+        ],
+        "language": "eql",
+        "license": "Elastic License v2",
+        "name": "Potential Linux Local Account Brute Force Detected",
+        "note": "## Triage and analysis\n\n> **Disclaimer**:\n> This investigation guide was created using generative AI technology and has been reviewed to improve its accuracy and relevance. While every effort has been made to ensure its quality, we recommend validating the content and adapting it to suit your specific environment and operational needs.\n\n### Investigating Potential Linux Local Account Brute Force Detected\n\nIn Linux environments, the 'su' command is used to switch user accounts, often requiring a password. Adversaries exploit this by attempting numerous logins with various passwords to gain unauthorized access. The detection rule identifies suspicious activity by monitoring rapid, repeated 'su' command executions from a single process, excluding common legitimate parent processes, indicating potential brute force attempts.\n\n### Possible investigation steps\n\n- Review the process execution details to identify the parent process of the 'su' command, focusing on any unusual or unauthorized parent processes not listed in the exclusion list.\n- Analyze the frequency and pattern of the 'su' command executions from the identified process to determine if they align with typical user behavior or indicate a brute force attempt.\n- Check the user account targeted by the 'su' command attempts to assess if it is a high-value or sensitive account that might be of interest to adversaries.\n- Investigate the source host (host.id) to determine if there are any other suspicious activities or anomalies associated with it, such as unusual network connections or other security alerts.\n- Correlate the event timestamps with other logs or alerts to identify any concurrent suspicious activities that might indicate a coordinated attack effort.\n\n### False positive analysis\n\n- Legitimate administrative scripts or automation tools may trigger the rule if they execute the 'su' command frequently. To mitigate this, identify and whitelist these scripts or tools by adding their parent process names to the exclusion list.\n- Scheduled tasks or cron jobs that require switching users might be misidentified as brute force attempts. Review and exclude these tasks by specifying their parent process names in the exclusion criteria.\n- Development or testing environments where frequent user switching is part of normal operations can generate false positives. Consider excluding these environments from monitoring or adjust the detection threshold to better fit the operational context.\n- Continuous integration or deployment systems that use the 'su' command for user context switching can be mistaken for brute force attempts. Add these systems' parent process names to the exclusion list to prevent false alerts.\n\n### Response and remediation\n\n- Immediately isolate the affected host to prevent further unauthorized access or lateral movement within the network.\n- Terminate the suspicious process identified by the detection rule to stop ongoing brute force attempts.\n- Reset passwords for the targeted user accounts to prevent unauthorized access using potentially compromised credentials.\n- Review and update the password policy to enforce strong, complex passwords and consider implementing account lockout mechanisms after a certain number of failed login attempts.\n- Conduct a thorough review of the affected system for any signs of successful unauthorized access or additional malicious activity, such as new user accounts or scheduled tasks.\n- Escalate the incident to the security operations team for further investigation and to determine if additional systems may be affected.\n- Enhance monitoring and logging on the affected host and similar systems to detect and respond to future brute force attempts more effectively.",
+        "query": "sequence by host.id, process.parent.executable, user.id with maxspan=1s\n  [process where host.os.type == \"linux\" and event.type == \"start\" and event.action == \"exec\" and process.name == \"su\" and\n   not process.parent.name in (\n     \"bash\", \"dash\", \"ash\", \"sh\", \"tcsh\", \"csh\", \"zsh\", \"ksh\", \"fish\", \"clickhouse-server\", \"ma\", \"gitlab-runner\",\n     \"updatedb.findutils\", \"cron\", \"perl\", \"sudo\", \"java\", \"cloud-app-identify\", \"ambari-sudo.sh\"\n   )\n  ] with runs=10\n",
+        "related_integrations": [
+            {
+                "package": "endpoint",
+                "version": "^9.0.0"
+            }
+        ],
+        "required_fields": [
+            {
+                "ecs": true,
+                "name": "event.action",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "event.type",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "host.id",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "host.os.type",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "process.name",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "process.parent.executable",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "process.parent.name",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "user.id",
+                "type": "keyword"
+            }
+        ],
+        "risk_score": 47,
+        "rule_id": "835c0622-114e-40b5-a346-f843ea5d01f1",
+        "setup": "## Setup\n\nThis rule requires data coming in from Elastic Defend.\n\n### Elastic Defend Integration Setup\nElastic Defend is integrated into the Elastic Agent using Fleet. Upon configuration, the integration allows the Elastic Agent to monitor events on your host and send data to the Elastic Security app.\n\n#### Prerequisite Requirements:\n- Fleet is required for Elastic Defend.\n- To configure Fleet Server refer to the [documentation](https://www.elastic.co/guide/en/fleet/current/fleet-server.html).\n\n#### The following steps should be executed in order to add the Elastic Defend integration on a Linux System:\n- Go to the Kibana home page and click \"Add integrations\".\n- In the query bar, search for \"Elastic Defend\" and select the integration to see more details about it.\n- Click \"Add Elastic Defend\".\n- Configure the integration name and optionally add a description.\n- Select the type of environment you want to protect, either \"Traditional Endpoints\" or \"Cloud Workloads\".\n- Select a configuration preset. Each preset comes with different default settings for Elastic Agent, you can further customize these later by configuring the Elastic Defend integration policy. [Helper guide](https://www.elastic.co/guide/en/security/current/configure-endpoint-integration-policy.html).\n- We suggest selecting \"Complete EDR (Endpoint Detection and Response)\" as a configuration setting, that provides \"All events; all preventions\"\n- Enter a name for the agent policy in \"New agent policy name\". If other agent policies already exist, you can click the \"Existing hosts\" tab and select an existing policy instead.\nFor more details on Elastic Agent configuration settings, refer to the [helper guide](https://www.elastic.co/guide/en/fleet/8.10/agent-policy.html).\n- Click \"Save and Continue\".\n- To complete the integration, select \"Add Elastic Agent to your hosts\" and continue to the next section to install the Elastic Agent on your hosts.\nFor more details on Elastic Defend refer to the [helper guide](https://www.elastic.co/guide/en/security/current/install-endpoint.html).\n",
+        "severity": "medium",
+        "tags": [
+            "Domain: Endpoint",
+            "OS: Linux",
+            "Use Case: Threat Detection",
+            "Tactic: Credential Access",
+            "Data Source: Elastic Defend",
+            "Resources: Investigation Guide"
+        ],
+        "threat": [
+            {
+                "framework": "MITRE ATT&CK",
+                "tactic": {
+                    "id": "TA0006",
+                    "name": "Credential Access",
+                    "reference": "https://attack.mitre.org/tactics/TA0006/"
+                },
+                "technique": [
+                    {
+                        "id": "T1110",
+                        "name": "Brute Force",
+                        "reference": "https://attack.mitre.org/techniques/T1110/",
+                        "subtechnique": [
+                            {
+                                "id": "T1110.001",
+                                "name": "Password Guessing",
+                                "reference": "https://attack.mitre.org/techniques/T1110/001/"
+                            }
+                        ]
+                    }
+                ]
+            }
+        ],
+        "type": "eql",
+        "version": 10
+    },
+    "id": "835c0622-114e-40b5-a346-f843ea5d01f1_10",
+    "type": "security-rule"
+}
