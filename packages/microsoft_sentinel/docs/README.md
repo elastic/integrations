@@ -6,6 +6,11 @@
 
 Use the Microsoft Sentinel integration to collect and parse Alerts and Incidents from Microsoft Sentinel REST API and Events from the Microsoft Azure Event Hub, then visualise the data in Kibana.
 
+## Agentless Enabled Integration
+Agentless integrations allow you to collect data without having to manage Elastic Agent in your cloud. They make manual agent deployment unnecessary, so you can focus on your data instead of the agent that collects it. For more information, refer to [Agentless integrations](https://www.elastic.co/guide/en/serverless/current/security-agentless-integrations.html) and the [Agentless integrations FAQ](https://www.elastic.co/guide/en/serverless/current/agentless-integration-troubleshooting.html).
+
+Agentless deployments are only supported in Elastic Serverless and Elastic Cloud environments.  This functionality is in beta and is subject to change. Beta features are not subject to the support SLA of official GA features.
+
 ## Data streams
 
 The Microsoft Sentinel integration collects logs for three types of events: Alert, Event and Incident.
@@ -18,7 +23,7 @@ The Microsoft Sentinel integration collects logs for three types of events: Aler
 
 ## Requirements
 
-Elastic Agent must be installed. For more details and installation instructions, please refer to the [Elastic Agent Installation Guide](https://www.elastic.co/guide/en/fleet/current/elastic-agent-installation.html).
+Unless you choose `Agentless` deployment, the Elastic Agent must be installed. For more details and installation instructions, please refer to the [Elastic Agent Installation Guide](https://www.elastic.co/guide/en/fleet/current/elastic-agent-installation.html).
 
 ### Installing and managing an Elastic Agent:
 
@@ -87,24 +92,24 @@ An example event for `alert` looks as following:
 {
     "@timestamp": "2020-07-20T18:21:53.615Z",
     "agent": {
-        "ephemeral_id": "fef91ec8-bbe7-494a-b3b4-a8d9d79b11c3",
-        "id": "2ca2bad8-2946-4164-8d1c-4b0dd7281ae6",
-        "name": "elastic-agent-77518",
+        "ephemeral_id": "1f99a68e-1086-4cef-9e7a-659e0093c11b",
+        "id": "f2e9b2a3-b798-45a5-a2e9-a344eebc95c7",
+        "name": "elastic-agent-80495",
         "type": "filebeat",
-        "version": "8.14.0"
+        "version": "8.17.0"
     },
     "data_stream": {
         "dataset": "microsoft_sentinel.alert",
-        "namespace": "19076",
+        "namespace": "89284",
         "type": "logs"
     },
     "ecs": {
         "version": "8.11.0"
     },
     "elastic_agent": {
-        "id": "2ca2bad8-2946-4164-8d1c-4b0dd7281ae6",
+        "id": "f2e9b2a3-b798-45a5-a2e9-a344eebc95c7",
         "snapshot": false,
-        "version": "8.14.0"
+        "version": "8.17.0"
     },
     "event": {
         "agent_id_status": "verified",
@@ -112,9 +117,10 @@ An example event for `alert` looks as following:
         "duration": 86400000000000,
         "end": "2020-07-21T18:21:53.615Z",
         "id": "/subscriptions/abcdef1-111111-4647-9105-6339bfdb4e6a/resourceGroups/myRG/providers/Microsoft.OperationalInsights/workspaces/myWorkspace/providers/Microsoft.SecurityInsights/Entities/abcdef-6fde-4ab7-a093-d09f7b75c58c",
-        "ingested": "2024-11-12T06:18:55Z",
+        "ingested": "2025-03-31T10:57:29Z",
         "original": "{\"id\":\"/subscriptions/abcdef1-111111-4647-9105-6339bfdb4e6a/resourceGroups/myRG/providers/Microsoft.OperationalInsights/workspaces/myWorkspace/providers/Microsoft.SecurityInsights/Entities/abcdef-6fde-4ab7-a093-d09f7b75c58c\",\"kind\":\"SecurityAlert\",\"name\":\"abcdef-6fde-4ab7-a093-d09f7b75c58c\",\"properties\":{\"additionalData\":{\"AlertMessageEnqueueTime\":\"2020-07-20T18:21:57.304Z\"},\"alertDisplayName\":\"myAlert\",\"alertType\":\"myAlert\",\"confidenceLevel\":\"Unknown\",\"endTimeUtc\":\"2020-07-21T18:21:53.6158361Z\",\"friendlyName\":\"myAlert\",\"processingEndTime\":\"2020-07-20T18:21:53.6158361Z\",\"productName\":\"AzureSecurityCenter\",\"resourceIdentifiers\":[{\"resourceGroup\":\"myRG\",\"subscriptionId\":\"a123456-4d29-4647-9105-6339bfdb4e6a\",\"type\":\"LogAnalytics\",\"workspaceId\":\"abcdefg-985d-4e4e-8e91-fb3466cd0e5b\"}],\"severity\":\"Low\",\"startTimeUtc\":\"2020-07-20T18:21:53.6158361Z\",\"status\":\"New\",\"systemAlertId\":\"abcdef-6fde-4ab7-a093-d09f7b75c58c\",\"tactics\":[\"abc\"],\"timeGenerated\":\"2020-07-20T18:21:53.6158361Z\",\"vendorName\":\"Microsoft\"},\"systemData\":{\"createdAt\":\"2020-07-20T18:21:57.304Z\",\"createdBy\":\"admin\",\"createdByType\":\"new\",\"lastModifiedAt\":\"2020-07-20T18:21:57.304Z\"},\"type\":\"Microsoft.SecurityInsights/Entities\"}",
-        "severity": 1,
+        "provider": "AzureSecurityCenter",
+        "severity": 21,
         "start": "2020-07-20T18:21:53.615Z"
     },
     "input": {
@@ -166,6 +172,9 @@ An example event for `alert` looks as following:
             },
             "type": "Microsoft.SecurityInsights/Entities"
         }
+    },
+    "rule": {
+        "name": "myAlert"
     },
     "tags": [
         "preserve_original_event",
@@ -484,4 +493,3 @@ An example event for `incident` looks as following:
 | observer.product |  | constant_keyword |
 | observer.vendor |  | constant_keyword |
 | tags | User defined tags. | keyword |
-

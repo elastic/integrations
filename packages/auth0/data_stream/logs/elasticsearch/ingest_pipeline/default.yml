@@ -517,20 +517,18 @@ processors:
           classification: "System - Notification"
           value: "An IP address is blocked with 100 failed login attempts using different usernames"
           type:
-            - indicator
             - info
+            - denied
           category:
-            - threat
             - intrusion_detection
           action: hundred-failed-logins-ip-address-blocked
         limit_wc:
           classification: "System - Notification"
           value: "An IP address is blocked with 10 failed login attempts into a single account from the same IP address"
           type:
-            - indicator
             - info
+            - denied
           category:
-            - threat
             - intrusion_detection
           action: ten-failed-logins-ip-address-blocked
         sys_os_update_start:
@@ -1038,6 +1036,26 @@ processors:
          } else {
            ctx.event.outcome = "unknown";
          }
+- script:
+    if: ctx?.auth0?.logs?.data?.details?.initiatedAt != null
+    tag: convert_timestamp_initiated_at to string removing any scientific notation if present
+    lang: painless
+    source: >
+      ctx.auth0.logs.data.details.initiatedAt = Math.round(Double.parseDouble(ctx.auth0.logs.data.details.initiatedAt.toString()));
+    on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+- script:
+    if: ctx?.auth0?.logs?.data?.details?.completedAt != null
+    tag: convert_timestamp_completed_at to string removing any scientific notation if present
+    lang: painless
+    source: >
+      ctx.auth0.logs.data.details.completedAt = Math.round(Double.parseDouble(ctx.auth0.logs.data.details.completedAt.toString()));
+    on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
 - date:
     if: ctx?.auth0?.logs?.data?.details?.initiatedAt != null
     field: auth0.logs.data.details.initiatedAt
@@ -1066,7 +1084,7 @@ processors:
 # Clean up
 ##
 - remove:
-    field: 
+    field:
       - json
       - auth0.logs.data.$event_schema.version
       - auth0.logs.data._id

@@ -1,0 +1,85 @@
+{
+    "attributes": {
+        "author": [
+            "Elastic"
+        ],
+        "description": "Detects known PowerShell offensive tooling author's name in PowerShell scripts. Attackers commonly use out-of-the-box offensive tools without modifying the code, which may still contain the author artifacts. This rule identifies common author handles found in popular PowerShell scripts used for red team exercises.",
+        "from": "now-9m",
+        "index": [
+            "winlogbeat-*",
+            "logs-windows.powershell*"
+        ],
+        "language": "kuery",
+        "license": "Elastic License v2",
+        "name": "Potential PowerShell HackTool Script by Author",
+        "note": "## Triage and analysis\n\n> **Disclaimer**:\n> This investigation guide was created using generative AI technology and has been reviewed to improve its accuracy and relevance. While every effort has been made to ensure its quality, we recommend validating the content and adapting it to suit your specific environment and operational needs.\n\n### Investigating Potential PowerShell HackTool Script by Author\n\nPowerShell is a powerful scripting language and automation framework used in Windows environments for task automation and configuration management. Adversaries exploit PowerShell's capabilities to execute malicious scripts, often leveraging well-known offensive tools without altering the original code. The detection rule identifies scripts containing specific author names linked to these tools, flagging potential misuse by recognizing unmodified author artifacts in the script block text.\n\n### Possible investigation steps\n\n- Review the PowerShell script block text associated with the alert to identify the specific author name that triggered the detection. This can provide insight into the potential tool or script being used.\n- Examine the process details, including the parent process and command line arguments, to understand the context in which the PowerShell script was executed. This can help determine if the execution was part of a legitimate task or a suspicious activity.\n- Check the host's recent activity logs for any other unusual or related events, such as network connections, file modifications, or other process executions, to identify potential lateral movement or data exfiltration attempts.\n- Investigate the user account under which the PowerShell script was executed to determine if it has been compromised or if the activity aligns with the user's typical behavior.\n- Correlate the alert with other security tools and logs, such as antivirus or endpoint detection and response (EDR) solutions, to gather additional context and confirm whether the activity is malicious.\n\n### False positive analysis\n\n- Scripts used in legitimate red team exercises may trigger the rule due to the presence of known author names. To manage this, create exceptions for scripts verified as part of authorized security assessments.\n- PowerShell scripts from open-source security tools used for internal testing or training might be flagged. Ensure these tools are documented and approved, then exclude them from the rule.\n- Automated scripts for system administration that include code snippets from well-known authors could be mistakenly identified. Review and whitelist these scripts if they are part of routine operations.\n- Security research and development activities using sample scripts from recognized authors may cause alerts. Maintain a list of such activities and exclude them from detection to avoid unnecessary alerts.\n- Internal development teams using PowerShell scripts for legitimate purposes might inadvertently use code from popular authors. Conduct regular reviews and exclude these scripts if they are deemed non-threatening.\n\n### Response and remediation\n\n- Immediately isolate the affected system from the network to prevent further execution of potentially malicious scripts and lateral movement.\n- Terminate any suspicious PowerShell processes identified by the alert to halt ongoing malicious activity.\n- Conduct a thorough review of the PowerShell script block text to confirm the presence of known offensive tool author names and assess the potential impact.\n- Remove any unauthorized or malicious scripts from the affected system and ensure that all legitimate scripts are verified and restored from a clean backup.\n- Update endpoint protection and antivirus signatures to detect and block the specific PowerShell scripts and associated indicators of compromise (IOCs) identified in the alert.\n- Escalate the incident to the security operations center (SOC) or incident response team for further investigation and to determine if additional systems are affected.\n- Implement enhanced monitoring and logging for PowerShell activity across the network to detect similar threats in the future, leveraging the MITRE ATT&CK framework for guidance on relevant techniques and tactics.",
+        "query": "host.os.type:windows and event.category:process and\n  powershell.file.script_block_text : (\n      \"mattifestation\" or \"JosephBialek\" or\n      \"harmj0y\" or \"ukstufus\" or\n      \"SecureThisShit\" or \"Matthew Graeber\" or\n      \"secabstraction\" or \"mgeeky\" or\n      \"oddvarmoe\" or \"am0nsec\" or\n      \"obscuresec\" or \"sixdub\" or\n      \"darkoperator\" or \"funoverip\" or\n      \"rvrsh3ll\" or \"kevin_robertson\" or\n      \"dafthack\" or \"r4wd3r\" or\n      \"danielhbohannon\" or \"OneLogicalMyth\" or\n      \"cobbr_io\" or \"xorrior\" or\n      \"PetrMedonos\" or \"citronneur\" or\n      \"eladshamir\" or \"RastaMouse\" or\n      \"enigma0x3\" or \"FuzzySec\" or\n      \"424f424f\" or \"jaredhaight\" or\n      \"fullmetalcache\" or \"Hubbl3\" or\n      \"curi0usJack\" or \"Cx01N\" or\n      \"itm4n\" or \"nurfed1\" or\n      \"cfalta\" or \"Scott Sutherland\" or\n      \"_nullbind\" or \"_tmenochet\" or\n      \"jaredcatkinson\" or \"ChrisTruncer\" or\n      \"monoxgas\" or \"TheRealWover\" or\n      \"splinter_code\"\n  )\n",
+        "references": [
+            "https://github.com/atc-project/atc-data/blob/master/docs/Logging_Policies/LP_0109_windows_powershell_script_block_log.md"
+        ],
+        "related_integrations": [
+            {
+                "package": "windows",
+                "version": "^2.5.0"
+            }
+        ],
+        "required_fields": [
+            {
+                "ecs": true,
+                "name": "event.category",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "host.os.type",
+                "type": "keyword"
+            },
+            {
+                "ecs": false,
+                "name": "powershell.file.script_block_text",
+                "type": "unknown"
+            }
+        ],
+        "risk_score": 73,
+        "rule_id": "2553a9af-52a4-4a05-bb03-85b2a479a0a0",
+        "setup": "## Setup\n\nThe 'PowerShell Script Block Logging' logging policy must be enabled.\nSteps to implement the logging policy with Advanced Audit Configuration:\n\n```\nComputer Configuration >\nAdministrative Templates >\nWindows PowerShell >\nTurn on PowerShell Script Block Logging (Enable)\n```\n\nSteps to implement the logging policy via registry:\n\n```\nreg add \"hklm\\SOFTWARE\\Policies\\Microsoft\\Windows\\PowerShell\\ScriptBlockLogging\" /v EnableScriptBlockLogging /t REG_DWORD /d 1\n```\n",
+        "severity": "high",
+        "tags": [
+            "Domain: Endpoint",
+            "OS: Windows",
+            "Use Case: Threat Detection",
+            "Tactic: Execution",
+            "Data Source: PowerShell Logs",
+            "Resources: Investigation Guide"
+        ],
+        "threat": [
+            {
+                "framework": "MITRE ATT&CK",
+                "tactic": {
+                    "id": "TA0002",
+                    "name": "Execution",
+                    "reference": "https://attack.mitre.org/tactics/TA0002/"
+                },
+                "technique": [
+                    {
+                        "id": "T1059",
+                        "name": "Command and Scripting Interpreter",
+                        "reference": "https://attack.mitre.org/techniques/T1059/",
+                        "subtechnique": [
+                            {
+                                "id": "T1059.001",
+                                "name": "PowerShell",
+                                "reference": "https://attack.mitre.org/techniques/T1059/001/"
+                            }
+                        ]
+                    }
+                ]
+            }
+        ],
+        "timestamp_override": "event.ingested",
+        "type": "query",
+        "version": 106
+    },
+    "id": "2553a9af-52a4-4a05-bb03-85b2a479a0a0_106",
+    "type": "security-rule"
+}

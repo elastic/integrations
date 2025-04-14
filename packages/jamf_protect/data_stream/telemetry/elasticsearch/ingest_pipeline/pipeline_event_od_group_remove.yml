@@ -55,15 +55,15 @@ processors:
         ignore_failure: true
     - rename:
         field: jamf_protect.telemetry.event.od_group_remove.instigator.is_platform_binary
-        target_field: jamf_protect.telemetry.platform_binary
+        target_field: process.platform_binary
         ignore_missing: true
     - rename:
         field: jamf_protect.telemetry.event.od_group_remove.instigator.is_es_client
-        target_field: jamf_protect.telemetry.es_client
+        target_field: process.endpoint_security_client
         ignore_missing: true
     - rename:
         field: jamf_protect.telemetry.event.od_group_remove.instigator.cdhash
-        target_field: jamf_protect.telemetry.code_directory_hash
+        target_field: process.hash.cdhash
         ignore_missing: true
     - rename:
         field: jamf_protect.telemetry.event.od_group_remove.instigator.executable.sha1
@@ -85,8 +85,8 @@ processors:
         allow_duplicates: false
     - append:
         field: related.hash
-        value: '{{{jamf_protect.telemetry.code_directory_hash}}}'
-        if: ctx.jamf_protect?.code_directory_hash != null
+        value: '{{{process.hash.cdhash}}}'
+        if: ctx.process?.hash?.cdhash != null && ctx.process.hash.cdhash != ''
         allow_duplicates: false
     - rename:
         field: jamf_protect.telemetry.event.od_group_remove.instigator.tty.path
@@ -145,6 +145,10 @@ processors:
         field: jamf_protect.telemetry.event.od_group_remove.instigator.team_id
         target_field: process.code_signature.team_id
         ignore_missing: true
+    - rename:
+        field: jamf_protect.telemetry.event.od_group_remove.instigator.codesigning_flags
+        target_field: process.code_signature.flags
+        ignore_missing: true
 
 ##########################
 ## ECS Parent Process ##
@@ -173,31 +177,38 @@ processors:
         target_field: process.parent.real_group.id
         type: string
         ignore_missing: true
-
+    - rename:
+        field: jamf_protect.telemetry.event.od_group_remove.instigator.parent_audit_token.signing_id
+        target_field: process.parent.code_signature.signing_id
+        ignore_missing: true
 ##########################
 ## ECS Responsible Process ##
 ##########################
 
     - rename:
         field: jamf_protect.telemetry.event.od_group_remove.instigator.responsible_audit_token.uuid
-        target_field: process.group_leader.entity_id
+        target_field: process.responsible.entity_id
         ignore_missing: true
     - rename:
         field: jamf_protect.telemetry.event.od_group_remove.instigator.responsible_audit_token.pid
-        target_field: process.group_leader.pid
+        target_field: process.responsible.pid
         ignore_missing: true
     - convert:
         field: jamf_protect.telemetry.event.od_group_remove.instigator.responsible_audit_token.euid
-        target_field: process.group_leader.user.id
+        target_field: process.responsible.user.id
         type: string
         ignore_missing: true
     - convert:
         field: jamf_protect.telemetry.event.od_group_remove.instigator.responsible_audit_token.ruid
-        target_field: process.group_leader.real_user.id
+        target_field: process.responsible.real_user.id
         type: string
         ignore_missing: true
     - convert:
         field: jamf_protect.telemetry.event.od_group_remove.instigator.responsible_audit_token.rgid
-        target_field: process.group_leader.real_group.id
+        target_field: process.responsible.real_group.id
         type: string
+        ignore_missing: true
+    - rename:
+        field: jamf_protect.telemetry.event.od_group_remove.instigator.responsible_audit_token.signing_id
+        target_field: process.responsible.code_signature.signing_id
         ignore_missing: true

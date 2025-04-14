@@ -1,10 +1,10 @@
 config_version: 2
 interval: {{interval}}
-{{#if enable_request_tracer}}
-resource.tracer.filename: "../../logs/cel/http-request-trace-*.ndjson"
-resource.tracer.maxbackups: 5
-resource.tracer.maxsize: 5
-{{/if}}
+resource.tracer:
+  enabled: {{enable_request_tracer}}
+  filename: "../../logs/cel/http-request-trace-*.ndjson"
+  maxbackups: 5
+  maxsize: 5
 {{#if proxy_url}}
 resource.proxy_url: {{proxy_url}}
 {{/if}}
@@ -35,7 +35,7 @@ program: |
         state.?want_more.orValue(false) ?
           state.next_page.link
         :
-          state.url.trim_right("/") + "/api/2.0/fo/asset/host/vm/detection/?" +
+          state.url.trim_right("/") + "/api/3.0/fo/asset/host/vm/detection/?" +
           state.?params.orValue("").parse_query().with({
             "action": ["list"],
             "show_igs": [(state.show_igs? "1" : "0")],
@@ -55,7 +55,7 @@ program: |
           (
             has(resp.Body) && size(resp.Body) != 0
             ?
-              (resp.Body.as(xml, try(xml.decode_xml('qualys_api_2_0_ahd'), "decode_xml_error_ahd").as(ahd_body, 
+              (resp.Body.as(xml, try(xml.decode_xml('qualys_api_3_0_ahd'), "decode_xml_error_ahd").as(ahd_body, 
                 !has(ahd_body.decode_xml_error_ahd) 
                 ?
                   (ahd_body.?doc.HOST_LIST_VM_DETECTION_OUTPUT.RESPONSE.hasValue() 
@@ -130,7 +130,7 @@ program: |
               "error": {
                 "code": string(resp.StatusCode),
                 "id": string(resp.Status),
-                "message": "GET "+state.url.trim_right("/") + "/api/2.0/fo/asset/host/vm/detection/: "+(
+                "message": "GET "+state.url.trim_right("/") + "/api/3.0/fo/asset/host/vm/detection/: "+(
                   size(resp.Body) != 0 ?
                     string(resp.Body)
                   :
@@ -145,7 +145,7 @@ program: |
   ).as(state, state.with(
     !has(state.worklist) ? state : 
       size(state.worklist) > 0 ?
-        request("GET", state.url.trim_right("/") + "/api/2.0/fo/knowledge_base/vuln/?" +
+        request("GET", state.url.trim_right("/") + "/api/3.0/fo/knowledge_base/vuln/?" +
           {
             "ids": [state.worklist.HOST_QID_LIST[0].join(",")],
             "action": ["list"],
@@ -156,7 +156,7 @@ program: |
             "Authorization": ["Basic "+(state.user+":"+state.password).base64()],
           }
         }).do_request().as(resp, resp.StatusCode == 200 ?
-          resp.Body.as(xml, try(xml.decode_xml('qualys_api_2_0_kb'), "decode_xml_error_kb").as(kb_body, 
+          resp.Body.as(xml, try(xml.decode_xml('qualys_api_3_0_kb'), "decode_xml_error_kb").as(kb_body, 
             !has(kb_body.decode_xml_error_kb) 
             ?
               (
@@ -240,7 +240,7 @@ program: |
               "error": {
                 "code": string(resp.StatusCode),
                 "id": string(resp.Status),
-                "message": "GET "+state.url.trim_right("/") + "/api/2.0/fo/knowledge_base/vuln/: "+(
+                "message": "GET "+state.url.trim_right("/") + "/api/3.0/fo/knowledge_base/vuln/: "+(
                   size(resp.Body) != 0 ?
                     string(resp.Body)
                   :
@@ -289,7 +289,7 @@ processors:
 {{processors}}
 {{/if}}
 xsd:
-  qualys_api_2_0_ahd: |
+  qualys_api_3_0_ahd: |
     <xsd:schema xmlns:xsd='http://www.w3.org/2001/XMLSchema'>
 
       <xsd:element name='HOST_LIST_VM_DETECTION_OUTPUT'>
@@ -759,7 +759,7 @@ xsd:
       </xsd:element>
       </xsd:schema>
 
-  qualys_api_2_0_kb: |
+  qualys_api_3_0_kb: |
     <xsd:schema xmlns:xsd='http://www.w3.org/2001/XMLSchema'>
 
       <xsd:element name='KNOWLEDGE_BASE_VULN_LIST_OUTPUT'>
@@ -853,6 +853,7 @@ xsd:
           <xsd:element ref='PUBLISHED_DATETIME'/>
           <xsd:element ref='BUGTRAQ_LIST' minOccurs='0' maxOccurs='1'/>
           <xsd:element ref='PATCHABLE'/>
+          <xsd:element ref='PATCH_PUBLISHED_DATE' minOccurs='0' maxOccurs='1'/>
           <xsd:element ref='SOFTWARE_LIST' minOccurs='0' maxOccurs='1'/>
           <xsd:element ref='VENDOR_REFERENCE_LIST' minOccurs='0' maxOccurs='1'/>
           <xsd:element ref='CVE_LIST' minOccurs='0' maxOccurs='1'/>
@@ -935,6 +936,9 @@ xsd:
       </xsd:element>
 
       <xsd:element name='PATCHABLE' type='xsd:string'>
+      </xsd:element>
+
+      <xsd:element name='PATCH_PUBLISHED_DATE' type='xsd:string'>
       </xsd:element>
 
       <xsd:element name='SOFTWARE_LIST'>

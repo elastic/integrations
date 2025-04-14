@@ -800,6 +800,39 @@ processors:
             - _ingest._value.from
           tag: remove_duplicate_fields
           ignore_missing: true
+  - foreach:
+      tag: foreach_associated_groups_data_prepare_attributes
+      if: ctx.threat_connect?.indicator?.associated_groups?.data != null
+      field: threat_connect.indicator.associated_groups.data
+      processor:
+        set:
+          tag: remove_associated_group_attributes_wrapper_object
+          field: _ingest._value.attributes
+          copy_from: _ingest._value.attributes.data
+          on_failure:
+            - append:
+                tag: set_associated_group_attributes_empty_array
+                field: _ingest._value.attributes
+                value: []
+  - foreach:
+      tag: foreach_associated_groups_data_prune_attributes
+      if: ctx.threat_connect?.indicator?.associated_groups?.data != null
+      field: threat_connect.indicator.associated_groups.data
+      processor:
+        foreach:
+          tag: foreach_associated_groups_attribute_obj
+          field: _ingest._value.attributes
+          processor:
+            remove:
+              tag: prune_associated_group_attribute_fields
+              field:
+                - _ingest._value.dateAdded
+                - _ingest._value.default
+                - _ingest._value.id
+                - _ingest._value.lastModified
+                - _ingest._value.pinned
+                - _ingest._value.source
+              ignore_missing: true
   - script:
       lang: painless
       description: This script rename fields belongs to json associatedIndicators data objects.
@@ -2048,6 +2081,18 @@ processors:
               tag: append_tags_platforms_data
               value: '{{{_ingest._value}}}'
               allow_duplicates: false
+# Some tags have tactics, unwrap them
+  - foreach:
+      field: json.tags.data
+      if: ctx.json?.tags?.data != null
+      tag: foreach_rename_tags_data_tactics_data
+      processor:
+        rename:
+          tag: rename_tags_data_tactics_data
+          field: _ingest._value.tactics.data
+          target_field: _ingest._value.tactics
+          override: true
+          ignore_missing: true
 # Rename the data field to match ES standards
   - rename:
       field: json.tags.data

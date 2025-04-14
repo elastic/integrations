@@ -219,6 +219,8 @@ processors:
 - append:
     field: related.user
     value: '{{{user.email}}}'
+    if: ctx.user?.email != null && ctx.user.email != ""
+    allow_duplicates: false
 - set:
     field: related.ip
     copy_from: host.ip
@@ -236,10 +238,12 @@ processors:
     field: event.type
     value: user
     if: ctx.jamf_pro.inventory.user_and_location != null
+    allow_duplicates: false
 - append:
     field: event.type
     value: info
     if: ctx.jamf_pro.inventory.hardware != null
+    allow_duplicates: false
 
 ##################
 # Error handling #

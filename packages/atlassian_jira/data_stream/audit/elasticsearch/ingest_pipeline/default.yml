@@ -14,6 +14,31 @@ processors:
       target_field: json
   - drop:
       if: ctx.json?.records instanceof List && ctx.json.records.length == 0
+  - script:
+      lang: painless
+      description: This script processor iterates over the whole document to remove fields with null values.
+      source: |
+        void handleMap(Map map) {
+          for (def x : map.values()) {
+            if (x instanceof Map) {
+                handleMap(x);
+            } else if (x instanceof List) {
+                handleList(x);
+            }
+          }
+          map.values().removeIf(v -> v == null || v == '' || (v instanceof Map && v.size() == 0) || (v instanceof List && v.size() == 0));
+        }
+        void handleList(List list) {
+          for (def x : list) {
+              if (x instanceof Map) {
+                  handleMap(x);
+              } else if (x instanceof List) {
+                  handleList(x);
+              }
+          }
+          list.removeIf(v -> v == null || v == '' || (v instanceof Map && v.size() == 0) || (v instanceof List && v.size() == 0));
+        }
+        handleMap(ctx);
   - pipeline:
       name: '{{ IngestPipeline "cloud" }}'
       if: "ctx._config?.atlassian_cloud != null"
@@ -26,10 +51,40 @@ processors:
         - UNIX
         - ISO8601
       target_field: "@timestamp"
-  - rename:
+  - split:
       field: json.source
-      target_field: source.address
+      separator: ","
+      target_field: _tmp.source_ip
       ignore_missing: true
+  - script:
+      lang: painless
+      description: Extract first IP and remaining IPs.
+      if: ctx._tmp?.source_ip instanceof List
+      source: >
+        int ip_list_size = ctx._tmp.source_ip.size();
+        ctx.source = new HashMap();
+        if (ip_list_size > 0) {
+          ctx.source.address = ctx._tmp.source_ip[0];
+
+          if (ip_list_size > 1) {
+            ctx.jira.audit.additional_source_ips = ctx._tmp.source_ip.subList(1, ip_list_size);
+          }
+        }
+  - foreach:
+      field: jira.audit.additional_source_ips
+      if: ctx.jira.audit?.additional_source_ips instanceof List
+      processor:
+        convert:
+          field: '{{{_ingest._value}}}'
+          type: ip
+          ignore_missing: true
+          on_failure:
+            - remove:
+                field: _ingest._value
+                ignore_missing: true
+            - append:
+                field: error.message
+                value: 'Processor {{{_ingest.on_failure_processor_type}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - convert:
       field: source.address
       target_field: source.ip
@@ -373,6 +428,14 @@ processors:
       value: '{{{source.ip}}}'
       allow_duplicates: false
       if: ctx.source?.ip != null
+  - foreach:
+      field: jira.audit.additional_source_ips
+      if: ctx.jira.audit?.additional_source_ips instanceof List
+      processor:
+        append:
+          field: related.ip
+          value: '{{{_ingest._value}}}'
+          allow_duplicates: false
   - append:
       field: related.hosts
       value: '{{{_tmp.service.domain}}}'
@@ -419,4 +482,8 @@ on_failure:
       allow_duplicates: false
   - append:
       field: error.message
-      value: '{{{ _ingest.on_failure_message }}}'
+      value: >
+        Processor "{{{ _ingest.on_failure_processor_type }}}"
+        with tag "{{{ _ingest.on_failure_processor_tag }}}"
+        in pipeline "{{{ _ingest.on_failure_pipeline }}}"
+        failed with message "{{{ _ingest.on_failure_message }}}"

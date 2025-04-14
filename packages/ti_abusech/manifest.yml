@@ -1,13 +1,13 @@
 name: ti_abusech
 title: AbuseCH
-version: "2.5.1"
+version: "2.9.0"
 description: Ingest threat intelligence indicators from URL Haus, Malware Bazaar, and Threat Fox feeds with Elastic Agent.
 type: integration
-format_version: "3.0.3"
+format_version: "3.2.3"
 categories: ["security", "threat_intel"]
 conditions:
   kibana:
-    version: "^8.13.0"
+    version: "^8.18.0 || ^9.0.0"
 icons:
   - src: /img/abusech2.svg
     title: AbuseCH
@@ -30,18 +30,39 @@ policy_templates:
   - name: ti_abusech
     title: AbuseCH API
     description: Ingest threat intelligence indicators from URL Haus, Malware Bazaar, and Threat Fox feeds with Elastic Agent.
+    deployment_modes:
+      default:
+        enabled: true
+      agentless:
+        enabled: true
+        organization: security
+        division: engineering
+        team: security-service-integrations
     inputs:
       - type: cel
         title: "Collect AbuseCH logs via API using Elastic Agent"
         description: "Ingest threat intelligence indicators from URL Haus, Malware Bazaar, and Threat Fox feeds with Elastic Agent."
         vars:
+          - name: auth_key
+            type: password
+            title: Auth Key
+            multi: false
+            required: false
+            show_user: true
+            secret: true
+            description: AbuseCH API key. This is optional but recommended to avoid rate limiting.
           - name: enable_request_tracer
             type: bool
             title: Enable request tracing
             multi: false
             required: false
             show_user: false
-            description: The request tracer logs requests and responses to the agent's local file-system for debugging configurations. Enabling this request tracing compromises security and should only be used for debugging. See [documentation](https://www.elastic.co/guide/en/beats/filebeat/current/filebeat-input-httpjson.html#_request_tracer_filename) for details.
+            description: >-
+              The request tracer logs requests and responses to the agent's local file-system for debugging configurations.
+              Enabling this request tracing compromises security and should only be used for debugging. Disabling the request
+              tracer will delete any stored traces.
+              See [documentation](https://www.elastic.co/guide/en/beats/filebeat/current/filebeat-input-cel.html#_resource_tracer_enable)
+              for details.
 owner:
   github: elastic/security-service-integrations
   type: elastic
