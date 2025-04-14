@@ -52,7 +52,7 @@ When the application is granted the API permissions listed in the table below, i
 
 | Data stream    | API Permissions  |
 | -------------- | ---------------- |
-| Alert   	     | Alert.Read.All   |
+| Alert          | Alert.Read.All   |
 | Machine        | Machine.Read.All |
 | Machine Action | Machine.Read.All |
 

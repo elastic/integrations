@@ -159,7 +159,7 @@ rules:
         - 'Bearer eyJ0eXAiOiJKV1QiLCJhbGciOiJSUzI1NiIsImtpZCI6Ilg1ZVhrN'
     query_params:
       $filter: "{lastUpdateDateTimeUtc gt .*}"
-      $top: 1
+      $top: 2
       $orderby: "lastUpdateDateTimeUtc asc"
       $skip: 0
     responses:
@@ -190,6 +190,28 @@ rules:
                 "relatedFileInfo": null,
                 "commands": [],
                 "troubleshootInfo": null
+              },
+              {
+                "id": "d72456af-1234-5678-abcd-abcdef87fdee",
+                "type": "RunAntiVirusScan",
+                "title": null,
+                "requestor": "testuser@example.com",
+                "requestorComment": "Quick Scan",
+                "status": "Succeeded",
+                "machineId": "de693d7fbdabcdefabcdefcfc9cf40b5bf2da1d8",
+                "computerDnsName": "c-lab-24",
+                "creationDateTimeUtc": "2024-11-22T12:48:33.9936591Z",
+                "lastUpdateDateTimeUtc": "2024-11-22T12:48:56.7684808Z",
+                "cancellationRequestor": null,
+                "cancellationComment": null,
+                "cancellationDateTimeUtc": null,
+                "errorHResult": 0,
+                "scope": "Quick",
+                "externalId": null,
+                "requestSource": "Portal",
+                "relatedFileInfo": null,
+                "commands": [],
+                "troubleshootInfo": null
               }
             ]
           }
@@ -201,9 +223,9 @@ rules:
         - 'Bearer eyJ0eXAiOiJKV1QiLCJhbGciOiJSUzI1NiIsImtpZCI6Ilg1ZVhrN'
     query_params:
       $filter: "{lastUpdateDateTimeUtc gt .*}"
-      $top: 1
+      $top: 2
       $orderby: "lastUpdateDateTimeUtc asc"
-      $skip: 1
+      $skip: 2
     responses:
       - status_code: 200
         body: |-
@@ -232,6 +254,31 @@ rules:
                 "relatedFileInfo": null,
                 "commands": [],
                 "troubleshootInfo": null
+              },
+              {
+                "id": "4887e3fb-c5a0-46b5-1234-a26823cdcbba",
+                "type": "StopAndQuarantineFile",
+                "title": null,
+                "requestor": "admin@example.com",
+                "requestorComment": "Quarantine Malicious File",
+                "status": "TimeOut",
+                "machineId": "dc909e4a81d1bfabcdefabcdefebe6f8ec7d3506",
+                "computerDnsName": "assettag-eid",
+                "creationDateTimeUtc": "2025-04-03T10:20:00.154974Z",
+                "lastUpdateDateTimeUtc": "2025-04-06T10:34:03.6898318Z",
+                "cancellationRequestor": null,
+                "cancellationComment": null,
+                "cancellationDateTimeUtc": null,
+                "errorHResult": -2145844840,
+                "scope": null,
+                "externalId": null,
+                "requestSource": "PublicApi",
+                "relatedFileInfo": {
+                  "fileIdentifier": "aaf4c61ddcc5e8a2dabede0f3b482cd9aea9434d",
+                  "fileIdentifierType": "Sha1"
+                },
+                "commands": [],
+                "troubleshootInfo": null
               }
             ]
           }
@@ -243,20 +290,48 @@ rules:
         - 'Bearer eyJ0eXAiOiJKV1QiLCJhbGciOiJSUzI1NiIsImtpZCI6Ilg1ZVhrN'
     query_params:
       $filter: "{lastUpdateDateTimeUtc gt .*}"
-      $top: 1
+      $top: 2
       $orderby: "lastUpdateDateTimeUtc asc"
-      $skip: 2
+      $skip: 4
     responses:
       - status_code: 200
         body: |-
-          {"@odata.context":"https://api.security.microsoft.com/api/$metadata#MachineActions","value":[]}
+          {{ minify_json `
+          {
+            "@odata.context": "https://api.security.microsoft.com/api/$metadata#MachineActions",
+            "value": [
+              {
+                "id": "2a800b14-1234-5678-abe4-abcdef42d881",
+                "type": "Isolate",
+                "title": null,
+                "requestor": "admin@example.com",
+                "requestorComment": "Isolating a device to prevent access to the external network",
+                "status": "Cancelled",
+                "machineId": "dc909e4a81d1bfa3abcdefabcdefe6f8ec7d3506",
+                "computerDnsName": "labtest-eid",
+                "creationDateTimeUtc": "2025-03-25T10:36:47.2968211Z",
+                "lastUpdateDateTimeUtc": "2025-03-26T07:25:33.9337697Z",
+                "cancellationRequestor": "e062d1f9-2398-1234-a024-12345673a25a",
+                "cancellationComment": "Machine action was canceled by automation",
+                "cancellationDateTimeUtc": "2025-03-26T07:25:33.9337696Z",
+                "errorHResult": -2147467260,
+                "scope": "Full",
+                "externalId": null,
+                "requestSource": "PublicApi",
+                "relatedFileInfo": null,
+                "commands": [],
+                "troubleshootInfo": null
+              }
+            ]
+          }
+          `}}
   - path: /api/machines
     methods: ["GET"]
     request_headers:
       Authorization:
         - 'Bearer eyJ0eXAiOiJKV1QiLCJhbGciOiJSUzI1NiIsImtpZCI6Ilg1ZVhrN'
     query_params:
-      $top: 1
+      $top: 2
       $skip: 0
     responses:
       - status_code: 200
@@ -328,6 +403,46 @@ rules:
                   }
                 ],
                 "vmMetadata": null
+              },
+              {
+                "id": "0e23b8b23abcdefabcdef6f877b45d19c04a522d",
+                "mergedIntoMachineId": null,
+                "isPotentialDuplication": false,
+                "isExcluded": false,
+                "exclusionReason": null,
+                "computerDnsName": "c-lab-08",
+                "firstSeen": "2024-11-05T11:54:59.5717001Z",
+                "lastSeen": "2025-04-02T02:51:16.2059102Z",
+                "osPlatform": "Windows10",
+                "osVersion": null,
+                "osProcessor": "x64",
+                "version": "22H2",
+                "lastIpAddress": "81.2.69.144",
+                "lastExternalIpAddress": "216.160.83.56",
+                "agentVersion": "10.8790.19045.5608",
+                "osBuild": 19045,
+                "healthStatus": "Active",
+                "deviceValue": "Normal",
+                "rbacGroupId": 0,
+                "rbacGroupName": null,
+                "riskScore": "None",
+                "exposureLevel": "Low",
+                "isAadJoined": true,
+                "aadDeviceId": "d78dc223-8dc8-1234-5678-abcdef03505b",
+                "machineTags": [],
+                "onboardingStatus": "Onboarded",
+                "osArchitecture": "64-bit",
+                "managedBy": "Intune",
+                "managedByStatus": "Unknown",
+                "ipAddresses": [
+                  {
+                    "ipAddress": "67.43.156.0",
+                    "macAddress": "00005E0053FF",
+                    "type": "Ethernet",
+                    "operationalStatus": "Up"
+                  }
+                ],
+                "vmMetadata": null
               }
             ]
           }
@@ -338,8 +453,8 @@ rules:
       Authorization:
         - 'Bearer eyJ0eXAiOiJKV1QiLCJhbGciOiJSUzI1NiIsImtpZCI6Ilg1ZVhrN'
     query_params:
-       $top: 1
-       $skip: 1
+       $top: 2
+       $skip: 2
     responses:
       - status_code: 200
         body: |-
@@ -404,6 +519,48 @@ rules:
                   }
                 ],
                 "vmMetadata": null
+              },
+              {
+                "id": "2fcd7073abcdefabcdef92b29b28987144c9c48a",
+                "mergedIntoMachineId": null,
+                "isPotentialDuplication": false,
+                "isExcluded": false,
+                "exclusionReason": null,
+                "computerDnsName": "C-Lab-31",
+                "firstSeen": "2024-11-06T07:14:57.835782Z",
+                "lastSeen": "2025-03-05T05:46:01.101101Z",
+                "osPlatform": "RedHatEnterpriseLinux",
+                "osVersion": null,
+                "osProcessor": "x64",
+                "version": "9.5",
+                "lastIpAddress": "67.43.156.0",
+                "lastExternalIpAddress": "2a02:cf40::",
+                "agentVersion": "30.124092.2.0",
+                "osBuild": null,
+                "healthStatus": "Inactive",
+                "deviceValue": "Normal",
+                "rbacGroupId": 0,
+                "rbacGroupName": null,
+                "riskScore": "None",
+                "exposureLevel": "Medium",
+                "isAadJoined": false,
+                "aadDeviceId": null,
+                "machineTags": [
+                  "C-Lab-Linux"
+                ],
+                "onboardingStatus": "Onboarded",
+                "osArchitecture": "64-bit",
+                "managedBy": "MicrosoftDefenderForEndpoint",
+                "managedByStatus": "Success",
+                "ipAddresses": [
+                  {
+                    "ipAddress": "10.50.12.31",
+                    "macAddress": "01005E901000",
+                    "type": "Other",
+                    "operationalStatus": "Up"
+                  }
+                ],
+                "vmMetadata": null
               }
             ]
           }
@@ -414,9 +571,73 @@ rules:
       Authorization:
         - 'Bearer eyJ0eXAiOiJKV1QiLCJhbGciOiJSUzI1NiIsImtpZCI6Ilg1ZVhrN'
     query_params:
-       $top: 1
-       $skip: 2
+       $top: 2
+       $skip: 4
     responses:
       - status_code: 200
         body: |-
-          {"@odata.context":"https://api.security.microsoft.com/api/$metadata#Machines","value": []}
+          {{ minify_json `
+          {
+            "@odata.context": "https://api.security.microsoft.com/api/$metadata#Machines",
+            "value": [
+              {
+                "id": "72d63195dcd8aaabcdefabcdef123456960cc83d",
+                "mergedIntoMachineId": null,
+                "isPotentialDuplication": false,
+                "isExcluded": false,
+                "exclusionReason": null,
+                "computerDnsName": "clw238-test",
+                "firstSeen": "2024-08-05T08:54:14.5864856Z",
+                "lastSeen": "2024-11-19T12:59:12.7616877Z",
+                "osPlatform": "Windows11",
+                "osVersion": null,
+                "osProcessor": "x64",
+                "version": "23H2",
+                "lastIpAddress": "192.168.92.66",
+                "lastExternalIpAddress": "81.2.69.192",
+                "agentVersion": "10.8760.22631.4317",
+                "osBuild": 22631,
+                "healthStatus": "Inactive",
+                "deviceValue": "Normal",
+                "rbacGroupId": 0,
+                "rbacGroupName": null,
+                "riskScore": "Informational",
+                "exposureLevel": "High",
+                "isAadJoined": false,
+                "aadDeviceId": null,
+                "machineTags": [],
+                "onboardingStatus": "Onboarded",
+                "osArchitecture": "64-bit",
+                "managedBy": "MicrosoftDefenderForEndpoint",
+                "managedByStatus": "Success",
+                "ipAddresses": [
+                  {
+                    "ipAddress": "81.2.69.142",
+                    "macAddress": "00005E005301",
+                    "type": "Ethernet",
+                    "operationalStatus": "Down"
+                  },
+                  {
+                    "ipAddress": "2a02:cf40::",
+                    "macAddress": "00005E00530A",
+                    "type": "Ethernet",
+                    "operationalStatus": "Down"
+                  },
+                  {
+                    "ipAddress": "127.0.0.1",
+                    "macAddress": null,
+                    "type": "SoftwareLoopback",
+                    "operationalStatus": "Up"
+                  },
+                  {
+                    "ipAddress": "::1",
+                    "macAddress": null,
+                    "type": "SoftwareLoopback",
+                    "operationalStatus": "Up"
+                  }
+                ],
+                "vmMetadata": null
+              }
+            ]
+          }
+          `}}

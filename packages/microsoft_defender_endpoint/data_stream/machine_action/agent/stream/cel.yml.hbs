@@ -19,6 +19,8 @@ auth.oauth2:
 state:
   initial_interval: {{initial_interval}}
   page_size: {{batch_size}}
+redact:
+  fields: ~
 program: |
   (
     state.?want_more.orValue(false) ?
@@ -44,9 +46,7 @@ program: |
             ?"last_updated": size(body.value) == 0 ?
               state.?cursor.last_updated
             :
-              optional.of(
-                body.value.map(e, e.lastUpdateDateTimeUtc).max()
-              ),
+              optional.of(body.value.map(e, e.lastUpdateDateTimeUtc).max()),
           },
           "start_time": start_time,
           "page_size": state.page_size,

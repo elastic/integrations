@@ -52,7 +52,7 @@ When the application is granted the API permissions listed in the table below, i
 
 | Data stream    | API Permissions  |
 | -------------- | ---------------- |
-| Alert   	     | Alert.Read.All   |
+| Alert          | Alert.Read.All   |
 | Machine        | Machine.Read.All |
 | Machine Action | Machine.Read.All |
 
@@ -270,24 +270,24 @@ An example event for `machine` looks as following:
 
 ```json
 {
-    "@timestamp": "2025-04-12T16:57:59.456Z",
+    "@timestamp": "2025-04-14T05:54:49.518Z",
     "agent": {
-        "ephemeral_id": "0d7c7783-43d1-45bf-b10f-917986e8614b",
-        "id": "3c43bc2a-d1ae-45e2-bdd7-17d79cf63f94",
-        "name": "elastic-agent-14761",
+        "ephemeral_id": "a2b7ac2f-3e28-445c-afa4-539453b79a3a",
+        "id": "33ea3bb6-a939-48aa-9632-9eae9a203137",
+        "name": "elastic-agent-52008",
         "type": "filebeat",
         "version": "8.18.0"
     },
     "data_stream": {
         "dataset": "microsoft_defender_endpoint.machine",
-        "namespace": "98493",
+        "namespace": "77636",
         "type": "logs"
     },
     "ecs": {
         "version": "8.11.0"
     },
     "elastic_agent": {
-        "id": "3c43bc2a-d1ae-45e2-bdd7-17d79cf63f94",
+        "id": "33ea3bb6-a939-48aa-9632-9eae9a203137",
         "snapshot": true,
         "version": "8.18.0"
     },
@@ -297,7 +297,7 @@ An example event for `machine` looks as following:
             "host"
         ],
         "dataset": "microsoft_defender_endpoint.machine",
-        "ingested": "2025-04-12T16:58:02Z",
+        "ingested": "2025-04-14T05:54:52Z",
         "kind": "event",
         "original": "{\"aadDeviceId\":null,\"agentVersion\":\"10.8760.17763.6414\",\"computerDnsName\":\"dlp-win2k19\",\"deviceValue\":\"Normal\",\"exclusionReason\":null,\"exposureLevel\":\"High\",\"firstSeen\":\"2024-10-17T13:56:23.9412922Z\",\"healthStatus\":\"Inactive\",\"id\":\"c114cb1c0b827fabcdefabcdef2b9cfd469c091b\",\"ipAddresses\":[{\"ipAddress\":\"10.50.11.140\",\"macAddress\":\"00005E005301\",\"operationalStatus\":\"Up\",\"type\":\"Ethernet\"},{\"ipAddress\":\"1.128.0.0\",\"macAddress\":\"00005E00530A\",\"operationalStatus\":\"Up\",\"type\":\"Ethernet\"},{\"ipAddress\":\"2a02:cf40::\",\"macAddress\":\"00005E005302\",\"operationalStatus\":\"Up\",\"type\":\"Ethernet\"},{\"ipAddress\":\"127.0.0.1\",\"macAddress\":null,\"operationalStatus\":\"Up\",\"type\":\"SoftwareLoopback\"},{\"ipAddress\":\"::1\",\"macAddress\":null,\"operationalStatus\":\"Up\",\"type\":\"SoftwareLoopback\"}],\"isAadJoined\":false,\"isExcluded\":false,\"isPotentialDuplication\":false,\"lastExternalIpAddress\":\"1.128.0.0\",\"lastIpAddress\":\"10.50.11.140\",\"lastSeen\":\"2024-10-24T06:12:35.4409708Z\",\"machineTags\":[],\"managedBy\":\"MicrosoftDefenderForEndpoint\",\"managedByStatus\":\"Success\",\"mergedIntoMachineId\":null,\"onboardingStatus\":\"Onboarded\",\"osArchitecture\":\"64-bit\",\"osBuild\":17763,\"osPlatform\":\"WindowsServer2019\",\"osProcessor\":\"x64\",\"osVersion\":null,\"rbacGroupId\":0,\"rbacGroupName\":null,\"riskScore\":\"None\",\"version\":\"1809\",\"vmMetadata\":null}",
         "type": [
@@ -459,47 +459,44 @@ An example event for `machine_action` looks as following:
 
 ```json
 {
-    "@timestamp": "2024-11-25T12:59:37.553Z",
+    "@timestamp": "2024-11-22T12:48:56.768Z",
     "agent": {
-        "ephemeral_id": "82b05ef5-8ca7-40ef-b1ad-92a7613bb028",
-        "id": "da997196-2b88-497b-9b81-e137b737f874",
-        "name": "elastic-agent-56917",
+        "ephemeral_id": "75d3d06e-36f0-43c7-9dab-b94443c2b313",
+        "id": "6901ad47-a8e1-47c7-ad4c-baaa28f4d6ba",
+        "name": "elastic-agent-68004",
         "type": "filebeat",
         "version": "8.18.0"
     },
     "data_stream": {
         "dataset": "microsoft_defender_endpoint.machine_action",
-        "namespace": "75898",
+        "namespace": "90899",
         "type": "logs"
     },
     "ecs": {
         "version": "8.11.0"
     },
     "elastic_agent": {
-        "id": "da997196-2b88-497b-9b81-e137b737f874",
+        "id": "6901ad47-a8e1-47c7-ad4c-baaa28f4d6ba",
         "snapshot": true,
         "version": "8.18.0"
     },
     "event": {
-        "action": "Unisolate",
+        "action": "RunAntiVirusScan",
         "agent_id_status": "verified",
-        "category": [
-            "network"
-        ],
-        "created": "2024-11-25T12:59:35.891Z",
+        "created": "2024-11-22T12:48:33.993Z",
         "dataset": "microsoft_defender_endpoint.machine_action",
-        "id": "034e1b7b-1234-5678-abcd-abcdef7b1219",
-        "ingested": "2025-04-12T17:01:00Z",
+        "id": "d72456af-1234-5678-abcd-abcdef87fdee",
+        "ingested": "2025-04-14T05:57:42Z",
         "kind": "event",
-        "original": "{\"cancellationComment\":null,\"cancellationDateTimeUtc\":null,\"cancellationRequestor\":null,\"commands\":[],\"computerDnsName\":\"c-lab-24\",\"creationDateTimeUtc\":\"2024-11-25T12:59:35.8912364Z\",\"errorHResult\":0,\"externalId\":null,\"id\":\"034e1b7b-1234-5678-abcd-abcdef7b1219\",\"lastUpdateDateTimeUtc\":\"2024-11-25T12:59:37.5532423Z\",\"machineId\":\"de693d7abcdefabcdefabcdef01f40b5bf2da1d8\",\"relatedFileInfo\":null,\"requestSource\":\"Portal\",\"requestor\":\"user1@example.com\",\"requestorComment\":\"Isolation release\",\"scope\":null,\"status\":\"Succeeded\",\"title\":null,\"troubleshootInfo\":null,\"type\":\"Unisolate\"}",
+        "original": "{\"cancellationComment\":null,\"cancellationDateTimeUtc\":null,\"cancellationRequestor\":null,\"commands\":[],\"computerDnsName\":\"c-lab-24\",\"creationDateTimeUtc\":\"2024-11-22T12:48:33.9936591Z\",\"errorHResult\":0,\"externalId\":null,\"id\":\"d72456af-1234-5678-abcd-abcdef87fdee\",\"lastUpdateDateTimeUtc\":\"2024-11-22T12:48:56.7684808Z\",\"machineId\":\"de693d7fbdabcdefabcdefcfc9cf40b5bf2da1d8\",\"relatedFileInfo\":null,\"requestSource\":\"Portal\",\"requestor\":\"testuser@example.com\",\"requestorComment\":\"Quick Scan\",\"scope\":\"Quick\",\"status\":\"Succeeded\",\"title\":null,\"troubleshootInfo\":null,\"type\":\"RunAntiVirusScan\"}",
         "outcome": "success",
         "type": [
-            "start"
+            "info"
         ]
     },
     "host": {
         "hostname": "c-lab-24",
-        "id": "de693d7abcdefabcdefabcdef01f40b5bf2da1d8",
+        "id": "de693d7fbdabcdefabcdefcfc9cf40b5bf2da1d8",
         "name": "c-lab-24"
     },
     "input": {
@@ -509,9 +506,10 @@ An example event for `machine_action` looks as following:
         "machine_action": {
             "error_h_result": 0,
             "request_source": "Portal",
-            "requestor_comment": "Isolation release",
+            "requestor_comment": "Quick Scan",
+            "scope": "Quick",
             "status": "Succeeded",
-            "type": "Unisolate"
+            "type": "RunAntiVirusScan"
         }
     },
     "observer": {
@@ -521,10 +519,10 @@ An example event for `machine_action` looks as following:
     "related": {
         "hosts": [
             "c-lab-24",
-            "de693d7abcdefabcdefabcdef01f40b5bf2da1d8"
+            "de693d7fbdabcdefabcdefcfc9cf40b5bf2da1d8"
         ],
         "user": [
-            "user1@example.com"
+            "testuser@example.com"
         ]
     },
     "tags": [
@@ -533,7 +531,7 @@ An example event for `machine_action` looks as following:
         "microsoft_defender_endpoint-machine_action"
     ],
     "user": {
-        "name": "user1@example.com"
+        "name": "testuser@example.com"
     }
 }
 ```
