@@ -32,7 +32,7 @@ Following Microsoft 365 Graph Reports can be collected by Microsoft Office 365 M
 | [App Registrations](https://learn.microsoft.com/en-us/graph/api/resources/application?view=graph-rest-1.0) |    [List Applications](https://learn.microsoft.com/en-us/graph/api/application-list?view=graph-rest-1.0&tabs=http)    |   Microsoft 365 App Registrations   |   No aggregation  | Application.Read.All, User.Read(delegated) |
 | [Entra Features](https://learn.microsoft.com/en-us/graph/api/organization-list?view=graph-rest-1.0&tabs=http) |    [Organization](https://learn.microsoft.com/en-us/graph/api/organization-list?view=graph-rest-1.0&tabs=http), [PremisesSync](https://graph.microsoft.com/v1.0/directory/onPremisesSynchronization)    |   Microsoft 365 Entra Connect  |   No aggregation  | Organization.Read.All, User.Read(delegated) |
 | Entra ID users | [user](https://learn.microsoft.com/en-us/graph/api/resources/user?view=graph-rest-1.0), [riskDetection](https://learn.microsoft.com/en-us/graph/api/resources/riskdetection?view=graph-rest-1.0) | Microsoft 365 Entra Connect User metrics | No aggregation | User.Read.All, IdentityRiskEvent.Read.All
-
+| Entra Agent | [agent](https://learn.microsoft.com/en-us/entra/identity/hybrid/connect/whatis-aadc-admin-agent) | Microsoft 365 Entra Agent metrics | No aggregation | RBAC role
 
 ## Setup
 
@@ -3377,3 +3377,123 @@ Please refer to the following [document](https://www.elastic.co/guide/en/ecs/cur
 | o365.metrics.entra.features.user_force_password_change_on_logon_enabled | Indicates if users are forced to change passwords on logon. | boolean |
 | o365.metrics.entra.features.user_writeback_enabled | Indicates if user writeback is enabled. | boolean |
 
+
+### Entra Agent
+
+Get details about Entra Agent. [Microsoft API](https://learn.microsoft.com/en-us/azure/api-management/api-management-key-concepts).
+
+An example event for `entra_agent` looks as following:
+
+```json
+{
+    "@timestamp": "2025-04-10T10:40:03.447Z",
+    "agent": {
+        "ephemeral_id": "7852790c-2a34-413e-a94c-74c05f82e5f9",
+        "id": "f3fc8c0f-bd46-481e-bf2c-764831ee324c",
+        "name": "elastic-agent-67757",
+        "type": "filebeat",
+        "version": "8.16.0"
+    },
+    "data_stream": {
+        "dataset": "o365_metrics.entra_features",
+        "namespace": "21154",
+        "type": "metrics"
+    },
+    "ecs": {
+        "version": "8.17.0"
+    },
+    "elastic_agent": {
+        "id": "f3fc8c0f-bd46-481e-bf2c-764831ee324c",
+        "snapshot": false,
+        "version": "8.16.0"
+    },
+    "event": {
+        "agent_id_status": "verified",
+        "dataset": "o365_metrics.entra_features",
+        "ingested": "2025-04-10T10:40:06Z"
+    },
+    "host": {
+        "architecture": "x86_64",
+        "containerized": true,
+        "hostname": "elastic-agent-67757",
+        "ip": [
+            "172.20.0.2",
+            "172.18.0.7"
+        ],
+        "mac": [
+            "02-42-AC-12-00-07",
+            "02-42-AC-14-00-02"
+        ],
+        "name": "elastic-agent-67757",
+        "os": {
+            "family": "",
+            "kernel": "5.15.153.1-microsoft-standard-WSL2",
+            "name": "Wolfi",
+            "platform": "wolfi",
+            "type": "linux",
+            "version": "20230201"
+        }
+    },
+    "input": {
+        "type": "cel"
+    },
+    "o365": {
+        "metrics": {
+            "entra": {
+                "agent": {
+                    "block_cloud_object_takeover_through_hard_match_enabled": true,
+                    "block_soft_match_enabled": true,
+                    "bypass_dir_sync_overrides_enabled": true,
+                    "cloud_password_policy_for_password_synced_users_enabled": true,
+                    "concurrent_credential_update_enabled": true,
+                    "concurrent_org_id_provisioning_enabled": true,
+                    "device_writeback_enabled": true,
+                    "directory_extensions_enabled": true,
+                    "fope_conflict_resolution_enabled": true,
+                    "group_write_back_enabled": true,
+                    "on_premises_sync_enabled": true,
+                    "password_sync_enabled": true,
+                    "password_writeback_enabled": true,
+                    "quarantine_upon_proxy_addresses_conflict_enabled": true,
+                    "quarantine_upon_upn_conflict_enabled": true,
+                    "soft_match_on_upn_enabled": true,
+                    "synchronize_upn_for_managed_users_enabled": true,
+                    "unified_group_writeback_enabled": true,
+                    "user_force_password_change_on_logon_enabled": true,
+                    "user_writeback_enabled": true
+                }
+            }
+        }
+    },
+    "tags": [
+        "o365.metrics.entra_features"
+    ]
+}
+```
+
+Please refer to the following [document](https://www.elastic.co/guide/en/ecs/current/ecs-field-reference.html) for detailed information on ECS fields.
+
+**Exported fields**
+
+| Field | Description | Type |
+|---|---|---|
+| @timestamp | Event timestamp. | date |
+| data_stream.dataset | Data stream dataset. | constant_keyword |
+| data_stream.namespace | Data stream namespace. | constant_keyword |
+| data_stream.type | Data stream type. | constant_keyword |
+| input.type | Input type. | keyword |
+| o365.metrics.entra.agent.active_alerts | The number of active alerts. | integer |
+| o365.metrics.entra.agent.created_date | The date the service was created. | date |
+| o365.metrics.entra.agent.disabled | Indicates whether the service is disabled. | boolean |
+| o365.metrics.entra.agent.last_disabled | The last time the service was disabled. | date |
+| o365.metrics.entra.agent.last_reboot | The last reboot date and time. | date |
+| o365.metrics.entra.agent.last_updated | The last time the service was updated. | date |
+| o365.metrics.entra.agent.machine_id | The ID of the machine. | keyword |
+| o365.metrics.entra.agent.machine_name | The name of the machine. | keyword |
+| o365.metrics.entra.agent.os_name | The name of the operating system. | keyword |
+| o365.metrics.entra.agent.os_version | The version of the operating system. | keyword |
+| o365.metrics.entra.agent.resolved_alerts | The number of resolved alerts. | integer |
+| o365.metrics.entra.agent.role | The role of the machine or service. | keyword |
+| o365.metrics.entra.agent.service_id | The ID of the service. | keyword |
+| o365.metrics.entra.agent.service_member_id | The ID of the service member. | keyword |
+| o365.metrics.entra.agent.status | The current status of the service. | keyword |
