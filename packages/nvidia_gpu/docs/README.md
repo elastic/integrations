@@ -20,6 +20,31 @@ For step-by-step instructions on how to set up an integration, see the
 
 When running on Kubernetes, you can use ${env.NODE_NAME} to get the node name for use in the hosts field. For example: `hosts: http://${env.NODE_NAME}:9400/metrics`.
 
+### Customizing the list of available metrics
+
+With `dcgm-exporter` you can configure which fields are collected by specifying a custom CSV file.
+You will find the default CSV file under `etc/default-counters.csv` in the repository, which is copied on your system or container to `/etc/dcgm-exporter/default-counters.csv`
+
+The layout and format of this file is as follows:
+
+```
+# Format
+# If line starts with a '#' it is considered a comment
+# DCGM FIELD, Prometheus metric type, help message
+
+# Clocks
+DCGM_FI_DEV_SM_CLOCK,  gauge, SM clock frequency (in MHz).
+DCGM_FI_DEV_MEM_CLOCK, gauge, Memory clock frequency (in MHz).
+```
+
+A custom csv file can be specified using the `-f` option or `--collectors` as follows:
+
+```shell
+dcgm-exporter -f /tmp/custom-collectors.csv
+```
+
+See more in the [DCGM Github Repository](https://github.com/NVIDIA/dcgm-exporter/tree/main)
+
 ## Data streams
 
 **stats** give you insight into the state of the NVIDIA GPUs.
@@ -29,13 +54,13 @@ An example event for `stats` looks as following:
 
 ```json
 {
-    "@timestamp": "2025-02-04T03:58:06.137Z",
+    "@timestamp": "2025-04-15T15:31:41.513Z",
     "agent": {
-        "ephemeral_id": "33183a42-1f03-4d37-bf77-2a683c47eec1",
-        "id": "b6f2a8e1-c701-4a92-a1a2-3a9362ad4af7",
-        "name": "4b8c5ec8e940",
+        "ephemeral_id": "398cee14-e976-4ee0-ae74-df923b06e08f",
+        "id": "60465982-823e-4f9d-b330-4bebc7e0b4aa",
+        "name": "093b05dfeffc",
         "type": "metricbeat",
-        "version": "8.16.1"
+        "version": "8.16.6"
     },
     "data_stream": {
         "dataset": "nvidia_gpu.stats",
@@ -43,59 +68,50 @@ An example event for `stats` looks as following:
         "type": "metrics"
     },
     "ecs": {
-        "version": "8.0.0"
+        "version": "8.17.0"
     },
     "elastic_agent": {
-        "id": "b6f2a8e1-c701-4a92-a1a2-3a9362ad4af7",
+        "id": "60465982-823e-4f9d-b330-4bebc7e0b4aa",
         "snapshot": false,
-        "version": "8.16.1"
+        "version": "8.16.6"
     },
     "event": {
         "agent_id_status": "verified",
         "dataset": "nvidia_gpu.stats",
-        "duration": 3729334,
-        "ingested": "2025-02-04T03:58:16Z",
+        "duration": 14458458,
+        "ingested": "2025-04-15T15:31:51Z",
         "module": "prometheus"
     },
     "gpu": {
         "decoder": {
-            "utilization": 0
+            "utilization": 2
         },
         "device": {
-            "brand": "GeForce",
             "id": "0",
-            "info_rom": {
-                "oem_version": "1.1",
-                "version": "G001.0000.02.04"
-            },
             "model": "NVIDIA GeForce RTX 2060 SUPER",
             "name": "nvidia0",
-            "uuid": "GPU-72ca939a-a640-eb0b-df2b-4ac1d7081736",
-            "vbios": {
-                "version": "90.06.44.00.2f"
-            }
+            "uuid": "GPU-72ca939a-a640-eb0b-df2b-4ac1d7081736"
         },
         "driver": {
-            "nvml_version": "12.560.35.02",
             "version": "560.94"
         },
         "encoder": {
             "utilization": 0
         },
         "energy": {
-            "total": 9333403
+            "total": 68062938297
         },
         "framebuffer": {
             "size": {
-                "free": 6990,
-                "used": 1015
+                "free": 247,
+                "used": 7758
             }
         },
         "license": {
             "vgpu": "0"
         },
         "memory": {
-            "copy_utilization": 10,
+            "copy_utilization": 13,
             "frequency": 405,
             "temperature": 0
         },
@@ -110,21 +126,21 @@ An example event for `stats` looks as following:
             }
         },
         "power": {
-            "usage": 19.131
+            "usage": 21.382
         },
         "streaming_multiprocessor": {
-            "frequency": 375
+            "frequency": 300
         },
-        "temperature": 43,
-        "utilization": 18
+        "temperature": 44,
+        "utilization": 12
     },
     "host": {
         "architecture": "aarch64",
         "containerized": false,
-        "hostname": "4b8c5ec8e940",
+        "hostname": "093b05dfeffc",
         "ip": "172.17.0.3",
         "mac": "02-42-AC-11-00-03",
-        "name": "4b8c5ec8e940",
+        "name": "093b05dfeffc",
         "os": {
             "codename": "noble",
             "family": "debian",
@@ -141,15 +157,15 @@ An example event for `stats` looks as following:
     },
     "prometheus": {
         "node": {
-            "job": "prometheus",
-            "name": "192.168.0.238:9400"
-        },
-        "up": {
-            "value": 0
+            "hostname": "de4a75bd4194",
+            "job": "prometheus"
         }
     },
+    "server": {
+        "address": "192.168.0.192:9400"
+    },
     "service": {
-        "address": "http://192.168.0.238:9400/metrics",
+        "address": "http://192.168.0.192:9400/metrics",
         "type": "prometheus"
     }
 }
@@ -210,3 +226,6 @@ An example event for `stats` looks as following:
 | prometheus.node.hostname | Hostname of the Prometheus node. | keyword |  |
 | prometheus.node.id | ID of the Prometheus node. | integer |  |
 | prometheus.node.job | Job of the Prometheus node. | keyword |  |
+| prometheus.up.value | Whether prometheus reports the targeted instance as up or down. | keyword |  |
+| service.address | Address where data about this service was collected from. This should be a URI, network address (ipv4:port or [ipv6]:port) or a resource path (sockets). | keyword |  |
+| service.type | The type of the service data is collected from. The type can be used to group and correlate logs and metrics from one service type. Example: If logs or metrics are collected from Elasticsearch, `service.type` would be `elasticsearch`. | keyword |  |

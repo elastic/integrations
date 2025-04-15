@@ -20,6 +20,31 @@ For step-by-step instructions on how to set up an integration, see the
 
 When running on Kubernetes, you can use ${env.NODE_NAME} to get the node name for use in the hosts field. For example: `hosts: http://${env.NODE_NAME}:9400/metrics`.
 
+### Customizing the list of available metrics
+
+With `dcgm-exporter` you can configure which fields are collected by specifying a custom CSV file.
+You will find the default CSV file under `etc/default-counters.csv` in the repository, which is copied on your system or container to `/etc/dcgm-exporter/default-counters.csv`
+
+The layout and format of this file is as follows:
+
+```
+# Format
+# If line starts with a '#' it is considered a comment
+# DCGM FIELD, Prometheus metric type, help message
+
+# Clocks
+DCGM_FI_DEV_SM_CLOCK,  gauge, SM clock frequency (in MHz).
+DCGM_FI_DEV_MEM_CLOCK, gauge, Memory clock frequency (in MHz).
+```
+
+A custom csv file can be specified using the `-f` option or `--collectors` as follows:
+
+```shell
+dcgm-exporter -f /tmp/custom-collectors.csv
+```
+
+See more in the [DCGM Github Repository](https://github.com/NVIDIA/dcgm-exporter/tree/main)
+
 ## Data streams
 
 **stats** give you insight into the state of the NVIDIA GPUs.

@@ -1,6 +1,9 @@
 ---
 description: Pipeline for NVIDIA GPU Metrics
 processors:
+- set:
+    field: ecs.version
+    value: '8.17.0'
 - rename:
     field: prometheus.DCGM_FI_DEV_MEM_COPY_UTIL.value
     target_field: gpu.memory.copy_utilization
@@ -67,7 +70,7 @@ processors:
     ignore_missing: true
 - rename:
     field: prometheus.labels.instance
-    target_field: prometheus.node.name
+    target_field: server.address
     ignore_missing: true
 - rename:
     field: prometheus.labels.pci_bus_id
