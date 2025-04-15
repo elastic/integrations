@@ -410,6 +410,21 @@ processors:
       tag: set_file_name_from_access_session_filename
       copy_from: beyondtrust_pra.access_session.filename
       ignore_empty_value: true
+  - convert:
+      field: json.filesize
+      tag: convert_filesize_to_long
+      target_field: beyondtrust_pra.access_session.filesize
+      type: long
+      ignore_missing: true
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - set:
+      field: file.size
+      tag: set_file_size_from_access_session_filesize
+      copy_from: beyondtrust_pra.access_session.filesize
+      ignore_empty_value: true
   - foreach:
       field: json.files.file
       if: ctx.json?.files?.file instanceof List
@@ -892,6 +907,7 @@ processors:
         - beyondtrust_pra.access_session.destination.public_ip
         - beyondtrust_pra.access_session.destination.username
         - beyondtrust_pra.access_session.filename
+        - beyondtrust_pra.access_session.filesize
         - beyondtrust_pra.access_session.performed_by.hostname
         - beyondtrust_pra.access_session.performed_by.id
         - beyondtrust_pra.access_session.performed_by.private_ip

@@ -99,6 +99,7 @@ This is the `Access Session` dataset.
 | beyondtrust_pra.access_session.filename | The name of the transferred file. | keyword |
 | beyondtrust_pra.access_session.files.file.filename | The name of the transferred file. | keyword |
 | beyondtrust_pra.access_session.files.file.filesize | The size of the transferred file. | long |
+| beyondtrust_pra.access_session.filesize | The size of the transferred file. | long |
 | beyondtrust_pra.access_session.performed_by.display_name | The display name assigned to the user. . | keyword |
 | beyondtrust_pra.access_session.performed_by.gsnumber | Uniquely identifies the user in regards to their current connection to the BeyondTrust Appliance B Series. | keyword |
 | beyondtrust_pra.access_session.performed_by.hostname | The hostname of the user's computer. | keyword |
@@ -162,9 +163,9 @@ An example event for `access_session` looks as following:
 {
     "@timestamp": "2024-04-04T13:30:00.000Z",
     "agent": {
-        "ephemeral_id": "6215c858-c129-46bd-ab86-d17442c2a675",
-        "id": "51c515e1-3b7e-4b1f-823b-9abd663a550f",
-        "name": "elastic-agent-37376",
+        "ephemeral_id": "a11d10e2-15f6-4fe2-b096-28ed0b870085",
+        "id": "3728b9dc-4bc5-4b86-973b-9a2e303a863a",
+        "name": "elastic-agent-24720",
         "type": "filebeat",
         "version": "8.17.0"
     },
@@ -191,6 +192,7 @@ An example event for `access_session` looks as following:
                     }
                 ]
             },
+            "filesize": 1024,
             "performed_by": {
                 "display_name": "Admin",
                 "gsnumber": "R56789",
@@ -317,7 +319,7 @@ An example event for `access_session` looks as following:
     },
     "data_stream": {
         "dataset": "beyondtrust_pra.access_session",
-        "namespace": "13256",
+        "namespace": "12228",
         "type": "logs"
     },
     "destination": {
@@ -346,7 +348,7 @@ An example event for `access_session` looks as following:
         "version": "8.17.0"
     },
     "elastic_agent": {
-        "id": "51c515e1-3b7e-4b1f-823b-9abd663a550f",
+        "id": "3728b9dc-4bc5-4b86-973b-9a2e303a863a",
         "snapshot": false,
         "version": "8.17.0"
     },
@@ -357,15 +359,16 @@ An example event for `access_session` looks as following:
             "session"
         ],
         "dataset": "beyondtrust_pra.access_session",
-        "ingested": "2025-04-10T09:10:04Z",
+        "ingested": "2025-04-15T07:58:33Z",
         "kind": "event",
-        "original": "{\"body\":\"Session started by Admin\",\"destination\":{\"gsnumber\":\"C12345\",\"hostname\":\"remote-host\",\"os\":\"Windows 10\",\"private_ip\":\"1.128.0.1\",\"public_ip\":\"81.2.69.192\",\"type\":\"customer\",\"username\":\"remote_user\"},\"encoded_body\":\"U2Vzc2lvbiBzdGFydGVkIGJ5IEFkbWlu\",\"event_type\":\"Session Start\",\"filename\":\"logfile.txt\",\"files\":{\"file\":[{\"filename\":\"logfile.txt\",\"filesize\":1024}]},\"performed_by\":{\"display_name\":\"Admin\",\"gsnumber\":\"R56789\",\"hostname\":\"admin-host\",\"id\":\"112233\",\"invited\":1,\"os\":\"Windows 11\",\"private_ip\":\"1.128.0.2\",\"public_ip\":\"175.16.199.0\",\"seconds_involved\":3600,\"session_owner\":1,\"type\":\"representative\",\"username\":\"admin_user\"},\"session\":{\"command_shell_recordings\":{\"command_shell_recording\":[{\"download_url\":\"https://example.com/shell_download/12345\",\"instance\":\"0\",\"view_url\":\"https://example.com/shell_view/12345\"}]},\"custom_attributes\":{\"custom_attribute\":[{\"#text\":\"High\",\"code_name\":\"priority\",\"display_name\":\"priority\"},{\"#text\":\"High\",\"code_name\":\"priority\",\"display_name\":\"priority\"}]},\"duration\":\"01:00:00\",\"end_time\":{\"#text\":\"2024-04-04T14:00:00Z\",\"timestamp\":\"1712239200\"},\"file_delete_count\":0,\"file_move_count\":1,\"file_transfer_count\":3,\"jump_group\":{\"#text\":\"Support Team\",\"id\":\"56789\",\"type\":\"shared\"},\"jumpoint\":{\"#text\":\"Main Jumpoint\",\"id\":\"98765\"},\"lseq\":\"12345\",\"primary_customer\":{\"#text\":\"Remote PC\",\"gsnumber\":\"C12345\"},\"primary_rep\":{\"#text\":\"John Doe\",\"gsnumber\":\"R56789\",\"id\":\"112233\"},\"session_chat_download_url\":\"https://example.com/chat_download/12345\",\"session_chat_view_url\":\"https://example.com/chat_view/12345\",\"session_recording_download_url\":\"https://example.com/recording_download/12345\",\"session_recording_view_url\":\"https://example.com/recording_view/12345\",\"session_type\":\"support2\",\"start_time\":{\"#text\":\"2024-04-04T13:00:00Z\",\"timestamp\":\"1712235600\"}},\"system_information\":{\"category\":[{\"data\":{\"row\":[{\"field\":[{\"#text\":\"remote-host1\",\"name\":\"hostname\"},{\"#text\":\"h1234\",\"name\":\"hostname\"}]},{\"field\":[{\"#text\":\"remote-host2\",\"name\":\"hostname\"},{\"#text\":\"h5647\",\"name\":\"hostname\"}]}]},\"description\":{\"field\":[{\"#text\":\"Hostname\",\"name\":\"hostname\"},{\"#text\":\"Hostid\",\"name\":\"hostid\"}]},\"name\":\"OS Information\"}]},\"timestamp\":\"2024-04-04T13:30:00Z\"}",
+        "original": "{\"body\":\"Session started by Admin\",\"destination\":{\"gsnumber\":\"C12345\",\"hostname\":\"remote-host\",\"os\":\"Windows 10\",\"private_ip\":\"1.128.0.1\",\"public_ip\":\"81.2.69.192\",\"type\":\"customer\",\"username\":\"remote_user\"},\"encoded_body\":\"U2Vzc2lvbiBzdGFydGVkIGJ5IEFkbWlu\",\"event_type\":\"Session Start\",\"filename\":\"logfile.txt\",\"files\":{\"file\":[{\"filename\":\"logfile.txt\",\"filesize\":\"1024\"}]},\"filesize\":1024,\"performed_by\":{\"display_name\":\"Admin\",\"gsnumber\":\"R56789\",\"hostname\":\"admin-host\",\"id\":\"112233\",\"invited\":1,\"os\":\"Windows 11\",\"private_ip\":\"1.128.0.2\",\"public_ip\":\"175.16.199.0\",\"seconds_involved\":3600,\"session_owner\":1,\"type\":\"representative\",\"username\":\"admin_user\"},\"session\":{\"command_shell_recordings\":{\"command_shell_recording\":[{\"download_url\":\"https://example.com/shell_download/12345\",\"instance\":\"0\",\"view_url\":\"https://example.com/shell_view/12345\"}]},\"custom_attributes\":{\"custom_attribute\":[{\"#text\":\"High\",\"code_name\":\"priority\",\"display_name\":\"priority\"},{\"#text\":\"High\",\"code_name\":\"priority\",\"display_name\":\"priority\"}]},\"duration\":\"01:00:00\",\"end_time\":{\"#text\":\"2024-04-04T14:00:00Z\",\"timestamp\":\"1712239200\"},\"file_delete_count\":0,\"file_move_count\":1,\"file_transfer_count\":3,\"jump_group\":{\"#text\":\"Support Team\",\"id\":\"56789\",\"type\":\"shared\"},\"jumpoint\":{\"#text\":\"Main Jumpoint\",\"id\":\"98765\"},\"lseq\":\"12345\",\"primary_customer\":{\"#text\":\"Remote PC\",\"gsnumber\":\"C12345\"},\"primary_rep\":{\"#text\":\"John Doe\",\"gsnumber\":\"R56789\",\"id\":\"112233\"},\"session_chat_download_url\":\"https://example.com/chat_download/12345\",\"session_chat_view_url\":\"https://example.com/chat_view/12345\",\"session_recording_download_url\":\"https://example.com/recording_download/12345\",\"session_recording_view_url\":\"https://example.com/recording_view/12345\",\"session_type\":\"support2\",\"start_time\":{\"#text\":\"2024-04-04T13:00:00Z\",\"timestamp\":\"1712235600\"}},\"system_information\":{\"category\":[{\"data\":{\"row\":[{\"field\":[{\"#text\":\"remote-host1\",\"name\":\"hostname\"},{\"#text\":\"h1234\",\"name\":\"hostname\"}]},{\"field\":[{\"#text\":\"remote-host2\",\"name\":\"hostname\"},{\"#text\":\"h5647\",\"name\":\"hostname\"}]}]},\"description\":{\"field\":[{\"#text\":\"Hostname\",\"name\":\"hostname\"},{\"#text\":\"Hostid\",\"name\":\"hostid\"}]},\"name\":\"OS Information\"}]},\"timestamp\":\"2024-04-04T13:30:00Z\"}",
         "type": [
             "start"
         ]
     },
     "file": {
-        "name": "logfile.txt"
+        "name": "logfile.txt",
+        "size": 1024
     },
     "host": {
         "geo": {
