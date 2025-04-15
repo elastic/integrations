@@ -32,6 +32,7 @@ Following Microsoft 365 Graph Reports can be collected by Microsoft Office 365 M
 | [App Registrations](https://learn.microsoft.com/en-us/graph/api/resources/application?view=graph-rest-1.0) |    [List Applications](https://learn.microsoft.com/en-us/graph/api/application-list?view=graph-rest-1.0&tabs=http)    |   Microsoft 365 App Registrations   |   No aggregation  | Application.Read.All, User.Read(delegated) |
 | [Entra Features](https://learn.microsoft.com/en-us/graph/api/organization-list?view=graph-rest-1.0&tabs=http) |    [Organization](https://learn.microsoft.com/en-us/graph/api/organization-list?view=graph-rest-1.0&tabs=http), [PremisesSync](https://graph.microsoft.com/v1.0/directory/onPremisesSynchronization)    |   Microsoft 365 Entra Connect  |   No aggregation  | Organization.Read.All, User.Read(delegated) |
 | Entra ID users | [user](https://learn.microsoft.com/en-us/graph/api/resources/user?view=graph-rest-1.0), [riskDetection](https://learn.microsoft.com/en-us/graph/api/resources/riskdetection?view=graph-rest-1.0) | Microsoft 365 Entra Connect User metrics | No aggregation | User.Read.All, IdentityRiskEvent.Read.All
+| Entra Alerts |  [alerts](https://learn.microsoft.com/en-us/entra/permissions-management/ui-triggers) | Microsoft 365 Entra Alerts metrics | No aggregation | RBAC role
 
 
 ## Setup
@@ -3376,4 +3377,120 @@ Please refer to the following [document](https://www.elastic.co/guide/en/ecs/cur
 | o365.metrics.entra.features.unified_group_writeback_enabled | Indicates if unified group write-back is enabled. | boolean |
 | o365.metrics.entra.features.user_force_password_change_on_logon_enabled | Indicates if users are forced to change passwords on logon. | boolean |
 | o365.metrics.entra.features.user_writeback_enabled | Indicates if user writeback is enabled. | boolean |
+
+
+### Entra Alerts
+
+Get details about Entra Alerts. [Microsoft API](https://learn.microsoft.com/en-us/azure/api-management/api-management-key-concepts).
+
+An example event for `entra_alerts` looks as following:
+
+```json
+{
+    "@timestamp": "2025-04-15T17:25:00.819Z",
+    "agent": {
+        "ephemeral_id": "3b6e1c11-7d74-4ceb-bbc5-05918fb5eb27",
+        "id": "41f82762-7d28-4a60-bcee-3359e55fd0da",
+        "name": "elastic-agent-71490",
+        "type": "filebeat",
+        "version": "8.16.0"
+    },
+    "data_stream": {
+        "dataset": "o365_metrics.entra_alerts",
+        "namespace": "14398",
+        "type": "metrics"
+    },
+    "ecs": {
+        "version": "8.17.0"
+    },
+    "elastic_agent": {
+        "id": "41f82762-7d28-4a60-bcee-3359e55fd0da",
+        "snapshot": false,
+        "version": "8.16.0"
+    },
+    "event": {
+        "agent_id_status": "verified",
+        "dataset": "o365_metrics.entra_alerts",
+        "ingested": "2025-04-15T17:25:03Z"
+    },
+    "host": {
+        "architecture": "x86_64",
+        "containerized": true,
+        "hostname": "elastic-agent-71490",
+        "ip": [
+            "172.20.0.2",
+            "172.18.0.4"
+        ],
+        "mac": [
+            "02-42-AC-12-00-04",
+            "02-42-AC-14-00-02"
+        ],
+        "name": "elastic-agent-71490",
+        "os": {
+            "family": "",
+            "kernel": "5.15.153.1-microsoft-standard-WSL2",
+            "name": "Wolfi",
+            "platform": "wolfi",
+            "type": "linux",
+            "version": "20230201"
+        }
+    },
+    "input": {
+        "type": "cel"
+    },
+    "o365": {
+        "metrics": {
+            "entra": {
+                "alerts": {
+                    "alert_id": "SampleAlertId",
+                    "created_date": "2025-04-14T00:00:00Z",
+                    "description": "SampleAlertDescription",
+                    "display_name": "SampleAlertDisplayName",
+                    "last_updated": "2025-04-14T00:00:00Z",
+                    "level": "Error",
+                    "monitor_role_type": "SampleRole",
+                    "remediation": "SampleAlertRemediation",
+                    "resolved_date": "2025-04-14T00:00:00Z",
+                    "scope": "SampleScope",
+                    "service_id": "SampleServiceId",
+                    "service_member_id": "SampleServiceMemberId",
+                    "short_name": "SampleAlertName",
+                    "state": "Active",
+                    "tenant_id": "SampleTenantId"
+                }
+            }
+        }
+    },
+    "tags": [
+        "o365.metrics.entra_alerts"
+    ]
+}
+```
+
+Please refer to the following [document](https://www.elastic.co/guide/en/ecs/current/ecs-field-reference.html) for detailed information on ECS fields.
+
+**Exported fields**
+
+| Field | Description | Type |
+|---|---|---|
+| @timestamp | Event timestamp. | date |
+| data_stream.dataset | Data stream dataset. | constant_keyword |
+| data_stream.namespace | Data stream namespace. | constant_keyword |
+| data_stream.type | Data stream type. | constant_keyword |
+| input.type | Input type. | keyword |
+| o365.metrics.entra.alerts.alert_id | Unique identifier for the alert. | keyword |
+| o365.metrics.entra.alerts.created_date | The date the alert was created. | date |
+| o365.metrics.entra.alerts.description | Description of the alert. | text |
+| o365.metrics.entra.alerts.display_name | Display name of the alert. | keyword |
+| o365.metrics.entra.alerts.last_updated | The date the alert was last updated. | date |
+| o365.metrics.entra.alerts.level | Severity level of the alert. | keyword |
+| o365.metrics.entra.alerts.monitor_role_type | Role type associated with the monitoring alert. | keyword |
+| o365.metrics.entra.alerts.remediation | Suggested remediation steps for the alert. | text |
+| o365.metrics.entra.alerts.resolved_date | The date the alert was resolved. | date |
+| o365.metrics.entra.alerts.scope | Scope of the alert. | keyword |
+| o365.metrics.entra.alerts.service_id | The ID of the service. | keyword |
+| o365.metrics.entra.alerts.service_member_id | The ID of the service member. | keyword |
+| o365.metrics.entra.alerts.short_name | Short name for the alert. | keyword |
+| o365.metrics.entra.alerts.state | Current state of the alert. | keyword |
+| o365.metrics.entra.alerts.tenant_id | The ID of the tenant. | keyword |
 
