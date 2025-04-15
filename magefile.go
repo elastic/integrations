@@ -14,10 +14,12 @@ import (
 	"path/filepath"
 	"strconv"
 
+	"github.com/Masterminds/semver/v3"
 	"github.com/magefile/mage/mg"
 	"github.com/magefile/mage/sh"
 	"github.com/pkg/errors"
 
+	"github.com/elastic/integrations/dev/citools"
 	"github.com/elastic/integrations/dev/codeowners"
 	"github.com/elastic/integrations/dev/coverage"
 	"github.com/elastic/integrations/dev/testsreporter"
@@ -155,6 +157,7 @@ func ReportFailedTests(ctx context.Context, testResultsFolder string) error {
 	dryRunEnv := os.Getenv("DRY_RUN")
 	serverlessProjectEnv := os.Getenv("SERVERLESS_PROJECT")
 	buildURL := os.Getenv("BUILDKITE_BUILD_URL")
+	subscription := os.Getenv("ELASTIC_SUBSCRIPTION")
 
 	serverless := false
 	if serverlessEnv != "" {
@@ -202,6 +205,7 @@ func ReportFailedTests(ctx context.Context, testResultsFolder string) error {
 		ServerlessProject: serverlessProjectEnv,
 		LogsDB:            logsDBEnabled,
 		StackVersion:      stackVersion,
+		Subscription:      subscription,
 		BuildURL:          buildURL,
 		MaxPreviousLinks:  defaultPreviousLinksNumber,
 		MaxTestsReported:  maxIssues,
@@ -209,4 +213,87 @@ func ReportFailedTests(ctx context.Context, testResultsFolder string) error {
 		Verbose:           verboseMode,
 	}
 	return testsreporter.Check(ctx, testResultsFolder, options)
+}
+
+// IsSubscriptionCompatible checks whether or not the package in the current directory allows to run with the given subscription (ELASTIC_SUBSCRIPTION env var).
+func IsSubscriptionCompatible() error {
+	subscription := os.Getenv("ELASTIC_SUBSCRIPTION")
+	if subscription == "" {
+		fmt.Println("true")
+		return nil
+	}
+
+	supported, err := citools.IsSubscriptionCompatible(subscription, "manifest.yml")
+	if err != nil {
+		return err
+	}
+	if supported {
+		fmt.Println("true")
+		return nil
+	}
+	fmt.Println("false")
+	return nil
+}
+
+// KibanaConstraintPackage returns the Kibana version constraint defined in the package manifest
+func KibanaConstraintPackage() error {
+	constraint, err := citools.KibanaConstraintPackage("manifest.yml")
+	if err != nil {
+		return fmt.Errorf("faile")
+	}
+	if constraint == nil {
+		fmt.Println("null")
+		return nil
+	}
+	fmt.Println(constraint)
+	return nil
+}
+
+// IsSupportedStack checks whether or not the package in the current directory is allowed to be installed in the given stack version
+func IsSupportedStack(stackVersion string) error {
+	if stackVersion == "" {
+		fmt.Println("true")
+		return nil
+	}
+
+	supported, err := citools.IsPackageSupportedInStackVersion(stackVersion, "manifest.yml")
+	if err != nil {
+		return err
+	}
+
+	if supported {
+		fmt.Println("true")
+		return nil
+	}
+	fmt.Println("false")
+	return nil
+}
+
+// IsLogsDBSupportedInPackage checks whether or not the package in the current directory supports LogsDB
+func IsLogsDBSupportedInPackage() error {
+	supported, err := citools.IsLogsDBSupportedInPackage("manifest.yml")
+	if err != nil {
+		return err
+	}
+	if !supported {
+		fmt.Println("false")
+		return nil
+	}
+	fmt.Println("true")
+	return nil
+}
+
+// IsVersionLessThanLogsDBGA checks whether or not the given version supports LogsDB. Minimum version that supports LogsDB as GA 8.17.0.
+func IsVersionLessThanLogsDBGA(version string) error {
+	stackVersion, err := semver.NewVersion(version)
+	if err != nil {
+		return fmt.Errorf("failed to parse version %q: %w", version, err)
+	}
+	lessThan := citools.IsVersionLessThanLogsDBGA(stackVersion)
+	if lessThan {
+		fmt.Println("true")
+		return nil
+	}
+	fmt.Println("false")
+	return nil
 }

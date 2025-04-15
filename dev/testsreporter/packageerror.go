@@ -24,6 +24,7 @@ type packageErrorOptions struct {
 	ServerlessProject string
 	LogsDB            bool
 	StackVersion      string
+	Subscription      string
 	BuildURL          string
 	TestCase          testCase
 	CodeownersPath    string
@@ -42,6 +43,7 @@ func newPackageError(options packageErrorOptions) (*packageError, error) {
 			serverlessProject: options.ServerlessProject,
 			logsDB:            options.LogsDB,
 			stackVersion:      options.StackVersion,
+			subscription:      options.Subscription,
 			errorLinks: errorLinks{
 				firstBuild:     options.BuildURL,
 				closedIssueURL: options.ClosedIssueURL,
@@ -101,7 +103,10 @@ func (p *packageError) SummaryData() map[string]any {
 }
 
 func (p *packageError) DescriptionData() map[string]any {
-	data := p.errorLinks.Data()
+	data := p.SummaryData()
+	for key, value := range p.errorLinks.Data() {
+		data[key] = value
+	}
 	data["failure"] = truncateText(p.Failure, defaultMaxLengthMessages)
 	data["error"] = truncateText(p.Error, defaultMaxLengthMessages)
 	return data
