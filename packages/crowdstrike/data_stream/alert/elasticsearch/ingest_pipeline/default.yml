@@ -4,7 +4,7 @@ processors:
   - set:
       field: ecs.version
       tag: set_ecs_version
-      value: 8.11.0
+      value: 8.17.0
   - set:
       field: event.kind
       tag: set_event_kind
@@ -66,6 +66,11 @@ processors:
       tag: rename_agent_id
       target_field: crowdstrike.alert.agent_id
       ignore_missing: true
+  - set:
+      field: host.id
+      tag: set_host_id_from_alert_agent_id
+      copy_from: crowdstrike.alert.agent_id
+      ignore_empty_value: true
   - rename:
       field: json.agent_scan_id
       tag: rename_agent_scan_id
@@ -525,10 +530,6 @@ processors:
       tag: set_host_os_platform_from_alert_device_platform_name
       copy_from: crowdstrike.alert.device.platform_name
       ignore_empty_value: true
-  - lowercase:
-      field: crowdstrike.alert.device.platform_name
-      target_field: host.os.type
-      ignore_failure: true
   - rename:
       field: json.device.pod_labels
       tag: rename_device_pod_labels
@@ -1401,6 +1402,36 @@ processors:
       tag: set_host_os_name_from_alert_operating_system
       copy_from: crowdstrike.alert.operating_system
       ignore_empty_value: true
+  - script:
+      description: Dynamically set host.os.type values.
+      tag: script_map_host_os_type
+      lang: painless
+      params:
+        os_type:
+          - linux
+          - macos
+          - unix
+          - windows
+          - ios
+          - android
+      source: |
+        if (ctx.crowdstrike?.alert?.device?.platform_name != null) {
+          String platform_name = ctx.crowdstrike.alert.device.platform_name.toLowerCase();
+          for (String os: params.os_type) {
+            if (platform_name.contains(os)) {
+              ctx.host.os.put('type', os);
+              return;
+            }
+          }
+        } else if (ctx.crowdstrike?.alert?.operating_system != null) {
+          String operating_system = ctx.crowdstrike.alert.operating_system.toLowerCase();
+          for (String os: params.os_type) {
+            if (operating_system.contains(os)) {
+              ctx.host.os.put('type', os);
+              return;
+            }
+          }
+        }
   - rename:
       field: json.os_name
       tag: rename_os_name
@@ -2566,6 +2597,7 @@ processors:
       ignore_missing: true
   - remove:
       field:
+        - crowdstrike.alert.agent_id
         - crowdstrike.alert.command_line
         - crowdstrike.alert.description
         - crowdstrike.alert.device.device_id

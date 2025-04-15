@@ -1,5 +1,12 @@
 title: "Falcon Data Replicator"
 type: logs
+elasticsearch:
+  index_template:
+    settings:
+      index:
+        mapping:
+          total_fields:
+            limit: 2000
 streams:
   - input: aws-s3
     template_path: aws-s3.yml.hbs
@@ -84,6 +91,34 @@ streams:
         type: text
         multi: false
         default: 0
+      - name: long_fields
+        title: Long Fields
+        description: Choose to `Index` or `Delete` long fields. Fields longer than 1024 bytes (except `event.original`) will be kept (indexed) or deleted based on this option.
+        type: select
+        multi: false
+        required: true
+        show_user: false
+        options:
+          - text: Index
+            value: index_long_fields
+          - text: Delete
+            value: delete_long_fields
+        default: index_long_fields
+      - name: long_fields_max_length
+        type: integer
+        title: Maximum Length of Fields
+        description: The maximum length of fields (in bytes) to consider them as too long. By default, fields larger than `1024` bytes are considered too long. This option in addition to `Long Fields` option helps users configure how integration should handle long fields.
+        default: 1024
+        required: true
+        show_user: false
+      - name: enable_deduplication
+        title: Enable Data Deduplication
+        required: true
+        show_user: false
+        description: If data deduplication is enabled, it ensures no duplicate events are received. A [fingerprint processor](https://www.elastic.co/guide/en/elasticsearch/reference/current/fingerprint-processor.html) is used to calculate hash from a set of crowdstrike fields that uniquely defines the event.
+        type: bool
+        multi: false
+        default: false
       - name: preserve_original_event
         required: true
         show_user: true
@@ -221,10 +256,28 @@ streams:
       - name: max_number_of_messages
         type: integer
         title: Maximum Concurrent SQS Messages
-        description: The maximum number of SQS messages that can be in flight at any time.
+        description: Deprecated in agent version 8.16.0, this parameter is ignored if present, use `Number of Workers` instead. The maximum number of SQS messages that can be in flight at any time.
         default: 5
         required: false
         show_user: false
+      - name: number_of_workers
+        type: integer
+        title: Number of Workers
+        description: Number of workers that will process the S3 or SQS objects listed.
+        default: 5
+        required: false
+        show_user: false
+
+      - name: prune_fields
+        type: bool
+        title: Prune Fields
+        default: true
+        multi: false
+        required: false
+        show_user: false
+        description: >-
+          Prune fields deletes fields that are less likely to be useful. This includes `agent.ephemeral_id`, `ecs.version`,
+          `event.timezone` and `log.offset`.
   - input: logfile
     title: Falcon Data Replicator logs
     description: Collect Falcon Data Replicator logs using a log file
@@ -285,4 +338,13 @@ streams:
         show_user: false
         description: >
           Processors are used to reduce the number of fields in the exported event or to enhance the event with metadata. This executes in the agent before the logs are parsed. See [Processors](https://www.elastic.co/guide/en/beats/filebeat/current/filtering-and-enhancing-data.html) for details.
-
+      - name: prune_fields
+        type: bool
+        title: Prune Fields
+        default: true
+        multi: false
+        required: false
+        show_user: false
+        description: >-
+          Prune fields deletes fields that are less likely to be useful. This includes `agent.ephemeral_id`, `ecs.version`,
+          `event.timezone` and `log.offset`.

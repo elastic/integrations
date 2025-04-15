@@ -94,6 +94,13 @@ processors:
       tag: set_event_id
       copy_from: wiz.issue.id
       ignore_empty_value: true
+  - script:
+      tag: set_event_url
+      description: Generate an event URL from the event ID and rule ID; helps to investigate the Wiz events.
+      lang: painless
+      if: ctx.event?.id != null
+      source: >
+        ctx.event.url = "https://app.wiz.io/issues#~(filters~(status~())~issue~'" + ctx.event.id + ")";
   - set:
       field: event.kind
       value: event

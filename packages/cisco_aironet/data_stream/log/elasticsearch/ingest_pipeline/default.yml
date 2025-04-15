@@ -217,6 +217,13 @@ processors:
       patterns:
         - "STA\\(Target MAC Address\\) \\[%{MAC:client.mac}.*?\\] %{DATA:event.reason}\\(Source IP Address\\) %{IP:client.ip}%{DATA}\\(Destination IP Address\\) %{IP:server.ip}"
       ignore_failure: false
+  - grok:
+      description: CLIENT_ORCH_LOG-6-CLIENT_ADDED_TO_RUN_STATE
+      field: message
+      if: ctx._temp_?.reason == 'CLIENT_ORCH_LOG-6-CLIENT_ADDED_TO_RUN_STATE'
+      patterns:
+        - "R0/0: wncd: Username entry \\(%{DATA:user.name}\\) joined with ssid \\(%{DATA:cisco.ssid}\\) for device with MAC: %{MAC:client.mac}"
+      ignore_failure: false
   ###
   # Client MAC
   - grok:
@@ -234,6 +241,18 @@ processors:
       pattern: '[:.]'
       replacement: '-'
       ignore_missing: true
+  - script:
+      lang: painless
+      if: ctx.client?.mac != null
+      description: 'Convert Cisco style mac to standard format (XXXX-XXXX-XXXX to XX-XX-XX-XX-XX-XX)'
+      source: |
+        def mac = ctx.client.mac;
+        def pattern = /^[A-F0-9]{4}(-[A-F0-9]{4}){2}$/;
+        def matcher = pattern.matcher(mac);
+        if (matcher.matches()) {
+           ctx.client.mac = mac.substring(0,2) + "-" + mac.substring(2,4) + "-" + mac.substring(5,7) + "-" + mac.substring(7,9) + "-" + mac.substring(10,12) + "-" + mac.substring(12,14);
+        }
+
   - uppercase:
       field: source.mac
       ignore_missing: true
