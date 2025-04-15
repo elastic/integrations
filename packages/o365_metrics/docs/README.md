@@ -923,6 +923,7 @@ An example event for `onedrive_usage_account_counts` looks as following:
                             "active": {
                                 "count": 14
                             },
+                            "site_type": "All",
                             "report": {
                                 "date": "2024-11-23",
                                 "period": {
@@ -966,6 +967,7 @@ Please refer to the following [document](https://www.elastic.co/guide/en/ecs/cur
 | o365.metrics.onedrive.usage.account.counts.report.date | The date the report was generated. | date |  |  |
 | o365.metrics.onedrive.usage.account.counts.report.period.day | The reporting period over which the data is aggregated (in days). | integer | d |  |
 | o365.metrics.onedrive.usage.account.counts.report.refresh_date | The date when the report data was last updated. | date |  |  |
+| o365.metrics.onedrive.usage.account.counts.site_type | The type of the site. | keyword |  |  |
 | o365.metrics.onedrive.usage.account.counts.total.count | The total number of OneDrive accounts evaluated in the report. | long |  | gauge |
 
 
@@ -1033,6 +1035,7 @@ An example event for `onedrive_usage_file_counts` looks as following:
                             "active": {
                                 "count": 14
                             },
+                            "site_type": "All",
                             "report": {
                                 "date": "2024-11-23",
                                 "period": {
@@ -1076,6 +1079,7 @@ Please refer to the following [document](https://www.elastic.co/guide/en/ecs/cur
 | o365.metrics.onedrive.usage.file.counts.report.date | The date the report was generated. | date |  |  |
 | o365.metrics.onedrive.usage.file.counts.report.period.day | The reporting period over which the data is aggregated (in days). | integer | d |  |
 | o365.metrics.onedrive.usage.file.counts.report.refresh_date | The date when the report data was last updated. | date |  |  |
+| o365.metrics.onedrive.usage.file.counts.site_type | The type of the site. | keyword |  |  |
 | o365.metrics.onedrive.usage.file.counts.total.count | The total number of OneDrive accounts evaluated in the report. | long |  | gauge |
 
 
@@ -1139,6 +1143,7 @@ An example event for `onedrive_usage_storage` looks as following:
             "onedrive": {
                 "usage": {
                     "storage": {
+                        "site_type": "OneDrive",
                         "report": {
                             "date": "2024-12-16",
                             "period": {
@@ -1180,6 +1185,7 @@ Please refer to the following [document](https://www.elastic.co/guide/en/ecs/cur
 | o365.metrics.onedrive.usage.storage.report.date | The date the report was generated. | date |  |  |
 | o365.metrics.onedrive.usage.storage.report.period.day | The reporting period over which the data is aggregated (in days). | integer | d |  |
 | o365.metrics.onedrive.usage.storage.report.refresh_date | The date when the report data was last updated. | date |  |  |
+| o365.metrics.onedrive.usage.storage.site_type | The type of the site. | keyword |  |  |
 | o365.metrics.onedrive.usage.storage.used.byte | The total storage used across OneDrive accounts during the reporting period, in bytes. | long | byte | gauge |
 
 
