@@ -78,6 +78,8 @@ processors:
 state:
   want_more: false
   url: "https://management.microsoft.com/v1.0"
+  worklist: []
+  next: 0
   base:
     tenant_id: "{{azure_tenant_id}}"
     period: "{{period}}"
@@ -87,15 +89,41 @@ redact:
     - base.tenant_id
 
 program: |
-    state.with(
-      request("GET", state.url + "/alerts").do_request().as(alerts_resp,
-        alerts_resp.StatusCode == 200
-        ?
-          bytes(alerts_resp.Body).decode_json().as(alerts_json,
+  (
+      state.with(
+          request(
+            "GET",
+            state.url + "/providers/Microsoft.ADHybridHealthService/services/GetServices/PremiumCheck"
+          ).do_request().as(resp, resp.StatusCode == 200 ?
+            bytes(resp.Body).decode_json().as(body, {
+              "worklist": body.value.collate("serviceName"),
+            })
+          :
             {
-              "events": alerts_json.value.map(alert,
-                {
-                  "o365": {
+              "events": {
+                "error": {
+                  "code": string(resp.StatusCode),
+                  "id": string(resp.Status),
+                  "message": "GET /GetServices/PremiumCheck:" + (
+                    size(resp.Body) != 0 ?
+                      string(resp.Body)
+                    :
+                      string(resp.Status) + ' (' + string(resp.StatusCode) + ')'
+                  ),
+                },
+              },
+              "want_more": false,
+            }
+        ))
+  ).as(state, state.with(
+        request(
+          "GET",
+          state.url + "/providers/Microsoft.ADHybridHealthService/services/" + state.worklist[state.next] + "/alerts"
+        ).do_request().as(resp, resp.StatusCode == 200 ?
+          bytes(resp.Body).decode_json().as(body,{
+            "events": (
+                body.value.map(alert, {
+                 "o365": {
                     "metrics": {
                       "entra": {
                         "alerts": {
@@ -118,25 +146,28 @@ program: |
                       }
                     }
                   }
-                }
-              )
-            }
-          )
+                })
+            ),
+            "worklist": int(state.next) + 1 < size(state.worklist) ? state.worklist : [],
+            "next": int(state.next) + 1 < size(state.worklist) ? int(state.next) + 1 : 0,
+            "want_more": int(state.next) + 1 < size(state.worklist)   
+          })
         :
           {
             "events": {
               "error": {
-                "code": string(alerts_resp.StatusCode),
-                "id": string(alerts_resp.Status),
-                "message": "GET " + "https://management.microsoft.com/v1.0" + "/alerts: " + (
-                  size(alerts_resp.Body) != 0 ?
-                    string(alerts_resp.Body)
+                "code": string(resp.StatusCode),
+                "id": string(resp.Status),
+                "message": "GET /services/" + state.worklist[state.next] + "/alerts:" + (
+                  size(resp.Body) != 0 ?
+                    string(resp.Body)
                   :
-                    string(alerts_resp.Status) + ' (' + string(alerts_resp.StatusCode) + ')'
-                )
-              }
+                    string(resp.Status) + ' (' + string(resp.StatusCode) + ')'
+                ),
+              },
             },
-            "want_more": false
+            "want_more": false,
           }
-      )
+        )
     )
+  )
