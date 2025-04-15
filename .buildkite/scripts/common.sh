@@ -320,20 +320,12 @@ delete_kind_cluster() {
 }
 
 kibana_version_manifest() {
-    local kibana_version
-    kibana_version=$(cat manifest.yml | yq ".conditions.kibana.version")
-    if [ "${kibana_version}" != "null" ]; then
-        echo "${kibana_version}"
-        return
+    local kibana_version=""
+    if ! kibana_version=$(mage -d "${WORKSPACE}" -w . kibanaConstraintPackage) ; then
+        return 1
     fi
-
-    kibana_version=$(cat manifest.yml | yq ".conditions.\"kibana.version\"")
-    if [ "${kibana_version}" != "null" ]; then
-        echo "${kibana_version}"
-        return
-    fi
-
-    echo "null"
+    echo "${kibana_version}"
+    return 0
 }
 
 capabilities_manifest() {
@@ -459,35 +451,25 @@ is_supported_stack() {
         return 0
     fi
 
-    local kibana_version
-    kibana_version=$(kibana_version_manifest)
-    if [ "${kibana_version}" == "null" ]; then
-        return 0
-    fi
-    if [[ ( ! "${kibana_version}" =~ \^7\. ) && "${STACK_VERSION}" =~ ^7\. ]]; then
+    local supported
+    if ! supported=$(mage -d "${WORKSPACE}" -w . isSupportedStack "${STACK_VERSION}"); then
         return 1
     fi
-    if [[ ( ! "${kibana_version}" =~ \^8\. ) && "${STACK_VERSION}" =~ ^8\. ]]; then
-        return 1
-    fi
-
-    # TODO: Allowed temporarily to test packages with stack version 9.0 if they have as constraint ^8.0 defined too.
-    # This workaround should be removed once packages have been updated their constraints for 9.0 stack.
-    if [[ ( ! ( "${kibana_version}" =~ \^9\. || "${kibana_version}" =~ \^8\. ) ) && "${STACK_VERSION}" =~ ^9\. ]]; then
-        return 1
-    fi
-
+    echo "${supported}"
     return 0
 }
 
 oldest_supported_version() {
     local kibana_version
-    kibana_version=$(kibana_version_manifest)
+    if ! kibana_version=$(kibana_version_manifest); then
+        return 1
+    fi
     if [ "$kibana_version" != "null" ]; then
         python3 "${SCRIPTS_BUILDKITE_PATH}/find_oldest_supported_version.py" --manifest-path manifest.yml
-        return
+        return 0
     fi
     echo "null"
+    return 0
 }
 
 create_elastic_package_profile() {
@@ -509,7 +491,9 @@ prepare_stack() {
         version_set="${STACK_VERSION}"
     else
         local version
-        version=$(oldest_supported_version)
+        if ! version=$(oldest_supported_version); then
+            return 1
+        fi
         if [[ "${requiredLogsDB}" == "true" ]]; then
             # If LogsDB index mode is enabled, the required Elastic stack should be at least 8.17.0
             # In 8.17.0 LogsDB index mode was made GA.
@@ -724,7 +708,12 @@ is_pr_affected() {
     local from="${2}"
     local to="${3}"
 
-    if ! is_supported_stack ; then
+    local stack_supported=""
+    if ! stack_supported=$(is_supported_stack) ; then
+        echo "${FATAL_ERROR}"
+        return 1
+    fi
+    if [[ "${stack_supported}" == "false" ]]; then
         echo "[${package}] PR is not affected: unsupported stack (${STACK_VERSION})"
         return 1
     fi
