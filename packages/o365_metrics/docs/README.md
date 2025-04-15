@@ -3386,45 +3386,45 @@ An example event for `entra_agent` looks as following:
 
 ```json
 {
-    "@timestamp": "2025-04-10T10:40:03.447Z",
+    "@timestamp": "2025-04-15T19:56:18.234Z",
     "agent": {
-        "ephemeral_id": "7852790c-2a34-413e-a94c-74c05f82e5f9",
-        "id": "f3fc8c0f-bd46-481e-bf2c-764831ee324c",
-        "name": "elastic-agent-67757",
+        "ephemeral_id": "1cfd9a42-ad2b-4646-b57d-15a2870b49e5",
+        "id": "bfcc8bed-6f67-4b29-8c6f-f8d88901dcd3",
+        "name": "elastic-agent-73243",
         "type": "filebeat",
         "version": "8.16.0"
     },
     "data_stream": {
-        "dataset": "o365_metrics.entra_features",
-        "namespace": "21154",
+        "dataset": "o365_metrics.entra_agent",
+        "namespace": "94664",
         "type": "metrics"
     },
     "ecs": {
         "version": "8.17.0"
     },
     "elastic_agent": {
-        "id": "f3fc8c0f-bd46-481e-bf2c-764831ee324c",
+        "id": "bfcc8bed-6f67-4b29-8c6f-f8d88901dcd3",
         "snapshot": false,
         "version": "8.16.0"
     },
     "event": {
         "agent_id_status": "verified",
-        "dataset": "o365_metrics.entra_features",
-        "ingested": "2025-04-10T10:40:06Z"
+        "dataset": "o365_metrics.entra_agent",
+        "ingested": "2025-04-15T19:56:21Z"
     },
     "host": {
         "architecture": "x86_64",
         "containerized": true,
-        "hostname": "elastic-agent-67757",
+        "hostname": "elastic-agent-73243",
         "ip": [
-            "172.20.0.2",
-            "172.18.0.7"
+            "172.19.0.2",
+            "172.18.0.4"
         ],
         "mac": [
-            "02-42-AC-12-00-07",
-            "02-42-AC-14-00-02"
+            "02-42-AC-12-00-04",
+            "02-42-AC-13-00-02"
         ],
-        "name": "elastic-agent-67757",
+        "name": "elastic-agent-73243",
         "os": {
             "family": "",
             "kernel": "5.15.153.1-microsoft-standard-WSL2",
@@ -3441,32 +3441,27 @@ An example event for `entra_agent` looks as following:
         "metrics": {
             "entra": {
                 "agent": {
-                    "block_cloud_object_takeover_through_hard_match_enabled": true,
-                    "block_soft_match_enabled": true,
-                    "bypass_dir_sync_overrides_enabled": true,
-                    "cloud_password_policy_for_password_synced_users_enabled": true,
-                    "concurrent_credential_update_enabled": true,
-                    "concurrent_org_id_provisioning_enabled": true,
-                    "device_writeback_enabled": true,
-                    "directory_extensions_enabled": true,
-                    "fope_conflict_resolution_enabled": true,
-                    "group_write_back_enabled": true,
-                    "on_premises_sync_enabled": true,
-                    "password_sync_enabled": true,
-                    "password_writeback_enabled": true,
-                    "quarantine_upon_proxy_addresses_conflict_enabled": true,
-                    "quarantine_upon_upn_conflict_enabled": true,
-                    "soft_match_on_upn_enabled": true,
-                    "synchronize_upn_for_managed_users_enabled": true,
-                    "unified_group_writeback_enabled": true,
-                    "user_force_password_change_on_logon_enabled": true,
-                    "user_writeback_enabled": true
+                    "active_alerts": 0,
+                    "created_date": "2018-04-28T11:33:07.484Z",
+                    "disabled": false,
+                    "last_disabled": "2018-03-12T23:17:00.511864Z",
+                    "last_reboot": "2024-03-12T11:33:07.484Z",
+                    "last_updated": "2024-03-12T00:15:32.5476494Z",
+                    "machine_id": "SampleMachineId",
+                    "machine_name": "SampleMachineName",
+                    "os_name": "SampleOSName",
+                    "os_version": "SampleOSVersion",
+                    "resolved_alerts": 0,
+                    "role": "AdfsServer_30",
+                    "service_id": "SampleServiceId",
+                    "service_member_id": "SampleServiceMemberId",
+                    "status": "Healthy"
                 }
             }
         }
     },
     "tags": [
-        "o365.metrics.entra_features"
+        "o365.metrics.entra_agent"
     ]
 }
 ```
