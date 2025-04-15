@@ -138,8 +138,12 @@ An example event for `stats` looks as following:
         "architecture": "aarch64",
         "containerized": false,
         "hostname": "093b05dfeffc",
-        "ip": "172.17.0.3",
-        "mac": "02-42-AC-11-00-03",
+        "ip": [
+            "172.17.0.3"
+        ],
+        "mac": [
+            "02-42-AC-11-00-03"
+        ],
         "name": "093b05dfeffc",
         "os": {
             "codename": "noble",
