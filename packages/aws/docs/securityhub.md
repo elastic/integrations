@@ -22,7 +22,7 @@ The [AWS Security Hub](https://docs.aws.amazon.com/securityhub/) integration col
 
   1. For the current integration package, it is recommended to have interval in hours.
   2. For the current integration package, it is compulsory to add Secret Access Key and Access Key ID.
-  3. Findings Full Posture data stream request all the hsitorical findings every 24 hours
+  3. Findings Full Posture data stream request all the historical findings every 24 hours.
 
 ## Logs
 
