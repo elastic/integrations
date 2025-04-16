@@ -3365,22 +3365,22 @@ An example event for `chat` looks as following:
 {
     "@timestamp": "2025-03-26T05:55:02.063Z",
     "agent": {
-        "ephemeral_id": "8bed52ea-bfcb-4e16-af6f-22e3df3b9ad0",
-        "id": "78f87cdf-42a1-459c-95c1-492fe5ac75b5",
-        "name": "elastic-agent-93138",
+        "ephemeral_id": "afc7ce98-0520-45e0-94c4-64274b308642",
+        "id": "411b5487-ebfa-4a91-89da-d7e59f3f1cd2",
+        "name": "elastic-agent-11706",
         "type": "filebeat",
         "version": "8.18.0"
     },
     "data_stream": {
         "dataset": "google_workspace.chat",
-        "namespace": "92365",
+        "namespace": "37789",
         "type": "logs"
     },
     "ecs": {
         "version": "8.16.0"
     },
     "elastic_agent": {
-        "id": "78f87cdf-42a1-459c-95c1-492fe5ac75b5",
+        "id": "411b5487-ebfa-4a91-89da-d7e59f3f1cd2",
         "snapshot": true,
         "version": "8.18.0"
     },
@@ -3392,7 +3392,7 @@ An example event for `chat` looks as following:
         ],
         "dataset": "google_workspace.chat",
         "id": "1",
-        "ingested": "2025-04-11T10:08:04Z",
+        "ingested": "2025-04-16T08:53:19Z",
         "kind": "event",
         "original": "{\"actor\":{\"callerType\":\"USER\",\"email\":\"foo@bar.com\",\"profileId\":\"1\"},\"etag\":\"abcdefgh/cBsNSJx2A9Lg8kiQCGLddmq827A/\",\"events\":{\"name\":\"room_name_updated\",\"parameters\":[{\"name\":\"room_id\",\"value\":\"1\"},{\"name\":\"actor\",\"value\":\"foo@bar.com\"},{\"name\":\"room_name\",\"value\":\"TEST3\"},{\"name\":\"external_room\",\"value\":\"DISABLED\"},{\"name\":\"actor_type\",\"value\":\"NON_ADMIN\"},{\"name\":\"conversation_type\",\"value\":\"SPACE\"},{\"name\":\"conversation_ownership\",\"value\":\"INTERNALLY_OWNED\"}],\"type\":\"user_action\"},\"id\":{\"applicationName\":\"chat\",\"customerId\":\"1\",\"time\":\"2025-03-26T05:55:02.063Z\",\"uniqueQualifier\":\"1\"},\"kind\":\"admin#reports#activity\"}",
         "provider": "chat",

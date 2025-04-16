@@ -39,6 +39,13 @@ processors:
         - append:
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - fingerprint:
+      description: Hashes the ID object and uses it as the document id to avoid duplicate events.
+      fields:
+        - json.id
+        - json.events
+      target_field: _id
+      ignore_missing: true
   - script:
       lang: painless
       tag: script_to_flatten_event_parameters
@@ -47,24 +54,23 @@ processors:
       source: >
         ctx.google_workspace = ctx.google_workspace ?: [:];
         ctx.google_workspace.chat = ctx.google_workspace.chat ?: [:];
-        for (int i = 0; i < ctx.json.events.parameters.length; ++i) {
-          if (ctx.json.events.parameters[i].value != null) {
-            ctx.google_workspace.chat[ctx.json.events.parameters[i].name.toLowerCase()] = ctx.json.events.parameters[i].value;
+        for (def param : ctx.json.events.parameters) {
+          if (param.name == null) {
+            continue;
           }
-          if (ctx.json.events.parameters[i].boolValue != null) {
-            ctx.google_workspace.chat[ctx.json.events.parameters[i].name.toLowerCase()] = ctx.json.events.parameters[i].boolValue;
-          }
-          if (ctx.json.events.parameters[i].intValue != null) {
-            ctx.google_workspace.chat[ctx.json.events.parameters[i].name.toLowerCase()] = ctx.json.events.parameters[i].intValue;
-          }
-          if (ctx.json.events.parameters[i].multiValue != null) {
-            ctx.google_workspace.chat[ctx.json.events.parameters[i].name.toLowerCase()] = ctx.json.events.parameters[i].multiValue;
-          }
-          if (ctx.json.events.parameters[i].multiIntValue != null) {
-            ctx.google_workspace.chat[ctx.json.events.parameters[i].name.toLowerCase()] = ctx.json.events.parameters[i].multiIntValue;
-          }
-          if (ctx.json.events.parameters[i].multiBoolValue != null) {
-            ctx.google_workspace.chat[ctx.json.events.parameters[i].name.toLowerCase()] = ctx.json.events.parameters[i].multiBoolValue;
+          def lw_case_name = param.name.toLowerCase();
+          if (param.value != null) {
+            ctx.google_workspace.chat[lw_case_name] = param.value;
+          } else if (param.boolValue != null) {
+            ctx.google_workspace.chat[lw_case_name] = param.boolValue;
+          } else if (param.intValue != null) {
+            ctx.google_workspace.chat[lw_case_name] = param.intValue;
+          } else if (param.multiValue != null) {
+            ctx.google_workspace.chat[lw_case_name] = param.multiValue;
+          } else if (param.multiIntValue != null) {
+            ctx.google_workspace.chat[lw_case_name] = param.multiIntValue;
+          } else if (param.multiBoolValue != null) {
+            ctx.google_workspace.chat[lw_case_name] = param.multiBoolValue;
           }
         }
       on_failure:

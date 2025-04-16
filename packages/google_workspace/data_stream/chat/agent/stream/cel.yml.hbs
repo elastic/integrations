@@ -45,7 +45,7 @@ program: |
         "maxResults": [string(state.batch_size)],
         "endTime": [state.end_time],
         "startTime": [state.start_time],
-        ?"pageToken": state.?cursor.next_page_token.optMap(v, [v]),
+        ?"pageToken": state.?next.page_token.optMap(v, [v]),
       }.format_query()
     ).do_request().as(resp, resp.StatusCode == 200 ?
       resp.Body.decode_json().as(body,{
@@ -57,11 +57,23 @@ program: |
           :
             []
         ),
+        // Update the cursor only if it is the last page to ensure any interrupted
+        // interval restarts from the beginning.
         "cursor": {
-           "last_timestamp": state.end_time,
-           ?"next_page_token": body.?nextPageToken,
+          ?"last_timestamp": (
+            has(body.nextPageToken) ?
+              state.?cursor.last_timestamp
+            :
+              optional.of(state.end_time)
+          )
          },
         "want_more": has(body.nextPageToken),
+        // The provided page token must be generated within the same time interval as the request.
+        // Using a page token from a previous interval may lead to unexpected results.
+        // The current implementation prevents a page token from being carried over to a subsequent interval.
+        "next": {
+          ?"page_token": body.?nextPageToken,
+        }
       })
     :
       {
