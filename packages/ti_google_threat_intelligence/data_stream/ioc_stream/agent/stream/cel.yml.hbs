@@ -1,0 +1,87 @@
+config_version: 2
+interval: {{interval}}
+{{#if enable_request_tracer}}
+resource.tracer.filename: "../../logs/cel/http-request-trace-*.ndjson"
+resource.tracer.maxbackups: 5
+{{/if}}
+{{#if proxy_url}}
+resource.proxy_url: {{proxy_url}}
+{{/if}}
+{{#if ssl}}
+resource.ssl: {{ssl}}
+{{/if}}
+{{#if http_client_timeout}}
+resource.timeout: {{http_client_timeout}}
+{{/if}}
+resource.url: {{url}}
+state:
+  initial_interval: {{initial_interval}}
+  access_token: {{access_token}}
+redact:
+  fields:
+    - access_token
+program: |
+  (
+    state.?want_more.orValue(false) ?
+      state
+    :
+      state.with({
+        "start_time": state.?cursor.last_timestamp.orValue((now - duration(state.initial_interval)).format("2006-01-02T15:04:05")),
+        "end_time": now.format("2006-01-02T15:04:05"),
+      })
+  ).as(state, state.with(
+    request(
+      "GET",
+      state.url.trim_right("/") + "/api/v3/ioc_stream?" + {
+        "limit": ["40"],
+        "filter": ["date:" + state.start_time + "+"],
+        ?"cursor": has(state.next_page) && state.next_page != null ? optional.of([string(state.next_page)]) : optional.none()
+      }.format_query()
+    ).with({
+      "Header": {
+        "x-apikey": [string(state.access_token)],
+        "x-tool":["Elastic"]
+      }
+    }).do_request().as(resp, resp.StatusCode == 200 ?
+      bytes(resp.Body).decode_json().as(body, {
+      "events": body.?data.orValue([{"message": "retry"}]).map(e, {
+        "message": e.encode_json()
+      }),
+      "cursor": {
+        "last_timestamp": has(body.?meta.cursor) ? null : state.end_time,
+      },
+      "want_more": has(body.?meta.cursor),
+      "next_page": has(body.?meta.cursor) ? body.meta.cursor : null  
+      })
+    :
+      {
+        "events": {
+          "error": {
+            "code": string(resp.StatusCode),
+            "id": string(resp.Status),
+            "message": "GET:"+(
+              size(resp.Body) != 0 ?
+                string(resp.Body)
+              :
+                string(resp.Status) + ' (' + string(resp.StatusCode) + ')'
+            ),
+          },
+        },
+        "want_more": false,
+      }
+    )
+  ))
+tags:
+{{#if preserve_original_event}}
+  - preserve_original_event
+{{/if}}
+{{#each tags as |tag|}}
+  - {{tag}}
+{{/each}}
+{{#contains "forwarded" tags}}
+publisher_pipeline.disable_host: true
+{{/contains}}
+{{#if processors}}
+processors:
+{{processors}}
+{{/if}}
