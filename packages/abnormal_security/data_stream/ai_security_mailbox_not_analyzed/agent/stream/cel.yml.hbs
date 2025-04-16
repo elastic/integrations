@@ -31,15 +31,15 @@ program: |
     request(
       "GET",
       state.url.trim_right("/") + "/v1/abuse_mailbox/not_analyzed?" + {
-        "start": [string(state.start_time)],
-        "end": [string(state.end_time)],
+        "start": [state.start_time],
+        "end": [state.end_time],
       }.format_query()
     ).with({
       "Header":{
         "Authorization": ["Bearer " + string(state.access_token)],
       }
     }).do_request().as(resp, resp.StatusCode == 200 ?
-        bytes(resp.Body).decode_json().as(body, has(body.results) && size(body.results) > 0 ?
+        resp.Body.decode_json().as(body, has(body.results) && size(body.results) > 0 ?
           {
             "events": body.results.map(result,
               {
@@ -66,7 +66,7 @@ program: |
             "error": {
               "code": string(resp.StatusCode),
               "id": string(resp.Status),
-              "message": "GET:"+(
+              "message": "GET "+state.url.trim_right("/") + "/v1/abuse_mailbox/not_analyzed:"+(
                 size(resp.Body) != 0 ?
                   string(resp.Body)
                 :
