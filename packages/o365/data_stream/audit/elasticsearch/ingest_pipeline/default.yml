@@ -218,6 +218,52 @@ processors:
         "148": "ComplianceConnector"
         "174": "DataShareOperation"
         "181": "EduDataLakeDownloadOperation"
+        "183": "MicrosoftGraphDataConnectOperation"
+        "186": "PowerPagesSite"
+        "187": "PowerPlatformAdminDlp"
+        "188": "PlannerPlan"
+        "189": "PlannerCopyPlan"
+        "190": "PlannerTask"
+        "191": "PlannerRoster"
+        "192": "PlannerPlanList"
+        "193": "PlannerTaskList"
+        "194": "PlannerTenantSettings"
+        "195": "ProjectForThewebProject"
+        "196": "ProjectForThewebTask"
+        "197": "ProjectForThewebRoadmap"
+        "198": "ProjectForThewebRoadmapItem"
+        "199": "ProjectForThewebProjectSettings"
+        "200": "ProjectForThewebRoadmapSettings"
+        "202": "MicrosoftTodoAudit"
+        "206": "MicrosoftTeamsSensitivityLabelAction"
+        "216": "Viva"
+        "217": "MicrosoftGraphDataConnectConsent"
+        "218": "AttackSimAdmin"
+        "230": "TeamsUpdates"
+        "231": "PlannerRosterSensitivityLabel"
+        "237": "DefenderExpertsforXDRAdmin"
+        "251": "VfamCreatePolicy"
+        "252": "VfamUpdatePolicy"
+        "253": "VfamDeletePolicy"
+        "256": "PowerPlatformAdministratorActivity"
+        "261": "CopilotInteraction"
+        "275": "OWAAuth"
+        "280": "VivaPulseResponse"
+        "281": "VivaPulseOrganizer"
+        "282": "VivaPulseAdmin"
+        "283": "VivaPulseReport"
+        "287": "ProjectForThewebAssignedToMeSettings"
+        "288": "CloudPolicyService"
+        "298": "BackupPolicy"
+        "299": "RestoreTask"
+        "300": "RestoreItem"
+        "301": "BackupItem"
+        "332": "ComplianceSettingsChange"
+        "337": "CloudUpdateProfileConfig"
+        "338": "CloudUpdateTenantConfig"
+        "339": "CloudUpdateDeviceConfig"
+        "358": "TrainableClassifier"
+        "359": "WebContentFiltering"
       source: >
         def schemaId = ctx.o365audit.RecordType.toString();
         def schema = params[schemaId];
@@ -850,6 +896,12 @@ processors:
       field: event.type
       value: group
       if: 'ctx.event?.code == "Yammer" && ctx.event?.action != null && ["GroupCreation", "GroupDeletion"].contains(ctx.event?.action)'
+  # TaskList Schema
+  - split:
+      field: o365audit.TaskList
+      separator: ','
+      ignore_missing: true
+      ignore_failure: true
   # Teams Schema
   - set: 
       field: event.action
