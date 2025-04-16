@@ -273,7 +273,6 @@ Tencent Cloud 集成旨在通过 Elastic Agent 将腾讯云的各种云产品的
 | host.containerized | If the host is a container. | boolean |
 | host.os.build | OS build information. | keyword |
 | host.os.codename | OS codename, if any. | keyword |
-| http.response.status_code |  | keyword |
 | input.type | Input type | keyword |
 | log.offset | Log offset | long |
 | tencent_cloud.clb.__SOURCE__ | Source of the log | keyword |
@@ -294,7 +293,7 @@ Tencent Cloud 集成旨在通过 Elastic Agent 将腾讯云的各种云产品的
 | tencent_cloud.clb.time_local | Local time | date |
 | tencent_cloud.clb.upstream_header_time | Upstream header time | long |
 | tencent_cloud.clb.upstream_response_time | Upstream response time | long |
-| tencent_cloud.clb.upstream_status | Upstream status | keyword |
+| tencent_cloud.clb.upstream_status | Upstream status | long |
 | tencent_cloud.clb.via_stgw_engine | Via STGW engine | keyword |
 | tencent_cloud.clb.vip_vpcid | VIP VPC ID | long |
 | tencent_cloud.clb.vsvc_id | Vsvc ID | long |
