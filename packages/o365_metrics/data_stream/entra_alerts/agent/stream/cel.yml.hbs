@@ -90,6 +90,9 @@ redact:
 
 program: |
   (
+    has(state.worklist) && size(state.worklist) > 0 ?
+      state
+    :
       state.with(
           request(
             "GET",
@@ -116,6 +119,7 @@ program: |
             }
         ))
   ).as(state, state.with(
+        state.next < size(state.worklist) ?
         request(
           "GET",
           state.url + "/providers/Microsoft.ADHybridHealthService/services/" + state.worklist[state.next] + "/alerts"
@@ -148,9 +152,8 @@ program: |
                   }
                 })
             ),
-            "worklist": int(state.next) + 1 < size(state.worklist) ? state.worklist : [],
-            "next": int(state.next) + 1 < size(state.worklist) ? int(state.next) + 1 : 0,
-            "want_more": int(state.next) + 1 < size(state.worklist)   
+          "want_more": int(state.next) < (size(state.worklist) - 1),
+          "next": (int(state.next) + 1)
           })
         :
           {
@@ -169,5 +172,10 @@ program: |
             "want_more": false,
           }
         )
+       :
+        {
+          "events": [],
+          "want_more": false,
+        }
     )
   )
