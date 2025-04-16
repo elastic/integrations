@@ -3387,45 +3387,45 @@ An example event for `entra_alerts` looks as following:
 
 ```json
 {
-    "@timestamp": "2025-04-15T21:10:08.220Z",
+    "@timestamp": "2025-04-16T19:54:35.155Z",
     "agent": {
-        "ephemeral_id": "96447225-9e8a-456d-8c17-20d8351c5f49",
-        "id": "6a6028cb-fd5f-4fd1-ad6c-686dbc7958d0",
-        "name": "elastic-agent-17401",
+        "ephemeral_id": "60d24042-dd55-44f7-8b30-101e689fd91a",
+        "id": "31b77faf-1b24-420c-8bd0-d0349d4fbde9",
+        "name": "elastic-agent-25940",
         "type": "filebeat",
         "version": "8.16.0"
     },
     "data_stream": {
         "dataset": "o365_metrics.entra_alerts",
-        "namespace": "76928",
+        "namespace": "38620",
         "type": "metrics"
     },
     "ecs": {
         "version": "8.17.0"
     },
     "elastic_agent": {
-        "id": "6a6028cb-fd5f-4fd1-ad6c-686dbc7958d0",
+        "id": "31b77faf-1b24-420c-8bd0-d0349d4fbde9",
         "snapshot": false,
         "version": "8.16.0"
     },
     "event": {
         "agent_id_status": "verified",
         "dataset": "o365_metrics.entra_alerts",
-        "ingested": "2025-04-15T21:10:11Z"
+        "ingested": "2025-04-16T19:54:38Z"
     },
     "host": {
         "architecture": "x86_64",
         "containerized": true,
-        "hostname": "elastic-agent-17401",
+        "hostname": "elastic-agent-25940",
         "ip": [
-            "172.20.0.2",
-            "172.18.0.8"
+            "172.21.0.2",
+            "172.18.0.4"
         ],
         "mac": [
-            "02-42-AC-12-00-08",
-            "02-42-AC-14-00-02"
+            "02-42-AC-12-00-04",
+            "02-42-AC-15-00-02"
         ],
-        "name": "elastic-agent-17401",
+        "name": "elastic-agent-25940",
         "os": {
             "family": "",
             "kernel": "5.15.153.1-microsoft-standard-WSL2",
