@@ -28,15 +28,6 @@ processors:
       tag: json_original
       field: event.original
       target_field: tencent_cloud.cos
-  - script:
-      tag: script_convert_array_to_string
-      description: Ensures the date processor does not receive an array value.
-      lang: painless
-      source: |
-        if (ctx.tencent_cloud?.cos?.__TIMESTAMP__ != null &&
-            ctx.tencent_cloud.cos.__TIMESTAMP__ instanceof ArrayList){
-            ctx.tencent_cloud.cos.__TIMESTAMP__ = ctx.tencent_cloud.cos.__TIMESTAMP__[0];
-        }
   - date:
       if: ctx.tencent_cloud?.cos?.__TIMESTAMP__ != null
       tag: date_processor_tencent_cloud.cos.__TIMESTAMP__
@@ -44,10 +35,15 @@ processors:
       target_field: '@timestamp'
       formats:
         - UNIX_MS
-  - rename:
+  - convert:
       ignore_missing: true
       field: tencent_cloud.cos.accountId
       target_field: cloud.account.id
+      type: string
+  - convert:
+      ignore_missing: true
+      field: tencent_cloud.cos.eventVersion
+      type: string
   - rename:
       ignore_missing: true
       field: tencent_cloud.cos.eventName
@@ -212,16 +208,12 @@ processors:
       field: related.user
       value: '{{{user.id}}}'
       allow_duplicates: false
-  - append:
-      if: ctx.event?.provider != null
-      field: related.host
-      value: '{{{event.provider}}}'
-      allow_duplicates: false
   - remove:
       ignore_missing: true
       tag: remove_fields
       field:
         - tencent_cloud.cos.vpcId
+        - tencent_cloud.cos.accountId
         - tencent_cloud.cos.__TIMESTAMP__
   - remove:
       ignore_failure: true
