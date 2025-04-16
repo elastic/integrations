@@ -78,6 +78,8 @@ processors:
 state:
   want_more: false
   url: "https://management.microsoft.com/v1.0"
+  worklist: []
+  next: 0
   base:
     tenant_id: "{{azure_tenant_id}}"
     period: "{{period}}"
@@ -87,15 +89,45 @@ redact:
     - base.tenant_id
 
 program: |
-    state.with(
-      request("GET", state.url + "/providers/Microsoft.ADHybridHealthService/services/GetServices/PremiumCheck").do_request().as(agent_resp,
-        agent_resp.StatusCode == 200
-        ?
-          bytes(agent_resp.Body).decode_json().as(agent_json,
+  (
+    has(state.worklist) && size(state.worklist) > 0 ?
+      state
+    :
+      state.with(
+          request(
+            "GET",
+            state.url + "/providers/Microsoft.ADHybridHealthService/services/GetServices/PremiumCheck"
+          ).do_request().as(resp, resp.StatusCode == 200 ?
+            bytes(resp.Body).decode_json().as(body, {
+              "worklist": body.value.collate("serviceName"),
+            })
+          :
             {
-              "events": agent_json.value.map(agent,
-                {
-                  "o365": {
+              "events": {
+                "error": {
+                  "code": string(resp.StatusCode),
+                  "id": string(resp.Status),
+                  "message": "GET /GetServices/PremiumCheck:" + (
+                    size(resp.Body) != 0 ?
+                      string(resp.Body)
+                    :
+                      string(resp.Status) + ' (' + string(resp.StatusCode) + ')'
+                  ),
+                },
+              },
+              "want_more": false,
+            }
+        ))
+  ).as(state, state.with(
+        state.next < size(state.worklist) ?
+        request(
+          "GET",
+          state.url + "/providers/Microsoft.ADHybridHealthService/services/" + state.worklist[state.next] + "/servicemembers"
+        ).do_request().as(resp, resp.StatusCode == 200 ?
+          bytes(resp.Body).decode_json().as(body,{
+            "events": (
+                body.value.map(agent, {
+                 "o365": {
                     "metrics": {
                       "entra": {
                         "agent": {
@@ -118,25 +150,32 @@ program: |
                       }
                     }
                   }
-                }
-              )
-            }
-          )
+                })
+            ),
+          "want_more": int(state.next) < (size(state.worklist) - 1),
+          "next": (int(state.next) + 1)
+          })
         :
           {
             "events": {
               "error": {
-                "code": string(agent_resp.StatusCode),
-                "id": string(agent_resp.Status),
-                "message": "GET " + "https://management.microsoft.com/v1.0" + "/agent: " + (
-                  size(agent_resp.Body) != 0 ?
-                    string(agent_resp.Body)
+                "code": string(resp.StatusCode),
+                "id": string(resp.Status),
+                "message": "GET /services/" + state.worklist[state.next] + "/servicemembers:" + (
+                  size(resp.Body) != 0 ?
+                    string(resp.Body)
                   :
-                    string(agent_resp.Status) + ' (' + string(agent_resp.StatusCode) + ')'
-                )
-              }
+                    string(resp.Status) + ' (' + string(resp.StatusCode) + ')'
+                ),
+              },
             },
-            "want_more": false
+            "want_more": false,
           }
-      )
+        )
+       :
+        {
+          "events": [],
+          "want_more": false,
+        }
     )
+  )
