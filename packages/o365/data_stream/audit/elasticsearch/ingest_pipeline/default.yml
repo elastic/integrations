@@ -11,12 +11,12 @@ processors:
       ignore_missing: true
       if: 'ctx.event?.original != null'
       description: 'The `message` field is no longer required if the document has an `event.original` field.'
-  - set:
-      field: event.original
-      value: "{{{o365audit}}}"
-      if: ctx.event?.original == null
+  - script:
       tag: set_event_original
-      ignore_empty_value: true
+      if: ctx.event?.original == null
+      source: |-
+        ctx.event = ctx.event ?: [:];
+        ctx.event.original = Json.dump(ctx.o365audit)
   - set:
       field: ecs.version
       value: '8.11.0'

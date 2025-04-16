@@ -71,11 +71,11 @@ An example event for `audit` looks as following:
 {
     "@timestamp": "2020-02-07T16:43:53.000Z",
     "agent": {
-        "ephemeral_id": "50dde7f7-f3a3-4597-9ce3-fd6c21fbe6df",
-        "id": "a6ce2e4c-5271-405f-acc5-cb378534481d",
-        "name": "docker-fleet-agent",
+        "ephemeral_id": "da16f371-03dc-4c53-a8c6-06373b156468",
+        "id": "c04578cd-061a-4331-b57f-c0993ec4b38b",
+        "name": "elastic-agent-84703",
         "type": "filebeat",
-        "version": "8.12.1"
+        "version": "8.18.0"
     },
     "client": {
         "address": "213.97.47.133",
@@ -83,16 +83,16 @@ An example event for `audit` looks as following:
     },
     "data_stream": {
         "dataset": "o365.audit",
-        "namespace": "ep",
+        "namespace": "85933",
         "type": "logs"
     },
     "ecs": {
         "version": "8.11.0"
     },
     "elastic_agent": {
-        "id": "a6ce2e4c-5271-405f-acc5-cb378534481d",
+        "id": "c04578cd-061a-4331-b57f-c0993ec4b38b",
         "snapshot": false,
-        "version": "8.12.1"
+        "version": "8.18.0"
     },
     "event": {
         "action": "PageViewed",
@@ -103,9 +103,9 @@ An example event for `audit` looks as following:
         "code": "SharePoint",
         "dataset": "o365.audit",
         "id": "99d005e6-a4c6-46fd-117c-08d7abeceab5",
-        "ingested": "2024-04-01T12:10:04Z",
+        "ingested": "2025-04-16T05:24:20Z",
         "kind": "event",
-        "original": "{Site=d5180cfc-3479-44d6-b410-8c985ac894e3, ObjectId=https://testsiem-my.sharepoint.com/personal/asr_testsiem_onmicrosoft_com/_layouts/15/onedrive.aspx, UserKey=i:0h.f|membership|1003200096971f55@live.com, ItemType=Page, OrganizationId=b86ab9d4-fcf1-4b11-8a06-7a8f91b47fbd, Operation=PageViewed, ClientIP=213.97.47.133, Workload=OneDrive, EventSource=SharePoint, RecordType=4, Version=1, UserId=asr@testsiem.onmicrosoft.com, WebId=8c5c94bb-8396-470c-87d7-8999f440cd30, CreationTime=2020-02-07T16:43:53, UserAgent=Mozilla/5.0 (Macintosh; Intel Mac OS X 10.14; rv:72.0) Gecko/20100101 Firefox/72.0, CustomUniqueId=true, Id=99d005e6-a4c6-46fd-117c-08d7abeceab5, CorrelationId=622b339f-4000-a000-f25f-92b3478c7a25, ListItemUniqueId=59a8433d-9bb8-cfef-6edc-4c0fc8b86875, UserType=0}",
+        "original": "{\"Site\":\"d5180cfc-3479-44d6-b410-8c985ac894e3\",\"ObjectId\":\"https://testsiem-my.sharepoint.com/personal/asr_testsiem_onmicrosoft_com/_layouts/15/onedrive.aspx\",\"ItemType\":\"Page\",\"UserKey\":\"i:0h.f|membership|1003200096971f55@live.com\",\"OrganizationId\":\"b86ab9d4-fcf1-4b11-8a06-7a8f91b47fbd\",\"Operation\":\"PageViewed\",\"ClientIP\":\"213.97.47.133\",\"Workload\":\"OneDrive\",\"EventSource\":\"SharePoint\",\"RecordType\":4,\"Version\":1,\"UserId\":\"asr@testsiem.onmicrosoft.com\",\"WebId\":\"8c5c94bb-8396-470c-87d7-8999f440cd30\",\"UserAgent\":\"Mozilla/5.0 (Macintosh; Intel Mac OS X 10.14; rv:72.0) Gecko/20100101 Firefox/72.0\",\"CreationTime\":\"2020-02-07T16:43:53\",\"CustomUniqueId\":true,\"Id\":\"99d005e6-a4c6-46fd-117c-08d7abeceab5\",\"CorrelationId\":\"622b339f-4000-a000-f25f-92b3478c7a25\",\"ListItemUniqueId\":\"59a8433d-9bb8-cfef-6edc-4c0fc8b86875\",\"UserType\":0}",
         "outcome": "success",
         "provider": "OneDrive",
         "type": [
@@ -176,7 +176,7 @@ An example event for `audit` looks as following:
             "name": "Mac OS X",
             "version": "10.14"
         },
-        "version": "72.0."
+        "version": "72.0"
     }
 }
 ```
