@@ -4,7 +4,6 @@ resource.tracer:
   enabled: {{enable_request_tracer}}
   filename: "../../logs/cel/http-request-trace-*.ndjson"
   maxbackups: 5
-  maxsize: 5
 {{#if proxy_url}}
 resource.proxy_url: {{proxy_url}}
 {{/if}}
@@ -45,25 +44,23 @@ program: |
         "maxResults": [string(state.batch_size)],
         "endTime": [state.end_time],
         "startTime": [state.start_time],
-        ?"pageToken": state.?next.page_token.optMap(v, [v]),
+        ?"pageToken": state.?cursor.next_page_token.optMap(v, [v]),
       }.format_query()
     ).do_request().as(resp, resp.StatusCode == 200 ?
-      resp.Body.decode_json().as(body,{
-        "events": (
-          has(body.items) ?
+      bytes(resp.Body).decode_json().as(body,{
+         "events": (
+            has(body.items) ?
             body.items.map(item, item.events.map(event, item.drop("events").as(root,
               {"message":root.with({"events": event}).encode_json()}
             ))).flatten()
           :
             []
-        ),
+          ),
         "cursor": {
            "last_timestamp": state.end_time,
-        },
+           ?"next_page_token": body.?nextPageToken,
+         },
         "want_more": has(body.nextPageToken),
-        "next": {
-          ?"page_token": body.?nextPageToken,
-        }
       })
     :
       {
