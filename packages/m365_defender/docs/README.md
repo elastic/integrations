@@ -2,20 +2,15 @@
 
 ## Overview
 
-The [Microsoft 365 Defender](https://learn.microsoft.com/en-us/microsoft-365/security/defender) integration allows you to monitor Alert, Incident (Microsoft Graph Security API) and Event (Streaming API) Logs. Microsoft 365 Defender is a unified pre and post-breach enterprise defense suite that natively coordinates detection, prevention, investigation, and response across endpoints, identities, email, and applications to provide integrated protection against sophisticated attacks.
+The [Microsoft 365 Defender](https://learn.microsoft.com/en-us/microsoft-365/security/defender) integration allows you to monitor Alert, Incident (Microsoft Graph Security API), Event (Streaming API) Logs, and Vulnerability (Microsoft Defender for Endpoint API) Logs. Microsoft 365 Defender is a unified pre and post-breach enterprise defense suite that natively coordinates detection, prevention, investigation, and response across endpoints, identities, email, and applications to provide integrated protection against sophisticated attacks.
 
-Use the Microsoft 365 Defender integration to collect and parse data from the Microsoft Azure Event Hub, and the Microsoft Graph Security v1.0 REST API. Then visualise that data in Kibana.
+Use the Microsoft 365 Defender integration to collect and parse data from the Microsoft Azure Event Hub, Microsoft Graph Security v1.0 REST API, and the Micrsoft Defender Endpoint API. Then visualise that data in Kibana.
 
-For example, you could use the data from this integration to consolidate and correlate security alerts from multiple sources. Also, by looking into the alert and incident, a user can take an appropriate action in the Microsoft 365 Defender Portal.
-
-## Agentless Enabled Integration
-Agentless integrations allow you to collect data without having to manage Elastic Agent in your cloud. They make manual agent deployment unnecessary, so you can focus on your data instead of the agent that collects it. For more information, refer to [Agentless integrations](https://www.elastic.co/guide/en/serverless/current/security-agentless-integrations.html) and the [Agentless integrations FAQ](https://www.elastic.co/guide/en/serverless/current/agentless-integration-troubleshooting.html).
-
-Agentless deployments are only supported in Elastic Serverless and Elastic Cloud environments.  This functionality is in beta and is subject to change. Beta features are not subject to the support SLA of official GA features.
+For example, you could use the data from this integration to consolidate and correlate security alerts from multiple sources. Also, by looking into the alert, incident, and vulnerability a user can take an appropriate action in the Microsoft 365 Defender Portal.
 
 ## Data streams
 
-The Microsoft 365 Defender integration collects logs for three types of events: Alert, Event, and Incident.
+The Microsoft 365 Defender integration collects logs for four types of events: Alert, Event, Incident, and Vulnerability.
 
 **Alert:** This data streams leverages the [Microsoft Graph Security API](https://learn.microsoft.com/en-us/graph/api/resources/security-alert?view=graph-rest-1.0) to collect alerts including suspicious activities in a customer's tenant that Microsoft or partner security providers have identified and flagged for action.
 
@@ -23,13 +18,43 @@ The Microsoft 365 Defender integration collects logs for three types of events: 
 
 **Incidents and Alerts (Recommended):** This data streams leverages the [Microsoft Graph Security API](https://learn.microsoft.com/en-us/graph/api/resources/security-api-overview?view=graph-rest-1.0) to ingest a collection of correlated alert instances and associated metadata that reflects the story of an attack in M365D. Incidents stemming from Microsoft 365 Defender, Microsoft Defender for Endpoint, Microsoft Defender for Office 365, Microsoft Defender for Identity, Microsoft Defender for Cloud Apps, and Microsoft Purview Data Loss Prevention are supported by this integration.
 
+**Vulnerability:** This data stream uses the Microsoft Defender for Endpoint API to collect a comprehensive set of [vulnerability data](https://learn.microsoft.com/en-us/defender-endpoint/api/get-all-vulnerabilities), also identifying the [affected machines](https://learn.microsoft.com/en-us/defender-endpoint/api/get-machines-by-vulnerability) and the [specific products](https://learn.microsoft.com/en-us/defender-endpoint/api/get-all-vulnerabilities-by-machines) on those machines. This provides a clearer understanding of potential security risks within your environment.
+
 ## Requirements
 
 You need Elasticsearch for storing and searching your data and Kibana for visualizing and managing it. You can use our hosted Elasticsearch Service on Elastic Cloud, which is recommended, or self-manage the Elastic Stack on your own hardware.
 
-This module has used **Microsoft Azure Event Hub** for Streaming Event, and **Microsoft Graph Security v1.0 REST API** for Incident data stream.
+This module has used **Microsoft Azure Event Hub** for Streaming Event, **Microsoft Graph Security v1.0 REST API** for Incident data stream and **Microsoft Defender for Endpoint API** for Vulnerability data stream.
 
 For **Event**, using filebeat's [Azure Event Hub](https://www.elastic.co/guide/en/beats/filebeat/current/filebeat-input-azure-eventhub.html) input, state such as leases on partitions and checkpoints in the event stream are shared between receivers using an Azure Storage container. For this reason, as a prerequisite to using this input, users will have to create or use an existing storage account.
+
+### Agentless Enabled Integration
+Agentless integrations allow you to collect data without having to manage Elastic Agent in your cloud. They make manual agent deployment unnecessary, so you can focus on your data instead of the agent that collects it. For more information, refer to [Agentless integrations](https://www.elastic.co/guide/en/serverless/current/security-agentless-integrations.html) and the [Agentless integrations FAQ](https://www.elastic.co/guide/en/serverless/current/agentless-integration-troubleshooting.html).
+
+Agentless deployments are only supported in Elastic Serverless and Elastic Cloud environments.  This functionality is in beta and is subject to change. Beta features are not subject to the support SLA of official GA features.
+
+### Agent Based Installation
+- Elastic Agent must be installed
+- You can install only one Elastic Agent per host.
+- Elastic Agent is required to stream data from the GCP Pub/Sub or REST API and ship the data to Elastic, where the events will then be processed via the integration's ingest pipelines.
+
+#### Installing and managing an Elastic Agent:
+
+You have a few options for installing and managing an Elastic Agent:
+
+#### Install a Fleet-managed Elastic Agent (recommended):
+
+With this approach, you install Elastic Agent and use Fleet in Kibana to define, configure, and manage your agents in a central location. We recommend using Fleet management because it makes the management and upgrade of your agents considerably easier.
+
+#### Install Elastic Agent in standalone mode (advanced users):
+
+With this approach, you install Elastic Agent and manually configure the agent locally on the system where it’s installed. You are responsible for managing and upgrading the agents. This approach is reserved for advanced users only.
+
+#### Install Elastic Agent in a containerized environment:
+
+You can run Elastic Agent inside a container, either with Fleet Server or standalone. Docker images for all versions of Elastic Agent are available from the Elastic Docker registry and we provide deployment manifests for running on Kubernetes.
+
+There are some minimum requirements for running Elastic Agent and for more information, refer to the link [here](https://www.elastic.co/guide/en/fleet/current/elastic-agent-installation.html).
 
 ## Compatibility
 
@@ -70,6 +95,21 @@ For **Event**, using filebeat's [Azure Event Hub](https://www.elastic.co/guide/e
 1. [Register a new Azure Application](https://learn.microsoft.com/en-us/graph/auth-register-app-v2?view=graph-rest-1.0).
 2. Permission required for accessing Incident API would be **SecurityIncident.Read.All**. See more details [here](https://learn.microsoft.com/en-us/graph/auth-v2-service?view=graph-rest-1.0)
 3. After the application has been created, it will generate Client ID, Client Secret and Tenant ID values that are required for alert and incident data collection.
+
+### To collect data from Microsoft Defender for Endpoint API, follow the below steps:
+
+1. [Register a new Azure Application](https://learn.microsoft.com/en-us/defender-endpoint/api/exposed-apis-create-app-webapp).
+2. Permission required for accessing Vulnerability API would be **Vulnerability.Read.All**. See more details [here](https://learn.microsoft.com/en-us/defender-endpoint/api/get-all-vulnerabilities)
+3. After the application has been created, it will generate Client ID, Client Secret and Tenant ID values that are required for vulnerability data collection.
+
+### Data Retention and ILM Configuration
+A full sync pulls in a large volume of data, which can lead to storage issues or index overflow over time. To avoid this, we’ve set up an Index Lifecycle Management (ILM) policy that automatically deletes data older than 7 days. This helps keep storage usage under control.
+
+> **Note:** The user or service account associated with the integration must have the following **index privileges** on the relevant index have the following permissions `delete`, `delete_index`
+
+## Troubleshooting
+
+If you see an error saying `exceeded maximum number of CEL executions` during data ingestion, it usually means a large volume of data is being processed for the selected time interval. To fix this, try increasing the Max Executions setting in the configuration.
 
 ## Logs reference
 
@@ -1433,4 +1473,180 @@ An example event for `incident` looks as following:
 | m365_defender.incident.web_url.query |  | keyword |
 | m365_defender.incident.web_url.scheme |  | keyword |
 | m365_defender.incident.web_url.username |  | keyword |
+
+
+### vulnerability
+
+This is the `vulnerability` dataset.
+
+#### Example
+
+An example event for `vulnerability` looks as following:
+
+```json
+{
+    "@timestamp": "2025-04-16T08:02:32.120Z",
+    "agent": {
+        "ephemeral_id": "69e07347-7dfa-498a-a1cb-873cbfc02df2",
+        "id": "4aad0efb-56d4-471c-84d0-f7e7f8ad817d",
+        "name": "elastic-agent-44360",
+        "type": "filebeat",
+        "version": "8.18.0"
+    },
+    "data_stream": {
+        "dataset": "m365_defender.vulnerability",
+        "namespace": "21648",
+        "type": "logs"
+    },
+    "ecs": {
+        "version": "8.17.0"
+    },
+    "elastic_agent": {
+        "id": "4aad0efb-56d4-471c-84d0-f7e7f8ad817d",
+        "snapshot": true,
+        "version": "8.18.0"
+    },
+    "event": {
+        "agent_id_status": "verified",
+        "category": [
+            "vulnerability"
+        ],
+        "dataset": "m365_defender.vulnerability",
+        "ingested": "2025-04-16T08:02:35Z",
+        "kind": "event",
+        "original": "{\"affectedMachine\":{\"assetCriticalityLevel\":\"None\",\"computerDnsName\":\"vmfimwin2k19\",\"cveId\":\"CVE-2025-3074\",\"fixingKbId\":null,\"id\":\"94819846155826828d1603b913c67fe336d81295-_-CVE-2025-3074-_-microsoft-_-edge_chromium-based-_-134.0.3124.72-_-\",\"machineId\":\"94819846155826828d1603b913c67fe336d81295\",\"osPlatform\":\"WindowsServer2019\",\"productName\":\"edge_chromium-based\",\"productVendor\":\"microsoft\",\"productVersion\":\"134.0.3124.72\",\"rbacGroupId\":0,\"rbacGroupName\":null,\"severity\":\"Medium\",\"tags\":[]},\"cveSupportability\":\"Supported\",\"cvssV3\":6.5,\"cvssVector\":\"CVSS:3.1/AV:N/AC:L/PR:N/UI:R/S:U/C:N/I:H/A:N/E:U/RL:O/RC:C\",\"description\":\"Summary: An inappropriate implementation in the Downloads feature of Google Chrome versions prior to 135.0.7049.52 could allow a remote attacker to perform UI spoofing via a crafted HTML page. This vulnerability, classified with a low severity by Chromium, may also enable bypassing security restrictions when a victim visits a specially crafted website. Impact: Exploitation of this vulnerability could lead to UI spoofing or bypassing security restrictions, potentially compromising user trust and security. AdditionalInformation: This vulnerability is associated with Google Chrome and has implications for Microsoft Edge (Chromium-based) due to shared code ingestion. Refer to Google Chrome Releases for further details. Remediation: Apply the latest patches and updates provided by the respective vendors. [Generated by AI]\",\"epss\":0.00111,\"exploitInKit\":false,\"exploitTypes\":[],\"exploitUris\":[],\"exploitVerified\":false,\"exposedMachines\":2,\"firstDetected\":\"2025-04-01T19:52:39Z\",\"id\":\"CVE-2025-3074\",\"name\":\"CVE-2025-3074\",\"patchFirstAvailable\":null,\"publicExploit\":false,\"publishedOn\":\"2025-04-01T00:00:00Z\",\"severity\":\"Medium\",\"tags\":[],\"updatedOn\":\"2025-04-08T00:00:00Z\"}",
+        "type": [
+            "info"
+        ]
+    },
+    "host": {
+        "id": "94819846155826828d1603b913c67fe336d81295",
+        "name": "vmfimwin2k19",
+        "os": {
+            "platform": "WindowsServer2019",
+            "type": "windows"
+        },
+        "risk": {
+            "calculated_level": "Medium"
+        }
+    },
+    "input": {
+        "type": "cel"
+    },
+    "m365_defender": {
+        "vulnerability": {
+            "affected_machine": {
+                "asset_criticality_level": "None",
+                "computer_dns_name": "vmfimwin2k19",
+                "id": "94819846155826828d1603b913c67fe336d81295-_-CVE-2025-3074-_-microsoft-_-edge_chromium-based-_-134.0.3124.72-_-",
+                "machine_id": "94819846155826828d1603b913c67fe336d81295",
+                "os_platform": "WindowsServer2019",
+                "product_name": "edge_chromium-based",
+                "product_vendor": "microsoft",
+                "product_version": "134.0.3124.72",
+                "rbac_group_id": "0",
+                "severity": "Medium"
+            },
+            "cve_supportability": "Supported",
+            "cvss_v3": 6.5,
+            "cvss_vector": "CVSS:3.1/AV:N/AC:L/PR:N/UI:R/S:U/C:N/I:H/A:N/E:U/RL:O/RC:C",
+            "description": "Summary: An inappropriate implementation in the Downloads feature of Google Chrome versions prior to 135.0.7049.52 could allow a remote attacker to perform UI spoofing via a crafted HTML page. This vulnerability, classified with a low severity by Chromium, may also enable bypassing security restrictions when a victim visits a specially crafted website. Impact: Exploitation of this vulnerability could lead to UI spoofing or bypassing security restrictions, potentially compromising user trust and security. AdditionalInformation: This vulnerability is associated with Google Chrome and has implications for Microsoft Edge (Chromium-based) due to shared code ingestion. Refer to Google Chrome Releases for further details. Remediation: Apply the latest patches and updates provided by the respective vendors. [Generated by AI]",
+            "epss": 0.00111,
+            "exploit_in_kit": false,
+            "exploit_verified": false,
+            "exposed_machines": 2,
+            "first_detected": "2025-04-01T19:52:39.000Z",
+            "id": "CVE-2025-3074",
+            "name": "CVE-2025-3074",
+            "public_exploit": false,
+            "published_on": "2025-04-01T00:00:00.000Z",
+            "severity": "Medium",
+            "updated_on": "2025-04-08T00:00:00.000Z"
+        }
+    },
+    "message": "Summary: An inappropriate implementation in the Downloads feature of Google Chrome versions prior to 135.0.7049.52 could allow a remote attacker to perform UI spoofing via a crafted HTML page. This vulnerability, classified with a low severity by Chromium, may also enable bypassing security restrictions when a victim visits a specially crafted website. Impact: Exploitation of this vulnerability could lead to UI spoofing or bypassing security restrictions, potentially compromising user trust and security. AdditionalInformation: This vulnerability is associated with Google Chrome and has implications for Microsoft Edge (Chromium-based) due to shared code ingestion. Refer to Google Chrome Releases for further details. Remediation: Apply the latest patches and updates provided by the respective vendors. [Generated by AI]",
+    "observer": {
+        "product": "Microsoft 365 Defender",
+        "vendor": "Microsoft"
+    },
+    "package": {
+        "name": "edge_chromium-based",
+        "version": "134.0.3124.72"
+    },
+    "related": {
+        "hosts": [
+            "vmfimwin2k19",
+            "94819846155826828d1603b913c67fe336d81295"
+        ]
+    },
+    "tags": [
+        "preserve_original_event",
+        "preserve_duplicate_custom_fields",
+        "forwarded",
+        "m365_defender-vulnerability"
+    ],
+    "threat": {
+        "indicator": {
+            "first_seen": "2025-04-01T19:52:39.000Z"
+        }
+    },
+    "vulnerability": {
+        "classification": "CVSS",
+        "description": "Summary: An inappropriate implementation in the Downloads feature of Google Chrome versions prior to 135.0.7049.52 could allow a remote attacker to perform UI spoofing via a crafted HTML page. This vulnerability, classified with a low severity by Chromium, may also enable bypassing security restrictions when a victim visits a specially crafted website. Impact: Exploitation of this vulnerability could lead to UI spoofing or bypassing security restrictions, potentially compromising user trust and security. AdditionalInformation: This vulnerability is associated with Google Chrome and has implications for Microsoft Edge (Chromium-based) due to shared code ingestion. Refer to Google Chrome Releases for further details. Remediation: Apply the latest patches and updates provided by the respective vendors. [Generated by AI]",
+        "enumeration": "CVE",
+        "id": "CVE-2025-3074",
+        "scanner": {
+            "vendor": "Microsoft"
+        },
+        "score": {
+            "base": 6.5
+        },
+        "severity": "Medium"
+    }
+}
+```
+
+**Exported fields**
+
+| Field | Description | Type |
+|---|---|---|
+| @timestamp | Event timestamp. | date |
+| data_stream.dataset | Data stream dataset. | constant_keyword |
+| data_stream.namespace | Data stream namespace. | constant_keyword |
+| data_stream.type | Data stream type. | constant_keyword |
+| event.dataset | Event dataset. | constant_keyword |
+| event.module | Event module. | constant_keyword |
+| input.type | Type of filebeat input. | keyword |
+| log.offset | Log offset. | long |
+| m365_defender.vulnerability.affected_machine.asset_criticality_level |  | keyword |
+| m365_defender.vulnerability.affected_machine.computer_dns_name |  | keyword |
+| m365_defender.vulnerability.affected_machine.fixing_kb_id |  | keyword |
+| m365_defender.vulnerability.affected_machine.id |  | keyword |
+| m365_defender.vulnerability.affected_machine.machine_id |  | keyword |
+| m365_defender.vulnerability.affected_machine.os_platform |  | keyword |
+| m365_defender.vulnerability.affected_machine.product_name |  | keyword |
+| m365_defender.vulnerability.affected_machine.product_vendor |  | keyword |
+| m365_defender.vulnerability.affected_machine.product_version |  | keyword |
+| m365_defender.vulnerability.affected_machine.rbac_group_id |  | keyword |
+| m365_defender.vulnerability.affected_machine.rbac_group_name |  | keyword |
+| m365_defender.vulnerability.affected_machine.severity |  | keyword |
+| m365_defender.vulnerability.affected_machine.tags |  | keyword |
+| m365_defender.vulnerability.cve_supportability | Possible values are: Supported, Not Supported, or SupportedInPremium. | keyword |
+| m365_defender.vulnerability.cvss_v3 | CVSS v3 score. | double |
+| m365_defender.vulnerability.cvss_vector | A compressed textual representation that reflects the values used to derive the score. | keyword |
+| m365_defender.vulnerability.description | Vulnerability description. | keyword |
+| m365_defender.vulnerability.epss | Represents the probability that a vulnerability will be exploited. This probability is expressed as a number between 0 and 1 (0%-100%) according to the EPSS model. | double |
+| m365_defender.vulnerability.exploit_in_kit | Exploit is part of an exploit kit. | boolean |
+| m365_defender.vulnerability.exploit_types | Exploit affect. Possible values are: Local privilege escalation, Denial of service, or Local. | keyword |
+| m365_defender.vulnerability.exploit_uris | Exploit source URLs. | keyword |
+| m365_defender.vulnerability.exploit_verified | Exploit is verified to work. | boolean |
+| m365_defender.vulnerability.exposed_machines | Number of exposed devices. | long |
+| m365_defender.vulnerability.first_detected |  | date |
+| m365_defender.vulnerability.id | Vulnerability Id. | keyword |
+| m365_defender.vulnerability.name | Vulnerability title. | keyword |
+| m365_defender.vulnerability.patch_first_available |  | date |
+| m365_defender.vulnerability.public_exploit | Public exploit exists. | boolean |
+| m365_defender.vulnerability.published_on | Date when vulnerability was published. | date |
+| m365_defender.vulnerability.severity | Vulnerability Severity. Possible values are: Low, Medium, High, or Critical. | keyword |
+| m365_defender.vulnerability.updated_on | Date when vulnerability was updated. | date |
 
