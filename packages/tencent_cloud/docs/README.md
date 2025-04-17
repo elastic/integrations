@@ -161,38 +161,38 @@ Tencent Cloud 集成旨在通过 Elastic Agent 将腾讯云的各种云产品的
 | host.os.codename | OS codename, if any. | keyword |
 | input.type | Input type | keyword |
 | log.offset | Log offset | long |
-| tencent_cloud.audit.actionType | Action type from the audit log | keyword |
-| tencent_cloud.audit.apiErrorCode | API error code from the audit log | keyword |
-| tencent_cloud.audit.errorMessage | Error message from the audit log | keyword |
-| tencent_cloud.audit.eventTime | Event time from the audit log | long |
-| tencent_cloud.audit.eventType | Event type from the audit log | keyword |
-| tencent_cloud.audit.eventVersion | Event version from the audit log | long |
-| tencent_cloud.audit.requestParameters.AccountArea | Account area from the request parameters | keyword |
-| tencent_cloud.audit.requestParameters.Conditions.Key | Key in the request conditions | keyword |
-| tencent_cloud.audit.requestParameters.Conditions.Operator | Operator in the request conditions | keyword |
-| tencent_cloud.audit.requestParameters.Conditions.Value | Value in the request conditions | keyword |
-| tencent_cloud.audit.requestParameters.DiskChargeType | Disk charge type from the request parameters | keyword |
-| tencent_cloud.audit.requestParameters.EndTime | End time in the request parameters | keyword |
-| tencent_cloud.audit.requestParameters.InquiryType | Inquiry type from the request parameters | keyword |
-| tencent_cloud.audit.requestParameters.InstanceIds | Instance IDs from the request parameters | keyword |
-| tencent_cloud.audit.requestParameters.Limit | Limit value from the request parameters | long |
-| tencent_cloud.audit.requestParameters.MetricNames | Metric names in the request parameters | keyword |
-| tencent_cloud.audit.requestParameters.Module | Module in the request parameters | keyword |
-| tencent_cloud.audit.requestParameters.Namespace | Namespace in the request parameters | keyword |
-| tencent_cloud.audit.requestParameters.Period | Period in the request parameters | long |
-| tencent_cloud.audit.requestParameters.Region | Region in the request parameters | keyword |
-| tencent_cloud.audit.requestParameters.StartTime | Start time in the request parameters | keyword |
-| tencent_cloud.audit.requestParameters.Version | Version in the request parameters | keyword |
-| tencent_cloud.audit.requestParameters.Zones | Zones from the request parameters | keyword |
-| tencent_cloud.audit.resourceName | Resource name from the audit log | keyword |
-| tencent_cloud.audit.resourceType | Resource type from the audit log | keyword |
-| tencent_cloud.audit.responseElements | Response elements from the audit log | keyword |
-| tencent_cloud.audit.sensitiveAction | Sensitive action from the audit log | keyword |
-| tencent_cloud.audit.userIdentity.principalId | Principal ID from the user identity | keyword |
-| tencent_cloud.audit.userIdentity.roleSessionName | Role session name from the user identity | keyword |
-| tencent_cloud.audit.userIdentity.secretId | Secret ID from the user identity | keyword |
-| tencent_cloud.audit.userIdentity.sessionContext | Session context from the user identity | text |
-| tencent_cloud.audit.userIdentity.type | User identity type | keyword |
+| tencent_cloud.audit.actionType | 审计日志中的操作类型 | keyword |
+| tencent_cloud.audit.apiErrorCode | 审计日志中的API错误代码 | keyword |
+| tencent_cloud.audit.errorMessage | 审计日志中的错误信息 | keyword |
+| tencent_cloud.audit.eventTime | 审计日志中的事件时间 | long |
+| tencent_cloud.audit.eventType | 审计日志中的事件类型 | keyword |
+| tencent_cloud.audit.eventVersion | 审计日志中的事件版本 | long |
+| tencent_cloud.audit.requestParameters.AccountArea | 请求参数中的账户区域 | keyword |
+| tencent_cloud.audit.requestParameters.Conditions.Key | 请求条件中的键 | keyword |
+| tencent_cloud.audit.requestParameters.Conditions.Operator | 请求条件中的操作符 | keyword |
+| tencent_cloud.audit.requestParameters.Conditions.Value | 请求条件中的值 | keyword |
+| tencent_cloud.audit.requestParameters.DiskChargeType | 请求参数中的磁盘计费类型 | keyword |
+| tencent_cloud.audit.requestParameters.EndTime | 请求参数中的结束时间 | keyword |
+| tencent_cloud.audit.requestParameters.InquiryType | 请求参数中的查询类型 | keyword |
+| tencent_cloud.audit.requestParameters.InstanceIds | 请求参数中的实例ID | keyword |
+| tencent_cloud.audit.requestParameters.Limit | 请求参数中的限制值 | long |
+| tencent_cloud.audit.requestParameters.MetricNames | 请求参数中的指标名称 | keyword |
+| tencent_cloud.audit.requestParameters.Module | 请求参数中的模块 | keyword |
+| tencent_cloud.audit.requestParameters.Namespace | 请求参数中的命名空间 | keyword |
+| tencent_cloud.audit.requestParameters.Period | 请求参数中的周期 | long |
+| tencent_cloud.audit.requestParameters.Region | 请求参数中的区域 | keyword |
+| tencent_cloud.audit.requestParameters.StartTime | 请求参数中的开始时间 | keyword |
+| tencent_cloud.audit.requestParameters.Version | 请求参数中的版本 | keyword |
+| tencent_cloud.audit.requestParameters.Zones | 请求参数中的区域 | keyword |
+| tencent_cloud.audit.resourceName | 审计日志中的资源名称 | keyword |
+| tencent_cloud.audit.resourceType | 审计日志中的资源类型 | keyword |
+| tencent_cloud.audit.responseElements | 审计日志中的响应元素 | keyword |
+| tencent_cloud.audit.sensitiveAction | 是否敏感操作 | keyword |
+| tencent_cloud.audit.userIdentity.principalId | 用户身份中的主体ID | keyword |
+| tencent_cloud.audit.userIdentity.roleSessionName | 用户身份中的角色会话名称 | keyword |
+| tencent_cloud.audit.userIdentity.secretId | 用户身份中的密钥ID | keyword |
+| tencent_cloud.audit.userIdentity.sessionContext | 用户身份中的会话上下文 | text |
+| tencent_cloud.audit.userIdentity.type | 用户身份类型 | keyword |
 
 
 ### SCF 日志
@@ -213,15 +213,15 @@ Tencent Cloud 集成旨在通过 Elastic Agent 将腾讯云的各种云产品的
 | host.os.codename | OS codename, if any. | keyword |
 | input.type | Input type | keyword |
 | log.offset | Log offset | long |
-| tencent_cloud.scf.SCF_Alias | SCF alias from the log | keyword |
-| tencent_cloud.scf.SCF_LogTime | SCF log time from the log | date |
-| tencent_cloud.scf.SCF_MemUsage | SCF memory usage from the log | long |
-| tencent_cloud.scf.SCF_Namespace | SCF namespace from the log | keyword |
-| tencent_cloud.scf.SCF_Qualifier | SCF qualifier from the log | keyword |
-| tencent_cloud.scf.SCF_RetryNum | SCF retry number from the log | long |
-| tencent_cloud.scf.SCF_StartTime | SCF start time from the log | date |
-| tencent_cloud.scf.SCF_Type | SCF type from the log | keyword |
-| tencent_cloud.scf.__TIMESTAMP__ | Timestamp from the log | date |
+| tencent_cloud.scf.SCF_Alias | SCF别名 | keyword |
+| tencent_cloud.scf.SCF_LogTime | SCF日志时间 | date |
+| tencent_cloud.scf.SCF_MemUsage | 函数运行内存 | double |
+| tencent_cloud.scf.SCF_Namespace | SCF命名空间 | keyword |
+| tencent_cloud.scf.SCF_Qualifier | SCF版本 | keyword |
+| tencent_cloud.scf.SCF_RetryNum | SCF重试次数 | long |
+| tencent_cloud.scf.SCF_StartTime | SCF开始时间 | date |
+| tencent_cloud.scf.SCF_Type | SCF类型，Platform 指平台日志，Custom 指用户日志。 | keyword |
+| tencent_cloud.scf.__TIMESTAMP__ | 时间戳 | date |
 
 
 ### COS 日志
@@ -237,24 +237,25 @@ Tencent Cloud 集成旨在通过 Elastic Agent 将腾讯云的各种云产品的
 | destination.bytes | Destination bytes | long |
 | event.dataset | Event dataset | constant_keyword |
 | event.module | Event module | constant_keyword |
-| tencent_cloud.cos.bucketName | Name of the Tencent Cloud COS bucket | keyword |
-| tencent_cloud.cos.deltaDataSize | Delta data size in the Tencent Cloud COS operation | long |
-| tencent_cloud.cos.eventSource | Source of the event in Tencent Cloud COS | keyword |
-| tencent_cloud.cos.eventTime | Time of the event in the COS log | date |
-| tencent_cloud.cos.eventVersion | Version of the event in Tencent Cloud COS | keyword |
-| tencent_cloud.cos.logSourceType | Type of the log source in Tencent Cloud COS | keyword |
-| tencent_cloud.cos.objectSize | Size of the object in Tencent Cloud COS | keyword |
-| tencent_cloud.cos.qcsRegion | qcs region of Tencent Cloud COS | keyword |
-| tencent_cloud.cos.range | Range information in the COS log | keyword |
-| tencent_cloud.cos.reqQcsSource | Request QCS source in the COS log | keyword |
-| tencent_cloud.cos.requester | Requester in Tencent Cloud COS operation | keyword |
-| tencent_cloud.cos.resErrorCode | Error code in the response of the COS operation | keyword |
-| tencent_cloud.cos.resErrorMsg | Response error message in Tencent Cloud COS operation | keyword |
-| tencent_cloud.cos.resTotalTime | Total response time in Tencent Cloud COS operation | long |
-| tencent_cloud.cos.storageClass | Storage class in Tencent Cloud COS | keyword |
-| tencent_cloud.cos.targetStorageClass | Target storage class in Tencent Cloud COS | keyword |
-| tencent_cloud.cos.userSecretKeyId | User secret key ID in Tencent Cloud COS | keyword |
-| tencent_cloud.cos.versionId | Version ID in Tencent Cloud COS | keyword |
+| tencent_cloud.cos.bucketName | 腾讯云COS桶的名称 | keyword |
+| tencent_cloud.cos.deltaDataSize | 腾讯云COS操作中的增量数据大小 | long |
+| tencent_cloud.cos.eventSource | 腾讯云COS中的事件来源 | keyword |
+| tencent_cloud.cos.eventTime | COS日志中的事件时间 | date |
+| tencent_cloud.cos.eventVersion | 腾讯云COS中的事件版本 | keyword |
+| tencent_cloud.cos.logSourceType | 腾讯云COS中的日志源类型 | keyword |
+| tencent_cloud.cos.objectSize | 腾讯云COS中的对象大小 | keyword |
+| tencent_cloud.cos.qcsRegion | 腾讯云COS的qcs区域 | keyword |
+| tencent_cloud.cos.range | COS日志中的范围信息 | keyword |
+| tencent_cloud.cos.reqQcsSource | COS日志中的请求QCS来源 | keyword |
+| tencent_cloud.cos.requester | 腾讯云COS操作中的请求者 | keyword |
+| tencent_cloud.cos.resErrorCode | COS操作响应中的错误代码 | keyword |
+| tencent_cloud.cos.resErrorMsg | 腾讯云COS操作中的响应错误信息 | keyword |
+| tencent_cloud.cos.resTotalTime | 腾讯云COS操作中的总响应时间 | long |
+| tencent_cloud.cos.storageClass | 腾讯云COS中的存储类别, STANDARD，STANDARD_IA，ARCHIVE | keyword |
+| tencent_cloud.cos.targetStorageClass | 腾讯云COS中的目标存储类别, STANDARD，STANDARD_IA，ARCHIVE | keyword |
+| tencent_cloud.cos.userSecretKeyId | 腾讯云COS中的用户密钥ID | keyword |
+| tencent_cloud.cos.versionId | 腾讯云COS中的版本ID | keyword |
+| tencent_cloud.cos.vpcId | VPC 请求 ID | long |
 
 
 ### CLB 日志
@@ -275,26 +276,26 @@ Tencent Cloud 集成旨在通过 Elastic Agent 将腾讯云的各种云产品的
 | host.os.codename | OS codename, if any. | keyword |
 | input.type | Input type | keyword |
 | log.offset | Log offset | long |
-| tencent_cloud.clb.__SOURCE__ | Source of the log | keyword |
-| tencent_cloud.clb.connection | Connection | long |
-| tencent_cloud.clb.connection_requests | Connection requests | long |
+| tencent_cloud.clb.__SOURCE__ | 日志来源 | keyword |
+| tencent_cloud.clb.connection | 连接 | long |
+| tencent_cloud.clb.connection_requests | 连接请求 | long |
 | tencent_cloud.clb.http_traceparent | HTTP traceparent | keyword |
-| tencent_cloud.clb.lb_id | Load balancer ID | keyword |
-| tencent_cloud.clb.proxy_host | Proxy host | long |
-| tencent_cloud.clb.request | Request | keyword |
-| tencent_cloud.clb.request_time | Request time | long |
-| tencent_cloud.clb.ssl_cipher | SSL cipher | keyword |
-| tencent_cloud.clb.ssl_handshake_time | SSL handshake time | keyword |
-| tencent_cloud.clb.ssl_protocol | SSL protocol | keyword |
-| tencent_cloud.clb.ssl_session_reused | SSL session reused | keyword |
-| tencent_cloud.clb.stgw_engine_connect_time | STGW engine connect time | keyword |
-| tencent_cloud.clb.stgw_engine_response_time | STGW engine response time | keyword |
-| tencent_cloud.clb.tcpinfo_rtt | TCP info RTT | long |
-| tencent_cloud.clb.time_local | Local time | date |
-| tencent_cloud.clb.upstream_header_time | Upstream header time | long |
-| tencent_cloud.clb.upstream_response_time | Upstream response time | long |
-| tencent_cloud.clb.upstream_status | Upstream status | long |
-| tencent_cloud.clb.via_stgw_engine | Via STGW engine | keyword |
+| tencent_cloud.clb.lb_id | 负载均衡器ID | keyword |
+| tencent_cloud.clb.proxy_host | 代理主机 | long |
+| tencent_cloud.clb.request | 请求 | keyword |
+| tencent_cloud.clb.request_time | 请求时间 | long |
+| tencent_cloud.clb.ssl_cipher | SSL密码 | keyword |
+| tencent_cloud.clb.ssl_handshake_time | SSL握手时间 | keyword |
+| tencent_cloud.clb.ssl_protocol | SSL协议 | keyword |
+| tencent_cloud.clb.ssl_session_reused | SSL会话重用 | keyword |
+| tencent_cloud.clb.stgw_engine_connect_time | STGW引擎连接时间 | keyword |
+| tencent_cloud.clb.stgw_engine_response_time | STGW引擎响应时间 | keyword |
+| tencent_cloud.clb.tcpinfo_rtt | TCP信息RTT | long |
+| tencent_cloud.clb.time_local | 本地时间 | date |
+| tencent_cloud.clb.upstream_header_time | 从 RS 接收完 HTTP 头部所花费时间：从开始 CONNECT RS 到从 RS 接收完 HTTP 应答头部的时间。单位：秒。 | double |
+| tencent_cloud.clb.upstream_response_time | 整个后端请求所花费时间：从开始 CONNECT RS 到从 RS 接收完应答的时间。单位：秒。 | double |
+| tencent_cloud.clb.upstream_status | RS 返回给 CLB 的状态码 | long |
+| tencent_cloud.clb.via_stgw_engine | 通过STGW引擎 | keyword |
 | tencent_cloud.clb.vip_vpcid | VIP VPC ID | long |
 | tencent_cloud.clb.vsvc_id | Vsvc ID | long |
 
