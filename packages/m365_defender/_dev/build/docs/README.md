@@ -2,20 +2,15 @@
 
 ## Overview
 
-The [Microsoft 365 Defender](https://learn.microsoft.com/en-us/microsoft-365/security/defender) integration allows you to monitor Alert, Incident (Microsoft Graph Security API) and Event (Streaming API) Logs. Microsoft 365 Defender is a unified pre and post-breach enterprise defense suite that natively coordinates detection, prevention, investigation, and response across endpoints, identities, email, and applications to provide integrated protection against sophisticated attacks.
+The [Microsoft 365 Defender](https://learn.microsoft.com/en-us/microsoft-365/security/defender) integration allows you to monitor Alert, Incident (Microsoft Graph Security API), Event (Streaming API) Logs, and Vulnerability (Microsoft Defender for Endpoint API) Logs. Microsoft 365 Defender is a unified pre and post-breach enterprise defense suite that natively coordinates detection, prevention, investigation, and response across endpoints, identities, email, and applications to provide integrated protection against sophisticated attacks.
 
-Use the Microsoft 365 Defender integration to collect and parse data from the Microsoft Azure Event Hub, and the Microsoft Graph Security v1.0 REST API. Then visualise that data in Kibana.
+Use the Microsoft 365 Defender integration to collect and parse data from the Microsoft Azure Event Hub, Microsoft Graph Security v1.0 REST API, and the Micrsoft Defender Endpoint API. Then visualise that data in Kibana.
 
-For example, you could use the data from this integration to consolidate and correlate security alerts from multiple sources. Also, by looking into the alert and incident, a user can take an appropriate action in the Microsoft 365 Defender Portal.
-
-## Agentless Enabled Integration
-Agentless integrations allow you to collect data without having to manage Elastic Agent in your cloud. They make manual agent deployment unnecessary, so you can focus on your data instead of the agent that collects it. For more information, refer to [Agentless integrations](https://www.elastic.co/guide/en/serverless/current/security-agentless-integrations.html) and the [Agentless integrations FAQ](https://www.elastic.co/guide/en/serverless/current/agentless-integration-troubleshooting.html).
-
-Agentless deployments are only supported in Elastic Serverless and Elastic Cloud environments.  This functionality is in beta and is subject to change. Beta features are not subject to the support SLA of official GA features.
+For example, you could use the data from this integration to consolidate and correlate security alerts from multiple sources. Also, by looking into the alert, incident, and vulnerability a user can take an appropriate action in the Microsoft 365 Defender Portal.
 
 ## Data streams
 
-The Microsoft 365 Defender integration collects logs for three types of events: Alert, Event, and Incident.
+The Microsoft 365 Defender integration collects logs for four types of events: Alert, Event, Incident, and Vulnerability.
 
 **Alert:** This data streams leverages the [Microsoft Graph Security API](https://learn.microsoft.com/en-us/graph/api/resources/security-alert?view=graph-rest-1.0) to collect alerts including suspicious activities in a customer's tenant that Microsoft or partner security providers have identified and flagged for action.
 
@@ -23,13 +18,43 @@ The Microsoft 365 Defender integration collects logs for three types of events: 
 
 **Incidents and Alerts (Recommended):** This data streams leverages the [Microsoft Graph Security API](https://learn.microsoft.com/en-us/graph/api/resources/security-api-overview?view=graph-rest-1.0) to ingest a collection of correlated alert instances and associated metadata that reflects the story of an attack in M365D. Incidents stemming from Microsoft 365 Defender, Microsoft Defender for Endpoint, Microsoft Defender for Office 365, Microsoft Defender for Identity, Microsoft Defender for Cloud Apps, and Microsoft Purview Data Loss Prevention are supported by this integration.
 
+**Vulnerability:** This data stream uses the Microsoft Defender for Endpoint API to collect a comprehensive set of [vulnerability data](https://learn.microsoft.com/en-us/defender-endpoint/api/get-all-vulnerabilities), also identifying the [affected machines](https://learn.microsoft.com/en-us/defender-endpoint/api/get-machines-by-vulnerability) and the [specific products](https://learn.microsoft.com/en-us/defender-endpoint/api/get-all-vulnerabilities-by-machines) on those machines. This provides a clearer understanding of potential security risks within your environment.
+
 ## Requirements
 
 You need Elasticsearch for storing and searching your data and Kibana for visualizing and managing it. You can use our hosted Elasticsearch Service on Elastic Cloud, which is recommended, or self-manage the Elastic Stack on your own hardware.
 
-This module has used **Microsoft Azure Event Hub** for Streaming Event, and **Microsoft Graph Security v1.0 REST API** for Incident data stream.
+This module has used **Microsoft Azure Event Hub** for Streaming Event, **Microsoft Graph Security v1.0 REST API** for Incident data stream and **Microsoft Defender for Endpoint API** for Vulnerability data stream.
 
 For **Event**, using filebeat's [Azure Event Hub](https://www.elastic.co/guide/en/beats/filebeat/current/filebeat-input-azure-eventhub.html) input, state such as leases on partitions and checkpoints in the event stream are shared between receivers using an Azure Storage container. For this reason, as a prerequisite to using this input, users will have to create or use an existing storage account.
+
+### Agentless Enabled Integration
+Agentless integrations allow you to collect data without having to manage Elastic Agent in your cloud. They make manual agent deployment unnecessary, so you can focus on your data instead of the agent that collects it. For more information, refer to [Agentless integrations](https://www.elastic.co/guide/en/serverless/current/security-agentless-integrations.html) and the [Agentless integrations FAQ](https://www.elastic.co/guide/en/serverless/current/agentless-integration-troubleshooting.html).
+
+Agentless deployments are only supported in Elastic Serverless and Elastic Cloud environments.  This functionality is in beta and is subject to change. Beta features are not subject to the support SLA of official GA features.
+
+### Agent Based Installation
+- Elastic Agent must be installed
+- You can install only one Elastic Agent per host.
+- Elastic Agent is required to stream data from the GCP Pub/Sub or REST API and ship the data to Elastic, where the events will then be processed via the integration's ingest pipelines.
+
+#### Installing and managing an Elastic Agent:
+
+You have a few options for installing and managing an Elastic Agent:
+
+#### Install a Fleet-managed Elastic Agent (recommended):
+
+With this approach, you install Elastic Agent and use Fleet in Kibana to define, configure, and manage your agents in a central location. We recommend using Fleet management because it makes the management and upgrade of your agents considerably easier.
+
+#### Install Elastic Agent in standalone mode (advanced users):
+
+With this approach, you install Elastic Agent and manually configure the agent locally on the system where it’s installed. You are responsible for managing and upgrading the agents. This approach is reserved for advanced users only.
+
+#### Install Elastic Agent in a containerized environment:
+
+You can run Elastic Agent inside a container, either with Fleet Server or standalone. Docker images for all versions of Elastic Agent are available from the Elastic Docker registry and we provide deployment manifests for running on Kubernetes.
+
+There are some minimum requirements for running Elastic Agent and for more information, refer to the link [here](https://www.elastic.co/guide/en/fleet/current/elastic-agent-installation.html).
 
 ## Compatibility
 
@@ -71,6 +96,21 @@ For **Event**, using filebeat's [Azure Event Hub](https://www.elastic.co/guide/e
 2. Permission required for accessing Incident API would be **SecurityIncident.Read.All**. See more details [here](https://learn.microsoft.com/en-us/graph/auth-v2-service?view=graph-rest-1.0)
 3. After the application has been created, it will generate Client ID, Client Secret and Tenant ID values that are required for alert and incident data collection.
 
+### To collect data from Microsoft Defender for Endpoint API, follow the below steps:
+
+1. [Register a new Azure Application](https://learn.microsoft.com/en-us/defender-endpoint/api/exposed-apis-create-app-webapp).
+2. Permission required for accessing Vulnerability API would be **Vulnerability.Read.All**. See more details [here](https://learn.microsoft.com/en-us/defender-endpoint/api/get-all-vulnerabilities)
+3. After the application has been created, it will generate Client ID, Client Secret and Tenant ID values that are required for vulnerability data collection.
+
+### Data Retention and ILM Configuration
+A full sync pulls in a large volume of data, which can lead to storage issues or index overflow over time. To avoid this, we’ve set up an Index Lifecycle Management (ILM) policy that automatically deletes data older than 7 days. This helps keep storage usage under control.
+
+> **Note:** The user or service account associated with the integration must have the following **index privileges** on the relevant index have the following permissions `delete`, `delete_index`
+
+## Troubleshooting
+
+If you see an error saying `exceeded maximum number of CEL executions` during data ingestion, it usually means a large volume of data is being processed for the selected time interval. To fix this, try increasing the Max Executions setting in the configuration.
+
 ## Logs reference
 
 ### alert
@@ -100,3 +140,13 @@ This is the `incident` dataset.
 {{event "incident"}}
 
 {{fields "incident"}}
+
+### vulnerability
+
+This is the `vulnerability` dataset.
+
+#### Example
+
+{{event "vulnerability"}}
+
+{{fields "vulnerability"}}
