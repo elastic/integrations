@@ -799,7 +799,9 @@ processors:
       if: ctx?.network?.iana_number != null
       source: |
         def iana_number = ctx.network.iana_number;
-        if (iana_number == '0') {
+        if (iana_number == '0' && ctx.source?.ip == '0.0.0.0') {
+            ctx.network.transport = 'ip';
+        } else if (iana_number == '0') {
             ctx.network.transport = 'hopopt';
         } else if (iana_number == '1') {
             ctx.network.transport = 'icmp';
@@ -819,8 +821,12 @@ processors:
             ctx.network.transport = 'ipv6-icmp';
         } else if (iana_number == '112') {
             ctx.network.transport = 'vrrp';
+        } else if (iana_number == '114') {
+            ctx.network.transport = '0-hop';
         } else if (iana_number == '132') {
             ctx.network.transport = 'sctp';
+        } else {
+            ctx.network.transport = iana_number;
         }
   - date:
       field: checkpoint.subs_exp
