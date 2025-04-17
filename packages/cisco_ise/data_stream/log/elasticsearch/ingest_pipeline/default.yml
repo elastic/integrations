@@ -63,8 +63,16 @@ processors:
       allow_duplicates: false
       ignore_failure: true
   - rename:
-      field: _tmp.timezone
+      field: _conf.tz_offset
       target_field: event.timezone
+      if: ctx._conf?.tz_offset != null
+      tag: rename_tz_offset
+      ignore_missing: true
+  - rename:
+      field: _tmp.timezone
+      tag: rename_tmp_timezone
+      target_field: event.timezone
+      if: ctx.event?.timezone == null # If user has not provided the timezone offset.
       ignore_missing: true
   - date:
       field: _tmp.timestamp
