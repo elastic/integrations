@@ -32,7 +32,7 @@ Following Microsoft 365 Graph Reports can be collected by Microsoft Office 365 M
 | [App Registrations](https://learn.microsoft.com/en-us/graph/api/resources/application?view=graph-rest-1.0) |    [List Applications](https://learn.microsoft.com/en-us/graph/api/application-list?view=graph-rest-1.0&tabs=http)    |   Microsoft 365 App Registrations   |   No aggregation  | Application.Read.All, User.Read(delegated) |
 | [Entra Features](https://learn.microsoft.com/en-us/graph/api/organization-list?view=graph-rest-1.0&tabs=http) |    [Organization](https://learn.microsoft.com/en-us/graph/api/organization-list?view=graph-rest-1.0&tabs=http), [PremisesSync](https://graph.microsoft.com/v1.0/directory/onPremisesSynchronization)    |   Microsoft 365 Entra Connect  |   No aggregation  | Organization.Read.All, User.Read(delegated) |
 | Entra ID users | [user](https://learn.microsoft.com/en-us/graph/api/resources/user?view=graph-rest-1.0), [riskDetection](https://learn.microsoft.com/en-us/graph/api/resources/riskdetection?view=graph-rest-1.0) | Microsoft 365 Entra Connect User metrics | No aggregation | User.Read.All, IdentityRiskEvent.Read.All
-
+| Entra Agent | [agent](https://learn.microsoft.com/en-us/entra/identity/hybrid/connect/whatis-aadc-admin-agent) | Microsoft 365 Entra Agent metrics | No aggregation | RBAC role
 
 ## Setup
 
@@ -3377,3 +3377,118 @@ Please refer to the following [document](https://www.elastic.co/guide/en/ecs/cur
 | o365.metrics.entra.features.user_force_password_change_on_logon_enabled | Indicates if users are forced to change passwords on logon. | boolean |
 | o365.metrics.entra.features.user_writeback_enabled | Indicates if user writeback is enabled. | boolean |
 
+
+### Entra Agent
+
+Get details about Entra Agent. [Microsoft API](https://learn.microsoft.com/en-us/azure/api-management/api-management-key-concepts).
+
+An example event for `entra_agent` looks as following:
+
+```json
+{
+    "@timestamp": "2025-04-16T21:09:07.790Z",
+    "agent": {
+        "ephemeral_id": "5a38d5c9-ac63-4044-94a9-c6e3196c96b9",
+        "id": "f1aebef7-0ec8-4ae9-83c6-831bb2d13416",
+        "name": "elastic-agent-91923",
+        "type": "filebeat",
+        "version": "8.16.0"
+    },
+    "data_stream": {
+        "dataset": "o365_metrics.entra_agent",
+        "namespace": "87907",
+        "type": "metrics"
+    },
+    "ecs": {
+        "version": "8.17.0"
+    },
+    "elastic_agent": {
+        "id": "f1aebef7-0ec8-4ae9-83c6-831bb2d13416",
+        "snapshot": false,
+        "version": "8.16.0"
+    },
+    "event": {
+        "agent_id_status": "verified",
+        "dataset": "o365_metrics.entra_agent",
+        "ingested": "2025-04-16T21:09:10Z"
+    },
+    "host": {
+        "architecture": "x86_64",
+        "containerized": true,
+        "hostname": "elastic-agent-91923",
+        "ip": [
+            "172.21.0.2",
+            "172.18.0.4"
+        ],
+        "mac": [
+            "02-42-AC-12-00-04",
+            "02-42-AC-15-00-02"
+        ],
+        "name": "elastic-agent-91923",
+        "os": {
+            "family": "",
+            "kernel": "5.15.153.1-microsoft-standard-WSL2",
+            "name": "Wolfi",
+            "platform": "wolfi",
+            "type": "linux",
+            "version": "20230201"
+        }
+    },
+    "input": {
+        "type": "cel"
+    },
+    "o365": {
+        "metrics": {
+            "entra": {
+                "agent": {
+                    "active_alerts": 0,
+                    "created_date": "2024-04-28T11:33:07.484Z",
+                    "disabled": false,
+                    "last_disabled": "2024-03-12T23:17:00.511864Z",
+                    "last_reboot": "2024-03-12T11:33:07.484Z",
+                    "last_updated": "2024-03-12T00:15:32.5476494Z",
+                    "machine_id": "SampleMachineId",
+                    "machine_name": "SampleMachineName",
+                    "os_name": "SampleOSName",
+                    "os_version": "SampleOSVersion",
+                    "resolved_alerts": 0,
+                    "role": "AdfsServer_30",
+                    "service_id": "SampleServiceId",
+                    "service_member_id": "SampleServiceMemberId",
+                    "status": "Healthy"
+                }
+            }
+        }
+    },
+    "tags": [
+        "o365.metrics.entra_agent"
+    ]
+}
+```
+
+Please refer to the following [document](https://www.elastic.co/guide/en/ecs/current/ecs-field-reference.html) for detailed information on ECS fields.
+
+**Exported fields**
+
+| Field | Description | Type |
+|---|---|---|
+| @timestamp | Event timestamp. | date |
+| data_stream.dataset | Data stream dataset. | constant_keyword |
+| data_stream.namespace | Data stream namespace. | constant_keyword |
+| data_stream.type | Data stream type. | constant_keyword |
+| input.type | Input type. | keyword |
+| o365.metrics.entra.agent.active_alerts | The number of active alerts. | integer |
+| o365.metrics.entra.agent.created_date | The date the service was created. | date |
+| o365.metrics.entra.agent.disabled | Indicates whether the service is disabled. | boolean |
+| o365.metrics.entra.agent.last_disabled | The last time the service was disabled. | date |
+| o365.metrics.entra.agent.last_reboot | The last reboot date and time. | date |
+| o365.metrics.entra.agent.last_updated | The last time the service was updated. | date |
+| o365.metrics.entra.agent.machine_id | The ID of the machine. | keyword |
+| o365.metrics.entra.agent.machine_name | The name of the machine. | keyword |
+| o365.metrics.entra.agent.os_name | The name of the operating system. | keyword |
+| o365.metrics.entra.agent.os_version | The version of the operating system. | keyword |
+| o365.metrics.entra.agent.resolved_alerts | The number of resolved alerts. | integer |
+| o365.metrics.entra.agent.role | The role of the machine or service. | keyword |
+| o365.metrics.entra.agent.service_id | The ID of the service. | keyword |
+| o365.metrics.entra.agent.service_member_id | The ID of the service member. | keyword |
+| o365.metrics.entra.agent.status | The current status of the service. | keyword |
