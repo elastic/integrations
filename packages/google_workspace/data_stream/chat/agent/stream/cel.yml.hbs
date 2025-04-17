@@ -57,8 +57,9 @@ program: |
           :
             []
         ),
-        // Update the cursor only if it is the last page to ensure any interrupted
-        // interval restarts from the beginning.
+        // Update the cursor only if it is the last page to ensure any interrupted 
+        // interval restarts from the last known cursor (`state.cursor.last_timestamp`),
+        // avoiding loss of data.
         "cursor": {
           ?"last_timestamp": (
             has(body.nextPageToken) ?
