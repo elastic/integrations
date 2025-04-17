@@ -1,0 +1,378 @@
+config_version: 2
+interval: {{interval}}
+resource.tracer:
+  enabled: {{enable_request_tracer}}
+  filename: "../../logs/cel/http-request-trace-*.ndjson"
+  maxbackups: 5
+{{#if proxy_url}}
+resource.proxy_url: {{proxy_url}}
+{{/if}}
+{{#if ssl}}
+resource.ssl: {{ssl}}
+{{/if}}
+{{#if http_client_timeout}}
+resource.timeout: {{http_client_timeout}}
+{{/if}}
+resource.url: {{url}}
+state:
+  initial_interval: {{initial_interval}}
+  batch_size: {{batch_size}}
+  api_token: {{api_token}}
+redact:
+  fields:
+    - api_token
+program: |
+  (
+    (has(state.?worklist.alerts) && size(state.worklist.alerts) > 0) ?
+      state
+    :
+      (
+        state.?want_more.orValue(false) ?
+          state
+        :
+          state.with(
+            {
+              "start_time": state.?cursor.last_timestamp.orValue((now - duration(state.initial_interval)).format(time_layout.RFC3339)),
+              "offset": state.?offset.orValue(0),
+              "device_offset": state.?device_offset.orValue(0),
+            }
+          )
+      ).as(state,
+        state.with(
+          post_request(
+            state.url.trim_right("/") + "/api/v1/alerts/",
+            "application/json",
+            {
+              "offset": int(state.offset),
+              "limit": int(state.batch_size),
+              "filter_by": {
+                "field": "updated_time",
+                "operation": "greater",
+                "value": string(state.start_time)
+              },
+              "fields": [
+                "id",
+                "alert_name",
+                "alert_type_name",
+                "alert_class",
+                "category",
+                "detected_time",
+                "updated_time",
+                "devices_count",
+                "unresolved_devices_count",
+                "medical_devices_count",
+                "iot_devices_count",
+                "it_devices_count",
+                "ot_devices_count",
+                "status",
+                "mitre_technique_ics_ids",
+                "mitre_technique_ics_names",
+                "mitre_technique_enterprise_ids",
+                "mitre_technique_enterprise_names",
+                "description",
+                "malicious_ip_tags_list",
+              ],
+              "sort_by": [
+                {
+                  "field": "updated_time",
+                  "order": "asc"
+                }
+              ]
+            }.encode_json()
+          ).with(
+            {
+              "Header": {
+                "Authorization": ["Bearer " + string(state.api_token)],
+              },
+            }
+          ).do_request().as(resp, (resp.StatusCode == 200) ?
+            resp.Body.decode_json().as(body,
+              {
+                "worklist": body,
+                "next": 0,
+                "offset": (size(body.alerts) > 0) ? (int(state.offset) + int(state.batch_size)) : 0,
+                "want_more": size(body.alerts) > 0,
+                "cursor": {
+                  ?"last_timestamp": (has(body.alerts) && size(body.alerts) > 0) ?
+                    optional.of(body.alerts[size(body.alerts) - 1].updated_time)
+                  :
+                    state.?cursor.last_timestamp,
+                },
+              }
+            )
+          :
+            {
+              "events": {
+                "error": {
+                  "code": string(resp.StatusCode),
+                  "id": string(resp.Status),
+                  "message": "POST " + state.url.trim_right("/") + "/api/v1/alerts/" + 
+                  (
+                    (size(resp.Body) != 0) ?
+                      string(resp.Body)
+                    :
+                      string(resp.Status) + " (" + string(resp.StatusCode) + ")"
+                  ),
+                },
+              },
+              "want_more": false,
+              "offset": 0,
+            }
+          )
+        )
+      )
+  ).as(state,
+    state.with(
+      !has(state.worklist) ? // Exit early due to POST failure.
+        state
+      : (has(state.worklist.alerts) && size(state.worklist.alerts) > 0) ?
+        post_request(
+          state.url.trim_right("/") + "/api/v1/alerts/" + string(int(state.worklist.alerts[state.next].id)) + "/devices",
+          "application/json",
+          {
+            "offset": int(state.device_offset),
+            "limit": int(state.batch_size),
+            "fields": [
+              "network_list",
+              "device_category",
+              "device_subcategory",
+              "device_type",
+              "uid",
+              "asset_id",
+              "mac_list",
+              "ip_list",
+              "device_type_family",
+              "model",
+              "model_family",
+              "product_code",
+              "os_category",
+              "serial_number",
+              "vlan_list",
+              "retired",
+              "labels",
+              "assignees",
+              "hw_version",
+              "local_name",
+              "os_name",
+              "os_version",
+              "os_revision",
+              "os_subcategory",
+              "combined_os",
+              "endpoint_security_names",
+              "equipment_class",
+              "consequence_of_failure",
+              "management_services",
+              "ad_distinguished_name",
+              "ad_description",
+              "mdm_ownership",
+              "mdm_enrollment_status",
+              "mdm_compliance_status",
+              "last_domain_user",
+              "fda_class",
+              "mobility",
+              "purdue_level",
+              "purdue_level_source",
+              "dhcp_hostnames",
+              "http_hostnames",
+              "snmp_hostnames",
+              "windows_hostnames",
+              "other_hostnames",
+              "windows_last_seen_hostname",
+              "dhcp_last_seen_hostname",
+              "http_last_seen_hostname",
+              "snmp_last_seen_hostname",
+              "ae_titles",
+              "dhcp_fingerprint",
+              "note",
+              "domains",
+              "battery_level",
+              "internet_communication",
+              "financial_cost",
+              "handles_pii",
+              "machine_type",
+              "phi",
+              "cmms_asset_tag",
+              "edr_is_up_to_date_text",
+              "avg_in_use_per_day",
+              "avg_online_per_day",
+              "avg_examinations_per_day",
+              "mac_oui_list",
+              "ip_assignment_list",
+              "protocol_location_list",
+              "vlan_name_list",
+              "vlan_description_list",
+              "connection_type_list",
+              "ssid_list",
+              "bssid_list",
+              "wireless_encryption_type_list",
+              "ap_name_list",
+              "ap_location_list",
+              "switch_mac_list",
+              "switch_ip_list",
+              "switch_name_list",
+              "switch_port_list",
+              "switch_location_list",
+              "switch_port_description_list",
+              "wlc_name_list",
+              "wlc_location_list",
+              "applied_acl_list",
+              "applied_acl_type_list",
+              "collection_servers",
+              "edge_locations",
+              "integration_types_reported_from",
+              "integrations_reported_from",
+              "number_of_nics",
+              "last_domain_user_activity",
+              "last_scan_time",
+              "edr_last_scan_time",
+              "retired_since",
+              "utilization_rate",
+              "activity_rate",
+              "os_eol_date",
+              "last_seen_list",
+              "first_seen_list",
+              "wifi_last_seen_list",
+              "last_seen_on_switch_list",
+              "is_online",
+              "network_scope_list",
+              "end_of_life_state",
+              "end_of_sale_date",
+              "end_of_life_date",
+              "connection_paths",
+              "ise_authentication_method_list",
+              "ise_endpoint_profile_list",
+              "ise_identity_group_list",
+              "ise_security_group_name_list",
+              "ise_security_group_tag_list",
+              "ise_logical_profile_list",
+              "cppm_authentication_status_list",
+              "cppm_roles_list",
+              "cppm_service_list",
+              "visibility_score",
+              "visibility_score_level",
+              "device_name",
+              "manufacturer",
+              "site_name",
+              "site_group_name",
+              "risk_score",
+              "risk_score_points",
+              "effective_likelihood_subscore",
+              "effective_likelihood_subscore_points",
+              "likelihood_subscore",
+              "likelihood_subscore_points",
+              "impact_subscore",
+              "impact_subscore_points",
+              "known_vulnerabilities",
+              "known_vulnerabilities_points",
+              "insecure_protocols",
+              "insecure_protocols_points",
+              "suspicious",
+              "switch_group_name_list",
+              "managed_by",
+              "authentication_user_list",
+              "collection_interfaces",
+              "data_sources_seen_reported_from",
+              "collection_servers_seen_reported_from",
+              "collection_interfaces_seen_reported_from",
+              "active_queries_seen_reported_from",
+              "edge_hosts_seen_reported_from",
+              "edge_locations_seen_reported_from",
+              "last_seen_reported",
+              "slot_cards",
+              "cmms_financial_cost",
+              "software_or_firmware_version",
+              "enforcement_or_authorization_profiles_list",
+              "ise_security_group_description_list",
+              "recommended_firewall_group_name",
+              "organization_firewall_group_name",
+              "recommended_zone_name",
+              "organization_zone_name",
+              "is_resolved"
+            ]
+          }.encode_json()
+        ).with(
+          {
+            "Header": {
+              "Authorization": ["Bearer " + string(state.api_token)],
+            },
+          }
+        ).do_request().as(resp, (resp.StatusCode == 200) ?
+          bytes(resp.Body).decode_json().as(body,
+            {
+              "events": (has(body.devices) && size(body.devices) > 0) ?
+                body.devices.orValue([]).map(evt,
+                  {
+                    "message": evt.with(
+                      {
+                        "alert_info": state.worklist.alerts[int(state.next)],
+                      }
+                    ).encode_json(),
+                  }
+                )
+              : (has(state.device_offset) && int(state.device_offset) == 0) ?
+                [
+                  {
+                    "message": {
+                      "alert_info": state.worklist.alerts[int(state.next)],
+                    }.encode_json(),
+                  },
+                ]
+              :
+                [{}],
+              "device_offset": (size(body.devices) > 0) ? (int(state.device_offset) + int(state.batch_size)) : 0,
+              "next": (size(body.devices) > 0) ?
+                state.next
+              : (int(state.next) + 1 < size(state.worklist.alerts)) ? (int(state.next) + 1) : 0, // size(body.devices) > 0
+              "worklist": (size(body.devices) > 0) ?
+                state.worklist
+              : (int(state.next) + 1 < size(state.worklist.alerts)) ? state.worklist : {},
+              "start_time": state.start_time,
+              "initial_interval": state.initial_interval,
+              "batch_size": state.batch_size,
+              "api_token": state.api_token,
+              "offset": state.offset,
+            }
+          )
+        :
+          {
+            "events": {
+              "error": {
+                "code": string(resp.StatusCode),
+                "id": string(resp.Status),
+                "message": "POST " + state.url.trim_right("/") + "/api/v1/alerts/" + string(int(state.worklist.alerts[state.next].id)) + "/devices" + 
+                (
+                  (size(resp.Body) != 0) ?
+                    string(resp.Body)
+                  :
+                    string(resp.Status) + " (" + string(resp.StatusCode) + ")"
+                ),
+              },
+            },
+            "want_more": false,
+            "counter": 0,
+          }
+        )
+      :
+        {
+          "events": [],
+          "want_more": false,
+        }
+    )
+  )
+tags:
+{{#if preserve_original_event}}
+  - preserve_original_event
+{{/if}}
+{{#if preserve_duplicate_custom_fields}}
+  - preserve_duplicate_custom_fields
+{{/if}}
+{{#each tags as |tag|}}
+  - {{tag}}
+{{/each}}
+{{#contains "forwarded" tags}}
+publisher_pipeline.disable_host: true
+{{/contains}}
+{{#if processors}}
+processors:
+{{processors}}
+{{/if}}
