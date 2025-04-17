@@ -34,14 +34,6 @@ processors:
       field: event.kind
       tag: set_event_kind
       value: alert
-  - append:
-      field: event.category
-      tag: set_event_category_host
-      value: host
-  - append:
-      field: event.type
-      tag: set_event_type
-      value: info
   - set:
       field: observer.vendor
       tag: set_observer_vendor
@@ -143,6 +135,16 @@ processors:
       target_field: claroty_xdome.alert.device.assignees
       ignore_missing: true
   - foreach:
+      field: claroty_xdome.alert.device.assignees
+      tag: foreach_add_assignees_into_related_user
+      if: ctx.claroty_xdome?.alert?.device?.assignees instanceof List
+      processor:
+        append:
+          field: related.user
+          tag: append_assignees_into_related_user
+          value: '{{{_ingest._value}}}'
+          allow_duplicates: false
+  - foreach:
       field: json.assignees_data
       tag: foreach_convert_assignees_data_to_string
       if: ctx.json?.assignees_data instanceof List
@@ -152,6 +154,34 @@ processors:
           tag: convert_assignees_data_to_string
           type: string
           ignore_missing: true
+          on_failure:
+            - remove:
+                field: _ingest._value.id
+                tag: remove_convert_assignees_Data_id
+                ignore_missing: true
+            - append:
+                field: error.message
+                value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - foreach:
+      field: json.assignees_data
+      tag: foreach_add_assignees_data_id_into_related_user
+      if: ctx.json.assignees_data instanceof List
+      processor:
+        append:
+          field: related.user
+          tag: append_assignees_data_id_into_related_user
+          value: '{{{_ingest._value.id}}}'
+          allow_duplicates: false
+  - foreach:
+      field: json.assignees_data
+      tag: foreach_add_assignees_data_display_name_into_related_user
+      if: ctx.json.assignees_data instanceof List
+      processor:
+        append:
+          field: related.user
+          tag: append_assignees_data_display_name_into_related_user
+          value: '{{{_ingest._value.display_name}}}'
+          allow_duplicates: false
   - foreach:
       field: json.assignees_data
       tag: foreach_convert_assignees_data_to_string
@@ -166,6 +196,9 @@ processors:
             - remove:
                 field: _ingest._value
                 ignore_missing: true
+            - append:
+                field: error.message
+                value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - rename:
       field: json.assignees_data
       tag: rename_assignees_data
@@ -1463,10 +1496,16 @@ processors:
       target_field: claroty_xdome.alert.device.uid
       ignore_missing: true
   - set:
-      field: device.id
-      tag: set_device_id_from_alert_device_uid
+      field: host.id
+      tag: set_host_id_from_alert_device_uid
       copy_from: claroty_xdome.alert.device.uid
       ignore_empty_value: true
+  - append:
+      field: related.hosts
+      tag: append_related_hosts_from_device_uid
+      value: '{{{claroty_xdome.alert.device.uid}}}'
+      allow_duplicates: false
+      if: ctx.claroty_xdome?.alert?.device?.uid != null
   - convert:
       field: json.utilization_rate
       tag: convert_utilization_rate_to_double

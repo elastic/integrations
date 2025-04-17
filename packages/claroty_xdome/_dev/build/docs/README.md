@@ -14,7 +14,7 @@ The Claroty xDome integration collects three types of logs.
 
 - **Alerts** - Retrieves alerts and their affected devices from Claroty xDome.
 
-- **Events** - Collects events related to OT activities.
+- **Events** - Collects events related to Operational Technology activities.
 
 - **Vulnerabilities** - Retrieves vulnerabilities and their affected devices from Claroty xDome.
 

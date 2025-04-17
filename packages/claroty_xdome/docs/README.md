@@ -14,7 +14,7 @@ The Claroty xDome integration collects three types of logs.
 
 - **Alerts** - Retrieves alerts and their affected devices from Claroty xDome.
 
-- **Events** - Collects events related to OT activities.
+- **Events** - Collects events related to Operational Technology activities.
 
 - **Vulnerabilities** - Retrieves vulnerabilities and their affected devices from Claroty xDome.
 
@@ -87,11 +87,11 @@ An example event for `alert` looks as following:
 {
     "@timestamp": "2025-03-28T03:07:32.195Z",
     "agent": {
-        "ephemeral_id": "55300058-9af0-4b4a-a825-bdd31a27e0e4",
-        "id": "fb2929fe-21a0-4150-aeee-0e9ffb272ee0",
-        "name": "elastic-agent-97159",
+        "ephemeral_id": "d82305cc-fb6e-4e37-a1cf-3046f16dc9c7",
+        "id": "69142d3c-c10b-4f57-a6cf-96d0a3585fc5",
+        "name": "elastic-agent-83732",
         "type": "filebeat",
-        "version": "8.17.0"
+        "version": "8.18.0"
     },
     "claroty_xdome": {
         "alert": {
@@ -337,11 +337,10 @@ An example event for `alert` looks as following:
     },
     "data_stream": {
         "dataset": "claroty_xdome.alert",
-        "namespace": "80725",
+        "namespace": "34331",
         "type": "logs"
     },
     "device": {
-        "id": "010510c5-fffd-4aa6-9bc5-51c1c79fa21e",
         "manufacturer": "Zebra Technologies",
         "model": {
             "identifier": "ZT410"
@@ -352,27 +351,22 @@ An example event for `alert` looks as following:
         "version": "8.17.0"
     },
     "elastic_agent": {
-        "id": "fb2929fe-21a0-4150-aeee-0e9ffb272ee0",
-        "snapshot": false,
-        "version": "8.17.0"
+        "id": "69142d3c-c10b-4f57-a6cf-96d0a3585fc5",
+        "snapshot": true,
+        "version": "8.18.0"
     },
     "event": {
         "action": "device-endoflife-zt410",
         "agent_id_status": "verified",
-        "category": [
-            "host"
-        ],
         "dataset": "claroty_xdome.alert",
-        "ingested": "2025-03-31T11:43:43Z",
+        "ingested": "2025-04-17T04:58:21Z",
         "kind": "alert",
         "original": "{\"activity_rate\":67,\"alert_info\":{\"alert_class\":\"Pre-Defined Alerts\",\"alert_name\":\"Device End-of-Life: ZT410\",\"alert_type_name\":\"Device End-of-Life\",\"category\":\"Risk\",\"description\":\"46 Zebra Technologies ZT410 Mobile Printer have been detected that will enter the End-of-Life state in 09/01/25\",\"detected_time\":\"2025-03-28T03:07:32.195965Z\",\"devices_count\":1,\"id\":1,\"iot_devices_count\":46,\"it_devices_count\":0,\"malicious_ip_tags_list\":null,\"medical_devices_count\":0,\"ot_devices_count\":0,\"status\":\"Unresolved\",\"unresolved_devices_count\":46,\"updated_time\":\"2025-03-28T03:07:32.195965Z\"},\"applied_acl_list\":[\"Claroty_ZT410_Wired_Access\"],\"applied_acl_type_list\":[\"Cisco dACL\"],\"asset_id\":\"JAKBHWV\",\"assignees\":[\"Sergei Ridkey\"],\"assignees_data\":[{\"display_name\":\"Sergei Ridkey\",\"id\":\"sergei.r\",\"is_active\":true,\"type\":\"user\"}],\"authentication_user_list\":[\"00-0C-C6-01-37-B10\"],\"avg_online_per_day\":16.2,\"collection_interfaces_seen_reported_from\":[\"ens142@demo-collection-sv_1\",\"ens192@demo-collection-sv_1\",\"ens192@demo-collection-sv_2\"],\"collection_servers_seen_reported_from\":[\"demo-collection-sv_1\",\"demo-collection-sv_2\"],\"combined_os\":\"Proprietary Link-OS 4\",\"connection_type_list\":[\"Ethernet\"],\"data_sources_seen_reported_from\":[\"Passive Collection\",\"Integration\"],\"device_category\":\"IoT\",\"device_name\":\"1.128.0.0\",\"device_subcategory\":\"General IoT\",\"device_type\":\"Mobile Printer\",\"device_type_family\":\"Mobile Printer\",\"dhcp_fingerprint\":null,\"dhcp_last_seen_hostname\":null,\"domains\":[],\"effective_likelihood_subscore\":\"Very Low\",\"effective_likelihood_subscore_points\":27.971817,\"end_of_life_date\":\"2025-09-01\",\"end_of_life_state\":\"End-Of-Life Notification\",\"financial_cost\":\"$10,000-$100,000\",\"first_seen_list\":[\"2024-11-23T05:22:38.150546+00:00\"],\"handles_pii\":\"Yes\",\"http_hostnames\":[],\"impact_subscore\":\"Medium\",\"impact_subscore_points\":53.3,\"insecure_protocols\":\"Very Low\",\"insecure_protocols_points\":0,\"integration_types_reported_from\":[\"Cisco ISE\"],\"integrations_reported_from\":[\"Cisco ISE (Cisco ISE)\"],\"internet_communication\":\"Yes\",\"ip_assignment_list\":[\"DHCP\"],\"ip_list\":[\"1.128.0.0\"],\"is_online\":false,\"is_resolved\":false,\"ise_authentication_method_list\":[\"mab\"],\"ise_security_group_description_list\":[\"Printers Group - Exported from xDome\"],\"ise_security_group_name_list\":[\"Printers_sgt\"],\"ise_security_group_tag_list\":[4],\"known_vulnerabilities\":\"Low\",\"known_vulnerabilities_points\":18.98562,\"labels\":[\"Exposed \\u0026 EOL Asset\",\"Exposed EOL Asset\",\"OT Internet Klabin\",\"SL1_Win 7 EWS with Critical KVs\"],\"last_seen_list\":[\"2025-02-09T00:30:28.150546+00:00\"],\"last_seen_on_switch_list\":[\"2025-03-09T09:42:01.150629+00:00\"],\"last_seen_reported\":\"2025-02-09T00:30:28.150546+00:00\",\"likelihood_subscore\":\"High\",\"likelihood_subscore_points\":63.57231,\"local_name\":null,\"mac_list\":[\"00:07:4d:c1:06:20\"],\"mac_oui_list\":[\"Zebra Technologies Corp.\"],\"machine_type\":\"Physical\",\"manufacturer\":\"Zebra Technologies\",\"model\":\"ZT410\",\"network_list\":[\"Industrial\"],\"network_scope_list\":[\"Default\"],\"number_of_nics\":1,\"organization_firewall_group_name\":\"No Zone\",\"os_category\":\"Proprietary\",\"os_name\":\"Proprietary\",\"os_revision\":\"4\",\"os_subcategory\":\"Link-OS\",\"os_version\":\"Link-OS\",\"phi\":null,\"purdue_level\":\"Level 3\",\"purdue_level_source\":\"Auto-Assigned\",\"recommended_firewall_group_name\":\"Printers\",\"retired\":false,\"risk_score\":\"Low\",\"risk_score_points\":38.10309,\"serial_number\":\"18J171636094\",\"site_group_name\":\"No Group\",\"site_name\":\"SV_1\",\"software_or_firmware_version\":\"V75.20.01Z\",\"switch_location_list\":[\"dep JzkRK\"],\"switch_mac_list\":[\"00:12:00:36:4e:5f\"],\"switch_port_list\":[\"Fa/1/12\"],\"uid\":\"010510c5-fffd-4aa6-9bc5-51c1c79fa21e\",\"utilization_rate\":0,\"visibility_score\":99,\"visibility_score_level\":\"Excellent\",\"vlan_description_list\":[\"Bldg1-Flr3\"],\"vlan_list\":[103],\"vlan_name_list\":[\"Bldg1-Flr3\"]}",
         "risk_score": 38.10309,
-        "severity": 21,
-        "type": [
-            "info"
-        ]
+        "severity": 21
     },
     "host": {
+        "id": "010510c5-fffd-4aa6-9bc5-51c1c79fa21e",
         "ip": [
             "1.128.0.0"
         ],
@@ -409,10 +403,15 @@ An example event for `alert` looks as following:
         "hosts": [
             "Proprietary Link-OS 4",
             "Proprietary",
-            "SV_1"
+            "SV_1",
+            "010510c5-fffd-4aa6-9bc5-51c1c79fa21e"
         ],
         "ip": [
             "1.128.0.0"
+        ],
+        "user": [
+            "Sergei Ridkey",
+            "sergei.r"
         ]
     },
     "tags": [
@@ -660,11 +659,11 @@ An example event for `event` looks as following:
 {
     "@timestamp": "2025-02-02T19:54:13.691Z",
     "agent": {
-        "ephemeral_id": "d47b455a-3300-452c-9baf-c5206a00603c",
-        "id": "a292b4a9-60a7-4a9f-a96b-bccff2e32874",
-        "name": "elastic-agent-59316",
+        "ephemeral_id": "e1542b9c-6ea0-4604-a051-77fd44a5fbec",
+        "id": "373ae615-e626-41fa-967e-97bcd8272632",
+        "name": "elastic-agent-62826",
         "type": "filebeat",
-        "version": "8.17.0"
+        "version": "8.18.0"
     },
     "claroty_xdome": {
         "event": {
@@ -703,7 +702,7 @@ An example event for `event` looks as following:
     },
     "data_stream": {
         "dataset": "claroty_xdome.event",
-        "namespace": "58231",
+        "namespace": "86709",
         "type": "logs"
     },
     "destination": {
@@ -726,9 +725,9 @@ An example event for `event` looks as following:
         "version": "8.17.0"
     },
     "elastic_agent": {
-        "id": "a292b4a9-60a7-4a9f-a96b-bccff2e32874",
-        "snapshot": false,
-        "version": "8.17.0"
+        "id": "373ae615-e626-41fa-967e-97bcd8272632",
+        "snapshot": true,
+        "version": "8.18.0"
     },
     "event": {
         "action": "configuration-upload",
@@ -740,7 +739,7 @@ An example event for `event` looks as following:
         ],
         "dataset": "claroty_xdome.event",
         "id": "12",
-        "ingested": "2025-03-31T11:44:32Z",
+        "ingested": "2025-04-17T04:59:22Z",
         "kind": "event",
         "original": "{\"description\":\"Configuration Upload was detected from 81.2.69.142 (Engineering Station) to 175.16.199.0 (PLC)\",\"dest_asset_id\":\"EHBLLGK\",\"dest_device_name\":\"175.16.199.0\",\"dest_device_type\":\"PLC\",\"dest_ip\":\"175.16.199.0\",\"dest_network\":\"Industrial\",\"dest_port\":2222,\"dest_site_name\":\"NY-BR-212\",\"detection_time\":\"2025-02-02T19:54:13.691489+00:00\",\"event_id\":12,\"event_type\":\"Configuration Upload\",\"ip_protocol\":\"UDP\",\"mode\":null,\"protocol\":\"CIP\",\"related_alert_ids\":[1000039],\"source_asset_id\":\"MNCYPGV\",\"source_device_name\":\"DESKTOP-JUFLZS\",\"source_device_type\":\"Engineering Station\",\"source_ip\":\"81.2.69.142\",\"source_network\":\"Industrial\",\"source_port\":56576,\"source_site_name\":\"Houston_Line_1\",\"source_username\":null}",
         "type": [
@@ -854,11 +853,11 @@ An example event for `vulnerability` looks as following:
 {
     "@timestamp": "2025-05-11T01:21:05.359Z",
     "agent": {
-        "ephemeral_id": "86c78c97-0904-4168-95b7-42d36e3a4919",
-        "id": "206ab0e8-dd01-4c3c-86b2-fee57d11dc80",
-        "name": "elastic-agent-91574",
+        "ephemeral_id": "bc73600d-9a72-4342-9090-4bd369d32b7e",
+        "id": "815797fa-9fe5-473c-9edf-9243a371d577",
+        "name": "elastic-agent-13644",
         "type": "filebeat",
-        "version": "8.17.0"
+        "version": "8.18.0"
     },
     "claroty_xdome": {
         "vulnerability": {
@@ -1101,11 +1100,10 @@ An example event for `vulnerability` looks as following:
     },
     "data_stream": {
         "dataset": "claroty_xdome.vulnerability",
-        "namespace": "85280",
+        "namespace": "45844",
         "type": "logs"
     },
     "device": {
-        "id": "0d4b011f-fe47-46d0-9b9c-b102e3309aaa",
         "manufacturer": "Siemens",
         "model": {
             "identifier": "PXC100-PE96.A"
@@ -1116,9 +1114,9 @@ An example event for `vulnerability` looks as following:
         "version": "8.17.0"
     },
     "elastic_agent": {
-        "id": "206ab0e8-dd01-4c3c-86b2-fee57d11dc80",
-        "snapshot": false,
-        "version": "8.17.0"
+        "id": "815797fa-9fe5-473c-9edf-9243a371d577",
+        "snapshot": true,
+        "version": "8.18.0"
     },
     "event": {
         "agent_id_status": "verified",
@@ -1126,8 +1124,8 @@ An example event for `vulnerability` looks as following:
             "vulnerability"
         ],
         "dataset": "claroty_xdome.vulnerability",
-        "ingested": "2025-03-31T11:45:23Z",
-        "kind": "alert",
+        "ingested": "2025-04-17T05:00:31Z",
+        "kind": "state",
         "original": "{\"activity_rate\":82,\"asset_id\":\"JLSXVOK\",\"assignees\":[\"Jose Alegria\",\"Kelvin Kan\"],\"assignees_data\":[{\"display_name\":\"Jose Alegria\",\"id\":\"jose.a\",\"is_active\":true,\"type\":\"user\"}],\"avg_online_per_day\":19.7,\"collection_interfaces_seen_reported_from\":[\"ens142@demo-collection-sv_2\"],\"collection_servers_seen_reported_from\":[\"demo-collection-sv_1\",\"demo-collection-sv_2\"],\"combined_os\":\"Nucleus 3.1.1\",\"connection_type_list\":[\"Ethernet\"],\"data_sources_seen_reported_from\":[\"Passive Collection\"],\"device_category\":\"OT\",\"device_name\":\"81.2.69.144\",\"device_subcategory\":\"Building Management\",\"device_type\":\"Building Automation Controller\",\"device_type_family\":\"Building Automation Controller\",\"effective_likelihood_subscore\":\"Low\",\"effective_likelihood_subscore_points\":50.071365,\"end_of_life_state\":\"Manufacturer Supported\",\"financial_cost\":\"$1,000-$10,000\",\"first_seen_list\":[\"2024-12-05T05:08:40.208303+00:00\"],\"hw_version\":\"PXME V2.8.18\",\"impact_subscore\":\"Critical\",\"impact_subscore_points\":65,\"insecure_protocols\":\"Very Low\",\"insecure_protocols_points\":0,\"internet_communication\":\"No\",\"ip_assignment_list\":[\"Static\"],\"ip_list\":[\"81.2.69.144\"],\"is_online\":true,\"ise_security_group_description_list\":[\"Building Management System Group - Exported from xDome\"],\"ise_security_group_name_list\":[\"Building_Management_System_sgt\"],\"ise_security_group_tag_list\":[3],\"known_vulnerabilities\":\"Medium\",\"known_vulnerabilities_points\":43.84793,\"labels\":[\"Asset Owner\",\"criticality\",\"OT Internet Klabin\"],\"last_seen_list\":[\"2025-03-28T02:54:47.042124+00:00\"],\"last_seen_on_switch_list\":[\"2025-03-09T09:41:58.208337+00:00\"],\"last_seen_reported\":\"2025-03-29T02:54:26.262271+00:00\",\"likelihood_subscore\":\"Low\",\"likelihood_subscore_points\":50.071365,\"mac_list\":[\"00:c0:e4:4b:d4:a8\"],\"mac_oui_list\":[\"Siemens Building\"],\"machine_type\":\"Physical\",\"manufacturer\":\"Siemens\",\"mobility\":\"Stationary\",\"model\":\"PXC100-PE96.A\",\"network_list\":[\"Industrial\"],\"network_scope_list\":[\"Default\"],\"number_of_nics\":1,\"organization_firewall_group_name\":\"No Zone\",\"os_category\":\"Other\",\"os_name\":\"Nucleus\",\"os_subcategory\":\"Nucleus\",\"os_version\":\"3.1.1\",\"purdue_level\":\"Level 1\",\"purdue_level_source\":\"Auto-Assigned\",\"recommended_firewall_group_name\":\"Building Management System\",\"retired\":false,\"risk_score\":\"Medium\",\"risk_score_points\":56.04282,\"serial_number\":\"150214B94630\",\"site_group_name\":\"No Group\",\"site_name\":\"SV_1\",\"switch_mac_list\":[\"00:11:93:61:e7:e3\"],\"switch_port_list\":[\"Fa/0/3\"],\"uid\":\"0d4b011f-fe47-46d0-9b9c-b102e3309aaa\",\"visibility_score\":98,\"visibility_score_level\":\"Excellent\",\"vlan_description_list\":[\"Bldg1-Flr8\"],\"vlan_list\":[108],\"vlan_name_list\":[\"Bldg1-Flr8\"],\"vulnerability_info\":{\"adjusted_vulnerability_score\":5.0070715,\"adjusted_vulnerability_score_level\":\"Medium\",\"affected_confirmed_devices_count\":0,\"affected_devices_count\":0,\"affected_fixed_devices_count\":0,\"affected_iot_devices_count\":0,\"affected_irrelevant_devices_count\":0,\"affected_it_devices_count\":0,\"affected_ot_devices_count\":0,\"affected_potentially_relevant_devices_count\":0,\"cve_ids\":[\"CVE-2020-26144\"],\"cvss_v2_exploitability_subscore\":6.5,\"cvss_v2_score\":3.3,\"cvss_v2_vector_string\":\"AV:A/AC:L/Au:N/C:N/I:P/A:N\",\"cvss_v3_exploitability_subscore\":2.8,\"cvss_v3_score\":6.5,\"cvss_v3_vector_string\":\"CVSS:3.1/AV:A/AC:L/PR:N/UI:N/S:U/C:N/I:H/A:N\",\"description\":\"CVE-2020-26144 - An issue was discovered on Samsung Galaxy S3 i9305 4.4.4 devices. The WEP, WPA, WPA2, and WPA3 implementations accept plaintext A-MSDU frames as long as the first 8 bytes correspond to a valid RFC1042 (i.e., LLC/SNAP) header for EAPOL. An adversary can abuse this to inject arbitrary network packets independent of the network configuration.\",\"epss_score\":0.00119,\"id\":\"ALTWZXRU\",\"is_known_exploited\":false,\"name\":\"CVE-2020-26144\",\"published_date\":\"2025-05-11T01:21:05.359000Z\",\"source_name\":\"NVD\",\"source_url\":\"https://nvd.nist.gov/vuln/detail/CVE-2020-26144\",\"sources\":[{\"name\":\"NVD\",\"url\":\"https://nvd.nist.gov/vuln/detail/CVE-2020-26144\"}],\"vulnerability_type\":\"Platform\"},\"vulnerability_is_user_verdict\":false,\"vulnerability_last_updated\":\"2025-03-28T03:11:36.632383+00:00\",\"vulnerability_relevance\":\"Confirmed\",\"vulnerability_source\":\"Claroty\",\"vulnerability_system_relevance\":\"Confirmed\"}",
         "risk_score": 56.04282,
         "severity": 47,
@@ -1148,6 +1146,7 @@ An example event for `vulnerability` looks as following:
             "region_iso_code": "GB-ENG",
             "region_name": "England"
         },
+        "id": "0d4b011f-fe47-46d0-9b9c-b102e3309aaa",
         "ip": [
             "81.2.69.144"
         ],
@@ -1184,11 +1183,21 @@ An example event for `vulnerability` looks as following:
         "hosts": [
             "Nucleus 3.1.1",
             "Nucleus",
-            "SV_1"
+            "SV_1",
+            "0d4b011f-fe47-46d0-9b9c-b102e3309aaa"
         ],
         "ip": [
             "81.2.69.144"
+        ],
+        "user": [
+            "Jose Alegria",
+            "Kelvin Kan",
+            "jose.a"
         ]
+    },
+    "resource": {
+        "id": "ALTWZXRU",
+        "name": "Claroty"
     },
     "tags": [
         "preserve_original_event",
@@ -1201,6 +1210,9 @@ An example event for `vulnerability` looks as following:
         "description": "CVE-2020-26144 - An issue was discovered on Samsung Galaxy S3 i9305 4.4.4 devices. The WEP, WPA, WPA2, and WPA3 implementations accept plaintext A-MSDU frames as long as the first 8 bytes correspond to a valid RFC1042 (i.e., LLC/SNAP) header for EAPOL. An adversary can abuse this to inject arbitrary network packets independent of the network configuration.",
         "enumeration": "CVE",
         "id": "CVE-2020-26144",
+        "package": {
+            "published_date": "2025-05-11T01:21:05.359Z"
+        },
         "reference": "https://nvd.nist.gov/vuln/detail/CVE-2020-26144",
         "score": {
             "base": 6.5,
@@ -1448,4 +1460,7 @@ An example event for `vulnerability` looks as following:
 | event.module | Event module. | constant_keyword |
 | input.type | Type of Filebeat input. | keyword |
 | log.offset | Log offset. | long |
+| resource.id |  | keyword |
+| resource.name |  | keyword |
+| vulnerability.package.published_date |  | date |
 
