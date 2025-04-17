@@ -61,23 +61,13 @@ processors:
         target_field: url.path
         ignore_missing: true
 
-    - script:
-        if: ctx.swimlane.audit_log?.SourceIp != null
-        source: >-
-
-            if (ctx.source == null) {
-                ctx.source = [:]; // Create an empty map if ctx.source is null
-            }
-
-            if (ctx.swimlane?.audit_log?.SourceIp.length() > 0) {
-
-                int commaIndex = ctx.swimlane?.audit_log?.SourceIp.indexOf(',');
-                if (commaIndex != -1) {
-                    ctx.source.ip = ctx.swimlane?.audit_log?.SourceIp.substring(0, commaIndex).trim();
-                } else {
-                    ctx.source.ip = ctx.swimlane?.audit_log?.SourceIp.trim(); // Only one IP
-                }
-            }
+    - grok:
+        field: swimlane.audit_log.SourceIp
+        patterns:
+            - "::ffff:%{IPV4:source.ip}"
+            - "%{IPV4:source.ip}"
+            - "%{IPV6:source.ip}" 
+        ignore_failure: true
 
     - geoip:
         field: source.ip
@@ -119,61 +109,50 @@ processors:
         target_field: user.id
         ignore_missing: true
 
-    - set:
-        field: event.type 
-        value: ["creation"]
-        if: 'ctx.swimlane.audit_log.ActionType == "Create"'
-
-    - set:
-        field: event.type 
-        value: ["access"]
-        if: 'ctx.swimlane.audit_log.ActionType == "Read"'
-
-    - set:
-        field: event.type
-        value: ["change"]
-        if: 'ctx.swimlane.audit_log.ActionType == "Update"'
-
-    - set:
-        field: event.type 
-        value: ["deletion"]
-        if: 'ctx.swimlane.audit_log.ActionType == "Delete"'
-
-    - set:
-        field: event.type
-        value: ["start"]
-        if: 'ctx.swimlane.audit_log.ActionType == "Login"'
-
-    - set:
-        field: event.type
-        value: ["end"]
-        if: 'ctx.swimlane.audit_log.ActionType == "Logout"'
+    - script:
+        lang: painless
+        tag: Add ECS categorization
+        params:
+            Create:
+              type:
+                - creation
+            Read:
+              type:
+                - access
+            Update:
+              type:
+                - change
+            Delete:
+              type:
+                - deletion
+            Login:
+              type:
+                - start
+            Logout:
+              type:
+                - end   
+            
+        source: >-
+            ctx.event.kind = 'event';
+            ctx.event.type = 'info';
+            if (ctx?.swimlane?.audit_log?.ActionType == null) {
+                return;
+            }
+            if (params.get(ctx?.swimlane?.audit_log?.ActionType) == null) {
+                return;
+            }
+            def hm = new HashMap(params.get(ctx?.swimlane?.audit_log?.ActionType));
+            hm.forEach((k, v) -> ctx.event[k] = v);
 
     - rename:
         field: swimlane.audit_log.Category
         target_field: log.category
         ignore_missing: true
 
-    - rename:
-        field: swimlane.audit_log.Endpoint
-        target_field: url.path
-        ignore_missing: true
-
-    - rename:
+    - grok:
         field: swimlane.audit_log.EndPoint
-        target_field: url.path
-        ignore_missing: true
-
-    - script:
-        if: ctx.url.path != null
-        source: >-
-            def paths = ctx.url?.path.splitOnToken("/");
-            if (paths.length > 0) {
-                int firstSlash = ctx.url.path.indexOf('/');
-                if (firstSlash != -1 && firstSlash + 1 < ctx.url?.path.length()) {
-                    ctx.url.path = ctx.url.path.substring(firstSlash + 1);
-                } 
-            }
+        patterns:
+            - "%{HOSTNAME:url.domain}/%{GREEDYDATA:url.path}"
 
     - rename:
         field: swimlane.audit_log.EventOutcome
@@ -220,13 +199,25 @@ processors:
     - date:
         field: swimlane.audit_log.EventTime
         target_field: "@timestamp"
-        formats: ["yyyy-MM-dd'T'HH:mm:ss.SSSSSSS'Z'", "yyyy-MM-dd'T'HH:mm:ss.SSSSS'Z'"]
+        formats: 
+            - "yyyy-MM-dd'T'HH:mm:ss.SSSSSSS'Z'"
+            - "yyyy-MM-dd'T'HH:mm:ss.SSSSS'Z'"
 
     - remove:
         field: swimlane
         ignore_missing: false
 
 on_failure:
-    - set:
-        field: error.message
-        value: "{{ _ingest.on_failure_message }}"
+  - set:
+      field: event.kind
+      value: pipeline_error
+  - append:
+      field: tags
+      value: preserve_original_event
+      allow_duplicates: false
+  - append:
+      field: error.message
+      value: >-
+        Processor '{{{ _ingest.on_failure_processor_type }}}'
+        {{{#_ingest.on_failure_processor_tag}}}with tag '{{{ _ingest.on_failure_processor_tag }}}'
+        {{{/_ingest.on_failure_processor_tag}}}failed with message '{{{ _ingest.on_failure_message }}}'
