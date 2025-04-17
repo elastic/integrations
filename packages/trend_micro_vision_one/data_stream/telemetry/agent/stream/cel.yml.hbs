@@ -46,10 +46,38 @@ state:
   registration_count: 0
 program: |
 
-  // assumptions: package listings are ordered by createdDateTime ASC, id ASC (API doc example shows this within a page. assume its the case across pages)
-  // assumptions: package listings are filtered for createdDateTime >= startDateTime (API doc calls it "the start of the data retrieval time range")
-  // assumptions: full pages (>= 500 packages/hour) will be rare. if they do happen, the package or packages with the last timestamp on a page will be received again on the following page and ingested twice
-  // assumptions: full pages with identical createdDateTime (>= 500 packages/second) will never happen. If they did happen, the integration would get stuck in a loop until those packages become unavailable.
+  // The following assumptions are made regarding package listings:
+  //
+  // - **They are ordered by `createdDateTime ASC`.**
+  //
+  //   The API documentation example data is ordered by
+  //   `createdDateTime ASC, id ASC` within a page. That is assumed to be the
+  //   case across pages.
+  //
+  // - **The `startDateTime` condition is inclusive.**
+  //
+  //   The documentation calls it "the start of the data retrieval time range".
+  //
+  // - **The `endDateTime` condition is exclusive, _or_
+  //   a package having `createdDateTime == endDateTime` will be rare.**
+  //
+  //   The documentation calls it "the end of the data retrieval time range".
+  //   It also says that "The data pipeline ingests data at least every 2
+  //   minutes." If a package is created every minute on average, there's a
+  //   1.7% chance it's creation time will fall on the last second of a given
+  //   15 minute window.
+  //   If the condition is inclusive and a package falls on the `endDateTime`,
+  //   it will be received again on the following page and ingested twice.
+  //
+  // - **Full pages of identical `createdDateTime` values will never happen.**
+  //
+  //   This would only happen if >= 500 packages are created in one second.
+  //   If it did happen, the integration would get stuck in a loop until those
+  //   packages become unavailable.
+  //
+  // Documentation: [Trend Vision One Public API (v3.0) - Datalake Pipeline][1]
+  //
+  // [1]: https://automation.trendmicro.com/xdr/api-v3/#tag/Datalake-Pipeline
 
   (state.?cursor.packages_to_get.orValue([]).size() > 0) ?
 
