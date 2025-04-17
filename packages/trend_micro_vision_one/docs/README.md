@@ -1073,7 +1073,9 @@ An example event for `telemetry` looks as following:
 | trend_micro_vision_one.telemetry.event_id |  | integer |
 | trend_micro_vision_one.telemetry.event_source_type |  | integer |
 | trend_micro_vision_one.telemetry.event_sub_id |  | integer |
+| trend_micro_vision_one.telemetry.event_subtype |  | keyword |
 | trend_micro_vision_one.telemetry.event_time |  | date |
+| trend_micro_vision_one.telemetry.event_type |  | keyword |
 | trend_micro_vision_one.telemetry.filter_risk_level |  | keyword |
 | trend_micro_vision_one.telemetry.first_seen |  | date |
 | trend_micro_vision_one.telemetry.group_id |  | keyword |
