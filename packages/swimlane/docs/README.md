@@ -11,15 +11,15 @@ The Swimlane Turbine Audit Logs integration collects one type of data streams: l
 
 ### swimlane.api 
 Swimlane API help you keep a record of events happening in Swimlane API which are related to Workspaces, Dashboards, Reports, Application, Applets, Records, Role Based Access Control (RBAC).
-All fields ingested to this data stream are stored under swimlane.api as an event.
+All fields ingested to this data stream are stored under `swimlane.api` as an event.
 
-### tenant.api 
+### swimlane.tenant
 Tenant API help you keep a record of events happening in Tenant API which are related to Account & Tenant Management, Settings, and Authentication.
-All fields ingested to this data stream are stored under tenant.api as an event.
+All fields ingested to this data stream are stored under `swimlane.tenant` as an event.
 
 ### turbine.api 
 Turbine API help you keep a record of events happening in Turbine API which are related to Connectors, Assets, Sensors, Solutions, Playbook, Schema Definitions, and Components.
-All fields ingested to this data stream are stored under turbine.api as an event.
+All fields ingested to this data stream are stored under `turbine.api` as an event.
 
 ## Requirements 
 
@@ -45,7 +45,6 @@ turbine-api:
 ## Data Stream
 
 ### swimlane.api
-All fields ingested to this data stream are stored under `swimlane.api`, with each event recorded individually.
 
 An example event for `swimlane_api` looks as following:
 
@@ -136,8 +135,7 @@ An example event for `swimlane_api` looks as following:
 | user.authentication.type | The authentication type used by the user for this request | keyword |
 
 
-### tenant.api
-All fields ingested to this data stream are stored under `swimlane.tenant`, with each event recorded individually.
+### swimlane.tenant
 
 An example event for `tenant_api` looks as following:
 
@@ -216,10 +214,9 @@ An example event for `tenant_api` looks as following:
 | log.type | Log Type | keyword |
 | source.user.changes.id | Unique identifier of the user which made the modification | keyword |
 | user.authentication.type | The authentication type used by the user for this request | keyword |
-
+.
 
 ### turbine.api
-All fields ingested to this data stream are stored under `turbine.api`, with each event recorded individually.
 
 An example event for `turbine_api` looks as following:
 
