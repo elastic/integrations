@@ -87,12 +87,19 @@ An example event for `audit` looks as following:
 ```json
 {
     "@timestamp": "2019-12-19T00:44:25.051Z",
+    "actor": {
+        "entity": {
+            "id": [
+                "xxx@xxx.xxx"
+            ]
+        }
+    },
     "agent": {
-        "ephemeral_id": "a22278bb-5e1f-4ab7-b468-277c8c0b80a9",
-        "id": "c6b95057-2f5d-4b8f-b4b5-37cbdb995dec",
-        "name": "docker-fleet-agent",
+        "ephemeral_id": "2dfb1a88-70c0-4128-893b-f894bbf75430",
+        "id": "44541c50-608e-4a02-a7d5-ea2ec8e966c1",
+        "name": "elastic-agent-43816",
         "type": "filebeat",
-        "version": "8.7.1"
+        "version": "8.13.0"
     },
     "client": {
         "user": {
@@ -107,16 +114,16 @@ An example event for `audit` looks as following:
     },
     "data_stream": {
         "dataset": "gcp.audit",
-        "namespace": "ep",
+        "namespace": "71537",
         "type": "logs"
     },
     "ecs": {
         "version": "8.11.0"
     },
     "elastic_agent": {
-        "id": "c6b95057-2f5d-4b8f-b4b5-37cbdb995dec",
+        "id": "44541c50-608e-4a02-a7d5-ea2ec8e966c1",
         "snapshot": false,
-        "version": "8.7.1"
+        "version": "8.13.0"
     },
     "event": {
         "action": "beta.compute.instances.aggregatedList",
@@ -125,23 +132,18 @@ An example event for `audit` looks as following:
             "network",
             "configuration"
         ],
-        "created": "2023-10-25T04:18:46.637Z",
+        "created": "2025-04-15T12:09:22.160Z",
         "dataset": "gcp.audit",
-        "id": "yonau2dg2zi",
-        "ingested": "2023-10-25T04:18:47Z",
+        "id": "yonau3dc2zi",
+        "ingested": "2025-04-15T12:09:25Z",
         "kind": "event",
-        "outcome": "success",
-        "provider": "data_access",
-        "type": [
-            "access",
-            "allowed"
-        ]
+        "outcome": "failure",
+        "provider": "data_access"
     },
     "gcp": {
         "audit": {
             "authorization_info": [
                 {
-                    "granted": true,
                     "permission": "compute.instances.list",
                     "resource_attributes": {
                         "name": "projects/elastic-beats",
@@ -160,17 +162,9 @@ An example event for `audit` looks as following:
                 ]
             },
             "resource_name": "projects/elastic-beats/global/instances",
-            "response": {
-                "@type": "core.k8s.io/v1.Status",
-                "apiVersion": "v1",
-                "details": {
-                    "group": "batch",
-                    "kind": "jobs",
-                    "name": "gsuite-exporter-1589294700",
-                    "uid": "2beff34a-945f-11ea-bacf-42010a80007f"
-                },
-                "kind": "Status",
-                "status_value": "Success"
+            "status": {
+                "code": 7,
+                "message": "PERMISSION_DENIED"
             },
             "type": "type.googleapis.com/google.cloud.audit.AuditLog"
         }
@@ -182,6 +176,18 @@ An example event for `audit` looks as following:
         "level": "INFO",
         "logger": "projects/elastic-beats/logs/cloudaudit.googleapis.com%2Fdata_access"
     },
+    "related": {
+        "entity": [
+            "projects/elastic-beats/global/instances",
+            "xxx@xxx.xxx"
+        ],
+        "ip": [
+            "192.168.1.1"
+        ],
+        "user": [
+            "xxx@xxx.xxx"
+        ]
+    },
     "service": {
         "name": "compute.googleapis.com"
     },
@@ -192,6 +198,13 @@ An example event for `audit` looks as following:
         "forwarded",
         "gcp-audit"
     ],
+    "target": {
+        "entity": {
+            "id": [
+                "projects/elastic-beats/global/instances"
+            ]
+        }
+    },
     "user_agent": {
         "device": {
             "name": "Mac"
