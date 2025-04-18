@@ -66,10 +66,26 @@ processors:
         target_field: message
         ignore_missing: true
 
-    - set:
-        field: source.ip
-        value: "{{swimlane.audit_log.SourceIp.0}}"
-        if: ctx.swimlane.audit_log?.SourceIp != null && ctx.swimlane.audit_log?.SourceIp.length > 0
+    - script:
+        lang: painless
+        description: "Normalize SourceIp to a single value"
+        source: >-
+            def src = ctx.swimlane?.audit_log?.SourceIp;
+            if (src != null) {
+                if (src instanceof List && src.size() > 0) {
+                    ctx.swimlane.audit_log.SourceIp = src[0];
+                } else if (src instanceof String) {
+                    ctx.swimlane.audit_log.SourceIp = src;
+                }
+            }
+
+    - grok:
+        field: swimlane.audit_log.SourceIp
+        patterns:
+            - "::ffff:%{IPV4:source.ip}"
+            - "%{IPV4:source.ip}"
+            - "%{IPV6:source.ip}" 
+        ignore_failure: true
 
     - geoip:
         field: source.ip
@@ -141,7 +157,7 @@ processors:
             
         source: >-
             ctx.event.kind = 'event';
-            ctx.event.type = 'info';
+            ctx.event.type = ['info'];
             if (ctx?.swimlane?.audit_log?.ActionType == null) {
                 return;
             }
