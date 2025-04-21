@@ -5,9 +5,10 @@ processors:
       field: ecs.version
       tag: set_ecs_version
       value: 8.11.0
-  - dissect:
+  - gsub:
       field: message
-      pattern: "ï»¿%{message}"
+      pattern: "^\\xEF\\xBB\\xBF"
+      replacement: ""
       ignore_failure: true
       tag: bom_removed
   - rename:
