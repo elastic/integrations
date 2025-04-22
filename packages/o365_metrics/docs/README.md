@@ -3380,7 +3380,7 @@ Please refer to the following [document](https://www.elastic.co/guide/en/ecs/cur
 
 ### Entra Agent
 
-Get details about Entra Agent. [Microsoft API](https://learn.microsoft.com/en-us/azure/api-management/api-management-key-concepts).
+Get details about Entra Agent. [Microsoft Docs](https://learn.microsoft.com/en-us/entra/identity/hybrid/cloud-sync/how-to-install).
 
 An example event for `entra_agent` looks as following:
 
