@@ -114,9 +114,7 @@ You’ll need to have a few requirements in place to run this tutorial:
 
 3. After the command runs, check that your new package appears in Kibana under **Management > Integrations > Installed integrations**.
 
-    :::{image} images/package-installed.png
-    :alt: Kibana installed integrations tab with a card for my sample package
-    :::
+    ![Kibana installed integrations tab with a card for my sample package](images/package-installed.png)
 
 
 
@@ -371,7 +369,7 @@ To run these steps using {{fleet}}-managed {{agent}}, you just need to update th
 
 
 1. [Download the {{agent}} install package](https://www.elastic.co/downloads/elastic-agent) to your machine.
-2. Download the {{agent}} package, extract it, and change into the package directory. You can find the steps for each available platform in [Install standalone {{agents}}](docs-content://reference/ingestion-tools/fleet/install-standalone-elastic-agent.md).
+2. Download the {{agent}} package, extract it, and change into the package directory. You can find the steps for each available platform in [Install standalone {{agents}}](docs-content://reference/fleet/install-standalone-elastic-agent.md).
 
     You can also download a package directly from the [{{agent}} download site](https://www.elastic.co/downloads/elastic-agent).
 
@@ -417,9 +415,7 @@ To run these steps using {{fleet}}-managed {{agent}}, you just need to update th
     2. In the search field, enter `log.file.path.text : *`. The search should return a couple of log entries.
     3. Hover over an entry and click `Enter` to view the cell contents.
 
-        :::{image} images/datastream-log-message.png
-        :alt: Data stream showing log message: "this is a nice day"
-        :::
+        ![Data stream showing log message: "this is a nice day"](images/datastream-log-message.png)
 
 
 

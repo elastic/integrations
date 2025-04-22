@@ -1,0 +1,91 @@
+config_version: 2
+interval: {{interval}}
+resource.tracer:
+  enabled: {{enable_request_tracer}}
+  filename: "../../logs/cel/http-request-trace-*.ndjson"
+  maxbackups: 5
+{{#if proxy_url}}
+resource.proxy_url: {{proxy_url}}
+{{/if}}
+{{#if ssl}}
+resource.ssl: {{ssl}}
+{{/if}}
+resource.url: {{url}}
+auth.oauth2:
+  client.id: {{client_id}}
+  client.secret: {{client_secret}}
+  token_url:  {{login_url}}/{{tenant_id}}/oauth2/v2.0/token
+  scopes: {{token_scopes}}
+state:
+  initial_interval: {{initial_interval}}
+  page_size: {{batch_size}}
+redact:
+  fields: ~
+program: |
+  (
+    state.?want_more.orValue(false) ?
+      state.start_time
+    :
+      state.?cursor.last_updated.orValue((now - duration(state.initial_interval)).format(time_layout.RFC3339Nano))
+  ).as(start_time, state.with(
+    request(
+      "GET",
+      state.url.trim_right("/") + "/api/machineactions?" + {
+        "$filter": ["lastUpdateDateTimeUtc gt " + start_time],
+        "$orderby": ["lastUpdateDateTimeUtc asc"],
+        "$top": [string(state.page_size)],
+        "$skip": [string(state.?skip.orValue(0))],
+      }.format_query()
+    ).do_request().as(resp, resp.StatusCode == 200 ?
+      resp.Body.decode_json().as(body,
+        {
+          "events": body.value.map(e, {
+            "message": e.encode_json(),
+          }),
+          "cursor": {
+            ?"last_updated": size(body.value) == 0 ?
+              state.?cursor.last_updated
+            :
+              optional.of(body.value.map(e, e.lastUpdateDateTimeUtc).max()),
+          },
+          "start_time": start_time,
+          "page_size": state.page_size,
+          "skip": size(body.value) == state.page_size ? int(state.?skip.orValue(0)) + int(state.page_size) : 0,
+          "want_more": size(body.?value.orValue([])) == state.page_size,
+        }
+      )
+    :
+      {
+        "events": {
+          "error": {
+            "code": string(resp.StatusCode),
+            "id": string(resp.Status),
+            "message": "GET " + state.url.trim_right("/") + "/api/machineactions: " + (
+              size(resp.Body) != 0 ?
+                string(resp.Body)
+              :
+                string(resp.Status) + " (" + string(resp.StatusCode) + ")"
+            ),
+          },
+        },
+        "want_more": false,
+      }
+    ))
+  )
+tags:
+{{#if preserve_original_event}}
+  - preserve_original_event
+{{/if}}
+{{#if preserve_duplicate_custom_fields}}
+  - preserve_duplicate_custom_fields
+{{/if}}
+{{#each tags as |tag|}}
+  - {{tag}}
+{{/each}}
+{{#contains "forwarded" tags}}
+publisher_pipeline.disable_host: true
+{{/contains}}
+{{#if processors}}
+processors:
+{{processors}}
+{{/if}}
