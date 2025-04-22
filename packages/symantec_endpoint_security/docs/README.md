@@ -3458,6 +3458,7 @@ An example event for `event` looks as following:
 | winlog.event_data.TargetUserSid |  | keyword |
 | winlog.event_data.Version |  | keyword |
 | winlog.event_data.WorkstationName |  | keyword |
+| winlog.event_id | The event identifier. The value is specific to the source of the event. | keyword |
 
 
 ### Incident
