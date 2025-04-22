@@ -10,11 +10,11 @@
                 "ignoreValidations": false
             },
             "panelsJSON": {
-                "be7e12cb-3517-4376-bfcf-f88e49f2bb80": {
+                "383d5f19-3aae-4475-bfe8-43367b4891d7": {
                     "explicitInput": {
                         "dataViewId": "metrics-*",
                         "fieldName": "azure.resource.name",
-                        "id": "be7e12cb-3517-4376-bfcf-f88e49f2bb80",
+                        "id": "383d5f19-3aae-4475-bfe8-43367b4891d7",
                         "searchTechnique": "prefix",
                         "selectedOptions": [],
                         "sort": {
@@ -28,34 +28,7 @@
                     "type": "optionsListControl",
                     "width": "medium"
                 },
-                "cdc1392a-218f-4c26-b16c-03203de9daa0": {
-                    "explicitInput": {
-                        "dataViewId": "metrics-*",
-                        "exclude": null,
-                        "existsSelected": null,
-                        "fieldName": "azure.subscription_name",
-                        "hideActionBar": null,
-                        "hideExclude": null,
-                        "hideExists": null,
-                        "hideSort": null,
-                        "id": "cdc1392a-218f-4c26-b16c-03203de9daa0",
-                        "placeholder": null,
-                        "runPastTimeout": null,
-                        "searchTechnique": "prefix",
-                        "selectedOptions": [],
-                        "singleSelect": null,
-                        "sort": {
-                            "by": "_count",
-                            "direction": "desc"
-                        },
-                        "title": "Subscriptions"
-                    },
-                    "grow": true,
-                    "order": 0,
-                    "type": "optionsListControl",
-                    "width": "medium"
-                },
-                "e3eb2192-7c1c-4265-a4af-e4a82e560a1f": {
+                "9573a966-a33b-46e9-9d84-8634730b3788": {
                     "explicitInput": {
                         "dataViewId": "metrics-*",
                         "exclude": null,
@@ -65,7 +38,7 @@
                         "hideExclude": null,
                         "hideExists": null,
                         "hideSort": null,
-                        "id": "e3eb2192-7c1c-4265-a4af-e4a82e560a1f",
+                        "id": "9573a966-a33b-46e9-9d84-8634730b3788",
                         "placeholder": null,
                         "runPastTimeout": null,
                         "searchTechnique": "prefix",
@@ -79,6 +52,33 @@
                     },
                     "grow": true,
                     "order": 1,
+                    "type": "optionsListControl",
+                    "width": "medium"
+                },
+                "d2f5364a-a7df-4c87-814d-ceb61e16b95e": {
+                    "explicitInput": {
+                        "dataViewId": "metrics-*",
+                        "exclude": null,
+                        "existsSelected": null,
+                        "fieldName": "azure.subscription_name",
+                        "hideActionBar": null,
+                        "hideExclude": null,
+                        "hideExists": null,
+                        "hideSort": null,
+                        "id": "d2f5364a-a7df-4c87-814d-ceb61e16b95e",
+                        "placeholder": null,
+                        "runPastTimeout": null,
+                        "searchTechnique": "prefix",
+                        "selectedOptions": [],
+                        "singleSelect": null,
+                        "sort": {
+                            "by": "_count",
+                            "direction": "desc"
+                        },
+                        "title": "Subscriptions"
+                    },
+                    "grow": true,
+                    "order": 0,
                     "type": "optionsListControl",
                     "width": "medium"
                 }
@@ -475,6 +475,7 @@
                             "adHocDataViews": {},
                             "datasourceStates": {
                                 "formBased": {
+                                    "currentIndexPatternId": "metrics-*",
                                     "layers": {
                                         "c5eed79c-ba72-464b-bca3-127247296a65": {
                                             "columnOrder": [
@@ -486,7 +487,7 @@
                                                 "3e8ef84d-0982-44ec-a7d5-44b74f865889": {
                                                     "dataType": "string",
                                                     "isBucketed": true,
-                                                    "label": "Top 5 values of azure.billing.product",
+                                                    "label": "Top values of azure.billing.product + 1 other",
                                                     "operationType": "terms",
                                                     "params": {
                                                         "exclude": [],
@@ -501,9 +502,11 @@
                                                         "orderDirection": "desc",
                                                         "otherBucket": true,
                                                         "parentFormat": {
-                                                            "id": "terms"
+                                                            "id": "multi_terms"
                                                         },
-                                                        "secondaryFields": [],
+                                                        "secondaryFields": [
+                                                            "azure.billing.currency"
+                                                        ],
                                                         "size": 5
                                                     },
                                                     "scale": "ordinal",
@@ -544,7 +547,8 @@
                                                     "sourceField": "azure.billing.pretax_cost"
                                                 }
                                             },
-                                            "incompleteColumns": {}
+                                            "incompleteColumns": {},
+                                            "indexPatternId": "metrics-*"
                                         }
                                     }
                                 }
@@ -580,6 +584,7 @@
                                         "accessors": [
                                             "77c34830-ab51-456f-8e09-e79eb3dd38f1"
                                         ],
+                                        "collapseFn": "",
                                         "layerId": "c5eed79c-ba72-464b-bca3-127247296a65",
                                         "layerType": "data",
                                         "seriesType": "bar_stacked",
@@ -762,7 +767,7 @@
                         "type": "lens",
                         "visualizationType": "lnsPie"
                     },
-                    "description": "The overall usage costs grouped by the models.",
+                    "description": "The cost utilization by model.",
                     "enhancements": {}
                 },
                 "gridData": {
@@ -773,7 +778,7 @@
                     "y": 17
                 },
                 "panelIndex": "d507e0e9-912d-4ed1-87ff-9d66bac2e098",
-                "title": "Total costs - by model",
+                "title": "Model cost utilization",
                 "type": "lens"
             }
         ],
@@ -834,17 +839,17 @@
         },
         {
             "id": "metrics-*",
-            "name": "controlGroup_597464e3-a982-4d93-89ab-4c101e2d0da1:optionsListDataView",
+            "name": "controlGroup_01645f74-66c0-421c-b5f4-95bae67cb286:optionsListDataView",
             "type": "index-pattern"
         },
         {
             "id": "metrics-*",
-            "name": "controlGroup_c71a4300-187c-41b6-9c36-e92fe6eb772a:optionsListDataView",
+            "name": "controlGroup_bc143900-5e8e-4a09-b75f-a83f13618209:optionsListDataView",
             "type": "index-pattern"
         },
         {
             "id": "metrics-*",
-            "name": "controlGroup_194a7adb-b727-4312-9bce-320823d2ac54:optionsListDataView",
+            "name": "controlGroup_0ad7ce0a-f072-48a8-9997-c6d3b7a25c60:optionsListDataView",
             "type": "index-pattern"
         }
     ],
