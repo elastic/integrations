@@ -99,9 +99,9 @@ An example event for `alert` looks as following:
 {
     "@timestamp": "2023-11-03T18:00:22.328Z",
     "agent": {
-        "ephemeral_id": "0aac4e6f-83d8-4a8f-bd15-7cef2237e1ca",
-        "id": "dd4a42eb-e2ab-4f5b-8a0c-83b4f39e1e99",
-        "name": "elastic-agent-77102",
+        "ephemeral_id": "761d8043-508c-46cd-9469-c51d585f05f2",
+        "id": "aa6e634d-6b81-436d-8d45-4b08ecd0aed3",
+        "name": "elastic-agent-98831",
         "type": "filebeat",
         "version": "8.18.0"
     },
@@ -321,7 +321,7 @@ An example event for `alert` looks as following:
     },
     "data_stream": {
         "dataset": "crowdstrike.alert",
-        "namespace": "15904",
+        "namespace": "31741",
         "type": "logs"
     },
     "device": {
@@ -335,7 +335,7 @@ An example event for `alert` looks as following:
         "version": "8.17.0"
     },
     "elastic_agent": {
-        "id": "dd4a42eb-e2ab-4f5b-8a0c-83b4f39e1e99",
+        "id": "aa6e634d-6b81-436d-8d45-4b08ecd0aed3",
         "snapshot": true,
         "version": "8.18.0"
     },
@@ -343,7 +343,7 @@ An example event for `alert` looks as following:
         "agent_id_status": "verified",
         "dataset": "crowdstrike.alert",
         "id": "ind:2ce412d17b334ad4adc8c1c54dbfec4b:399748687993-5761-42627600",
-        "ingested": "2025-03-05T07:58:51Z",
+        "ingested": "2025-04-01T10:07:46Z",
         "kind": "alert",
         "original": "{\"agent_id\":\"2ce412d17b334ad4adc8c1c54dbfec4b\",\"aggregate_id\":\"aggind:2ce412d17b334ad4adc8c1c54dbfec4b:163208931778\",\"alleged_filetype\":\"exe\",\"cid\":\"92012896127c4a948236ba7601b886b0\",\"cloud_indicator\":\"false\",\"cmdline\":\"\\\"C:\\\\Users\\\\yuvraj.mahajan\\\\AppData\\\\Local\\\\Temp\\\\Temp3cc4c329-2896-461f-9dea-88009eb2e8fb_pfSenseFirewallOpenVPNClients-20230823T120504Z-001.zip\\\\pfSenseFirewallOpenVPNClients\\\\Windows\\\\openvpn-cds-pfSense-UDP4-1194-pfsense-install-2.6.5-I001-amd64.exe\\\"\",\"composite_id\":\"92012896127c4a8236ba7601b886b0:ind:2ce412d17b334ad4adc8c1c54dbfec4b:399748687993-5761-42627600\",\"confidence\":10,\"context_timestamp\":\"2023-11-03T18:00:31Z\",\"control_graph_id\":\"ctg:2ce4127b334ad4adc8c1c54dbfec4b:163208931778\",\"crawl_edge_ids\":{\"Sensor\":[\"KZcZ=__;K\\u0026cmqQ]Z=W,QK4W.9(rBfs\\\\gfmjTblqI^F-_oNnAWQ\\u0026-o0:dR/\\u003e\\u003e2J\\u003cd2T/ji6R\\u0026RIHe-tZSkP*q?HW;:leq.:kk)\\u003eIVMD36[+=kiQDRm.bB?;d\\\"V0JaQlaltC59Iq6nM?6`\\u003eZAs+LbOJ9p9A;9'WV9^H3XEMs8N\",\"KZcZA__;?\\\"cmott@m_k)MSZ^+C?.cg\\u003cLga#0@71X07*LY2teE56*16pL[=!bjF7g@0jOQE'jT6RX_F@sr#RP-U/d[#nm9A,A,W%cl/T@\\u003cW`alY1K_h%QDBBF;_e7S!!*'!\",\"KZd)iK2;s\\\\ckQl_P*d=Mo?^a7/JKc\\\\*L48169!7I5;0\\\\\\u003cH^hNG\\\"ZQ3#U3\\\"eo\\u003c\\u003e92t[f!\\u003e*b9WLY@H!V0N,BJsNSTD:?/+fY';e\\u003cOHh9AmlT?5\\u003cgGqK:*L99kat+P)eZ$HR\\\"Ql@Q!!!$!rr\",\"N6=Ks_B9Bncmur)?\\\\[fV$k/N5;:6@aB$P;R$2XAaPJ?E\\u003cG5,UfaP')8#2AY4ff+q?T?b0/RBi-YAeGmb\\u003c6Bqp[DZh#I(jObGkjJJaMf\\\\:#mb;BM\\\\L[g!\\\\F*M!!*'!\",\"N6B%O`'=_7d#%u\\u0026d[+LTNDs\\u003c3307?8n=GrFI:4YYGCL,cIt-Tuj!\\u0026\\u003c6:3RbC`uNjL#gW\\u0026=)E`4^/'fp*.bFX@p_$,R6.\\\"=lV*T*5Vf`c.:nkd$+YD:DJ,Ls0[sArC')K%YTc$:@kUQW5s8N\",\"N6B%s!\\\\k)ed$F6\\u003ea%iM\\\"\\u003cFTSe/eH8M:\\u003c9gf;$$.b??kpC*99aX!Lq:g6:Q3@Ga4Zrb@MaMa]L'YAt$IFBu])\\\"H^sF$r7gDPf6\\u0026CHpVKO3\\u003cDgK9,Y/e@V\\\"b\\u0026m!\\u003c\\u003c'\",\"N6CU\\u0026`%VT\\\"d$=67=h\\\\I)/BJH:8-lS!.%\\\\-!$1@bAhtVO?q4]9'9'haE4N0*-0Uh'-'f',YW3]T=jL3D#N=fJi]Pp-bWej+R9q[%h[p]p26NK8q3b50k9G:.\\u0026eM\\u003cQer\\u003e__\\\"59K'R?_=`'`rK/'hA\\\"r+L5i-*Ut5PI!!*'!\",\"N6CUF__;K!d$:[C93.?=/5(`5KnM]!L#UbnSY5HOHc#[6A\\u0026FE;(naXB4h/OG\\\"%MDAR=fo41Z]rXc\\\"J-\\\\\\u0026\\u0026V8UW.?I6V*G+,))Ztu_IuCMV#ZJ:QDJ_EjQmjiX#HENY'WD0rVAV$Gl6_+0e:2$8D)):.LUs+8-S$L!!!$!rr\",\"N6CUF__;K!d$:\\\\N43JV0AO56@6D0$!na(s)d.dQ'iI1*uiKt#j?r\\\"X'\\\\AtNML2_C__7ic6,8Dc[F\\u003c0NTUGtl%HD#?/Y)t8!1X.;G!*FQ9GP-ukQn`6I##\\u0026$^81(P+hN*-#rf/cUs)Wb\\\"\\u003c_/?I'[##WMh'H[Rcl+!!\\u003c\\u003c'\",\"N6L[G__;K!d\\\"qhT7k?[D\\\"Bk:5s%+=\\u003e#DM0j$_\\u003cr/JG0TCEQ!Ug(be3)\\u0026R2JnX+RSqorgC-NCjf6XATBWX(5\\u003cL1J1DV\\u003e44ZjO9q*d!YLuHhkq!3\\u003e3tpi\\u003eOPYZp9]5f1#/AlRZL06`/I6cl\\\"d.\\u0026=To@9kS!prs8N\"]},\"crawl_vertex_ids\":{\"Sensor\":[\"aggind:2ce412d17b334ad4adc8c1c54dbfec4b:163208931778\",\"ctg:2ce412d17b334ad4adc8c1c54dbfec4b:163208931778\",\"ind:2ce412d17b34ad4adc8c1c54dbfec4b:399748687993-5761-42627600\",\"mod:2ce412d17b4ad4adc8c1c54dbfec4b:0b25d56bd2b4d8a6df45beff7be165117fbf7ba6ba2c07744f039143866335e4\",\"mod:2ce412d17b4ad4adc8c1c54dbfec4b:b26a6791b72753d2317efd5e1363d93fdd33e611c8b9e08a3b24ea4d755b81fd\",\"mod:2ce412d17b334ad4adc8c1c54dbfec4b:caef4ae19056eeb122a0540508fa8984cea960173ada0dc648cb846d6ef5dd33\",\"pid:2ce412d17b33d4adc8c1c54dbfec4b:392734873135\",\"pid:2ce412d17b334ad4adc8c1c54dbfec4b:392736520876\",\"pid:2ce412d17b334ad4adc8c1c54dbfec4b:399748687993\",\"quf:2ce412d17b334ad4adc8c1c54dbfec4b:b26a6791b72753d2317efd5e1363d93fdd33e611c8b9e08a3b24ea4d755b81fd\",\"uid:2ce412d17b334ad4adc8c1c54dbfec4b:S-1-5-21-1909377054-3469629671-4104191496-4425\"]},\"crawled_timestamp\":\"2023-11-03T19:00:23.985020992Z\",\"created_timestamp\":\"2023-11-03T18:01:23.995794943Z\",\"data_domains\":[\"Endpoint\"],\"description\":\"ThisfilemeetstheAdware/PUPAnti-malwareMLalgorithm'slowest-confidencethreshold.\",\"device\":{\"agent_load_flags\":\"0\",\"agent_local_time\":\"2023-10-12T03:45:57.753Z\",\"agent_version\":\"7.04.17605.0\",\"bios_manufacturer\":\"ABC\",\"bios_version\":\"F8CN42WW(V2.05)\",\"cid\":\"92012896127c4a948236ba7601b886b0\",\"config_id_base\":\"65994763\",\"config_id_build\":\"17605\",\"config_id_platform\":\"3\",\"device_id\":\"2ce412d17b334ad4adc8c1c54dbfec4b\",\"external_ip\":\"81.2.69.142\",\"first_seen\":\"2023-04-07T09:36:36Z\",\"groups\":[\"18704e21288243b58e4c76266d38caaf\"],\"hostinfo\":{\"active_directory_dn_display\":[\"WinComputers\",\"WinComputers\\\\ABC\"],\"domain\":\"ABC.LOCAL\"},\"hostname\":\"ABC709-1175\",\"last_seen\":\"2023-11-03T17:51:42Z\",\"local_ip\":\"81.2.69.142\",\"mac_address\":\"ab-21-48-61-05-b2\",\"machine_domain\":\"ABC.LOCAL\",\"major_version\":\"10\",\"minor_version\":\"0\",\"modified_timestamp\":\"2023-11-03T17:53:43Z\",\"os_version\":\"Windows11\",\"ou\":[\"ABC\",\"WinComputers\"],\"platform_id\":\"0\",\"platform_name\":\"Windows\",\"pod_labels\":null,\"product_type\":\"1\",\"product_type_desc\":\"Workstation\",\"site_name\":\"Default-First-Site-Name\",\"status\":\"normal\",\"system_manufacturer\":\"LENOVO\",\"system_product_name\":\"20VE\"},\"falcon_host_link\":\"https://falcon.us-2.crowdstrike.com/activity-v2/detections/dhjffg:ind:2ce412d17b334ad4adc8c1c54dbfec4b:399748687993-5761-42627600\",\"filename\":\"openvpn-abc-pfSense-UDP4-1194-pfsense-install-2.6.5-I001-amd64.exe\",\"filepath\":\"\\\\Device\\\\HarddiskVolume3\\\\Users\\\\yuvraj.mahajan\\\\AppData\\\\Local\\\\Temp\\\\Temp3cc4c329-2896-461f-9dea-88009eb2e8fb_pfSenseFirewallOpenVPNClients-20230823T120504Z-001.zip\\\\pfSenseFirewallOpenVPNClients\\\\Windows\\\\openvpn-cds-pfSense-UDP4-1194-pfsense-install-2.6.5-I001-amd64.exe\",\"grandparent_details\":{\"cmdline\":\"C:\\\\Windows\\\\system32\\\\userinit.exe\",\"filename\":\"userinit.exe\",\"filepath\":\"\\\\Device\\\\HarddiskVolume3\\\\Windows\\\\System32\\\\userinit.exe\",\"local_process_id\":\"4328\",\"md5\":\"b07f77fd3f9828b2c9d61f8a36609741\",\"process_graph_id\":\"pid:2ce412d17b334ad4adc8c1c54dbfec4b:392734873135\",\"process_id\":\"392734873135\",\"sha256\":\"caef4ae19056eeb122a0540508fa8984cea960173ada0dc648cb846d6ef5dd33\",\"timestamp\":\"2023-10-30T16:49:19Z\",\"user_graph_id\":\"uid:2ce412d17b334ad4adc8c1c54dbfec4b:S-1-5-21-1909377054-3469629671-4104191496-4425\",\"user_id\":\"S-1-5-21-1909377054-3469629671-4104191496-4425\",\"user_name\":\"yuvraj.mahajan\"},\"has_script_or_module_ioc\":\"true\",\"id\":\"ind:2ce412d17b334ad4adc8c1c54dbfec4b:399748687993-5761-42627600\",\"indicator_id\":\"ind:2ce412d17b334ad4adc8c1c54dbfec4b:399748687993-5761-42627600\",\"ioc_context\":[{\"ioc_description\":\"\\\\Device\\\\HarddiskVolume3\\\\Users\\\\yuvraj.mahajan\\\\AppData\\\\Local\\\\Temp\\\\Temp3cc4c329-2896-461f-9dea-88009eb2e8fb_pfSenseFirewallOpenVPNClients-20230823T120504Z-001.zip\\\\pfSenseFirewallOpenVPNClients\\\\Windows\\\\openvpn-cds-pfSense-UDP4-1194-pfsense-install-2.6.5-I001-amd64.exe\",\"ioc_source\":\"library_load\",\"ioc_type\":\"hash_sha256\",\"ioc_value\":\"b26a6791b72753d2317efd5e1363d93fdd33e611c8b9e08a3b24ea4d755b81fd\",\"md5\":\"cdf9cfebb400ce89d5b6032bfcdc693b\",\"sha256\":\"b26a6791b72753d2317efd5e1363d93fdd33e611c8b9e08a3b24ea4d755b81fd\",\"type\":\"module\"}],\"ioc_values\":[],\"is_synthetic_quarantine_disposition\":true,\"local_process_id\":\"17076\",\"logon_domain\":\"ABSYS\",\"md5\":\"cdf9cfebb400ce89d5b6032bfcdc693b\",\"name\":\"PrewittPupAdwareSensorDetect-Lowest\",\"objective\":\"FalconDetectionMethod\",\"parent_details\":{\"cmdline\":\"C:\\\\WINDOWS\\\\Explorer.EXE\",\"filename\":\"explorer.exe\",\"filepath\":\"\\\\Device\\\\HarddiskVolume3\\\\Windows\\\\explorer.exe\",\"local_process_id\":\"1040\",\"md5\":\"8cc3fcdd7d52d2d5221303c213e044ae\",\"process_graph_id\":\"pid:2ce412d17b334ad4adc8c1c54dbfec4b:392736520876\",\"process_id\":\"392736520876\",\"sha256\":\"0b25d56bd2b4d8a6df45beff7be165117fbf7ba6ba2c07744f039143866335e4\",\"timestamp\":\"2023-11-03T18:00:32Z\",\"user_graph_id\":\"uid:2ce412d17b334ad4adc8c1c54dbfec4b:S-1-5-21-1909377054-3469629671-4104191496-4425\",\"user_id\":\"S-1-5-21-1909377054-3469629671-4104191496-4425\",\"user_name\":\"mohit.jha\"},\"parent_process_id\":\"392736520876\",\"pattern_disposition\":2176,\"pattern_disposition_description\":\"Prevention/Quarantine,processwasblockedfromexecutionandquarantinewasattempted.\",\"pattern_disposition_details\":{\"blocking_unsupported_or_disabled\":false,\"bootup_safeguard_enabled\":false,\"critical_process_disabled\":false,\"detect\":false,\"fs_operation_blocked\":false,\"handle_operation_downgraded\":false,\"inddet_mask\":false,\"indicator\":false,\"kill_action_failed\":false,\"kill_parent\":false,\"kill_process\":false,\"kill_subprocess\":false,\"operation_blocked\":false,\"policy_disabled\":false,\"process_blocked\":true,\"quarantine_file\":true,\"quarantine_machine\":false,\"registry_operation_blocked\":false,\"rooting\":false,\"sensor_only\":false,\"suspend_parent\":false,\"suspend_process\":false},\"pattern_id\":5761,\"platform\":\"Windows\",\"poly_id\":\"AACSASiWEnxKlIIaw8LWC-8XINBatE2uYZaWqRAAATiEEfPFwhoY4opnh1CQjm0tvUQp4Lu5eOAx29ZVj-qrGrA==\",\"process_end_time\":\"1699034421\",\"process_id\":\"399748687993\",\"process_start_time\":\"1699034413\",\"product\":\"epp\",\"quarantined_files\":[{\"filename\":\"\\\\Device\\\\Volume3\\\\Users\\\\yuvraj.mahajan\\\\AppData\\\\Local\\\\Temp\\\\Temp3cc4c329-2896-461f-9dea-88009eb2e8fb_pfSenseFirewallOpenVPNClients-20230823T120504Z-001.zip\\\\pfSenseFirewallOpenVPNClients\\\\Windows\\\\openvpn-cds-pfSense-UDP4-1194-pfsense-install-2.6.5-I001-amd64.exe\",\"id\":\"2ce412d17b334ad4adc8c1c54dbfec4b_b26a6791b72753d2317efd5e1363d93fdd33e611c8b9e08a3b24ea4d755b81fd\",\"sha256\":\"b26a6791b72753d2317efd5e1363d93fdd33e611c8b9e08a3b24ea4d755b81fd\",\"state\":\"quarantined\"}],\"scenario\":\"NGAV\",\"severity\":30,\"sha1\":\"0000000000000000000000000000000000000000\",\"sha256\":\"b26a6791b72753d2317efd5e1363d93fdd33e611c8b9e08a3b24ea4d755b81fd\",\"show_in_ui\":true,\"source_products\":[\"FalconInsight\"],\"source_vendors\":[\"CrowdStrike\"],\"status\":\"new\",\"tactic\":\"MachineLearning\",\"tactic_id\":\"CSTA0004\",\"technique\":\"Adware/PUP\",\"technique_id\":\"CST0000\",\"timestamp\":\"2023-11-03T18:00:22.328Z\",\"tree_id\":\"1931778\",\"tree_root\":\"38687993\",\"triggering_process_graph_id\":\"pid:2ce4124ad4adc8c1c54dbfec4b:399748687993\",\"type\":\"ldt\",\"updated_timestamp\":\"2023-11-03T19:00:23.985007341Z\",\"user_id\":\"S-1-5-21-1909377054-3469629671-4104191496-4425\",\"user_name\":\"mohit.jha\"}",
         "severity": 30
@@ -355,6 +355,7 @@ An example event for `alert` looks as following:
     "host": {
         "domain": "ABC.LOCAL",
         "hostname": "ABC709-1175",
+        "id": "2ce412d17b334ad4adc8c1c54dbfec4b",
         "ip": [
             "81.2.69.142"
         ],
@@ -2329,9 +2330,9 @@ An example event for `host` looks as following:
 {
     "@timestamp": "2023-11-07T10:26:53.000Z",
     "agent": {
-        "ephemeral_id": "2423ba78-5baf-47bf-ba88-10ff81219c3e",
-        "id": "875577ef-6fc9-4f60-a89a-e4c7916db692",
-        "name": "elastic-agent-66623",
+        "ephemeral_id": "433ed82f-d593-4bf3-a2d5-f2eeff55244e",
+        "id": "b012e3fd-e4b6-430f-a71e-f2a316f45cde",
+        "name": "elastic-agent-79098",
         "type": "filebeat",
         "version": "8.18.0"
     },
@@ -2475,7 +2476,7 @@ An example event for `host` looks as following:
     },
     "data_stream": {
         "dataset": "crowdstrike.host",
-        "namespace": "36048",
+        "namespace": "36106",
         "type": "logs"
     },
     "device": {
@@ -2485,7 +2486,7 @@ An example event for `host` looks as following:
         "version": "8.17.0"
     },
     "elastic_agent": {
-        "id": "875577ef-6fc9-4f60-a89a-e4c7916db692",
+        "id": "b012e3fd-e4b6-430f-a71e-f2a316f45cde",
         "snapshot": true,
         "version": "8.18.0"
     },
@@ -2495,7 +2496,7 @@ An example event for `host` looks as following:
             "host"
         ],
         "dataset": "crowdstrike.host",
-        "ingested": "2025-03-05T08:04:58Z",
+        "ingested": "2025-04-01T06:56:55Z",
         "kind": "event",
         "original": "{\"agent_load_flags\":\"0\",\"agent_local_time\":\"2023-11-07T04:51:16.678Z\",\"agent_version\":\"7.05.17603.0\",\"bios_manufacturer\":\"ABCInc.\",\"bios_version\":\"2020.0.1.0.0(iBridge:22.11.000.0.0,0)\",\"chassis_type\":\"9\",\"chassis_type_desc\":\"Laptop\",\"cid\":\"92012896127c4948236ba7601b886b0\",\"config_id_base\":\"6594763\",\"config_id_build\":\"1703\",\"config_id_platform\":\"4\",\"connection_ip\":\"81.2.69.192\",\"cpu_signature\":\"460517\",\"device_id\":\"3114433dbce478ca48d9a828b9b34be\",\"device_policies\":{\"device_control\":{\"applied\":true,\"applied_date\":\"2023-06-20T08:45:26.341093915Z\",\"assigned_date\":\"2023-06-20T08:43:47.736146738Z\",\"policy_id\":\"2f88daf0177f467dae69262a5ce71775\",\"policy_type\":\"device-control\"},\"firewall\":{\"applied\":true,\"applied_date\":\"2023-09-11T10:33:44.174488832Z\",\"assigned_date\":\"2023-09-11T10:32:47.853976945Z\",\"policy_id\":\"1ee301f7e3e24e96ad6a23c73aaac1e3\",\"policy_type\":\"firewall\",\"rule_set_id\":\"1ee301f7e3e24e96ad6a23c73aaac1e3\"},\"global_config\":{\"applied\":true,\"applied_date\":\"2023-11-07T04:52:59.515775409Z\",\"assigned_date\":\"2023-11-07T04:51:18.94671252Z\",\"policy_id\":\"7e3078b60976486cac5dc998808d9135\",\"policy_type\":\"globalconfig\",\"settings_hash\":\"f01def74\"},\"prevention\":{\"applied\":true,\"applied_date\":\"2023-06-08T10:04:47.643357971Z\",\"assigned_date\":\"2023-06-08T10:03:49.505180252Z\",\"policy_id\":\"1024fac1b279424fa7300b8ac2d56be5\",\"policy_type\":\"prevention\",\"rule_groups\":[],\"settings_hash\":\"f7a54ca1\"},\"remote_response\":{\"applied\":true,\"applied_date\":\"2023-06-08T10:04:47.01735027Z\",\"assigned_date\":\"2023-06-08T10:03:49.505163572Z\",\"policy_id\":\"dabb4def99034f11b9b3d52271584c9f\",\"policy_type\":\"remote-response\",\"settings_hash\":\"8a548e5e\"},\"sensor_update\":{\"applied\":true,\"applied_date\":\"2023-11-07T04:52:59.659583066Z\",\"assigned_date\":\"2023-11-07T04:47:43.342175341Z\",\"policy_id\":\"64bfa2bbcd4e46da92a66b107933da11\",\"policy_type\":\"sensor-update\",\"settings_hash\":\"tagged|18;101\",\"uninstall_protection\":\"ENABLED\"}},\"external_ip\":\"81.2.69.192\",\"first_seen\":\"2023-06-08T10:00:19Z\",\"group_hash\":\"b607fe25348a46d421ff46e19741b0caf5bbc70bb6da1637f56e97b4e1454d77\",\"groups\":[\"182388a8dbea4c44b5e019cfd32c2695\"],\"hostname\":\"CLM101-131.local\",\"kernel_version\":\"22.6.0\",\"last_seen\":\"2023-11-07T10:25:24Z\",\"local_ip\":\"81.2.69.142\",\"mac_address\":\"14-7d-da-ad-ac-71\",\"machine_domain\":\"SYS\",\"major_version\":\"22\",\"meta\":{\"version\":\"6002\",\"version_string\":\"7:43570272778\"},\"minor_version\":\"6\",\"modified_timestamp\":\"2023-11-07T10:26:53Z\",\"os_build\":\"22G120\",\"os_version\":\"Ventura(13)\",\"platform_id\":\"1\",\"platform_name\":\"Mac\",\"policies\":[{\"applied\":true,\"applied_date\":\"2023-06-08T10:04:47.643357971Z\",\"assigned_date\":\"2023-06-08T10:03:49.505180252Z\",\"policy_id\":\"1024fac1b279424fa7300b8ac2d56be5\",\"policy_type\":\"prevention\",\"rule_groups\":[],\"settings_hash\":\"f7a54ca1\"}],\"product_type_desc\":\"Workstation\",\"provision_status\":\"Provisioned\",\"reduced_functionality_mode\":\"no\",\"serial_number\":\"FVFDH73HMNHX\",\"site_name\":\"Default-First-Site-Name\",\"status\":\"normal\",\"system_manufacturer\":\"ABCInc.\",\"system_product_name\":\"Air,1\",\"tags\":[\"tags\"]}",
         "type": [
@@ -2516,6 +2517,7 @@ An example event for `host` looks as following:
             "region_name": "England"
         },
         "hostname": "CLM101-131.local",
+        "id": "3114433dbce478ca48d9a828b9b34be",
         "ip": [
             "81.2.69.192"
         ],
@@ -2524,7 +2526,8 @@ An example event for `host` looks as following:
         ],
         "os": {
             "full": "Ventura(13)",
-            "platform": "Mac"
+            "platform": "Mac",
+            "type": "macos"
         }
     },
     "input": {
@@ -2669,9 +2672,9 @@ An example event for `vulnerability` looks as following:
 {
     "@timestamp": "2025-02-25T13:33:23.000Z",
     "agent": {
-        "ephemeral_id": "dfb95753-5c63-42c7-8812-73f2cddd6a37",
-        "id": "175543db-fab5-4030-b4a8-c9e72125eaeb",
-        "name": "elastic-agent-65366",
+        "ephemeral_id": "892ed88a-50e8-4457-ac94-0a36ef58595c",
+        "id": "b5997753-aab5-47ad-897b-70c7767c888e",
+        "name": "elastic-agent-98540",
         "type": "filebeat",
         "version": "8.18.0"
     },
@@ -2836,14 +2839,14 @@ An example event for `vulnerability` looks as following:
     },
     "data_stream": {
         "dataset": "crowdstrike.vulnerability",
-        "namespace": "50310",
+        "namespace": "27347",
         "type": "logs"
     },
     "ecs": {
         "version": "8.17.0"
     },
     "elastic_agent": {
-        "id": "175543db-fab5-4030-b4a8-c9e72125eaeb",
+        "id": "b5997753-aab5-47ad-897b-70c7767c888e",
         "snapshot": true,
         "version": "8.18.0"
     },
@@ -2854,7 +2857,7 @@ An example event for `vulnerability` looks as following:
         ],
         "dataset": "crowdstrike.vulnerability",
         "id": "897580adb4ab4540a457536faa42de18_eda961728a22320da280bd9d181a798b",
-        "ingested": "2025-03-10T07:12:11Z",
+        "ingested": "2025-04-01T10:09:14Z",
         "kind": "event",
         "original": "{\"aid\":\"897580adb4ab4540a357536faa41de18\",\"app\":{\"product_name_normalized\":\"openssh\",\"product_name_version\":\"openssh 1:9.6p1-3ubuntu13.4\",\"vendor_normalized\":\"Ubuntu\"},\"apps\":[{\"evaluation_logic\":{\"aid\":\"897580adb4ab4540a357536faa41de18\",\"cid\":\"2cd98db1a47b4c98b913c94d43bfab70\",\"complex_check_operator\":\"AND\",\"created_timestamp\":\"2025-02-20T10:15:30Z\",\"id\":\"138bd6a67791327ab367838079b4d786\",\"logic\":[{\"comparison_check\":\"equals\",\"comparisons\":{\"state_comparisons\":[{\"entity_comparisons\":[{\"actual_value_field\":\"version\",\"operation\":\"equals\",\"value_datatype\":\"string\"}],\"entity_operator\":\"AND\"}],\"state_operator\":\"OR\"},\"determined_by_comparison\":true,\"existence_check\":\"Yes\",\"id\":\"logic-12345\",\"negate\":false,\"status\":\"active\",\"title\":\"Evaluation Logic for OpenSSH\",\"type\":\"comparison\"}],\"updated_timestamp\":\"2025-02-25T13:33:23Z\"},\"patch_publication_date\":\"2025-02-19T00:00:00Z\",\"product_name_normalized\":\"openssh\",\"product_name_version\":\"openssh 1:9.6p1-3ubuntu13.4\",\"remediation\":{\"ids\":[\"4688299d204b35a192828bdaf556ecf8\"]},\"remediation_info\":{\"minimum_id\":\"df1af7df1d33382398fb0dc268109a4d\",\"patch_publication_date\":\"2025-02-19T00:00:00Z\",\"recommended_id\":\"4688299d207b35a192828bdaf556ecf8\"},\"sub_status\":\"open\",\"vendor_normalized\":\"Ubuntu\"}],\"cid\":\"2cd98db1a47b4c98b913c94d43bfab70\",\"closed_timestamp\":\"2025-02-26T10:00:00Z\",\"confidence\":\"confirmed\",\"created_timestamp\":\"2025-02-20T10:10:24Z\",\"cve\":{\"base_score\":6.8,\"cisa_info\":{\"due_date\":\"2025-03-01\",\"is_cisa_kev\":false},\"cwes\":[\"CWE-123\"],\"description\":\"A vulnerability was found in OpenSSH...\",\"exploit_status\":30,\"exploitability_score\":1.6,\"exprt_rating\":\"MEDIUM\",\"id\":\"CVE-2025-26465\",\"impact_score\":5.2,\"published_date\":\"2025-02-18T19:15:00Z\",\"references\":[\"https://ubuntu.com/security/CVE-2025-26465\"],\"remediation_level\":\"O\",\"severity\":\"MEDIUM\",\"spotlight_published_date\":\"2025-02-19T05:32:00Z\",\"types\":[\"Vulnerability\"],\"vector\":\"CVSS:3.1/AV:N/AC:H/PR:N/UI:R/S:U/C:H/I:H/A:N\"},\"data_providers\":[{\"ports\":[22,80],\"provider\":\"Falcon sensor\",\"rating\":\"high\",\"scan_id\":\"scan-123456\",\"scan_time\":\"2025-02-20T12:00:00Z\",\"scanner_id\":\"scanner-xyz\"}],\"host_info\":{\"asset_criticality\":\"Critical\",\"groups\":[{\"id\":\"group-123\",\"name\":\"Production\"}],\"has_run_container\":false,\"host_last_seen_timestamp\":\"2025-02-18T00:00:00Z\",\"hostname\":\"ub24-50-10-154\",\"internet_exposure\":\"No\",\"local_ip\":\"1.128.0.0\",\"machine_domain\":\"example.local\",\"managed_by\":\"Falcon sensor\",\"os_version\":\"Ubuntu 24.04\",\"platform\":\"Linux\",\"product_type_desc\":\"Server\",\"service_provider\":\"AWS\",\"service_provider_account_id\":\"123456789012\",\"system_manufacturer\":\"Dell\",\"tags\":[\"production\",\"security\"]},\"id\":\"897580adb4ab4540a457536faa42de18_eda961728a22320da280bd9d181a798b\",\"remediation\":{\"entities\":[{\"action\":\"Update ubuntu openssh to version 1:9.6p1-3ubuntu13.8 or newer\",\"id\":\"4688299d207b35a192828bdaf556ecf8\",\"link\":\"https://ubuntu.com/security/CVE-2025-26465\",\"recommendation_type\":\"recommended\",\"reference\":\"1:9.6p1-3ubuntu13.8\",\"title\":\"Update ubuntu openssh\",\"vendor_url\":\"https://www.openssh.com\"}],\"ids\":[\"4688299d207b35a192828bdaf556ecf8\",\"df1af7df1d33382398fb0dc268109a4d\"]},\"status\":\"open\",\"suppression_info\":{\"is_suppressed\":false,\"reason\":\"Not applicable\"},\"updated_timestamp\":\"2025-02-25T13:33:23Z\",\"vulnerability_id\":\"CVE-2025-26465\"}",
         "type": [
@@ -2862,13 +2865,15 @@ An example event for `vulnerability` looks as following:
         ]
     },
     "host": {
+        "id": "897580adb4ab4540a357536faa41de18",
         "ip": [
             "1.128.0.0"
         ],
         "name": "ub24-50-10-154",
         "os": {
+            "name": "Ubuntu 24.04",
             "platform": "Linux",
-            "version": "Ubuntu 24.04"
+            "type": "linux"
         }
     },
     "input": {

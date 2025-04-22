@@ -1,0 +1,98 @@
+{
+    "attributes": {
+        "author": [
+            "Elastic"
+        ],
+        "description": "This rule detects network events that may indicate the use of RPC traffic to the Internet. RPC is commonly used by system administrators to remotely control a system for maintenance or to use shared resources. It should almost never be directly exposed to the Internet, as it is frequently targeted and exploited by threat actors as an initial access or backdoor vector.",
+        "from": "now-9m",
+        "index": [
+            "packetbeat-*",
+            "auditbeat-*",
+            "filebeat-*",
+            "logs-network_traffic.*",
+            "logs-panw.panos*"
+        ],
+        "language": "kuery",
+        "license": "Elastic License v2",
+        "name": "RPC (Remote Procedure Call) to the Internet",
+        "note": "## Triage and analysis\n\n> **Disclaimer**:\n> This investigation guide was created using generative AI technology and has been reviewed to improve its accuracy and relevance. While every effort has been made to ensure its quality, we recommend validating the content and adapting it to suit your specific environment and operational needs.\n\n### Investigating RPC (Remote Procedure Call) to the Internet\n\nRPC enables remote management and resource sharing across networks, crucial for system administration. However, when exposed to the Internet, it becomes a target for attackers seeking initial access or backdoor entry. The detection rule identifies suspicious RPC traffic from internal IPs to external networks, flagging potential exploitation attempts by monitoring specific ports and IP ranges.\n\n### Possible investigation steps\n\n- Review the source IP address from the alert to identify the internal system initiating the RPC traffic. Check if this IP belongs to a known or authorized device within the network.\n- Examine the destination IP address to determine if it is a known or suspicious external entity. Use threat intelligence sources to assess if the IP has been associated with malicious activity.\n- Analyze the network traffic logs for the specific event.dataset values (network_traffic.flow or zeek.dce_rpc) to gather more context about the nature and volume of the RPC traffic.\n- Investigate the destination port, specifically port 135, to confirm if the traffic is indeed RPC-related and assess if there are any legitimate reasons for this communication.\n- Check for any recent changes or anomalies in the network configuration or system settings of the source IP that might explain the unexpected RPC traffic.\n- Correlate this alert with other security events or logs to identify any patterns or additional indicators of compromise that might suggest a broader attack campaign.\n\n### False positive analysis\n\n- Internal testing environments may generate RPC traffic to external IPs for legitimate purposes. Identify and document these environments, then create exceptions in the detection rule to prevent unnecessary alerts.\n- Cloud-based services or applications that require RPC communication for integration or management might trigger false positives. Review these services and whitelist their IP addresses if they are verified as non-threatening.\n- VPN or remote access solutions that use RPC for secure connections can be mistaken for suspicious activity. Ensure that the IP ranges of these solutions are excluded from the rule to avoid false alerts.\n- Automated backup or synchronization tools that use RPC to communicate with external servers could be flagged. Verify these tools and add their destination IPs to an exception list if they are part of routine operations.\n\n### Response and remediation\n\n- Immediately isolate the affected system from the network to prevent further unauthorized access or data exfiltration.\n- Conduct a thorough analysis of the affected system to identify any unauthorized changes or installed backdoors, focusing on processes and services related to RPC.\n- Revoke any compromised credentials and enforce a password reset for all accounts that may have been accessed or used during the incident.\n- Apply necessary patches and updates to the affected system and any other systems with similar vulnerabilities to mitigate the risk of exploitation.\n- Monitor network traffic for any signs of lateral movement or additional suspicious activity, particularly focusing on RPC-related traffic.\n- Escalate the incident to the security operations center (SOC) or incident response team for further investigation and to determine if additional systems are affected.\n- Implement enhanced logging and monitoring for RPC traffic to detect and respond to similar threats more effectively in the future.",
+        "query": "(event.dataset: network_traffic.flow or (event.category: (network or network_traffic))) and\n  network.transport:tcp and (destination.port:135 or event.dataset:zeek.dce_rpc) and\n  source.ip:(\n    10.0.0.0/8 or\n    172.16.0.0/12 or\n    192.168.0.0/16\n  ) and\n  not destination.ip:(\n    10.0.0.0/8 or\n    127.0.0.0/8 or\n    169.254.0.0/16 or\n    172.16.0.0/12 or\n    192.0.0.0/24 or\n    192.0.0.0/29 or\n    192.0.0.8/32 or\n    192.0.0.9/32 or\n    192.0.0.10/32 or\n    192.0.0.170/32 or\n    192.0.0.171/32 or\n    192.0.2.0/24 or\n    192.31.196.0/24 or\n    192.52.193.0/24 or\n    192.168.0.0/16 or\n    192.88.99.0/24 or\n    224.0.0.0/4 or\n    100.64.0.0/10 or\n    192.175.48.0/24 or\n    198.18.0.0/15 or\n    198.51.100.0/24 or\n    203.0.113.0/24 or\n    240.0.0.0/4 or\n    \"::1\" or\n    \"FE80::/10\" or\n    \"FF00::/8\"\n  )\n",
+        "references": [
+            "https://www.iana.org/assignments/iana-ipv4-special-registry/iana-ipv4-special-registry.xhtml"
+        ],
+        "related_integrations": [
+            {
+                "package": "network_traffic",
+                "version": "^1.33.0"
+            },
+            {
+                "package": "panw",
+                "version": "^5.2.0"
+            }
+        ],
+        "required_fields": [
+            {
+                "ecs": true,
+                "name": "destination.ip",
+                "type": "ip"
+            },
+            {
+                "ecs": true,
+                "name": "destination.port",
+                "type": "long"
+            },
+            {
+                "ecs": true,
+                "name": "event.category",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "event.dataset",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "network.transport",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "source.ip",
+                "type": "ip"
+            }
+        ],
+        "risk_score": 73,
+        "rule_id": "32923416-763a-4531-bb35-f33b9232ecdb",
+        "severity": "high",
+        "tags": [
+            "Tactic: Initial Access",
+            "Domain: Endpoint",
+            "Use Case: Threat Detection",
+            "Data Source: PAN-OS",
+            "Resources: Investigation Guide"
+        ],
+        "threat": [
+            {
+                "framework": "MITRE ATT&CK",
+                "tactic": {
+                    "id": "TA0001",
+                    "name": "Initial Access",
+                    "reference": "https://attack.mitre.org/tactics/TA0001/"
+                },
+                "technique": [
+                    {
+                        "id": "T1190",
+                        "name": "Exploit Public-Facing Application",
+                        "reference": "https://attack.mitre.org/techniques/T1190/"
+                    }
+                ]
+            }
+        ],
+        "timestamp_override": "event.ingested",
+        "type": "query",
+        "version": 106
+    },
+    "id": "32923416-763a-4531-bb35-f33b9232ecdb_106",
+    "type": "security-rule"
+}
