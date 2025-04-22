@@ -29,6 +29,7 @@ It is compatible with a subset of applications under the [Google Reports API v1]
 | [Chrome](https://developers.google.com/admin-sdk/reports/v1/appendix/activity/chrome) | The Chrome activity reports return information about Chrome browser and Chrome OS events. |
 | [Data Studio](https://developers.google.com/admin-sdk/reports/v1/appendix/activity/data-studio) | Track and audit user interactions and changes made to Looker Studio assets. |
 | [Calendar](https://developers.google.com/admin-sdk/reports/v1/appendix/activity/calendar) | The Calendar activity report returns information about how your account's users manage and modify their Google Calendar events. |
+| [Chat](https://developers.google.com/admin-sdk/reports/v1/appendix/activity/chat) | The Chat activity report returns information about how your account's users use and manage Spaces. |
 
 ## Requirements
 
@@ -45,7 +46,7 @@ This integration will make use of the following *oauth2 scope*:
 
 Once you have downloaded your service account credentials as a JSON file, you are ready to set up your integration.
 
-Click the Advanced option of Google Workspace Audit Reports. The default value of "API Host" is `https://www.googleapis.com`. The API Host will be used for collecting `access_transparency`, `admin`, `calendar`, `chrome`, `context_aware_access`, `data_studio`, `device`, `drive`, `gcp`, `groups`, `group_enterprise`, `login`, `rules`, `saml`, `token` and `user accounts` logs.
+Click the Advanced option of Google Workspace Audit Reports. The default value of "API Host" is `https://www.googleapis.com`. The API Host will be used for collecting `access_transparency`, `admin`, `calendar`, `chat`, `chrome`, `context_aware_access`, `data_studio`, `device`, `drive`, `gcp`, `groups`, `group_enterprise`, `login`, `rules`, `saml`, `token` and `user accounts` logs.
 
 >  NOTE: The `Delegated Account` value in the configuration, is expected to be the email of the administrator account, and not the email of the ServiceAccount.
 
@@ -283,3 +284,11 @@ This is the `calendar` dataset.
 {{event "calendar"}}
 
 {{fields "calendar"}}
+
+### Chat
+
+This is the `chat` dataset.
+
+{{event "chat"}}
+
+{{fields "chat"}}
