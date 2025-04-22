@@ -1,13 +1,11 @@
 config_version: 2
 interval: {{interval}}
-token_scopes:
-  - "https://management.microsoft.com/.default"
 auth.oauth2:
     client.id: {{client_id}}
     client.secret: {{client_secret}}
     provider: azure
     scopes: 
-{{#each token_scopes as |token_scope|}}
+{{#each token_scopes_management as |token_scope|}}
       - {{token_scope}}
 {{/each}}
     endpoint_params: 
@@ -77,9 +75,9 @@ processors:
 
 state:
   want_more: false
-  url: "https://management.microsoft.com/v1.0"
   worklist: []
   next: 0
+  url: {{url_management}}
   base:
     tenant_id: "{{azure_tenant_id}}"
     period: "{{period}}"

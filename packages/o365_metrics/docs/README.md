@@ -3381,7 +3381,7 @@ Please refer to the following [document](https://www.elastic.co/guide/en/ecs/cur
 
 ### Entra Alerts
 
-Get details about Entra Alerts. [Microsoft API](https://learn.microsoft.com/en-us/azure/api-management/api-management-key-concepts).
+Get details about Entra Alerts. [Microsoft Docs](https://learn.microsoft.com/en-us/azure/container-apps/alerts).
 
 An example event for `entra_alerts` looks as following:
 
