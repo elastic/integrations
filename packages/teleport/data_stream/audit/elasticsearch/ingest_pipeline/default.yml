@@ -13,12 +13,15 @@ processors:
       if: ctx.tags?.contains('both') == true
   - script:
       lang: painless
-      if: ctx.tags?.contains('both') == true
-      source: ctx.tags.remove(ctx.tags.indexOf('both'));
-  - script:
-      lang: painless
-      if: ctx.cloud == null && ctx.tags?.contains('elastic_cloud_data') == true
-      source: ctx.tags.remove(ctx.tags.indexOf('elastic_cloud_data'));
+      source: |
+        if (ctx.tags != null) {
+          if (ctx.tags.contains('both')) {
+            ctx.tags.remove(ctx.tags.indexOf('both'));
+          }
+          if (ctx.cloud == null && ctx.tags.contains('elastic_cloud_data')) {
+            ctx.tags.remove(ctx.tags.indexOf('elastic_cloud_data'));
+          }
+        }
   - set:
       field: _conf.want_provider_cloud
       value: true
