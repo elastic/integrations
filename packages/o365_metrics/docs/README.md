@@ -3386,45 +3386,45 @@ An example event for `entra_agent` looks as following:
 
 ```json
 {
-    "@timestamp": "2025-04-16T21:09:07.790Z",
+    "@timestamp": "2025-04-22T18:55:29.982Z",
     "agent": {
-        "ephemeral_id": "5a38d5c9-ac63-4044-94a9-c6e3196c96b9",
-        "id": "f1aebef7-0ec8-4ae9-83c6-831bb2d13416",
-        "name": "elastic-agent-91923",
+        "ephemeral_id": "a20d478e-8467-44f4-9c25-936a5efdea6f",
+        "id": "80c8a782-e6ce-46e8-80f2-cab0e3625308",
+        "name": "elastic-agent-13298",
         "type": "filebeat",
         "version": "8.16.0"
     },
     "data_stream": {
         "dataset": "o365_metrics.entra_agent",
-        "namespace": "87907",
+        "namespace": "96998",
         "type": "metrics"
     },
     "ecs": {
         "version": "8.17.0"
     },
     "elastic_agent": {
-        "id": "f1aebef7-0ec8-4ae9-83c6-831bb2d13416",
+        "id": "80c8a782-e6ce-46e8-80f2-cab0e3625308",
         "snapshot": false,
         "version": "8.16.0"
     },
     "event": {
         "agent_id_status": "verified",
         "dataset": "o365_metrics.entra_agent",
-        "ingested": "2025-04-16T21:09:10Z"
+        "ingested": "2025-04-22T18:55:32Z"
     },
     "host": {
         "architecture": "x86_64",
         "containerized": true,
-        "hostname": "elastic-agent-91923",
+        "hostname": "elastic-agent-13298",
         "ip": [
-            "172.21.0.2",
+            "172.20.0.2",
             "172.18.0.4"
         ],
         "mac": [
             "02-42-AC-12-00-04",
-            "02-42-AC-15-00-02"
+            "02-42-AC-14-00-02"
         ],
-        "name": "elastic-agent-91923",
+        "name": "elastic-agent-13298",
         "os": {
             "family": "",
             "kernel": "5.15.153.1-microsoft-standard-WSL2",
@@ -3455,6 +3455,7 @@ An example event for `entra_agent` looks as following:
                     "role": "AdfsServer_30",
                     "service_id": "SampleServiceId",
                     "service_member_id": "SampleServiceMemberId",
+                    "service_name": "sampleServiceName",
                     "status": "Healthy"
                 }
             }
@@ -3491,4 +3492,5 @@ Please refer to the following [document](https://www.elastic.co/guide/en/ecs/cur
 | o365.metrics.entra.agent.role | The role of the machine or service. | keyword |
 | o365.metrics.entra.agent.service_id | The ID of the service. | keyword |
 | o365.metrics.entra.agent.service_member_id | The ID of the service member. | keyword |
+| o365.metrics.entra.agent.service_name | The name of the service. | keyword |
 | o365.metrics.entra.agent.status | The current status of the service. | keyword |
