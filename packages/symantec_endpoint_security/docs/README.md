@@ -3432,6 +3432,32 @@ An example event for `event` looks as following:
 | ses.verdict_id | The outcome of the Scan. | keyword |
 | ses.verdict_value | The outcome value of the Scan. | keyword |
 | ses.version | The event type version, in the form major.minor. | keyword |
+| winlog.event_data | The event-specific data. If you are capturing event data on versions prior to Windows Vista, the parameters in `event_data` are named `param1`, `param2`, and so on, because event log parameters are unnamed in earlier versions of Windows. | object |
+| winlog.event_data.CallerProcessId |  | keyword |
+| winlog.event_data.CallerProcessName |  | keyword |
+| winlog.event_data.ClientProcessId |  | keyword |
+| winlog.event_data.CountOfCredentialsReturned |  | keyword |
+| winlog.event_data.FailureReason |  | keyword |
+| winlog.event_data.IpAddress |  | keyword |
+| winlog.event_data.LogonType |  | keyword |
+| winlog.event_data.ProcessName |  | keyword |
+| winlog.event_data.ReadOperation |  | keyword |
+| winlog.event_data.Reason |  | keyword |
+| winlog.event_data.ReturnCode |  | keyword |
+| winlog.event_data.StartTime |  | keyword |
+| winlog.event_data.State |  | keyword |
+| winlog.event_data.Status |  | keyword |
+| winlog.event_data.SubStatus |  | keyword |
+| winlog.event_data.SubjectDomainName |  | keyword |
+| winlog.event_data.SubjectLogonId |  | keyword |
+| winlog.event_data.SubjectUserName |  | keyword |
+| winlog.event_data.SubjectUserSid |  | keyword |
+| winlog.event_data.TargetDomainName |  | keyword |
+| winlog.event_data.TargetName |  | keyword |
+| winlog.event_data.TargetUserName |  | keyword |
+| winlog.event_data.TargetUserSid |  | keyword |
+| winlog.event_data.Version |  | keyword |
+| winlog.event_data.WorkstationName |  | keyword |
 
 
 ### Incident
