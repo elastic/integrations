@@ -22,6 +22,7 @@ The [AWS Security Hub](https://docs.aws.amazon.com/securityhub/) integration col
 
   1. For the current integration package, it is recommended to have interval in hours.
   2. For the current integration package, it is compulsory to add Secret Access Key and Access Key ID.
+  3. Findings Full Posture data stream request all the historical findings every 24 hours.
 
 ## Logs
 
@@ -36,6 +37,18 @@ This is the [`securityhub_findings`](https://docs.aws.amazon.com/securityhub/1.0
 Please refer to the following [document](https://www.elastic.co/guide/en/ecs/current/ecs-field-reference.html) for detailed information on ECS fields.
 
 {{fields "securityhub_findings"}}
+
+### Findings Full Posture
+
+This is the [`securityhub_findings_full_posture`](https://docs.aws.amazon.com/securityhub/1.0/APIReference/API_GetFindings.html#API_GetFindings_ResponseElements) data stream.
+
+{{event "securityhub_findings_full_posture"}}
+
+**ECS Field Reference**
+
+Please refer to the following [document](https://www.elastic.co/guide/en/ecs/current/ecs-field-reference.html) for detailed information on ECS fields.
+
+{{fields "securityhub_findings_full_posture"}}
 
 ### Insights
 
