@@ -933,6 +933,11 @@ processors:
       value: '{{{ses.file.sha1}}}'
       allow_duplicates: false
       if: ctx.ses?.file?.sha1 != null && ctx.ses.file.sha1 != ''
+  - set:
+      field: file.hash.sha256
+      copy_from: ses.file.sha2
+      tag: set_file_hash_sha256_from_file_sha2
+      if: ctx.ses?.file?.sha2 != null && ctx.ses.file.sha2 != ''
   - append:
       field: related.hash
       tag: append_related_hash_from_file_sha2
@@ -990,6 +995,7 @@ processors:
         - ses.file.name
         - ses.file.path
         - ses.file.sha1
+        - ses.file.sha2
         - ses.file.signature_issuer
         - ses.file.signature_serial_number
         - ses.file.size

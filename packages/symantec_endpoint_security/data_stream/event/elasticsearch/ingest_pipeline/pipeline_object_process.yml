@@ -1231,6 +1231,11 @@ processors:
       value: '{{{ses.process.file.sha2}}}'
       allow_duplicates: false
       if: ctx.ses?.process?.file?.sha2 != null && ctx.ses.process.file.sha2 != ''
+  - set:
+      field: process.hash.sha256
+      copy_from: ses.process.file.sha2
+      tag: set_file_hash_sha256_from_process_file_sha2
+      if: ctx.ses?.process?.file?.sha2 != null && ctx.ses.process.file.sha2 != ''
   - append:
       field: related.hash
       tag: append_related_hash_from_process_file_parent_sha2
@@ -1307,6 +1312,7 @@ processors:
         - ses.process.file.name
         - ses.process.file.path
         - ses.process.file.sha1
+        - ses.process.file.sha2
         - ses.process.file.signature_issuer
         - ses.process.file.signature_serial_number
         - ses.process.file.size
