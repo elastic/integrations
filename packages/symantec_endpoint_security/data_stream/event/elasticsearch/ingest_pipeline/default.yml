@@ -203,6 +203,11 @@ processors:
       value: '{{{ses.device_end_time}}}'
       allow_duplicates: false
       if: ctx.ses?.device_end_time != null
+  - set:
+      field: group.name
+      tag: set_group_name_from_device_group
+      copy_from: ses.device_group
+      ignore_empty_value: true
   - convert:
       field: ses.device_gateway
       tag: convert_device_gateway_to_ip
@@ -1176,6 +1181,7 @@ processors:
         - ses.device_domain
         - ses.device_domain_uid
         - ses.device_end_time
+        - ses.device_group
         - ses.device_hw_bios_manufacturer
         - ses.device_hw_cpu_type
         - ses.device_ip
