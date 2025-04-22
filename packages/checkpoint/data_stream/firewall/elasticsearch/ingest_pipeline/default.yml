@@ -799,9 +799,7 @@ processors:
       if: ctx?.network?.iana_number != null
       source: |
         def iana_number = ctx.network.iana_number;
-        if (iana_number == '0' && ctx.source?.ip == '0.0.0.0') {
-            ctx.network.transport = 'ip';
-        } else if (iana_number == '0') {
+        if (iana_number == '0' && ctx.source?.ip?.contains(':')) {
             ctx.network.transport = 'hopopt';
         } else if (iana_number == '1') {
             ctx.network.transport = 'icmp';
@@ -825,6 +823,8 @@ processors:
             ctx.network.transport = '0-hop';
         } else if (iana_number == '132') {
             ctx.network.transport = 'sctp';
+        } else if (iana_number == '4294967295') {
+            iana_number = null;
         } else {
             ctx.network.transport = iana_number;
         }
