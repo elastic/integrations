@@ -77,8 +77,8 @@ processors:
   - set:
       field: source.ip
       tag: set_log_source_ip_into_source_ip
-      value: '{{{watchguard_firebox.log.source_ip}}}'
-      if: ctx.watchguard_firebox?.log?.source_ip != null
+      copy_from: watchguard_firebox.log.source_ip
+      ignore_empty_value: true
   - append:
       field: related.ip
       tag: append_source_ip_into_related_ip
@@ -88,8 +88,8 @@ processors:
   - set:
       field: destination.ip
       tag: set_log_destination_ip_into_destination_ip
-      value: '{{{watchguard_firebox.log.destination_ip}}}'
-      if: ctx.watchguard_firebox?.log?.destination_ip != null
+      copy_from: watchguard_firebox.log.destination_ip
+      ignore_empty_value: true
   - append:
       field: related.ip
       tag: append_destination_ip_into_related_ip
@@ -99,13 +99,13 @@ processors:
   - set:
       field: source.port
       tag: set_log_source_port_into_source_port
-      value: '{{{watchguard_firebox.log.source_port}}}'
-      if: ctx.watchguard_firebox?.log?.source_port != null
+      copy_from: watchguard_firebox.log.source_port
+      ignore_empty_value: true
   - set:
       field: destination.port
       tag: set_log_destination_port_into_destination_port
-      value: '{{{watchguard_firebox.log.destination_port}}}'
-      if: ctx.watchguard_firebox?.log?.destination_port != null
+      copy_from: watchguard_firebox.log.destination_port
+      ignore_empty_value: true
   - set:
       field: event.action
       tag: set_event_action_from_log_action
@@ -983,12 +983,6 @@ processors:
         - append:
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
-  - append:
-      field: destination.port
-      tag: append_watchguard_firebox_log_srv_port_into_destination_port
-      value: '{{{watchguard_firebox.log.srv_port}}}'
-      allow_duplicates: false
-      if: ctx.watchguard_firebox?.log?.srv_port != null
   - rename:
       field: watchguard_firebox.log.subj_tag
       tag: rename_subj_tag
