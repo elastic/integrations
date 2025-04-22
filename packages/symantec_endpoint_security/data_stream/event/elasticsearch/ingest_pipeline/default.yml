@@ -27,6 +27,11 @@ processors:
         - append:
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - set:
+      field: event.module
+      copy_from: ses.feature_name
+      tag: set_event_module
+      if: ctx.ses?.feature_name instanceof String && ctx.ses.feature_name != ''
   - convert:
       field: ses.category_id
       tag: convert_category_id_to_string
@@ -1184,6 +1189,7 @@ processors:
         - ses.device_type
         - ses.device_uid
         - ses.event_duration
+        - ses.feature_name
         - ses.log_level
         - ses.log_name
         - ses.message
