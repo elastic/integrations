@@ -1,0 +1,17 @@
+---
+description: Changeme
+processors:
+  - script:
+      description: Changeme
+      lang: painless
+      source: |
+        if (ctx.avg_source_bytes != null) {
+            ctx['source']['bytes'] = (long)(ctx.avg_source_bytes);
+        }
+on_failure:
+  - set:
+      field: event.kind
+      value: pipeline_error
+  - append:
+      field: error.message
+      value: '{{{ _ingest.on_failure_message }}}'
