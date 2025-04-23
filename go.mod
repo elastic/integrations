@@ -3,6 +3,7 @@ module github.com/elastic/integrations
 go 1.24.2
 
 require (
+	github.com/Masterminds/semver/v3 v3.3.1
 	github.com/blang/semver v3.5.1+incompatible
 	github.com/cli/go-gh/v2 v2.12.0
 	github.com/elastic/elastic-package v0.111.0
@@ -34,7 +35,6 @@ require (
 	github.com/GoogleCloudPlatform/opentelemetry-operations-go/internal/resourcemapping v0.49.0 // indirect
 	github.com/MakeNowJust/heredoc v1.0.0 // indirect
 	github.com/Masterminds/goutils v1.1.1 // indirect
-	github.com/Masterminds/semver/v3 v3.3.1 // indirect
 	github.com/Masterminds/sprig/v3 v3.3.0 // indirect
 	github.com/PaesslerAG/gval v1.2.2 // indirect
 	github.com/PaesslerAG/jsonpath v0.1.1 // indirect
@@ -55,7 +55,7 @@ require (
 	github.com/cli/safeexec v1.0.0 // indirect
 	github.com/cloudflare/circl v1.4.0 // indirect
 	github.com/cncf/xds/go v0.0.0-20241223141626-cff3c89139a3 // indirect
-	github.com/creack/pty v1.1.23 // indirect
+	github.com/creack/pty v1.1.19 // indirect
 	github.com/creasty/defaults v1.8.0 // indirect
 	github.com/davecgh/go-spew v1.1.2-0.20180830191138-d8f796af33cc // indirect
 	github.com/dsnet/compress v0.0.2-0.20210315054119-f66993602bf5 // indirect
@@ -211,7 +211,7 @@ require (
 	gopkg.in/evanphx/json-patch.v4 v4.12.0 // indirect
 	gopkg.in/inf.v0 v0.9.1 // indirect
 	gopkg.in/yaml.v2 v2.4.0 // indirect
-	helm.sh/helm/v3 v3.17.2 // indirect
+	helm.sh/helm/v3 v3.17.3 // indirect
 	howett.net/plist v1.0.0 // indirect
 	k8s.io/api v0.32.3 // indirect
 	k8s.io/apiextensions-apiserver v0.32.2 // indirect

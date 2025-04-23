@@ -320,20 +320,12 @@ delete_kind_cluster() {
 }
 
 kibana_version_manifest() {
-    local kibana_version
-    kibana_version=$(cat manifest.yml | yq ".conditions.kibana.version")
-    if [ "${kibana_version}" != "null" ]; then
-        echo "${kibana_version}"
-        return
+    local kibana_version=""
+    if ! kibana_version=$(mage -d "${WORKSPACE}" -w . kibanaConstraintPackage) ; then
+        return 1
     fi
-
-    kibana_version=$(cat manifest.yml | yq ".conditions.\"kibana.version\"")
-    if [ "${kibana_version}" != "null" ]; then
-        echo "${kibana_version}"
-        return
-    fi
-
-    echo "null"
+    echo "${kibana_version}"
+    return 0
 }
 
 capabilities_manifest() {
@@ -459,35 +451,25 @@ is_supported_stack() {
         return 0
     fi
 
-    local kibana_version
-    kibana_version=$(kibana_version_manifest)
-    if [ "${kibana_version}" == "null" ]; then
-        return 0
-    fi
-    if [[ ( ! "${kibana_version}" =~ \^7\. ) && "${STACK_VERSION}" =~ ^7\. ]]; then
+    local supported
+    if ! supported=$(mage -d "${WORKSPACE}" -w . isSupportedStack "${STACK_VERSION}"); then
         return 1
     fi
-    if [[ ( ! "${kibana_version}" =~ \^8\. ) && "${STACK_VERSION}" =~ ^8\. ]]; then
-        return 1
-    fi
-
-    # TODO: Allowed temporarily to test packages with stack version 9.0 if they have as constraint ^8.0 defined too.
-    # This workaround should be removed once packages have been updated their constraints for 9.0 stack.
-    if [[ ( ! ( "${kibana_version}" =~ \^9\. || "${kibana_version}" =~ \^8\. ) ) && "${STACK_VERSION}" =~ ^9\. ]]; then
-        return 1
-    fi
-
+    echo "${supported}"
     return 0
 }
 
 oldest_supported_version() {
     local kibana_version
-    kibana_version=$(kibana_version_manifest)
+    if ! kibana_version=$(kibana_version_manifest); then
+        return 1
+    fi
     if [ "$kibana_version" != "null" ]; then
         python3 "${SCRIPTS_BUILDKITE_PATH}/find_oldest_supported_version.py" --manifest-path manifest.yml
-        return
+        return 0
     fi
     echo "null"
+    return 0
 }
 
 create_elastic_package_profile() {
@@ -499,25 +481,46 @@ create_elastic_package_profile() {
 prepare_stack() {
     echo "--- Prepare stack"
 
+    local requiredSubscription="${ELASTIC_SUBSCRIPTION:-""}"
+    local requiredLogsDB="${STACK_LOGSDB_ENABLED:-"false"}"
+
     local args="-v"
+    local version_set=""
     if [ -n "${STACK_VERSION}" ]; then
         args="${args} --version ${STACK_VERSION}"
+        version_set="${STACK_VERSION}"
     else
         local version
-        version=$(oldest_supported_version)
+        if ! version=$(oldest_supported_version); then
+            return 1
+        fi
+        if [[ "${requiredLogsDB}" == "true" ]]; then
+            # If LogsDB index mode is enabled, the required Elastic stack should be at least 8.17.0
+            # In 8.17.0 LogsDB index mode was made GA.
+            local less_than=""
+            if ! less_than=$(mage -d "${WORKSPACE}" -w . isVersionLessThanLogsDBGA "${version}") ; then
+                echo "${FATAL_ERROR}"
+                return 1
+            fi
+            if [[ "${less_than}" == "true" ]]; then
+                version="8.17.0"
+            fi
+        fi
         if [[ "${version}" != "null" ]]; then
             args="${args} --version ${version}"
+            version_set="${version}"
         fi
     fi
+    echoerr "- Stack Version: \"${version_set}\""
 
-    if [ "${STACK_LOGSDB_ENABLED:-false}" == "true" ]; then
+    if [ "${requiredLogsDB:-false}" == "true" ]; then
         echoerr "- Enable LogsDB"
         args="${args} -U stack.logsdb_enabled=true"
     fi
 
-    if [ "${ELASTIC_SUBSCRIPTION:-""}" != "" ]; then
+    if [ "${requiredSubscription}" != "" ]; then
         echoerr "- Set Subscription ${ELASTIC_SUBSCRIPTION}"
-        args="${args} -U stack.elastic_subscription=${ELASTIC_SUBSCRIPTION}"
+        args="${args} -U stack.elastic_subscription=${requiredSubscription}"
     fi
 
     if [[ "${STACK_VERSION}" =~ ^7\.17 ]]; then
@@ -686,14 +689,46 @@ is_subscription_compatible() {
     return 0
 }
 
+is_logsdb_compatible() {
+    if [[ "${STACK_VERSION:-""}" != "" ]]; then
+        # Assumption that if this variable is set, it is supported
+        echo "true"
+        return 0
+    fi
+
+    if ! reason=$(mage -d "${WORKSPACE}" -w . isLogsDBSupportedInPackage); then
+        return 1
+    fi
+    echo "${reason}"
+    return 0
+}
+
 is_pr_affected() {
     local package="${1}"
     local from="${2}"
     local to="${3}"
 
-    if ! is_supported_stack ; then
+    local stack_supported=""
+    if ! stack_supported=$(is_supported_stack) ; then
+        echo "${FATAL_ERROR}"
+        return 1
+    fi
+    if [[ "${stack_supported}" == "false" ]]; then
         echo "[${package}] PR is not affected: unsupported stack (${STACK_VERSION})"
         return 1
+    fi
+
+    if [[ "${STACK_LOGSDB_ENABLED:-"false"}" == "true" ]]; then
+        # Packages require to support 8.17.0 or higher as part of their Kibana constraints (manifest)
+        local logsdb_compatible=""
+        if ! logsdb_compatible=$(is_logsdb_compatible); then
+            echo "${FATAL_ERROR}"
+            return 1
+        fi
+        if [[ "${logsdb_compatible}" == "false" ]]; then
+            echo "[${package}] PR is not affected: not supported LogsDB (${STACK_VERSION})"
+            return 1
+        fi
     fi
 
     if is_serverless; then

@@ -30,7 +30,8 @@ Following Microsoft 365 Graph Reports can be collected by Microsoft Office 365 M
 | [Teamms Call Quality](https://learn.microsoft.com/en-us/graph/api/resources/communications-api-overview?view=graph-rest-1.0?view=o365-worldwide)                                                 |    [reportRoot: callRecords](https://learn.microsoft.com/en-us/graph/api/callrecords-callrecord-list-sessions?view=graph-rest-1.0&tabs=http)    |   Microsoft 365 Teams Call Quality metrics   |   No aggregation  |   CallRecords.Read.All    |
 | Tenant Settings | [organization](https://learn.microsoft.com/en-us/graph/api/resources/organization?view=graph-rest-1.0), [adminReportSettings](https://learn.microsoft.com/en-us/graph/api/resources/adminreportsettings?view=graph-rest-1.0) | Microsoft 365 Tenant Settings | No aggregation | Organization.Read.All, ReportSettings.Read.All, Directory.Read.All  |
 | [App Registrations](https://learn.microsoft.com/en-us/graph/api/resources/application?view=graph-rest-1.0) |    [List Applications](https://learn.microsoft.com/en-us/graph/api/application-list?view=graph-rest-1.0&tabs=http)    |   Microsoft 365 App Registrations   |   No aggregation  | Application.Read.All, User.Read(delegated) |
-| Entra ID users | [user](https://learn.microsoft.com/en-us/graph/api/resources/user?view=graph-rest-1.0), [riskDetection](https://learn.microsoft.com/en-us/graph/api/resources/riskdetection?view=graph-rest-1.0) | Microsoft 365 Entra ID user metrics | No aggregation | User.Read.All, IdentityRiskEvent.Read.All
+| [Entra Features](https://learn.microsoft.com/en-us/graph/api/organization-list?view=graph-rest-1.0&tabs=http) |    [Organization](https://learn.microsoft.com/en-us/graph/api/organization-list?view=graph-rest-1.0&tabs=http), [PremisesSync](https://graph.microsoft.com/v1.0/directory/onPremisesSynchronization)    |   Microsoft 365 Entra Connect  |   No aggregation  | Organization.Read.All, User.Read(delegated) |
+| Entra ID users | [user](https://learn.microsoft.com/en-us/graph/api/resources/user?view=graph-rest-1.0), [riskDetection](https://learn.microsoft.com/en-us/graph/api/resources/riskdetection?view=graph-rest-1.0) | Microsoft 365 Entra Connect User metrics | No aggregation | User.Read.All, IdentityRiskEvent.Read.All
 
 
 ## Setup
@@ -922,6 +923,7 @@ An example event for `onedrive_usage_account_counts` looks as following:
                             "active": {
                                 "count": 14
                             },
+                            "site_type": "All",
                             "report": {
                                 "date": "2024-11-23",
                                 "period": {
@@ -965,6 +967,7 @@ Please refer to the following [document](https://www.elastic.co/guide/en/ecs/cur
 | o365.metrics.onedrive.usage.account.counts.report.date | The date the report was generated. | date |  |  |
 | o365.metrics.onedrive.usage.account.counts.report.period.day | The reporting period over which the data is aggregated (in days). | integer | d |  |
 | o365.metrics.onedrive.usage.account.counts.report.refresh_date | The date when the report data was last updated. | date |  |  |
+| o365.metrics.onedrive.usage.account.counts.site_type | The type of the site. | keyword |  |  |
 | o365.metrics.onedrive.usage.account.counts.total.count | The total number of OneDrive accounts evaluated in the report. | long |  | gauge |
 
 
@@ -1032,6 +1035,7 @@ An example event for `onedrive_usage_file_counts` looks as following:
                             "active": {
                                 "count": 14
                             },
+                            "site_type": "All",
                             "report": {
                                 "date": "2024-11-23",
                                 "period": {
@@ -1075,6 +1079,7 @@ Please refer to the following [document](https://www.elastic.co/guide/en/ecs/cur
 | o365.metrics.onedrive.usage.file.counts.report.date | The date the report was generated. | date |  |  |
 | o365.metrics.onedrive.usage.file.counts.report.period.day | The reporting period over which the data is aggregated (in days). | integer | d |  |
 | o365.metrics.onedrive.usage.file.counts.report.refresh_date | The date when the report data was last updated. | date |  |  |
+| o365.metrics.onedrive.usage.file.counts.site_type | The type of the site. | keyword |  |  |
 | o365.metrics.onedrive.usage.file.counts.total.count | The total number of OneDrive accounts evaluated in the report. | long |  | gauge |
 
 
@@ -1138,6 +1143,7 @@ An example event for `onedrive_usage_storage` looks as following:
             "onedrive": {
                 "usage": {
                     "storage": {
+                        "site_type": "OneDrive",
                         "report": {
                             "date": "2024-12-16",
                             "period": {
@@ -1179,6 +1185,7 @@ Please refer to the following [document](https://www.elastic.co/guide/en/ecs/cur
 | o365.metrics.onedrive.usage.storage.report.date | The date the report was generated. | date |  |  |
 | o365.metrics.onedrive.usage.storage.report.period.day | The reporting period over which the data is aggregated (in days). | integer | d |  |
 | o365.metrics.onedrive.usage.storage.report.refresh_date | The date when the report data was last updated. | date |  |  |
+| o365.metrics.onedrive.usage.storage.site_type | The type of the site. | keyword |  |  |
 | o365.metrics.onedrive.usage.storage.used.byte | The total storage used across OneDrive accounts during the reporting period, in bytes. | long | byte | gauge |
 
 
@@ -3241,4 +3248,132 @@ Please refer to the following [document](https://www.elastic.co/guide/en/ecs/cur
 | o365.metrics.app_registrations.password_credentials.display_name | Friendly name for the password. | keyword |
 | o365.metrics.app_registrations.password_credentials.end_date_time | The date and time at which the password expires. | date |
 | o365.metrics.app_registrations.password_credentials.key_id | The unique identifier for the password. | keyword |
+
+
+### Entra Features
+
+Get details about Entra Features. [Microsoft API](https://learn.microsoft.com/en-us/graph/api/resources/organization?view=graph-rest-1.0).
+
+An example event for `entra_features` looks as following:
+
+```json
+{
+    "@timestamp": "2025-04-10T10:40:03.447Z",
+    "agent": {
+        "ephemeral_id": "7852790c-2a34-413e-a94c-74c05f82e5f9",
+        "id": "f3fc8c0f-bd46-481e-bf2c-764831ee324c",
+        "name": "elastic-agent-67757",
+        "type": "filebeat",
+        "version": "8.16.0"
+    },
+    "data_stream": {
+        "dataset": "o365_metrics.entra_features",
+        "namespace": "21154",
+        "type": "metrics"
+    },
+    "ecs": {
+        "version": "8.17.0"
+    },
+    "elastic_agent": {
+        "id": "f3fc8c0f-bd46-481e-bf2c-764831ee324c",
+        "snapshot": false,
+        "version": "8.16.0"
+    },
+    "event": {
+        "agent_id_status": "verified",
+        "dataset": "o365_metrics.entra_features",
+        "ingested": "2025-04-10T10:40:06Z"
+    },
+    "host": {
+        "architecture": "x86_64",
+        "containerized": true,
+        "hostname": "elastic-agent-67757",
+        "ip": [
+            "172.20.0.2",
+            "172.18.0.7"
+        ],
+        "mac": [
+            "02-42-AC-12-00-07",
+            "02-42-AC-14-00-02"
+        ],
+        "name": "elastic-agent-67757",
+        "os": {
+            "family": "",
+            "kernel": "5.15.153.1-microsoft-standard-WSL2",
+            "name": "Wolfi",
+            "platform": "wolfi",
+            "type": "linux",
+            "version": "20230201"
+        }
+    },
+    "input": {
+        "type": "cel"
+    },
+    "o365": {
+        "metrics": {
+            "entra": {
+                "features": {
+                    "block_cloud_object_takeover_through_hard_match_enabled": true,
+                    "block_soft_match_enabled": true,
+                    "bypass_dir_sync_overrides_enabled": true,
+                    "cloud_password_policy_for_password_synced_users_enabled": true,
+                    "concurrent_credential_update_enabled": true,
+                    "concurrent_org_id_provisioning_enabled": true,
+                    "device_writeback_enabled": true,
+                    "directory_extensions_enabled": true,
+                    "fope_conflict_resolution_enabled": true,
+                    "group_write_back_enabled": true,
+                    "on_premises_sync_enabled": true,
+                    "password_sync_enabled": true,
+                    "password_writeback_enabled": true,
+                    "quarantine_upon_proxy_addresses_conflict_enabled": true,
+                    "quarantine_upon_upn_conflict_enabled": true,
+                    "soft_match_on_upn_enabled": true,
+                    "synchronize_upn_for_managed_users_enabled": true,
+                    "unified_group_writeback_enabled": true,
+                    "user_force_password_change_on_logon_enabled": true,
+                    "user_writeback_enabled": true
+                }
+            }
+        }
+    },
+    "tags": [
+        "o365.metrics.entra_features"
+    ]
+}
+```
+
+Please refer to the following [document](https://www.elastic.co/guide/en/ecs/current/ecs-field-reference.html) for detailed information on ECS fields.
+
+**Exported fields**
+
+| Field | Description | Type |
+|---|---|---|
+| @timestamp | Event timestamp. | date |
+| data_stream.dataset | Data stream dataset. | constant_keyword |
+| data_stream.namespace | Data stream namespace. | constant_keyword |
+| data_stream.type | Data stream type. | constant_keyword |
+| input.type | Input type. | keyword |
+| o365.metrics.entra.features.block_cloud_object_takeover_through_hard_match_enabled | Indicates whether cloud object takeover through hard match is blocked. | boolean |
+| o365.metrics.entra.features.block_soft_match_enabled | Indicates whether soft match is blocked. | boolean |
+| o365.metrics.entra.features.bypass_dir_sync_overrides_enabled | Indicates whether directory sync overrides are bypassed. | boolean |
+| o365.metrics.entra.features.cloud_password_policy_for_password_synced_users_enabled | Indicates if cloud password policy is enabled for password-synced users. | boolean |
+| o365.metrics.entra.features.concurrent_credential_update_enabled | Indicates if concurrent credential updates are allowed. | boolean |
+| o365.metrics.entra.features.concurrent_org_id_provisioning_enabled | Indicates if concurrent Org ID provisioning is enabled. | boolean |
+| o365.metrics.entra.features.device_writeback_enabled | Indicates if device writeback is enabled. | boolean |
+| o365.metrics.entra.features.directory_extensions_enabled | Indicates if directory extensions are enabled. | boolean |
+| o365.metrics.entra.features.fope_conflict_resolution_enabled | Indicates if FOPE conflict resolution is enabled. | boolean |
+| o365.metrics.entra.features.group_write_back_enabled | Indicates if group write-back is enabled. | boolean |
+| o365.metrics.entra.features.on_premises_last_sync_datetime | Indicates the last on premises sync date. | date |
+| o365.metrics.entra.features.on_premises_sync_enabled | Indicates if the on premises sync is enabled. | boolean |
+| o365.metrics.entra.features.password_sync_enabled | Indicates if password sync is enabled. | boolean |
+| o365.metrics.entra.features.password_writeback_enabled | Indicates if password writeback is enabled. | boolean |
+| o365.metrics.entra.features.quarantine_upon_proxy_addresses_conflict_enabled | Indicates if quarantine is applied upon proxy address conflict. | boolean |
+| o365.metrics.entra.features.quarantine_upon_upn_conflict_enabled | Indicates if quarantine is applied upon UPN conflict. | boolean |
+| o365.metrics.entra.features.soft_match_on_upn_enabled | Indicates if soft match on UPN is enabled. | boolean |
+| o365.metrics.entra.features.synchronize_upn_for_managed_users_enabled | Indicates if UPN synchronization for managed users is enabled. | boolean |
+| o365.metrics.entra.features.tenant_id | The ID of the tenant. | keyword |
+| o365.metrics.entra.features.unified_group_writeback_enabled | Indicates if unified group write-back is enabled. | boolean |
+| o365.metrics.entra.features.user_force_password_change_on_logon_enabled | Indicates if users are forced to change passwords on logon. | boolean |
+| o365.metrics.entra.features.user_writeback_enabled | Indicates if user writeback is enabled. | boolean |
 
