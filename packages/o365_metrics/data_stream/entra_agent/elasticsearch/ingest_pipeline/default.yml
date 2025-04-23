@@ -4,3 +4,22 @@ processors:
   - set:
       field: ecs.version
       value: 8.17.0
+
+  - set:
+      field: host.os.name
+      copy_from: o365.metrics.entra.agent.os_name
+      tag: set_host_os_name
+      ignore_empty_value: true
+
+  - set:
+      field: host.os.version
+      copy_from: o365.metrics.entra.agent.os_version
+      tag: set_host_os_version
+      ignore_empty_value: true
+
+  - remove:
+      field:
+        - o365.metrics.entra.agent.os_name
+        - o365.metrics.entra.agent.os_version
+      ignore_missing: true
+      tag: remove_os_fields
