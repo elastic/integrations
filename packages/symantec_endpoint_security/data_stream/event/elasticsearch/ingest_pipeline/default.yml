@@ -689,6 +689,16 @@ processors:
         - remove:
             field: ses.is_user_present
             ignore_missing: true
+  - foreach:
+      field: ses.lineage
+      if: ctx.ses?.lineage instanceof List
+      tag: foreach_lineage
+      processor:
+        append:
+          tag: append_lineage_to_process_previous_executable
+          field: process.previous.executable
+          value: '{{{_ingest._value}}}'
+          allow_duplicates: false
   - append:
       field: log.level
       tag: append_log_level_from_log_level
@@ -1196,6 +1206,7 @@ processors:
         - ses.device_uid
         - ses.event_duration
         - ses.feature_name
+        - ses.lineage
         - ses.log_level
         - ses.log_name
         - ses.message
