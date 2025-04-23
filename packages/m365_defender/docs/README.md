@@ -18,7 +18,7 @@ The Microsoft 365 Defender integration collects logs for four types of events: A
 
 **Incidents and Alerts (Recommended):** This data streams leverages the [Microsoft Graph Security API](https://learn.microsoft.com/en-us/graph/api/resources/security-api-overview?view=graph-rest-1.0) to ingest a collection of correlated alert instances and associated metadata that reflects the story of an attack in M365D. Incidents stemming from Microsoft 365 Defender, Microsoft Defender for Endpoint, Microsoft Defender for Office 365, Microsoft Defender for Identity, Microsoft Defender for Cloud Apps, and Microsoft Purview Data Loss Prevention are supported by this integration.
 
-**Vulnerability:** This data stream uses the Microsoft Defender for Endpoint API to collect a comprehensive set of [vulnerability data](https://learn.microsoft.com/en-us/defender-endpoint/api/get-all-vulnerabilities), also identifying the [affected machines](https://learn.microsoft.com/en-us/defender-endpoint/api/get-machines-by-vulnerability) and the [specific products](https://learn.microsoft.com/en-us/defender-endpoint/api/get-all-vulnerabilities-by-machines) on those machines. This provides a clearer understanding of potential security risks within your environment.
+**Vulnerability:** This data stream uses the [Microsoft Defender for Endpoint API](https://learn.microsoft.com/en-us/defender-endpoint/api/exposed-apis-list) to gather vulnerability details by fetching data from three different endpoints — [vulnerabilities](https://learn.microsoft.com/en-us/defender-endpoint/api/get-all-vulnerabilities), [machines](https://learn.microsoft.com/en-us/defender-endpoint/api/get-machines), and [software/products](https://learn.microsoft.com/en-us/defender-endpoint/api/get-all-vulnerabilities-by-machines). The collected data is then correlated and mapped to generate a single, enriched log per vulnerability, providing a clear view of risks across machines and installed software in your environment.
 
 ## Requirements
 
@@ -57,59 +57,68 @@ You can run Elastic Agent inside a container, either with Fleet Server or standa
 There are some minimum requirements for running Elastic Agent and for more information, refer to the link [here](https://www.elastic.co/guide/en/fleet/current/elastic-agent-installation.html).
 
 ## Compatibility
-
-- Supported Microsoft 365 Defender streaming event types have been supported in the current integration version:
-
-  | Resource types            | Description               |
-  |---------------------------|---------------------------|
-  | AlertEvidence             | Files, IP addresses, URLs, users, or devices associated with alerts. |
-  | AlertInfo                 | Alerts from M365 Defender XDR services, including severity and threat categorization. |
-  | DeviceEvents              | Event types, including events triggered by security controls. |
-  | DeviceFileCertificateInfo | Certificate information of signed files obtained from certificate verification events on endpoints. |
-  | DeviceFileEvents          | File creation, modification, and other file system events. |
-  | DeviceImageLoadEvents     | DLL loading events. |
-  | DeviceInfo                | Machine information, including OS information. |
-  | DeviceLogonEvents         | Sign-ins and other authentication events on devices. |
-  | DeviceNetworkEvents       | Network connection and related events. |
-  | DeviceNetworkInfo         | Network properties of devices, as well as connected networks and domains. |
-  | DeviceProcessEvents       | Process creation and related events. |
-  | DeviceRegistryEvents      | Creation and modification of registry entries. |
-  | EmailAttachmentInfo       | Information about files attached to emails. |
-  | EmailEvents               | Microsoft 365 email events, including email delivery and blocking events. |
-  | EmailPostDeliveryEvents   | Security events that occur post-delivery, after Microsoft 365 delivers the emails to the recipient mailbox. |
-  | EmailUrlInfo              | Information about URLs in emails. |
-  | IdentityInfo              | Account information from various sources, including Microsoft Entra ID. |
-  | IdentityLogonEvents       | Authentication events on Active Directory and Microsoft online services. |
-  | IdentityQueryEvents       | Queries for Active Directory objects, such as users, groups, devices, and domains. |
-  | IdentityDirectoryEvents   | Events involving an on-premises domain controller running Active Directory (AD). This table covers a range of identity-related events and system events on the domain controller. |
-  | CloudAppEvents            | Events involving accounts and objects in Office 365 and other cloud apps and services. |
-  | UrlClickEvent             | Safe Links clicks from email messages, Teams, and Office 365 apps. |
+###  This integration supports below API versions to collect data.
+  - [Microsoft Graph Security v1.0 REST API](https://learn.microsoft.com/en-us/graph/api/resources/security-alert?view=graph-rest-1.0)
+  - [M365 Defender Streaming API](https://learn.microsoft.com/en-us/microsoft-365/security/defender/streaming-api?view=o365-worldwide)
+    Supported Microsoft 365 Defender streaming event types:
+      | Resource types            | Description               |
+    |---------------------------|---------------------------|
+    | AlertEvidence             | Files, IP addresses, URLs, users, or devices associated with alerts. |
+    | AlertInfo                 | Alerts from M365 Defender XDR services, including severity and threat categorization. |
+    | DeviceEvents              | Event types, including events triggered by security controls. |
+    | DeviceFileCertificateInfo | Certificate information of signed files obtained from certificate verification events on endpoints. |
+    | DeviceFileEvents          | File creation, modification, and other file system events. |
+    | DeviceImageLoadEvents     | DLL loading events. |
+    | DeviceInfo                | Machine information, including OS information. |
+    | DeviceLogonEvents         | Sign-ins and other authentication events on devices. |
+    | DeviceNetworkEvents       | Network connection and related events. |
+    | DeviceNetworkInfo         | Network properties of devices, as well as connected networks and domains. |
+    | DeviceProcessEvents       | Process creation and related events. |
+    | DeviceRegistryEvents      | Creation and modification of registry entries. |
+    | EmailAttachmentInfo       | Information about files attached to emails. |
+    | EmailEvents               | Microsoft 365 email events, including email delivery and blocking events. |
+    | EmailPostDeliveryEvents   | Security events that occur post-delivery, after Microsoft 365 delivers the emails to the recipient mailbox. |
+    | EmailUrlInfo              | Information about URLs in emails. |
+    | IdentityInfo              | Account information from various sources, including Microsoft Entra ID. |
+    | IdentityLogonEvents       | Authentication events on Active Directory and Microsoft online services. |
+    | IdentityQueryEvents       | Queries for Active Directory objects, such as users, groups, devices, and domains. |
+    | IdentityDirectoryEvents   | Events involving an on-premises domain controller running Active Directory (AD). This table covers a range of identity-related events and system events on the domain controller. |
+    | CloudAppEvents            | Events involving accounts and objects in Office 365 and other cloud apps and services. |
+    | UrlClickEvent             | Safe Links clicks from email messages, Teams, and Office 365 apps. |
+  - [Microsoft Defender for Endpoint API](https://learn.microsoft.com/en-us/defender-endpoint/api/exposed-apis-list)
+    - [Vulnerabilities API](https://learn.microsoft.com/en-us/defender-endpoint/api/get-all-vulnerabilities) (Last updated On 04/25/2024)
+    - [Machines API](https://learn.microsoft.com/en-us/defender-endpoint/api/get-machines) (Last updated On 03/01/2025)
+    - [software/products API](https://learn.microsoft.com/en-us/defender-endpoint/api/get-all-vulnerabilities-by-machines) (Last updated On 04/25/2024)
 
 ## Setup
 
-### To collect data from Microsoft Azure Event Hub, follow the below steps:
-1. [Configure Microsoft 365 Defender to stream Advanced Hunting events to your Azure Event Hub](https://learn.microsoft.com/en-us/microsoft-365/security/defender/streaming-api-event-hub?view=o365-worldwide).
+### Follow the steps below to configure data collection from Microsoft sources:
 
-### To collect data from Microsoft Graph Security v1.0 REST API, follow the below steps:
+### 1. Collecting Data from Microsoft Azure Event Hub
+- [Configure Microsoft 365 Defender to stream Advanced Hunting events to your Azure Event Hub](https://learn.microsoft.com/en-us/microsoft-365/security/defender/streaming-api-event-hub?view=o365-worldwide).
 
-1. [Register a new Azure Application](https://learn.microsoft.com/en-us/graph/auth-register-app-v2?view=graph-rest-1.0).
-2. Permission required for accessing Incident API would be **SecurityIncident.Read.All**. See more details [here](https://learn.microsoft.com/en-us/graph/auth-v2-service?view=graph-rest-1.0)
-3. After the application has been created, it will generate Client ID, Client Secret and Tenant ID values that are required for alert and incident data collection.
+### 2. Collecting Data from Microsoft Graph Security v1.0 REST API (for Incidents & Alerts)
+- [Register a new Azure Application](https://learn.microsoft.com/en-us/graph/auth-register-app-v2?view=graph-rest-1.0).
+- Assign the required permission: **SecurityIncident.Read.All**. See more details [here](https://learn.microsoft.com/en-us/graph/auth-v2-service?view=graph-rest-1.0).
+- Once the application is registered, note the following values for use during configuration:
+  - Client ID
+  - Client Secret
+  - Tenant ID
 
-### To collect data from Microsoft Defender for Endpoint API, follow the below steps:
-
-1. [Register a new Azure Application](https://learn.microsoft.com/en-us/defender-endpoint/api/exposed-apis-create-app-webapp).
-2. Permission required for accessing Vulnerability API would be **Vulnerability.Read.All**. See more details [here](https://learn.microsoft.com/en-us/defender-endpoint/api/get-all-vulnerabilities)
-3. After the application has been created, it will generate Client ID, Client Secret and Tenant ID values that are required for vulnerability data collection.
+### 3. Collecting Data from Microsoft Defender for Endpoint API (for Vulnerabilities)
+- [Register a new Azure Application](https://learn.microsoft.com/en-us/graph/auth-register-app-v2?view=graph-rest-1.0).
+- Assign the required permissions: 
+  - **Vulnerability.Read.All** See more details [here](https://learn.microsoft.com/en-us/defender-endpoint/api/get-all-vulnerabilities#permissions).
+  - **Machine.Read.All** See more details [here](https://learn.microsoft.com/en-us/defender-endpoint/api/get-machines#permissions).
+- After registration, retrieve the following credentials needed for configuration:
+  - Client ID
+  - Client Secret
+  - Tenant ID
 
 ### Data Retention and ILM Configuration
 A full sync pulls in a large volume of data, which can lead to storage issues or index overflow over time. To avoid this, we’ve set up an Index Lifecycle Management (ILM) policy that automatically deletes data older than 7 days. This helps keep storage usage under control.
 
 > **Note:** The user or service account associated with the integration must have the following **index privileges** on the relevant index have the following permissions `delete`, `delete_index`
-
-## Troubleshooting
-
-If you see an error saying `exceeded maximum number of CEL executions` during data ingestion, it usually means a large volume of data is being processed for the selected time interval. To fix this, try increasing the Max Executions setting in the configuration.
 
 ## Logs reference
 
@@ -1485,25 +1494,25 @@ An example event for `vulnerability` looks as following:
 
 ```json
 {
-    "@timestamp": "2025-04-16T08:02:32.120Z",
+    "@timestamp": "2025-04-23T11:25:04.108Z",
     "agent": {
-        "ephemeral_id": "69e07347-7dfa-498a-a1cb-873cbfc02df2",
-        "id": "4aad0efb-56d4-471c-84d0-f7e7f8ad817d",
-        "name": "elastic-agent-44360",
+        "ephemeral_id": "9539bfcf-f33e-40fb-80fd-fd8859bd7feb",
+        "id": "cd26dbfc-c514-4bcb-be98-72339ce86527",
+        "name": "elastic-agent-26556",
         "type": "filebeat",
         "version": "8.18.0"
     },
     "data_stream": {
         "dataset": "m365_defender.vulnerability",
-        "namespace": "21648",
+        "namespace": "42934",
         "type": "logs"
     },
     "ecs": {
         "version": "8.17.0"
     },
     "elastic_agent": {
-        "id": "4aad0efb-56d4-471c-84d0-f7e7f8ad817d",
-        "snapshot": true,
+        "id": "cd26dbfc-c514-4bcb-be98-72339ce86527",
+        "snapshot": false,
         "version": "8.18.0"
     },
     "event": {
@@ -1512,22 +1521,32 @@ An example event for `vulnerability` looks as following:
             "vulnerability"
         ],
         "dataset": "m365_defender.vulnerability",
-        "ingested": "2025-04-16T08:02:35Z",
+        "ingested": "2025-04-23T11:25:05Z",
         "kind": "event",
-        "original": "{\"affectedMachine\":{\"assetCriticalityLevel\":\"None\",\"computerDnsName\":\"vmfimwin2k19\",\"cveId\":\"CVE-2025-3074\",\"fixingKbId\":null,\"id\":\"94819846155826828d1603b913c67fe336d81295-_-CVE-2025-3074-_-microsoft-_-edge_chromium-based-_-134.0.3124.72-_-\",\"machineId\":\"94819846155826828d1603b913c67fe336d81295\",\"osPlatform\":\"WindowsServer2019\",\"productName\":\"edge_chromium-based\",\"productVendor\":\"microsoft\",\"productVersion\":\"134.0.3124.72\",\"rbacGroupId\":0,\"rbacGroupName\":null,\"severity\":\"Medium\",\"tags\":[]},\"cveSupportability\":\"Supported\",\"cvssV3\":6.5,\"cvssVector\":\"CVSS:3.1/AV:N/AC:L/PR:N/UI:R/S:U/C:N/I:H/A:N/E:U/RL:O/RC:C\",\"description\":\"Summary: An inappropriate implementation in the Downloads feature of Google Chrome versions prior to 135.0.7049.52 could allow a remote attacker to perform UI spoofing via a crafted HTML page. This vulnerability, classified with a low severity by Chromium, may also enable bypassing security restrictions when a victim visits a specially crafted website. Impact: Exploitation of this vulnerability could lead to UI spoofing or bypassing security restrictions, potentially compromising user trust and security. AdditionalInformation: This vulnerability is associated with Google Chrome and has implications for Microsoft Edge (Chromium-based) due to shared code ingestion. Refer to Google Chrome Releases for further details. Remediation: Apply the latest patches and updates provided by the respective vendors. [Generated by AI]\",\"epss\":0.00111,\"exploitInKit\":false,\"exploitTypes\":[],\"exploitUris\":[],\"exploitVerified\":false,\"exposedMachines\":2,\"firstDetected\":\"2025-04-01T19:52:39Z\",\"id\":\"CVE-2025-3074\",\"name\":\"CVE-2025-3074\",\"patchFirstAvailable\":null,\"publicExploit\":false,\"publishedOn\":\"2025-04-01T00:00:00Z\",\"severity\":\"Medium\",\"tags\":[],\"updatedOn\":\"2025-04-08T00:00:00Z\"}",
+        "original": "{\"affectedMachine\":{\"aadDeviceId\":null,\"agentVersion\":\"30.124092.2.0\",\"computerDnsName\":\"bdp3449-ub20-2-4a4f31e2-46ea-4c26-ad89-f09ad1d5fe01\",\"cveId\":\"CVE-2025-3074\",\"deviceValue\":\"Normal\",\"exclusionReason\":null,\"exposureLevel\":\"Low\",\"firstSeen\":\"2025-01-08T13:05:05.3483549Z\",\"fixingKbId\":null,\"healthStatus\":\"Inactive\",\"id\":\"94819846155826828d1603b913c67fe336d81295-_-CVE-2025-3074-_-microsoft-_-edge_chromium-based-_-134.0.3124.72-_-\",\"ipAddresses\":[{\"ipAddress\":\"216.160.83.56\",\"macAddress\":\"000C2910F1DA\",\"operationalStatus\":\"Up\",\"type\":\"Other\"}],\"isAadJoined\":false,\"isExcluded\":false,\"isPotentialDuplication\":false,\"lastExternalIpAddress\":\"1.128.0.0\",\"lastIpAddress\":\"175.16.199.0\",\"lastSeen\":\"2025-01-08T13:15:03.694371Z\",\"machineId\":\"94819846155826828d1603b913c67fe336d81295\",\"machineTags\":[\"test tag\"],\"managedBy\":\"MicrosoftDefenderForEndpoint\",\"managedByStatus\":\"Success\",\"mergedIntoMachineId\":null,\"onboardingStatus\":\"Onboarded\",\"osArchitecture\":\"64-bit\",\"osBuild\":6,\"osPlatform\":\"Ubuntu\",\"osProcessor\":\"x64\",\"osVersion\":null,\"productName\":\"edge_chromium-based\",\"productVendor\":\"microsoft\",\"productVersion\":\"134.0.3124.72\",\"rbacGroupId\":0,\"rbacGroupName\":null,\"riskScore\":\"None\",\"severity\":\"Medium\",\"version\":\"20.4\",\"vmMetadata\":null},\"cveSupportability\":\"Supported\",\"cvssV3\":6.5,\"cvssVector\":\"CVSS:3.1/AV:N/AC:L/PR:N/UI:R/S:U/C:N/I:H/A:N/E:U/RL:O/RC:C\",\"description\":\"Summary: An inappropriate implementation in the Downloads feature of Google Chrome versions prior to 135.0.7049.52 could allow a remote attacker to perform UI spoofing via a crafted HTML page. This vulnerability, classified with a low severity by Chromium, may also enable bypassing security restrictions when a victim visits a specially crafted website. Impact: Exploitation of this vulnerability could lead to UI spoofing or bypassing security restrictions, potentially compromising user trust and security. AdditionalInformation: This vulnerability is associated with Google Chrome and has implications for Microsoft Edge (Chromium-based) due to shared code ingestion. Refer to Google Chrome Releases for further details. Remediation: Apply the latest patches and updates provided by the respective vendors. [Generated by AI]\",\"epss\":0.00111,\"exploitInKit\":false,\"exploitTypes\":[],\"exploitUris\":[],\"exploitVerified\":false,\"exposedMachines\":2,\"firstDetected\":\"2025-04-01T19:52:39Z\",\"id\":\"CVE-2025-3074\",\"name\":\"CVE-2025-3074\",\"patchFirstAvailable\":null,\"publicExploit\":false,\"publishedOn\":\"2025-04-01T00:00:00Z\",\"severity\":\"Medium\",\"tags\":[\"test\"],\"updatedOn\":\"2025-04-08T00:00:00Z\"}",
         "type": [
             "info"
         ]
     },
+    "group": {
+        "id": "0"
+    },
     "host": {
+        "architecture": "x64",
+        "hostname": "bdp3449-ub20-2-4a4f31e2-46ea-4c26-ad89-f09ad1d5fe01",
         "id": "94819846155826828d1603b913c67fe336d81295",
-        "name": "vmfimwin2k19",
+        "ip": [
+            "1.128.0.0"
+        ],
+        "name": "bdp3449-ub20-2-4a4f31e2-46ea-4c26-ad89-f09ad1d5fe01",
         "os": {
-            "platform": "WindowsServer2019",
-            "type": "windows"
+            "name": "Ubuntu 20.4",
+            "platform": "Ubuntu",
+            "type": "linux",
+            "version": "20.4"
         },
         "risk": {
-            "calculated_level": "Medium"
+            "calculated_level": "None"
         }
     },
     "input": {
@@ -1536,16 +1555,45 @@ An example event for `vulnerability` looks as following:
     "m365_defender": {
         "vulnerability": {
             "affected_machine": {
-                "asset_criticality_level": "None",
-                "computer_dns_name": "vmfimwin2k19",
+                "agent_version": "30.124092.2.0",
+                "computer_dns_name": "bdp3449-ub20-2-4a4f31e2-46ea-4c26-ad89-f09ad1d5fe01",
+                "device_value": "Normal",
+                "exposure_level": "Low",
+                "first_seen": "2025-01-08T13:05:05.348Z",
+                "health_status": "Inactive",
                 "id": "94819846155826828d1603b913c67fe336d81295-_-CVE-2025-3074-_-microsoft-_-edge_chromium-based-_-134.0.3124.72-_-",
+                "ip_addresses": [
+                    {
+                        "ip_address": "216.160.83.56",
+                        "mac_address": "00-0C-29-10-F1-DA",
+                        "operational_status": "Up",
+                        "type": "Other"
+                    }
+                ],
+                "is_aad_joined": false,
+                "is_excluded": false,
+                "is_potential_duplication": false,
+                "last_external_ip_address": "1.128.0.0",
+                "last_ip_address": "175.16.199.0",
+                "last_seen": "2025-01-08T13:15:03.694Z",
                 "machine_id": "94819846155826828d1603b913c67fe336d81295",
-                "os_platform": "WindowsServer2019",
+                "machine_tags": [
+                    "test tag"
+                ],
+                "managed_by": "MicrosoftDefenderForEndpoint",
+                "managed_by_status": "Success",
+                "onboarding_status": "Onboarded",
+                "os_architecture": "64-bit",
+                "os_build": 6,
+                "os_platform": "Ubuntu",
+                "os_processor": "x64",
                 "product_name": "edge_chromium-based",
                 "product_vendor": "microsoft",
                 "product_version": "134.0.3124.72",
                 "rbac_group_id": "0",
-                "severity": "Medium"
+                "risk_score": "None",
+                "severity": "Medium",
+                "version": "20.4"
             },
             "cve_supportability": "Supported",
             "cvss_v3": 6.5,
@@ -1561,6 +1609,9 @@ An example event for `vulnerability` looks as following:
             "public_exploit": false,
             "published_on": "2025-04-01T00:00:00.000Z",
             "severity": "Medium",
+            "tags": [
+                "test"
+            ],
             "updated_on": "2025-04-08T00:00:00.000Z"
         }
     },
@@ -1575,8 +1626,13 @@ An example event for `vulnerability` looks as following:
     },
     "related": {
         "hosts": [
-            "vmfimwin2k19",
+            "bdp3449-ub20-2-4a4f31e2-46ea-4c26-ad89-f09ad1d5fe01",
             "94819846155826828d1603b913c67fe336d81295"
+        ],
+        "ip": [
+            "216.160.83.56",
+            "1.128.0.0",
+            "175.16.199.0"
         ]
     },
     "tags": [
@@ -1585,16 +1641,12 @@ An example event for `vulnerability` looks as following:
         "forwarded",
         "m365_defender-vulnerability"
     ],
-    "threat": {
-        "indicator": {
-            "first_seen": "2025-04-01T19:52:39.000Z"
-        }
-    },
     "vulnerability": {
         "classification": "CVSS",
         "description": "Summary: An inappropriate implementation in the Downloads feature of Google Chrome versions prior to 135.0.7049.52 could allow a remote attacker to perform UI spoofing via a crafted HTML page. This vulnerability, classified with a low severity by Chromium, may also enable bypassing security restrictions when a victim visits a specially crafted website. Impact: Exploitation of this vulnerability could lead to UI spoofing or bypassing security restrictions, potentially compromising user trust and security. AdditionalInformation: This vulnerability is associated with Google Chrome and has implications for Microsoft Edge (Chromium-based) due to shared code ingestion. Refer to Google Chrome Releases for further details. Remediation: Apply the latest patches and updates provided by the respective vendors. [Generated by AI]",
         "enumeration": "CVE",
         "id": "CVE-2025-3074",
+        "reference": "https://www.cve.org/CVERecord?id=CVE-2025-3074",
         "scanner": {
             "vendor": "Microsoft"
         },
@@ -1618,19 +1670,49 @@ An example event for `vulnerability` looks as following:
 | event.module | Event module. | constant_keyword |
 | input.type | Type of filebeat input. | keyword |
 | log.offset | Log offset. | long |
-| m365_defender.vulnerability.affected_machine.asset_criticality_level |  | keyword |
-| m365_defender.vulnerability.affected_machine.computer_dns_name |  | keyword |
+| m365_defender.vulnerability.affected_machine.aad_device_id | Microsoft Entra Device ID (when machine is Microsoft Entra joined). | keyword |
+| m365_defender.vulnerability.affected_machine.agent_version |  | keyword |
+| m365_defender.vulnerability.affected_machine.computer_dns_name | Machine fully qualified name. | keyword |
+| m365_defender.vulnerability.affected_machine.device_value | The value of the device. Possible values are: Normal, Low, and High. | keyword |
+| m365_defender.vulnerability.affected_machine.exclusion_reason |  | keyword |
+| m365_defender.vulnerability.affected_machine.exposure_level | Exposure level as evaluated by Microsoft Defender for Endpoint. Possible values are: None, Low, Medium, and High. | keyword |
+| m365_defender.vulnerability.affected_machine.first_seen | First date and time where the machine was observed by Microsoft Defender for Endpoint. | date |
 | m365_defender.vulnerability.affected_machine.fixing_kb_id |  | keyword |
+| m365_defender.vulnerability.affected_machine.health_status | machine health status. Possible values are: Active, Inactive, ImpairedCommunication, NoSensorData, NoSensorDataImpairedCommunication, and Unknown. | keyword |
 | m365_defender.vulnerability.affected_machine.id |  | keyword |
-| m365_defender.vulnerability.affected_machine.machine_id |  | keyword |
-| m365_defender.vulnerability.affected_machine.os_platform |  | keyword |
+| m365_defender.vulnerability.affected_machine.ip_addresses.ip_address |  | ip |
+| m365_defender.vulnerability.affected_machine.ip_addresses.mac_address |  | keyword |
+| m365_defender.vulnerability.affected_machine.ip_addresses.operational_status |  | keyword |
+| m365_defender.vulnerability.affected_machine.ip_addresses.type |  | keyword |
+| m365_defender.vulnerability.affected_machine.is_aad_joined |  | boolean |
+| m365_defender.vulnerability.affected_machine.is_excluded |  | boolean |
+| m365_defender.vulnerability.affected_machine.is_potential_duplication |  | boolean |
+| m365_defender.vulnerability.affected_machine.last_external_ip_address | Last IP through which the machine accessed the internet. | ip |
+| m365_defender.vulnerability.affected_machine.last_ip_address | Last IP on local NIC on the machine. | ip |
+| m365_defender.vulnerability.affected_machine.last_seen | Time and date of the last received full device report. A device typically sends a full report every 24 hours. NOTE: This property doesn't correspond to the last seen value in the UI. It pertains to the last device update. | date |
+| m365_defender.vulnerability.affected_machine.machine_id | Machine identity. | keyword |
+| m365_defender.vulnerability.affected_machine.machine_tags | Set of machine tags. | keyword |
+| m365_defender.vulnerability.affected_machine.managed_by |  | keyword |
+| m365_defender.vulnerability.affected_machine.managed_by_status |  | keyword |
+| m365_defender.vulnerability.affected_machine.merged_into_machine_id |  | keyword |
+| m365_defender.vulnerability.affected_machine.onboarding_status | Status of machine onboarding. Possible values are: onboarded, CanBeOnboarded, Unsupported, and InsufficientInfo. | keyword |
+| m365_defender.vulnerability.affected_machine.os_architecture | Operating system architecture. Possible values are: 32-bit, 64-bit. Use this property instead of osProcessor. | keyword |
+| m365_defender.vulnerability.affected_machine.os_build | Operating system build number. | long |
+| m365_defender.vulnerability.affected_machine.os_platform | Operating system platform. | keyword |
+| m365_defender.vulnerability.affected_machine.os_processor | Operating system processor. Use osArchitecture property instead. | keyword |
+| m365_defender.vulnerability.affected_machine.os_version |  | keyword |
 | m365_defender.vulnerability.affected_machine.product_name |  | keyword |
 | m365_defender.vulnerability.affected_machine.product_vendor |  | keyword |
 | m365_defender.vulnerability.affected_machine.product_version |  | keyword |
-| m365_defender.vulnerability.affected_machine.rbac_group_id |  | keyword |
-| m365_defender.vulnerability.affected_machine.rbac_group_name |  | keyword |
+| m365_defender.vulnerability.affected_machine.rbac_group_id | Machine group ID. | keyword |
+| m365_defender.vulnerability.affected_machine.rbac_group_name | Machine group Name. | keyword |
+| m365_defender.vulnerability.affected_machine.risk_score | Risk score as evaluated by Microsoft Defender for Endpoint. Possible values are: None, Informational, Low, Medium, and High. | keyword |
 | m365_defender.vulnerability.affected_machine.severity |  | keyword |
-| m365_defender.vulnerability.affected_machine.tags |  | keyword |
+| m365_defender.vulnerability.affected_machine.version | Operating system version. | keyword |
+| m365_defender.vulnerability.affected_machine.vmMetadata.cloud_provider |  | keyword |
+| m365_defender.vulnerability.affected_machine.vmMetadata.resource_id |  | keyword |
+| m365_defender.vulnerability.affected_machine.vmMetadata.subscription_id |  | keyword |
+| m365_defender.vulnerability.affected_machine.vmMetadata.vm_id |  | keyword |
 | m365_defender.vulnerability.cve_supportability | Possible values are: Supported, Not Supported, or SupportedInPremium. | keyword |
 | m365_defender.vulnerability.cvss_v3 | CVSS v3 score. | double |
 | m365_defender.vulnerability.cvss_vector | A compressed textual representation that reflects the values used to derive the score. | keyword |
@@ -1648,5 +1730,6 @@ An example event for `vulnerability` looks as following:
 | m365_defender.vulnerability.public_exploit | Public exploit exists. | boolean |
 | m365_defender.vulnerability.published_on | Date when vulnerability was published. | date |
 | m365_defender.vulnerability.severity | Vulnerability Severity. Possible values are: Low, Medium, High, or Critical. | keyword |
+| m365_defender.vulnerability.tags |  | keyword |
 | m365_defender.vulnerability.updated_on | Date when vulnerability was updated. | date |
 
