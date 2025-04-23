@@ -3387,45 +3387,45 @@ An example event for `entra_alerts` looks as following:
 
 ```json
 {
-    "@timestamp": "2025-04-22T18:16:07.355Z",
+    "@timestamp": "2025-04-23T18:11:57.403Z",
     "agent": {
-        "ephemeral_id": "9746adcb-b400-4a6f-8564-d0f4dd8348a3",
-        "id": "81b7cc89-24d2-4301-8d97-f610f633e3fe",
-        "name": "elastic-agent-37830",
+        "ephemeral_id": "36e7652b-a394-4cd7-acd0-8ee4076b8bbb",
+        "id": "51be13a7-9966-4056-950d-5ec1eb8c9f24",
+        "name": "elastic-agent-55146",
         "type": "filebeat",
         "version": "8.16.0"
     },
     "data_stream": {
         "dataset": "o365_metrics.entra_alerts",
-        "namespace": "43842",
+        "namespace": "34267",
         "type": "metrics"
     },
     "ecs": {
         "version": "8.17.0"
     },
     "elastic_agent": {
-        "id": "81b7cc89-24d2-4301-8d97-f610f633e3fe",
+        "id": "51be13a7-9966-4056-950d-5ec1eb8c9f24",
         "snapshot": false,
         "version": "8.16.0"
     },
     "event": {
         "agent_id_status": "verified",
         "dataset": "o365_metrics.entra_alerts",
-        "ingested": "2025-04-22T18:16:10Z"
+        "ingested": "2025-04-23T18:12:00Z"
     },
     "host": {
         "architecture": "x86_64",
         "containerized": true,
-        "hostname": "elastic-agent-37830",
+        "hostname": "elastic-agent-55146",
         "ip": [
             "172.20.0.2",
-            "172.18.0.7"
+            "172.18.0.4"
         ],
         "mac": [
-            "02-42-AC-12-00-07",
+            "02-42-AC-12-00-04",
             "02-42-AC-14-00-02"
         ],
-        "name": "elastic-agent-37830",
+        "name": "elastic-agent-55146",
         "os": {
             "family": "",
             "kernel": "5.15.153.1-microsoft-standard-WSL2",
@@ -3442,21 +3442,22 @@ An example event for `entra_alerts` looks as following:
         "metrics": {
             "entra": {
                 "alerts": {
-                    "alert_id": "SampleAlertId",
+                    "alert_id": "b5f2d6c1-3c44-4a2b-934a-a0e3e21d8e27",
                     "created_date": "2025-04-14T00:00:00Z",
-                    "description": "SampleAlertDescription",
-                    "display_name": "SampleAlertDisplayName",
+                    "description": "Unfamiliar sign-in properties detected for a user account.",
+                    "display_name": "Unfamiliar Sign-in Properties",
                     "last_updated": "2025-04-14T00:00:00Z",
                     "level": "Error",
-                    "monitor_role_type": "SampleRole",
-                    "remediation": "SampleAlertRemediation",
+                    "monitor_role_type": "IdentityProtection",
+                    "remediation": "Review user risk in Microsoft Entra ID and confirm if sign-in was legitimate. Take remediation actions such as password reset or MFA enforcement.",
                     "resolved_date": "2025-04-14T00:00:00Z",
-                    "scope": "SampleScope",
-                    "service_id": "SampleServiceId",
-                    "service_member_id": "SampleServiceMemberId",
-                    "short_name": "SampleAlertName",
+                    "scope": "Directory",
+                    "service_id": "aad-identityprotection",
+                    "service_member_id": "aad-ip-alert-0042",
+                    "service_name": "MicrosoftEntraIDIdentityProtection",
+                    "short_name": "UnfamiliarSignin",
                     "state": "Active",
-                    "tenant_id": "SampleTenantId"
+                    "tenant_id": "f8cdef31-a31e-4b4a-93e4-5f571e91255a"
                 }
             }
         }
@@ -3481,15 +3482,16 @@ Please refer to the following [document](https://www.elastic.co/guide/en/ecs/cur
 | o365.metrics.entra.alerts.alert_id | Unique identifier for the alert. | keyword |
 | o365.metrics.entra.alerts.created_date | The date the alert was created. | date |
 | o365.metrics.entra.alerts.description | Description of the alert. | text |
-| o365.metrics.entra.alerts.display_name | Display name of the alert. | keyword |
+| o365.metrics.entra.alerts.display_name | Display name of the alert. | text |
 | o365.metrics.entra.alerts.last_updated | The date the alert was last updated. | date |
 | o365.metrics.entra.alerts.level | Severity level of the alert. | keyword |
 | o365.metrics.entra.alerts.monitor_role_type | Role type associated with the monitoring alert. | keyword |
 | o365.metrics.entra.alerts.remediation | Suggested remediation steps for the alert. | text |
 | o365.metrics.entra.alerts.resolved_date | The date the alert was resolved. | date |
-| o365.metrics.entra.alerts.scope | Scope of the alert. | keyword |
+| o365.metrics.entra.alerts.scope | Scope of the alert. | text |
 | o365.metrics.entra.alerts.service_id | The ID of the service. | keyword |
 | o365.metrics.entra.alerts.service_member_id | The ID of the service member. | keyword |
+| o365.metrics.entra.alerts.service_name | The name of the service. | keyword |
 | o365.metrics.entra.alerts.short_name | Short name for the alert. | keyword |
 | o365.metrics.entra.alerts.state | Current state of the alert. | keyword |
 | o365.metrics.entra.alerts.tenant_id | The ID of the tenant. | keyword |
