@@ -1,11 +1,13 @@
 ---
 description: Pipeline for the Data Exfiltration Detection Integration transform.
 processors:
-  - convert: 
-      field: avg_source_bytes
-      type: long
-      ignore_missing: true
-      target_field: source.bytes
+  - script:
+      description: Casts the value of the field `avg_source_bytes` to a long and assigns it to `source.bytes`.
+      lang: painless
+      source: |
+        if (ctx.avg_source_bytes != null) {
+            ctx['source']['bytes'] = (long)(ctx.avg_source_bytes);
+        }
   - remove:
       field: avg_source_bytes
       ignore_missing: true
