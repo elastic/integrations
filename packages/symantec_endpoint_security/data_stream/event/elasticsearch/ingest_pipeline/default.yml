@@ -814,6 +814,12 @@ processors:
       tag: decode_product_data_if_json
       if: ctx.ses?.product_data instanceof String
       ignore_failure: true
+  - set:
+      field: message
+      tag: set_message_from_product_data_bpe_description
+      copy_from: ses.product_data.bpe_description
+      ignore_empty_value: true
+      if: ctx.message == null || ctx.message == ''
   - convert:
       field: ses.proxy_device_ip
       tag: convert_proxy_device_ip_to_ip
