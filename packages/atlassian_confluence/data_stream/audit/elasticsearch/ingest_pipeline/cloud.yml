@@ -1,6 +1,12 @@
 ---
 description: Pipeline for processing Atlassian Confluence Cloud audit logs.
 processors:
+- fingerprint:
+    fields:
+      - json.creationDate
+      - json.author.accountId
+    target_field: _id
+    ignore_missing: true
 - date:
     field: json.creationDate
     if: ctx.json?.creationDate != null

@@ -47,55 +47,112 @@ An example event for `audit` looks as following:
 
 ```json
 {
-    "@timestamp": "2021-11-16T09:25:56.666Z",
+    "@timestamp": "2021-11-22T23:44:13.873Z",
     "agent": {
-        "ephemeral_id": "5e7e2606-c5b7-4cca-bcf6-5a9959484395",
-        "id": "1f67a92c-38d3-40a8-9093-c4495a7411a3",
-        "name": "docker-fleet-agent",
+        "ephemeral_id": "806232da-7e85-4c7d-984b-fa5ca6a999b2",
+        "id": "2b5e780d-acdf-4a81-a918-32e218f0e03f",
+        "name": "elastic-agent-27484",
         "type": "filebeat",
-        "version": "8.10.2"
+        "version": "8.18.0"
     },
     "confluence": {
         "audit": {
-            "external_collaborator": false,
+            "extra_attributes": [
+                {
+                    "name": "Query",
+                    "nameI18nKey": "atlassian.audit.event.attribute.query"
+                },
+                {
+                    "name": "Results returned",
+                    "nameI18nKey": "atlassian.audit.event.attribute.results",
+                    "value": "57"
+                },
+                {
+                    "name": "ID Range",
+                    "nameI18nKey": "atlassian.audit.event.attribute.id",
+                    "value": "1 - 57"
+                },
+                {
+                    "name": "Timestamp Range",
+                    "nameI18nKey": "atlassian.audit.event.attribute.timestamp",
+                    "value": "2021-11-22T23:42:45.791Z - 2021-11-22T23:43:22.615Z"
+                }
+            ],
+            "method": "Browser",
             "type": {
-                "action": "User deactivated",
-                "category": "Users and groups"
+                "action": "Audit Log search performed",
+                "actionI18nKey": "atlassian.audit.event.action.audit.search",
+                "area": "AUDIT_LOG",
+                "category": "Auditing",
+                "categoryI18nKey": "atlassian.audit.event.category.audit",
+                "level": "BASE"
             }
         }
     },
     "data_stream": {
         "dataset": "atlassian_confluence.audit",
-        "namespace": "ep",
+        "namespace": "58111",
         "type": "logs"
     },
     "ecs": {
         "version": "8.11.0"
     },
     "elastic_agent": {
-        "id": "1f67a92c-38d3-40a8-9093-c4495a7411a3",
-        "snapshot": false,
-        "version": "8.10.2"
+        "id": "2b5e780d-acdf-4a81-a918-32e218f0e03f",
+        "snapshot": true,
+        "version": "8.18.0"
     },
     "event": {
-        "action": "User deactivated",
+        "action": "atlassian.audit.event.action.audit.search",
         "agent_id_status": "verified",
-        "created": "2023-11-06T13:17:04.339Z",
         "dataset": "atlassian_confluence.audit",
-        "ingested": "2023-11-06T13:17:05Z",
+        "ingested": "2025-04-24T10:46:22Z",
         "kind": "event",
-        "original": "{\"affectedObject\":{\"name\":\"\",\"objectType\":\"\"},\"associatedObjects\":[],\"author\":{\"accountType\":\"\",\"displayName\":\"System\",\"externalCollaborator\":false,\"isExternalCollaborator\":false,\"operations\":null,\"publicName\":\"Unknown user\",\"type\":\"user\"},\"category\":\"Users and groups\",\"changedValues\":[],\"creationDate\":1637054756666,\"description\":\"\",\"remoteAddress\":\"81.2.69.143\",\"summary\":\"User deactivated\",\"superAdmin\":false,\"sysAdmin\":false}",
+        "original": "{\"affectedObjects\":[],\"auditType\":{\"action\":\"Audit Log search performed\",\"actionI18nKey\":\"atlassian.audit.event.action.audit.search\",\"area\":\"AUDIT_LOG\",\"category\":\"Auditing\",\"categoryI18nKey\":\"atlassian.audit.event.category.audit\",\"level\":\"BASE\"},\"author\":{\"id\":\"2c9580827d4a06e8017d4a07c3e10000\",\"name\":\"test.user\",\"type\":\"user\"},\"changedValues\":[],\"extraAttributes\":[{\"name\":\"Query\",\"nameI18nKey\":\"atlassian.audit.event.attribute.query\",\"value\":\"\"},{\"name\":\"Results returned\",\"nameI18nKey\":\"atlassian.audit.event.attribute.results\",\"value\":\"57\"},{\"name\":\"ID Range\",\"nameI18nKey\":\"atlassian.audit.event.attribute.id\",\"value\":\"1 - 57\"},{\"name\":\"Timestamp Range\",\"nameI18nKey\":\"atlassian.audit.event.attribute.timestamp\",\"value\":\"2021-11-22T23:42:45.791Z - 2021-11-22T23:43:22.615Z\"}],\"method\":\"Browser\",\"source\":\"81.2.69.143\",\"system\":\"http://confluence.internal:8090\",\"timestamp\":{\"epochSecond\":1637624653,\"nano\":873000000},\"version\":\"1.0\"}",
         "type": [
             "info"
         ]
     },
+    "host": {
+        "architecture": "x86_64",
+        "containerized": true,
+        "hostname": "elastic-agent-27484",
+        "ip": [
+            "192.168.241.2",
+            "192.168.249.4"
+        ],
+        "mac": [
+            "02-42-C0-A8-F1-02",
+            "02-42-C0-A8-F9-04"
+        ],
+        "name": "elastic-agent-27484",
+        "os": {
+            "kernel": "3.10.0-1160.81.1.el7.x86_64",
+            "name": "Wolfi",
+            "platform": "wolfi",
+            "type": "linux",
+            "version": "20230201"
+        }
+    },
     "input": {
-        "type": "httpjson"
+        "type": "log"
+    },
+    "log": {
+        "file": {
+            "path": "/tmp/service_logs/test-audit.log"
+        },
+        "offset": 0
     },
     "related": {
+        "hosts": [
+            "confluence.internal"
+        ],
         "ip": [
             "81.2.69.143"
         ]
+    },
+    "service": {
+        "address": "http://confluence.internal:8090"
     },
     "source": {
         "address": "81.2.69.143",
@@ -115,11 +172,11 @@ An example event for `audit` looks as following:
     },
     "tags": [
         "preserve_original_event",
-        "forwarded",
         "confluence-audit"
     ],
     "user": {
-        "full_name": "System"
+        "full_name": "test.user",
+        "id": "2c9580827d4a06e8017d4a07c3e10000"
     }
 }
 ```
