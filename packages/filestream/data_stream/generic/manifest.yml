@@ -288,3 +288,35 @@ streams:
         multi: false
         required: false
         show_user: true
+      - name: delete_on_eof
+        type: bool
+        title: Delete file on EOF
+        default: false
+        show_user: false
+        description: |
+          When enabled, files will be removed after they have been
+          read until the End-Of-File (EOF) and all events have been
+          published to the output.
+      - name: delete_on_inactive
+        type: bool
+        title: Delete files when inactive
+        default: false
+        show_user: false
+        description: |
+          When enabled, files will be removed after they're considered
+          inactive. A file is considered inactive based on the time
+          when the last line was read. To configure the inactive
+          timeout set 'Close on State Changed Inactive'.
+
+          If this option is enabled, `close.on_state_change.inactive`
+          has its default changed to 30min, to overwrite the inactive
+          timeout, set 'Close on State Changed Inactive'.
+      - name: delete_grace_period
+        type: text
+        show_user: false
+        description: |
+          An interval to wait after the file is closed and all events
+          have been published before trying to remove it.
+
+          E.g: "30m", Valid time units are "ns", "us" (or "µs"), "ms",
+          "s", "m", "h".
