@@ -5,7 +5,7 @@
 WARNING: Migrating from the "Custom Logs (Legacy)" to "Custom Logs
 (Filestream)" will cause files to be re-ingested because the state is not migrated.
 
-In the future releases it's expected to have an automated way to migrate the state. However, this is not possible at the moment.
+In future releases it's expected to have an automated way to migrate the state. However, this is not possible at the moment.
 
 The current best option for minimizing the data duplication while migrating to "Custom Logs (Filestream)" is to use the 'Ignore Older' or 'Exclude Files' options.
 
