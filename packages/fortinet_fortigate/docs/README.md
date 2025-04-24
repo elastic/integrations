@@ -360,6 +360,7 @@ An example event for `log` looks as following:
 | fortinet.firewall.datarange | Data range for reports | keyword |
 | fortinet.firewall.date | Date | keyword |
 | fortinet.firewall.ddnsserver | DDNS server | ip |
+| fortinet.firewall.deltabytes | Total bytes delta | long |
 | fortinet.firewall.desc | Description | keyword |
 | fortinet.firewall.detectionmethod | Detection method | keyword |
 | fortinet.firewall.devcategory | Device category | keyword |
@@ -565,7 +566,7 @@ An example event for `log` looks as following:
 | fortinet.firewall.rate | Wireless rogue rate value | keyword |
 | fortinet.firewall.rawdata | Raw data value | keyword |
 | fortinet.firewall.rawdataid | Raw data ID | keyword |
-| fortinet.firewall.rcvddelta | Received bytes delta | keyword |
+| fortinet.firewall.rcvddelta | Received bytes delta | long |
 | fortinet.firewall.reason | Alert reason | keyword |
 | fortinet.firewall.received | Server key exchange received | integer |
 | fortinet.firewall.receivedsignature | Server key exchange received signature | keyword |
@@ -590,7 +591,7 @@ An example event for `log` looks as following:
 | fortinet.firewall.security | Wireless rogue security | keyword |
 | fortinet.firewall.sensitivity | Sensitivity for document fingerprint | keyword |
 | fortinet.firewall.sensor | NAC Sensor Name | keyword |
-| fortinet.firewall.sentdelta | Sent bytes delta | keyword |
+| fortinet.firewall.sentdelta | Sent bytes delta | long |
 | fortinet.firewall.seq | Sequence number | keyword |
 | fortinet.firewall.serial | WAN optimisation serial | keyword |
 | fortinet.firewall.serialno | Serial number | keyword |
