@@ -1,4 +1,6 @@
-# Custom Logs Package
+# Custom Logs (Legacy) Package
+
+**This package is deprecated please use the Custom Logs (Filestream) package instead.**
 
 The **Custom Logs** package is used to ingest arbitrary log files and parse their contents using [Ingest Pipelines](https://www.elastic.co/guide/en/elasticsearch/reference/current/ingest.html). Follow the steps below to set up and use this package.
 
