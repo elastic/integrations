@@ -4,7 +4,7 @@ auth.oauth2:
     client.id: {{client_id}}
     client.secret: {{client_secret}}
     provider: azure
-    scopes: 
+    scopes:
 {{#each token_scopes_management as |token_scope|}}
       - {{token_scope}}
 {{/each}}
@@ -59,9 +59,6 @@ resource.tracer.filename: "../../logs/cel/http-request-trace-*.ndjson"
 {{/if}}
 
 tags:
-{{#if preserve_original_event}}
-  - preserve_original_event
-{{/if}}
 {{#each tags as |tag|}}
   - {{tag}}
 {{/each}}
@@ -75,106 +72,90 @@ processors:
 
 state:
   want_more: false
-  worklist: []
-  next: 0
-  url: {{url_management}}
+  premium_check_path: '/providers/Microsoft.ADHybridHealthService/services/GetServices/PremiumCheck'
+  service_path: '/providers/Microsoft.ADHybridHealthService/services'
   base:
     tenant_id: "{{azure_tenant_id}}"
     period: "{{period}}"
+  url: {{url_management}}
 
 redact:
   fields:
     - base.tenant_id
 
 program: |
-  (
-    has(state.worklist) && size(state.worklist) > 0 ?
-      state
-    :
-      state.with(
-          request(
-            "GET",
-            state.url + "/providers/Microsoft.ADHybridHealthService/services/GetServices/PremiumCheck"
-          ).do_request().as(resp, resp.StatusCode == 200 ?
-            bytes(resp.Body).decode_json().as(body, {
-              "worklist": body.value.collate("serviceName"),
-            })
-          :
+    state.with(
+      request(
+        "GET", 
+        state.url.trim_right("/") + state.premium_check_path
+      ).do_request().as(services_resp,
+        services_resp.StatusCode == 200
+        ?
+          bytes(services_resp.Body).decode_json().as(services_json,
             {
-              "events": {
-                "error": {
-                  "code": string(resp.StatusCode),
-                  "id": string(resp.Status),
-                  "message": "GET /GetServices/PremiumCheck:" + (
-                    size(resp.Body) != 0 ?
-                      string(resp.Body)
-                    :
-                      string(resp.Status) + ' (' + string(resp.StatusCode) + ')'
-                  ),
-                },
-              },
-              "want_more": false,
-            }
-        ))
-  ).as(state, state.with(
-        state.next < size(state.worklist) ?
-        request(
-          "GET",
-          state.url + "/providers/Microsoft.ADHybridHealthService/services/" + state.worklist[state.next] + "/servicemembers"
-        ).do_request().as(resp, resp.StatusCode == 200 ?
-          bytes(resp.Body).decode_json().as(body,{
-            "events": (
-                body.value.map(agent, {
-                 "o365": {
-                    "metrics": {
-                      "entra": {
-                        "agent": {
-                          "service_name": state.worklist[state.next],
-                          "last_reboot": agent.lastReboot,
-                          "last_disabled": agent.lastDisabled,
-                          "last_updated": agent.lastUpdated,
-                          "active_alerts": agent.activeAlerts,
-                          "resolved_alerts": agent.resolvedAlerts,
-                          "created_date": agent.createdDate,
-                          "disabled": agent.disabled,
-                          "service_id": agent.serviceId,
-                          "service_member_id": agent.serviceMemberId,
-                          "machine_id": agent.machineId,
-                          "machine_name": agent.machineName,
-                          "role": agent.role,
-                          "status": agent.status,
-                          "os_version": agent.osVersion,
-                          "os_name": agent.osName
-                        }
-                      }
+              "events": services_json.value.collate("serviceName").map(serviceName,
+                {
+                 "o365":{  
+                  "metrics": {
+                    "entra": {
+                      "agent": 
+                        request(
+                          "GET", 
+                          state.url.trim_right("/") + state.service_path + "/" + serviceName + "/servicemembers"
+                        ).do_request().as(servicemembers_resp,
+                         servicemembers_resp.StatusCode != 200
+                          ?
+                            [{
+                                "servicemembers_error": [
+                                  string(servicemembers_resp.StatusCode), 
+                                  string(servicemembers_resp.Body)
+                                ].join(" ")
+                            }]
+                          :
+                            bytes(servicemembers_resp.Body).decode_json().as(body,   
+                                body.value.map(servicemembers, {
+                                      "service_name": serviceName,
+                                      "last_reboot": servicemembers.lastReboot,
+                                      "last_disabled": servicemembers.lastDisabled,
+                                      "last_updated": servicemembers.lastUpdated,
+                                      "active_alerts": servicemembers.activeAlerts,
+                                      "resolved_alerts": servicemembers.resolvedAlerts,
+                                      "created_date": servicemembers.createdDate,
+                                      "disabled": servicemembers.disabled,
+                                      "service_id": servicemembers.serviceId,
+                                      "service_member_id": servicemembers.serviceMemberId,
+                                      "machine_id": servicemembers.machineId,
+                                      "machine_name": servicemembers.machineName,
+                                      "role": servicemembers.role,
+                                      "status": servicemembers.status,
+                                      "os_version": servicemembers.osVersion,
+                                      "os_name": servicemembers.osName
+                                })
+                            )
+                        )
                     }
                   }
-                })
-            ),
-          "want_more": int(state.next) < (size(state.worklist) - 1),
-          "next": (int(state.next) + 1)
-          })
+                }
+              }
+              ),
+              "want_more": false
+            }
+          )
         :
           {
             "events": {
               "error": {
-                "code": string(resp.StatusCode),
-                "id": string(resp.Status),
-                "message": "GET /services/" + state.worklist[state.next] + "/servicemembers:" + (
-                  size(resp.Body) != 0 ?
-                    string(resp.Body)
+                "code": string(services_resp.StatusCode),
+                "id": string(services_resp.Status),
+                "message": "GET " + state.premium_check_path + ": " + (
+                  size(services_resp.Body) != 0 ?
+                    string(services_resp.Body)
                   :
-                    string(resp.Status) + ' (' + string(resp.StatusCode) + ')'
+                    string(services_resp.Status) + ' (' + string(services_resp.StatusCode) + ')'
                 ),
               },
             },
-            "want_more": false,
+            "want_more": false
           }
-        )
-       :
-        {
-          "events": [],
-          "want_more": false,
-        }
+      )
     )
-  )
