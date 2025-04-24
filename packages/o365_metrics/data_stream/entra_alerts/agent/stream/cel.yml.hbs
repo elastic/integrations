@@ -73,10 +73,12 @@ processors:
 {{processors}}
 {{/if}}
 
+
 state:
   want_more: false
-  premium_check_path: '/providers/Microsoft.ADHybridHealthService/services/GetServices/PremiumCheck'
+  premium_check_path: '/providers/Microsoft.ADHybridHealthService/services/GetServices/PremiumCheck?serviceType=AadSyncService&skipCount=0&takeCount=50'
   service_path: '/providers/Microsoft.ADHybridHealthService/services'
+  api_query_param: '&api-version=2014-01-01'
   url: {{url_management}}
   base:
     tenant_id: "{{azure_tenant_id}}"
@@ -90,7 +92,7 @@ program: |
     state.with(
       request(
         "GET", 
-        state.url.trim_right("/") + state.premium_check_path
+        state.url.trim_right("/") + state.premium_check_path + state.api_query_param
       ).do_request().as(services_resp,
         services_resp.StatusCode == 200
         ?
