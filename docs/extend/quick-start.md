@@ -136,7 +136,7 @@ You’ve now built an integration package, but it does not contain any assets. F
 
         The command creates the required data in the `/data_stream/log` directory. If you pick `log` as data stream name, the dataset is called `sample.log` and the final data stream created will be `logs-sample.log-default` as an example.
 
-3. To not have to worry about mappings, you can pull in all [Elastic Common Schema (ECS) fields][Elastic Common Schema (ECS)](ecs://reference/index.md)). To do this, create the file `_dev/build/build.yml` under the root directory and add the following content:
+3. To not have to worry about mappings, you can pull in all [Elastic Common Schema (ECS) fields](ecs://reference/index.md). To do this, create the file `_dev/build/build.yml` under the root directory and add the following content:
 
     ```yaml
     dependencies:
