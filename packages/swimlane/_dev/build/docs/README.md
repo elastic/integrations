@@ -1,24 +1,22 @@
-# Swimlane Turbine Audit Logs
+# Swimlane Turbine
 
-The Swimlane Turbine integration allows you to ingest on-prem audit logs. Swimlane Turbine, the Enterprise AI Hyperautomation & Orchestration Platform. 
+The Swimlane Turbine integration allows you to ingest on-prem audit logs from Swimlane Turbine, the Enterprise AI Hyperautomation & Orchestration Platform. 
 
-Use the Swimlane Turbine Audit Logs integration to stream container pod logs into your Elastic deployment. 
-
-This integration is used for change management & control, authentication, authorization activities are restricted to POST, PUT, PATCH, DELETE.  
+Use the Swimlane Turbine integration to stream container pod logs into your Elastic deployment. 
 
 ## Data streams
-The Swimlane Turbine Audit Logs integration collects one type of data streams: logs.
+The Swimlane Turbine integration collects one type of data streams: logs.
 
 ### swimlane.api 
-Swimlane API help you keep a record of events happening in Swimlane API which are related to Workspaces, Dashboards, Reports, Application, Applets, Records, Role Based Access Control (RBAC).
+Swimlane API help logs keep a record of events happening in Swimlane API which are related to Workspaces, Dashboards, Reports, Application, Applets, Records, Role Based Access Control (RBAC).
 All fields ingested to this data stream are stored under `swimlane.api` as an event.
 
 ### swimlane.tenant
-Tenant API help you keep a record of events happening in Tenant API which are related to Account & Tenant Management, Settings, and Authentication.
+Tenant API help logs keep a record of events happening in Tenant API which are related to Account & Tenant Management, Settings, and Authentication.
 All fields ingested to this data stream are stored under `swimlane.tenant` as an event.
 
 ### turbine.api 
-Turbine API help you keep a record of events happening in Turbine API which are related to Connectors, Assets, Sensors, Solutions, Playbook, Schema Definitions, and Components.
+Turbine API help logs keep a record of events happening in Turbine API which are related to Connectors, Assets, Sensors, Solutions, Playbook, Schema Definitions, and Components.
 All fields ingested to this data stream are stored under `turbine.api` as an event.
 
 ## Requirements 
@@ -60,4 +58,4 @@ turbine-api:
 
 {{event "turbine_api"}}
 
-{{fields "tenant_api"}}
+{{fields "turbine_api"}}
