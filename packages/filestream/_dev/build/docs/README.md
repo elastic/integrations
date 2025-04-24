@@ -1,4 +1,4 @@
-# Custom Filestream Log integration
+# Custom Logs (Filestream) Package
 
 The `filestream` custom input is used to read lines from active log files. It is the
 new, improved alternative to the `log` input. It comes with various improvements
