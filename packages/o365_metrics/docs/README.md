@@ -3387,45 +3387,45 @@ An example event for `entra_alerts` looks as following:
 
 ```json
 {
-    "@timestamp": "2025-04-23T18:11:57.403Z",
+    "@timestamp": "2025-04-24T16:44:07.812Z",
     "agent": {
-        "ephemeral_id": "36e7652b-a394-4cd7-acd0-8ee4076b8bbb",
-        "id": "51be13a7-9966-4056-950d-5ec1eb8c9f24",
-        "name": "elastic-agent-55146",
+        "ephemeral_id": "fd9f72c5-1e04-46bb-b68a-1837e4537311",
+        "id": "d0e07005-8ef5-4e07-a0ed-5b25648c7a50",
+        "name": "elastic-agent-85888",
         "type": "filebeat",
         "version": "8.16.0"
     },
     "data_stream": {
         "dataset": "o365_metrics.entra_alerts",
-        "namespace": "34267",
+        "namespace": "87942",
         "type": "metrics"
     },
     "ecs": {
         "version": "8.17.0"
     },
     "elastic_agent": {
-        "id": "51be13a7-9966-4056-950d-5ec1eb8c9f24",
+        "id": "d0e07005-8ef5-4e07-a0ed-5b25648c7a50",
         "snapshot": false,
         "version": "8.16.0"
     },
     "event": {
         "agent_id_status": "verified",
         "dataset": "o365_metrics.entra_alerts",
-        "ingested": "2025-04-23T18:12:00Z"
+        "ingested": "2025-04-24T16:44:10Z"
     },
     "host": {
         "architecture": "x86_64",
         "containerized": true,
-        "hostname": "elastic-agent-55146",
+        "hostname": "elastic-agent-85888",
         "ip": [
-            "172.20.0.2",
+            "172.29.0.2",
             "172.18.0.4"
         ],
         "mac": [
             "02-42-AC-12-00-04",
-            "02-42-AC-14-00-02"
+            "02-42-AC-1D-00-02"
         ],
-        "name": "elastic-agent-55146",
+        "name": "elastic-agent-85888",
         "os": {
             "family": "",
             "kernel": "5.15.153.1-microsoft-standard-WSL2",
@@ -3441,24 +3441,26 @@ An example event for `entra_alerts` looks as following:
     "o365": {
         "metrics": {
             "entra": {
-                "alerts": {
-                    "alert_id": "b5f2d6c1-3c44-4a2b-934a-a0e3e21d8e27",
-                    "created_date": "2025-04-14T00:00:00Z",
-                    "description": "Unfamiliar sign-in properties detected for a user account.",
-                    "display_name": "Unfamiliar Sign-in Properties",
-                    "last_updated": "2025-04-14T00:00:00Z",
-                    "level": "Error",
-                    "monitor_role_type": "IdentityProtection",
-                    "remediation": "Review user risk in Microsoft Entra ID and confirm if sign-in was legitimate. Take remediation actions such as password reset or MFA enforcement.",
-                    "resolved_date": "2025-04-14T00:00:00Z",
-                    "scope": "Directory",
-                    "service_id": "aad-identityprotection",
-                    "service_member_id": "aad-ip-alert-0042",
-                    "service_name": "MicrosoftEntraIDIdentityProtection",
-                    "short_name": "UnfamiliarSignin",
-                    "state": "Active",
-                    "tenant_id": "f8cdef31-a31e-4b4a-93e4-5f571e91255a"
-                }
+                "alerts": [
+                    {
+                        "alert_id": "b5f2d6c1-3c44-4a2b-934a-a0e3e21d8e27",
+                        "created_date": "2025-04-14T00:00:00Z",
+                        "description": "Unfamiliar sign-in properties detected for a user account.",
+                        "display_name": "Unfamiliar Sign-in Properties",
+                        "last_updated": "2025-04-14T00:00:00Z",
+                        "level": "Error",
+                        "monitor_role_type": "IdentityProtection",
+                        "remediation": "Review user risk in Microsoft Entra ID and confirm if sign-in was legitimate. Take remediation actions such as password reset or MFA enforcement.",
+                        "resolved_date": "2025-04-14T00:00:00Z",
+                        "scope": "Directory",
+                        "service_id": "aad-identityprotection",
+                        "service_member_id": "aad-ip-alert-0042",
+                        "service_name": "MicrosoftEntraIDIdentityProtection",
+                        "short_name": "UnfamiliarSignin",
+                        "state": "Active",
+                        "tenant_id": "f8cdef31-a31e-4b4a-93e4-5f571e91255a"
+                    }
+                ]
             }
         }
     },

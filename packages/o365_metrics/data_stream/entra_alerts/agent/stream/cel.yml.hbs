@@ -75,8 +75,8 @@ processors:
 
 state:
   want_more: false
-  worklist: []
-  next: 0
+  premium_check_path: '/providers/Microsoft.ADHybridHealthService/services/GetServices/PremiumCheck'
+  service_path: '/providers/Microsoft.ADHybridHealthService/services'
   url: {{url_management}}
   base:
     tenant_id: "{{azure_tenant_id}}"
@@ -87,94 +87,78 @@ redact:
     - base.tenant_id
 
 program: |
-  (
-    has(state.worklist) && size(state.worklist) > 0 ?
-      state
-    :
-      state.with(
-          request(
-            "GET",
-            state.url + "/providers/Microsoft.ADHybridHealthService/services/GetServices/PremiumCheck"
-          ).do_request().as(resp, resp.StatusCode == 200 ?
-            bytes(resp.Body).decode_json().as(body, {
-              "worklist": body.value.collate("serviceName"),
-            })
-          :
+    state.with(
+      request(
+        "GET", 
+        state.url.trim_right("/") + state.premium_check_path
+      ).do_request().as(services_resp,
+        services_resp.StatusCode == 200
+        ?
+          bytes(services_resp.Body).decode_json().as(services_json,
             {
-              "events": {
-                "error": {
-                  "code": string(resp.StatusCode),
-                  "id": string(resp.Status),
-                  "message": "GET /GetServices/PremiumCheck:" + (
-                    size(resp.Body) != 0 ?
-                      string(resp.Body)
-                    :
-                      string(resp.Status) + ' (' + string(resp.StatusCode) + ')'
-                  ),
-                },
-              },
-              "want_more": false,
-            }
-        ))
-  ).as(state, state.with(
-        state.next < size(state.worklist) ?
-        request(
-          "GET",
-          state.url + "/providers/Microsoft.ADHybridHealthService/services/" + state.worklist[state.next] + "/alerts"
-        ).do_request().as(resp, resp.StatusCode == 200 ?
-          bytes(resp.Body).decode_json().as(body,{
-            "events": (
-                body.value.map(alert, {
-                 "o365": {
-                    "metrics": {
-                      "entra": {
-                        "alerts": {
-                          "service_name": state.worklist[state.next],
-                          "alert_id": alert.alertId,
-                          "level": alert.level,
-                          "state": alert.state,
-                          "short_name": alert.shortName,
-                          "display_name": alert.displayName,
-                          "description": alert.description,
-                          "remediation": alert.remediation,
-                          "scope": alert.scope,
-                          "created_date": alert.createdDate,
-                          "resolved_date": alert.resolvedDate,
-                          "last_updated": alert.lastUpdated,
-                          "monitor_role_type": alert.monitorRoleType,
-                          "tenant_id": alert.tenantId,
-                          "service_id": alert.serviceId,
-                          "service_member_id": alert.serviceMemberId
-                        }
-                      }
+              "events": services_json.value.collate("serviceName").map(serviceName,
+                {
+                 "o365":{  
+                  "metrics": {
+                    "entra": {
+                      "alerts": 
+                        request(
+                          "GET", 
+                          state.url.trim_right("/") + state.service_path + "/" + serviceName + "/alerts"
+                        ).do_request().as(alerts_resp,
+                         alerts_resp.StatusCode != 200
+                          ?
+                            [{
+                                "alerts_error": [
+                                  string(alerts_resp.StatusCode), 
+                                  string(alerts_resp.Body)
+                                ].join(" ")
+                            }]
+                          :
+                            bytes(alerts_resp.Body).decode_json().as(body,   
+                                body.value.map(alert, {
+                                      "service_name": serviceName,
+                                      "alert_id": alert.alertId,
+                                      "level": alert.level,
+                                      "state": alert.state,
+                                      "short_name": alert.shortName,
+                                      "display_name": alert.displayName,
+                                      "description": alert.description,
+                                      "remediation": alert.remediation,
+                                      "scope": alert.scope,
+                                      "created_date": alert.createdDate,
+                                      "resolved_date": alert.resolvedDate,
+                                      "last_updated": alert.lastUpdated,
+                                      "monitor_role_type": alert.monitorRoleType,
+                                      "tenant_id": alert.tenantId,
+                                      "service_id": alert.serviceId,
+                                      "service_member_id": alert.serviceMemberId
+                                })
+                            )
+                        )
                     }
                   }
-                })
-            ),
-          "want_more": int(state.next) < (size(state.worklist) - 1),
-          "next": (int(state.next) + 1)
-          })
+                }
+              }
+              ),
+              "want_more": false
+            }
+          )
         :
           {
             "events": {
               "error": {
-                "code": string(resp.StatusCode),
-                "id": string(resp.Status),
-                "message": "GET /services/" + state.worklist[state.next] + "/alerts:" + (
-                  size(resp.Body) != 0 ?
-                    string(resp.Body)
+                "code": string(services_resp.StatusCode),
+                "id": string(services_resp.Status),
+                "message": "GET " + state.premium_check_path + ": " + (
+                  size(services_resp.Body) != 0 ?
+                    string(services_resp.Body)
                   :
-                    string(resp.Status) + ' (' + string(resp.StatusCode) + ')'
+                    string(services_resp.Status) + ' (' + string(services_resp.StatusCode) + ')'
                 ),
               },
             },
-            "want_more": false,
+            "want_more": false
           }
-        )
-       :
-        {
-          "events": [],
-          "want_more": false,
-        }
+      )
     )
-  )
