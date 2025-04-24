@@ -2812,15 +2812,15 @@ An example event for `chrome` looks as following:
 {
     "@timestamp": "2024-12-09T14:18:25.405Z",
     "agent": {
-        "ephemeral_id": "7917124f-6a0b-493b-be4b-a928a4f17334",
-        "id": "499a39d7-b13c-4994-a354-0d3791cf15e6",
-        "name": "docker-fleet-agent",
+        "ephemeral_id": "22ff6e77-fce6-4e45-bc2d-52ade8e25589",
+        "id": "32a76848-9087-44d6-9609-47bbf0751dd4",
+        "name": "elastic-agent-93760",
         "type": "filebeat",
-        "version": "8.16.0"
+        "version": "8.18.0"
     },
     "data_stream": {
         "dataset": "google_workspace.chrome",
-        "namespace": "12964",
+        "namespace": "88541",
         "type": "logs"
     },
     "device": {
@@ -2832,16 +2832,16 @@ An example event for `chrome` looks as following:
         "version": "8.16.0"
     },
     "elastic_agent": {
-        "id": "499a39d7-b13c-4994-a354-0d3791cf15e6",
-        "snapshot": false,
-        "version": "8.16.0"
+        "id": "32a76848-9087-44d6-9609-47bbf0751dd4",
+        "snapshot": true,
+        "version": "8.18.0"
     },
     "event": {
         "action": "browser_extension_install",
         "agent_id_status": "verified",
         "dataset": "google_workspace.chrome",
         "id": "-3640711002716937498",
-        "ingested": "2024-12-24T07:36:34Z",
+        "ingested": "2025-04-22T12:02:30Z",
         "kind": "event",
         "original": "{\"actor\":{\"callerType\":\"USER\",\"email\":\"kalpesh.kumar@example.io\",\"profileId\":\"109689693170624712102\"},\"etag\":\"\\\"CfV-pEPVZc7PJf2fWsHJTliD34MdGbO8iFIk3L4uBwQ/cBsNSJx2A9Lg8kiQCGLddmq827A\\\"\",\"events\":{\"name\":\"BROWSER_EXTENSION_INSTALL\",\"parameters\":[{\"intValue\":\"1733753905405\",\"name\":\"TIMESTAMP\"},{\"name\":\"EVENT_REASON\",\"value\":\"BROWSER_EXTENSION_INSTALL\"},{\"name\":\"APP_ID\",\"value\":\"lmjegmlicamnimmfhcmpkclmigmmcbeh\"},{\"name\":\"APP_NAME\",\"value\":\"Application Launcher For Drive (by Google)\"},{\"name\":\"BROWSER_VERSION\",\"value\":\"123.0.6312.112\"},{\"name\":\"CHROME_ORG_UNIT_ID\",\"value\":\"02gajno12larrqx\"},{\"name\":\"CLIENT_TYPE\",\"value\":\"CHROME_OS_DEVICE\"},{\"name\":\"DEVICE_NAME\",\"value\":\"NXKUTSI002429051947600\"},{\"name\":\"DEVICE_PLATFORM\",\"value\":\"ChromeOS 15786.48.2\"},{\"name\":\"DEVICE_USER\",\"value\":\"kalpesh.kumar@example.io\"},{\"name\":\"DIRECTORY_DEVICE_ID\",\"value\":\"efa9510f-8cd2-4d85-b6c2-939cfb335e9e\"},{\"name\":\"EVENT_RESULT\",\"value\":\"REPORTED\"},{\"name\":\"EXTENSION_ACTION\",\"value\":\"INSTALL\"},{\"name\":\"EXTENSION_SOURCE\",\"value\":\"CHROME_WEBSTORE\"},{\"name\":\"EXTENSION_VERSION\",\"value\":\"3.10\"},{\"name\":\"ORG_UNIT_NAME\",\"value\":\"example.io\"},{\"name\":\"PROFILE_USER_NAME\",\"value\":\"kalpesh.kumar@example.io\"},{\"name\":\"USER_AGENT\",\"value\":\"Mozilla/5.0 (X11; CrOS x86_64 14541.0.0) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/123.0.0.0 Safari/537.36\"},{\"name\":\"VIRTUAL_DEVICE_ID\",\"value\":\"3d69c5a5-0afc-474b-a1a3-d3dc617e2a60\"}],\"type\":\"BROWSER_EXTENSION_INSTALL_TYPE\"},\"id\":{\"applicationName\":\"chrome\",\"customerId\":\"C03puekhd\",\"time\":\"2024-12-09T14:18:25.405Z\",\"uniqueQualifier\":\"-3640711002716937498\"},\"kind\":\"admin#reports#activity\"}",
         "outcome": "success",
@@ -3023,22 +3023,22 @@ An example event for `data_studio` looks as following:
 {
     "@timestamp": "2025-03-26T09:47:49.748Z",
     "agent": {
-        "ephemeral_id": "a4d793df-cc20-4b91-b990-f8f13da50202",
-        "id": "51440eed-1bea-4a14-ba9e-5b47d1552102",
-        "name": "elastic-agent-38941",
+        "ephemeral_id": "b77a02e9-85bf-41aa-9b44-811d3c8bf3b4",
+        "id": "3b862dd5-96d5-421f-b5a0-887b788df98e",
+        "name": "elastic-agent-92555",
         "type": "filebeat",
         "version": "8.18.0"
     },
     "data_stream": {
         "dataset": "google_workspace.data_studio",
-        "namespace": "67784",
+        "namespace": "12604",
         "type": "logs"
     },
     "ecs": {
         "version": "8.16.0"
     },
     "elastic_agent": {
-        "id": "51440eed-1bea-4a14-ba9e-5b47d1552102",
+        "id": "3b862dd5-96d5-421f-b5a0-887b788df98e",
         "snapshot": true,
         "version": "8.18.0"
     },
@@ -3050,7 +3050,7 @@ An example event for `data_studio` looks as following:
         ],
         "dataset": "google_workspace.data_studio",
         "id": "1",
-        "ingested": "2025-04-02T06:52:12Z",
+        "ingested": "2025-04-22T12:03:39Z",
         "kind": "event",
         "original": "{\"actor\":{\"callerType\":\"USER\",\"email\":\"foo@bar.com\",\"profileId\":\"1\"},\"events\":{\"name\":\"DELETE_DISTRIBUTION_CONTENT\",\"parameters\":[{\"name\":\"ASSET_ID\",\"value\":\"abc-123\"},{\"name\":\"ASSET_NAME\",\"value\":\"[Sample]ReportName\"},{\"name\":\"OWNER_EMAIL\",\"value\":\"foo@bar.com\"},{\"name\":\"ASSET_TYPE\",\"value\":\"REPORT\"},{\"name\":\"VISIBILITY\",\"value\":\"PEOPLE_WITHIN_DOMAIN_WITH_LINK\"},{\"name\":\"PARENT_WORKSPACE_ID\",\"value\":\"\"},{\"name\":\"CONNECTOR_TYPE\",\"value\":\"\"},{\"name\":\"DISTRIBUTION_CONTENT_NAME\",\"value\":\"[Sample]ReportName\"},{\"name\":\"DISTRIBUTION_CONTENT_OWNER_EMAIL\",\"value\":\"foo@bar.com\"},{\"name\":\"DISTRIBUTION_CONTENT_ID\",\"value\":\"abc-123\"},{\"name\":\"DISTRIBUTION_CONTENT_TYPE\",\"value\":\"SCHEDULE\"}],\"type\":\"ACCESS\"},\"id\":{\"applicationName\":\"data_studio\",\"customerId\":\"1\",\"time\":\"2025-03-26T09:47:49.748Z\",\"uniqueQualifier\":\"1\"},\"ipAddress\":\"67.43.156.13\",\"kind\":\"admin#reports#activity\"}",
         "provider": "data_studio",
@@ -3188,22 +3188,22 @@ An example event for `calendar` looks as following:
 {
     "@timestamp": "2025-04-01T07:00:40.262Z",
     "agent": {
-        "ephemeral_id": "f3c83423-1e98-4097-a310-5e96f806e9fe",
-        "id": "4e6649f8-dc18-4804-a413-251260a7e344",
-        "name": "elastic-agent-70148",
+        "ephemeral_id": "c496161a-177e-4359-8324-e11405aeeaad",
+        "id": "1ab21f00-c503-4805-b1de-01dacd186aef",
+        "name": "elastic-agent-44155",
         "type": "filebeat",
         "version": "8.18.0"
     },
     "data_stream": {
         "dataset": "google_workspace.calendar",
-        "namespace": "26814",
+        "namespace": "50432",
         "type": "logs"
     },
     "ecs": {
         "version": "8.16.0"
     },
     "elastic_agent": {
-        "id": "4e6649f8-dc18-4804-a413-251260a7e344",
+        "id": "1ab21f00-c503-4805-b1de-01dacd186aef",
         "snapshot": true,
         "version": "8.18.0"
     },
@@ -3215,7 +3215,7 @@ An example event for `calendar` looks as following:
         ],
         "dataset": "google_workspace.calendar",
         "id": "1",
-        "ingested": "2025-04-10T05:31:54Z",
+        "ingested": "2025-04-22T12:01:05Z",
         "kind": "event",
         "original": "{\"actor\":{\"email\":\"foo@bar.com\",\"profileId\":\"1\"},\"etag\":\"abcdefgh/cBsNSJx2A9Lg8kiQCGLddmq827A\",\"events\":{\"name\":\"delete_calendar\",\"parameters\":[{\"name\":\"calendar_id\",\"value\":\"c_abc123@group.calendar.google.com\"},{\"name\":\"api_kind\",\"value\":\"web\"},{\"name\":\"user_agent\",\"value\":\"Mozilla/5.0\"}],\"type\":\"calendar_change\"},\"id\":{\"applicationName\":\"calendar\",\"customerId\":\"1\",\"time\":\"2025-04-01T07:00:40.262Z\",\"uniqueQualifier\":\"1\"},\"ipAddress\":\"67.43.156.13\",\"kind\":\"admin#reports#activity\",\"ownerDomain\":\"elastic.com\"}",
         "provider": "calendar",
