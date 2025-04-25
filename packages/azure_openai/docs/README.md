@@ -135,8 +135,6 @@ For more details on ECS fields, check the [ECS Field Reference](https://www.elas
 | azure.open_ai.properties.backend_request_body.messages.content | The prompt input. | keyword |
 | azure.open_ai.properties.backend_request_body.messages.role | The API access role. | keyword |
 | azure.open_ai.properties.backend_request_body.model | The model name. | keyword |
-| azure.open_ai.properties.backend_response_body.choices.content_filter_results.categories.category_name | The categories (self-harm, hate, sexual, violence). | keyword |
-| azure.open_ai.properties.backend_response_body.choices.content_filter_results.categories.severity | The severity levels (safe, low, medium, and high). | keyword |
 | azure.open_ai.properties.backend_response_body.choices.content_filter_results.custom_blocklists.filtered | Request filtered by custom blocklist. | boolean |
 | azure.open_ai.properties.backend_response_body.choices.content_filter_results.custom_blocklists.id | The custom blocklist id. | keyword |
 | azure.open_ai.properties.backend_response_body.choices.content_filter_results.hate.filtered | True if the content filtered based on severity level. | boolean |
