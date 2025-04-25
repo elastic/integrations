@@ -1612,6 +1612,7 @@ An example event for `firewall_event` looks as following:
 | cloudflare_logpush.firewall_event.origin.response.status | The RayID of the request that issued the challenge/jschallenge. | long |
 | cloudflare_logpush.firewall_event.ray.id | The RayID of the request. | keyword |
 | cloudflare_logpush.firewall_event.ref | The user-defined identifier for the rule triggered by this request. | keyword |
+| cloudflare_logpush.firewall_event.rule.description | The Cloudflare security product-specific Description of the rule triggered by this request. | keyword |
 | cloudflare_logpush.firewall_event.rule.id | The Cloudflare security product-specific RuleID triggered by this request. | keyword |
 | cloudflare_logpush.firewall_event.source | The Cloudflare security product triggered by this request. | keyword |
 | cloudflare_logpush.firewall_event.timestamp | The date and time the event occurred at the edge. | date |
@@ -2776,6 +2777,7 @@ An example event for `http_request` looks as following:
 | cloudflare_logpush.http_request.content_scan.sizes | List of content object sizes. | long |
 | cloudflare_logpush.http_request.content_scan.types | List of content types. | keyword |
 | cloudflare_logpush.http_request.cookies | String key-value pairs for Cookies. | flattened |
+| cloudflare_logpush.http_request.datetime | Timestamp when the request was received | date |
 | cloudflare_logpush.http_request.edge.cf_connecting_o2o | True if the request looped through multiple zones on the Cloudflare edge. | boolean |
 | cloudflare_logpush.http_request.edge.colo.code | IATA airport code of data center that received the request. | keyword |
 | cloudflare_logpush.http_request.edge.colo.id | Cloudflare edge colo id. | long |

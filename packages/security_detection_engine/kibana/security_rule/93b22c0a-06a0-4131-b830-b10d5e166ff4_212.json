@@ -1,0 +1,125 @@
+{
+    "attributes": {
+        "author": [
+            "Elastic"
+        ],
+        "description": "A suspicious SolarWinds child process was detected, which may indicate an attempt to execute malicious programs.",
+        "false_positives": [
+            "Trusted SolarWinds child processes, verify process details such as network connections and file writes."
+        ],
+        "from": "now-9m",
+        "index": [
+            "logs-endpoint.events.process-*",
+            "endgame-*",
+            "logs-sentinel_one_cloud_funnel.*"
+        ],
+        "language": "eql",
+        "license": "Elastic License v2",
+        "name": "Suspicious SolarWinds Child Process",
+        "note": "## Triage and analysis\n\n> **Disclaimer**:\n> This investigation guide was created using generative AI technology and has been reviewed to improve its accuracy and relevance. While every effort has been made to ensure its quality, we recommend validating the content and adapting it to suit your specific environment and operational needs.\n\n### Investigating Suspicious SolarWinds Child Process\n\nSolarWinds is a widely used IT management software that operates critical network and system monitoring functions. Adversaries may exploit its trusted processes to execute unauthorized programs, leveraging its elevated privileges to bypass security controls. The detection rule identifies unusual child processes spawned by SolarWinds' core services, excluding known legitimate operations, to flag potential malicious activity.\n\n### Possible investigation steps\n\n- Review the details of the triggered alert to identify the specific child process name and executable path that caused the alert.\n- Check the parent process details, specifically SolarWinds.BusinessLayerHost.exe or SolarWinds.BusinessLayerHostx64.exe, to confirm its legitimacy and ensure it is running from the expected directory.\n- Investigate the child process's code signature to determine if it is trusted or if there are any anomalies in the signature that could indicate tampering.\n- Analyze the historical activity of the suspicious child process on the host to identify any patterns or previous instances of execution that could provide context.\n- Correlate the suspicious process activity with other security events or logs from the same host to identify any related malicious behavior or indicators of compromise.\n- Consult threat intelligence sources to determine if the suspicious process or executable path is associated with known malware or adversary techniques.\n\n### False positive analysis\n\n- Legitimate SolarWinds updates or patches may trigger the rule. Ensure that the process code signature is verified as trusted and matches known update signatures.\n- Custom scripts or tools integrated with SolarWinds for automation purposes might be flagged. Review these processes and add them to the exclusion list if they are verified as safe and necessary for operations.\n- Third-party plugins or extensions that interact with SolarWinds could be misidentified. Validate these plugins and consider excluding them if they are from a trusted source and essential for functionality.\n- Scheduled tasks or maintenance activities that involve SolarWinds processes may appear suspicious. Confirm these tasks are part of regular operations and exclude them if they are consistent with expected behavior.\n- Temporary diagnostic or troubleshooting tools used by IT staff might be detected. Ensure these tools are authorized and add them to the exclusion list if they are frequently used and pose no threat.\n\n### Response and remediation\n\n- Immediately isolate the affected system from the network to prevent further unauthorized access or lateral movement by the adversary.\n- Terminate any suspicious child processes identified that are not part of the known legitimate operations list, ensuring that no malicious programs continue to execute.\n- Conduct a thorough review of the affected system's recent activity logs to identify any additional indicators of compromise or unauthorized changes.\n- Restore the affected system from a known good backup to ensure that any potential malware or unauthorized changes are removed.\n- Update all SolarWinds software and related components to the latest versions to patch any known vulnerabilities that could be exploited.\n- Implement enhanced monitoring on the affected system and similar environments to detect any recurrence of suspicious activity, focusing on unusual child processes spawned by SolarWinds services.\n- Escalate the incident to the security operations center (SOC) or incident response team for further analysis and to determine if broader organizational impacts need to be addressed.",
+        "query": "process where host.os.type == \"windows\" and event.type == \"start\" and\n process.parent.name: (\"SolarWinds.BusinessLayerHost.exe\", \"SolarWinds.BusinessLayerHostx64.exe\") and\n not (\n    process.name : (\n        \"APMServiceControl*.exe\",\n        \"ExportToPDFCmd*.Exe\",\n        \"SolarWinds.Credentials.Orion.WebApi*.exe\",\n        \"SolarWinds.Orion.Topology.Calculator*.exe\",\n        \"Database-Maint.exe\",\n        \"SolarWinds.Orion.ApiPoller.Service.exe\",\n        \"WerFault.exe\",\n        \"WerMgr.exe\",\n        \"SolarWinds.BusinessLayerHost.exe\",\n        \"SolarWinds.BusinessLayerHostx64.exe\",\n        \"SolarWinds.Topology.Calculator.exe\",\n        \"SolarWinds.Topology.Calculatorx64.exe\",\n        \"SolarWinds.APM.RealTimeProcessPoller.exe\") and\n    process.code_signature.trusted == true\n ) and\n not process.executable : (\"?:\\\\Windows\\\\SysWOW64\\\\ARP.EXE\", \"?:\\\\Windows\\\\SysWOW64\\\\lodctr.exe\", \"?:\\\\Windows\\\\SysWOW64\\\\unlodctr.exe\")\n",
+        "references": [
+            "https://www.fireeye.com/blog/threat-research/2020/12/evasive-attacker-leverages-solarwinds-supply-chain-compromises-with-sunburst-backdoor.html",
+            "https://github.com/mandiant/sunburst_countermeasures/blob/main/rules/SUNBURST/hxioc/SUNBURST%20SUSPICIOUS%20CHILD%20PROCESSES%20(METHODOLOGY).ioc"
+        ],
+        "related_integrations": [
+            {
+                "package": "endpoint",
+                "version": "^9.0.0"
+            },
+            {
+                "package": "sentinel_one_cloud_funnel",
+                "version": "^1.9.0"
+            }
+        ],
+        "required_fields": [
+            {
+                "ecs": true,
+                "name": "event.type",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "host.os.type",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "process.code_signature.trusted",
+                "type": "boolean"
+            },
+            {
+                "ecs": true,
+                "name": "process.executable",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "process.name",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "process.parent.name",
+                "type": "keyword"
+            }
+        ],
+        "risk_score": 47,
+        "rule_id": "93b22c0a-06a0-4131-b830-b10d5e166ff4",
+        "severity": "medium",
+        "tags": [
+            "Domain: Endpoint",
+            "OS: Windows",
+            "Use Case: Threat Detection",
+            "Tactic: Execution",
+            "Data Source: Elastic Endgame",
+            "Data Source: Elastic Defend",
+            "Data Source: SentinelOne",
+            "Resources: Investigation Guide"
+        ],
+        "threat": [
+            {
+                "framework": "MITRE ATT&CK",
+                "tactic": {
+                    "id": "TA0002",
+                    "name": "Execution",
+                    "reference": "https://attack.mitre.org/tactics/TA0002/"
+                },
+                "technique": [
+                    {
+                        "id": "T1106",
+                        "name": "Native API",
+                        "reference": "https://attack.mitre.org/techniques/T1106/"
+                    }
+                ]
+            },
+            {
+                "framework": "MITRE ATT&CK",
+                "tactic": {
+                    "id": "TA0001",
+                    "name": "Initial Access",
+                    "reference": "https://attack.mitre.org/tactics/TA0001/"
+                },
+                "technique": [
+                    {
+                        "id": "T1195",
+                        "name": "Supply Chain Compromise",
+                        "reference": "https://attack.mitre.org/techniques/T1195/",
+                        "subtechnique": [
+                            {
+                                "id": "T1195.002",
+                                "name": "Compromise Software Supply Chain",
+                                "reference": "https://attack.mitre.org/techniques/T1195/002/"
+                            }
+                        ]
+                    }
+                ]
+            }
+        ],
+        "timestamp_override": "event.ingested",
+        "type": "eql",
+        "version": 212
+    },
+    "id": "93b22c0a-06a0-4131-b830-b10d5e166ff4_212",
+    "type": "security-rule"
+}
