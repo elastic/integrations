@@ -103,8 +103,9 @@ program: |
                  "o365":{  
                   "metrics": {
                     "entra": {
-                      "alerts": 
-                        request(
+                      "alerts": {
+                        "service_name": serviceName,
+                        "alerts" : request(
                           "GET", 
                           state.url.trim_right("/") + state.service_path + "/" + serviceName + "/alerts?" + state.api_query_param
                         ).do_request().as(alerts_resp,
@@ -119,7 +120,6 @@ program: |
                           :
                             bytes(alerts_resp.Body).decode_json().as(body,   
                                 body.value.map(alert, {
-                                      "service_name": serviceName,
                                       "alert_id": alert.alertId,
                                       "level": alert.level,
                                       "state": alert.state,
@@ -138,6 +138,7 @@ program: |
                                 })
                             )
                         )
+                     } 
                     }
                   }
                 }

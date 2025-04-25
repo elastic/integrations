@@ -768,6 +768,7 @@ rules:
                       }
                   }
               ]
+
           }
   - path: /providers/Microsoft.ADHybridHealthService/services/GetServices/PremiumCheck
     methods: ['GET']
@@ -792,6 +793,9 @@ rules:
                   },
                   {
                       "serviceName": "MicrosoftDefenderforOffice365"
+                  },
+                  {
+                      "serviceName": "MicrosoftSentinel"
                   }
               ]
           }
@@ -829,6 +833,17 @@ rules:
                     }
               ]
           }
+      - status_code: 200
+        headers:
+          Content-Type:
+            - 'application/json'
+        body: |-
+          {
+              "value": [],
+              "nextLink": null,
+              "totalCount": 0,
+              "continuationToken": null
+          }         
   - path: /providers/Microsoft.ADHybridHealthService/services/MicrosoftDefenderforOffice365/alerts
     methods: ['GET']
     request_headers:
@@ -863,3 +878,21 @@ rules:
                     }
               ]
           }
+  - path: /providers/Microsoft.ADHybridHealthService/services/MicrosoftSentinel/alerts
+    methods: ['GET']
+    request_headers:
+      Authorization:
+        - "Bearer xxxx"
+    query_params:
+      'api-version': '2014-01-01'
+    responses:
+      - status_code: 401
+        headers:
+          Content-Type:
+            - 'application/json'
+        body: |-
+          {
+            "error": {
+            "code": "AuthenticationFailed",
+            "message": "Authentication failed."
+            }
