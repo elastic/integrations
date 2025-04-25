@@ -105,14 +105,14 @@ program: |
                     "entra": {
                       "alerts": {
                         "service_name": serviceName,
-                        "alerts" : request(
+                        "records" : request(
                           "GET", 
                           state.url.trim_right("/") + state.service_path + "/" + serviceName + "/alerts?" + state.api_query_param
                         ).do_request().as(alerts_resp,
                          alerts_resp.StatusCode != 200
                           ?
                             [{
-                                "alerts_error": [
+                                "error": [
                                   string(alerts_resp.StatusCode), 
                                   string(alerts_resp.Body)
                                 ].join(" ")
