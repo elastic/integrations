@@ -27,6 +27,7 @@ state:
   user_key: {{user_key}}
   initial_interval: {{initial_interval}}
   batch_size: {{batch_size}}
+  application_name_for_url: {{application_name_for_url}}
 redact:
   fields: ~
 program: |
@@ -41,7 +42,7 @@ program: |
   ).as(state, state.with(
     request(
       "GET",
-      state.url.trim_right("/") + "/admin/reports/v1/activity/users/" + state.user_key + "/applications/calendar?"+ {
+      state.url.trim_right("/") + "/admin/reports/v1/activity/users/" + state.user_key + "/applications/" + state.application_name_for_url + "?"+ {
         "maxResults": [string(state.batch_size)],
         "endTime": [state.end_time],
         "startTime": [state.start_time],
@@ -82,7 +83,7 @@ program: |
           "error": {
             "code": string(resp.StatusCode),
             "id": string(resp.Status),
-            "message": "GET "+state.url.trim_right("/")+"/admin/reports/v1/activity/users/"+state.user_key+"/applications/calendar:"+(
+            "message": "GET "+state.url.trim_right("/")+"/admin/reports/v1/activity/users/"+state.user_key+"/applications/" + state.application_name_for_url + ":"+(
               size(resp.Body) != 0 ?
                 string(resp.Body)
               :
