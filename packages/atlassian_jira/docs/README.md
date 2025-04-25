@@ -49,24 +49,24 @@ An example event for `audit` looks as following:
 {
     "@timestamp": "2021-11-22T00:05:08.514Z",
     "agent": {
-        "ephemeral_id": "0613cec0-a373-4ea0-8bd8-c3a81b0a22f2",
-        "id": "a23e5e9e-6cf7-4048-ab32-433874d232ae",
-        "name": "elastic-agent-38771",
+        "ephemeral_id": "4a05fc27-d72e-43ab-aa6e-e19105807ecd",
+        "id": "cdda426a-7e47-48c4-b2f5-b9f1ad5bf08a",
+        "name": "docker-fleet-agent",
         "type": "filebeat",
-        "version": "8.18.0"
+        "version": "8.8.0"
     },
     "data_stream": {
         "dataset": "atlassian_jira.audit",
-        "namespace": "38562",
+        "namespace": "ep",
         "type": "logs"
     },
     "ecs": {
         "version": "8.11.0"
     },
     "elastic_agent": {
-        "id": "a23e5e9e-6cf7-4048-ab32-433874d232ae",
+        "id": "cdda426a-7e47-48c4-b2f5-b9f1ad5bf08a",
         "snapshot": true,
-        "version": "8.18.0"
+        "version": "8.8.0"
     },
     "event": {
         "action": "jira.auditing.group.created",
@@ -75,7 +75,7 @@ An example event for `audit` looks as following:
             "iam"
         ],
         "dataset": "atlassian_jira.audit",
-        "ingested": "2025-04-24T10:08:01Z",
+        "ingested": "2023-05-09T21:23:48Z",
         "kind": "event",
         "original": "{\"affectedObjects\":[{\"name\":\"jira-software-users\",\"type\":\"GROUP\"}],\"auditType\":{\"action\":\"Group created\",\"actionI18nKey\":\"jira.auditing.group.created\",\"area\":\"USER_MANAGEMENT\",\"category\":\"group management\",\"categoryI18nKey\":\"jira.auditing.category.groupmanagement\",\"level\":\"BASE\"},\"author\":{\"id\":\"-2\",\"name\":\"Anonymous\",\"type\":\"user\"},\"changedValues\":[],\"extraAttributes\":[],\"method\":\"Browser\",\"source\":\"10.50.33.72\",\"system\":\"http://jira.internal:8088\",\"timestamp\":{\"epochSecond\":1637539508,\"nano\":514000000},\"version\":\"1.0\"}",
         "type": [
@@ -89,22 +89,23 @@ An example event for `audit` looks as following:
     "host": {
         "architecture": "x86_64",
         "containerized": true,
-        "hostname": "elastic-agent-38771",
+        "hostname": "docker-fleet-agent",
+        "id": "cff3d165179d4aef9596ddbb263e3adb",
         "ip": [
-            "192.168.245.2",
-            "192.168.249.4"
+            "172.23.0.7"
         ],
         "mac": [
-            "02-42-C0-A8-F5-02",
-            "02-42-C0-A8-F9-04"
+            "02-42-AC-17-00-07"
         ],
-        "name": "elastic-agent-38771",
+        "name": "docker-fleet-agent",
         "os": {
-            "kernel": "3.10.0-1160.81.1.el7.x86_64",
-            "name": "Wolfi",
-            "platform": "wolfi",
+            "codename": "focal",
+            "family": "debian",
+            "kernel": "5.10.47-linuxkit",
+            "name": "Ubuntu",
+            "platform": "ubuntu",
             "type": "linux",
-            "version": "20230201"
+            "version": "20.04.5 LTS (Focal Fossa)"
         }
     },
     "input": {
