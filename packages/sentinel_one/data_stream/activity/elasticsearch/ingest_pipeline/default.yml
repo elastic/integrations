@@ -105,7 +105,7 @@ processors:
             value: '{{{_ingest.on_failure_message}}}'
   - rename:
       field: json.description
-      target_field: message
+      target_field: sentinel_one.activity.description_value
       ignore_missing: true
   - rename:
       field: json.hash
@@ -170,6 +170,10 @@ processors:
       field: json.primaryDescription
       target_field: sentinel_one.activity.description.primary
       ignore_missing: true
+  - set:
+      field: message
+      copy_from: sentinel_one.activity.description.primary
+      if: ctx.sentinel_one?.activity?.description?.primary != null
   - rename:
       field: json.secondaryDescription
       target_field: sentinel_one.activity.description.secondary
