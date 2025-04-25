@@ -19,13 +19,9 @@ processors:
     - drop:
         if: ctx.json == null || !(ctx.json instanceof Map)
 
-    - json:
-        field: json.body
-        target_field: parsed_body
-        if: ctx.json.body != null
-
     - remove:
-        field: ["message", "input", "stream", "log"]
+        field: 
+            - message
         ignore_missing: true
 
     - rename:
@@ -54,7 +50,7 @@ processors:
 
     - rename:
         field: swimlane.audit_log.TenantId
-        target_field: cloud.origin.tenant.id
+        target_field: cloud.origin.project.id
         ignore_missing: true
         
     - rename:
@@ -211,8 +207,7 @@ processors:
         field: swimlane.audit_log.EventTime
         target_field: "@timestamp"
         formats: 
-            - "yyyy-MM-dd'T'HH:mm:ss.SSSSSSS'Z'"
-            - "yyyy-MM-dd'T'HH:mm:ss.SSSSS'Z'"
+            - ISO8601
 
     - remove:
         field: swimlane
