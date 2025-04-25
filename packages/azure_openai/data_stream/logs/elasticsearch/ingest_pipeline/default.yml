@@ -236,30 +236,30 @@ processors:
           List response_categories = new ArrayList();
           for(choice in ctx.azure.open_ai.properties.backend_response_body.choices)
             {
-              Map self_harm_category = new HashMap();
               if(choice.content_filter_results?.self_harm?.filtered == true) {
+                Map self_harm_category = new HashMap();
                 self_harm_category.put("category_name", "self_harm");
                 self_harm_category.put("severity", choice.content_filter_results.self_harm.severity);
+                response_categories.add(self_harm_category);
               }
-              response_categories.add(self_harm_category);
-              Map sexual_category = new HashMap();
               if(choice.content_filter_results?.sexual?.filtered == true) {
+                Map sexual_category = new HashMap();
                 sexual_category.put("category_name", "sexual");
                 sexual_category.put("severity", choice.content_filter_results.sexual.severity);
+                response_categories.add(sexual_category);
               }
-              response_categories.add(sexual_category);
-              Map hate_category = new HashMap();
               if(choice.content_filter_results?.hate?.filtered == true) {
+                Map hate_category = new HashMap();
                 hate_category.put("category_name", "hate");
                 hate_category.put("severity", choice.content_filter_results.hate.severity);
+                response_categories.add(hate_category);
               }
-              response_categories.add(hate_category);
-              Map violence_category = new HashMap();
               if(choice.content_filter_results?.violence?.filtered == true) {
+                Map violence_category = new HashMap();
                 violence_category.put("category_name", "violence");
                 violence_category.put("severity", choice.content_filter_results.violence.severity);
+                response_categories.add(violence_category);
               }
-              response_categories.add(violence_category);
           }
           ctx.azure.open_ai.properties.backend_response_body.content_filtered_categories = response_categories;
   - rename:
