@@ -11,13 +11,19 @@ auth.oauth2.google.delegated_account: {{delegated_account}}
 auth.oauth2.scopes:
   - https://www.googleapis.com/auth/admin.reports.audit.readonly
 request.url: {{api_host}}/admin/reports/v1/activity/users/{{user_key}}/applications/groups
+{{#if proxy_url}}
+request.proxy_url: {{proxy_url}}
+{{/if}}
+{{#if ssl}}
+ssl: {{ssl}}
+{{/if}}
 {{#if http_client_timeout}}
 request.timeout: {{http_client_timeout}}
 {{/if}}
 request.transforms:
   - set:
       target: url.params.startTime
-      # If last pagination cycle was finished successully
+      # If last pagination cycle was finished successfully
       # we move the startDate pointer forward
       # else we reprocess the last interval from the beginning.
       # If none of the values are in the cursor it means is a fresh start
@@ -73,7 +79,10 @@ tags:
 {{#if preserve_original_event}}
   - preserve_original_event
 {{/if}}
-{{#each tags as |tag i|}}
+{{#if preserve_duplicate_custom_fields}}
+  - preserve_duplicate_custom_fields
+{{/if}}
+{{#each tags as |tag|}}
   - {{tag}}
 {{/each}}
 {{#contains "forwarded" tags}}
