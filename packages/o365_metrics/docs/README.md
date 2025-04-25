@@ -2451,261 +2451,283 @@ An example event for `teams_call_quality` looks as following:
 
 ```json
 {
+    "@timestamp": "2025-04-25T08:34:03.545Z",
+    "agent": {
+        "ephemeral_id": "ca5003d7-5342-4088-8dc0-82666f24a100",
+        "id": "abbc8f61-f490-42af-804d-117c5e7d9b90",
+        "name": "elastic-agent-24709",
+        "type": "filebeat",
+        "version": "8.16.0"
+    },
+    "data_stream": {
+        "dataset": "o365_metrics.teams_call_quality",
+        "namespace": "95205",
+        "type": "metrics"
+    },
+    "ecs": {
+        "version": "8.17.0"
+    },
+    "elastic_agent": {
+        "id": "abbc8f61-f490-42af-804d-117c5e7d9b90",
+        "snapshot": false,
+        "version": "8.16.0"
+    },
+    "event": {
+        "agent_id_status": "verified",
+        "dataset": "o365_metrics.teams_call_quality",
+        "ingested": "2025-04-25T08:34:04Z"
+    },
+    "host": {
+        "architecture": "aarch64",
+        "containerized": false,
+        "hostname": "elastic-agent-24709",
+        "ip": [
+            "172.23.0.2",
+            "172.28.0.4"
+        ],
+        "mac": [
+            "02-42-AC-17-00-02",
+            "02-42-AC-1C-00-04"
+        ],
+        "name": "elastic-agent-24709",
+        "os": {
+            "family": "",
+            "kernel": "5.10.104-linuxkit",
+            "name": "Wolfi",
+            "platform": "wolfi",
+            "type": "linux",
+            "version": "20230201"
+        }
+    },
+    "input": {
+        "type": "cel"
+    },
     "o365": {
         "metrics": {
             "teams": {
                 "call": {
                     "quality": {
-                        "callee": {
-                            "cpu_cores": {
-                                "count": 2
-                            },
-                            "cpu_name": "Intel(R) Xeon(R) Platinum 8272CL CPU @ 2.60GHz",
-                            "cpu_processor_speed": {
-                                "mhz": 2594
-                            },
-                            "feedback": {
-                                "rating": "poor",
-                                "tokens": {
-                                    "distorted_sound": false,
-                                    "echo": false,
-                                    "interruptions": false,
-                                    "low_volume": false,
-                                    "no_sound": false,
-                                    "noisy": true,
-                                    "other_no_sound": false,
-                                    "stopped": false
-                                }
-                            },
-                            "identity": {
-                                "user": {
-                                    "display_name": "Owen Franklin",
-                                    "id": "f69e2c00-0000-0000-0000-185e5f5f5d8a",
-                                    "tenant_id": "dc368399-474c-4d40-900c-6265431fd81f"
-                                }
-                            },
-                            "name": "machineName_2",
-                            "user_agent": {
-                                "header_value": "UCCAPI/16.0.12527.20122 OC/16.0.12527.20194 (Skype for Business)",
-                                "platform": "windows",
-                                "product_family": "skypeForBusiness"
-                            }
-                        },
-                        "caller": {
-                            "cpu_cores": {
-                                "count": 8
-                            },
-                            "cpu_name": "AMD EPYC 7452 32-Core Processor",
-                            "cpu_processor_speed": {
-                                "mhz": 2346
-                            },
-                            "identity": {
-                                "user": {
-                                    "display_name": "Abbie Wilkins",
-                                    "id": "821809f5-0000-0000-0000-3b5136c0e777",
-                                    "tenant_id": "dc368399-474c-4d40-900c-6265431fd81f"
-                                }
-                            },
-                            "name": "machineName_1",
-                            "user_agent": {
-                                "header_value": "RTCC/7.0.0.0 UCWA/7.0.0.0 AndroidLync/6.25.0.27 (SM-G930U Android 8.0.0)",
-                                "platform": "android",
-                                "product_family": "skypeForBusiness"
-                            }
-                        },
-                        "end_date_time": "2020-02-25T18:52:46.7640013Z",
-                        "id": "e523d2ed-2966-4b6b-925b-754a88034cc5",
-                        "is_test": false,
-                        "modalities": [
-                            "audio"
-                        ],
-                        "segments": {
-                            "callee": {
-                                "cpu_cores_count": 2,
-                                "cpu_name": "Intel(R) Xeon(R) Platinum 8272CL CPU @ 2.60GHz",
-                                "identity": {
-                                    "user": {
-                                        "display_name": "Owen Franklin",
-                                        "id": "f69e2c00-0000-0000-0000-185e5f5f5d8a",
-                                        "tenant_id": "dc368399-474c-4d40-900c-6265431fd81f"
-                                    }
-                                },
-                                "name": "machineName_2",
-                                "user_agent": {
-                                    "header_value": "UCCAPI/16.0.12527.20122 OC/16.0.12527.20194 (Skype for Business)",
-                                    "platform": "windows",
-                                    "product_family": "skypeForBusiness"
-                                }
-                            },
-                            "caller": {
-                                "cpu_cores_count": 8,
-                                "cpu_name": "AMD EPYC 7452 32-Core Processor",
-                                "cpu_processor_speed_in_mhz": 2346,
-                                "identity": {
-                                    "user": {
-                                        "display_name": "Abbie Wilkins",
-                                        "id": "821809f5-0000-0000-0000-3b5136c0e777",
-                                        "tenant_id": "dc368399-474c-4d40-900c-6265431fd81f"
-                                    }
-                                },
-                                "name": "machineName_1",
-                                "user_agent": {
-                                    "header_value": "RTCC/7.0.0.0 UCWA/7.0.0.0 AndroidLync/6.25.0.27 (SM-G930U Android 8.0.0)",
-                                    "platform": "android",
-                                    "product_family": "skypeForBusiness"
-                                }
-                            },
-                            "end_date_time": "2020-02-25T18:52:46.7640013Z",
-                            "id": "e523d2ed-2966-4b6b-925b-754a88034cc5",
-                            "media": {
-                                "callee_device": {
-                                    "capture_device_driver": "Microsoft: 5.0.8638.1100",
-                                    "capture_device_name": "Microphone (Microsoft Virtual Audio Device (Simple) (WDM))",
-                                    "initial_signal_level_root_mean_square": 146.7885,
-                                    "mic_glitch_rate": 143,
-                                    "received_noise_level": -86,
-                                    "received_signal_level": -14,
-                                    "render_device_driver": "Microsoft: 5.0.8638.1100",
-                                    "render_device_name": "Speakers (Microsoft Virtual Audio Device (Simple) (WDM))",
-                                    "speaker_glitch_rate": 182
-                                },
-                                "callee_network": {
-                                    "bandwidth_low_event_ratio": 0,
-                                    "connection_type": "wired",
-                                    "delay_event_ratio": 0,
-                                    "ip_address": "10.139.0.12",
-                                    "link_speed": 4294967295,
-                                    "mac_address": "00-00-00-00-00-00-00-00",
-                                    "port": 50011,
-                                    "received_quality_event_ratio": 0,
-                                    "reflexive_ip_address": "127.0.0.2",
-                                    "relay_ip_address": "52.114.188.102",
-                                    "relay_port": 52810,
-                                    "sent_quality_event_ratio": 0.31,
-                                    "subnet": "10.139.80.0"
-                                },
-                                "caller_device": {
-                                    "capture_device_name": "Default input device",
-                                    "initial_signal_level_root_mean_square": 60.25816,
-                                    "mic_glitch_rate": 23,
-                                    "received_noise_level": -68,
-                                    "received_signal_level": -10,
-                                    "render_device_name": "Default output device",
-                                    "render_mute_event_ratio": 1,
-                                    "render_zero_volume_event_ratio": 1,
-                                    "speaker_glitch_rate": 3830
-                                },
-                                "caller_network": {
-                                    "bandwidth_low_event_ratio": 0,
-                                    "connection_type": "wifi",
-                                    "delay_event_ratio": 0,
-                                    "ip_address": "10.150.0.2",
-                                    "link_speed": 54000000,
-                                    "mac_address": "00-00-00-00-00-00",
-                                    "port": 27288,
-                                    "received_quality_event_ratio": 0.27,
-                                    "reflexive_ip_address": "127.0.0.2",
-                                    "relay_ip_address": "52.114.188.32",
-                                    "relay_port": 53889,
-                                    "sent_quality_event_ratio": 0,
-                                    "subnet": "10.150.0.0"
-                                },
-                                "label": "main-audio",
-                                "streams": [
+                        "call_record_id": "6ce-b8fa-4d44-a613-7f81",
+                        "sessions": [
+                            {
+                                "modalities": [
+                                    "video"
+                                ],
+                                "segments": [
                                     {
-                                        "average_audio_network_jitter": "PT0.043S",
-                                        "average_bandwidth_estimate": 9965083,
-                                        "average_jitter": "PT0.016S",
-                                        "average_packet_loss_rate": 0,
-                                        "average_round_trip_time": "PT0.061S",
-                                        "is_audio_forward_error_correction_used": true,
-                                        "max_audio_network_jitter": "PT0.046S",
-                                        "max_jitter": "PT0.021S",
-                                        "max_packet_loss_rate": 0,
-                                        "max_round_trip_time": "PT0.079S",
-                                        "packet_utilization": 67,
-                                        "stream_direction": "callerToCallee",
-                                        "stream_id": "1504545584",
-                                        "was_media_bypassed": false
-                                    },
-                                    {
-                                        "average_audio_degradation": 1.160898,
-                                        "average_audio_network_jitter": "PT0.266S",
-                                        "average_bandwidth_estimate": 15644878,
-                                        "average_jitter": "PT0.007S",
-                                        "average_packet_loss_rate": 0.01381693,
-                                        "average_ratio_of_concealed_samples": 0.06233422,
-                                        "average_round_trip_time": "PT0.064S",
-                                        "is_audio_forward_error_correction_used": false,
-                                        "max_audio_network_jitter": "PT0.474S",
-                                        "max_jitter": "PT0.012S",
-                                        "max_packet_loss_rate": 0.03738318,
-                                        "max_ratio_of_concealed_samples": 0.07192807,
-                                        "max_round_trip_time": "PT0.106S",
-                                        "packet_utilization": 709,
-                                        "stream_direction": "calleeToCaller",
-                                        "stream_id": "1785122252",
-                                        "was_media_bypassed": false
+                                        "callee": {
+                                            "associated_identity": {
+                                                "display_name": "Kung fu",
+                                                "id": "75b-a8-80-8fb-ee5a77",
+                                                "tenant_id": "3f392c-bce5-42b7-8a68-14f",
+                                                "user_principal_name": "kung.fu@m3696.onmicrosoft.com"
+                                            }
+                                        },
+                                        "caller": {
+                                            "associated_identity": {
+                                                "display_name": "Dev Desan",
+                                                "id": "efb8-ad86-4de2-9357-01184e8",
+                                                "tenant_id": "3f2c-e5-b7-8a68-14af",
+                                                "user_principal_name": "dev.desan@m365x96.onmicrosoft.com"
+                                            }
+                                        },
+                                        "end_date_time": "2025-03-26T13:06:31.4228153Z",
+                                        "failure_info": {
+                                            "reason": "",
+                                            "stage": "midcall"
+                                        },
+                                        "media": [
+                                            {
+                                                "callee_network": {
+                                                    "connection_type": "wired",
+                                                    "ip_address": "10.0.146.255",
+                                                    "link_speed": 0,
+                                                    "network_transport_protocol": "udp",
+                                                    "port": 3480,
+                                                    "reflexive_ip_address": "52.112.234.86"
+                                                },
+                                                "caller_network": {
+                                                    "connection_type": "wired",
+                                                    "ip_address": "10.0.146.255",
+                                                    "link_speed": 0,
+                                                    "network_transport_protocol": "udp",
+                                                    "port": 3492,
+                                                    "reflexive_ip_address": "52.113.244.89"
+                                                },
+                                                "label": "main-video",
+                                                "streams": [
+                                                    {
+                                                        "audio_codec": "unknown",
+                                                        "packet_utilization": 0,
+                                                        "stream_direction": "callerToCallee",
+                                                        "stream_id": "2386820939",
+                                                        "video_codec": "unknown"
+                                                    },
+                                                    {
+                                                        "audio_codec": "unknown",
+                                                        "packet_utilization": 0,
+                                                        "stream_direction": "calleeToCaller",
+                                                        "stream_id": "8322863909",
+                                                        "video_codec": "unknown"
+                                                    }
+                                                ]
+                                            }
+                                        ],
+                                        "segment_id": "2e569-b0db-40ad-b5d8-dcb2c1",
+                                        "start_date_time": "2025-03-26T13:04:57.232483Z"
                                     }
-                                ]
+                                ],
+                                "session_id": "2e89-b0db-40ad-b5d8-dcbc1"
                             },
-                            "start_date_time": "2020-02-25T18:52:21.2169889Z"
-                        },
-                        "start_date_time": "2020-02-25T18:52:21.2169889Z"
+                            {
+                                "modalities": [
+                                    "audio"
+                                ],
+                                "segments": [
+                                    {
+                                        "callee": {
+                                            "associated_identity": {
+                                                "display_name": "Lu ias",
+                                                "id": "75b-6ba8-4a80-8ffb-eeda7",
+                                                "tenant_id": "3f3de92c-bce5-42b7-8a68-1438785455af",
+                                                "user_principal_name": "lu.ias@m3596.onmicrosoft.com"
+                                            }
+                                        },
+                                        "caller": {
+                                            "associated_identity": {
+                                                "display_name": "oma Mrs",
+                                                "id": "d1941-76c2-45fc-b6ee-2c38dd3",
+                                                "tenant_id": "3f3de92c-bce5-42b7-8a68-1438785455af",
+                                                "user_principal_name": "oma.mrs@m365596.onmoft.com"
+                                            }
+                                        },
+                                        "end_date_time": "2025-03-26T13:05:14.2824132Z",
+                                        "failure_info": {
+                                            "reason": "",
+                                            "stage": "midcall"
+                                        },
+                                        "media": [
+                                            {
+                                                "callee_network": {
+                                                    "connection_type": "wired",
+                                                    "ip_address": "10.0.146.255",
+                                                    "link_speed": 0,
+                                                    "network_transport_protocol": "udp",
+                                                    "port": 3480,
+                                                    "reflexive_ip_address": "52.112.234.86"
+                                                },
+                                                "caller_network": {
+                                                    "connection_type": "wired",
+                                                    "ip_address": "10.0.146.255",
+                                                    "link_speed": 0,
+                                                    "network_transport_protocol": "udp",
+                                                    "port": 3492,
+                                                    "reflexive_ip_address": "52.113.244.89"
+                                                },
+                                                "label": "main-audio",
+                                                "streams": [
+                                                    {
+                                                        "audio_codec": "unknown",
+                                                        "packet_utilization": 0,
+                                                        "stream_direction": "callerToCallee",
+                                                        "stream_id": "2386820939",
+                                                        "video_codec": "unknown"
+                                                    },
+                                                    {
+                                                        "audio_codec": "unknown",
+                                                        "packet_utilization": 0,
+                                                        "stream_direction": "calleeToCaller",
+                                                        "stream_id": "8322863909",
+                                                        "video_codec": "unknown"
+                                                    }
+                                                ]
+                                            }
+                                        ],
+                                        "segment_id": "a66d-b6f2-443-b12e-5aa1b6",
+                                        "start_date_time": "2025-03-26T13:04:57.232483Z"
+                                    }
+                                ],
+                                "session_id": "a66d-b6f2-443-b12e-5aa1b6"
+                            },
+                            {
+                                "modalities": [
+                                    "audio"
+                                ],
+                                "segments": [
+                                    {
+                                        "callee": {
+                                            "associated_identity": {
+                                                "display_name": "Lui Eia",
+                                                "id": "72cec15b-6ba8-4a80-8ffb-eeda50425a77",
+                                                "tenant_id": "3f2c-b5-47-88-1435af",
+                                                "user_principal_name": "lui.eia@m365596.onmicrosoft.com"
+                                            }
+                                        },
+                                        "caller": {
+                                            "associated_identity": {
+                                                "display_name": "Tia mia",
+                                                "id": "d1945381-76c2-45fc-b6ee-2c36c5128dd3",
+                                                "tenant_id": "3f92c-be5-47-88-14355af",
+                                                "user_principal_name": "tia.mia@m3596.onmicrosoft.com"
+                                            }
+                                        },
+                                        "end_date_time": "2025-03-26T13:05:14.2824132Z",
+                                        "failure_info": {
+                                            "reason": "",
+                                            "stage": "midcall"
+                                        },
+                                        "media": [
+                                            {
+                                                "callee_network": {
+                                                    "connection_type": "wired",
+                                                    "ip_address": "10.0.146.255",
+                                                    "link_speed": 0,
+                                                    "network_transport_protocol": "udp",
+                                                    "port": 3480,
+                                                    "reflexive_ip_address": "52.112.234.86"
+                                                },
+                                                "caller_network": {
+                                                    "connection_type": "wired",
+                                                    "ip_address": "10.0.146.255",
+                                                    "link_speed": 0,
+                                                    "network_transport_protocol": "udp",
+                                                    "port": 3492,
+                                                    "reflexive_ip_address": "52.113.244.89"
+                                                },
+                                                "label": "main-audio",
+                                                "streams": [
+                                                    {
+                                                        "audio_codec": "unknown",
+                                                        "packet_utilization": 0,
+                                                        "stream_direction": "callerToCallee",
+                                                        "stream_id": "2386820939",
+                                                        "video_codec": "unknown"
+                                                    },
+                                                    {
+                                                        "audio_codec": "unknown",
+                                                        "packet_utilization": 0,
+                                                        "stream_direction": "calleeToCaller",
+                                                        "stream_id": "8322863909",
+                                                        "video_codec": "unknown"
+                                                    }
+                                                ]
+                                            }
+                                        ],
+                                        "segment_id": "a66d-b6f2-443-b12e-5aa1b6",
+                                        "start_date_time": "2025-03-26T13:04:57.232483Z"
+                                    }
+                                ],
+                                "session_id": "test1"
+                            }
+                        ]
                     }
                 }
             }
         }
     },
-    "agent": {
-        "name": "docker-fleet-agent",
-        "id": "abf38fab-f7b6-4e1c-a3b3-a70a64f9e5db",
-        "ephemeral_id": "08417a8d-9698-4c62-b7dc-e1b048647626",
-        "type": "filebeat",
-        "version": "8.16.0"
-    },
-    "@timestamp": "2025-01-29T12:36:44.408Z",
-    "ecs": {
-        "version": "8.16.0"
-    },
-    "data_stream": {
-        "namespace": "default",
-        "type": "metrics",
-        "dataset": "o365_metrics.teams_call_quality"
-    },
-    "host": {
-        "hostname": "docker-fleet-agent",
-        "os": {
-            "kernel": "5.10.104-linuxkit",
-            "name": "Wolfi",
-            "family": "",
-            "type": "linux",
-            "version": "20230201",
-            "platform": "wolfi"
-        },
-        "ip": [
-            "192.168.48.7"
-        ],
-        "containerized": false,
-        "name": "docker-fleet-agent",
-        "mac": [
-            "02-42-C0-A8-30-07"
-        ],
-        "architecture": "aarch64"
-    },
-    "elastic_agent": {
-        "id": "abf38fab-f7b6-4e1c-a3b3-a70a64f9e5db",
-        "version": "8.16.0",
-        "snapshot": false
-    },
-    "event": {
-        "agent_id_status": "verified",
-        "ingested": "2025-01-29T12:35:44.48Z",
-        "dataset": "o365_metrics.teams_call_quality",
-        "original": "{ \"id\": \"e523d2ed-2966-4b6b-925b-754a88034cc5\", \"modalities\": [ \"audio\" ], \"startDateTime\": \"2020-02-25T18:52:21.2169889Z\", \"endDateTime\": \"2020-02-25T18:52:46.7640013Z\", \"isTest\": false, \"caller\": { \"@odata.type\": \"#microsoft.graph.callRecords.participantEndpoint\", \"name\": \"machineName_1\", \"cpuName\": \"AMD EPYC 7452 32-Core Processor\", \"cpuCoresCount\": 8, \"cpuProcessorSpeedInMhz\": 2346, \"userAgent\": { \"@odata.type\": \"#microsoft.graph.callRecords.clientUserAgent\", \"headerValue\": \"RTCC\/7.0.0.0 UCWA\/7.0.0.0 AndroidLync\/6.25.0.27 (SM-G930U Android 8.0.0)\", \"platform\": \"android\", \"productFamily\": \"skypeForBusiness\" }, \"identity\": { \"@odata.type\": \"#microsoft.graph.identitySet\", \"user\": { \"id\": \"821809f5-0000-0000-0000-3b5136c0e777\", \"displayName\": \"Abbie Wilkins\", \"tenantId\": \"dc368399-474c-4d40-900c-6265431fd81f\" } } }, \"callee\": { \"@odata.type\": \"#microsoft.graph.callRecords.participantEndpoint\", \"name\": \"machineName_2\", \"cpuName\": \"Intel(R) Xeon(R) Platinum 8272CL CPU @ 2.60GHz\", \"cpuCoresCount\": 2, \"cpuProcessorSpeedInMhz\": 2594, \"userAgent\": { \"@odata.type\": \"#microsoft.graph.callRecords.clientUserAgent\", \"headerValue\": \"UCCAPI\/16.0.12527.20122 OC\/16.0.12527.20194 (Skype for Business)\", \"platform\": \"windows\", \"productFamily\": \"skypeForBusiness\" }, \"identity\": { \"user\": { \"id\": \"f69e2c00-0000-0000-0000-185e5f5f5d8a\", \"displayName\": \"Owen Franklin\", \"tenantId\": \"dc368399-474c-4d40-900c-6265431fd81f\" } }, \"feedback\": { \"rating\": \"poor\", \"tokens\": { \"NoSound\": false, \"OtherNoSound\": false, \"Echo\": false, \"Noisy\": true, \"LowVolume\": false, \"Stopped\": false, \"DistortedSound\": false, \"Interruptions\": false } } }, \"segments\": [ { \"startDateTime\": \"2020-02-25T18:52:21.2169889Z\", \"endDateTime\": \"2020-02-25T18:52:46.7640013Z\", \"id\": \"e523d2ed-2966-4b6b-925b-754a88034cc5\", \"caller\": { \"@odata.type\": \"#microsoft.graph.callRecords.participantEndpoint\", \"name\": \"machineName_1\", \"cpuName\": \"AMD EPYC 7452 32-Core Processor\", \"cpuCoresCount\": 8, \"cpuProcessorSpeedInMhz\": 2346, \"userAgent\": { \"@odata.type\": \"#microsoft.graph.callRecords.clientUserAgent\", \"headerValue\": \"RTCC\/7.0.0.0 UCWA\/7.0.0.0 AndroidLync\/6.25.0.27 (SM-G930U Android 8.0.0)\", \"platform\": \"android\", \"productFamily\": \"skypeForBusiness\" }, \"identity\": { \"user\": { \"id\": \"821809f5-0000-0000-0000-3b5136c0e777\", \"displayName\": \"Abbie Wilkins\", \"tenantId\": \"dc368399-474c-4d40-900c-6265431fd81f\" } } }, \"callee\": { \"@odata.type\": \"#microsoft.graph.callRecords.participantEndpoint\", \"name\": \"machineName_2\", \"cpuName\": \"Intel(R) Xeon(R) Platinum 8272CL CPU @ 2.60GHz\", \"cpuCoresCount\": 2, \"userAgent\": { \"@odata.type\": \"#microsoft.graph.callRecords.clientUserAgent\", \"headerValue\": \"UCCAPI\/16.0.12527.20122 OC\/16.0.12527.20194 (Skype for Business)\", \"platform\": \"windows\", \"productFamily\": \"skypeForBusiness\" }, \"identity\": { \"user\": { \"id\": \"f69e2c00-0000-0000-0000-185e5f5f5d8a\", \"displayName\": \"Owen Franklin\", \"tenantId\": \"dc368399-474c-4d40-900c-6265431fd81f\" } } }, \"media\": [ { \"label\": \"main-audio\", \"callerNetwork\": { \"ipAddress\": \"10.150.0.2\", \"subnet\": \"10.150.0.0\", \"linkSpeed\": 54000000, \"connectionType\": \"wifi\", \"port\": 27288, \"reflexiveIPAddress\": \"127.0.0.2\", \"relayIPAddress\": \"52.114.188.32\", \"relayPort\": 53889, \"macAddress\": \"00-00-00-00-00-00\", \"dnsSuffix\": null, \"sentQualityEventRatio\": 0, \"receivedQualityEventRatio\": 0.27, \"delayEventRatio\": 0, \"bandwidthLowEventRatio\": 0 }, \"calleeNetwork\": { \"ipAddress\": \"10.139.0.12\", \"subnet\": \"10.139.80.0\", \"linkSpeed\": 4294967295, \"connectionType\": \"wired\", \"port\": 50011, \"reflexiveIPAddress\": \"127.0.0.2\", \"relayIPAddress\": \"52.114.188.102\", \"relayPort\": 52810, \"macAddress\": \"00-00-00-00-00-00-00-00\", \"dnsSuffix\": null, \"sentQualityEventRatio\": 0.31, \"receivedQualityEventRatio\": 0, \"delayEventRatio\": 0, \"bandwidthLowEventRatio\": 0 }, \"callerDevice\": { \"captureDeviceName\": \"Default input device\", \"renderDeviceName\": \"Default output device\", \"receivedSignalLevel\": -10, \"receivedNoiseLevel\": -68, \"initialSignalLevelRootMeanSquare\": 60.25816, \"renderZeroVolumeEventRatio\": 1, \"renderMuteEventRatio\": 1, \"micGlitchRate\": 23, \"speakerGlitchRate\": 3830 }, \"calleeDevice\": { \"captureDeviceName\": \"Microphone (Microsoft Virtual Audio Device (Simple) (WDM))\", \"captureDeviceDriver\": \"Microsoft: 5.0.8638.1100\", \"renderDeviceName\": \"Speakers (Microsoft Virtual Audio Device (Simple) (WDM))\", \"renderDeviceDriver\": \"Microsoft: 5.0.8638.1100\", \"receivedSignalLevel\": -14, \"receivedNoiseLevel\": -86, \"initialSignalLevelRootMeanSquare\": 146.7885, \"micGlitchRate\": 143, \"speakerGlitchRate\": 182 }, \"streams\": [ { \"streamId\": \"1504545584\", \"streamDirection\": \"callerToCallee\", \"averageAudioDegradation\": null, \"averageJitter\": \"PT0.016S\", \"maxJitter\": \"PT0.021S\", \"averagePacketLossRate\": 0, \"maxPacketLossRate\": 0, \"averageRatioOfConcealedSamples\": null, \"maxRatioOfConcealedSamples\": null, \"averageRoundTripTime\": \"PT0.061S\", \"maxRoundTripTime\": \"PT0.079S\", \"packetUtilization\": 67, \"averageBandwidthEstimate\": 9965083, \"wasMediaBypassed\": false, \"averageAudioNetworkJitter\": \"PT0.043S\", \"maxAudioNetworkJitter\": \"PT0.046S\", \"rmsFreezeDuration\": null, \"averageFreezeDuration\": null, \"isAudioForwardErrorCorrectionUsed\": true }, { \"streamId\": \"1785122252\", \"streamDirection\": \"calleeToCaller\", \"averageAudioDegradation\": 1.160898, \"averageJitter\": \"PT0.007S\", \"maxJitter\": \"PT0.012S\", \"averagePacketLossRate\": 0.01381693, \"maxPacketLossRate\": 0.03738318, \"averageRatioOfConcealedSamples\": 0.06233422, \"maxRatioOfConcealedSamples\": 0.07192807, \"averageRoundTripTime\": \"PT0.064S\", \"maxRoundTripTime\": \"PT0.106S\", \"packetUtilization\": 709, \"averageBandwidthEstimate\": 15644878, \"wasMediaBypassed\": false, \"averageAudioNetworkJitter\": \"PT0.266S\", \"maxAudioNetworkJitter\": \"PT0.474S\", \"rmsFreezeDuration\": null, \"averageFreezeDuration\": null, \"isAudioForwardErrorCorrectionUsed\": false } ] } ] } ] }"
-    },
     "tags": [
-        "o365metrics-teams.call.quality"
+        "preserve_original_event",
+        "o365.metrics.teams.call.quality"
     ]
 }
 ```
@@ -2719,144 +2741,87 @@ Please refer to the following [document](https://www.elastic.co/guide/en/ecs/cur
 | Field | Description | Type |
 |---|---|---|
 | @timestamp | Event timestamp. | date |
-| cloud.image.id | Image ID for the cloud instance. | keyword |
 | data_stream.dataset | Data stream dataset. | constant_keyword |
 | data_stream.namespace | Data stream namespace. | constant_keyword |
 | data_stream.type | Data stream type. | constant_keyword |
-| host.containerized | If the host is a container. | boolean |
-| host.os.build | OS build information. | keyword |
-| host.os.codename | OS codename, if any. | keyword |
 | input.type | Type of Filebeat input. | keyword |
-| o365.metrics.teams.call.quality.call_record_id | Unique identifier for the call record | keyword |
-| o365.metrics.teams.call.quality.callee.cpu_cores.count | The number of CPU cores on the callee's device | long |
-| o365.metrics.teams.call.quality.callee.cpu_name | The name of the CPU on the callee's device | keyword |
-| o365.metrics.teams.call.quality.callee.cpu_processor_speed.mhz | The processor speed in MHz on the callee's CPU | long |
-| o365.metrics.teams.call.quality.callee.feedback.rating | The rating the callee gave for the call quality | keyword |
-| o365.metrics.teams.call.quality.callee.feedback.tokens.distorted_sound | Whether distorted sound was reported by the callee | boolean |
-| o365.metrics.teams.call.quality.callee.feedback.tokens.echo | Whether echo was reported by the callee | boolean |
-| o365.metrics.teams.call.quality.callee.feedback.tokens.interruptions | Whether interruptions were reported by the callee | boolean |
-| o365.metrics.teams.call.quality.callee.feedback.tokens.low_volume | Whether low volume was reported by the callee | boolean |
-| o365.metrics.teams.call.quality.callee.feedback.tokens.no_sound | Whether no sound was reported by the callee | boolean |
-| o365.metrics.teams.call.quality.callee.feedback.tokens.noisy | Whether background noise was reported by the callee | boolean |
-| o365.metrics.teams.call.quality.callee.feedback.tokens.other_no_sound | Whether other no sound issues were reported by the callee | boolean |
-| o365.metrics.teams.call.quality.callee.feedback.tokens.stopped | Whether the call was stopped prematurely by the callee | boolean |
-| o365.metrics.teams.call.quality.callee.identity.user.display_name | The display name of the callee | keyword |
-| o365.metrics.teams.call.quality.callee.identity.user.id | The unique user ID for the callee | keyword |
-| o365.metrics.teams.call.quality.callee.identity.user.tenant_id | The tenant ID of the callee's organization | keyword |
-| o365.metrics.teams.call.quality.callee.name | The name of the callee | keyword |
-| o365.metrics.teams.call.quality.callee.user_agent.header_value | The header value of the user agent | keyword |
-| o365.metrics.teams.call.quality.callee.user_agent.platform | The platform of the callee (e.g., Windows, macOS) | keyword |
-| o365.metrics.teams.call.quality.callee.user_agent.product_family | The product family of the callee (e.g., Teams, Skype) | keyword |
-| o365.metrics.teams.call.quality.caller.cpu_cores.count | The number of CPU cores on the caller's device | long |
-| o365.metrics.teams.call.quality.caller.cpu_name | The name of the CPU on the caller's device | keyword |
-| o365.metrics.teams.call.quality.caller.cpu_processor_speed.mhz | The processor speed in MHz on the caller's CPU | long |
-| o365.metrics.teams.call.quality.caller.identity.user.display_name | The display name of the caller | keyword |
-| o365.metrics.teams.call.quality.caller.identity.user.id | The unique user ID for the caller | keyword |
-| o365.metrics.teams.call.quality.caller.identity.user.tenant_id | The tenant ID of the caller's organization | keyword |
-| o365.metrics.teams.call.quality.caller.name | The name of the caller | keyword |
-| o365.metrics.teams.call.quality.caller.user_agent.header_value | The header value of the user agent | keyword |
-| o365.metrics.teams.call.quality.caller.user_agent.platform | The platform of the caller (e.g., Windows, macOS) | keyword |
-| o365.metrics.teams.call.quality.caller.user_agent.product_family | The product family of the caller (e.g., Teams, Skype) | keyword |
-| o365.metrics.teams.call.quality.end_date_time | The end date and time of the call | date |
-| o365.metrics.teams.call.quality.id | Unique identifier for the call quality record | keyword |
-| o365.metrics.teams.call.quality.is_test | Indicates whether the call is a test call | boolean |
-| o365.metrics.teams.call.quality.modalities | Types of communication used in the call (audio, video, etc.) | keyword |
-| o365.metrics.teams.call.quality.segments.callee.cpu_cores_count | The number of CPU cores on the callee's device | long |
-| o365.metrics.teams.call.quality.segments.callee.cpu_name | The name of the CPU on the callee's device | keyword |
-| o365.metrics.teams.call.quality.segments.callee.cpu_processor_speed_in_mhz | The processor speed in MHz on the callee's CPU | long |
-| o365.metrics.teams.call.quality.segments.callee.feedback.rating | The rating the callee gave for the call quality | keyword |
-| o365.metrics.teams.call.quality.segments.callee.feedback.tokens.distorted_sound | Whether distorted sound was reported by the callee | boolean |
-| o365.metrics.teams.call.quality.segments.callee.feedback.tokens.echo | Whether echo was reported by the callee | boolean |
-| o365.metrics.teams.call.quality.segments.callee.feedback.tokens.interruptions | Whether interruptions were reported by the callee | boolean |
-| o365.metrics.teams.call.quality.segments.callee.feedback.tokens.low_volume | Whether low volume was reported by the callee | boolean |
-| o365.metrics.teams.call.quality.segments.callee.feedback.tokens.no_sound | Whether no sound was reported by the callee | boolean |
-| o365.metrics.teams.call.quality.segments.callee.feedback.tokens.noisy | Whether background noise was reported by the callee | boolean |
-| o365.metrics.teams.call.quality.segments.callee.feedback.tokens.other_no_sound | Whether other no sound issues were reported by the callee | boolean |
-| o365.metrics.teams.call.quality.segments.callee.feedback.tokens.stopped | Whether the call was stopped prematurely by the callee | boolean |
-| o365.metrics.teams.call.quality.segments.callee.identity.user.display_name | The display name of the callee | keyword |
-| o365.metrics.teams.call.quality.segments.callee.identity.user.id | The unique user ID for the callee | keyword |
-| o365.metrics.teams.call.quality.segments.callee.identity.user.tenant_id | The tenant ID of the callee's organization | keyword |
-| o365.metrics.teams.call.quality.segments.callee.name | The name of the callee | keyword |
-| o365.metrics.teams.call.quality.segments.callee.user_agent.header_value | The header value of the user agent | keyword |
-| o365.metrics.teams.call.quality.segments.callee.user_agent.platform | The platform of the callee (e.g., Windows, macOS) | keyword |
-| o365.metrics.teams.call.quality.segments.callee.user_agent.product_family | The product family of the callee (e.g., Teams, Skype) | keyword |
-| o365.metrics.teams.call.quality.segments.caller.cpu_cores_count | The number of CPU cores on the caller's device | long |
-| o365.metrics.teams.call.quality.segments.caller.cpu_name | The name of the CPU on the caller's device | keyword |
-| o365.metrics.teams.call.quality.segments.caller.cpu_processor_speed_in_mhz | The processor speed in MHz on the caller's CPU | long |
-| o365.metrics.teams.call.quality.segments.caller.identity.user.display_name | The display name of the caller | keyword |
-| o365.metrics.teams.call.quality.segments.caller.identity.user.id | The unique user ID for the caller | keyword |
-| o365.metrics.teams.call.quality.segments.caller.identity.user.tenant_id | The tenant ID of the caller's organization | keyword |
-| o365.metrics.teams.call.quality.segments.caller.name | The name of the caller | keyword |
-| o365.metrics.teams.call.quality.segments.caller.user_agent.header_value | The header value of the user agent | keyword |
-| o365.metrics.teams.call.quality.segments.caller.user_agent.platform | The platform of the caller (e.g., Windows, macOS) | keyword |
-| o365.metrics.teams.call.quality.segments.caller.user_agent.product_family | The product family of the caller (e.g., Teams, Skype) | keyword |
-| o365.metrics.teams.call.quality.segments.end_date_time | End time of the segment | date |
-| o365.metrics.teams.call.quality.segments.id | Unique identifier for the segment | keyword |
-| o365.metrics.teams.call.quality.segments.media.callee_device.capture_device_driver | The name of the callee's capture device driver | keyword |
-| o365.metrics.teams.call.quality.segments.media.callee_device.capture_device_name | The name of the callee's capture device | keyword |
-| o365.metrics.teams.call.quality.segments.media.callee_device.initial_signal_level_root_mean_square | Initial RMS of the callee's signal level | float |
-| o365.metrics.teams.call.quality.segments.media.callee_device.mic_glitch_rate | The glitch rate for the callee's microphone | float |
-| o365.metrics.teams.call.quality.segments.media.callee_device.received_noise_level | The received noise level on the callee's device | float |
-| o365.metrics.teams.call.quality.segments.media.callee_device.received_signal_level | The received signal level on the callee's device | float |
-| o365.metrics.teams.call.quality.segments.media.callee_device.render_device_driver | The name of the callee's render device driver | keyword |
-| o365.metrics.teams.call.quality.segments.media.callee_device.render_device_name | The name of the callee's render device | keyword |
-| o365.metrics.teams.call.quality.segments.media.callee_device.speaker_glitch_rate | The glitch rate for the callee's speaker | float |
-| o365.metrics.teams.call.quality.segments.media.callee_network.bandwidth_low_event_ratio | The event ratio of low bandwidth for the callee's network | float |
-| o365.metrics.teams.call.quality.segments.media.callee_network.connection_type | Type of connection used (e.g., wifi, wired) | keyword |
-| o365.metrics.teams.call.quality.segments.media.callee_network.delay_event_ratio | The event ratio of delay in the callee's network | float |
-| o365.metrics.teams.call.quality.segments.media.callee_network.dns_suffix | DNS suffix for the callee's network | keyword |
-| o365.metrics.teams.call.quality.segments.media.callee_network.ip_address | IP address of the callee's network | keyword |
-| o365.metrics.teams.call.quality.segments.media.callee_network.link_speed | Link speed of the callee's network connection | long |
-| o365.metrics.teams.call.quality.segments.media.callee_network.mac_address | MAC address of the callee's device | keyword |
-| o365.metrics.teams.call.quality.segments.media.callee_network.port | Port used for the connection | long |
-| o365.metrics.teams.call.quality.segments.media.callee_network.received_quality_event_ratio | Quality event ratio related to the received network quality | float |
-| o365.metrics.teams.call.quality.segments.media.callee_network.reflexive_ip_address | Reflexive IP address for the callee's network | keyword |
-| o365.metrics.teams.call.quality.segments.media.callee_network.relay_ip_address | Relay IP address for the callee's network | keyword |
-| o365.metrics.teams.call.quality.segments.media.callee_network.relay_port | Relay port | long |
-| o365.metrics.teams.call.quality.segments.media.callee_network.sent_quality_event_ratio | Quality event ratio related to the callee's network | float |
-| o365.metrics.teams.call.quality.segments.media.callee_network.subnet | Subnet of the callee's network | keyword |
-| o365.metrics.teams.call.quality.segments.media.caller_device.capture_device_name | The name of the caller's capture device | keyword |
-| o365.metrics.teams.call.quality.segments.media.caller_device.initial_signal_level_root_mean_square | Initial RMS of the caller's signal level | float |
-| o365.metrics.teams.call.quality.segments.media.caller_device.mic_glitch_rate | The glitch rate for the caller's microphone | float |
-| o365.metrics.teams.call.quality.segments.media.caller_device.received_noise_level | The received noise level on the caller's device | float |
-| o365.metrics.teams.call.quality.segments.media.caller_device.received_signal_level | The received signal level on the caller's device | float |
-| o365.metrics.teams.call.quality.segments.media.caller_device.render_device_name | The name of the caller's render device | keyword |
-| o365.metrics.teams.call.quality.segments.media.caller_device.render_mute_event_ratio | Ratio of mute events during rendering | float |
-| o365.metrics.teams.call.quality.segments.media.caller_device.render_zero_volume_event_ratio | Ratio of zero volume events during rendering | float |
-| o365.metrics.teams.call.quality.segments.media.caller_device.speaker_glitch_rate | The glitch rate for the caller's speaker | float |
-| o365.metrics.teams.call.quality.segments.media.caller_network.bandwidth_low_event_ratio | The event ratio of low bandwidth for the caller's network | float |
-| o365.metrics.teams.call.quality.segments.media.caller_network.connection_type | Type of connection used (e.g., wifi, wired) | keyword |
-| o365.metrics.teams.call.quality.segments.media.caller_network.delay_event_ratio | The event ratio of delay in the caller's network | float |
-| o365.metrics.teams.call.quality.segments.media.caller_network.dns_suffix | DNS suffix for the caller's network | keyword |
-| o365.metrics.teams.call.quality.segments.media.caller_network.ip_address | IP address of the caller's network | keyword |
-| o365.metrics.teams.call.quality.segments.media.caller_network.link_speed | Link speed of the caller's network connection | long |
-| o365.metrics.teams.call.quality.segments.media.caller_network.mac_address | MAC address of the caller's device | keyword |
-| o365.metrics.teams.call.quality.segments.media.caller_network.port | Port used for the connection | long |
-| o365.metrics.teams.call.quality.segments.media.caller_network.received_quality_event_ratio | Quality event ratio related to the received network quality | float |
-| o365.metrics.teams.call.quality.segments.media.caller_network.reflexive_ip_address | Reflexive IP address for the caller's network | keyword |
-| o365.metrics.teams.call.quality.segments.media.caller_network.relay_ip_address | Relay IP address for the caller's network | keyword |
-| o365.metrics.teams.call.quality.segments.media.caller_network.relay_port | Relay port | long |
-| o365.metrics.teams.call.quality.segments.media.caller_network.sent_quality_event_ratio | Quality event ratio related to the caller's network | float |
-| o365.metrics.teams.call.quality.segments.media.caller_network.subnet | Subnet of the caller's network | keyword |
-| o365.metrics.teams.call.quality.segments.media.label | The label for the media stream (e.g., "main-audio") | keyword |
-| o365.metrics.teams.call.quality.segments.media.streams.average_audio_degradation | Average audio degradation metric | float |
-| o365.metrics.teams.call.quality.segments.media.streams.average_audio_network_jitter | Average audio network jitter in milliseconds | keyword |
-| o365.metrics.teams.call.quality.segments.media.streams.average_bandwidth_estimate | Average bandwidth estimate in bits per second | float |
-| o365.metrics.teams.call.quality.segments.media.streams.average_jitter | Average jitter in milliseconds | keyword |
-| o365.metrics.teams.call.quality.segments.media.streams.average_packet_loss_rate | Average rate of packet loss | float |
-| o365.metrics.teams.call.quality.segments.media.streams.average_ratio_of_concealed_samples | Average ratio of concealed samples | float |
-| o365.metrics.teams.call.quality.segments.media.streams.average_round_trip_time | Average round trip time in milliseconds | keyword |
-| o365.metrics.teams.call.quality.segments.media.streams.is_audio_forward_error_correction_used | Indicates if audio forward error correction was used | boolean |
-| o365.metrics.teams.call.quality.segments.media.streams.max_audio_network_jitter | Maximum audio network jitter in milliseconds | keyword |
-| o365.metrics.teams.call.quality.segments.media.streams.max_jitter | Maximum jitter in milliseconds | keyword |
-| o365.metrics.teams.call.quality.segments.media.streams.max_packet_loss_rate | Maximum rate of packet loss | float |
-| o365.metrics.teams.call.quality.segments.media.streams.max_ratio_of_concealed_samples |  | float |
-| o365.metrics.teams.call.quality.segments.media.streams.max_round_trip_time | Maximum round trip time in milliseconds | keyword |
-| o365.metrics.teams.call.quality.segments.media.streams.packet_utilization | Utilization rate of packets | float |
-| o365.metrics.teams.call.quality.segments.media.streams.stream_direction | Direction of the media stream | keyword |
-| o365.metrics.teams.call.quality.segments.media.streams.stream_id | The stream ID | keyword |
-| o365.metrics.teams.call.quality.segments.media.streams.was_media_bypassed | Indicates if media was bypassed | boolean |
-| o365.metrics.teams.call.quality.segments.quality_score | Quality score of the call segment | float |
-| o365.metrics.teams.call.quality.segments.start_date_time | Start time of the segment | date |
-| o365.metrics.teams.call.quality.start_date_time | The start date and time of the call | date |
+| o365.metrics.teams.call.quality.call_record_id | Unique identifier for the call record. | keyword |
+| o365.metrics.teams.call.quality.sessions.modalities | List of modalities present in the session. Possible values are- unknown, audio, video, videoBasedScreenSharing, data, screenSharing, unknownFutureValue. | keyword |
+| o365.metrics.teams.call.quality.sessions.segments.callee.associated_identity.display_name | The display name of the callee | keyword |
+| o365.metrics.teams.call.quality.sessions.segments.callee.associated_identity.id | The unique user ID for the callee | keyword |
+| o365.metrics.teams.call.quality.sessions.segments.callee.associated_identity.tenant_id | The tenant ID of the callee's organization | keyword |
+| o365.metrics.teams.call.quality.sessions.segments.callee.associated_identity.user_principal_name | The tenant ID of the callee's organization | keyword |
+| o365.metrics.teams.call.quality.sessions.segments.caller.associated_identity.display_name | The display name of the caller | keyword |
+| o365.metrics.teams.call.quality.sessions.segments.caller.associated_identity.id | The unique user ID for the caller | keyword |
+| o365.metrics.teams.call.quality.sessions.segments.caller.associated_identity.tenant_id | The tenant ID of the caller's organization | keyword |
+| o365.metrics.teams.call.quality.sessions.segments.caller.associated_identity.user_principal_name | The tenant ID of the caller's organization | keyword |
+| o365.metrics.teams.call.quality.sessions.segments.end_date_time | UTC time when the segment ended. | date |
+| o365.metrics.teams.call.quality.sessions.segments.failure_info.reason | Classification of why a call or portion of a call failed. | keyword |
+| o365.metrics.teams.call.quality.sessions.segments.failure_info.stage | The stage when the failure occurred. Possible values are- unknown, callSetup, midcall, unknownFutureValue. | keyword |
+| o365.metrics.teams.call.quality.sessions.segments.media.callee_network.bandwidth_low_event_ratio | Fraction of the call that the media endpoint detected the available bandwidth or bandwidth policy was low enough to cause poor quality of the audio sent. | long |
+| o365.metrics.teams.call.quality.sessions.segments.media.callee_network.basic_service_set_identifier | The wireless LAN basic service set identifier of the media endpoint used to connect to the network. This property isn't available if the user disables precise location sharing in their operating system or Microsoft Teams app settings. | keyword |
+| o365.metrics.teams.call.quality.sessions.segments.media.callee_network.connection_type | Type of network used by the media endpoint. Possible values are- unknown, wired, wifi, mobile, tunnel, unknownFutureValue. | keyword |
+| o365.metrics.teams.call.quality.sessions.segments.media.callee_network.delay_event_ratio | Fraction of the call that the media endpoint detected the network delay was significant enough to impact the ability to have real-time two-way communication. | long |
+| o365.metrics.teams.call.quality.sessions.segments.media.callee_network.dns_suffix | DNS suffix associated with the network adapter of the media endpoint. | keyword |
+| o365.metrics.teams.call.quality.sessions.segments.media.callee_network.ip_address | IP address of the media endpoint. | keyword |
+| o365.metrics.teams.call.quality.sessions.segments.media.callee_network.link_speed | Link speed in bits per second reported by the network adapter used by the media endpoint. | long |
+| o365.metrics.teams.call.quality.sessions.segments.media.callee_network.mac_address | The media access control (MAC) address of the media endpoint's network device. | keyword |
+| o365.metrics.teams.call.quality.sessions.segments.media.callee_network.network_transport_protocol | Network protocol used for the transmission of stream. Possible values are- unknown, udp, tcp, unknownFutureValue. | keyword |
+| o365.metrics.teams.call.quality.sessions.segments.media.callee_network.port | Network port number used by media endpoint. | long |
+| o365.metrics.teams.call.quality.sessions.segments.media.callee_network.received_quality_event_ratio | Fraction of the call that the media endpoint detected the network was causing poor quality of the audio received. | long |
+| o365.metrics.teams.call.quality.sessions.segments.media.callee_network.reflexive_ip_address | IP address of the media endpoint as seen by the media relay server. This is typically the public internet IP address associated to the endpoint. | keyword |
+| o365.metrics.teams.call.quality.sessions.segments.media.callee_network.relay_ip_address | IP address of the media relay server allocated by the media endpoint. | keyword |
+| o365.metrics.teams.call.quality.sessions.segments.media.callee_network.relay_port | Network port number allocated on the media relay server by the media endpoint. | long |
+| o365.metrics.teams.call.quality.sessions.segments.media.callee_network.sent_quality_event_ratio | Fraction of the call that the media endpoint detected the network was causing poor quality of the audio sent. | long |
+| o365.metrics.teams.call.quality.sessions.segments.media.callee_network.subnet | Subnet used for media stream by the media endpoint. | keyword |
+| o365.metrics.teams.call.quality.sessions.segments.media.caller_network.bandwidth_low_event_ratio | Fraction of the call that the media endpoint detected the available bandwidth or bandwidth policy was low enough to cause poor quality of the audio sent. | long |
+| o365.metrics.teams.call.quality.sessions.segments.media.caller_network.basic_service_set_identifier | The wireless LAN basic service set identifier of the media endpoint used to connect to the network. This property isn't available if the user disables precise location sharing in their operating system or Microsoft Teams app settings. | keyword |
+| o365.metrics.teams.call.quality.sessions.segments.media.caller_network.connection_type | Type of network used by the media endpoint. Possible values are- unknown, wired, wifi, mobile, tunnel, unknownFutureValue. | keyword |
+| o365.metrics.teams.call.quality.sessions.segments.media.caller_network.delay_event_ratio | Fraction of the call that the media endpoint detected the network delay was significant enough to impact the ability to have real-time two-way communication. | long |
+| o365.metrics.teams.call.quality.sessions.segments.media.caller_network.dns_suffix | DNS suffix associated with the network adapter of the media endpoint. | keyword |
+| o365.metrics.teams.call.quality.sessions.segments.media.caller_network.ip_address | IP address of the media endpoint. | keyword |
+| o365.metrics.teams.call.quality.sessions.segments.media.caller_network.link_speed | Link speed in bits per second reported by the network adapter used by the media endpoint. | long |
+| o365.metrics.teams.call.quality.sessions.segments.media.caller_network.mac_address | The media access control (MAC) address of the media endpoint's network device. | keyword |
+| o365.metrics.teams.call.quality.sessions.segments.media.caller_network.network_transport_protocol | Network protocol used for the transmission of stream. Possible values are- unknown, udp, tcp, unknownFutureValue. | keyword |
+| o365.metrics.teams.call.quality.sessions.segments.media.caller_network.port | Network port number used by media endpoint. | long |
+| o365.metrics.teams.call.quality.sessions.segments.media.caller_network.received_quality_event_ratio | Fraction of the call that the media endpoint detected the network was causing poor quality of the audio received. | long |
+| o365.metrics.teams.call.quality.sessions.segments.media.caller_network.reflexive_ip_address | IP address of the media endpoint as seen by the media relay server. This is typically the public internet IP address associated to the endpoint. | keyword |
+| o365.metrics.teams.call.quality.sessions.segments.media.caller_network.relay_ip_address | IP address of the media relay server allocated by the media endpoint. | keyword |
+| o365.metrics.teams.call.quality.sessions.segments.media.caller_network.relay_port | Network port number allocated on the media relay server by the media endpoint. | long |
+| o365.metrics.teams.call.quality.sessions.segments.media.caller_network.sent_quality_event_ratio | Fraction of the call that the media endpoint detected the network was causing poor quality of the audio sent. | long |
+| o365.metrics.teams.call.quality.sessions.segments.media.caller_network.subnet | Subnet used for media stream by the media endpoint. | keyword |
+| o365.metrics.teams.call.quality.sessions.segments.media.label | How the media was identified during media negotiation stage. (e.g., "main-audio") | keyword |
+| o365.metrics.teams.call.quality.sessions.segments.media.streams.audio_codec | Codec name used to encode audio for transmission on the network. Possible values are- unknown, invalid, cn, pcma, pcmu, amrWide, g722, g7221, g7221c, g729, multiChannelAudio, muchv2, opus, satin, satinFullband, rtAudio8, rtAudio16, silk, silkNarrow, silkWide, siren, xmsRta, unknownFutureValue. | keyword |
+| o365.metrics.teams.call.quality.sessions.segments.media.streams.average_audio_degradation | Average Network Mean Opinion Score degradation for stream. Represents how much the network loss and jitter has impacted the quality of received audio. | long |
+| o365.metrics.teams.call.quality.sessions.segments.media.streams.average_audio_network_jitter | Average jitter for the stream computed as specified in RFC 3550, denoted in ISO 8601 format. For example, 1 second is denoted as 'PT1S', where 'P' is the duration designator, 'T' is the time designator, and 'S' is the second designator. | keyword |
+| o365.metrics.teams.call.quality.sessions.segments.media.streams.average_bandwidth_estimate | Average estimated bandwidth available between two endpoints in bits per second. | long |
+| o365.metrics.teams.call.quality.sessions.segments.media.streams.average_freeze_duration | Average duration of the received freezing time in the video stream. | keyword |
+| o365.metrics.teams.call.quality.sessions.segments.media.streams.average_jitter | Average jitter for the stream computed as specified in RFC 3550, denoted in ISO 8601 format. For example, 1 second is denoted as 'PT1S', where 'P' is the duration designator, 'T' is the time designator, and 'S' is the second designator. | keyword |
+| o365.metrics.teams.call.quality.sessions.segments.media.streams.average_packet_loss_rate | Average packet loss rate for stream. | long |
+| o365.metrics.teams.call.quality.sessions.segments.media.streams.average_ratio_of_concealed_samples | Ratio of the number of audio frames with samples generated by packet loss concealment to the total number of audio frames. | long |
+| o365.metrics.teams.call.quality.sessions.segments.media.streams.average_received_frame_rate | Average frames per second received for all video streams computed over the duration of the session. | long |
+| o365.metrics.teams.call.quality.sessions.segments.media.streams.average_round_trip_time | Average network propagation round-trip time computed as specified in RFC 3550, denoted in ISO 8601 format. For example, 1 second is denoted as 'PT1S', where 'P' is the duration designator, 'T' is the time designator, and 'S' is the second designator. | keyword |
+| o365.metrics.teams.call.quality.sessions.segments.media.streams.average_video_frame_loss_percentage | Average percentage of video frames lost as displayed to the user. | long |
+| o365.metrics.teams.call.quality.sessions.segments.media.streams.average_video_frame_rate | Average frames per second received for a video stream, computed over the duration of the session. | long |
+| o365.metrics.teams.call.quality.sessions.segments.media.streams.average_video_packet_loss_rate | Average fraction of packets lost. | long |
+| o365.metrics.teams.call.quality.sessions.segments.media.streams.end_date_time | UTC time when the stream ended. | date |
+| o365.metrics.teams.call.quality.sessions.segments.media.streams.is_audio_forward_error_correction_used | Indicates whether the forward error correction (FEC) was used at some point during the session. The default value is null. | boolean |
+| o365.metrics.teams.call.quality.sessions.segments.media.streams.low_frame_rate_ratio | Fraction of the call where frame rate is less than 7.5 frames per second. | long |
+| o365.metrics.teams.call.quality.sessions.segments.media.streams.low_video_processing_capability_ratio | Fraction of the call that the client is running less than 70% expected video processing capability. | long |
+| o365.metrics.teams.call.quality.sessions.segments.media.streams.max_audio_network_jitter | Maximum of audio network jitter computed over each of the 20 second windows during the session, denoted in ISO 8601 format. For example, 1 second is denoted as 'PT1S', where 'P' is the duration designator, 'T' is the time designator, and 'S' is the second designator. | keyword |
+| o365.metrics.teams.call.quality.sessions.segments.media.streams.max_jitter | Maximum jitter for the stream computed as specified in RFC 3550, denoted in ISO 8601 format. For example, 1 second is denoted as 'PT1S', where 'P' is the duration designator, 'T' is the time designator, and 'S' is the second designator. | keyword |
+| o365.metrics.teams.call.quality.sessions.segments.media.streams.max_packet_loss_rate | Maximum packet loss rate for the stream. | long |
+| o365.metrics.teams.call.quality.sessions.segments.media.streams.max_ratio_of_concealed_samples | Maximum ratio of packets concealed by the healer. | long |
+| o365.metrics.teams.call.quality.sessions.segments.media.streams.max_round_trip_time | Maximum network propagation round-trip time computed as specified in RFC 3550, denoted in ISO 8601 format. For example, 1 second is denoted as 'PT1S', where 'P' is the duration designator, 'T' is the time designator, and 'S' is the second designator. | keyword |
+| o365.metrics.teams.call.quality.sessions.segments.media.streams.packet_utilization | Packet count for the stream. | long |
+| o365.metrics.teams.call.quality.sessions.segments.media.streams.post_forward_error_correction_packet_loss_rate | Packet loss rate after FEC has been applied aggregated across all video streams and codecs. | long |
+| o365.metrics.teams.call.quality.sessions.segments.media.streams.rms_freeze_duration | Average duration of the received freezing time in the video stream represented in root mean square. | keyword |
+| o365.metrics.teams.call.quality.sessions.segments.media.streams.start_date_time | UTC time when the stream started. | date |
+| o365.metrics.teams.call.quality.sessions.segments.media.streams.stream_direction | Indicates the direction of the media stream. Possible values are- callerToCallee, calleeToCaller. | keyword |
+| o365.metrics.teams.call.quality.sessions.segments.media.streams.stream_id | Unique identifier for the stream. | keyword |
+| o365.metrics.teams.call.quality.sessions.segments.media.streams.video_codec | Codec name used to encode video for transmission on the network. Possible values are- unknown, invalid, av1, h263, h264, h264s, h264uc, h265, rtvc1, rtVideo, xrtvc1, unknownFutureValue. | keyword |
+| o365.metrics.teams.call.quality.sessions.segments.media.streams.was_media_bypassed | True if the media stream bypassed the Mediation Server and went straight between client and PSTN Gateway/PBX, false otherwise. | boolean |
+| o365.metrics.teams.call.quality.sessions.segments.segment_id | Unique identifier for the segment | keyword |
+| o365.metrics.teams.call.quality.sessions.segments.start_date_time | UTC time when the segment started. | date |
+| o365.metrics.teams.call.quality.sessions.session_id | Unique identifier for the session. | keyword |
 
