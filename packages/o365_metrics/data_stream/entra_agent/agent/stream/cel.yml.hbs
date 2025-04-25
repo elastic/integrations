@@ -98,8 +98,10 @@ program: |
                 {
                  "o365":{  
                   "metrics": {
-                    "entra": {
-                      "agent": 
+                      "entra": {
+                      "agent": {
+                        "service_name": serviceName,
+                        "agent" :
                         request(
                           "GET", 
                           state.url.trim_right("/") + state.service_path + "/" + serviceName + "/servicemembers?" + state.api_query_param
@@ -115,7 +117,6 @@ program: |
                           :
                             bytes(servicemembers_resp.Body).decode_json().as(body,   
                                 body.value.map(servicemembers, {
-                                      "service_name": serviceName,
                                       "last_reboot": servicemembers.lastReboot,
                                       "last_disabled": servicemembers.lastDisabled,
                                       "last_updated": servicemembers.lastUpdated,
@@ -137,6 +138,7 @@ program: |
                     }
                   }
                 }
+               }
               }
               ),
               "want_more": false

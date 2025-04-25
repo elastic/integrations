@@ -3386,45 +3386,45 @@ An example event for `entra_agent` looks as following:
 
 ```json
 {
-    "@timestamp": "2025-04-24T23:17:40.459Z",
+    "@timestamp": "2025-04-25T13:50:04.711Z",
     "agent": {
-        "ephemeral_id": "69a30128-0494-43a1-90f0-01318ea7d08d",
-        "id": "8f5b3849-d6b2-42f7-9472-726fe0b4e80b",
-        "name": "elastic-agent-78185",
+        "ephemeral_id": "68a581ac-f63e-40a5-8a56-a936ba4238c8",
+        "id": "b809f421-6391-4381-8fec-dd94d090a4c4",
+        "name": "elastic-agent-71128",
         "type": "filebeat",
         "version": "8.16.0"
     },
     "data_stream": {
         "dataset": "o365_metrics.entra_agent",
-        "namespace": "16568",
+        "namespace": "36283",
         "type": "metrics"
     },
     "ecs": {
         "version": "8.17.0"
     },
     "elastic_agent": {
-        "id": "8f5b3849-d6b2-42f7-9472-726fe0b4e80b",
+        "id": "b809f421-6391-4381-8fec-dd94d090a4c4",
         "snapshot": false,
         "version": "8.16.0"
     },
     "event": {
         "agent_id_status": "verified",
         "dataset": "o365_metrics.entra_agent",
-        "ingested": "2025-04-24T23:17:43Z"
+        "ingested": "2025-04-25T13:50:07Z"
     },
     "host": {
         "architecture": "x86_64",
         "containerized": true,
-        "hostname": "elastic-agent-78185",
+        "hostname": "elastic-agent-71128",
         "ip": [
-            "172.29.0.2",
+            "172.30.0.2",
             "172.18.0.4"
         ],
         "mac": [
             "02-42-AC-12-00-04",
-            "02-42-AC-1D-00-02"
+            "02-42-AC-1E-00-02"
         ],
-        "name": "elastic-agent-78185",
+        "name": "elastic-agent-71128",
         "os": {
             "family": "",
             "kernel": "5.15.153.1-microsoft-standard-WSL2",
@@ -3440,26 +3440,28 @@ An example event for `entra_agent` looks as following:
     "o365": {
         "metrics": {
             "entra": {
-                "agent": [
-                    {
-                        "active_alerts": 1,
-                        "created_date": "2024-02-18T09:12:45.273Z",
-                        "disabled": false,
-                        "last_disabled": "2024-03-12T23:17:00.511864Z",
-                        "last_reboot": "2024-03-12T11:33:07.484Z",
-                        "last_updated": "2024-03-12T00:15:32.547649Z",
-                        "machine_id": "e4c1b8f2-9f1e-4f55-911e-3cddc0e9d331",
-                        "machine_name": "ENTRA-ID-NODE-03",
-                        "os_name": "Windows Server 2019 Datacenter",
-                        "os_version": "10.0.17763.3650",
-                        "resolved_alerts": 5,
-                        "role": "AdfsServer_30",
-                        "service_id": "aad-identityprotection",
-                        "service_member_id": "aad-ip-node-3012",
-                        "service_name": "MicrosoftEntraIDIdentityProtection",
-                        "status": "Healthy"
-                    }
-                ]
+                "agent": {
+                    "agent": [
+                        {
+                            "active_alerts": 1,
+                            "created_date": "2024-02-18T09:12:45.273Z",
+                            "disabled": false,
+                            "last_disabled": "2024-03-12T23:17:00.511864Z",
+                            "last_reboot": "2024-03-12T11:33:07.484Z",
+                            "last_updated": "2024-03-12T00:15:32.547649Z",
+                            "machine_id": "e4c1b8f2-9f1e-4f55-911e-3cddc0e9d331",
+                            "machine_name": "ENTRA-ID-NODE-03",
+                            "os_name": "Windows Server 2019 Datacenter",
+                            "os_version": "10.0.17763.3650",
+                            "resolved_alerts": 5,
+                            "role": "AdfsServer_30",
+                            "service_id": "aad-identityprotection",
+                            "service_member_id": "aad-ip-node-3012",
+                            "status": "Healthy"
+                        }
+                    ],
+                    "service_name": "MicrosoftEntraIDIdentityProtection"
+                }
             }
         }
     },
@@ -3480,19 +3482,20 @@ Please refer to the following [document](https://www.elastic.co/guide/en/ecs/cur
 | data_stream.namespace | Data stream namespace. | constant_keyword |
 | data_stream.type | Data stream type. | constant_keyword |
 | input.type | Input type. | keyword |
-| o365.metrics.entra.agent.active_alerts | The number of active alerts. | integer |
-| o365.metrics.entra.agent.created_date | The date the service was created. | date |
-| o365.metrics.entra.agent.disabled | Indicates whether the service is disabled. | boolean |
-| o365.metrics.entra.agent.last_disabled | The last time the service was disabled. | date |
-| o365.metrics.entra.agent.last_reboot | The last reboot date and time. | date |
-| o365.metrics.entra.agent.last_updated | The last time the service was updated. | date |
-| o365.metrics.entra.agent.machine_id | The ID of the machine. | keyword |
-| o365.metrics.entra.agent.machine_name | The name of the machine. | keyword |
-| o365.metrics.entra.agent.os_name | The name of the operating system. | keyword |
-| o365.metrics.entra.agent.os_version | The version of the operating system. | keyword |
-| o365.metrics.entra.agent.resolved_alerts | The number of resolved alerts. | integer |
-| o365.metrics.entra.agent.role | The role of the machine or service. | keyword |
-| o365.metrics.entra.agent.service_id | The ID of the service. | keyword |
-| o365.metrics.entra.agent.service_member_id | The ID of the service member. | keyword |
+| o365.metrics.entra.agent.agent.active_alerts | The number of active alerts. | integer |
+| o365.metrics.entra.agent.agent.created_date | The date the service was created. | date |
+| o365.metrics.entra.agent.agent.disabled | Indicates whether the service is disabled. | boolean |
+| o365.metrics.entra.agent.agent.last_disabled | The last time the service was disabled. | date |
+| o365.metrics.entra.agent.agent.last_reboot | The last reboot date and time. | date |
+| o365.metrics.entra.agent.agent.last_updated | The last time the service was updated. | date |
+| o365.metrics.entra.agent.agent.machine_id | The ID of the machine. | keyword |
+| o365.metrics.entra.agent.agent.machine_name | The name of the machine. | keyword |
+| o365.metrics.entra.agent.agent.os_name | The name of the operating system. | keyword |
+| o365.metrics.entra.agent.agent.os_version | The version of the operating system. | keyword |
+| o365.metrics.entra.agent.agent.resolved_alerts | The number of resolved alerts. | integer |
+| o365.metrics.entra.agent.agent.role | The role of the machine or service. | keyword |
+| o365.metrics.entra.agent.agent.service_id | The ID of the service. | keyword |
+| o365.metrics.entra.agent.agent.service_member_id | The ID of the service member. | keyword |
+| o365.metrics.entra.agent.agent.servicemembers_error | An error if the agent data is not available. | text |
+| o365.metrics.entra.agent.agent.status | The current status of the service. | keyword |
 | o365.metrics.entra.agent.service_name | The name of the service. | keyword |
-| o365.metrics.entra.agent.status | The current status of the service. | keyword |

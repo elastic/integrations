@@ -792,9 +792,23 @@ rules:
                   },
                   {
                       "serviceName": "MicrosoftDefenderforOffice365"
+                  },
+                  {
+                      "serviceName": "MicrosoftSentinel"
                   }
               ]
           }
+      - status_code: 200
+        headers:
+          Content-Type:
+            - 'application/json'
+        body: |-
+          {
+              "value": [],
+              "nextLink": null,
+              "totalCount": 0,
+              "continuationToken": null
+          }      
   - path: /providers/Microsoft.ADHybridHealthService/services/MicrosoftEntraIDIdentityProtection/servicemembers
     methods: ['GET']
     request_headers:
@@ -862,4 +876,22 @@ rules:
                       "osName": "Windows Server 2022"
                   }
               ]
+          }
+  - path: /providers/Microsoft.ADHybridHealthService/services/MicrosoftSentinel/servicemembers
+    methods: ['GET']
+    request_headers:
+      Authorization:
+        - "Bearer xxxx"
+    query_params:
+      'api-version': '2014-01-01'
+    responses:
+      - status_code: 400
+        headers:
+          Content-Type:
+            - 'application/json'
+        body: |-
+          {
+          "error": {
+          "code": "AuthenticationFailed",
+          "message": "Authentication failed."
           }
