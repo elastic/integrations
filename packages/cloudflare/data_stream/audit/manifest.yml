@@ -1,21 +1,29 @@
 type: logs
 title: Cloudflare Audit Logs
 streams:
-  - input: httpjson
+  - input: cel
     vars:
       - name: auth_email
         type: text
         title: Auth Email
-        description: The Auth Email. Needs to be used with an Auth Key.
+        description: The Auth Email. Needs to be used with an Auth Key. Do not fill if you are using an Auth Token.
         multi: false
-        required: true
+        required: false
         show_user: true
       - name: auth_key
         type: password
         title: Auth Key
-        description: The Auth Key. Needs to be used with an Auth Email.
+        description: The Auth Key. Needs to be used with an Auth Email. Do not fill if you are using an Auth Token.
         multi: false
-        required: true
+        required: false
+        show_user: true
+        secret: true
+      - name: auth_token
+        type: password
+        title: Auth token
+        description: The auth token. If set, Auth Email and Auth Key will be ignored.
+        required: false
+        multi: false
         show_user: true
         secret: true
       - name: account
@@ -30,8 +38,8 @@ streams:
         multi: false
         required: true
         show_user: true
-        description: Interval at which the logs will be pulled. The value must be between 2m and 1h. Supported units for this parameter are h/m/s.
-        default: 1h
+        description: Interval at which the logs will be pulled. The value must be between 1s and 1h. Supported units for this parameter are h/m/s.
+        default: 5m
       - name: initial_interval
         type: text
         title: Initial Interval
@@ -71,6 +79,6 @@ streams:
         required: false
         show_user: false
         description: "Processors are used to reduce the number of fields in the exported event or to enhance the event with metadata. \nThis executes in the agent before the logs are parsed. \nSee [Processors](https://www.elastic.co/guide/en/beats/filebeat/current/filtering-and-enhancing-data.html) for details.\n"
-    template_path: httpjson.yml.hbs
+    template_path: cel.yml.hbs
     title: Cloudflare Audit logs
     description: Collect Cloudflare Audit logs via the API

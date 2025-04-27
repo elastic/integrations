@@ -15,13 +15,33 @@ Users of [Cloudflare](https://www.cloudflare.com/en-au/learning/what-is-cloudfla
 
 ### Configure Cloudflare audit logs data stream
 
+The integration can retrieve Cloudflare audit logs using -
+
+1. Auth Email and Auth Key
+2. API Token
+
+More information is available [here](https://developers.cloudflare.com/api/resources/audit_logs/)
+
+#### Configure using Auth Email and Auth Key
+
 Enter values "Auth Email", "Auth Key" and "Account ID".
 
 1. **Auth Email** is the email address associated with your account. 
 2. [**Auth Key**](https://developers.cloudflare.com/api/keys/) is the API key generated on the "My Account" page.
 3. **Account ID** can be found on the Cloudflare dashboard. Follow the navigation documentation from [here](https://developers.cloudflare.com/fundamentals/get-started/basic-tasks/find-account-and-zone-ids/).
 
-NOTE: See for `X-AUTH-EMAIL` and `X-AUTH-KEY` [here](https://api.cloudflare.com/#getting-started-requests) for more information on Auth Email and Auth Key.
+>  Note: See for `X-AUTH-EMAIL` and `X-AUTH-KEY` [here](https://api.cloudflare.com/#getting-started-requests) for more information on Auth Email and Auth Key.
+
+#### Configure using API Token
+
+Enter values "API Token" and "Account ID".
+
+For the Cloudflare integration to be able to successfully get logs, one of the following permissions must be granted to the API token -
+
+- Account Settings Write, Account Settings Read
+
+1. [**API Tokens**](https://developers.cloudflare.com/api/tokens/) allow for more granular permission settings. 
+3. **Account ID** can be found on the Cloudflare dashboard. Follow the navigation documentation from [here](https://developers.cloudflare.com/fundamentals/get-started/basic-tasks/find-account-and-zone-ids/).
 
 ### Configure Cloudflare logs
 
@@ -404,7 +424,7 @@ An example event for `logpull` looks as following:
         "bytes": 2848
     },
     "source": {
-        "address": "35.232.161.245",
+        "address": "35.232.161.215",
         "as": {
             "number": 15169
         },
