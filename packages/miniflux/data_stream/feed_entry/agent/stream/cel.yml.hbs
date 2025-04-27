@@ -1,0 +1,99 @@
+config_version: 2
+interval: {{interval}}
+{{#if enable_request_tracer}}
+resource.tracer.filename: "../../logs/cel/miniflux-feed_entry-http-request-trace-*.ndjson"
+resource.tracer.maxbackups: 5
+{{/if}}
+resource.url: {{api_url}}
+state:
+  api_key: {{api_key}}
+  batch_size: {{batch_size}}
+redact:
+  fields:
+    - api_key
+program: |-
+  state.with(
+        request(
+                "GET",
+                state.url + "?" + {
+                        "limit": [string(state.batch_size)],
+                        "order": ["id"],
+                        "after_entry_id": [
+                                has(state.cursor) && has(state.cursor.last_entry_id) && state.cursor.last_entry_id != null ?
+                                        string(state.cursor.last_entry_id)
+                                :
+                                        "0",
+                        ],
+                }.format_query()
+        ).with(
+            {
+                "Header":{
+                    "X-Auth-Token": [state.api_key],
+                }
+            }
+        ).do_request().as(resp, (resp.StatusCode != 200) ?
+            {
+                    "events": {
+                            "error": {
+                                    "code": string(resp.StatusCode),
+                                    "id": string(resp.Status),
+                                    "message": "GET:" + 
+                                    (
+                                            (size(resp.Body) != 0) ?
+                                                    string(resp.Body)
+                                            :
+                                                    string(resp.Status) + " (" + string(resp.StatusCode) + ")"
+                                    ),
+                            },
+                    },
+                    "want_more": false,
+            }
+        :
+                bytes(resp.Body).decode_json().as(body, !has(body.entries) ?
+                        {
+                                "events": [],
+                                "want_more": false,
+                        }
+                :
+                        {
+                                "events": body.entries.map(feed_entry,
+                                        {
+                                                "message": feed_entry.encode_json(),
+                                        }
+                                ),
+                                "cursor": {
+                                        "last_entry_id": (
+                                            has(body.entries) ?
+                                                (
+                                                    (body.entries.size() > 0) ?
+                                                        string(int(body.entries.map(e, e.id).max()))
+                                                    :
+                                                        state.cursor.last_entry_id
+                                                )
+                                            :
+                                                ""
+                                        ),        
+                                        "size": body.entries.size(),
+                                },
+                                "want_more": has(body.entries) && body.entries.size() > 0,
+                                "batch_size": state.batch_size,
+                                "api_key": state.api_key,
+                                "url": state.url,
+                        }
+                )
+        )
+  )
+tags:
+{{#if preserve_original_event}}
+  - preserve_original_event
+{{/if}}
+{{#each tags as |tag|}}
+  - {{tag}}
+{{/each}}
+{{#contains "forwarded" tags}}
+publisher_pipeline.disable_host: true
+{{/contains}}
+{{#if processors}}
+processors:
+{{processors}}
+{{/if}}
