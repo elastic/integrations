@@ -1,0 +1,153 @@
+---
+description: Ingest pipeline for Varonis DatAdvantage syslog messages
+processors:
+############
+# ECS Fields
+############
+  - set:
+      field: ecs.version
+      value: '8.11.0'
+
+  - set:
+      field: event.kind
+      value: event
+
+  - append:
+      field: event.category
+      value: configuration
+      allow_duplicates: false
+
+  - append:
+      field: event.type
+      value: info
+      allow_duplicates: false
+
+  - set:
+      field: event.dataset
+      value: varonis.logs
+
+  - set:
+      field: event.module
+      value: varonis
+
+############
+# syslog Fields
+############
+  - script:
+      lang: painless
+      description: Create new fields for the custom string label and its value only if value is present
+      source: >
+        void changeLabelsToKeys(Map input) {
+            List keys = new ArrayList(input.keySet()); // To avoid conflicts
+            for (String key : keys) {
+                if (key.endsWith("Label")) {
+                    String valueKey = key.substring(0, key.length() - 5);
+                    if (input.containsKey(valueKey) && input.get(valueKey) != null && !input.get(valueKey).toString().isEmpty()) {
+                        input.put(input.get(key), input.get(valueKey));
+                        input.remove(valueKey);
+                        input.remove(key);
+                    } else {
+                        input.remove(key);
+                    }
+                }
+            }
+        }
+
+        changeLabelsToKeys(ctx.cef.extensions);
+
+  - rename:
+      field: cef.extensions
+      target_field: varonis.logs
+
+  - script:
+      description: Convert Additional Info keys to snake case.
+      tag: additional-info-keys-to-snake-case
+      lang: painless
+      source: |
+        Map keysToSnakeCase(Map m) {
+          def regex = /_?([a-z])([A-Z]+)/;
+          def snakeCaseMap = [:];
+
+          for (entry in m.entrySet()) {
+            def k = entry.getKey();
+            def v = entry.getValue();
+
+            if (v instanceof Map) {
+              v = keysToSnakeCase(v);
+            } else if (v instanceof List) {
+              for (int i = 0; i < v.size(); i++) {
+                def item = v.get(i);
+                if (item instanceof Map) {
+                  v.set(i, keysToSnakeCase(item));
+                }
+              }
+            }
+
+            k = regex.matcher(k).replaceAll('$1_$2').toLowerCase();
+            snakeCaseMap.put(k, v);
+          }
+          return snakeCaseMap;
+        }
+
+        if (ctx.varonis.logs != null) {
+          ctx.varonis.logs = keysToSnakeCase(ctx.varonis.logs);
+        }
+
+  # processor to lowercase the value of event.outcome
+  - lowercase:
+      field: event.outcome
+      target_field: event.outcome
+      ignore_missing: true
+
+  # script to create a new field to assign label to event.severity
+  - script:
+      description: Convert event severity to their text meaning using params
+      lang: painless
+      params:
+        descriptions:
+          "0": "emergency"
+          "1": "alert"
+          "2": "critical"
+          "3": "error"
+          "4": "warning"
+          "5": "notice"
+          "6": "informational"
+          "7": "debug"
+      if: ctx.event?.severity != null
+      source: |
+        String severity = String.valueOf(ctx.event.severity);
+        ctx.event.severity_label = params.descriptions.getOrDefault(
+          severity,
+          "unknown"
+        );
+
+  ####################
+  ## Cleanup Fields ##
+  ####################
+  - remove:
+      field:
+        - cef
+        - log
+        - varonis.logs.destination_host_name
+        - varonis.logs.destination_user_name
+        - varonis.logs.source_user_name
+        - varonis.logs.destination_user_privileges
+        - varonis.logs.device_action
+        - varonis.logs.end_time
+        - varonis.logs.start_time
+        - varonis.logs.event_outcome
+        - varonis.logs.file_path
+        - varonis.logs.file_permission
+        - varonis.logs.filename
+        - varonis.logs.message
+        - varonis.logs.file_type
+        - varonis.logs.device_receipt_time
+      ignore_missing: true
+
+on_failure:
+  - append:
+      field: error.message
+      value: '{{{_ingest.on_failure_message}}}'
+  - set:
+      field: event.kind
+      value: pipeline_error

@@ -145,6 +145,29 @@ processors:
       copy_from: event.created
       tag: copy_timestamp_from_event_created
       if: ctx.crowdstrike?.event?.UTCTimestamp == null && ctx.event?.created != null
+  # Assign severities to conform to security rules values
+  #
+  # 21 = Low
+  # 47 = Medium
+  # 73 = High
+  # 99 = Critical
+  #
+  # Leave crowdstrike values in place, since they have their own semantics.
+  - script:
+      lang: painless
+      if: ctx.crowdstrike?.event?.SeverityName instanceof String
+      source: |-
+        ctx.event = ctx.event ?: [:];
+        String name = ctx.crowdstrike.event.SeverityName;
+        if (name.equalsIgnoreCase("low")) {
+          ctx.event.severity = 21;
+        } else if (name.equalsIgnoreCase("medium")) {
+          ctx.event.severity = 47;
+        } else if (name.equalsIgnoreCase("high")) {
+          ctx.event.severity = 73;
+        } else if (name.equalsIgnoreCase("critical")) {
+          ctx.event.severity = 99;
+        }
   - script:
       lang: painless
       tag: script_remove_null_event
@@ -216,6 +239,10 @@ processors:
       name: '{{ IngestPipeline "detection_summary" }}'
       tag: pipeline_detection_summary
       if: ctx.crowdstrike?.metadata?.eventType == "DetectionSummaryEvent"
+  - pipeline:
+      name: '{{ IngestPipeline "epp_detection_summary" }}'
+      tag: pipeline_epp_detection_summary
+      if: ctx.crowdstrike?.metadata?.eventType == "EPPDetectionSummaryEvent"
   - pipeline:
       name: '{{ IngestPipeline "mobile_detection_summary" }}'
       tag: pipeline_mobile_detection_summary

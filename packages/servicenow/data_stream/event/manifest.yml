@@ -84,6 +84,15 @@ streams:
         default: America/Los_Angeles
         description: >-
           By default, datetimes in the logs without a time zone will be interpreted as relative to the time zone configured in the host where the agent is running. If ingesting logs from a different time zone, use this field to set the time zone offset so that datetimes are correctly parsed. Acceptable time zone formats are: a canonical ID (e.g. "Europe/Amsterdam"), or an HH:mm differential (e.g. "-05:00") from UTC.
+      - name: query
+        type: text
+        title: Sysparm Query
+        description: >-
+          Encoded query for filtering result sets with operators like `=`, `!=`, `^`, `^OR`, `LIKE`, `ORDERBY`, `ORDERBYDESC`
+          (e.g. `active=true^ORDERBYname`). Note: Avoid using the timestamp field in the query, as it may affect pagination and cursor logic.
+        multi: false
+        required: false
+        show_user: false
       - name: http_client_timeout
         type: text
         title: HTTP Client Timeout
@@ -298,7 +307,7 @@ streams:
         required: false
         show_user: true
         default: 5
-        description: The maximum number of SQS messages that can be inflight at any time.
+        description: Deprecated in agent version 8.16.0, this parameter is ignored if present, use number_of_workers instead. The maximum number of SQS messages that can be inflight at any time.
       - name: decode_parquet_enabled
         type: bool
         title: Parquet Codec

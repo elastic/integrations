@@ -1,7 +1,7 @@
 format_version: 3.3.0
 name: azure_logs
 title: "Custom Azure Logs"
-version: 0.3.0
+version: 0.3.1
 source:
   license: Elastic-2.0
 description: "Collect log events from Azure Event Hubs with Elastic Agent"
@@ -93,7 +93,22 @@ policy_templates:
           The ingest pipeline ID to use for processing the data. If provided,
           replaces the default pipeline for this integration.
         required: false
-        show_user: true        
+        show_user: true
+      - name: storage_account_container
+        type: text
+        title: Storage Account Container
+        multi: false
+        required: false
+        show_user: false
+        description:  >-
+          The storage account container where the integration stores the checkpoint
+          data for the event hub / consumer group. It is an advanced option to use with extreme care.
+          If you are using the [processor_version](https://www.elastic.co/guide/en/integrations/current/azure_logs.html#azure_logs-event-hub-processor-options) v1
+          (default option), you MUST use a dedicated storage account container for each event hub / consumer group pair.
+          For information about container name restrictions, please refer to the
+          [Container Names](https://docs.microsoft.com/en-us/rest/api/storageservices/naming-and-referencing-containers--blobs--and-metadata#container-names)
+          section in Microsoft's documentation.
+          If you don't specify a container name, the integration will automatically generate a default one for you.
       - name: resource_manager_endpoint
         type: text
         title: Resource Manager Endpoint
