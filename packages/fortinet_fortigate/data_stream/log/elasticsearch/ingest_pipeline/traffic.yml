@@ -235,7 +235,7 @@ processors:
           field: error.message
           value: "url parsing failed with message {{ _ingest.on_failure_message }}"
 - script:
-    if: ctx.fortinet?.firewall?.rcvddelta != null && ctx.fortinet?.firewall?.sentdelta != null
+    if: ctx.fortinet?.firewall?.rcvddelta instanceof Number && ctx.fortinet?.firewall?.sentdelta instanceof Number
     tag: script_sum_delta_bytes
     lang: painless
     source: ctx.fortinet.firewall.deltabytes = ctx.fortinet.firewall.rcvddelta + ctx.fortinet.firewall.sentdelta
