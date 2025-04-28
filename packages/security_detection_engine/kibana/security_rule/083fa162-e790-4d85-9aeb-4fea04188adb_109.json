@@ -8,11 +8,11 @@
         "index": [
             "logs-endpoint.events.*"
         ],
-        "language": "kuery",
+        "language": "eql",
         "license": "Elastic License v2",
         "name": "Suspicious Hidden Child Process of Launchd",
         "note": "## Triage and analysis\n\n> **Disclaimer**:\n> This investigation guide was created using generative AI technology and has been reviewed to improve its accuracy and relevance. While every effort has been made to ensure its quality, we recommend validating the content and adapting it to suit your specific environment and operational needs.\n\n### Investigating Suspicious Hidden Child Process of Launchd\n\nLaunchd is a key macOS system process responsible for managing system and user services. Adversaries may exploit it by creating hidden child processes to maintain persistence or evade defenses. The detection rule identifies unusual child processes of launchd, focusing on hidden files, which are often indicative of malicious activity. By monitoring process initiation events, it helps uncover potential threats linked to persistence and defense evasion tactics.\n\n### Possible investigation steps\n\n- Review the process details to identify the hidden child process, focusing on the process.name field to determine if it matches known malicious patterns or unusual names.\n- Examine the process.parent.executable field to confirm that the parent process is indeed /sbin/launchd, ensuring the alert is not a false positive.\n- Investigate the file path and attributes of the hidden file associated with the child process to determine its origin and legitimacy.\n- Check the user account associated with the process initiation event to assess if it aligns with expected user behavior or if it indicates potential compromise.\n- Correlate the event with other recent process initiation events on the same host to identify any patterns or additional suspicious activities.\n- Review system logs and other security alerts for the host to gather more context on the potential threat and assess the scope of the activity.\n\n### False positive analysis\n\n- System updates or legitimate software installations may trigger hidden child processes of launchd. Users can create exceptions for known update processes or trusted software installations to prevent unnecessary alerts.\n- Some legitimate applications may use hidden files for configuration or temporary data storage, which could be misidentified as suspicious. Users should identify these applications and whitelist their processes to reduce false positives.\n- Development tools or scripts that run as background processes might appear as hidden child processes. Developers can exclude these tools by specifying their process names or paths in the detection rule exceptions.\n- Automated backup or synchronization services might create hidden files as part of their normal operation. Users should verify these services and add them to an exclusion list if they are deemed safe.\n- Custom scripts or automation tasks scheduled to run at login could be flagged. Users should review these scripts and, if legitimate, configure the rule to ignore these specific processes.\n\n### Response and remediation\n\n- Isolate the affected macOS system from the network to prevent further spread or communication with potential command and control servers.\n- Terminate the suspicious hidden child process of launchd to stop any ongoing malicious activity.\n- Conduct a thorough review of all launch agents, daemons, and logon items on the affected system to identify and remove any unauthorized or malicious entries.\n- Restore the system from a known good backup if available, ensuring that the backup predates the initial compromise.\n- Update the macOS system and all installed applications to the latest versions to patch any vulnerabilities that may have been exploited.\n- Monitor the system for any signs of re-infection or further suspicious activity, focusing on process initiation events and hidden files.\n- Escalate the incident to the security operations team for further investigation and to determine if additional systems may be affected.",
-        "query": "event.category:process and host.os.type:macos and event.type:(start or process_started) and\n process.name:.* and process.parent.executable:/sbin/launchd\n",
+        "query": "process where host.os.type == \"macos\" and event.type in (\"start\", \"process_started\") and\n process.name like~ \".*\" and process.parent.name == \"launchd\"\n",
         "references": [
             "https://objective-see.com/blog/blog_0x61.html",
             "https://www.intezer.com/blog/research/operation-electrorat-attacker-creates-fake-companies-to-drain-your-crypto-wallets/",
@@ -21,15 +21,10 @@
         "related_integrations": [
             {
                 "package": "endpoint",
-                "version": "^8.2.0"
+                "version": "^9.0.0"
             }
         ],
         "required_fields": [
-            {
-                "ecs": true,
-                "name": "event.category",
-                "type": "keyword"
-            },
             {
                 "ecs": true,
                 "name": "event.type",
@@ -47,7 +42,7 @@
             },
             {
                 "ecs": true,
-                "name": "process.parent.executable",
+                "name": "process.parent.name",
                 "type": "keyword"
             }
         ],
@@ -111,7 +106,7 @@
             }
         ],
         "timestamp_override": "event.ingested",
-        "type": "query",
+        "type": "eql",
         "version": 109
     },
     "id": "083fa162-e790-4d85-9aeb-4fea04188adb_109",

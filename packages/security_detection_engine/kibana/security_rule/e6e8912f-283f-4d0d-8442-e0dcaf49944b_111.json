@@ -12,7 +12,7 @@
         "license": "Elastic License v2",
         "name": "Screensaver Plist File Modified by Unexpected Process",
         "note": "## Triage and analysis\n\n- Analyze the plist file modification event to identify whether the change was expected or not\n- Investigate the process that modified the plist file for malicious code or other suspicious behavior\n- Identify if any suspicious or known malicious screensaver (.saver) files were recently written to or modified on the host\n",
-        "query": "file where host.os.type == \"macos\" and event.type != \"deletion\" and\n  file.name: \"com.apple.screensaver.*.plist\" and\n   file.path : (\n      \"/Users/*/Library/Preferences/ByHost/*\",\n      \"/Library/Managed Preferences/*\",\n      \"/System/Library/Preferences/*\"\n      ) and\n  (\n    process.code_signature.trusted == false or\n    process.code_signature.exists == false or\n\n    /* common script interpreters and abused native macOS bins */\n    process.name : (\n      \"curl\",\n      \"mktemp\",\n      \"tail\",\n      \"funzip\",\n      \"python*\",\n      \"osascript\",\n      \"perl\"\n      )\n   ) and\n\n  /* Filter OS processes modifying screensaver plist files */\n  not process.executable : (\n    \"/usr/sbin/cfprefsd\",\n    \"/usr/libexec/xpcproxy\",\n    \"/System/Library/CoreServices/ManagedClient.app/Contents/Resources/MCXCompositor\",\n    \"/System/Library/CoreServices/ManagedClient.app/Contents/MacOS/ManagedClient\"\n    )\n",
+        "query": "file where host.os.type == \"macos\" and event.action == \"modification\" and\n  file.name like~ \"com.apple.screensaver.*.plist\" and\n   file.path like (\n      \"/Users/*/Library/Preferences/ByHost/*\",\n      \"/Library/Managed Preferences/*\",\n      \"/System/Library/Preferences/*\"\n      ) and\n  (\n    process.code_signature.trusted == false or\n    process.code_signature.exists == false or\n\n    /* common script interpreters and abused native macOS bins */\n    process.name like~ (\n      \"curl\",\n      \"mktemp\",\n      \"tail\",\n      \"funzip\",\n      \"python*\",\n      \"osascript\",\n      \"perl\"\n      )\n   ) and\n\n  /* Filter OS processes modifying screensaver plist files */\n  not process.executable like (\n    \"/usr/sbin/cfprefsd\",\n    \"/usr/libexec/xpcproxy\",\n    \"/System/Library/CoreServices/ManagedClient.app/Contents/Resources/MCXCompositor\",\n    \"/System/Library/CoreServices/ManagedClient.app/Contents/MacOS/ManagedClient\"\n    )\n",
         "references": [
             "https://posts.specterops.io/saving-your-access-d562bf5bf90b",
             "https://github.com/D00MFist/PersistentJXA"
@@ -20,13 +20,13 @@
         "related_integrations": [
             {
                 "package": "endpoint",
-                "version": "^8.2.0"
+                "version": "^9.0.0"
             }
         ],
         "required_fields": [
             {
                 "ecs": true,
-                "name": "event.type",
+                "name": "event.action",
                 "type": "keyword"
             },
             {
