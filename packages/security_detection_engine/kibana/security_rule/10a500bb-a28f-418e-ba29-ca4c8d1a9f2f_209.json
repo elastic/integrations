@@ -11,11 +11,11 @@
         "index": [
             "logs-endpoint.events.*"
         ],
-        "language": "kuery",
+        "language": "eql",
         "license": "Elastic License v2",
         "name": "WebProxy Settings Modification",
         "note": "## Triage and analysis\n\n> **Disclaimer**:\n> This investigation guide was created using generative AI technology and has been reviewed to improve its accuracy and relevance. While every effort has been made to ensure its quality, we recommend validating the content and adapting it to suit your specific environment and operational needs.\n\n### Investigating WebProxy Settings Modification\n\nWeb proxy settings in macOS manage how web traffic is routed, often used to enhance security or manage network traffic. Adversaries may exploit these settings to redirect or intercept web traffic, potentially capturing sensitive data like credentials. The detection rule identifies suspicious use of the `networksetup` command to alter proxy settings, excluding known legitimate applications, thus highlighting potential unauthorized modifications indicative of malicious activity.\n\n### Possible investigation steps\n\n- Review the process details to confirm the use of the networksetup command with arguments like -setwebproxy, -setsecurewebproxy, or -setautoproxyurl, which indicate an attempt to modify web proxy settings.\n- Check the parent process information to ensure it is not one of the known legitimate applications such as /Library/PrivilegedHelperTools/com.80pct.FreedomHelper or /Applications/Fiddler Everywhere.app/Contents/Resources/app/out/WebServer/Fiddler.WebUi.\n- Investigate the user account associated with the process to determine if the activity aligns with their typical behavior or if it appears suspicious.\n- Examine recent network traffic logs for unusual patterns or connections that could suggest traffic redirection or interception.\n- Look for any additional alerts or logs related to the same host or user that might indicate a broader pattern of suspicious activity.\n- Assess the system for any signs of compromise or unauthorized access, such as unexpected user accounts or changes to system configurations.\n\n### False positive analysis\n\n- Legitimate applications like FreedomHelper, Fiddler Everywhere, and xpcproxy may trigger the rule when they modify proxy settings. To prevent these from being flagged, ensure they are included in the exclusion list of known applications.\n- Network management tools such as Proxyman and Incoggo might also be detected. Add these to the exclusion list to avoid unnecessary alerts.\n- Regular system updates or configurations by IT administrators can sometimes involve proxy setting changes. Coordinate with IT to identify these activities and consider adding them to the exclusion criteria if they are routine and verified as safe.\n- Automated scripts or maintenance tasks that adjust proxy settings for legitimate reasons should be reviewed and, if deemed non-threatening, excluded from detection to reduce false positives.\n- Monitor for any new applications or processes that may need to be added to the exclusion list as part of ongoing security management to ensure the rule remains effective without generating excessive false alerts.\n\n### Response and remediation\n\n- Immediately isolate the affected macOS device from the network to prevent further unauthorized access or data exfiltration.\n- Terminate any suspicious processes related to the `networksetup` command that are not associated with known legitimate applications.\n- Review and reset the web proxy settings on the affected device to their default or intended configuration to ensure no malicious redirection is in place.\n- Conduct a thorough scan of the affected system using updated security tools to identify and remove any malware or unauthorized software that may have been installed.\n- Analyze logs and network traffic to identify any data that may have been intercepted or exfiltrated, focusing on sensitive information such as credentials.\n- Escalate the incident to the security operations team for further investigation and to determine if other systems may be affected.\n- Implement enhanced monitoring and alerting for similar activities across the network to detect and respond to future attempts promptly.",
-        "query": "event.category:process and host.os.type:macos and event.type:start and\n process.name : networksetup and process.args : ((\"-setwebproxy\" or \"-setsecurewebproxy\" or \"-setautoproxyurl\") and not (Bluetooth or off)) and\n not process.parent.executable : (\"/Library/PrivilegedHelperTools/com.80pct.FreedomHelper\" or\n                                  \"/Applications/Fiddler Everywhere.app/Contents/Resources/app/out/WebServer/Fiddler.WebUi\" or\n                                  \"/usr/libexec/xpcproxy\") and\n not process.Ext.effective_parent.executable : (\"/Applications/Proxyman.app/Contents/MacOS/Proxyman\" or \"/Applications/Incoggo.app/Contents/MacOS/Incoggo.app\")\n",
+        "query": "process where host.os.type == \"macos\" and event.type in (\"start\", \"process_started\") and event.action == \"exec\" and\n process.name == \"networksetup\" and process.args like~ (\"-setwebproxy\", \"-setsecurewebproxy\", \"-setautoproxyurl\") and\n (process.parent.name like~ (\"osascript\", \"bash\", \"sh\", \"zsh\", \"Terminal\", \"Python*\") or (process.parent.code_signature.exists == false or process.parent.code_signature.trusted == false))\n",
         "references": [
             "https://unit42.paloaltonetworks.com/mac-malware-steals-cryptocurrency-exchanges-cookies/",
             "https://objectivebythesea.com/v2/talks/OBTS_v2_Zohar.pdf"
@@ -23,13 +23,13 @@
         "related_integrations": [
             {
                 "package": "endpoint",
-                "version": "^8.2.0"
+                "version": "^9.0.0"
             }
         ],
         "required_fields": [
             {
                 "ecs": true,
-                "name": "event.category",
+                "name": "event.action",
                 "type": "keyword"
             },
             {
@@ -43,11 +43,6 @@
                 "type": "keyword"
             },
             {
-                "ecs": false,
-                "name": "process.Ext.effective_parent.executable",
-                "type": "unknown"
-            },
-            {
                 "ecs": true,
                 "name": "process.args",
                 "type": "keyword"
@@ -59,7 +54,17 @@
             },
             {
                 "ecs": true,
-                "name": "process.parent.executable",
+                "name": "process.parent.code_signature.exists",
+                "type": "boolean"
+            },
+            {
+                "ecs": true,
+                "name": "process.parent.code_signature.trusted",
+                "type": "boolean"
+            },
+            {
+                "ecs": true,
+                "name": "process.parent.name",
                 "type": "keyword"
             }
         ],
@@ -93,7 +98,7 @@
             }
         ],
         "timestamp_override": "event.ingested",
-        "type": "query",
+        "type": "eql",
         "version": 209
     },
     "id": "10a500bb-a28f-418e-ba29-ca4c8d1a9f2f_209",

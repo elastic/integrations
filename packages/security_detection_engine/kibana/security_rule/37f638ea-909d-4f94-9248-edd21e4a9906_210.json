@@ -15,14 +15,14 @@
         "license": "Elastic License v2",
         "name": "Finder Sync Plugin Registered and Enabled",
         "note": "## Triage and analysis\n\n> **Disclaimer**:\n> This investigation guide was created using generative AI technology and has been reviewed to improve its accuracy and relevance. While every effort has been made to ensure its quality, we recommend validating the content and adapting it to suit your specific environment and operational needs.\n\n### Investigating Finder Sync Plugin Registered and Enabled\n\nFinder Sync plugins enhance macOS Finder by allowing third-party applications to integrate and modify its interface. While beneficial for legitimate software, adversaries can exploit this feature to maintain persistence by registering malicious plugins. The detection rule identifies suspicious plugin registrations by monitoring the `pluginkit` process, filtering out known safe applications, and flagging unusual activity, thus helping analysts spot potential threats.\n\n### Possible investigation steps\n\n- Review the process details to confirm the execution of the `pluginkit` process with the specific arguments `-e`, `use`, and `-i`, which indicate the registration of a Finder Sync plugin.\n- Cross-reference the plugin identifier found in the process arguments against the list of known safe applications to determine if it is potentially malicious.\n- Investigate the parent process of the `pluginkit` execution to identify any unusual or unauthorized parent processes that might suggest malicious activity.\n- Check the system for any recent installations or updates of applications that might have introduced the suspicious Finder Sync plugin.\n- Analyze the behavior and origin of the executable associated with the suspicious plugin to assess its legitimacy and potential threat level.\n- Review system logs and other security alerts around the time of the plugin registration to identify any correlated suspicious activities or anomalies.\n\n### False positive analysis\n\n- Known safe applications like Google Drive, Boxcryptor, Adobe, Microsoft OneDrive, Insync, and Box are already excluded from triggering false positives. Ensure these applications are up-to-date to maintain their exclusion status.\n- If a legitimate application not listed in the exclusions is causing false positives, consider adding its specific Finder Sync plugin identifier to the exclusion list after verifying its safety.\n- Monitor the parent process paths of legitimate applications. If a trusted application frequently triggers alerts, add its executable path to the exclusion list to prevent unnecessary alerts.\n- Regularly review and update the exclusion list to accommodate new versions or additional legitimate applications that may introduce Finder Sync plugins.\n- Educate users on the importance of installing applications from trusted sources to minimize the risk of false positives and ensure that only legitimate plugins are registered.\n\n### Response and remediation\n\n- Immediately isolate the affected macOS system from the network to prevent potential lateral movement or data exfiltration by the malicious Finder Sync plugin.\n- Terminate the suspicious `pluginkit` process to stop the execution of the rogue Finder Sync plugin and prevent further persistence.\n- Remove the malicious Finder Sync plugin by unregistering it using the `pluginkit` command with appropriate flags to ensure it cannot be re-enabled.\n- Conduct a thorough scan of the system using updated antivirus or endpoint detection and response (EDR) tools to identify and remove any additional malicious payloads or artifacts.\n- Review system logs and the Finder Sync plugin registration history to identify any unauthorized changes or additional compromised systems.\n- Escalate the incident to the security operations center (SOC) or incident response team for further analysis and to determine if the threat is part of a larger attack campaign.\n- Implement enhanced monitoring for `pluginkit` activity and similar persistence mechanisms to detect and respond to future attempts promptly.",
-        "query": "process where host.os.type == \"macos\" and event.type in (\"start\", \"process_started\") and process.name : \"pluginkit\" and\n  process.args : \"-e\" and process.args : \"use\" and process.args : \"-i\" and\n  not process.args :\n  (\n    \"com.google.GoogleDrive.FinderSyncAPIExtension\",\n    \"com.google.drivefs.findersync\",\n    \"com.boxcryptor.osx.Rednif\",\n    \"com.adobe.accmac.ACCFinderSync\",\n    \"com.microsoft.OneDrive.FinderSync\",\n    \"com.insynchq.Insync.Insync-Finder-Integration\",\n    \"com.box.desktop.findersyncext\"\n  ) and\n  not process.parent.executable : (\"/Library/Application Support/IDriveforMac/IDriveHelperTools/FinderPluginApp.app/Contents/MacOS/FinderPluginApp\",\n                                   \"/Applications/Google Drive.app/Contents/MacOS/Google Drive\") and\n  not process.Ext.effective_parent.executable : (\"/Applications/Google Drive.app/Contents/MacOS/Google Drive\",\n                                                 \"/usr/local/jamf/bin/jamf\",\n                                                 \"/Applications/Nextcloud.app/Contents/MacOS/Nextcloud\",\n                                                 \"/Library/Application Support/Checkpoint/Endpoint Security/AMFinderExtensions.app/Contents/MacOS/AMFinderExtensions\",\n                                                 \"/Applications/pCloud Drive.app/Contents/MacOS/pCloud Drive\")\n",
+        "query": "process where host.os.type == \"macos\" and event.type in (\"start\", \"process_started\") and process.name == \"pluginkit\" and\n  process.args == \"-e\" and process.args like~ \"use\" and process.args == \"-i\" and\n  (process.name like~ (\"python*\", \"node\", \"osascript\", \"bash\", \"sh\", \"zsh\") or (process.parent.code_signature.exists == false or process.parent.code_signature.trusted == false))\n",
         "references": [
             "https://github.com/specterops/presentations/raw/master/Leo%20Pitt/Hey_Im_Still_in_Here_Modern_macOS_Persistence_SO-CON2020.pdf"
         ],
         "related_integrations": [
             {
                 "package": "endpoint",
-                "version": "^8.2.0"
+                "version": "^9.0.0"
             }
         ],
         "required_fields": [
@@ -37,11 +37,6 @@
                 "type": "keyword"
             },
             {
-                "ecs": false,
-                "name": "process.Ext.effective_parent.executable",
-                "type": "unknown"
-            },
-            {
                 "ecs": true,
                 "name": "process.args",
                 "type": "keyword"
@@ -53,8 +48,13 @@
             },
             {
                 "ecs": true,
-                "name": "process.parent.executable",
-                "type": "keyword"
+                "name": "process.parent.code_signature.exists",
+                "type": "boolean"
+            },
+            {
+                "ecs": true,
+                "name": "process.parent.code_signature.trusted",
+                "type": "boolean"
             }
         ],
         "risk_score": 47,
