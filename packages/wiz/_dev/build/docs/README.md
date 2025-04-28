@@ -89,7 +89,7 @@ Agentless deployments are only supported in Elastic Serverless and Elastic Cloud
 - (Recommended) Obtain or generate authentication info for the third-party product, either a username/password or an authentication token.
 
 2. Add a webhook Integration in Wiz
-- In Wiz, go to the  Settings > Integrations page, then click Add Integration.
+- In Wiz, go to the Settings > Integrations page, then click Add Integration.
 - Under SIEM & Automation Tools, click Webhook.
 - On the New Integration page:
   - Enter a meaningful Name.

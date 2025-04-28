@@ -89,7 +89,7 @@ Agentless deployments are only supported in Elastic Serverless and Elastic Cloud
 - (Recommended) Obtain or generate authentication info for the third-party product, either a username/password or an authentication token.
 
 2. Add a webhook Integration in Wiz
-- In Wiz, go to the  Settings > Integrations page, then click Add Integration.
+- In Wiz, go to the Settings > Integrations page, then click Add Integration.
 - Under SIEM & Automation Tools, click Webhook.
 - On the New Integration page:
   - Enter a meaningful Name.
@@ -604,9 +604,9 @@ An example event for `defend` looks as following:
 {
     "@timestamp": "2025-01-21T18:52:15.838Z",
     "agent": {
-        "ephemeral_id": "1a35c265-344d-401d-92b2-5601c764b554",
-        "id": "3946700f-7bc9-4f4a-9d38-3a7447dd536e",
-        "name": "elastic-agent-65716",
+        "ephemeral_id": "10c542b8-ed29-40a5-9d04-f32da0fef9bc",
+        "id": "c4be22ec-fa52-4247-accb-8c8e1762c834",
+        "name": "elastic-agent-50085",
         "type": "filebeat",
         "version": "8.18.0"
     },
@@ -615,14 +615,14 @@ An example event for `defend` looks as following:
     },
     "data_stream": {
         "dataset": "wiz.defend",
-        "namespace": "85076",
+        "namespace": "18676",
         "type": "logs"
     },
     "ecs": {
         "version": "8.17.0"
     },
     "elastic_agent": {
-        "id": "3946700f-7bc9-4f4a-9d38-3a7447dd536e",
+        "id": "c4be22ec-fa52-4247-accb-8c8e1762c834",
         "snapshot": true,
         "version": "8.18.0"
     },
@@ -634,9 +634,9 @@ An example event for `defend` looks as following:
         ],
         "dataset": "wiz.defend",
         "id": "2b46aa0d-9f46-5cb9-a6ae-e83ca514144a",
-        "ingested": "2025-04-22T09:59:09Z",
+        "ingested": "2025-04-28T09:00:38Z",
         "kind": "event",
-        "original": "{\"threatId\":\"733edfe5-db25-5b14-ac58-dc69d6005c81\",\"severity\":\"MEDIUM\",\"description\":\"Process executed the touch binary with the relevant command line flag used to modify files date information such as creation time, and last modification time. This could indicate the presence of a threat actor achieving defense evasion using the Timestomping technique.\",\"trigger\":{\"ruleName\":\"Detections Webhook Test Rule\",\"source\":\"DETECTIONS\",\"type\":\"Created\",\"ruleId\":\"a08fe977-3f54-48bf-adcf-f76994739c1f\"},\"title\":\"Timestomping technique was detected\",\"tdrId\":\"46fd0cdc-252e-5e69-be6e-66e4851d7ae4\",\"triggeringEventsCount\":2,\"tdrSource\":\"WIZ_SENSOR\",\"primaryResource\":{\"cloudAccount\":{\"cloudPlatform\":\"AWS\",\"externalId\":\"134653897021\",\"id\":\"5d67ed02-738e-5217-b065-d93642dd2629\"},\"nativeType\":\"ecs#containerinstance\",\"name\":\"test-container\",\"externalId\":\"test-container\",\"id\":\"da259b23-de77-5adb-8336-8c4071696305\",\"region\":\"us-east-1\",\"type\":\"CONTAINER\"},\"mitreTechniques\":[\"T1070.006\"],\"createdAt\":\"2025-01-21T18:52:16.819883668Z\",\"timeframe\":{\"start\":\"2025-01-21T18:52:15.838Z\",\"end\":\"2025-01-21T18:52:15.838Z\"},\"cloudAccounts\":[{\"cloudPlatform\":\"AWS\",\"externalId\":\"134653897021\",\"id\":\"5d67ed02-738e-5217-b065-d93642dd2629\"}],\"mitreTactics\":[\"TA0005\"],\"id\":\"6a440e9b-c8d8-5482-a0e9-da714359aecf\",\"threatURL\":\"https://test.wiz.io/issues#~(issue~'733edfe5-db25-5b14-ac58-dc69d6005c81)\",\"triggeringEvent\":{\"cloudPlatform\":\"AWS\",\"origin\":\"WIZ_SENSOR\",\"resources\":[{\"cloudAccount\":{\"cloudPlatform\":\"AWS\",\"externalId\":\"134653897021\",\"id\":\"5d67ed02-738e-5217-b065-d93642dd2629\"},\"nativeType\":\"ecs#containerinstance\",\"name\":\"test-container\",\"externalId\":\"test-container\",\"id\":\"da259b23-de77-5adb-8336-8c4071696305\",\"region\":\"us-east-1\",\"type\":\"CONTAINER\"}],\"externalId\":\"Ptrace##test-container-SensorRuleEngine##sen-id-142-bd820642-34f2-4d3c-90b6-c384df0fd528\",\"description\":\"The program /usr/bin/bash executed the program /usr/bin/touch on container test-container\",\"source\":\"WizSensorAlert##RuleEngine\",\"runtimeDetails\":{\"processTree\":[{\"container\":{\"imageId\":\"d18500ef-c0f7-5028-8c4c-1cd56c3a6652\",\"name\":\"test-container\",\"externalId\":\"test-container\",\"imageExternalId\":\"sha256:dcad76015854d8bcab3041a631d9d25d777325bb78abfa8ab0882e1b85ad84bb\",\"id\":\"da259b23-de77-5adb-8336-8c4071696305\"},\"executionTime\":\"2025-01-21T18:52:15.838Z\",\"path\":\"/usr/bin/touch\",\"size\":109616,\"id\":\"1560\",\"userId\":\"0\",\"hash\":\"a0d0c6248d07a8fa8e3b6a94e218ff9c8c372ad6\",\"command\":\"touch -r /usr/bin /tmp/uga\",\"username\":\"root\"},{\"container\":{\"imageId\":\"d18500ef-c0f7-5028-8c4c-1cd56c3a6652\",\"name\":\"test-container\",\"externalId\":\"test-container\",\"imageExternalId\":\"sha256:dcad76015854d8bcab3041a631d9d25d777325bb78abfa8ab0882e1b85ad84bb\",\"id\":\"da259b23-de77-5adb-8336-8c4071696305\"},\"executionTime\":\"2025-01-21T18:52:15.838Z\",\"path\":\"/usr/bin/bash\",\"size\":1265648,\"id\":\"1560\",\"userId\":\"0\",\"hash\":\"91fbd9d8c65de48dc82a1064b8a4fc89f5651778\",\"command\":\"/bin/bash -x -c touch -r /usr/bin /tmp/uga\",\"username\":\"root\"}]},\"cloudProviderUrl\":\"https://console.aws.amazon.com/cloudtrail/home?region=us-east-1#/events/Ptrace##test-container-SensorRuleEngine##sen-id-142-bd820642-34f2-4d3c-90b6-c384df0fd528\",\"actor\":{\"nativeType\":\"Microsoft Entra ID Application Service Principal\",\"name\":\"test-actor\",\"externalId\":\"test-actor\",\"id\":\"4e1bd57f-49b2-47a8-a4a7-0e66fe0b770e\",\"type\":\"SERVICE_ACCOUNT\"},\"actorIPMeta\":{\"reputationSource\":\"Recorded Future\",\"country\":\"United States\",\"isForeign\":true,\"reputation\":\"Benign\",\"autonomousSystemNumber\":8075,\"autonomousSystemOrganization\":\"MICROSOFT-CORP-MSN-AS-BLOCK\"},\"eventTime\":\"2025-01-21T18:52:15.838Z\",\"name\":\"Timestomping technique was detected\",\"id\":\"2b46aa0d-9f46-5cb9-a6ae-e83ca514144a\",\"category\":\"Detection\",\"status\":\"Success\",\"actorIP\":\"81.2.69.192\"},\"cloudOrganizations\":[]}",
+        "original": "{\"severity\":\"MEDIUM\",\"threatId\":\"733edfe5-db25-5b14-ac58-dc69d6005c81\",\"description\":\"Process executed the touch binary with the relevant command line flag used to modify files date information such as creation time, and last modification time. This could indicate the presence of a threat actor achieving defense evasion using the Timestomping technique.\",\"trigger\":{\"ruleName\":\"Detections Webhook Test Rule\",\"source\":\"DETECTIONS\",\"type\":\"Created\",\"ruleId\":\"a08fe977-3f54-48bf-adcf-f76994739c1f\"},\"tdrId\":\"46fd0cdc-252e-5e69-be6e-66e4851d7ae4\",\"title\":\"Timestomping technique was detected\",\"triggeringEventsCount\":2,\"tdrSource\":\"WIZ_SENSOR\",\"primaryResource\":{\"cloudAccount\":{\"cloudPlatform\":\"AWS\",\"externalId\":\"134653897021\",\"id\":\"5d67ed02-738e-5217-b065-d93642dd2629\"},\"nativeType\":\"ecs#containerinstance\",\"name\":\"test-container\",\"externalId\":\"test-container\",\"id\":\"da259b23-de77-5adb-8336-8c4071696305\",\"region\":\"us-east-1\",\"type\":\"CONTAINER\"},\"mitreTechniques\":[\"T1070.006\"],\"cloudAccounts\":[{\"cloudPlatform\":\"AWS\",\"externalId\":\"134653897021\",\"id\":\"5d67ed02-738e-5217-b065-d93642dd2629\"}],\"timeframe\":{\"start\":\"2025-01-21T18:52:15.838Z\",\"end\":\"2025-01-21T18:52:15.838Z\"},\"createdAt\":\"2025-01-21T18:52:16.819883668Z\",\"mitreTactics\":[\"TA0005\"],\"id\":\"6a440e9b-c8d8-5482-a0e9-da714359aecf\",\"threatURL\":\"https://test.wiz.io/issues#~(issue~'733edfe5-db25-5b14-ac58-dc69d6005c81)\",\"triggeringEvent\":{\"cloudPlatform\":\"AWS\",\"origin\":\"WIZ_SENSOR\",\"externalId\":\"Ptrace##test-container-SensorRuleEngine##sen-id-142-bd820642-34f2-4d3c-90b6-c384df0fd528\",\"description\":\"The program /usr/bin/bash executed the program /usr/bin/touch on container test-container\",\"resources\":[{\"cloudAccount\":{\"cloudPlatform\":\"AWS\",\"externalId\":\"134653897021\",\"id\":\"5d67ed02-738e-5217-b065-d93642dd2629\"},\"nativeType\":\"ecs#containerinstance\",\"name\":\"test-container\",\"externalId\":\"test-container\",\"id\":\"da259b23-de77-5adb-8336-8c4071696305\",\"region\":\"us-east-1\",\"type\":\"CONTAINER\"}],\"source\":\"WizSensorAlert##RuleEngine\",\"runtimeDetails\":{\"processTree\":[{\"container\":{\"imageId\":\"d18500ef-c0f7-5028-8c4c-1cd56c3a6652\",\"name\":\"test-container\",\"externalId\":\"test-container\",\"imageExternalId\":\"sha256:dcad76015854d8bcab3041a631d9d25d777325bb78abfa8ab0882e1b85ad84bb\",\"id\":\"da259b23-de77-5adb-8336-8c4071696305\"},\"executionTime\":\"2025-01-21T18:52:15.838Z\",\"path\":\"/usr/bin/touch\",\"size\":109616,\"id\":\"1560\",\"userId\":\"0\",\"hash\":\"a0d0c6248d07a8fa8e3b6a94e218ff9c8c372ad6\",\"command\":\"touch -r /usr/bin /tmp/uga\",\"username\":\"root\"},{\"container\":{\"imageId\":\"d18500ef-c0f7-5028-8c4c-1cd56c3a6652\",\"name\":\"test-container\",\"externalId\":\"test-container\",\"imageExternalId\":\"sha256:dcad76015854d8bcab3041a631d9d25d777325bb78abfa8ab0882e1b85ad84bb\",\"id\":\"da259b23-de77-5adb-8336-8c4071696305\"},\"executionTime\":\"2025-01-21T18:52:15.838Z\",\"path\":\"/usr/bin/bash\",\"size\":1265648,\"id\":\"1560\",\"userId\":\"0\",\"hash\":\"91fbd9d8c65de48dc82a1064b8a4fc89f5651778\",\"command\":\"/bin/bash -x -c touch -r /usr/bin /tmp/uga\",\"username\":\"root\"}]},\"cloudProviderUrl\":\"https://console.aws.amazon.com/cloudtrail/home?region=us-east-1#/events/Ptrace##test-container-SensorRuleEngine##sen-id-142-bd820642-34f2-4d3c-90b6-c384df0fd528\",\"actor\":{\"nativeType\":\"Microsoft Entra ID Application Service Principal\",\"name\":\"test-actor\",\"externalId\":\"test-actor\",\"id\":\"4e1bd57f-49b2-47a8-a4a7-0e66fe0b770e\",\"type\":\"SERVICE_ACCOUNT\"},\"actorIPMeta\":{\"reputationSource\":\"Recorded Future\",\"country\":\"United States\",\"isForeign\":true,\"reputation\":\"Benign\",\"autonomousSystemNumber\":8075,\"autonomousSystemOrganization\":\"MICROSOFT-CORP-MSN-AS-BLOCK\"},\"name\":\"Timestomping technique was detected\",\"eventTime\":\"2025-01-21T18:52:15.838Z\",\"id\":\"2b46aa0d-9f46-5cb9-a6ae-e83ca514144a\",\"category\":\"Detection\",\"status\":\"Success\",\"actorIP\":\"81.2.69.192\"},\"cloudOrganizations\":[]}",
         "outcome": "success",
         "provider": "WizSensorAlert##RuleEngine",
         "severity": 47,
@@ -933,7 +933,7 @@ An example event for `defend` looks as following:
 | wiz.defend.triggering_event.event_time | ISO8601 timestamp of when event occurred. | date |
 | wiz.defend.triggering_event.external_id | Event External ID. | keyword |
 | wiz.defend.triggering_event.id | Event ID. | keyword |
-| wiz.defend.triggering_event.name | Name of the event . | keyword |
+| wiz.defend.triggering_event.name | Name of the event. | keyword |
 | wiz.defend.triggering_event.origin | Origin of the event. | keyword |
 | wiz.defend.triggering_event.resources.cloud_account.cloud_platform | Cloud Platform associated with Cloud Account. | keyword |
 | wiz.defend.triggering_event.resources.cloud_account.external_id | External ID for cloud account. | keyword |
