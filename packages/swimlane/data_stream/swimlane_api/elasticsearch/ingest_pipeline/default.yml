@@ -21,7 +21,7 @@ processors:
 
     - remove:
         field: 
-            - message
+          - message
         ignore_missing: true
 
     - rename:
@@ -79,15 +79,10 @@ processors:
     - grok:
         field: swimlane.audit_log.SourceIp
         patterns:
-            - "::ffff:%{IPV4:source.ip}"
-            - "%{IPV4:source.ip}"
-            - "%{IPV6:source.ip}" 
+          - "::ffff:%{IPV4:source.ip}"
+          - "%{IPV4:source.ip}"
+          - "%{IPV6:source.ip}" 
         ignore_failure: true
-
-    - convert:
-        field: source.ip
-        type: ip
-        ignore_missing: true
 
     - geoip:
         field: source.ip
@@ -138,36 +133,36 @@ processors:
         lang: painless
         tag: Add ECS categorization
         params:
-            Create:
-              type:
-                - creation
-            Read:
-              type:
-                - access
-            Update:
-              type:
-                - change
-            Delete:
-              type:
-                - deletion
-            Login:
-              type:
-                - start
-            Logout:
-              type:
-                - end   
+          Create:
+            type:
+              - creation
+          Read:
+            type:
+              - access
+          Update:
+            type:
+              - change
+          Delete:
+            type:
+              - deletion
+          Login:
+            type:
+              - start
+          Logout:
+            type:
+              - end   
             
         source: >-
-            ctx.event.kind = 'event';
-            ctx.event.type = ['info'];
-            if (ctx?.swimlane?.audit_log?.ActionType == null) {
-                return;
-            }
-            if (params.get(ctx?.swimlane?.audit_log?.ActionType) == null) {
-                return;
-            }
-            def hm = new HashMap(params.get(ctx?.swimlane?.audit_log?.ActionType));
-            hm.forEach((k, v) -> ctx.event[k] = v);
+          ctx.event.kind = 'event';
+          ctx.event.type = ['info'];
+          if (ctx?.swimlane?.audit_log?.ActionType == null) {
+              return;
+          }
+          if (params.get(ctx?.swimlane?.audit_log?.ActionType) == null) {
+              return;
+          }
+          def hm = new HashMap(params.get(ctx?.swimlane?.audit_log?.ActionType));
+          hm.forEach((k, v) -> ctx.event[k] = v);
 
     - rename:
         field: swimlane.audit_log.Category
@@ -218,7 +213,7 @@ processors:
         field: swimlane.audit_log.EventTime
         target_field: "@timestamp"
         formats: 
-            - ISO8601
+          - ISO8601
 
     - remove:
         field: swimlane
