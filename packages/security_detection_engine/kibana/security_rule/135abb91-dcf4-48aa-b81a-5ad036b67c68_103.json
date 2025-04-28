@@ -1,0 +1,139 @@
+{
+    "attributes": {
+        "author": [
+            "Elastic"
+        ],
+        "description": "This rule detects PAM version discovery activity on Linux systems. PAM version discovery can be an indication of an attacker attempting to backdoor the authentication process through malicious PAM modules.",
+        "from": "now-9m",
+        "index": [
+            "endgame-*",
+            "logs-crowdstrike.fdr*",
+            "logs-endpoint.events.process*",
+            "logs-sentinel_one_cloud_funnel.*"
+        ],
+        "language": "eql",
+        "license": "Elastic License v2",
+        "name": "Pluggable Authentication Module (PAM) Version Discovery",
+        "note": "## Triage and analysis\n\n> **Disclaimer**:\n> This investigation guide was created using generative AI technology and has been reviewed to improve its accuracy and relevance. While every effort has been made to ensure its quality, we recommend validating the content and adapting it to suit your specific environment and operational needs.\n\n### Investigating Pluggable Authentication Module (PAM) Version Discovery\n\nPluggable Authentication Modules (PAM) provide a flexible mechanism for authenticating users on Linux systems. Adversaries may exploit PAM by discovering its version to identify vulnerabilities or backdoor the authentication process with malicious modules. The detection rule identifies suspicious processes querying PAM-related packages, indicating potential reconnaissance or tampering attempts, thus alerting security teams to possible threats.\n\n### Possible investigation steps\n\n- Review the process details to confirm the presence of suspicious activity, focusing on processes with names \"dpkg\", \"dpkg-query\", or \"rpm\" and their arguments \"libpam-modules\" or \"pam\".\n- Check the user account associated with the process to determine if it is a legitimate user or potentially compromised.\n- Investigate the parent process to understand the origin of the command execution and assess if it aligns with normal user behavior.\n- Analyze recent login attempts and authentication logs to identify any unusual patterns or failed attempts that may indicate unauthorized access attempts.\n- Correlate this activity with other alerts or logs from the same host to identify if there are additional indicators of compromise or related suspicious activities.\n\n### False positive analysis\n\n- Routine system updates or package management activities may trigger the rule when legitimate processes like dpkg or rpm query PAM-related packages. To manage this, consider creating exceptions for known maintenance windows or trusted administrative scripts.\n- Automated configuration management tools, such as Ansible or Puppet, might execute commands that match the rule's criteria. Identify these tools and exclude their processes from triggering alerts by specifying their execution context.\n- Security compliance checks or vulnerability assessments often involve querying system packages, including PAM. If these are regularly scheduled and verified, whitelist the associated processes to prevent unnecessary alerts.\n- Developers or system administrators testing PAM configurations might inadvertently trigger the rule. Establish a protocol for notifying the security team of such activities in advance, allowing for temporary exceptions during testing periods.\n- Custom scripts used for system monitoring or auditing may include commands that match the rule. Review these scripts and, if deemed safe, add them to an exclusion list to reduce false positives.\n\n### Response and remediation\n\n- Isolate the affected system from the network to prevent further unauthorized access or lateral movement by the adversary.\n- Terminate any suspicious processes identified by the detection rule, specifically those involving 'dpkg', 'dpkg-query', or 'rpm' with arguments related to PAM.\n- Conduct a thorough review of PAM configuration files and modules on the affected system to identify and remove any unauthorized or malicious modifications.\n- Restore any compromised PAM modules from a known good backup to ensure the integrity of the authentication process.\n- Monitor for any additional suspicious activity on the affected system and related systems, focusing on unusual authentication attempts or process executions.\n- Escalate the incident to the security operations team for further investigation and to determine if additional systems are affected.\n- Implement enhanced monitoring and logging for PAM-related activities across the network to detect similar threats in the future.",
+        "query": "process where host.os.type == \"linux\" and event.type == \"start\" and\n  event.action in (\"exec\", \"exec_event\", \"start\", \"ProcessRollup2\") and process.parent.name != null and\n  (\n    (process.name in (\"dpkg\", \"dpkg-query\") and process.args == \"libpam-modules\") or\n    (process.name == \"rpm\" and process.args == \"pam\")\n  ) and\nnot process.parent.name in (\"dcservice\", \"inspectorssmplugin\")\n",
+        "references": [
+            "https://www.group-ib.com/blog/pluggable-authentication-module/",
+            "https://embracethered.com/blog/posts/2022/post-exploit-pam-ssh-password-grabbing/"
+        ],
+        "related_integrations": [
+            {
+                "package": "endpoint",
+                "version": "^8.2.0"
+            },
+            {
+                "package": "crowdstrike",
+                "version": "^1.1.0"
+            },
+            {
+                "package": "sentinel_one_cloud_funnel",
+                "version": "^1.0.0"
+            }
+        ],
+        "required_fields": [
+            {
+                "ecs": true,
+                "name": "event.action",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "event.type",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "host.os.type",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "process.args",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "process.name",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "process.parent.name",
+                "type": "keyword"
+            }
+        ],
+        "risk_score": 21,
+        "rule_id": "135abb91-dcf4-48aa-b81a-5ad036b67c68",
+        "setup": "## Setup\n\nThis rule requires data coming in from Elastic Defend.\n\n### Elastic Defend Integration Setup\nElastic Defend is integrated into the Elastic Agent using Fleet. Upon configuration, the integration allows the Elastic Agent to monitor events on your host and send data to the Elastic Security app.\n\n#### Prerequisite Requirements:\n- Fleet is required for Elastic Defend.\n- To configure Fleet Server refer to the [documentation](https://www.elastic.co/guide/en/fleet/current/fleet-server.html).\n\n#### The following steps should be executed in order to add the Elastic Defend integration on a Linux System:\n- Go to the Kibana home page and click \"Add integrations\".\n- In the query bar, search for \"Elastic Defend\" and select the integration to see more details about it.\n- Click \"Add Elastic Defend\".\n- Configure the integration name and optionally add a description.\n- Select the type of environment you want to protect, either \"Traditional Endpoints\" or \"Cloud Workloads\".\n- Select a configuration preset. Each preset comes with different default settings for Elastic Agent, you can further customize these later by configuring the Elastic Defend integration policy. [Helper guide](https://www.elastic.co/guide/en/security/current/configure-endpoint-integration-policy.html).\n- We suggest selecting \"Complete EDR (Endpoint Detection and Response)\" as a configuration setting, that provides \"All events; all preventions\"\n- Enter a name for the agent policy in \"New agent policy name\". If other agent policies already exist, you can click the \"Existing hosts\" tab and select an existing policy instead.\nFor more details on Elastic Agent configuration settings, refer to the [helper guide](https://www.elastic.co/guide/en/fleet/8.10/agent-policy.html).\n- Click \"Save and Continue\".\n- To complete the integration, select \"Add Elastic Agent to your hosts\" and continue to the next section to install the Elastic Agent on your hosts.\nFor more details on Elastic Defend refer to the [helper guide](https://www.elastic.co/guide/en/security/current/install-endpoint.html).\n",
+        "severity": "low",
+        "tags": [
+            "Domain: Endpoint",
+            "OS: Linux",
+            "Use Case: Threat Detection",
+            "Tactic: Discovery",
+            "Tactic: Persistence",
+            "Tactic: Credential Access",
+            "Data Source: Elastic Defend",
+            "Data Source: Elastic Endgame",
+            "Data Source: Crowdstrike",
+            "Data Source: SentinelOne",
+            "Resources: Investigation Guide"
+        ],
+        "threat": [
+            {
+                "framework": "MITRE ATT&CK",
+                "tactic": {
+                    "id": "TA0007",
+                    "name": "Discovery",
+                    "reference": "https://attack.mitre.org/tactics/TA0007/"
+                },
+                "technique": [
+                    {
+                        "id": "T1082",
+                        "name": "System Information Discovery",
+                        "reference": "https://attack.mitre.org/techniques/T1082/"
+                    }
+                ]
+            },
+            {
+                "framework": "MITRE ATT&CK",
+                "tactic": {
+                    "id": "TA0003",
+                    "name": "Persistence",
+                    "reference": "https://attack.mitre.org/tactics/TA0003/"
+                },
+                "technique": [
+                    {
+                        "id": "T1543",
+                        "name": "Create or Modify System Process",
+                        "reference": "https://attack.mitre.org/techniques/T1543/"
+                    }
+                ]
+            },
+            {
+                "framework": "MITRE ATT&CK",
+                "tactic": {
+                    "id": "TA0006",
+                    "name": "Credential Access",
+                    "reference": "https://attack.mitre.org/tactics/TA0006/"
+                },
+                "technique": [
+                    {
+                        "id": "T1556",
+                        "name": "Modify Authentication Process",
+                        "reference": "https://attack.mitre.org/techniques/T1556/"
+                    }
+                ]
+            }
+        ],
+        "timestamp_override": "event.ingested",
+        "type": "eql",
+        "version": 103
+    },
+    "id": "135abb91-dcf4-48aa-b81a-5ad036b67c68_103",
+    "type": "security-rule"
+}
