@@ -89,18 +89,22 @@ redact:
 
 program: |
    (
+    // Check if pagination is complete for call records or needs to continue
     has(state.next_page) && state.next_page == "" ?
       state
     :
+      // If there is a next page or it's the initial request, proceed with data fetching
       state.with(
           request(
             "GET",
+            // use next_page link if available, otherwise construct the initial query
             has(state.next_page) && state.next_page != "" ?
             state.next_page
             :
             state.url.trim_right("/") + "/communications/callRecords?" + "$filter=startDateTime%20ge%20"+ string(now - duration(state.base.interval) - duration(state.sync_delay))
           ).do_request().as(resp, resp.StatusCode == 200 ?
             bytes(resp.Body).decode_json().as(body, {
+              //Collect call record IDs into the worklist
               "worklist": state.worklist + body.value.collate("id"),
               "want_more": "@odata.nextLink" in body,
               "next_page": "@odata.nextLink" in body ? body["@odata.nextLink"] : "",
@@ -123,6 +127,7 @@ program: |
             }
         ))
    ).as(state,
+    // If worklist has items to process, proceed to session-level data fetching using call_record_id(id)
     has(state.worklist) && size(state.worklist) > int(state.next) ?
     state.with(
       request(
@@ -134,6 +139,7 @@ program: |
       ).do_request().as(resp, resp.StatusCode == 200 ?
         bytes(resp.Body).decode_json().as(sess, sess.value.map(session, 
         {
+          // Map each session and its segments
           "session_id": session.id,
           "modalities" : session.modalities,
           "segments": session.segments.map(seg,{
@@ -236,15 +242,22 @@ program: |
           )
         })
         .as(mapped_sessions,
+
+        // If there's a next link for session pagination, continue fetching
+        // but do not emit for this case. Populate events
+        // with a place-holder to be discarded by the ingest
+        // pipeline. Keep storing sessions in prev_sess for same call_record
+
         ("@odata.nextLink" in sess) ? 
          {
            "events": [{"message": "want_more"}],
            "want_more": "@odata.nextLink" in sess || size(state.worklist) > 0,
            "next_page_sessions": "@odata.nextLink" in sess ? sess["@odata.nextLink"] : "",
-           "worklist": ("@odata.nextLink" in sess ? state.worklist : tail(state.worklist)),
+           "worklist": state.worklist,
            "prev_sess": mapped_sessions + state.prev_sess,
          }
          :
+         // If no more session pages, emit final event
          {
              "events": [
               {
@@ -264,7 +277,8 @@ program: |
            ],
            "want_more": "@odata.nextLink" in sess || size(state.worklist) > 0,
            "next_page_sessions": "@odata.nextLink" in sess ? sess["@odata.nextLink"] : "",
-           "worklist": ("@odata.nextLink" in sess ? state.worklist : tail(state.worklist)),
+           // Remove the processed call_record_id from the worklist after publishing its event.
+           "worklist":  tail(state.worklist),
            "prev_sess": [],
          }))
       :
