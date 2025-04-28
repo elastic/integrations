@@ -1,6 +1,6 @@
 # Custom Logs (Filestream) Package
 
-WARNING: Migrating from the "Custom Logs (Legacy)" to "Custom Logs
+WARNING: Migrating from the "Custom Logs (Deprecated)" to "Custom Logs
 (Filestream)" will cause files to be re-ingested because the state is not migrated.
 
 In future releases it's expected to have an automated way to migrate the state. However, this is not possible at the moment.
