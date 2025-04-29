@@ -1,0 +1,91 @@
+{
+    "attributes": {
+        "author": [
+            "Elastic"
+        ],
+        "description": "This rule monitors for the unusual occurrence of outbound network connections to suspicious webservice domains.",
+        "from": "now-9m",
+        "history_window_start": "now-7d",
+        "index": [
+            "logs-endpoint.events.network-*"
+        ],
+        "language": "kuery",
+        "license": "Elastic License v2",
+        "name": "Unusual Network Connection to Suspicious Web Service",
+        "new_terms_fields": [
+            "host.id",
+            "process.executable",
+            "destination.domain"
+        ],
+        "note": " ## Triage and analysis\n\n> **Disclaimer**:\n> This investigation guide was created using generative AI technology and has been reviewed to improve its accuracy and relevance. While every effort has been made to ensure its quality, we recommend validating the content and adapting it to suit your specific environment and operational needs.\n\n### Investigating Unusual Network Connection to Suspicious Web Service\n\nIn macOS environments, network connections to web services are routine for data sharing and collaboration. However, adversaries exploit these services for command and control by disguising malicious traffic as legitimate. The detection rule identifies unusual outbound connections to known suspicious domains, flagging potential misuse by monitoring specific domain patterns and connection events, thus aiding in early threat detection.\n\n### Possible investigation steps\n\n- Review the destination domain and process executable from the alert to determine if it matches any expected web service communication.\n- Check the event.category and event.type fields to confirm the nature of the network connection and ensure it aligns with the expected behavior of a macOS system.\n- Investigate the source host identified by host.os.type to gather information about its recent activities, installed applications, and any potential indicators of compromise.\n- Analyze network traffic logs for the source host to identify any other unusual or suspicious outbound connections that may indicate a broader compromise.\n- Correlate the alert with other security events or alerts from the same host or network segment to identify patterns or related incidents.\n- Consult threat intelligence sources to gather additional context on the flagged domain and assess its reputation and history of malicious activity.\n\n### False positive analysis\n\n- Frequent access to legitimate cloud storage services like Google Drive or Dropbox for routine file sharing can trigger false positives. Users can create exceptions for specific domains or IP addresses known to be safe and frequently accessed by their organization.\n- Automated backup services that use domains such as OneDrive or SharePoint may be flagged. To mitigate this, identify and whitelist the specific services or applications that are part of regular backup operations.\n- Collaboration tools like Slack or Discord, used for legitimate communication, might be mistakenly flagged. Users should review and whitelist these domains if they are part of standard business operations.\n- URL shorteners like bit.ly or tinyurl.com used in marketing or communication campaigns can cause false alerts. Establish a list of trusted shortener services and exclude them from monitoring if they are regularly used by the organization.\n- Development and testing environments using services like ngrok or localtunnel for temporary public URLs can be misidentified. Ensure these environments are documented and excluded from the rule if they are part of normal development workflows.\n\n### Response and remediation\n\n- Immediately isolate the affected macOS device from the network to prevent further communication with the suspicious domains.\n- Conduct a thorough review of the network logs to identify any data exfiltration attempts or additional suspicious connections originating from the isolated device.\n- Remove any unauthorized or suspicious applications or scripts found on the device that may be facilitating the outbound connections.\n- Update the device's security software and perform a full system scan to detect and remove any malware or unauthorized software.\n- Reset credentials and review access permissions for the affected user accounts to prevent unauthorized access.\n- Monitor the network for any further attempts to connect to the flagged domains and ensure that alerts are configured to notify security teams of any recurrence.\n- Escalate the incident to the security operations center (SOC) or relevant cybersecurity team for further investigation and to determine if the threat is part of a larger attack campaign.\n",
+        "query": "event.category : \"network\" and host.os.type : \"macos\" and event.type : \"start\" and\ndestination.domain : (\n    pastebin.* or\n    paste.ee or\n    ghostbin.com or\n    drive.google.com or\n    ?.docs.live.net or\n    api.dropboxapi.* or\n    content.dropboxapi.* or\n    *dl.dropboxusercontent.* or\n    api.onedrive.com or\n    *.onedrive.org or\n    onedrive.live.com or\n    filebin.net or\n    *.ngrok.io or\n    ngrok.com or\n    *.portmap.* or\n    *serveo.net or\n    *localtunnel.me or\n    *pagekite.me or\n    *localxpose.io or\n    *notabug.org or\n    rawcdn.githack.* or\n    paste.nrecom.net or\n    zerobin.net or\n    controlc.com or\n    requestbin.net or\n    api.slack.com or\n    slack-redir.net or\n    slack-files.com or\n    cdn.discordapp.com or\n    discordapp.com or\n    discord.com or\n    apis.azureedge.net or\n    cdn.sql.gg or\n    ?.top4top.io or\n    top4top.io or\n    uplooder.net or\n    *.cdnmegafiles.com or\n    transfer.sh or\n    updates.peer2profit.com or\n    api.telegram.org or\n    t.me or\n    meacz.gq or\n    rwrd.org or\n    *.publicvm.com or\n    *.blogspot.com or\n    api.mylnikov.org or\n    script.google.com or\n    script.googleusercontent.com or\n    paste4btc.com or\n    workupload.com or\n    temp.sh or\n    filetransfer.io or\n    gofile.io or\n    store?.gofile.io or\n    tiny.one or\n    api.notion.com or\n    *.sharepoint.com or\n    *upload.ee or\n    bit.ly or\n    t.ly or\n    cutt.ly or\n    mbasic.facebook.com or\n    api.gofile.io or\n    file.io or\n    api.anonfiles.com or\n    api.trello.com or\n    gist.githubusercontent.com or\n    dpaste.com or\n    *azurewebsites.net or\n    *.zulipchat.com or\n    *.4shared.com or\n    filecloud.me or\n    i.ibb.co or\n    files.catbox.moe or\n    *.getmyip.com or\n    mockbin.org or\n    webhook.site or\n    run.mocky.io or\n    *infinityfreeapp.com or\n    free.keep.sh or\n    tinyurl.com or\n    ftpupload.net or\n    lobfile.com or\n    *.ngrok-free.app or\n    myexternalip.com or\n    yandex.ru or\n    *.yandex.ru or\n    *.aternos.me or\n    cdn??.space or\n    *.pcloud.com or\n    mediafire.zip or\n    urlz.fr or\n    rentry.co or\n    *.b-cdn.net or\n    pastecode.dev or\n    i.imgur.com or\n    the.earth.li or\n    *.trycloudflare.com\n)\n",
+        "related_integrations": [
+            {
+                "package": "endpoint",
+                "version": "^9.0.0"
+            }
+        ],
+        "required_fields": [
+            {
+                "ecs": true,
+                "name": "destination.domain",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "event.category",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "event.type",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "host.os.type",
+                "type": "keyword"
+            }
+        ],
+        "risk_score": 47,
+        "rule_id": "b07f0fba-0a78-11f0-8311-b66272739ecb",
+        "severity": "medium",
+        "tags": [
+            "Domain: Endpoint",
+            "OS: macOS",
+            "Use Case: Threat Detection",
+            "Tactic: Command and Control",
+            "Data Source: Elastic Defend",
+            "Resources: Investigation Guide"
+        ],
+        "threat": [
+            {
+                "framework": "MITRE ATT&CK",
+                "tactic": {
+                    "id": "TA0011",
+                    "name": "Command and Control",
+                    "reference": "https://attack.mitre.org/tactics/TA0011/"
+                },
+                "technique": [
+                    {
+                        "id": "T1071",
+                        "name": "Application Layer Protocol",
+                        "reference": "https://attack.mitre.org/techniques/T1071/",
+                        "subtechnique": [
+                            {
+                                "id": "T1071.001",
+                                "name": "Web Protocols",
+                                "reference": "https://attack.mitre.org/techniques/T1071/001/"
+                            }
+                        ]
+                    }
+                ]
+            }
+        ],
+        "timestamp_override": "event.ingested",
+        "type": "new_terms",
+        "version": 2
+    },
+    "id": "b07f0fba-0a78-11f0-8311-b66272739ecb_2",
+    "type": "security-rule"
+}

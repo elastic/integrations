@@ -1,0 +1,229 @@
+---
+description: Pipeline for processing tenable ot security cloud events
+processors:
+
+  - rename:
+      field: message
+      target_field: tenable_ot_security.events
+
+  - fingerprint:
+      fields:
+        - tenable_ot_security.events
+      tag: fingerprinting
+      target_field: "_id"
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+
+  #################### Scripts for processing input ####################
+
+  - script:
+      description: Drops null/empty values recursively.
+      lang: painless
+      source: |
+        boolean dropEmptyFields(Object object) {
+          if (object == null || object == "") {
+            return true;
+          } else if (object instanceof Map) {
+            ((Map) object).values().removeIf(value -> dropEmptyFields(value));
+            return (((Map) object).size() == 0);
+          } else if (object instanceof List) {
+            ((List) object).removeIf(value -> dropEmptyFields(value));
+            return (((List) object).length == 0);
+          }
+          return false;
+        }
+        dropEmptyFields(ctx);
+
+  - script:
+      description: Convert Additional Info keys to snake case.
+      tag: additional-info-keys-to-snake-case
+      lang: painless
+      source: |
+        Map keysToSnakeCase(Map m) {
+          def regex = /_?([a-z])([A-Z]+)/;
+          def snakeCaseMap = [:];
+          for (entry in m.entrySet()) {
+            def k = entry.getKey();
+            def v = entry.getValue();
+            if (v instanceof Map) {
+              v = keysToSnakeCase(v);
+            } else if (v instanceof List) {
+              for (int i = 0; i < v.size(); i++) {
+                def item = v.get(i);
+                if (item instanceof Map) {
+                  v.set(i, keysToSnakeCase(item));
+                }
+              }
+            }
+            k = regex.matcher(k).replaceAll('$1_$2').toLowerCase();
+            snakeCaseMap.put(k, v);
+          }
+          return snakeCaseMap;
+        }
+        if (ctx.tenable_ot_security.events != null) {
+          ctx.tenable_ot_security.events = keysToSnakeCase(ctx.tenable_ot_security.events);
+        }
+
+  - script:
+      description: Recursively normalize every occurrence of 'nodes'.
+      lang: painless
+      source: |
+        def normalize(def obj) {
+          if (obj instanceof Map) {
+                Map newObj = new HashMap();
+                for (entry in obj.entrySet()) {
+                    def key = entry.getKey();
+                    def value = entry.getValue();
+
+                    // If the value is a map with a single key "nodes", replace it with its contents
+                    if (value instanceof Map && value.containsKey("nodes")) {
+                        value = value.get("nodes");
+                    }
+
+                    // Recursively process if value is a map or list
+                    newObj.put(key, normalize(value));
+                }
+                return newObj;
+            } else if (obj instanceof List) {
+                List newList = new ArrayList();
+                for (item in obj) {
+                    newList.add(normalize(item));
+                }
+                return newList;
+            } else {
+                return obj;
+            }
+           }
+        // Apply normalization to every occurrence of "nodes" in events.
+        if (ctx.containsKey("tenable_ot_security") && ctx.tenable_ot_security.containsKey("events")) {
+          ctx.tenable_ot_security.events = normalize(ctx.tenable_ot_security.events);
+        }
+
+  #################### ECS Fields ####################
+
+  - set:
+      field: event.kind
+      value: event
+
+  - set:
+      field: ecs.version
+      value: "8.11.0"
+
+  - append:
+      field: event.category
+      value: iam
+
+  - set:
+      field: event.module
+      value: tenable_ot_security
+
+  - set:
+      field: event.type
+      value: ["info"]
+
+  - set:
+      field: event.dataset
+      value: tenable_ot_security.events
+
+  - set:
+     field: "@timestamp"
+     copy_from: tenable_ot_security.events.time
+     ignore_empty_value: true
+
+  - set:
+      field: event.id
+      copy_from: tenable_ot_security.events.id
+      ignore_empty_value: true
+
+  - convert:
+      field: tenable_ot_security.events.src_ip
+      type: ip
+      if: ctx.tenable_ot_security.events?.src_ip != null && ctx.tenable_ot_security.events.src_ip != ''
+      ignore_missing: true
+
+  - append:
+      field: source.ip
+      value: '{{{tenable_ot_security.events.src_ip}}}'
+      if: ctx.tenable_ot_security.events?.src_ip != null || ctx.tenable_ot_security.events.src_ip != ''
+      allow_duplicates: false
+
+  - convert:
+      field: tenable_ot_security.events.dst_ip
+      type: ip
+      if: ctx.tenable_ot_security.events?.dst_ip != null && ctx.tenable_ot_security.events.dst_ip != ''
+      ignore_missing: true
+
+  - append:
+      field: destination.ip
+      value: '{{{tenable_ot_security.events.dst_ip}}}'
+      if: ctx.tenable_ot_security.events?.dst_ip != null || ctx.tenable_ot_security.events?.dst_ip != ''
+      allow_duplicates: false
+
+  - script:
+      description: Convert MAC addresses to standard notation.
+      lang: painless
+      source: |
+        def events = ctx?.tenable_ot_security?.events;
+        if (events != null) {
+          if (events.dst_mac != null) {
+            events.dst_mac = events.dst_mac.replace(":", "-").toUpperCase();
+          }
+          if (events.src_mac != null) {
+            events.src_mac = events.src_mac.replace(":", "-").toUpperCase();
+          }
+          def srcInterface = events.src_interface;
+          if (srcInterface?.mac != null) {
+            srcInterface.mac = srcInterface.mac.replace(":", "-").toUpperCase();
+          }
+        }
+
+  - append:
+      field: destination.mac
+      value: '{{{tenable_ot_security.events.dst_mac}}}'
+      if: ctx.tenable_ot_security.events?.dst_mac != null && ctx.tenable_ot_security.events.dst_mac != ''
+      allow_duplicates: false
+
+  - append:
+      field: source.mac
+      value: '{{{tenable_ot_security.events.src_mac}}}'
+      allow_duplicates: false
+      if: ctx.tenable_ot_security.events?.src_mac != null && ctx.tenable_ot_security.events.src_mac != ''
+
+  - append:
+      field: network.protocol
+      value: '{{{tenable_ot_security.events.protocol_raw}}}'
+      allow_duplicates: false
+      if: ctx.tenable_ot_security.events?.protocol_raw != null && ctx.tenable_ot_security.events.protocol_raw != ''
+
+  - append:
+      field: related.user
+      if: ctx.tenable_ot_security.events?.resolved_user != null && ctx.tenable_ot_security.events.resolved_user != ''
+      value: "{{{tenable_ot_security.events.resolved_user}}}"
+      allow_duplicates: false
+
+  #################### Override host.ip ####################
+
+  - append:
+      field: host.ip
+      value: "{{{tenable_ot_security.events.src_ip}}}"
+      allow_duplicates: false
+      if: ctx.tenable_ot_security.events?.src_ip != null && ctx.tenable_ot_security.events.src_ip != ''
+
+  - geoip:
+      field: host.ip
+      target_field: host.geo
+      ignore_missing: true
+      ignore_failure: true
+
+#################### Error Log fields ####################
+
+on_failure:
+  - append:
+      field: error.message
+      value: '{{{_ingest.on_failure_message}}}'
+
+  - set:
+      field: event.kind
+      value: pipeline_error
