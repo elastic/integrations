@@ -353,9 +353,7 @@ processors:
 
         for (def group : ctx.activedirectory.groups) {
           if (group.name != null) {
-            if (ctx.user.group.name == null) {
-              ctx.user.group.name = new HashSet();
-            }
+            ctx.user.group.name = ctx.user.group.name ?: new HashSet();
             ctx.user.group.name.add(group.name);
           }
 
@@ -364,9 +362,7 @@ processors:
           }
 
           group.id = group.object_sid;
-          if (ctx.user.group.id == null) {
-            ctx.user.group.id = new HashSet();
-          }
+          ctx.user.group.id = ctx.user.group.id ?: new HashSet();
           ctx.user.group.id.add(group.id);
 
           int idx = group.object_sid.lastIndexOf('-');
