@@ -81,7 +81,7 @@ state:
   sync_delay: "5s"
   base:
     tenant_id: "{{azure_tenant_id}}"
-    interval: "{{interval}}"
+    initial_interval: "{{initial_interval}}"
 
 redact:
   fields:
@@ -101,11 +101,15 @@ program: |
             has(state.next_page) && state.next_page != "" ?
             state.next_page
             :
-            state.url.trim_right("/") + "/communications/callRecords?" + "$filter=startDateTime%20ge%20"+ string(now - duration(state.base.interval) - duration(state.sync_delay))
+            state.url.trim_right("/") + "/communications/callRecords?" + "$filter=startDateTime%20ge%20"+ string(now - duration(state.base.initial_interval) - duration(state.sync_delay))
           ).do_request().as(resp, resp.StatusCode == 200 ?
             bytes(resp.Body).decode_json().as(body, {
               //Collect call record IDs into the worklist
-              "worklist": state.worklist + body.value.collate("id"),
+              "worklist" : state.worklist + body.value.map(mp, {
+                "id": mp.id,
+                "start_date_time": mp.startDateTime,
+                "end_date_time": mp.endDateTime,
+              }),
               "want_more": "@odata.nextLink" in body,
               "next_page": "@odata.nextLink" in body ? body["@odata.nextLink"] : "",
             })
@@ -135,7 +139,7 @@ program: |
         has(state.next_page_sessions) && state.next_page_sessions != "" ?
         state.next_page_sessions
         :
-        state.url + "/communications/callRecords/" + state.worklist[state.next] + "/sessions?$expand=segments"
+        state.url + "/communications/callRecords/" + state.worklist[state.next].id + "/sessions?$expand=segments"
       ).do_request().as(resp, resp.StatusCode == 200 ?
         bytes(resp.Body).decode_json().as(sess, sess.value.map(session, 
         {
@@ -266,7 +270,9 @@ program: |
                     "teams": {
                       "call":{
                         "quality": {
-                          "call_record_id" : string(state.worklist[state.next]),
+                          "call_record_id" : string(state.worklist[state.next].id),
+                          "start_date_time" : state.worklist[state.next].start_date_time,
+                          "end_date_time" : state.worklist[state.next].end_date_time,
                           "sessions": mapped_sessions + state.prev_sess
                         }
                       }

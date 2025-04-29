@@ -2622,45 +2622,45 @@ An example event for `teams_call_quality` looks as following:
 
 ```json
 {
-    "@timestamp": "2025-04-25T08:34:03.545Z",
+    "@timestamp": "2023-09-25T09:28:38Z",
     "agent": {
-        "ephemeral_id": "ca5003d7-5342-4088-8dc0-82666f24a100",
-        "id": "abbc8f61-f490-42af-804d-117c5e7d9b90",
-        "name": "elastic-agent-24709",
+        "ephemeral_id": "96f94b5e-07c1-4154-9bb9-4e9af413f17b",
+        "id": "ba281301-b13d-4d62-a529-3499c2df0687",
+        "name": "elastic-agent-56810",
         "type": "filebeat",
         "version": "8.16.0"
     },
     "data_stream": {
         "dataset": "o365_metrics.teams_call_quality",
-        "namespace": "95205",
+        "namespace": "39329",
         "type": "metrics"
     },
     "ecs": {
         "version": "8.17.0"
     },
     "elastic_agent": {
-        "id": "abbc8f61-f490-42af-804d-117c5e7d9b90",
+        "id": "ba281301-b13d-4d62-a529-3499c2df0687",
         "snapshot": false,
         "version": "8.16.0"
     },
     "event": {
         "agent_id_status": "verified",
         "dataset": "o365_metrics.teams_call_quality",
-        "ingested": "2025-04-25T08:34:04Z"
+        "ingested": "2025-04-29T06:58:45Z"
     },
     "host": {
         "architecture": "aarch64",
         "containerized": false,
-        "hostname": "elastic-agent-24709",
+        "hostname": "elastic-agent-56810",
         "ip": [
-            "172.23.0.2",
-            "172.28.0.4"
+            "172.26.0.2",
+            "172.25.0.4"
         ],
         "mac": [
-            "02-42-AC-17-00-02",
-            "02-42-AC-1C-00-04"
+            "02-42-AC-19-00-04",
+            "02-42-AC-1A-00-02"
         ],
-        "name": "elastic-agent-24709",
+        "name": "elastic-agent-56810",
         "os": {
             "family": "",
             "kernel": "5.10.104-linuxkit",
@@ -2679,6 +2679,7 @@ An example event for `teams_call_quality` looks as following:
                 "call": {
                     "quality": {
                         "call_record_id": "6ce-b8fa-4d44-a613-7f81",
+                        "end_date_time": "2023-09-25T09:28:41Z",
                         "sessions": [
                             {
                                 "modalities": [
@@ -2890,7 +2891,8 @@ An example event for `teams_call_quality` looks as following:
                                 ],
                                 "session_id": "test1"
                             }
-                        ]
+                        ],
+                        "start_date_time": "2023-09-25T09:28:38Z"
                     }
                 }
             }
@@ -2917,6 +2919,7 @@ Please refer to the following [document](https://www.elastic.co/guide/en/ecs/cur
 | data_stream.type | Data stream type. | constant_keyword |
 | input.type | Type of Filebeat input. | keyword |
 | o365.metrics.teams.call.quality.call_record_id | Unique identifier for the call record. | keyword |
+| o365.metrics.teams.call.quality.end_date_time | UTC time when the last user left the call. | date |
 | o365.metrics.teams.call.quality.sessions.modalities | List of modalities present in the session. Possible values are- unknown, audio, video, videoBasedScreenSharing, data, screenSharing, unknownFutureValue. | keyword |
 | o365.metrics.teams.call.quality.sessions.segments.callee.associated_identity.display_name | The display name of the callee | keyword |
 | o365.metrics.teams.call.quality.sessions.segments.callee.associated_identity.id | The unique user ID for the callee | keyword |
@@ -2995,6 +2998,7 @@ Please refer to the following [document](https://www.elastic.co/guide/en/ecs/cur
 | o365.metrics.teams.call.quality.sessions.segments.segment_id | Unique identifier for the segment | keyword |
 | o365.metrics.teams.call.quality.sessions.segments.start_date_time | UTC time when the segment started. | date |
 | o365.metrics.teams.call.quality.sessions.session_id | Unique identifier for the session. | keyword |
+| o365.metrics.teams.call.quality.start_date_time | UTC time when the first user joined the call. | date |
 
 
 ### Tenant Settings
