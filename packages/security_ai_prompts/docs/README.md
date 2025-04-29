@@ -8,7 +8,7 @@ This integration is in **beta** and subject to changes. Feedback and contributio
 
 ## Requirements
 
-- Elastic Stack **8.19.x** or later.
+- Elastic Stack **8.19.x**, **9.1.x**, or later.
 - Kibana with the **Elastic Assistant** plugin enabled.
 - Feature flag enabled in Kibana settings:
   ```yml
