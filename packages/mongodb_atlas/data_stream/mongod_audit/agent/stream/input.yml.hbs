@@ -35,13 +35,16 @@ redact:
   fields: ~
 program: |
     (
+      // Check if the host list is available and not empty
       (has(state.hostlist) && size(state.hostlist) > 0) ?
-        state
+        state // If host list is available, proceed with the current state
       :
         (
+          // If the page number is not 1, proceed with the current state
           (state.page_num != 1) ?
             state
           :
+            // Otherwise, set the start and end dates for the query
             state.with(
               {
                 "startDate": state.?cursor.last_timestamp.orValue(int(now - duration("30m"))),
@@ -49,6 +52,7 @@ program: |
               }
             )
         ).as(state,
+          // Make a GET request to retrieve the host list
           state.with(
             request("GET", state.url + "/api/atlas/v2/groups/" + state.group_id + "/processes?pageNum=" + string(state.page_num) + "&itemsPerPage=100").with(
               {
@@ -56,15 +60,20 @@ program: |
                   "Accept": ["application/vnd.atlas." + string(now.getFullYear()) + "-01-01+json"],
                 },
               }
-            ).do_request().as(resp, (resp.StatusCode == 200) ?
+            ).do_request().as(resp,
+            // Check if the response status code is 200
+            (resp.StatusCode == 200) ?
+              // Parse the response body as JSON
               bytes(resp.Body).decode_json().as(body,
                 {
+                  // Extract the host list and other relevant information
                   "hostlist": body.results.map(e, e.hostname),
                   "next": 0,
                   "page_num": body.links.exists_one(res, res.rel == "next") ? (int(state.page_num) + 1) : 1,
                 }
               )
             :
+              // Handle error response
               bytes(resp.Body).decode_json().as(body, (body != null) ?
                 {
                   "events": [
@@ -93,11 +102,14 @@ program: |
             )
           )
         )
-    ).as(state, !has(state.next) ?
-      state
+    ).as(state,
+    // Check if the next host is available
+    !has(state.next) ?
+      state // If no next host, proceed with the current state
     : (state.next >= size(state.hostlist)) ?
-      {}
+      {} // If no more hosts, return an empty object
     :
+      // Make a GET request to retrieve the log data for the current host
       request("GET", state.url + "/api/atlas/v2/groups/" + state.group_id + "/clusters/" + state.hostlist[state.next] + "/logs/mongodb-audit-log.gz?startDate=" + string(int(state.startDate)) + "&endDate=" + string(int(state.endDate))).with(
         {
           "Header": {
@@ -105,9 +117,12 @@ program: |
           },
         }
       ).do_request().as(resp,
+        // Check if the response status code is 200 and the response body is not empty
         (resp.StatusCode == 200 && resp.ContentLength != 0) ?
+          // Parse the response body as a gzip file
           string(bytes(resp.Body).mime("application/gzip")).as(body,
             {
+              // Extract the log data and other relevant information
               "events": body.trim_space().split("\n").map(value, {"message": value, "host_name": state.hostlist[state.next]}),
               "cursor": {
                 "last_timestamp": state.endDate,
