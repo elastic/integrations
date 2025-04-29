@@ -2,11 +2,13 @@
 description: ECS compatibility layer pipeline.
 processors:
   - rename:
+      tag: rename_flow
       field: flow
       target_field: network_traffic.flow
       ignore_missing: true
   - rename:
       # Retained for legacy dashboard behaviour.
+      tag: rename_status
       field: status
       target_field: network_traffic.status
       ignore_missing: true
@@ -16,9 +18,11 @@ processors:
       ignore_missing: true
   # Remove packetbeat fields that are handled by agent or fleet.
   - remove:
+      tag: remove_type
       field: type
       ignore_missing: true
   - remove:
+      tag: remove_event_dataset
       field: event.dataset
       ignore_missing: true
 
