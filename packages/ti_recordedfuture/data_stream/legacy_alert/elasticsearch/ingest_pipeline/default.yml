@@ -35,11 +35,15 @@ processors:
         - append:
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
-  - set:
-      field: url.full
-      tag: set_url_full_from_legacy_alert_document_url
-      copy_from: recordedfuture.legacy_alert.document.url
-      ignore_empty_value: true
+  - uri_parts:
+      field: recordedfuture.legacy_alert.document.url
+      tag: uri_parts_document_url
+      if: ctx.recordedfuture?.legacy_alert?.document?.url != ''
+      ignore_missing: true
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - set:
       field: event.id
       tag: set_event_id_from_legacy_alert_id

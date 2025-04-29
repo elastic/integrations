@@ -14,7 +14,6 @@ It also fetches [Playbook Alerts](https://api.recordedfuture.com/playbook-alert)
 This allows for streamlined alert management and improved security monitoring.
 By accessing both alert types, it provides deeper insights into potential threats.
 
-
 ### Expiration of Indicators of Compromise (IOCs)
 The ingested IOCs expire after certain duration. An [Elastic Transform](https://www.elastic.co/guide/en/elasticsearch/reference/current/transforms.html) is created to faciliate only active IOCs be available to the end users. This transform creates a destination index named `logs-ti_recordedfuture_latest.threat-1` which only contains active and unexpired IOCs. The destination index also has an alias `logs-ti_recordedfuture_latest.threat`. When setting up indicator match rules, use this latest destination index to avoid false positives from expired IOCs. Please read [ILM Policy](#ilm-policy) below which is added to avoid unbounded growth on source `.ds-logs-ti_recordedfuture.threat-*` indices.
 

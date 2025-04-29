@@ -14,7 +14,6 @@ It also fetches [Playbook Alerts](https://api.recordedfuture.com/playbook-alert)
 This allows for streamlined alert management and improved security monitoring.
 By accessing both alert types, it provides deeper insights into potential threats.
 
-
 ### Expiration of Indicators of Compromise (IOCs)
 The ingested IOCs expire after certain duration. An [Elastic Transform](https://www.elastic.co/guide/en/elasticsearch/reference/current/transforms.html) is created to faciliate only active IOCs be available to the end users. This transform creates a destination index named `logs-ti_recordedfuture_latest.threat-1` which only contains active and unexpired IOCs. The destination index also has an alias `logs-ti_recordedfuture_latest.threat`. When setting up indicator match rules, use this latest destination index to avoid false positives from expired IOCs. Please read [ILM Policy](#ilm-policy) below which is added to avoid unbounded growth on source `.ds-logs-ti_recordedfuture.threat-*` indices.
 
@@ -220,30 +219,30 @@ An example event for `legacy_alert` looks as following:
 {
     "@timestamp": "2026-03-31T04:03:56.425Z",
     "agent": {
-        "ephemeral_id": "d6c27b02-6c71-4972-a48a-88ae29097226",
-        "id": "47c77fd9-8131-4072-a621-f34311e8634d",
-        "name": "elastic-agent-55511",
+        "ephemeral_id": "756eea50-e26f-4348-b781-d5ff2c4f4bfb",
+        "id": "155ca947-8bc1-49ba-9243-1af1fa5340f8",
+        "name": "elastic-agent-34461",
         "type": "filebeat",
         "version": "8.18.0"
     },
     "data_stream": {
         "dataset": "ti_recordedfuture.legacy_alert",
-        "namespace": "94804",
+        "namespace": "13059",
         "type": "logs"
     },
     "ecs": {
         "version": "8.17.0"
     },
     "elastic_agent": {
-        "id": "47c77fd9-8131-4072-a621-f34311e8634d",
-        "snapshot": true,
+        "id": "155ca947-8bc1-49ba-9243-1af1fa5340f8",
+        "snapshot": false,
         "version": "8.18.0"
     },
     "event": {
         "agent_id_status": "verified",
         "dataset": "ti_recordedfuture.legacy_alert",
         "id": "ABCD1234XYZ",
-        "ingested": "2025-04-10T11:29:36Z",
+        "ingested": "2025-04-28T17:50:01Z",
         "kind": "alert",
         "original": "{\"ai_insights\":{\"comment\":\"The Recorded Future AI requires more references in order to produce a summary.\",\"text\":\"Text summary\"},\"analyst_note\":{\"id\":\"abcdef\",\"url\":{\"api\":\"https://api.recordedfuture.com/v2/analystnote/abcdef\",\"portal\":\"https://app.recordedfuture.com/portal/analyst-note/shared/true/doc:abcdef\"}},\"document\":{\"authors\":[],\"source\":{\"id\":\"source:VKz42X\",\"name\":\"Insikt Group\",\"type\":\"Source\"},\"title\":\"Morphing Meerkat PhaaS Platform Uses DNS MX Records and DoH Protocol to Deliver Targeted Phishing Campaign\",\"url\":\"https://example.com/abc/def\"},\"enriched_entities\":[],\"entities\":[{\"id\":\"ip:89.160.20.156\",\"name\":\"89.160.20.156\",\"type\":\"IpAddress\"},{\"id\":\"YOvb\",\"name\":\"Webmail\",\"type\":\"Product\"},{\"id\":\"url:https://carriertrucks.com\",\"name\":\"https://carriertrucks.com\",\"type\":\"URL\"}],\"fragment\":\"On March 27, 2025, Infoblox reported that the phishing-as-a-service (PhaaS) platform Morphing Meerkat uses DNS MX records and DNS-over-HTTPS (DoH) queries to deliver phishing pages tailored to victims’ email providers. Threat actors initiate campaigns using spoofed spam emails impersonating over 100 brands—including financial software providers. Embedded malicious links redirect users via compromised WordPress sites, public file-sharing platforms, or open redirect flaws on trusted domains like Google’s DoubleClick. The phishing kits dynamically serve one of over 114 localized HTML templates by mapping MX responses to specific login pages, defaulting to generic Webmail or Roundcube pages when unrecognized. Client -side JavaScript further customizes\",\"id\":\"ABCD1234XYZ\",\"language\":\"eng\",\"log\":{\"note_author\":null,\"note_date\":\"2025-03-31T04:03:56.425Z\",\"status_change_by\":\"admin\",\"status_date\":\"2025-03-31T04:03:56.425Z\",\"triggered\":\"2026-03-31T04:03:56.425Z\"},\"owner_organisation_details\":{\"enterprise_id\":\"uhash:abcd\",\"enterprise_name\":\"Elastic-Example\",\"organisations\":[{\"organisation_id\":\"uhash:abcd\",\"organisation_name\":\"Elastic-Example\"}]},\"primary_entity\":null,\"review\":{\"assignee\":\"John\",\"note\":\"note\",\"status\":\"no-action\",\"status_in_portal\":\"New\"},\"rule\":{\"id\":\"ABC123\",\"name\":\"Analysis from Insikt Group\",\"url\":{\"portal\":\"https://app.recordedfuture.com/live/sc/ViewIdkobra_view_report_item_alert_editor?view_opts=%7B%22reportId%22%3A%abcd%22%2C%22bTitle%22%3Atrue%2C%22title%22%3A%22Analysis+from+Insikt+Group%22%7D\"},\"use_case_deprecation\":{\"description\":null}},\"title\":\"Analysis from Insikt Group - 1 reference\",\"type\":\"REFERENCE\",\"url\":{\"api\":\"https://api.recordedfuture.com/v3/alerts/abcd\",\"portal\":\"https://app.recordedfuture.com/live/sc/notification/?id=bcd\"}}"
     },
@@ -350,7 +349,10 @@ An example event for `legacy_alert` looks as following:
         "recordedfuture-legacy_alert"
     ],
     "url": {
-        "full": "https://example.com/abc/def"
+        "domain": "example.com",
+        "original": "https://example.com/abc/def",
+        "path": "/abc/def",
+        "scheme": "https"
     },
     "user": {
         "name": "admin"
@@ -422,23 +424,23 @@ An example event for `playbook_alert` looks as following:
 {
     "@timestamp": "2023-07-21T17:32:28.000Z",
     "agent": {
-        "ephemeral_id": "cccd9a71-039c-4625-8dbf-217a827f7a27",
-        "id": "e1082b73-9255-465c-bb6e-f4c210a76e9b",
-        "name": "elastic-agent-85665",
+        "ephemeral_id": "06665763-b0ac-4182-817e-e450b29d1825",
+        "id": "59258429-b369-4b6f-8c26-f118b4b88773",
+        "name": "elastic-agent-90185",
         "type": "filebeat",
         "version": "8.18.0"
     },
     "data_stream": {
         "dataset": "ti_recordedfuture.playbook_alert",
-        "namespace": "80691",
+        "namespace": "18639",
         "type": "logs"
     },
     "ecs": {
         "version": "8.17.0"
     },
     "elastic_agent": {
-        "id": "e1082b73-9255-465c-bb6e-f4c210a76e9b",
-        "snapshot": true,
+        "id": "59258429-b369-4b6f-8c26-f118b4b88773",
+        "snapshot": false,
         "version": "8.18.0"
     },
     "event": {
@@ -446,7 +448,7 @@ An example event for `playbook_alert` looks as following:
         "created": "2023-07-21T17:32:28.000Z",
         "dataset": "ti_recordedfuture.playbook_alert",
         "id": "task:abc",
-        "ingested": "2025-04-10T11:33:50Z",
+        "ingested": "2025-04-28T17:50:59Z",
         "kind": "alert",
         "original": "{\"panel_action\":[{\"action\":\"Domain takedown request.\",\"assignee_id\":\"uhash:40wXmPVONA\",\"assignee_name\":\"Marty McFly\",\"description\":\"Initiate a takedown request...\",\"link\":\"takedownrequests.com\",\"status\":\"Resolved\",\"updated\":\"2023-07-21T17:32:28Z\"}],\"panel_evidence_dns\":{\"ip_list\":[{\"context_list\":[{\"context\":\"Active Mail Server\"}],\"criticality\":\"Low\",\"entity\":\"string\",\"record_type\":\"string\",\"risk_score\":99}],\"mx_list\":[{\"context_list\":[{\"context\":\"Active Mail Server\"}],\"criticality\":\"Low\",\"entity\":\"string\",\"record_type\":\"string\",\"risk_score\":99}],\"ns_list\":[{\"context_list\":[{\"context\":\"Active Mail Server\"}],\"criticality\":\"Low\",\"entity\":\"string\",\"record_type\":\"string\",\"risk_score\":99}]},\"panel_evidence_summary\":{\"explanation\":\"string\",\"keywords_in_domain_name\":{\"payment_keywords_in_domain_name\":[{\"domain\":\"idn:sso.bank.com\",\"word\":\"sso, bank\"}],\"security_keywords_in_domain_name\":[{\"domain\":\"idn:sso.bank.com\",\"word\":\"sso, bank\"}]},\"phishing_malicious_behavior\":{\"threatTypes\":[\"malware\"]},\"reregistration\":{\"expiration\":\"2023-07-21T17:32:28Z\",\"registrar\":\"string\",\"registrar_name\":\"string\"},\"resolved_record_list\":[{\"context_list\":[{\"context\":\"Active Mail Server\"}],\"criticality\":\"Low\",\"entity\":\"string\",\"record_type\":\"string\",\"risk_score\":99}],\"screenshot_mentions\":[{\"analyzed\":\"2023-07-21T17:32:28Z\",\"document\":\"doc:3tR0p\",\"mentioned_custom_keywords\":[{\"fragment\":\"string\",\"keyword\":\"string\",\"reference\":\"19GLiq\"}],\"mentioned_entities\":[{\"entity\":{\"id\":\"shq4H\",\"name\":\"My Test Product\",\"type\":\"Product\"},\"fragment\":\"string\",\"reference\":\"19GLiq\"}],\"screenshot\":\"img:27368c9c-5bf3-488a-8300-13657f38e37a\",\"url\":\"url:https://www.recordedfuture.com\"}],\"screenshots\":[{\"availability\":\"Available\",\"created\":\"2025-03-21T12:20:45.457Z\",\"description\":\"string\",\"image_id\":\"img:27368c9c-5bf3-488a-8300-13657f38e37a\",\"tag\":\"Parked / Ad hosting website\"}]},\"panel_evidence_whois\":{\"body\":[{\"added\":\"2025-03-21T12:20:45.457Z\",\"attribute\":\"attr:whois\",\"entity\":\"idn:mail.google.mail.pl\",\"provider\":\"whois\",\"removed\":\"2025-03-21T12:20:45.457Z\",\"value\":{\"contactEmail\":\"user@example.com\",\"createdDate\":\"2025-03-21T12:20:45.457Z\",\"expiresDate\":\"2025-03-21T12:20:45.457Z\",\"nameServers\":[\"idn:ns1.example.com\"],\"privateRegistration\":true,\"registrarName\":\"Example Domains, Inc.\",\"status\":\"string\",\"updatedDate\":\"2025-03-21T12:20:45.457Z\"}}]},\"panel_log_v2\":[{\"author_id\":\"uhash:40wXmPVONA\",\"author_name\":\"Marty McFly\",\"changes\":[{\"new\":{\"id\":\"uhash:Ds92mDX\",\"name\":\"Marty\"},\"old\":{\"id\":\"uhash:Ds92mDX\",\"name\":\"Marty\"},\"type\":\"assignee_change\"},{\"actions_taken\":[\"cyber_vulnerability.patched\",\"brand_mentions_on_code_repository.keys_rotated\",\"domain_abuse.takedown\",\"third_party_risk.vendor_mitigated_findings\",\"identity_novel_exposures.enforced_password_reset\"],\"new\":\"InProgress\",\"old\":\"New\",\"type\":\"status_change\"},{\"new\":\"High\",\"old\":\"Moderate\",\"type\":\"priority_change\"},{\"new\":\"Never\",\"old\":\"SignificantUpdates\",\"type\":\"reopen_strategy_change\"},{\"new\":\"string\",\"old\":\"string\",\"type\":\"title_change\"},{\"added\":[{\"id\":\"ip:19.158.255.26\",\"name\":\"19.158.255.26\",\"type\":\"IpAddress\"}],\"removed\":[{\"id\":\"ip:19.158.255.26\",\"name\":\"19.158.255.26\",\"type\":\"IpAddress\"}],\"type\":\"entities_change\"},{\"added\":[{\"id\":\"ip:19.158.255.26\",\"name\":\"19.158.255.26\",\"type\":\"IpAddress\"}],\"removed\":[{\"id\":\"ip:19.158.255.26\",\"name\":\"19.158.255.26\",\"type\":\"IpAddress\"}],\"type\":\"related_entities_change\"},{\"new\":\"string\",\"old\":\"string\",\"type\":\"description_change\"},{\"new\":\"string\",\"old\":\"string\",\"type\":\"external_id_change\"},{\"comment\":\"string\",\"type\":\"comment_change\"},{\"added\":[\"task:4d65b0f8-8254-402c-8178-4a9f97afc9b2\"],\"removed\":[\"task:4d65b0f8-8254-402c-8178-4a9f97afc9b2\"],\"type\":\"action_change\"},{\"added\":[\"C\\u0026C Server\"],\"removed\":[\"Active Mail Server\"],\"type\":\"assessment_ids_change\"},{\"removed_actions_taken\":[\"cyber_vulnerability.patched\",\"brand_mentions_on_code_repository.keys_rotated\",\"domain_abuse.takedown\",\"third_party_risk.vendor_mitigated_findings\",\"identity_novel_exposures.enforced_password_reset\"],\"type\":\"onward_actions_removed_change\"},{\"added_actions_taken\":[\"cyber_vulnerability.patched\",\"brand_mentions_on_code_repository.keys_rotated\",\"domain_abuse.takedown\",\"third_party_risk.vendor_mitigated_findings\",\"identity_novel_exposures.enforced_password_reset\"],\"type\":\"onward_actions_added_change\"},{\"added\":[{\"entity\":{\"id\":\"ip:19.158.255.26\",\"name\":\"19.158.255.26\",\"type\":\"IpAddress\"},\"type\":\"A\"}],\"domain\":\"mail.google.mail.pl\",\"removed\":[{\"entity\":{\"id\":\"ip:19.158.255.26\",\"name\":\"19.158.255.26\",\"type\":\"IpAddress\"},\"type\":\"A\"}],\"type\":\"dns_change\"},{\"added_contacts\":[{\"city\":\"string\",\"country\":\"string\",\"country_code\":\"string\",\"created\":\"2023-07-21T17:32:28Z\",\"email\":\"mail.google.mail.pl\",\"fax\":\"string\",\"name\":\"string\",\"organization\":\"string\",\"postal_code\":\"string\",\"state\":\"string\",\"street1\":\"string\",\"telephone\":\"string\",\"type\":\"string\"}],\"domain\":\"mail.google.mail.pl\",\"new_record\":{\"contact_email\":\"mail.google.mail.pl\",\"created\":\"2023-07-21T17:32:28Z\",\"name_servers\":[\"mail.google.mail.pl\"],\"private_registration\":true,\"registrar_name\":\"string\",\"status\":\"string\"},\"old_record\":{\"contact_email\":\"mail.google.mail.pl\",\"created\":\"2023-07-21T17:32:28Z\",\"name_servers\":[\"mail.google.mail.pl\"],\"private_registration\":true,\"registrar_name\":\"string\",\"status\":\"string\"},\"removed_contacts\":[{\"city\":\"string\",\"country\":\"string\",\"country_code\":\"string\",\"created\":\"2023-07-21T17:32:28Z\",\"email\":\"mail.google.mail.pl\",\"fax\":\"string\",\"name\":\"string\",\"organization\":\"string\",\"postal_code\":\"string\",\"state\":\"string\",\"street1\":\"string\",\"telephone\":\"string\",\"type\":\"string\"}],\"type\":\"whois_change\"},{\"added\":[{\"logotype_id\":\"U3QTi\",\"screenshot_id\":\"img:e8581823-7acd-402e-b863-daabda7db9d0\",\"url\":\"https://www.recordedfuture.com\"}],\"domain\":\"mail.google.mail.pl\",\"removed\":[{\"logotype_id\":\"U3QTi\",\"screenshot_id\":\"img:e8581823-7acd-402e-b863-daabda7db9d0\",\"url\":\"https://www.recordedfuture.com\"}],\"type\":\"logotype_in_screenshot_change\"},{\"added\":[{\"assessments\":[{\"id\":\"C\\u0026C Server\",\"level\":3,\"title\":\"string\"}],\"id\":\"ip:67.43.156.13\"}],\"domain\":\"mail.google.mail.pl\",\"removed\":[{\"assessments\":[{\"id\":\"C\\u0026C Server\",\"level\":3,\"title\":\"string\"}],\"id\":\"ip:67.43.156.13\"}],\"type\":\"malicious_dns_change\"},{\"added\":{\"expiration\":\"2026-07-21T00:00:00Z\",\"iana_id\":\"string\",\"registrar\":\"ip:67.43.156.13\",\"registrar_name\":\"NameCheap, Inc\"},\"domain\":\"mail.google.mail.pl\",\"removed\":{\"expiration\":\"2026-07-21T00:00:00Z\",\"iana_id\":\"string\",\"registrar\":\"ip:67.43.156.13\",\"registrar_name\":\"NameCheap, Inc\"},\"type\":\"reregistration_change\"},{\"added\":[{\"assessments\":[{\"id\":\"string\",\"level\":3,\"source\":{\"id\":\"string\",\"name\":\"string\"},\"title\":\"string\"}],\"url\":\"https://www.somesite.com\"}],\"domain\":\"recordedfuture.com\",\"removed\":[{\"assessments\":[{\"id\":\"string\",\"level\":3,\"source\":{\"id\":\"string\",\"name\":\"string\"},\"title\":\"string\"}],\"url\":\"https://www.somesite.com\"}],\"type\":\"malicious_url_change\"},{\"added\":[{\"analyzed\":\"2023-07-21T00:00:00Z\",\"document\":\"Ft6Qt\",\"mentioned_entities\":[{\"assessments\":[{\"id\":\"string\",\"level\":3,\"source\":{\"id\":\"string\",\"name\":\"string\"},\"title\":\"string\"}],\"entity\":{\"id\":\"ip:19.158.255.26\",\"name\":\"19.158.255.26\",\"type\":\"IpAddress\"},\"fragment\":\"string\",\"reference\":\"oIj2a\"}],\"mentioned_texts\":[{\"assessments\":[{\"id\":\"string\",\"level\":3,\"source\":{\"id\":\"string\",\"name\":\"string\"},\"title\":\"string\"}],\"fragment\":\"string\",\"reference\":\"string\",\"text\":\"string\"}],\"screenshot_id\":\"img:27368c9c-5bf3-488a-8300-13657f38e37a\",\"url\":\"https://www.somesite.com\"}],\"domain\":\"recordedfuture.com\",\"type\":\"screenshot_mentions_change\"},{\"added\":{\"threat_types\":[\"malware\"]},\"domain\":\"idn:mail.google.mail.pl\",\"removed\":{\"threat_types\":[\"malware\"]},\"type\":\"phishing_malicious_behavior_change\"},{\"added\":{\"id\":\"Exploit Likely\",\"level\":3,\"title\":\"string\"},\"removed\":{\"id\":\"Exploit Likely\",\"level\":3,\"title\":\"string\"},\"triggered_by_risk_rule\":{\"description\":\"Web Reporting Prior to NVD Disclosure\",\"evidence_string\":\"string\",\"id\":\"riskrule:dc2929d6-5157-43f5-ad4f-d96b7ecf7da9\",\"machine_name\":\"noCvssScore\",\"name\":\"c2929d6-5157-43f5-ad4f-d96b7ecf7da9\",\"timestamp\":\"2023-07-21T17:32:28Z\"},\"type\":\"lifecycle_in_cve_change\"},{\"added\":[{\"assessments\":[{\"entity\":{\"id\":\"ip:19.158.255.26\",\"name\":\"19.158.255.26\",\"type\":\"IpAddress\"},\"id\":\"attr:possibleKeyLeak\",\"level\":3,\"text_indicator\":\"credential\",\"title\":\"Possible Key Leak\"}],\"document\":{\"content\":\"string\",\"id\":\"doc:rprM_Q\",\"owner_id\":\"uhash:40wXmPVONA\",\"owner_name\":\"Marty\",\"published\":\"2023-07-21T17:32:28Z\"},\"target_entities\":[{\"id\":\"ip:19.158.255.26\",\"name\":\"19.158.255.26\",\"type\":\"IpAddress\"}],\"watch_lists\":[{\"id\":\"string\",\"name\":\"string\"}]}],\"type\":\"evidence_changes\"},{\"added\":{\"evidence_string\":\"string\",\"level\":3,\"timestamp\":\"2023-08-14T17:32:28Z\"},\"removed\":{\"evidence_string\":\"string\",\"level\":3,\"timestamp\":\"2023-08-14T17:32:28Z\"},\"risk_attribute\":\"Recent Attention on Ransomware Extortion Website\",\"type\":\"tpr_assessment_change\"}],\"created\":\"2023-07-21T17:32:28Z\",\"id\":\"uuid:a3c4f8f0-8dd8-4940-8b0a-75a59764d068\"}],\"panel_status\":{\"actions_taken\":[\"cyber_vulnerability.patched\",\"brand_mentions_on_code_repository.keys_rotated\",\"domain_abuse.takedown\",\"third_party_risk.vendor_mitigated_findings\",\"identity_novel_exposures.enforced_password_reset\"],\"assignee_id\":\"uhash:40wXmPVONA\",\"assignee_name\":\"Marty McFly\",\"case_rule_id\":\"string\",\"case_rule_label\":\"Domain Abuse\",\"context_list\":[{\"context\":\"Active Mail Server\"}],\"created\":\"2023-07-21T17:32:28Z\",\"creator_id\":\"uhash:40wXmPVONA\",\"creator_name\":\"Marty McFly\",\"entity_criticality\":\"Low\",\"entity_id\":\"idn:mail.google.mail.pl\",\"entity_name\":\"mail.google.mail.pl\",\"owner_organisation_details\":{\"enterprise_id\":\"uhash:1HX2qIn4Zy\",\"enterprise_name\":\"Recorded Future\",\"organisations\":[{\"organisation_id\":\"uhash:3HX3rIn4Kv\",\"organisation_name\":\"Recorded Future\"}]},\"priority\":\"High\",\"reopen\":\"Never\",\"risk_score\":99,\"status\":\"Resolved\",\"targets\":[\"idn:mail.google.mail.pl\"],\"updated\":\"2023-07-21T17:32:28Z\"},\"playbook_alert_id\":\"task:abc\"}",
         "risk_score": 99,
