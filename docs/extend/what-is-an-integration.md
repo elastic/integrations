@@ -20,7 +20,7 @@ Integrations have a strict, well-defined structure, and offer a number of benefi
 * Easy, less error-prone configuration
 * Fewer monitoring agents for users to install
 * Deploy in just a few clicks
-* Decoupled release process from the {stack}
+* Decoupled release process from the {{stack}}
 
 
 ## Integration lifecycle [how-integrations-work]
