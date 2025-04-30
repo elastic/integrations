@@ -1,6 +1,9 @@
 ---
 description: Pipeline for Windows Security events
 processors:
+  - pipeline:
+      name: '{{ IngestPipeline "adfs" }}'
+      if: 'ctx.winlog?.provider_name != null && ctx.winlog.provider_name == "AD FS Auditing"'
   - script:
       lang: painless
       ignore_failure: false
