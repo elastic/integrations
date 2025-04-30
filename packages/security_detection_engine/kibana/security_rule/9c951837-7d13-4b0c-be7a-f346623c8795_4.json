@@ -1,0 +1,112 @@
+{
+    "attributes": {
+        "author": [
+            "Elastic"
+        ],
+        "description": "Identifies processes loading Active Directory related modules followed by a network connection to the ADWS dedicated TCP port. Adversaries may abuse the ADWS Windows service that allows Active Directory to be queried via this web service.",
+        "from": "now-9m",
+        "index": [
+            "logs-endpoint.events.library-*",
+            "logs-endpoint.events.network-*"
+        ],
+        "language": "eql",
+        "license": "Elastic License v2",
+        "name": "Potential Enumeration via Active Directory Web Service",
+        "note": "## Triage and analysis\n\n> **Disclaimer**:\n> This investigation guide was created using generative AI technology and has been reviewed to improve its accuracy and relevance. While every effort has been made to ensure its quality, we recommend validating the content and adapting it to suit your specific environment and operational needs.\n\n### Investigating Potential Enumeration via Active Directory Web Service\n\nActive Directory Web Service (ADWS) facilitates querying Active Directory (AD) over a network, providing a web-based interface for directory services. Adversaries may exploit ADWS to enumerate network resources and user accounts, gaining insights into the environment. The detection rule identifies suspicious activity by monitoring processes that load AD-related modules and establish network connections to the ADWS port, indicating potential unauthorized enumeration attempts.\n\n### Possible investigation steps\n\n- Review the process entity ID to identify the specific process that triggered the alert and gather details such as the process name, executable path, and user context.\n- Examine the user ID associated with the process to determine if it belongs to a legitimate user or service account, and verify if the user has a history of accessing Active Directory resources.\n- Investigate the network connection details, focusing on the destination IP address and port 9389, to identify the target server and assess if it is a legitimate Active Directory Web Service endpoint.\n- Check for any recent changes or unusual activity on the host machine, such as new software installations or configuration changes, that could explain the loading of Active Directory-related modules.\n- Correlate the alert with other security events or logs from the same timeframe to identify any patterns or additional suspicious activities that might indicate a broader attack or reconnaissance effort.\n\n### False positive analysis\n\n- Legitimate administrative tools or scripts may load Active Directory-related modules and connect to the ADWS port. To handle this, create exceptions for known administrative processes that regularly perform these actions.\n- Scheduled tasks or automated scripts running under service accounts might trigger the rule. Identify these tasks and exclude their associated user IDs or process paths from the detection rule.\n- Security or monitoring software that queries Active Directory for legitimate purposes can cause false positives. Review and whitelist these applications by adding their executable paths to the exclusion list.\n- Development or testing environments where developers frequently interact with Active Directory services may generate alerts. Consider excluding specific user IDs or process paths associated with these environments to reduce noise.\n- Ensure that any exceptions or exclusions are regularly reviewed and updated to reflect changes in the environment or administrative practices.\n\n### Response and remediation\n\n- Isolate the affected system from the network to prevent further unauthorized access or data exfiltration.\n- Terminate any suspicious processes identified in the alert that are loading Active Directory-related modules and making network connections to the ADWS port.\n- Conduct a thorough review of the affected system's user accounts and permissions to identify any unauthorized changes or access.\n- Reset credentials for any accounts that were potentially compromised or used in the suspicious activity.\n- Implement network segmentation to limit access to the ADWS port (9389) to only trusted systems and users.\n- Escalate the incident to the security operations center (SOC) or incident response team for further investigation and to determine if additional systems are affected.\n- Update and enhance monitoring rules to detect similar enumeration attempts in the future, focusing on unusual process behavior and network connections to critical services.",
+        "query": "sequence by process.entity_id with maxspan=3m\n [library where host.os.type == \"windows\" and\n  dll.name : (\"System.DirectoryServices*.dll\", \"System.IdentityModel*.dll\") and\n  not user.id in (\"S-1-5-18\", \"S-1-5-19\", \"S-1-5-20\") and\n  not process.executable :\n                (\"?:\\\\windows\\\\system32\\\\dsac.exe\",\n                 \"?:\\\\program files\\\\powershell\\\\?\\\\pwsh.exe\",\n                 \"?:\\\\windows\\\\system32\\\\windowspowershell\\\\*.exe\",\n                 \"?:\\\\windows\\\\syswow64\\\\windowspowershell\\\\*.exe\",\n                 \"?:\\\\program files\\\\microsoft monitoring agent\\\\*.exe\",\n                 \"?:\\\\windows\\\\adws\\\\microsoft.activedirectory.webservices.exe\")]\n [network where host.os.type == \"windows\" and destination.port == 9389 and source.port >= 49152 and\n  network.direction == \"egress\" and network.transport == \"tcp\" and not cidrmatch(destination.ip, \"127.0.0.0/8\", \"::1/128\")]\n",
+        "references": [
+            "https://github.com/FalconForceTeam/SOAPHound"
+        ],
+        "related_integrations": [
+            {
+                "package": "endpoint",
+                "version": "^9.0.0"
+            }
+        ],
+        "required_fields": [
+            {
+                "ecs": true,
+                "name": "destination.ip",
+                "type": "ip"
+            },
+            {
+                "ecs": true,
+                "name": "destination.port",
+                "type": "long"
+            },
+            {
+                "ecs": true,
+                "name": "dll.name",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "host.os.type",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "network.direction",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "network.transport",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "process.entity_id",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "process.executable",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "source.port",
+                "type": "long"
+            },
+            {
+                "ecs": true,
+                "name": "user.id",
+                "type": "keyword"
+            }
+        ],
+        "risk_score": 47,
+        "rule_id": "9c951837-7d13-4b0c-be7a-f346623c8795",
+        "severity": "medium",
+        "tags": [
+            "Domain: Endpoint",
+            "OS: Windows",
+            "Use Case: Threat Detection",
+            "Tactic: Discovery",
+            "Data Source: Elastic Defend",
+            "Resources: Investigation Guide"
+        ],
+        "threat": [
+            {
+                "framework": "MITRE ATT&CK",
+                "tactic": {
+                    "id": "TA0007",
+                    "name": "Discovery",
+                    "reference": "https://attack.mitre.org/tactics/TA0007/"
+                },
+                "technique": [
+                    {
+                        "id": "T1018",
+                        "name": "Remote System Discovery",
+                        "reference": "https://attack.mitre.org/techniques/T1018/"
+                    }
+                ]
+            }
+        ],
+        "timestamp_override": "event.ingested",
+        "type": "eql",
+        "version": 4
+    },
+    "id": "9c951837-7d13-4b0c-be7a-f346623c8795_4",
+    "type": "security-rule"
+}

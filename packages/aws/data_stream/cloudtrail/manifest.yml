@@ -82,7 +82,7 @@ streams:
         description: "Time interval for polling listing of the S3 bucket. NOTE: Supported units for this parameter are h/m/s."
       - name: number_of_workers
         type: integer
-        title: "[S3] Number of Workers"
+        title: "[S3/SQS] Number of Workers"
         multi: false
         required: false
         show_user: false
@@ -178,6 +178,16 @@ streams:
         show_user: false
         description: >
           Additional settings to be added to the configuration. Be careful using this as it might break the input as those settings are not validated and can override the settings specified above. See [`aws-s3` input settings docs](https://www.elastic.co/guide/en/beats/filebeat/current/filebeat-input-aws-s3.html) for details.
+      
+      - name: actor_target_mapping
+        required: true
+        show_user: true
+        title: Actor and Target Entity Mapping
+        description: >
+          Maps actor and target entity identifiers relative to an event into designated fields (`actor.entity.id` for the acting entity and `target.entity.id` for the affected entity/entities). All identifiers, regardless of role, are captured in the `related.entity` field.This introduces additional ingest pipeline processors for parsing, which may introduce performance overhead in certain cases.
+        type: bool
+        multi: false
+        default: true
 
   - input: aws-cloudwatch
     template_path: aws-cloudwatch.yml.hbs
@@ -305,3 +315,13 @@ streams:
         type: bool
         multi: false
         default: false
+
+      - name: actor_target_mapping
+        required: true
+        show_user: true
+        title: Actor and Target Entity Mapping
+        description: >
+          Maps actor and target entity identifiers relative to an event into designated fields (`actor.entity.id` for the acting entity and `target.entity.id` for the affected entity/entities). All identifiers, regardless of role, are captured in the `related.entity` field. This introduces additional ingest pipeline processors for parsing, which may introduce performance overhead in certain cases.
+        type: bool
+        multi: false
+        default: true

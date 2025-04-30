@@ -78,7 +78,14 @@ An example event for `audit` looks as following:
 
 ```json
 {
-    "@timestamp": "2019-04-22T19:39:26.676Z",
+    "@timestamp": "2019-04-22T00:49:03.000Z",
+    "agent": {
+        "ephemeral_id": "6c572258-fcb8-48b0-bb7b-ffb396adb07a",
+        "id": "c12ead0e-edd3-4b3c-9a69-06eb2964d4cd",
+        "name": "elastic-agent-51912",
+        "type": "filebeat",
+        "version": "8.14.0"
+    },
     "client": {
         "address": "67.43.156.11",
         "as": {
@@ -94,63 +101,75 @@ An example event for `audit` looks as following:
             }
         },
         "ip": "67.43.156.11",
-        "port": 51454
+        "port": 42
+    },
+    "data_stream": {
+        "dataset": "teleport.audit",
+        "namespace": "41787",
+        "type": "logs"
     },
     "ecs": {
         "version": "8.11.0"
     },
+    "elastic_agent": {
+        "id": "c12ead0e-edd3-4b3c-9a69-06eb2964d4cd",
+        "snapshot": false,
+        "version": "8.14.0"
+    },
     "event": {
-        "action": "session.start",
+        "action": "user.login",
+        "agent_id_status": "verified",
         "category": [
-            "session"
+            "authentication"
         ],
-        "code": "T2000I",
-        "id": "84c07a99-856c-419f-9de5-15560451a116",
+        "code": "T1012I",
+        "dataset": "teleport.audit",
+        "id": "173d6b6e-d613-44be-8ff6-f9f893791ef4",
+        "ingested": "2025-04-22T06:23:17Z",
         "kind": "event",
-        "original": "{\"addr.local\":\"172.31.28.130:3022\",\"addr.remote\":\"67.43.156.11:51454\",\"code\":\"T2000I\",\"ei\":0,\"event\":\"session.start\",\"login\":\"root\",\"namespace\":\"default\",\"server_id\":\"de3800ea-69d9-4d72-a108-97e57f8eb393\",\"sid\":\"56408539-6536-11e9-80a1-427cfde50f5a\",\"size\":\"80:25\",\"time\":\"2019-04-22T19:39:26.676Z\",\"uid\":\"84c07a99-856c-419f-9de5-15560451a116\",\"user\":\"admin@example.com\"}",
+        "original": "{\"addr.remote\":\"67.43.156.11:42\",\"code\":\"T1012I\",\"cluster_name\":\"root.cluster\",\"event\":\"user.login\",\"method\":\"headless\",\"ei\":0,\"success\":false,\"time\":\"2019-04-22T00:49:03Z\",\"uid\":\"173d6b6e-d613-44be-8ff6-f9f893791ef4\",\"user\":\"admin@example.com\"}",
+        "outcome": [
+            "failure"
+        ],
         "sequence": 0,
         "type": [
             "start"
         ]
     },
-    "group": {
-        "name": "default"
+    "input": {
+        "type": "filestream"
     },
-    "host": {
-        "id": "de3800ea-69d9-4d72-a108-97e57f8eb393"
-    },
-    "process": {
-        "tty": {
-            "columns": 80,
-            "rows": 25
+    "log": {
+        "file": {
+            "device_id": "64768",
+            "inode": "1615130",
+            "path": "/tmp/service_logs/test-teleport-all-events.log"
         },
-        "user": {
-            "name": "root"
+        "offset": 62632
+    },
+    "orchestrator": {
+        "cluster": {
+            "name": "root.cluster"
         }
     },
     "related": {
         "ip": [
-            "67.43.156.11",
-            "172.31.28.130"
+            "67.43.156.11"
         ],
         "user": [
-            "admin@example.com",
-            "root"
+            "admin@example.com"
         ]
     },
-    "server": {
-        "address": "172.31.28.130",
-        "ip": "172.31.28.130",
-        "port": 3022
-    },
     "tags": [
-        "preserve_original_event"
+        "preserve_original_event",
+        "forwarded",
+        "teleport-audit",
+        "provider_cloud_data"
     ],
     "teleport": {
         "audit": {
-            "session": {
-                "id": "56408539-6536-11e9-80a1-427cfde50f5a",
-                "terminal_size": "80:25"
+            "login": {
+                "method": "headless"
             }
         }
     },
