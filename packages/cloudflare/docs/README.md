@@ -44,12 +44,12 @@ For the Cloudflare integration to be able to successfully get logs, one of the f
 
 - Account Settings Write, Account Settings Read
 
-1. **Auth Tokens** is the API Token generated on the "My Profile" > "API Tokens" or "Manage Account" > "Account API Tokens" page.
+1. **Auth Token** is the API Token generated on the "My Profile" > "API Tokens" or "Manage Account" > "Account API Tokens" page.
 2. **Account ID** can be found [here](https://developers.cloudflare.com/fundamentals/get-started/basic-tasks/find-account-and-zone-ids/).
 
 >  Note: See [here](https://developers.cloudflare.com/fundamentals/api/get-started/create-token/) for more information on `API Token`.
 
-### Configure Cloudflare traffic logs data stream
+### Configure Cloudflare logs
 
 These logs contain data related to the connecting client, the request path through the Cloudflare network, and the response from the origin web server. For more information see [here](https://developers.cloudflare.com/logs/logpull/).
 
@@ -76,9 +76,9 @@ Enter values "Auth Token" and "Zone ID".
 
 For the Cloudflare integration to be able to successfully get logs the following permissions must be granted to the Auth token -
 
-- Account Settings Write, Account Settings Read
+- Account.Access: Audit Logs: Read
 
-1. **Auth Tokens** is the API Token generated on the "My Profile" > "API Tokens" or "Manage Account" > "Account API Tokens" page.
+1. **Auth Token** is the API Token generated on the "My Profile" > "API Tokens" or "Manage Account" > "Account API Tokens" page.
 2. **Zone ID** can be found [here](https://developers.cloudflare.com/fundamentals/get-started/basic-tasks/find-account-and-zone-ids/).
 
 >  Note: See [here](https://developers.cloudflare.com/fundamentals/api/get-started/create-token/) for more information on `API Token`.
