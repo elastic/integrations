@@ -31,6 +31,7 @@ It is compatible with a subset of applications under the [Google Reports API v1]
 | [Calendar](https://developers.google.com/admin-sdk/reports/v1/appendix/activity/calendar) | The Calendar activity report returns information about how your account's users manage and modify their Google Calendar events. |
 | [Chat](https://developers.google.com/admin-sdk/reports/v1/appendix/activity/chat) | The Chat activity report returns information about how your account's users use and manage Spaces. |
 | [Vault](https://developers.google.com/admin-sdk/reports/v1/appendix/activity/vault) | The Vault activity report returns information about various types of Vault Audit activity events. |
+| [Meet](https://developers.google.com/admin-sdk/reports/v1/appendix/activity/meet) | The Meet activity report returns information about various aspects of call events. |
 
 ## Requirements
 
@@ -47,7 +48,7 @@ This integration will make use of the following *oauth2 scope*:
 
 Once you have downloaded your service account credentials as a JSON file, you are ready to set up your integration.
 
-Click the Advanced option of Google Workspace Audit Reports. The default value of "API Host" is `https://www.googleapis.com`. The API Host will be used for collecting `access_transparency`, `admin`, `calendar`, `chat`, `chrome`, `context_aware_access`, `data_studio`, `device`, `drive`, `gcp`, `groups`, `group_enterprise`, `login`, `rules`, `saml`, `token`, `user accounts` and `vault` logs.
+Click the Advanced option of Google Workspace Audit Reports. The default value of "API Host" is `https://www.googleapis.com`. The API Host will be used for collecting `access_transparency`, `admin`, `calendar`, `chat`, `chrome`, `context_aware_access`, `data_studio`, `device`, `drive`, `gcp`, `groups`, `group_enterprise`, `login`, `meet`, `rules`, `saml`, `token`, `user accounts` and `vault` logs.
 
 >  NOTE: The `Delegated Account` value in the configuration, is expected to be the email of the administrator account, and not the email of the ServiceAccount.
 
@@ -3650,6 +3651,206 @@ An example event for `vault` looks as following:
 | google_workspace.vault.resource_url | The document URL of the document view. | keyword |
 | google_workspace.vault.target_user | The targeted user (such as user put on hold). | keyword |
 | google_workspace.vault.type |  | keyword |
+| input.type | Type of filebeat input. | keyword |
+| log.offset | Log offset. | long |
+
+
+### Meet
+
+This is the `meet` dataset.
+
+An example event for `meet` looks as following:
+
+```json
+{
+    "@timestamp": "2025-04-11T09:23:00.703059Z",
+    "agent": {
+        "ephemeral_id": "cb95fe6a-fb4d-44be-95ad-d3a4e40bdd61",
+        "id": "76eeb811-464d-4c2d-bec0-6e9769916c36",
+        "name": "elastic-agent-39147",
+        "type": "filebeat",
+        "version": "8.18.0"
+    },
+    "data_stream": {
+        "dataset": "google_workspace.meet",
+        "namespace": "78724",
+        "type": "logs"
+    },
+    "ecs": {
+        "version": "8.16.0"
+    },
+    "elastic_agent": {
+        "id": "76eeb811-464d-4c2d-bec0-6e9769916c36",
+        "snapshot": true,
+        "version": "8.18.0"
+    },
+    "event": {
+        "action": "invitation-sent",
+        "agent_id_status": "verified",
+        "dataset": "google_workspace.meet",
+        "id": "1",
+        "ingested": "2025-04-25T07:03:39Z",
+        "kind": "event",
+        "original": "{\"actor\":{\"callerType\":\"USER\",\"email\":\"foo@bar.com\",\"profileId\":\"1\"},\"etag\":\"abcdefgh/cBsNSJx2A9Lg8kiQCGLddmq827A\",\"events\":{\"name\":\"invitation_sent\",\"parameters\":[{\"boolValue\":false,\"name\":\"is_external\"},{\"name\":\"meeting_code\",\"value\":\"NTBTYDTXBE\"},{\"name\":\"conference_id\",\"value\":\"-PeisjX_5iUtKPuGffkJDaBcdEfgh\"},{\"name\":\"action_time\",\"value\":\"2025-04-11T09:23:00.703059Z\"},{\"intValue\":\"1\",\"name\":\"target_user_count\"},{\"name\":\"identifier\",\"value\":\"foo@bar.com\"},{\"name\":\"identifier_type\",\"value\":\"email_address\"}],\"type\":\"conference_action\"},\"id\":{\"applicationName\":\"meet\",\"customerId\":\"1\",\"time\":\"2025-04-11T09:23:00.703Z\",\"uniqueQualifier\":\"1\"},\"kind\":\"admin#reports#activity\"}",
+        "provider": "meet",
+        "type": [
+            "info"
+        ]
+    },
+    "google_workspace": {
+        "actor": {
+            "caller_type": "USER"
+        },
+        "etag": "abcdefgh/cBsNSJx2A9Lg8kiQCGLddmq827A",
+        "kind": "admin#reports#activity",
+        "meet": {
+            "conference_id": "-PeisjX_5iUtKPuGffkJDaBcdEfgh",
+            "endpoint": {
+                "identifier": "foo@bar.com",
+                "identifier_type": "email_address",
+                "is_external": false
+            },
+            "meeting_code": "NTBTYDTXBE",
+            "name": "invitation_sent",
+            "target": {
+                "user_count": 1
+            },
+            "type": "conference_action"
+        }
+    },
+    "input": {
+        "type": "cel"
+    },
+    "observer": {
+        "product": "Meet",
+        "vendor": "Google Workspace"
+    },
+    "organization": {
+        "id": "1"
+    },
+    "related": {
+        "user": [
+            "foo@bar.com"
+        ]
+    },
+    "source": {
+        "user": {
+            "domain": "bar.com",
+            "email": "foo@bar.com",
+            "id": "1",
+            "name": "foo@bar.com"
+        }
+    },
+    "tags": [
+        "preserve_original_event",
+        "forwarded",
+        "google_workspace-meet"
+    ],
+    "user": {
+        "domain": "bar.com",
+        "email": "foo@bar.com",
+        "id": "1",
+        "name": "foo@bar.com"
+    }
+}
+```
+
+**Exported fields**
+
+| Field | Description | Type |
+|---|---|---|
+| @timestamp | Event timestamp. | date |
+| data_stream.dataset | Data stream dataset. | constant_keyword |
+| data_stream.namespace | Data stream namespace. | constant_keyword |
+| data_stream.type | Data stream type. | constant_keyword |
+| event.dataset | Event dataset. | constant_keyword |
+| event.module | Event module. | constant_keyword |
+| google_workspace.actor.caller_type | The type of actor. Values can be:   \*USER\*: Another user in the same domain.   \*EXTERNAL_USER\*: A user outside the domain.   \*KEY\*: A non-human actor. | keyword |
+| google_workspace.actor.email | The primary email address of the actor. May be absent if there is no email address associated with the actor. | keyword |
+| google_workspace.actor.key | Only present when `actor.type` is `KEY`. Can be the `consumer_key` of the requestor for OAuth 2LO API requests or an identifier for robot accounts. | keyword |
+| google_workspace.actor.profile_id | The unique Google Workspace profile ID of the actor. | keyword |
+| google_workspace.etag | ETag of the entry. | keyword |
+| google_workspace.id.application_name | Application name to which the event belongs. For possible values see the list of applications above in applicationName. | keyword |
+| google_workspace.id.customer_id | The unique identifier for a Google Workspace account. | keyword |
+| google_workspace.id.time | Time of occurrence of the activity. This is in UNIX epoch time in seconds. | date |
+| google_workspace.id.unique_qualifier | Unique qualifier if multiple events have the same time. | keyword |
+| google_workspace.ip_address | IP address of the user doing the action. This is the Internet Protocol (IP) address of the user when logging into Google Workspace, which may or may not reflect the user's physical location. For example, the IP address can be the user's proxy server's address or a virtual private network (VPN) address. The API supports IPv4 and IPv6. | ip |
+| google_workspace.kind | The type of API resource, mapped from `kind` in the original payload, more details can be found [here](https://developers.google.com/admin-sdk/reports/reference/rest/v1/activities/list#activity). | keyword |
+| google_workspace.meet.action_description | The description of a abuse report. | keyword |
+| google_workspace.meet.action_reason | The reason for submitting a abuse report. | keyword |
+| google_workspace.meet.action_time | The time of an action. | date |
+| google_workspace.meet.broadcast_state | The state of this Meet broadcast. | keyword |
+| google_workspace.meet.calendar_event_id | The identifier of the Google Calendar event associated with the conference. | keyword |
+| google_workspace.meet.conference_id | The unique identifier of the conference. | keyword |
+| google_workspace.meet.endpoint.audio.recv_packet_loss_max | The maximum packet loss for received audio streams (percent). | long |
+| google_workspace.meet.endpoint.audio.recv_packet_loss_mean | The mean packet loss for received audio streams (percent). | long |
+| google_workspace.meet.endpoint.audio.recv_seconds | The duration during which the participant received any audio (seconds). | long |
+| google_workspace.meet.endpoint.audio.send_bitrate_kbps_mean | The mean bitrate of the sent audio stream (kbit/s). | long |
+| google_workspace.meet.endpoint.audio.send_packet_loss_max | The maximum packet loss for the sent audio stream (percent). | long |
+| google_workspace.meet.endpoint.audio.send_packet_loss_mean | The mean packet loss for the sent audio stream (percent). | long |
+| google_workspace.meet.endpoint.audio.send_seconds | The duration during which the participant sent audio (seconds). | long |
+| google_workspace.meet.endpoint.device_type | The participant's device type. | keyword |
+| google_workspace.meet.endpoint.display_name | Human readable name of the endpoint that is displayed in the meeting. | keyword |
+| google_workspace.meet.endpoint.duration_seconds | The duration for which the participant stayed in the meeting (seconds). | long |
+| google_workspace.meet.endpoint.end_of_call_rating | The call rating given by the participant at the end of the call, ranging from 1 to 5. | long |
+| google_workspace.meet.endpoint.id | The unique endpoint identifier for the current call. | keyword |
+| google_workspace.meet.endpoint.identifier | The unique participant identifier (for example, an email address, phone number, or device ID). | keyword |
+| google_workspace.meet.endpoint.identifier_type | Indicates the type of the participant identifier. | keyword |
+| google_workspace.meet.endpoint.ip_address | The participant's external IP address. | ip |
+| google_workspace.meet.endpoint.is_external | Indicates if the participant is external to your organization. | boolean |
+| google_workspace.meet.endpoint.location_country | The country from which the participant joined. | keyword |
+| google_workspace.meet.endpoint.location_region | The city or geographical region within a country from which the participant joined. | keyword |
+| google_workspace.meet.endpoint.network.congestion | The fraction of time where the network did not have enough bandwidth to send all the data to Google servers (percent). | long |
+| google_workspace.meet.endpoint.network.estimated_download_kbps_mean | The estimated bandwidth used by received media streams (kbps). | long |
+| google_workspace.meet.endpoint.network.estimated_upload_kbps_mean | The estimated bandwidth used by sent media streams (kbps). | long |
+| google_workspace.meet.endpoint.network.recv_jitter_msec_max | The maximum network jitter for received packets (milliseconds). | long |
+| google_workspace.meet.endpoint.network.recv_jitter_msec_mean | The mean network jitter for received packets (milliseconds). | long |
+| google_workspace.meet.endpoint.network.rtt_msec_mean | The mean network round-trip time (milliseconds). | long |
+| google_workspace.meet.endpoint.network.send_jitter_msec_mean | The mean network jitter for sent packets (milliseconds). | long |
+| google_workspace.meet.endpoint.network.transport_protocol | The network protocol that was used. | keyword |
+| google_workspace.meet.endpoint.screencast.recv_bitrate_kbps_mean | The mean bitrate of the received screencasts (kbit/s). | long |
+| google_workspace.meet.endpoint.screencast.recv_fps_mean | The mean frame rate of received screencasts (FPS). | long |
+| google_workspace.meet.endpoint.screencast.recv_long_side_median_pixels | The median of the long side of the received screencasts (pixels). | long |
+| google_workspace.meet.endpoint.screencast.recv_packet_loss_max | The maximum packet loss for received screencasts (percent). | long |
+| google_workspace.meet.endpoint.screencast.recv_packet_loss_mean | The mean packet loss for received screencasts (percent). | long |
+| google_workspace.meet.endpoint.screencast.recv_seconds | The duration during which the participant received any screencast (seconds). | long |
+| google_workspace.meet.endpoint.screencast.recv_short_side_median_pixels | The median of the short side of the received screencasts (pixels). | long |
+| google_workspace.meet.endpoint.screencast.send_bitrate_kbps_mean | The mean bitrate of sent screencasts (kbit/s). | long |
+| google_workspace.meet.endpoint.screencast.send_fps_mean | The mean frame rate of sent screencasts (FPS). | long |
+| google_workspace.meet.endpoint.screencast.send_long_side_median_pixels | The median of the long side of the sent screencasts (pixels). | long |
+| google_workspace.meet.endpoint.screencast.send_packet_loss_max | The maximum packet loss for sent screencasts (percent). | long |
+| google_workspace.meet.endpoint.screencast.send_packet_loss_mean | The mean packet loss for sent screencasts (percent). | long |
+| google_workspace.meet.endpoint.screencast.send_seconds | The duration during which the participant sent a screencast (seconds). | long |
+| google_workspace.meet.endpoint.screencast.send_short_side_median_pixels | The median of the short side of the sent screencasts (pixels). | long |
+| google_workspace.meet.endpoint.start_timestamp_seconds | The time when the participant joined the meeting (in epoch seconds). | long |
+| google_workspace.meet.endpoint.video.recv_fps_mean | The mean frame rate of received video streams (FPS). | long |
+| google_workspace.meet.endpoint.video.recv_long_side_median_pixels | The median of the long side of the received video streams (pixels). | long |
+| google_workspace.meet.endpoint.video.recv_packet_loss_max | The maximum packet loss for received video streams (percent). | long |
+| google_workspace.meet.endpoint.video.recv_packet_loss_mean | The mean packet loss for received video streams (percent). | long |
+| google_workspace.meet.endpoint.video.recv_seconds | The duration during which the participant received any video (seconds). | long |
+| google_workspace.meet.endpoint.video.recv_short_side_median_pixels | The median of the short side of the received video streams (pixels). | long |
+| google_workspace.meet.endpoint.video.send_bitrate_kbps_mean | The mean bitrate of the sent video stream (kbit/s). | long |
+| google_workspace.meet.endpoint.video.send_fps_mean | The mean frame rate of the sent video stream (FPS). | long |
+| google_workspace.meet.endpoint.video.send_long_side_median_pixels | The median of the long side of the sent video stream (pixels). | long |
+| google_workspace.meet.endpoint.video.send_packet_loss_max | The maximum packet loss for the sent video stream (percent). | long |
+| google_workspace.meet.endpoint.video.send_packet_loss_mean | The mean packet loss for the sent video stream (percent). | long |
+| google_workspace.meet.endpoint.video.send_seconds | The duration during which the participant sent video (seconds). | long |
+| google_workspace.meet.endpoint.video.send_short_side_median_pixels | The median of the short side of the sent video stream (pixels). | long |
+| google_workspace.meet.livestream.endpoint.ecdn_location | The Enterprise Content Delivery Network (eCDN) location for a Meet livestream viewer. | keyword |
+| google_workspace.meet.livestream.endpoint.ecdn_network | The eCDN network for a Meet livestream viewer. | keyword |
+| google_workspace.meet.livestream.endpoint.private_ip_address | The private IP address for a Meet livestream viewer. | ip |
+| google_workspace.meet.livestream.view_page_id | The id for the Meet conference livestream view page. | keyword |
+| google_workspace.meet.meeting_code | The meeting code for the Google Meet conference. | keyword |
+| google_workspace.meet.name |  | keyword |
+| google_workspace.meet.organizer_email | The email address of the meeting creator. | keyword |
+| google_workspace.meet.product_type | The type of meeting product (Classic Hangouts/Google Meet). | keyword |
+| google_workspace.meet.streaming_session_state | The state of this Meet streaming session. | keyword |
+| google_workspace.meet.target.display_names | The target display names for this action. | keyword |
+| google_workspace.meet.target.email | The target email for this action. | keyword |
+| google_workspace.meet.target.phone_number | The target phone number for this action. | keyword |
+| google_workspace.meet.target.user_count | Target user count. | long |
+| google_workspace.meet.type |  | keyword |
+| google_workspace.organization.domain | The domain that is affected by the report's event. | keyword |
 | input.type | Type of filebeat input. | keyword |
 | log.offset | Log offset. | long |
 
