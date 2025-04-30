@@ -1,84 +1,116 @@
-<!-- Use this template language as a starting point, replacing {placeholder text} with details about the integration. -->
-<!-- Find more detailed documentation guidelines in https://github.com/elastic/integrations/blob/main/docs/documentation_guidelines.md -->
+# Miniflux integration
 
-# Miniflux
+## Overview
 
-<!-- The Miniflux integration allows you to monitor {name of service}. {name of service} is {describe service}.
+The Miniflux integration allows you to extract data from Miniflux. Miniflux is an RSS feed reader.
 
-Use the Miniflux integration to {purpose}. Then visualize that data in Kibana, create alerts to notify you if something goes wrong, and reference {data stream type} when troubleshooting an issue.
+Use the Miniflux integration to extract RSS feed content. Then visualize that data in Kibana, create alerts to notify you if something goes wrong.
 
-For example, if you wanted to {sample use case} you could {action}. Then you can {visualize|alert|troubleshoot} by {action}. -->
+For example, if you wanted to be notified for a new feed entry you could set up an alert. 
 
-## Data streams
+## Datastreams
 
-<!-- The Miniflux integration collects {one|two} type{s} of data streams: {logs and/or metrics}. -->
+The Minifux integration collects one type of data streams: logs.
 
-<!-- If applicable -->
-<!-- **Logs** help you keep a record of events happening in {service}.
-Log data streams collected by the {name} integration include {sample data stream(s)} and more. See more details in the [Logs](#logs-reference). -->
+**Logs** help you extract feed entries from Miniflux API.
+Log data streams collected by the Miniflux integration include feed_entry. See more details in the Logs reference.
 
-<!-- If applicable -->
-<!-- **Metrics** give you insight into the state of {service}.
-Metric data streams collected by the {name} integration include {sample data stream(s)} and more. See more details in the [Metrics](#metrics-reference). -->
-
-<!-- Optional: Any additional notes on data streams -->
 
 ## Requirements
 
-You need Elasticsearch for storing and searching your data and Kibana for visualizing and managing it.
-You can use our hosted Elasticsearch Service on Elastic Cloud, which is recommended, or self-manage the Elastic Stack on your own hardware.
+You need Elasticsearch for storing and searching your data and Kibana for visualizing and managing it. You can use our hosted Elasticsearch Service on Elastic Cloud, which is recommended, or self-manage the Elastic Stack on your own hardware.
 
-<!--
-	Optional: Other requirements including:
-	* System compatibility
-	* Supported versions of third-party products
-	* Permissions needed
-	* Anything else that could block a user from successfully using the integration
--->
+Each data stream collects different kinds of logs data, which may require dedicated permissions to be fetched and may vary across operating systems. Details on the permissions needed for each data stream are available in the Logs reference.
 
 ## Setup
 
-<!-- Any prerequisite instructions -->
+Before sending logs to Elastic from your Miniflux application (self-hosted or SaaS), you must create a Miniflux API key by following [Miniflux's documentation](https://miniflux.app/docs/api.html#authentication)
 
-For step-by-step instructions on how to set up an integration, see the
-[Getting started](https://www.elastic.co/guide/en/welcome-to-elastic/current/getting-started-observability.html) guide.
+After you've configured your device, you can set up the Elastic integration.
 
-<!-- Additional set up instructions -->
+<!-- ## Troubleshooting (optional)
 
-<!-- If applicable -->
-<!-- ## Logs reference -->
+Provide information about special cases and exceptions that aren’t necessary for getting started or won’t be applicable to all users. Check the [troubleshooting guidelines](https://www.elastic.co/guide/en/integrations-developer/current/documentation-guidelines.html#idg-docs-guidelines-troubleshooting) for more information. -->
 
-<!-- Repeat for each data stream of the current type -->
-<!-- ### {Data stream name}
+<!-- ## Reference
 
-The `{data stream name}` data stream provides events from {source} of the following types: {list types}. -->
+Provide detailed information about the log or metric types we support within the integration. Check the [reference guidelines](https://www.elastic.co/guide/en/integrations-developer/current/documentation-guidelines.html#idg-docs-guidelines-reference) for more information. -->
 
-<!-- Optional -->
-<!-- #### Example
+## Logs
 
-An example event for `{data stream name}` looks as following:
+### Feed Entry
 
-{code block with example} -->
+This is the `feed_entry` dataset.
 
-<!-- #### Exported fields
+**Exported fields**
 
-{insert table} -->
+| Field | Description | Type |
+|---|---|---|
+| @timestamp | Event timestamp. | date |
+| data_stream.dataset | Data stream dataset. | constant_keyword |
+| data_stream.namespace | Data stream namespace. | constant_keyword |
+| data_stream.type | Data stream type. | constant_keyword |
+| miniflux.author | Author of the feed entry | keyword |
+| miniflux.changed_at |  | date |
+| miniflux.comments_url |  | keyword |
+| miniflux.content |  | keyword |
+| miniflux.created_at |  | date |
+| miniflux.enclosures |  | keyword |
+| miniflux.feed.allow_self_signed_certificates |  | boolean |
+| miniflux.feed.apprise_service_urls |  | boolean |
+| miniflux.feed.blocklist_rules |  | keyword |
+| miniflux.feed.category.hide_globally |  | boolean |
+| miniflux.feed.category.id |  | long |
+| miniflux.feed.category.title |  | keyword |
+| miniflux.feed.category.user_id |  | long |
+| miniflux.feed.checked_at |  | date |
+| miniflux.feed.cookie |  | keyword |
+| miniflux.feed.crawler |  | boolean |
+| miniflux.feed.description |  | keyword |
+| miniflux.feed.disable_http2 |  | boolean |
+| miniflux.feed.disabled |  | boolean |
+| miniflux.feed.etag_header |  | keyword |
+| miniflux.feed.feed_url |  | keyword |
+| miniflux.feed.fetch_via_proxy |  | boolean |
+| miniflux.feed.hide_globally |  | boolean |
+| miniflux.feed.icon.external_icon_id |  | keyword |
+| miniflux.feed.icon.feed_id |  | long |
+| miniflux.feed.icon.icon_id |  | long |
+| miniflux.feed.id |  | long |
+| miniflux.feed.ignore_http_cache |  | boolean |
+| miniflux.feed.keeplist_rules |  | keyword |
+| miniflux.feed.last_modified_header |  | keyword |
+| miniflux.feed.next_check_at |  | date |
+| miniflux.feed.no_media_player |  | boolean |
+| miniflux.feed.ntfy_enabled |  | boolean |
+| miniflux.feed.ntfy_priority |  | integer |
+| miniflux.feed.ntfy_topic |  | keyword |
+| miniflux.feed.parsing_error_count |  | integer |
+| miniflux.feed.parsing_error_message |  | keyword |
+| miniflux.feed.password |  | keyword |
+| miniflux.feed.proxy_url |  | keyword |
+| miniflux.feed.pushover_enabled |  | boolean |
+| miniflux.feed.pushover_priority |  | integer |
+| miniflux.feed.rewrite_rules |  | keyword |
+| miniflux.feed.scraper_rules |  | keyword |
+| miniflux.feed.site_url |  | keyword |
+| miniflux.feed.title |  | keyword |
+| miniflux.feed.urlrewrite_rules |  | keyword |
+| miniflux.feed.user_agent |  | keyword |
+| miniflux.feed.user_id |  | long |
+| miniflux.feed.username |  | keyword |
+| miniflux.feed.webhook_url |  | keyword |
+| miniflux.feed_id |  | long |
+| miniflux.hash |  | keyword |
+| miniflux.id |  | long |
+| miniflux.published_at |  | date |
+| miniflux.reading_time |  | integer |
+| miniflux.share_code |  | keyword |
+| miniflux.starred |  | boolean |
+| miniflux.status |  | keyword |
+| miniflux.tags |  | keyword |
+| miniflux.title |  | keyword |
+| miniflux.url |  | keyword |
+| miniflux.user_id |  | long |
 
-<!-- If applicable -->
-<!-- ## Metrics reference -->
 
-<!-- Repeat for each data stream of the current type -->
-<!-- ### {Data stream name}
-
-The `{data stream name}` data stream provides events from {source} of the following types: {list types}. -->
-
-<!-- Optional -->
-<!-- #### Example
-
-An example event for `{data stream name}` looks as following:
-
-{code block with example} -->
-
-<!-- #### Exported fields
-
-{insert table} -->
