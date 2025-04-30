@@ -30,6 +30,7 @@ It is compatible with a subset of applications under the [Google Reports API v1]
 | [Data Studio](https://developers.google.com/admin-sdk/reports/v1/appendix/activity/data-studio) | Track and audit user interactions and changes made to Looker Studio assets. |
 | [Calendar](https://developers.google.com/admin-sdk/reports/v1/appendix/activity/calendar) | The Calendar activity report returns information about how your account's users manage and modify their Google Calendar events. |
 | [Chat](https://developers.google.com/admin-sdk/reports/v1/appendix/activity/chat) | The Chat activity report returns information about how your account's users use and manage Spaces. |
+| [Vault](https://developers.google.com/admin-sdk/reports/v1/appendix/activity/vault) | The Vault activity report returns information about various types of Vault Audit activity events. |
 
 ## Requirements
 
@@ -46,7 +47,7 @@ This integration will make use of the following *oauth2 scope*:
 
 Once you have downloaded your service account credentials as a JSON file, you are ready to set up your integration.
 
-Click the Advanced option of Google Workspace Audit Reports. The default value of "API Host" is `https://www.googleapis.com`. The API Host will be used for collecting `access_transparency`, `admin`, `calendar`, `chat`, `chrome`, `context_aware_access`, `data_studio`, `device`, `drive`, `gcp`, `groups`, `group_enterprise`, `login`, `rules`, `saml`, `token` and `user accounts` logs.
+Click the Advanced option of Google Workspace Audit Reports. The default value of "API Host" is `https://www.googleapis.com`. The API Host will be used for collecting `access_transparency`, `admin`, `calendar`, `chat`, `chrome`, `context_aware_access`, `data_studio`, `device`, `drive`, `gcp`, `groups`, `group_enterprise`, `login`, `rules`, `saml`, `token`, `user accounts` and `vault` logs.
 
 >  NOTE: The `Delegated Account` value in the configuration, is expected to be the email of the administrator account, and not the email of the ServiceAccount.
 
@@ -292,3 +293,11 @@ This is the `chat` dataset.
 {{event "chat"}}
 
 {{fields "chat"}}
+
+### Vault
+
+This is the `vault` dataset.
+
+{{event "vault"}}
+
+{{fields "vault"}}
