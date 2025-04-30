@@ -1,8 +1,12 @@
 # Cloudflare Integration
 
-Cloudflare integration uses [Cloudflare's API](https://api.cloudflare.com/) to retrieve [audit logs](https://support.cloudflare.com/hc/en-us/articles/115002833612-Understanding-Cloudflare-Audit-Logs) and [traffic logs](https://developers.cloudflare.com/logs/logpull/understanding-the-basics/) from Cloudflare, for a particular zone, and ingest them into Elasticsearch. This allows you to search, observe and visualize the Cloudflare log events through Elasticsearch.
+Cloudflare integration uses [Cloudflare's API](https://api.cloudflare.com/) to retrieve [audit logs](https://support.cloudflare.com/hc/en-us/articles/115002833612-Understanding-Cloudflare-Audit-Logs) from the Cloudflare account and [Cloudflare's Logpull API](https://developers.cloudflare.com/logs/logpull/) to retrieve [traffic logs](https://developers.cloudflare.com/logs/logpull/understanding-the-basics/) from Cloudflare, for a particular zone, and ingest them into Elasticsearch. This allows you to search, observe and visualize the Cloudflare log events through Elasticsearch.
 
 Users of [Cloudflare](https://www.cloudflare.com/en-au/learning/what-is-cloudflare/) use Cloudflare services to increase the security and performance of their web sites and services. 
+
+> Note: Logpull is considered a legacy feature and it is recommended to use the Elastic's [Cloudflare Logpush](https://www.elastic.co/docs/reference/integrations/cloudflare_logpush) integration for Cloudflare traffic logs for better performance and functionality. See [here](https://developers.cloudflare.com/logs/logpull/) for more details.
+
+>  Note: Authenticating with API Key (Auth Key) using `X-AUTH-EMAIL` and `X-AUTH-KEY` is considered to be a legacy feature with several limitations that makes it less secure than API token (Auth Token). See [here](https://developers.cloudflare.com/fundamentals/api/get-started/keys/#limitations) for more information on API Key limitations.
 
 ## Configuration
 
@@ -18,62 +22,66 @@ Users of [Cloudflare](https://www.cloudflare.com/en-au/learning/what-is-cloudfla
 The integration can retrieve Cloudflare audit logs using -
 
 1. Auth Email and Auth Key
-2. API Token
+2. Auth Token
 
-More information is available [here](https://developers.cloudflare.com/api/resources/audit_logs/)
+More information is available [here](https://developers.cloudflare.com/logs/logpull/requesting-logs/#required-authentication-headers).
 
 #### Configure using Auth Email and Auth Key
 
 Enter values "Auth Email", "Auth Key" and "Account ID".
 
 1. **Auth Email** is the email address associated with your account. 
-2. [**Auth Key**](https://developers.cloudflare.com/api/keys/) is the API key generated on the "My Account" page.
-3. **Account ID** can be found on the Cloudflare dashboard. Follow the navigation documentation from [here](https://developers.cloudflare.com/fundamentals/get-started/basic-tasks/find-account-and-zone-ids/).
+2. **Auth Key** is the Global API key generated on the "My Profile" > "API Tokens" page.
+3. **Account ID** can be found [here](https://developers.cloudflare.com/fundamentals/get-started/basic-tasks/find-account-and-zone-ids/).
 
->  Note: See for `X-AUTH-EMAIL` and `X-AUTH-KEY` [here](https://api.cloudflare.com/#getting-started-requests) for more information on Auth Email and Auth Key.
+>  Note: See [here](https://developers.cloudflare.com/fundamentals/api/get-started/keys/) for more information on `X-AUTH-EMAIL` and `X-AUTH-KEY`.
 
-#### Configure using API Token
+#### Configure using Auth Token
 
-Enter values "API Token" and "Account ID".
+Enter values "Auth Token" and "Account ID".
 
 For the Cloudflare integration to be able to successfully get logs, one of the following permissions must be granted to the API token -
 
 - Account Settings Write, Account Settings Read
 
-1. [**API Tokens**](https://developers.cloudflare.com/api/tokens/) allow for more granular permission settings. 
-3. **Account ID** can be found on the Cloudflare dashboard. Follow the navigation documentation from [here](https://developers.cloudflare.com/fundamentals/get-started/basic-tasks/find-account-and-zone-ids/).
+1. **Auth Tokens** is the API Token generated on the "My Profile" > "API Tokens" page.
+2. **Account ID** can be found [here](https://developers.cloudflare.com/fundamentals/get-started/basic-tasks/find-account-and-zone-ids/).
 
-### Configure Cloudflare logs
+>  Note: See [here](https://developers.cloudflare.com/fundamentals/api/get-started/create-token/) for more information on `API Token`.
+
+### Configure Cloudflare traffic logs data stream
 
 These logs contain data related to the connecting client, the request path through the Cloudflare network, and the response from the origin web server. For more information see [here](https://developers.cloudflare.com/logs/logpull/).
 
 The integration can retrieve Cloudflare logs using -
 
 1. Auth Email and Auth Key
-2. API Token
+2. Auth Token
 
-More information is available [here](https://developers.cloudflare.com/logs/logpull/requesting-logs/#required-authentication-headers)
+More information is available [here](https://developers.cloudflare.com/logs/logpull/requesting-logs/#required-authentication-headers).
 
 #### Configure using Auth Email and Auth Key
 
 Enter values "Auth Email", "Auth Key" and "Zone ID".
 
 1. **Auth Email** is the email address associated with your account. 
-2. [**Auth Key**](https://developers.cloudflare.com/api/keys/) is the API key generated on the "My Account" page.
+2. **Auth Key** is the Global API key generated on the "My Profile" > "API Tokens" page.
 3. **Zone ID** can be found [here](https://developers.cloudflare.com/fundamentals/get-started/basic-tasks/find-account-and-zone-ids/).
 
->  Note: See for `X-AUTH-EMAIL` and `X-AUTH-KEY` [here](https://api.cloudflare.com/#getting-started-requests) for more information on Auth Email and Auth Key.
+>  Note: See [here](https://developers.cloudflare.com/fundamentals/api/get-started/keys/) for more information on `X-AUTH-EMAIL` and `X-AUTH-KEY`.
 
-#### Configure using API Token
+#### Configure using Auth Token
 
-Enter values "API Token" and "Zone ID".
+Enter values "Auth Token" and "Zone ID".
 
-For the Cloudflare integration to be able to successfully get logs the following permissions must be granted to the API token -
+For the Cloudflare integration to be able to successfully get logs the following permissions must be granted to the Auth token -
 
 - Account.Access: Audit Logs: Read
 
-1. [**API Tokens**](https://developers.cloudflare.com/api/tokens/) allow for more granular permission settings. 
+1. **Auth Tokens** is the API Token generated on the "My Profile" > "API Tokens" page.
 2. **Zone ID** can be found [here](https://developers.cloudflare.com/fundamentals/get-started/basic-tasks/find-account-and-zone-ids/).
+
+>  Note: See [here](https://developers.cloudflare.com/fundamentals/api/get-started/create-token/) for more information on `API Token`.
 
 ## Logs
 
@@ -424,7 +432,7 @@ An example event for `logpull` looks as following:
         "bytes": 2848
     },
     "source": {
-        "address": "35.232.161.215",
+        "address": "35.232.161.245",
         "as": {
             "number": 15169
         },
