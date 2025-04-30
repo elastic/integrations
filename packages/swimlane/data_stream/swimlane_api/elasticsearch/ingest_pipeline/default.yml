@@ -99,7 +99,7 @@ processors:
       ignore_missing: true
   - set:
       field: message
-      value: "{{message}}: {{swimlane.audit_log.NewValue.Name}} with Id: {{swimlane.audit_log.NewValue.Id}}"
+      value: "{{{message}}}: {{{swimlane.audit_log.NewValue.Name}}} with Id: {{{swimlane.audit_log.NewValue.Id}}}"
       if: 'ctx.swimlane.audit_log.NewValue != null && ctx.swimlane.audit_log.NewValue.Name != null && ctx.swimlane.audit_log.NewValue.Id != null'
   - rename:
       field: swimlane.audit_log.UserId
@@ -130,13 +130,13 @@ processors:
       source: >-
         ctx.event.kind = 'event';
         ctx.event.type = ['info'];
-        if (ctx?.swimlane?.audit_log?.ActionType == null) {
+        if (ctx.swimlane?.audit_log?.ActionType == null) {
             return;
         }
-        if (params.get(ctx?.swimlane?.audit_log?.ActionType) == null) {
+        if (params.get(ctx.swimlane?.audit_log?.ActionType) == null) {
             return;
         }
-        def hm = new HashMap(params.get(ctx?.swimlane?.audit_log?.ActionType));
+        def hm = new HashMap(params.get(ctx.swimlane?.audit_log?.ActionType));
         hm.forEach((k, v) -> ctx.event[k] = v);
   - rename:
       field: swimlane.audit_log.Category
@@ -148,10 +148,10 @@ processors:
       ignore_missing: true
   # drop all events that are related to the hubs/record endpoint as it's too noisy
   - drop:
-      if: ctx?.url?.path instanceof String && ctx.url.path.toLowerCase().contains("hubs/record")
+      if: ctx.url?.path instanceof String && ctx.url.path.toLowerCase().contains("hubs/record")
   # drop events all record updates
   - drop:
-      if: ctx?.url?.path instanceof String && ctx.url.path.toLowerCase().endsWith("/values")
+      if: ctx.url?.path instanceof String && ctx.url.path.toLowerCase().endsWith("/values")
   - rename:
       field: swimlane.audit_log.EventOutcome
       target_field: event.outcome
