@@ -1,6 +1,6 @@
 # Swimlane Turbine
 
-The Swimlane Turbine integration allows you to ingest on-prem audit logs from Swimlane Turbine, the Enterprise AI Hyperautomation & Orchestration Platform. 
+The [Swimlane Turbine](https://swimlane.com/swimlane-turbine/) integration allows you to ingest on-prem audit logs from Swimlane Turbine, the Enterprise AI Hyperautomation & Orchestration Platform. 
 
 Use the Swimlane Turbine integration to stream container pod logs into your Elastic deployment. 
 
