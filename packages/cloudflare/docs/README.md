@@ -4,7 +4,7 @@ Cloudflare integration uses [Cloudflare's API](https://api.cloudflare.com/) to r
 
 Users of [Cloudflare](https://www.cloudflare.com/en-au/learning/what-is-cloudflare/) use Cloudflare services to increase the security and performance of their web sites and services. 
 
-> Note: Logpull is considered a legacy feature and it is recommended to use the Elastic's [Cloudflare Logpush](https://www.elastic.co/docs/reference/integrations/cloudflare_logpush) integration for Cloudflare traffic logs for better performance and functionality. See [here](https://developers.cloudflare.com/logs/logpull/) for more details.
+> Note: Logpull is considered a legacy feature and it is recommended to use the [Cloudflare Logpush](https://www.elastic.co/docs/reference/integrations/cloudflare_logpush) integration for Cloudflare traffic logs for better performance and functionality. See [here](https://developers.cloudflare.com/logs/logpull/) for more details.
 
 >  Note: Authenticating with API Key (Auth Key) using `X-AUTH-EMAIL` and `X-AUTH-KEY` is considered to be a legacy feature with several limitations that makes it less secure than API token (Auth Token). See [here](https://developers.cloudflare.com/fundamentals/api/get-started/keys/#limitations) for more information on API Key limitations.
 

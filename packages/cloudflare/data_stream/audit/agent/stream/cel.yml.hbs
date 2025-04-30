@@ -1,8 +1,8 @@
 config_version: "2"
 interval: {{interval}}
 {{#if enable_request_tracer}}
-resource.tracer.filename: "../../logs/cel/http-request-trace-*.ndjson"
-request.tracer.maxbackups: 5
+resource.tracer.filename: "../../logs/httpjson/http-request-trace-*.ndjson"
+resource.tracer.maxbackups: 5
 {{/if}}
 {{#if proxy_url}}
 resource.proxy_url: {{proxy_url}}
@@ -44,7 +44,7 @@ program: |
             state.with({
                 "cursor" : {
                     "page": 1,
-                    "last_timestamp": state.?cursor.last_timestamp.orValue((now - duration(state.?initial_interval.orValue("720h"))).format(time_layout.RFC3339)),
+                    "last_timestamp": state.?cursor.last_timestamp.orValue((now - duration(state.?initial_interval.orValue("720h"))).format(time_layout.RFC3339Nano)),
                 },
                 "per_page" : state.?per_page.orValue(100),
             })
@@ -95,7 +95,7 @@ program: |
                                                 batch_last_timestamp
                                             :
                                                 timestamp(state.cursor.last_timestamp))
-                                        ))).format(time_layout.RFC3339)
+                                        ))).format(time_layout.RFC3339Nano)
                                     )
                                 :
                                     state.cursor.last_timestamp
