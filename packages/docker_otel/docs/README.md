@@ -2,7 +2,7 @@
 
 The Docker OpenTelemetry Assets integration collects metrics from Docker containers using OpenTelemetry Collector. This integration enables monitoring of Docker containers using the OpenTelemetry protocol for metrics collection, providing insights into container performance and resource utilization.
 
-Use the Docker OpenTelemetry Assets integration to monitor container metrics such as CPU usage, memory consumption, disk I/O, and network traffic through the OpenTelemetry Collector. Then visualize that data in Kibana, create alerts to notify you if resource usage exceeds thresholds, and reference metrics when troubleshooting performance issues.
+Use the Docker OpenTelemetry Assets integration to monitor container metrics such as CPU usage, memory consumption, disk I/O, and network traffic through the OpenTelemetry Collector. 
 
 For example, if you wanted to monitor container CPU spikes, you could track CPU usage metrics across all containers. Then you can visualize these metrics in dashboards or create alerts when CPU usage exceeds defined thresholds.
 
