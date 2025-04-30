@@ -33,6 +33,10 @@ processors:
       target_field: faas.name
   - rename:
       ignore_missing: true
+      field: tencent_cloud.scf.SCF_Qualifier
+      target_field: faas.version
+  - rename:
+      ignore_missing: true
       field: tencent_cloud.scf.SCF_Level
       target_field: log.level
   - date:
@@ -114,6 +118,11 @@ processors:
       tag: remove_fields
       field:
         - tencent_cloud.scf.__SOURCE__
+  - append:
+      if: ctx.source?.ip != null
+      field: related.ip
+      value: '{{{source.ip}}}'
+      allow_duplicates: false
   - set:
       field: event.kind
       tag: set_pipeline_error_in_event_kind

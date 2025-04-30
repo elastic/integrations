@@ -207,6 +207,7 @@ Tencent Cloud 集成旨在通过 Elastic Agent 将腾讯云的各种云产品的
 | data_stream.namespace | Data stream namespace. | constant_keyword |
 | data_stream.type | Data stream type. | constant_keyword |
 | event.dataset | Event dataset | constant_keyword |
+| event.kind | Event Kind | constant_keyword |
 | event.module | Event module | constant_keyword |
 | host.containerized | If the host is a container. | boolean |
 | host.os.build | OS build information. | keyword |
@@ -217,7 +218,6 @@ Tencent Cloud 集成旨在通过 Elastic Agent 将腾讯云的各种云产品的
 | tencent_cloud.scf.SCF_LogTime | SCF日志时间 | date |
 | tencent_cloud.scf.SCF_MemUsage | 函数运行内存 | double |
 | tencent_cloud.scf.SCF_Namespace | SCF命名空间 | keyword |
-| tencent_cloud.scf.SCF_Qualifier | SCF版本 | keyword |
 | tencent_cloud.scf.SCF_RetryNum | SCF重试次数 | long |
 | tencent_cloud.scf.SCF_StartTime | SCF开始时间 | date |
 | tencent_cloud.scf.SCF_Type | SCF类型，Platform 指平台日志，Custom 指用户日志。 | keyword |
