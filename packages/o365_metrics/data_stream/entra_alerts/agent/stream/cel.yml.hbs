@@ -16,7 +16,7 @@ auth.oauth2:
     azure.tenant_id: {{azure_tenant_id}}
 {{/if}}
 
-resource.url: {{url}}
+resource.url: {{url_management}}
 {{#if resource_ssl}}
 resource.ssl: 
   {{resource_ssl}}
@@ -79,7 +79,6 @@ state:
   premium_check_path: '/providers/Microsoft.ADHybridHealthService/services/GetServices/PremiumCheck?serviceType=AadSyncService&skipCount=0&takeCount=50'
   service_path: '/providers/Microsoft.ADHybridHealthService/services'
   api_query_param: '&api-version=2014-01-01'
-  url: {{url_management}}
   base:
     tenant_id: "{{azure_tenant_id}}"
     period: "{{period}}"
@@ -105,14 +104,14 @@ program: |
                     "entra": {
                       "alerts": {
                         "service_name": serviceName,
-                        "alerts" : request(
+                        "records" : request(
                           "GET", 
                           state.url.trim_right("/") + state.service_path + "/" + serviceName + "/alerts?" + state.api_query_param
                         ).do_request().as(alerts_resp,
                          alerts_resp.StatusCode != 200
                           ?
                             [{
-                                "alerts_error": [
+                                "error": [
                                   string(alerts_resp.StatusCode), 
                                   string(alerts_resp.Body)
                                 ].join(" ")
