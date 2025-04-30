@@ -74,42 +74,38 @@ processors:
       field: network.transport
       tag: lowercase_network_transport
       ignore_missing: true
-  - append:
+  - set:
       field: source.ip
-      tag: append_log_source_ip_into_source_ip
-      value: '{{{watchguard_firebox.log.source_ip}}}'
-      allow_duplicates: false
-      if: ctx.watchguard_firebox?.log?.source_ip != null
+      tag: set_log_source_ip_into_source_ip
+      copy_from: watchguard_firebox.log.source_ip
+      ignore_empty_value: true
   - append:
       field: related.ip
       tag: append_source_ip_into_related_ip
       value: '{{{watchguard_firebox.log.source_ip}}}'
       allow_duplicates: false
       if: ctx.watchguard_firebox?.log?.source_ip != null
-  - append:
+  - set:
       field: destination.ip
-      tag: append_log_destination_ip_into_destination_ip
-      value: '{{{watchguard_firebox.log.destination_ip}}}'
-      allow_duplicates: false
-      if: ctx.watchguard_firebox?.log?.destination_ip != null
+      tag: set_log_destination_ip_into_destination_ip
+      copy_from: watchguard_firebox.log.destination_ip
+      ignore_empty_value: true
   - append:
       field: related.ip
       tag: append_destination_ip_into_related_ip
       value: '{{{watchguard_firebox.log.destination_ip}}}'
       allow_duplicates: false
       if: ctx.watchguard_firebox?.log?.destination_ip != null
-  - append:
+  - set:
       field: source.port
-      tag: append_log_source_port_into_source_port
-      value: '{{{watchguard_firebox.log.source_port}}}'
-      allow_duplicates: false
-      if: ctx.watchguard_firebox?.log?.source_port != null
-  - append:
+      tag: set_log_source_port_into_source_port
+      copy_from: watchguard_firebox.log.source_port
+      ignore_empty_value: true
+  - set:
       field: destination.port
-      tag: append_log_destination_port_into_destination_port
-      value: '{{{watchguard_firebox.log.destination_port}}}'
-      allow_duplicates: false
-      if: ctx.watchguard_firebox?.log?.destination_port != null
+      tag: set_log_destination_port_into_destination_port
+      copy_from: watchguard_firebox.log.destination_port
+      ignore_empty_value: true
   - set:
       field: event.action
       tag: set_event_action_from_log_action
@@ -952,6 +948,7 @@ processors:
       value: '{{{watchguard_firebox.log.source_user_domain}}}'
       allow_duplicates: false
       if: ctx.watchguard_firebox?.log?.source_user_domain != null
+  # In proxy redirect logs, srv_* indicates the true, redirected destination. For these logs, set destination to the srv values.
   - convert:
       field: watchguard_firebox.log.srv_ip
       tag: convert_srv_ip_to_ip
@@ -964,11 +961,10 @@ processors:
         - append:
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
-  - append:
+  - set:
       field: destination.ip
-      tag: append_watchguard_firebox_log_srv_ip_into_destination_ip
-      value: '{{{watchguard_firebox.log.srv_ip}}}'
-      allow_duplicates: false
+      tag: set_watchguard_firebox_log_srv_ip_into_destination_ip
+      copy_from: watchguard_firebox.log.srv_ip
       if: ctx.watchguard_firebox?.log?.srv_ip != null
   - append:
       field: related.ip
@@ -987,11 +983,10 @@ processors:
         - append:
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
-  - append:
+  - set:
       field: destination.port
-      tag: append_watchguard_firebox_log_srv_port_into_destination_port
-      value: '{{{watchguard_firebox.log.srv_port}}}'
-      allow_duplicates: false
+      tag: set_watchguard_firebox_log_srv_port_into_destination_port
+      copy_from: watchguard_firebox.log.srv_port
       if: ctx.watchguard_firebox?.log?.srv_port != null
   - rename:
       field: watchguard_firebox.log.subj_tag
@@ -1098,6 +1093,8 @@ processors:
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - community_id:
+      tag: src_dst_community_id
+      if: 'ctx.watchguard_firebox.log.source_port != 0 && ctx.watchguard_firebox.log.destination_port != 0'
       source_ip: watchguard_firebox.log.source_ip
       source_port: watchguard_firebox.log.source_port
       destination_ip: watchguard_firebox.log.destination_ip
