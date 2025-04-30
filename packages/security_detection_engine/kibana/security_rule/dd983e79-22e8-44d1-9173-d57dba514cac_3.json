@@ -1,0 +1,106 @@
+{
+    "attributes": {
+        "author": [
+            "Elastic"
+        ],
+        "description": "This rule detects potential Docker socket enumeration activity by monitoring processes that attempt to interact with the Docker socket file (/var/run/docker.sock). Docker socket enumeration is a common technique used by attackers to interact with the Docker daemon and perform various operations, such as creating, starting, stopping, and removing containers. Attackers may abuse Docker socket enumeration to gain unauthorized access to the host system, escalate privileges, or move laterally within the environment.",
+        "from": "now-9m",
+        "index": [
+            "auditbeat-*",
+            "endgame-*",
+            "logs-auditd_manager.auditd-*",
+            "logs-crowdstrike.fdr*",
+            "logs-endpoint.events.process*",
+            "logs-sentinel_one_cloud_funnel.*"
+        ],
+        "language": "eql",
+        "license": "Elastic License v2",
+        "name": "Docker Socket Enumeration",
+        "note": "## Triage and analysis\n\n> **Disclaimer**:\n> This investigation guide was created using generative AI technology and has been reviewed to improve its accuracy and relevance. While every effort has been made to ensure its quality, we recommend validating the content and adapting it to suit your specific environment and operational needs.\n\n### Investigating Docker Socket Enumeration\n\nDocker sockets facilitate communication between the Docker client and daemon, enabling container management. Adversaries exploit this by accessing the socket to control containers, potentially escalating privileges or moving laterally. The detection rule identifies suspicious processes interacting with the Docker socket, using specific commands, to flag unauthorized enumeration attempts.\n\n### Possible investigation steps\n\n- Review the process details to confirm the presence of suspicious commands interacting with the Docker socket, specifically looking for the use of tools like curl, socat, nc, netcat, ncat, or nc.traditional.\n- Examine the command line arguments of the flagged process to understand the intent and scope of the interaction with the Docker socket, focusing on paths like /var/run/docker.sock or /run/docker.sock.\n- Identify the user account under which the suspicious process was executed to assess if it has legitimate access to Docker resources or if it might be compromised.\n- Check the historical activity of the involved user and process to determine if this behavior is anomalous or part of a known pattern.\n- Investigate any recent changes or deployments in the Docker environment that might explain the interaction with the Docker socket, such as new container setups or updates.\n- Correlate the alert with other security events or logs from the same host or network segment to identify potential lateral movement or privilege escalation attempts.\n\n### False positive analysis\n\n- Legitimate administrative tasks using tools like curl or socat to interact with Docker for monitoring or management purposes can trigger alerts. To handle this, create exceptions for specific user accounts or scripts that are known to perform these tasks regularly.\n- Automated scripts or services that check the status of Docker containers might be flagged. Identify these scripts and whitelist their process names or command lines to prevent unnecessary alerts.\n- Development environments where developers frequently use command-line tools to interact with Docker may cause false positives. Consider excluding specific development machines or user groups from the rule to reduce noise.\n- Continuous integration or deployment pipelines that use Docker commands as part of their workflow can be mistaken for enumeration attempts. Exclude these processes by identifying their unique command patterns or execution contexts.\n- Security tools that perform regular audits or checks on Docker environments might trigger the rule. Verify these tools and add them to an exception list to avoid false alerts.\n\n### Response and remediation\n\n- Immediately isolate the affected host from the network to prevent further unauthorized access or lateral movement.\n- Terminate any suspicious processes identified in the alert that are interacting with the Docker socket, such as those using curl, socat, or netcat.\n- Conduct a thorough review of Docker containers on the affected host to identify any unauthorized or malicious containers. Stop and remove any that are not recognized or are deemed suspicious.\n- Check for any unauthorized changes to Docker configurations or images and revert them to a known good state.\n- Review and restrict permissions on the Docker socket file (/var/run/docker.sock) to limit access to only trusted users and processes.\n- Escalate the incident to the security operations team for further investigation and to determine if additional hosts or systems are affected.\n- Implement enhanced monitoring and logging for Docker socket interactions to detect and respond to similar threats more quickly in the future.\n",
+        "query": "process where host.os.type == \"linux\" and event.type == \"start\" and\nevent.action in (\"exec\", \"exec_event\", \"start\", \"ProcessRollup2\", \"executed\", \"process_started\") and\nprocess.name in (\"curl\", \"socat\", \"nc\", \"netcat\", \"ncat\", \"nc.traditional\") and\nprocess.command_line like (\"*/var/run/docker.sock*\", \"*/run/docker.sock*\")\n",
+        "related_integrations": [
+            {
+                "package": "endpoint",
+                "version": "^9.0.0"
+            },
+            {
+                "package": "auditd_manager",
+                "version": "^1.18.0"
+            },
+            {
+                "package": "crowdstrike",
+                "version": "^1.51.0"
+            },
+            {
+                "package": "sentinel_one_cloud_funnel",
+                "version": "^1.9.0"
+            }
+        ],
+        "required_fields": [
+            {
+                "ecs": true,
+                "name": "event.action",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "event.type",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "host.os.type",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "process.command_line",
+                "type": "wildcard"
+            },
+            {
+                "ecs": true,
+                "name": "process.name",
+                "type": "keyword"
+            }
+        ],
+        "risk_score": 21,
+        "rule_id": "dd983e79-22e8-44d1-9173-d57dba514cac",
+        "setup": "## Setup\n\nThis rule requires data coming in from Elastic Defend.\n\n### Elastic Defend Integration Setup\nElastic Defend is integrated into the Elastic Agent using Fleet. Upon configuration, the integration allows the Elastic Agent to monitor events on your host and send data to the Elastic Security app.\n\n#### Prerequisite Requirements:\n- Fleet is required for Elastic Defend.\n- To configure Fleet Server refer to the [documentation](https://www.elastic.co/guide/en/fleet/current/fleet-server.html).\n\n#### The following steps should be executed in order to add the Elastic Defend integration on a Linux System:\n- Go to the Kibana home page and click \"Add integrations\".\n- In the query bar, search for \"Elastic Defend\" and select the integration to see more details about it.\n- Click \"Add Elastic Defend\".\n- Configure the integration name and optionally add a description.\n- Select the type of environment you want to protect, either \"Traditional Endpoints\" or \"Cloud Workloads\".\n- Select a configuration preset. Each preset comes with different default settings for Elastic Agent, you can further customize these later by configuring the Elastic Defend integration policy. [Helper guide](https://www.elastic.co/guide/en/security/current/configure-endpoint-integration-policy.html).\n- We suggest selecting \"Complete EDR (Endpoint Detection and Response)\" as a configuration setting, that provides \"All events; all preventions\"\n- Enter a name for the agent policy in \"New agent policy name\". If other agent policies already exist, you can click the \"Existing hosts\" tab and select an existing policy instead.\nFor more details on Elastic Agent configuration settings, refer to the [helper guide](https://www.elastic.co/guide/en/fleet/8.10/agent-policy.html).\n- Click \"Save and Continue\".\n- To complete the integration, select \"Add Elastic Agent to your hosts\" and continue to the next section to install the Elastic Agent on your hosts.\nFor more details on Elastic Defend refer to the [helper guide](https://www.elastic.co/guide/en/security/current/install-endpoint.html).\n",
+        "severity": "low",
+        "tags": [
+            "Domain: Endpoint",
+            "Domain: Container",
+            "OS: Linux",
+            "Use Case: Threat Detection",
+            "Tactic: Discovery",
+            "Data Source: Elastic Defend",
+            "Data Source: Elastic Endgame",
+            "Data Source: Auditd Manager",
+            "Data Source: Crowdstrike",
+            "Data Source: SentinelOne",
+            "Resources: Investigation Guide"
+        ],
+        "threat": [
+            {
+                "framework": "MITRE ATT&CK",
+                "tactic": {
+                    "id": "TA0007",
+                    "name": "Discovery",
+                    "reference": "https://attack.mitre.org/tactics/TA0007/"
+                },
+                "technique": [
+                    {
+                        "id": "T1613",
+                        "name": "Container and Resource Discovery",
+                        "reference": "https://attack.mitre.org/techniques/T1613/"
+                    }
+                ]
+            }
+        ],
+        "timestamp_override": "event.ingested",
+        "type": "eql",
+        "version": 3
+    },
+    "id": "dd983e79-22e8-44d1-9173-d57dba514cac_3",
+    "type": "security-rule"
+}
