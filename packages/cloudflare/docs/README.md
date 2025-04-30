@@ -76,7 +76,7 @@ Enter values "Auth Token" and "Zone ID".
 
 For the Cloudflare integration to be able to successfully get logs the following permissions must be granted to the Auth token -
 
-- Account.Access: Audit Logs: Read
+- Account Settings Write, Account Settings Read
 
 1. **Auth Tokens** is the API Token generated on the "My Profile" > "API Tokens" or "Manage Account" > "Account API Tokens" page.
 2. **Zone ID** can be found [here](https://developers.cloudflare.com/fundamentals/get-started/basic-tasks/find-account-and-zone-ids/).
