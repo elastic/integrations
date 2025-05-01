@@ -114,9 +114,7 @@ You’ll need to have a few requirements in place to run this tutorial:
 
 3. After the command runs, check that your new package appears in Kibana under **Management > Integrations > Installed integrations**.
 
-    :::{image} images/package-installed.png
-    :alt: Kibana installed integrations tab with a card for my sample package
-    :::
+    ![Kibana installed integrations tab with a card for my sample package](images/package-installed.png)
 
 
 
@@ -138,7 +136,7 @@ You’ve now built an integration package, but it does not contain any assets. F
 
         The command creates the required data in the `/data_stream/log` directory. If you pick `log` as data stream name, the dataset is called `sample.log` and the final data stream created will be `logs-sample.log-default` as an example.
 
-3. To not have to worry about mappings, you can pull in all [Elastic Common Schema (ECS) fields][Elastic Common Schema (ECS)](ecs://reference/index.md)). To do this, create the file `_dev/build/build.yml` under the root directory and add the following content:
+3. To not have to worry about mappings, you can pull in all [Elastic Common Schema (ECS) fields](ecs://reference/index.md). To do this, create the file `_dev/build/build.yml` under the root directory and add the following content:
 
     ```yaml
     dependencies:
@@ -417,9 +415,7 @@ To run these steps using {{fleet}}-managed {{agent}}, you just need to update th
     2. In the search field, enter `log.file.path.text : *`. The search should return a couple of log entries.
     3. Hover over an entry and click `Enter` to view the cell contents.
 
-        :::{image} images/datastream-log-message.png
-        :alt: Data stream showing log message: "this is a nice day"
-        :::
+        ![Data stream showing log message: "this is a nice day"](images/datastream-log-message.png)
 
 
 
