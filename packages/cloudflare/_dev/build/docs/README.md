@@ -17,7 +17,7 @@ Users of [Cloudflare](https://www.cloudflare.com/en-au/learning/what-is-cloudfla
 3. Click on "Cloudflare" integration from the search results.
 4. Click on **Add Cloudflare** button to add Cloudflare integration.
 
-### Configure Cloudflare audit logs data stream
+### Configure Cloudflare Audit logs
 
 The integration can retrieve Cloudflare audit logs using -
 
@@ -49,7 +49,7 @@ For the Cloudflare integration to be able to successfully get logs, one of the f
 
 >  Note: See [here](https://developers.cloudflare.com/fundamentals/api/get-started/create-token/) for more information on `API Token`.
 
-### Configure Cloudflare logs
+### Configure Cloudflare Logpull logs
 
 These logs contain data related to the connecting client, the request path through the Cloudflare network, and the response from the origin web server. For more information see [here](https://developers.cloudflare.com/logs/logpull/).
 
