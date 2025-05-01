@@ -40,7 +40,7 @@ Enter values "Auth Email", "Auth Key" and "Account ID".
 
 Enter values "Auth Token" and "Account ID".
 
-For the Cloudflare integration to be able to successfully get logs, one of the following permissions must be granted to the API token -
+For the Cloudflare integration to be able to successfully get logs, one of the following permissions must be granted to the API Token -
 
 - Account Settings Write, Account Settings Read
 
@@ -74,7 +74,7 @@ Enter values "Auth Email", "Auth Key" and "Zone ID".
 
 Enter values "Auth Token" and "Zone ID".
 
-For the Cloudflare integration to be able to successfully get logs the following permissions must be granted to the Auth token -
+For the Cloudflare integration to be able to successfully get logs the following permissions must be granted to the API Token -
 
 - Account.Access: Audit Logs: Read
 
