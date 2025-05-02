@@ -1,9 +1,9 @@
 config_version: "2"
 interval: {{interval}}
-{{#if enable_request_tracer}}
-resource.tracer.filename: "../../logs/cel/http-request-trace-*.ndjson"
-resource.tracer.maxbackups: 5
-{{/if}}
+resource.tracer:
+  enabled: {{enable_request_tracer}}
+  filename: "../../logs/cel/http-request-trace-*.ndjson"
+  maxbackups: 5
 {{#if proxy_url}}
 resource.proxy_url: {{proxy_url}}
 {{/if}}
@@ -36,7 +36,6 @@ redact:
         - auth_token
         - auth_key
 program: |
-
     (
         has(state.want_more) && state.want_more ?
             state
@@ -72,11 +71,11 @@ program: |
                     optional.none(),
             }
         }).do_request().as(resp, resp.StatusCode == 200 ?
-            bytes(resp.Body).decode_json().as(body, {
+            resp.Body.decode_json().as(body, {
                 "events": body.result.map(e, {
                     "message": e.encode_json(),
                 }),
-                "want_more": (has(body.result) && size(body.result) == state.per_page ? true : false),
+                "want_more": has(body.result) && size(body.result) == state.per_page,
                 "cursor": (
                     (has(body.result) && size(body.result) == state.per_page ?
                         {
@@ -105,18 +104,9 @@ program: |
                 ),
                 "account_id": state.account_id,
                 "per_page": state.per_page,
-                ?"auth_token": has(state.auth_token) ?
-                    optional.of(state.auth_token)
-                :
-                    optional.none(),
-                ?"auth_email": has(state.auth_email) ? 
-                    optional.of(state.auth_email)
-                :
-                    optional.none(),
-                ?"auth_key": has(state.auth_key) ? 
-                    optional.of(state.auth_key)
-                :
-                    optional.none(),
+                ?"auth_token": state.?auth_token,
+                ?"auth_email": state.?auth_email,
+                ?"auth_key": state.?auth_key,
             })
 
         :
@@ -125,11 +115,11 @@ program: |
                     "error": {
                         "code": string(resp.StatusCode),
                         "id": string(resp.Status),
-                        "message": "GET:"+(
+                        "message": "GET " + state.url.trim_right("/") + "/client/v4/accounts/" + state.account_id + "/audit_logs:"+(
                             size(resp.Body) != 0 ?
-                            string(resp.Body)
+                                string(resp.Body)
                             :
-                            string(resp.Status) + ' (' + string(resp.StatusCode) + ')'
+                                string(resp.Status) + ' (' + string(resp.StatusCode) + ')'
                         ),
                     },
                 },
@@ -140,22 +130,12 @@ program: |
                 },
                 "account_id": state.account_id,
                 "per_page": state.per_page,
-                ?"auth_token": has(state.auth_token) ?
-                    optional.of(state.auth_token)
-                :
-                    optional.none(),
-                ?"auth_email": has(state.auth_email) ? 
-                    optional.of(state.auth_email)
-                :
-                    optional.none(),
-                ?"auth_key": has(state.auth_key) ? 
-                    optional.of(state.auth_key)
-                :
-                    optional.none(),
+                ?"auth_token": state.?auth_token,
+                ?"auth_email": state.?auth_email,
+                ?"auth_key": state.?auth_key,
             }
         )
     )
-
 {{#if tags.length}}
 tags:
 {{else if preserve_original_event}}
