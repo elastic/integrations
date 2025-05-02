@@ -33,5 +33,7 @@ After you've configured your device, you can set up the Elastic integration.
 
 This is the `feed_entry` dataset.
 
+{{event "feed_entry"}}
+
 {{fields "feed_entry"}}
 
