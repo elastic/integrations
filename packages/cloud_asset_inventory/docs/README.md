@@ -8,7 +8,7 @@ The Cloud Asset Discovery integration helps you discover and track all the resou
 
 > ⚠️ (BETA) Please note: Multiple cloud providers per policy are not supported. Please select only one.
 
-[View the full list of supported services for discovery](https://github.com/elastic/cloudbeat/blob/main/internal/Discovery/ASSETS.md).
+[View the full list of supported services for discovery](https://github.com/elastic/cloudbeat/blob/main/internal/inventory/ASSETS.md).
 
 ### Why Use Cloud Asset Discovery?
 
