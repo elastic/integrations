@@ -1,0 +1,63 @@
+{
+    "attributes": {
+        "anomaly_threshold": 70,
+        "author": [
+            "Elastic"
+        ],
+        "description": "A machine learning job has detected unusually high mean of RDP session duration. Long RDP sessions can be used to evade detection mechanisms via session persistence, and might be used to perform tasks such as lateral movement, that might require uninterrupted access to a compromised machine.",
+        "from": "now-12h",
+        "interval": "15m",
+        "license": "Elastic License v2",
+        "machine_learning_job_id": "lmd_high_mean_rdp_session_duration",
+        "name": "High Mean of RDP Session Duration",
+        "note": "## Triage and analysis\n\n> **Disclaimer**:\n> This investigation guide was created using generative AI technology and has been reviewed to improve its accuracy and relevance. While every effort has been made to ensure its quality, we recommend validating the content and adapting it to suit your specific environment and operational needs.\n\n### Investigating High Mean of RDP Session Duration\n\nRemote Desktop Protocol (RDP) enables remote access to systems, facilitating administrative tasks. However, adversaries exploit prolonged RDP sessions to maintain persistent access, potentially conducting lateral movements undetected. The 'High Mean of RDP Session Duration' detection rule leverages machine learning to identify anomalies in session lengths, flagging potential misuse indicative of malicious activity.\n\n### Possible investigation steps\n\n- Review the specific RDP session details, including the start and end times, to understand the duration and identify any patterns or anomalies in session lengths.\n- Correlate the flagged RDP session with user activity logs to determine if the session aligns with expected user behavior or if it deviates from normal patterns.\n- Check for any concurrent or subsequent suspicious activities, such as file transfers or command executions, that might indicate lateral movement or data exfiltration.\n- Investigate the source and destination IP addresses involved in the RDP session to identify if they are known, trusted, or associated with any previous security incidents.\n- Analyze the user account involved in the RDP session for any signs of compromise, such as recent password changes, failed login attempts, or unusual access patterns.\n- Review any recent changes in the network or system configurations that might have affected RDP session durations or security settings.\n\n### False positive analysis\n\n- Extended RDP sessions for legitimate administrative tasks can trigger false positives. To manage this, identify and whitelist IP addresses or user accounts associated with routine administrative activities.\n- Scheduled maintenance or software updates often require prolonged RDP sessions. Exclude these activities by setting time-based exceptions during known maintenance windows.\n- Remote support sessions from trusted third-party vendors may appear as anomalies. Create exceptions for these vendors by verifying their IP addresses and adding them to an allowlist.\n- Training sessions or demonstrations using RDP can result in longer session durations. Document and exclude these events by correlating them with scheduled training times and user accounts involved.\n- Automated scripts or processes that maintain RDP sessions for monitoring purposes can be mistaken for threats. Identify these scripts and exclude their associated user accounts or machine names from the detection rule.\n\n### Response and remediation\n\n- Immediately isolate the affected system from the network to prevent further unauthorized access or lateral movement.\n- Terminate any suspicious or unauthorized RDP sessions to cut off potential adversary access.\n- Conduct a thorough review of user accounts and permissions on the affected system to identify and disable any compromised accounts.\n- Apply security patches and updates to the affected system to address any vulnerabilities that may have been exploited.\n- Restore the system from a known good backup if any unauthorized changes or malware are detected.\n- Monitor network traffic and logs for any signs of further exploitation attempts or related suspicious activity.\n- Escalate the incident to the security operations center (SOC) or incident response team for further investigation and to ensure comprehensive remediation.",
+        "references": [
+            "https://www.elastic.co/guide/en/security/current/prebuilt-ml-jobs.html",
+            "https://docs.elastic.co/en/integrations/lmd",
+            "https://www.elastic.co/blog/detecting-lateral-movement-activity-a-new-kibana-integration",
+            "https://www.elastic.co/blog/remote-desktop-protocol-connections-elastic-security"
+        ],
+        "related_integrations": [
+            {
+                "package": "lmd",
+                "version": "^2.3.0"
+            },
+            {
+                "package": "endpoint",
+                "version": "^9.0.0"
+            }
+        ],
+        "risk_score": 21,
+        "rule_id": "a74c60cb-70ee-4629-a127-608ead14ebf1",
+        "setup": "## Setup\n\nThe rule requires the Lateral Movement Detection integration assets to be installed, as well as file and Windows RDP process events collected by the Elastic Defend integration.\n\n### Lateral Movement Detection Setup\nThe Lateral Movement Detection integration detects lateral movement activity by identifying abnormalities in file and Windows RDP events. Anomalies are detected using Elastic's Anomaly Detection feature.\n\n#### Prerequisite Requirements:\n- Fleet is required for Lateral Movement Detection.\n- To configure Fleet Server refer to the [documentation](https://www.elastic.co/guide/en/fleet/current/fleet-server.html).\n- Windows RDP process events collected by the [Elastic Defend](https://docs.elastic.co/en/integrations/endpoint) integration.\n- To install Elastic Defend, refer to the [documentation](https://www.elastic.co/guide/en/security/current/install-endpoint.html).\n\n#### The following steps should be executed to install assets associated with the Lateral Movement Detection integration:\n- Go to the Kibana homepage. Under Management, click Integrations.\n- In the query bar, search for Lateral Movement Detection and select the integration to see more details about it.\n- Follow the instructions under the **Installation** section.\n- For this rule to work, complete the instructions through **Add preconfigured anomaly detection jobs**.\n",
+        "severity": "low",
+        "tags": [
+            "Use Case: Lateral Movement Detection",
+            "Rule Type: ML",
+            "Rule Type: Machine Learning",
+            "Tactic: Lateral Movement",
+            "Resources: Investigation Guide"
+        ],
+        "threat": [
+            {
+                "framework": "MITRE ATT&CK",
+                "tactic": {
+                    "id": "TA0008",
+                    "name": "Lateral Movement",
+                    "reference": "https://attack.mitre.org/tactics/TA0008/"
+                },
+                "technique": [
+                    {
+                        "id": "T1210",
+                        "name": "Exploitation of Remote Services",
+                        "reference": "https://attack.mitre.org/techniques/T1210/"
+                    }
+                ]
+            }
+        ],
+        "type": "machine_learning",
+        "version": 7
+    },
+    "id": "a74c60cb-70ee-4629-a127-608ead14ebf1_7",
+    "type": "security-rule"
+}
