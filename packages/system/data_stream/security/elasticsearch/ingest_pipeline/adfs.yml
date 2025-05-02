@@ -2,35 +2,69 @@
 description: Pipeline for ADFS Audit events. 
 processors:
   - gsub:
+      description: Remove newlines in `winlog.event_data.param2``.
       pattern: "\n"
       ignore_missing: true
       field: "winlog.event_data.param2"
       replacement: ""
   - grok:
-      ignore_failure: true
+      ignore_failure: false
       field: "winlog.event_data.param2"
       patterns:
-      - "^%{AUDITXMLROOT}%{SPACE}<ContextComponents>(?:%{SPACE}%{RESOURCEAUDIT}%{SPACE}%{AUTHNAUDIT}%{SPACE}%{PROTOCOLAUDIT})?%{SPACE}%{REQUESTAUDIT}%{SPACE}(?:%{SIGNOUTAUDIT}%{SPACE})?</ContextComponents></AuditBase>$"
+      - "^<\\?xml%{DATA}\\?>%{AUDITBASE}%{SPACE}%{AUDITXMLROOT}%{SPACE}<ContextComponents>(?:%{SPACE}%{RESOURCEAUDIT}%{SPACE}%{AUTHNAUDIT}%{SPACE}%{PROTOCOLAUDIT})?%{SPACE}%{REQUESTAUDIT}%{SPACE}(?:%{SIGNOUTAUDIT}%{SPACE})?</ContextComponents></AuditBase>$"
       ignore_missing: true
       tag: "adfs_grok"
       pattern_definitions:
         AUTHNAUDIT: "<Component %{DATA}AuthNAuditComponent%{DATA}>%{SPACE}<PrimaryAuth>(N/A|%{DATA:winlog.adfs.primary_auth})</PrimaryAuth>%{SPACE}<DeviceAuth>%{DATA:winlog.adfs.device_auth:boolean}</DeviceAuth>%{SPACE}<DeviceId>(N/A|%{DATA:winlog.adfs.device_id})</DeviceId>%{SPACE}<MfaPerformed>%{DATA:winlog.adfs.mfa_performed:boolean}</MfaPerformed>%{SPACE}<MfaMethod>(N/A|%{DATA:winlog.adfs.mfa_method})</MfaMethod>%{SPACE}<TokenBindingProvidedId>%{DATA:winlog.adfs.binding_provided_id:boolean}</TokenBindingProvidedId>%{SPACE}<TokenBindingReferredId>%{DATA:winlog.adfs.binding_referred_id:boolean}</TokenBindingReferredId>%{SPACE}<SsoBindingValidationLevel>%{DATA:winlog.adfs.binding_level:keyword}</SsoBindingValidationLevel>%{SPACE}</Component>"
-        RESOURCEAUDIT: "<Component%{DATA}ResourceAuditComponent%{DATA}%{SPACE}<RelyingParty>%{DATA:winlog.adfs.relaying_party}</RelyingParty>%{SPACE}<ClaimsProvider>%{DATA:winlog.adfs.claims_provider}</ClaimsProvider>%{SPACE}<UserId>%{DATA:winlog.adfs.user_id:keyword}</UserId>%{SPACE}</Component>"
+        RESOURCEAUDIT: "<Component%{DATA}ResourceAuditComponent%{DATA}%{SPACE}<RelyingParty>%{DATA:winlog.adfs.relying_party}</RelyingParty>%{SPACE}<ClaimsProvider>%{DATA:winlog.adfs.claims_provider}</ClaimsProvider>%{SPACE}<UserId>%{DATA:winlog.adfs.user_id:keyword}</UserId>%{SPACE}</Component>"
         SIGNOUTAUDIT: "<Component%{DATA}SignOutAuditComponent%{DATA}>%{SPACE}<SignedInRPs>%{SPACE}<SignedInRPs>%{DATA:winlog.adfs.signed_in_rps}</SignedInRPs>%{SPACE}</SignedInRPs>%{SPACE}</Component>"
-        REQUESTAUDIT: "<Component%{DATA}RequestAuditComponent%{DATA}>%{SPACE}<Server>%{DATA:winlog.adfs.server:keyword}</Server>%{SPACE}<AuthProtocol>%{DATA:winlog.adfs.auth_protocol}</AuthProtocol>%{SPACE}<NetworkLocation>%{DATA:winlog.adfs.network_location:keyword}</NetworkLocation>%{SPACE}<IpAddress>%{IPORHOST:winlog.adfs.ip_address}</IpAddress>%{SPACE}<ForwardedIpAddress>(?:%{IPORHOST:winlog.adfs.forwarded_ip},\
-          \ )?%{IPORHOST:winlog.adfs.forwarded_ip}</ForwardedIpAddress>%{SPACE}<ProxyIpAddress>(N/A|%{IPORHOST:winlog.adfs.proxy_ip})</ProxyIpAddress>%{SPACE}<NetworkIpAddress>(N/A|%{IPORHOST:winlog.adfs.network_ip})</NetworkIpAddress>%{SPACE}<ProxyServer>(N/A|%{DATA:winlog.adfs.proxy_server:keyword})</ProxyServer>%{SPACE}<UserAgentString>%{DATA:winlog.adfs.user_agent:keyword}</UserAgentString>%{SPACE}<Endpoint>%{DATA:winlog.adfs.endpoint}</Endpoint>%{SPACE}</Component>"
+        REQUESTAUDIT: "<Component%{DATA}RequestAuditComponent%{DATA}>%{SPACE}<Server>%{DATA:winlog.adfs.server:keyword}</Server>%{SPACE}<AuthProtocol>%{DATA:winlog.adfs.auth_protocol}</AuthProtocol>%{SPACE}<NetworkLocation>%{DATA:winlog.adfs.network_location:keyword}</NetworkLocation>%{SPACE}<IpAddress>%{IPORHOST:winlog.adfs.ip_address}</IpAddress>%{SPACE}<ForwardedIpAddress>%{DATA:_tmp.forwardedIp}</ForwardedIpAddress>%{SPACE}<ProxyIpAddress>(N/A|%{IPORHOST:winlog.adfs.proxy_ip})</ProxyIpAddress>%{SPACE}<NetworkIpAddress>(N/A|%{IPORHOST:winlog.adfs.network_ip})</NetworkIpAddress>%{SPACE}<ProxyServer>(N/A|%{DATA:winlog.adfs.proxy_server:keyword})</ProxyServer>%{SPACE}<UserAgentString>%{DATA:winlog.adfs.user_agent:keyword}</UserAgentString>%{SPACE}<Endpoint>%{DATA:winlog.adfs.endpoint}</Endpoint>%{SPACE}</Component>"
         PROTOCOLAUDIT: "<Component%{DATA}>%{SPACE}<OAuthClientId>(N/A|%{DATA:winlog.adfs.oauth.client_id})</OAuthClientId>%{SPACE}<OAuthGrant>(N/A|%{DATA:winlog.adfs.oauth.grant})</OAuthGrant>%{SPACE}</Component>"
-        AUDITXMLROOT: "<\\?xml%{DATA}<AuditType>%{DATA:winlog.adfs.audit_type}</AuditType>%{SPACE}<AuditResult>%{DATA:winlog.adfs.audit_result}</AuditResult>%{SPACE}<FailureType>%{DATA:winlog.adfs.audit_failure_type}</FailureType>%{SPACE}<ErrorCode>(N/A|%{DATA:winlog.adfs.error.code})</ErrorCode>"
-      if: "ctx?.event?.provider == \"AD FS Auditing\""
+        AUDITXMLROOT: "<AuditType>%{DATA:winlog.adfs.audit_type}</AuditType>%{SPACE}<AuditResult>%{DATA:winlog.adfs.audit_result}</AuditResult>%{SPACE}<FailureType>%{DATA:winlog.adfs.audit_failure_type}</FailureType>%{SPACE}<ErrorCode>(N/A|%{DATA:winlog.adfs.error.code})</ErrorCode>"
+        AUDITBASE: "<AuditBase%{DATA}type=\"%{DATA:winlog.adfs.auditbase_type}\">"
+      on_failure:
+        - append:
+            field: error.message
+            value: "Failed to match grok pattern for XML data in `winlog.event_data.param2`."
   - grok:
-      ignore_failure: true
+      description: "Extract forwarded IP list"
+      field: "_tmp.forwardedIp"
+      patterns:
+      - "%{IPORHOST:winlog.adfs.forwarded_ip},%{IPORHOST:_tmp.winlog.adfs.forwarded_ip}"
+      - "%{IPORHOST:winlog.adfs.forwarded_ip}"
+  - append:
+      field: "related.ip"
+      allow_duplicates: false
+      value:
+      - "{{ winlog.adfs.forwarded_ip }}"
+      if: "ctx?.winlog?.adfs?.forwarded_ip != null"
+      description: "Append forwarded IP to related.ip"  
+  - append:
+      field: "related.ip"
+      allow_duplicates: false
+      value:
+      - "{{ _tmp.winlog.adfs.forwarded_ip }}"
+      if: "ctx?._tmp?.winlog?.adfs?.forwarded_ip != null"
+      description: "Append forwarded IP to related.ip"              
+  - append:
+      field: winlog.adfs.forwarded_ip
+      value: "{{ _tmp.winlog.adfs.forwarded_ip }}"
+      if: "ctx?._tmp?.winlog?.adfs?.forwarded_ip != null"
+  - grok:
+      description: "Extract user information from `winlog.adfs.user_id` to ECS fields."
+      ignore_failure: false
       ignore_missing: true
       field: "winlog.adfs.user_id"
       patterns:
       - "(%{DATA:user.domain}\\\\%{USER:user.name})|(%{USER:user.name}@%{DATA:user.domain}$)|(%{GREEDYDATA:user.name}$)"
+      on_failure:
+        - append:
+            field: error.message
+            value: "Failed to parse user from {{ winlog.adfs.user_id }}"   
+      if: "ctx?.winlog?.adfs?.user_id != null"
   - user_agent:
       extract_device_type: false
-      ignore_failure: true
+      ignore_failure: false
       ignore_missing: true
       field: "winlog.adfs.user_agent"
       properties:
@@ -39,8 +73,12 @@ processors:
       - "device"
       - "original"
       - "version"
+      on_failure:
+        - append:
+            field: error.message
+            value: "Failed to process user agent: {{ winlog.adfs.user_agent }}"   
   - script:
-      ignore_failure: true
+      ignore_failure: false
       source: "      def sourceIp = ctx.winlog?.adfs?.ip_address;\n      def forwardedIps\
         \ = ctx.winlog?.adfs?.forwarded_ip;\n      \n      if (sourceIp != null &&\
         \ forwardedIps != null) {\n        // Convert to list if it's not already\n\
@@ -52,10 +90,17 @@ processors:
         \ 1) {\n          ctx.source = [\"ip\": forwardedIps[0]];\n        }\n   \
         \   }"
       lang: "painless"
-  - remove:
-      ignore_failure: true
-      ignore_missing: true
-      field: "winlog.event_data.param2"
+      on_failure:
+        - append:
+            field: error.message
+            value: "Failed to extract source IP from winlog.adfs.ip_address or winlog.adfs.forwarded_ip"
+  - append:
+      field: "related.ip"
+      allow_duplicates: false
+      value:
+      - "{{source.ip}}"
+      if: "ctx?.source?.ip != null"
+      description: "Append source IP to related.ip"    
   - rename:
       field: "winlog.event_data.param1"
       target_field: "winlog.activity_id"
@@ -65,7 +110,7 @@ processors:
       field: "trace.id"
       copy_from: "winlog.activity_id"
   - geoip:
-      ignore_failure: true
+      ignore_failure: false
       ignore_missing: true
       field: "source.ip"
       target_field: "source.geo"
@@ -87,8 +132,7 @@ processors:
       allow_duplicates: false
       value:
       - "authentication"
-      if: "ctx?.event?.code == 1203 || ctx?.event?.code == 1202|| ctx?.event?.code\
-        \ == 1206"
+      if: "ctx?.event?.code == '1203' || ctx?.event?.code == '1202'|| ctx?.event?.code == '1206'"
   - set:
       description: "event.action: sign-in; event.code: 1203"
       field: "event.action"
@@ -115,3 +159,17 @@ processors:
       field: "event.type"
       value: "change"
       if: "ctx?.event?.code == 1205 || ctx?.event?.code == 1204"
+
+  - remove:
+      field: "_tmp.winlog.adfs.forwarded_ip"
+      if: "ctx?._tmp?.winlog?.adfs?.forwarded_ip != null"
+  - remove:
+      field: "_tmp.forwardedIp"
+      if: "ctx?._tmp?.forwardedIp != null"      
+on_failure:
+  - set:
+      field: event.kind
+      value: pipeline_error
+  - append:
+      field: error.message
+      value: "{{ _ingest.on_failure_message }}"
