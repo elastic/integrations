@@ -522,6 +522,28 @@ Please refer to the following [document](https://www.elastic.co/guide/en/ecs/cur
 | process.name.caseless | Multi-field of `process.name`. | keyword |
 | process.name.text | Multi-field of `process.name`. | match_only_text |
 | winlog.activity_id | A globally unique identifier that identifies the current activity. The events that are published with this identifier are part of the same activity. | keyword |
+| winlog.adfs.audit_failure_type | The type of audit failure that occurred. | keyword |
+| winlog.adfs.audit_result | The outcome of the audit event. | keyword |
+| winlog.adfs.audit_type | The type of audit event that occurred. | keyword |
+| winlog.adfs.auditbase_type | The type of audit event that occurred. | keyword |
+| winlog.adfs.auth_protocol |  | keyword |
+| winlog.adfs.binding_level |  | keyword |
+| winlog.adfs.binding_provided_id |  | boolean |
+| winlog.adfs.binding_referred_id |  | boolean |
+| winlog.adfs.claims_provider |  | keyword |
+| winlog.adfs.device_auth |  | boolean |
+| winlog.adfs.endpoint |  | keyword |
+| winlog.adfs.forwarded_ip |  | ip |
+| winlog.adfs.ip_address |  | ip |
+| winlog.adfs.mfa_performed |  | boolean |
+| winlog.adfs.network_location |  | keyword |
+| winlog.adfs.primary_auth |  | keyword |
+| winlog.adfs.proxy_server |  | keyword |
+| winlog.adfs.relying_party |  | keyword |
+| winlog.adfs.server |  | keyword |
+| winlog.adfs.user_agent |  | keyword |
+| winlog.adfs.user_agent.text | Multi-field of `winlog.adfs.user_agent`. | match_only_text |
+| winlog.adfs.user_id |  | keyword |
 | winlog.api | The event log API type used to read the record. The possible values are "wineventlog" for the Windows Event Log API or "eventlogging" for the Event Logging API. The Event Logging API was designed for Windows Server 2003 or Windows 2000 operating systems. In Windows Vista, the event logging infrastructure was redesigned. On Windows Vista or later operating systems, the Windows Event Log API is used. Winlogbeat automatically detects which API to use for reading event logs. | keyword |
 | winlog.channel | The name of the channel from which this record was read. This value is one of the names from the `event_logs` collection in the configuration. | keyword |
 | winlog.computerObject.domain |  | keyword |
