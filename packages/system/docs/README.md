@@ -541,6 +541,7 @@ Please refer to the following [document](https://www.elastic.co/guide/en/ecs/cur
 | winlog.adfs.proxy_server |  | keyword |
 | winlog.adfs.relying_party |  | keyword |
 | winlog.adfs.server |  | keyword |
+| winlog.adfs.signed_in_rps |  | keyword |
 | winlog.adfs.user_agent |  | keyword |
 | winlog.adfs.user_agent.text | Multi-field of `winlog.adfs.user_agent`. | match_only_text |
 | winlog.adfs.user_id |  | keyword |
