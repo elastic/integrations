@@ -8,29 +8,32 @@ processors:
       field: "winlog.event_data.param2"
       replacement: ""
   - grok:
+      description: "Extract ADFS XML data from `winlog.event_data.param2`."
+      tag: "Extract XML data from ADFS event data."
       ignore_failure: false
       field: "winlog.event_data.param2"
       patterns:
       - "^<\\?xml%{DATA}\\?>%{AUDITBASE}%{SPACE}%{AUDITXMLROOT}%{SPACE}<ContextComponents>(?:%{SPACE}%{RESOURCEAUDIT}%{SPACE}%{AUTHNAUDIT}%{SPACE}%{PROTOCOLAUDIT})?%{SPACE}%{REQUESTAUDIT}%{SPACE}(?:%{SIGNOUTAUDIT}%{SPACE})?</ContextComponents></AuditBase>$"
       ignore_missing: true
-      tag: "adfs_grok"
       pattern_definitions:
         AUTHNAUDIT: "<Component %{DATA}AuthNAuditComponent%{DATA}>%{SPACE}<PrimaryAuth>(N/A|%{DATA:winlog.adfs.primary_auth})</PrimaryAuth>%{SPACE}<DeviceAuth>%{DATA:winlog.adfs.device_auth:boolean}</DeviceAuth>%{SPACE}<DeviceId>(N/A|%{DATA:winlog.adfs.device_id})</DeviceId>%{SPACE}<MfaPerformed>%{DATA:winlog.adfs.mfa_performed:boolean}</MfaPerformed>%{SPACE}<MfaMethod>(N/A|%{DATA:winlog.adfs.mfa_method})</MfaMethod>%{SPACE}<TokenBindingProvidedId>%{DATA:winlog.adfs.binding_provided_id:boolean}</TokenBindingProvidedId>%{SPACE}<TokenBindingReferredId>%{DATA:winlog.adfs.binding_referred_id:boolean}</TokenBindingReferredId>%{SPACE}<SsoBindingValidationLevel>%{DATA:winlog.adfs.binding_level:keyword}</SsoBindingValidationLevel>%{SPACE}</Component>"
-        RESOURCEAUDIT: "<Component%{DATA}ResourceAuditComponent%{DATA}%{SPACE}<RelyingParty>%{DATA:winlog.adfs.relying_party}</RelyingParty>%{SPACE}<ClaimsProvider>%{DATA:winlog.adfs.claims_provider}</ClaimsProvider>%{SPACE}<UserId>%{DATA:winlog.adfs.user_id:keyword}</UserId>%{SPACE}</Component>"
+        RESOURCEAUDIT: "<Component%{DATA}ResourceAuditComponent%{DATA}%{SPACE}<RelyingParty>(N/A|%{DATA:winlog.adfs.relying_party})</RelyingParty>%{SPACE}<ClaimsProvider>(N/A|%{DATA:winlog.adfs.claims_provider})</ClaimsProvider>%{SPACE}<UserId>%{DATA:winlog.adfs.user_id:keyword}</UserId>%{SPACE}</Component>"
         SIGNOUTAUDIT: "<Component%{DATA}SignOutAuditComponent%{DATA}>%{SPACE}<SignedInRPs>%{SPACE}<SignedInRPs>%{DATA:winlog.adfs.signed_in_rps}</SignedInRPs>%{SPACE}</SignedInRPs>%{SPACE}</Component>"
-        REQUESTAUDIT: "<Component%{DATA}RequestAuditComponent%{DATA}>%{SPACE}<Server>%{DATA:winlog.adfs.server:keyword}</Server>%{SPACE}<AuthProtocol>%{DATA:winlog.adfs.auth_protocol}</AuthProtocol>%{SPACE}<NetworkLocation>%{DATA:winlog.adfs.network_location:keyword}</NetworkLocation>%{SPACE}<IpAddress>%{IPORHOST:winlog.adfs.ip_address}</IpAddress>%{SPACE}<ForwardedIpAddress>%{DATA:_tmp.forwardedIp}</ForwardedIpAddress>%{SPACE}<ProxyIpAddress>(N/A|%{IPORHOST:winlog.adfs.proxy_ip})</ProxyIpAddress>%{SPACE}<NetworkIpAddress>(N/A|%{IPORHOST:winlog.adfs.network_ip})</NetworkIpAddress>%{SPACE}<ProxyServer>(N/A|%{DATA:winlog.adfs.proxy_server:keyword})</ProxyServer>%{SPACE}<UserAgentString>%{DATA:winlog.adfs.user_agent:keyword}</UserAgentString>%{SPACE}<Endpoint>%{DATA:winlog.adfs.endpoint}</Endpoint>%{SPACE}</Component>"
+        REQUESTAUDIT: "<Component%{DATA}RequestAuditComponent%{DATA}>%{SPACE}<Server>%{DATA:winlog.adfs.server:keyword}</Server>%{SPACE}<AuthProtocol>(N/A|%{DATA:winlog.adfs.auth_protocol})</AuthProtocol>%{SPACE}<NetworkLocation>%{DATA:winlog.adfs.network_location:keyword}</NetworkLocation>%{SPACE}<IpAddress>%{IPORHOST:winlog.adfs.ip_address}</IpAddress>%{SPACE}(?:<ForwardedIpAddress>%{DATA:_tmp.forwardedIp})?</ForwardedIpAddress>%{SPACE}<ProxyIpAddress>(N/A|%{IPORHOST:winlog.adfs.proxy_ip})</ProxyIpAddress>%{SPACE}<NetworkIpAddress>(N/A|%{IPORHOST:winlog.adfs.network_ip})</NetworkIpAddress>%{SPACE}<ProxyServer>(N/A|%{DATA:winlog.adfs.proxy_server:keyword})</ProxyServer>%{SPACE}<UserAgentString>%{DATA:winlog.adfs.user_agent:keyword}</UserAgentString>%{SPACE}<Endpoint>%{DATA:winlog.adfs.endpoint}</Endpoint>%{SPACE}</Component>"
         PROTOCOLAUDIT: "<Component%{DATA}>%{SPACE}<OAuthClientId>(N/A|%{DATA:winlog.adfs.oauth.client_id})</OAuthClientId>%{SPACE}<OAuthGrant>(N/A|%{DATA:winlog.adfs.oauth.grant})</OAuthGrant>%{SPACE}</Component>"
-        AUDITXMLROOT: "<AuditType>%{DATA:winlog.adfs.audit_type}</AuditType>%{SPACE}<AuditResult>%{DATA:winlog.adfs.audit_result}</AuditResult>%{SPACE}<FailureType>%{DATA:winlog.adfs.audit_failure_type}</FailureType>%{SPACE}<ErrorCode>(N/A|%{DATA:winlog.adfs.error.code})</ErrorCode>"
+        AUDITXMLROOT: "<AuditType>%{DATA:winlog.adfs.audit_type}</AuditType>%{SPACE}<AuditResult>%{DATA:winlog.adfs.audit_result}</AuditResult>%{SPACE}<FailureType>(None|%{DATA:winlog.adfs.audit_failure_type})</FailureType>%{SPACE}<ErrorCode>(N/A|%{DATA:winlog.adfs.error.code})</ErrorCode>"
         AUDITBASE: "<AuditBase%{DATA}type=\"%{DATA:winlog.adfs.auditbase_type}\">"
       on_failure:
         - append:
             field: error.message
             value: "Failed to match grok pattern for XML data in `winlog.event_data.param2`."
+      if: "ctx?.winlog?.event_data?.param2 != null"            
   - grok:
-      description: "Extract forwarded IP list"
+      description: "Extract IP addresses from `_tmp.forwardedIp`"
+      tag: "Extract IP addresses from _tmp.forwardedIp."
       field: "_tmp.forwardedIp"
       patterns:
-      - "%{IPORHOST:winlog.adfs.forwarded_ip},%{IPORHOST:_tmp.winlog.adfs.forwarded_ip}"
+      - "%{IPORHOST:winlog.adfs.forwarded_ip},%{SPACE}%{IPORHOST:_tmp.winlog.adfs.forwarded_ip}"
       - "%{IPORHOST:winlog.adfs.forwarded_ip}"
   - append:
       field: "related.ip"
@@ -39,17 +42,21 @@ processors:
       - "{{ winlog.adfs.forwarded_ip }}"
       if: "ctx?.winlog?.adfs?.forwarded_ip != null"
       description: "Append forwarded IP to related.ip"  
+      tag: "Append forwarded IP to related.ip"        
   - append:
       field: "related.ip"
       allow_duplicates: false
       value:
       - "{{ _tmp.winlog.adfs.forwarded_ip }}"
       if: "ctx?._tmp?.winlog?.adfs?.forwarded_ip != null"
-      description: "Append forwarded IP to related.ip"              
+      description: "Append forwarded IP to related.ip"         
+      tag: "Append second forwarded IP to related.ip"             
   - append:
       field: winlog.adfs.forwarded_ip
       value: "{{ _tmp.winlog.adfs.forwarded_ip }}"
       if: "ctx?._tmp?.winlog?.adfs?.forwarded_ip != null"
+      description: "Append second forwarded IP to winlog.adfs.forwarded_ip"
+      tag: "Append second forwarded IP to winlog.adfs.forwarded_ip"      
   - grok:
       description: "Extract user information from `winlog.adfs.user_id` to ECS fields."
       ignore_failure: false
@@ -60,7 +67,7 @@ processors:
       on_failure:
         - append:
             field: error.message
-            value: "Failed to parse user from {{ winlog.adfs.user_id }}"   
+            value: "Failed to parse user information from {{ winlog.adfs.user_id }}"   
       if: "ctx?.winlog?.adfs?.user_id != null"
   - user_agent:
       extract_device_type: false
@@ -93,14 +100,7 @@ processors:
       on_failure:
         - append:
             field: error.message
-            value: "Failed to extract source IP from winlog.adfs.ip_address or winlog.adfs.forwarded_ip"
-  - append:
-      field: "related.ip"
-      allow_duplicates: false
-      value:
-      - "{{source.ip}}"
-      if: "ctx?.source?.ip != null"
-      description: "Append source IP to related.ip"    
+            value: "Failed to extract source IP from {{ winlog.adfs.ip_address }} or {{ winlog.adfs.forwarded_ip }}"    
   - rename:
       field: "winlog.event_data.param1"
       target_field: "winlog.activity_id"
@@ -109,57 +109,100 @@ processors:
       override: false
       field: "trace.id"
       copy_from: "winlog.activity_id"
-  - geoip:
+  - script:
+      lang: painless
       ignore_failure: false
-      ignore_missing: true
-      field: "source.ip"
-      target_field: "source.geo"
-  - geoip:
-      database_file: "GeoLite2-ASN.mmdb"
-      ignore_failure: true
-      ignore_missing: true
-      field: "source.ip"
-      target_field: "source.as"
+      tag: Set ECS categorization fields for ADFS events
+      description: Set ECS categorization fields of ADFS events
+      params:
+        "1200":
+          category:
+            - authentication
+          type:
+            - start
+          action: logged-in
+          outcome: success
+          reason: The Federation Service issued a valid token
+        "1201":
+          category:
+            - authentication
+          type:
+            - info
+          action: logon-failed
+          outcome: failure
+          reason: The Federation Service failed to issue a valid token
+        "1202":
+          category:
+            - authentication
+          type:
+            - start
+          action: credential-validated
+          outcome: success
+          reason: The Federation Service validated a new credential
+        "1203":
+          category:
+            - authentication
+          type:
+            - info
+          action: credential-validated
+          outcome: failure
+          reason: The Federation Service failed to validate a new credential
+        "1204":
+          category:
+            - iam
+          type:
+            - change
+            - user
+          action: changed-password
+          outcome: success
+          reason: A password was changed
+        "1205":
+          category:
+            - iam
+          type:
+            - change
+            - user
+          action: changed-password
+          outcome: failure
+          reason: A password change was attempted, but failed
+        "1206":
+          category:
+            - authentication
+          type:
+            - end
+          action: logged-out
+          outcome: success
+          reason: A SignOut request was successfully processed
+        "1207":
+          category:
+            - authentication
+          type:
+            - info
+          action: logged-out
+          outcome: failure   
+      source: |-
+        if (ctx.event?.code == null || params.get(ctx.event.code) == null) {
+          return;
+        }
+        params.get(ctx.event.code).forEach((k, v) -> {
+          if (v instanceof List) {
+            ctx.event[k] = new ArrayList(v);
+          } else {
+            ctx.event[k] = v;
+          }
+        });                           
   - append:
       field: "related.user"
       allow_duplicates: false
       value:
-      - "{{winlog.user.name}}"
-      - "{{user.name}}"
+      - "{{ user.name }}"
+      if: "ctx?.user?.name != null"
   - append:
-      description: "event.category: authentication; event.code: 1202, 1203 "
-      field: "event.category"
+      field: "related.user"
       allow_duplicates: false
       value:
-      - "authentication"
-      if: "ctx?.event?.code == '1203' || ctx?.event?.code == '1202'|| ctx?.event?.code == '1206'"
-  - set:
-      description: "event.action: sign-in; event.code: 1203"
-      field: "event.action"
-      value: "sign-in"
-      if: "ctx?.event?.code == '1203' || ctx?.event?.code == '1202'"
-  - set:
-      description: "event.action: sign-out; event.code: 1206"
-      field: "event.action"
-      value: "sign-out"
-      if: "ctx?.event?.code == '1206'"
-  - append:
-      description: "event.category: iam; event.code: 1205, 1204"
-      field: "event.category"
-      value:
-      - "iam"
-      if: "ctx?.event?.code ==  '1205' ||ctx?.event?.code ==  '1204'"
-  - set:
-      description: "event.action: change-password; event.code: 1205, 1204"
-      field: "event.action"
-      value: "change-password"
-      if: "ctx?.event?.code == '1205' || ctx?.event?.code == '1204'"
-  - set:
-      description: "event.type: change; event.code: 1205, 1204"
-      field: "event.type"
-      value: "change"
-      if: "ctx?.event?.code == '1205' || ctx?.event?.code == '1204'"
-
+      - "{{ winlog.user.name }}"
+      if: "ctx?.winlog?.user?.name != null"                                      
   - remove:
       field: "_tmp.winlog.adfs.forwarded_ip"
       if: "ctx?._tmp?.winlog?.adfs?.forwarded_ip != null"
