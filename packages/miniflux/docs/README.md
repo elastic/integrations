@@ -15,7 +15,6 @@ The Minifux integration collects one type of data streams: logs.
 **Logs** help you extract feed entries from Miniflux API.
 Log data streams collected by the Miniflux integration include feed_entry. See more details in the Logs reference.
 
-
 ## Requirements
 
 You need Elasticsearch for storing and searching your data and Kibana for visualizing and managing it. You can use our hosted Elasticsearch Service on Elastic Cloud, which is recommended, or self-manage the Elastic Stack on your own hardware.
@@ -27,14 +26,6 @@ Each data stream collects different kinds of logs data, which may require dedica
 Before sending logs to Elastic from your Miniflux application (self-hosted or SaaS), you must create a Miniflux API key by following [Miniflux's documentation](https://miniflux.app/docs/api.html#authentication)
 
 After you've configured your device, you can set up the Elastic integration.
-
-<!-- ## Troubleshooting (optional)
-
-Provide information about special cases and exceptions that aren’t necessary for getting started or won’t be applicable to all users. Check the [troubleshooting guidelines](https://www.elastic.co/guide/en/integrations-developer/current/documentation-guidelines.html#idg-docs-guidelines-troubleshooting) for more information. -->
-
-<!-- ## Reference
-
-Provide detailed information about the log or metric types we support within the integration. Check the [reference guidelines](https://www.elastic.co/guide/en/integrations-developer/current/documentation-guidelines.html#idg-docs-guidelines-reference) for more information. -->
 
 ## Logs
 
