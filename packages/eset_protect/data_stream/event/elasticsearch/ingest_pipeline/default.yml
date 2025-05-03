@@ -5,6 +5,12 @@ processors:
       field: ecs.version
       tag: set_ecs_version
       value: 8.11.0
+  - gsub:
+      field: message
+      pattern: "^(\\xEF\\xBB\\xBF|\\xFF\\xFE\\x00\\x00|\\x00\\x00\\xFE\\xFF|\\xFF\\xFE|\\xFE\\xFF)"
+      replacement: ""
+      ignore_failure: true
+      tag: bom_removed
   - rename:
       field: message
       tag: rename_message_to_event_original

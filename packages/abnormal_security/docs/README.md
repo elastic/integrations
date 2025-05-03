@@ -6,9 +6,11 @@ The Abnormal Security integration collects data for AI Security Mailbox (formerl
 
 ## Data streams
 
-The Abnormal Security integration collects four types of logs:
+The Abnormal Security integration collects six types of logs:
 
 - **[AI Security Mailbox](https://app.swaggerhub.com/apis-docs/abnormal-security/abx/1.4.3#/AI%20Security%20Mailbox%20(formerly%20known%20as%20Abuse%20Mailbox))** - Get details of AI Security Mailbox.
+
+- **[AI Security Mailbox Not Analyzed](https://app.swaggerhub.com/apis/abnormal-security/abx/1.4.3#/AI%20Security%20Mailbox%20(formerly%20known%20as%20Abuse%20Mailbox)/v1_abuse_mailbox_not_analyzed_retrieve)** - Get details of messages submitted to AI Security Mailbox that were not analyzed.
 
 - **[Audit](https://app.swaggerhub.com/apis-docs/abnormal-security/abx/1.4.3#/Audit%20Logs)** - Get details of Audit logs for Portal.
 
@@ -195,6 +197,122 @@ An example event for `ai_security_mailbox` looks as following:
 | abnormal_security.ai_security_mailbox.recipient.address | The email address of the recipient. | keyword |
 | abnormal_security.ai_security_mailbox.recipient.name | The name of the recipient. | keyword |
 | abnormal_security.ai_security_mailbox.subject | Subject of the first email in the abuse campaign. | keyword |
+| data_stream.dataset | Data stream dataset. | constant_keyword |
+| data_stream.namespace | Data stream namespace. | constant_keyword |
+| data_stream.type | Data stream type. | constant_keyword |
+| event.dataset | Event dataset. | constant_keyword |
+| event.module | Event module. | constant_keyword |
+| input.type | Type of filebeat input. | keyword |
+| log.offset | Log offset. | long |
+
+
+### AI Security Mailbox Not Analyzed
+
+This is the `ai_security_mailbox_not_analyzed` dataset.
+
+#### Example
+
+An example event for `ai_security_mailbox_not_analyzed` looks as following:
+
+```json
+{
+    "@timestamp": "2025-03-04T17:03:55.000Z",
+    "abnormal_security": {
+        "ai_security_mailbox_not_analyzed": {
+            "abx_message_id": "-1234567891234568000",
+            "reason": "PHISHING_SIMULATION",
+            "recipient": {
+                "address": "phishing@test.com",
+                "name": "Phishing Test"
+            },
+            "reported_time": "2025-03-04T17:03:55Z",
+            "reporter": {
+                "address": "info@test.com",
+                "name": "Info Test"
+            },
+            "subject": "Fwd: Forwarded email"
+        }
+    },
+    "agent": {
+        "ephemeral_id": "30574c81-fa18-4fa0-88fe-9a5402bf1562",
+        "id": "49766dbb-8c1b-41e5-ac89-e0a87c0d6249",
+        "name": "elastic-agent-94210",
+        "type": "filebeat",
+        "version": "8.17.3"
+    },
+    "data_stream": {
+        "dataset": "abnormal_security.ai_security_mailbox_not_analyzed",
+        "namespace": "17196",
+        "type": "logs"
+    },
+    "ecs": {
+        "version": "8.11.0"
+    },
+    "elastic_agent": {
+        "id": "49766dbb-8c1b-41e5-ac89-e0a87c0d6249",
+        "snapshot": false,
+        "version": "8.17.3"
+    },
+    "email": {
+        "subject": "Fwd: Forwarded email",
+        "to": {
+            "address": [
+                "phishing@test.com"
+            ]
+        }
+    },
+    "event": {
+        "agent_id_status": "verified",
+        "category": [
+            "email"
+        ],
+        "dataset": "abnormal_security.ai_security_mailbox_not_analyzed",
+        "id": "-1234567891234568000",
+        "ingested": "2025-04-08T00:08:23Z",
+        "kind": "event",
+        "original": "{\"abx_message_id\":-1234567891234568000,\"not_analyzed_reason\":\"PHISHING_SIMULATION\",\"recipient\":{\"email\":\"phishing@test.com\",\"name\":\"Phishing Test\"},\"reported_datetime\":\"2025-03-04T17:03:55Z\",\"reporter\":{\"email\":\"info@test.com\",\"name\":\"Info Test\"},\"subject\":\"Fwd: Forwarded email\"}",
+        "reason": "PHISHING_SIMULATION",
+        "type": [
+            "info"
+        ]
+    },
+    "input": {
+        "type": "cel"
+    },
+    "observer": {
+        "product": "Inbound Email Security",
+        "vendor": "Abnormal"
+    },
+    "related": {
+        "user": [
+            "phishing@test.com",
+            "Phishing Test",
+            "info@test.com",
+            "Info Test"
+        ]
+    },
+    "tags": [
+        "preserve_original_event",
+        "preserve_duplicate_custom_fields",
+        "forwarded",
+        "abnormal_security-ai_security_mailbox_not_analyzed"
+    ]
+}
+```
+
+**Exported fields**
+
+| Field | Description | Type |
+|---|---|---|
+| @timestamp | Event timestamp. | date |
+| abnormal_security.ai_security_mailbox_not_analyzed.abx_message_id | Unique ID for the message in Abnormal AI Security Mailbox. | keyword |
+| abnormal_security.ai_security_mailbox_not_analyzed.reason | Reason why this message wasn't analyzed by the AI engine. | keyword |
+| abnormal_security.ai_security_mailbox_not_analyzed.recipient.address | The email address of the recipient. | keyword |
+| abnormal_security.ai_security_mailbox_not_analyzed.recipient.name | The name of the recipient. | keyword |
+| abnormal_security.ai_security_mailbox_not_analyzed.reported_time | Date When the message was reported. | date |
+| abnormal_security.ai_security_mailbox_not_analyzed.reporter.address | The email address of the reporter. | keyword |
+| abnormal_security.ai_security_mailbox_not_analyzed.reporter.name | The name of the reporter. | keyword |
+| abnormal_security.ai_security_mailbox_not_analyzed.subject | Subject of the reported email. | keyword |
 | data_stream.dataset | Data stream dataset. | constant_keyword |
 | data_stream.namespace | Data stream namespace. | constant_keyword |
 | data_stream.type | Data stream type. | constant_keyword |
