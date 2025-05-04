@@ -46,6 +46,9 @@ state:
 {{#if include_group_assoc}}
     - associatedGroups
 {{/if}}
+{{#if include_group_assoc_attribs}}
+    - associatedGroups.attributes
+{{/if}}
 {{#if include_indicator_assoc}}
     - associatedIndicators
 {{/if}}
@@ -68,10 +71,10 @@ redact:
 # milliseconds and if it ended in 0, that 0 would be dropped and TC TQL then would error on the timestamp.
 program: |
   ['lastModified GEQ "'+(
-      !state.want_more ?
-          state.?cursor.last_timestamp.orValue((now - duration(state.initial_interval)).format(time_layout.RFC3339))
-      :
-          state.?cursor.first_timestamp.orValue("")
+          state.want_more ?
+              state.?cursor.first_timestamp.orValue("")
+          :
+              state.?cursor.last_timestamp.orValue((now - duration(state.initial_interval)).format(time_layout.RFC3339))
       )+'"'+(
           state.?tql_filter.orValue("") != "" ?
               " AND "+state.tql_filter.trim(" ")
@@ -124,22 +127,23 @@ program: |
                       state.url.trim_right("/")
               ),
               "cursor": {
+                  "first_timestamp": (
+                      !(has(body.data) && has(state.?cursor.first_timestamp)) ?
+                          // We don't have any data or a first_timestamp. Limit to look-back.
+                          string(now - duration(state.initial_interval))
+                      : (has(body.next) && body.next != null && body.next != "") ?
+                          // want_more is true, so limit to first timestamp.
+                          state.cursor.first_timestamp
+                      :
+                          // We have data, but want_more is false, limit to last available
+                          // timestamp falling back to look-back.
+                          state.?cursor.last_timestamp.orValue(string(now - duration(state.initial_interval)))
+                  ),
                   ?"last_timestamp": (
                       has(body.data) && body.data.size() > 0 ?
                           optional.of(body.data.map(e, timestamp(e.lastModified)).max() + duration("1s"))
                       :
                           state.?cursor.last_timestamp
-                  ),
-                  "first_timestamp": (
-                      has(body.data) && state.?cursor.first_timestamp.orValue(null) != null ?
-                          (
-                              has(body.next) && body.next != null && body.next != "" ?
-                                  state.cursor.first_timestamp
-                              :
-                                  state.cursor.last_timestamp
-                          )
-                      :
-                          string(now - duration(state.initial_interval))
                   ),
               }
           })
