@@ -84,7 +84,7 @@ program: |-
   			"PublisherIdentifier": [state.base.tenant_id],
   		}.format_query()
   	).do_request().as(start_subs_resp,
-  		bytes(start_subs_resp.Body).decode_json().as(start_subs_resp_body,
+  		start_subs_resp.Body.decode_json().as(start_subs_resp_body,
   			(
   				has(start_subs_resp_body.status) && start_subs_resp_body.status == "enabled" ||
   				has(start_subs_resp_body.error) && has(start_subs_resp_body.error.code) &&
@@ -149,7 +149,7 @@ program: |-
   						)
   					)
   				).do_request().as(list_contents_resp,
-  					bytes(list_contents_resp.Body).decode_json().as(list_contents_resp_body,
+  					list_contents_resp.Body.decode_json().as(list_contents_resp_body,
   						(
   							type(list_contents_resp_body) != map && size(list_contents_resp_body) > 0 &&
   							has(list_contents_resp_body[0].contentUri) && list_contents_resp_body[0].contentUri != "" &&
@@ -160,7 +160,7 @@ program: |-
   								(has(l1.contentExpiration) && l1.contentExpiration.parse_time(time_layout.RFC3339) >= now) ?
   									request("GET", l1.contentUri).do_request().as(content_resp,
   										(has(content_resp.StatusCode) && content_resp.StatusCode == 200 && size(content_resp.Body) > 0) ?
-  											bytes(content_resp.Body).decode_json().map(content_resp_body,
+  											content_resp.Body.decode_json().map(content_resp_body,
   												content_resp_body.with({"copy": {"o365audit": content_resp_body}})
   											).map(content_resp_body_with_copy,
   												content_resp_body_with_copy.copy
