@@ -88,6 +88,10 @@ for package in ${PACKAGE_LIST}; do
         FORCE_CHECK_ALL: "${FORCE_CHECK_ALL}"
         SERVERLESS: "false"
         UPLOAD_SAFE_LOGS: ${UPLOAD_SAFE_LOGS}
+      plugins:
+        # See https://github.com/elastic/oblt-infra/blob/main/conf/resources/repos/integrations/01-aws-buildkite-oidc.tf
+        - elastic/oblt-aws-auth#v0.1.0:
+            duration: 3600 # seconds
       artifact_paths:
         - build/test-results/*.xml
         - build/test-coverage/*.xml
