@@ -87,7 +87,8 @@ program: |-
   		bytes(start_subs_resp.Body).decode_json().as(start_subs_resp_body,
   			(
   				has(start_subs_resp_body.status) && start_subs_resp_body.status == "enabled" ||
-  has(start_subs_resp_body.error) && has(start_subs_resp_body.error.code) && start_subs_resp_body.error.code == "AF20024"
+  				has(start_subs_resp_body.error) && has(start_subs_resp_body.error.code) &&
+  				start_subs_resp_body.error.code == "AF20024"
   			) ?
   				// When start-subscription API returns success or if already started subscription,
   				duration(state.base.batch_interval).as(batch_interval,
@@ -96,7 +97,7 @@ program: |-
   							"GET",
   							(
   								state.want_more && has(state.?cursor.content_types_state_as_list) && size(state.cursor.content_types_state_as_list.filter(e, e.content_type == content_type)) > 0 &&
-  state.cursor.content_types_state_as_list.filter(e, e.content_type == content_type)[0].next_page != ""
+  								state.cursor.content_types_state_as_list.filter(e, e.content_type == content_type)[0].next_page != ""
   							) ?
   								// if NextPageUri exists
   								state.cursor.content_types_state_as_list.filter(e, e.content_type == content_type)[0].next_page
@@ -121,8 +122,8 @@ program: |-
   												"contentType": [content_type],
   												"PublisherIdentifier": [state.base.tenant_id],
   												"startTime": [string(state_created_at_calc + duration("1s"))],
-  												"endTime": [string((state_created_at_calc + batch_interval).as(
-  													calc_end_time, (calc_end_time <= now) ?
+  												"endTime": [string((state_created_at_calc + batch_interval).as(calc_end_time,
+  													(calc_end_time <= now) ?
   														calc_end_time
   													:
   														now
@@ -151,8 +152,8 @@ program: |-
   					bytes(list_contents_resp.Body).decode_json().as(list_contents_resp_body,
   						(
   							type(list_contents_resp_body) != map && size(list_contents_resp_body) > 0 &&
-  has(list_contents_resp_body[0].contentUri) && list_contents_resp_body[0].contentUri != "" &&
-  has(list_contents_resp_body[0].contentCreated) && list_contents_resp_body[0].contentCreated != ""
+  							has(list_contents_resp_body[0].contentUri) && list_contents_resp_body[0].contentUri != "" &&
+  							has(list_contents_resp_body[0].contentCreated) && list_contents_resp_body[0].contentCreated != ""
   						) ?
   							// contents exist to consume
   							list_contents_resp_body.map(l1,
@@ -179,9 +180,9 @@ program: |-
   													"want_more_content": has(list_contents_resp.Header) &&
   													(
   														has(list_contents_resp.Header.NextPageUri) && list_contents_resp.Header.NextPageUri.size() > 0 ||
-  has(list_contents_resp.Header.Nextpageuri) && list_contents_resp.Header.Nextpageuri.size() > 0
+  														has(list_contents_resp.Header.Nextpageuri) && list_contents_resp.Header.Nextpageuri.size() > 0
   													) || {"temp": list_contents_resp_body}.collate("temp.contentCreated").max().split("T").as(t, t.size() > 1 &&
-  t[0] != now.format("2006-01-02")),
+  													t[0] != now.format("2006-01-02")),
   												}
   											)
   										:
@@ -217,8 +218,10 @@ program: |-
   									{
   										"events_per_content_type": (size(list_contents_resp_body) == 0) ? [] : [list_contents_resp_body],
   										"content_type": content_type,
-  										"content_created_at": (has(list_contents_resp.StatusCode) && has(reqQuery.endTime) &&
-  list_contents_resp.StatusCode == 200 && reqQuery.endTime.size() > 0) ?
+  										"content_created_at": (
+  											has(list_contents_resp.StatusCode) && has(reqQuery.endTime) &&
+  											list_contents_resp.StatusCode == 200 && reqQuery.endTime.size() > 0
+  										) ?
   											(reqQuery.endTime[0])
   										: (has(reqQuery.startTime) && reqQuery.startTime.size() > 0) ?
   											(reqQuery.startTime[0])
@@ -233,9 +236,11 @@ program: |-
   										:
   											string(now - duration(state.base.list_contents_start_time)),
   										"next_page": "",
-  										"want_more_content": has(list_contents_resp.StatusCode) && has(reqQuery.endTime) &&
-  list_contents_resp.StatusCode == 200 && reqQuery.endTime.size() > 0 && reqQuery.endTime[0].split("T").as(t, t.size() > 0 &&
-  t[0] != now.format("2006-01-02")),
+  										"want_more_content": (
+  											has(list_contents_resp.StatusCode) && has(reqQuery.endTime) &&
+  											list_contents_resp.StatusCode == 200 && reqQuery.endTime.size() > 0 && reqQuery.endTime[0].split("T").as(t, t.size() > 0 &&
+  											t[0] != now.format("2006-01-02"))
+  										),
   									},
   								]
   							)
