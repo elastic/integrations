@@ -11,6 +11,13 @@ state:
 redact:
   fields:
     - api_key
+{{#if regex_input}}
+regexp:
+  regex_input: '{{regex_input}}'
+{{else}}
+regexp:
+  regex_input: '^$'
+{{/if}}
 program: |-
   state.with(
         request(
@@ -57,10 +64,21 @@ program: |-
                 :
                         {
                                 "events": body.entries.map(feed_entry,
-                                        {
-                                                "message": feed_entry.encode_json(),
-                                        }
-                                ),
+                                        (feed_entry.content.encode_json().re_find_all("regex_input").size() == 0) ?
+                                                [{
+                                                        "message": feed_entry.encode_json()
+                                                }]
+                                        : 
+                                                feed_entry.content.encode_json().re_find_all("regex_input").map(e, e.to_upper()).as(ids, ids.zip(ids).keys()).map(
+                                                        feed_entry_split,
+                                                        {
+                                                                "message": feed_entry.with({
+                                                                        "feed_entry_split": feed_entry_split
+                                                                }).encode_json(),
+                                                                "feed_entry_split": feed_entry_split,
+                                                        }
+                                                )
+                                ).flatten().drop_empty(),
                                 "cursor": {
                                         "last_entry_id": (
                                             has(body.entries) ?
