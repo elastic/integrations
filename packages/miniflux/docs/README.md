@@ -37,24 +37,24 @@ An example event for `feed_entry` looks as following:
 
 ```json
 {
-    "@timestamp": "2025-05-02T22:01:52.958Z",
+    "@timestamp": "2025-05-05T06:58:24.601Z",
     "agent": {
-        "ephemeral_id": "1d94aeae-3dad-4f43-9f04-a8c3016f7463",
-        "id": "c068eae7-622a-4db0-96ea-5b77375350e6",
-        "name": "elastic-agent-10668",
+        "ephemeral_id": "833c483c-2956-4fa6-a811-79450a8f600c",
+        "id": "b6224b13-8b9e-4148-ae7a-f19daad5ca40",
+        "name": "elastic-agent-42540",
         "type": "filebeat",
         "version": "8.18.0"
     },
     "data_stream": {
         "dataset": "miniflux.feed_entry",
-        "namespace": "79008",
+        "namespace": "44469",
         "type": "logs"
     },
     "ecs": {
         "version": "8.16.0"
     },
     "elastic_agent": {
-        "id": "c068eae7-622a-4db0-96ea-5b77375350e6",
+        "id": "b6224b13-8b9e-4148-ae7a-f19daad5ca40",
         "snapshot": false,
         "version": "8.18.0"
     },
@@ -64,7 +64,7 @@ An example event for `feed_entry` looks as following:
             "vulnerability"
         ],
         "dataset": "miniflux.feed_entry",
-        "ingested": "2025-05-02T22:01:54Z",
+        "ingested": "2025-05-05T06:58:26Z",
         "kind": "alert",
         "type": [
             "info"
@@ -144,7 +144,6 @@ An example event for `feed_entry` looks as following:
         "user_id": 4426
     },
     "tags": [
-        "preserve_original_event",
         "forwarded"
     ]
 }
@@ -209,6 +208,7 @@ An example event for `feed_entry` looks as following:
 | miniflux.feed.user_id |  | long |
 | miniflux.feed.username |  | keyword |
 | miniflux.feed.webhook_url |  | keyword |
+| miniflux.feed_entry_split |  | keyword |
 | miniflux.feed_id |  | long |
 | miniflux.hash |  | keyword |
 | miniflux.id |  | long |
