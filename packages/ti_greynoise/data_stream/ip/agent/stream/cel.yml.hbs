@@ -28,7 +28,7 @@ program: |
       state.url.trim_right("/") + "/v3/gnql" + "?" + {
       ?"scroll": has(state.scroll) && state.scroll != null ? optional.of([state.scroll]) : optional.none(),
       "query": ["last_seen:1d" + (has(state.query) && state.query != null ? " " + state.query.trim_right(" ") : "")],
-      "size": [(has(state.page_size) && state.page_size != null ? string(state.page_size) : "5000")],
+      "size": [(has(state.page_size) && state.page_size != null && int(state.page_size) <= 5000 ? string(state.page_size) : "5000")],
       }.format_query()
     ).with({
       "Header": {
