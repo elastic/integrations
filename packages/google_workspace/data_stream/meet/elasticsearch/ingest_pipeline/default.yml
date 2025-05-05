@@ -152,13 +152,19 @@ processors:
       ignore_missing: true
   - set:
       field: source.user.email
+      tag: set_source_user_email_from_identifier
+      copy_from: google_workspace.meet.identifier
+      ignore_empty_value: true
+      if: ctx.google_workspace?.meet?.identifier != null && ctx.google_workspace?.meet?.identifier_type == "email_address"
+  - set:
+      field: source.user.email
       tag: set_source_user_email_from_actor_email
       copy_from: google_workspace.actor.email
       ignore_empty_value: true
   - set:
       field: source.user.name
-      tag: set_source_user_name_from_actor_email
-      copy_from: google_workspace.actor.email
+      tag: set_source_user_name_from_source_user_email
+      copy_from: source.user.email
       ignore_empty_value: true
   - dissect:
       field: source.user.email
