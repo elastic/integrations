@@ -1,10 +1,10 @@
 # Microsoft Office 365 Metrics Integration
 
-This integration uses the [Microsoft Graph API](https://learn.microsoft.com/en-us/graph/overview) to collect essential metrics from Microsoft Office 365, offering detailed insights into user activity, application usage, and overall system performance.
+This integration uses the [Microsoft Graph API](https://learn.microsoft.com/en-us/graph/overview) and [Microsoft Management API](https://learn.microsoft.com/en-us/office/office-365-management-api/) to collect essential metrics from Microsoft Office 365, offering detailed insights into user activity, application usage, and overall system performance.
 
 ## Data streams
 
-Following Microsoft 365 Graph Reports can be collected by Microsoft Office 365 Metrics integration.
+Following Microsoft 365 data can be collected by Microsoft Office 365 Metrics integration.
 
 | Report          | API | Data-stream Name | Aggregation Level | Required permissions
 |-----------------|-----|------------------|-------------------|--------------------|
