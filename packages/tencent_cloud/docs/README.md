@@ -207,7 +207,6 @@ Tencent Cloud 集成旨在通过 Elastic Agent 将腾讯云的各种云产品的
 | data_stream.namespace | Data stream namespace. | constant_keyword |
 | data_stream.type | Data stream type. | constant_keyword |
 | event.dataset | Event dataset | constant_keyword |
-| event.kind | Event Kind | constant_keyword |
 | event.module | Event module | constant_keyword |
 | host.containerized | If the host is a container. | boolean |
 | host.os.build | OS build information. | keyword |
