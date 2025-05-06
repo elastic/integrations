@@ -324,17 +324,17 @@ An example event for `flow` looks as following:
 
 ```json
 {
-    "@timestamp": "2023-10-16T22:40:20.005Z",
+    "@timestamp": "2025-05-06T16:27:50.010Z",
     "agent": {
-        "ephemeral_id": "005dde79-7459-4b47-ae00-972086b4f5db",
-        "id": "f923dfe0-3acb-4f62-9ab4-1fabb8e8e112",
-        "name": "docker-fleet-agent",
+        "ephemeral_id": "ec608800-4587-40c2-8acc-eca2310b5bca",
+        "id": "81831106-07f4-4b1b-b4e9-e1030b2c8fca",
+        "name": "elastic-agent-96598",
         "type": "packetbeat",
-        "version": "8.6.2"
+        "version": "8.13.2"
     },
     "data_stream": {
         "dataset": "endace.flow",
-        "namespace": "ep",
+        "namespace": "92016",
         "type": "logs"
     },
     "destination": {
@@ -344,12 +344,12 @@ An example event for `flow` looks as following:
         "port": 8000
     },
     "ecs": {
-        "version": "8.11.0"
+        "version": "8.17.0"
     },
     "elastic_agent": {
-        "id": "f923dfe0-3acb-4f62-9ab4-1fabb8e8e112",
+        "id": "81831106-07f4-4b1b-b4e9-e1030b2c8fca",
         "snapshot": false,
-        "version": "8.6.2"
+        "version": "8.13.2"
     },
     "event": {
         "action": "network_flow",
@@ -358,11 +358,12 @@ An example event for `flow` looks as following:
             "network"
         ],
         "dataset": "endace.flow",
-        "duration": 73561,
-        "end": "2023-10-16T22:39:45.677Z",
-        "ingested": "2023-10-16T22:40:21Z",
+        "duration": 216667,
+        "end": "2025-05-06T16:27:12.442Z",
+        "ingested": "2025-05-06T16:27:51Z",
         "kind": "event",
-        "start": "2023-10-16T22:39:45.677Z",
+        "reference": "/vision2/pivotintovision/?title=endace_pivot&datasources=tag:rotation-file&start=1746548532442&end=1746549132442&tools=trafficOverTime_by_app,conversations_by_ipaddress&ip_conv=::1%26::1",
+        "start": "2025-05-06T16:27:12.442Z",
         "type": [
             "connection",
             "end"
@@ -373,25 +374,27 @@ An example event for `flow` looks as following:
         "id": "QAT///////8A////IP8AAAEAAAAAAAAAAAAAAAAAAAABAAAAAAAAAAAAAAAAAAAAAUAfeMg"
     },
     "host": {
-        "architecture": "x86_64",
+        "architecture": "aarch64",
         "containerized": false,
-        "hostname": "docker-fleet-agent",
-        "id": "f91b175388d443fca5c155815dfc2279",
+        "hostname": "elastic-agent-96598",
+        "id": "312a60eca7374205bc60e8afdda36d0a",
         "ip": [
-            "172.19.0.7"
+            "172.19.0.2",
+            "172.18.0.4"
         ],
         "mac": [
-            "02-42-AC-13-00-07"
+            "02-42-AC-12-00-04",
+            "02-42-AC-13-00-02"
         ],
-        "name": "docker-fleet-agent",
+        "name": "elastic-agent-96598",
         "os": {
             "codename": "focal",
             "family": "debian",
-            "kernel": "5.15.49-linuxkit",
+            "kernel": "6.10.14-linuxkit",
             "name": "Ubuntu",
             "platform": "ubuntu",
             "type": "linux",
-            "version": "20.04.5 LTS (Focal Fossa)"
+            "version": "20.04.6 LTS (Focal Fossa)"
         }
     },
     "network": {
