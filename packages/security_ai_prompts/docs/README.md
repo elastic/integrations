@@ -10,10 +10,6 @@ This integration is in **beta** and subject to changes. Feedback and contributio
 
 - Elastic Stack **8.19.x**, **9.1.x**, or later.
 - Kibana with the **Elastic Assistant** plugin enabled.
-- Feature flag enabled in Kibana settings:
-  ```yml
-  xpack.securitySolution.enableExperimental: ['securityAIPromptsEnabled']
-  ```
 
 ## Installation
 
