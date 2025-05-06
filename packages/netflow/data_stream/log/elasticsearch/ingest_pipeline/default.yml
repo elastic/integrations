@@ -82,13 +82,11 @@ processors:
         }
 
         if (flagsSeen.length > 0) {
-            if (ctx.containsKey("_tmp_")) {
-                ctx._tmp_.tcp_flags_string = flagString.toString();
-            }
             ctx.netflow.tcp_flags = flagsSeen;
         }
 
-      if: ctx.netflow?.tcp_control_bits != null
+      if: ctx.netflow?.tcp_control_bits instanceof Integer
+
   - set: 
       field: network.type
       value: ipv4
