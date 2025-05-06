@@ -26,7 +26,7 @@ Elastic Agent must be installed. For more details, check the Elastic Agent [inst
     - Format. Select the format for the log files: CEF
     - Compress logs. By default, log files are compressed. Set the option to not compress files.
 
-### Obtain API URL, API Key and API ID(Pull Mode)
+### Obtain API URL, API Key and API ID (Pull Mode)
 
 1. Login to your [Imperva Cloud WAF console](https://authentication-management.service.imperva.com/login).
 2. On the sidebar, click Logs > Log Setup.
