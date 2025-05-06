@@ -68,7 +68,7 @@ Elastic Agent is required to stream data from the S3 bucket and ship the data to
    - Access Key ID
    - Session Token
 
-5. Save the integration.
+4. Save the integration.
 
 **NOTE**:
 There are other input combination options available for the AWS S3 and AWS SQS, please check [here](https://www.elastic.co/guide/en/beats/filebeat/current/filebeat-input-aws-s3.html).
