@@ -30,6 +30,7 @@ It is compatible with a subset of applications under the [Google Reports API v1]
 | [Data Studio](https://developers.google.com/admin-sdk/reports/v1/appendix/activity/data-studio) | Track and audit user interactions and changes made to Looker Studio assets. |
 | [Calendar](https://developers.google.com/admin-sdk/reports/v1/appendix/activity/calendar) | The Calendar activity report returns information about how your account's users manage and modify their Google Calendar events. |
 | [Chat](https://developers.google.com/admin-sdk/reports/v1/appendix/activity/chat) | The Chat activity report returns information about how your account's users use and manage Spaces. |
+| [Vault](https://developers.google.com/admin-sdk/reports/v1/appendix/activity/vault) | The Vault activity report returns information about various types of Vault Audit activity events. |
 
 ## Requirements
 
@@ -46,7 +47,7 @@ This integration will make use of the following *oauth2 scope*:
 
 Once you have downloaded your service account credentials as a JSON file, you are ready to set up your integration.
 
-Click the Advanced option of Google Workspace Audit Reports. The default value of "API Host" is `https://www.googleapis.com`. The API Host will be used for collecting `access_transparency`, `admin`, `calendar`, `chat`, `chrome`, `context_aware_access`, `data_studio`, `device`, `drive`, `gcp`, `groups`, `group_enterprise`, `login`, `rules`, `saml`, `token` and `user accounts` logs.
+Click the Advanced option of Google Workspace Audit Reports. The default value of "API Host" is `https://www.googleapis.com`. The API Host will be used for collecting `access_transparency`, `admin`, `calendar`, `chat`, `chrome`, `context_aware_access`, `data_studio`, `device`, `drive`, `gcp`, `groups`, `group_enterprise`, `login`, `rules`, `saml`, `token`, `user accounts` and `vault` logs.
 
 >  NOTE: The `Delegated Account` value in the configuration, is expected to be the email of the administrator account, and not the email of the ServiceAccount.
 
@@ -3500,6 +3501,155 @@ An example event for `chat` looks as following:
 | google_workspace.ip_address | IP address of the user doing the action. This is the Internet Protocol (IP) address of the user when logging into Google Workspace, which may or may not reflect the user's physical location. For example, the IP address can be the user's proxy server's address or a virtual private network (VPN) address. The API supports IPv4 and IPv6. | ip |
 | google_workspace.kind | The type of API resource, mapped from `kind` in the original payload, more details can be found [here](https://developers.google.com/admin-sdk/reports/reference/rest/v1/activities/list#activity). | keyword |
 | google_workspace.organization.domain | The domain that is affected by the report's event. | keyword |
+| input.type | Type of filebeat input. | keyword |
+| log.offset | Log offset. | long |
+
+
+### Vault
+
+This is the `vault` dataset.
+
+An example event for `vault` looks as following:
+
+```json
+{
+    "@timestamp": "2025-04-10T19:05:24.881Z",
+    "agent": {
+        "ephemeral_id": "540f8dff-4158-4152-a7b6-757f8019ae43",
+        "id": "e5b82ff4-853f-4f9f-9a68-54de01dc5631",
+        "name": "elastic-agent-58720",
+        "type": "filebeat",
+        "version": "8.18.0"
+    },
+    "data_stream": {
+        "dataset": "google_workspace.vault",
+        "namespace": "52776",
+        "type": "logs"
+    },
+    "ecs": {
+        "version": "8.16.0"
+    },
+    "elastic_agent": {
+        "id": "e5b82ff4-853f-4f9f-9a68-54de01dc5631",
+        "snapshot": true,
+        "version": "8.18.0"
+    },
+    "event": {
+        "action": "view-per-matter-litigation-hold-report",
+        "agent_id_status": "verified",
+        "category": [
+            "configuration"
+        ],
+        "dataset": "google_workspace.vault",
+        "id": "1",
+        "ingested": "2025-04-23T06:26:01Z",
+        "kind": "event",
+        "original": "{\"actor\":{\"callerType\":\"USER\",\"email\":\"foo@bar.com\",\"profileId\":\"1\"},\"etag\":\"XB4Sd9ZEYpFd-msikcPTLY7Ao7PvyP0QeR9k5OdWZ_Y/77VsZvNcux1EnUIu_SyN08-cHo8\",\"events\":{\"name\":\"view_per_matter_litigation_hold_report\",\"parameters\":[{\"name\":\"matter_id\",\"value\":\"78504485-73d5-4b01-ae1a-63ebc1ae66eb\"},{\"name\":\"resource_name\",\"value\":\"0\"},{\"name\":\"additional_details\",\"value\":\"matter_name: \\\"Demo\\\"\\n\"}],\"type\":\"user_action\"},\"id\":{\"applicationName\":\"vault\",\"customerId\":\"1\",\"time\":\"2025-04-10T19:05:24.881Z\",\"uniqueQualifier\":\"1\"},\"kind\":\"admin#reports#activity\"}",
+        "provider": "vault",
+        "type": [
+            "access"
+        ]
+    },
+    "google_workspace": {
+        "actor": {
+            "caller_type": "USER"
+        },
+        "etag": "XB4Sd9ZEYpFd-msikcPTLY7Ao7PvyP0QeR9k5OdWZ_Y/77VsZvNcux1EnUIu_SyN08-cHo8",
+        "kind": "admin#reports#activity",
+        "vault": {
+            "additional_details": {
+                "matter_name": "Demo"
+            },
+            "additional_details_raw": "matter_name: \"Demo\"\n",
+            "matter_id": "78504485-73d5-4b01-ae1a-63ebc1ae66eb",
+            "name": "view_per_matter_litigation_hold_report",
+            "resource_name": "0",
+            "type": "user_action"
+        }
+    },
+    "input": {
+        "type": "cel"
+    },
+    "observer": {
+        "product": "Vault",
+        "vendor": "Google Workspace"
+    },
+    "organization": {
+        "id": "1"
+    },
+    "related": {
+        "user": [
+            "foo@bar.com"
+        ]
+    },
+    "source": {
+        "user": {
+            "domain": "bar.com",
+            "email": "foo@bar.com",
+            "id": "1",
+            "name": "foo@bar.com"
+        }
+    },
+    "tags": [
+        "preserve_original_event",
+        "forwarded",
+        "google_workspace-vault"
+    ],
+    "user": {
+        "domain": "bar.com",
+        "email": "foo@bar.com",
+        "id": "1",
+        "name": "foo@bar.com"
+    }
+}
+```
+
+**Exported fields**
+
+| Field | Description | Type |
+|---|---|---|
+| @timestamp | Event timestamp. | date |
+| data_stream.dataset | Data stream dataset. | constant_keyword |
+| data_stream.namespace | Data stream namespace. | constant_keyword |
+| data_stream.type | Data stream type. | constant_keyword |
+| event.dataset | Event dataset. | constant_keyword |
+| event.module | Event module. | constant_keyword |
+| google_workspace.actor.caller_type | The type of actor. Values can be:   \*USER\*: Another user in the same domain.   \*EXTERNAL_USER\*: A user outside the domain.   \*KEY\*: A non-human actor. | keyword |
+| google_workspace.actor.email | The primary email address of the actor. May be absent if there is no email address associated with the actor. | keyword |
+| google_workspace.actor.key | Only present when `actor.type` is `KEY`. Can be the `consumer_key` of the requestor for OAuth 2LO API requests or an identifier for robot accounts. | keyword |
+| google_workspace.actor.profile_id | The unique Google Workspace profile ID of the actor. | keyword |
+| google_workspace.etag | ETag of the entry. | keyword |
+| google_workspace.id.application_name | Application name to which the event belongs. For possible values see the list of applications above in applicationName. | keyword |
+| google_workspace.id.customer_id | The unique identifier for a Google Workspace account. | keyword |
+| google_workspace.id.time | Time of occurrence of the activity. This is in UNIX epoch time in seconds. | date |
+| google_workspace.id.unique_qualifier | Unique qualifier if multiple events have the same time. | keyword |
+| google_workspace.ip_address | IP address of the user doing the action. This is the Internet Protocol (IP) address of the user when logging into Google Workspace, which may or may not reflect the user's physical location. For example, the IP address can be the user's proxy server's address or a virtual private network (VPN) address. The API supports IPv4 and IPv6. | ip |
+| google_workspace.kind | The type of API resource, mapped from `kind` in the original payload, more details can be found [here](https://developers.google.com/admin-sdk/reports/reference/rest/v1/activities/list#activity). | keyword |
+| google_workspace.organization.domain | The domain that is affected by the report's event. | keyword |
+| google_workspace.vault.additional_details.apply_only_to_deleted_objects |  | boolean |
+| google_workspace.vault.additional_details.data_region |  | keyword |
+| google_workspace.vault.additional_details.export_format |  | keyword |
+| google_workspace.vault.additional_details.export_linked_drive_files |  | boolean |
+| google_workspace.vault.additional_details.export_name |  | keyword |
+| google_workspace.vault.additional_details.matter_name |  | keyword |
+| google_workspace.vault.additional_details.period |  | keyword |
+| google_workspace.vault.additional_details.query |  | keyword |
+| google_workspace.vault.additional_details.show_locker_content |  | boolean |
+| google_workspace.vault.additional_details.type |  | keyword |
+| google_workspace.vault.additional_details.use_improved_export |  | boolean |
+| google_workspace.vault.additional_details_raw | Additional details pertaining to an audit log. | keyword |
+| google_workspace.vault.matter_id | The Matter ID an audit pertains to. | keyword |
+| google_workspace.vault.name |  | keyword |
+| google_workspace.vault.organizational_unit_name | The organizational unit name. | keyword |
+| google_workspace.vault.query.mode | The mode of a search. Possible values are All data, Held data, Unprocessed data. | keyword |
+| google_workspace.vault.query.terms |  | keyword |
+| google_workspace.vault.query.time_zone |  | keyword |
+| google_workspace.vault.query.type |  | keyword |
+| google_workspace.vault.query_raw | The user inputted query for search and exports. | keyword |
+| google_workspace.vault.resource_name | The resource name of the action, such as hold name or saved query name. | keyword |
+| google_workspace.vault.resource_url | The document URL of the document view. | keyword |
+| google_workspace.vault.target_user | The targeted user (such as user put on hold). | keyword |
+| google_workspace.vault.type |  | keyword |
 | input.type | Type of filebeat input. | keyword |
 | log.offset | Log offset. | long |
 
