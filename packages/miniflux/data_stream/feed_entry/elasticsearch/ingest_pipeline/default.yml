@@ -4,7 +4,7 @@ processors:
     - set:
         field: ecs.version
         tag: set_ecs_version
-        value: 8.16.0
+        value: 8.17.0
     
     - fail:
         tag: cel_failure
@@ -13,23 +13,36 @@ processors:
     - set:
         field: event.kind
         tag: set_event_kind_1
-        value: alert
+        value: enrichment
     - set:
         field: event.category
         tag: set_event_catgeory
-        value: [vulnerability]
+        value: [web]
     - set:
         field: event.type
         tag: set_event_type
         value: [info]
-    - json:
+    - rename:
         field: message
-        tag: json_message
+        tag: rename_message_to_event_original
+        target_field: event.original
+        ignore_missing: true
+        description: Renames the original `message` field to `event.original` to store a copy of the original message. The `event.original` field is not touched if the document already has one; it may happen when Logstash sends the document.
+        if: ctx.event?.original == null
+    - remove:
+        field: message
+        tag: remove_message
+        ignore_missing: true
+        description: The `message` field is no longer required if the document has an `event.original` field.
+        if: ctx.event?.original != null
+    - json:
+        field: event.original
+        tag: json_event_original
         target_field: json
         on_failure:
             - append:
                 field: error.message
-                value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+                value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
     - rename:
         field: json.author
         tag: rename_author
@@ -246,6 +259,9 @@ processors:
         field: json.hash
         tag: rename_hash
         target_field: miniflux.hash
+    - append:
+        field: related.hash
+        value: "{{{miniflux.hash}}}"
     - rename:
         field: json.id
         tag: rename_id
@@ -289,14 +305,51 @@ processors:
         tag: rename_user_id
         target_field: miniflux.user_id
 
+    # Cleanup
     - remove:
         tag: remove_json
-        field:
-            # - json.changed_at
-            # - json.created_at
-            # - json.feed.checked_at
-            # - json.feed.next_check_at
-            # - json.published_at
+        field: 
             - json
-            - message
-  
+    - script:
+        tag: script_to_drop_null_values
+        lang: painless
+        description: Drops null/empty values recursively.
+        source: |-
+            boolean drop(Object object) {
+            if (object == null || object == '') {
+                return true;
+            } else if (object instanceof Map) {
+                ((Map) object).values().removeIf(v -> drop(v));
+                return (((Map) object).size() == 0);
+            } else if (object instanceof List) {
+                ((List) object).removeIf(v -> drop(v));
+                return (((List) object).length == 0);
+            }
+            return false;
+            }
+            drop(ctx);
+    - set:
+        field: event.kind
+        tag: set_pipeline_error_into_event_kind
+        value: pipeline_error
+        if: ctx.error?.message != null
+    - append:
+        field: tags
+        value: preserve_original_event
+        allow_duplicates: false
+        if: ctx.error?.message != null
+on_failure:
+  - append:
+      field: error.message
+      value: >-
+        Processor '{{{ _ingest.on_failure_processor_type }}}'
+        {{{#_ingest.on_failure_processor_tag}}}with tag '{{{ _ingest.on_failure_processor_tag }}}'
+        {{{/_ingest.on_failure_processor_tag}}}failed with message '{{{ _ingest.on_failure_message }}}'
+  - set:
+      field: event.kind
+      tag: set_pipeline_error_to_event_kind
+      value: pipeline_error
+  - append:
+      field: tags
+      value: preserve_original_event
+      allow_duplicates: false

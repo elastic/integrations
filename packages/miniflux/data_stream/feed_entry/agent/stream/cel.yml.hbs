@@ -1,9 +1,9 @@
 config_version: 2
 interval: {{interval}}
-{{#if enable_request_tracer}}
-resource.tracer.filename: "../../logs/cel/miniflux-feed_entry-http-request-trace-*.ndjson"
-resource.tracer.maxbackups: 5
-{{/if}}
+resource.tracer:
+  enabled: {{enable_request_tracer}}
+  filename: "../../logs/cel/http-request-trace-*.ndjson"
+  maxbackups: 5
 resource.url: {{api_url}}
 state:
   api_key: {{api_key}}
@@ -40,20 +40,19 @@ program: |-
             }
         ).do_request().as(resp, (resp.StatusCode != 200) ?
             {
-                    "events": {
-                            "error": {
-                                    "code": string(resp.StatusCode),
-                                    "id": string(resp.Status),
-                                    "message": "GET:" + 
-                                    (
-                                            (size(resp.Body) != 0) ?
-                                                    string(resp.Body)
-                                            :
-                                                    string(resp.Status) + " (" + string(resp.StatusCode) + ")"
-                                    ),
-                            },
-                    },
-                    "want_more": false,
+                "events": {
+                        "error": {
+                                "code": string(resp.StatusCode),
+                                "id": string(resp.Status),
+                                "message": "GET " + state.url + (
+                                        size(resp.Body) != 0 ?
+                                                string(resp.Body)
+                                        :
+                                                string(resp.Status) + ' (' + string(resp.StatusCode) + ')'
+                                ),
+                        },
+                },
+                "want_more": false,
             }
         :
                 bytes(resp.Body).decode_json().as(body, !has(body.entries) ?

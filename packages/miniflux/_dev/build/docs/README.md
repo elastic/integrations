@@ -2,7 +2,7 @@
 
 ## Overview
 
-The Miniflux integration allows you to extract data from Miniflux. Miniflux is an RSS feed reader.
+The [Miniflux](https://miniflux.app/) integration allows you to extract data from Miniflux. Miniflux is an RSS feed reader.
 
 Use the Miniflux integration to extract RSS feed content. Then visualize that data in Kibana, create alerts to notify you if something goes wrong.
 
@@ -10,10 +10,9 @@ For example, if you wanted to be notified for a new feed entry you could set up 
 
 ## Datastreams
 
-The Minifux integration collects one type of data streams: logs.
+This integration collects the following logs:
 
-**Logs** help you extract feed entries from Miniflux API.
-Log data streams collected by the Miniflux integration include feed_entry. See more details in the Logs reference.
+- **[Entries](https://miniflux.app/docs/api.html#endpoint-get-entries)** - Retrieves feed entries from the Miniflux application.
 
 ## Requirements
 

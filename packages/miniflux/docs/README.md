@@ -2,7 +2,7 @@
 
 ## Overview
 
-The Miniflux integration allows you to extract data from Miniflux. Miniflux is an RSS feed reader.
+The [Miniflux](https://miniflux.app/) integration allows you to extract data from Miniflux. Miniflux is an RSS feed reader.
 
 Use the Miniflux integration to extract RSS feed content. Then visualize that data in Kibana, create alerts to notify you if something goes wrong.
 
@@ -10,10 +10,9 @@ For example, if you wanted to be notified for a new feed entry you could set up 
 
 ## Datastreams
 
-The Minifux integration collects one type of data streams: logs.
+This integration collects the following logs:
 
-**Logs** help you extract feed entries from Miniflux API.
-Log data streams collected by the Miniflux integration include feed_entry. See more details in the Logs reference.
+- **[Entries](https://miniflux.app/docs/api.html#endpoint-get-entries)** - Retrieves feed entries from the Miniflux application.
 
 ## Requirements
 
@@ -37,35 +36,35 @@ An example event for `feed_entry` looks as following:
 
 ```json
 {
-    "@timestamp": "2025-05-05T22:15:10.510Z",
+    "@timestamp": "2025-05-06T21:06:24.887Z",
     "agent": {
-        "ephemeral_id": "36c14525-764a-45b6-a98a-a5a715feef13",
-        "id": "68cff31f-e9c8-4b25-a95f-3790734acbd9",
-        "name": "elastic-agent-12943",
+        "ephemeral_id": "96028cf6-f764-487d-ab01-60ce9e199ba0",
+        "id": "ae37d583-e1da-455d-a7b8-b2b910214d42",
+        "name": "elastic-agent-44518",
         "type": "filebeat",
         "version": "8.18.0"
     },
     "data_stream": {
         "dataset": "miniflux.feed_entry",
-        "namespace": "26056",
+        "namespace": "41197",
         "type": "logs"
     },
     "ecs": {
-        "version": "8.16.0"
+        "version": "8.17.0"
     },
     "elastic_agent": {
-        "id": "68cff31f-e9c8-4b25-a95f-3790734acbd9",
+        "id": "ae37d583-e1da-455d-a7b8-b2b910214d42",
         "snapshot": false,
         "version": "8.18.0"
     },
     "event": {
         "agent_id_status": "verified",
         "category": [
-            "vulnerability"
+            "web"
         ],
         "dataset": "miniflux.feed_entry",
-        "ingested": "2025-05-05T22:15:12Z",
-        "kind": "alert",
+        "ingested": "2025-05-06T21:06:27Z",
+        "kind": "enrichment",
         "type": [
             "info"
         ]
@@ -74,16 +73,11 @@ An example event for `feed_entry` looks as following:
         "type": "cel"
     },
     "miniflux": {
-        "author": "",
         "changed_at": "2023-09-02T20:30:13.118Z",
-        "comments_url": "",
         "content": "<p></p>\n\n<h1>Exploit for Code Injection in Vmware Spring Framework CVE-2022-22965</h1>\n<p>2023-09-02 | CVSS 7.5 </p>\n\n\n\n\n\nCopy\nDownload\nSource\n<a href=\"#share-url\">Share</a>\n\n<pre><code>## https://sploitus.com/exploit?id=5C9561BE-D9BB-58D0-8E51-09DDD257BC72\n# Spring4Shell: CVE-2022-22965 RCE\n\n## Java Spring framework RCE vulnerability\nThese vulnerabilities affects a component &#34;Spring Core&#34; —  the heart of the framework \n\n**Current conditions for vulnerability:-**\n\n- JDK 9+\n- A vulnerable version of the Spring Framework (&lt;5.2 | 5.2.0-19 | 5.3.0-17)\n- Apache Tomcat as a server for the Spring application, packaged as a WAR\n- A dependency on the spring-webmvc and/or spring-webflux components of the Spring Framework\n\n## The exploit\n\n```python\nuser@attacker:~$ ./exploit.py --help\nusage: exploit.py [-h] [-f FILENAME] [-p PASSWORD] [-d DIRECTORY] url\n\nSpring4Shell RCE Proof of Concept\n\npositional arguments:\n  url                   Target URL\n\noptional arguments:\n  -h, --help            show this help message and exit\n  -f FILENAME, --filename FILENAME\n                        Name of the file to upload (Default tomcatwar.jsp)\n  -p PASSWORD, --password PASSWORD\n                        Password to protect the shell with (Default: thm)\n  -d DIRECTORY, --directory DIRECTORY\n                        The upload path for the file (Default: ROOT)\n```\n\n```python\nuser@attacker:~$ ./exploit.py http://MACHINE_IP/\nShell Uploaded Successfully!\n\n\n# OUTPUT= Your shell can be found at: http://MACHINE_IP/tomcatwar.jsp?pwd=thm&amp;cmd=whoami\n```</code> </pre>\n\n",
         "created_at": "2023-09-02T20:17:02.689Z",
-        "enclosures": [],
         "feed": {
             "allow_self_signed_certificates": false,
-            "apprise_service_urls": "",
-            "blocklist_rules": "",
             "category": {
                 "hide_globally": false,
                 "id": 25000,
@@ -91,12 +85,9 @@ An example event for `feed_entry` looks as following:
                 "user_id": 4426
             },
             "checked_at": "2025-05-02T12:25:58.524Z",
-            "cookie": "",
             "crawler": true,
-            "description": "",
             "disable_http2": false,
             "disabled": false,
-            "etag_header": "",
             "feed_url": "https://sploitus.com/rss",
             "fetch_via_proxy": false,
             "hide_globally": false,
@@ -107,44 +98,36 @@ An example event for `feed_entry` looks as following:
             },
             "id": 355593,
             "ignore_http_cache": false,
-            "keeplist_rules": "",
-            "last_modified_header": "",
             "next_check_at": "0001-01-01T00:00:00.000Z",
             "no_media_player": false,
             "ntfy_enabled": false,
             "ntfy_priority": 0,
-            "ntfy_topic": "",
             "parsing_error_count": 0,
-            "parsing_error_message": "",
-            "password": "",
-            "proxy_url": "",
             "pushover_enabled": false,
             "pushover_priority": 0,
-            "rewrite_rules": "",
-            "scraper_rules": "",
             "site_url": "https://sploitus.com/rss",
             "title": "Sploitus.com Exploits RSS Feed",
-            "urlrewrite_rules": "",
-            "user_agent": "",
-            "user_id": 4426,
-            "username": "",
-            "webhook_url": ""
+            "user_id": 4426
         },
         "feed_id": 355593,
         "hash": "fab2dc0ad7ba85e40595d197da245cb2602ce93c6a2c2deca340ce909c9a4a13",
         "id": 83721716,
         "published_at": "2023-09-02T10:41:05.000Z",
         "reading_time": 1,
-        "share_code": "",
         "starred": true,
         "status": "read",
-        "tags": [],
         "title": "Exploit for Code Injection in Vmware Spring Framework exploit",
         "url": "https://sploitus.com/exploit?id=5C9561BE-D9BB-58D0-8E51-09DDD257BC72&utm_source=rss&utm_medium=rss",
         "user_id": 4426
     },
+    "related": {
+        "hash": [
+            "fab2dc0ad7ba85e40595d197da245cb2602ce93c6a2c2deca340ce909c9a4a13"
+        ]
+    },
     "tags": [
-        "forwarded"
+        "forwarded",
+        "miniflux-feed_entry"
     ]
 }
 ```
