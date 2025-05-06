@@ -96,14 +96,16 @@ program: |-
   						request(
   							"GET",
   							(
-  								state.want_more && has(state.?cursor.content_types_state_as_list) && size(state.cursor.content_types_state_as_list.filter(e, e.content_type == content_type)) > 0 &&
+  								state.want_more && has(state.?cursor.content_types_state_as_list) &&
+  								size(state.cursor.content_types_state_as_list.filter(e, e.content_type == content_type)) > 0 &&
   								state.cursor.content_types_state_as_list.filter(e, e.content_type == content_type)[0].next_page != ""
   							) ?
   								// if NextPageUri exists
   								state.cursor.content_types_state_as_list.filter(e, e.content_type == content_type)[0].next_page
   							:
   							(
-  								has(state.?cursor.content_types_state_as_list) && size(state.cursor.content_types_state_as_list.filter(e, e.content_type == content_type)) > 0
+  								has(state.?cursor.content_types_state_as_list) &&
+  								size(state.cursor.content_types_state_as_list.filter(e, e.content_type == content_type)) > 0
   							) ?
   								// if NextPageUri does not exist, but content_type_state_created_at exists in state
   								state.cursor.content_types_state_as_list.filter(e, e.content_type == content_type).as(content_type_state,
@@ -169,7 +171,12 @@ program: |-
   													"events_per_content_type": contents,
   													"content_type": content_type,
   													// if 'contentCreated' is older than 167h55m, change it to 167h55m.
-  													"content_created_at": {"temp": list_contents_resp_body}.collate("temp.contentCreated").max().as(temp_max, (temp_max.parse_time(time_layout.RFC3339) > now - duration("167h55m")) ? temp_max : (now - duration("167h55m")).format(time_layout.RFC3339)),
+  													"content_created_at": {"temp": list_contents_resp_body}.collate("temp.contentCreated").max().as(temp_max,
+  														(temp_max.parse_time(time_layout.RFC3339) > now - duration("167h55m")) ?
+  															temp_max
+  														:
+  															(now - duration("167h55m")).format(time_layout.RFC3339)
+  													),
   													"next_page": (has(list_contents_resp.?Header.NextPageUri) && list_contents_resp.Header.NextPageUri.size() > 0) ?
   														(list_contents_resp.Header.NextPageUri[0])
   													: (has(list_contents_resp.?Header.Nextpageuri) && list_contents_resp.Header.Nextpageuri.size() > 0) ?
@@ -189,7 +196,12 @@ program: |-
   											{
   												"events_per_content_type": [],
   												"content_type": content_type,
-  												"content_created_at": {"temp": list_contents_resp_body}.collate("temp.contentCreated").max().as(temp_max, (temp_max.parse_time(time_layout.RFC3339) > now - duration("167h55m")) ? temp_max : (now - duration("167h55m")).format(time_layout.RFC3339)),
+  												"content_created_at": {"temp": list_contents_resp_body}.collate("temp.contentCreated").max().as(temp_max,
+  													(temp_max.parse_time(time_layout.RFC3339) > now - duration("167h55m")) ?
+  														temp_max
+  													:
+  														(now - duration("167h55m")).format(time_layout.RFC3339)
+  												),
   												"next_page": (has(list_contents_resp.?Header.NextPageUri) && list_contents_resp.Header.NextPageUri.size() > 0) ?
   													(list_contents_resp.Header.NextPageUri[0])
   												: (has(list_contents_resp.?Header.Nextpageuri) && list_contents_resp.Header.Nextpageuri.size() > 0) ?
@@ -202,7 +214,12 @@ program: |-
   									{
   										"events_per_content_type": [],
   										"content_type": content_type,
-  										"content_created_at": {"temp": list_contents_resp_body}.collate("temp.contentCreated").max().as(temp_max, (temp_max.parse_time(time_layout.RFC3339) > now - duration("167h55m")) ? temp_max : (now - duration("167h55m")).format(time_layout.RFC3339)),
+  										"content_created_at": {"temp": list_contents_resp_body}.collate("temp.contentCreated").max().as(temp_max,
+  											(temp_max.parse_time(time_layout.RFC3339) > now - duration("167h55m")) ?
+  												temp_max
+  											:
+  												(now - duration("167h55m")).format(time_layout.RFC3339)
+  										),
   										"next_page": (has(list_contents_resp.?Header.NextPageUri) && list_contents_resp.Header.NextPageUri.size() > 0) ?
   											(list_contents_resp.Header.NextPageUri[0])
   										: (has(list_contents_resp.?Header.Nextpageuri) && list_contents_resp.Header.Nextpageuri.size() > 0) ?
@@ -238,7 +255,8 @@ program: |-
   										"next_page": "",
   										"want_more_content": (
   											has(list_contents_resp.StatusCode) && has(reqQuery.endTime) &&
-  											list_contents_resp.StatusCode == 200 && reqQuery.endTime.size() > 0 && reqQuery.endTime[0].split("T").as(t, t.size() > 0 &&
+  											list_contents_resp.StatusCode == 200 && reqQuery.endTime.size() > 0 &&
+  											reqQuery.endTime[0].split("T").as(t, t.size() > 0 &&
   											t[0] != now.format("2006-01-02"))
   										),
   									},
