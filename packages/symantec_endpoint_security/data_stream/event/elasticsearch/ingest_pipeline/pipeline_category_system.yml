@@ -3350,6 +3350,47 @@ processors:
       if: ctx.ses?.type_id != null && ['8000', '8001', '8002', '8003', '8004', '8005', '8006', '8007', '8009', '8011', '8015', '8016', '8018'].contains(ctx.ses.type_id) && ctx.ses?.user != null
       tag: pipeline_object_user
       ignore_missing_pipeline: true
+  - json:
+      description: Parse Windows Event data and store it in the same fields as the winlog integration does
+      field: ses.data
+      target_field: winlog.event_data
+      if: ctx.ses?.type_id == '8015' && ctx.ses.data instanceof String && ctx.ses.data.length() > 0
+      tag: parse_windows_event_data
+      ignore_failure: true
+  - set:
+      field: winlog.event_id
+      copy_from: ses.ref_event
+      if: ctx.ses?.type_id == '8015' && ctx.ses.ref_event != null
+  - append:
+      field: related.ip
+      tag: append_related_ip_from_winlog_event_data
+      value: '{{{winlog.event_data.IpAddress}}}'
+      allow_duplicates: false
+      if: ctx.winlog?.event_data?.IpAddress != null
+  - append:
+      field: related.hosts
+      tag: append_related_host_from_winlog_event_data_workstation_name
+      value: '{{{winlog.event_data.WorkstationName}}}'
+      allow_duplicates: false
+      if: ctx.winlog?.event_data?.WorkstationName != null
+  - append:
+      field: related.hosts
+      tag: append_related_host_from_winlog_event_data_client_machine
+      value: '{{{winlog.event_data.ClientMachine}}}'
+      allow_duplicates: false
+      if: ctx.winlog?.event_data?.ClientMachine != null
+  - append:
+      field: related.user
+      tag: append_related_user_from_winlog_event_data_user
+      value: '{{{winlog.event_data.User}}}'
+      allow_duplicates: false
+      if: ctx.winlog?.event_data?.User != null
+  - append:
+      field: related.user
+      tag: append_related_user_from_winlog_event_data_subject_user_name
+      value: '{{{winlog.event_data.SubjectUserName}}}'
+      allow_duplicates: false
+      if: ctx.winlog?.event_data?.SubjectUserName != null
   - remove:
       field:
         - ses.directory.accessed
@@ -3387,6 +3428,7 @@ processors:
         - ses.email.header_from
         - ses.email.header_subject
         - ses.email.header_to
+        - ses.ref_event
         - ses.remote_process.file.accessed
         - ses.remote_process.file.created
         - ses.remote_process.file.md5
