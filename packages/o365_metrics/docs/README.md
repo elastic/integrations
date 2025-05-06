@@ -2921,81 +2921,81 @@ Please refer to the following [document](https://www.elastic.co/guide/en/ecs/cur
 | o365.metrics.teams.call.quality.call_record_id | Unique identifier for the call record. | keyword |
 | o365.metrics.teams.call.quality.end_date_time | UTC time when the last user left the call. | date |
 | o365.metrics.teams.call.quality.sessions.modalities | List of modalities present in the session. Possible values are- unknown, audio, video, videoBasedScreenSharing, data, screenSharing, unknownFutureValue. | keyword |
-| o365.metrics.teams.call.quality.sessions.segments.callee.associated_identity.display_name | The display name of the callee | keyword |
-| o365.metrics.teams.call.quality.sessions.segments.callee.associated_identity.id | The unique user ID for the callee | keyword |
-| o365.metrics.teams.call.quality.sessions.segments.callee.associated_identity.tenant_id | The tenant ID of the callee's organization | keyword |
-| o365.metrics.teams.call.quality.sessions.segments.callee.associated_identity.user_principal_name | The tenant ID of the callee's organization | keyword |
-| o365.metrics.teams.call.quality.sessions.segments.caller.associated_identity.display_name | The display name of the caller | keyword |
-| o365.metrics.teams.call.quality.sessions.segments.caller.associated_identity.id | The unique user ID for the caller | keyword |
-| o365.metrics.teams.call.quality.sessions.segments.caller.associated_identity.tenant_id | The tenant ID of the caller's organization | keyword |
-| o365.metrics.teams.call.quality.sessions.segments.caller.associated_identity.user_principal_name | The tenant ID of the caller's organization | keyword |
+| o365.metrics.teams.call.quality.sessions.segments.callee.associated_identity.display_name | The display name of the callee. | keyword |
+| o365.metrics.teams.call.quality.sessions.segments.callee.associated_identity.id | The unique user ID for the callee. | keyword |
+| o365.metrics.teams.call.quality.sessions.segments.callee.associated_identity.tenant_id | The tenant ID of the callee's organization. | keyword |
+| o365.metrics.teams.call.quality.sessions.segments.callee.associated_identity.user_principal_name | The user principal name of the callee. | keyword |
+| o365.metrics.teams.call.quality.sessions.segments.caller.associated_identity.display_name | The display name of the caller. | keyword |
+| o365.metrics.teams.call.quality.sessions.segments.caller.associated_identity.id | The unique user ID for the caller. | keyword |
+| o365.metrics.teams.call.quality.sessions.segments.caller.associated_identity.tenant_id | The tenant ID of the caller's organization. | keyword |
+| o365.metrics.teams.call.quality.sessions.segments.caller.associated_identity.user_principal_name | The user principal name of the caller. | keyword |
 | o365.metrics.teams.call.quality.sessions.segments.end_date_time | UTC time when the segment ended. | date |
 | o365.metrics.teams.call.quality.sessions.segments.failure_info.reason | Classification of why a call or portion of a call failed. | keyword |
 | o365.metrics.teams.call.quality.sessions.segments.failure_info.stage | The stage when the failure occurred. Possible values are- unknown, callSetup, midcall, unknownFutureValue. | keyword |
-| o365.metrics.teams.call.quality.sessions.segments.media.callee_network.bandwidth_low_event_ratio | Fraction of the call that the media endpoint detected the available bandwidth or bandwidth policy was low enough to cause poor quality of the audio sent. | long |
+| o365.metrics.teams.call.quality.sessions.segments.media.callee_network.bandwidth_low_event_ratio | Fraction of the call that the media endpoint detected the available bandwidth or bandwidth policy was low enough to cause poor quality of the audio sent. | double |
 | o365.metrics.teams.call.quality.sessions.segments.media.callee_network.basic_service_set_identifier | The wireless LAN basic service set identifier of the media endpoint used to connect to the network. This property isn't available if the user disables precise location sharing in their operating system or Microsoft Teams app settings. | keyword |
 | o365.metrics.teams.call.quality.sessions.segments.media.callee_network.connection_type | Type of network used by the media endpoint. Possible values are- unknown, wired, wifi, mobile, tunnel, unknownFutureValue. | keyword |
-| o365.metrics.teams.call.quality.sessions.segments.media.callee_network.delay_event_ratio | Fraction of the call that the media endpoint detected the network delay was significant enough to impact the ability to have real-time two-way communication. | long |
+| o365.metrics.teams.call.quality.sessions.segments.media.callee_network.delay_event_ratio | Fraction of the call that the media endpoint detected the network delay was significant enough to impact the ability to have real-time two-way communication. | double |
 | o365.metrics.teams.call.quality.sessions.segments.media.callee_network.dns_suffix | DNS suffix associated with the network adapter of the media endpoint. | keyword |
-| o365.metrics.teams.call.quality.sessions.segments.media.callee_network.ip_address | IP address of the media endpoint. | keyword |
+| o365.metrics.teams.call.quality.sessions.segments.media.callee_network.ip_address | IP address of the media endpoint. | ip |
 | o365.metrics.teams.call.quality.sessions.segments.media.callee_network.link_speed | Link speed in bits per second reported by the network adapter used by the media endpoint. | long |
 | o365.metrics.teams.call.quality.sessions.segments.media.callee_network.mac_address | The media access control (MAC) address of the media endpoint's network device. | keyword |
 | o365.metrics.teams.call.quality.sessions.segments.media.callee_network.network_transport_protocol | Network protocol used for the transmission of stream. Possible values are- unknown, udp, tcp, unknownFutureValue. | keyword |
 | o365.metrics.teams.call.quality.sessions.segments.media.callee_network.port | Network port number used by media endpoint. | long |
-| o365.metrics.teams.call.quality.sessions.segments.media.callee_network.received_quality_event_ratio | Fraction of the call that the media endpoint detected the network was causing poor quality of the audio received. | long |
-| o365.metrics.teams.call.quality.sessions.segments.media.callee_network.reflexive_ip_address | IP address of the media endpoint as seen by the media relay server. This is typically the public internet IP address associated to the endpoint. | keyword |
-| o365.metrics.teams.call.quality.sessions.segments.media.callee_network.relay_ip_address | IP address of the media relay server allocated by the media endpoint. | keyword |
+| o365.metrics.teams.call.quality.sessions.segments.media.callee_network.received_quality_event_ratio | Fraction of the call that the media endpoint detected the network was causing poor quality of the audio received. | double |
+| o365.metrics.teams.call.quality.sessions.segments.media.callee_network.reflexive_ip_address | IP address of the media endpoint as seen by the media relay server. This is typically the public internet IP address associated to the endpoint. | ip |
+| o365.metrics.teams.call.quality.sessions.segments.media.callee_network.relay_ip_address | IP address of the media relay server allocated by the media endpoint. | ip |
 | o365.metrics.teams.call.quality.sessions.segments.media.callee_network.relay_port | Network port number allocated on the media relay server by the media endpoint. | long |
-| o365.metrics.teams.call.quality.sessions.segments.media.callee_network.sent_quality_event_ratio | Fraction of the call that the media endpoint detected the network was causing poor quality of the audio sent. | long |
+| o365.metrics.teams.call.quality.sessions.segments.media.callee_network.sent_quality_event_ratio | Fraction of the call that the media endpoint detected the network was causing poor quality of the audio sent. | double |
 | o365.metrics.teams.call.quality.sessions.segments.media.callee_network.subnet | Subnet used for media stream by the media endpoint. | keyword |
-| o365.metrics.teams.call.quality.sessions.segments.media.caller_network.bandwidth_low_event_ratio | Fraction of the call that the media endpoint detected the available bandwidth or bandwidth policy was low enough to cause poor quality of the audio sent. | long |
+| o365.metrics.teams.call.quality.sessions.segments.media.caller_network.bandwidth_low_event_ratio | Fraction of the call that the media endpoint detected the available bandwidth or bandwidth policy was low enough to cause poor quality of the audio sent. | double |
 | o365.metrics.teams.call.quality.sessions.segments.media.caller_network.basic_service_set_identifier | The wireless LAN basic service set identifier of the media endpoint used to connect to the network. This property isn't available if the user disables precise location sharing in their operating system or Microsoft Teams app settings. | keyword |
 | o365.metrics.teams.call.quality.sessions.segments.media.caller_network.connection_type | Type of network used by the media endpoint. Possible values are- unknown, wired, wifi, mobile, tunnel, unknownFutureValue. | keyword |
-| o365.metrics.teams.call.quality.sessions.segments.media.caller_network.delay_event_ratio | Fraction of the call that the media endpoint detected the network delay was significant enough to impact the ability to have real-time two-way communication. | long |
+| o365.metrics.teams.call.quality.sessions.segments.media.caller_network.delay_event_ratio | Fraction of the call that the media endpoint detected the network delay was significant enough to impact the ability to have real-time two-way communication. | double |
 | o365.metrics.teams.call.quality.sessions.segments.media.caller_network.dns_suffix | DNS suffix associated with the network adapter of the media endpoint. | keyword |
-| o365.metrics.teams.call.quality.sessions.segments.media.caller_network.ip_address | IP address of the media endpoint. | keyword |
+| o365.metrics.teams.call.quality.sessions.segments.media.caller_network.ip_address | IP address of the media endpoint. | ip |
 | o365.metrics.teams.call.quality.sessions.segments.media.caller_network.link_speed | Link speed in bits per second reported by the network adapter used by the media endpoint. | long |
 | o365.metrics.teams.call.quality.sessions.segments.media.caller_network.mac_address | The media access control (MAC) address of the media endpoint's network device. | keyword |
 | o365.metrics.teams.call.quality.sessions.segments.media.caller_network.network_transport_protocol | Network protocol used for the transmission of stream. Possible values are- unknown, udp, tcp, unknownFutureValue. | keyword |
 | o365.metrics.teams.call.quality.sessions.segments.media.caller_network.port | Network port number used by media endpoint. | long |
-| o365.metrics.teams.call.quality.sessions.segments.media.caller_network.received_quality_event_ratio | Fraction of the call that the media endpoint detected the network was causing poor quality of the audio received. | long |
-| o365.metrics.teams.call.quality.sessions.segments.media.caller_network.reflexive_ip_address | IP address of the media endpoint as seen by the media relay server. This is typically the public internet IP address associated to the endpoint. | keyword |
-| o365.metrics.teams.call.quality.sessions.segments.media.caller_network.relay_ip_address | IP address of the media relay server allocated by the media endpoint. | keyword |
+| o365.metrics.teams.call.quality.sessions.segments.media.caller_network.received_quality_event_ratio | Fraction of the call that the media endpoint detected the network was causing poor quality of the audio received. | double |
+| o365.metrics.teams.call.quality.sessions.segments.media.caller_network.reflexive_ip_address | IP address of the media endpoint as seen by the media relay server. This is typically the public internet IP address associated to the endpoint. | ip |
+| o365.metrics.teams.call.quality.sessions.segments.media.caller_network.relay_ip_address | IP address of the media relay server allocated by the media endpoint. | ip |
 | o365.metrics.teams.call.quality.sessions.segments.media.caller_network.relay_port | Network port number allocated on the media relay server by the media endpoint. | long |
-| o365.metrics.teams.call.quality.sessions.segments.media.caller_network.sent_quality_event_ratio | Fraction of the call that the media endpoint detected the network was causing poor quality of the audio sent. | long |
+| o365.metrics.teams.call.quality.sessions.segments.media.caller_network.sent_quality_event_ratio | Fraction of the call that the media endpoint detected the network was causing poor quality of the audio sent. | double |
 | o365.metrics.teams.call.quality.sessions.segments.media.caller_network.subnet | Subnet used for media stream by the media endpoint. | keyword |
-| o365.metrics.teams.call.quality.sessions.segments.media.label | How the media was identified during media negotiation stage. (e.g., "main-audio") | keyword |
+| o365.metrics.teams.call.quality.sessions.segments.media.label | How the media was identified during media negotiation stage. (e.g., "main-audio"). | keyword |
 | o365.metrics.teams.call.quality.sessions.segments.media.streams.audio_codec | Codec name used to encode audio for transmission on the network. Possible values are- unknown, invalid, cn, pcma, pcmu, amrWide, g722, g7221, g7221c, g729, multiChannelAudio, muchv2, opus, satin, satinFullband, rtAudio8, rtAudio16, silk, silkNarrow, silkWide, siren, xmsRta, unknownFutureValue. | keyword |
-| o365.metrics.teams.call.quality.sessions.segments.media.streams.average_audio_degradation | Average Network Mean Opinion Score degradation for stream. Represents how much the network loss and jitter has impacted the quality of received audio. | long |
+| o365.metrics.teams.call.quality.sessions.segments.media.streams.average_audio_degradation | Average Network Mean Opinion Score degradation for stream. Represents how much the network loss and jitter has impacted the quality of received audio. | double |
 | o365.metrics.teams.call.quality.sessions.segments.media.streams.average_audio_network_jitter | Average jitter for the stream computed as specified in RFC 3550, denoted in ISO 8601 format. For example, 1 second is denoted as 'PT1S', where 'P' is the duration designator, 'T' is the time designator, and 'S' is the second designator. | keyword |
 | o365.metrics.teams.call.quality.sessions.segments.media.streams.average_bandwidth_estimate | Average estimated bandwidth available between two endpoints in bits per second. | long |
 | o365.metrics.teams.call.quality.sessions.segments.media.streams.average_freeze_duration | Average duration of the received freezing time in the video stream. | keyword |
 | o365.metrics.teams.call.quality.sessions.segments.media.streams.average_jitter | Average jitter for the stream computed as specified in RFC 3550, denoted in ISO 8601 format. For example, 1 second is denoted as 'PT1S', where 'P' is the duration designator, 'T' is the time designator, and 'S' is the second designator. | keyword |
-| o365.metrics.teams.call.quality.sessions.segments.media.streams.average_packet_loss_rate | Average packet loss rate for stream. | long |
-| o365.metrics.teams.call.quality.sessions.segments.media.streams.average_ratio_of_concealed_samples | Ratio of the number of audio frames with samples generated by packet loss concealment to the total number of audio frames. | long |
-| o365.metrics.teams.call.quality.sessions.segments.media.streams.average_received_frame_rate | Average frames per second received for all video streams computed over the duration of the session. | long |
+| o365.metrics.teams.call.quality.sessions.segments.media.streams.average_packet_loss_rate | Average packet loss rate for stream. | double |
+| o365.metrics.teams.call.quality.sessions.segments.media.streams.average_ratio_of_concealed_samples | Ratio of the number of audio frames with samples generated by packet loss concealment to the total number of audio frames. | double |
+| o365.metrics.teams.call.quality.sessions.segments.media.streams.average_received_frame_rate | Average frames per second received for all video streams computed over the duration of the session. | double |
 | o365.metrics.teams.call.quality.sessions.segments.media.streams.average_round_trip_time | Average network propagation round-trip time computed as specified in RFC 3550, denoted in ISO 8601 format. For example, 1 second is denoted as 'PT1S', where 'P' is the duration designator, 'T' is the time designator, and 'S' is the second designator. | keyword |
-| o365.metrics.teams.call.quality.sessions.segments.media.streams.average_video_frame_loss_percentage | Average percentage of video frames lost as displayed to the user. | long |
-| o365.metrics.teams.call.quality.sessions.segments.media.streams.average_video_frame_rate | Average frames per second received for a video stream, computed over the duration of the session. | long |
-| o365.metrics.teams.call.quality.sessions.segments.media.streams.average_video_packet_loss_rate | Average fraction of packets lost. | long |
+| o365.metrics.teams.call.quality.sessions.segments.media.streams.average_video_frame_loss_percentage | Average percentage of video frames lost as displayed to the user. | double |
+| o365.metrics.teams.call.quality.sessions.segments.media.streams.average_video_frame_rate | Average frames per second received for a video stream, computed over the duration of the session. | double |
+| o365.metrics.teams.call.quality.sessions.segments.media.streams.average_video_packet_loss_rate | Average fraction of packets lost. | double |
 | o365.metrics.teams.call.quality.sessions.segments.media.streams.end_date_time | UTC time when the stream ended. | date |
 | o365.metrics.teams.call.quality.sessions.segments.media.streams.is_audio_forward_error_correction_used | Indicates whether the forward error correction (FEC) was used at some point during the session. The default value is null. | boolean |
-| o365.metrics.teams.call.quality.sessions.segments.media.streams.low_frame_rate_ratio | Fraction of the call where frame rate is less than 7.5 frames per second. | long |
-| o365.metrics.teams.call.quality.sessions.segments.media.streams.low_video_processing_capability_ratio | Fraction of the call that the client is running less than 70% expected video processing capability. | long |
+| o365.metrics.teams.call.quality.sessions.segments.media.streams.low_frame_rate_ratio | Fraction of the call where frame rate is less than 7.5 frames per second. | double |
+| o365.metrics.teams.call.quality.sessions.segments.media.streams.low_video_processing_capability_ratio | Fraction of the call that the client is running less than 70% expected video processing capability. | double |
 | o365.metrics.teams.call.quality.sessions.segments.media.streams.max_audio_network_jitter | Maximum of audio network jitter computed over each of the 20 second windows during the session, denoted in ISO 8601 format. For example, 1 second is denoted as 'PT1S', where 'P' is the duration designator, 'T' is the time designator, and 'S' is the second designator. | keyword |
 | o365.metrics.teams.call.quality.sessions.segments.media.streams.max_jitter | Maximum jitter for the stream computed as specified in RFC 3550, denoted in ISO 8601 format. For example, 1 second is denoted as 'PT1S', where 'P' is the duration designator, 'T' is the time designator, and 'S' is the second designator. | keyword |
-| o365.metrics.teams.call.quality.sessions.segments.media.streams.max_packet_loss_rate | Maximum packet loss rate for the stream. | long |
-| o365.metrics.teams.call.quality.sessions.segments.media.streams.max_ratio_of_concealed_samples | Maximum ratio of packets concealed by the healer. | long |
+| o365.metrics.teams.call.quality.sessions.segments.media.streams.max_packet_loss_rate | Maximum packet loss rate for the stream. | double |
+| o365.metrics.teams.call.quality.sessions.segments.media.streams.max_ratio_of_concealed_samples | Maximum ratio of packets concealed by the healer. | double |
 | o365.metrics.teams.call.quality.sessions.segments.media.streams.max_round_trip_time | Maximum network propagation round-trip time computed as specified in RFC 3550, denoted in ISO 8601 format. For example, 1 second is denoted as 'PT1S', where 'P' is the duration designator, 'T' is the time designator, and 'S' is the second designator. | keyword |
 | o365.metrics.teams.call.quality.sessions.segments.media.streams.packet_utilization | Packet count for the stream. | long |
-| o365.metrics.teams.call.quality.sessions.segments.media.streams.post_forward_error_correction_packet_loss_rate | Packet loss rate after FEC has been applied aggregated across all video streams and codecs. | long |
+| o365.metrics.teams.call.quality.sessions.segments.media.streams.post_forward_error_correction_packet_loss_rate | Packet loss rate after FEC has been applied aggregated across all video streams and codecs. | double |
 | o365.metrics.teams.call.quality.sessions.segments.media.streams.rms_freeze_duration | Average duration of the received freezing time in the video stream represented in root mean square. | keyword |
 | o365.metrics.teams.call.quality.sessions.segments.media.streams.start_date_time | UTC time when the stream started. | date |
 | o365.metrics.teams.call.quality.sessions.segments.media.streams.stream_direction | Indicates the direction of the media stream. Possible values are- callerToCallee, calleeToCaller. | keyword |
 | o365.metrics.teams.call.quality.sessions.segments.media.streams.stream_id | Unique identifier for the stream. | keyword |
 | o365.metrics.teams.call.quality.sessions.segments.media.streams.video_codec | Codec name used to encode video for transmission on the network. Possible values are- unknown, invalid, av1, h263, h264, h264s, h264uc, h265, rtvc1, rtVideo, xrtvc1, unknownFutureValue. | keyword |
 | o365.metrics.teams.call.quality.sessions.segments.media.streams.was_media_bypassed | True if the media stream bypassed the Mediation Server and went straight between client and PSTN Gateway/PBX, false otherwise. | boolean |
-| o365.metrics.teams.call.quality.sessions.segments.segment_id | Unique identifier for the segment | keyword |
+| o365.metrics.teams.call.quality.sessions.segments.segment_id | Unique identifier for the segment. | keyword |
 | o365.metrics.teams.call.quality.sessions.segments.start_date_time | UTC time when the segment started. | date |
 | o365.metrics.teams.call.quality.sessions.session_id | Unique identifier for the session. | keyword |
 | o365.metrics.teams.call.quality.start_date_time | UTC time when the first user joined the call. | date |
