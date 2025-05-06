@@ -14,7 +14,7 @@ Elastic Agent must be installed. For more details, check the Elastic Agent [inst
 
 ## Setup
 
-### Setup Amazon S3 Connection(Push Mode)
+### Setup Amazon S3 Connection (Push Mode)
 
 1. Login to your [Imperva Cloud WAF console](https://authentication-management.service.imperva.com/login).
 2. On the sidebar, click Logs > Log Setup.
