@@ -67,17 +67,13 @@ processors:
       lang: painless
       source: |
         String[] flags = new String[]{"CWR", "ECE", "URG", "ACK", "PSH", "RST", "SYN", "FIN"};
-        StringBuilder flagString = new StringBuilder();
         ArrayList flagsSeen = new ArrayList();
 
         int tcp_flags = ctx.netflow.tcp_control_bits;
         for (int i = 8; i > 0; --i) {
             int value = (tcp_flags & (1 << (i-1))) & 0x0ff;
             if (value != 0) {
-                flagString.append('1');
                 flagsSeen.add(flags[8-i]);
-            } else {
-                flagString.append('0');
             }
         }
 
