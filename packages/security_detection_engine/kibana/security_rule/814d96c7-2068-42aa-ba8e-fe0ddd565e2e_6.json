@@ -1,0 +1,63 @@
+{
+    "attributes": {
+        "anomaly_threshold": 70,
+        "author": [
+            "Elastic"
+        ],
+        "description": "An anomaly detection job has detected a remote file transfer with a rare extension, which could indicate potential lateral movement activity on the host.",
+        "from": "now-90m",
+        "interval": "15m",
+        "license": "Elastic License v2",
+        "machine_learning_job_id": "lmd_rare_file_extension_remote_transfer",
+        "name": "Unusual Remote File Extension",
+        "note": "## Triage and analysis\n\n> **Disclaimer**:\n> This investigation guide was created using generative AI technology and has been reviewed to improve its accuracy and relevance. While every effort has been made to ensure its quality, we recommend validating the content and adapting it to suit your specific environment and operational needs.\n\n### Investigating Unusual Remote File Extension\n\nThe detection of unusual remote file extensions leverages machine learning to identify anomalies in file transfers, which may suggest lateral movement by adversaries. Attackers often exploit remote services to transfer files with uncommon extensions, bypassing standard security measures. This rule flags such anomalies, aiding in early detection of potential threats by correlating rare file extensions with known lateral movement tactics.\n\n### Possible investigation steps\n\n- Review the alert details to identify the specific file extension and the source and destination of the file transfer.\n- Check the historical data for the identified file extension to determine if it has been used previously in legitimate activities or if it is indeed rare.\n- Investigate the source host to identify any recent changes or suspicious activities, such as new user accounts or unusual login patterns.\n- Examine the destination host for any signs of compromise or unauthorized access, focusing on recent file modifications or unexpected processes.\n- Correlate the file transfer event with other security alerts or logs to identify potential patterns of lateral movement or exploitation of remote services.\n- Consult threat intelligence sources to determine if the rare file extension is associated with known malware or adversary tactics.\n\n### False positive analysis\n\n- Common internal file transfers with rare extensions may trigger false positives. Review and whitelist known benign file extensions used by internal applications or processes.\n- Automated backup or synchronization tools might use uncommon file extensions. Identify these tools and create exceptions for their typical file extensions to prevent unnecessary alerts.\n- Development environments often generate files with unique extensions. Collaborate with development teams to understand these patterns and exclude them from detection if they are verified as non-threatening.\n- Security tools or scripts that transfer diagnostic or log files with unusual extensions can be mistaken for lateral movement. Document these tools and adjust the rule to ignore their specific file extensions.\n- Regularly review and update the list of excluded extensions to ensure it reflects current operational practices and does not inadvertently allow malicious activity.\n\n### Response and remediation\n\n- Isolate the affected host immediately to prevent further lateral movement and contain the potential threat.\n- Review and terminate any suspicious remote sessions or connections identified on the host to cut off unauthorized access.\n- Conduct a thorough scan of the affected system for malware or unauthorized software that may have been transferred using the unusual file extension.\n- Restore the affected system from a known good backup if any malicious activity or compromise is confirmed.\n- Update and patch all software and systems on the affected host to close any vulnerabilities that may have been exploited.\n- Monitor network traffic for any further unusual file transfers or connections, focusing on rare file extensions and remote service exploitation patterns.\n- Escalate the incident to the security operations center (SOC) or incident response team for further investigation and to determine if additional systems are affected.",
+        "references": [
+            "https://www.elastic.co/guide/en/security/current/prebuilt-ml-jobs.html",
+            "https://docs.elastic.co/en/integrations/lmd",
+            "https://www.elastic.co/blog/detecting-lateral-movement-activity-a-new-kibana-integration",
+            "https://www.elastic.co/blog/remote-desktop-protocol-connections-elastic-security"
+        ],
+        "related_integrations": [
+            {
+                "package": "lmd",
+                "version": "^2.3.0"
+            },
+            {
+                "package": "endpoint",
+                "version": "^9.0.0"
+            }
+        ],
+        "risk_score": 21,
+        "rule_id": "814d96c7-2068-42aa-ba8e-fe0ddd565e2e",
+        "setup": "## Setup\n\nThe rule requires the Lateral Movement Detection integration assets to be installed, as well as file and Windows RDP process events collected by the Elastic Defend integration.\n\n### Lateral Movement Detection Setup\nThe Lateral Movement Detection integration detects lateral movement activity by identifying abnormalities in file and Windows RDP events. Anomalies are detected using Elastic's Anomaly Detection feature.\n\n#### Prerequisite Requirements:\n- Fleet is required for Lateral Movement Detection.\n- To configure Fleet Server refer to the [documentation](https://www.elastic.co/guide/en/fleet/current/fleet-server.html).\n- File events collected by the [Elastic Defend](https://docs.elastic.co/en/integrations/endpoint) integration.\n- To install Elastic Defend, refer to the [documentation](https://www.elastic.co/guide/en/security/current/install-endpoint.html).\n\n#### The following steps should be executed to install assets associated with the Lateral Movement Detection integration:\n- Go to the Kibana homepage. Under Management, click Integrations.\n- In the query bar, search for Lateral Movement Detection and select the integration to see more details about it.\n- Follow the instructions under the **Installation** section.\n- For this rule to work, complete the instructions through **Add preconfigured anomaly detection jobs**.\n",
+        "severity": "low",
+        "tags": [
+            "Use Case: Lateral Movement Detection",
+            "Rule Type: ML",
+            "Rule Type: Machine Learning",
+            "Tactic: Lateral Movement",
+            "Resources: Investigation Guide"
+        ],
+        "threat": [
+            {
+                "framework": "MITRE ATT&CK",
+                "tactic": {
+                    "id": "TA0008",
+                    "name": "Lateral Movement",
+                    "reference": "https://attack.mitre.org/tactics/TA0008/"
+                },
+                "technique": [
+                    {
+                        "id": "T1210",
+                        "name": "Exploitation of Remote Services",
+                        "reference": "https://attack.mitre.org/techniques/T1210/"
+                    }
+                ]
+            }
+        ],
+        "type": "machine_learning",
+        "version": 6
+    },
+    "id": "814d96c7-2068-42aa-ba8e-fe0ddd565e2e_6",
+    "type": "security-rule"
+}

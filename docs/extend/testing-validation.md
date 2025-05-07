@@ -105,8 +105,8 @@ The CI job runner collects coverage data and stores them together with build art
 
 As the Cobertura report format refers to packages, classes, methods, and such, unfortunately it doesn’t map easily onto the packages domain. We have decided to make a few assumptions for the Cobertura classification:
 
-* **Package**: `integration``
-* **File**: `data stream``
+* **Package**: `integration`
+* **File**: `data stream`
 * **Class**: test type (`pipeline tests`, `system tests`, etc.)
 * **Method**: "OK" if there are any tests present.
 
