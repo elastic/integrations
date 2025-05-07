@@ -47,8 +47,8 @@ Elastic Agent is required to stream data from the GCP Pub/Sub or REST API and sh
 1. In Kibana navigate to **Management** > **Integrations**.
 2. In the search bar, type **BeyondTrust PRA**.
 3. Select the **BeyondTrust PRA** integration and add it.
-5. Add all the required integration configuration parameters, including the URL, Client ID, Client Secret, Session Timeout, Interval, and Initial Interval, to enable data collection.
-6. Select "Save and continue" to save the integration.
+4. Add all the required integration configuration parameters, including the URL, Client ID, Client Secret, Session Timeout, Interval, and Initial Interval, to enable data collection.
+5. Select "Save and continue" to save the integration.
 
 ## Logs
 
