@@ -112,26 +112,26 @@ An example event for `alerts` looks as following:
 
 ```json
 {
-    "@timestamp": "2025-02-24T07:36:51.749Z",
+    "@timestamp": "2025-05-06T07:04:59.704Z",
     "agent": {
-        "ephemeral_id": "05b5d07a-298d-4d27-ba4c-f4d06b4ab9cf",
-        "id": "678c464f-aeaf-4ddb-82c3-fea65b2c795e",
-        "name": "elastic-agent-76578",
+        "ephemeral_id": "29dd8752-991c-4f0f-8625-76b7c8cf07a1",
+        "id": "91381ecc-cd6d-4b82-8918-53fd23b92f71",
+        "name": "elastic-agent-26611",
         "type": "filebeat",
-        "version": "8.17.0"
+        "version": "8.16.5"
     },
     "data_stream": {
         "dataset": "jamf_protect.alerts",
-        "namespace": "22645",
+        "namespace": "86504",
         "type": "logs"
     },
     "ecs": {
         "version": "8.17.0"
     },
     "elastic_agent": {
-        "id": "678c464f-aeaf-4ddb-82c3-fea65b2c795e",
+        "id": "91381ecc-cd6d-4b82-8918-53fd23b92f71",
         "snapshot": false,
-        "version": "8.17.0"
+        "version": "8.16.5"
     },
     "event": {
         "action": "CustomURLHandlerCreation",
@@ -142,7 +142,7 @@ An example event for `alerts` looks as following:
         ],
         "dataset": "jamf_protect.alerts",
         "id": "6bdb0697-6d07-47bc-a37d-6c3348a5d953",
-        "ingested": "2025-02-24T07:36:52Z",
+        "ingested": "2025-05-06T07:05:00Z",
         "kind": "alert",
         "provider": "Jamf Protect",
         "reason": "Application that uses custom url handler created",
@@ -304,20 +304,21 @@ An example event for `telemetry` looks as following:
 
 ```json
 {
-    "@timestamp": "2025-02-24T07:38:19.685Z",
+    "@timestamp": "2025-05-06T07:05:49.773Z",
     "agent": {
-        "ephemeral_id": "fa0ffebc-beff-404b-b7de-82ec48894d43",
-        "id": "39edd9ac-890a-4c7c-937c-574b89b5ef0c",
-        "name": "elastic-agent-58622",
+        "ephemeral_id": "472f9f11-a6e7-4d0b-9e1b-130ef698ff6d",
+        "id": "ae8a71b9-4f10-4cd9-af9d-d9d188b4eb47",
+        "name": "elastic-agent-24313",
         "type": "filebeat",
-        "version": "8.17.0"
+        "version": "8.16.5"
     },
     "data_stream": {
         "dataset": "jamf_protect.telemetry",
-        "namespace": "22952",
+        "namespace": "81248",
         "type": "logs"
     },
     "device": {
+        "id": "123ABC456DJ",
         "manufacturer": "Apple",
         "serial_number": "123ABC456DJ"
     },
@@ -325,9 +326,9 @@ An example event for `telemetry` looks as following:
         "version": "8.17.0"
     },
     "elastic_agent": {
-        "id": "39edd9ac-890a-4c7c-937c-574b89b5ef0c",
+        "id": "ae8a71b9-4f10-4cd9-af9d-d9d188b4eb47",
         "snapshot": false,
-        "version": "8.17.0"
+        "version": "8.16.5"
     },
     "event": {
         "action": "exec",
@@ -338,7 +339,7 @@ An example event for `telemetry` looks as following:
         "code": "9",
         "dataset": "jamf_protect.telemetry",
         "id": "CDB31202-8CB4-4C72-A9C6-7F494CD5F598",
-        "ingested": "2025-02-24T07:38:20Z",
+        "ingested": "2025-05-06T07:05:50Z",
         "kind": "event",
         "provider": "Jamf Protect",
         "reason": "A new process has been executed",
@@ -388,7 +389,7 @@ An example event for `telemetry` looks as following:
         ],
         "args_count": 3,
         "code_signature": {
-            "flags": 570493697,
+            "flags": "570493697",
             "signing_id": "com.apple.zsh"
         },
         "endpoint_security_client": false,
@@ -448,6 +449,9 @@ An example event for `telemetry` looks as following:
         "working_directory": "/"
     },
     "related": {
+        "hash": [
+            "23c70bd9b41017f9878af49bc2c46f7c8a70680b"
+        ],
         "hosts": [
             "MacBookPro"
         ],
@@ -581,10 +585,10 @@ An example event for `telemetry` looks as following:
 | jamf_protect.telemetry.to_username | Username to which an action is directed | keyword |
 | jamf_protect.telemetry.tty | Software terminal device file that the process is associated with | keyword |
 | log.offset | Log offset | long |
-| process.code_signature.flags |  | long |
+| process.code_signature.flags |  | keyword |
 | process.endpoint_security_client |  | boolean |
 | process.hash.cdhash |  | keyword |
-| process.parent.code_signature.flags |  | long |
+| process.parent.code_signature.flags |  | keyword |
 | process.platform_binary |  | boolean |
 | process.responsible.code_signature.flags |  | long |
 | process.responsible.entity_id |  | keyword |
@@ -617,17 +621,17 @@ An example event for `web_threat_events` looks as following:
 
 ```json
 {
-    "@timestamp": "2025-02-24T07:41:11.879Z",
+    "@timestamp": "2025-05-06T07:07:40.814Z",
     "agent": {
-        "ephemeral_id": "27610e91-0834-4981-98fc-7a6e2b056c82",
-        "id": "50314729-e4cd-4b04-8d8f-223ef660a602",
-        "name": "elastic-agent-48100",
+        "ephemeral_id": "8d7fdfb8-8f36-464d-86ae-a74755cae28f",
+        "id": "a3e98343-39ea-4445-8f5a-05c63b91a565",
+        "name": "elastic-agent-85660",
         "type": "filebeat",
-        "version": "8.17.0"
+        "version": "8.16.5"
     },
     "data_stream": {
         "dataset": "jamf_protect.web_threat_events",
-        "namespace": "80582",
+        "namespace": "85085",
         "type": "logs"
     },
     "destination": {
@@ -639,9 +643,9 @@ An example event for `web_threat_events` looks as following:
         "version": "8.17.0"
     },
     "elastic_agent": {
-        "id": "50314729-e4cd-4b04-8d8f-223ef660a602",
+        "id": "a3e98343-39ea-4445-8f5a-05c63b91a565",
         "snapshot": false,
-        "version": "8.17.0"
+        "version": "8.16.5"
     },
     "event": {
         "action": "Detected",
@@ -651,7 +655,7 @@ An example event for `web_threat_events` looks as following:
         ],
         "dataset": "jamf_protect.web_threat_events",
         "id": "013b15c9-8f62-4bf1-948a-d82367af2a10",
-        "ingested": "2025-02-24T07:41:12Z",
+        "ingested": "2025-05-06T07:07:41Z",
         "kind": "alert",
         "provider": "Jamf Protect",
         "reason": "Sideloaded App",
@@ -744,17 +748,17 @@ An example event for `web_traffic_events` looks as following:
 
 ```json
 {
-    "@timestamp": "2025-02-24T07:42:33.808Z",
+    "@timestamp": "2025-05-06T07:08:31.909Z",
     "agent": {
-        "ephemeral_id": "67f0cd6e-01e7-4d27-932e-09ff01c548d8",
-        "id": "56980767-52b4-4e52-aa29-0af97a410ffd",
-        "name": "elastic-agent-54836",
+        "ephemeral_id": "42d89806-2bc9-4e59-8539-6f725aadae26",
+        "id": "e51e5e0d-4398-4748-89e5-25ff802b9665",
+        "name": "elastic-agent-61468",
         "type": "filebeat",
-        "version": "8.17.0"
+        "version": "8.16.5"
     },
     "data_stream": {
         "dataset": "jamf_protect.web_traffic_events",
-        "namespace": "42913",
+        "namespace": "12323",
         "type": "logs"
     },
     "dns": {
@@ -773,9 +777,9 @@ An example event for `web_traffic_events` looks as following:
         "version": "8.17.0"
     },
     "elastic_agent": {
-        "id": "56980767-52b4-4e52-aa29-0af97a410ffd",
+        "id": "e51e5e0d-4398-4748-89e5-25ff802b9665",
         "snapshot": false,
-        "version": "8.17.0"
+        "version": "8.16.5"
     },
     "event": {
         "action": "DNS Lookup",
@@ -785,7 +789,7 @@ An example event for `web_traffic_events` looks as following:
             "network"
         ],
         "dataset": "jamf_protect.web_traffic_events",
-        "ingested": "2025-02-24T07:42:34Z",
+        "ingested": "2025-05-06T07:08:32Z",
         "kind": "event",
         "outcome": [
             "success"
