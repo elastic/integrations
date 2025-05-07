@@ -792,14 +792,24 @@ is_pr_affected() {
     echo "${updated}" | grep -q -E "^packages/${package}/"
     echo $?
     echo "------"
+    echo "Grep exit status (intermiediate variable)"
+    echo "-------"
+    grep --version
+    echo "-------"
 
     echoerr "[${package}] git-diff: check non-package files (${commit_merge}..${to})"
-    if git diff --name-only "${commit_merge}" "${to}" | grep -q -E -v '^(packages/|\.github/(CODEOWNERS|ISSUE_TEMPLATE|PULL_REQUEST_TEMPLATE)|README\.md|docs/|.buildkite/)' ; then
+    # Avoid using "-q" in grep in this pipe, it could cause that some files updated are not detected due to SIGPIPE errors
+    # https://buildkite.com/elastic/integrations/builds/25606
+    # https://github.com/elastic/integrations/pull/13810/files
+    if git diff --name-only "${commit_merge}" "${to}" | grep -E -v '^(packages/|\.github/(CODEOWNERS|ISSUE_TEMPLATE|PULL_REQUEST_TEMPLATE)|README\.md|docs/|.buildkite/)' > /dev/null; then
         echo "[${package}] PR is affected: found non-package files"
         return 0
     fi
     echoerr "[${package}] git-diff: check package files (${commit_merge}..${to})"
-    if git diff --name-only "${commit_merge}" "${to}" | grep -q -E "^packages/${package}/" ; then
+    # Avoid using "-q" in grep in this pipe, it could cause that some files updated are not detected due to SIGPIPE errors
+    # https://buildkite.com/elastic/integrations/builds/25606
+    # https://github.com/elastic/integrations/pull/13810/files
+    if git diff --name-only "${commit_merge}" "${to}" | grep -E "^packages/${package}/" > /dev/null ; then
         echo "[${package}] PR is affected: found package files"
         return 0
     fi
