@@ -780,6 +780,13 @@ is_pr_affected() {
     git diff --name-only "${commit_merge}" "${to}" | grep -q -E "^packages/${package}/"
     echo $?
     echo "------"
+    echo "Grep exit status (intermiediate variable)"
+    echo "-------"
+    local updated=""
+    updated=$(git diff --name-only "${commit_merge}" "${to}")
+    echo "${updated}" | grep -q -E "^packages/${package}/"
+    echo $?
+    echo "------"
 
     echoerr "[${package}] git-diff: check non-package files (${commit_merge}..${to})"
     if git diff --name-only "${commit_merge}" "${to}" | grep -q -E -v '^(packages/|\.github/(CODEOWNERS|ISSUE_TEMPLATE|PULL_REQUEST_TEMPLATE)|README\.md|docs/|.buildkite/)' ; then
