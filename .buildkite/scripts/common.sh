@@ -780,6 +780,11 @@ is_pr_affected() {
     git diff --name-only "${commit_merge}" "${to}" | grep -q -E "^packages/${package}/"
     echo $?
     echo "------"
+    echo "Grep exit status /dev/null"
+    echo "-------"
+    git diff --name-only "${commit_merge}" "${to}" | grep -E "^packages/${package}/" > /dev/null
+    echo $?
+    echo "------"
     echo "Grep exit status (intermiediate variable)"
     echo "-------"
     local updated=""
