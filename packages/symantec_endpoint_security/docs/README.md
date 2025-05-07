@@ -1425,7 +1425,6 @@ An example event for `event` looks as following:
         "name": "User123"
     }
 }
-
 ```
 
 **Exported fields**
@@ -3587,7 +3586,6 @@ An example event for `incident` looks as following:
         "scheme": "https"
     }
 }
-
 ```
 
 **Exported fields**
