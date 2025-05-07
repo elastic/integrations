@@ -1,0 +1,38 @@
+# Use of "*" to use all namespaces defined.
+source:
+  index:
+    - "logs-aws.config-*"
+dest:
+  index: "security_solution-aws.misconfiguration_latest-v3"
+  aliases:
+    - alias: "security_solution-aws.misconfiguration_latest"
+      move_on_creation: true
+latest:
+  unique_key:
+    - rule.uuid
+    - resource.id
+    - data_stream.namespace
+    - data_stream.dataset
+  sort: "@timestamp"
+description: >-
+  Latest Configs from AWS. As configs get updated, this transform stores only the latest state of each config inside the destination index. Thus the transform's destination index contains only the latest state of the config.
+frequency: 5m
+settings:
+  # This is required to prevent the transform from clobbering the Fleet-managed mappings.
+  deduce_mappings: false
+  unattended: true
+sync:
+  time:
+    field: "event.ingested"
+    # sometimes transform wouldn't process all documents.
+    delay: 60s
+retention_policy:
+  time:
+    field: "@timestamp"
+    max_age: 2160h
+_meta:
+  managed: true
+  # Bump this version to delete, reinstall, and restart the transform during
+  # package installation.
+  fleet_transform_version: 0.1.0
+  run_as_kibana_system: false

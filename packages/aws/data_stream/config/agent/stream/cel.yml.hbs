@@ -1,0 +1,167 @@
+config_version: 2
+interval: {{interval}}
+resource.tracer:
+  enabled: {{enable_request_tracer}}
+  filename: "../../logs/cel/http-request-trace-*.ndjson"
+  maxbackups: 5
+{{#if proxy_url}}
+resource.proxy_url: {{proxy_url}}
+{{/if}}
+{{#if ssl}}
+resource.ssl: {{ssl}}
+{{/if}}
+{{#if http_client_timeout}}
+resource.timeout: {{http_client_timeout}}
+{{/if}}
+resource.url: https://config.{{aws_region}}.amazonaws.com/
+state:
+  batch_size: {{batch_size}}
+program: |
+  (
+    has(state.?worklist.ConfigRules) && size(state.worklist.ConfigRules) > 0 ?
+      {
+        "worklist": state.worklist,
+        "batch_size": state.batch_size,
+        "has_next": state.has_next,
+        "next": state.next,
+        "next_page": state.next_page,
+      }
+    :
+      post_request(
+        state.url.trim_right("/"),
+        "application/json",
+        {
+          ?"NextToken": has(state.next_page) && has(state.next_page.rule_token) ? optional.of(state.next_page.rule_token) : optional.none(),
+        }.encode_json()
+      ).with(
+        {
+          "Header": {
+            "Content-Type": ["application/x-amz-json-1.1"],
+            "X-Amz-Target": ["StarlingDoveService.DescribeConfigRules"],
+          },
+        }
+      ).do_request().as(resp, (resp.StatusCode == 200) ?
+        resp.Body.decode_json().as(body,
+          {
+            "worklist": body,
+            "next": 0,
+            "has_next": has(body.NextToken),
+            "batch_size": state.batch_size,
+            "next_page": {
+              ?"rule_token": body.?NextToken,
+            },
+          }
+        )
+      :
+        {
+          "events": {
+            "error": {
+              "code": string(resp.StatusCode),
+              "id": string(resp.Status),
+              "message": "POST " + state.url.trim_right("/") + "DescribeConfigRules " +
+              (
+                (size(resp.Body) != 0) ?
+                  string(resp.Body)
+                :
+                  string(resp.Status) + " (" + string(resp.StatusCode) + ")"
+              ),
+            },
+          },
+          "want_more": false,
+          "batch_size": state.batch_size,
+        }
+      )
+  ).as(config_rules,
+    !has(config_rules.worklist) ? // Exit early due to POST failure.
+      config_rules
+    : has(config_rules.worklist.ConfigRules) && size(config_rules.worklist.ConfigRules) > 0 ?
+      post_request(
+        state.url.trim_right("/"),
+        "application/json",
+        {
+          ?"NextToken": has(config_rules.next_page) && has(config_rules.next_page.result_token) ? optional.of(config_rules.next_page.result_token) : optional.none(),
+          "ConfigRuleName": config_rules.worklist.ConfigRules[config_rules.next].ConfigRuleName,
+          "Limit": int(config_rules.batch_size),
+        }.encode_json()
+      ).with(
+        {
+          "Header": {
+            "Content-Type": ["application/x-amz-json-1.1"],
+              "X-Amz-Target": ["StarlingDoveService.GetComplianceDetailsByConfigRule"],
+          },
+        }
+      ).do_request().as(resp, (resp.StatusCode == 200) ?
+        bytes(resp.Body).decode_json().as(body,
+          {
+            "events": (has(body.EvaluationResults) && size(body.EvaluationResults) > 0) ?
+              body.EvaluationResults.orValue([]).map(evt,
+                {
+                  "message": evt.with(
+                    {
+                      "ConfigRuleInfo": config_rules.worklist.ConfigRules[int(config_rules.next)],
+                    }
+                  ).encode_json(),
+                }
+              )
+            :
+              [
+                {
+                  "message": {
+                    "ConfigRuleInfo": config_rules.worklist.ConfigRules[int(config_rules.next)],
+                  }.encode_json(),
+                },
+              ],
+            "next_page": {
+              ?"result_token": body.?NextToken,
+              ?"rule_token": config_rules.?next_page.rule_token,
+            },
+            "want_more": config_rules.has_next || has(body.NextToken) || (int(config_rules.next) + 1 < size(config_rules.worklist.ConfigRules)),
+            "next": has(body.NextToken) ? config_rules.next : (int(config_rules.next) + 1 < size(config_rules.worklist.ConfigRules)) ? (int(config_rules.next) + 1) : 0,
+            "worklist": has(body.NextToken) ? config_rules.worklist : (int(config_rules.next) + 1 < size(config_rules.worklist.ConfigRules)) ? config_rules.worklist : {},
+            "has_next": config_rules.has_next,
+            "batch_size": config_rules.batch_size,
+          }
+        )
+      :
+        {
+          "events": {
+            "error": {
+              "code": string(resp.StatusCode),
+              "id": string(resp.Status),
+              "message": "POST " + state.url.trim_right("/") + "GetComplianceDetailsByConfigRule " + 
+              (
+                (size(resp.Body) != 0) ?
+                  string(resp.Body)
+                :
+                  string(resp.Status) + " (" + string(resp.StatusCode) + ")"
+              ),
+            },
+          },
+          "want_more": false,
+          "batch_size": config_rules.batch_size,
+        }
+      )
+    :
+      {
+        "events": [],
+        "want_more": false,
+        "batch_size": config_rules.batch_size,
+      }
+  )
+tags:
+{{#if preserve_original_event}}
+  - preserve_original_event
+{{/if}}
+{{#if preserve_duplicate_custom_fields}}
+  - preserve_duplicate_custom_fields
+{{/if}}
+{{#each tags as |tag|}}
+  - {{tag}}
+{{/each}}
+{{#contains "forwarded" tags}}
+publisher_pipeline.disable_host: true
+{{/contains}}
+{{#if processors}}
+processors:
+{{processors}}
+{{/if}}
