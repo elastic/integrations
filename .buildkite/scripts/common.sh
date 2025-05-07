@@ -767,9 +767,13 @@ is_pr_affected() {
     fi
 
     commit_merge=$(git merge-base "${from}" "${to}")
-    echo "Folders with files modified"
+    echo "All files modified"
     echo "-------"
-    git --no-pager diff --name-only "${commit_merge}" "${to}" | xargs -I {} dirname {} |sort |uniq 
+    git diff --name-only "${commit_merge}" "${to}"
+    echo "------"
+    echo "Packages Files modified"
+    echo "-------"
+    git diff --name-only "${commit_merge}" "${to}" | grep -E "^packages/${package}/"
     echo "------"
 
     echoerr "[${package}] git-diff: check non-package files (${commit_merge}..${to})"
