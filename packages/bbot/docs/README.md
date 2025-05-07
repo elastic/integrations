@@ -8,7 +8,7 @@ This integration requires the external use of BBOT. You will have to download an
 
 As of version `1.1.2` of this integration, both BBOT `1.x` and `2.x` are supported. However all examples provided by the module documentation now assume use of BBOT `2.x`.
 
-Note that BBOT `1.x` formats are currently being supported on a best effort basis only and support will eventually be removed.
+Note that BBOT `1.x` formats are currently being supported on a best-effort basis only and support will eventually be removed.
 
 Please upgrade to BBOT `2.x` as soon as possible to ensure continuity of features and functionality.
 
