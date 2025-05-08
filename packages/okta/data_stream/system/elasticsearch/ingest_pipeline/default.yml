@@ -625,6 +625,26 @@ processors:
       field: _conf
       ignore_missing: true
       ignore_failure: true
+  - uri_parts:
+      field: okta_url
+      target_field: okta_url
+      keep_original: false
+      ignore_missing: true
+  - rename:
+      field: okta_url.domain
+      target_field: host.name
+      ignore_missing: true
+      on_failure:
+        - rename:
+            field: okta_url.domain
+            target_field: okta.okta_domain
+            on_failure:
+              - rename:
+                  field: okta_url.domain
+                  target_field: okta_domain
+  - remove:
+      field: okta_url
+      ignore_missing: true
 on_failure:
   - set:
       field: event.kind

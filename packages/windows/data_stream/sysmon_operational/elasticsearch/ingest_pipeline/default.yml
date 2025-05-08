@@ -10,6 +10,7 @@ processors:
       description: Remove all empty values from event_data.
       lang: painless
       source: ctx.winlog?.event_data?.entrySet().removeIf(entry -> [null, "", "-", "{00000000-0000-0000-0000-000000000000}"].contains(entry.getValue()))
+      if: ctx.winlog?.event_data != null
   - rename:
       field: winlog.level
       target_field: log.level
@@ -1403,11 +1404,6 @@ processors:
         - winlog.level
       ignore_failure: true
       ignore_missing: true
-  - script:
-      description: Remove all empty values from event_data.
-      lang: painless
-      source: ctx.winlog?.event_data?.entrySet().removeIf(entry -> entry.getValue() == null || entry.getValue().equals("") || entry.getValue().equals("-"));
-      if: ctx.winlog?.event_data != null
   - remove:
       description: Remove empty event data.
       field: winlog.event_data
