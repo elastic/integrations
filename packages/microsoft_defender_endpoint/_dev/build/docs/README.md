@@ -21,14 +21,13 @@ Agentless integrations allow you to collect data without having to manage Elasti
 
 Agentless deployments are only supported in Elastic Serverless and Elastic Cloud environments.  This functionality is in beta and is subject to change. Beta features are not subject to the support SLA of official GA features.
 
-### Agent based installation
-Elastic Agent must be installed. For more details, check the Elastic Agent [installation instructions](docs-content://reference/fleet/install-elastic-agents.md).
-You can install only one Elastic Agent per host.
-Elastic Agent is required to stream data from the GCP Pub/Sub or REST API and ship the data to Elastic, where the events will then be processed via the integration's ingest pipelines.
+### Agent-based installation
+
+Elastic Agent must be installed. For more details, check the Elastic Agent [installation instructions](docs-content://reference/fleet/install-elastic-agents.md). You can install only one Elastic Agent per host.
 
 ## Setup
 
-### To collect logs through REST API, follow the below steps:
+### Collect logs through REST API
 
 To allow the integration to ingest data from the Microsoft Defender API, you need to create a new application on your Azure domain. The procedure to create an application is found on the [Create a new Azure Application](https://docs.microsoft.com/en-us/windows/security/threat-protection/microsoft-defender-atp/exposed-apis-create-app-webapp) documentation page.
 
@@ -49,14 +48,13 @@ These values are:
 - Client Secret
 - Tenant ID
 
-### Enabling the integration in Elastic:
+### Enable the integration in Elastic
 
-1. In Kibana navigate to Management > Integrations.
-2. In "Search for integrations" top bar, search for `Microsoft Defender for Endpoint`.
-3. Select the "Microsoft Defender for Endpoint" integration from the search results.
-4. Select "Add Microsoft Defender for Endpoint" to add the integration.
-5. Add all the required integration configuration parameters, including the Client ID, Client Secret, Tenant ID to enable data collection.
-6. Select "Save and continue" to save the integration.
+1. In Kibana navigate to **Management** > **Integrations**.
+2. In the search bar, type **Microsoft Defender for Endpoint**.
+3. Select the **Microsoft Defender for Endpoint** integration and add it.
+4. Add all the required integration configuration parameters, including the Client ID, Client Secret, Tenant ID to enable data collection.
+5. Select "Save and continue" to save the integration.
 
 ### Data Retention and ILM Configuration (For Vulnerability Data Stream)
 A full sync pulls in a large volume of data, which can lead to storage issues or index overflow over time. To avoid this, we’ve set up an Index Lifecycle Management (ILM) policy that automatically deletes data older than 7 days. This helps keep storage usage under control.
