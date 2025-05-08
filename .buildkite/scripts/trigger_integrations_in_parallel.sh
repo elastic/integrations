@@ -58,6 +58,11 @@ for package in ${PACKAGE_LIST}; do
         FORCE_CHECK_ALL: "${FORCE_CHECK_ALL}"
         SERVERLESS: "false"
         UPLOAD_SAFE_LOGS: ${UPLOAD_SAFE_LOGS}
+      plugins:
+        # See https://github.com/elastic/oblt-infra/blob/main/conf/resources/repos/integrations/01-aws-buildkite-oidc.tf
+        # This plugin creates the environment variables required by the service deployer (AWS_SECRET_ACCESS_KEY and AWS_SECRET_KEY_ID)
+        - elastic/oblt-aws-auth#v0.1.0:
+            duration: 10800 # seconds
       artifact_paths:
         - build/test-results/*.xml
         - build/test-coverage/*.xml
