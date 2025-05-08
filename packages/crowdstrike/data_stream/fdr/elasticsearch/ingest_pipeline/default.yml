@@ -390,6 +390,51 @@ processors:
       description: Categorize events.
       lang: painless
       params:
+        ActiveDirectoryServiceAccessRequest:
+          category: [ database ]
+          type: [ access ]
+          kind: event
+          outcome: success
+        ActiveDirectoryAuthentication:
+          category: [ authentication ]
+          type: [ start ]
+          kind: event
+          outcome: success
+        ActiveDirectoryServiceAccessRequestFailure:
+          category: [ database ]
+          type: [ access ]
+          kind: event
+          outcome: failure
+        ActiveDirectoryIncomingLdapSearchRequest:
+          category: [ database ]
+          type: [ access ]
+          kind: event
+          outcome: unknown
+        ActiveDirectoryAuthenticationFailure:
+          category: [ authentication ]
+          type: [ start ]
+          kind: event
+          outcome: failure
+        ActiveDirectoryInteractiveDomainLogon:
+          category: [ authentication ]
+          type: [ start ]
+          kind: event
+          outcome: success
+        ActiveDirectoryIncomingDceRpcRequest:
+          category: [ api ]
+          type: [ start ]
+          kind: event
+          outcome: unknown
+        ActiveDirectoryIncomingPsExecExecution2:
+          category: [ process ]
+          type: [ start ]
+          kind: event
+          outcome: success
+        ActiveDirectoryIncomingDceRpcEpmRequest:
+          category: [ api ]
+          type: [ start ]
+          kind: event
+          outcome: unknown
         AcUninstallConfirmation:
           category: [ package ]
           type: [ deletion ]
@@ -1334,6 +1379,11 @@ processors:
           type: [ change ]
           kind: event
           outcome: success
+        SudoCommandAttempt:
+          category: [ authentication ]
+          type: [ start ]
+          kind: event
+          outcome: unknown
         SuspiciousCreateSymbolicLink:
           category: [ malware, file ]
           type: [ creation, info ]
@@ -2359,6 +2409,79 @@ processors:
       ignore_failure: true
       ignore_empty_value: true
       if: ctx._temp?.user_parts != null && ctx._temp.user_parts.size() == 2
+  - set:
+      field: user.name
+      copy_from: crowdstrike.SourceAccountSamAccountName
+      if: ctx.event?.action instanceof String && ctx.event.action.startsWith('ActiveDirectory')
+      ignore_empty_value: true
+  - set:
+      field: user.email
+      copy_from: crowdstrike.SourceAccountUserName
+      if: >-
+        ctx.event?.action instanceof String && ctx.event.action.startsWith('ActiveDirectory') &&
+        ctx.crowdstrike?.SourceAccountUserName instanceof String && ctx.crowdstrike.SourceAccountUserName.contains('@')
+      ignore_empty_value: true
+  - set:
+      field: user.id
+      copy_from: crowdstrike.SourceEndpointAccountObjectSid
+      if: ctx.event?.action instanceof String && ctx.event.action.startsWith('ActiveDirectory')
+      ignore_empty_value: true
+  - set:
+      field: user.domain
+      copy_from: crowdstrike.SourceAccountDomain
+      if: ctx.event?.action instanceof String && ctx.event.action.startsWith('ActiveDirectory')
+      ignore_empty_value: true
+  - set:
+      field: user.name
+      copy_from: crowdstrike.OriginalUserName
+      if: ctx.event?.action == 'TokenImpersonated'
+      ignore_empty_value: true
+  - set:
+      field: user.id
+      copy_from: crowdstrike.OriginalUserSid
+      if: ctx.event?.action == 'TokenImpersonated'
+      ignore_empty_value: true
+  - set:
+      field: user.target.name
+      copy_from: crowdstrike.ImpersonatedUserName
+      if: ctx.event?.action == 'TokenImpersonated'
+      ignore_empty_value: true
+  - set:
+      field: user.name
+      copy_from: crowdstrike.OriginalUserName
+      if: ctx.event?.action == 'SudoCommandAttempt'
+      ignore_empty_value: true
+  - set:
+      field: user.name
+      value: root
+      if: (ctx.user?.name == null || ctx.user.name == '') && ctx.event?.action == 'SudoCommandAttempt'
+  - set:
+      field: user.id
+      copy_from: crowdstrike.OriginalUserID
+      if: ctx.event?.action == 'SudoCommandAttempt'
+      ignore_empty_value: true
+  - set:
+      field: user.id
+      value: 0
+      if: ctx.user?.id == null && ctx.event?.action == 'SudoCommandAttempt'
+  - set:
+      field: user.target.name
+      copy_from: crowdstrike.NewUsername
+      if: ctx.event?.action == 'SudoCommandAttempt'
+      ignore_empty_value: true
+  - set:
+      field: user.target.name
+      value: root
+      if: (ctx.user?.target?.name == null || ctx.user.target.name == '') && ctx.event?.action == 'SudoCommandAttempt'
+  - set:
+      field: user.target.id
+      copy_from: crowdstrike.NewUserID
+      if: ctx.event?.action == 'SudoCommandAttempt'
+      ignore_empty_value: true
+  - set:
+      field: user.target.id
+      value: 0
+      if: ctx.user?.target?.id == null && ctx.event?.action == 'SudoCommandAttempt'
   - append:
       field: related.user
       value: "{{{user.name}}}"
