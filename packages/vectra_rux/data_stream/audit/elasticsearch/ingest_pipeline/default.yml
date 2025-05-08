@@ -34,6 +34,10 @@ processors:
       field: event.kind
       tag: set_event_kind
       value: event
+  - set:
+      field: observer.product
+      tag: set_observer_product
+      value: Vectra RUX
   - append:
       field: event.category
       tag: append_category_session
@@ -52,20 +56,30 @@ processors:
       value: configuration
       allow_duplicates: false
       if: >-
-        ctx.json?.event_action?.contains('created') == true || ctx.json?.event_action?.contains('deleted') == true || ctx.json?.event_action?.contains('updated') == true || ctx.json?.event_action?.contains('lock') == true || ctx.json?.event_action?.contains('unlock') == true || ctx.json?.event_action?.contains('marked_as_fixed') == true || ctx.json?.event_action?.contains('unmarked_as_fixed') == true
+        ctx.json?.event_action?.contains('created') == true ||
+        ctx.json?.event_action?.contains('deleted') == true ||
+        ctx.json?.event_action?.contains('updated') == true ||
+        ctx.json?.event_action?.contains('lock') == true ||
+        ctx.json?.event_action?.contains('unlock') == true ||
+        ctx.json?.event_action?.contains('marked_as_fixed') == true ||
+        ctx.json?.event_action?.contains('unmarked_as_fixed') == true
   - append:
       field: event.category
       tag: append_category_access
       value: access
       allow_duplicates: false
-      if: ctx.json?.event_action?.contains('lock') == true || ctx.json?.event_action?.contains('unlock') == true
+      if: >-
+        ctx.json?.event_action?.contains('lock') == true ||
+        ctx.json?.event_action?.contains('unlock') == true
   - append:
       field: event.type
       tag: append_type_change
       value: change
       allow_duplicates: false
       if: >-
-        ctx.json?.event_action?.contains('updated') == true || ctx.json?.event_action?.contains('marked_as_fixed') == true || ctx.json?.event_action?.contains('unmarked_as_fixed') == true
+        ctx.json?.event_action?.contains('updated') == true ||
+        ctx.json?.event_action?.contains('marked_as_fixed') == true ||
+        ctx.json?.event_action?.contains('unmarked_as_fixed') == true
   - append:
       field: event.type
       tag: append_type_creation

@@ -37,8 +37,7 @@ program: |
         "limit": [string(state.batch_size)],
         "event_timestamp_gte": [start_time],
         "type": [state.type],
-      }.format_query()).do_request().as(resp,
-        (resp.StatusCode == 200) ?
+      }.format_query()).do_request().as(resp, (resp.StatusCode == 200) ?
           resp.Body.decode_json().as(body, {
             "events": body.events.map(e, {
               "message": e.encode_json(),
@@ -63,7 +62,7 @@ program: |
               "error": {
                 "code": string(resp.StatusCode),
                 "id": string(resp.Status),
-                "message": "GET " + state.url.trim_right("/") + "/api/" + string(state.version) + "/events/entity_scoring" + 
+                "message": "GET " + state.url.trim_right("/") + "/api/" + string(state.version) + "/events/entity_scoring: " + 
                 (
                   (size(resp.Body) != 0) ?
                     string(resp.Body)
