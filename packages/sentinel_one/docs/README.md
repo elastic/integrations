@@ -40,23 +40,23 @@ An example event for `activity` looks as following:
 {
     "@timestamp": "2022-04-05T16:01:56.995Z",
     "agent": {
-        "ephemeral_id": "9319bd57-cf05-46e2-b333-1bed7686b36a",
-        "id": "8a970448-3422-428e-b4dd-650eb0e9c205",
-        "name": "elastic-agent-39532",
+        "ephemeral_id": "9708976f-46ea-47f7-9fe8-5a9e412560cd",
+        "id": "2a5e3cb8-63c3-416a-b22d-cd062f0ac61d",
+        "name": "elastic-agent-33921",
         "type": "filebeat",
         "version": "8.18.0"
     },
     "data_stream": {
         "dataset": "sentinel_one.activity",
-        "namespace": "94834",
+        "namespace": "32847",
         "type": "logs"
     },
     "ecs": {
         "version": "8.11.0"
     },
     "elastic_agent": {
-        "id": "8a970448-3422-428e-b4dd-650eb0e9c205",
-        "snapshot": true,
+        "id": "2a5e3cb8-63c3-416a-b22d-cd062f0ac61d",
+        "snapshot": false,
         "version": "8.18.0"
     },
     "event": {
@@ -64,9 +64,9 @@ An example event for `activity` looks as following:
         "category": [
             "configuration"
         ],
-        "created": "2025-04-01T09:27:03.091Z",
+        "created": "2025-04-21T14:22:01.561Z",
         "dataset": "sentinel_one.activity",
-        "ingested": "2025-04-01T09:27:04Z",
+        "ingested": "2025-04-21T14:22:02Z",
         "kind": "event",
         "original": "{\"accountId\":\"1234567890123456789\",\"accountName\":\"Default\",\"activityType\":1234,\"agentId\":null,\"agentUpdatedVersion\":null,\"comments\":null,\"createdAt\":\"2022-04-05T16:01:56.995120Z\",\"data\":{\"accountId\":1234567890123456800,\"accountName\":\"Default\",\"fullScopeDetails\":\"Account Default\",\"fullScopeDetailsPath\":\"test/path\",\"groupName\":null,\"scopeLevel\":\"Account\",\"scopeName\":\"Default\",\"siteName\":null,\"username\":\"test user\"},\"description\":null,\"groupId\":null,\"groupName\":null,\"hash\":null,\"id\":\"1234567890123456789\",\"osFamily\":null,\"primaryDescription\":\"created Default account.\",\"secondaryDescription\":null,\"siteId\":null,\"siteName\":null,\"threatId\":null,\"updatedAt\":\"2022-04-05T16:01:56.992136Z\",\"userId\":\"1234567890123456789\"}",
         "type": [
@@ -76,6 +76,7 @@ An example event for `activity` looks as following:
     "input": {
         "type": "httpjson"
     },
+    "message": "created Default account.",
     "related": {
         "user": [
             "test user"
@@ -182,6 +183,7 @@ An example event for `activity` looks as following:
 | sentinel_one.activity.data.uuid | UUID. | keyword |
 | sentinel_one.activity.description.primary | Primary description. | keyword |
 | sentinel_one.activity.description.secondary | Secondary description. | keyword |
+| sentinel_one.activity.description_value |  | keyword |
 | sentinel_one.activity.id | Activity ID. | keyword |
 | sentinel_one.activity.site.id | Related site ID (if applicable). | keyword |
 | sentinel_one.activity.site.name | Related site name (if applicable). | keyword |
@@ -508,9 +510,9 @@ An example event for `alert` looks as following:
 {
     "@timestamp": "2018-02-27T04:49:26.257Z",
     "agent": {
-        "ephemeral_id": "383eb2ea-2541-4fc5-b484-1120abc815e2",
-        "id": "34d91faa-14cf-412c-9de8-d739c7b078b1",
-        "name": "elastic-agent-80600",
+        "ephemeral_id": "f7263a43-43f1-494d-b833-7fdb8bb2335d",
+        "id": "1a5b477b-17d5-4254-8418-2e57e88f7806",
+        "name": "elastic-agent-26994",
         "type": "filebeat",
         "version": "8.18.0"
     },
@@ -523,7 +525,7 @@ An example event for `alert` looks as following:
     },
     "data_stream": {
         "dataset": "sentinel_one.alert",
-        "namespace": "53336",
+        "namespace": "59397",
         "type": "logs"
     },
     "destination": {
@@ -545,8 +547,8 @@ An example event for `alert` looks as following:
         "version": "8.11.0"
     },
     "elastic_agent": {
-        "id": "34d91faa-14cf-412c-9de8-d739c7b078b1",
-        "snapshot": true,
+        "id": "1a5b477b-17d5-4254-8418-2e57e88f7806",
+        "snapshot": false,
         "version": "8.18.0"
     },
     "event": {
@@ -554,10 +556,10 @@ An example event for `alert` looks as following:
         "category": [
             "malware"
         ],
-        "created": "2025-04-01T09:30:31.193Z",
+        "created": "2025-04-21T14:20:33.126Z",
         "dataset": "sentinel_one.alert",
         "id": "123456789123456789",
-        "ingested": "2025-04-01T09:30:34Z",
+        "ingested": "2025-04-21T14:20:36Z",
         "kind": "event",
         "original": "{\"agentDetectionInfo\":{\"machineType\":\"string\",\"name\":\"string\",\"osFamily\":\"string\",\"osName\":\"string\",\"osRevision\":\"string\",\"siteId\":\"123456789123456789\",\"uuid\":\"string\",\"version\":\"3.x.x.x\"},\"alertInfo\":{\"alertId\":\"123456789123456789\",\"analystVerdict\":\"string\",\"createdAt\":\"2018-02-27T04:49:26.257525Z\",\"dnsRequest\":\"string\",\"dnsResponse\":\"string\",\"dstIp\":\"81.2.69.144\",\"dstPort\":\"1234\",\"dvEventId\":\"string\",\"eventType\":\"info\",\"hitType\":\"Events\",\"incidentStatus\":\"string\",\"indicatorCategory\":\"string\",\"indicatorDescription\":\"string\",\"indicatorName\":\"string\",\"loginAccountDomain\":\"string\",\"loginAccountSid\":\"string\",\"loginIsAdministratorEquivalent\":\"string\",\"loginIsSuccessful\":\"string\",\"loginType\":\"string\",\"loginsUserName\":\"string\",\"modulePath\":\"string\",\"moduleSha1\":\"aaf4c61ddcc5e8a2dabede0f3b482cd9aea9434d\",\"netEventDirection\":\"string\",\"registryKeyPath\":\"string\",\"registryOldValue\":\"string\",\"registryOldValueType\":\"string\",\"registryPath\":\"string\",\"registryValue\":\"string\",\"reportedAt\":\"2018-02-27T04:49:26.257525Z\",\"source\":\"string\",\"srcIp\":\"81.2.69.142\",\"srcMachineIp\":\"81.2.69.142\",\"srcPort\":\"1234\",\"tiIndicatorComparisonMethod\":\"string\",\"tiIndicatorSource\":\"string\",\"tiIndicatorType\":\"string\",\"tiIndicatorValue\":\"string\",\"updatedAt\":\"2018-02-27T04:49:26.257525Z\"},\"containerInfo\":{\"id\":\"string\",\"image\":\"string\",\"labels\":\"string\",\"name\":\"string\"},\"kubernetesInfo\":{\"cluster\":\"string\",\"controllerKind\":\"string\",\"controllerLabels\":\"string\",\"controllerName\":\"string\",\"namespace\":\"string\",\"namespaceLabels\":\"string\",\"node\":\"string\",\"pod\":\"string\",\"podLabels\":\"string\"},\"ruleInfo\":{\"description\":\"string\",\"id\":\"string\",\"name\":\"string\",\"scopeLevel\":\"string\",\"severity\":\"Low\",\"treatAsThreat\":\"UNDEFINED\"},\"sourceParentProcessInfo\":{\"commandline\":\"string\",\"fileHashMd5\":\"5d41402abc4b2a76b9719d911017c592\",\"fileHashSha1\":\"aaf4c61ddcc5e8a2dabede0f3b482cd9aea9434d\",\"fileHashSha256\":\"2cf24dba5fb0a30e26e83b2ac5b9e29e1b161e5c1fa7425e73043362938b9824\",\"filePath\":\"string\",\"fileSignerIdentity\":\"string\",\"integrityLevel\":\"unknown\",\"name\":\"string\",\"pid\":\"12345\",\"pidStarttime\":\"2018-02-27T04:49:26.257525Z\",\"storyline\":\"string\",\"subsystem\":\"unknown\",\"uniqueId\":\"string\",\"user\":\"string\"},\"sourceProcessInfo\":{\"commandline\":\"string\",\"fileHashMd5\":\"5d41402abc4b2a76b9719d911017c592\",\"fileHashSha1\":\"aaf4c61ddcc5e8a2dabede0f3b482cd9aea9434d\",\"fileHashSha256\":\"2cf24dba5fb0a30e26e83b2ac5b9e29e1b161e5c1fa7425e73043362938b9824\",\"filePath\":\"string\",\"fileSignerIdentity\":\"string\",\"integrityLevel\":\"unknown\",\"name\":\"string\",\"pid\":\"12345\",\"pidStarttime\":\"2018-02-27T04:49:26.257525Z\",\"storyline\":\"string\",\"subsystem\":\"unknown\",\"uniqueId\":\"string\",\"user\":\"string\"},\"targetProcessInfo\":{\"tgtFileCreatedAt\":\"2018-02-27T04:49:26.257525Z\",\"tgtFileHashSha1\":\"aaf4c61ddcc5e8a2dabede0f3b482cd9aea9434d\",\"tgtFileHashSha256\":\"2cf24dba5fb0a30e26e83b2ac5b9e29e1b161e5c1fa7425e73043362938b9824\",\"tgtFileId\":\"string\",\"tgtFileIsSigned\":\"string\",\"tgtFileModifiedAt\":\"2018-02-27T04:49:26.257525Z\",\"tgtFileOldPath\":\"string\",\"tgtFilePath\":\"string\",\"tgtProcCmdLine\":\"string\",\"tgtProcImagePath\":\"string\",\"tgtProcIntegrityLevel\":\"unknown\",\"tgtProcName\":\"string\",\"tgtProcPid\":\"12345\",\"tgtProcSignedStatus\":\"string\",\"tgtProcStorylineId\":\"string\",\"tgtProcUid\":\"string\",\"tgtProcessStartTime\":\"2018-02-27T04:49:26.257525Z\"}}",
         "type": [
@@ -583,6 +585,7 @@ An example event for `alert` looks as following:
     "input": {
         "type": "httpjson"
     },
+    "message": "string",
     "observer": {
         "serial_number": "string",
         "version": "3.x.x.x"
@@ -986,23 +989,23 @@ An example event for `threat` looks as following:
 {
     "@timestamp": "2022-04-06T08:54:17.194Z",
     "agent": {
-        "ephemeral_id": "c6b202e4-98c4-4349-a65c-e65b908e071a",
-        "id": "f12f6421-3fe5-4b8b-85dc-edc7a78bb4ff",
-        "name": "elastic-agent-52847",
+        "ephemeral_id": "4ad502cd-94d6-4be0-bbd3-4a726c111c52",
+        "id": "d58c2916-6feb-495e-af59-368df9d32f82",
+        "name": "elastic-agent-80138",
         "type": "filebeat",
         "version": "8.18.0"
     },
     "data_stream": {
         "dataset": "sentinel_one.threat",
-        "namespace": "85660",
+        "namespace": "51415",
         "type": "logs"
     },
     "ecs": {
         "version": "8.11.0"
     },
     "elastic_agent": {
-        "id": "f12f6421-3fe5-4b8b-85dc-edc7a78bb4ff",
-        "snapshot": true,
+        "id": "d58c2916-6feb-495e-af59-368df9d32f82",
+        "snapshot": false,
         "version": "8.18.0"
     },
     "event": {
@@ -1011,10 +1014,10 @@ An example event for `threat` looks as following:
         "category": [
             "malware"
         ],
-        "created": "2025-04-01T09:32:31.271Z",
+        "created": "2025-04-21T14:24:22.083Z",
         "dataset": "sentinel_one.threat",
         "id": "1234567890123456789",
-        "ingested": "2025-04-01T09:32:34Z",
+        "ingested": "2025-04-21T14:24:25Z",
         "kind": "alert",
         "original": "{\"agentDetectionInfo\":{\"accountId\":\"1234567890123456789\",\"accountName\":\"Default\",\"agentDetectionState\":null,\"agentDomain\":\"WORKGROUP\",\"agentIpV4\":\"10.0.0.1\",\"agentIpV6\":\"2a02:cf40::\",\"agentLastLoggedInUpn\":null,\"agentLastLoggedInUserMail\":null,\"agentLastLoggedInUserName\":\"\",\"agentMitigationMode\":\"protect\",\"agentOsName\":\"linux\",\"agentOsRevision\":\"1234\",\"agentRegisteredAt\":\"2022-04-06T08:26:45.515278Z\",\"agentUuid\":\"fwfbxxxxxxxxxxqcfjfnxxxxxxxxx\",\"agentVersion\":\"21.x.x\",\"cloudProviders\":{},\"externalIp\":\"81.2.69.143\",\"groupId\":\"1234567890123456789\",\"groupName\":\"Default Group\",\"siteId\":\"1234567890123456789\",\"siteName\":\"Default site\"},\"agentRealtimeInfo\":{\"accountId\":\"1234567890123456789\",\"accountName\":\"Default\",\"activeThreats\":7,\"agentComputerName\":\"test-LINUX\",\"agentDecommissionedAt\":null,\"agentDomain\":\"WORKGROUP\",\"agentId\":\"1234567890123456789\",\"agentInfected\":true,\"agentIsActive\":true,\"agentIsDecommissioned\":false,\"agentMachineType\":\"server\",\"agentMitigationMode\":\"detect\",\"agentNetworkStatus\":\"connected\",\"agentOsName\":\"linux\",\"agentOsRevision\":\"1234\",\"agentOsType\":\"linux\",\"agentUuid\":\"fwfbxxxxxxxxxxqcfjfnxxxxxxxxx\",\"agentVersion\":\"21.x.x.1234\",\"groupId\":\"1234567890123456789\",\"groupName\":\"Default Group\",\"networkInterfaces\":[{\"id\":\"1234567890123456789\",\"inet\":[\"10.0.0.1\"],\"inet6\":[\"2a02:cf40:add:4002:91f2:a9b2:e09a:6fc6\"],\"name\":\"Ethernet\",\"physical\":\"DE:AD:00:00:BE:EF\"}],\"operationalState\":\"na\",\"rebootRequired\":false,\"scanAbortedAt\":null,\"scanFinishedAt\":\"2022-04-06T09:18:21.090855Z\",\"scanStartedAt\":\"2022-04-06T08:26:52.838047Z\",\"scanStatus\":\"finished\",\"siteId\":\"1234567890123456789\",\"siteName\":\"Default site\",\"storageName\":null,\"storageType\":null,\"userActionsNeeded\":[]},\"containerInfo\":{\"id\":null,\"image\":null,\"labels\":null,\"name\":null},\"id\":\"1234567890123456789\",\"indicators\":[],\"kubernetesInfo\":{\"cluster\":null,\"controllerKind\":null,\"controllerLabels\":null,\"controllerName\":null,\"namespace\":null,\"namespaceLabels\":null,\"node\":null,\"pod\":null,\"podLabels\":null},\"mitigationStatus\":[{\"action\":\"unquarantine\",\"actionsCounters\":{\"failed\":0,\"notFound\":0,\"pendingReboot\":0,\"success\":1,\"total\":1},\"agentSupportsReport\":true,\"groupNotFound\":false,\"lastUpdate\":\"2022-04-06T08:54:17.198002Z\",\"latestReport\":\"/threats/mitigation-report\",\"mitigationEndedAt\":\"2022-04-06T08:54:17.101000Z\",\"mitigationStartedAt\":\"2022-04-06T08:54:17.101000Z\",\"status\":\"success\"},{\"action\":\"kill\",\"actionsCounters\":null,\"agentSupportsReport\":true,\"groupNotFound\":false,\"lastUpdate\":\"2022-04-06T08:45:55.303355Z\",\"latestReport\":null,\"mitigationEndedAt\":\"2022-04-06T08:45:55.297364Z\",\"mitigationStartedAt\":\"2022-04-06T08:45:55.297363Z\",\"status\":\"success\"}],\"threatInfo\":{\"analystVerdict\":\"undefined\",\"analystVerdictDescription\":\"Undefined\",\"automaticallyResolved\":false,\"browserType\":null,\"certificateId\":\"\",\"classification\":\"Trojan\",\"classificationSource\":\"Cloud\",\"cloudFilesHashVerdict\":\"black\",\"collectionId\":\"1234567890123456789\",\"confidenceLevel\":\"malicious\",\"createdAt\":\"2022-04-06T08:45:54.519988Z\",\"detectionEngines\":[{\"key\":\"sentinelone_cloud\",\"title\":\"SentinelOne Cloud\"}],\"detectionType\":\"static\",\"engines\":[\"SentinelOne Cloud\"],\"externalTicketExists\":false,\"externalTicketId\":null,\"failedActions\":false,\"fileExtension\":\"EXE\",\"fileExtensionType\":\"Executable\",\"filePath\":\"default.exe\",\"fileSize\":1234,\"fileVerificationType\":\"NotSigned\",\"identifiedAt\":\"2022-04-06T08:45:53.968000Z\",\"incidentStatus\":\"unresolved\",\"incidentStatusDescription\":\"Unresolved\",\"initiatedBy\":\"agent_policy\",\"initiatedByDescription\":\"Agent Policy\",\"initiatingUserId\":null,\"initiatingUsername\":null,\"isFileless\":false,\"isValidCertificate\":false,\"maliciousProcessArguments\":null,\"md5\":null,\"mitigatedPreemptively\":false,\"mitigationStatus\":\"not_mitigated\",\"mitigationStatusDescription\":\"Not mitigated\",\"originatorProcess\":\"default.exe\",\"pendingActions\":false,\"processUser\":\"test user\",\"publisherName\":\"\",\"reachedEventsLimit\":false,\"rebootRequired\":false,\"sha1\":\"aaf4c61ddcc5e8a2dabede0f3b482cd9aea9434d\",\"sha256\":null,\"storyline\":\"D0XXXXXXXXXXAF4D\",\"threatId\":\"1234567890123456789\",\"threatName\":\"default.exe\",\"updatedAt\":\"2022-04-06T08:54:17.194122Z\"},\"whiteningOptions\":[\"hash\"]}",
         "type": [
@@ -1051,6 +1054,7 @@ An example event for `threat` looks as following:
     "input": {
         "type": "httpjson"
     },
+    "message": "Threat Detected: default.exe (malicious)",
     "observer": {
         "version": "21.x.x.1234"
     },
@@ -1259,6 +1263,9 @@ An example event for `threat` looks as following:
                 "size": 1234
             }
         }
+    },
+    "user": {
+        "name": "test user"
     }
 }
 ```
