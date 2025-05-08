@@ -1,5 +1,5 @@
 ---
-description: Pipeline for processing Legacy Alerts.
+description: Pipeline for processing Triggered Alerts.
 processors:
   - set:
       field: ecs.version
@@ -29,16 +29,16 @@ processors:
   - json:
       field: event.original
       tag: json_event_original
-      target_field: recordedfuture.legacy_alert
+      target_field: recordedfuture.triggered_alert
       if: ctx.event?.original != null
       on_failure:
         - append:
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - uri_parts:
-      field: recordedfuture.legacy_alert.document.url
+      field: recordedfuture.triggered_alert.document.url
       tag: uri_parts_document_url
-      if: ctx.recordedfuture?.legacy_alert?.document?.url != ''
+      if: ctx.recordedfuture?.triggered_alert?.document?.url != ''
       ignore_missing: true
       on_failure:
         - append:
@@ -46,31 +46,31 @@ processors:
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - set:
       field: event.id
-      tag: set_event_id_from_legacy_alert_id
-      copy_from: recordedfuture.legacy_alert.id
+      tag: set_event_id_from_triggered_alert_id
+      copy_from: recordedfuture.triggered_alert.id
       ignore_empty_value: true
   - set:
       field: message
       tag: set_message_from_legacy_fragment
-      copy_from: recordedfuture.legacy_alert.fragment
+      copy_from: recordedfuture.triggered_alert.fragment
       ignore_empty_value: true
   - date:
-      field: recordedfuture.legacy_alert.log.note_date
+      field: recordedfuture.triggered_alert.log.note_date
       tag: date_log_note_date
-      target_field: recordedfuture.legacy_alert.log.note_date
+      target_field: recordedfuture.triggered_alert.log.note_date
       formats:
         - ISO8601
-      if: ctx.recordedfuture?.legacy_alert?.log?.note_date != null && ctx.recordedfuture.legacy_alert.log.note_date != ''
+      if: ctx.recordedfuture?.triggered_alert?.log?.note_date != null && ctx.recordedfuture.triggered_alert.log.note_date != ''
       on_failure:
         - remove:
-            field: recordedfuture.legacy_alert.log.note_date
+            field: recordedfuture.triggered_alert.log.note_date
         - append:
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - set:
       field: user.name
-      tag: set_user_name_from_legacy_alert_log_status_change_by
-      copy_from: recordedfuture.legacy_alert.log.status_change_by
+      tag: set_user_name_from_triggered_alert_log_status_change_by
+      copy_from: recordedfuture.triggered_alert.log.status_change_by
       ignore_empty_value: true
   - append:
       field: related.user
@@ -81,59 +81,59 @@ processors:
   - append:
       field: related.user
       tag: append_review_assignee_to_related_user
-      value: "{{{recordedfuture.legacy_alert.review.assignee}}}"
+      value: "{{{recordedfuture.triggered_alert.review.assignee}}}"
       allow_duplicates: false
-      if: ctx.recordedfuture?.legacy_alert?.review?.assignee != null
+      if: ctx.recordedfuture?.triggered_alert?.review?.assignee != null
   - date:
-      field: recordedfuture.legacy_alert.log.status_date
+      field: recordedfuture.triggered_alert.log.status_date
       tag: date_log_status_date
-      target_field: recordedfuture.legacy_alert.log.status_date
+      target_field: recordedfuture.triggered_alert.log.status_date
       formats:
         - ISO8601
-      if: ctx.recordedfuture?.legacy_alert?.log?.status_date != null && ctx.recordedfuture.legacy_alert.log.status_date != ''
+      if: ctx.recordedfuture?.triggered_alert?.log?.status_date != null && ctx.recordedfuture.triggered_alert.log.status_date != ''
       on_failure:
         - remove:
-            field: recordedfuture.legacy_alert.log.status_date
+            field: recordedfuture.triggered_alert.log.status_date
         - append:
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - date:
-      field: recordedfuture.legacy_alert.log.triggered
+      field: recordedfuture.triggered_alert.log.triggered
       tag: date_log_triggered
-      target_field: recordedfuture.legacy_alert.log.triggered
+      target_field: recordedfuture.triggered_alert.log.triggered
       formats:
         - ISO8601
-      if: ctx.recordedfuture?.legacy_alert?.log?.triggered != null && ctx.recordedfuture.legacy_alert.log.triggered != ''
+      if: ctx.recordedfuture?.triggered_alert?.log?.triggered != null && ctx.recordedfuture.triggered_alert.log.triggered != ''
       on_failure:
         - remove:
-            field: recordedfuture.legacy_alert.log.triggered
+            field: recordedfuture.triggered_alert.log.triggered
         - append:
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - set:
       field: '@timestamp'
-      tag: set_@timestamp_from_legacy_alert_log_triggered
-      copy_from: recordedfuture.legacy_alert.log.triggered
+      tag: set_@timestamp_from_triggered_alert_log_triggered
+      copy_from: recordedfuture.triggered_alert.log.triggered
       ignore_empty_value: true
   - set:
       field: rule.id
-      tag: set_rule_id_from_legacy_alert_rule_id
-      copy_from: recordedfuture.legacy_alert.rule.id
+      tag: set_rule_id_from_triggered_alert_rule_id
+      copy_from: recordedfuture.triggered_alert.rule.id
       ignore_empty_value: true
   - set:
       field: rule.name
-      tag: set_rule_name_from_legacy_alert_rule_name
-      copy_from: recordedfuture.legacy_alert.rule.name
+      tag: set_rule_name_from_triggered_alert_rule_name
+      copy_from: recordedfuture.triggered_alert.rule.name
       ignore_empty_value: true
   - script:
       description: Set related.ip field with entity name.
       tag: script_to_set_related_ip_with_entity_name
       lang: painless
-      if: ctx.recordedfuture?.legacy_alert?.entities instanceof List
+      if: ctx.recordedfuture?.triggered_alert?.entities instanceof List
       source: |-
         ctx.related = ctx.related ?: [:];
         def ipList = new ArrayList();
-        for (data in ctx.recordedfuture.legacy_alert.entities) {
+        for (data in ctx.recordedfuture.triggered_alert.entities) {
           if (data.type != null && data.name != null && data.type.toLowerCase() == 'ipaddress') {
             ipList.add(data.name);
           }
@@ -158,13 +158,13 @@ processors:
                 value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - remove:
       field:
-        - recordedfuture.legacy_alert.document.url
-        - recordedfuture.legacy_alert.fragment
-        - recordedfuture.legacy_alert.id
-        - recordedfuture.legacy_alert.log.status_change_by
-        - recordedfuture.legacy_alert.log.triggered
-        - recordedfuture.legacy_alert.rule.id
-        - recordedfuture.legacy_alert.rule.name
+        - recordedfuture.triggered_alert.document.url
+        - recordedfuture.triggered_alert.fragment
+        - recordedfuture.triggered_alert.id
+        - recordedfuture.triggered_alert.log.status_change_by
+        - recordedfuture.triggered_alert.log.triggered
+        - recordedfuture.triggered_alert.rule.id
+        - recordedfuture.triggered_alert.rule.name
       tag: remove_custom_duplicate_fields
       ignore_missing: true
       if: ctx.tags == null || !(ctx.tags.contains('preserve_duplicate_custom_fields'))

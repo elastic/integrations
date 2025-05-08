@@ -10,7 +10,7 @@ from multiple entities, it's necessary to define one integration for each.
 Alternatively, it's also possible to use the integration to fetch custom Fusion files
 by supplying the URL to the CSV file as the _Custom_ _URL_ configuration option.
 
-It also fetches [Playbook Alerts](https://api.recordedfuture.com/playbook-alert) from the Recorded Future API and [Legacy Alerts](https://api.recordedfuture.com/v2/#!/Alerts/Alert_Notification_Search) via the Recorded Future Connect API, ensuring comprehensive threat intelligence coverage.
+It also fetches [Playbook Alerts](https://api.recordedfuture.com/playbook-alert) from the Recorded Future API, and [Triggered Alerts](https://api.recordedfuture.com/v2/#!/Alerts/Alert_Notification_Search) via the Recorded Future Connect API, ensuring comprehensive threat intelligence coverage.
 This allows for streamlined alert management and improved security monitoring.
 By accessing both alert types, it provides deeper insights into potential threats.
 
@@ -19,7 +19,6 @@ The ingested IOCs expire after certain duration. An [Elastic Transform](https://
 
 ### ILM Policy
 To facilitate IOC expiration, source datastream-backed indices `.ds-logs-ti_recordedfuture.threat-*` are allowed to contain duplicates from each polling interval. ILM policy is added to these source indices so it doesn't lead to unbounded growth. This means data in these source indices will be deleted after `5 days` from ingested date.
-
 
 **NOTE:** For large risklist downloads, adjust the timeout setting so that the Agent has enough time to download and process the risklist.
 
@@ -41,15 +40,15 @@ This is the `threat` dataset.
 
 {{fields "threat"}}
 
-### legacy_alert
+### triggered_alert
 
-This is the `legacy_alert` dataset.
+This is the `triggered_alert` dataset.
 
 #### Example
 
-{{event "legacy_alert"}}
+{{event "triggered_alert"}}
 
-{{fields "legacy_alert"}}
+{{fields "triggered_alert"}}
 
 ### playbook_alert
 
