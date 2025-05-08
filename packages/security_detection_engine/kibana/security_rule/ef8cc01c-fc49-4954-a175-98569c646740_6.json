@@ -1,0 +1,66 @@
+{
+    "attributes": {
+        "anomaly_threshold": 75,
+        "author": [
+            "Elastic"
+        ],
+        "description": "A machine learning job has detected data exfiltration to a particular destination port. Data transfer patterns that are outside the normal traffic patterns of an organization could indicate exfiltration over command and control channels.",
+        "from": "now-6h",
+        "interval": "15m",
+        "license": "Elastic License v2",
+        "machine_learning_job_id": "ded_high_sent_bytes_destination_port",
+        "name": "Potential Data Exfiltration Activity to an Unusual Destination Port",
+        "note": "## Triage and analysis\n\n> **Disclaimer**:\n> This investigation guide was created using generative AI technology and has been reviewed to improve its accuracy and relevance. While every effort has been made to ensure its quality, we recommend validating the content and adapting it to suit your specific environment and operational needs.\n\n### Investigating Potential Data Exfiltration Activity to an Unusual Destination Port\n\nMachine learning models analyze network traffic to identify anomalies, such as data transfers to uncommon destination ports, which may suggest exfiltration via command and control channels. Adversaries exploit these channels to stealthily siphon data. This detection rule leverages ML to flag deviations from normal traffic patterns, aiding in early identification of potential threats.\n\n### Possible investigation steps\n\n- Review the network traffic logs to identify the source IP address associated with the unusual destination port activity. Determine if this IP is known or expected within the organization's network.\n- Analyze the destination port and associated IP address to assess whether it is commonly used for legitimate purposes or if it is known for malicious activity. Cross-reference with threat intelligence databases if necessary.\n- Examine the volume and frequency of data transferred to the unusual destination port to identify any patterns or anomalies that deviate from normal behavior.\n- Investigate the user or system account associated with the source IP to determine if there are any signs of compromise or unauthorized access.\n- Check for any recent changes or updates in the network configuration or security policies that might explain the anomaly.\n- Correlate this event with other security alerts or logs to identify any related suspicious activities or patterns that could indicate a broader threat.\n\n### False positive analysis\n\n- Routine data transfers to external services using uncommon ports may trigger false positives. Identify and document these services to create exceptions in the monitoring system.\n- Internal applications that use non-standard ports for legitimate data transfers can be mistaken for exfiltration attempts. Regularly update the list of approved applications and their associated ports to minimize false alerts.\n- Scheduled data backups to cloud services or remote servers might use unusual ports. Verify these activities and configure the system to recognize them as non-threatening.\n- Development and testing environments often use non-standard ports for various operations. Ensure these environments are well-documented and excluded from exfiltration alerts when appropriate.\n- Collaborate with network administrators to maintain an updated inventory of all legitimate network activities and their corresponding ports, reducing the likelihood of false positives.\n\n### Response and remediation\n\n- Immediately isolate the affected system from the network to prevent further data exfiltration and contain the threat.\n- Conduct a thorough analysis of the network traffic logs to identify the scope of the exfiltration and determine if other systems are affected.\n- Block the identified unusual destination port at the network perimeter to prevent further unauthorized data transfers.\n- Review and update firewall and intrusion detection/prevention system (IDS/IPS) rules to block similar exfiltration attempts in the future.\n- Notify the incident response team and relevant stakeholders about the potential data breach for further investigation and escalation.\n- Perform a comprehensive scan of the affected system for malware or unauthorized software that may have facilitated the exfiltration.\n- Implement enhanced monitoring on the affected system and network segment to detect any further suspicious activity.",
+        "references": [
+            "https://www.elastic.co/guide/en/security/current/prebuilt-ml-jobs.html",
+            "https://docs.elastic.co/en/integrations/ded",
+            "https://www.elastic.co/blog/detect-data-exfiltration-activity-with-kibanas-new-integration"
+        ],
+        "related_integrations": [
+            {
+                "package": "ded",
+                "version": "^2.3.0"
+            },
+            {
+                "package": "endpoint",
+                "version": "^9.0.0"
+            },
+            {
+                "package": "network_traffic",
+                "version": "^1.33.0"
+            }
+        ],
+        "risk_score": 21,
+        "rule_id": "ef8cc01c-fc49-4954-a175-98569c646740",
+        "setup": "## Setup\n\nThe rule requires the Data Exfiltration Detection integration assets to be installed, as well as network and file events collected by integrations such as Elastic Defend and Network Packet Capture (for network events only).\n\n### Data Exfiltration Detection Setup\nThe Data Exfiltration Detection integration detects data exfiltration activity by identifying abnormalities in network and file events. Anomalies are detected using Elastic's Anomaly Detection feature.\n\n#### Prerequisite Requirements:\n- Fleet is required for Data Exfiltration Detection.\n- To configure Fleet Server refer to the [documentation](https://www.elastic.co/guide/en/fleet/current/fleet-server.html).\n- Network events collected by the [Elastic Defend](https://docs.elastic.co/en/integrations/endpoint) or [Network Packet Capture](https://docs.elastic.co/integrations/network_traffic) integration.\n- To install Elastic Defend, refer to the [documentation](https://www.elastic.co/guide/en/security/current/install-endpoint.html).\n- To add the Network Packet Capture integration to an Elastic Agent policy, refer to [this](https://www.elastic.co/guide/en/fleet/current/add-integration-to-policy.html) guide.\n\n#### The following steps should be executed to install assets associated with the Data Exfiltration Detection integration:\n- Go to the Kibana homepage. Under Management, click Integrations.\n- In the query bar, search for Data Exfiltration Detection and select the integration to see more details about it.\n- Follow the instructions under the **Installation** section.\n- For this rule to work, complete the instructions through **Add preconfigured anomaly detection jobs**.\n",
+        "severity": "low",
+        "tags": [
+            "Use Case: Data Exfiltration Detection",
+            "Rule Type: ML",
+            "Rule Type: Machine Learning",
+            "Tactic: Exfiltration",
+            "Resources: Investigation Guide"
+        ],
+        "threat": [
+            {
+                "framework": "MITRE ATT&CK",
+                "tactic": {
+                    "id": "TA0010",
+                    "name": "Exfiltration",
+                    "reference": "https://attack.mitre.org/tactics/TA0010/"
+                },
+                "technique": [
+                    {
+                        "id": "T1041",
+                        "name": "Exfiltration Over C2 Channel",
+                        "reference": "https://attack.mitre.org/techniques/T1041/"
+                    }
+                ]
+            }
+        ],
+        "type": "machine_learning",
+        "version": 6
+    },
+    "id": "ef8cc01c-fc49-4954-a175-98569c646740_6",
+    "type": "security-rule"
+}

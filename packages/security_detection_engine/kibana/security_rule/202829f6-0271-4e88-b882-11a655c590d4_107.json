@@ -1,0 +1,113 @@
+{
+    "attributes": {
+        "author": [
+            "Elastic"
+        ],
+        "description": "Monitors for kernel processes with associated process executable fields that are not empty. Unix kernel processes such as kthreadd and kworker typically do not have process.executable fields associated to them. Attackers may attempt to hide their malicious programs by masquerading as legitimate kernel processes.",
+        "from": "now-9m",
+        "index": [
+            "endgame-*",
+            "logs-crowdstrike.fdr*",
+            "logs-endpoint.events.process*",
+            "logs-sentinel_one_cloud_funnel.*"
+        ],
+        "language": "eql",
+        "license": "Elastic License v2",
+        "name": "Executable Masquerading as Kernel Process",
+        "note": "## Triage and analysis\n\n> **Disclaimer**:\n> This investigation guide was created using generative AI technology and has been reviewed to improve its accuracy and relevance. While every effort has been made to ensure its quality, we recommend validating the content and adapting it to suit your specific environment and operational needs.\n\n### Investigating Executable Masquerading as Kernel Process\n\nIn Linux environments, kernel processes like `kthreadd` and `kworker` typically run without associated executable paths. Adversaries exploit this by naming malicious executables after these processes to evade detection. The detection rule identifies anomalies by flagging kernel-named processes with non-empty executable fields, indicating potential masquerading attempts. This helps in uncovering stealthy threats that mimic legitimate system activities.\n\n### Possible investigation steps\n\n- Review the process details for the flagged process, focusing on the process.executable field to identify the path and name of the executable. This can provide initial insights into whether the executable is legitimate or potentially malicious.\n- Check the process's parent process (process.parent) to understand the context in which the process was started. This can help determine if the process was spawned by a legitimate system process or a suspicious one.\n- Investigate the file at the path specified in the process.executable field. Verify its legitimacy by checking its hash against known malware databases or using a file reputation service.\n- Examine the process's command line arguments (process.command_line) for any unusual or suspicious parameters that might indicate malicious activity.\n- Review recent system logs and events around the time the process was started to identify any related activities or anomalies that could provide additional context or evidence of compromise.\n- If available, use threat intelligence sources to check for any known indicators of compromise (IOCs) related to the process name or executable path.\n\n### False positive analysis\n\n- Custom scripts or administrative tools may be named similarly to kernel processes for convenience or organizational standards. Review these scripts and tools to ensure they are legitimate and consider adding them to an exception list if verified.\n- Some legitimate software or monitoring tools might use kernel-like names for their processes to integrate closely with system operations. Verify the source and purpose of these processes and exclude them if they are confirmed to be non-malicious.\n- System updates or patches might temporarily create processes with kernel-like names that have executable paths. Monitor these occurrences and exclude them if they are part of a verified update process.\n- Development or testing environments may intentionally use kernel-like names for process simulation. Ensure these environments are isolated and add exceptions for these processes if they are part of controlled testing scenarios.\n\n### Response and remediation\n\n- Isolate the affected system from the network to prevent further spread of the potential threat and to contain any malicious activity.\n- Terminate the suspicious process immediately to stop any ongoing malicious actions. Use process management tools to kill the process identified by the alert.\n- Conduct a forensic analysis of the affected system to identify any additional indicators of compromise (IOCs) and assess the extent of the intrusion.\n- Remove any malicious executables or files associated with the masquerading process from the system to ensure complete remediation.\n- Restore the system from a known good backup if the integrity of the system is compromised, ensuring that the backup is free from any malicious artifacts.\n- Update and patch the system to close any vulnerabilities that may have been exploited by the attacker, ensuring all software and security tools are up to date.\n- Escalate the incident to the security operations center (SOC) or incident response team for further investigation and to determine if additional systems are affected.",
+        "query": "process where host.os.type == \"linux\" and event.type == \"start\" and event.action in (\"exec\", \"exec_event\", \"start\", \"ProcessRollup2\") and\nprocess.name : (\"kworker*\", \"kthread*\") and process.executable != null\n",
+        "references": [
+            "https://sandflysecurity.com/blog/linux-stealth-rootkit-malware-with-edr-evasion-analyzed/"
+        ],
+        "related_integrations": [
+            {
+                "package": "endpoint",
+                "version": "^9.0.0"
+            },
+            {
+                "package": "crowdstrike",
+                "version": "^1.51.0"
+            },
+            {
+                "package": "sentinel_one_cloud_funnel",
+                "version": "^1.9.0"
+            }
+        ],
+        "required_fields": [
+            {
+                "ecs": true,
+                "name": "event.action",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "event.type",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "host.os.type",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "process.executable",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "process.name",
+                "type": "keyword"
+            }
+        ],
+        "risk_score": 21,
+        "rule_id": "202829f6-0271-4e88-b882-11a655c590d4",
+        "setup": "## Setup\n\n\nThis rule requires data coming in from Elastic Defend.\n\n### Elastic Defend Integration Setup\nElastic Defend is integrated into the Elastic Agent using Fleet. Upon configuration, the integration allows the Elastic Agent to monitor events on your host and send data to the Elastic Security app.\n\n#### Prerequisite Requirements:\n- Fleet is required for Elastic Defend.\n- To configure Fleet Server refer to the [documentation](https://www.elastic.co/guide/en/fleet/current/fleet-server.html).\n\n#### The following steps should be executed in order to add the Elastic Defend integration on a Linux System:\n- Go to the Kibana home page and click \"Add integrations\".\n- In the query bar, search for \"Elastic Defend\" and select the integration to see more details about it.\n- Click \"Add Elastic Defend\".\n- Configure the integration name and optionally add a description.\n- Select the type of environment you want to protect, either \"Traditional Endpoints\" or \"Cloud Workloads\".\n- Select a configuration preset. Each preset comes with different default settings for Elastic Agent, you can further customize these later by configuring the Elastic Defend integration policy. [Helper guide](https://www.elastic.co/guide/en/security/current/configure-endpoint-integration-policy.html).\n- We suggest selecting \"Complete EDR (Endpoint Detection and Response)\" as a configuration setting, that provides \"All events; all preventions\"\n- Enter a name for the agent policy in \"New agent policy name\". If other agent policies already exist, you can click the \"Existing hosts\" tab and select an existing policy instead.\nFor more details on Elastic Agent configuration settings, refer to the [helper guide](https://www.elastic.co/guide/en/fleet/8.10/agent-policy.html).\n- Click \"Save and Continue\".\n- To complete the integration, select \"Add Elastic Agent to your hosts\" and continue to the next section to install the Elastic Agent on your hosts.\nFor more details on Elastic Defend refer to the [helper guide](https://www.elastic.co/guide/en/security/current/install-endpoint.html).\n",
+        "severity": "low",
+        "tags": [
+            "Domain: Endpoint",
+            "OS: Linux",
+            "Use Case: Threat Detection",
+            "Tactic: Defense Evasion",
+            "Data Source: Elastic Defend",
+            "Data Source: Elastic Endgame",
+            "Data Source: Crowdstrike",
+            "Data Source: SentinelOne",
+            "Resources: Investigation Guide"
+        ],
+        "threat": [
+            {
+                "framework": "MITRE ATT&CK",
+                "tactic": {
+                    "id": "TA0005",
+                    "name": "Defense Evasion",
+                    "reference": "https://attack.mitre.org/tactics/TA0005/"
+                },
+                "technique": [
+                    {
+                        "id": "T1036",
+                        "name": "Masquerading",
+                        "reference": "https://attack.mitre.org/techniques/T1036/",
+                        "subtechnique": [
+                            {
+                                "id": "T1036.004",
+                                "name": "Masquerade Task or Service",
+                                "reference": "https://attack.mitre.org/techniques/T1036/004/"
+                            }
+                        ]
+                    },
+                    {
+                        "id": "T1564",
+                        "name": "Hide Artifacts",
+                        "reference": "https://attack.mitre.org/techniques/T1564/"
+                    }
+                ]
+            }
+        ],
+        "timestamp_override": "event.ingested",
+        "type": "eql",
+        "version": 107
+    },
+    "id": "202829f6-0271-4e88-b882-11a655c590d4_107",
+    "type": "security-rule"
+}

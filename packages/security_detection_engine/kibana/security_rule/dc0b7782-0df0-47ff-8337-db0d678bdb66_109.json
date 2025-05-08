@@ -1,0 +1,127 @@
+{
+    "attributes": {
+        "author": [
+            "Elastic"
+        ],
+        "description": "Identifies when suspicious content is extracted from a file and subsequently decompressed using the funzip utility. Malware may execute the tail utility using the \"-c\" option to read a sequence of bytes from the end of a file. The output from tail can be piped to funzip in order to decompress malicious code before it is executed. This behavior is consistent with malware families such as Bundlore.",
+        "from": "now-9m",
+        "index": [
+            "endgame-*",
+            "logs-endpoint.events.process*",
+            "logs-sentinel_one_cloud_funnel.*"
+        ],
+        "language": "eql",
+        "license": "Elastic License v2",
+        "name": "Suspicious Content Extracted or Decompressed via Funzip",
+        "note": "## Triage and analysis\n\n> **Disclaimer**:\n> This investigation guide was created using generative AI technology and has been reviewed to improve its accuracy and relevance. While every effort has been made to ensure its quality, we recommend validating the content and adapting it to suit your specific environment and operational needs.\n\n### Investigating Suspicious Content Extracted or Decompressed via Funzip\n\nFunzip is a utility used to decompress files directly from a stream, often employed in legitimate data processing tasks. However, adversaries can exploit this by combining it with the 'tail' command to extract and execute malicious payloads stealthily. The detection rule identifies this misuse by monitoring specific command sequences and excluding benign processes, thus flagging potential threats for further investigation.\n\n### Possible investigation steps\n\n- Review the process details to confirm the presence of the 'tail' and 'funzip' command sequence, focusing on the specific arguments used, such as \"-c\", to understand the context of the command execution.\n- Examine the parent process information to determine if the process was initiated by any known benign executables or scripts, specifically checking against the exclusion list like \"/usr/bin/dracut\" or \"/sbin/dracut\".\n- Investigate the command line history and execution context of the parent process, especially if it involves \"sh\" or \"sudo\", to identify any suspicious patterns or unauthorized script executions.\n- Check the file path and content being accessed by the 'tail' command to ensure it is not targeting sensitive or unexpected files, excluding known benign paths like \"/var/log/messages\".\n- Correlate the event with other security alerts or logs from the same host to identify any related suspicious activities or patterns that might indicate a broader compromise.\n- Assess the risk and impact by determining if the decompressed content was executed or if it led to any subsequent suspicious processes or network connections.\n\n### False positive analysis\n\n- Legitimate system maintenance tasks may trigger this rule if they involve decompressing logs or data files using funzip. To manage this, identify and exclude specific maintenance scripts or processes that are known to use funzip in a non-threatening manner.\n- Automated backup or data processing operations might use funzip in combination with tail for legitimate purposes. Review these operations and add exceptions for known benign processes or scripts that match this pattern.\n- Security tools or monitoring solutions like Nessus may inadvertently trigger this rule if they use similar command sequences for scanning or data collection. Exclude these tools by adding exceptions for their specific command lines or parent processes.\n- Custom scripts developed in-house for data analysis or processing might use funzip and tail together. Document these scripts and exclude them from the rule to prevent false positives, ensuring they are reviewed and approved by security teams.\n\n### Response and remediation\n\n- Immediately isolate the affected system from the network to prevent further spread of the potential malware.\n- Terminate any suspicious processes identified by the detection rule, specifically those involving the 'tail' and 'funzip' command sequence.\n- Conduct a thorough scan of the affected system using updated antivirus or endpoint detection and response (EDR) tools to identify and remove any malicious payloads.\n- Review and analyze system logs and command history to identify any unauthorized access or additional malicious activities that may have occurred.\n- Restore any compromised files or systems from known good backups to ensure integrity and availability of data.\n- Implement application whitelisting to prevent unauthorized execution of utilities like 'funzip' and 'tail' by non-administrative users.\n- Escalate the incident to the security operations center (SOC) or incident response team for further investigation and to assess the need for broader organizational response measures.",
+        "query": "process where host.os.type == \"linux\" and event.action in (\"exec\", \"exec_event\", \"start\") and\n((process.args == \"tail\" and process.args == \"-c\" and process.args == \"funzip\")) and\nnot process.args : \"/var/log/messages\" and\nnot process.parent.executable : (\"/usr/bin/dracut\", \"/sbin/dracut\", \"/usr/bin/xargs\") and\nnot (process.parent.name in (\"sh\", \"sudo\") and process.parent.command_line : \"*nessus_su*\")\n",
+        "references": [
+            "https://attack.mitre.org/software/S0482/"
+        ],
+        "related_integrations": [
+            {
+                "package": "endpoint",
+                "version": "^9.0.0"
+            },
+            {
+                "package": "sentinel_one_cloud_funnel",
+                "version": "^1.9.0"
+            }
+        ],
+        "required_fields": [
+            {
+                "ecs": true,
+                "name": "event.action",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "host.os.type",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "process.args",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "process.parent.command_line",
+                "type": "wildcard"
+            },
+            {
+                "ecs": true,
+                "name": "process.parent.executable",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "process.parent.name",
+                "type": "keyword"
+            }
+        ],
+        "risk_score": 47,
+        "rule_id": "dc0b7782-0df0-47ff-8337-db0d678bdb66",
+        "setup": "## Setup\n\nThis rule requires data coming in from Elastic Defend.\n\n### Elastic Defend Integration Setup\nElastic Defend is integrated into the Elastic Agent using Fleet. Upon configuration, the integration allows the Elastic Agent to monitor events on your host and send data to the Elastic Security app.\n\n#### Prerequisite Requirements:\n- Fleet is required for Elastic Defend.\n- To configure Fleet Server refer to the [documentation](https://www.elastic.co/guide/en/fleet/current/fleet-server.html).\n\n#### The following steps should be executed in order to add the Elastic Defend integration on a Linux System:\n- Go to the Kibana home page and click \"Add integrations\".\n- In the query bar, search for \"Elastic Defend\" and select the integration to see more details about it.\n- Click \"Add Elastic Defend\".\n- Configure the integration name and optionally add a description.\n- Select the type of environment you want to protect, either \"Traditional Endpoints\" or \"Cloud Workloads\".\n- Select a configuration preset. Each preset comes with different default settings for Elastic Agent, you can further customize these later by configuring the Elastic Defend integration policy. [Helper guide](https://www.elastic.co/guide/en/security/current/configure-endpoint-integration-policy.html).\n- We suggest selecting \"Complete EDR (Endpoint Detection and Response)\" as a configuration setting, that provides \"All events; all preventions\"\n- Enter a name for the agent policy in \"New agent policy name\". If other agent policies already exist, you can click the \"Existing hosts\" tab and select an existing policy instead.\nFor more details on Elastic Agent configuration settings, refer to the [helper guide](https://www.elastic.co/guide/en/fleet/8.10/agent-policy.html).\n- Click \"Save and Continue\".\n- To complete the integration, select \"Add Elastic Agent to your hosts\" and continue to the next section to install the Elastic Agent on your hosts.\nFor more details on Elastic Defend refer to the [helper guide](https://www.elastic.co/guide/en/security/current/install-endpoint.html).\n",
+        "severity": "medium",
+        "tags": [
+            "Domain: Endpoint",
+            "OS: Linux",
+            "Use Case: Threat Detection",
+            "Tactic: Execution",
+            "Data Source: Elastic Endgame",
+            "Data Source: Elastic Defend",
+            "Data Source: SentinelOne",
+            "Resources: Investigation Guide"
+        ],
+        "threat": [
+            {
+                "framework": "MITRE ATT&CK",
+                "tactic": {
+                    "id": "TA0002",
+                    "name": "Execution",
+                    "reference": "https://attack.mitre.org/tactics/TA0002/"
+                },
+                "technique": [
+                    {
+                        "id": "T1059",
+                        "name": "Command and Scripting Interpreter",
+                        "reference": "https://attack.mitre.org/techniques/T1059/",
+                        "subtechnique": [
+                            {
+                                "id": "T1059.004",
+                                "name": "Unix Shell",
+                                "reference": "https://attack.mitre.org/techniques/T1059/004/"
+                            }
+                        ]
+                    }
+                ]
+            },
+            {
+                "framework": "MITRE ATT&CK",
+                "tactic": {
+                    "id": "TA0005",
+                    "name": "Defense Evasion",
+                    "reference": "https://attack.mitre.org/tactics/TA0005/"
+                },
+                "technique": [
+                    {
+                        "id": "T1027",
+                        "name": "Obfuscated Files or Information",
+                        "reference": "https://attack.mitre.org/techniques/T1027/"
+                    },
+                    {
+                        "id": "T1140",
+                        "name": "Deobfuscate/Decode Files or Information",
+                        "reference": "https://attack.mitre.org/techniques/T1140/"
+                    }
+                ]
+            }
+        ],
+        "timestamp_override": "event.ingested",
+        "type": "eql",
+        "version": 109
+    },
+    "id": "dc0b7782-0df0-47ff-8337-db0d678bdb66_109",
+    "type": "security-rule"
+}
