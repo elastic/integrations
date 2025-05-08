@@ -666,7 +666,7 @@ processors:
       ignore_missing: true
   - convert:
       field: json.action_process_os_pid
-      tag: convert_action_process_os_pid_to_long  
+      tag: convert_action_process_os_pid_to_long
       target_field: panw_cortex.xdr.event.action.process.os_pid
       type: long
       ignore_missing: true
@@ -1055,6 +1055,11 @@ processors:
       tag: rename_action_remote_process_user_sid
       target_field: panw_cortex.xdr.event.action.remote_process.user_sid
       ignore_missing: true
+  - set:
+      field: process.entry_leader.user.id
+      tag: set_process_entry_leader_user_id_from_xdr_event_action_remote_process_user_sid
+      copy_from: panw_cortex.xdr.event.action.remote_process.user_sid
+      ignore_empty_value: true
   - append:
       field: related.user
       tag: append_related_user_from_xdr_event_action_remote_process_user_sid
@@ -1066,6 +1071,11 @@ processors:
       tag: rename_action_remote_process_username
       target_field: panw_cortex.xdr.event.action.remote_process.username
       ignore_missing: true
+  - set:
+      field: process.entry_leader.user.name
+      tag: set_process_entry_leader_user_name_from_xdr_event_action_remote_process_username
+      copy_from: panw_cortex.xdr.event.action.remote_process.username
+      ignore_empty_value: true
   - append:
       field: related.user
       tag: append_related_user_from_xdr_event_action_remote_process_username
@@ -1169,15 +1179,6 @@ processors:
       tag: rename_agent_hostname
       target_field: panw_cortex.xdr.event.agent.hostname
       ignore_missing: true
-  - set:
-      field: host.name
-      tag: set_host_name_from_xdr_event_agent_hostname
-      copy_from: panw_cortex.xdr.event.agent.hostname
-      ignore_empty_value: true
-  - lowercase:
-      field: host.name
-      tag: lowercase_host_name
-      ignore_missing: true
   - append:
       field: related.hosts
       tag: append_related_host_from_xdr_event_agent_hostname
@@ -1219,16 +1220,6 @@ processors:
   - foreach:
       field: json.agent_ip_addresses
       if: ctx.json?.agent_ip_addresses instanceof List
-      tag: foreach_append_agent_ip_addresses_v6_into_host_ip
-      processor:
-        append:
-          field: host.ip
-          tag: append_agent_ip_addresses_v6_into_host_ip
-          value: '{{{_ingest._value}}}'
-          allow_duplicates: false
-  - foreach:
-      field: json.agent_ip_addresses
-      if: ctx.json?.agent_ip_addresses instanceof List
       tag: foreach_agent_ip_addresses_append_into_related_ip
       processor:
         append:
@@ -1261,16 +1252,6 @@ processors:
   - foreach:
       field: json.agent_ip_addresses_v6
       if: ctx.json?.agent_ip_addresses_v6 instanceof List
-      tag: foreach_agent_ip_addresses_v6_append_into_host_ip
-      processor:
-        append:
-          field: host.ip
-          tag: append_agent_ip_addresses_v6_into_host_ip
-          value: '{{{_ingest._value}}}'
-          allow_duplicates: false
-  - foreach:
-      field: json.agent_ip_addresses_v6
-      if: ctx.json?.agent_ip_addresses_v6 instanceof List
       tag: foreach_agent_ip_addresses_v6_append_into_related_ip
       processor:
         append:
@@ -1288,21 +1269,11 @@ processors:
       tag: rename_agent_os_sub_type
       target_field: panw_cortex.xdr.event.agent.os_sub_type
       ignore_missing: true
-  - set:
-      field: host.os.version
-      tag: set_host_os_version_from_xdr_event_agent_os_sub_type
-      copy_from: panw_cortex.xdr.event.agent.os_sub_type
-      ignore_empty_value: true
   - rename:
       field: json.agent_os_type
       tag: rename_agent_os_type
       target_field: panw_cortex.xdr.event.agent.os_type
       ignore_missing: true
-  - set:
-      field: host.os.family
-      tag: set_host_os_family_from_xdr_event_agent_os_type
-      copy_from: panw_cortex.xdr.event.agent.os_type
-      ignore_empty_value: true
   - lowercase:
       field: host.os.family
       tag: lowercase_host_os_family
@@ -1694,12 +1665,7 @@ processors:
         - panw_cortex.xdr.event.action.user_status_sid
         - panw_cortex.xdr.event.action.username
         - panw_cortex.xdr.event.agent.content_version
-        - panw_cortex.xdr.event.agent.hostname
         - panw_cortex.xdr.event.agent.id
-        - panw_cortex.xdr.event.agent.ip_addresses
-        - panw_cortex.xdr.event.agent.ip_addresses_v6
-        - panw_cortex.xdr.event.agent.os_sub_type
-        - panw_cortex.xdr.event.agent.os_type
         - panw_cortex.xdr.event.agent.version
         - panw_cortex.xdr.event.action.file.name
         - panw_cortex.xdr.event.action.file.path
@@ -1720,6 +1686,8 @@ processors:
         - panw_cortex.xdr.event.os_actor.process_image_md5
         - panw_cortex.xdr.event.os_actor.process_image_sha256
         - panw_cortex.xdr.event.os_actor.remote_ip
+        - panw_cortex.xdr.event.action.remote_process.user_sid
+        - panw_cortex.xdr.event.action.remote_process.username
       tag: remove_custom_duplicate_fields
       ignore_missing: true
       if: ctx.tags == null || !ctx.tags.contains('preserve_duplicate_custom_fields')
