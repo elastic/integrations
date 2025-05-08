@@ -1,0 +1,88 @@
+{
+    "attributes": {
+        "author": [
+            "Elastic"
+        ],
+        "description": "Identifies suspicious activity from the Microsoft Authentication Broker in Microsoft Entra ID sign-in logs. This behavior may indicate an adversary using a phished OAuth refresh token or a Primary Refresh Token (PRT) to register a device and access Microsoft services as a user. The pattern includes sign-ins from multiple IPs across services (Microsoft Graph, DRS, AAD) using the Authentication Broker client on behalf of a principal user.",
+        "false_positives": [
+            "Legitimate device registrations using Microsoft Authentication Broker may occur during corporate enrollment scenarios or bulk provisioning, but it is uncommon for multiple source IPs to register the same identity across Microsoft Graph, Device Registration Service (DRS), and Azure Active Directory (AAD) in a short time span."
+        ],
+        "from": "now-1h",
+        "language": "esql",
+        "license": "Elastic License v2",
+        "name": "Suspicious Activity via Auth Broker On-Behalf-of Principal User",
+        "note": "## Triage and analysis\n\n### Investigating Suspicious Activity via Auth Broker On-Behalf-of Principal User\n\nThis rule identifies suspicious activity from the Microsoft Authentication Broker where the same identity accesses Microsoft Graph at least twice and either Device Registration Service (DRS) or Azure Active Directory (AAD) once \u2014 all from multiple unique source IPs within a short window. This behavior may indicate the use of a previously phished refresh token to impersonate a user and register a device, followed by an attempt to acquire a Primary Refresh Token (PRT) for persistent access.\n\n### Possible Investigation Steps:\n\n- `target`: The user principal name targeted by the authentication broker. Investigate whether this user has recently registered a device, signed in from new IPs, or has had recent password resets or MFA changes.\n- `azure.signinlogs.identity`: The identity value the broker is acting on behalf of. This may be useful when correlating to device registration records or audit events tied to object IDs.\n- `ips`: Analyze the list of unique IP addresses used within the 30-minute window. Determine whether these originate from different geographic regions, cloud providers, or anonymizing infrastructure (e.g., Tor or VPNs).\n- `incoming_token_type`: Look for values like `\"refreshToken\"` or `\"none\"`, which may indicate token replay. `\"refreshToken\"` suggests broker-based reauthentication using stolen credentials.\n- `user_agents`: Check for mixed user agent strings. Automation tools (e.g., `python-requests`) alongside browser-based agents (e.g., Chrome on macOS) may indicate scripted misuse of tokens.\n- `OS`: Review for inconsistencies. For example, if both `Windows` and `MacOs` appear during a short time span for the same user, this may point to token abuse across multiple environments.\n- `target_time_window`: Use the truncated time window to pivot into raw `azure.signinlogs` to reconstruct the full sequence of resource access events, including exact timestamps and service targets.\n- `azure.auditlogs` to check for device join or registration events around the same timeframe.\n- `azure.identityprotection` to identify correlated risk detections, such as anonymized IP access or token replay.\n- Any additional sign-ins from the `ips` involved, even outside the broker, to determine if tokens have been reused elsewhere.\n\n### False Positive Analysis\n\n- This pattern may occur if the user is registering a new device legitimately from two networks (e.g., mobile hotspot and home).\n- Security software (e.g., endpoint detection tools) or identity clients may produce rapid Graph and DRS access in rare edge cases.\n- Developers or IT administrators working across environments may also produce similar behavior.\n\n### Response and Remediation\n\n- If confirmed unauthorized, revoke all refresh tokens for the affected user and remove any devices registered during this session.\n- Notify the user and determine whether the device join or authentication activity was expected.\n- Audit Conditional Access and broker permissions (`29d9ed98-a469-4536-ade2-f981bc1d605e`) to ensure policies enforce strict access controls.\n- Consider blocking token-based reauthentication to Microsoft Graph and DRS from suspicious locations or user agents.\n- Continue monitoring for follow-on activity like lateral movement or privilege escalation.\n",
+        "query": "FROM logs-azure.signinlogs* metadata _id, _version, _index\n\n// filter for Microsoft Entra ID Sign-in Logs\n| where event.dataset == \"azure.signinlogs\"\n\n    // filters on member principals, excluding service principals\n    and azure.signinlogs.properties.user_type == \"Member\"\n    and source.ip is not null\n    and azure.signinlogs.identity is not null\n    and azure.signinlogs.properties.user_principal_name is not null\n    and event.outcome == \"success\"\n\n    // filter for successful sign-ins to Microsoft Graph and DRS/AAD from the Microsoft Authentication Broker\n    and (azure.signinlogs.properties.app_display_name == \"Microsoft Authentication Broker\" or azure.signinlogs.properties.app_id == \"29d9ed98-a469-4536-ade2-f981bc1d605e\")\n    and azure.signinlogs.properties.resource_display_name in (\"Device Registration Service\", \"Microsoft Graph\", \"Windows Azure Active Directory\")\n\n// keep relevant fields\n| keep @timestamp, azure.signinlogs.identity, source.ip, azure.signinlogs.properties.app_display_name, azure.signinlogs.properties.resource_display_name, azure.signinlogs.properties.user_principal_name, azure.signinlogs.properties.incoming_token_type, user_agent.original, azure.signinlogs.properties.device_detail.operating_system\n\n// aggregate by 30-minute time window\n| eval target_time_window = DATE_TRUNC(30 minutes, @timestamp)\n\n// case statements to track which are MS Graph, DRS, and AAD access\n| eval ms_graph = case(azure.signinlogs.properties.resource_display_name == \"Microsoft Graph\", source.ip, null), drs = case(azure.signinlogs.properties.resource_display_name == \"Device Registration Service\", source.ip, null), aad = case(azure.signinlogs.properties.resource_display_name == \"Windows Azure Active Directory\", source.ip, null)\n\n// aggregate by principal and time window\n// store token types, target user, unique source IPs, and user agents in arrays for investigation\n| stats is_ms_graph = COUNT_DISTINCT(ms_graph), is_drs = COUNT_DISTINCT(drs), is_aad = COUNT_DISTINCT(aad), unique_src_ip = COUNT_DISTINCT(source.ip), ips = VALUES(source.ip), incoming_token_type = VALUES(azure.signinlogs.properties.incoming_token_type), target = VALUES(azure.signinlogs.properties.user_principal_name), user_agents = VALUES(user_agent.original), OS = VALUES(azure.signinlogs.properties.device_detail.operating_system) by azure.signinlogs.identity, target_time_window\n\n// filter for cases with multiple unique source IPs, and at least one DRS or AAD access, and multiple MS Graph accesses\n| where unique_src_ip >= 2 and (is_drs >= 1 or is_aad >= 1) and is_ms_graph >= 2\n",
+        "references": [
+            "https://www.volexity.com/blog/2025/04/22/phishing-for-codes-russian-threat-actors-target-microsoft-365-oauth-workflows/",
+            "https://github.com/dirkjanm/ROADtools",
+            "https://dirkjanm.io/phishing-for-microsoft-entra-primary-refresh-tokens/"
+        ],
+        "risk_score": 73,
+        "rule_id": "375132c6-25d5-11f0-8745-f661ea17fbcd",
+        "setup": "#### Required Microsoft Entra ID Sign-In Logs\nThis rule requires the Microsoft Entra ID Sign-In Logs integration be enabled and configured to collect sign-in logs. In Entra ID, sign-in logs must be enabled and streaming to the Event Hub used for the Azure integration.\n",
+        "severity": "high",
+        "tags": [
+            "Domain: Cloud",
+            "Data Source: Azure",
+            "Data Source: Entra ID",
+            "Data Source: Entra ID Sign-in Logs",
+            "Use Case: Identity and Access Audit",
+            "Use Case: Threat Detection",
+            "Resources: Investigation Guide",
+            "Tactic: Defense Evasion",
+            "Tactic: Persistence"
+        ],
+        "threat": [
+            {
+                "framework": "MITRE ATT&CK",
+                "tactic": {
+                    "id": "TA0005",
+                    "name": "Defense Evasion",
+                    "reference": "https://attack.mitre.org/tactics/TA0005/"
+                },
+                "technique": [
+                    {
+                        "id": "T1550",
+                        "name": "Use Alternate Authentication Material",
+                        "reference": "https://attack.mitre.org/techniques/T1550/",
+                        "subtechnique": [
+                            {
+                                "id": "T1550.001",
+                                "name": "Application Access Token",
+                                "reference": "https://attack.mitre.org/techniques/T1550/001/"
+                            }
+                        ]
+                    }
+                ]
+            },
+            {
+                "framework": "MITRE ATT&CK",
+                "tactic": {
+                    "id": "TA0003",
+                    "name": "Persistence",
+                    "reference": "https://attack.mitre.org/tactics/TA0003/"
+                },
+                "technique": [
+                    {
+                        "id": "T1098",
+                        "name": "Account Manipulation",
+                        "reference": "https://attack.mitre.org/techniques/T1098/",
+                        "subtechnique": [
+                            {
+                                "id": "T1098.005",
+                                "name": "Device Registration",
+                                "reference": "https://attack.mitre.org/techniques/T1098/005/"
+                            }
+                        ]
+                    }
+                ]
+            }
+        ],
+        "timestamp_override": "event.ingested",
+        "type": "esql",
+        "version": 1
+    },
+    "id": "375132c6-25d5-11f0-8745-f661ea17fbcd_1",
+    "type": "security-rule"
+}
