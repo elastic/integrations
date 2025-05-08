@@ -38,80 +38,26 @@ steps:
     agents:
       image: "${LINUX_AGENT_IMAGE}"
 
-  - label: ":white_check_mark: Check go sources"
-    key: "check"
-    command: ".buildkite/scripts/check_sources.sh"
+  - label: "Check integrations apache_tomcat"
+    key: "test-integrations-apache_tomcat"
+    command: ".buildkite/scripts/test_one_package.sh apache_tomcat origin/main d2b1504eae3fcd8b573c718f07b4b4f182a4c0ce"
+    timeout_in_minutes: 240
     agents:
-      image: "${LINUX_AGENT_IMAGE}"
-      cpu: "8"
-      memory: "4G"
-    depends_on:
-      - step: "reference-target-branch"
-        allow_failure: false
-
-  - label: "Trigger integrations"
-    key: "test-integrations"
-    command: ".buildkite/scripts/trigger_integrations_in_parallel.sh"
+      provider: gcp
+      image: ${IMAGE_UBUNTU_X86_64}
     env:
+      STACK_VERSION: "${STACK_VERSION}"
+      FORCE_CHECK_ALL: "false"
+      SERVERLESS: "false"
       UPLOAD_SAFE_LOGS: 1
-    depends_on:
-      - step: "check"
-        allow_failure: false
-
-  - wait: ~
-    continue_on_failure: true
-
-  - label: "Publish benchmarks"
-    key: publish-benchmarks
-    command: ".buildkite/scripts/process_benchmarks.sh"
-    env:
-      BENCHMARK_THRESHOLD: 15
-    agents:
-      image: "${LINUX_AGENT_IMAGE}"
-      cpu: "8"
-      memory: "4G"
-    if: |
-      build.env('BUILDKITE_PULL_REQUEST') != "false" &&
-      build.env('BUILDKITE_PIPELINE_SLUG') == "integrations"
-
-  - label: ":sonarqube: Continuous Code Inspection"
-    soft_fail: true # FIXME: Coverage is failing, remove this after solving the issue
-    timeout_in_minutes: 120
-    env:
-      VAULT_SONAR_TOKEN_PATH: "kv/ci-shared/platform-ingest/elastic/integrations/sonar-analyze-token"
-    agents:
-      image: "docker.elastic.co/cloud-ci/sonarqube/buildkite-scanner:latest"
-      cpu: "8"
-      memory: "4G"
-    command: ".buildkite/scripts/run_sonar_scanner.sh"
-    artifact_paths:
-      - build/test-coverage/coverage_merged.xml
-    if: |
-      build.env('BUILDKITE_PIPELINE_SLUG') == "integrations"
-
-  - label: ":junit: Junit annotate"
     plugins:
-      - junit-annotate#v2.5.0:
-          artifacts: "build/test-results/*.xml"
-          failed-download-exit-code: 0 # Not fail the build in case there are no XML files
-          report-skipped: true
-          always-annotate: true
-    agents:
-      provider: "gcp"  # junit plugin requires docker
-
-  - label: ":github: Report failed tests"
-    key: report-failed-tests
-    command: ".buildkite/scripts/report_issues.sh"
-    env:
-      CI_MAX_TESTS_REPORTED: 30
-    agents:
-      image: "${LINUX_AGENT_IMAGE}"
-      cpu: "8"
-      memory: "4G"
-    # not fail build if this step fails
-    soft_fail: true
-    # run this step when if it is triggered by the daily job
-    if: |
-      build.source == "trigger_job" &&
-      build.env('BUILDKITE_PIPELINE_SLUG') == "integrations" &&
-      build.env('BUILDKITE_TRIGGERED_FROM_BUILD_PIPELINE_SLUG') == "integrations-schedule-daily"
+      # See https://github.com/elastic/oblt-infra/blob/main/conf/resources/repos/integrations/01-aws-buildkite-oidc.tf
+      # This plugin creates the environment variables required by the service deployer (AWS_SECRET_ACCESS_KEY and AWS_SECRET_KEY_ID)
+      - elastic/oblt-aws-auth#test/debug:
+          duration: 10800 # seconds
+    artifact_paths:
+      - build/test-results/*.xml
+      - build/test-coverage/*.xml
+      - build/benchmark-results/*.json
+      - build/elastic-stack-dump/*/logs/*.log
+      - build/elastic-stack-dump/*/logs/fleet-server-internal/**/*
