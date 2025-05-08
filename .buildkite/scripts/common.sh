@@ -713,30 +713,20 @@ is_pr_affected() {
 
     echo "[${package}] git-diff: check non-package files"
     commit_merge=$(git merge-base "${from}" "${to}")
-<<<<<<< HEAD
+    # Avoid using "-q" in grep in this pipe, it could cause that some files updated are not detected due to SIGPIPE errors when "set -o pipefail"
+    # Example:
+    # https://buildkite.com/elastic/integrations/builds/25606
+    # https://github.com/elastic/integrations/pull/13810
     if git diff --name-only "${commit_merge}" "${to}" | grep -E -v '^(packages/|\.github/(CODEOWNERS|ISSUE_TEMPLATE|PULL_REQUEST_TEMPLATE)|README\.md|docs/)' ; then
         echo "[${package}] PR is affected: found non-package files"
         return 0
     fi
     echo "[${package}] git-diff: check package files"
+    # Avoid using "-q" in grep in this pipe, it could cause that some files updated are not detected due to SIGPIPE errors when "set -o pipefail"
+    # Example:
+    # https://buildkite.com/elastic/integrations/builds/25606
+    # https://github.com/elastic/integrations/pull/13810
     if git diff --name-only "${commit_merge}" "${to}" | grep -E "^packages/${package}/" ; then
-=======
-    echoerr "[${package}] git-diff: check non-package files (${commit_merge}..${to})"
-    # Avoid using "-q" in grep in this pipe, it could cause that some files updated are not detected due to SIGPIPE errors when "set -o pipefail"
-    # Example:
-    # https://buildkite.com/elastic/integrations/builds/25606
-    # https://github.com/elastic/integrations/pull/13810
-    if git diff --name-only "${commit_merge}" "${to}" | grep -E -v '^(packages/|\.github/(CODEOWNERS|ISSUE_TEMPLATE|PULL_REQUEST_TEMPLATE)|README\.md|docs/)' > /dev/null; then
-        echo "[${package}] PR is affected: found non-package files"
-        return 0
-    fi
-    echoerr "[${package}] git-diff: check package files (${commit_merge}..${to})"
-    # Avoid using "-q" in grep in this pipe, it could cause that some files updated are not detected due to SIGPIPE errors when "set -o pipefail"
-    # Example:
-    # https://buildkite.com/elastic/integrations/builds/25606
-    # https://github.com/elastic/integrations/pull/13810
-    if git diff --name-only "${commit_merge}" "${to}" | grep -E "^packages/${package}/" > /dev/null ; then
->>>>>>> 93aec8f6a ([CI] Do not use -q parameter together with git commands in pipe (#13832))
         echo "[${package}] PR is affected: found package files"
         return 0
     fi
