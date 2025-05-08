@@ -92,7 +92,7 @@ program: |-
   			) ?
   				// When start-subscription API returns success or if already started subscription,
   				duration(state.base.batch_interval).as(batch_interval,
-  					((batch_interval > duration("24h")) ? duration("24h") : batch_interval).as(batch_interval,
+  					min(duration("24h"), batch_interval).as(batch_interval,
   						request(
   							"GET",
   							(
@@ -111,25 +111,18 @@ program: |-
   								state.cursor.content_types_state_as_list.filter(e, e.content_type == content_type).as(content_type_state,
   									content_type_state[0].content_created_at.as(content_type_state_created_at,
   										// if saved time inside state is more than 7 days old, then change it to 7 days.
-  										content_type_state_created_at.parse_time(time_layout.RFC3339).as(state_created_at,
-  											// The 168h API age limit is expressed as 167h55m to
-  											// prevent API call delay from causing a call to fail.
-  											(state_created_at < now - duration("167h55m")) ?
-  												(now - duration("167h55m"))
-  											:
-  												state_created_at
+  										max(
+  											// The 168h (7d) API age limit is expressed as 167h55m to prevent API call
+  											// delay from causing a call to fail.
+  											now - duration("167h55m"),
+  											content_type_state_created_at.parse_time(time_layout.RFC3339)
   										).as(state_created_at_calc,
   											state.url.trim_right("/") + "/api/v1.0/" + state.base.tenant_id + "/activity/feed/subscriptions/content?" +
   											{
   												"contentType": [content_type],
   												"PublisherIdentifier": [state.base.tenant_id],
-  												"startTime": [string(state_created_at_calc + duration("1s"))],
-  												"endTime": [string((state_created_at_calc + batch_interval).as(calc_end_time,
-  													(calc_end_time <= now) ?
-  														calc_end_time
-  													:
-  														now
-  												))],
+  												"startTime": [string(min(now - duration("1s"), state_created_at_calc + duration("1s")))],
+  												"endTime": [string(min(now, state_created_at_calc + batch_interval))],
   											}.format_query()
   										)
   									)
@@ -140,13 +133,8 @@ program: |-
   								{
   									"contentType": [content_type],
   									"PublisherIdentifier": [state.base.tenant_id],
-  									"startTime": [string(now - duration(state.base.list_contents_start_time))],
-  									"endTime": [string((now - duration(state.base.list_contents_start_time) + batch_interval).as(calc_end_time,
-  										(calc_end_time <= now) ?
-  											calc_end_time
-  										:
-  											now
-  									))],
+  									"startTime": [string(min(now - duration("1s"), now - duration(state.base.list_contents_start_time)))],
+  									"endTime": [string(min(now, now - duration(state.base.list_contents_start_time) + batch_interval))],
   								}.format_query()
   						)
   					)
