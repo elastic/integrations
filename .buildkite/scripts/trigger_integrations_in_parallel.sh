@@ -93,6 +93,12 @@ for package in ${PACKAGE_LIST}; do
         # This plugin creates the environment variables required by the service deployer (AWS_SECRET_ACCESS_KEY and AWS_SECRET_KEY_ID)
         - elastic/oblt-aws-auth#v0.1.0:
             duration: 10800 # seconds
+        # See https://github.com/elastic/oblt-infra/blob/main/conf/resources/repos/integrations/01-gcp-buildkite-oidc.tf
+        # This plugin authenticates to Google Cloud using the OIDC token.
+        - elastic/oblt-google-auth#v1.2.0:
+            lifetime: 10800 # seconds
+            project-id: "elastic-observability-ci"
+            project-number: "911195782929"
       artifact_paths:
         - build/test-results/*.xml
         - build/test-coverage/*.xml
