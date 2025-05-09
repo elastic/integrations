@@ -44,3 +44,11 @@ This is the `vulnerability` dataset.
 {{event "vulnerability"}}
 
 {{fields "vulnerability"}}
+
+### Vulnerability Patched
+
+This is the `vulnerability_patched` dataset.
+
+{{event "vulnerability_patched"}}
+
+{{fields "vulnerability_patched"}}
