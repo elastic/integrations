@@ -69,22 +69,24 @@ Log data streams collected by the Azure Logs integration include Activity, Platf
 
 The integration routes the logs to the most appropriate data stream based on the log category. 
 
-For example, if the integration receives a log event with the `NonInteractiveUserSignInLogs` category, it will index it in the `logs-azure.signinlogs-default` using the `azure.signinlogs` dataset. Using the following table the data streams will be logs-<data_stream.dataset>-logs for each log type.
+Use the following table to identify the target data streams for each log category. For example, if the integration receives a log event with the `NonInteractiveUserSignInLogs` category, it will infer `azure.signinlogs` as dataset, indexing the log in the `logs-azure.signinlogs-default` . 
 
-| Dataset                     | Log Category                                                                                                                                               |
+| Data Stream                     | Log Category                                                                                                                                           |
 | --------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `azure.activitylogs`        | Administrative, Security, ServiceHealth, Alert, Recommendation, Policy, Autoscale, ResourceHealth                                            |
-| `azure.application_gateway` | ApplicationGatewayFirewallLog, ApplicationGatewayAccessLog                                                                                               |
-| `azure.auditlogs`           | AuditLogs                                                                                                                                                  |
-| `azure.firewall_logs`       | AzureFirewallApplicationRule, AzureFirewallNetworkRule, AzureFirewallDnsProxy, AZFWApplicationRule, AZFWNetworkRule, AZFWNatRule, AZFWDnsQuery |
-| `azure.graphactivitylog`    | MicrosoftGraphActivityLogs                                                                                                                                 |
-| `azure.identity_protection` | RiskyUsers, UserRiskEvents                                                                                                                               |
-| `azure.provisioning`        | ProvisioningLogs                                                                                                                                           |
-| `azure.signinlogs`          | SignInLogs, NonInteractiveUserSignInLogs, ServicePrincipalSignInLogs<br>ManagedIdentitySignInLogs                                                      |
-| `azure.springcloudlogs`     | ApplicationConsole<br>SystemLogs<br>IngressLogs<br>BuildLogs<br>ContainerEventLogs                                                                         |
-| `azure.platformlogs`        | All other log categories                                                                                                                                   |
+| `logs-azure.activitylogs-*`        | Administrative, Security, ServiceHealth, Alert, Recommendation, Policy, Autoscale, ResourceHealth                                                   |
+| `logs-azure.application_gateway-*` | ApplicationGatewayFirewallLog, ApplicationGatewayAccessLog                                                                                          |
+| `logs-azure.auditlogs-*`           | AuditLogs                                                                                                                                           |
+| `logs-azure.firewall_logs-*`       | AzureFirewallApplicationRule, AzureFirewallNetworkRule, AzureFirewallDnsProxy, AZFWApplicationRule, AZFWNetworkRule, AZFWNatRule, AZFWDnsQuery      |
+| `logs-azure.graphactivitylog-*`    | MicrosoftGraphActivityLogs                                                                                                                          |
+| `logs-azure.identity_protection-*` | RiskyUsers, UserRiskEvents                                                                                                                          |
+| `logs-azure.provisioning-*`        | ProvisioningLogs                                                                                                                                    |
+| `logs-azure.signinlogs-*`          | SignInLogs, NonInteractiveUserSignInLogs, ServicePrincipalSignInLogs, ManagedIdentitySignInLogs                                                     |
+| `logs-azure.springcloudlogs-*`     | ApplicationConsole, SystemLogs, IngressLogs, BuildLogs, ContainerEventLogs                                                                          |
+| `logs-azure.platformlogs-*`        | All other log categories                                                                                                                            |
 
-The integration indexes all other Azure logs using the `azure.platformlogs` dataset.
+### What about all other log categories?
+
+The integration indexes all other Azure logs categories using the `logs-azure.platformlogs-*` data stream.
 
 ## Requirements
 
