@@ -69,7 +69,7 @@ Log data streams collected by the Azure Logs integration include Activity, Platf
 
 The integration routes the logs to the most appropriate data stream based on the log category. 
 
-Use the following table to identify the target data streams for each log category. For example, if the integration receives a log event with the `NonInteractiveUserSignInLogs` category, it will infer `azure.signinlogs` as dataset, indexing the log in the `logs-azure.signinlogs-default` . 
+Use the following table to identify the target data streams for each log category. For example, if the integration receives a log event with the `NonInteractiveUserSignInLogs` category, it will infer `azure.signinlogs` as dataset, indexing the log into `logs-azure.signinlogs-default` data stream. 
 
 | Data Stream                     | Log Category                                                                                                                                           |
 | --------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------- |
