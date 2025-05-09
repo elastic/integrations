@@ -1,0 +1,205 @@
+rules:
+  - path: /
+    methods: ["POST"]
+    request_headers:
+      Content-Type:
+        - "application/x-amz-json-1.1"
+      X-Amz-Target:
+        - "StarlingDoveService.DescribeConfigRules"
+    request_body: '{"NextToken":"page2"}'
+    responses:
+      - status_code: 200
+        body: |-
+          {
+              "ConfigRules": [
+                  {
+                      "ConfigRuleArn": "arn:aws:config:us-east-1:11223344556:config-rule/config-rule-id3",
+                      "ConfigRuleId": "config-rule-id3",
+                      "ConfigRuleName": "required-tags",
+                      "ConfigRuleState": "ACTIVE",
+                      "Description": "Checks whether your resources have the tags that you specify.",
+                      "EvaluationModes": [
+                          {
+                              "Mode": "DETECTIVE"
+                          }
+                      ],
+                      "InputParameters": "{\"tag1Key\":\"k1\",\"tag1Value\":\"v1\"}",
+                      "Scope": {
+                          "ComplianceResourceTypes": [
+                              "AWS::EC2::Instance"
+                          ]
+                      },
+                      "Source": {
+                          "Owner": "AWS",
+                          "SourceIdentifier": "REQUIRED_TAGS"
+                      }
+                  }
+              ]
+          }
+  - path: /
+    methods: ["POST"]
+    request_headers:
+      Content-Type:
+        - "application/x-amz-json-1.1"
+      X-Amz-Target:
+        - "StarlingDoveService.DescribeConfigRules"
+    responses:
+      - status_code: 200
+        body: |-
+          {
+            "ConfigRules": [
+                {
+                    "ConfigRuleArn": "arn:aws:config:us-east-1:11223344556:config-rule/config-rule-id1",
+                    "ConfigRuleId": "config-rule-id1",
+                    "ConfigRuleName": "access-keys-rotated",
+                    "ConfigRuleState": "ACTIVE",
+                    "Description": "Checks whether the active access keys are rotated within the number of days specified in maxAccessKeyAge. The rule is non-compliant if the access keys have not been rotated for more than maxAccessKeyAge number of days.",
+                    "EvaluationModes": [
+                        {
+                            "Mode": "DETECTIVE"
+                        }
+                    ],
+                    "InputParameters": "{\"maxAccessKeyAge\":\"90\"}",
+                    "MaximumExecutionFrequency": "TwentyFour_Hours",
+                    "Source": {
+                        "Owner": "AWS",
+                        "SourceIdentifier": "ACCESS_KEYS_ROTATED"
+                    }
+                },
+                {
+                    "ConfigRuleArn": "arn:aws:config:us-east-1:11223344556:config-rule/config-rule-id2",
+                    "ConfigRuleId": "config-rule-id2",
+                    "ConfigRuleName": "account-part-of-organizations",
+                    "ConfigRuleState": "ACTIVE",
+                    "Description": "Rule checks whether AWS account is part of AWS Organizations. The rule is NON_COMPLIANT if the AWS account is not part of AWS Organizations or AWS Organizations master account ID does not match rule parameter MasterAccountId.",
+                    "EvaluationModes": [
+                        {
+                            "Mode": "DETECTIVE"
+                        }
+                    ],
+                    "InputParameters": "{}",
+                    "MaximumExecutionFrequency": "TwentyFour_Hours",
+                    "Source": {
+                        "Owner": "AWS",
+                        "SourceIdentifier": "ACCOUNT_PART_OF_ORGANIZATIONS"
+                    }
+                }
+            ],
+            "NextToken": "page2"
+          }
+  - path: /
+    methods: ["POST"]
+    request_headers:
+      Content-Type:
+        - "application/x-amz-json-1.1"
+      X-Amz-Target:
+        - "StarlingDoveService.GetComplianceDetailsByConfigRule"
+    request_body: '{"ConfigRuleName":"access-keys-rotated","Limit":2}'
+    responses:
+      - status_code: 200
+        body: |-
+          {
+              "EvaluationResults": [
+                  {
+                      "ComplianceType": "COMPLIANT",
+                      "ConfigRuleInvokedTime": 1.444799479852E9,
+                      "EvaluationResultIdentifier": {
+                          "EvaluationResultQualifier": {
+                              "ConfigRuleName": "access-keys-rotated",
+                              "EvaluationMode": "DETECTIVE",
+                              "ResourceId": "i-0a4468fbfafeeg20h",
+                              "ResourceType": "AWS::EC2::Instance"
+                          },
+                          "OrderingTimestamp": 1.443541951883E9
+                      },
+                      "ResultRecordedTime": 1.444799480061E9
+                  },
+                  {
+                      "ComplianceType": "COMPLIANT",
+                      "ConfigRuleInvokedTime": 1.544799479852E9,
+                      "EvaluationResultIdentifier": {
+                          "EvaluationResultQualifier": {
+                              "ConfigRuleName": "access-keys-rotated",
+                              "EvaluationMode": "DETECTIVE",
+                              "ResourceId": "i-0a4468fbfafeeg30h",
+                              "ResourceType": "AWS::EC2::Instance"
+                          },
+                          "OrderingTimestamp": 1.543541951883E9
+                      },
+                      "ResultRecordedTime": 1.544799480061E9
+                  }
+              ],
+              "NextToken": "page2"
+          }
+  - path: /
+    methods: ["POST"]
+    request_headers:
+      Content-Type:
+        - "application/x-amz-json-1.1"
+      X-Amz-Target:
+        - "StarlingDoveService.GetComplianceDetailsByConfigRule"
+    request_body: '{"ConfigRuleName":"access-keys-rotated","Limit":2,"NextToken":"page2"}'
+    responses:
+      - status_code: 200
+        body: |-
+          {
+              "EvaluationResults": [
+                  {
+                      "ComplianceType": "NON_COMPLIANT",
+                      "ConfigRuleInvokedTime": 1.644799479852E9,
+                      "EvaluationResultIdentifier": {
+                          "EvaluationResultQualifier": {
+                              "ConfigRuleName": "access-keys-rotated",
+                              "EvaluationMode": "DETECTIVE",
+                              "ResourceId": "i-0a4468fbfafeeg30h",
+                              "ResourceType": "AWS::EC2::Instance"
+                          },
+                          "OrderingTimestamp": 1.643541951883E9
+                      },
+                      "ResultRecordedTime": 1.644799480061E9
+                  }
+              ]
+          }
+  - path: /
+    methods: ["POST"]
+    request_headers:
+      Content-Type:
+        - "application/x-amz-json-1.1"
+      X-Amz-Target:
+        - "StarlingDoveService.GetComplianceDetailsByConfigRule"
+    request_body: '{"ConfigRuleName":"account-part-of-organizations","Limit":2}'
+    responses:
+      - status_code: 200
+        body: |-
+          {
+              "EvaluationResults": []
+          } 
+  - path: /
+    methods: ["POST"]
+    request_headers:
+      Content-Type:
+        - "application/x-amz-json-1.1"
+      X-Amz-Target:
+        - "StarlingDoveService.GetComplianceDetailsByConfigRule"
+    request_body: '{"ConfigRuleName":"required-tags","Limit":2}'
+    responses:
+      - status_code: 200
+        body: |-
+          {
+              "EvaluationResults": [
+                  {
+                      "ComplianceType": "NON_COMPLIANT",
+                      "ConfigRuleInvokedTime": 1.844799479852E9,
+                      "EvaluationResultIdentifier": {
+                          "EvaluationResultQualifier": {
+                              "ConfigRuleName": "required-tags",
+                              "EvaluationMode": "PROACTIVE",
+                              "ResourceId": "i-0a4468fbfafeeg41h",
+                              "ResourceType": "AWS::EC2::Instance"
+                          },
+                          "OrderingTimestamp": 1.843541951883E9
+                      },
+                      "ResultRecordedTime": 1.844799480061E9
+                  }
+              ]
+          }  
