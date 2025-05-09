@@ -3,10 +3,6 @@ description: Pipeline for processing the API logs
 processors:
     - rename:
         ignore_missing: true
-        field: "_tmp.ece.log.@timestamp"
-        target_field: "@timestamp"
-    - rename:
-        ignore_missing: true
         field: "_tmp.ece.log.process.thread.name"
         target_field: "process.thread.name"
     - rename:
@@ -37,18 +33,23 @@ processors:
         ignore_missing: true
         field: "_tmp.ece.log.query_parameters"
         target_field: "url.query"
-    - rename:
+    - set:
+        description: For the URI parts processor we need proper http://... therefore we add it. http if it's not default port.
+        field: url.origin
+        value: http://{{_tmp.ece.log.request_url}}
+        if: "!ctx._tmp?.ece?.log?.request_url?.contains('12443')"
+    - set:
+        description: For the URI parts processor we need proper https://... therefore we add it.
+        field: url.origin
+        value: https://{{_tmp.ece.log.request_url}}
+        if: ctx._tmp?.ece?.log?.request_url?.contains('12443')
+    - uri_parts:
+        field: url.origin
         ignore_missing: true
-        field: "_tmp.ece.log.request_url"
-        target_field: "url.original"
     - rename:
         ignore_missing: true
         field: "_tmp.ece.log.request_method"
         target_field: "http.request.method"
-    - rename:
-        ignore_missing: true
-        field: "_tmp.ece.log.request_host"
-        target_field: "url.domain"
     - rename:
         ignore_missing: true
         field: "_tmp.ece.log.request_length"
@@ -196,6 +197,16 @@ processors:
         field: "url.original"
         ignore_failure: true
         pattern: "%{}/deployments/%{ece.deployment.id}"
+    - dissect:
+        description: Extract the deployment id from the url
+        field: "url.original"
+        ignore_failure: true
+        pattern: "%{}/deployments/%{ece.deployment.id}/%{}"
+    - dissect:
+        description: Extracts the API call against Elasticsearch through the API console
+        field: "url.original"
+        if: ctx.url?.original?.contains('/elasticsearch/main-elasticsearch/proxy/')
+        pattern: "%{}/elasticsearch/main-elasticsearch/proxy/%{ece.deployment.es_api}"
     - script:
         description: Set event.action based on API documentation
         if: "ctx.url?.original != null && ctx.http?.request?.method != null"

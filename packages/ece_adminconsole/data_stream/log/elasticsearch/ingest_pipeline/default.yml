@@ -21,6 +21,12 @@ processors:
         ignore_missing: true
         field: _tmp.ece.log.message
         target_field: message
+    - date:
+        if: ctx._tmp?.ece?.log['@timestamp'] != null
+        field: "_tmp.ece.log.@timestamp"
+        formats:
+            - ISO8601
+        tag: set-the-time-from-the-log
     - pipeline:
           name: '{{ IngestPipeline "api" }}'
           if: ctx.message =~ /^\d{3} /
