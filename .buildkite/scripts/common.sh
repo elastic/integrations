@@ -301,7 +301,9 @@ use_elastic_package() {
 is_already_published() {
     local packageZip=$1
 
-    if curl -s --head "https://package-storage.elastic.co/artifacts/packages/${packageZip}" | grep -q "HTTP/2 200" ; then
+    # Avoid using "-q" in grep in this pipe, it could cause some weird behavior in some scenarios due to SIGPIPE errors when "set -o pipefail"
+    # https://tldp.org/LDP/lpg/node20.html
+    if curl -s --head "https://package-storage.elastic.co/artifacts/packages/${packageZip}" | grep "HTTP/2 200" > /dev/null; then
         echo "- Already published ${packageZip}"
         return 0
     fi
@@ -407,7 +409,9 @@ is_package_excluded_in_config() {
     local package_name=""
     package_name=$(package_name_manifest)
 
-    if echo "${excluded_packages}" | grep -q -E "\"${package_name}\""; then
+    # Avoid using "-q" in grep in this pipe, it could cause some weird behavior in some scenarios due to SIGPIPE errors when "set -o pipefail"
+    # https://tldp.org/LDP/lpg/node20.html
+    if echo "${excluded_packages}" | grep -E "\"${package_name}\"" > /dev/null; then
         return 0
     fi
     return 1
@@ -438,7 +442,9 @@ is_supported_capability() {
     fi
 
     for cap in ${capabilities}; do
-        if ! echo "${cap}" | grep -q -E "${capabilities_kibana_grep}"; then
+        # Avoid using "-q" in grep in this pipe, it could cause some weird behavior in some scenarios due to SIGPIPE errors when "set -o pipefail"
+        # https://tldp.org/LDP/lpg/node20.html
+        if ! echo "${cap}" | grep -E "${capabilities_kibana_grep}" > /dev/null; then
             return 1
         fi
     done
@@ -768,12 +774,20 @@ is_pr_affected() {
 
     commit_merge=$(git merge-base "${from}" "${to}")
     echoerr "[${package}] git-diff: check non-package files (${commit_merge}..${to})"
-    if git diff --name-only "${commit_merge}" "${to}" | grep -q -E -v '^(packages/|\.github/(CODEOWNERS|ISSUE_TEMPLATE|PULL_REQUEST_TEMPLATE)|README\.md|docs/)' ; then
+    # Avoid using "-q" in grep in this pipe, it could cause that some files updated are not detected due to SIGPIPE errors when "set -o pipefail"
+    # Example:
+    # https://buildkite.com/elastic/integrations/builds/25606
+    # https://github.com/elastic/integrations/pull/13810
+    if git diff --name-only "${commit_merge}" "${to}" | grep -E -v '^(packages/|\.github/(CODEOWNERS|ISSUE_TEMPLATE|PULL_REQUEST_TEMPLATE)|README\.md|docs/)' > /dev/null; then
         echo "[${package}] PR is affected: found non-package files"
         return 0
     fi
     echoerr "[${package}] git-diff: check package files (${commit_merge}..${to})"
-    if git diff --name-only "${commit_merge}" "${to}" | grep -q -E "^packages/${package}/" ; then
+    # Avoid using "-q" in grep in this pipe, it could cause that some files updated are not detected due to SIGPIPE errors when "set -o pipefail"
+    # Example:
+    # https://buildkite.com/elastic/integrations/builds/25606
+    # https://github.com/elastic/integrations/pull/13810
+    if git diff --name-only "${commit_merge}" "${to}" | grep -E "^packages/${package}/" > /dev/null ; then
         echo "[${package}] PR is affected: found package files"
         return 0
     fi
