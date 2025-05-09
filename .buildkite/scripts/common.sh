@@ -10,7 +10,6 @@ platform_type_lowercase="${platform_type,,}"
 
 SCRIPTS_BUILDKITE_PATH="${WORKSPACE}/.buildkite/scripts"
 
-GOOGLE_CREDENTIALS_FILENAME="google-cloud-credentials.json"
 export ELASTIC_PACKAGE_BIN=${WORKSPACE}/build/elastic-package
 
 API_BUILDKITE_PIPELINES_URL="https://api.buildkite.com/v2/organizations/elastic/pipelines/"
@@ -251,34 +250,6 @@ with_github_cli() {
     rm -rf "${WORKSPACE}/tmp"
 
     gh version
-}
-
-## Logging and logout from Google Cloud
-google_cloud_auth_safe_logs() {
-    local gsUtilLocation
-    gsUtilLocation=$(mktemp -d -p "${WORKSPACE}" -t "${TMP_FOLDER_TEMPLATE}")
-    local secretFileLocation=${gsUtilLocation}/${GOOGLE_CREDENTIALS_FILENAME}
-
-    echo "${PRIVATE_CI_GCS_CREDENTIALS_SECRET}" > "${secretFileLocation}"
-
-    gcloud auth activate-service-account --key-file "${secretFileLocation}" 2> /dev/null
-    export GOOGLE_APPLICATION_CREDENTIALS=${secretFileLocation}
-}
-
-google_cloud_logout_active_account() {
-  local active_account
-  active_account=$(gcloud auth list --filter=status:ACTIVE --format="value(account)" 2>/dev/null || true)
-  if [[ -n "$active_account" && -n "${GOOGLE_APPLICATION_CREDENTIALS+x}" ]]; then
-    echo "Logging out from GCP for active account"
-    gcloud auth revoke "$active_account" > /dev/null 2>&1
-  else
-    echo "No active GCP accounts found."
-  fi
-
-  if [ -n "${GOOGLE_APPLICATION_CREDENTIALS+x}" ]; then
-    rm -rf "${GOOGLE_APPLICATION_CREDENTIALS}"
-    unset GOOGLE_APPLICATION_CREDENTIALS
-  fi
 }
 
 ## Helpers for integrations pipelines
@@ -918,16 +889,16 @@ upload_safe_logs() {
     local source="$2"
     local target="$3"
 
+    echo "--- Uploading safe logs to GCP bucket ${bucket}"
+
     if ! ls ${source} 2>&1 > /dev/null ; then
         echo "upload_safe_logs: artifacts files not found, nothing will be archived"
         return
     fi
 
-    google_cloud_auth_safe_logs
+    gcloud storage cp ${source} "gs://${bucket}/buildkite/${REPO_BUILD_TAG}/${target}"
 
-    gsutil cp ${source} "gs://${bucket}/buildkite/${REPO_BUILD_TAG}/${target}"
-
-    google_cloud_logout_active_account
+    echo "GCP logout is not required, the BK plugin will do it for us"
 }
 
 clean_safe_logs() {
