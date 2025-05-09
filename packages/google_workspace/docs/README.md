@@ -32,6 +32,7 @@ It is compatible with a subset of applications under the [Google Reports API v1]
 | [Chat](https://developers.google.com/admin-sdk/reports/v1/appendix/activity/chat) | The Chat activity report returns information about how your account's users use and manage Spaces. |
 | [Vault](https://developers.google.com/admin-sdk/reports/v1/appendix/activity/vault) | The Vault activity report returns information about various types of Vault Audit activity events. |
 | [Meet](https://developers.google.com/admin-sdk/reports/v1/appendix/activity/meet) | The Meet activity report returns information about various aspects of call events. |
+| [Keep](https://developers.google.com/admin-sdk/reports/v1/appendix/activity/keep) | The Keep activity report returns information about how your account's users manage and modify their notes. |
 
 ## Requirements
 
@@ -48,7 +49,7 @@ This integration will make use of the following *oauth2 scope*:
 
 Once you have downloaded your service account credentials as a JSON file, you are ready to set up your integration.
 
-Click the Advanced option of Google Workspace Audit Reports. The default value of "API Host" is `https://www.googleapis.com`. The API Host will be used for collecting `access_transparency`, `admin`, `calendar`, `chat`, `chrome`, `context_aware_access`, `data_studio`, `device`, `drive`, `gcp`, `groups`, `group_enterprise`, `login`, `meet`, `rules`, `saml`, `token`, `user accounts` and `vault` logs.
+Click the Advanced option of Google Workspace Audit Reports. The default value of "API Host" is `https://www.googleapis.com`. The API Host will be used for collecting `access_transparency`, `admin`, `calendar`, `chat`, `chrome`, `context_aware_access`, `data_studio`, `device`, `drive`, `gcp`, `groups`, `group_enterprise`, `keep`, `login`, `meet`, `rules`, `saml`, `token`, `user accounts` and `vault` logs.
 
 >  NOTE: The `Delegated Account` value in the configuration, is expected to be the email of the administrator account, and not the email of the ServiceAccount.
 
@@ -3850,6 +3851,133 @@ An example event for `meet` looks as following:
 | google_workspace.meet.target.phone_number | The target phone number for this action. | keyword |
 | google_workspace.meet.target.user_count | Target user count. | long |
 | google_workspace.meet.type |  | keyword |
+| google_workspace.organization.domain | The domain that is affected by the report's event. | keyword |
+| input.type | Type of filebeat input. | keyword |
+| log.offset | Log offset. | long |
+
+
+### Keep
+
+This is the `keep` dataset.
+
+An example event for `keep` looks as following:
+
+```json
+{
+    "@timestamp": "2025-03-27T12:45:08.310Z",
+    "agent": {
+        "ephemeral_id": "e43a76f4-47c9-40b4-b16e-547081b85cca",
+        "id": "d2812dfd-bd3b-46f8-b372-9357a26b4580",
+        "name": "elastic-agent-49635",
+        "type": "filebeat",
+        "version": "8.18.0"
+    },
+    "data_stream": {
+        "dataset": "google_workspace.keep",
+        "namespace": "61415",
+        "type": "logs"
+    },
+    "ecs": {
+        "version": "8.16.0"
+    },
+    "elastic_agent": {
+        "id": "d2812dfd-bd3b-46f8-b372-9357a26b4580",
+        "snapshot": true,
+        "version": "8.18.0"
+    },
+    "event": {
+        "action": "uploaded-attachment",
+        "agent_id_status": "verified",
+        "dataset": "google_workspace.keep",
+        "id": "0",
+        "ingested": "2025-04-29T06:58:21Z",
+        "kind": "event",
+        "original": "{\"actor\":{\"callerType\":\"USER\",\"email\":\"foo@bar.com\",\"profileId\":\"1\"},\"etag\":\"abcdefgh-SHfJfeOMlTPu983WfVweBonaAPdmU\",\"events\":{\"name\":\"uploaded_attachment\",\"parameters\":[{\"name\":\"owner_email\",\"value\":\"foo@bar.com\"},{\"name\":\"note_name\",\"value\":\"https://keep.googleapis.com/v1/notes/abc-xyz\"},{\"name\":\"attachment_name\",\"value\":\"https://keep.googleapis.com/v1/notes/abc-xyz/attachments/abcdefgh\"}],\"type\":\"user_action\"},\"id\":{\"applicationName\":\"keep\",\"customerId\":\"1\",\"time\":\"2025-03-27T12:45:08.310Z\",\"uniqueQualifier\":\"0\"},\"kind\":\"admin#reports#activity\"}",
+        "provider": "keep",
+        "type": [
+            "change"
+        ]
+    },
+    "google_workspace": {
+        "actor": {
+            "caller_type": "USER"
+        },
+        "etag": "abcdefgh-SHfJfeOMlTPu983WfVweBonaAPdmU",
+        "keep": {
+            "attachment_name": "https://keep.googleapis.com/v1/notes/abc-xyz/attachments/abcdefgh",
+            "name": "uploaded_attachment",
+            "note_name": "https://keep.googleapis.com/v1/notes/abc-xyz",
+            "owner_email": "foo@bar.com",
+            "type": "user_action"
+        },
+        "kind": "admin#reports#activity"
+    },
+    "input": {
+        "type": "cel"
+    },
+    "observer": {
+        "product": "Keep",
+        "vendor": "Google Workspace"
+    },
+    "organization": {
+        "id": "1"
+    },
+    "related": {
+        "user": [
+            "foo@bar.com"
+        ]
+    },
+    "source": {
+        "user": {
+            "domain": "bar.com",
+            "email": "foo@bar.com",
+            "id": "1",
+            "name": "foo@bar.com"
+        }
+    },
+    "tags": [
+        "preserve_original_event",
+        "forwarded",
+        "google_workspace-keep"
+    ],
+    "url": {
+        "full": "https://keep.googleapis.com/v1/notes/abc-xyz"
+    },
+    "user": {
+        "domain": "bar.com",
+        "email": "foo@bar.com",
+        "id": "1",
+        "name": "foo@bar.com"
+    }
+}
+```
+
+**Exported fields**
+
+| Field | Description | Type |
+|---|---|---|
+| @timestamp | Event timestamp. | date |
+| data_stream.dataset | Data stream dataset. | constant_keyword |
+| data_stream.namespace | Data stream namespace. | constant_keyword |
+| data_stream.type | Data stream type. | constant_keyword |
+| event.dataset | Event dataset. | constant_keyword |
+| event.module | Event module. | constant_keyword |
+| google_workspace.actor.caller_type | The type of actor. Values can be:   \*USER\*: Another user in the same domain.   \*EXTERNAL_USER\*: A user outside the domain.   \*KEY\*: A non-human actor. | keyword |
+| google_workspace.actor.email | The primary email address of the actor. May be absent if there is no email address associated with the actor. | keyword |
+| google_workspace.actor.key | Only present when `actor.type` is `KEY`. Can be the `consumer_key` of the requestor for OAuth 2LO API requests or an identifier for robot accounts. | keyword |
+| google_workspace.actor.profile_id | The unique Google Workspace profile ID of the actor. | keyword |
+| google_workspace.etag | ETag of the entry. | keyword |
+| google_workspace.id.application_name | Application name to which the event belongs. For possible values see the list of applications above in applicationName. | keyword |
+| google_workspace.id.customer_id | The unique identifier for a Google Workspace account. | keyword |
+| google_workspace.id.time | Time of occurrence of the activity. This is in UNIX epoch time in seconds. | date |
+| google_workspace.id.unique_qualifier | Unique qualifier if multiple events have the same time. | keyword |
+| google_workspace.ip_address | IP address of the user doing the action. This is the Internet Protocol (IP) address of the user when logging into Google Workspace, which may or may not reflect the user's physical location. For example, the IP address can be the user's proxy server's address or a virtual private network (VPN) address. The API supports IPv4 and IPv6. | ip |
+| google_workspace.keep.attachment_name | Attachment resource URI. | keyword |
+| google_workspace.keep.name |  | keyword |
+| google_workspace.keep.note_name | Note resource URI. | keyword |
+| google_workspace.keep.owner_email | Note owner email. | keyword |
+| google_workspace.keep.type |  | keyword |
+| google_workspace.kind | The type of API resource, mapped from `kind` in the original payload, more details can be found [here](https://developers.google.com/admin-sdk/reports/reference/rest/v1/activities/list#activity). | keyword |
 | google_workspace.organization.domain | The domain that is affected by the report's event. | keyword |
 | input.type | Type of filebeat input. | keyword |
 | log.offset | Log offset. | long |
