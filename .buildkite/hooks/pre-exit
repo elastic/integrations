@@ -7,10 +7,6 @@ set -euo pipefail
 if [[ "$BUILDKITE_PIPELINE_SLUG" =~ ^(integrations|integrations-test-stack)$ ]]; then
     # FIXME: update condition depending on the pipeline steps triggered
     if [[ "$BUILDKITE_STEP_KEY" =~ ^test-integrations- ]]; then
-        unset ELASTIC_PACKAGE_AWS_ACCESS_KEY
-        unset ELASTIC_PACKAGE_AWS_SECRET_KEY
-        unset AWS_ACCESS_KEY_ID
-        unset AWS_SECRET_ACCESS_KEY
 
         # Ensure that kind cluster is deleted
         delete_kind_cluster
@@ -25,10 +21,6 @@ fi
 
 if [[ "$BUILDKITE_PIPELINE_SLUG" == "integrations-serverless" ]]; then
     if [[ "$BUILDKITE_STEP_KEY" == "test-integrations-serverless-project" ]]; then
-        unset ELASTIC_PACKAGE_AWS_ACCESS_KEY
-        unset ELASTIC_PACKAGE_AWS_SECRET_KEY
-        unset AWS_ACCESS_KEY_ID
-        unset AWS_SECRET_ACCESS_KEY
 
         # Ensure that kind cluster is deleted
         delete_kind_cluster
@@ -43,8 +35,6 @@ fi
 
 unset_secrets
 cleanup
-
-google_cloud_logout_active_account
 
 if [[ "$BUILDKITE_PIPELINE_SLUG" == "integrations-backport" && "$BUILDKITE_STEP_KEY" == "create-backport-branch" ]]; then
   cd "${WORKSPACE}"
