@@ -91,6 +91,7 @@ There are a few ways to provide AWS credentials:
 * Use temporary security credentials
 * Use a shared credentials file
 * Use an IAM role Amazon Resource Name (ARN)
+* Use an EC2 instance's IAM Role
 
 #### Use access keys directly
 
@@ -162,6 +163,19 @@ To use an IAM role ARN, you need to provide either a [credential profile](#use-a
 Note: If `role_arn` is given, the package will check if access keys are given.
 If they are not given, the package will check for a credential profile name.
 If neither is given, the default credential profile will be used. 
+
+#### Use an EC2 instance's IAM Role
+
+When Elastic Agent runs on an EC2 instance that has an IAM role attached via an instance profile, it can automatically authenticate to AWS services using a temporary access key pair and session token provided by the Instance Metadata Service (IMDS). For more details see [IAM roles for Amazon EC2](https://docs.aws.amazon.com/AWSEC2/latest/UserGuide/iam-roles-for-amazon-ec2.html).
+
+To use the IAM role attached to the EC2 instance, leave all of the following options empty:
+
+* `access_key_id`
+* `secret_access_key`
+* `session_token`
+* `credential_profile_name`
+* `shared_credential_file`
+* `role_arn`
 
 ### AWS Permissions
 
