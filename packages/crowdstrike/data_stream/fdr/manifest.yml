@@ -232,8 +232,33 @@ streams:
                     evts.push(evt);
                   }
                 });
-              } else if (message != null && topic_arn != null) {
+              }
+              // Checks if event notification is S3 -> SNS -> SQS
+              else if (message != null && topic_arn != null) {
                 var p = JSON.parse(message);
+                var snsrec = p.Records;
+                if (snsrec != null && snsrec.length != 0) {
+                  snsrec.forEach(function(f){
+                    if (f.s3 && f.s3.bucket && f.s3.bucket.name && f.s3.object && f.s3.object.key) {
+                      var evt = new S3EventV2();
+                      evt.SetS3BucketName(f.s3.bucket.name);
+                      evt.SetS3ObjectKey(f.s3.object.key);
+                      if (f.s3.bucket.arn) {
+                        evt.SetS3BucketARN(f.s3.bucket.arn);
+                      }
+                      if (f.awsRegion) {
+                        evt.SetAWSRegion(f.awsRegion);
+                      }
+                      if (f.eventName) {
+                        evt.SetEventName(f.eventName);
+                      }
+                      if (f.eventSource) {
+                        evt.SetEventSource(f.eventSource);
+                      }
+                      evts.push(evt);
+                    }
+                  });
+                }
               }
             } else {
               // FDR queue
