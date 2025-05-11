@@ -205,11 +205,11 @@ streams:
             var evts = [];
             var files = m.files;
             var bucket = m.bucket;
+            var records = m.Records;
+            var message = m.Message;
+            var topic_arn = m.TopicArn;
             // Checks if not FDR queue
             if (!Array.isArray(files) || (files.length == 0) || bucket == null || bucket == "") {
-              var records = m.Records;
-              var message = m.Message;
-              var topic_arn = m.TopicArn;
               // Checks if event notification is S3 -> SQS
               if (records != null && records.length != 0) {
                 records.forEach(function(f){
@@ -259,6 +259,22 @@ streams:
                     }
                   });
                 }
+              }
+              // Checks if event notification is S3 -> EventBridge -> SQS
+              else if (m.detail != null && m.detail.bucket != null && m.detail.object != null && m.detail.bucket.name != null && m.detail.object.key != null) {
+                var evt = new S3EventV2();
+                evt.SetS3BucketName(m.detail.bucket.name);
+                evt.SetS3ObjectKey(m.detail.object.key);
+                if (Array.isArray(m.resources) && m.resources.length > 0) {
+                  evt.SetS3BucketARN(m.resources[0]);
+                }
+                if (m.source != null && m.source == "aws.s3") {
+                  evt.SetEventSource("aws:s3");
+                }
+                if (m['detail-type'] == "Object Created") {
+                  evt.SetEventName("ObjectCreated:Put");
+                }
+                evts.push(evt);
               }
             } else {
               // FDR queue
