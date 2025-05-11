@@ -38,6 +38,7 @@ processors:
         - '^%{CISCO_PRIORITY_MSGCOUNT}?%{TIMESTAMP_ISO8601:_temp_.cisco_timestamp} %{CISCO_HOSTNAME:log.syslog.hostname} %{GREEDYDATA:_temp_.message}$'
         - '^%{CISCO_PRIORITY_MSGCOUNT}?%{SYSLOGTIMESTAMP} %{IP} (?:%{CISCO_HOSTNAME:log.syslog.hostname}: )?(?:%{NUMBER:cisco.ios.sequence}: )?(?:%{CISCO_UPTIME:cisco.ios.uptime}|%{CISCO_TIMESTAMP}): %{GREEDYDATA:_temp_.message}$'
         - '^%{CISCO_PRIORITY_MSGCOUNT}?%{SYSLOGTIMESTAMP} (?:%{IP}|%{CISCO_HOSTNAME:log.syslog.hostname}) %{NUMBER:cisco.ios.sequence}: (?:%{CISCO_UPTIME:cisco.ios.uptime}|%{CISCO_TIMESTAMP}): %{GREEDYDATA:_temp_.message}$'
+        - '^%{CISCO_PRIORITY_MSGCOUNT}?%{CISCO_TIMESTAMP:_temp_.timestamp}: %{GREEDYDATA:_temp_.message}$'
         - '^%{CISCO_PRIORITY_MSGCOUNT}?(?:(?:%{IP}|%{CISCO_HOSTNAME:log.syslog.hostname})(?:: \*%{DATA}:|:?)? )?(?:%{NUMBER:cisco.ios.sequence}: )?(?:%{CISCO_UPTIME:cisco.ios.uptime}|%{CISCO_TIMESTAMP:_temp_.timestamp}): %{GREEDYDATA:_temp_.message}$'
         - '^%{SYSLOGTIMESTAMP} (?:%{IP}|%{HOSTNAME:log.syslog.hostname}) %{CISCO_PRIORITY_MSGCOUNT}?(?:%{NUMBER:cisco.ios.sequence}: )(?:(?:%{CISCO_UPTIME:cisco.ios.uptime}|%{CISCO_TIMESTAMP}): )?%{GREEDYDATA:_temp_.message}$'
         - '^%{CISCO_PRIORITY_MSGCOUNT}?%{SYSLOGTIMESTAMP} (?:%{IP:log.syslog.hostname}|%{CISCO_HOSTNAME:log.syslog.hostname}|%{WORD:log.syslog.hostname}) %{GREEDYDATA:_temp_.message}$'
@@ -56,38 +57,29 @@ processors:
       patterns:
         - '^%%{GREEDYDATA:message}$'
         - '^%{GREEDYDATA:_temp_.generic_message}$'
-  # Do not allow all-digit hostnames, these are sequence numbers. Due limitations of grok, and how
-  # many various log formats are supported, it's not possible to do this entirely with patterns.
-  # See https://github.com/elastic/integrations/pull/13816 for details.
-  - script:
-      lang: painless
-      tag: convert_host_to_seq
-      source: |
-        if (ctx?.log?.syslog != null && ctx.log.syslog.containsKey('hostname')) {
-          def val = ctx.log.syslog.hostname;
-          Pattern p = /\d+/;
-          if (p.matcher(val).matches()) {
-            if (ctx.cisco == null) {
-              ctx.cisco = new HashMap();
-            }
-            if (ctx.cisco.ios == null) {
-              ctx.cisco.ios = new HashMap();
-            }
-            ctx.cisco.ios.sequence = val;
-            ctx.log.syslog.remove('hostname');
-            // sequence may actually be part of a timestamp in some cases. Remove it, if it appears to be parsed from a timestamp
-            if (ctx?._temp_?.timestamp != null) {
-              val = ctx._temp_.timestamp;
-              Pattern p2 = /^(Jan|Feb|Mar|Apr|May|Jun|Jul|Aug|Sep|Oct|Nov|Dec) \d{1,2} \d{2}:\d{2}:\d{2}.*/;
-              if (p2.matcher(val).matches()) {
-                ctx.cisco.ios.remove('sequence');
-              }
-            }
-            if (ctx.log.syslog.isEmpty()) {
-              ctx.log.remove("syslog");
-            }
-          }
-        }
+  # Handle all-digit hostnames as sequence numbers
+  - grok:
+      field: log.syslog.hostname
+      patterns:
+        - '^%{NUMBER:_temp_.sequence}$'
+      ignore_missing: true
+      ignore_failure: true 
+  - set:
+      field: cisco.ios.sequence
+      copy_from: _temp_.sequence
+      if: ctx._temp_?.sequence != null
+  - remove:
+      field: log.syslog.hostname
+      if: ctx._temp_?.sequence != null
+      ignore_missing: true
+  - remove:
+      field: _temp_.sequence
+      if: ctx._temp_?.sequence != null
+      ignore_missing: true
+  - remove:
+      field: log.syslog
+      if: "ctx.log?.syslog != null && ctx.log.syslog.isEmpty()"
+      ignore_missing: true
   - set:
       field: event.sequence
       copy_from: cisco.ios.sequence
