@@ -42,15 +42,16 @@ streams:
         required: true
         show_user: true
         description: URL of the AWS SQS queue that messages will be received from.
-      - name: is_fdr_queue
-        type: bool
-        title: Is FDR queue
-        multi: false
-        required: true
-        show_user: true
-        description: |
-          By default the FDR queue is expected. This option must be set to `false` if you are using your own queue.
-        default: true
+        default: https://sqs.ap-south-1.amazonaws.com/898201413883/kcr-crowds-sqs
+      # - name: is_fdr_queue
+      #   type: bool
+      #   title: Is FDR queue
+      #   multi: false
+      #   required: true
+      #   show_user: true
+      #   description: |
+      #     By default the FDR queue is expected. This option must be set to `false` if you are using your own queue.
+      #   default: true
       - name: enrich_metadata
         required: true
         show_user: true
@@ -204,36 +205,66 @@ streams:
             var evts = [];
             var files = m.files;
             var bucket = m.bucket;
+            // Checks if not FDR queue
             if (!Array.isArray(files) || (files.length == 0) || bucket == null || bucket == "") {
-              return evts;
-            }
-            files.sort(function(a, b) {
-              var isMetadata = function(a) {
-                return a.path && ((a.path.indexOf("aidmaster") !== -1) || (a.path.indexOf("userinfo") !== -1));
-              };
-              var cmp = function(a, b) {
-                if (a < b) {
+              var records = m.Records;
+              var message = m.Message;
+              var topic_arn = m.TopicArn;
+              // Checks if event notification is S3 -> SQS
+              if (records != null && records.length != 0) {
+                records.forEach(function(f){
+                  if (f.s3 && f.s3.bucket && f.s3.bucket.name && f.s3.object && f.s3.object.key) {
+                    var evt = new S3EventV2();
+                    evt.SetS3BucketName(f.s3.bucket.name);
+                    evt.SetS3ObjectKey(f.s3.object.key);
+                    if (f.s3.bucket.arn) {
+                      evt.SetS3BucketARN(f.s3.bucket.arn);
+                    }
+                    if (f.awsRegion) {
+                      evt.SetAWSRegion(f.awsRegion);
+                    }
+                    if (f.eventName) {
+                      evt.SetEventName(f.eventName);
+                    }
+                    if (f.eventSource) {
+                      evt.SetEventSource(f.eventSource);
+                    }
+                    evts.push(evt);
+                  }
+                });
+              } else if (message != null && topic_arn != null) {
+                var p = JSON.parse(message);
+              }
+            } else {
+              // FDR queue
+              files.sort(function(a, b) {
+                var isMetadata = function(a) {
+                  return a.path && ((a.path.indexOf("aidmaster") !== -1) || (a.path.indexOf("userinfo") !== -1));
+                };
+                var cmp = function(a, b) {
+                  if (a < b) {
+                    return -1;
+                  }
+                  if (a > b) {
+                    return 1;
+                  }
+                  return 0;
+                };
+                if (isMetadata(a) === isMetadata(b)) {
+                  return cmp(a.path, b.path);
+                }
+                if (isMetadata(a)) {
                   return -1;
                 }
-                if (a > b) {
-                  return 1;
-                }
-                return 0;
-              };
-              if (isMetadata(a) === isMetadata(b)) {
-                return cmp(a.path, b.path);
-              }
-              if (isMetadata(a)) {
-                return -1;
-              }
-              return 1;
-            });
-            files.forEach(function(f){
-              var evt = new S3EventV2();
-              evt.SetS3BucketName(bucket);
-              evt.SetS3ObjectKey(f.path);
-              evts.push(evt);
-            });
+                return 1;
+              });
+              files.forEach(function(f){
+                var evt = new S3EventV2();
+                evt.SetS3BucketName(bucket);
+                evt.SetS3ObjectKey(f.path);
+                evts.push(evt);
+              });
+            }
             return evts;
           }
       - name: tags
@@ -305,7 +336,6 @@ streams:
         description: Keep the aidmaster and userinfo documents after they have been used for event enrichment.
         type: bool
         multi: false
-        default: false
       - name: metadata_ttl
         required: true
         show_user: true
