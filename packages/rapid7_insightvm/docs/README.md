@@ -38,35 +38,35 @@ An example event for `asset` looks as following:
 
 ```json
 {
-    "@timestamp": "2023-05-23T16:17:06.996Z",
+    "@timestamp": "2025-05-12T03:36:55.168Z",
     "agent": {
-        "ephemeral_id": "163d2260-4499-492b-bbd5-4d90487865b9",
-        "id": "c157ef08-38bb-40dd-bae1-c6bc8c8f02fa",
-        "name": "docker-fleet-agent",
+        "ephemeral_id": "72b549b4-4b06-4aea-9f32-4388425b83ca",
+        "id": "af9a6758-9b83-4e5d-8860-da3c73a70516",
+        "name": "elastic-agent-70515",
         "type": "filebeat",
-        "version": "8.9.0"
+        "version": "8.13.0"
     },
     "data_stream": {
         "dataset": "rapid7_insightvm.asset",
-        "namespace": "ep",
+        "namespace": "68800",
         "type": "logs"
     },
     "ecs": {
         "version": "8.11.0"
     },
     "elastic_agent": {
-        "id": "c157ef08-38bb-40dd-bae1-c6bc8c8f02fa",
-        "snapshot": true,
-        "version": "8.9.0"
+        "id": "af9a6758-9b83-4e5d-8860-da3c73a70516",
+        "snapshot": false,
+        "version": "8.13.0"
     },
     "event": {
         "agent_id_status": "verified",
         "category": [
             "host"
         ],
-        "created": "2023-05-23T16:17:06.996Z",
+        "created": "2025-05-12T03:36:55.168Z",
         "dataset": "rapid7_insightvm.asset",
-        "ingested": "2023-05-23T16:17:08Z",
+        "ingested": "2025-05-12T03:36:58Z",
         "kind": "state",
         "original": "{\"assessed_for_policies\":false,\"assessed_for_vulnerabilities\":true,\"critical_vulnerabilities\":0,\"exploits\":0,\"id\":\"452534235-25a7-40a3-9321-28ce0b5cc90e-default-asset-199\",\"ip\":\"10.1.0.128\",\"last_assessed_for_vulnerabilities\":\"2020-03-20T19:19:42.611Z\",\"last_scan_end\":\"2020-03-20T19:19:42.611Z\",\"last_scan_start\":\"2020-03-20T19:18:13.611Z\",\"malware_kits\":0,\"moderate_vulnerabilities\":2,\"new\":[],\"os_architecture\":\"x86_64\",\"os_description\":\"CentOS Linux 2.6.18\",\"os_family\":\"Linux\",\"os_name\":\"Linux\",\"os_system_name\":\"CentOS Linux\",\"os_type\":\"General\",\"os_vendor\":\"CentOS\",\"os_version\":\"2.6.18\",\"remediated\":[],\"risk_score\":0,\"severe_vulnerabilities\":0,\"tags\":[{\"name\":\"lab\",\"type\":\"SITE\"}],\"total_vulnerabilities\":2}",
         "type": [
@@ -209,6 +209,7 @@ An example event for `asset` looks as following:
 | rapid7.insightvm.asset.same.first_found | The first time the vulnerability was discovered. | date |
 | rapid7.insightvm.asset.same.key | The identifier of the assessment key. | keyword |
 | rapid7.insightvm.asset.same.last_found | The most recent time the vulnerability was discovered. | date |
+| rapid7.insightvm.asset.same.nic | The NIC of the vulnerability finding. | keyword |
 | rapid7.insightvm.asset.same.port | For services vulnerabilities, the port that is vulnerable. | long |
 | rapid7.insightvm.asset.same.proof | The identifier of the vulnerability proof. | keyword |
 | rapid7.insightvm.asset.same.protocol | For services vulnerabilities, the protocol that is vulnerable. | keyword |

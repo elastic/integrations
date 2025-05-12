@@ -28,14 +28,7 @@ request.transforms:
   - set:
       target: url.params.size
       value: {{batch_size}}
-  - set:
-      target: url.params.comparisonTime
-      value: '[[formatDate (now (parseDuration "-{{interval}}")) "RFC3339"]]'
 response.pagination:
-  - set:
-      target: url.params.comparisonTime
-      value: '[[.last_response.url.params.Get "comparisonTime"]]'
-      fail_on_template_error: true
   - set:
       target: url.params.cursor
       value: '[[if index .last_response.body.metadata "cursor"]][[.last_response.body.metadata.cursor]][[end]]'
@@ -43,6 +36,10 @@ response.pagination:
 response.split:
   target: body.data
   ignore_empty_value: true
+  split:
+    target: body.same
+    keep_parent: true
+    ignore_empty_value: true
 tags:
 {{#if preserve_original_event}}
   - preserve_original_event
