@@ -36,24 +36,24 @@ An example event for `vulnerability` looks as following:
 
 ```json
 {
-    "@timestamp": "2025-05-11T13:49:20.005Z",
+    "@timestamp": "2025-05-11T13:57:59.364Z",
     "agent": {
-        "ephemeral_id": "15802930-7a72-4984-80e9-abd6ccebe79f",
-        "id": "1887584f-f37b-48db-9315-c25f643d9b70",
-        "name": "elastic-agent-68461",
+        "ephemeral_id": "19991d29-a79b-467c-93af-f425b85de028",
+        "id": "5374b8ec-e50d-43be-9cfd-c7716d8b938c",
+        "name": "elastic-agent-18061",
         "type": "filebeat",
         "version": "8.18.0"
     },
     "data_stream": {
         "dataset": "github_security_advisory.vulnerability",
-        "namespace": "80094",
+        "namespace": "99076",
         "type": "logs"
     },
     "ecs": {
         "version": "8.17.0"
     },
     "elastic_agent": {
-        "id": "1887584f-f37b-48db-9315-c25f643d9b70",
+        "id": "5374b8ec-e50d-43be-9cfd-c7716d8b938c",
         "snapshot": false,
         "version": "8.18.0"
     },
@@ -63,7 +63,7 @@ An example event for `vulnerability` looks as following:
             "vulnerability"
         ],
         "dataset": "github_security_advisory.vulnerability",
-        "ingested": "2025-05-11T13:49:23Z",
+        "ingested": "2025-05-11T13:58:02Z",
         "kind": "enrichment",
         "type": [
             "info"
