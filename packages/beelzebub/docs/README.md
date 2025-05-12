@@ -10,7 +10,7 @@ This allows you to search, observe and visualize the Beelzebub logs through Elas
 
 This integration was last tested with Beelzebub `v3.3.6`.
 
-Please note that Beelzebub only produces NDJSON log files at this time, to ship logs to this integration via any other method you will require another component, such as [fluentd](https://www.fluentd.org/), to perform this.
+Please note that Beelzebub only produces NDJSON log files at this time, to ship logs to this integration via any other method you will require another component, such as [Logstash](https://www.elastic.co/logstash) or [fluentd](https://www.fluentd.org/), which can perform this by reading the Beelzebub produced log files and transporting the content as it changes to an appropriately configured Elastic Agent input, an ingest location that can be utilised by an appropriately configured Elastic Agent, or directly into Elasticsearch.
 
 For more information, refer to:
 1. [GitHub](https://github.com/mariocandela/beelzebub)
@@ -38,7 +38,7 @@ The package collects log events from file or by receiving HTTP POST requests.
 3. Choose to redact passwords, or not.
 4. Configure advanced options if desired.
 
-### Configure Beelzebub logging
+### Example Beelzebub Logging Configuration
 
 Example `beelzebub.yaml` configuration.
 ```
@@ -59,48 +59,6 @@ core:
     enabled: false
     uri: ""
     auth-token: ""
-```
-
-Example `fluentd.conf` to transport logs from local beelzebub.log file via HTTP to an Elastic Agent http_endpoint.
-
-```
-# fluentd.conf
-
-<source>
-  @type tail
-  path /beelzebub/logs/beelzebub.log
-  pos_file /fluentd/tmp/beelzebub.pos
-  tag app.honeypot
-  <parse>
-    @type none
-  </parse>
-</source>
-
-<match app.honeypot>
-  @type copy
-
-  # OPTIONAL: copy logs to S3 and/or any other output as required via multiple <store></store> definitions.
-
-  <store>
-    @type http
-    endpoint "#{ENV['HTTP_URL']}"
-    <auth>
-      method basic
-      username "#{ENV['HTTP_USERNAME']}"
-      password "#{ENV['HTTP_PASSWORD']}"
-    </auth>
-    open_timeout 2
-    content_type "application/json"
-    <format>
-      @type single_value
-    </format>
-    <buffer>
-      flush_interval 10s
-    </buffer>
-  </store>
-</match>
-
-# EOF
 ```
 
 ## Logs

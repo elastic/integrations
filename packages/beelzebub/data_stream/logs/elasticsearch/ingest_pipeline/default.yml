@@ -25,6 +25,12 @@ processors:
       ignore_missing: true
       tag: rename_message_to_event_original
 
+  - remove:
+      if: ctx.event?.original != null
+      description: "Remove unnecessary message field if event.original exists"
+      field: message
+      ignore_missing: true
+
   - redact:
       if: 'ctx.tags != null && ctx.tags.contains("redact_passwords") && !(ctx.event?.original =~ /\"Password\": *\"\"/)'
       description: "Redact any passwords in event.original"
@@ -93,12 +99,19 @@ processors:
       ignore_missing: true
       tag: convert_json_event_sourceip
 
+  - append:
+      if: ctx.source?.ip != null
+      field: related.ip
+      value: "{{{source.ip}}}"
+      allow_duplicates: false
+      tag: append_source_ip_to_related_ip
+
   - convert:
       if: ctx.json?.event?.SourcePort != ""
       description: "ECS mapping json.event.SourcePort -> source.port"
       field: json.event.SourcePort
       target_field: source.port
-      type: integer
+      type: long
       ignore_missing: true
       tag: convert_json_event_sourceport
 
@@ -298,6 +311,13 @@ processors:
       ignore_empty_value: true
       tag: ecs_map_user_name
 
+  - append:
+      if: ctx.user?.name != null
+      field: related.user
+      value: "{{{user.name}}}"
+      allow_duplicates: false
+      tag: append_user_name_to_related_user
+
   - rename:
       field: json
       target_field: beelzebub
@@ -343,17 +363,29 @@ processors:
         - beelzebub.event.User
       ignore_missing: true
 
-  - remove:
-      if: ctx.event?.original != null
-      description: "Remove unnecessary message field if event.original exists"
-      field: message
-      ignore_missing: true
+  - set:
+      field: event.kind
+      tag: set_pipeline_error_into_event_kind
+      value: pipeline_error
+      if: ctx.error?.message != null
+
+  - append:
+      field: tags
+      value: preserve_original_event
+      allow_duplicates: false
+      if: ctx.error?.message != null
 
 on_failure:
   - append:
       field: error.message
       value: "Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}"
+
   - set:
       field: event.kind
       tag: set_pipeline_error_to_event_kind
       value: pipeline_error
+
+  - append:
+      field: tags
+      value: preserve_original_event
+      allow_duplicates: false
