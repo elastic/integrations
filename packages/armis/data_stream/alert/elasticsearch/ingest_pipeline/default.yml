@@ -232,6 +232,11 @@ processors:
         - append:
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - set:
+      field: '@timestamp'
+      tag: set_@timestamp_from_status_change_time
+      copy_from: armis.alert.status_change_time
+      ignore_empty_value: true
   - date:
       field: json.time
       tag: date_time
@@ -245,11 +250,6 @@ processors:
         - append:
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
-  - set:
-      field: '@timestamp'
-      tag: set_@timestamp_from_alert_time
-      copy_from: armis.alert.time
-      ignore_empty_value: true
   - rename:
       field: json.title
       tag: rename_title
@@ -265,9 +265,9 @@ processors:
         - armis.alert.alert_id
         - armis.alert.device_ids
         - armis.alert.description
-        - armis.alert.time
         - armis.alert.policy_id
         - armis.alert.policy_title
+        - armis.alert.status_change_time
         - armis.alert.mitre_attack_labels
       tag: remove_custom_duplicate_fields
       ignore_missing: true

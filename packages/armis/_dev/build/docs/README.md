@@ -70,9 +70,20 @@ There are some minimum requirements for running Elastic Agent and for more infor
 
 ## Limitations
 
-1. In the **alert data stream**, based on the documentation, we initially expected to use the `statusChangeTime` field for filtering updates. However, the `"after"` filter applies only to the primary `time` field from the alert endpoint and does not support filtering based on `statusChangeTime`. As a result, when an alert's status changes, the data collection process does not capture these updates.
+1. In the **vulnerability data stream**, our filtering mechanism for the **vulnerability search API** relies specifically on the `lastDetected` field. This means that when a user takes action on a vulnerability and `lastDetected` updates, only then will the event for that vulnerability be retrieved. Initially, we assumed this field would always have a value and could be used as a cursor timestamp for fetching data between intervals. However, due to inconsistencies in the API response, we observed cases where `lastDetected` is `null`.
 
-2. In the **vulnerability data stream**, our filtering mechanism for the **vulnerability search API** relies specifically on the `lastDetected` field. This means that when a user takes action on a vulnerability and `lastDetected` updates, only then will the event for that vulnerability be retrieved. Initially, we assumed this field would always have a value and could be used as a cursor timestamp for fetching data between intervals. However, due to inconsistencies in the API response, we observed cases where `lastDetected` is `null`.
+## Troubleshooting
+
+- If you are seeing below mentioned errors in the **vulnerability data stream**, try reducing the page size in your request.
+
+  **Common errors:**
+  - `502 Bad Gateway`
+  - `414 Request-URI Too Large`
+
+- If you are encountering issues in the **alert data stream**, particularly during the initial data fetch, try reducing the initial interval.
+
+  **Example error:**
+  - `The server encountered an internal error and was unable to complete your request. Either the server is overloaded or there is an error in the application.`
 
 ## Logs reference
 

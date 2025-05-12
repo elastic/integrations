@@ -99,13 +99,13 @@ program: |
             })
           :
             resp.StatusCode == 401 ?
+            // Armis doesn't support multiple sessions per token; generate a new token on 401 (expired).
               {
                 "events": [{"message":"retry"}],
                 "is_token_valid": false,
                 "offset": has(state.offset) && state.offset != null ? state.offset : 0,
                 "want_more": true,
               }
-            // Armis doesn't support multiple sessions per token; generate a new token on 401 (expired)
             :
               {
                 "events": {
