@@ -38,24 +38,24 @@ An example event for `asset` looks as following:
 
 ```json
 {
-    "@timestamp": "2025-05-12T03:36:55.168Z",
+    "@timestamp": "2025-05-12T09:23:13.726Z",
     "agent": {
-        "ephemeral_id": "72b549b4-4b06-4aea-9f32-4388425b83ca",
-        "id": "af9a6758-9b83-4e5d-8860-da3c73a70516",
-        "name": "elastic-agent-70515",
+        "ephemeral_id": "455c70dc-8047-481a-aa24-d4749eac2bf1",
+        "id": "253f27c0-b0a7-4463-98dc-b9d572d49428",
+        "name": "elastic-agent-88962",
         "type": "filebeat",
         "version": "8.13.0"
     },
     "data_stream": {
         "dataset": "rapid7_insightvm.asset",
-        "namespace": "68800",
+        "namespace": "24119",
         "type": "logs"
     },
     "ecs": {
         "version": "8.11.0"
     },
     "elastic_agent": {
-        "id": "af9a6758-9b83-4e5d-8860-da3c73a70516",
+        "id": "253f27c0-b0a7-4463-98dc-b9d572d49428",
         "snapshot": false,
         "version": "8.13.0"
     },
@@ -64,9 +64,9 @@ An example event for `asset` looks as following:
         "category": [
             "host"
         ],
-        "created": "2025-05-12T03:36:55.168Z",
+        "created": "2025-05-12T09:23:13.726Z",
         "dataset": "rapid7_insightvm.asset",
-        "ingested": "2025-05-12T03:36:58Z",
+        "ingested": "2025-05-12T09:23:16Z",
         "kind": "state",
         "original": "{\"assessed_for_policies\":false,\"assessed_for_vulnerabilities\":true,\"critical_vulnerabilities\":0,\"exploits\":0,\"id\":\"452534235-25a7-40a3-9321-28ce0b5cc90e-default-asset-199\",\"ip\":\"10.1.0.128\",\"last_assessed_for_vulnerabilities\":\"2020-03-20T19:19:42.611Z\",\"last_scan_end\":\"2020-03-20T19:19:42.611Z\",\"last_scan_start\":\"2020-03-20T19:18:13.611Z\",\"malware_kits\":0,\"moderate_vulnerabilities\":2,\"new\":[],\"os_architecture\":\"x86_64\",\"os_description\":\"CentOS Linux 2.6.18\",\"os_family\":\"Linux\",\"os_name\":\"Linux\",\"os_system_name\":\"CentOS Linux\",\"os_type\":\"General\",\"os_vendor\":\"CentOS\",\"os_version\":\"2.6.18\",\"remediated\":[],\"risk_score\":0,\"severe_vulnerabilities\":0,\"tags\":[{\"name\":\"lab\",\"type\":\"SITE\"}],\"total_vulnerabilities\":2}",
         "type": [
