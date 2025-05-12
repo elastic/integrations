@@ -204,4 +204,3 @@ An example event for `feed_entry` looks as following:
 | miniflux.title |  | keyword |
 | miniflux.url |  | keyword |
 | miniflux.user_id |  | long |
-
