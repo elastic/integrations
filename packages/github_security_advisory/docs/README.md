@@ -209,4 +209,3 @@ An example event for `vulnerability` looks as following:
 | github_security_advisory.vulnerabilities.vulnerable_version_range |  | keyword |
 | input.type | Type of filebeat input. | keyword |
 
-
