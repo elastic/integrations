@@ -61,6 +61,28 @@ processors:
         }
 
       if: ctx.netflow instanceof Map
+  - script:
+      description: Parse the TCP flags into string descriptions.
+      tag: script_tcp_flags
+      lang: painless
+      source: |
+        String[] flags = new String[]{"CWR", "ECE", "URG", "ACK", "PSH", "RST", "SYN", "FIN"};
+        ArrayList flagsSeen = new ArrayList();
+
+        int tcp_flags = ctx.netflow.tcp_control_bits;
+        for (int i = 8; i > 0; --i) {
+            int value = (tcp_flags & (1 << (i-1))) & 0x0ff;
+            if (value != 0) {
+                flagsSeen.add(flags[8-i]);
+            }
+        }
+
+        if (flagsSeen.length > 0) {
+            ctx.netflow.tcp_flags = flagsSeen;
+        }
+
+      if: ctx.netflow?.tcp_control_bits instanceof Integer
+
   - set: 
       field: network.type
       value: ipv4
