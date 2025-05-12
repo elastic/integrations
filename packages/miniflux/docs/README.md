@@ -36,24 +36,24 @@ An example event for `feed_entry` looks as following:
 
 ```json
 {
-    "@timestamp": "2025-05-12T12:22:58.863Z",
+    "@timestamp": "2025-05-06T21:06:24.887Z",
     "agent": {
-        "ephemeral_id": "1bbd2ec6-be2f-4a52-a516-7644755c748c",
-        "id": "142eaea1-a12d-4eef-9d53-8731e0faced3",
-        "name": "elastic-agent-83183",
+        "ephemeral_id": "96028cf6-f764-487d-ab01-60ce9e199ba0",
+        "id": "ae37d583-e1da-455d-a7b8-b2b910214d42",
+        "name": "elastic-agent-44518",
         "type": "filebeat",
         "version": "8.18.0"
     },
     "data_stream": {
         "dataset": "miniflux.feed_entry",
-        "namespace": "78938",
+        "namespace": "41197",
         "type": "logs"
     },
     "ecs": {
         "version": "8.17.0"
     },
     "elastic_agent": {
-        "id": "142eaea1-a12d-4eef-9d53-8731e0faced3",
+        "id": "ae37d583-e1da-455d-a7b8-b2b910214d42",
         "snapshot": false,
         "version": "8.18.0"
     },
@@ -63,7 +63,7 @@ An example event for `feed_entry` looks as following:
             "web"
         ],
         "dataset": "miniflux.feed_entry",
-        "ingested": "2025-05-12T12:23:01Z",
+        "ingested": "2025-05-06T21:06:27Z",
         "kind": "enrichment",
         "type": [
             "info"
@@ -204,5 +204,4 @@ An example event for `feed_entry` looks as following:
 | miniflux.title |  | keyword |
 | miniflux.url |  | keyword |
 | miniflux.user_id |  | long |
-
 
