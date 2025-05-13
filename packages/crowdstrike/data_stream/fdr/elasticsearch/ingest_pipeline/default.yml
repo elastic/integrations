@@ -40,6 +40,21 @@ processors:
         - append:
             field: error.message
             value: "'{{{ _ingest.on_failure_processor_tag }}}' rename failed with message {{{ _ingest.on_failure_message }}}"
+  - convert:
+      field: crowdstrike.UTCTimestamp
+      target_field: _temp.utc_timestamp
+      type: long
+      ignore_failure: true
+  - date:
+      tag: date-timestamp-utc
+      description: Parse timestamp from event.
+      field: _temp.utc_timestamp
+      target_field: event.created
+      formats:
+        - UNIX
+      ignore_failure: true
+      if: >
+        ctx.event?.created == null && ctx._temp?.utc_timestamp instanceof long && ctx._temp.utc_timestamp < (long)1e10
   - date:
       tag: date-timestamp-utc
       description: Parse timestamp from event.
