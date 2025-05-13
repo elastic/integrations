@@ -1,0 +1,46 @@
+title: Assets
+type: logs
+streams:
+  - input: cel
+    title: Tenable OT Security Assets
+    description: Request settings for Tenable OT Security.
+    enabled: true
+    template_path: cel.yml.hbs
+    vars:
+      - name: interval
+        type: text
+        title: Interval
+        description: Specifies how often data for all managed accounts will be re-fetched.
+        show_user: true
+        required: true
+        default: "24h"
+      - name: limit
+        type: integer
+        title: Limit
+        description: Defines the number of assets to fetch per request.
+        show_user: true
+        required: true
+        default: 1000
+      - name: tags
+        type: text
+        title: Tags
+        description: Tags to apply to assets, such as 'forwarded'.
+        multi: true
+        show_user: false
+        default:
+          - forwarded
+          - tenable_ot_security
+      - name: preserve_original_event
+        type: bool
+        title: Preserve Original Event
+        description: If enabled, retains a raw copy of the original event in the `event.original` field.
+        required: true
+        show_user: false
+        multi: false
+        default: false
+      - name: processors
+        type: yaml
+        title: Processors
+        description: Processors modify assets by reducing fields or adding metadata. This occurs within the agent before logs are parsed.
+        multi: false
+        required: false

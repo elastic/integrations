@@ -201,6 +201,12 @@ processors:
       allow_duplicates: false
       if: ctx.ses?.process?.file?.name != null
   - append:
+      field: file.name
+      tag: append_file_name_from_process_file_original_name
+      value: '{{{ses.process.file.original_name}}}'
+      allow_duplicates: false
+      if: ctx.ses?.process?.file?.original_name != null
+  - append:
       field: file.path
       tag: append_file_path_from_process_file_path
       value: '{{{ses.process.file.path}}}'
@@ -1231,6 +1237,11 @@ processors:
       value: '{{{ses.process.file.sha2}}}'
       allow_duplicates: false
       if: ctx.ses?.process?.file?.sha2 != null && ctx.ses.process.file.sha2 != ''
+  - set:
+      field: process.hash.sha256
+      copy_from: ses.process.file.sha2
+      tag: set_file_hash_sha256_from_process_file_sha2
+      if: ctx.ses?.process?.file?.sha2 instanceof String && ctx.ses.process.file.sha2 != ''
   - append:
       field: related.hash
       tag: append_related_hash_from_process_file_parent_sha2
@@ -1280,6 +1291,12 @@ processors:
       allow_duplicates: false
       if: ctx.ses?.process?.user?.uid != null && ctx.ses.process.user.uid != ''
   - append:
+      field: user.name
+      tag: append_user_name_from_process_user_name
+      value: '{{{ses.process.user.name}}}'
+      allow_duplicates: false
+      if: ctx.ses?.process?.user?.name != null && ctx.ses.process.user.name != ''
+  - append:
       field: related.user
       tag: append_related_user_from_process_user_name
       value: '{{{ses.process.user.name}}}'
@@ -1305,8 +1322,10 @@ processors:
         - ses.process.file.md5
         - ses.process.file.mime_type
         - ses.process.file.name
+        - ses.process.file.original_name
         - ses.process.file.path
         - ses.process.file.sha1
+        - ses.process.file.sha2
         - ses.process.file.signature_issuer
         - ses.process.file.signature_serial_number
         - ses.process.file.size

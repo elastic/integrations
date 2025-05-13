@@ -1,11 +1,20 @@
 {{ if ne .stackVersion "" -}}
 - Stack version: {{ .stackVersion }}
+{{ else -}}
+{{ if .logsDB -}}
+- Stack version: maximum of either the version used in PR builds or 8.17.0 (GA version for LogsDB index mode)
+{{ else -}}
+- Stack version: Same as in Pull Request builds
+{{ end -}}
 {{ end -}}
 {{ if .serverless -}}
 - Serverless: {{ .serverlessProject}}
 {{ end -}}
 {{ if .logsDB -}}
 - LogsDB: enabled
+{{ end -}}
+{{ if ne .subscription "" -}}
+- Subscription: {{ .subscription }}
 {{ end -}}
 {{ if and (ne .packageName "") (ne .packageName nil) -}}
 - Package: {{ .packageName }}
@@ -20,7 +29,7 @@
     - {{ . }}
 {{- end }}
 {{ end -}}
-{{ if ne (len .owners) 0 -}}
+{{ if and (ne .owners nil) (ne (len .owners) 0) -}}
 - Owners:
 {{- range .owners }}
     - {{ . }}
