@@ -554,6 +554,8 @@ Please refer to the following [document](https://www.elastic.co/guide/en/ecs/cur
 | winlog.event_data.AuditPolicyChangesDescription |  | keyword |
 | winlog.event_data.AuditSourceName |  | keyword |
 | winlog.event_data.AuthenticationPackageName |  | keyword |
+| winlog.event_data.BackupType |  | keyword |
+| winlog.event_data.BackupTypeDescription |  | keyword |
 | winlog.event_data.Binary |  | keyword |
 | winlog.event_data.BitlockerUserInputTime |  | keyword |
 | winlog.event_data.BootMode |  | keyword |
@@ -583,9 +585,11 @@ Please refer to the following [document](https://www.elastic.co/guide/en/ecs/cur
 | winlog.event_data.CountOfCredentialsReturned |  | keyword |
 | winlog.event_data.CrashOnAuditFailValue |  | keyword |
 | winlog.event_data.CreationUtcTime |  | keyword |
+| winlog.event_data.CryptoAlgorithms |  | keyword |
 | winlog.event_data.CurrentProfile |  | keyword |
 | winlog.event_data.DSName |  | keyword |
 | winlog.event_data.DSType |  | keyword |
+| winlog.event_data.DataDescription |  | keyword |
 | winlog.event_data.Description |  | keyword |
 | winlog.event_data.DestAddress |  | keyword |
 | winlog.event_data.DestPort |  | keyword |
@@ -619,6 +623,9 @@ Please refer to the following [document](https://www.elastic.co/guide/en/ecs/cur
 | winlog.event_data.FailureName |  | keyword |
 | winlog.event_data.FailureNameLength |  | keyword |
 | winlog.event_data.FailureReason |  | keyword |
+| winlog.event_data.FailureReasons |  | keyword |
+| winlog.event_data.FailureReasonsOutcome |  | keyword |
+| winlog.event_data.FileName |  | keyword |
 | winlog.event_data.FileVersion |  | keyword |
 | winlog.event_data.FilterId |  | keyword |
 | winlog.event_data.FilterKey |  | keyword |
@@ -633,6 +640,7 @@ Please refer to the following [document](https://www.elastic.co/guide/en/ecs/cur
 | winlog.event_data.GroupMembership |  | keyword |
 | winlog.event_data.GroupTypeChange |  | keyword |
 | winlog.event_data.HandleId |  | keyword |
+| winlog.event_data.HardwareIds |  | keyword |
 | winlog.event_data.HasRemoteDynamicKeywordAddress |  | keyword |
 | winlog.event_data.HomeDirectory |  | keyword |
 | winlog.event_data.HomePath |  | keyword |
@@ -657,6 +665,7 @@ Please refer to the following [document](https://www.elastic.co/guide/en/ecs/cur
 | winlog.event_data.LayerName |  | keyword |
 | winlog.event_data.LayerNameDescription |  | keyword |
 | winlog.event_data.LayerRTID |  | keyword |
+| winlog.event_data.LinkName |  | keyword |
 | winlog.event_data.LmPackageName |  | keyword |
 | winlog.event_data.LocationInformation |  | keyword |
 | winlog.event_data.LogonGuid |  | keyword |
@@ -668,6 +677,7 @@ Please refer to the following [document](https://www.elastic.co/guide/en/ecs/cur
 | winlog.event_data.MachineAccountQuota |  | keyword |
 | winlog.event_data.MajorVersion |  | keyword |
 | winlog.event_data.MandatoryLabel |  | keyword |
+| winlog.event_data.MasterKeyId |  | keyword |
 | winlog.event_data.MaximumPerformancePercent |  | keyword |
 | winlog.event_data.MemberName |  | keyword |
 | winlog.event_data.MemberSid |  | keyword |
@@ -740,6 +750,7 @@ Please refer to the following [document](https://www.elastic.co/guide/en/ecs/cur
 | winlog.event_data.ProfilePath |  | keyword |
 | winlog.event_data.ProfileUsed |  | keyword |
 | winlog.event_data.Properties |  | keyword |
+| winlog.event_data.ProtectedDataFlags |  | keyword |
 | winlog.event_data.Protocol |  | keyword |
 | winlog.event_data.ProviderContextKey |  | keyword |
 | winlog.event_data.ProviderContextName |  | keyword |
@@ -752,6 +763,8 @@ Please refer to the following [document](https://www.elastic.co/guide/en/ecs/cur
 | winlog.event_data.ReadOperation |  | keyword |
 | winlog.event_data.Reason |  | keyword |
 | winlog.event_data.ReasonForRejection |  | keyword |
+| winlog.event_data.RecoveryKeyId |  | keyword |
+| winlog.event_data.RecoveryServer |  | keyword |
 | winlog.event_data.RelativeTargetName |  | keyword |
 | winlog.event_data.RemoteAddress_ip |  | ip |
 | winlog.event_data.RemoteAddress_name |  | keyword |
@@ -759,6 +772,7 @@ Please refer to the following [document](https://www.elastic.co/guide/en/ecs/cur
 | winlog.event_data.RemoteMachineID |  | keyword |
 | winlog.event_data.RemoteUserDescription |  | keyword |
 | winlog.event_data.RemoteUserID |  | keyword |
+| winlog.event_data.RequestId |  | keyword |
 | winlog.event_data.Resource |  | keyword |
 | winlog.event_data.ResourceAttributes |  | keyword |
 | winlog.event_data.ResourceManager |  | keyword |
