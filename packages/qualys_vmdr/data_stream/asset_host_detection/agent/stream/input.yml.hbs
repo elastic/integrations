@@ -42,7 +42,7 @@ program: |
             state.url.trim_right("/") + "/api/3.0/fo/asset/host/vm/detection/?" +
             state.?params.orValue("").parse_query().with({
               "action": ["list"],
-              "show_igs": [(state.show_igs? "1" : "0")],
+              "show_igs": [state.show_igs? "1" : "0"],
               "host_metadata": ["all"],
               "show_qds": ["1"],
               "show_qds_factors": ["1"],
@@ -229,13 +229,7 @@ program: |
                     }
                 ).as(state, 
                   state.want_more && size(state.events) == 0 ?
-                    state.with({
-                      "events": [{
-                        "message": "retry",
-                        "interval_start": state.interval_start,
-                        "interval_id": state.interval_id,
-                      }]
-                    })
+                    state.with({"events": [{"message": "retry"}]})
                   :
                     state
                 )
