@@ -268,6 +268,7 @@ TYCHON connects to open ports on the computer and reports back if it is hosting 
 | tychon.script.version | Scanner Script Version. | version |
 | tychon.server.address | Some event server addresses are defined ambiguously. The event will sometimes list an IP, a domain or a unix socket.  You should always store the raw address in the `.address` field. Then it should be duplicated to `.ip` or `.domain`, depending on which one it is. | keyword |
 | tychon.server.ip | The ip or domain of the site hosting the cipher | ip |
+| tychon.server.ip_str |  | keyword |
 | tychon.server.port | Port of the server. | long |
 | tychon.service.description | The description of the service | keyword |
 | tychon.service.display_name | The friendly name of the service | keyword |

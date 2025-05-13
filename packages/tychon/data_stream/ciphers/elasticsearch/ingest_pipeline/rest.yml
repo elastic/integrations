@@ -90,7 +90,13 @@ processors:
       tag: convert_tychon_server_ip
       field: tychon.server.ip
       type: ip
-      ignore_failure: true #This can be either ip or domain.
+      ignore_missing: true
+      on_failure: #This can be either ip or domain.
+        - rename:
+            field: tychon.server.ip
+            tag: rename_tychon_server_ip_to_ip_str
+            target_field: tychon.server.ip_str
+            ignore_missing: true
   - append:
       tag: append_related_ip
       field: related.ip
@@ -202,6 +208,11 @@ processors:
       tag: set_server_ip
       field: server.ip
       copy_from: tychon.server.ip
+      ignore_empty_value: true
+  - set:
+      tag: set_server_domain
+      field: server.domain
+      copy_from: tychon.server.ip_str
       ignore_empty_value: true
   - set:
       tag: set_server_port
