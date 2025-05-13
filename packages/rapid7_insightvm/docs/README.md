@@ -38,24 +38,24 @@ An example event for `asset` looks as following:
 
 ```json
 {
-    "@timestamp": "2025-05-12T09:23:13.726Z",
+    "@timestamp": "2025-05-13T12:18:50.388Z",
     "agent": {
-        "ephemeral_id": "455c70dc-8047-481a-aa24-d4749eac2bf1",
-        "id": "253f27c0-b0a7-4463-98dc-b9d572d49428",
-        "name": "elastic-agent-88962",
+        "ephemeral_id": "9bdec071-fe61-4ab8-bb89-67f2ccd46f17",
+        "id": "0adaf99a-f0e5-4dfd-95fc-582f8f0057d9",
+        "name": "elastic-agent-42288",
         "type": "filebeat",
         "version": "8.13.0"
     },
     "data_stream": {
         "dataset": "rapid7_insightvm.asset",
-        "namespace": "24119",
+        "namespace": "50081",
         "type": "logs"
     },
     "ecs": {
         "version": "8.11.0"
     },
     "elastic_agent": {
-        "id": "253f27c0-b0a7-4463-98dc-b9d572d49428",
+        "id": "0adaf99a-f0e5-4dfd-95fc-582f8f0057d9",
         "snapshot": false,
         "version": "8.13.0"
     },
@@ -64,63 +64,89 @@ An example event for `asset` looks as following:
         "category": [
             "host"
         ],
-        "created": "2025-05-12T09:23:13.726Z",
+        "created": "2025-05-13T12:18:50.388Z",
         "dataset": "rapid7_insightvm.asset",
-        "ingested": "2025-05-12T09:23:16Z",
+        "ingested": "2025-05-13T12:18:53Z",
         "kind": "state",
-        "original": "{\"assessed_for_policies\":false,\"assessed_for_vulnerabilities\":true,\"critical_vulnerabilities\":0,\"exploits\":0,\"id\":\"452534235-25a7-40a3-9321-28ce0b5cc90e-default-asset-199\",\"ip\":\"10.1.0.128\",\"last_assessed_for_vulnerabilities\":\"2020-03-20T19:19:42.611Z\",\"last_scan_end\":\"2020-03-20T19:19:42.611Z\",\"last_scan_start\":\"2020-03-20T19:18:13.611Z\",\"malware_kits\":0,\"moderate_vulnerabilities\":2,\"new\":[],\"os_architecture\":\"x86_64\",\"os_description\":\"CentOS Linux 2.6.18\",\"os_family\":\"Linux\",\"os_name\":\"Linux\",\"os_system_name\":\"CentOS Linux\",\"os_type\":\"General\",\"os_vendor\":\"CentOS\",\"os_version\":\"2.6.18\",\"remediated\":[],\"risk_score\":0,\"severe_vulnerabilities\":0,\"tags\":[{\"name\":\"lab\",\"type\":\"SITE\"}],\"total_vulnerabilities\":2}",
+        "original": "{\"assessed_for_policies\":false,\"assessed_for_vulnerabilities\":true,\"credential_assessments\":[{\"port\":22,\"protocol\":\"TCP\",\"status\":\"NO_CREDS_SUPPLIED\"}],\"critical_vulnerabilities\":1,\"exploits\":1,\"id\":\"8bcfe121-1234-5678-9012-c4a6abcdabcde-default-asset-4\",\"ip\":\"175.16.199.1\",\"last_assessed_for_vulnerabilities\":\"2025-05-08T06:51:31.736Z\",\"last_scan_end\":\"2025-05-08T06:51:31.736Z\",\"last_scan_start\":\"2025-05-08T06:51:19.193Z\",\"mac\":\"00:00:5E:00:53:00\",\"malware_kits\":0,\"moderate_vulnerabilities\":0,\"new\":[],\"os_architecture\":\"\",\"os_description\":\"Ubuntu Linux\",\"os_family\":\"Linux\",\"os_name\":\"Linux\",\"os_system_name\":\"Ubuntu Linux\",\"os_type\":\"\",\"os_vendor\":\"Ubuntu\",\"remediated\":[],\"risk_score\":1268,\"same\":{\"check_id\":null,\"first_found\":\"2025-05-08T06:51:31Z\",\"key\":\"\",\"last_found\":\"2025-05-08T06:51:31.736Z\",\"nic\":null,\"port\":22,\"proof\":\"\\u003cp\\u003e\\u003cul\\u003e\\u003cli\\u003eRunning SSH service\\u003c/li\\u003e\\u003cli\\u003eProduct OpenSSH exists -- OpenBSD OpenSSH 8.9p1\\u003c/li\\u003e\\u003cli\\u003eVulnerable version of product OpenSSH found -- OpenBSD OpenSSH 8.9p1\\u003c/li\\u003e\\u003c/ul\\u003e\\u003cp\\u003eVulnerable version of OpenSSH detected on Ubuntu Linux\\u003c/p\\u003e\\u003c/p\\u003e\",\"protocol\":\"TCP\",\"solution_fix\":\"\\u003cp\\u003eDownload and apply the upgrade from: \\u003ca href=\\\"https://ftp.openbsd.org/pub/OpenBSD/OpenSSH\\\"\\u003ehttps://ftp.openbsd.org/pub/OpenBSD/OpenSSH\\u003c/a\\u003e\\u003c/p\\u003e\",\"solution_id\":\"openbsd-openssh-upgrade-latest\",\"solution_summary\":\"Upgrade to the latest version of OpenSSH\",\"solution_type\":\"rollup\",\"status\":\"VULNERABLE_VERS\",\"vulnerability_id\":\"openbsd-openssh-cve-2024-6387\"},\"severe_vulnerabilities\":1,\"tags\":[{\"name\":\"test\",\"type\":\"SITE\"}],\"total_vulnerabilities\":2,\"unique_identifiers\":[]}",
         "type": [
             "info"
         ]
     },
     "host": {
-        "architecture": "x86_64",
-        "id": "452534235-25a7-40a3-9321-28ce0b5cc90e-default-asset-199",
+        "id": "8bcfe121-1234-5678-9012-c4a6abcdabcde-default-asset-4",
         "ip": [
-            "10.1.0.128"
+            "175.16.199.1"
+        ],
+        "mac": [
+            "00-00-5E-00-53-00"
         ],
         "os": {
             "family": "Linux",
-            "full": "CentOS Linux 2.6.18",
-            "name": "Linux",
-            "version": "2.6.18"
+            "full": "Ubuntu Linux",
+            "name": "Linux"
         },
         "risk": {
-            "static_score": 0
+            "static_score": 1268
         }
     },
     "input": {
         "type": "httpjson"
+    },
+    "network": {
+        "transport": [
+            "tcp"
+        ]
     },
     "rapid7": {
         "insightvm": {
             "asset": {
                 "assessed_for_policies": false,
                 "assessed_for_vulnerabilities": true,
-                "critical_vulnerabilities": 0,
-                "exploits": 0,
-                "id": "452534235-25a7-40a3-9321-28ce0b5cc90e-default-asset-199",
-                "ip": "10.1.0.128",
-                "last_assessed_for_vulnerabilities": "2020-03-20T19:19:42.611Z",
-                "last_scan_end": "2020-03-20T19:19:42.611Z",
-                "last_scan_start": "2020-03-20T19:18:13.611Z",
+                "credential_assessments": [
+                    {
+                        "port": 22,
+                        "protocol": "TCP",
+                        "status": "NO_CREDS_SUPPLIED"
+                    }
+                ],
+                "critical_vulnerabilities": 1,
+                "exploits": 1,
+                "id": "8bcfe121-1234-5678-9012-c4a6abcdabcde-default-asset-4",
+                "ip": "175.16.199.1",
+                "last_assessed_for_vulnerabilities": "2025-05-08T06:51:31.736Z",
+                "last_scan_end": "2025-05-08T06:51:31.736Z",
+                "last_scan_start": "2025-05-08T06:51:19.193Z",
+                "mac": "00-00-5E-00-53-00",
                 "malware_kits": 0,
-                "moderate_vulnerabilities": 2,
+                "moderate_vulnerabilities": 0,
                 "os": {
-                    "architecture": "x86_64",
-                    "description": "CentOS Linux 2.6.18",
+                    "description": "Ubuntu Linux",
                     "family": "Linux",
                     "name": "Linux",
-                    "system_name": "CentOS Linux",
-                    "type": "General",
-                    "vendor": "CentOS",
-                    "version": "2.6.18"
+                    "system_name": "Ubuntu Linux",
+                    "vendor": "Ubuntu"
                 },
-                "risk_score": 0,
-                "severe_vulnerabilities": 0,
+                "risk_score": 1268,
+                "same": {
+                    "first_found": "2025-05-08T06:51:31.000Z",
+                    "last_found": "2025-05-08T06:51:31.736Z",
+                    "port": 22,
+                    "proof": "Running SSH service\n\nProduct OpenSSH exists -- OpenBSD OpenSSH 8.9p1\n\nVulnerable version of product OpenSSH found -- OpenBSD OpenSSH 8.9p1\n\n\nVulnerable version of OpenSSH detected on Ubuntu Linux",
+                    "protocol": "TCP",
+                    "solution": {
+                        "fix": "Download and apply the upgrade from: https://ftp.openbsd.org/pub/OpenBSD/OpenSSH",
+                        "id": "openbsd-openssh-upgrade-latest",
+                        "summary": "Upgrade to the latest version of OpenSSH",
+                        "type": "rollup"
+                    },
+                    "status": "VULNERABLE_VERS",
+                    "vulnerability_id": "openbsd-openssh-cve-2024-6387"
+                },
+                "severe_vulnerabilities": 1,
                 "tags": [
                     {
-                        "name": "lab",
+                        "name": "test",
                         "type": "SITE"
                     }
                 ],
@@ -130,7 +156,7 @@ An example event for `asset` looks as following:
     },
     "related": {
         "ip": [
-            "10.1.0.128"
+            "175.16.199.1"
         ]
     },
     "tags": [
@@ -138,7 +164,12 @@ An example event for `asset` looks as following:
         "preserve_duplicate_custom_fields",
         "forwarded",
         "rapid7_insightvm-asset"
-    ]
+    ],
+    "vulnerability": {
+        "id": [
+            "openbsd-openssh-cve-2024-6387"
+        ]
+    }
 }
 ```
 
