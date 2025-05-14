@@ -1,6 +1,22 @@
 ---
 description: Process events from Faitour honeypot
 processors:
+  ################################
+  ## Redact passwords if tagged ##
+  ################################
+  - redact:
+      description: Redact any passwords in the log data
+      tag: redact_message
+      if: 'ctx.tags != null && ctx.tags.contains("redact_passwords") && ctx.message =~ /\"password\":\"/'
+      field: event.message
+      patterns:
+        - '"password":"%{DATA:REDACTED}"'
+      prefix: '"password":"<'
+      suffix: '>"'
+      ignore_missing: true
+      ignore_failure: true
+      trace_redact: true
+
   ###################################
   ## Parse JSON message to faitour ##
   ###################################
@@ -54,24 +70,6 @@ processors:
       tag: set_event_original
       field: event.original
       copy_from: message
-  - redact:
-      description: Redact any passwords in the log data
-      tag: redact_event_original
-      if: 'ctx.tags != null && ctx.tags.contains("redact_passwords") && ctx.event?.original =~ /\"password\":\"/'
-      field: event.original
-      patterns:
-        - '"password":"%{DATA:REDACTED}"'
-      prefix: '"password":"<'
-      suffix: '>"'
-      ignore_missing: true
-      ignore_failure: true
-      trace_redact: true
-  - set:
-      description: Set time of event ingestion
-      tag: set_event_ingested
-      field: event.ingested
-      copy_from: _ingest.timestamp
-      ignore_failure: true
 
   ############################
   ## Handle ECS File Fields ##
@@ -85,35 +83,25 @@ processors:
       override: true
       ignore_missing: true
       ignore_failure: true
-  - gsub:
-      description: Parse file path from file name if available
-      tag: gsub_file_path
-      if: ctx.file?.name != null && ctx.file.name =~ /[\\\/]/
-      field: file.name
-      target_field: file.path
-      pattern: '[\\/][^\\/]*$'
-      replacement: ''
-      ignore_missing: true
-      ignore_failure: true
-  - gsub:
-      description: Remove file path from file name if available
-      tag: gsub_file_name
-      if: ctx.file?.name != null && ctx.file.name =~ /[\\\/]/
-      field: file.name
-      pattern: '^(.*)[\\/]'
-      replacement: ''
-      ignore_missing: true
-      ignore_failure: true
-  - gsub:
-      description: Parse file extension from file name if available
-      tag: gsub_file_extension
-      if: ctx.file?.name != null && ctx.file.name =~ /[\.]/
-      field: file.name
-      target_field: file.extension
-      pattern: '^.*[\.]'
-      replacement: ''
-      ignore_missing: true
-      ignore_failure: true
+  - script:
+      description: Extract file path, name, and extension from file.name
+      tag: script_file_path_name_extension
+      if: ctx.file?.name != null
+      lang: painless
+      source: >
+        String fullPath = ctx.file.name;
+        int lastSlash = (int)Math.max((double)fullPath.lastIndexOf('/'), (double)fullPath.lastIndexOf('\\'));
+        if (lastSlash >= 0) {
+          ctx.file.path = fullPath.substring(0, lastSlash);
+          ctx.file.name = fullPath.substring(lastSlash + 1);
+        } else {
+          ctx.file.name = fullPath;
+        }
+
+        int lastDot = (int)ctx.file.name.lastIndexOf('.');
+        if (lastDot >= 0 && lastDot < ctx.file.name.length() - 1) {
+          ctx.file.extension = ctx.file.name.substring(lastDot + 1);
+        }
 
   ############################
   ## Handle ECS HTTP Fields ##
