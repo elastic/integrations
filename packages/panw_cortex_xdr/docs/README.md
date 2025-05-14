@@ -21,7 +21,7 @@ Agentless deployments are only supported in Elastic Serverless and Elastic Cloud
 
 ### Agent-based installation
 
-Elastic Agent must be installed. For more details, check the Elastic Agent [installation instructions](https://www.elastic.co/guide/en/fleet/current/elastic-agent-installation.html). You can install only one Elastic Agent per host.
+Elastic Agent must be installed. For more details, check the Elastic Agent [installation instructions](docs-content://reference/fleet/install-elastic-agents.md).
 
 ## Compatibility
 
@@ -590,6 +590,9 @@ This is the `Event` dataset.
 | data_stream.type | Data stream type. | constant_keyword |
 | event.dataset | Event dataset. | constant_keyword |
 | event.module | Event module. | constant_keyword |
+| gcs.storage.bucket.name |  | keyword |
+| gcs.storage.object.content_type |  | keyword |
+| gcs.storage.object.name |  | keyword |
 | input.type | Type of filebeat input. | keyword |
 | log.offset | Log offset. | long |
 | panw_cortex.xdr.event.action.boot_time |  | date |
@@ -741,6 +744,329 @@ This is the `Event` dataset.
 | panw_cortex.xdr.event.os_actor.remote_ip |  | ip |
 | panw_cortex.xdr.event.os_actor.thread_thread_id |  | keyword |
 
+
+An example event for `event` looks as following:
+
+```json
+{
+    "@timestamp": "2025-04-16T09:15:30Z",
+    "agent": {
+        "ephemeral_id": "457e730b-4017-4553-b583-db8492843380",
+        "id": "a8f5f167f44f4964e6c998dee827110c",
+        "name": "elastic-agent-59911",
+        "type": "filebeat",
+        "version": [
+            "v5.12.3-1",
+            "3.8.7.0"
+        ]
+    },
+    "cloud": {
+        "provider": "google cloud"
+    },
+    "data_stream": {
+        "dataset": "panw_cortex_xdr.event",
+        "namespace": "76146",
+        "type": "logs"
+    },
+    "destination": {
+        "ip": [
+            "1.128.0.9",
+            "81.2.69.144"
+        ],
+        "port": [
+            80
+        ]
+    },
+    "ecs": {
+        "version": "8.11.0"
+    },
+    "elastic_agent": {
+        "id": "85550c58-360e-45c9-a64c-9732c95ce595",
+        "snapshot": false,
+        "version": "8.18.0"
+    },
+    "event": {
+        "action": "remote-access",
+        "agent_id_status": "mismatch",
+        "dataset": "panw_cortex_xdr.event",
+        "id": "evt-987654321",
+        "ingested": "2025-05-14T09:09:23Z",
+        "kind": "event",
+        "original": "{\"_id\":\"abc123\",\"action_file_access_time\":\"2023-09-15T12:00:00Z\",\"action_file_attributes\":\"readonly\",\"action_file_create_time\":\"2023-09-01T12:00:00Z\",\"action_file_device_type\":\"Device Type\",\"action_file_group\":\"gr123\",\"action_file_group_name\":\"GroupName\",\"action_file_is_anonymous\":true,\"action_file_last_writer_actor\":\"Writer Actor\",\"action_file_md5\":\"d41d8cd98f00b204e9800998ecf8427e\",\"action_file_mod_time\":\"2023-09-15T12:00:00Z\",\"action_file_mode\":\"0640\",\"action_file_name\":[\"MyOffice.BackgroundTasks.dll\"],\"action_file_operation_flags\":\"Operation Flags\",\"action_file_owner\":\"Owner\",\"action_file_owner_name\":\"OwnerName\",\"action_file_path\":[\"C:\\\\Program Files\\\\WindowsApps\\\\Microsoft.MicrosoftOfficeHub_18.2204.1141.0_x64__8wekyb3d8bbwe\\\\MyOffice.BackgroundTasks.dll\"],\"action_file_pe_info\":\"PE info\",\"action_file_prev_type\":\"Previous Type\",\"action_file_previous_file_name\":\"file.dll\",\"action_file_previous_file_path\":\"C:\\\\PreviousPath\\\\file.dll\",\"action_file_sha256\":\"e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855\",\"action_file_signature_is_embedded\":true,\"action_file_signature_product\":\"File Product\",\"action_file_signature_status\":\"Verified\",\"action_file_signature_vendor\":\"File Vendor\",\"action_file_size\":123456,\"action_file_type\":\"DLL\",\"action_local_ip\":[\"1.128.0.0\"],\"action_local_port\":[8080],\"action_module_base_address\":\"0x7fffb1d00000\",\"action_module_boot_code_integrity\":\"enabled\",\"action_module_code_integrity\":\"verified\",\"action_module_file_info\":\"C:\\\\Program Files\\\\ExampleApp\\\\example.dll\",\"action_module_image_size\":\"512\",\"action_module_last_writer_actor\":\"SYSTEM\",\"action_module_md5\":\"9e107d9d372bb6826bd81d3542a419d6\",\"action_module_other_load_location\":\"C:\\\\Windows\\\\Temp\\\\example.tmp\",\"action_module_page_protection\":\"PAGE_EXECUTE_READWRITE\",\"action_module_path\":\"C:\\\\Program Files\\\\ExampleApp\\\\example.dll\",\"action_module_sha256\":\"2cf24dba5fb0a30e26e83b2ac5b9e29e1b161e5c1fa7425e73043362938b9824\",\"action_module_signature_is_embedded\":true,\"action_module_signature_product\":\"Example App Suite\",\"action_module_signature_status\":\"Valid\",\"action_module_signature_vendor\":\"ExampleCorp Inc.\",\"action_module_system_properties\":\"64-bit, Windows 10, Build 19045\",\"action_network_connection_id\":\"12345\",\"action_network_creation_time\":\"2023-10-01T12:00:00Z\",\"action_network_is_server\":true,\"action_network_protocol\":\"HTTP\",\"action_network_stats_is_last\":true,\"action_powered_off\":\"off\",\"action_process_fds\":\"File descriptors info\",\"action_process_image_command_line\":\"C:\\\\Program Files\\\\App\\\\app.exe -arg1\",\"action_process_image_extension\":\".exe\",\"action_process_image_md5\":\"d41d8cd98f00b204e9800998ecf8427e\",\"action_process_image_name\":\"app.exe\",\"action_process_image_path\":\"C:\\\\Program Files\\\\App\\\\app.exe\",\"action_process_image_sha256\":\"e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855\",\"action_process_in_txn\":false,\"action_process_instance_execution_time\":\"2025-04-16T12:34:56Z\",\"action_process_instance_id\":\"instance_001\",\"action_process_integrity_level\":\"High\",\"action_process_last_writer_actor\":\"Writer Actor\",\"action_process_os_pid\":\"7846\",\"action_process_pe_load_info\":\"Paint\",\"action_process_peb\":\"PEB info\",\"action_process_peb32\":\"PEB32 info\",\"action_process_privileges\":\"Privileges info\",\"action_process_scheduled_task_name\":\"Scheduled Task\",\"action_process_signature_is_embedded\":true,\"action_process_signature_product\":\"App Product\",\"action_process_signature_status\":[\"Verified\"],\"action_process_signature_vendor\":\"App Vendor\",\"action_process_termination_code\":0,\"action_process_termination_date\":\"2023-10-01T12:30:00Z\",\"action_process_token\":\"Token info\",\"action_process_user_sid\":\"S-1-5-21-3623811015-3361044348-30300820-1013\",\"action_process_username\":\"user\",\"action_remote_ip\":[\"1.128.0.9\"],\"action_remote_port\":[\"80\"],\"action_remote_process_image_command_line\":\"\\\"C:\\\\Windows\\\\System32\\\\svchost.exe\\\" -k netsvcs\",\"action_remote_process_image_md5\":\"44d88612fea8a8f36de82e1278abb02f\",\"action_remote_process_image_name\":\"svchost.exe\",\"action_remote_process_image_path\":\"C:\\\\Windows\\\\System32\\\\svchost.exe\",\"action_remote_process_image_sha256\":\"3395856ce81f2b7382dee72602f798b642f14140b2fc0f8c7d65e9b32e0d0b09\",\"action_remote_process_instance_id\":\"remote-host-01::1234::5678\",\"action_remote_process_integrity_level\":\"High\",\"action_remote_process_os_pid\":\"1234\",\"action_remote_process_signature_is_embedded\":\"true\",\"action_remote_process_signature_product\":\"Microsoft Windows Operating System\",\"action_remote_process_signature_status\":\"Valid\",\"action_remote_process_signature_vendor\":\"Microsoft Corporation\",\"action_remote_process_thread_id\":\"5678\",\"action_remote_process_thread_start_address\":\"0x7ffdfb2a1000\",\"action_remote_process_user_sid\":\"S-1-5-18\",\"action_remote_process_username\":\"NT AUTHORITY\\\\SYSTEM\",\"action_socket_type\":\"TCP\",\"action_total_download\":2048,\"action_total_upload\":1024,\"action_user_is_local_session\":true,\"action_user_session_id\":\"1C3D4E5F\",\"action_user_status\":\"Active\",\"action_user_status_sid\":\"S-1-5-21-3623811015-3361044348-30300820-1013\",\"action_username\":\"CORP\\\\jdoe\",\"address_mapping\":\"192.168.1.10 -> 10.0.0.5\",\"agent_content_version\":\"v5.12.3-1\",\"agent_hostname\":\"endpoint-22.corp.local\",\"agent_id\":\"a8f5f167f44f4964e6c998dee827110c\",\"agent_interface_map\":\"eth0-192.168.1.10\",\"agent_ip_addresses\":[\"67.43.156.0\",\"67.43.156.2\"],\"agent_ip_addresses_v6\":[\"fe80::1c3d:2eff:fe4a:6b7a\"],\"agent_os_sub_type\":\"Enterprise\",\"agent_os_type\":\"Windows\",\"agent_version\":\"3.8.7.0\",\"event_id\":\"evt-987654321\",\"event_rpc_func_opnum\":\"45\",\"event_rpc_interface_uuid\":\"12345678-1234-abcd-ef00-0123456789ab\",\"event_sub_type\":\"remote-access\",\"event_timestamp\":[\"2025-04-16T09:15:30Z\"],\"event_type\":[\"process-start\"],\"event_version\":\"1.0\",\"host_metadata_domain\":\"corp.local\",\"host_metadata_hostname\":\"endpoint-22\",\"host_metadata_interface_map\":\"Ethernet0-192.168.1.10\",\"os_actor_local_ip\":\"216.160.83.56\",\"os_actor_local_port\":49152,\"os_actor_primary_user_sid\":\"S-1-5-21-3623811015-3361044348-30300820-1013\",\"os_actor_primary_username\":\"CORP\\\\jdoe\",\"os_actor_process_command_line\":\"\\\"C:\\\\Program Files\\\\ExampleApp\\\\example.exe\\\" -task run\",\"os_actor_process_image_md5\":\"5d41402abc4b2a76b9719d911017c592\",\"os_actor_process_image_name\":\"example.exe\",\"os_actor_process_image_path\":\"C:\\\\Program Files\\\\ExampleApp\\\\example.exe\",\"os_actor_process_image_sha256\":\"2cf24dba5fb0a30e26e83b2ac5b9e29e1b161e5c1fa7425e73043362938b9824\",\"os_actor_process_instance_id\":\"endpoint-22::5678::9012\",\"os_actor_process_logon_id\":\"0x3e7\",\"os_actor_process_os_pid\":\"5678\",\"os_actor_process_signature_status\":[\"Valid\"],\"os_actor_remote_ip\":\"81.2.69.144\",\"os_actor_thread_thread_id\":\"9012\"}"
+    },
+    "file": {
+        "accessed": "2023-09-15T12:00:00.000Z",
+        "attributes": [
+            "readonly"
+        ],
+        "code_signature": {
+            "exists": true
+        },
+        "created": "2023-09-01T12:00:00.000Z",
+        "gid": "gr123",
+        "group": "GroupName",
+        "hash": {
+            "md5": "d41d8cd98f00b204e9800998ecf8427e",
+            "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+        },
+        "mode": "0640",
+        "mtime": "2023-09-15T12:00:00.000Z",
+        "name": [
+            "MyOffice.BackgroundTasks.dll"
+        ],
+        "owner": "OwnerName",
+        "path": [
+            "C:\\Program Files\\WindowsApps\\Microsoft.MicrosoftOfficeHub_18.2204.1141.0_x64__8wekyb3d8bbwe\\MyOffice.BackgroundTasks.dll"
+        ],
+        "pe": {
+            "description": "PE info"
+        },
+        "size": 123456,
+        "type": "DLL"
+    },
+    "gcs": {
+        "storage": {
+            "bucket": {
+                "name": "cortex_system_test-34789"
+            },
+            "object": {
+                "content_type": "application/x-gzip",
+                "name": "test-event.log"
+            }
+        }
+    },
+    "host": {
+        "domain": "corp.local",
+        "hostname": "endpoint-22"
+    },
+    "input": {
+        "type": "gcs"
+    },
+    "log": {
+        "file": {
+            "path": "gs://cortex_system_test-34789/test-event.log"
+        },
+        "offset": 0
+    },
+    "network": {
+        "protocol": "http"
+    },
+    "observer": {
+        "product": "Cortex XDR",
+        "vendor": "Palo Alto Networks"
+    },
+    "package": {
+        "path": "C:\\Program Files\\ExampleApp\\example.dll"
+    },
+    "panw_cortex": {
+        "xdr": {
+            "event": {
+                "action": {
+                    "file": {
+                        "device_type": "Device Type",
+                        "is_anonymous": true,
+                        "last_writer_actor": "Writer Actor",
+                        "operation_flags": "Operation Flags",
+                        "owner": "Owner",
+                        "prev_type": "Previous Type",
+                        "previous_file_name": "file.dll",
+                        "previous_file_path": "C:\\PreviousPath\\file.dll",
+                        "signature_product": "File Product",
+                        "signature_status": "Verified",
+                        "signature_vendor": "File Vendor"
+                    },
+                    "module": {
+                        "base_address": "0x7fffb1d00000",
+                        "boot_code_integrity": "enabled",
+                        "code_integrity": "verified",
+                        "file_info": "C:\\Program Files\\ExampleApp\\example.dll",
+                        "image_size": 512,
+                        "last_writer_actor": "SYSTEM",
+                        "md5": "9e107d9d372bb6826bd81d3542a419d6",
+                        "other_load_location": "C:\\Windows\\Temp\\example.tmp",
+                        "page_protection": "PAGE_EXECUTE_READWRITE",
+                        "sha256": "2cf24dba5fb0a30e26e83b2ac5b9e29e1b161e5c1fa7425e73043362938b9824",
+                        "signature_is_embedded": true,
+                        "signature_product": "Example App Suite",
+                        "signature_status": "Valid",
+                        "signature_vendor": "ExampleCorp Inc.",
+                        "system_properties": "64-bit, Windows 10, Build 19045"
+                    },
+                    "network": {
+                        "connection_id": "12345",
+                        "creation_time": "2023-10-01T12:00:00.000Z",
+                        "is_server": true,
+                        "stats_is_last": true
+                    },
+                    "powered_off": "off",
+                    "process": {
+                        "fds": "File descriptors info",
+                        "image_command_line": "C:\\Program Files\\App\\app.exe -arg1",
+                        "image_extension": ".exe",
+                        "image_name": "app.exe",
+                        "image_path": "C:\\Program Files\\App\\app.exe",
+                        "in_txn": false,
+                        "instance_execution_time": "2025-04-16T12:34:56.000Z",
+                        "instance_id": "instance_001",
+                        "integrity_level": "High",
+                        "last_writer_actor": "Writer Actor",
+                        "peb": "PEB info",
+                        "peb32": "PEB32 info",
+                        "privileges": "Privileges info",
+                        "scheduled_task_name": "Scheduled Task",
+                        "signature_product": "App Product",
+                        "token": "Token info"
+                    },
+                    "remote_process": {
+                        "image_command_line": "\"C:\\Windows\\System32\\svchost.exe\" -k netsvcs",
+                        "image_name": "svchost.exe",
+                        "image_path": "C:\\Windows\\System32\\svchost.exe",
+                        "instance_id": "remote-host-01::1234::5678",
+                        "integrity_level": "High",
+                        "os_pid": "1234",
+                        "signature_is_embedded": true,
+                        "signature_product": "Microsoft Windows Operating System",
+                        "signature_status": "Valid",
+                        "signature_vendor": "Microsoft Corporation",
+                        "thread_id": "5678",
+                        "thread_start_address": "0x7ffdfb2a1000"
+                    },
+                    "socket_type": "TCP",
+                    "total_download": 2048,
+                    "total_upload": 1024,
+                    "user_is_local_session": true,
+                    "user_session_id": "1C3D4E5F",
+                    "user_status": "Active"
+                },
+                "address_mapping": "192.168.1.10 -> 10.0.0.5",
+                "agent": {
+                    "hostname": "endpoint-22.corp.local",
+                    "interface_map": "eth0-192.168.1.10",
+                    "ip_addresses": [
+                        "67.43.156.0",
+                        "67.43.156.2"
+                    ],
+                    "ip_addresses_v6": [
+                        "fe80::1c3d:2eff:fe4a:6b7a"
+                    ],
+                    "os_sub_type": "Enterprise",
+                    "os_type": "Windows"
+                },
+                "event_rpc_func_opnum": "45",
+                "event_rpc_interface_uuid": "12345678-1234-abcd-ef00-0123456789ab",
+                "event_type": [
+                    "process-start"
+                ],
+                "event_version": "1.0",
+                "host_metadata": {
+                    "interface_map": "Ethernet0-192.168.1.10"
+                },
+                "id": "abc123",
+                "os_actor": {
+                    "process_command_line": "\"C:\\Program Files\\ExampleApp\\example.exe\" -task run",
+                    "process_image_name": "example.exe",
+                    "process_image_path": "C:\\Program Files\\ExampleApp\\example.exe",
+                    "process_instance_id": "endpoint-22::5678::9012",
+                    "process_logon_id": "0x3e7",
+                    "process_os_pid": "5678",
+                    "process_signature_status": [
+                        "Valid"
+                    ],
+                    "thread_thread_id": "9012"
+                }
+            }
+        }
+    },
+    "process": {
+        "code_signature": {
+            "exists": true,
+            "status": [
+                "Verified"
+            ],
+            "subject_name": "App Vendor"
+        },
+        "end": "2023-10-01T12:30:00.000Z",
+        "entry_leader": {
+            "attested_user": {
+                "id": "S-1-5-21-3623811015-3361044348-30300820-1013",
+                "name": "user"
+            },
+            "user": {
+                "id": "S-1-5-18",
+                "name": "NT AUTHORITY\\SYSTEM"
+            }
+        },
+        "exit_code": 0,
+        "hash": {
+            "md5": [
+                "d41d8cd98f00b204e9800998ecf8427e",
+                "44d88612fea8a8f36de82e1278abb02f",
+                "5d41402abc4b2a76b9719d911017c592"
+            ],
+            "sha256": [
+                "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+                "3395856ce81f2b7382dee72602f798b642f14140b2fc0f8c7d65e9b32e0d0b09",
+                "2cf24dba5fb0a30e26e83b2ac5b9e29e1b161e5c1fa7425e73043362938b9824"
+            ]
+        },
+        "pe": {
+            "description": "Paint"
+        },
+        "pid": 7846
+    },
+    "related": {
+        "hash": [
+            "d41d8cd98f00b204e9800998ecf8427e",
+            "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+            "9e107d9d372bb6826bd81d3542a419d6",
+            "2cf24dba5fb0a30e26e83b2ac5b9e29e1b161e5c1fa7425e73043362938b9824",
+            "44d88612fea8a8f36de82e1278abb02f",
+            "3395856ce81f2b7382dee72602f798b642f14140b2fc0f8c7d65e9b32e0d0b09",
+            "5d41402abc4b2a76b9719d911017c592"
+        ],
+        "hosts": [
+            "endpoint-22.corp.local",
+            "corp.local",
+            "endpoint-22"
+        ],
+        "ip": [
+            "1.128.0.0",
+            "1.128.0.9",
+            "67.43.156.0",
+            "67.43.156.2",
+            "fe80::1c3d:2eff:fe4a:6b7a",
+            "216.160.83.56",
+            "81.2.69.144"
+        ],
+        "user": [
+            "S-1-5-21-3623811015-3361044348-30300820-1013",
+            "user",
+            "S-1-5-18",
+            "NT AUTHORITY\\SYSTEM",
+            "CORP\\jdoe"
+        ]
+    },
+    "source": {
+        "ip": [
+            "1.128.0.0",
+            "216.160.83.56"
+        ],
+        "port": [
+            8080,
+            49152
+        ]
+    },
+    "tags": [
+        "preserve_original_event",
+        "forwarded",
+        "panw_cortex_xdr-event"
+    ],
+    "user": {
+        "id": "S-1-5-21-3623811015-3361044348-30300820-1013",
+        "name": "CORP\\jdoe"
+    }
+}
+```
 
 ### Incidents
 

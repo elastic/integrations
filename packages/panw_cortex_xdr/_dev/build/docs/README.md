@@ -21,7 +21,7 @@ Agentless deployments are only supported in Elastic Serverless and Elastic Cloud
 
 ### Agent-based installation
 
-Elastic Agent must be installed. For more details, check the Elastic Agent [installation instructions](https://www.elastic.co/guide/en/fleet/current/elastic-agent-installation.html). You can install only one Elastic Agent per host.
+Elastic Agent must be installed. For more details, check the Elastic Agent [installation instructions](docs-content://reference/fleet/install-elastic-agents.md).
 
 ## Compatibility
 
@@ -106,6 +106,8 @@ This is the `Event` dataset.
 #### Example
 
 {{fields "event"}}
+
+{{event "event"}}
 
 ### Incidents
 
