@@ -91,6 +91,26 @@ streams:
         type: text
         multi: false
         default: 0
+      - name: long_fields
+        title: Long Fields
+        description: Choose to `Index` or `Delete` long fields. Fields longer than 1024 bytes (except `event.original`) will be kept (indexed) or deleted based on this option.
+        type: select
+        multi: false
+        required: true
+        show_user: false
+        options:
+          - text: Index
+            value: index_long_fields
+          - text: Delete
+            value: delete_long_fields
+        default: index_long_fields
+      - name: long_fields_max_length
+        type: integer
+        title: Maximum Length of Fields
+        description: The maximum length of fields (in bytes) to consider them as too long. By default, fields larger than `1024` bytes are considered too long. This option in addition to `Long Fields` option helps users configure how integration should handle long fields.
+        default: 1024
+        required: true
+        show_user: false
       - name: enable_deduplication
         title: Enable Data Deduplication
         required: true
@@ -248,6 +268,16 @@ streams:
         required: false
         show_user: false
 
+      - name: prune_fields
+        type: bool
+        title: Prune Fields
+        default: true
+        multi: false
+        required: false
+        show_user: false
+        description: >-
+          Prune fields deletes fields that are less likely to be useful. This includes `agent.ephemeral_id`, `ecs.version`,
+          `event.timezone` and `log.offset`.
   - input: logfile
     title: Falcon Data Replicator logs
     description: Collect Falcon Data Replicator logs using a log file
@@ -308,4 +338,13 @@ streams:
         show_user: false
         description: >
           Processors are used to reduce the number of fields in the exported event or to enhance the event with metadata. This executes in the agent before the logs are parsed. See [Processors](https://www.elastic.co/guide/en/beats/filebeat/current/filtering-and-enhancing-data.html) for details.
-
+      - name: prune_fields
+        type: bool
+        title: Prune Fields
+        default: true
+        multi: false
+        required: false
+        show_user: false
+        description: >-
+          Prune fields deletes fields that are less likely to be useful. This includes `agent.ephemeral_id`, `ecs.version`,
+          `event.timezone` and `log.offset`.

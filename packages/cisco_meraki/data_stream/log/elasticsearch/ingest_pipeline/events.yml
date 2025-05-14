@@ -82,9 +82,10 @@ processors:
     field: event.original
     pattern: "%{} events dhcp lease of ip %{_temp.client_ip} from %{} mac %{server.mac} for client mac %{client.mac} %{}"
     if: ctx?.msgtype.toLowerCase() == "dhcp" && ctx?._temp?.dhcp_op.toLowerCase() == 'lease'
-- dissect:
+- grok:
     field: event.original
-    pattern: "%{} events dhcp no offers for mac %{client.mac} %{}"
+    patterns:
+      - "events dhcp no offers for mac %{MAC:client.mac}"
     if: ctx?.msgtype.toLowerCase() == "dhcp" && ctx?._temp?.dhcp_op.toLowerCase() == 'no' && ctx?._temp?.dhcp_op2.toLowerCase() == 'offers'
 - set:
     field: cisco_meraki.event_subtype
@@ -229,6 +230,16 @@ processors:
     value: dhcp
     if: ctx?.cisco_meraki?.event_subtype == 'multiple_dhcp_servers_detected'
 - rename:
+    field: cisco_meraki.{{{cisco_meraki.event_subtype}}}.client_mac
+    target_field: client.mac
+    if: ctx.cisco_meraki?.event_subtype != null && ['dfs_event', 'association', 'disassociation', 'aps_association_reject', 'multiple_dhcp_servers_detected', 'wpa_deauth', 'wpa_auth', '8021x_eap_failure', '8021x_auth', '8021x_deauth', '8021x_eap_success', 'device_packet_flood'].contains(ctx.cisco_meraki.event_subtype)
+    ignore_missing: true
+- rename:
+    field: cisco_meraki.{{{cisco_meraki.event_subtype}}}.ip_src
+    target_field: source.ip
+    if: ctx.cisco_meraki?.event_subtype != null && ['dfs_event', 'association', 'disassociation', 'aps_association_reject', 'multiple_dhcp_servers_detected', 'wpa_deauth', 'wpa_auth', '8021x_eap_failure', '8021x_auth', '8021x_deauth', '8021x_eap_success', 'splash_auth', 'device_packet_flood'].contains(ctx.cisco_meraki.event_subtype)
+    ignore_missing: true
+- rename:
     field: cisco_meraki.multiple_dhcp_servers_detected.original_server_mac
     target_field: server.mac
     if: ctx?.cisco_meraki?.event_subtype == 'multiple_dhcp_servers_detected'
@@ -269,13 +280,6 @@ processors:
     field: related.ip
     value: "{{{cisco_meraki.multiple_dhcp_servers_detected.server_ip}}}"
     if: ctx?.cisco_meraki?.event_subtype == 'multiple_dhcp_servers_detected'
-####################################################
-# wpa_deauth
-####################################################
-- rename:
-    field: cisco_meraki.wpa_deauth.client_mac
-    target_field: client.mac
-    if: ctx?.cisco_meraki?.event_subtype == 'wpa_deauth'
 
 ####################################################
 # Handle client_vpn_connect

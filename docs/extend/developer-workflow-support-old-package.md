@@ -59,9 +59,7 @@ Follow these detailed steps to release a fix for a given package version:
 
     **Please, pay attention!**, if you just run the pipeline it’ll wait for your inputs, nothing will happen without that.
 
-    :::{image} images/backport_input_step.png
-    :alt: waiting input step
-    :::
+    ![waiting input step](images/backport_input_step.png)
 
     Pipeline’s inputs:
 
