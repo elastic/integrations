@@ -259,12 +259,14 @@ processors:
       field: event.outcome
       tag: set_event_outcome_success
       value: success
-      if: ctx.ping_federate?.audit?.status?.toLowerCase().contains("success")
+      if: ctx.ping_federate?.audit?.status != null && 
+          ctx.ping_federate.audit.status.toLowerCase().contains("success")
   - set:
       field: event.outcome
       tag: set_event_outcome_failure
       value: failure
-      if: ctx.ping_federate?.audit?.status?.toLowerCase().contains("fail")
+      if: ctx.ping_federate?.audit?.status != null && 
+          ctx.ping_federate.audit.status.toLowerCase().contains("fail")
   - set:
       field: ping_federate.audit.role
       tag: set_role_from_deviceCustomString4
