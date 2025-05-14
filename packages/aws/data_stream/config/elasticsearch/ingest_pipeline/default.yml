@@ -348,7 +348,7 @@ processors:
           ctx.event.outcome = 'failure';
         } else if (ctx.aws.config.compliance_type == 'COMPLIANT') {
           ctx.event.outcome = 'success';
-        }else {
+        } else {
           ctx.event.outcome = 'unknown';
         }
   - rename:
@@ -360,7 +360,7 @@ processors:
       field: rule.tags
       tag: set_rule_tags_from_config_config_rule_info_scope_tag_value
       copy_from: aws.config.rule_info.scope.tag_value
-      ignore_empty_value: true  
+      ignore_empty_value: true
   - remove:
       field:
         - aws.config.evaluation_result_identifier.ordering_timestamp
@@ -407,6 +407,11 @@ processors:
       tag: set_pipeline_error_into_event_kind
       value: pipeline_error
       if: ctx.error?.message != null
+  - append:
+      field: tags
+      value: preserve_original_event
+      allow_duplicates: false
+      if: ctx.error?.message != null
 on_failure:
   - append:
       field: error.message
@@ -419,4 +424,3 @@ on_failure:
       field: tags
       value: preserve_original_event
       allow_duplicates: false
-
