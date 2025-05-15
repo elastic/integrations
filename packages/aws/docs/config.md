@@ -72,11 +72,11 @@ An example event for `config` looks as following:
 
 ```json
 {
-    "@timestamp": "2025-05-14T09:24:43.131164267Z",
+    "@timestamp": "2025-05-15T07:58:22.984Z",
     "agent": {
-        "ephemeral_id": "5c3a0fd0-d4fe-4261-9522-c481b46fcb84",
-        "id": "42651566-3d44-4694-9718-8d7f6da5d102",
-        "name": "elastic-agent-16692",
+        "ephemeral_id": "d0c3ee19-2392-4043-b593-6b17777af11d",
+        "id": "5be90210-85df-4e5b-85b6-88ffdd10983e",
+        "name": "elastic-agent-81980",
         "type": "filebeat",
         "version": "8.18.0"
     },
@@ -125,14 +125,14 @@ An example event for `config` looks as following:
     },
     "data_stream": {
         "dataset": "aws.config",
-        "namespace": "65231",
+        "namespace": "98805",
         "type": "logs"
     },
     "ecs": {
         "version": "8.17.0"
     },
     "elastic_agent": {
-        "id": "42651566-3d44-4694-9718-8d7f6da5d102",
+        "id": "5be90210-85df-4e5b-85b6-88ffdd10983e",
         "snapshot": false,
         "version": "8.18.0"
     },
@@ -143,7 +143,7 @@ An example event for `config` looks as following:
         ],
         "created": "2015-09-29T15:52:31.883Z",
         "dataset": "aws.config",
-        "ingested": "2025-05-14T09:24:43Z",
+        "ingested": "2025-05-15T07:58:25Z",
         "kind": "event",
         "original": "{\"ComplianceType\":\"COMPLIANT\",\"ConfigRuleInfo\":{\"ConfigRuleArn\":\"arn:aws:config:us-east-1:11223344556:config-rule/config-rule-id1\",\"ConfigRuleId\":\"config-rule-id1\",\"ConfigRuleName\":\"access-keys-rotated\",\"ConfigRuleState\":\"ACTIVE\",\"Description\":\"Checks whether the active access keys are rotated within the number of days specified in maxAccessKeyAge. The rule is non-compliant if the access keys have not been rotated for more than maxAccessKeyAge number of days.\",\"EvaluationModes\":[{\"Mode\":\"DETECTIVE\"}],\"InputParameters\":\"{\\\"maxAccessKeyAge\\\":\\\"90\\\"}\",\"MaximumExecutionFrequency\":\"TwentyFour_Hours\",\"Source\":{\"Owner\":\"AWS\",\"SourceIdentifier\":\"ACCESS_KEYS_ROTATED\"}},\"ConfigRuleInvokedTime\":1444799479.852,\"EvaluationResultIdentifier\":{\"EvaluationResultQualifier\":{\"ConfigRuleName\":\"access-keys-rotated\",\"EvaluationMode\":\"DETECTIVE\",\"ResourceId\":\"i-0a4468fbfafeeg20h\",\"ResourceType\":\"AWS::EC2::Instance\"},\"OrderingTimestamp\":1443541951.883},\"ResultRecordedTime\":1444799480.061}",
         "outcome": "success",
