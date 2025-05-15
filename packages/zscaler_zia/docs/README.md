@@ -1541,26 +1541,26 @@ An example event for `web` looks as following:
 
 ```json
 {
-    "@timestamp": "2021-12-31T08:08:08.000Z",
+    "@timestamp": "2021-12-17T07:04:57.000Z",
     "agent": {
-        "ephemeral_id": "afba03f3-0a10-4b56-998d-0fd4aa4e71ea",
-        "id": "6df0d50c-dafe-4616-9ed1-10519bfbda98",
-        "name": "elastic-agent-86843",
+        "ephemeral_id": "b67f76b8-bc8e-4644-9d09-d505cd800f63",
+        "id": "172485a7-a3a4-4062-810f-bf87bc1a7e9b",
+        "name": "elastic-agent-96465",
         "type": "filebeat",
-        "version": "8.15.0"
+        "version": "8.18.0"
     },
     "data_stream": {
         "dataset": "zscaler_zia.web",
-        "namespace": "65605",
+        "namespace": "47715",
         "type": "logs"
     },
     "ecs": {
         "version": "8.11.0"
     },
     "elastic_agent": {
-        "id": "6df0d50c-dafe-4616-9ed1-10519bfbda98",
+        "id": "172485a7-a3a4-4062-810f-bf87bc1a7e9b",
         "snapshot": false,
-        "version": "8.15.0"
+        "version": "8.18.0"
     },
     "event": {
         "action": "blocked",
@@ -1569,11 +1569,12 @@ An example event for `web` looks as following:
             "web"
         ],
         "dataset": "zscaler_zia.web",
-        "ingested": "2024-08-22T16:05:37Z",
+        "ingested": "2025-05-14T09:27:52Z",
         "kind": "event",
+        "outcome": "failure",
         "timezone": "UTC",
         "type": [
-            "info"
+            "access"
         ]
     },
     "file": {
@@ -1592,7 +1593,12 @@ An example event for `web` looks as following:
         }
     },
     "input": {
-        "type": "http_endpoint"
+        "type": "tcp"
+    },
+    "log": {
+        "source": {
+            "address": "192.168.249.3:33240"
+        }
     },
     "network": {
         "protocol": "http_proxy"
