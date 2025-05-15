@@ -10,25 +10,9 @@ The Sysdig integration collects two type of logs:
 
 ## Requirements
 
-Elastic Agent must be installed. For more details and installation instructions, please refer to the [Elastic Agent Installation Guide](https://www.elastic.co/guide/en/fleet/current/elastic-agent-installation.html).
+### Agent-based installation
 
-### Installing and managing an Elastic Agent:
-
-There are several options for installing and managing Elastic Agent:
-
-### Install a Fleet-managed Elastic Agent (recommended):
-
-With this approach, you install Elastic Agent and use Fleet in Kibana to define, configure, and manage your agents in a central location. We recommend using Fleet management because it makes the management and upgrade of your agents considerably easier.
-
-### Install Elastic Agent in standalone mode (advanced users):
-
-With this approach, you install Elastic Agent and manually configure the agent locally on the system where it’s installed. You are responsible for managing and upgrading the agents. This approach is reserved for advanced users only.
-
-### Install Elastic Agent in a containerized environment:
-
-You can run Elastic Agent inside a container, either with Fleet Server or standalone. Docker images for all versions of Elastic Agent are available from the Elastic Docker registry, and we provide deployment manifests for running on Kubernetes.
-
-Please note, there are minimum requirements for running Elastic Agent. For more information, refer to the [Elastic Agent Minimum Requirements](https://www.elastic.co/guide/en/fleet/current/elastic-agent-installation.html#elastic-agent-installation-minimum-requirements).
+Elastic Agent must be installed. For more details, check the Elastic Agent [installation instructions](docs-content://reference/fleet/install-elastic-agents.md).
 
 Sysdig must be configured to output alerts to a supported output channel as defined in [Setup](#setup). The system will only receive common fields output by Sysdig's rules, meaning that if a rule does not include a desired field the rule must be edited in Sysdig to add the field.
 
@@ -59,7 +43,7 @@ The HTTP input allows the Elastic Agent to receive Sysdig Alerts via HTTP webhoo
 
 **Note**:
   - The URL may vary depending on your region. Please refer to the [Documentation](https://docs.sysdig.com/en/developer-tools/sysdig-api/#access-the-sysdig-api-using-the-regional-endpoints) to find the correct URL for your region.
-  - If you see an error saying `exceeded maximum number of CEL executions` during data ingestion, it usually means a large volume of data is being processed for the selected time interval. To fix this, try increasing the Max Executions setting in the configuration.
+  - If you see an error saying `exceeded maximum number of CEL executions` during data ingestion, it usually means a large volume of data is being processed for the selected time interval. To fix this, try increasing the `Maximum Pages Per Interval` setting in the configuration.
 
 ## Logs Reference
 
@@ -67,83 +51,17 @@ The HTTP input allows the Elastic Agent to receive Sysdig Alerts via HTTP webhoo
 
 Sysdig alerts can contain a multitude of various fields pertaining to the type of activity on the host machine.
 
-**Exported fields**
-
-| Field | Description | Type |
-|---|---|---|
-| @timestamp | Event timestamp with nanos. | date |
-| data_stream.dataset | Data stream dataset. | constant_keyword |
-| data_stream.namespace | Data stream namespace. | constant_keyword |
-| data_stream.type | Data stream type. | constant_keyword |
-| event.dataset | Data stream / event dataset. | constant_keyword |
-| event.module | The module the event belongs to. | constant_keyword |
-| input.type |  | constant_keyword |
-| sysdig.actions |  | flattened |
-| sysdig.agentId | Agent identifier | integer |
-| sysdig.category | Event category from Sysdig | keyword |
-| sysdig.containerId | Identifier of the container | text |
-| sysdig.content.fields.container.image.tag | Tag for the container image | text |
-| sysdig.content.fields.container.name | Name of the container | text |
-| sysdig.content.fields.proc.cmdline | Command line args for the process | text |
-| sysdig.content.fields.proc.cwd | Current working directory for the current process | text |
-| sysdig.content.fields.proc.exepath | Path for the current process | text |
-| sysdig.content.fields.proc.name | Name of the process | text |
-| sysdig.content.fields.proc.pcmdline | Command line args for the parent process | text |
-| sysdig.content.fields.proc.pid | Identifier for the process | text |
-| sysdig.content.fields.proc.pname | Name of the parent process | text |
-| sysdig.content.fields.proc.ppid | Identifier for the parent process | text |
-| sysdig.content.fields.user.name | Name of the user | text |
-| sysdig.content.fields.user.uid | Identifier for the user | text |
-| sysdig.content.output | The raw event output | text |
-| sysdig.content.policyOrigin | Originator of the rule associated with an event | text |
-| sysdig.content.policyVersion | Version of the rule associated with an event | integer |
-| sysdig.content.ruleName | Name of the rule associated with an event | text |
-| sysdig.content.ruleTags | Tags associated with an event rule | text |
-| sysdig.content.ruleType | Category of the rule associated with an event | text |
-| sysdig.description | Description of the event policy | text |
-| sysdig.event.category |  | text |
-| sysdig.event.description |  | text |
-| sysdig.event.type |  | text |
-| sysdig.hostMac | MAC address of the host machine | text |
-| sysdig.id | Event identifier | text |
-| sysdig.labels.azure.instanceId | Instance identifier for the azure instance | text |
-| sysdig.labels.azure.instanceName | Instance name for the azure instance | text |
-| sysdig.labels.azure.instanceSize | Size for the azure instance | text |
-| sysdig.labels.cloudProvider.account.id | Account identifier for the cloud provider | text |
-| sysdig.labels.cloudProvider.name | Name for the cloud provider | text |
-| sysdig.labels.cloudProvider.region | Region for the cloud provider | text |
-| sysdig.labels.gcp.availabilityZone | AZ for the gcp instance | text |
-| sysdig.labels.gcp.instanceId | Instance identifier for the gcp instance | text |
-| sysdig.labels.gcp.instanceName | Instance name for the gcp instance | text |
-| sysdig.labels.gcp.machineType | Machine type for the gcp instance | text |
-| sysdig.labels.gcp.projectId | Project identifier for the gcp instance | text |
-| sysdig.labels.gcp.projectName | Project name for the gcp instance | text |
-| sysdig.labels.host.hostName | Name of the current host | keyword |
-| sysdig.labels.kubernetes.cluster.name | Name of the k8s cluster | text |
-| sysdig.labels.kubernetes.namespace.name | Namespace of the k8s cluster | text |
-| sysdig.labels.kubernetes.pod.name | Name of the k8s pod | text |
-| sysdig.labels.kubernetes.workload.type | Type of k8s resource | text |
-| sysdig.machineId | Identifier of the host machine | text |
-| sysdig.name | Name of the event policy | text |
-| sysdig.originator |  | text |
-| sysdig.severity | Numerical severity value associated with an event | integer |
-| sysdig.source | Event source | text |
-| sysdig.timestamp | Timestamp of the event | date |
-| sysdig.timestampRFC3339Nano |  | date |
-| sysdig.type | In the case of policies, value should come through as "policy" | text |
-
-
 #### Example
 
 An example event for `alerts` looks as following:
 
 ```json
 {
-    "@timestamp": "2024-09-12T13:06:12.675Z",
+    "@timestamp": "2025-05-15T20:55:10.950Z",
     "agent": {
-        "ephemeral_id": "fe172d2f-7b14-4b87-bc5a-acc14684e4c5",
+        "ephemeral_id": "d1edefb2-dd7d-40f4-bc12-f3e8e0e8a0c8",
         "id": "58014837",
-        "name": "docker-fleet-agent",
+        "name": "elastic-agent-68303",
         "type": "filebeat",
         "version": "8.14.1"
     },
@@ -171,14 +89,14 @@ An example event for `alerts` looks as following:
     },
     "data_stream": {
         "dataset": "sysdig.alerts",
-        "namespace": "15372",
+        "namespace": "85290",
         "type": "logs"
     },
     "ecs": {
         "version": "8.0.0"
     },
     "elastic_agent": {
-        "id": "a2d71da8-f67f-43fa-a895-0251c4a68bb0",
+        "id": "e5c61bf4-097f-42fe-90df-25e8ef080bd8",
         "snapshot": false,
         "version": "8.14.1"
     },
@@ -186,7 +104,7 @@ An example event for `alerts` looks as following:
         "agent_id_status": "mismatch",
         "dataset": "sysdig.alerts",
         "id": "17dec715376910362c8c3f62a4ceda2e",
-        "ingested": "2024-09-12T13:06:22Z",
+        "ingested": "2025-05-15T20:55:12Z",
         "kind": "alert",
         "provider": "syscall",
         "severity": 7,
@@ -340,6 +258,72 @@ An example event for `alerts` looks as following:
 }
 ```
 
+**Exported fields**
+
+| Field | Description | Type |
+|---|---|---|
+| @timestamp | Event timestamp with nanos. | date |
+| data_stream.dataset | Data stream dataset. | constant_keyword |
+| data_stream.namespace | Data stream namespace. | constant_keyword |
+| data_stream.type | Data stream type. | constant_keyword |
+| event.dataset | Data stream / event dataset. | constant_keyword |
+| event.module | The module the event belongs to. | constant_keyword |
+| input.type |  | constant_keyword |
+| sysdig.actions |  | flattened |
+| sysdig.agentId | Agent identifier | integer |
+| sysdig.category | Event category from Sysdig | keyword |
+| sysdig.containerId | Identifier of the container | text |
+| sysdig.content.fields.container.image.tag | Tag for the container image | text |
+| sysdig.content.fields.container.name | Name of the container | text |
+| sysdig.content.fields.proc.cmdline | Command line args for the process | text |
+| sysdig.content.fields.proc.cwd | Current working directory for the current process | text |
+| sysdig.content.fields.proc.exepath | Path for the current process | text |
+| sysdig.content.fields.proc.name | Name of the process | text |
+| sysdig.content.fields.proc.pcmdline | Command line args for the parent process | text |
+| sysdig.content.fields.proc.pid | Identifier for the process | text |
+| sysdig.content.fields.proc.pname | Name of the parent process | text |
+| sysdig.content.fields.proc.ppid | Identifier for the parent process | text |
+| sysdig.content.fields.user.name | Name of the user | text |
+| sysdig.content.fields.user.uid | Identifier for the user | text |
+| sysdig.content.output | The raw event output | text |
+| sysdig.content.policyOrigin | Originator of the rule associated with an event | text |
+| sysdig.content.policyVersion | Version of the rule associated with an event | integer |
+| sysdig.content.ruleName | Name of the rule associated with an event | text |
+| sysdig.content.ruleTags | Tags associated with an event rule | text |
+| sysdig.content.ruleType | Category of the rule associated with an event | text |
+| sysdig.description | Description of the event policy | text |
+| sysdig.event.category |  | text |
+| sysdig.event.description |  | text |
+| sysdig.event.type |  | text |
+| sysdig.hostMac | MAC address of the host machine | text |
+| sysdig.id | Event identifier | text |
+| sysdig.labels.azure.instanceId | Instance identifier for the azure instance | text |
+| sysdig.labels.azure.instanceName | Instance name for the azure instance | text |
+| sysdig.labels.azure.instanceSize | Size for the azure instance | text |
+| sysdig.labels.cloudProvider.account.id | Account identifier for the cloud provider | text |
+| sysdig.labels.cloudProvider.name | Name for the cloud provider | text |
+| sysdig.labels.cloudProvider.region | Region for the cloud provider | text |
+| sysdig.labels.gcp.availabilityZone | AZ for the gcp instance | text |
+| sysdig.labels.gcp.instanceId | Instance identifier for the gcp instance | text |
+| sysdig.labels.gcp.instanceName | Instance name for the gcp instance | text |
+| sysdig.labels.gcp.machineType | Machine type for the gcp instance | text |
+| sysdig.labels.gcp.projectId | Project identifier for the gcp instance | text |
+| sysdig.labels.gcp.projectName | Project name for the gcp instance | text |
+| sysdig.labels.host.hostName | Name of the current host | keyword |
+| sysdig.labels.kubernetes.cluster.name | Name of the k8s cluster | text |
+| sysdig.labels.kubernetes.namespace.name | Namespace of the k8s cluster | text |
+| sysdig.labels.kubernetes.pod.name | Name of the k8s pod | text |
+| sysdig.labels.kubernetes.workload.type | Type of k8s resource | text |
+| sysdig.machineId | Identifier of the host machine | text |
+| sysdig.name | Name of the event policy | text |
+| sysdig.originator |  | text |
+| sysdig.severity | Numerical severity value associated with an event | integer |
+| sysdig.source | Event source | text |
+| sysdig.timestamp | Timestamp of the event | date |
+| sysdig.timestampRFC3339Nano |  | date |
+| sysdig.type | In the case of policies, value should come through as "policy" | text |
+
+
 ### Event
 
 This is the `event` dataset.
@@ -352,9 +336,9 @@ An example event for `event` looks as following:
 {
     "@timestamp": "2025-04-05T03:00:01.1159286Z",
     "agent": {
-        "ephemeral_id": "7e0f4795-76f9-42be-a7d4-6e76eafb55e4",
-        "id": "9fd8bef6-b2ff-4274-bb25-deda1a6cda6e",
-        "name": "elastic-agent-97447",
+        "ephemeral_id": "ca0565a4-e614-4914-ac1d-cb0541e3e3e3",
+        "id": "c3e9d7b3-bd72-4ef6-b34f-0956971ed698",
+        "name": "elastic-agent-86708",
         "type": "filebeat",
         "version": "8.14.1"
     },
@@ -381,14 +365,14 @@ An example event for `event` looks as following:
     },
     "data_stream": {
         "dataset": "sysdig.event",
-        "namespace": "66013",
+        "namespace": "57780",
         "type": "logs"
     },
     "ecs": {
         "version": "8.11.0"
     },
     "elastic_agent": {
-        "id": "9fd8bef6-b2ff-4274-bb25-deda1a6cda6e",
+        "id": "c3e9d7b3-bd72-4ef6-b34f-0956971ed698",
         "snapshot": false,
         "version": "8.14.1"
     },
@@ -399,7 +383,7 @@ An example event for `event` looks as following:
         ],
         "dataset": "sysdig.event",
         "id": "1a334cdef0060123456789abcdef64a9",
-        "ingested": "2025-04-21T13:11:32Z",
+        "ingested": "2025-05-15T20:56:16Z",
         "kind": "event",
         "original": "{\"category\":\"runtime\",\"content\":{\"fields\":{\"container.image.repository\":\"docker.io/library/python\",\"container.name\":\"shell-scripting\",\"evt.res\":\"SUCCESS\",\"evt.type\":\"execve\",\"group.gid\":\"0\",\"group.name\":\"root\",\"proc.args\":\"\",\"proc.cmdline\":\"sh\",\"proc.cwd\":\"/\",\"proc.exepath\":\"/usr/bin/dash\",\"proc.hash.sha256\":\"f5adb8bf0100ed0f8c7782ca5f92814e9229525a4b4e0d401cf3bea09ac960a6\",\"proc.name\":\"sh\",\"proc.pcmdline\":\"bash -c echo IyEvYmluL2Jhc2gKYXB0IHVwZGF0ZSAteTsgYXB0IGluc3RhbGwgLXkgbmNhdApuYyAtbHYgMTMzNyAmCg== | base64 -d | sh; echo cHl0aG9uMyAtYyAnaW1wb3J0IG9zLHB0eSxzb2NrZXQ7cz1zb2NrZXQuc29ja2V0KCk7cy5jb25uZWN0KCgiMC4wLjAuMCIsMTMzNykpO1tvcy5kdXAyKHMuZmlsZW5vKCksZilmb3IgZiBpbigwLDEsMildO3B0eS5zcGF3bihbInNoIiwgIi1jIiwgInNsZWVwIDU7bHMgLWE7IGV4aXQgMCJdKScK | base64 -d | sh\",\"proc.pid\":\"1372469\",\"proc.pid.ts\":\"1743822001115100312\",\"proc.pname\":\"bash\",\"proc.ppid\":\"1372453\",\"proc.ppid.ts\":\"1743822000952432134\",\"proc.sid\":\"1\",\"user.loginname\":\"\\u003cNA\\u003e\",\"user.loginuid\":\"-1\",\"user.name\":\"root\",\"user.uid\":\"0\"},\"origin\":\"Secure UI\",\"output\":\"Custom rule. The shell-scripting with image docker.io/library/python by parent bash under user root (proc.name=sh proc.exepath-custom=/usr/bin/dash proc.pname=bash gparent=runc ggparent=containerd-shim gggparent=systemd image=docker.io/library/python user.uid=0 proc.cmdline=sh proc.pcmdline=bash -c echo IyEvYmluL2Jhc2gKYXB0IHVwZGF0ZSAteTsgYXB0IGluc3RhbGwgLXkgbmNhdApuYyAtbHYgMTMzNyAmCg== | base64 -d | sh; echo cHl0aG9uMyAtYyAnaW1wb3J0IG9zLHB0eSxzb2NrZXQ7cz1zb2NrZXQuc29ja2V0KCk7cy5jb25uZWN0KCgiMC4wLjAuMCIsMTMzNykpO1tvcy5kdXAyKHMuZmlsZW5vKCksZilmb3IgZiBpbigwLDEsMildO3B0eS5zcGF3bihbInNoIiwgIi1jIiwgInNsZWVwIDU7bHMgLWE7IGV4aXQgMCJdKScK | base64 -d | sh user.name=root user.loginuid=-1 proc.args= container.name=shell-scripting evt.type=execve evt.res=SUCCESS proc.pid=1372469 proc.cwd=/ proc.ppid=1372453 proc.sid=1 proc.exepath=/usr/bin/dash user.loginname=\\u003cNA\\u003e group.gid=0 group.name=root proc.pid.ts=1743822001115100312 proc.ppid.ts=1743822000952432134 proc.hash.sha256=f5adb8bf0100ed0f8c7782ca5f92814e9229525a4b4e0d401cf3bea09ac960a6)\",\"policyId\":10569534,\"ruleName\":\"My test rule custom\",\"ruleSubType\":0,\"ruleTags\":[\"My-tag-custom-1-hello-world\",\"MITTRE-WHATEVER\"],\"ruleType\":6,\"type\":\"workloadRuntimeDetection\"},\"description\":\"This is just a dumb policy to test custom policies\",\"engine\":\"falco\",\"id\":\"1a334cdef0060123456789abcdef64a9\",\"labels\":{\"cloudProvider.account.id\":\"012345678912\",\"cloudProvider.name\":\"gcp\",\"cloudProvider.region\":\"us-central1\",\"container.image.digest\":\"sha256:aa7b73608abcfb021247bbb4c111435234a0459298a6da610681097a54ca2c2a\",\"container.image.id\":\"ef0f72a55bd2\",\"container.image.repo\":\"docker.io/library/python\",\"container.image.tag\":\"3.9.18-slim\",\"container.label.io.kubernetes.container.name\":\"shell-scripting\",\"container.label.io.kubernetes.pod.name\":\"shell-scripting-29063700-123ab\",\"container.label.io.kubernetes.pod.namespace\":\"default\",\"container.name\":\"shell-scripting\",\"gcp.location\":\"us-central1\",\"gcp.projectId\":\"012345678912\",\"host.hostName\":\"gke-cluster-gcp-demo-san-default-pool-11234abc-abcd\",\"host.mac\":\"01:00:5e:90:10:00\",\"kubernetes.cluster.name\":\"gke-alliances-demo-6\",\"kubernetes.cronJob.name\":\"shell-scripting\",\"kubernetes.job.name\":\"shell-scripting-29063700\",\"kubernetes.namespace.name\":\"default\",\"kubernetes.node.name\":\"gke-cluster-gcp-demo-san-default-pool-12345678-abcd\",\"kubernetes.pod.name\":\"shell-scripting-12345678-123ab\",\"kubernetes.workload.name\":\"shell-scripting\",\"kubernetes.workload.type\":\"cronjob\"},\"name\":\"Manuel test policy\",\"originator\":\"policy\",\"rawEventCategory\":\"runtime\",\"rawEventOriginator\":\"linuxAgent\",\"severity\":4,\"source\":\"syscall\",\"sourceDetails\":{\"subType\":\"container\",\"type\":\"workload\"},\"timestamp\":1743822001115928600}",
         "outcome": "success",
@@ -408,10 +392,6 @@ An example event for `event` looks as following:
         "type": [
             "info"
         ]
-    },
-    "group": {
-        "id": "0",
-        "name": "root"
     },
     "host": {
         "hostname": "gke-cluster-gcp-demo-san-default-pool-11234abc-abcd",
@@ -556,6 +536,10 @@ An example event for `event` looks as following:
         "sysdig-event"
     ],
     "user": {
+        "group": {
+            "id": "0",
+            "name": "root"
+        },
         "id": "0",
         "name": "root"
     }
@@ -574,23 +558,8 @@ An example event for `event` looks as following:
 | event.module | Event module. | constant_keyword |
 | input.type | Type of filebeat input. | keyword |
 | log.offset | Log offset. | long |
-| process.hash.sha256 |  | keyword |
-| process.parent.command_line |  | keyword |
-| process.parent.executable |  | keyword |
-| process.parent.name |  | keyword |
-| process.parent.parent.command_line |  | keyword |
-| process.parent.parent.executable |  | keyword |
-| process.parent.parent.name |  | keyword |
-| process.parent.parent.parent.command_line |  | keyword |
-| process.parent.parent.parent.executable |  | keyword |
-| process.parent.parent.parent.name |  | keyword |
-| process.parent.parent.parent.parent.command_line |  | keyword |
-| process.parent.parent.parent.parent.executable |  | keyword |
-| process.parent.parent.parent.parent.name |  | keyword |
-| process.parent.pid |  | long |
-| process.parent.start |  | date |
-| sysdig.event.actions.after_event_ns | Amount of nanoseconds after the event the Capture spans. | long |
-| sysdig.event.actions.before_event_ns | Amount of nanoseconds before the event the Capture spans. | long |
+| sysdig.event.actions.after_event_ns | Duration after the event that the capture spans in nanoseconds. | long |
+| sysdig.event.actions.before_event_ns | Duration before the event that the capture spans in nanoseconds. | long |
 | sysdig.event.actions.err_msg | When isSuccessful is false, details on why the action failed. | keyword |
 | sysdig.event.actions.is_successful | Whether or not the Capture was taken successfully. | boolean |
 | sysdig.event.actions.token | Token to retrieve the related capture. | keyword |
@@ -645,7 +614,8 @@ An example event for `event` looks as following:
 | sysdig.event.content.fields.proc.exepath |  | keyword |
 | sysdig.event.content.fields.proc.hash.sha256 |  | keyword |
 | sysdig.event.content.fields.proc.name |  | keyword |
-| sysdig.event.content.fields.proc.pcmdline |  | keyword |
+| sysdig.event.content.fields.proc.pcmdline |  | wildcard |
+| sysdig.event.content.fields.proc.pcmdline.text | Multi-field of `sysdig.event.content.fields.proc.pcmdline`. | text |
 | sysdig.event.content.fields.proc.pexepath |  | keyword |
 | sysdig.event.content.fields.proc.pid |  | long |
 | sysdig.event.content.fields.proc.pid_ts |  | date |
@@ -664,7 +634,7 @@ An example event for `event` looks as following:
 | sysdig.event.content.integration_type | The type of integration that generated the event. Possible values are cloudtrail, okta, github, gcp, azure. | keyword |
 | sysdig.event.content.namespace | Kubernetes namespace. | keyword |
 | sysdig.event.content.origin |  | keyword |
-| sysdig.event.content.output | Event output, generated after the configured rule. | keyword |
+| sysdig.event.content.output | Event output, generated after the configured rule. | match_only_text |
 | sysdig.event.content.policy_id | ID of the policy that generated the event. | keyword |
 | sysdig.event.content.policy_notification_channel_ids | The list of notification channels where an alert is sent after event is generated. Doesn't account for aggregations and eventual thresholds. | keyword |
 | sysdig.event.content.policy_origin | The policy author. Possible values are Sysdig, Sysdig UI, Tuner. | keyword |
@@ -691,7 +661,7 @@ An example event for `event` looks as following:
 | sysdig.event.content.type | The type of the event content. | keyword |
 | sysdig.event.content.zones.id | Zone ID. | keyword |
 | sysdig.event.content.zones.name | Zone name. | keyword |
-| sysdig.event.description | Description of the policy the event is generated after. | keyword |
+| sysdig.event.description | Description of the policy the event is generated after. | match_only_text |
 | sysdig.event.engine | The engine used to generate the event out of the raw signal. Possible values are drift, falco, list, machineLearning, malware. | keyword |
 | sysdig.event.id | The event id. | keyword |
 | sysdig.event.labels.aws.account_id |  | keyword |

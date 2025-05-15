@@ -157,7 +157,7 @@ processors:
       field: proc.pid.ts
       tag: dot_expander_proc_pid_ts
       path: sysdig.event.content.fields
-      if: ctx.sysdig?.event?.content?.fields['proc.pid.ts'] != null
+      if: ctx.sysdig?.event?.content?.fields instanceof Map && ctx.sysdig.event.content.fields['proc.pid.ts'] != null
       on_failure:
         - append:
             field: error.message
@@ -171,7 +171,7 @@ processors:
       field: proc.ppid.ts
       tag: dot_expander_proc_ppid_ts
       path: sysdig.event.content.fields
-      if: ctx.sysdig?.event?.content?.fields['proc.ppid.ts'] != null
+      if: ctx.sysdig?.event?.content?.fields instanceof Map && ctx.sysdig.event.content.fields['proc.ppid.ts'] != null
       on_failure:
         - append:
             field: error.message
@@ -185,7 +185,7 @@ processors:
       field: ct.user
       tag: dot_expander_ct_user
       path: sysdig.event.content.fields
-      if: ctx.sysdig?.event?.content?.fields['ct.user'] != null
+      if: ctx.sysdig?.event?.content?.fields instanceof Map && ctx.sysdig.event.content.fields['ct.user'] != null
       on_failure:
         - append:
             field: error.message
@@ -363,12 +363,12 @@ processors:
       type: string
       ignore_missing: true
   - set:
-      field: group.id
+      field: user.group.id
       tag: set_group_id_from_content_fields_group_gid
       copy_from: sysdig.event.content.fields.group.gid
       ignore_empty_value: true
   - set:
-      field: group.name
+      field: user.group.name
       tag: set_group_name_from_content_fields_group_name
       copy_from: sysdig.event.content.fields.group.name
       ignore_empty_value: true
@@ -1290,26 +1290,29 @@ processors:
       tag: set_event_severity_from_severity
       copy_from: sysdig.event.severity
       ignore_empty_value: true
-  - set:
-      field: sysdig.event.severity_value
-      tag: set_event_severity_value_to_high
-      value: High
-      if: ctx.event?.severity != null && ctx.event.severity >= 0 && ctx.event.severity <= 3
-  - set:
-      field: sysdig.event.severity_value
-      tag: set_event_severity_value_to_medium
-      value: Medium
-      if: ctx.event?.severity != null && ctx.event.severity >= 4 && ctx.event.severity <= 5
-  - set:
-      field: sysdig.event.severity_value
-      tag: set_event_severity_value_to_low
-      value: Low
-      if: ctx.event?.severity != null && ctx.event.severity == 6
-  - set:
-      field: sysdig.event.severity_value
-      tag: set_event_severity_value_to_info
-      value: Info
-      if: ctx.event?.severity != null && ctx.event.severity == 7
+  - script:
+      description: Set severity value..
+      tag: script_set_severity_value
+      lang: painless
+      if: ctx.event?.severity != null
+      source: >
+        String severity_value;
+        if (ctx.event.severity >= 0 && ctx.event.severity <= 3) {
+          severity_value = "High";
+        } else if (ctx.event.severity >= 4 && ctx.event.severity <= 5) {
+          severity_value = "Medium";
+        } else if (ctx.event.severity == 6) {
+          severity_value = "Low";
+        } else if (ctx.event.severity == 7) {
+          severity_value = "Info";
+        }
+        if (severity_value != null) {
+          ctx.sysdig.event.severity_value = severity_value;
+        }
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - rename:
       field: json.source
       tag: rename_source

@@ -30,15 +30,15 @@ program: |
       {}
     :
       {
-        "start_time": state.?cursor.last_timestamp.orValue(int(timestamp((now - duration(state.initial_interval))))*1000000000),
-        "end_time": int(timestamp(now))*1000000000,
+        "start_time": state.?cursor.last_timestamp.orValue(timestamp((now - duration(state.initial_interval))).as(s, int(s)*1000 + s.getMilliseconds())*1000000),
+        "end_time": (int(timestamp(now))*1000 + now.getMilliseconds())*1000000,
       }
   ).as(filter, state.with(
     request("GET",
       state.url.trim_right("/") + "/secure/events/v1/events?" + {
         ?"from": filter.?start_time.optMap(v, [string(v)]),
         ?"to": filter.?end_time.optMap(v, [string(v)]),
-        ?"cursor": state.?page.next.optMap(v, [v]),
+        ?"cursor": state.?next.page.optMap(v, [v]),
         "limit": [string(state.batch_size)],
       }.format_query()
     ).with({
@@ -59,8 +59,8 @@ program: |
           )
         },
         ?"end_time": filter.?end_time,
-        "page": {
-          ?"next": body.?page.next,
+        "next": {
+          ?"page": body.?page.next,
         },
         "want_more": has(body.page.next),
       })
@@ -79,7 +79,7 @@ program: |
           },
         },
         "want_more": false,
-        "page": {},
+        "next": {},
       }
     )
   ))
