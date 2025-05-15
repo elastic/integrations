@@ -13,6 +13,13 @@ publisher_pipeline.disable_host: true
 {{/contains}}
 
 processors:
+{{#if preprocessors}}
+- copy_fields:
+    fields:
+      - from: "message"
+        to: "@metadata.event_original"
+{{preprocessors}}
+{{/if}}
 - rename:
     fields:
       - {from: "message", to: "event.original"}
@@ -20,6 +27,13 @@ processors:
 - decode_cef:
     field: event.original
 
+{{#if preprocessors}}
+- convert:
+    mode: rename
+    fields:
+      - from: "@metadata.event_original"
+        to: "event.original"
+{{/if}}
 {{#if processors}}
 {{processors}}
 {{/if}}
