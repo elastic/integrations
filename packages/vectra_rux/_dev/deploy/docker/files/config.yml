@@ -1,0 +1,804 @@
+rules:
+  - path: /oauth2/token
+    methods: ['POST']
+    responses:
+      - status_code: 200
+        headers:
+          Content-Type:
+            - 'application/json'
+        body: |
+          {"access_token":"xxxx","expires_in":1799,"token_type":"bearer"}
+  - path: /api/v3.4/events/audits
+    methods: ['GET']
+    query_params:
+      limit: 2
+      from: 5
+      event_timestamp_gte: "{event_timestamp_gte:.*}"
+    request_headers:
+      Authorization:
+        - 'Bearer xxxx'
+    responses:
+      - status_code: 200
+        body: |
+          {{ minify_json `
+          {
+              "events": [
+                  {
+                      "id": 5,
+                      "user_id": 5,
+                      "username": "admin",
+                      "user_type": "API_CLIENT",
+                      "api_client_id": "0cc5c3a9-4b1d-4b3a-9c5c-3a9b1d4b3a9b",
+                      "user_role": "Security Analyst",
+                      "version": "2022.0.0",
+                      "source_ip": "89.160.20.156",
+                      "event_timestamp": "2025-02-12T00:00:00.000Z",
+                      "message": "[table:linked_account][id:1] with tags [] was changed to ['tag1', 'tag2', 'tag3', 'tag4', 'tag5', 'tag6']",
+                      "result_status": "success",
+                      "event_data": {},
+                      "event_object": "account_tags",
+                      "event_action": "updated"
+                  }
+              ],
+              "next_checkpoint": 6,
+              "remaining_count": 0
+          }
+          `}}
+  - path: /api/v3.4/events/audits
+    methods: ['GET']
+    query_params:
+      limit: 2
+      from: 3
+      event_timestamp_gte: "{event_timestamp_gte:.*}"
+    request_headers:
+      Authorization:
+        - 'Bearer xxxx'
+    responses:
+      - status_code: 200
+        body: |
+          {{ minify_json `
+          {
+              "events": [
+                  {
+                      "id": 3,
+                      "user_id": 3,
+                      "username": "admin",
+                      "user_type": "API_CLIENT",
+                      "api_client_id": "0cc5c3a9-4b1d-4b3a-9c5c-3a9b1d4b3a9b",
+                      "user_role": "Security Analyst",
+                      "version": "2022.0.0",
+                      "source_ip": "89.160.20.156",
+                      "event_timestamp": "2025-02-01T00:00:00.000Z",
+                      "message": "[table:linked_account][id:1] with tags [] was changed to ['tag1', 'tag2', 'tag3', 'tag4', 'tag5', 'tag6']",
+                      "result_status": "success",
+                      "event_data": {},
+                      "event_object": "account_tags",
+                      "event_action": "updated"
+                  },
+                  {
+                      "id": 4,
+                      "user_id": 4,
+                      "username": "admin",
+                      "user_type": "API_CLIENT",
+                      "api_client_id": "0cc5c3a9-4b1d-4b3a-9c5c-3a9b1d4b3a9b",
+                      "user_role": "Security Analyst",
+                      "version": "2022.0.0",
+                      "source_ip": "89.160.20.156",
+                      "event_timestamp": "2025-02-08T00:00:00.000Z",
+                      "message": "[table:linked_account][id:1] with tags [] was changed to ['tag1', 'tag2', 'tag3', 'tag4', 'tag5', 'tag6']",
+                      "result_status": "success",
+                      "event_data": {},
+                      "event_object": "account_tags",
+                      "event_action": "updated"
+                  }
+              ],
+              "next_checkpoint": 5,
+              "remaining_count": 1
+          }
+          `}}
+  - path: /api/v3.4/events/audits
+    methods: ['GET']
+    query_params:
+      limit: 2
+      from: 0
+      event_timestamp_gte: "{event_timestamp_gte:.*}"
+    request_headers:
+      Authorization:
+        - 'Bearer xxxx'
+    responses:
+      - status_code: 200
+        body: |
+          {{ minify_json `
+          {
+              "events": [
+                  {
+                      "id": 1,
+                      "user_id": 22284,
+                      "username": "john.doe@net.co",
+                      "user_type": "JWT",
+                      "api_client_id": null,
+                      "user_role": "Security Analyst",
+                      "version": "202502.14.0",
+                      "source_ip": "81.2.69.142",
+                      "event_timestamp": "2025-03-03T06:42:20Z",
+                      "message": "Tag testdev has been added to detections with ids [172]",
+                      "result_status": "success",
+                      "event_data": {
+                          "account_note": {
+                              "note_id": "684",
+                              "account_id": "57"
+                          }
+                      },
+                      "event_object": "detection_tag",
+                      "event_action": "created"
+                  },
+                  {
+                      "id": 2,
+                      "user_id": 22285,
+                      "username": "john.doe@net.co",
+                      "user_type": "JWT",
+                      "api_client_id": null,
+                      "user_role": "Security Analyst",
+                      "version": "202502.14.0",
+                      "source_ip": "81.2.69.142",
+                      "event_timestamp": "2025-03-04T06:42:20Z",
+                      "message": "Tag testdev has been added to detections with ids [172]",
+                      "result_status": "success",
+                      "event_data": {
+                          "account_note": {
+                              "note_id": "684",
+                              "account_id": "57"
+                          }
+                      },
+                      "event_object": "detection_tag",
+                      "event_action": "created"
+                  }
+              ],
+              "next_checkpoint": 3,
+              "remaining_count": 3
+          }
+          `}}
+  - path: /api/v3.4/events/detections
+    methods: ['GET']
+    query_params:
+      limit: 2
+      from: 5
+      event_timestamp_gte: "{event_timestamp_gte:.*}"
+    request_headers:
+      Authorization:
+        - 'Bearer xxxx'
+    responses:
+      - status_code: 200
+        body: |
+          {{ minify_json `
+          {
+              "events": [
+                  {
+                      "id": 5,
+                      "category": "command_and_control",
+                      "threat": 50,
+                      "certainty": 50,
+                      "triaged": false,
+                      "detection_type": "Azure AD Redundant Access Creation",
+                      "url": "https://207031206993.uw2.devportal.vectra.ai/detections/959",
+                      "d_type_vname": "Azure AD Redundant Access Creation",
+                      "detection_id": 959,
+                      "detection_href": "https://207031206993.uw2.devportal.vectra.ai/detections/959?detail_id=94341",
+                      "entity_id": 1,
+                      "type": "account",
+                      "entity_href": "https://207031206993.uw2.devportal.vectra.ai/accounts/1",
+                      "entity_uid": "O365:ServicePrincipal_3fb87dda-882a-49e1-88b9-67d2499b2fd4",
+                      "src_entity": "O365:ServicePrincipal_3fb87dda-882a-49e1-88b9-67d2499b2fd4",
+                      "event_timestamp": "2022-09-13T16:31:35Z",
+                      "mitre": [
+                          "T1526"
+                      ],
+                      "detail": {},
+                      "severity": 5
+                  }
+              ],
+              "next_checkpoint": 6,
+              "remaining_count": 0
+          }
+          `}}
+  - path: /api/v3.4/events/detections
+    methods: ['GET']
+    query_params:
+      limit: 2
+      from: 3
+      event_timestamp_gte: "{event_timestamp_gte:.*}"
+    request_headers:
+      Authorization:
+        - 'Bearer xxxx'
+    responses:
+      - status_code: 200
+        body: |
+          {{ minify_json `
+          {
+              "events": [
+                  {
+                      "detection_href": "https://123589577.cc1.portal.vectra.ai/detections/32986?detail_id=99603",
+                      "detection_id": 32986,
+                      "d_type_vname": "Hidden HTTPS Tunnel",
+                      "entity_id": 976,
+                      "severity": 0,
+                      "id": 3,
+                      "certainty": 0,
+                      "detection_type": "Hidden HTTPS Tunnel",
+                      "event_timestamp": "2024-10-25T10:16:42Z",
+                      "category": "command_and_control",
+                      "triaged": false,
+                      "detail": {},
+                      "entity_uid": "deltics-1",
+                      "url": "https://123589577.cc1.portal.vectra.ai/hosts/976",
+                      "type": "host",
+                      "threat": 0,
+                      "mitre": [
+                          "T1043",
+                          "T1094",
+                          "T1024",
+                          "T1132",
+                          "T1001",
+                          "T1008",
+                          "T1071",
+                          "T1032",
+                          "T1105",
+                          "T1108"
+                      ]
+                  },
+                  {
+                      "detection_href": "https://123589577.cc1.portal.vectra.ai/detections/32986?detail_id=99603",
+                      "detection_id": 32986,
+                      "d_type_vname": "Hidden HTTPS Tunnel",
+                      "entity_id": 976,
+                      "severity": 0,
+                      "id": 4,
+                      "certainty": 0,
+                      "detection_type": "Hidden HTTPS Tunnel",
+                      "event_timestamp": "2024-10-26T10:16:42Z",
+                      "category": "command_and_control",
+                      "triaged": false,
+                      "detail": {},
+                      "entity_uid": "deltics-1",
+                      "url": "https://123589577.cc1.portal.vectra.ai/hosts/976",
+                      "type": "host",
+                      "threat": 0,
+                      "mitre": [
+                          "T1043",
+                          "T1094",
+                          "T1024",
+                          "T1132",
+                          "T1001",
+                          "T1008",
+                          "T1071",
+                          "T1032",
+                          "T1105",
+                          "T1108"
+                      ]
+                  }
+              ],
+              "next_checkpoint": 5,
+              "remaining_count": 1
+          }
+          `}}
+  - path: /api/v3.4/events/detections
+    methods: ['GET']
+    query_params:
+      limit: 2
+      from: 0
+      event_timestamp_gte: "{event_timestamp_gte:.*}"
+    request_headers:
+      Authorization:
+        - 'Bearer xxxx'
+    responses:
+      - status_code: 200
+        body: |
+          {{ minify_json `
+          {
+              "events": [
+                  {
+                      "detection_href": "https://123589577.cc1.portal.vectra.ai/detections/32986?detail_id=99603",
+                      "detection_id": 32986,
+                      "d_type_vname": "Hidden HTTPS Tunnel",
+                      "entity_id": 976,
+                      "severity": 0,
+                      "id": 1,
+                      "certainty": 0,
+                      "detection_type": "Hidden HTTPS Tunnel",
+                      "event_timestamp": "2024-10-23T10:16:42Z",
+                      "category": "command_and_control",
+                      "triaged": false,
+                      "detail": {},
+                      "entity_uid": "deltics-1",
+                      "url": "https://123589577.cc1.portal.vectra.ai/hosts/976",
+                      "type": "host",
+                      "threat": 0,
+                      "mitre": [
+                          "T1043",
+                          "T1094",
+                          "T1024",
+                          "T1132",
+                          "T1001",
+                          "T1008",
+                          "T1071",
+                          "T1032",
+                          "T1105",
+                          "T1108"
+                      ]
+                  },
+                  {
+                      "detection_href": "https://123589577.cc1.portal.vectra.ai/detections/32986?detail_id=99603",
+                      "detection_id": 32986,
+                      "d_type_vname": "Hidden HTTPS Tunnel",
+                      "entity_id": 976,
+                      "severity": 0,
+                      "id": 2,
+                      "certainty": 0,
+                      "detection_type": "Hidden HTTPS Tunnel",
+                      "event_timestamp": "2024-10-24T10:16:42Z",
+                      "category": "command_and_control",
+                      "triaged": false,
+                      "detail": {},
+                      "entity_uid": "deltics-1",
+                      "url": "https://123589577.cc1.portal.vectra.ai/hosts/976",
+                      "type": "host",
+                      "threat": 0,
+                      "mitre": [
+                          "T1043",
+                          "T1094",
+                          "T1024",
+                          "T1132",
+                          "T1001",
+                          "T1008",
+                          "T1071",
+                          "T1032",
+                          "T1105",
+                          "T1108"
+                      ]
+                  }
+              ],
+              "next_checkpoint": 3,
+              "remaining_count": 3
+          }
+          `}}
+  - path: /api/v3.4/events/entity_scoring
+    methods: ['GET']
+    query_params:
+      limit: 2
+      from: 5
+      event_timestamp_gte: "{event_timestamp_gte:.*}"
+    request_headers:
+      Authorization:
+        - 'Bearer xxxx'
+    responses:
+      - status_code: 200
+        body: |
+          {{ minify_json `
+          {
+              "events": [
+                  {
+                      "id": 5,
+                      "entity_id": 105,
+                      "breadth_contrib": 0,
+                      "importance": 0,
+                      "type": "host",
+                      "is_prioritized": false,
+                      "severity": "Low",
+                      "urgency_reason": "Ransomware: This entity was prioritized because it was implicated in an active ransomware detection",
+                      "urgency_score": 0,
+                      "velocity_contrib": 0,
+                      "event_timestamp": "2022-08-12T00:14:31Z",
+                      "name": "Windows10_Jump",
+                      "active_detection_types": [
+                          "hidden_https_tunnel_cnc"
+                      ],
+                      "category": "HOST_SCORING",
+                      "last_detection": {
+                          "id": 103,
+                          "type": "hidden_https_tunnel_cnc",
+                          "url": "https://200888808432.uw2.devportal.vectra.ai/detections/103"
+                      },
+                      "attack_rating": 0,
+                      "url": "https://200888808432.uw2.devportal.vectra.ai/accounts/8"
+                  }
+              ],
+              "next_checkpoint": 6,
+              "remaining_count": 0
+          }
+          `}}
+  - path: /api/v3.4/events/entity_scoring
+    methods: ['GET']
+    query_params:
+      limit: 2
+      from: 3
+      event_timestamp_gte: "{event_timestamp_gte:.*}"
+    request_headers:
+      Authorization:
+        - 'Bearer xxxx'
+    responses:
+      - status_code: 200
+        body: |
+          {{ minify_json `
+          {
+              "events": [
+                  {
+                      "id": 3,
+                      "entity_id": 103,
+                      "breadth_contrib": 0,
+                      "importance": 0,
+                      "type": "host",
+                      "is_prioritized": false,
+                      "severity": "Low",
+                      "urgency_reason": "Ransomware: This entity was prioritized because it was implicated in an active ransomware detection",
+                      "urgency_score": 0,
+                      "velocity_contrib": 0,
+                      "event_timestamp": "2022-07-09T00:14:31Z",
+                      "name": "piper-desktop",
+                      "active_detection_types": [
+                          "hidden_https_tunnel_cnc"
+                      ],
+                      "category": "HOST_SCORING",
+                      "last_detection": {
+                          "id": 103,
+                          "type": "hidden_https_tunnel_cnc",
+                          "url": "https://200888808432.uw2.devportal.vectra.ai/detections/103"
+                      },
+                      "attack_rating": 0,
+                      "url": "https://200888808432.uw2.devportal.vectra.ai/accounts/8"
+                  },
+                  {
+                      "id": 4,
+                      "entity_id": 104,
+                      "breadth_contrib": 0,
+                      "importance": 0,
+                      "type": "host",
+                      "is_prioritized": false,
+                      "severity": "Low",
+                      "urgency_reason": "Ransomware: This entity was prioritized because it was implicated in an active ransomware detection",
+                      "urgency_score": 0,
+                      "velocity_contrib": 0,
+                      "event_timestamp": "2022-07-10T00:14:31Z",
+                      "name": "piper-desktop",
+                      "active_detection_types": [
+                          "hidden_https_tunnel_cnc"
+                      ],
+                      "category": "HOST_SCORING",
+                      "last_detection": {
+                          "id": 103,
+                          "type": "hidden_https_tunnel_cnc",
+                          "url": "https://200888808432.uw2.devportal.vectra.ai/detections/103"
+                      },
+                      "attack_rating": 0,
+                      "url": "https://200888808432.uw2.devportal.vectra.ai/accounts/8"
+                  }
+              ],
+              "next_checkpoint": 5,
+              "remaining_count": 1
+          }
+          `}}
+  - path: /api/v3.4/events/entity_scoring
+    methods: ['GET']
+    query_params:
+      limit: 2
+      from: 0
+      event_timestamp_gte: "{event_timestamp_gte:.*}"
+    request_headers:
+      Authorization:
+        - 'Bearer xxxx'
+    responses:
+      - status_code: 200
+        body: |
+          {{ minify_json `
+          {
+              "events": [
+                  {
+                      "id": 1,
+                      "entity_id": 100,
+                      "breadth_contrib": 0,
+                      "importance": 0,
+                      "type": "host",
+                      "is_prioritized": false,
+                      "severity": "Low",
+                      "urgency_reason": "Ransomware: This entity was prioritized because it was implicated in an active ransomware detection",
+                      "urgency_score": 0,
+                      "velocity_contrib": 0,
+                      "event_timestamp": "2022-07-07T00:14:31Z",
+                      "name": "piper-desktop",
+                      "active_detection_types": [
+                          "hidden_https_tunnel_cnc"
+                      ],
+                      "category": "HOST_SCORING",
+                      "last_detection": {
+                          "id": 103,
+                          "type": "hidden_https_tunnel_cnc",
+                          "url": "https://200888808432.uw2.devportal.vectra.ai/detections/103"
+                      },
+                      "attack_rating": 0,
+                      "url": "https://200888808432.uw2.devportal.vectra.ai/accounts/8"
+                  },
+                  {
+                      "id": 2,
+                      "entity_id": 101,
+                      "breadth_contrib": 0,
+                      "importance": 0,
+                      "type": "host",
+                      "is_prioritized": false,
+                      "severity": "Low",
+                      "urgency_reason": "Ransomware: This entity was prioritized because it was implicated in an active ransomware detection",
+                      "urgency_score": 0,
+                      "velocity_contrib": 0,
+                      "event_timestamp": "2022-07-08T00:14:31Z",
+                      "name": "piper-desktop",
+                      "active_detection_types": [
+                          "hidden_https_tunnel_cnc"
+                      ],
+                      "category": "HOST_SCORING",
+                      "last_detection": {
+                          "id": 103,
+                          "type": "hidden_https_tunnel_cnc",
+                          "url": "https://200888808432.uw2.devportal.vectra.ai/detections/103"
+                      },
+                      "attack_rating": 0,
+                      "url": "https://200888808432.uw2.devportal.vectra.ai/accounts/8"
+                  }
+              ],
+              "next_checkpoint": 3,
+              "remaining_count": 3
+          }
+          `}}
+  - path: /api/v3.4/health
+    methods: ['GET']
+    request_headers:
+      Authorization:
+        - 'Bearer xxxx'
+    responses:
+      - status_code: 200
+        body: |
+          {{ minify_json `
+          {
+              "memory": {
+                  "usage_percent": 47,
+                  "free_bytes": 5597118464,
+                  "used_bytes": 33078743040,
+                  "total_bytes": 67444477952,
+                  "updated_at": "2025-04-18 07:17:35+00:00"
+              },
+              "trafficdrop": {
+                  "sensors": [
+                      {
+                          "name": "EDR Sensor",
+                          "error": "All interfaces have traffic volume within range",
+                          "status": "OK",
+                          "serial_number": "V421353ef386550fb2f9a959fa3f52aee",
+                          "luid": "w4ftj0a8",
+                          "ip_address": "1.128.0.0"
+                      },
+                      {
+                          "name": "XDR Sensor",
+                          "error": "Interface have traffic volume within range",
+                          "status": "OK",
+                          "serial_number": "1421353ef386550fb2f9a959fa3f52aee",
+                          "luid": "w4ftj0a8",
+                          "ip_address": "1.128.0.11"
+                      }
+                  ],
+                  "updated_at": "2025-04-18 07:17:35+00:00"
+              },
+              "cpu": {
+                  "user_percent": 30,
+                  "nice_percent": 0,
+                  "system_percent": 24.9,
+                  "idle_percent": 43.9,
+                  "updated_at": "2025-04-18 07:17:35+00:00"
+              },
+              "hostid": {
+                  "artifact_counts": {
+                      "TestEDR": 0,
+                      "arsenic": 0,
+                      "carbon_black": 0,
+                      "cb_cloud": 0,
+                      "clear_state": 0,
+                      "cookie": 0,
+                      "crowdstrike": 0,
+                      "cybereason": 0,
+                      "dhcp": 6606,
+                      "dns": 27818,
+                      "end_time": 0,
+                      "fireeye": 0,
+                      "generic_edr": 0,
+                      "idle_end": 27818,
+                      "idle_start": 27936,
+                      "invalid": 0,
+                      "kerberos": 209,
+                      "kerberos_user": 0,
+                      "mdns": 18575,
+                      "netbios": 15596,
+                      "proxy_ip": 0,
+                      "rdns": 0,
+                      "sentinelone": 0,
+                      "split": 0,
+                      "src_port": 0,
+                      "static_ip": 0,
+                      "total": 134681,
+                      "uagent": 10122,
+                      "vmachine_info": 0,
+                      "windows_defender": 1,
+                      "zpa_user": 0
+                  },
+                  "ip_always_percent": 18.52,
+                  "ip_sometimes_percent": 2.47,
+                  "ip_never_percent": 79.01,
+                  "updated_at": "2025-04-18 07:17:35+00:00"
+              },
+              "network": {
+                  "updated_at": "2025-04-18 07:17:34+00:00",
+                  "vlans": {
+                      "vlan_ids": [
+                          "7",
+                          "8"
+                      ],
+                      "count": 1
+                  }
+              },
+              "disk": {
+                  "degraded_raid_volume": {
+                      "error": "error",
+                      "output": "output",
+                      "status": "OK"
+                  },
+                  "disk_raid": {
+                      "error": "error",
+                      "output": "output",
+                      "status": "OK"
+                  },
+                  "disk_utilization": {
+                      "free_bytes": 10000109,
+                      "total_bytes": 67444477952,
+                      "usage_percent": 47,
+                      "used_bytes": 33078743040
+                  },
+                  "raid_disks_missing": {
+                      "error": "error",
+                      "output": "output",
+                      "status": "OK"
+                  },
+                  "updated_at": "2025-04-18 07:17:34+00:00"
+              },
+              "power": {
+                  "status": "SKIP",
+                  "error": "Power check for this device is not supported",
+                  "updated_at": "2025-04-18 07:17:35+00:00"
+              },
+              "system": {
+                  "uptime": "261 days, 13 hours, 33 minutes",
+                  "serial_number": "VHE66258a5e8dafe76d9a5dd741abd94ee8",
+                  "version": {
+                      "last_update": "Wed Apr  9 02:03:16 2025",
+                      "last_update_utc": "2025-04-09T02:03:16+00:00",
+                      "model": "VHE",
+                      "mode": "brain",
+                      "cloud_bridge": true,
+                      "gmt": "2025-04-18T07:14:09.593927Z",
+                      "vm_type": "vmware",
+                      "vectra_instance_type": "medium",
+                      "vectra_version": "9.0.3-2-62"
+                  },
+                  "updated_at": "2025-04-18 07:17:33+00:00"
+              },
+              "sensors": [
+                  {
+                      "id": 3,
+                      "location": "hyp-2-37",
+                      "serial_number": "V421353ef386550fb2f9a959fa3f52aee",
+                      "luid": "w4ftj0a8",
+                      "status": "paired",
+                      "version": "9.0.3-1-62",
+                      "ip_address": "175.16.199.0",
+                      "ssh_tunnel_port": "38113",
+                      "public_key": "-----BEGIN PUBLIC KEY-----\nMIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEA1y0zv2goBjkol/8TggJJ\nMgP03tIZ6B6w9PVpF/bK8KTT0/hinX8PHP/MdDS58sVE6DuAqAkkELqN55f35AhB\nOqztY9xWDH8bO7Y0P0kbBIQ9+/abyfNpaxbiQe5Yk8oClyEgtXH4GKJCNxkGgbIb\n-----END PUBLIC KEY-----\n",
+                      "product_name": "DCS",
+                      "mode": "sensor",
+                      "headend_uri": "175.16.199.24",
+                      "original_version": "7.9.0-17-38",
+                      "last_seen": "2025-04-18T07:15:37.685Z",
+                      "update_count": 0,
+                      "name": "EDR Sensor"
+                  },
+                  {
+                      "id": 2,
+                      "location": "hyp-2-35",
+                      "serial_number": "12421353ef386550fb2f9a959fa3f52aee",
+                      "luid": "w4ftj0a8",
+                      "status": "paired",
+                      "version": "9.0.3-1-62",
+                      "ip_address": "175.16.199.0",
+                      "ssh_tunnel_port": "38113",
+                      "public_key": "-----BEGIN PUBLIC KEY-----\nMIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEA1y0zv2goBjkol/8TggJJ\nMgP03tIZ6B6w9PVpF/bK8KTT0/hinX8PHP/MdDS58sVE6DuAqAkkELqN55f35AhB\nOqztY9xWDH8bO7Y0P0kbBIQ9+/abyfNpaxbiQe5Yk8oClyEgtXH4GKJCNxkGgbIb\n-----END PUBLIC KEY-----\n",
+                      "product_name": "DCS",
+                      "mode": "sensor",
+                      "headend_uri": "175.16.199.24",
+                      "original_version": "7.9.0-17-38",
+                      "last_seen": "2025-04-18T07:15:37.685Z",
+                      "update_count": 0,
+                      "name": "XDR Sensor"
+                  },
+                  {
+                      "id": 1,
+                      "location": "hyp-2-30",
+                      "serial_number": "V4121353ef386550fb2f9a959fa3f52aee",
+                      "luid": "w4ftj0a8",
+                      "status": "paired",
+                      "version": "9.0.3-1-62",
+                      "ip_address": "175.16.199.0",
+                      "ssh_tunnel_port": "38113",
+                      "public_key": "-----BEGIN PUBLIC KEY-----\nMIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEA1y0zv2goBjkol/8TggJJ\nMgP03tIZ6B6w9PVpF/bK8KTT0/hinX8PHP/MdDS58sVE6DuAqAkkELqN55f35AhB\nOqztY9xWDH8bO7Y0P0kbBIQ9+/abyfNpaxbiQe5Yk8oClyEgtXH4GKJCNxkGgbIb\n-----END PUBLIC KEY-----\n",
+                      "product_name": "DCS",
+                      "mode": "sensor",
+                      "headend_uri": "http://headend_uri/",
+                      "original_version": "7.9.0-17-38",
+                      "last_seen": "2025-04-18T07:15:37.685Z",
+                      "update_count": 0,
+                      "name": "DR Sensor"
+                  }
+              ],
+              "detection": {
+                  "updated_at": "2025-04-18 07:17:33+00:00",
+                  "name": "Detection 1",
+                  "detection_type": "AWS",
+                  "message": "This is detection message",
+                  "status": "OK"
+              },
+              "event_timestamp": "2025-04-15T09:39:45.146Z",
+              "connectivity": {
+                  "sensors": [
+                      {
+                          "name": "EDR Sensor",
+                          "error": "metadata replication seems fine",
+                          "status": "OK",
+                          "serial_number": "V421353ef386550fb2f9a959fa3f52aee",
+                          "luid": "w4ftj0a8",
+                          "ip_address": "216.160.83.56",
+                          "affected_metadata_hours": [
+                              "2025-04-18T00:00:00Z",
+                              "2025-04-18T01:00:00Z"
+                          ]
+                      },
+                      {
+                          "name": "XDR Sensor",
+                          "error": "metadata replication seems fine",
+                          "status": "OK",
+                          "serial_number": "V423ef386550fb2f9a959fa3f52aee",
+                          "luid": "w4ftj0a8",
+                          "ip_address": "81.2.69.142",
+                          "affected_metadata_hours": [
+                              "2025-04-18T00:00:00Z",
+                              "2025-04-18T01:00:00Z"
+                          ]
+                      }
+                  ],
+                  "updated_at": "2025-04-18 07:17:35+00:00"
+              }
+          }
+          `}}
+  - path: /api/v3.4/lockdown
+    methods: ['GET']
+    request_headers:
+      Authorization:
+        - 'Bearer xxxx'
+    responses:
+      - status_code: 200
+        body: |
+          {{ minify_json `
+          [
+            {
+              "id": 1,
+              "type": "host",
+              "entity_id": 1184,
+              "entity_name": "Windows10_Jump",
+              "lock_event_timestamp": "2023-03-06T22:30:06Z",
+              "locked_by": "vadmin",
+              "certainty": 0,
+              "unlock_event_timestamp": "2023-04-07T23:50:00Z"
+            }
+          ]
+          `}}
