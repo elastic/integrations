@@ -26,10 +26,12 @@ redact:
   fields:
     - password
 program: |
-  state.with({
-    ?"interval_start": state.?want_more.orValue(false) ? optional.none() : optional.of(now),
-    ?"interval_id": state.?want_more.orValue(false) ? optional.none() : optional.of(uuid()),
-  }).as(state,
+  dyn(state.with({
+    "interval": {
+      "start": state.?interval.start.orValue(now),
+      "id": state.?interval.id.orValue(uuid()),
+    }
+  })).as(state,
     (has(state.worklist) && size(state.worklist) > 0 
     ?
       state
@@ -104,8 +106,8 @@ program: |
                               string(resp.Body)
                             ),
                           },
-                          "interval_start": state.interval_start,
-                          "interval_id": state.interval_id,
+                          "interval_start": state.interval.start,
+                          "interval_id": state.interval.id,
                         },
                         "want_more": false,
                       }
@@ -118,8 +120,8 @@ program: |
                             string(resp.Body)
                           ),
                         },
-                        "interval_start": state.interval_start,
-                        "interval_id": state.interval_id,
+                        "interval_start": state.interval.start,
+                        "interval_id": state.interval.id,
                       },
                       "want_more": false,
                     }
@@ -145,8 +147,8 @@ program: |
                       string(resp.Status) + ' (' + string(resp.StatusCode) + ')'
                   ),
                 },
-                "interval_start": state.interval_start,
-                "interval_id": state.interval_id,
+                "interval_start": state.interval.start,
+                "interval_id": state.interval.id,
               },
               "want_more": false,
             })
@@ -194,8 +196,8 @@ program: |
                                 )
                               ).flatten().map(e, {
                                 "message": e.with({
-                                  "interval_start": state.interval_start,
-                                  "interval_id": state.interval_id,
+                                  "interval_start": state.interval.start,
+                                  "interval_id": state.interval.id,
                                 }).encode_json()
                               })
                             ),
@@ -220,8 +222,8 @@ program: |
                           "KNOWLEDGE_BASE": {
                             "response_error": "response IDs values are missing: " + string(kb_body.?doc.KNOWLEDGE_BASE_VULN_LIST_OUTPUT.RESPONSE.ID_SET.orValue([])),
                           },
-                          "interval_start": state.interval_start,
-                          "interval_id": state.interval_id,
+                          "interval_start": state.interval.start,
+                          "interval_id": state.interval.id,
                         }.encode_json()
                       }],
                       "worklist": {},
@@ -244,8 +246,8 @@ program: |
                           string(resp.Status) + ' (' + string(resp.StatusCode) + ')'
                       ),
                     },
-                    "interval_start": state.interval_start,
-                    "interval_id": state.interval_id,
+                    "interval_start": state.interval.start,
+                    "interval_id": state.interval.id,
                   },
                   "worklist": {},
                   "want_more": false,
@@ -264,8 +266,8 @@ program: |
                       string(resp.Status) + ' (' + string(resp.StatusCode) + ')'
                   ),
                 },
-                "interval_start": state.interval_start,
-                "interval_id": state.interval_id,
+                "interval_start": state.interval.start,
+                "interval_id": state.interval.id,
               },
               "want_more": false,
             }
@@ -278,7 +280,7 @@ program: |
           }
       )
     )
-  )
+  ).as(state, state.want_more ? state : state.drop("interval"))
 fields_under_root: true
 fields:
   _conf:
