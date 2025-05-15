@@ -55,3 +55,27 @@ Please refer to the following [document](https://www.elastic.co/guide/en/ecs/cur
 Please refer to the following [document](https://www.elastic.co/guide/en/ecs/current/ecs-field-reference.html) for detailed information on ECS fields.
 
 {{fields "partition"}}
+
+### consumer
+
+The `consumer` dataset collects JMX metrics from Kafka consumers using Jolokia.
+
+{{event "consumer"}}
+
+**ECS Field Reference**
+
+Please refer to the following [document](https://www.elastic.co/guide/en/ecs/current/ecs-field-reference.html) for detailed information on ECS fields.
+
+{{fields "consumer"}}
+
+### producer
+
+The `producer` dataset collects JMX metrics from Kafka producers using Jolokia.
+
+{{event "producer"}}
+
+**ECS Field Reference**
+
+Please refer to the following [document](https://www.elastic.co/guide/en/ecs/current/ecs-field-reference.html) for detailed information on ECS fields.
+
+{{fields "producer"}}
