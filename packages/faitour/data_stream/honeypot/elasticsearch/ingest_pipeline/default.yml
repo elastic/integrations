@@ -90,7 +90,11 @@ processors:
       lang: painless
       source: >
         String fullPath = ctx.file.name;
-        int lastSlash = (int)Math.max((double)fullPath.lastIndexOf('/'), (double)fullPath.lastIndexOf('\\'));
+        int lastSlash = fullPath.lastIndexOf('/');
+        int lastBackslash = fullPath.lastIndexOf('\\');
+        if (lastBackslash > lastSlash) {
+          lastSlash = lastBackslash
+        }
         if (lastSlash >= 0) {
           ctx.file.path = fullPath.substring(0, lastSlash);
           ctx.file.name = fullPath.substring(lastSlash + 1);
@@ -257,6 +261,24 @@ processors:
       if: "ctx?.tags == null || !(ctx.tags.contains('preserve_original_event'))"
       ignore_missing: true
       ignore_failure: true
+  - script:
+      description: Drops null/empty values recursively.
+      tag: script_to_drop_null_values
+      lang: painless
+      source: |-
+        boolean drop(Object object) {
+          if (object == null || object == '') {
+            return true;
+          } else if (object instanceof Map) {
+            ((Map) object).values().removeIf(v -> drop(v));
+            return (((Map) object).size() == 0);
+          } else if (object instanceof List) {
+            ((List) object).removeIf(v -> drop(v));
+            return (((List) object).length == 0);
+          }
+          return false;
+        }
+        drop(ctx);
 
 ##############################
 ## Handle Pipeline Failures ##
