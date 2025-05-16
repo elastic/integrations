@@ -89,7 +89,7 @@ processors:
       target_field: aws.config.rule_info.config_rule_id
       ignore_missing: true
   - set:
-      field: rule.uuid
+      field: rule.id
       tag: set_rule_id_from_config_config_rule_info_config_rule_id
       copy_from: aws.config.rule_info.config_rule_id
       ignore_empty_value: true
@@ -311,8 +311,8 @@ processors:
       ignore_missing: true
   - set:
       field: resource.id
-      tag: set_resource_id_from_config_evaluation_result_identifier_evaluation_result_qualifier_resource_id
-      copy_from: aws.config.evaluation_result_identifier.evaluation_result_qualifier.resource_id
+      tag: set_resource_id_from_config_config_rule_info_config_rule_arn
+      copy_from: aws.config.rule_info.config_rule_arn
       ignore_empty_value: true
   - rename:
       field: json.EvaluationResultIdentifier.EvaluationResultQualifier.ResourceType
@@ -329,15 +329,10 @@ processors:
       tag: rename_ComplianceType
       target_field: aws.config.compliance_type
       ignore_missing: true
-  - set:
-      field: result.evaluation
-      tag: set_result_evaluation_from_aws_config_compliance_type
-      copy_from: aws.config.compliance_type
-      ignore_empty_value: true
   - script:
-      tag: set_event_outcome_from_aws_config_compliance_type
+      tag: set_event_outcome_and_result_evaluation_from_aws_config_compliance_type
       lang: painless
-      description: set event.outcome from aws.config.compliance_type
+      description: set event.outcome and result.evaluation from compliance_type
       if : ctx.aws?.config?.compliance_type instanceof String
       source: >-
         if (ctx.aws.config.compliance_type == 'NON_COMPLIANT') {
@@ -347,6 +342,24 @@ processors:
         } else {
           ctx.event.outcome = 'unknown';
         }
+  - set:
+      field: result.evaluation
+      tag: set_result_evaluation_passed
+      value: passed
+      if: ctx.aws?.config?.compliance_type == 'COMPLIANT'
+      ignore_empty_value: true
+  - set:
+      field: result.evaluation
+      tag: set_result_evaluation_failed
+      value: failed
+      if: ctx.aws?.config?.compliance_type == 'NON_COMPLIANT'
+      ignore_empty_value: true
+  - set:
+      field: result.evaluation
+      tag: set_result_evaluation_unknown
+      value: unknown
+      if: ctx.result?.evaluation == null
+      ignore_empty_value: true
   - rename:
       field: json.ConfigRuleInfo.Scope.TagValue
       tag: rename_ConfigRuleInfo_Scope_TagValue

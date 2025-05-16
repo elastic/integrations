@@ -72,11 +72,11 @@ An example event for `config` looks as following:
 
 ```json
 {
-    "@timestamp": "2025-05-15T07:58:22.984Z",
+    "@timestamp": "2025-05-16T07:58:23.791Z",
     "agent": {
-        "ephemeral_id": "d0c3ee19-2392-4043-b593-6b17777af11d",
-        "id": "5be90210-85df-4e5b-85b6-88ffdd10983e",
-        "name": "elastic-agent-81980",
+        "ephemeral_id": "6fbe87e6-993e-4c40-abbe-bbe39ee3591c",
+        "id": "7d2ce287-1db4-4b2d-99f9-a00c406e3c06",
+        "name": "elastic-agent-65400",
         "type": "filebeat",
         "version": "8.18.0"
     },
@@ -125,14 +125,14 @@ An example event for `config` looks as following:
     },
     "data_stream": {
         "dataset": "aws.config",
-        "namespace": "98805",
+        "namespace": "55739",
         "type": "logs"
     },
     "ecs": {
         "version": "8.17.0"
     },
     "elastic_agent": {
-        "id": "5be90210-85df-4e5b-85b6-88ffdd10983e",
+        "id": "7d2ce287-1db4-4b2d-99f9-a00c406e3c06",
         "snapshot": false,
         "version": "8.18.0"
     },
@@ -143,7 +143,7 @@ An example event for `config` looks as following:
         ],
         "created": "2015-09-29T15:52:31.883Z",
         "dataset": "aws.config",
-        "ingested": "2025-05-15T07:58:25Z",
+        "ingested": "2025-05-16T07:58:26Z",
         "kind": "event",
         "original": "{\"ComplianceType\":\"COMPLIANT\",\"ConfigRuleInfo\":{\"ConfigRuleArn\":\"arn:aws:config:us-east-1:11223344556:config-rule/config-rule-id1\",\"ConfigRuleId\":\"config-rule-id1\",\"ConfigRuleName\":\"access-keys-rotated\",\"ConfigRuleState\":\"ACTIVE\",\"Description\":\"Checks whether the active access keys are rotated within the number of days specified in maxAccessKeyAge. The rule is non-compliant if the access keys have not been rotated for more than maxAccessKeyAge number of days.\",\"EvaluationModes\":[{\"Mode\":\"DETECTIVE\"}],\"InputParameters\":\"{\\\"maxAccessKeyAge\\\":\\\"90\\\"}\",\"MaximumExecutionFrequency\":\"TwentyFour_Hours\",\"Source\":{\"Owner\":\"AWS\",\"SourceIdentifier\":\"ACCESS_KEYS_ROTATED\"}},\"ConfigRuleInvokedTime\":1444799479.852,\"EvaluationResultIdentifier\":{\"EvaluationResultQualifier\":{\"ConfigRuleName\":\"access-keys-rotated\",\"EvaluationMode\":\"DETECTIVE\",\"ResourceId\":\"i-0a4468fbfafeeg20h\",\"ResourceType\":\"AWS::EC2::Instance\"},\"OrderingTimestamp\":1443541951.883},\"ResultRecordedTime\":1444799480.061}",
         "outcome": "success",
@@ -160,17 +160,17 @@ An example event for `config` looks as following:
         "vendor": "Amazon"
     },
     "resource": {
-        "id": "i-0a4468fbfafeeg20h",
+        "id": "arn:aws:config:us-east-1:11223344556:config-rule/config-rule-id1",
         "type": "AWS::EC2::Instance"
     },
     "result": {
-        "evaluation": "COMPLIANT"
+        "evaluation": "passed"
     },
     "rule": {
         "description": "Checks whether the active access keys are rotated within the number of days specified in maxAccessKeyAge. The rule is non-compliant if the access keys have not been rotated for more than maxAccessKeyAge number of days.",
+        "id": "config-rule-id1",
         "name": "access-keys-rotated",
-        "reference": "arn:aws:config:us-east-1:11223344556:config-rule/config-rule-id1",
-        "uuid": "config-rule-id1"
+        "reference": "arn:aws:config:us-east-1:11223344556:config-rule/config-rule-id1"
     },
     "tags": [
         "preserve_original_event",
@@ -224,14 +224,15 @@ Please refer to the following [document](https://www.elastic.co/guide/en/ecs/cur
 | aws.config.rule_info.source.source_details.maximum_execution_frequency | The frequency at which you want AWS Config to run evaluations for a custom rule with a periodic trigger. | keyword |
 | aws.config.rule_info.source.source_details.message_type | The type of notification that triggers AWS Config to run an evaluation for a rule. | keyword |
 | aws.config.rule_info.source.source_identifier | For AWS Config Managed rules, a predefined identifier from a list. | keyword |
+| cloud.provider |  | constant_keyword |
 | data_stream.dataset | Data stream dataset. | constant_keyword |
 | data_stream.namespace | Data stream namespace. | constant_keyword |
 | data_stream.type | Data stream type. | constant_keyword |
 | event.dataset | Event dataset. | constant_keyword |
 | event.module | Event module. | constant_keyword |
 | input.type | Type of Filebeat input. | keyword |
-| labels.is_transform_source | Distinguishes between documents that are a source for a transform and documents that are an output of a transform, to facilitate easier filtering. | constant_keyword |
 | log.offset | Log offset. | long |
+| observer.vendor |  | constant_keyword |
 | resource.id |  | keyword |
 | resource.type |  | keyword |
 | result.evaluation |  | keyword |
