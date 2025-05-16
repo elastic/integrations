@@ -29,36 +29,22 @@ For Rest API support, this module has been tested against the **CrowdStrike API 
 
 ## Requirements
 
-### Agentless Enabled Integration
+### Agentless enabled integration
 Agentless integrations allow you to collect data without having to manage Elastic Agent in your cloud. They make manual agent deployment unnecessary, so you can focus on your data instead of the agent that collects it. For more information, refer to [Agentless integrations](https://www.elastic.co/guide/en/serverless/current/security-agentless-integrations.html) and the [Agentless integrations FAQ](https://www.elastic.co/guide/en/serverless/current/agentless-integration-troubleshooting.html).
 
 Agentless deployments are only supported in Elastic Serverless and Elastic Cloud environments.  This functionality is in beta and is subject to change. Beta features are not subject to the support SLA of official GA features.
 
-### Agent Based Installation
-- Elastic Agent must be installed
-- You can install only one Elastic Agent per host.
-- Elastic Agent is required to stream data from the GCP Pub/Sub or REST API and ship the data to Elastic, where the events will then be processed via the integration's ingest pipelines.
+### Agent based installation
 
-#### Installing and managing an Elastic Agent:
-
-You have a few options for installing and managing an Elastic Agent:
-
-#### Install a Fleet-managed Elastic Agent (recommended):
-
-With this approach, you install Elastic Agent and use Fleet in Kibana to define, configure, and manage your agents in a central location. We recommend using Fleet management because it makes the management and upgrade of your agents considerably easier.
-
-#### Install Elastic Agent in standalone mode (advanced users):
-
-With this approach, you install Elastic Agent and manually configure the agent locally on the system where it’s installed. You are responsible for managing and upgrading the agents. This approach is reserved for advanced users only.
-
-#### Install Elastic Agent in a containerized environment:
-
-You can run Elastic Agent inside a container, either with Fleet Server or standalone. Docker images for all versions of Elastic Agent are available from the Elastic Docker registry and we provide deployment manifests for running on Kubernetes.
-
-There are some minimum requirements for running Elastic Agent and for more information, refer to the link [here](https://www.elastic.co/guide/en/fleet/current/elastic-agent-installation.html).
+Elastic Agent must be installed. For more details, check the Elastic Agent [installation instructions](docs-content://reference/fleet/install-elastic-agents.md).
+You can install only one Elastic Agent per host.
+Elastic Agent is required to stream data from the GCP Pub/Sub or REST API and ship the data to Elastic, where the events will then be processed via the integration's ingest pipelines.
 
 ## Setup
-### To collect data from CrowdStrike REST API, the following parameters from your CrowdStrike instance are required:
+
+### Collect data from CrowdStrike REST API 
+
+The following parameters from your CrowdStrike instance are required:
 
 1. Client ID
 2. Client Secret
@@ -72,7 +58,9 @@ There are some minimum requirements for running Elastic Agent and for more infor
     | Host          | read:host     |
     | Vulnerability | read:vulnerability |
 
-### To collect data from CrowdStrike Event Stream, the following parameters from your CrowdStrike instance are required:
+### Collect data from CrowdStrike Event Stream
+
+The following parameters from your CrowdStrike instance are required:
 
 1. Client ID
 2. Client Secret
@@ -1374,12 +1362,15 @@ For example, if your Crowdstrike event contains `id: 123`, `aid: 456`, and `cid:
 | aws.s3.bucket.arn | The AWS S3 bucket ARN. | keyword |
 | aws.s3.bucket.name | The AWS S3 bucket name. | keyword |
 | aws.s3.object.key | The AWS S3 Object key. | keyword |
+| crowdstrike.AccessType |  | keyword |
 | crowdstrike.AccountDomain |  | match_only_text |
 | crowdstrike.AccountObjectGuid |  | match_only_text |
 | crowdstrike.AccountObjectSid |  | match_only_text |
 | crowdstrike.AccountType |  | keyword |
 | crowdstrike.ActiveDirectoryAuthenticationMethod |  | keyword |
 | crowdstrike.ActivityId |  | keyword |
+| crowdstrike.AddressFamily |  | keyword |
+| crowdstrike.AdminStatus |  | keyword |
 | crowdstrike.AgentIdString |  | keyword |
 | crowdstrike.AgentLoadFlags |  | keyword |
 | crowdstrike.AgentLocalTime |  | date |
@@ -1387,9 +1378,14 @@ For example, if your Crowdstrike event contains `id: 123`, `aid: 456`, and `cid:
 | crowdstrike.AgentVersion |  | keyword |
 | crowdstrike.AggregateId |  | keyword |
 | crowdstrike.AllocateVirtualMemoryCount |  | long |
+| crowdstrike.AllowlistingFilterId |  | keyword |
 | crowdstrike.ApiReturnValue |  | keyword |
 | crowdstrike.ApplicationName |  | match_only_text |
 | crowdstrike.ArchiveFileWrittenCount |  | long |
+| crowdstrike.AsepClass |  | keyword |
+| crowdstrike.AsepFlags |  | keyword |
+| crowdstrike.AsepIndex |  | keyword |
+| crowdstrike.AsepValueType |  | keyword |
 | crowdstrike.AsepWrittenCount |  | long |
 | crowdstrike.AssociatedFile |  | keyword |
 | crowdstrike.AttemptNumber |  | long |
@@ -1398,6 +1394,9 @@ For example, if your Crowdstrike event contains `id: 123`, `aid: 456`, and `cid:
 | crowdstrike.AuthenticationPackage |  | keyword |
 | crowdstrike.AuthenticationUuid |  | keyword |
 | crowdstrike.AuthenticationUuidAsString |  | keyword |
+| crowdstrike.AuthenticodeHashData |  | keyword |
+| crowdstrike.AuthenticodeHashDataSHA256 |  | keyword |
+| crowdstrike.BaseReachableTime |  | keyword |
 | crowdstrike.BinaryExecutableWrittenCount |  | long |
 | crowdstrike.BiosChanged |  | match_only_text |
 | crowdstrike.BiosManufacturer |  | keyword |
@@ -1427,10 +1426,14 @@ For example, if your Crowdstrike event contains `id: 123`, `aid: 456`, and `cid:
 | crowdstrike.BootArgs |  | keyword |
 | crowdstrike.BootTimeFunctionalityLevel |  | keyword |
 | crowdstrike.BoundedCount |  | long |
+| crowdstrike.BoundingLimitCount |  | long |
+| crowdstrike.BoundingLimitDuration |  | keyword |
 | crowdstrike.BundleID |  | keyword |
 | crowdstrike.CLICreationCount |  | long |
+| crowdstrike.CNAMERecords |  | keyword |
 | crowdstrike.CallStackModuleNames |  | keyword |
 | crowdstrike.CallStackModuleNamesVersion |  | version |
+| crowdstrike.CapPrm |  | keyword |
 | crowdstrike.ChangedPcrBitmap |  | match_only_text |
 | crowdstrike.ChannelDiffStatus |  | keyword |
 | crowdstrike.ChannelId |  | keyword |
@@ -1444,6 +1447,7 @@ For example, if your Crowdstrike event contains `id: 123`, `aid: 456`, and `cid:
 | crowdstrike.CommandCountMax |  | match_only_text |
 | crowdstrike.CommandHistory |  | keyword |
 | crowdstrike.CommandHistory.text | Multi-field of `crowdstrike.CommandHistory`. | match_only_text |
+| crowdstrike.CompanyName |  | keyword |
 | crowdstrike.CompletionEventId |  | keyword |
 | crowdstrike.CompositeId | Global unique identifier that identifies a unique alert. | keyword |
 | crowdstrike.ConHostId |  | keyword |
@@ -1460,7 +1464,10 @@ For example, if your Crowdstrike event contains `id: 123`, `aid: 456`, and `cid:
 | crowdstrike.ConnectType |  | keyword |
 | crowdstrike.ConnectionAddressIP6 |  | match_only_text |
 | crowdstrike.ConnectionFlags |  | keyword |
+| crowdstrike.ConnectionType |  | keyword |
+| crowdstrike.ContentSHA256HashData |  | keyword |
 | crowdstrike.ContextBaseFileName |  | keyword |
+| crowdstrike.ContextImageFileName |  | keyword |
 | crowdstrike.ContextProcessId |  | keyword |
 | crowdstrike.ContextTimeStamp | System local time of event creation. | date |
 | crowdstrike.CpuClockSpeed |  | keyword |
@@ -1474,6 +1481,9 @@ For example, if your Crowdstrike event contains `id: 123`, `aid: 456`, and `cid:
 | crowdstrike.CurrentLocalIP |  | ip |
 | crowdstrike.CustomerIdString |  | keyword |
 | crowdstrike.CycleTime |  | long |
+| crowdstrike.DadState |  | keyword |
+| crowdstrike.DadTransmits |  | keyword |
+| crowdstrike.Data1 |  | keyword |
 | crowdstrike.DataDomains |  | keyword |
 | crowdstrike.DcNumAttachments |  | match_only_text |
 | crowdstrike.DcNumBlockingPolicies |  | match_only_text |
@@ -1483,16 +1493,22 @@ For example, if your Crowdstrike event contains `id: 123`, `aid: 456`, and `cid:
 | crowdstrike.DetectId |  | keyword |
 | crowdstrike.DetectName |  | keyword |
 | crowdstrike.DeviceId |  | keyword |
+| crowdstrike.DeviceMountCounter |  | long |
 | crowdstrike.DevicePropertyClassGuid |  | match_only_text |
 | crowdstrike.DevicePropertyClassName |  | match_only_text |
 | crowdstrike.DevicePropertyLocationInformation |  | match_only_text |
+| crowdstrike.DirectionType |  | keyword |
 | crowdstrike.DirectoryCreatedCount |  | long |
 | crowdstrike.DirectoryEnumeratedCount |  | long |
+| crowdstrike.DllCharacteristics |  | keyword |
 | crowdstrike.DnsRequestCount |  | long |
+| crowdstrike.DnsResponseType |  | keyword |
 | crowdstrike.DocumentFileWrittenCount |  | long |
+| crowdstrike.DomainSid |  | keyword |
 | crowdstrike.DownloadPath |  | keyword |
 | crowdstrike.DownloadPort |  | long |
 | crowdstrike.DownloadServer |  | keyword |
+| crowdstrike.DriverLoadFlags |  | keyword |
 | crowdstrike.DualRequest |  | keyword |
 | crowdstrike.DylibPath |  | match_only_text |
 | crowdstrike.ELFSubType |  | keyword |
@@ -1512,18 +1528,28 @@ For example, if your Crowdstrike event contains `id: 123`, `aid: 456`, and `cid:
 | crowdstrike.EnabledPrivilegesBitmask |  | keyword |
 | crowdstrike.EndTime |  | date |
 | crowdstrike.Entitlements |  | keyword |
+| crowdstrike.EnvironmentVariableName |  | keyword |
+| crowdstrike.EnvironmentVariableValue |  | keyword |
 | crowdstrike.EnvironmentVariablesString |  | match_only_text |
 | crowdstrike.ErrorCode |  | keyword |
 | crowdstrike.ErrorStatus |  | keyword |
+| crowdstrike.EtwRawProcessId |  | long |
 | crowdstrike.EtwRawThreadId |  | long |
+| crowdstrike.EventCorrelationId |  | keyword |
 | crowdstrike.EventOrigin |  | integer |
 | crowdstrike.EventType |  | keyword |
 | crowdstrike.EventUUID |  | keyword |
+| crowdstrike.ExceptionAddress |  | keyword |
+| crowdstrike.ExceptionCode |  | keyword |
+| crowdstrike.ExceptionInformation0 |  | keyword |
+| crowdstrike.ExclusionSource |  | keyword |
+| crowdstrike.ExclusionType |  | keyword |
 | crowdstrike.ExeAndServiceCount |  | long |
 | crowdstrike.ExecutableBytes |  | match_only_text |
 | crowdstrike.ExecutableDeletedCount |  | long |
 | crowdstrike.ExtendedAttributeValue |  | match_only_text |
 | crowdstrike.ExtendedAttributeValueReadable |  | match_only_text |
+| crowdstrike.ExtendedKeyUsages |  | keyword |
 | crowdstrike.ExternalApiType |  | keyword |
 | crowdstrike.FXFileSize |  | keyword |
 | crowdstrike.Facility |  | keyword |
@@ -1534,30 +1560,60 @@ For example, if your Crowdstrike event contains `id: 123`, `aid: 456`, and `cid:
 | crowdstrike.FeatureVector |  | match_only_text |
 | crowdstrike.File |  | keyword |
 | crowdstrike.FileAttributes |  | keyword |
+| crowdstrike.FileCategory |  | keyword |
 | crowdstrike.FileContent |  | match_only_text |
 | crowdstrike.FileDeletedCount |  | long |
 | crowdstrike.FileEcpBitmask |  | keyword |
 | crowdstrike.FileName |  | keyword |
 | crowdstrike.FileObject |  | keyword |
+| crowdstrike.FileOperatorSid |  | keyword |
 | crowdstrike.FilePath |  | keyword |
+| crowdstrike.FileSigningTime |  | keyword |
+| crowdstrike.FileSubType |  | keyword |
+| crowdstrike.FileSystemOperationType |  | keyword |
 | crowdstrike.FileVaultIsEnabled |  | match_only_text |
+| crowdstrike.FileVersion |  | keyword |
+| crowdstrike.FileWrittenFlags |  | keyword |
 | crowdstrike.FilesWritten.FileName |  | keyword |
 | crowdstrike.FilesWritten.FilePath |  | keyword |
 | crowdstrike.FilesWritten.Timestamp |  | date |
+| crowdstrike.FirewallAction |  | keyword |
+| crowdstrike.FirewallOption |  | keyword |
+| crowdstrike.FirewallOptionNumericValue |  | keyword |
+| crowdstrike.FirewallProfile |  | keyword |
+| crowdstrike.FirewallRule |  | keyword |
+| crowdstrike.FirewallRuleId |  | keyword |
 | crowdstrike.FirmwareAnalysisEclConsumerInterfaceVersion |  | keyword |
 | crowdstrike.FirmwareAnalysisEclControlInterfaceVersion |  | keyword |
 | crowdstrike.FirstCommand |  | match_only_text |
 | crowdstrike.FirstDiscoveredDate |  | date |
+| crowdstrike.FirstIP4Record |  | keyword |
 | crowdstrike.FirstSeen |  | date |
+| crowdstrike.FixedFileVersion |  | keyword |
 | crowdstrike.Flags |  | keyword |
+| crowdstrike.FltCallbackData |  | keyword |
+| crowdstrike.FltCompletionContext |  | keyword |
+| crowdstrike.FltRelatedObjects |  | keyword |
+| crowdstrike.FontBuffer |  | keyword |
+| crowdstrike.FontBufferLength |  | keyword |
+| crowdstrike.FontFileCount |  | long |
+| crowdstrike.FontFileName |  | keyword |
+| crowdstrike.FontLoadOperation |  | keyword |
+| crowdstrike.FsOperationClassification |  | keyword |
+| crowdstrike.FsOperationClassificationFlags |  | keyword |
+| crowdstrike.FullExceptionRecord |  | keyword |
 | crowdstrike.GenericFileWrittenCount |  | long |
 | crowdstrike.GrandParentBaseFileName |  | keyword |
 | crowdstrike.GrandparentCommandLine |  | keyword |
 | crowdstrike.GrandparentCommandLine.text | Multi-field of `crowdstrike.GrandparentCommandLine`. | match_only_text |
 | crowdstrike.GrandparentImageFileName |  | keyword |
 | crowdstrike.GrandparentImageFilePath |  | keyword |
+| crowdstrike.GroupRid |  | keyword |
+| crowdstrike.HandleCreateAuthenticationId |  | keyword |
+| crowdstrike.HandleCreated |  | keyword |
 | crowdstrike.HostGroups |  | keyword |
 | crowdstrike.HostHiddenStatus |  | keyword |
+| crowdstrike.HostProcessType |  | keyword |
 | crowdstrike.HttpInternalSource |  | match_only_text |
 | crowdstrike.HttpMethod |  | match_only_text |
 | crowdstrike.HttpRequestHeader |  | match_only_text |
@@ -1567,33 +1623,55 @@ For example, if your Crowdstrike event contains `id: 123`, `aid: 456`, and `cid:
 | crowdstrike.IOServiceClass |  | keyword |
 | crowdstrike.IOServiceName |  | keyword |
 | crowdstrike.IOServicePath |  | keyword |
+| crowdstrike.IP4Records |  | keyword |
+| crowdstrike.IcmpCode |  | keyword |
+| crowdstrike.IcmpType |  | keyword |
+| crowdstrike.IfType |  | keyword |
+| crowdstrike.ImageCheckSum |  | keyword |
+| crowdstrike.ImageEntryPoint |  | keyword |
+| crowdstrike.ImageFileName |  | keyword |
 | crowdstrike.ImageSubsystem |  | keyword |
+| crowdstrike.ImageTimeStamp |  | keyword |
+| crowdstrike.ImpersonatedUserName |  | keyword |
+| crowdstrike.InBroadcastOctets |  | keyword |
 | crowdstrike.InContext |  | keyword |
 | crowdstrike.InDiscards |  | keyword |
 | crowdstrike.InErrors |  | keyword |
+| crowdstrike.InMulticastOctets |  | keyword |
 | crowdstrike.InMulticastPkts |  | keyword |
+| crowdstrike.InNUcastPkts |  | keyword |
 | crowdstrike.InOctets |  | keyword |
+| crowdstrike.InUcastOctets |  | keyword |
 | crowdstrike.InUcastPkts |  | keyword |
 | crowdstrike.InUnknownProtos |  | keyword |
 | crowdstrike.IndividualDiskInfo |  | match_only_text |
 | crowdstrike.Information |  | keyword |
+| crowdstrike.InjectedDll |  | keyword |
 | crowdstrike.InjectedDllCount |  | long |
 | crowdstrike.InjectedThreadCount |  | long |
+| crowdstrike.InjectedThreadFlag |  | keyword |
 | crowdstrike.InstanceMetadata |  | match_only_text |
 | crowdstrike.InstanceMetadataSignature |  | match_only_text |
 | crowdstrike.IntegrityLevel |  | keyword |
 | crowdstrike.InterfaceAlias |  | keyword |
+| crowdstrike.InterfaceDescription |  | keyword |
+| crowdstrike.InterfaceFlags |  | keyword |
 | crowdstrike.InterfaceGuid |  | keyword |
+| crowdstrike.InterfaceIdentifier |  | keyword |
 | crowdstrike.InterfaceIndex |  | long |
 | crowdstrike.InterfaceKind |  | match_only_text |
+| crowdstrike.InterfaceMtu |  | keyword |
 | crowdstrike.InterfaceType |  | keyword |
 | crowdstrike.InterfaceVersion |  | keyword |
+| crowdstrike.IpEntryFlags |  | keyword |
 | crowdstrike.IrpFlags |  | keyword |
 | crowdstrike.IsOnNetwork |  | keyword |
 | crowdstrike.IsOnRemovableDisk |  | keyword |
 | crowdstrike.IsTransactedFile |  | keyword |
+| crowdstrike.IsUnique |  | keyword |
 | crowdstrike.KernelTime |  | long |
 | crowdstrike.KeyObject |  | match_only_text |
+| crowdstrike.LanguageId |  | keyword |
 | crowdstrike.LastAdded |  | match_only_text |
 | crowdstrike.LastDiscoveredBy |  | keyword |
 | crowdstrike.LastDisplayed |  | match_only_text |
@@ -1605,11 +1683,16 @@ For example, if your Crowdstrike event contains `id: 123`, `aid: 456`, and `cid:
 | crowdstrike.LfoUploadFlags |  | keyword |
 | crowdstrike.LightningLatencyState |  | keyword |
 | crowdstrike.Line |  | keyword |
+| crowdstrike.LinkLocalAddressBehavior |  | keyword |
+| crowdstrike.LinkLocalAddressTimeout |  | keyword |
 | crowdstrike.LocalAddressIP4 |  | ip |
 | crowdstrike.LocalAddressIP6 |  | ip |
+| crowdstrike.LocalAddressMaskIP4 |  | keyword |
+| crowdstrike.LocalAddressMaskIP6 |  | keyword |
 | crowdstrike.LocalAdminAccess |  | keyword |
 | crowdstrike.LocalIP |  | ip |
 | crowdstrike.LocalIPv6 |  | ip |
+| crowdstrike.LocalIpAddressPipelineSource |  | keyword |
 | crowdstrike.LogicalCoreCount |  | long |
 | crowdstrike.LoginSessionId |  | keyword |
 | crowdstrike.LogoffTime |  | date |
@@ -1621,6 +1704,7 @@ For example, if your Crowdstrike event contains `id: 123`, `aid: 456`, and `cid:
 | crowdstrike.LogonType |  | keyword |
 | crowdstrike.MACAddress |  | keyword |
 | crowdstrike.MACPrefix |  | keyword |
+| crowdstrike.MD5HashData |  | keyword |
 | crowdstrike.MD5String |  | keyword |
 | crowdstrike.MLModelVersion |  | keyword |
 | crowdstrike.MachOSubType |  | keyword |
@@ -1628,10 +1712,17 @@ For example, if your Crowdstrike event contains `id: 123`, `aid: 456`, and `cid:
 | crowdstrike.MajorVersion |  | keyword |
 | crowdstrike.Malicious |  | keyword |
 | crowdstrike.ManagedPdbBuildPath |  | match_only_text |
+| crowdstrike.MappedFromUserMode |  | keyword |
+| crowdstrike.MaxReassemblySize |  | keyword |
+| crowdstrike.MaxRouterAdvertisementInterval |  | keyword |
 | crowdstrike.MaxThreadCount |  | long |
+| crowdstrike.MediaConnectState |  | keyword |
+| crowdstrike.MediaType |  | keyword |
 | crowdstrike.MemoryAvailable |  | match_only_text |
 | crowdstrike.MemoryTotal |  | keyword |
+| crowdstrike.Metric |  | keyword |
 | crowdstrike.MicrocodeSignature |  | keyword |
+| crowdstrike.MinRouterAdvertisementInterval |  | keyword |
 | crowdstrike.MinorFunction |  | keyword |
 | crowdstrike.MinorVersion |  | keyword |
 | crowdstrike.MmioDataGenPmconB |  | match_only_text |
@@ -1640,8 +1731,13 @@ For example, if your Crowdstrike event contains `id: 123`, `aid: 456`, and `cid:
 | crowdstrike.MoboManufacturer |  | keyword |
 | crowdstrike.MoboProductName |  | keyword |
 | crowdstrike.ModelPrediction |  | keyword |
+| crowdstrike.ModuleCharacteristics |  | keyword |
 | crowdstrike.ModuleLoadCount |  | long |
+| crowdstrike.ModuleSize |  | keyword |
 | crowdstrike.NDRoot |  | keyword |
+| crowdstrike.NegateInterface |  | keyword |
+| crowdstrike.NegateLocalAddress |  | keyword |
+| crowdstrike.NegateRemoteAddress |  | keyword |
 | crowdstrike.NeighborList |  | keyword |
 | crowdstrike.NeighborName |  | keyword |
 | crowdstrike.NetLuidIndex |  | long |
@@ -1651,15 +1747,19 @@ For example, if your Crowdstrike event contains `id: 123`, `aid: 456`, and `cid:
 | crowdstrike.NetworkConnectCount |  | long |
 | crowdstrike.NetworkConnectCountUdp |  | long |
 | crowdstrike.NetworkContainmentState |  | keyword |
+| crowdstrike.NetworkGuid |  | keyword |
+| crowdstrike.NetworkInterfaceGuid |  | keyword |
 | crowdstrike.NetworkListenCount |  | long |
 | crowdstrike.NetworkModuleLoadCount |  | long |
 | crowdstrike.NetworkRecvAcceptCount |  | long |
 | crowdstrike.NewExecutableWrittenCount |  | long |
 | crowdstrike.NewFileIdentifier |  | keyword |
+| crowdstrike.NlMtu |  | keyword |
 | crowdstrike.Nonce |  | integer |
 | crowdstrike.OSVersionFileData |  | match_only_text |
 | crowdstrike.OSVersionFileName |  | keyword |
 | crowdstrike.OU |  | keyword |
+| crowdstrike.Object1Type |  | keyword |
 | crowdstrike.ObjectNameEtw |  | match_only_text |
 | crowdstrike.ObjectTypeEtw |  | match_only_text |
 | crowdstrike.Objective |  | keyword |
@@ -1686,21 +1786,38 @@ For example, if your Crowdstrike event contains `id: 123`, `aid: 456`, and `cid:
 | crowdstrike.OciContainerStatePid |  | match_only_text |
 | crowdstrike.OciContainersStartedCount |  | match_only_text |
 | crowdstrike.OciContainersStoppedCount |  | match_only_text |
+| crowdstrike.OnLinkPrefixLength |  | keyword |
+| crowdstrike.OperStatus |  | keyword |
 | crowdstrike.OperationFlags |  | keyword |
 | crowdstrike.Options |  | keyword |
+| crowdstrike.OriginalContentLength |  | keyword |
+| crowdstrike.OriginalEventTimeStamp |  | keyword |
+| crowdstrike.OriginalFilename |  | keyword |
+| crowdstrike.OriginalParentAuthenticationId |  | keyword |
+| crowdstrike.OriginalUserName |  | keyword |
+| crowdstrike.OriginalUserSid |  | keyword |
+| crowdstrike.OutBroadcastOctets |  | keyword |
+| crowdstrike.OutDiscards |  | keyword |
 | crowdstrike.OutErrors |  | keyword |
+| crowdstrike.OutMulticastOctets |  | keyword |
 | crowdstrike.OutMulticastPkts |  | keyword |
+| crowdstrike.OutNUcastPkts |  | keyword |
 | crowdstrike.OutOctets |  | keyword |
+| crowdstrike.OutUcastOctets |  | keyword |
 | crowdstrike.OutUcastPkts |  | keyword |
 | crowdstrike.Parameter1 |  | keyword |
 | crowdstrike.Parameter2 |  | keyword |
 | crowdstrike.Parameter3 |  | keyword |
+| crowdstrike.Parameter64_1 |  | keyword |
+| crowdstrike.Parameter64_2 |  | keyword |
+| crowdstrike.Parameter64_3 |  | keyword |
 | crowdstrike.ParentAuthenticationId |  | keyword |
 | crowdstrike.ParentCommandLine |  | keyword |
 | crowdstrike.ParentCommandLine.text | Multi-field of `crowdstrike.ParentCommandLine`. | match_only_text |
 | crowdstrike.ParentImageFileName |  | keyword |
 | crowdstrike.ParentImageFilePath |  | keyword |
 | crowdstrike.PasswordLastSet |  | keyword |
+| crowdstrike.PathMtuDiscoveryTimeout |  | keyword |
 | crowdstrike.PatternDispositionDescription |  | keyword |
 | crowdstrike.PatternDispositionFlags.BlockingUnsupportedOrDisabled |  | boolean |
 | crowdstrike.PatternDispositionFlags.BootupSafeguardEnabled |  | boolean |
@@ -1749,11 +1866,18 @@ For example, if your Crowdstrike event contains `id: 123`, `aid: 456`, and `cid:
 | crowdstrike.Pcr6 |  | match_only_text |
 | crowdstrike.Pcr7 |  | match_only_text |
 | crowdstrike.PendingUpdateIds |  | match_only_text |
+| crowdstrike.PerformanceCounter |  | keyword |
+| crowdstrike.PermanentPhysicalAddress |  | keyword |
 | crowdstrike.PhysicalAddress |  | keyword |
 | crowdstrike.PhysicalAddressLength |  | long |
 | crowdstrike.PhysicalCoreCount |  | long |
+| crowdstrike.PhysicalMediumType |  | keyword |
 | crowdstrike.PointerSize |  | keyword |
+| crowdstrike.PreferredLifetime |  | keyword |
+| crowdstrike.PrefixLength |  | keyword |
+| crowdstrike.PrefixOrigin |  | keyword |
 | crowdstrike.PreviousConnectTime |  | date |
+| crowdstrike.PrimaryModule |  | keyword |
 | crowdstrike.PrivilegedProcessHandleCount |  | long |
 | crowdstrike.PrivilegesBitmask |  | keyword |
 | crowdstrike.ProcessAttributes |  | match_only_text |
@@ -1761,11 +1885,13 @@ For example, if your Crowdstrike event contains `id: 123`, `aid: 456`, and `cid:
 | crowdstrike.ProcessCreateFlags |  | keyword |
 | crowdstrike.ProcessId |  | long |
 | crowdstrike.ProcessParameterFlags |  | keyword |
+| crowdstrike.ProcessStartKey |  | keyword |
 | crowdstrike.ProcessSxsFlags |  | keyword |
 | crowdstrike.ProcessorPackageCount |  | long |
 | crowdstrike.ProductType |  | keyword |
 | crowdstrike.ProtectVirtualMemoryCount |  | long |
 | crowdstrike.ProvisionState |  | keyword |
+| crowdstrike.PublicKeys |  | keyword |
 | crowdstrike.PupAdwareConfidence |  | keyword |
 | crowdstrike.PupAdwareDecisionValue |  | keyword |
 | crowdstrike.QuarantinedFileExtendedState |  | match_only_text |
@@ -1777,50 +1903,98 @@ For example, if your Crowdstrike event contains `id: 123`, `aid: 456`, and `cid:
 | crowdstrike.RGID |  | keyword |
 | crowdstrike.RPath |  | match_only_text |
 | crowdstrike.RUID |  | keyword |
+| crowdstrike.RawThreadId |  | keyword |
+| crowdstrike.ReachableTime |  | keyword |
 | crowdstrike.ReasonOfFunctionalityLevel |  | keyword |
+| crowdstrike.ReceiveLinkSpeed |  | keyword |
 | crowdstrike.RegBinaryValue |  | match_only_text |
+| crowdstrike.RegClassification |  | keyword |
+| crowdstrike.RegClassificationFlags |  | keyword |
+| crowdstrike.RegClassificationIndex |  | keyword |
+| crowdstrike.RegConfigClass |  | keyword |
+| crowdstrike.RegConfigFlags |  | keyword |
+| crowdstrike.RegConfigIndex |  | keyword |
+| crowdstrike.RegConfigValueType |  | keyword |
 | crowdstrike.RegCreateDisposition |  | match_only_text |
 | crowdstrike.RegCreateOptions |  | match_only_text |
 | crowdstrike.RegKeySecurityDecreasedCount |  | long |
+| crowdstrike.RegObjectName |  | keyword |
+| crowdstrike.RegOperationType |  | keyword |
 | crowdstrike.RegPostObjectName |  | match_only_text |
 | crowdstrike.RegRootObjectName |  | match_only_text |
 | crowdstrike.RegStringValue |  | match_only_text |
+| crowdstrike.RegType |  | keyword |
+| crowdstrike.RegValueName |  | keyword |
 | crowdstrike.RemoteAccount |  | keyword |
+| crowdstrike.RemoteAddressMaskIP4 |  | keyword |
+| crowdstrike.RemoteAddressMaskIP6 |  | keyword |
+| crowdstrike.RemoteAddressString |  | keyword |
 | crowdstrike.RemovableDiskFileWrittenCount |  | long |
 | crowdstrike.RequestType |  | keyword |
+| crowdstrike.ResendToCloud |  | keyword |
+| crowdstrike.RespondingDnsServer |  | keyword |
+| crowdstrike.RetransmitTime |  | keyword |
+| crowdstrike.RouteAge |  | keyword |
+| crowdstrike.RouteMetric |  | keyword |
+| crowdstrike.RouteOrigin |  | keyword |
+| crowdstrike.RouterDiscoveryBehavior |  | keyword |
 | crowdstrike.RpcClientProcessId |  | keyword |
 | crowdstrike.RpcClientThreadId |  | keyword |
 | crowdstrike.RpcNestingLevel |  | keyword |
 | crowdstrike.RpcOpClassification |  | match_only_text |
 | crowdstrike.RpcOpNum |  | keyword |
 | crowdstrike.RunDllInvocationCount |  | long |
+| crowdstrike.SHA1HashData |  | keyword |
 | crowdstrike.SHA1String |  | keyword |
+| crowdstrike.SHA256HashData |  | keyword |
 | crowdstrike.SHA256String |  | keyword |
 | crowdstrike.SVGID |  | keyword |
 | crowdstrike.SVUID |  | keyword |
 | crowdstrike.SamAccountName |  | match_only_text |
+| crowdstrike.ScopeLevel |  | keyword |
+| crowdstrike.ScopeZone |  | keyword |
+| crowdstrike.ScreenshotType |  | keyword |
 | crowdstrike.ScreenshotsTakenCount |  | long |
 | crowdstrike.ScriptContent |  | match_only_text |
 | crowdstrike.ScriptContentBytes |  | match_only_text |
+| crowdstrike.ScriptContentName |  | keyword |
 | crowdstrike.ScriptContentScanId |  | match_only_text |
+| crowdstrike.ScriptControlErrorCode |  | keyword |
 | crowdstrike.ScriptEngineInvocationCount |  | long |
+| crowdstrike.ScriptingLanguageId |  | keyword |
 | crowdstrike.SensorGroupingTags |  | keyword |
 | crowdstrike.SensorId |  | keyword |
 | crowdstrike.SensorStateBitMap |  | keyword |
 | crowdstrike.ServiceAccessPropertiesEtw |  | match_only_text |
 | crowdstrike.ServiceDelayedAutoStart |  | match_only_text |
 | crowdstrike.ServiceDependOnService |  | match_only_text |
+| crowdstrike.ServiceDescription |  | keyword |
 | crowdstrike.ServiceDisplayName |  | keyword |
+| crowdstrike.ServiceErrorControl |  | keyword |
 | crowdstrike.ServiceEventCount |  | long |
+| crowdstrike.ServiceFailureActions |  | keyword |
+| crowdstrike.ServiceImagePath |  | keyword |
 | crowdstrike.ServicePackMajor |  | keyword |
+| crowdstrike.ServiceSecurity |  | keyword |
+| crowdstrike.ServiceStart |  | keyword |
+| crowdstrike.ServiceType |  | keyword |
 | crowdstrike.SessionId |  | keyword |
 | crowdstrike.SessionProcessId |  | keyword |
 | crowdstrike.SetThreadContextCount |  | long |
 | crowdstrike.Severity |  | integer |
 | crowdstrike.SeverityName |  | keyword |
 | crowdstrike.ShareAccess |  | keyword |
+| crowdstrike.ShareName |  | keyword |
+| crowdstrike.ShareSecurity |  | keyword |
+| crowdstrike.ShareSecuritySddl |  | keyword |
+| crowdstrike.SignInfoFlags |  | keyword |
+| crowdstrike.SignatureErrorState |  | keyword |
+| crowdstrike.SignatureState |  | keyword |
 | crowdstrike.SiteName |  | keyword |
+| crowdstrike.SitePrefixLength |  | keyword |
 | crowdstrike.Size |  | long |
+| crowdstrike.SkipAsSource |  | keyword |
+| crowdstrike.SmbClientName |  | keyword |
 | crowdstrike.SmbShareName |  | keyword |
 | crowdstrike.SnapshotFileOpenCount |  | long |
 | crowdstrike.SourceAccountDomain |  | keyword |
@@ -1833,11 +2007,13 @@ For example, if your Crowdstrike event contains `id: 123`, `aid: 456`, and `cid:
 | crowdstrike.SourceEndpointHostName |  | keyword |
 | crowdstrike.SourceEndpointNetworkTag |  | keyword |
 | crowdstrike.SourceEndpointNetworkType |  | keyword |
+| crowdstrike.SourceEventUniqueId |  | keyword |
 | crowdstrike.SourceFileName |  | keyword |
 | crowdstrike.SourceProcessId |  | keyword |
 | crowdstrike.SourceProducts |  | keyword |
 | crowdstrike.SourceThreadId |  | keyword |
 | crowdstrike.SourceThreadModule |  | match_only_text |
+| crowdstrike.SourceThreadStartAddress |  | keyword |
 | crowdstrike.SourceVendors |  | keyword |
 | crowdstrike.SpibarDataBfpr |  | match_only_text |
 | crowdstrike.SpibarDataFreg0 |  | match_only_text |
@@ -1858,12 +2034,15 @@ For example, if your Crowdstrike event contains `id: 123`, `aid: 456`, and `cid:
 | crowdstrike.StorageUsageInfo |  | match_only_text |
 | crowdstrike.SubStatus |  | keyword |
 | crowdstrike.SubjectDomainNameEtw |  | match_only_text |
+| crowdstrike.SuffixOrigin |  | keyword |
 | crowdstrike.SuppressType |  | keyword |
 | crowdstrike.SuspectStackCount |  | long |
 | crowdstrike.SuspiciousCredentialModuleLoadCount |  | long |
 | crowdstrike.SuspiciousDnsRequestCount |  | long |
 | crowdstrike.SuspiciousFontLoadCount |  | long |
 | crowdstrike.SuspiciousRawDiskReadCount |  | long |
+| crowdstrike.SymbolicLinkName |  | keyword |
+| crowdstrike.SymbolicLinkTarget |  | keyword |
 | crowdstrike.SyntheticPR2Flags |  | keyword |
 | crowdstrike.SystemManufacturer |  | keyword |
 | crowdstrike.SystemProcessCount |  | match_only_text |
@@ -1873,15 +2052,30 @@ For example, if your Crowdstrike event contains `id: 123`, `aid: 456`, and `cid:
 | crowdstrike.SystemTableIndex |  | long |
 | crowdstrike.Tactic |  | keyword |
 | crowdstrike.Tags |  | keyword |
+| crowdstrike.TargetCommandLineParameters |  | keyword |
 | crowdstrike.TargetDomainControllerObjectGuid |  | keyword |
 | crowdstrike.TargetDomainControllerObjectSid |  | keyword |
 | crowdstrike.TargetFileName |  | keyword |
+| crowdstrike.TargetSHA256HashData |  | keyword |
 | crowdstrike.TargetThreadId |  | keyword |
+| crowdstrike.TargetThreadModule |  | keyword |
+| crowdstrike.TaskAuthor |  | keyword |
+| crowdstrike.TaskExecArguments |  | keyword |
+| crowdstrike.TaskExecCommand |  | keyword |
+| crowdstrike.TaskName |  | keyword |
 | crowdstrike.TaskXml |  | match_only_text |
 | crowdstrike.Technique |  | keyword |
+| crowdstrike.TemplateDisposition |  | keyword |
+| crowdstrike.TemplateInstanceId |  | keyword |
+| crowdstrike.ThreadStartAddress |  | keyword |
 | crowdstrike.ThreadStartBytes |  | match_only_text |
+| crowdstrike.ThreadStartContext |  | keyword |
 | crowdstrike.Timeout |  | long |
 | crowdstrike.TokenType |  | keyword |
+| crowdstrike.TotalCount |  | long |
+| crowdstrike.TransmitLinkSpeed |  | keyword |
+| crowdstrike.TreeId |  | keyword |
+| crowdstrike.TunnelType |  | keyword |
 | crowdstrike.Type | The endpoint detection type ("ldt": Legacy Endpoint Detection, or "ofp": Office Prevention Macro Detection). | keyword |
 | crowdstrike.USN |  | keyword |
 | crowdstrike.UninstallPendingUpdateIds |  | match_only_text |
@@ -1899,9 +2093,12 @@ For example, if your Crowdstrike event contains `id: 123`, `aid: 456`, and `cid:
 | crowdstrike.UserMemoryProtectExecutableCount |  | long |
 | crowdstrike.UserMemoryProtectExecutableRemoteCount |  | long |
 | crowdstrike.UserName |  | keyword |
+| crowdstrike.UserRid |  | keyword |
 | crowdstrike.UserSid |  | keyword |
 | crowdstrike.UserSid_readable |  | keyword |
+| crowdstrike.UserThread |  | keyword |
 | crowdstrike.UserTime |  | long |
+| crowdstrike.ValidLifetime |  | keyword |
 | crowdstrike.VerifiedCertificate |  | keyword |
 | crowdstrike.VersionInfo |  | match_only_text |
 | crowdstrike.VnodeModificationType |  | keyword |
@@ -1919,11 +2116,13 @@ For example, if your Crowdstrike event contains `id: 123`, `aid: 456`, and `cid:
 | crowdstrike.VolumeDeviceType |  | keyword |
 | crowdstrike.VolumeDeviceVendor |  | match_only_text |
 | crowdstrike.VolumeDriveLetter |  | keyword |
+| crowdstrike.VolumeEncryptionStatus |  | keyword |
 | crowdstrike.VolumeFileSystemDevice |  | keyword |
 | crowdstrike.VolumeFileSystemDriver |  | keyword |
 | crowdstrike.VolumeFileSystemType |  | keyword |
 | crowdstrike.VolumeIsEncrypted |  | keyword |
 | crowdstrike.VolumeIsNetwork |  | keyword |
+| crowdstrike.VolumeLabel |  | keyword |
 | crowdstrike.VolumeMediaBSDMajor |  | keyword |
 | crowdstrike.VolumeMediaBSDMinor |  | keyword |
 | crowdstrike.VolumeMediaBSDName |  | keyword |
@@ -1942,11 +2141,16 @@ For example, if your Crowdstrike event contains `id: 123`, `aid: 456`, and `cid:
 | crowdstrike.VolumeOriginPath |  | match_only_text |
 | crowdstrike.VolumeRealDeviceName |  | keyword |
 | crowdstrike.VolumeSectorSize |  | keyword |
+| crowdstrike.VolumeSessionUUID |  | keyword |
 | crowdstrike.VolumeSnapshotName |  | match_only_text |
 | crowdstrike.VolumeSnapshotTimeStamp |  | match_only_text |
 | crowdstrike.VolumeType |  | keyword |
 | crowdstrike.VolumeUUID |  | keyword |
 | crowdstrike.WindowFlags |  | keyword |
+| crowdstrike.WmiNamespaceName |  | keyword |
+| crowdstrike.WmiProviderName |  | keyword |
+| crowdstrike.WmiProviderType |  | keyword |
+| crowdstrike.WmiQuery |  | keyword |
 | crowdstrike.__mv_LocalAddressIP4 |  | keyword |
 | crowdstrike.__mv_aip |  | keyword |
 | crowdstrike.__mv_discoverer_aid |  | keyword |
@@ -1988,6 +2192,7 @@ For example, if your Crowdstrike event contains `id: 123`, `aid: 456`, and `cid:
 | destination.ip | IP address of the destination (IPv4 or IPv6). | ip |
 | destination.port | Port of the destination. | long |
 | device.id | The unique identifier of a device. The identifier must not change across application sessions but stay fixed for an instance of a (mobile) device. On iOS, this value must be equal to the vendor identifier (https://developer.apple.com/documentation/uikit/uidevice/1620059-identifierforvendor). On Android, this value must be equal to the Firebase Installation ID or a globally unique UUID which is persisted across sessions in your application. For GDPR and data protection law reasons this identifier should not carry information that would allow to identify a user. | keyword |
+| dll.Ext.size | Size of DLL. | long |
 | dns.question.name | The name being queried. If the name field contains non-printable characters (below 32 or above 126), those characters should be represented as escaped base 10 integers (\DDD). Back slashes and quotes should be escaped. Tabs, carriage returns, and line feeds should be converted to \t, \r, and \n respectively. | keyword |
 | dns.question.registered_domain | The highest registered domain, stripped of the subdomain. For example, the registered domain for "foo.example.com" is "example.com". This value can be determined precisely with a list like the public suffix list (https://publicsuffix.org). Trying to approximate this by simply taking the last two labels will not work well for TLDs such as "co.uk". | keyword |
 | dns.question.subdomain | The subdomain is all of the labels under the registered_domain. If the domain has multiple levels of subdomain, such as "sub2.sub1.example.com", the subdomain field should contain "sub2.sub1", with no trailing period. | keyword |
@@ -2017,6 +2222,8 @@ For example, if your Crowdstrike event contains `id: 123`, `aid: 456`, and `cid:
 | file.path.text | Multi-field of `file.path`. | match_only_text |
 | file.size | File size in bytes. Only relevant when `file.type` is "file". | long |
 | file.type | File type (file, dir, or symlink). | keyword |
+| group.Ext.real.id | Unique identifier for the group on the system/platform. | keyword |
+| group.id | Unique identifier for the group on the system/platform. | keyword |
 | host.domain | Name of the domain of which the host is a member. For example, on Windows this could be the host's Active Directory domain or NetBIOS domain name. For Linux this could be the domain of the host's LDAP provider. | keyword |
 | host.geo.city_name | City name. | keyword |
 | host.geo.continent_name | Name of the continent. | keyword |
@@ -2047,6 +2254,7 @@ For example, if your Crowdstrike event contains `id: 123`, `aid: 456`, and `cid:
 | observer.type | The type of the observer the data is coming from. There is no predefined list of observer types. Some examples are `forwarder`, `firewall`, `ids`, `ips`, `proxy`, `poller`, `sensor`, `APM server`. | constant_keyword |
 | observer.vendor | Vendor name of the observer. | constant_keyword |
 | observer.version | Observer version. | keyword |
+| process.Ext.token.integrity_level_name | Human readable integrity level. | keyword |
 | process.args | Array of process arguments, starting with the absolute path to the executable. May be filtered to protect sensitive information. | keyword |
 | process.args_count | Length of the process.args array. This field can be useful for querying or performing bucket analysis on how many arguments were provided to start a process. More arguments may be an indication of suspicious activity. | long |
 | process.command_line | Full command line that started the process, including the absolute path to the executable, and all arguments. Some arguments may be filtered to protect sensitive information. | wildcard |
@@ -2054,11 +2262,14 @@ For example, if your Crowdstrike event contains `id: 123`, `aid: 456`, and `cid:
 | process.end | The time the process ended. | date |
 | process.entity_id | Unique identifier for the process. The implementation of this is specified by the data source, but some examples of what could be used here are a process-generated UUID, Sysmon Process GUIDs, or a hash of some uniquely identifying components of a process. Constructing a globally unique identifier is a common practice to mitigate PID reuse as well as to identify a specific process over time, across multiple monitored hosts. | keyword |
 | process.executable | Absolute path to the process executable. | keyword |
+| process.executable.caseless | Multi-field of `process.executable`. | keyword |
 | process.executable.text | Multi-field of `process.executable`. | match_only_text |
 | process.exit_code | The exit code of the process, if this is a termination event. The field should be absent if there is no exit code for the event (e.g. process start). | long |
+| process.group.id |  | keyword |
 | process.hash.md5 | MD5 hash. | keyword |
 | process.hash.sha256 | SHA256 hash. | keyword |
 | process.name | Process name. Sometimes called program name or similar. | keyword |
+| process.name.caseless | Multi-field of `process.name`. | keyword |
 | process.name.text | Multi-field of `process.name`. | match_only_text |
 | process.parent.entity_id | Unique identifier for the process. The implementation of this is specified by the data source, but some examples of what could be used here are a process-generated UUID, Sysmon Process GUIDs, or a hash of some uniquely identifying components of a process. Constructing a globally unique identifier is a common practice to mitigate PID reuse as well as to identify a specific process over time, across multiple monitored hosts. | keyword |
 | process.parent.name | Process name. Sometimes called program name or similar. | keyword |
@@ -2103,6 +2314,7 @@ For example, if your Crowdstrike event contains `id: 123`, `aid: 456`, and `cid:
 | url.scheme | Scheme of the request, such as "https". Note: The `:` is not part of the scheme. | keyword |
 | url.subdomain | The subdomain portion of a fully qualified domain name includes all of the names except the host name under the registered_domain.  In a partially qualified domain, or if the the qualification level of the full name cannot be determined, subdomain contains all of the names below the registered domain. For example the subdomain portion of "www.east.mydomain.co.uk" is "east". If the domain has multiple levels of subdomain, such as "sub2.sub1.example.com", the subdomain field should contain "sub2.sub1", with no trailing period. | keyword |
 | url.top_level_domain | The effective top level domain (eTLD), also known as the domain suffix, is the last part of the domain name. For example, the top level domain for example.com is "com". This value can be determined precisely with a list like the public suffix list (https://publicsuffix.org). Trying to approximate this by simply taking the last label will not work well for effective TLDs such as "co.uk". | keyword |
+| user.Ext.real.id | One or multiple unique identifiers of the user. | keyword |
 | user.domain | Name of the directory the user is a member of. For example, an LDAP or Active Directory domain name. | keyword |
 | user.email | User email address. | keyword |
 | user.full_name | User's full name, if available. | keyword |
