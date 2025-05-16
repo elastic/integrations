@@ -10,7 +10,7 @@ This allows you to search, observe and visualize the Beelzebub logs through Elas
 
 This integration was last tested with Beelzebub `v3.3.6`.
 
-Please note that Beelzebub only produces NDJSON log files at this time, to ship logs to this integration via any other method you will require another component, such as [Logstash](https://www.elastic.co/logstash) or [fluentd](https://www.fluentd.org/), which can perform this by reading the Beelzebub produced log files and transporting the content as it changes to an appropriately configured Elastic Agent input, an ingest location that can be utilised by an appropriately configured Elastic Agent, or directly into Elasticsearch.
+Please note that Beelzebub only produces NDJSON log files at this time, to ship logs to this integration via any other method you will require another component, such as [Logstash](https://www.elastic.co/logstash), which can perform this by reading the Beelzebub produced log files and transporting the content as it changes to an appropriately configured Elastic Agent input, an ingest location that can be utilised by an appropriately configured Elastic Agent, or directly into Elasticsearch.
 
 For more information, refer to:
 1. [GitHub](https://github.com/mariocandela/beelzebub)
