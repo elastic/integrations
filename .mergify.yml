@@ -4,6 +4,15 @@ queue_rules:
     conditions:
       - check-success=integrations/pr-merge
 
+defaults:
+  actions:
+    backport:
+      title: "[{{ destination_branch }}] (backport #{{ number }}) {{ title }}"
+      assignees:
+        - "{{ author }}"
+      labels:
+        - "backport"
+
 pull_request_rules:
   - name: automatic merge of bot 🤖
     conditions:
@@ -14,3 +23,15 @@ pull_request_rules:
     actions:
       queue:
         name: default
+
+  - name: notify the backport has not been merged yet
+    conditions:
+      - -merged
+      - -closed
+      - author=mergify[bot]
+      - "#check-success>0"
+      - schedule=Mon-Mon 06:00-10:00[Europe/Paris]
+    actions:
+      comment:
+        message: |
+          This pull request has not been merged yet. Could you please review and merge it @{{ assignee | join(', @') }}? 🙏
