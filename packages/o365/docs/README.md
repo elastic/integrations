@@ -463,3 +463,4 @@ An example event for `audit` looks as following:
 | o365.audit.WorkspaceId |  | keyword |
 | o365.audit.WorkspaceName |  | keyword |
 | o365.audit.YammerNetworkId |  | keyword |
+
