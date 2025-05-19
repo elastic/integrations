@@ -33,7 +33,7 @@ processors:
   - fingerprint:
       fields:
         - json.receivedTime
-        - json.abxMessageId
+        - json.abxMessageIdStr
         - json.threatId
         - json.internetMessageId
       tag: fingerprint_threat
@@ -67,12 +67,18 @@ processors:
       field: observer.product
       tag: set_observer_product
       value: Inbound Email Security
+  - rename:
+      field: json.abxMessageIdStr
+      tag: rename_abxMessageIdStr
+      target_field: abnormal_security.threat.abx_message_id
+      ignore_missing: true
   - convert:
       field: json.abxMessageId
       tag: convert_abxMessageId_to_string
       target_field: abnormal_security.threat.abx_message_id
       type: string
       ignore_missing: true
+      if: ctx.abnormal_security?.threat?.abx_message_id == null
   - set:
       field: event.id
       tag: set_event_id_from_threat_abx_message_id

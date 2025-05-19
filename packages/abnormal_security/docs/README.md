@@ -666,7 +666,7 @@ An example event for `threat` looks as following:
     "@timestamp": "2024-07-17T23:25:38.000Z",
     "abnormal_security": {
         "threat": {
-            "abx_message_id": "2260288475997441000",
+            "abx_message_id": "2260288475997441028",
             "abx_portal_url": "https://portal.abnormalsecurity.com/home/threat-center/remediation-history/3456765434567654",
             "attachment_count": 0,
             "attachment_names": [
@@ -729,22 +729,22 @@ An example event for `threat` looks as following:
         }
     },
     "agent": {
-        "ephemeral_id": "c33499ad-8601-4101-98cb-e589c42e87c8",
-        "id": "97446cfe-0533-47af-b89c-e02d2a21875c",
-        "name": "elastic-agent-92805",
+        "ephemeral_id": "75c3b215-619b-49ef-b777-69817b3456bf",
+        "id": "b2d713bd-bc00-435e-a6fb-10e3c97a832b",
+        "name": "elastic-agent-13104",
         "type": "filebeat",
         "version": "8.17.3"
     },
     "data_stream": {
         "dataset": "abnormal_security.threat",
-        "namespace": "62817",
+        "namespace": "41893",
         "type": "logs"
     },
     "ecs": {
         "version": "8.11.0"
     },
     "elastic_agent": {
-        "id": "97446cfe-0533-47af-b89c-e02d2a21875c",
+        "id": "b2d713bd-bc00-435e-a6fb-10e3c97a832b",
         "snapshot": false,
         "version": "8.17.3"
     },
@@ -785,8 +785,8 @@ An example event for `threat` looks as following:
             "email"
         ],
         "dataset": "abnormal_security.threat",
-        "id": "2260288475997441000",
-        "ingested": "2025-05-19T15:50:22Z",
+        "id": "2260288475997441028",
+        "ingested": "2025-05-19T16:20:00Z",
         "kind": "enrichment",
         "original": "{\"abxMessageId\":2260288475997441000,\"abxMessageIdStr\":\"2260288475997441028\",\"abxPortalUrl\":\"https://portal.abnormalsecurity.com/home/threat-center/remediation-history/3456765434567654\",\"attachmentCount\":0,\"attachmentNames\":[],\"attachments\":[\"attachment1.txt\",\"attachment2.txt\"],\"attackStrategy\":\"Unknown Sender\",\"attackType\":\"Spam\",\"attackVector\":\"Link\",\"attackedParty\":\"Employee (Other)\",\"autoRemediated\":true,\"ccEmails\":[],\"fromAddress\":\"john@example.com\",\"fromName\":\"john\",\"impersonatedParty\":\"None / Others\",\"internetMessageId\":\"\\u003cAZz8NUMEST-qmuz77_koic@example\\u003e\",\"isRead\":false,\"links\":[{\"display_text\":\"This is not a spoof!\",\"domain\":\"lamronba.com\",\"source\":\"body\",\"type\":\"html href\",\"url\":\"http://spoof.lamronba.com\"},{\"display_text\":\"This is not a spoof!\",\"domain\":\"lamronba2.com\",\"source\":\"body\",\"type\":\"html href\",\"url\":\"http://spoof.lamronba2.com\"}],\"postRemediated\":false,\"receivedTime\":\"2024-07-17T23:25:38Z\",\"recipientAddress\":\"bob@example.com\",\"remediationStatus\":\"Auto-Remediated\",\"remediationTimestamp\":\"2024-07-17T23:25:45.73564Z\",\"replyToEmails\":[],\"returnPath\":\"bounce-bob_H181S7GUCF@example.com\",\"senderDomain\":\"example.com\",\"senderIpAddress\":\"81.2.69.142\",\"sentTime\":\"2024-07-17T23:25:29Z\",\"subject\":\"YoU.have.𝗪𝟬0𝗡𝗡 a K0baIt 215-piece_ToooI_Set_Noo0wW..#GBOB\",\"summaryInsights\":[\"Abnormal Email Body HTML\",\"Invisible characters found in Email\",\"Suspicious Link\",\"Unusual Sender\",\"Unusual Sender Domain\"],\"threatId\":\"bf255f2d-a2ad-3f50-5075-fdcc24308bbd\",\"toAddresses\":[\"bob@example.com\"],\"urlCount\":1,\"urls\":[\"https://www.example.com/\"]}",
         "reference": "https://portal.abnormalsecurity.com/home/threat-center/remediation-history/3456765434567654",
