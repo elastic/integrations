@@ -1,0 +1,89 @@
+{
+    "attributes": {
+        "author": [
+            "Elastic"
+        ],
+        "description": "Identifies attempts to enable the root account using the dsenableroot command. This command may be abused by adversaries for persistence, as the root account is disabled by default.",
+        "from": "now-9m",
+        "index": [
+            "logs-endpoint.events.*"
+        ],
+        "language": "eql",
+        "license": "Elastic License v2",
+        "name": "Attempt to Enable the Root Account",
+        "note": "## Triage and analysis\n\n> **Disclaimer**:\n> This investigation guide was created using generative AI technology and has been reviewed to improve its accuracy and relevance. While every effort has been made to ensure its quality, we recommend validating the content and adapting it to suit your specific environment and operational needs.\n\n### Investigating Attempt to Enable the Root Account\n\nIn macOS environments, the root account is typically disabled to enhance security. However, adversaries may attempt to enable it using the `dsenableroot` command to gain persistent, elevated access. The detection rule identifies such attempts by monitoring process events for the execution of `dsenableroot` without the disable flag, indicating potential misuse for persistence.\n\n### Possible investigation steps\n\n- Review the process event logs to confirm the execution of the dsenableroot command without the disable flag, as indicated by the absence of process.args:\"-d\".\n- Identify the user account associated with the process event to determine if the action was initiated by a legitimate user or a potential adversary.\n- Check for any recent changes in user account permissions or configurations that might indicate unauthorized access or privilege escalation.\n- Investigate any other suspicious activities or process executions around the same time as the dsenableroot command to identify potential lateral movement or further persistence mechanisms.\n- Correlate the event with other security alerts or logs from the same host to assess if this is part of a broader attack campaign.\n\n### False positive analysis\n\n- System administrators may legitimately enable the root account for maintenance or troubleshooting. To handle this, create exceptions for known administrator accounts or specific maintenance windows.\n- Automated scripts or management tools might use the dsenableroot command as part of their operations. Identify these tools and exclude their process signatures from triggering alerts.\n- Educational or testing environments may require enabling the root account for instructional purposes. Implement exclusions for these environments by tagging relevant systems or user accounts.\n- Ensure that any exclusion rules are regularly reviewed and updated to reflect changes in administrative practices or tool usage to maintain security integrity.\n\n### Response and remediation\n\n- Immediately isolate the affected macOS system from the network to prevent any potential lateral movement by the adversary.\n- Terminate any unauthorized processes associated with the `dsenableroot` command to halt further misuse of elevated privileges.\n- Review system logs and user activity to identify any unauthorized changes or access that occurred after the root account was enabled.\n- Reset the root account password and disable the root account to prevent further unauthorized access.\n- Conduct a thorough scan of the system for any additional signs of compromise or persistence mechanisms that may have been installed.\n- Notify the security team and relevant stakeholders about the incident for awareness and further investigation.\n- Implement additional monitoring and alerting for any future attempts to enable the root account, ensuring rapid detection and response.",
+        "query": "process where host.os.type == \"macos\" and event.type in (\"start\", \"process_started\") and\n process.name == \"dsenableroot\" and \n not process.args == \"-d\"\n",
+        "references": [
+            "https://ss64.com/osx/dsenableroot.html"
+        ],
+        "related_integrations": [
+            {
+                "package": "endpoint",
+                "version": "^9.0.0"
+            }
+        ],
+        "required_fields": [
+            {
+                "ecs": true,
+                "name": "event.type",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "host.os.type",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "process.args",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "process.name",
+                "type": "keyword"
+            }
+        ],
+        "risk_score": 47,
+        "rule_id": "cc2fd2d0-ba3a-4939-b87f-2901764ed036",
+        "setup": "## Setup\n\nThis rule requires data coming in from Elastic Defend.\n\n### Elastic Defend Integration Setup\nElastic Defend is integrated into the Elastic Agent using Fleet. Upon configuration, the integration allows the Elastic Agent to monitor events on your host and send data to the Elastic Security app.\n\n#### Prerequisite Requirements:\n- Fleet is required for Elastic Defend.\n- To configure Fleet Server refer to the [documentation](https://www.elastic.co/guide/en/fleet/current/fleet-server.html).\n\n#### The following steps should be executed in order to add the Elastic Defend integration on a macOS System:\n- Go to the Kibana home page and click \"Add integrations\".\n- In the query bar, search for \"Elastic Defend\" and select the integration to see more details about it.\n- Click \"Add Elastic Defend\".\n- Configure the integration name and optionally add a description.\n- Select the type of environment you want to protect, for MacOS it is recommended to select \"Traditional Endpoints\".\n- Select a configuration preset. Each preset comes with different default settings for Elastic Agent, you can further customize these later by configuring the Elastic Defend integration policy. [Helper guide](https://www.elastic.co/guide/en/security/current/configure-endpoint-integration-policy.html).\n- We suggest selecting \"Complete EDR (Endpoint Detection and Response)\" as a configuration setting, that provides \"All events; all preventions\"\n- Enter a name for the agent policy in \"New agent policy name\". If other agent policies already exist, you can click the \"Existing hosts\" tab and select an existing policy instead.\nFor more details on Elastic Agent configuration settings, refer to the [helper guide](https://www.elastic.co/guide/en/fleet/current/agent-policy.html).\n- Click \"Save and Continue\".\n- To complete the integration, select \"Add Elastic Agent to your hosts\" and continue to the next section to install the Elastic Agent on your hosts.\nFor more details on Elastic Defend refer to the [helper guide](https://www.elastic.co/guide/en/security/current/install-endpoint.html).\n",
+        "severity": "medium",
+        "tags": [
+            "Domain: Endpoint",
+            "OS: macOS",
+            "Use Case: Threat Detection",
+            "Tactic: Persistence",
+            "Data Source: Elastic Defend",
+            "Resources: Investigation Guide"
+        ],
+        "threat": [
+            {
+                "framework": "MITRE ATT&CK",
+                "tactic": {
+                    "id": "TA0003",
+                    "name": "Persistence",
+                    "reference": "https://attack.mitre.org/tactics/TA0003/"
+                },
+                "technique": [
+                    {
+                        "id": "T1078",
+                        "name": "Valid Accounts",
+                        "reference": "https://attack.mitre.org/techniques/T1078/",
+                        "subtechnique": [
+                            {
+                                "id": "T1078.003",
+                                "name": "Local Accounts",
+                                "reference": "https://attack.mitre.org/techniques/T1078/003/"
+                            }
+                        ]
+                    }
+                ]
+            }
+        ],
+        "timestamp_override": "event.ingested",
+        "type": "eql",
+        "version": 109
+    },
+    "id": "cc2fd2d0-ba3a-4939-b87f-2901764ed036_109",
+    "type": "security-rule"
+}

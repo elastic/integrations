@@ -24,42 +24,23 @@ This module has been tested against the latest Google SCC API version **v1**.
 
 ## Requirements
 
-### Agentless Enabled Integration
+### Agentless enabled integration
+
 Agentless integrations allow you to collect data without having to manage Elastic Agent in your cloud. They make manual agent deployment unnecessary, so you can focus on your data instead of the agent that collects it. For more information, refer to [Agentless integrations](https://www.elastic.co/guide/en/serverless/current/security-agentless-integrations.html) and the [Agentless integrations FAQ](https://www.elastic.co/guide/en/serverless/current/agentless-integration-troubleshooting.html).
 
 Agentless deployments are only supported in Elastic Serverless and Elastic Cloud environments.  This functionality is in beta and is subject to change. Beta features are not subject to the support SLA of official GA features.
 
-### Agent Based Installation
-- Elastic Agent must be installed
-- You can install only one Elastic Agent per host.
-- Elastic Agent is required to stream data from the GCP Pub/Sub or REST API and ship the data to Elastic, where the events will then be processed via the integration's ingest pipelines.
+### Agent-based installation
 
-#### Installing and managing an Elastic Agent:
+Elastic Agent must be installed. For more details, check the Elastic Agent [installation instructions](docs-content://reference/fleet/install-elastic-agents.md). You can install only one Elastic Agent per host.
 
-You have a few options for installing and managing an Elastic Agent:
+### Google SCC service account
 
-#### Install a Fleet-managed Elastic Agent (recommended):
-
-With this approach, you install Elastic Agent and use Fleet in Kibana to define, configure, and manage your agents in a central location. We recommend using Fleet management because it makes the management and upgrade of your agents considerably easier.
-
-#### Install Elastic Agent in standalone mode (advanced users):
-
-With this approach, you install Elastic Agent and manually configure the agent locally on the system where it’s installed. You are responsible for managing and upgrading the agents. This approach is reserved for advanced users only.
-
-#### Install Elastic Agent in a containerized environment:
-
-You can run Elastic Agent inside a container, either with Fleet Server or standalone. Docker images for all versions of Elastic Agent are available from the Elastic Docker registry and we provide deployment manifests for running on Kubernetes.
-
-There are some minimum requirements for running Elastic Agent and for more information, refer to the link [here](https://www.elastic.co/guide/en/fleet/current/elastic-agent-installation.html).
-
-## Prerequisites
-
-   - Create Google SCC service account [Steps to create](https://developers.google.com/identity/protocols/oauth2/service-account#creatinganaccount).
-   - Permissions required for Service Account: 
-      - Cloud Asset Viewer at Organization Level
-      - Pub/Sub Subscriber at Project Level
-      - Security Center Admin Editor at Organization Level
-   - **Security Command Center API** and **Cloud Asset API** must be enabled.
+To create your Google SCC service account, you have to follow [these steps](https://developers.google.com/identity/protocols/oauth2/service-account#creatinganaccount) and the following permissions are required: 
+- Cloud Asset Viewer at Organization Level
+- Pub/Sub Subscriber at Project Level
+- Security Center Admin Editor at Organization Level
+- **Security Command Center API** and **Cloud Asset API** must be enabled.
 
 This integration will make use of the following *oauth2 scope*:
 
@@ -71,22 +52,23 @@ If installing in GCP-Cloud Environment, No need to provide any credentials and m
 
 ## Setup
 
-### To create GCP Pub/Sub, follow the below steps:
+### Create GCP Pub/Sub
 
-- [Create Topic for Pub/sub](https://cloud.google.com/pubsub/docs/create-topic#create_a_topic).
-- [Create Subscription for topic](https://cloud.google.com/pubsub/docs/create-subscription#create_subscriptions)
+1. [Create Topic for Pub/sub](https://cloud.google.com/pubsub/docs/create-topic#create_a_topic).
+2. [Create Subscription for topic](https://cloud.google.com/pubsub/docs/create-subscription#create_subscriptions)
 
-### To collect data from GCP Pub/Sub, follow the below steps:
+### Collect data from GCP Pub/Sub
 
-- [Configure to export finding to GCP Pub/Sub](https://cloud.google.com/security-command-center/docs/how-to-notifications).
-- [Configure to export asset to GCP Pub/Sub](https://cloud.google.com/asset-inventory/docs/monitoring-asset-changes).
-- [Configure to export audit to GCP Pub/Sub](https://cloud.google.com/logging/docs/export/configure_export_v2?_ga=2.110932226.-66737431.1679995682#overview).
+1. [Configure to export finding to GCP Pub/Sub](https://cloud.google.com/security-command-center/docs/how-to-notifications).
+2. [Configure to export asset to GCP Pub/Sub](https://cloud.google.com/asset-inventory/docs/monitoring-asset-changes).
+3. [Configure to export audit to GCP Pub/Sub](https://cloud.google.com/logging/docs/export/configure_export_v2?_ga=2.110932226.-66737431.1679995682#overview).
 
 **NOTE**:
    - **Sink destination** must be **Pub/Sub topic** while exporting audit logs to GCP Pub/Sub.
    - Create unique Pub/Sub topic per data-stream.
 
-### Enabling the integration in Elastic:
+### Enable the integration in Elastic
+
 1. In Kibana go to **Management > Integrations**.
 2. In "Search for integrations" search bar, type **Google Security Command Center**.
 3. Click on the **Google Security Command Center** integration from the search results.

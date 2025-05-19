@@ -510,7 +510,6 @@ processors:
       field: gcp.audit.resource_name
       copy_from: json.protoPayload.resourceName
       ignore_failure: true
-      if: ctx.orchestrator?.type != 'kubernetes'
   - set:
       field: gcp.audit.resource_location.current_locations
       copy_from: json.protoPayload.resourceLocation.currentLocations
@@ -630,11 +629,6 @@ processors:
         - _conf
         - _temp
         - json
-      ignore_missing: true
-  - remove:
-      field: event.original
-      if: "ctx?.tags == null || !(ctx.tags.contains('preserve_original_event'))"
-      ignore_failure: true
       ignore_missing: true
   - script:
       description: Drops null and empty values and dotted keys recursively
