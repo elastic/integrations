@@ -1,0 +1,119 @@
+{
+    "attributes": {
+        "author": [
+            "Elastic"
+        ],
+        "description": "Identifies the execution of a launchd child process with a hidden file. An adversary can establish persistence by installing a new logon item, launch agent, or daemon that executes upon login.",
+        "from": "now-9m",
+        "index": [
+            "logs-endpoint.events.*"
+        ],
+        "language": "kuery",
+        "license": "Elastic License v2",
+        "name": "Suspicious Hidden Child Process of Launchd",
+        "note": "## Triage and analysis\n\n> **Disclaimer**:\n> This investigation guide was created using generative AI technology and has been reviewed to improve its accuracy and relevance. While every effort has been made to ensure its quality, we recommend validating the content and adapting it to suit your specific environment and operational needs.\n\n### Investigating Suspicious Hidden Child Process of Launchd\n\nLaunchd is a key macOS system process responsible for managing system and user services. Adversaries may exploit it by creating hidden child processes to maintain persistence or evade defenses. The detection rule identifies unusual child processes of launchd, focusing on hidden files, which are often indicative of malicious activity. By monitoring process initiation events, it helps uncover potential threats linked to persistence and defense evasion tactics.\n\n### Possible investigation steps\n\n- Review the process details to identify the hidden child process, focusing on the process.name field to determine if it matches known malicious patterns or unusual names.\n- Examine the process.parent.executable field to confirm that the parent process is indeed /sbin/launchd, ensuring the alert is not a false positive.\n- Investigate the file path and attributes of the hidden file associated with the child process to determine its origin and legitimacy.\n- Check the user account associated with the process initiation event to assess if it aligns with expected user behavior or if it indicates potential compromise.\n- Correlate the event with other recent process initiation events on the same host to identify any patterns or additional suspicious activities.\n- Review system logs and other security alerts for the host to gather more context on the potential threat and assess the scope of the activity.\n\n### False positive analysis\n\n- System updates or legitimate software installations may trigger hidden child processes of launchd. Users can create exceptions for known update processes or trusted software installations to prevent unnecessary alerts.\n- Some legitimate applications may use hidden files for configuration or temporary data storage, which could be misidentified as suspicious. Users should identify these applications and whitelist their processes to reduce false positives.\n- Development tools or scripts that run as background processes might appear as hidden child processes. Developers can exclude these tools by specifying their process names or paths in the detection rule exceptions.\n- Automated backup or synchronization services might create hidden files as part of their normal operation. Users should verify these services and add them to an exclusion list if they are deemed safe.\n- Custom scripts or automation tasks scheduled to run at login could be flagged. Users should review these scripts and, if legitimate, configure the rule to ignore these specific processes.\n\n### Response and remediation\n\n- Isolate the affected macOS system from the network to prevent further spread or communication with potential command and control servers.\n- Terminate the suspicious hidden child process of launchd to stop any ongoing malicious activity.\n- Conduct a thorough review of all launch agents, daemons, and logon items on the affected system to identify and remove any unauthorized or malicious entries.\n- Restore the system from a known good backup if available, ensuring that the backup predates the initial compromise.\n- Update the macOS system and all installed applications to the latest versions to patch any vulnerabilities that may have been exploited.\n- Monitor the system for any signs of re-infection or further suspicious activity, focusing on process initiation events and hidden files.\n- Escalate the incident to the security operations team for further investigation and to determine if additional systems may be affected.",
+        "query": "event.category:process and host.os.type:macos and event.type:(start or process_started) and\n process.name:.* and process.parent.executable:/sbin/launchd\n",
+        "references": [
+            "https://objective-see.com/blog/blog_0x61.html",
+            "https://www.intezer.com/blog/research/operation-electrorat-attacker-creates-fake-companies-to-drain-your-crypto-wallets/",
+            "https://developer.apple.com/library/archive/documentation/MacOSX/Conceptual/BPSystemStartup/Chapters/CreatingLaunchdJobs.html"
+        ],
+        "related_integrations": [
+            {
+                "package": "endpoint",
+                "version": "^9.0.0"
+            }
+        ],
+        "required_fields": [
+            {
+                "ecs": true,
+                "name": "event.category",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "event.type",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "host.os.type",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "process.name",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "process.parent.executable",
+                "type": "keyword"
+            }
+        ],
+        "risk_score": 47,
+        "rule_id": "083fa162-e790-4d85-9aeb-4fea04188adb",
+        "setup": "## Setup\n\nThis rule requires data coming in from Elastic Defend.\n\n### Elastic Defend Integration Setup\nElastic Defend is integrated into the Elastic Agent using Fleet. Upon configuration, the integration allows the Elastic Agent to monitor events on your host and send data to the Elastic Security app.\n\n#### Prerequisite Requirements:\n- Fleet is required for Elastic Defend.\n- To configure Fleet Server refer to the [documentation](https://www.elastic.co/guide/en/fleet/current/fleet-server.html).\n\n#### The following steps should be executed in order to add the Elastic Defend integration on a macOS System:\n- Go to the Kibana home page and click \"Add integrations\".\n- In the query bar, search for \"Elastic Defend\" and select the integration to see more details about it.\n- Click \"Add Elastic Defend\".\n- Configure the integration name and optionally add a description.\n- Select the type of environment you want to protect, for MacOS it is recommended to select \"Traditional Endpoints\".\n- Select a configuration preset. Each preset comes with different default settings for Elastic Agent, you can further customize these later by configuring the Elastic Defend integration policy. [Helper guide](https://www.elastic.co/guide/en/security/current/configure-endpoint-integration-policy.html).\n- We suggest selecting \"Complete EDR (Endpoint Detection and Response)\" as a configuration setting, that provides \"All events; all preventions\"\n- Enter a name for the agent policy in \"New agent policy name\". If other agent policies already exist, you can click the \"Existing hosts\" tab and select an existing policy instead.\nFor more details on Elastic Agent configuration settings, refer to the [helper guide](https://www.elastic.co/guide/en/fleet/current/agent-policy.html).\n- Click \"Save and Continue\".\n- To complete the integration, select \"Add Elastic Agent to your hosts\" and continue to the next section to install the Elastic Agent on your hosts.\nFor more details on Elastic Defend refer to the [helper guide](https://www.elastic.co/guide/en/security/current/install-endpoint.html).\n",
+        "severity": "medium",
+        "tags": [
+            "Domain: Endpoint",
+            "OS: macOS",
+            "Use Case: Threat Detection",
+            "Tactic: Persistence",
+            "Tactic: Defense Evasion",
+            "Data Source: Elastic Defend",
+            "Resources: Investigation Guide"
+        ],
+        "threat": [
+            {
+                "framework": "MITRE ATT&CK",
+                "tactic": {
+                    "id": "TA0003",
+                    "name": "Persistence",
+                    "reference": "https://attack.mitre.org/tactics/TA0003/"
+                },
+                "technique": [
+                    {
+                        "id": "T1543",
+                        "name": "Create or Modify System Process",
+                        "reference": "https://attack.mitre.org/techniques/T1543/",
+                        "subtechnique": [
+                            {
+                                "id": "T1543.001",
+                                "name": "Launch Agent",
+                                "reference": "https://attack.mitre.org/techniques/T1543/001/"
+                            }
+                        ]
+                    }
+                ]
+            },
+            {
+                "framework": "MITRE ATT&CK",
+                "tactic": {
+                    "id": "TA0005",
+                    "name": "Defense Evasion",
+                    "reference": "https://attack.mitre.org/tactics/TA0005/"
+                },
+                "technique": [
+                    {
+                        "id": "T1564",
+                        "name": "Hide Artifacts",
+                        "reference": "https://attack.mitre.org/techniques/T1564/",
+                        "subtechnique": [
+                            {
+                                "id": "T1564.001",
+                                "name": "Hidden Files and Directories",
+                                "reference": "https://attack.mitre.org/techniques/T1564/001/"
+                            }
+                        ]
+                    }
+                ]
+            }
+        ],
+        "timestamp_override": "event.ingested",
+        "type": "query",
+        "version": 108
+    },
+    "id": "083fa162-e790-4d85-9aeb-4fea04188adb_108",
+    "type": "security-rule"
+}
