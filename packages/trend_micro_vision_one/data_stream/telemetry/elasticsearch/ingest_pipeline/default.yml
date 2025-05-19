@@ -7,9 +7,11 @@ processors:
   ##############################################################################
 
   - set:
+      tag: set_ecs_version
       field: ecs.version
       value: '8.11.0'
   - set:
+      tag: set_event_kind
       field: event.kind
       value: event
 
@@ -19,6 +21,7 @@ processors:
   ##############################################################################
 
   - drop:
+      tag: drop
       if: ctx.event?.reason == "want_more"
 
   ##############################################################################
@@ -26,14 +29,17 @@ processors:
   ##############################################################################
 
   - rename:
+      tag: rename_message
       field: message
       target_field: event.original
       ignore_missing: true
       if: ctx.event?.original == null
   - remove:
+      tag: remove_message
       field: message
       ignore_missing: true
   - json:
+      tag: json_event_original
       field: event.original
       target_field: trend_micro_vision_one.telemetry
       ignore_failure: true
@@ -43,6 +49,7 @@ processors:
   ##############################################################################
 
   - script:
+      tag: script_convert_camelcase_to_snake_case
       lang: painless
       description: Convert camelCase to snake_case
       source: |
@@ -101,6 +108,7 @@ processors:
   ##############################################################################
 
   - script:
+      tag: script_add_event_type_based_on_event_id
       lang: painless
       description: Add event_type based on event_id
       source: |
@@ -132,6 +140,7 @@ processors:
         '101': TELEMETRY_ASSOCIATION
 
   - script:
+      tag: script_add_event_subtype_based_on_event_sub_id
       lang: painless
       description: Add event_subtype based on event_sub_id
       source: |
@@ -231,6 +240,7 @@ processors:
   ##############################################################################
 
   - script:
+      tag: script_extract_offset_from_timezone_value_or_fall_back_to_utc
       description: Extract offset from timezone value or fall back to UTC.
       lang: painless
       source: |
@@ -238,114 +248,133 @@ processors:
         ctx._tmp_timezone = m.find() ? m.group(1) : "UTC";
 
   - date:
+      tag: date_trend_micro_vision_one_telemetry_event_time
       field: trend_micro_vision_one.telemetry.event_time
       target_field: trend_micro_vision_one.telemetry.event_time
       if: ctx.trend_micro_vision_one?.telemetry?.event_time != null
       timezone: '{{{_tmp_timezone}}}'
       formats: ['UNIX_MS']
   - date:
+      tag: date_trend_micro_vision_one_telemetry_first_seen
       field: trend_micro_vision_one.telemetry.first_seen
       target_field: trend_micro_vision_one.telemetry.first_seen
       if: ctx.trend_micro_vision_one?.telemetry?.first_seen != null
       timezone: '{{{_tmp_timezone}}}'
       formats: ['UNIX_MS']
   - date:
+      tag: date_trend_micro_vision_one_telemetry_last_seen
       field: trend_micro_vision_one.telemetry.last_seen
       target_field: trend_micro_vision_one.telemetry.last_seen
       if: ctx.trend_micro_vision_one?.telemetry?.last_seen != null
       timezone: '{{{_tmp_timezone}}}'
       formats: ['UNIX_MS']
   - date:
+      tag: date_trend_micro_vision_one_telemetry_log_received_time
       field: trend_micro_vision_one.telemetry.log_received_time
       target_field: trend_micro_vision_one.telemetry.log_received_time
       if: ctx.trend_micro_vision_one?.telemetry?.log_received_time != null
       timezone: '{{{_tmp_timezone}}}'
       formats: ['UNIX_MS']
   - date:
+      tag: date_trend_micro_vision_one_telemetry_object_file_creation
       field: trend_micro_vision_one.telemetry.object_file_creation
       target_field: trend_micro_vision_one.telemetry.object_file_creation
       if: ctx.trend_micro_vision_one?.telemetry?.object_file_creation != null
       timezone: '{{{_tmp_timezone}}}'
       formats: ['UNIX_MS']
   - date:
+      tag: date_trend_micro_vision_one_telemetry_object_file_modified_time
       field: trend_micro_vision_one.telemetry.object_file_modified_time
       target_field: trend_micro_vision_one.telemetry.object_file_modified_time
       if: ctx.trend_micro_vision_one?.telemetry?.object_file_modified_time != null
       timezone: '{{{_tmp_timezone}}}'
       formats: ['UNIX_MS']
   - date:
+      tag: date_trend_micro_vision_one_telemetry_object_first_seen
       field: trend_micro_vision_one.telemetry.object_first_seen
       target_field: trend_micro_vision_one.telemetry.object_first_seen
       if: ctx.trend_micro_vision_one?.telemetry?.object_first_seen != null
       timezone: '{{{_tmp_timezone}}}'
       formats: ['UNIX_MS']
   - date:
+      tag: date_trend_micro_vision_one_telemetry_object_last_seen
       field: trend_micro_vision_one.telemetry.object_last_seen
       target_field: trend_micro_vision_one.telemetry.object_last_seen
       if: ctx.trend_micro_vision_one?.telemetry?.object_last_seen != null
       timezone: '{{{_tmp_timezone}}}'
       formats: ['UNIX_MS']
   - date:
+      tag: date_trend_micro_vision_one_telemetry_object_launch_time
       field: trend_micro_vision_one.telemetry.object_launch_time
       target_field: trend_micro_vision_one.telemetry.object_launch_time
       if: ctx.trend_micro_vision_one?.telemetry?.object_launch_time != null
       timezone: '{{{_tmp_timezone}}}'
       formats: ['UNIX_MS']
   - date:
+      tag: date_trend_micro_vision_one_telemetry_parent_file_creation
       field: trend_micro_vision_one.telemetry.parent_file_creation
       target_field: trend_micro_vision_one.telemetry.parent_file_creation
       if: ctx.trend_micro_vision_one?.telemetry?.parent_file_creation != null
       timezone: '{{{_tmp_timezone}}}'
       formats: ['UNIX_MS']
   - date:
+      tag: date_trend_micro_vision_one_telemetry_parent_file_modified_time
       field: trend_micro_vision_one.telemetry.parent_file_modified_time
       target_field: trend_micro_vision_one.telemetry.parent_file_modified_time
       if: ctx.trend_micro_vision_one?.telemetry?.parent_file_modified_time != null
       timezone: '{{{_tmp_timezone}}}'
       formats: ['UNIX_MS']
   - date:
+      tag: date_trend_micro_vision_one_telemetry_parent_launch_time
       field: trend_micro_vision_one.telemetry.parent_launch_time
       target_field: trend_micro_vision_one.telemetry.parent_launch_time
       if: ctx.trend_micro_vision_one?.telemetry?.parent_launch_time != null
       timezone: '{{{_tmp_timezone}}}'
       formats: ['UNIX_MS']
   - date:
+      tag: date_trend_micro_vision_one_telemetry_process_file_creation
       field: trend_micro_vision_one.telemetry.process_file_creation
       target_field: trend_micro_vision_one.telemetry.process_file_creation
       if: ctx.trend_micro_vision_one?.telemetry?.process_file_creation != null
       timezone: '{{{_tmp_timezone}}}'
       formats: ['UNIX_MS']
   - date:
+      tag: date_trend_micro_vision_one_telemetry_process_file_modified_time
       field: trend_micro_vision_one.telemetry.process_file_modified_time
       target_field: trend_micro_vision_one.telemetry.process_file_modified_time
       if: ctx.trend_micro_vision_one?.telemetry?.process_file_modified_time != null
       timezone: '{{{_tmp_timezone}}}'
       formats: ['UNIX_MS']
   - date:
+      tag: date_trend_micro_vision_one_telemetry_process_launch_time
       field: trend_micro_vision_one.telemetry.process_launch_time
       target_field: trend_micro_vision_one.telemetry.process_launch_time
       if: ctx.trend_micro_vision_one?.telemetry?.process_launch_time != null
       timezone: '{{{_tmp_timezone}}}'
       formats: ['UNIX_MS']
   - date:
+      tag: date_trend_micro_vision_one_telemetry_src_file_creation
       field: trend_micro_vision_one.telemetry.src_file_creation
       target_field: trend_micro_vision_one.telemetry.src_file_creation
       if: ctx.trend_micro_vision_one?.telemetry?.src_file_creation != null
       timezone: '{{{_tmp_timezone}}}'
       formats: ['UNIX_MS']
   - date:
+      tag: date_trend_micro_vision_one_telemetry_src_file_modified_time
       field: trend_micro_vision_one.telemetry.src_file_modified_time
       target_field: trend_micro_vision_one.telemetry.src_file_modified_time
       if: ctx.trend_micro_vision_one?.telemetry?.src_file_modified_time != null
       timezone: '{{{_tmp_timezone}}}'
       formats: ['UNIX_MS']
   - date:
+      tag: date_trend_micro_vision_one_telemetry_src_first_seen
       field: trend_micro_vision_one.telemetry.src_first_seen
       target_field: trend_micro_vision_one.telemetry.src_first_seen
       if: ctx.trend_micro_vision_one?.telemetry?.src_first_seen != null
       timezone: '{{{_tmp_timezone}}}'
       formats: ['UNIX_MS']
   - date:
+      tag: date_trend_micro_vision_one_telemetry_src_last_seen
       field: trend_micro_vision_one.telemetry.src_last_seen
       target_field: trend_micro_vision_one.telemetry.src_last_seen
       if: ctx.trend_micro_vision_one?.telemetry?.src_last_seen != null
@@ -353,31 +382,38 @@ processors:
       formats: ['UNIX_MS']
 
   - remove:
+      tag: remove_tmp_timezone
       field:
         - _tmp_timezone
       ignore_missing: true
 
   - convert:
+      tag: convert_trend_micro_vision_one_telemetry_object_current_file_size
       field: trend_micro_vision_one.telemetry.object_current_file_size
       type: long
       ignore_missing: true
   - convert:
+      tag: convert_trend_micro_vision_one_telemetry_object_file_size
       field: trend_micro_vision_one.telemetry.object_file_size
       type: long
       ignore_missing: true
   - convert:
+      tag: convert_trend_micro_vision_one_telemetry_parent_file_size
       field: trend_micro_vision_one.telemetry.parent_file_size
       type: long
       ignore_missing: true
   - convert:
+      tag: convert_trend_micro_vision_one_telemetry_process_file_size
       field: trend_micro_vision_one.telemetry.process_file_size
       type: long
       ignore_missing: true
   - convert:
+      tag: convert_trend_micro_vision_one_telemetry_raw_data_size
       field: trend_micro_vision_one.telemetry.raw_data_size
       type: long
       ignore_missing: true
   - convert:
+      tag: convert_trend_micro_vision_one_telemetry_src_file_size
       field: trend_micro_vision_one.telemetry.src_file_size
       type: long
       ignore_missing: true
@@ -387,20 +423,24 @@ processors:
   ##############################################################################
 
   - set:
+      tag: set_timestamp
       field: "@timestamp"
       copy_from: trend_micro_vision_one.telemetry.event_time
       if: ctx.trend_micro_vision_one?.telemetry?.event_time != null
 
   - set:
+      tag: set_event_id
       field: event.id
       copy_from: trend_micro_vision_one.telemetry.uuid
       if: ctx.trend_micro_vision_one?.telemetry?.uuid != null
 
   - set:
+      tag: set_event_code
       field: event.code
       copy_from: trend_micro_vision_one.telemetry.event_id
       if: ctx.trend_micro_vision_one?.telemetry?.event_id != null
   - convert:
+      tag: convert_event_code
       field: event.code
       type: string
       ignore_missing: true
@@ -408,6 +448,7 @@ processors:
   # file.*
 
   - script:
+      tag: script_populate_file_created
       description: Populate file.created
       lang: painless
       source: |
@@ -421,18 +462,22 @@ processors:
         ctx.file.created.removeIf(v -> v == null);
         if (ctx.file.created.size() == 1) ctx.file.created = ctx.file.created[0];
   - set:
+      tag: set_file_hash_md5
       field: file.hash.md5
       copy_from: trend_micro_vision_one.telemetry.object_file_hash_md5
       if: ctx.trend_micro_vision_one?.telemetry?.object_file_hash_md5 != null
   - set:
+      tag: set_file_hash_sha1
       field: file.hash.sha1
       copy_from: trend_micro_vision_one.telemetry.object_file_hash_sha1
       if: ctx.trend_micro_vision_one?.telemetry?.object_file_hash_sha1 != null
   - set:
+      tag: set_file_hash_sha256
       field: file.hash.sha256
       copy_from: trend_micro_vision_one.telemetry.object_file_hash_sha256
       if: ctx.trend_micro_vision_one?.telemetry?.object_file_hash_sha256 != null
   - script:
+      tag: script_populate_file_mtime
       description: Populate file.mtime
       lang: painless
       source: |
@@ -446,6 +491,7 @@ processors:
         ctx.file.mtime.removeIf(v -> v == null);
         if (ctx.file.mtime.size() == 1) ctx.file.mtime = ctx.file.mtime[0];
   - script:
+      tag: script_populate_file_path
       description: Populate file.path
       lang: painless
       source: |
@@ -457,6 +503,7 @@ processors:
         ctx.file.path.removeIf(v -> v == null);
         if (ctx.file.path.size() == 1) ctx.file.path = ctx.file.path[0];
   - script:
+      tag: script_populate_file_size
       description: Populate file.size
       lang: painless
       source: |
@@ -471,14 +518,17 @@ processors:
         ctx.file.size.removeIf(v -> v == null);
         if (ctx.file.size.size() == 1) ctx.file.size = ctx.file.size[0];
   - set:
+      tag: set_file_user_domain
       field: file.user.domain
       copy_from: trend_micro_vision_one.telemetry.object_user_domain
       if: ctx.trend_micro_vision_one?.telemetry?.object_user_domain != null
   - set:
+      tag: set_file_user_group_id
       field: file.user.group.id
       copy_from: trend_micro_vision_one.telemetry.object_user_group_sids
       if: ctx.trend_micro_vision_one?.telemetry?.object_user_group_sids != null
   - set:
+      tag: set_file_user_name
       field: file.user.name
       copy_from: trend_micro_vision_one.telemetry.object_user
       if: ctx.trend_micro_vision_one?.telemetry.object_user != null
@@ -486,30 +536,37 @@ processors:
   # host.*
 
   - set:
+      tag: set_host_id
       field: host.id
       copy_from: trend_micro_vision_one.telemetry.endpoint_guid
       if: ctx.trend_micro_vision_one?.telemetry?.endpoint_guid != null
   - set:
+      tag: set_host_name
       field: host.name
       copy_from: trend_micro_vision_one.telemetry.endpoint_host_name
       if: ctx.trend_micro_vision_one?.telemetry?.endpoint_host_name != null
   - set:
+      tag: set_host_ip
       field: host.ip
       copy_from: trend_micro_vision_one.telemetry.endpoint_ip
       if: ctx.trend_micro_vision_one?.telemetry?.endpoint_ip != null
   - set:
+      tag: set_host_mac
       field: host.mac
       copy_from: trend_micro_vision_one.telemetry.endpoint_mac_address
       if: ctx.trend_micro_vision_one?.telemetry?.endpoint_mac_address != null
   - gsub:
+      tag: gsub_host_mac
       field: host.mac
       pattern: ':'
       replacement: '-'
       ignore_missing: true
   - uppercase:
+      tag: uppercase_host_mac
       field: host.mac
       ignore_missing: true
   - set:
+      tag: set_group_id
       field: group.id
       copy_from: trend_micro_vision_one.telemetry.group_id
       if: ctx.trend_micro_vision_one?.telemetry?.group_id != null
@@ -517,14 +574,17 @@ processors:
   # os.*
 
   - set:
+      tag: set_os_full
       field: os.full
       copy_from: trend_micro_vision_one.telemetry.os_description
       if: ctx.trend_micro_vision_one?.telemetry?.os_description != null
   - set:
+      tag: set_os_name
       field: os.name
       copy_from: trend_micro_vision_one.telemetry.os_name
       if: ctx.trend_micro_vision_one?.telemetry?.os_name != null
   - set:
+      tag: set_os_version
       field: os.version
       copy_from: trend_micro_vision_one.telemetry.os_ver
       if: ctx.trend_micro_vision_one?.telemetry?.os_ver != null
@@ -533,6 +593,7 @@ processors:
   # process.*
 
   - script:
+      tag: script_populate_process_command_line
       description: Populate process.command_line
       lang: painless
       source: |
@@ -544,22 +605,27 @@ processors:
         ctx.process.command_line.removeIf(v -> v == null);
         if (ctx.process.command_line.size() == 1) ctx.process.command_line = ctx.process.command_line[0];
   - set:
+      tag: set_process_executable
       field: process.executable
       copy_from: trend_micro_vision_one.telemetry.process_file_path
       if: ctx.trend_micro_vision_one?.telemetry?.process_file_path != null
   - set:
+      tag: set_process_hash_md5
       field: process.hash.md5
       copy_from: trend_micro_vision_one.telemetry.process_file_hash_md5
       if: ctx.trend_micro_vision_one?.telemetry?.process_file_hash_md5 != null
   - set:
+      tag: set_process_hash_sha1
       field: process.hash.sha1
       copy_from: trend_micro_vision_one.telemetry.process_file_hash_sha1
       if: ctx.trend_micro_vision_one?.telemetry?.process_file_hash_sha1 != null
   - set:
+      tag: set_process_hash_sha256
       field: process.hash.sha256
       copy_from: trend_micro_vision_one.telemetry.process_file_hash_sha256
       if: ctx.trend_micro_vision_one?.telemetry?.process_file_hash_sha256 != null
   - script:
+      tag: script_populate_process_name
       description: Populate process.name
       lang: painless
       source: |
@@ -571,6 +637,7 @@ processors:
         ctx.process.name.removeIf(v -> v == null);
         if (ctx.process.name.size() == 1) ctx.process.name = ctx.process.name[0];
   - script:
+      tag: script_populate_process_pid
       description: Populate process.pid
       lang: painless
       source: |
@@ -582,6 +649,7 @@ processors:
         ctx.process.pid.removeIf(v -> v == null);
         if (ctx.process.pid.size() == 1) ctx.process.pid = ctx.process.pid[0];
   - script:
+      tag: script_populate_process_start
       description: Populate process.start
       lang: painless
       source: |
@@ -593,14 +661,17 @@ processors:
         ctx.process.start.removeIf(v -> v == null);
         if (ctx.process.start.size() == 1) ctx.process.start = ctx.process.start[0];
   - set:
+      tag: set_process_user_domain
       field: process.user.domain
       copy_from: trend_micro_vision_one.telemetry.process_user_domain
       if: ctx.trend_micro_vision_one?.telemetry?.process_user_domain != null
   - set:
+      tag: set_process_user_group_id
       field: process.user.group.id
       copy_from: trend_micro_vision_one.telemetry.process_user_group_sids
       if: ctx.trend_micro_vision_one?.telemetry?.process_user_group_sids != null
   - set:
+      tag: set_process_user_name
       field: process.user.name
       copy_from: trend_micro_vision_one.telemetry.process_user
       if: ctx.trend_micro_vision_one?.telemetry?.process_user != null
@@ -608,42 +679,52 @@ processors:
   # process.parent.*
 
   - set:
+      tag: set_process_parent_command_line
       field: process.parent.command_line
       copy_from: trend_micro_vision_one.telemetry.parent_cmd
       if: ctx.trend_micro_vision_one?.telemetry?.parent_cmd != null
   - set:
+      tag: set_process_parent_executable
       field: process.parent.executable
       copy_from: trend_micro_vision_one.telemetry.parent_file_path
       if: ctx.trend_micro_vision_one?.telemetry?.parent_file_path != null
   - set:
+      tag: set_process_parent_hash_md5
       field: process.parent.hash.md5
       copy_from: trend_micro_vision_one.telemetry.parent_file_hash_md5
       if: ctx.trend_micro_vision_one?.telemetry?.parent_file_hash_md5 != null
   - set:
+      tag: set_process_parent_hash_sha1
       field: process.parent.hash.sha1
       copy_from: trend_micro_vision_one.telemetry.parent_file_hash_sha1
       if: ctx.trend_micro_vision_one?.telemetry?.parent_file_hash_sha1 != null
   - set:
+      tag: set_process_parent_hash_sha256
       field: process.parent.hash.sha256
       copy_from: trend_micro_vision_one.telemetry.parent_file_hash_sha256
       if: ctx.trend_micro_vision_one?.telemetry?.parent_file_hash_sha256 != null
   - set:
+      tag: set_process_parent_name
       field: process.parent.name
       copy_from: trend_micro_vision_one.telemetry.parent_name
       if: ctx.trend_micro_vision_one?.telemetry?.parent_name != null
   - set:
+      tag: set_process_parent_pid
       field: process.parent.pid
       copy_from: trend_micro_vision_one.telemetry.parent_pid
       if: ctx.trend_micro_vision_one?.telemetry?.parent_pid != null
   - set:
+      tag: set_process_parent_start
       field: process.parent.start
       copy_from: trend_micro_vision_one.telemetry.parent_launch_time
       if: ctx.trend_micro_vision_one?.telemetry?.parent_launch_time != null
   - set:
+      tag: set_process_parent_user_domain
       field: process.parent.user.domain
       copy_from: trend_micro_vision_one.telemetry.parent_user_domain
       if: ctx.trend_micro_vision_one?.telemetry?.parent_user_domain != null
   - set:
+      tag: set_process_parent_user_name
       field: process.parent.user.name
       copy_from: trend_micro_vision_one.telemetry.parent_user
       if: ctx.trend_micro_vision_one?.telemetry?.parent_user != null
@@ -651,10 +732,12 @@ processors:
   # source.* / destination.*
 
   - set:
+      tag: set_source_ip
       field: source.ip
       copy_from: trend_micro_vision_one.telemetry.src
       if: ctx.trend_micro_vision_one?.telemetry?.src != null
   - set:
+      tag: set_destination_ip
       field: destination.ip
       copy_from: trend_micro_vision_one.telemetry.dst
       if: ctx.trend_micro_vision_one?.telemetry?.dst != null
@@ -662,6 +745,7 @@ processors:
   # tags
 
   - foreach:
+      tag: foreach_trend_micro_vision_one_telemetry_tags
       field: trend_micro_vision_one.telemetry.tags
       ignore_missing: true
       processor:
@@ -673,57 +757,68 @@ processors:
   # related.*
 
   - append:
+      tag: append_related_hash
       field: related.hash
       value: '{{{ file.hash.md5 }}}'
       if: ctx.file?.hash?.md5 != null
       allow_duplicates: false
   - append:
+      tag: append_related_hash_2
       field: related.hash
       value: '{{{ file.hash.sha1 }}}'
       if: ctx.file?.hash?.sha1 != null
       allow_duplicates: false
   - append:
+      tag: append_related_hash_3
       field: related.hash
       value: '{{{ file.hash.sha256 }}}'
       if: ctx.file?.hash?.sha256 != null
       allow_duplicates: false
   - append:
+      tag: append_related_hash_4
       field: related.hash
       value: '{{{ process.hash.md5 }}}'
       if: ctx.process?.hash?.md5 != null
       allow_duplicates: false
   - append:
+      tag: append_related_hash_5
       field: related.hash
       value: '{{{ process.hash.sha1 }}}'
       if: ctx.process?.hash?.sha1 != null
       allow_duplicates: false
   - append:
+      tag: append_related_hash_6
       field: related.hash
       value: '{{{ process.hash.sha256 }}}'
       if: ctx.process?.hash?.sha256 != null
       allow_duplicates: false
   - append:
+      tag: append_related_hash_7
       field: related.hash
       value: '{{{ process.parent.hash.md5 }}}'
       if: ctx.process?.parent?.hash?.md5 != null
       allow_duplicates: false
   - append:
+      tag: append_related_hash_8
       field: related.hash
       value: '{{{ process.parent.hash.sha1 }}}'
       if: ctx.process?.parent?.hash?.sha1 != null
       allow_duplicates: false
   - append:
+      tag: append_related_hash_9
       field: related.hash
       value: '{{{ process.parent.hash.sha256 }}}'
       if: ctx.process?.parent?.hash?.sha256 != null
       allow_duplicates: false
 
   - append:
+      tag: append_related_hosts
       field: related.hosts
       value: '{{{ host.id }}}'
       if: ctx.host?.id != null
       allow_duplicates: false
   - append:
+      tag: append_related_hosts_2
       field: related.hosts
       value: '{{{ host.name }}}'
       if: ctx.host?.name != null
@@ -731,26 +826,31 @@ processors:
 
   - set:
       # note: host.ip is already an array
+      tag: set_related_ip
       field: related.ip
       copy_from: host.ip
       if: ctx.host?.ip != null
   - append:
+      tag: append_related_ip
       field: related.ip
       value: '{{{ destination.ip }}}'
       if: ctx.destination?.ip != null
       allow_duplicates: false
   - append:
+      tag: append_related_ip_2
       field: related.ip
       value: '{{{ source.ip }}}'
       if: ctx.source?.ip != null
       allow_duplicates: false
 
   - append:
+      tag: append_related_user
       field: related.user
       value: '{{{ file.user.name }}}'
       if: ctx.file?.user?.name != null
       allow_duplicates: false
   - append:
+      tag: append_related_user_2
       field: related.user
       value: '{{{ process.user.name }}}'
       if: ctx.process?.user?.name != null
@@ -761,6 +861,7 @@ processors:
   ##############################################################################
 
   - script:
+      tag: script_drops_null_empty_values_recursively
       description: Drops null/empty values recursively.
       lang: painless
       source: |
@@ -783,6 +884,7 @@ processors:
   ##############################################################################
 
   - fingerprint:
+      tag: fingerprint
       fields:
         - trend_micro_vision_one.telemetry
       target_field: _id
@@ -793,6 +895,7 @@ processors:
   ##############################################################################
 
   - remove:
+      tag: remove_duplicate_custom_fields
       field:
         - trend_micro_vision_one.telemetry.dst
         - trend_micro_vision_one.telemetry.endpoint_guid
@@ -863,13 +966,16 @@ on_failure:
   ##############################################################################
 
   - set:
+      tag: on_failure_set_event_kind
       field: event.kind
       value: pipeline_error
   - append:
+      tag: on_failure_append_tags
       field: tags
       value: preserve_original_event
       allow_duplicates: false
   - append:
+      tag: on_failure_append_error_message
       field: error.message
       value: >
         Processor "{{{ _ingest.on_failure_processor_type }}}"
