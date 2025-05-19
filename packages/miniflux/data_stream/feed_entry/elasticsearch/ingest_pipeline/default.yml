@@ -296,6 +296,18 @@ processors:
         field: json.title
         tag: rename_title
         target_field: miniflux.title
+    - uri_parts:
+        field: json.url
+        if: ctx.json?.url != null && ctx.json.url != ''
+        on_failure:
+            - set:
+                field: url.original
+                copy_from: url.original
+                if: ctx.json?.url != null && ctx.json.url != ''
+    - set:
+        field: url.full
+        copy_from: url.original
+        if: ctx.url?.original != null && ctx.url.original != ''
     - rename:
         field: json.url
         tag: rename_url
