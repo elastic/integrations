@@ -44,9 +44,25 @@ processors:
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - rename:
       field: json._id
-      tag: rename_id_to_id
+      tag: rename_id_to_xdr_event_id
       target_field: panw_cortex.xdr.event.id
       ignore_missing: true
+  - rename:
+      field: json.uuid
+      tag: rename_uuid_to_xdr_event_uuid
+      target_field: panw_cortex.xdr.event.uuid
+      ignore_missing: true
+  - set:
+      field: process.entity_id
+      tag: set_process_entity_id_from_xdr_event_id
+      copy_from: panw_cortex.xdr.event.id
+      ignore_empty_value: true
+  - set:
+      field: process.entity_id
+      if: ctx.process?.entity_id == null
+      tag: set_process_entity_id_from_xdr_event_uuid
+      copy_from: panw_cortex.xdr.event.uuid
+      ignore_empty_value: true
   - date:
       field: json.action_boot_time
       tag: date_action_boot_time
@@ -1698,6 +1714,7 @@ processors:
         - panw_cortex.xdr.event.event_timestamp
         - panw_cortex.xdr.event.host_metadata.domain
         - panw_cortex.xdr.event.host_metadata.hostname
+        - panw_cortex.xdr.event.id
         - panw_cortex.xdr.event.os_actor.local_ip
         - panw_cortex.xdr.event.os_actor.local_port
         - panw_cortex.xdr.event.os_actor.primary_user_sid
@@ -1708,6 +1725,7 @@ processors:
         - panw_cortex.xdr.event.action.remote_process.user_sid
         - panw_cortex.xdr.event.action.remote_process.username
         - panw_cortex.xdr.event.action.remote_process.os_pid
+        - panw_cortex.xdr.event.uuid
       tag: remove_custom_duplicate_fields
       ignore_missing: true
       if: ctx.tags == null || !ctx.tags.contains('preserve_duplicate_custom_fields')

@@ -20,6 +20,9 @@ variable "TEST_RUN_ID" {
   default = "detached"
 }
 
+// If testing using the elastic-siem account then update the default value for below
+// mentioned variable GOOGLE_CREDENTIALS and service_account_key in test-event-config.yml
+// with your actual credentials
 variable "GOOGLE_CREDENTIALS" {
   description = "GCP service account credentials in JSON format"
   type        = string
