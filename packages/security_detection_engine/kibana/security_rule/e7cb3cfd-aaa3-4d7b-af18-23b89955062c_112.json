@@ -1,0 +1,108 @@
+{
+    "attributes": {
+        "author": [
+            "Elastic"
+        ],
+        "description": "Identifies the execution of the unshadow utility which is part of John the Ripper, a password-cracking tool on the host machine. Malicious actors can use the utility to retrieve the combined contents of the '/etc/shadow' and '/etc/password' files. Using the combined file generated from the utility, the malicious threat actors can use them as input for password-cracking utilities or prepare themselves for future operations by gathering credential information of the victim.",
+        "from": "now-9m",
+        "index": [
+            "endgame-*",
+            "logs-crowdstrike.fdr*",
+            "logs-endpoint.events.process*",
+            "logs-sentinel_one_cloud_funnel.*"
+        ],
+        "language": "eql",
+        "license": "Elastic License v2",
+        "name": "Potential Linux Credential Dumping via Unshadow",
+        "note": "## Triage and analysis\n\n> **Disclaimer**:\n> This investigation guide was created using generative AI technology and has been reviewed to improve its accuracy and relevance. While every effort has been made to ensure its quality, we recommend validating the content and adapting it to suit your specific environment and operational needs.\n\n### Investigating Potential Linux Credential Dumping via Unshadow\n\nUnshadow is a utility within the John the Ripper suite, used to merge `/etc/shadow` and `/etc/passwd` files, making them vulnerable to password cracking. Adversaries exploit this to extract and crack user credentials, gaining unauthorized access. The detection rule identifies suspicious execution of Unshadow by monitoring process activities, focusing on specific execution patterns and argument counts, thus flagging potential credential dumping attempts.\n\n### Possible investigation steps\n\n- Review the process execution details to confirm the presence of the unshadow utility by checking the process name and arguments, ensuring that the process.args_count is 3 or more.\n- Investigate the user account under which the unshadow process was executed to determine if it aligns with expected administrative activities or if it indicates potential unauthorized access.\n- Examine the command line arguments used with the unshadow process to identify the specific files targeted, such as /etc/shadow and /etc/passwd, and verify if these files were accessed or modified.\n- Check for any subsequent processes or activities that might indicate password cracking attempts, such as the execution of John the Ripper or similar tools, following the unshadow execution.\n- Correlate the event with other security alerts or logs from the same host or user to identify any patterns or additional suspicious activities that might suggest a broader attack campaign.\n- Assess the risk and impact by determining if any sensitive credentials were potentially exposed and consider implementing additional monitoring or access controls to prevent future incidents.\n\n### False positive analysis\n\n- System administrators or security teams may use the unshadow utility for legitimate auditing or recovery purposes. To handle this, create exceptions for known administrative accounts or specific maintenance windows.\n- Automated scripts or backup processes might invoke unshadow as part of routine operations. Identify these scripts and exclude their execution paths or associated user accounts from triggering alerts.\n- Security testing or penetration testing activities could involve the use of unshadow. Coordinate with the testing team to whitelist their activities during the testing period to avoid false positives.\n- Development or testing environments might have unshadow executed as part of security tool evaluations. Exclude these environments from monitoring or adjust the rule to focus on production systems only.\n\n### Response and remediation\n\n- Immediately isolate the affected host from the network to prevent further unauthorized access or data exfiltration.\n- Terminate any suspicious processes related to the unshadow utility to halt ongoing credential dumping activities.\n- Conduct a thorough review of the affected system's `/etc/shadow` and `/etc/passwd` files to identify any unauthorized modifications or access.\n- Change passwords for all user accounts on the affected system, prioritizing those with elevated privileges, to mitigate the risk of compromised credentials.\n- Review and update access controls and permissions for sensitive files, ensuring that only authorized users have access to `/etc/shadow` and `/etc/passwd`.\n- Escalate the incident to the security operations center (SOC) or incident response team for further investigation and to determine if additional systems are affected.\n- Implement enhanced monitoring and logging for similar activities across the network to detect and respond to future credential dumping attempts promptly.",
+        "query": "process where host.os.type == \"linux\" and event.type == \"start\" and event.action in (\"exec\", \"exec_event\", \"start\", \"ProcessRollup2\") and\nprocess.name == \"unshadow\" and process.args_count >= 3\n",
+        "references": [
+            "https://www.cyberciti.biz/faq/unix-linux-password-cracking-john-the-ripper/"
+        ],
+        "related_integrations": [
+            {
+                "package": "endpoint",
+                "version": "^9.0.0"
+            },
+            {
+                "package": "crowdstrike",
+                "version": "^1.51.0"
+            },
+            {
+                "package": "sentinel_one_cloud_funnel",
+                "version": "^1.9.0"
+            }
+        ],
+        "required_fields": [
+            {
+                "ecs": true,
+                "name": "event.action",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "event.type",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "host.os.type",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "process.args_count",
+                "type": "long"
+            },
+            {
+                "ecs": true,
+                "name": "process.name",
+                "type": "keyword"
+            }
+        ],
+        "risk_score": 47,
+        "rule_id": "e7cb3cfd-aaa3-4d7b-af18-23b89955062c",
+        "setup": "## Setup\n\nThis rule requires data coming in from Elastic Defend.\n\n### Elastic Defend Integration Setup\nElastic Defend is integrated into the Elastic Agent using Fleet. Upon configuration, the integration allows the Elastic Agent to monitor events on your host and send data to the Elastic Security app.\n\n#### Prerequisite Requirements:\n- Fleet is required for Elastic Defend.\n- To configure Fleet Server refer to the [documentation](https://www.elastic.co/guide/en/fleet/current/fleet-server.html).\n\n#### The following steps should be executed in order to add the Elastic Defend integration on a Linux System:\n- Go to the Kibana home page and click \"Add integrations\".\n- In the query bar, search for \"Elastic Defend\" and select the integration to see more details about it.\n- Click \"Add Elastic Defend\".\n- Configure the integration name and optionally add a description.\n- Select the type of environment you want to protect, either \"Traditional Endpoints\" or \"Cloud Workloads\".\n- Select a configuration preset. Each preset comes with different default settings for Elastic Agent, you can further customize these later by configuring the Elastic Defend integration policy. [Helper guide](https://www.elastic.co/guide/en/security/current/configure-endpoint-integration-policy.html).\n- We suggest selecting \"Complete EDR (Endpoint Detection and Response)\" as a configuration setting, that provides \"All events; all preventions\"\n- Enter a name for the agent policy in \"New agent policy name\". If other agent policies already exist, you can click the \"Existing hosts\" tab and select an existing policy instead.\nFor more details on Elastic Agent configuration settings, refer to the [helper guide](https://www.elastic.co/guide/en/fleet/8.10/agent-policy.html).\n- Click \"Save and Continue\".\n- To complete the integration, select \"Add Elastic Agent to your hosts\" and continue to the next section to install the Elastic Agent on your hosts.\nFor more details on Elastic Defend refer to the [helper guide](https://www.elastic.co/guide/en/security/current/install-endpoint.html).\n",
+        "severity": "medium",
+        "tags": [
+            "Domain: Endpoint",
+            "OS: Linux",
+            "Use Case: Threat Detection",
+            "Tactic: Credential Access",
+            "Data Source: Elastic Defend",
+            "Data Source: Elastic Endgame",
+            "Data Source: Crowdstrike",
+            "Data Source: SentinelOne",
+            "Resources: Investigation Guide"
+        ],
+        "threat": [
+            {
+                "framework": "MITRE ATT&CK",
+                "tactic": {
+                    "id": "TA0006",
+                    "name": "Credential Access",
+                    "reference": "https://attack.mitre.org/tactics/TA0006/"
+                },
+                "technique": [
+                    {
+                        "id": "T1003",
+                        "name": "OS Credential Dumping",
+                        "reference": "https://attack.mitre.org/techniques/T1003/",
+                        "subtechnique": [
+                            {
+                                "id": "T1003.008",
+                                "name": "/etc/passwd and /etc/shadow",
+                                "reference": "https://attack.mitre.org/techniques/T1003/008/"
+                            }
+                        ]
+                    }
+                ]
+            }
+        ],
+        "timestamp_override": "event.ingested",
+        "type": "eql",
+        "version": 112
+    },
+    "id": "e7cb3cfd-aaa3-4d7b-af18-23b89955062c_112",
+    "type": "security-rule"
+}

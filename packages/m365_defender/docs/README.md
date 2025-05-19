@@ -571,6 +571,7 @@ This is the `event` dataset.
 | Target.process.name | Process name. Sometimes called program name or similar. | keyword |
 | Target.process.name.text | Multi-field of `Target.process.name`. | text |
 | cloud.image.id | Image ID for the cloud instance. | keyword |
+| cloud.instance.id | Instance ID of the host machine. | keyword |
 | data_stream.dataset | Data stream dataset. | constant_keyword |
 | data_stream.namespace | Data stream namespace. | constant_keyword |
 | data_stream.type | Data stream type. | constant_keyword |
