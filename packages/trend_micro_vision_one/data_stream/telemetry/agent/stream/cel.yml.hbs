@@ -204,7 +204,7 @@ program: |
       // no pipeline id -> setup: try to get the pipeline id
       //------------------------------------------------------------------------
 
-      (state.hard_coded_pipeline_id != null && state.hard_coded_pipeline_id != '') ?
+      (state.?hard_coded_pipeline_id.orValue('') != '') ?
 
         //----------------------------------------------------------------------
         // a hard-coded pipeline id was provided -> return it in the cursor
@@ -213,7 +213,7 @@ program: |
         state.with({
           "events": [{"event": {"reason": "want_more"}}],
           "cursor": state.?cursor.orValue({}).with({ "pipeline_id": state.hard_coded_pipeline_id }),
-          "want_more": true, // use the fetched pipeline id immediately
+          "want_more": true, // use hard-coded pipeline id immediately
         })
 
       :
