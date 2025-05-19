@@ -11,12 +11,12 @@ processors:
       ignore_missing: true
       if: 'ctx.event?.original != null'
       description: 'The `message` field is no longer required if the document has an `event.original` field.'
-  - set:
-      field: event.original
-      value: "{{{o365audit}}}"
-      if: ctx.event?.original == null
+  - script:
       tag: set_event_original
-      ignore_empty_value: true
+      if: ctx.event?.original == null
+      source: |-
+        ctx.event = ctx.event ?: [:];
+        ctx.event.original = Json.dump(ctx.o365audit)
   - set:
       field: ecs.version
       value: '8.11.0'
@@ -519,10 +519,9 @@ processors:
       value: creation
       if: 'ctx.event?.action != null && ["FileUploaded", "FolderCopied", "FolderCreated"].contains(ctx.event?.action)'
   # SecurityComplianceAlerts Schema
-  - rename:
-      field: o365audit.Comments
-      target_field: message
-      ignore_missing: true
+  - set:
+      field: message
+      copy_from: o365audit.Name
       if: ctx.event?.code == "SecurityComplianceAlerts"
   - rename:
       field: o365audit.Name

@@ -1,0 +1,92 @@
+{
+    "attributes": {
+        "author": [
+            "Elastic"
+        ],
+        "description": "A supervised machine learning model has identified a DNS question name that used by the SUNBURST malware and is predicted to be the result of a Domain Generation Algorithm.",
+        "from": "now-10m",
+        "index": [
+            "logs-endpoint.events.*",
+            "logs-network_traffic.*"
+        ],
+        "language": "kuery",
+        "license": "Elastic License v2",
+        "name": "Machine Learning Detected DGA activity using a known SUNBURST DNS domain",
+        "note": "## Triage and analysis\n\n> **Disclaimer**:\n> This investigation guide was created using generative AI technology and has been reviewed to improve its accuracy and relevance. While every effort has been made to ensure its quality, we recommend validating the content and adapting it to suit your specific environment and operational needs.\n\n### Investigating Machine Learning Detected DGA activity using a known SUNBURST DNS domain\n\nDomain Generation Algorithms (DGAs) are used by adversaries to dynamically generate domain names for command and control (C2) communication, making it difficult to block malicious domains. The SUNBURST malware utilized such techniques. The detection rule leverages machine learning to identify DNS queries linked to these generated domains, specifically targeting those associated with SUNBURST, by analyzing patterns and predicting malicious activity, thus aiding in early threat detection and mitigation.\n\n### Possible investigation steps\n\n- Review the DNS logs to identify the source IP address associated with the DNS query for avsvmcloud.com to determine the affected host within the network.\n- Check historical DNS query logs for the identified host to see if there are additional queries to other suspicious or known malicious domains, indicating further compromise.\n- Investigate the network traffic from the identified host around the time of the alert to detect any unusual patterns or connections to external IP addresses that may suggest command and control activity.\n- Examine endpoint security logs and alerts for the affected host to identify any signs of SUNBURST malware or other related malicious activity.\n- Correlate the alert with other security events in the environment to determine if there are any related incidents or patterns that could indicate a broader attack campaign.\n- Assess the risk and impact of the detected activity on the organization and determine if immediate containment or remediation actions are necessary.\n\n### False positive analysis\n\n- Legitimate software updates or network services may occasionally use domain generation algorithms for load balancing or redundancy, leading to false positives. Users should monitor and whitelist these known benign services.\n- Internal testing environments or security tools that simulate DGA behavior for research or training purposes might trigger alerts. Exclude these environments by adding them to an exception list.\n- Some cloud services might use dynamic DNS techniques that resemble DGA patterns. Identify and document these services, then configure exceptions to prevent unnecessary alerts.\n- Frequent legitimate access to avsvmcloud.com by security researchers or analysts could be misclassified. Ensure these activities are logged and reviewed, and create exceptions for known research IPs or user accounts.\n- Regularly review and update the exception list to ensure it reflects current network behavior and does not inadvertently allow new threats.\n\n### Response and remediation\n\n- Isolate the affected systems immediately to prevent further communication with the malicious domain avsvmcloud.com and halt potential data exfiltration or lateral movement.\n- Conduct a thorough scan of the isolated systems using updated antivirus and anti-malware tools to identify and remove any SUNBURST malware or related malicious files.\n- Review and block any outbound traffic to the domain avsvmcloud.com at the network perimeter to prevent future connections from other potentially compromised systems.\n- Analyze network logs and DNS query records to identify any other systems that may have communicated with the domain, and apply the same isolation and scanning procedures to those systems.\n- Escalate the incident to the security operations center (SOC) or incident response team for further investigation and to determine the full scope of the compromise.\n- Implement enhanced monitoring and alerting for any DNS queries or network traffic patterns indicative of DGA activity, particularly those resembling SUNBURST characteristics, to detect and respond to similar threats promptly.\n- Review and update incident response and recovery plans to incorporate lessons learned from this incident, ensuring faster and more effective responses to future threats.",
+        "query": "ml_is_dga.malicious_prediction:1 and dns.question.registered_domain:avsvmcloud.com\n",
+        "references": [
+            "https://www.elastic.co/guide/en/security/current/prebuilt-ml-jobs.html",
+            "https://docs.elastic.co/en/integrations/dga",
+            "https://www.elastic.co/security-labs/detect-domain-generation-algorithm-activity-with-new-kibana-integration"
+        ],
+        "related_integrations": [
+            {
+                "package": "dga",
+                "version": "^2.2.0"
+            },
+            {
+                "package": "endpoint",
+                "version": "^9.0.0"
+            },
+            {
+                "package": "network_traffic",
+                "version": "^1.33.0"
+            }
+        ],
+        "required_fields": [
+            {
+                "ecs": true,
+                "name": "dns.question.registered_domain",
+                "type": "keyword"
+            },
+            {
+                "ecs": false,
+                "name": "ml_is_dga.malicious_prediction",
+                "type": "unknown"
+            }
+        ],
+        "risk_score": 73,
+        "rule_id": "bcaa15ce-2d41-44d7-a322-918f9db77766",
+        "setup": "## Setup\n\nThe rule requires the Domain Generation Algorithm (DGA) Detection integration assets to be installed, as well as DNS events collected by integrations such as Elastic Defend, Network Packet Capture, or Packetbeat.\n\n### DGA Detection Setup\nThe DGA Detection integration consists of an ML-based framework to detect DGA activity in DNS events.\n\n#### Prerequisite Requirements:\n- Fleet is required for DGA Detection.\n- To configure Fleet Server refer to the [documentation](https://www.elastic.co/guide/en/fleet/current/fleet-server.html).\n- DNS events collected by the [Elastic Defend](https://docs.elastic.co/en/integrations/endpoint), [Network Packet Capture](https://docs.elastic.co/integrations/network_traffic) integration, or [Packetbeat](https://www.elastic.co/guide/en/beats/packetbeat/current/packetbeat-overview.html).\n- To install Elastic Defend, refer to the [documentation](https://www.elastic.co/guide/en/security/current/install-endpoint.html).\n- To add the Network Packet Capture integration to an Elastic Agent policy, refer to [this](https://www.elastic.co/guide/en/fleet/current/add-integration-to-policy.html) guide.\n- To set up and run Packetbeat, follow [this](https://www.elastic.co/guide/en/beats/packetbeat/current/setting-up-and-running.html) guide.\n\n#### The following steps should be executed to install assets associated with the DGA Detection integration:\n- Go to the Kibana homepage. Under Management, click Integrations.\n- In the query bar, search for Domain Generation Algorithm Detection and select the integration to see more details about it.\n- Follow the instructions under the **Installation** section.\n- For this rule to work, complete the instructions through **Configure the ingest pipeline**.\n",
+        "severity": "high",
+        "tags": [
+            "Domain: Network",
+            "Domain: Endpoint",
+            "Data Source: Elastic Defend",
+            "Use Case: Domain Generation Algorithm Detection",
+            "Rule Type: ML",
+            "Rule Type: Machine Learning",
+            "Tactic: Command and Control",
+            "Resources: Investigation Guide"
+        ],
+        "threat": [
+            {
+                "framework": "MITRE ATT&CK",
+                "tactic": {
+                    "id": "TA0011",
+                    "name": "Command and Control",
+                    "reference": "https://attack.mitre.org/tactics/TA0011/"
+                },
+                "technique": [
+                    {
+                        "id": "T1568",
+                        "name": "Dynamic Resolution",
+                        "reference": "https://attack.mitre.org/techniques/T1568/",
+                        "subtechnique": [
+                            {
+                                "id": "T1568.002",
+                                "name": "Domain Generation Algorithms",
+                                "reference": "https://attack.mitre.org/techniques/T1568/002/"
+                            }
+                        ]
+                    }
+                ]
+            }
+        ],
+        "timestamp_override": "event.ingested",
+        "type": "query",
+        "version": 9
+    },
+    "id": "bcaa15ce-2d41-44d7-a322-918f9db77766_9",
+    "type": "security-rule"
+}
