@@ -35,7 +35,7 @@ Customers can access a subset of the available threat lists based on their **Goo
 
 ## Data Streams
 
-Data collection is available for all four feed types: `Linux`, `Malicious Network Infrastructure`, `Malware`, `Mobile` and `OS X`, each with a separate data stream and one more data stream for IOC stream. By default, **Malicious Network Infrastructure** is enabled. Users can enable additional data streams based on their GTI subscription tier. If a user enables data collection for a data stream they do not have access to, it will result in an error log on the **Discover** page.
+Data collection is available for all four feed types: `Linux`, `Malicious Network Infrastructure`, `Malware`, `Mobile` and `OS X`, each with a separate data stream. By default, **Malicious Network Infrastructure** is enabled. Users can enable additional data streams based on their GTI subscription tier. If a user enables data collection for a data stream they do not have access to, it will result in an error log on the **Discover** page.
 
 ## Requirements
 
