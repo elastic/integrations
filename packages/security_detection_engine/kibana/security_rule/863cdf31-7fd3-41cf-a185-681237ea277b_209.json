@@ -1,0 +1,89 @@
+{
+    "attributes": {
+        "author": [
+            "Elastic",
+            "Austin Songer"
+        ],
+        "description": "Identifies the deletion of an Amazon Relational Database Service (RDS) Security group.",
+        "false_positives": [
+            "An RDS security group deletion may be done by a system or network administrator. Verify whether the user identity, user agent, and/or hostname should be making changes in your environment. Security group deletions by unfamiliar users or hosts should be investigated. If known behavior is causing false positives, it can be exempted from the rule."
+        ],
+        "from": "now-60m",
+        "index": [
+            "filebeat-*",
+            "logs-aws.cloudtrail-*"
+        ],
+        "interval": "10m",
+        "language": "kuery",
+        "license": "Elastic License v2",
+        "name": "AWS RDS Security Group Deletion",
+        "note": "## Triage and analysis\n\n> **Disclaimer**:\n> This investigation guide was created using generative AI technology and has been reviewed to improve its accuracy and relevance. While every effort has been made to ensure its quality, we recommend validating the content and adapting it to suit your specific environment and operational needs.\n\n### Investigating AWS RDS Security Group Deletion\n\nAmazon RDS Security Groups control access to RDS instances, acting as a virtual firewall. Adversaries may delete these groups to disrupt database access or cover their tracks. The detection rule monitors AWS CloudTrail logs for successful deletion events of RDS Security Groups, signaling potential unauthorized activity. This helps security analysts quickly identify and respond to suspicious deletions.\n\n### Possible investigation steps\n\n- Review the AWS CloudTrail logs to confirm the event details, focusing on the event.provider:rds.amazonaws.com and event.action:DeleteDBSecurityGroup fields to ensure the deletion event is accurately captured.\n- Identify the user or role associated with the event by examining the user identity information in the CloudTrail logs to determine if the action was performed by an authorized entity.\n- Check the event time and correlate it with other security events or alerts to identify any suspicious activity patterns or sequences that might indicate a broader attack.\n- Investigate the context of the deletion by reviewing recent changes or activities in the AWS account, such as modifications to IAM policies or unusual login attempts, to assess if the deletion is part of a larger unauthorized access attempt.\n- Contact the relevant database or cloud infrastructure team to verify if the deletion was intentional and authorized, ensuring that it aligns with any ongoing maintenance or decommissioning activities.\n\n### False positive analysis\n\n- Routine maintenance activities by authorized personnel may trigger the rule. To manage this, create exceptions for known maintenance windows or specific user accounts that regularly perform these tasks.\n- Automated scripts or tools used for infrastructure management might delete security groups as part of their normal operation. Identify these scripts and exclude their actions from triggering alerts by using specific identifiers or tags.\n- Changes in security group configurations during scheduled updates or migrations can result in deletions. Document these events and adjust the detection rule to ignore deletions during these planned activities.\n- Testing environments often involve frequent creation and deletion of resources, including security groups. Exclude these environments from monitoring by using environment-specific tags or identifiers.\n\n### Response and remediation\n\n- Immediately isolate the affected RDS instance by modifying its security group settings to restrict all inbound and outbound traffic, preventing further unauthorized access.\n- Review AWS CloudTrail logs to identify the source of the deletion request, including the IAM user or role involved, and assess whether the credentials have been compromised.\n- Recreate the deleted RDS Security Group with the appropriate rules and reassign it to the affected RDS instance to restore normal operations.\n- Conduct a thorough audit of IAM permissions to ensure that only authorized personnel have the ability to delete RDS Security Groups, and revoke any unnecessary permissions.\n- Implement multi-factor authentication (MFA) for all IAM users with permissions to modify RDS Security Groups to enhance security and prevent unauthorized changes.\n- Escalate the incident to the security operations team for further investigation and to determine if additional systems or data have been affected.\n- Update incident response plans and security policies based on the findings to prevent similar incidents in the future and improve overall cloud security posture.",
+        "query": "event.dataset:aws.cloudtrail and event.provider:rds.amazonaws.com and event.action:DeleteDBSecurityGroup and event.outcome:success\n",
+        "references": [
+            "https://docs.aws.amazon.com/AmazonRDS/latest/APIReference/API_DeleteDBSecurityGroup.html"
+        ],
+        "related_integrations": [
+            {
+                "integration": "cloudtrail",
+                "package": "aws",
+                "version": "^3.0.0"
+            }
+        ],
+        "required_fields": [
+            {
+                "ecs": true,
+                "name": "event.action",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "event.dataset",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "event.outcome",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "event.provider",
+                "type": "keyword"
+            }
+        ],
+        "risk_score": 21,
+        "rule_id": "863cdf31-7fd3-41cf-a185-681237ea277b",
+        "setup": "The AWS Fleet integration, Filebeat module, or similarly structured data is required to be compatible with this rule.",
+        "severity": "low",
+        "tags": [
+            "Domain: Cloud",
+            "Data Source: AWS",
+            "Data Source: Amazon Web Services",
+            "Data Source: AWS RDS",
+            "Tactic: Impact",
+            "Resources: Investigation Guide"
+        ],
+        "threat": [
+            {
+                "framework": "MITRE ATT&CK",
+                "tactic": {
+                    "id": "TA0040",
+                    "name": "Impact",
+                    "reference": "https://attack.mitre.org/tactics/TA0040/"
+                },
+                "technique": [
+                    {
+                        "id": "T1531",
+                        "name": "Account Access Removal",
+                        "reference": "https://attack.mitre.org/techniques/T1531/"
+                    }
+                ]
+            }
+        ],
+        "timestamp_override": "event.ingested",
+        "type": "query",
+        "version": 209
+    },
+    "id": "863cdf31-7fd3-41cf-a185-681237ea277b_209",
+    "type": "security-rule"
+}

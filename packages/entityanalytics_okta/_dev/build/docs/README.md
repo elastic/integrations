@@ -21,51 +21,32 @@ The Okta Entity Analytics integration collects two types of data: user and devic
 
 ## Requirements
 
-- Elastic Agent must be installed.
-- You can install only one Elastic Agent per host.
-- Elastic Agent is required to stream data using Entity Analytics Input and ship the data to Elastic, where the events will then be processed via the integration's ingest pipelines.
-
-### Installing and managing an Elastic Agent:
-
-You have a few options for installing and managing an Elastic Agent:
-
-### Install a Fleet-managed Elastic Agent (recommended):
-
-With this approach, you install Elastic Agent and use Fleet in Kibana to define, configure, and manage your agents in a central location. We recommend using Fleet management because it makes the management and upgrade of your agents considerably easier.
-
-### Install Elastic Agent in standalone mode (advanced users):
-
-With this approach, you install Elastic Agent and manually configure the agent locally on the system where it’s installed. You are responsible for managing and upgrading the agents. This approach is reserved for advanced users only.
-
-### Install Elastic Agent in a containerized environment:
-
-You can run Elastic Agent inside a container, either with Fleet Server or standalone. Docker images for all versions of Elastic Agent are available from the Elastic Docker registry, and we provide deployment manifests for running on Kubernetes.
-
-There are some minimum requirements for running Elastic Agent and for more information, refer to the link [here](https://www.elastic.co/guide/en/fleet/current/elastic-agent-installation.html).
+Elastic Agent must be installed. For more details, check the Elastic Agent [installation instructions](docs-content://reference/fleet/install-elastic-agents.md).
 
 The minimum **kibana.version** required is **8.9.0**.
 
 ## Setup
 
-### To collect data from Okta, follow the below steps:
+### Collect data from Okta
 
-- Required URL namespace, which should be preceded by an organization's subdomain (tenant) or configured custom domain.
-- Create an Okta API Token for Authentication. Follow this [guide](https://developer.okta.com/docs/guides/create-an-api-token/main/).
+1. Get the required URL namespace, which should be preceded by an organization's subdomain (tenant) or configured custom domain.
+2. Create an Okta API Token for Authentication. Follow this [guide](https://developer.okta.com/docs/guides/create-an-api-token/main/).
 
-### Enabling the integration in Elastic:
+### Enable the integration in Elastic
 
-1. In Kibana, go to Management > Integrations.
-2. In the "Search for integrations" search bar, type Okta Entity Analytics.
-3. Click on the "Okta Entity Analytics" integration from the search results.
-4. Click on the Add Okta Entity Analytics Integration button to add the integration.
-5. While adding the integration, add the URL and API Token that we got earlier.
-6. Save the integration by adding other necessary parameters.
+1. In Kibana navigate to **Management** > **Integrations**.
+2. In the search bar, type **Okta Entity Analytics**.
+3. Select the **Okta Entity Analytics** integration and add it.
+4. While adding the integration, add the URL and API Token that you got earlier.
+5. Save the integration.
 
 ## Usage
 
 The Okta provider periodically contacts the Okta API, retrieving updates for users and devices, updates its internal cache of user/device metadata, and ships the updated metadata to Elasticsearch.
 
 Fetching and shipping updates occurs in one of two processes: **full synchronizations** and **incremental updates**. Full synchronizations will send the entire list of users and devices in state, along with write markers to indicate the start and end of the synchronization event. Incremental updates will only send data for changed users/devices during that event. Changes can come in many forms, whether it be a change to the user’s or device’s metadata, or a user or device was added or deleted. By default, full synchronizations occur every 24 hours and incremental updates occur every 15 minutes. These intervals may be customized to suit your use case.
+
+Users should ensure that full synchronization and incremental updates are not performed so frequently that they are impossible to complete within the [Okta rate limits](https://developer.okta.com/docs/reference/rl-global-mgmt/) for the endpoints that are being used — for user entity analytics: `/api/v1/users`; and for device entity analytics: `/api/v1/devices` — and the volume of data that is expected from the API endpoints. Currently, Okta limits requests to `/api/v1/users` and `/api/v1/devices` to fetch at most 200 entities per request. Rate limit usage can be monitored via the [Okta rate limit dashboard](https://developer.okta.com/docs/reference/rl-dashboard/), and general information about Okta management rate limits is available from the Okta documentation [here](https://developer.okta.com/docs/reference/rate-limits/).
 
 ## Sample Events
 
