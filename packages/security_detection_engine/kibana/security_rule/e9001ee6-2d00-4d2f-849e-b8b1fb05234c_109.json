@@ -1,0 +1,107 @@
+{
+    "attributes": {
+        "author": [
+            "Elastic"
+        ],
+        "description": "This rule monitors for the execution of several commonly used system commands executed by a previously unknown executable located in commonly abused directories. An alert from this rule can indicate the presence of potentially malicious activity, such as the execution of unauthorized or suspicious processes attempting to run malicious code. Detecting and investigating such behavior can help identify and mitigate potential security threats, protecting the system and its data from potential compromise.",
+        "from": "now-9m",
+        "history_window_start": "now-14d",
+        "index": [
+            "logs-endpoint.events.*",
+            "endgame-*"
+        ],
+        "language": "kuery",
+        "license": "Elastic License v2",
+        "name": "Suspicious System Commands Executed by Previously Unknown Executable",
+        "new_terms_fields": [
+            "process.parent.executable"
+        ],
+        "note": "## Triage and analysis\n\n> **Disclaimer**:\n> This investigation guide was created using generative AI technology and has been reviewed to improve its accuracy and relevance. While every effort has been made to ensure its quality, we recommend validating the content and adapting it to suit your specific environment and operational needs.\n\n### Investigating Suspicious System Commands Executed by Previously Unknown Executable\n\nIn Linux environments, system commands are essential for managing processes and configurations. Adversaries exploit this by executing commands via unknown executables in vulnerable directories, aiming to run unauthorized code. The detection rule identifies such anomalies by monitoring command executions from unfamiliar sources, excluding known safe processes, thus highlighting potential threats for further investigation.\n\n### Possible investigation steps\n\n- Review the process.executable path to determine if it is located in a commonly abused directory such as /tmp, /dev/shm, or /var/tmp, which may indicate malicious intent.\n- Examine the process.args to identify which specific system command was executed (e.g., hostname, id, ifconfig) and assess whether its execution is typical for the system's normal operations.\n- Check the process.parent.executable to understand the parent process that initiated the suspicious command execution, ensuring it is not a known safe process or a legitimate system service.\n- Investigate the user account associated with the process to determine if it has the necessary permissions and if the activity aligns with the user's typical behavior.\n- Correlate the event with other logs or alerts from the same host to identify any patterns or additional suspicious activities that may indicate a broader compromise.\n- Assess the risk score and severity in the context of the environment to prioritize the investigation and response efforts accordingly.\n\n### False positive analysis\n\n- System maintenance scripts or automated tasks may trigger alerts if they execute common system commands from directories like /tmp or /var/tmp. To handle this, identify these scripts and add their executables to the exclusion list.\n- Custom user scripts that perform routine checks using commands like ls or ps might be flagged. Review these scripts and consider adding their paths to the known safe processes to prevent unnecessary alerts.\n- Development or testing environments often use temporary executables in directories such as /dev/shm. If these are known and non-threatening, include their paths in the exception list to reduce false positives.\n- Some monitoring tools or agents might execute commands like uptime or whoami from non-standard locations. Verify these tools and update the exclusion criteria to include their executables or parent processes.\n- In environments with containerized applications, processes running from /run/containerd or similar paths might be incorrectly flagged. Ensure these paths are accounted for in the exclusion settings if they are part of legitimate operations.\n\n### Response and remediation\n\n- Isolate the affected system from the network to prevent further unauthorized access or lateral movement by the adversary.\n- Terminate any suspicious processes identified by the alert, especially those originating from unknown executables in commonly abused directories.\n- Conduct a thorough review of the affected directories (e.g., /tmp, /var/tmp, /dev/shm) to identify and remove any unauthorized or malicious files or executables.\n- Restore any altered system configurations or files from a known good backup to ensure system integrity.\n- Implement stricter access controls and permissions on the directories identified in the alert to prevent unauthorized executable placement.\n- Monitor the system for any signs of persistence mechanisms, such as cron jobs or startup scripts, and remove any that are unauthorized.\n- Escalate the incident to the security operations team for further analysis and to determine if additional systems may be compromised.",
+        "query": "host.os.type:linux and event.category:process and event.action:(exec or exec_event or fork or fork_event) and\nprocess.executable:(* and (\n  /etc/crontab or /bin/* or /boot/* or /dev/shm/* or /etc/cron.*/* or /etc/init.d/* or /etc/rc*.d/* or /etc/update-motd.d/* or\n  /home/*/.* or /tmp/* or /usr/bin/* or /usr/lib/update-notifier/* or /usr/share/* or /var/tmp/*\n) and not /tmp/go-build*) and\nprocess.args:(hostname or id or ifconfig or ls or netstat or ps or pwd or route or top or uptime or whoami) and\nnot (process.name:\n  (apt or dnf or docker or dockerd or dpkg or hostname or id or ls or netstat or ps or pwd or rpm or snap or\n  snapd or sudo or top or uptime or which or whoami or yum) or\nprocess.parent.executable:(\n  /opt/cassandra/bin/cassandra or /opt/nessus/sbin/nessusd or /opt/nessus_agent/sbin/nessus-agent-module or /opt/puppetlabs/puppet/bin/puppet or\n  /opt/puppetlabs/puppet/bin/ruby or /usr/libexec/platform-python or /usr/local/cloudamize/bin/CCAgent or /usr/sbin/sshd or /bin/* or\n  /etc/network/* or /opt/Elastic/* or /opt/TrendMicro* or /opt/aws/* or /opt/eset/* or /opt/rapid7/* or /run/containerd/* or /run/k3s/* or\n  /snap/* or /tmp/dpkg-licenses* or /tmp/newroot/* or /usr/bin/* or /var/lib/amagent/* or /var/lib/docker/* or /vz/*\n  ) or\n  process.executable:(/run/containerd/* or /srv/snp/docker/* or /tmp/.criu*)\n)\n",
+        "related_integrations": [
+            {
+                "package": "endpoint",
+                "version": "^9.0.0"
+            }
+        ],
+        "required_fields": [
+            {
+                "ecs": true,
+                "name": "event.action",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "event.category",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "host.os.type",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "process.args",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "process.executable",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "process.name",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "process.parent.executable",
+                "type": "keyword"
+            }
+        ],
+        "risk_score": 21,
+        "rule_id": "e9001ee6-2d00-4d2f-849e-b8b1fb05234c",
+        "setup": "## Setup\n\nThis rule requires data coming in from Elastic Defend.\n\n### Elastic Defend Integration Setup\nElastic Defend is integrated into the Elastic Agent using Fleet. Upon configuration, the integration allows the Elastic Agent to monitor events on your host and send data to the Elastic Security app.\n\n#### Prerequisite Requirements:\n- Fleet is required for Elastic Defend.\n- To configure Fleet Server refer to the [documentation](https://www.elastic.co/guide/en/fleet/current/fleet-server.html).\n\n#### The following steps should be executed in order to add the Elastic Defend integration on a Linux System:\n- Go to the Kibana home page and click \"Add integrations\".\n- In the query bar, search for \"Elastic Defend\" and select the integration to see more details about it.\n- Click \"Add Elastic Defend\".\n- Configure the integration name and optionally add a description.\n- Select the type of environment you want to protect, either \"Traditional Endpoints\" or \"Cloud Workloads\".\n- Select a configuration preset. Each preset comes with different default settings for Elastic Agent, you can further customize these later by configuring the Elastic Defend integration policy. [Helper guide](https://www.elastic.co/guide/en/security/current/configure-endpoint-integration-policy.html).\n- We suggest selecting \"Complete EDR (Endpoint Detection and Response)\" as a configuration setting, that provides \"All events; all preventions\"\n- Enter a name for the agent policy in \"New agent policy name\". If other agent policies already exist, you can click the \"Existing hosts\" tab and select an existing policy instead.\nFor more details on Elastic Agent configuration settings, refer to the [helper guide](https://www.elastic.co/guide/en/fleet/8.10/agent-policy.html).\n- Click \"Save and Continue\".\n- To complete the integration, select \"Add Elastic Agent to your hosts\" and continue to the next section to install the Elastic Agent on your hosts.\nFor more details on Elastic Defend refer to the [helper guide](https://www.elastic.co/guide/en/security/current/install-endpoint.html).\n",
+        "severity": "low",
+        "tags": [
+            "Domain: Endpoint",
+            "OS: Linux",
+            "Use Case: Threat Detection",
+            "Tactic: Execution",
+            "Data Source: Elastic Endgame",
+            "Data Source: Elastic Defend",
+            "Resources: Investigation Guide"
+        ],
+        "threat": [
+            {
+                "framework": "MITRE ATT&CK",
+                "tactic": {
+                    "id": "TA0002",
+                    "name": "Execution",
+                    "reference": "https://attack.mitre.org/tactics/TA0002/"
+                },
+                "technique": [
+                    {
+                        "id": "T1059",
+                        "name": "Command and Scripting Interpreter",
+                        "reference": "https://attack.mitre.org/techniques/T1059/",
+                        "subtechnique": [
+                            {
+                                "id": "T1059.004",
+                                "name": "Unix Shell",
+                                "reference": "https://attack.mitre.org/techniques/T1059/004/"
+                            }
+                        ]
+                    }
+                ]
+            }
+        ],
+        "timestamp_override": "event.ingested",
+        "type": "new_terms",
+        "version": 109
+    },
+    "id": "e9001ee6-2d00-4d2f-849e-b8b1fb05234c_109",
+    "type": "security-rule"
+}

@@ -43,6 +43,7 @@ if [ ! -d packages ]; then
     exit 1
 fi
 
+echo "--- Install requirements"
 add_bin_path
 
 with_yq
@@ -60,14 +61,47 @@ sleep 120
 echo "Done."
 
 # setting range of changesets to check differences
+echo "--- Get from and to changesets"
 from="$(get_from_changeset)"
+if [[ "${from}" == "" ]]; then
+    echo "Missing \"from\" changset".
+    exit 1
+fi
 to="$(get_to_changeset)"
+if [[ "${to}" == "" ]]; then
+    echo "Missing \"to\" changset".
+    exit 1
+fi
+echo "Checking with commits: from: '${from}' to: '${to}'"
 
 any_package_failing=0
 
 pushd packages > /dev/null
 for package in $(list_all_directories); do
-    if ! process_package "${package}" "${from}" "${to}"; then
+    echo "--- [$package] check if it is required to be tested"
+    pushd "${package}" > /dev/null
+    skip_package=false
+    failure=false
+    if ! reason=$(is_pr_affected "${package}" "${from}" "${to}") ; then
+        skip_package=true
+        if [[ "${reason}" == "${FATAL_ERROR}" ]]; then
+            failure=true
+        fi
+    fi
+    popd > /dev/null
+    if [[ "${failure}" == "true" ]]; then
+        echo "Unexpected failure checking ${package}"
+        exit 1
+    fi
+
+    echo "${reason}"
+
+    if [[ "${skip_package}" == "true" ]]; then
+        echo "- ${reason}" >> "${SKIPPED_PACKAGES_FILE_PATH}"
+        continue
+    fi
+
+    if ! process_package "${package}" "${FAILED_PACKAGES_FILE_PATH}" ; then
         any_package_failing=1
     fi
 done
@@ -75,10 +109,12 @@ popd > /dev/null
 
 if running_on_buildkite ; then
     if [ -f "${SKIPPED_PACKAGES_FILE_PATH}" ]; then
+        echo "--- Create Skip Buildkite annotation"
         create_collapsed_annotation "Skipped packages in ${SERVERLESS_PROJECT}" "${SKIPPED_PACKAGES_FILE_PATH}" "info" "ctx-skipped-packages-${SERVERLESS_PROJECT}"
     fi
 
     if [ -f "${FAILED_PACKAGES_FILE_PATH}" ]; then
+        echo "--- Create Failed Buildkite annotation"
         create_collapsed_annotation "Failed packages in ${SERVERLESS_PROJECT}" "${FAILED_PACKAGES_FILE_PATH}" "error" "ctx-failed-packages-${SERVERLESS_PROJECT}"
     fi
 fi
