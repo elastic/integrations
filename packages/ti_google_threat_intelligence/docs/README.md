@@ -4,7 +4,7 @@
 
 [Google Threat Intelligence](https://gtidocs.virustotal.com/) is a security solution that helps organizations detect, analyze, and mitigate threats. It leverages Google's global telemetry, advanced analytics, and vast infrastructure to provide actionable insights. Key features include threat detection, malware and phishing analysis, and real-time threat alerts.
 
-Google Threat Intelligence uses the **Threat List API** to deliver hourly data chunks. The Threat Lists feature allows customers to consume **Indicators of Compromise (IOCs)** categorized by various threat types.
+Google Threat Intelligence uses the **[Threat List API](https://gtidocs.virustotal.com/reference/api-overview)** to deliver hourly data chunks. The Threat Lists feature allows customers to consume **Indicators of Compromise (IOCs)** categorized by various threat types.
 
 ## Threat List API Feeds
 
@@ -35,31 +35,11 @@ Customers can access a subset of the available threat lists based on their **Goo
 
 ## Data Streams
 
-The Google Threat Intelligence Integration allows data collection for all 14 feed types. Users can enable additional data streams based on their GTI subscription tier. If a user enables data collection for a data stream they do not have access to, it will result in an error log on the **Discover** page.
+Data collection is available for four feed types: `cryptominer`, `first_stage_delivery_vectors`, `infostealer`, and `iot`, each provided through a separate data stream. Users can enable data streams based on their GTI subscription tier. If a user enables data collection for a data stream they do not have access to, it will result in an error log on the **Discover** page.
 
 ## Requirements
 
-- Elastic Agent must be installed.
-- You can install only one Elastic Agent per host.
-- Elastic Agent is required to stream data through the REST API and ship the data to Elastic, where the events will then be processed via the integration's ingest pipelines.
-
-### Installing and managing an Elastic Agent:
-
-You have a few options for installing and managing an Elastic Agent:
-
-### Install a Fleet-managed Elastic Agent (recommended):
-
-With this approach, you install Elastic Agent and use Fleet in Kibana to define, configure, and manage your agents in a central location. We recommend using Fleet management because it makes the management and upgrade of your agents considerably easier.
-
-### Install Elastic Agent in standalone mode (advanced users):
-
-With this approach, you install Elastic Agent and manually configure the agent locally on the system where it’s installed. You are responsible for managing and upgrading the agents. This approach is reserved for advanced users only.
-
-### Install Elastic Agent in a containerized environment:
-
-You can run Elastic Agent inside a container, either with Fleet Server or standalone. Docker images for all versions of Elastic Agent are available from the Elastic Docker registry, and we provide deployment manifests for running on Kubernetes.
-
-There are some minimum requirements for running Elastic Agent. For more information, refer to the Elastic Agent [installation guide](https://www.elastic.co/guide/en/fleet/current/elastic-agent-installation.html).
+Elastic Agent must be installed. For more details, check the Elastic Agent [installation instructions](docs-content://reference/fleet/install-elastic-agents.md).
 
 ## Setup
 
@@ -68,7 +48,6 @@ There are some minimum requirements for running Elastic Agent. For more informat
 - VirusTotal URL will work as the base URL for this integration: https://www.virustotal.com
 - An API key will be used to authenticate your request.
 - **Time Selection of Initial Interval and Interval**:
-  - The GTI Threat List API only accepts time in **yyyymmddhh** format.
   - Users need to specify the **initial interval** and **interval** in an hourly format, such as **2h, 3h**, etc.
 **Note:** Please make sure both initial interval and interval are in hours and greater than 1 hour.
 
@@ -79,13 +58,13 @@ There are some minimum requirements for running Elastic Agent. For more informat
 3. Click on the **Google Threat Intelligence** integration from the search results.
 4. Click on the **Add Google Threat Intelligence** button to add the integration.
 5. While adding the integration, to collect logs via REST API, provide the following details:
-   - Enable the type of threat feed you have access to.
+   - Enable the type of data stream you have access to.
    - Access Token
    - Initial Interval
    - Interval
    - (Optional) Query to add custom query filtering on relationship, GTI score, and positives.
 6. Click on **Save and Continue** to save the integration.
-**Note:** Please make only the threat feed types you have the privilege to access are enabled..
+**Note:** Please make only the threat feed types you have the privilege to access are enabled.
 
 ## Transforming Data for Up-to-Date Insights
 
@@ -93,20 +72,22 @@ To keep the collected data up to date, **Transforms** are used.
 
 Users can view the transforms by navigating to **Management > Stack Management > Transforms**.
 
+Follow **Steps to enable transforms** to enable transforms and populate `Threat Feed Overview` and `IOC Stream Overview` dashboards.
+
 Here, users can see continuously running transforms and also view the latest transformed GTI data in the **Discover** section.
 
 The `labels.is_transform_source` field indicates log origin:
 - **False** for transformed index
 - **True** for source index
 
-Currently, four transforms are running across all 14 data streams:
+Currently, four transforms are running across all 4 data streams:
 
-| Transform Name                                                         | Description                               |
-| ---------------------------------------------------------------------- | ----------------------------------------- |
-| IP Transform (ID: `logs-ti_google_threat_intelligence.ip_ioc`)         | Keeps IP entity type data up to date.     |
-| URL Transform (ID: `logs-ti_google_threat_intelligence.url_ioc`)       | Keeps URL entity type data up to date.    |
-| Domain Transform (ID: `logs-ti_google_threat_intelligence.domain_ioc`) | Keeps Domain entity type data up to date. |
-| File Transform (ID: `logs-ti_google_threat_intelligence.file_ioc`)     | Keeps File entity type data up to date.   |
+| Transform Name                                                                                                                                                           | Description                                              |
+| ------------------------------------------------------------------------------------------------------------------------------------------------------------------------ | -------------------------------------------------------- |
+| IP Transform (ID: `logs-ti_google_threat_intelligence.ip_ioc`, Pipeline: `ti_google_threat_intelligence-latest_ip_ioc-transform-pipeline`)                               | Keeps IP entity type data up to date.                    |
+| URL Transform (ID: `logs-ti_google_threat_intelligence.url_ioc`, Pipeline: `ti_google_threat_intelligence-latest_url_ioc-transform-pipeline`)                            | Keeps URL entity type data up to date.                   |
+| Domain Transform (ID: `logs-ti_google_threat_intelligence.domain_ioc`, Pipeline: `ti_google_threat_intelligence-latest_domain_ioc-transform-pipeline`)                   | Keeps Domain entity type data up to date.                |
+| File Transform (ID: `logs-ti_google_threat_intelligence.file_ioc`, Pipeline: `ti_google_threat_intelligence-latest_file_ioc-transform-pipeline`)                         | Keeps File entity type data up to date.                  |
 
 For example:
 
@@ -150,9 +131,33 @@ The following are the names of the four sample rules:
 | Google Threat Intelligence File IOC Correlation       | Detects and alerts on matches between File IOCs collected by GTI data with user's selected Elastic environment data.       |
 | Google Threat Intelligence IP Address IOC Correlation | Detects and alerts on matches between IP Address IOCs collected by GTI data with user's selected Elastic environment data. |
 
+The following transform and its associated pipelines are used to filter relevant data from alerts. Follow **Steps to enable transforms** to enable these transforms and populate `Threat Intelligence` and `Adversary Intelligence` dashboards.
+
+| Transform Name                                                                                                                                          | Description                                                                     |
+| ------------------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------- |
+| Detected IOC Transform  (ID: `logs-ti_google_threat_intelligence.rule`, Pipeline: `ti_google_threat_intelligence-correlation_detection_rule-pipeline`)  | Filters and extracts necessary information from Detected IOCs from threat feed. |
+
+### Steps to enable transforms
+
+1. Navigate to **Stack Management > Transforms** in Kibana.
+2. Locate the transform you want to enable by searching for its **Transform ID**.
+3. Click the **three dots** next to the transform, then select **Edit**.
+4. Under the **Destination configuration** section, set the **Ingest Pipeline**:
+   - Each transform in the **Google Threat Intelligence** integration has a corresponding ingest pipeline.
+   - Refer to the **Transforms table** above for the appropriate pipeline name associated with transform.
+   - Prefix the pipeline name with the integration version.  
+     For example:  
+     ```
+     0.1.0-ti_google_threat_intelligence-latest_ip_ioc_st-transform-pipeline
+     ```
+   - Click **Update** to save the changes.
+5. Click the **three dots** again next to the transform and select **Start** to activate it.
+
+**Note:** After updating the integration, make sure to update the pipeline prefix accordingly.
+
 ## Limitations
 
-1. If an event contains multiple matching mappings (e.g., two file hash fields within the same event match GTI data), only one alert will be generated for that event.
+1. If an event contains multiple matching mappings (e.g., two file hash fields within the same event match GTI data), only one alert per detection rule will be generated for that event.
 2. If an IOC from the user's Elasticsearch index is enriched with GTI information, and the GTI information is updated later, the changes are not reflected in the dashboards because Elastic detection rules only run on live data.
 
 ## Troubleshooting
@@ -163,6 +168,9 @@ The following are the names of the four sample rules:
 4. If detection rules take longer to run, ensure you have specified index patterns and applied queries to make your source events more specific.
    **Note:** More events in index patterns mean more time needed for detection rules to run.
 5. Ensure that relevant fields are correctly mapped in the **Indicator Mapping** section. Verify that fields in the specified index pattern are properly mapped, and ensure entity-specific fields (e.g., IP fields to IP fields, keyword fields like file hash SHA256 to corresponding file hash SHA256 fields) are accurately configured.
+6. If any transform is not in a **Healthy** state, try resetting it:
+   - Click the **three dots** next to the transform, then select **Reset**.
+   - After resetting, follow the **Steps to enable transforms** above to reconfigure and restart the transform.
 
 ## Logs Reference
 
@@ -178,24 +186,24 @@ An example event for `cryptominer` looks as following:
 {
     "@timestamp": "2025-01-27T19:51:31.000Z",
     "agent": {
-        "ephemeral_id": "bca39035-98e1-4af3-b001-7b59aa499330",
-        "id": "0943c5c5-87c8-470b-8f11-20c6bce4aa42",
-        "name": "elastic-agent-62906",
+        "ephemeral_id": "1c63f4ab-eb6a-4af7-beb8-1c2c169ef186",
+        "id": "a1205da4-909f-4308-89bd-5341631162a5",
+        "name": "elastic-agent-68929",
         "type": "filebeat",
-        "version": "8.16.0"
+        "version": "8.17.3"
     },
     "data_stream": {
         "dataset": "ti_google_threat_intelligence.cryptominer",
-        "namespace": "22570",
+        "namespace": "11712",
         "type": "logs"
     },
     "ecs": {
-        "version": "8.11.0"
+        "version": "8.17.0"
     },
     "elastic_agent": {
-        "id": "0943c5c5-87c8-470b-8f11-20c6bce4aa42",
+        "id": "a1205da4-909f-4308-89bd-5341631162a5",
         "snapshot": false,
-        "version": "8.16.0"
+        "version": "8.17.3"
     },
     "event": {
         "agent_id_status": "verified",
@@ -203,7 +211,7 @@ An example event for `cryptominer` looks as following:
             "threat"
         ],
         "dataset": "ti_google_threat_intelligence.cryptominer",
-        "ingested": "2025-03-13T05:23:30Z",
+        "ingested": "2025-05-19T13:35:15Z",
         "kind": "enrichment",
         "original": "{\"data\":{\"attributes\":{\"first_submission_date\":1582817050,\"gti_assessment\":{\"severity\":{\"value\":\"SEVERITY_NONE\"},\"threat_score\":{\"value\":1},\"verdict\":{\"value\":\"VERDICT_UNDETECTED\"}},\"last_analysis_date\":1582817050,\"last_analysis_stats\":{\"harmless\":55,\"malicious\":8,\"undetected\":8},\"last_http_response_code\":200,\"last_modification_date\":1738007491,\"last_submission_date\":1582817050,\"positives\":8,\"times_submitted\":1,\"tld\":\"ru\",\"url\":\"http://securepasswel.ru/files/grapes_encrypted_87ed10f.bin\"},\"id\":\"0146b3be6e724b10e620e8090821a8253772af779a4996145cdf295c01e0900c\",\"relationships\":{},\"type\":\"url\"}}",
         "type": [
@@ -235,9 +243,7 @@ An example event for `cryptominer` looks as following:
                 ],
                 "url": "http://securepasswel.ru/files/grapes_encrypted_87ed10f.bin"
             },
-            "id": {
-                "url": "0146b3be6e724b10e620e8090821a8253772af779a4996145cdf295c01e0900c"
-            },
+            "id": "0146b3be6e724b10e620e8090821a8253772af779a4996145cdf295c01e0900c",
             "type": "url"
         }
     },
@@ -253,43 +259,32 @@ An example event for `cryptominer` looks as following:
         "product": "Threat Intelligence",
         "vendor": "Google"
     },
+    "related": {
+        "hosts": [
+            "securepasswel.ru"
+        ]
+    },
     "tags": [
         "preserve_original_event",
-        "preserve_duplicate_custom_fields",
         "forwarded",
         "google_threat_intelligence-cryptominer"
     ],
     "threat": {
+        "feed": {
+            "name": "Cryptominer"
+        },
         "indicator": {
-            "feed_type": "Cryptominer",
-            "first_submission_date": "2020-02-27T15:24:10.000Z",
-            "harmless": 55,
-            "http_response_code": 200,
-            "id": "0146b3be6e724b10e620e8090821a8253772af779a4996145cdf295c01e0900c",
+            "id": [
+                "0146b3be6e724b10e620e8090821a8253772af779a4996145cdf295c01e0900c"
+            ],
             "last_seen": "2020-02-27T15:24:10.000Z",
-            "last_submission_date": "2020-02-27T15:24:10.000Z",
-            "malicious": 8,
             "modified_at": "2025-01-27T19:51:31.000Z",
-            "positives": 8,
-            "score": 1,
-            "severity": "SEVERITY_NONE",
-            "times_submitted": 1,
-            "top_level_domain": [
-                "ru"
-            ],
+            "name": "0146b3be6e724b10e620e8090821a8253772af779a4996145cdf295c01e0900c",
             "type": "url",
-            "undetected": 8,
             "url": {
-                "id": "0146b3be6e724b10e620e8090821a8253772af779a4996145cdf295c01e0900c",
+                "full": "http://securepasswel.ru/files/grapes_encrypted_87ed10f.bin",
                 "original": "http://securepasswel.ru/files/grapes_encrypted_87ed10f.bin"
-            },
-            "user_tags": [
-                "preserve_original_event",
-                "preserve_duplicate_custom_fields",
-                "forwarded",
-                "google_threat_intelligence-cryptominer"
-            ],
-            "verdict": "VERDICT_UNDETECTED"
+            }
         }
     },
     "url": {
@@ -349,10 +344,7 @@ An example event for `cryptominer` looks as following:
 | gti.cryptominer.attributes.type_tags | The broader tags related to the specific file type. | keyword |
 | gti.cryptominer.attributes.url | The original URL to be scanned. | keyword |
 | gti.cryptominer.attributes.vhash | An in-house similarity clustering algorithm value, based on a simple structural feature hash allows you to find similar files. | keyword |
-| gti.cryptominer.id.domain | The domain address associated with the entity. | keyword |
-| gti.cryptominer.id.file | The file object ID (SHA256 hash) associated with the entity. | keyword |
-| gti.cryptominer.id.ip | The IP address associated with the entity. | ip |
-| gti.cryptominer.id.url | The URL address associated with the entity. | keyword |
+| gti.cryptominer.id | The unique ID associated with the entity. | keyword |
 | gti.cryptominer.relationships.campaigns.attributes.collection_type | Identifies the type of the object. | keyword |
 | gti.cryptominer.relationships.campaigns.attributes.name | Campaign's name. | keyword |
 | gti.cryptominer.relationships.campaigns.id | The unique identifier associated with a specific relationship entry. | keyword |
@@ -385,67 +377,6 @@ An example event for `cryptominer` looks as following:
 | input.type | Type of filebeat input. | keyword |
 | labels.is_transform_source | Distinguishes between documents that are a source for a transform and documents that are an output of a transform, to facilitate easier filtering. | constant_keyword |
 | log.offset | Log offset. | long |
-| threat.indicator.as.owner |  | keyword |
-| threat.indicator.attributes |  | keyword |
-| threat.indicator.campaigns.attributes.collection_type |  | keyword |
-| threat.indicator.campaigns.attributes.name |  | keyword |
-| threat.indicator.campaigns.id |  | keyword |
-| threat.indicator.campaigns.type |  | keyword |
-| threat.indicator.categories |  | keyword |
-| threat.indicator.collections.attributes.collection_type |  | keyword |
-| threat.indicator.collections.attributes.name |  | keyword |
-| threat.indicator.collections.id |  | keyword |
-| threat.indicator.collections.type |  | keyword |
-| threat.indicator.created |  | date |
-| threat.indicator.domain |  | keyword |
-| threat.indicator.feed_type |  | keyword |
-| threat.indicator.first_submission_date |  | date |
-| threat.indicator.harmless |  | long |
-| threat.indicator.http_response_code |  | long |
-| threat.indicator.id |  | keyword |
-| threat.indicator.jarm |  | keyword |
-| threat.indicator.last_analysis_results.engine |  | keyword |
-| threat.indicator.last_analysis_results.result |  | keyword |
-| threat.indicator.last_submission_date |  | date |
-| threat.indicator.malicious |  | long |
-| threat.indicator.malware_families.attributes.collection_type |  | keyword |
-| threat.indicator.malware_families.attributes.name |  | keyword |
-| threat.indicator.malware_families.id |  | keyword |
-| threat.indicator.malware_families.type |  | keyword |
-| threat.indicator.meaningful_name |  | keyword |
-| threat.indicator.network |  | keyword |
-| threat.indicator.outgoing_links |  | keyword |
-| threat.indicator.positives |  | long |
-| threat.indicator.regional_internet_registry |  | keyword |
-| threat.indicator.reports.attributes.collection_type |  | keyword |
-| threat.indicator.reports.attributes.name |  | keyword |
-| threat.indicator.reports.id |  | keyword |
-| threat.indicator.reports.type |  | keyword |
-| threat.indicator.score |  | long |
-| threat.indicator.severity |  | keyword |
-| threat.indicator.software_toolkits.attributes.collection_type |  | keyword |
-| threat.indicator.software_toolkits.attributes.name |  | keyword |
-| threat.indicator.software_toolkits.id |  | keyword |
-| threat.indicator.software_toolkits.type |  | keyword |
-| threat.indicator.suspicious |  | long |
-| threat.indicator.threat_actors.attributes.collection_type |  | keyword |
-| threat.indicator.threat_actors.attributes.name |  | keyword |
-| threat.indicator.threat_actors.id |  | keyword |
-| threat.indicator.threat_actors.type |  | keyword |
-| threat.indicator.timeout |  | long |
-| threat.indicator.times_submitted |  | long |
-| threat.indicator.top_level_domain |  | keyword |
-| threat.indicator.type_tags |  | keyword |
-| threat.indicator.undetected |  | long |
-| threat.indicator.url.id |  | keyword |
-| threat.indicator.user_tags |  | keyword |
-| threat.indicator.verdict |  | keyword |
-| threat.indicator.vhash |  | keyword |
-| threat.indicator.vulnerabilities.attributes.collection_type |  | keyword |
-| threat.indicator.vulnerabilities.attributes.name |  | keyword |
-| threat.indicator.vulnerabilities.id |  | keyword |
-| threat.indicator.vulnerabilities.type |  | keyword |
-| threat.indicator.web_page_title |  | keyword |
 
 
 ### First Stage Delivery Vectors
@@ -460,24 +391,24 @@ An example event for `first_stage_delivery_vectors` looks as following:
 {
     "@timestamp": "2025-01-27T19:51:31.000Z",
     "agent": {
-        "ephemeral_id": "85b97b3d-db21-4464-ad1c-da7b2567bab5",
-        "id": "eaa17be9-8812-4a51-9f84-535df7826d54",
-        "name": "elastic-agent-75212",
+        "ephemeral_id": "9e832dae-f2ef-4ced-98b3-070b1f47f3b4",
+        "id": "3f71dc6f-a247-49f7-955c-732637edd57c",
+        "name": "elastic-agent-25871",
         "type": "filebeat",
-        "version": "8.16.0"
+        "version": "8.17.3"
     },
     "data_stream": {
         "dataset": "ti_google_threat_intelligence.first_stage_delivery_vectors",
-        "namespace": "12160",
+        "namespace": "94004",
         "type": "logs"
     },
     "ecs": {
-        "version": "8.11.0"
+        "version": "8.17.0"
     },
     "elastic_agent": {
-        "id": "eaa17be9-8812-4a51-9f84-535df7826d54",
+        "id": "3f71dc6f-a247-49f7-955c-732637edd57c",
         "snapshot": false,
-        "version": "8.16.0"
+        "version": "8.17.3"
     },
     "event": {
         "agent_id_status": "verified",
@@ -485,7 +416,7 @@ An example event for `first_stage_delivery_vectors` looks as following:
             "threat"
         ],
         "dataset": "ti_google_threat_intelligence.first_stage_delivery_vectors",
-        "ingested": "2025-03-13T05:25:49Z",
+        "ingested": "2025-05-19T13:37:34Z",
         "kind": "enrichment",
         "original": "{\"data\":{\"attributes\":{\"first_submission_date\":1582817050,\"gti_assessment\":{\"severity\":{\"value\":\"SEVERITY_NONE\"},\"threat_score\":{\"value\":1},\"verdict\":{\"value\":\"VERDICT_UNDETECTED\"}},\"last_analysis_date\":1582817050,\"last_analysis_stats\":{\"harmless\":55,\"malicious\":8,\"undetected\":8},\"last_http_response_code\":200,\"last_modification_date\":1738007491,\"last_submission_date\":1582817050,\"positives\":8,\"times_submitted\":1,\"tld\":\"ru\",\"url\":\"http://securepasswel.ru/files/grapes_encrypted_87ed10f.bin\"},\"id\":\"0146b3be6e724b10e620e8090821a8253772af779a4996145cdf295c01e0900c\",\"relationships\":{},\"type\":\"url\"}}",
         "type": [
@@ -517,9 +448,7 @@ An example event for `first_stage_delivery_vectors` looks as following:
                 ],
                 "url": "http://securepasswel.ru/files/grapes_encrypted_87ed10f.bin"
             },
-            "id": {
-                "url": "0146b3be6e724b10e620e8090821a8253772af779a4996145cdf295c01e0900c"
-            },
+            "id": "0146b3be6e724b10e620e8090821a8253772af779a4996145cdf295c01e0900c",
             "type": "url"
         }
     },
@@ -535,43 +464,32 @@ An example event for `first_stage_delivery_vectors` looks as following:
         "product": "Threat Intelligence",
         "vendor": "Google"
     },
+    "related": {
+        "hosts": [
+            "securepasswel.ru"
+        ]
+    },
     "tags": [
         "preserve_original_event",
-        "preserve_duplicate_custom_fields",
         "forwarded",
         "google_threat_intelligence-first_stage_delivery_vectors"
     ],
     "threat": {
+        "feed": {
+            "name": "First Stage Delivery Vectors"
+        },
         "indicator": {
-            "feed_type": "First Stage Delivery Vectors",
-            "first_submission_date": "2020-02-27T15:24:10.000Z",
-            "harmless": 55,
-            "http_response_code": 200,
-            "id": "0146b3be6e724b10e620e8090821a8253772af779a4996145cdf295c01e0900c",
+            "id": [
+                "0146b3be6e724b10e620e8090821a8253772af779a4996145cdf295c01e0900c"
+            ],
             "last_seen": "2020-02-27T15:24:10.000Z",
-            "last_submission_date": "2020-02-27T15:24:10.000Z",
-            "malicious": 8,
             "modified_at": "2025-01-27T19:51:31.000Z",
-            "positives": 8,
-            "score": 1,
-            "severity": "SEVERITY_NONE",
-            "times_submitted": 1,
-            "top_level_domain": [
-                "ru"
-            ],
+            "name": "0146b3be6e724b10e620e8090821a8253772af779a4996145cdf295c01e0900c",
             "type": "url",
-            "undetected": 8,
             "url": {
-                "id": "0146b3be6e724b10e620e8090821a8253772af779a4996145cdf295c01e0900c",
+                "full": "http://securepasswel.ru/files/grapes_encrypted_87ed10f.bin",
                 "original": "http://securepasswel.ru/files/grapes_encrypted_87ed10f.bin"
-            },
-            "user_tags": [
-                "preserve_original_event",
-                "preserve_duplicate_custom_fields",
-                "forwarded",
-                "google_threat_intelligence-first_stage_delivery_vectors"
-            ],
-            "verdict": "VERDICT_UNDETECTED"
+            }
         }
     },
     "url": {
@@ -631,10 +549,7 @@ An example event for `first_stage_delivery_vectors` looks as following:
 | gti.first_stage_delivery_vectors.attributes.type_tags | The broader tags related to the specific file type. | keyword |
 | gti.first_stage_delivery_vectors.attributes.url | The original URL to be scanned. | keyword |
 | gti.first_stage_delivery_vectors.attributes.vhash | An in-house similarity clustering algorithm value, based on a simple structural feature hash allows you to find similar files. | keyword |
-| gti.first_stage_delivery_vectors.id.domain | The domain address associated with the entity. | keyword |
-| gti.first_stage_delivery_vectors.id.file | The file object ID (SHA256 hash) associated with the entity. | keyword |
-| gti.first_stage_delivery_vectors.id.ip | The IP address associated with the entity. | ip |
-| gti.first_stage_delivery_vectors.id.url | The URL address associated with the entity. | keyword |
+| gti.first_stage_delivery_vectors.id | The unique ID associated with the entity. | keyword |
 | gti.first_stage_delivery_vectors.relationships.campaigns.attributes.collection_type | Identifies the type of the object. | keyword |
 | gti.first_stage_delivery_vectors.relationships.campaigns.attributes.name | Campaign's name. | keyword |
 | gti.first_stage_delivery_vectors.relationships.campaigns.id | The unique identifier associated with a specific relationship entry. | keyword |
@@ -667,67 +582,6 @@ An example event for `first_stage_delivery_vectors` looks as following:
 | input.type | Type of filebeat input. | keyword |
 | labels.is_transform_source | Distinguishes between documents that are a source for a transform and documents that are an output of a transform, to facilitate easier filtering. | constant_keyword |
 | log.offset | Log offset. | long |
-| threat.indicator.as.owner |  | keyword |
-| threat.indicator.attributes |  | keyword |
-| threat.indicator.campaigns.attributes.collection_type |  | keyword |
-| threat.indicator.campaigns.attributes.name |  | keyword |
-| threat.indicator.campaigns.id |  | keyword |
-| threat.indicator.campaigns.type |  | keyword |
-| threat.indicator.categories |  | keyword |
-| threat.indicator.collections.attributes.collection_type |  | keyword |
-| threat.indicator.collections.attributes.name |  | keyword |
-| threat.indicator.collections.id |  | keyword |
-| threat.indicator.collections.type |  | keyword |
-| threat.indicator.created |  | date |
-| threat.indicator.domain |  | keyword |
-| threat.indicator.feed_type |  | keyword |
-| threat.indicator.first_submission_date |  | date |
-| threat.indicator.harmless |  | long |
-| threat.indicator.http_response_code |  | long |
-| threat.indicator.id |  | keyword |
-| threat.indicator.jarm |  | keyword |
-| threat.indicator.last_analysis_results.engine |  | keyword |
-| threat.indicator.last_analysis_results.result |  | keyword |
-| threat.indicator.last_submission_date |  | date |
-| threat.indicator.malicious |  | long |
-| threat.indicator.malware_families.attributes.collection_type |  | keyword |
-| threat.indicator.malware_families.attributes.name |  | keyword |
-| threat.indicator.malware_families.id |  | keyword |
-| threat.indicator.malware_families.type |  | keyword |
-| threat.indicator.meaningful_name |  | keyword |
-| threat.indicator.network |  | keyword |
-| threat.indicator.outgoing_links |  | keyword |
-| threat.indicator.positives |  | long |
-| threat.indicator.regional_internet_registry |  | keyword |
-| threat.indicator.reports.attributes.collection_type |  | keyword |
-| threat.indicator.reports.attributes.name |  | keyword |
-| threat.indicator.reports.id |  | keyword |
-| threat.indicator.reports.type |  | keyword |
-| threat.indicator.score |  | long |
-| threat.indicator.severity |  | keyword |
-| threat.indicator.software_toolkits.attributes.collection_type |  | keyword |
-| threat.indicator.software_toolkits.attributes.name |  | keyword |
-| threat.indicator.software_toolkits.id |  | keyword |
-| threat.indicator.software_toolkits.type |  | keyword |
-| threat.indicator.suspicious |  | long |
-| threat.indicator.threat_actors.attributes.collection_type |  | keyword |
-| threat.indicator.threat_actors.attributes.name |  | keyword |
-| threat.indicator.threat_actors.id |  | keyword |
-| threat.indicator.threat_actors.type |  | keyword |
-| threat.indicator.timeout |  | long |
-| threat.indicator.times_submitted |  | long |
-| threat.indicator.top_level_domain |  | keyword |
-| threat.indicator.type_tags |  | keyword |
-| threat.indicator.undetected |  | long |
-| threat.indicator.url.id |  | keyword |
-| threat.indicator.user_tags |  | keyword |
-| threat.indicator.verdict |  | keyword |
-| threat.indicator.vhash |  | keyword |
-| threat.indicator.vulnerabilities.attributes.collection_type |  | keyword |
-| threat.indicator.vulnerabilities.attributes.name |  | keyword |
-| threat.indicator.vulnerabilities.id |  | keyword |
-| threat.indicator.vulnerabilities.type |  | keyword |
-| threat.indicator.web_page_title |  | keyword |
 
 
 ### Infostealers
@@ -742,24 +596,24 @@ An example event for `infostealer` looks as following:
 {
     "@timestamp": "2025-01-27T19:51:31.000Z",
     "agent": {
-        "ephemeral_id": "2bbffa57-86bc-45af-827d-f7d06445e727",
-        "id": "346e8860-fe9c-4cd7-af50-d0cc1ed143d9",
-        "name": "elastic-agent-63102",
+        "ephemeral_id": "2b87f06e-1f17-4a01-8bc6-57d3735e76d1",
+        "id": "f5242744-100e-464f-9e46-80bb5a2d200e",
+        "name": "elastic-agent-94523",
         "type": "filebeat",
-        "version": "8.16.0"
+        "version": "8.17.3"
     },
     "data_stream": {
         "dataset": "ti_google_threat_intelligence.infostealer",
-        "namespace": "23119",
+        "namespace": "21758",
         "type": "logs"
     },
     "ecs": {
-        "version": "8.11.0"
+        "version": "8.17.0"
     },
     "elastic_agent": {
-        "id": "346e8860-fe9c-4cd7-af50-d0cc1ed143d9",
+        "id": "f5242744-100e-464f-9e46-80bb5a2d200e",
         "snapshot": false,
-        "version": "8.16.0"
+        "version": "8.17.3"
     },
     "event": {
         "agent_id_status": "verified",
@@ -767,7 +621,7 @@ An example event for `infostealer` looks as following:
             "threat"
         ],
         "dataset": "ti_google_threat_intelligence.infostealer",
-        "ingested": "2025-03-13T05:28:06Z",
+        "ingested": "2025-05-19T13:39:56Z",
         "kind": "enrichment",
         "original": "{\"data\":{\"attributes\":{\"first_submission_date\":1582817050,\"gti_assessment\":{\"severity\":{\"value\":\"SEVERITY_NONE\"},\"threat_score\":{\"value\":1},\"verdict\":{\"value\":\"VERDICT_UNDETECTED\"}},\"last_analysis_date\":1582817050,\"last_analysis_stats\":{\"harmless\":55,\"malicious\":8,\"undetected\":8},\"last_http_response_code\":200,\"last_modification_date\":1738007491,\"last_submission_date\":1582817050,\"positives\":8,\"times_submitted\":1,\"tld\":\"ru\",\"url\":\"http://securepasswel.ru/files/grapes_encrypted_87ed10f.bin\"},\"id\":\"0146b3be6e724b10e620e8090821a8253772af779a4996145cdf295c01e0900c\",\"relationships\":{},\"type\":\"url\"}}",
         "type": [
@@ -799,9 +653,7 @@ An example event for `infostealer` looks as following:
                 ],
                 "url": "http://securepasswel.ru/files/grapes_encrypted_87ed10f.bin"
             },
-            "id": {
-                "url": "0146b3be6e724b10e620e8090821a8253772af779a4996145cdf295c01e0900c"
-            },
+            "id": "0146b3be6e724b10e620e8090821a8253772af779a4996145cdf295c01e0900c",
             "type": "url"
         }
     },
@@ -817,43 +669,32 @@ An example event for `infostealer` looks as following:
         "product": "Threat Intelligence",
         "vendor": "Google"
     },
+    "related": {
+        "hosts": [
+            "securepasswel.ru"
+        ]
+    },
     "tags": [
         "preserve_original_event",
-        "preserve_duplicate_custom_fields",
         "forwarded",
         "google_threat_intelligence-infostealer"
     ],
     "threat": {
+        "feed": {
+            "name": "Infostealer"
+        },
         "indicator": {
-            "feed_type": "Infostealer",
-            "first_submission_date": "2020-02-27T15:24:10.000Z",
-            "harmless": 55,
-            "http_response_code": 200,
-            "id": "0146b3be6e724b10e620e8090821a8253772af779a4996145cdf295c01e0900c",
+            "id": [
+                "0146b3be6e724b10e620e8090821a8253772af779a4996145cdf295c01e0900c"
+            ],
             "last_seen": "2020-02-27T15:24:10.000Z",
-            "last_submission_date": "2020-02-27T15:24:10.000Z",
-            "malicious": 8,
             "modified_at": "2025-01-27T19:51:31.000Z",
-            "positives": 8,
-            "score": 1,
-            "severity": "SEVERITY_NONE",
-            "times_submitted": 1,
-            "top_level_domain": [
-                "ru"
-            ],
+            "name": "0146b3be6e724b10e620e8090821a8253772af779a4996145cdf295c01e0900c",
             "type": "url",
-            "undetected": 8,
             "url": {
-                "id": "0146b3be6e724b10e620e8090821a8253772af779a4996145cdf295c01e0900c",
+                "full": "http://securepasswel.ru/files/grapes_encrypted_87ed10f.bin",
                 "original": "http://securepasswel.ru/files/grapes_encrypted_87ed10f.bin"
-            },
-            "user_tags": [
-                "preserve_original_event",
-                "preserve_duplicate_custom_fields",
-                "forwarded",
-                "google_threat_intelligence-infostealer"
-            ],
-            "verdict": "VERDICT_UNDETECTED"
+            }
         }
     },
     "url": {
@@ -913,10 +754,7 @@ An example event for `infostealer` looks as following:
 | gti.infostealer.attributes.type_tags | The broader tags related to the specific file type. | keyword |
 | gti.infostealer.attributes.url | The original URL to be scanned. | keyword |
 | gti.infostealer.attributes.vhash | An in-house similarity clustering algorithm value, based on a simple structural feature hash allows you to find similar files. | keyword |
-| gti.infostealer.id.domain | The domain address associated with the entity. | keyword |
-| gti.infostealer.id.file | The file object ID (SHA256 hash) associated with the entity. | keyword |
-| gti.infostealer.id.ip | The IP address associated with the entity. | ip |
-| gti.infostealer.id.url | The URL address associated with the entity. | keyword |
+| gti.infostealer.id | The unique ID associated with the entity. | keyword |
 | gti.infostealer.relationships.campaigns.attributes.collection_type | Identifies the type of the object. | keyword |
 | gti.infostealer.relationships.campaigns.attributes.name | Campaign's name. | keyword |
 | gti.infostealer.relationships.campaigns.id | The unique identifier associated with a specific relationship entry. | keyword |
@@ -949,67 +787,6 @@ An example event for `infostealer` looks as following:
 | input.type | Type of filebeat input. | keyword |
 | labels.is_transform_source | Distinguishes between documents that are a source for a transform and documents that are an output of a transform, to facilitate easier filtering. | constant_keyword |
 | log.offset | Log offset. | long |
-| threat.indicator.as.owner |  | keyword |
-| threat.indicator.attributes |  | keyword |
-| threat.indicator.campaigns.attributes.collection_type |  | keyword |
-| threat.indicator.campaigns.attributes.name |  | keyword |
-| threat.indicator.campaigns.id |  | keyword |
-| threat.indicator.campaigns.type |  | keyword |
-| threat.indicator.categories |  | keyword |
-| threat.indicator.collections.attributes.collection_type |  | keyword |
-| threat.indicator.collections.attributes.name |  | keyword |
-| threat.indicator.collections.id |  | keyword |
-| threat.indicator.collections.type |  | keyword |
-| threat.indicator.created |  | date |
-| threat.indicator.domain |  | keyword |
-| threat.indicator.feed_type |  | keyword |
-| threat.indicator.first_submission_date |  | date |
-| threat.indicator.harmless |  | long |
-| threat.indicator.http_response_code |  | long |
-| threat.indicator.id |  | keyword |
-| threat.indicator.jarm |  | keyword |
-| threat.indicator.last_analysis_results.engine |  | keyword |
-| threat.indicator.last_analysis_results.result |  | keyword |
-| threat.indicator.last_submission_date |  | date |
-| threat.indicator.malicious |  | long |
-| threat.indicator.malware_families.attributes.collection_type |  | keyword |
-| threat.indicator.malware_families.attributes.name |  | keyword |
-| threat.indicator.malware_families.id |  | keyword |
-| threat.indicator.malware_families.type |  | keyword |
-| threat.indicator.meaningful_name |  | keyword |
-| threat.indicator.network |  | keyword |
-| threat.indicator.outgoing_links |  | keyword |
-| threat.indicator.positives |  | long |
-| threat.indicator.regional_internet_registry |  | keyword |
-| threat.indicator.reports.attributes.collection_type |  | keyword |
-| threat.indicator.reports.attributes.name |  | keyword |
-| threat.indicator.reports.id |  | keyword |
-| threat.indicator.reports.type |  | keyword |
-| threat.indicator.score |  | long |
-| threat.indicator.severity |  | keyword |
-| threat.indicator.software_toolkits.attributes.collection_type |  | keyword |
-| threat.indicator.software_toolkits.attributes.name |  | keyword |
-| threat.indicator.software_toolkits.id |  | keyword |
-| threat.indicator.software_toolkits.type |  | keyword |
-| threat.indicator.suspicious |  | long |
-| threat.indicator.threat_actors.attributes.collection_type |  | keyword |
-| threat.indicator.threat_actors.attributes.name |  | keyword |
-| threat.indicator.threat_actors.id |  | keyword |
-| threat.indicator.threat_actors.type |  | keyword |
-| threat.indicator.timeout |  | long |
-| threat.indicator.times_submitted |  | long |
-| threat.indicator.top_level_domain |  | keyword |
-| threat.indicator.type_tags |  | keyword |
-| threat.indicator.undetected |  | long |
-| threat.indicator.url.id |  | keyword |
-| threat.indicator.user_tags |  | keyword |
-| threat.indicator.verdict |  | keyword |
-| threat.indicator.vhash |  | keyword |
-| threat.indicator.vulnerabilities.attributes.collection_type |  | keyword |
-| threat.indicator.vulnerabilities.attributes.name |  | keyword |
-| threat.indicator.vulnerabilities.id |  | keyword |
-| threat.indicator.vulnerabilities.type |  | keyword |
-| threat.indicator.web_page_title |  | keyword |
 
 
 ### Internet of Things
@@ -1024,24 +801,24 @@ An example event for `iot` looks as following:
 {
     "@timestamp": "2025-01-27T19:51:31.000Z",
     "agent": {
-        "ephemeral_id": "7ae1cf58-6cff-47d7-bc1b-d943bcd87fc5",
-        "id": "55869170-6c7a-4064-93d1-e4d0ef15f9b6",
-        "name": "elastic-agent-68198",
+        "ephemeral_id": "5a15445c-db8f-4887-879b-a228e057a11e",
+        "id": "5d47065e-b3b4-4d1e-a990-29a43de92031",
+        "name": "elastic-agent-52732",
         "type": "filebeat",
-        "version": "8.16.0"
+        "version": "8.17.3"
     },
     "data_stream": {
         "dataset": "ti_google_threat_intelligence.iot",
-        "namespace": "10830",
+        "namespace": "14621",
         "type": "logs"
     },
     "ecs": {
-        "version": "8.11.0"
+        "version": "8.17.0"
     },
     "elastic_agent": {
-        "id": "55869170-6c7a-4064-93d1-e4d0ef15f9b6",
+        "id": "5d47065e-b3b4-4d1e-a990-29a43de92031",
         "snapshot": false,
-        "version": "8.16.0"
+        "version": "8.17.3"
     },
     "event": {
         "agent_id_status": "verified",
@@ -1049,7 +826,7 @@ An example event for `iot` looks as following:
             "threat"
         ],
         "dataset": "ti_google_threat_intelligence.iot",
-        "ingested": "2025-03-13T05:30:28Z",
+        "ingested": "2025-05-19T13:42:16Z",
         "kind": "enrichment",
         "original": "{\"data\":{\"attributes\":{\"first_submission_date\":1582817050,\"gti_assessment\":{\"severity\":{\"value\":\"SEVERITY_NONE\"},\"threat_score\":{\"value\":1},\"verdict\":{\"value\":\"VERDICT_UNDETECTED\"}},\"last_analysis_date\":1582817050,\"last_analysis_stats\":{\"harmless\":55,\"malicious\":8,\"undetected\":8},\"last_http_response_code\":200,\"last_modification_date\":1738007491,\"last_submission_date\":1582817050,\"positives\":8,\"times_submitted\":1,\"tld\":\"ru\",\"url\":\"http://securepasswel.ru/files/grapes_encrypted_87ed10f.bin\"},\"id\":\"0146b3be6e724b10e620e8090821a8253772af779a4996145cdf295c01e0900c\",\"relationships\":{},\"type\":\"url\"}}",
         "type": [
@@ -1081,9 +858,7 @@ An example event for `iot` looks as following:
                 ],
                 "url": "http://securepasswel.ru/files/grapes_encrypted_87ed10f.bin"
             },
-            "id": {
-                "url": "0146b3be6e724b10e620e8090821a8253772af779a4996145cdf295c01e0900c"
-            },
+            "id": "0146b3be6e724b10e620e8090821a8253772af779a4996145cdf295c01e0900c",
             "type": "url"
         }
     },
@@ -1099,43 +874,32 @@ An example event for `iot` looks as following:
         "product": "Threat Intelligence",
         "vendor": "Google"
     },
+    "related": {
+        "hosts": [
+            "securepasswel.ru"
+        ]
+    },
     "tags": [
         "preserve_original_event",
-        "preserve_duplicate_custom_fields",
         "forwarded",
         "google_threat_intelligence-iot"
     ],
     "threat": {
+        "feed": {
+            "name": "IOT"
+        },
         "indicator": {
-            "feed_type": "Internet of Things",
-            "first_submission_date": "2020-02-27T15:24:10.000Z",
-            "harmless": 55,
-            "http_response_code": 200,
-            "id": "0146b3be6e724b10e620e8090821a8253772af779a4996145cdf295c01e0900c",
+            "id": [
+                "0146b3be6e724b10e620e8090821a8253772af779a4996145cdf295c01e0900c"
+            ],
             "last_seen": "2020-02-27T15:24:10.000Z",
-            "last_submission_date": "2020-02-27T15:24:10.000Z",
-            "malicious": 8,
             "modified_at": "2025-01-27T19:51:31.000Z",
-            "positives": 8,
-            "score": 1,
-            "severity": "SEVERITY_NONE",
-            "times_submitted": 1,
-            "top_level_domain": [
-                "ru"
-            ],
+            "name": "0146b3be6e724b10e620e8090821a8253772af779a4996145cdf295c01e0900c",
             "type": "url",
-            "undetected": 8,
             "url": {
-                "id": "0146b3be6e724b10e620e8090821a8253772af779a4996145cdf295c01e0900c",
+                "full": "http://securepasswel.ru/files/grapes_encrypted_87ed10f.bin",
                 "original": "http://securepasswel.ru/files/grapes_encrypted_87ed10f.bin"
-            },
-            "user_tags": [
-                "preserve_original_event",
-                "preserve_duplicate_custom_fields",
-                "forwarded",
-                "google_threat_intelligence-iot"
-            ],
-            "verdict": "VERDICT_UNDETECTED"
+            }
         }
     },
     "url": {
@@ -1195,10 +959,7 @@ An example event for `iot` looks as following:
 | gti.iot.attributes.type_tags | The broader tags related to the specific file type. | keyword |
 | gti.iot.attributes.url | The original URL to be scanned. | keyword |
 | gti.iot.attributes.vhash | An in-house similarity clustering algorithm value, based on a simple structural feature hash allows you to find similar files. | keyword |
-| gti.iot.id.domain | The domain address associated with the entity. | keyword |
-| gti.iot.id.file | The file object ID (SHA256 hash) associated with the entity. | keyword |
-| gti.iot.id.ip | The IP address associated with the entity. | ip |
-| gti.iot.id.url | The URL address associated with the entity. | keyword |
+| gti.iot.id | The unique ID associated with the entity. | keyword |
 | gti.iot.relationships.campaigns.attributes.collection_type | Identifies the type of the object. | keyword |
 | gti.iot.relationships.campaigns.attributes.name | Campaign's name. | keyword |
 | gti.iot.relationships.campaigns.id | The unique identifier associated with a specific relationship entry. | keyword |
@@ -1231,65 +992,4 @@ An example event for `iot` looks as following:
 | input.type | Type of filebeat input. | keyword |
 | labels.is_transform_source | Distinguishes between documents that are a source for a transform and documents that are an output of a transform, to facilitate easier filtering. | constant_keyword |
 | log.offset | Log offset. | long |
-| threat.indicator.as.owner |  | keyword |
-| threat.indicator.attributes |  | keyword |
-| threat.indicator.campaigns.attributes.collection_type |  | keyword |
-| threat.indicator.campaigns.attributes.name |  | keyword |
-| threat.indicator.campaigns.id |  | keyword |
-| threat.indicator.campaigns.type |  | keyword |
-| threat.indicator.categories |  | keyword |
-| threat.indicator.collections.attributes.collection_type |  | keyword |
-| threat.indicator.collections.attributes.name |  | keyword |
-| threat.indicator.collections.id |  | keyword |
-| threat.indicator.collections.type |  | keyword |
-| threat.indicator.created |  | date |
-| threat.indicator.domain |  | keyword |
-| threat.indicator.feed_type |  | keyword |
-| threat.indicator.first_submission_date |  | date |
-| threat.indicator.harmless |  | long |
-| threat.indicator.http_response_code |  | long |
-| threat.indicator.id |  | keyword |
-| threat.indicator.jarm |  | keyword |
-| threat.indicator.last_analysis_results.engine |  | keyword |
-| threat.indicator.last_analysis_results.result |  | keyword |
-| threat.indicator.last_submission_date |  | date |
-| threat.indicator.malicious |  | long |
-| threat.indicator.malware_families.attributes.collection_type |  | keyword |
-| threat.indicator.malware_families.attributes.name |  | keyword |
-| threat.indicator.malware_families.id |  | keyword |
-| threat.indicator.malware_families.type |  | keyword |
-| threat.indicator.meaningful_name |  | keyword |
-| threat.indicator.network |  | keyword |
-| threat.indicator.outgoing_links |  | keyword |
-| threat.indicator.positives |  | long |
-| threat.indicator.regional_internet_registry |  | keyword |
-| threat.indicator.reports.attributes.collection_type |  | keyword |
-| threat.indicator.reports.attributes.name |  | keyword |
-| threat.indicator.reports.id |  | keyword |
-| threat.indicator.reports.type |  | keyword |
-| threat.indicator.score |  | long |
-| threat.indicator.severity |  | keyword |
-| threat.indicator.software_toolkits.attributes.collection_type |  | keyword |
-| threat.indicator.software_toolkits.attributes.name |  | keyword |
-| threat.indicator.software_toolkits.id |  | keyword |
-| threat.indicator.software_toolkits.type |  | keyword |
-| threat.indicator.suspicious |  | long |
-| threat.indicator.threat_actors.attributes.collection_type |  | keyword |
-| threat.indicator.threat_actors.attributes.name |  | keyword |
-| threat.indicator.threat_actors.id |  | keyword |
-| threat.indicator.threat_actors.type |  | keyword |
-| threat.indicator.timeout |  | long |
-| threat.indicator.times_submitted |  | long |
-| threat.indicator.top_level_domain |  | keyword |
-| threat.indicator.type_tags |  | keyword |
-| threat.indicator.undetected |  | long |
-| threat.indicator.url.id |  | keyword |
-| threat.indicator.user_tags |  | keyword |
-| threat.indicator.verdict |  | keyword |
-| threat.indicator.vhash |  | keyword |
-| threat.indicator.vulnerabilities.attributes.collection_type |  | keyword |
-| threat.indicator.vulnerabilities.attributes.name |  | keyword |
-| threat.indicator.vulnerabilities.id |  | keyword |
-| threat.indicator.vulnerabilities.type |  | keyword |
-| threat.indicator.web_page_title |  | keyword |
 

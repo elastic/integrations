@@ -10,18 +10,15 @@ source:
       must_not:
         - exists:
             field: error.message
-        - match_phrase:
-            event.dataset: ti_google_threat_intelligence.enriched_ioc
 dest:
   index: "logs-ti_google_threat_intelligence_latest.dest_domain_ioc-1"
   aliases:
     - alias: "logs-ti_google_threat_intelligence_latest.domain_ioc"
       move_on_creation: true
-  pipeline: 0.1.0-ti_google_threat_intelligence-latest_domain_ioc-transform-pipeline
 latest:
   unique_key:
     - event.dataset
-    - threat.indicator.domain
+    - threat.indicator.id
   sort: "@timestamp"
 description: >-
   Latest Domain IOC from Google Threat Intelligence API. As Domain IOC get updated, this transform stores only the latest state of each Domain IOC inside the destination index. Thus the transform's destination index contains only the latest state of the Domain IOC.

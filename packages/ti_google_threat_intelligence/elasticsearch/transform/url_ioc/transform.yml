@@ -1,7 +1,20 @@
 # Use of "*" to use all namespaces defined.
 source:
   index:
-    - "logs-ti_google_threat_intelligence.*"
+    - "logs-ti_google_threat_intelligence.cryptominer*"
+    - "logs-ti_google_threat_intelligence.iot*"
+    - "logs-ti_google_threat_intelligence.mobile*"
+    - "logs-ti_google_threat_intelligence.threat_actor*"
+    - "logs-ti_google_threat_intelligence.first_stage_delivery_vectors*"
+    - "logs-ti_google_threat_intelligence.linux*"
+    - "logs-ti_google_threat_intelligence.osx*"
+    - "logs-ti_google_threat_intelligence.trending*"
+    - "logs-ti_google_threat_intelligence.infostealer*"
+    - "logs-ti_google_threat_intelligence.malicious_network_infrastructure*"
+    - "logs-ti_google_threat_intelligence.phishing*"
+    - "logs-ti_google_threat_intelligence.vulnerability_weaponization*"
+    - "logs-ti_google_threat_intelligence.malware*"
+    - "logs-ti_google_threat_intelligence.ransomware*"
   query:
     bool:
       filter:
@@ -10,18 +23,15 @@ source:
       must_not:
         - exists:
             field: error.message
-        - match_phrase:
-            event.dataset: ti_google_threat_intelligence.enriched_ioc
 dest:
   index: "logs-ti_google_threat_intelligence_latest.dest_url_ioc-1"
   aliases:
     - alias: "logs-ti_google_threat_intelligence_latest.url_ioc"
       move_on_creation: true
-  pipeline: 0.1.0-ti_google_threat_intelligence-latest_url_ioc-transform-pipeline
 latest:
   unique_key:
     - event.dataset
-    - threat.indicator.url.id
+    - threat.indicator.id
   sort: "@timestamp"
 description: >-
   Latest URL IOC from Google Threat Intelligence API. As URL IOC get updated, this transform stores only the latest state of each URL IOC inside the destination index. Thus the transform's destination index contains only the latest state of the URL IOC.

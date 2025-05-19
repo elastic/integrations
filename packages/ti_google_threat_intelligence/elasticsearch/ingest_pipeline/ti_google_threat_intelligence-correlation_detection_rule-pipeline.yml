@@ -57,7 +57,7 @@ processors:
   - set:
       field: ecs.version
       tag: set_ecs_version
-      value: 8.11.0
+      value: 8.17.0
   - set:
       field: event.kind
       tag: set_event_kind_to_enrichment
@@ -90,29 +90,141 @@ processors:
   - rename:
       field: temp_fields.indicator
       tag : rename_temp_fields_to_indicator
-      target_field: threat.indicator
+      target_field: gti.threat.indicator
       ignore_missing: true
   - rename:
       field: temp_fields.matched.atomic
       tag : rename_temp_fields_to_matched_value
-      target_field: threat.indicator.matched.value
+      target_field: gti.threat.indicator.matched.value
       ignore_missing: true
   - rename:
       field: temp_fields.matched.field
       tag : rename_temp_fields_to_matched_field
-      target_field: threat.indicator.matched.field
+      target_field: gti.threat.indicator.matched.field
       ignore_missing: true
   - rename:
       field: temp_fields.dataset
-      tag : rename_temp_fields_to_matched_field
-      target_field: threat.indicator.matched.dataset
+      tag : rename_temp_fields_to_matched_dataset
+      target_field: gti.threat.indicator.matched.dataset
       ignore_missing: true
   - rename:
       field: temp_fields.module
-      tag : rename_temp_fields_to_matched_field
-      target_field: threat.indicator.matched.module
+      tag : rename_temp_fields_to_matched_module
+      target_field: gti.threat.indicator.matched.module
       ignore_missing: true
 # Create ECS-compliant mappings for threat.indicator fields.
+  - set:
+      field: threat.feed.name
+      tag: set_threat_feed_name
+      copy_from: gti.threat.indicator.feed.name
+      ignore_empty_value: true
+  - set:
+      field: threat.indicator.as.number
+      tag: set_threat_indicator_as_number_from_attributes_as_number
+      copy_from: gti.threat.indicator.attributes.as_number
+      ignore_empty_value: true
+  - set:
+      field: threat.indicator.geo.continent_code
+      tag: set_threat_indicator_geo_continent_code_from_attributes_continent
+      copy_from: gti.threat.indicator.attributes.continent
+      ignore_empty_value: true
+  - set:
+      field: threat.indicator.geo.country_iso_code
+      tag: set_threat_indicator_geo_country_iso_code_from_attributes_country
+      copy_from: gti.threat.indicator.attributes.country
+      ignore_empty_value: true
+  - set:
+      field: threat.indicator.first_seen
+      tag: set_threat_indicator_first_seen_from_event_created
+      copy_from: gti.threat.indicator.attributes.creation_date
+      ignore_empty_value: true
+  - set:
+      field: threat.indicator.last_seen
+      tag: set_threat_indicator_last_seen_from_attributes_last_analysis_date
+      copy_from: gti.threat.indicator.attributes.last_analysis_date
+      ignore_empty_value: true
+  - set:
+      field: threat.indicator.url.original
+      tag: set_threat_indicator_url_original_from_attributes_url
+      copy_from: gti.threat.indicator.attributes.url
+      ignore_empty_value: true
+  - set:
+      field: threat.indicator.url.full
+      tag: set_threat_indicator_url_full_from_url_original
+      value: "{{{threat.indicator.url.original}}}"
+      ignore_empty_value: true
+  - set:
+      field: threat.indicator.url.full
+      tag: set_threat_indicator_url_full_from_attributes_last_final_url
+      copy_from: gti.threat.indicator.attributes.last_final_url
+      ignore_empty_value: true
+  - set:
+      field: threat.indicator.modified_at
+      tag: set_threat_indicator_modified_at_from_attributes_last_modification_date
+      copy_from: gti.threat.indicator.attributes.last_modification_date
+      ignore_empty_value: true
+  - set:
+      field: threat.indicator.file.hash.md5
+      tag: set_threat_indicator_file_hash_md5_from_attributes_md5
+      copy_from: gti.threat.indicator.attributes.md5
+      ignore_empty_value: true
+  - set:
+      field: threat.indicator.file.name
+      tag: set_threat_indicator_file_name_from_attributes_names
+      copy_from: gti.threat.indicator.attributes.names
+      ignore_empty_value: true
+  - script:
+      description: Set threat indicator type from gti threat.indicator type.
+      if: ctx.gti?.threat?.indicator?.type != null
+      tag: set_threat_indicator_type_from_gti_type
+      lang: painless
+      params:
+        domain: domain-name
+        file: file
+        ip_address: ipv4-addr
+        url: url
+      source: |-
+        if (ctx.threat == null) {
+          ctx.threat = new HashMap();
+        }
+        if (ctx.threat.indicator == null) {
+          ctx.threat.indicator = new HashMap();
+        }
+        ctx.threat.indicator.type = params[ctx.gti.threat.indicator.type];
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - append:
+      field: threat.indicator.id
+      tag: append_threat_indicator_id
+      value: '{{{gti.threat.indicator.id}}}'
+      allow_duplicates: false
+  - set:
+      field: threat.indicator.name
+      tag: set_threat_indicator_name_from_id
+      copy_from: gti.threat.indicator.id
+      ignore_empty_value: true
+  - set:
+      field: threat.indicator.file.hash.sha256
+      tag: set_threat_indicator_file_hash_sha256_from_id
+      copy_from: gti.threat.indicator.id
+      if: ctx.gti?.threat?.indicator?.type == 'file'
+      ignore_empty_value: true
+  - set:
+      field: threat.indicator.ip
+      tag: set_threat_indicator_url_from_id
+      copy_from: gti.threat.indicator.id
+      if: ctx.gti?.threat?.indicator?.type == 'ip_address'
+      ignore_empty_value: true
+  - uri_parts:
+      field: threat.indicator.url.original
+      tag: uri_parts_url_original
+      ignore_missing: true
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - append:
       field: related.hash
       tag: append_file_hash_md5_into_related_hash
@@ -122,15 +234,15 @@ processors:
   - append:
       field: related.hash
       tag: append_vhash_into_related_hash
-      value: '{{{threat.indicator.vhash}}}'
+      value: '{{{gti.threat.indicator.vhash}}}'
       allow_duplicates: false
-      if: ctx.threat?.indicator?.vhash != null
+      if: ctx.gti?.threat?.indicator?.vhash != null
   - append:
       field: related.hash
       tag: append_jarm_into_related_hash
-      value: '{{{threat.indicator.jarm}}}'
+      value: '{{{gti.threat.indicator.jarm}}}'
       allow_duplicates: false
-      if: ctx.threat?.indicator?.jarm != null
+      if: ctx.gti?.threat?.indicator?.jarm != null
   - append:
       field: related.hash
       tag: append_file_hash_sha256_into_related_hash
@@ -144,14 +256,9 @@ processors:
       allow_duplicates: false
       if: ctx.threat?.indicator?.ip != null
   - set:
-      field: event.created
-      tag: set_gti_enriched_ioc_event_created
-      copy_from: threat.indicator.created
-      ignore_empty_value: true
-  - set:
       field: http.response.status_code
       tag: set_http_response_status_code
-      copy_from: threat.indicator.http_response_code
+      copy_from: gti.threat.indicator.http_response_code
       ignore_empty_value: true
   - set:
       field: event.ingested

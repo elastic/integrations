@@ -9,12 +9,14 @@ source:
             kibana.alert.rule.tags: Google Threat Intelligence
         - match_phrase:
             kibana.alert.rule.category: Indicator Match Rule
+      must_not:
+        - match_phrase:
+            kibana.alert.rule.tags: IOC Stream
 dest:
   index: "logs-ti_google_threat_intelligence.enriched_ioc-1"
   aliases:
     - alias: "logs-ti_google_threat_intelligence.enriched_ioc"
       move_on_creation: true
-  pipeline: 0.1.0-ti_google_threat_intelligence-correlation_detection_rule-pipeline
 latest:
   unique_key:
     - kibana.alert.uuid
