@@ -232,6 +232,7 @@ Please refer to the following [document](https://www.elastic.co/guide/en/ecs/cur
 | azure.graphactivitylogs.properties.app_id | The identifier for the application. | keyword |
 | azure.graphactivitylogs.properties.at_content | Reserved for future use. | keyword |
 | azure.graphactivitylogs.properties.billed_size | The record size in bytes. | double |
+| azure.graphactivitylogs.properties.c_device_id |  | keyword |
 | azure.graphactivitylogs.properties.client_auth_method | Indicates how the client was authenticated. For a public client, the value is 0. If client ID and client secret are used, the value is 1. If a client certificate was used for authentication, the value is 2. | integer |
 | azure.graphactivitylogs.properties.client_request_id | The client request identifier when sent. If no client request identifier is sent, the value will be equal to the operation identifier. | keyword |
 | azure.graphactivitylogs.properties.identity_provider | The identity provider that authenticated the subject of the token. | keyword |
