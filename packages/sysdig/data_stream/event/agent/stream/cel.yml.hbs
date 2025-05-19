@@ -30,8 +30,8 @@ program: |
       {}
     :
       {
-        "start_time": state.?cursor.last_timestamp.orValue(timestamp((now - duration(state.initial_interval))).as(s, int(s)*1000 + s.getMilliseconds())*1000000),
-        "end_time": (int(timestamp(now))*1000 + now.getMilliseconds())*1000000,
+        "start_time": state.?cursor.last_timestamp.orValue(timestamp((now - duration(state.initial_interval))).as(ts, int(ts)*1000000000 + int(ts - timestamp(int(ts))))),
+        "end_time": now.as(ts, int(ts)*1000000000 + int(ts - timestamp(int(ts)))),
       }
   ).as(filter, state.with(
     request("GET",

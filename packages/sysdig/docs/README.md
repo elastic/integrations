@@ -336,9 +336,9 @@ An example event for `event` looks as following:
 {
     "@timestamp": "2025-04-05T03:00:01.1159286Z",
     "agent": {
-        "ephemeral_id": "ca0565a4-e614-4914-ac1d-cb0541e3e3e3",
-        "id": "c3e9d7b3-bd72-4ef6-b34f-0956971ed698",
-        "name": "elastic-agent-86708",
+        "ephemeral_id": "9c2740ce-0231-4f1c-9b03-ba17c5430743",
+        "id": "57e0981b-86e9-4bda-a293-dde14ffd115d",
+        "name": "elastic-agent-91842",
         "type": "filebeat",
         "version": "8.14.1"
     },
@@ -365,14 +365,14 @@ An example event for `event` looks as following:
     },
     "data_stream": {
         "dataset": "sysdig.event",
-        "namespace": "57780",
+        "namespace": "31832",
         "type": "logs"
     },
     "ecs": {
         "version": "8.11.0"
     },
     "elastic_agent": {
-        "id": "c3e9d7b3-bd72-4ef6-b34f-0956971ed698",
+        "id": "57e0981b-86e9-4bda-a293-dde14ffd115d",
         "snapshot": false,
         "version": "8.14.1"
     },
@@ -383,7 +383,7 @@ An example event for `event` looks as following:
         ],
         "dataset": "sysdig.event",
         "id": "1a334cdef0060123456789abcdef64a9",
-        "ingested": "2025-05-15T20:56:16Z",
+        "ingested": "2025-05-19T08:53:26Z",
         "kind": "event",
         "original": "{\"category\":\"runtime\",\"content\":{\"fields\":{\"container.image.repository\":\"docker.io/library/python\",\"container.name\":\"shell-scripting\",\"evt.res\":\"SUCCESS\",\"evt.type\":\"execve\",\"group.gid\":\"0\",\"group.name\":\"root\",\"proc.args\":\"\",\"proc.cmdline\":\"sh\",\"proc.cwd\":\"/\",\"proc.exepath\":\"/usr/bin/dash\",\"proc.hash.sha256\":\"f5adb8bf0100ed0f8c7782ca5f92814e9229525a4b4e0d401cf3bea09ac960a6\",\"proc.name\":\"sh\",\"proc.pcmdline\":\"bash -c echo IyEvYmluL2Jhc2gKYXB0IHVwZGF0ZSAteTsgYXB0IGluc3RhbGwgLXkgbmNhdApuYyAtbHYgMTMzNyAmCg== | base64 -d | sh; echo cHl0aG9uMyAtYyAnaW1wb3J0IG9zLHB0eSxzb2NrZXQ7cz1zb2NrZXQuc29ja2V0KCk7cy5jb25uZWN0KCgiMC4wLjAuMCIsMTMzNykpO1tvcy5kdXAyKHMuZmlsZW5vKCksZilmb3IgZiBpbigwLDEsMildO3B0eS5zcGF3bihbInNoIiwgIi1jIiwgInNsZWVwIDU7bHMgLWE7IGV4aXQgMCJdKScK | base64 -d | sh\",\"proc.pid\":\"1372469\",\"proc.pid.ts\":\"1743822001115100312\",\"proc.pname\":\"bash\",\"proc.ppid\":\"1372453\",\"proc.ppid.ts\":\"1743822000952432134\",\"proc.sid\":\"1\",\"user.loginname\":\"\\u003cNA\\u003e\",\"user.loginuid\":\"-1\",\"user.name\":\"root\",\"user.uid\":\"0\"},\"origin\":\"Secure UI\",\"output\":\"Custom rule. The shell-scripting with image docker.io/library/python by parent bash under user root (proc.name=sh proc.exepath-custom=/usr/bin/dash proc.pname=bash gparent=runc ggparent=containerd-shim gggparent=systemd image=docker.io/library/python user.uid=0 proc.cmdline=sh proc.pcmdline=bash -c echo IyEvYmluL2Jhc2gKYXB0IHVwZGF0ZSAteTsgYXB0IGluc3RhbGwgLXkgbmNhdApuYyAtbHYgMTMzNyAmCg== | base64 -d | sh; echo cHl0aG9uMyAtYyAnaW1wb3J0IG9zLHB0eSxzb2NrZXQ7cz1zb2NrZXQuc29ja2V0KCk7cy5jb25uZWN0KCgiMC4wLjAuMCIsMTMzNykpO1tvcy5kdXAyKHMuZmlsZW5vKCksZilmb3IgZiBpbigwLDEsMildO3B0eS5zcGF3bihbInNoIiwgIi1jIiwgInNsZWVwIDU7bHMgLWE7IGV4aXQgMCJdKScK | base64 -d | sh user.name=root user.loginuid=-1 proc.args= container.name=shell-scripting evt.type=execve evt.res=SUCCESS proc.pid=1372469 proc.cwd=/ proc.ppid=1372453 proc.sid=1 proc.exepath=/usr/bin/dash user.loginname=\\u003cNA\\u003e group.gid=0 group.name=root proc.pid.ts=1743822001115100312 proc.ppid.ts=1743822000952432134 proc.hash.sha256=f5adb8bf0100ed0f8c7782ca5f92814e9229525a4b4e0d401cf3bea09ac960a6)\",\"policyId\":10569534,\"ruleName\":\"My test rule custom\",\"ruleSubType\":0,\"ruleTags\":[\"My-tag-custom-1-hello-world\",\"MITTRE-WHATEVER\"],\"ruleType\":6,\"type\":\"workloadRuntimeDetection\"},\"description\":\"This is just a dumb policy to test custom policies\",\"engine\":\"falco\",\"id\":\"1a334cdef0060123456789abcdef64a9\",\"labels\":{\"cloudProvider.account.id\":\"012345678912\",\"cloudProvider.name\":\"gcp\",\"cloudProvider.region\":\"us-central1\",\"container.image.digest\":\"sha256:aa7b73608abcfb021247bbb4c111435234a0459298a6da610681097a54ca2c2a\",\"container.image.id\":\"ef0f72a55bd2\",\"container.image.repo\":\"docker.io/library/python\",\"container.image.tag\":\"3.9.18-slim\",\"container.label.io.kubernetes.container.name\":\"shell-scripting\",\"container.label.io.kubernetes.pod.name\":\"shell-scripting-29063700-123ab\",\"container.label.io.kubernetes.pod.namespace\":\"default\",\"container.name\":\"shell-scripting\",\"gcp.location\":\"us-central1\",\"gcp.projectId\":\"012345678912\",\"host.hostName\":\"gke-cluster-gcp-demo-san-default-pool-11234abc-abcd\",\"host.mac\":\"01:00:5e:90:10:00\",\"kubernetes.cluster.name\":\"gke-alliances-demo-6\",\"kubernetes.cronJob.name\":\"shell-scripting\",\"kubernetes.job.name\":\"shell-scripting-29063700\",\"kubernetes.namespace.name\":\"default\",\"kubernetes.node.name\":\"gke-cluster-gcp-demo-san-default-pool-12345678-abcd\",\"kubernetes.pod.name\":\"shell-scripting-12345678-123ab\",\"kubernetes.workload.name\":\"shell-scripting\",\"kubernetes.workload.type\":\"cronjob\"},\"name\":\"Manuel test policy\",\"originator\":\"policy\",\"rawEventCategory\":\"runtime\",\"rawEventOriginator\":\"linuxAgent\",\"severity\":4,\"source\":\"syscall\",\"sourceDetails\":{\"subType\":\"container\",\"type\":\"workload\"},\"timestamp\":1743822001115928600}",
         "outcome": "success",
@@ -582,6 +582,7 @@ An example event for `event` looks as following:
 | sysdig.event.content.fields.container.label.io.kubernetes.pod.namespace |  | keyword |
 | sysdig.event.content.fields.container.mounts |  | keyword |
 | sysdig.event.content.fields.container.name |  | keyword |
+| sysdig.event.content.fields.container.name.text | Multi-field of `sysdig.event.content.fields.container.name`. | match_only_text |
 | sysdig.event.content.fields.container.privileged |  | boolean |
 | sysdig.event.content.fields.ct.id |  | keyword |
 | sysdig.event.content.fields.ct.name |  | keyword |
@@ -609,17 +610,23 @@ An example event for `event` looks as following:
 | sysdig.event.content.fields.group.gid |  | keyword |
 | sysdig.event.content.fields.group.name |  | keyword |
 | sysdig.event.content.fields.proc.args |  | keyword |
-| sysdig.event.content.fields.proc.cmdline |  | keyword |
+| sysdig.event.content.fields.proc.cmdline |  | wildcard |
+| sysdig.event.content.fields.proc.cmdline.text | Multi-field of `sysdig.event.content.fields.proc.cmdline`. | text |
 | sysdig.event.content.fields.proc.cwd |  | keyword |
+| sysdig.event.content.fields.proc.cwd.text | Multi-field of `sysdig.event.content.fields.proc.cwd`. | match_only_text |
 | sysdig.event.content.fields.proc.exepath |  | keyword |
+| sysdig.event.content.fields.proc.exepath.text | Multi-field of `sysdig.event.content.fields.proc.exepath`. | match_only_text |
 | sysdig.event.content.fields.proc.hash.sha256 |  | keyword |
 | sysdig.event.content.fields.proc.name |  | keyword |
+| sysdig.event.content.fields.proc.name.text | Multi-field of `sysdig.event.content.fields.proc.name`. | match_only_text |
 | sysdig.event.content.fields.proc.pcmdline |  | wildcard |
 | sysdig.event.content.fields.proc.pcmdline.text | Multi-field of `sysdig.event.content.fields.proc.pcmdline`. | text |
 | sysdig.event.content.fields.proc.pexepath |  | keyword |
+| sysdig.event.content.fields.proc.pexepath.text | Multi-field of `sysdig.event.content.fields.proc.pexepath`. | match_only_text |
 | sysdig.event.content.fields.proc.pid |  | long |
 | sysdig.event.content.fields.proc.pid_ts |  | date |
 | sysdig.event.content.fields.proc.pname |  | keyword |
+| sysdig.event.content.fields.proc.pname.text | Multi-field of `sysdig.event.content.fields.proc.pname`. | match_only_text |
 | sysdig.event.content.fields.proc.ppid |  | long |
 | sysdig.event.content.fields.proc.ppid_ts |  | date |
 | sysdig.event.content.fields.proc.sid |  | keyword |
