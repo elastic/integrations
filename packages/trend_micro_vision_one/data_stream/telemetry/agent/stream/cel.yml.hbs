@@ -42,6 +42,7 @@ state:
   min_time_range: {{min_time_range}}
   max_time_range: {{max_time_range}}
   managed_pipeline_description: {{managed_pipeline_description}}
+  hard_coded_pipeline_id: {{hard_coded_pipeline_id}}
   want_more: false
   registration_count: 0
 program: |
@@ -199,80 +200,98 @@ program: |
 
     :
 
-      //--------------------------------------------------------------------
+      //------------------------------------------------------------------------
       // no pipeline id -> setup: try to get the pipeline id
-      //--------------------------------------------------------------------
+      //------------------------------------------------------------------------
 
-      request("GET", state.url.trim_suffix("/") + "/v3.0/datalake/dataPipelines").with({
-        "Header": { "Authorization": ["Bearer " + state.api_token] }
-      }).do_request().as(resp,
-        (resp.StatusCode != 200) ?
-          state.with({
-            "events": {
-              "error": {
-                "code": string(resp.StatusCode),
-                "id": string(resp.Status),
-                "message": "GET list pipelines: "+(
-                  size(resp.Body) != 0 ?  string(resp.Body) : string(resp.Status) + ' (' + string(resp.StatusCode) + ')'
-                ),
+      (state.hard_coded_pipeline_id != null && state.hard_coded_pipeline_id != '') ?
+
+        //----------------------------------------------------------------------
+        // a hard-coded pipeline id was provided -> return it in the cursor
+        //----------------------------------------------------------------------
+
+        state.with({
+          "events": [{"event": {"reason": "want_more"}}],
+          "cursor": state.?cursor.orValue({}).with({ "pipeline_id": state.hard_coded_pipeline_id }),
+          "want_more": true, // use the fetched pipeline id immediately
+        })
+
+      :
+
+        //----------------------------------------------------------------------
+        // no hard-coded pipeline id was provided -> list existing pipelines
+        //----------------------------------------------------------------------
+
+        request("GET", state.url.trim_suffix("/") + "/v3.0/datalake/dataPipelines").with({
+          "Header": { "Authorization": ["Bearer " + state.api_token] }
+        }).do_request().as(resp,
+          (resp.StatusCode != 200) ?
+            state.with({
+              "events": {
+                "error": {
+                  "code": string(resp.StatusCode),
+                  "id": string(resp.Status),
+                  "message": "GET list pipelines: "+(
+                    size(resp.Body) != 0 ?  string(resp.Body) : string(resp.Status) + ' (' + string(resp.StatusCode) + ')'
+                  ),
+                },
               },
-            },
-            "want_more": false,
-          })
-        :
-          bytes(resp.Body).decode_json().as(body,
-            body.items.filter(i, i.description == state.managed_pipeline_description)[?0].id.orValue(null).as(id,
-              (id != null) ?
+              "want_more": false,
+            })
+          :
+            bytes(resp.Body).decode_json().as(body,
+              body.items.filter(i, i.description == state.managed_pipeline_description)[?0].id.orValue(null).as(id,
+                (id != null) ?
 
-                //------------------------------------------------------------
-                // got the pipeline id -> return it in the cursor
-                //------------------------------------------------------------
+                  //------------------------------------------------------------
+                  // got the pipeline id -> return it in the cursor
+                  //------------------------------------------------------------
 
-                state.with({
-                  "events": [{"event": {"reason": "want_more"}}],
-                  "cursor": state.?cursor.orValue({}).with({ "pipeline_id": id }),
-                  "want_more": true, // use the fetched pipeline id immediately
-                })
+                  state.with({
+                    "events": [{"event": {"reason": "want_more"}}],
+                    "cursor": state.?cursor.orValue({}).with({ "pipeline_id": id }),
+                    "want_more": true, // use the fetched pipeline id immediately
+                  })
 
-              :
+                :
 
-                //------------------------------------------------------------
-                // no pipeline id found -> register a new pipeline
-                //------------------------------------------------------------
+                  //------------------------------------------------------------
+                  // no pipeline id found -> register a new pipeline
+                  //------------------------------------------------------------
 
-                request("POST", state.url.trim_suffix("/") + "/v3.0/datalake/dataPipelines").with({
-                  "Header": {
-                    "Content-Type": ["application/json;charset=utf-8"],
-                    "Authorization": ["Bearer " + state.api_token],
-                  },
-                  "Body": {
-                    "type": "telemetry",
-                    "subType": ["all"],
-                    "description": state.managed_pipeline_description,
-                  }.encode_json(),
-                }).do_request().as(resp,
-                  (resp.StatusCode != 201) ?
-                    state.with({
-                      "events": {
-                        "error": {
-                          "code": string(resp.StatusCode),
-                          "id": string(resp.Status),
-                          "message": "POST register a new pipeline: "+(
-                            size(resp.Body) != 0 ?  string(resp.Body) : string(resp.Status) + ' (' + string(resp.StatusCode) + ')'
-                          ),
+                  request("POST", state.url.trim_suffix("/") + "/v3.0/datalake/dataPipelines").with({
+                    "Header": {
+                      "Content-Type": ["application/json;charset=utf-8"],
+                      "Authorization": ["Bearer " + state.api_token],
+                    },
+                    "Body": {
+                      "type": "telemetry",
+                      "subType": ["all"],
+                      "description": state.managed_pipeline_description,
+                    }.encode_json(),
+                  }).do_request().as(resp,
+                    (resp.StatusCode != 201) ?
+                      state.with({
+                        "events": {
+                          "error": {
+                            "code": string(resp.StatusCode),
+                            "id": string(resp.Status),
+                            "message": "POST register a new pipeline: "+(
+                              size(resp.Body) != 0 ?  string(resp.Body) : string(resp.Status) + ' (' + string(resp.StatusCode) + ')'
+                            ),
+                          },
                         },
-                      },
-                      "want_more": false,
-                    })
-                  :
-                    // no pipeline id is returned, but it will be found next time
-                    state.with({
-                      "events": [{"event": {"reason": "want_more"}}],
-                      "want_more": int(state.registration_count) == 0, // avoid a busy loop by waiting if the registration was previously attempted
-                      "registration_count": int(state.registration_count) + 1,
-                    })
-                )
+                        "want_more": false,
+                      })
+                    :
+                      // no pipeline id is returned, but it will be found next time
+                      state.with({
+                        "events": [{"event": {"reason": "want_more"}}],
+                        "want_more": int(state.registration_count) == 0, // avoid a busy loop by waiting if the registration was previously attempted
+                        "registration_count": int(state.registration_count) + 1,
+                      })
+                  )
 
+              )
             )
-          )
-      )
+        )
