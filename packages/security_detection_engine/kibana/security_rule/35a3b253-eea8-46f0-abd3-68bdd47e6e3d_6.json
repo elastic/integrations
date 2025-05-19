@@ -1,0 +1,62 @@
+{
+    "attributes": {
+        "anomaly_threshold": 75,
+        "author": [
+            "Elastic"
+        ],
+        "description": "A machine learning job has detected high bytes of data written to an external device. In a typical operational setting, there is usually a predictable pattern or a certain range of data that is written to external devices. An unusually large amount of data being written is anomalous and can signal illicit data copying or transfer activities.",
+        "from": "now-2h",
+        "interval": "15m",
+        "license": "Elastic License v2",
+        "machine_learning_job_id": "ded_high_bytes_written_to_external_device",
+        "name": "Spike in Bytes Sent to an External Device",
+        "note": "## Triage and analysis\n\n> **Disclaimer**:\n> This investigation guide was created using generative AI technology and has been reviewed to improve its accuracy and relevance. While every effort has been made to ensure its quality, we recommend validating the content and adapting it to suit your specific environment and operational needs.\n\n### Investigating Spike in Bytes Sent to an External Device\n\nThe detection rule leverages machine learning to identify anomalies in data transfer patterns to external devices, which typically follow predictable trends. Adversaries may exploit this by transferring large volumes of data to external media for exfiltration. The rule detects deviations from normal behavior, flagging potential illicit data transfers for further investigation.\n\n### Possible investigation steps\n\n- Review the alert details to identify the specific external device involved and the volume of data transferred.\n- Correlate the time of the anomaly with user activity logs to determine if the data transfer aligns with any known or authorized user actions.\n- Check historical data transfer patterns for the involved device to assess whether the detected spike is truly anomalous or part of a legitimate operational change.\n- Investigate the user account associated with the data transfer for any signs of compromise or unusual behavior, such as recent password changes or failed login attempts.\n- Examine the content and type of data transferred, if possible, to assess the sensitivity and potential impact of the data exfiltration.\n- Cross-reference the device and user activity with other security alerts or incidents to identify any related suspicious activities or patterns.\n\n### False positive analysis\n\n- Regular backups to external devices can trigger false positives. Users should identify and exclude backup operations from the rule's scope by specifying known backup software or devices.\n- Software updates or installations that involve large data transfers to external media may be misclassified. Users can create exceptions for these activities by defining specific update processes or installation paths.\n- Data archiving processes that periodically transfer large volumes of data to external storage can be mistaken for exfiltration. Users should whitelist these scheduled archiving tasks by recognizing the associated patterns or schedules.\n- Media content creation or editing, such as video production, often involves significant data transfers. Users can exclude these activities by identifying and excluding the relevant applications or file types.\n- Temporary data transfers for legitimate business purposes, like transferring project files to a client, can be flagged. Users should document and exclude these known business processes by specifying the involved devices or file types.\n\n### Response and remediation\n\n- Immediately isolate the affected device from the network to prevent further data exfiltration.\n- Conduct a forensic analysis of the device to identify the source and scope of the data transfer, focusing on the files transferred and any associated processes or applications.\n- Review and revoke any unnecessary permissions or access rights that may have facilitated the data transfer to the external device.\n- Notify the security operations center (SOC) and relevant stakeholders about the incident for awareness and potential escalation.\n- Implement additional monitoring on similar devices and network segments to detect any further anomalous data transfer activities.\n- Update and enforce data transfer policies to restrict unauthorized use of external devices, ensuring compliance with organizational security standards.\n- Consider deploying endpoint detection and response (EDR) solutions to enhance visibility and control over data movements to external devices.",
+        "references": [
+            "https://www.elastic.co/guide/en/security/current/prebuilt-ml-jobs.html",
+            "https://docs.elastic.co/en/integrations/ded",
+            "https://www.elastic.co/blog/detect-data-exfiltration-activity-with-kibanas-new-integration"
+        ],
+        "related_integrations": [
+            {
+                "package": "ded",
+                "version": "^2.3.0"
+            },
+            {
+                "package": "endpoint",
+                "version": "^9.0.0"
+            }
+        ],
+        "risk_score": 21,
+        "rule_id": "35a3b253-eea8-46f0-abd3-68bdd47e6e3d",
+        "setup": "## Setup\n\nThe rule requires the Data Exfiltration Detection integration assets to be installed, as well as network and file events collected by integrations such as Elastic Defend and Network Packet Capture (for network events only).\n\n### Data Exfiltration Detection Setup\nThe Data Exfiltration Detection integration detects data exfiltration activity by identifying abnormalities in network and file events. Anomalies are detected using Elastic's Anomaly Detection feature.\n\n#### Prerequisite Requirements:\n- Fleet is required for Data Exfiltration Detection.\n- To configure Fleet Server refer to the [documentation](https://www.elastic.co/guide/en/fleet/current/fleet-server.html).\n- File events collected by the Elastic Defend integration.\n- To install Elastic Defend, refer to the [documentation](https://www.elastic.co/guide/en/security/current/install-endpoint.html).\n\n#### The following steps should be executed to install assets associated with the Data Exfiltration Detection integration:\n- Go to the Kibana homepage. Under Management, click Integrations.\n- In the query bar, search for Data Exfiltration Detection and select the integration to see more details about it.\n- Follow the instructions under the **Installation** section.\n- For this rule to work, complete the instructions through **Add preconfigured anomaly detection jobs**.\n",
+        "severity": "low",
+        "tags": [
+            "Use Case: Data Exfiltration Detection",
+            "Rule Type: ML",
+            "Rule Type: Machine Learning",
+            "Tactic: Exfiltration",
+            "Resources: Investigation Guide"
+        ],
+        "threat": [
+            {
+                "framework": "MITRE ATT&CK",
+                "tactic": {
+                    "id": "TA0010",
+                    "name": "Exfiltration",
+                    "reference": "https://attack.mitre.org/tactics/TA0010/"
+                },
+                "technique": [
+                    {
+                        "id": "T1052",
+                        "name": "Exfiltration Over Physical Medium",
+                        "reference": "https://attack.mitre.org/techniques/T1052/"
+                    }
+                ]
+            }
+        ],
+        "type": "machine_learning",
+        "version": 6
+    },
+    "id": "35a3b253-eea8-46f0-abd3-68bdd47e6e3d_6",
+    "type": "security-rule"
+}

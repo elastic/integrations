@@ -7,6 +7,9 @@
         - name: detection_ids
           type: long
           description: List of IDs that correlate to the Bot Management Heuristic detections made on a request. Available in Logpush v2 only.
+        - name: detection_tags
+          type: keyword
+          description: List of tags that correlate to the Bot Management Heuristic detections made on a request. Available only for Bot Management customers. To enable this feature, contact your account team.
         - name: score
           type: group
           fields:
@@ -34,6 +37,9 @@
         - name: status
           type: keyword
           description: HTTP status code returned by the cache to the edge.
+        - name: reserve_used
+          type: boolean
+          description: Cache Reserve was used to serve this request.
         - name: tiered_fill
           type: boolean
           description: Tiered Cache was used to serve this request.
@@ -43,6 +49,9 @@
         - name: asn
           type: long
           description: Client AS number.
+        - name: city
+          type: keyword
+          description: Approximate city of the client.
         - name: country
           type: keyword
           description: Country of the client IP address.
@@ -58,6 +67,12 @@
         - name: ip_class
           type: keyword
           description: Class IP.
+        - name: latitude
+          type: keyword
+          description: Approximate latitude of the client.
+        - name: longitude
+          type: keyword
+          description: Approximate longitude of the client.
         - name: mtls
           type: group
           fields:
@@ -70,6 +85,9 @@
                 - name: status
                   type: keyword
                   description: The status of mTLS authentication, Only populated on the first request on an mTLS connection.
+        - name: region_code
+          type: keyword
+          description: The ISO-3166-2 region code of the client IP address.
         - name: request
           type: group
           fields:
@@ -130,6 +148,18 @@
         - name: xrequested_with
           type: text
           description: X-Requested-With HTTP header.
+    - name: content_scan
+      type: group
+      fields:
+        - name: results
+          type: keyword
+          description: List of content scan results.
+        - name: sizes
+          type: long
+          description: List of content object sizes.
+        - name: types
+          type: keyword
+          description: List of content types.
     - name: cookies
       type: flattened
       description: String key-value pairs for Cookies.
@@ -418,6 +448,9 @@
         - name: name
           type: keyword
           description: The human-readable name of the zone.
+    - name: datetime
+      type: date
+      description: Timestamp when the request was received
 - name: log.source.address
   type: keyword
   description: Source address from which the log event was read / sent from.

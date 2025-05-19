@@ -99,6 +99,16 @@ processors:
   - foreach:
       field: ses.device_networks
       if: ctx.ses?.device_networks instanceof List
+      tag: foreach_device_networks_ipv4_for_host_ip
+      processor:
+        append:
+          field: host.ip
+          tag: append_host_ip_from_ipv4
+          value: '{{{_ingest._value.ipv4}}}'
+          allow_duplicates: false
+  - foreach:
+      field: ses.device_networks
+      if: ctx.ses?.device_networks instanceof List
       tag: foreach_device_networks_ipv4
       processor:              
         append:
@@ -152,6 +162,42 @@ processors:
             - append:
                 field: error.message
                 value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - foreach:
+      field: ses.device_networks
+      if: ctx.ses?.device_networks instanceof List
+      tag: foreach_device_networks_mac
+      processor:
+        append:
+          field: _tmp_raw_host_macs
+          tag: append_tmp_raw_host_macs_from_mac
+          value: '{{{_ingest._value.mac}}}'
+          allow_duplicates: false
+  - foreach:
+      field: _tmp_raw_host_macs
+      if: ctx._tmp_raw_host_macs instanceof List
+      tag: foreach_tmp_raw_host_macs_for_gsub
+      processor:
+        gsub:
+          field: _ingest._value
+          tag: gsub_raw_mac
+          pattern: '[-:.]'
+          replacement: '-'
+          ignore_missing: true
+  - foreach:
+      field: _tmp_raw_host_macs
+      if: ctx._tmp_raw_host_macs instanceof List
+      tag: foreach_tmp_raw_host_macs_for_append
+      processor:
+        append:
+          field: host.mac
+          tag: append_host_mac_from_tmp_raw_host_macs
+          value: '{{{_ingest._value}}}'
+          allow_duplicates: false
+  - remove:
+      field:
+        - _tmp_raw_host_macs
+      tag: remove_tmp_raw_host_macs
+      ignore_missing: true
   - foreach:
       field: ses.device_networks
       if: ctx.ses?.device_networks instanceof List

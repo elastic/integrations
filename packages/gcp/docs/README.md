@@ -298,12 +298,19 @@ An example event for `audit` looks as following:
 ```json
 {
     "@timestamp": "2019-12-19T00:44:25.051Z",
+    "actor": {
+        "entity": {
+            "id": [
+                "xxx@xxx.xxx"
+            ]
+        }
+    },
     "agent": {
-        "ephemeral_id": "a22278bb-5e1f-4ab7-b468-277c8c0b80a9",
-        "id": "c6b95057-2f5d-4b8f-b4b5-37cbdb995dec",
-        "name": "docker-fleet-agent",
+        "ephemeral_id": "da325f64-9209-4ce8-b7b9-1a98fbcf04a5",
+        "id": "3ee263c0-32c5-4060-8539-ecdf1abde99a",
+        "name": "elastic-agent-67309",
         "type": "filebeat",
-        "version": "8.7.1"
+        "version": "8.13.0"
     },
     "client": {
         "user": {
@@ -318,16 +325,16 @@ An example event for `audit` looks as following:
     },
     "data_stream": {
         "dataset": "gcp.audit",
-        "namespace": "ep",
+        "namespace": "96942",
         "type": "logs"
     },
     "ecs": {
         "version": "8.11.0"
     },
     "elastic_agent": {
-        "id": "c6b95057-2f5d-4b8f-b4b5-37cbdb995dec",
+        "id": "3ee263c0-32c5-4060-8539-ecdf1abde99a",
         "snapshot": false,
-        "version": "8.7.1"
+        "version": "8.13.0"
     },
     "event": {
         "action": "beta.compute.instances.aggregatedList",
@@ -336,10 +343,10 @@ An example event for `audit` looks as following:
             "network",
             "configuration"
         ],
-        "created": "2023-10-25T04:18:46.637Z",
+        "created": "2025-04-22T05:28:14.956Z",
         "dataset": "gcp.audit",
         "id": "yonau2dg2zi",
-        "ingested": "2023-10-25T04:18:47Z",
+        "ingested": "2025-04-22T05:28:17Z",
         "kind": "event",
         "outcome": "success",
         "provider": "data_access",
@@ -393,6 +400,18 @@ An example event for `audit` looks as following:
         "level": "INFO",
         "logger": "projects/elastic-beats/logs/cloudaudit.googleapis.com%2Fdata_access"
     },
+    "related": {
+        "entity": [
+            "projects/elastic-beats/global/instances",
+            "xxx@xxx.xxx"
+        ],
+        "ip": [
+            "192.168.1.1"
+        ],
+        "user": [
+            "xxx@xxx.xxx"
+        ]
+    },
     "service": {
         "name": "compute.googleapis.com"
     },
@@ -403,6 +422,13 @@ An example event for `audit` looks as following:
         "forwarded",
         "gcp-audit"
     ],
+    "target": {
+        "entity": {
+            "id": [
+                "projects/elastic-beats/global/instances"
+            ]
+        }
+    },
     "user_agent": {
         "device": {
             "name": "Mac"
