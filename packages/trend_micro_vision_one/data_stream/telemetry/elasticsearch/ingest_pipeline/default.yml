@@ -26,7 +26,7 @@ processors:
 
   ##############################################################################
   # parse the event JSON
-  ##############################################################################
+  ##############################################################logs-trend_micro_vision_one.telemetry-default################
 
   - rename:
       tag: rename_message
@@ -115,6 +115,8 @@ processors:
         def key = (ctx.trend_micro_vision_one?.telemetry?.event_id ?: "").toString();
         if (params.containsKey(key)) {
           ctx.trend_micro_vision_one.telemetry.event_type = params[key];
+        } else {
+          ctx.trend_micro_vision_one.telemetry.event_type = key;
         }
       # Mappings: https://github.com/trendmicro/tm-v1-schema?tab=readme-ov-file#eventid
       params:
@@ -147,6 +149,8 @@ processors:
         def key = (ctx.trend_micro_vision_one?.telemetry?.event_sub_id ?: "").toString();
         if (params.containsKey(key)) {
           ctx.trend_micro_vision_one.telemetry.event_subtype = params[key];
+        } else {
+          ctx.trend_micro_vision_one.telemetry.event_subtype = key;
         }
       # Mappings: https://github.com/trendmicro/tm-v1-schema?tab=readme-ov-file#eventsubid
       params:
