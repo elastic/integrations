@@ -1,0 +1,81 @@
+{
+    "attributes": {
+        "author": [
+            "Elastic"
+        ],
+        "description": "Identifies when the Identity and Access Management (IAM) permissions are modified for a Google Cloud Platform (GCP) storage bucket. An adversary may modify the permissions on a storage bucket to weaken their target's security controls or an administrator may inadvertently modify the permissions, which could lead to data exposure or loss.",
+        "false_positives": [
+            "Storage bucket permissions may be modified by system administrators. Verify that the configuration change was expected. Exceptions can be added to this rule to filter expected behavior."
+        ],
+        "index": [
+            "filebeat-*",
+            "logs-gcp*"
+        ],
+        "language": "kuery",
+        "license": "Elastic License v2",
+        "name": "GCP Storage Bucket Permissions Modification",
+        "note": "## Triage and analysis\n\n> **Disclaimer**:\n> This investigation guide was created using generative AI technology and has been reviewed to improve its accuracy and relevance. While every effort has been made to ensure its quality, we recommend validating the content and adapting it to suit your specific environment and operational needs.\n\n### Investigating GCP Storage Bucket Permissions Modification\n\nGoogle Cloud Platform (GCP) storage buckets are essential for storing and managing data in the cloud. IAM permissions control access to these buckets, ensuring data security. Adversaries may alter these permissions to bypass security measures, leading to unauthorized data access or exposure. The detection rule identifies successful permission changes, signaling potential misuse or accidental misconfigurations, aiding in timely security audits and responses.\n\n### Possible investigation steps\n\n- Review the event logs for the specific action \"storage.setIamPermissions\" to identify which IAM permissions were modified and by whom.\n- Check the event.outcome field to confirm the success of the permission change and correlate it with any recent access attempts or data access patterns.\n- Investigate the identity of the user or service account that performed the permission change to determine if it aligns with expected administrative activities.\n- Assess the current IAM policy of the affected storage bucket to understand the new permissions and evaluate any potential security risks or exposure.\n- Cross-reference the timing of the permission change with other security events or alerts to identify any suspicious activity or patterns.\n- Consult with the bucket owner or relevant stakeholders to verify if the permission change was authorized and necessary for operational purposes.\n\n### False positive analysis\n\n- Routine administrative updates to IAM permissions can trigger alerts. To manage this, create exceptions for known maintenance windows or specific administrative accounts that regularly perform these updates.\n- Automated scripts or tools that adjust permissions as part of their normal operation may cause false positives. Identify these scripts and exclude their actions from triggering alerts by using specific service accounts or tags.\n- Changes made by trusted third-party services integrated with GCP might be flagged. Review and whitelist these services if they are verified and necessary for business operations.\n- Temporary permission changes for troubleshooting or testing purposes can be mistaken for malicious activity. Document and schedule these changes, and exclude them from alerts during the specified timeframes.\n- Permissions modified by cloud management platforms or orchestration tools should be reviewed. If these tools are part of standard operations, consider excluding their actions from the detection rule.\n\n### Response and remediation\n\n- Immediately revoke any unauthorized IAM permissions changes by restoring the previous known good configuration for the affected GCP storage bucket.\n- Conduct a thorough review of the IAM policy change logs to identify the source and nature of the modification, focusing on the user or service account responsible for the change.\n- Isolate the affected storage bucket from external access until the permissions are verified and secured to prevent further unauthorized access.\n- Notify the security team and relevant stakeholders about the incident, providing details of the unauthorized changes and the steps taken to mitigate the risk.\n- Implement additional monitoring on the affected storage bucket and related IAM policies to detect any further unauthorized changes or suspicious activities.\n- Review and update IAM policies to ensure the principle of least privilege is enforced, reducing the risk of similar incidents in the future.\n- If the incident is suspected to be part of a larger attack, escalate to incident response teams for a comprehensive investigation and potential involvement of law enforcement if necessary.",
+        "query": "event.dataset:gcp.audit and event.action:\"storage.setIamPermissions\" and event.outcome:success\n",
+        "references": [
+            "https://cloud.google.com/storage/docs/access-control/iam-permissions"
+        ],
+        "related_integrations": [
+            {
+                "integration": "audit",
+                "package": "gcp",
+                "version": "^2.41.0"
+            }
+        ],
+        "required_fields": [
+            {
+                "ecs": true,
+                "name": "event.action",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "event.dataset",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "event.outcome",
+                "type": "keyword"
+            }
+        ],
+        "risk_score": 47,
+        "rule_id": "2326d1b2-9acf-4dee-bd21-867ea7378b4d",
+        "setup": "The GCP Fleet integration, Filebeat module, or similarly structured data is required to be compatible with this rule.",
+        "severity": "medium",
+        "tags": [
+            "Domain: Cloud",
+            "Data Source: GCP",
+            "Data Source: Google Cloud Platform",
+            "Use Case: Identity and Access Audit",
+            "Tactic: Defense Evasion",
+            "Resources: Investigation Guide"
+        ],
+        "threat": [
+            {
+                "framework": "MITRE ATT&CK",
+                "tactic": {
+                    "id": "TA0005",
+                    "name": "Defense Evasion",
+                    "reference": "https://attack.mitre.org/tactics/TA0005/"
+                },
+                "technique": [
+                    {
+                        "id": "T1222",
+                        "name": "File and Directory Permissions Modification",
+                        "reference": "https://attack.mitre.org/techniques/T1222/"
+                    }
+                ]
+            }
+        ],
+        "timestamp_override": "event.ingested",
+        "type": "query",
+        "version": 107
+    },
+    "id": "2326d1b2-9acf-4dee-bd21-867ea7378b4d_107",
+    "type": "security-rule"
+}
