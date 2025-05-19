@@ -91,7 +91,8 @@ func TestSummary(t *testing.T) {
 				},
 				teams: []string{"team1", "team2"},
 			},
-			expected: `- Serverless: observability
+			expected: `- Stack version: Same as in Pull Request builds
+- Serverless: observability
 - Package: foo
 - Failing test: mytest
 - DataStream: data
@@ -113,7 +114,8 @@ func TestSummary(t *testing.T) {
 				},
 				teams: []string{"team1", "team2"},
 			},
-			expected: `- Serverless: observability
+			expected: `- Stack version: Same as in Pull Request builds
+- Serverless: observability
 - Package: foo
 - Failing test: mytest
 - Owners:
@@ -122,7 +124,7 @@ func TestSummary(t *testing.T) {
 `,
 		},
 		{
-			title: "summary logsdb",
+			title: "summary logsdb without stack version defined",
 			resultError: &packageError{
 				dataError: dataError{
 					logsDB: true,
@@ -133,7 +135,8 @@ func TestSummary(t *testing.T) {
 				},
 				teams: []string{"team1", "team2"},
 			},
-			expected: `- LogsDB: enabled
+			expected: `- Stack version: maximum of either the version used in PR builds or 8.17.0 (GA version for LogsDB index mode)
+- LogsDB: enabled
 - Package: foo
 - Failing test: mytest
 - Owners:
@@ -156,6 +159,53 @@ func TestSummary(t *testing.T) {
 				teams: []string{"team1"},
 			},
 			expected: `- Stack version: 8.16
+- Packages:
+    - foo
+    - bar
+- Owners:
+    - team1
+`,
+		},
+		{
+			title: "summary with basic license",
+			resultError: &buildError{
+				dataError: dataError{
+					logsDB:       false,
+					serverless:   false,
+					subscription: "basic",
+					stackVersion: "8.16",
+				},
+				packages: []string{
+					"foo",
+					"bar",
+				},
+				teams: []string{"team1"},
+			},
+			expected: `- Stack version: 8.16
+- Subscription: basic
+- Packages:
+    - foo
+    - bar
+- Owners:
+    - team1
+`,
+		},
+		{
+			title: "summary with basic license no stack",
+			resultError: &buildError{
+				dataError: dataError{
+					logsDB:       false,
+					serverless:   false,
+					subscription: "basic",
+				},
+				packages: []string{
+					"foo",
+					"bar",
+				},
+				teams: []string{"team1"},
+			},
+			expected: `- Stack version: Same as in Pull Request builds
+- Subscription: basic
 - Packages:
     - foo
     - bar
@@ -355,6 +405,47 @@ Latest 2 failed builds:
 				teams: []string{"team1"},
 			},
 			expected: `- Stack version: 8.16
+- Packages:
+    - foo
+    - bar
+- Owners:
+    - team1
+
+
+
+Latest issue closed for the same test: http://issue.link/1
+
+First build failed: http://link/1
+
+Latest failed builds:
+- http://link/2
+- http://link/3
+`,
+		},
+		{
+			title: "description basic license no stack",
+			resultError: &buildError{
+				dataError: dataError{
+					logsDB:       false,
+					serverless:   false,
+					subscription: "basic",
+					errorLinks: errorLinks{
+						firstBuild: "http://link/1",
+						previousBuilds: []string{
+							"http://link/2",
+							"http://link/3",
+						},
+						closedIssueURL: "http://issue.link/1",
+					},
+				},
+				packages: []string{
+					"foo",
+					"bar",
+				},
+				teams: []string{"team1"},
+			},
+			expected: `- Stack version: Same as in Pull Request builds
+- Subscription: basic
 - Packages:
     - foo
     - bar

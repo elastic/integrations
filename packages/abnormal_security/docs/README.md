@@ -6,9 +6,11 @@ The Abnormal Security integration collects data for AI Security Mailbox (formerl
 
 ## Data streams
 
-The Abnormal Security integration collects four types of logs:
+The Abnormal Security integration collects six types of logs:
 
 - **[AI Security Mailbox](https://app.swaggerhub.com/apis-docs/abnormal-security/abx/1.4.3#/AI%20Security%20Mailbox%20(formerly%20known%20as%20Abuse%20Mailbox))** - Get details of AI Security Mailbox.
+
+- **[AI Security Mailbox Not Analyzed](https://app.swaggerhub.com/apis/abnormal-security/abx/1.4.3#/AI%20Security%20Mailbox%20(formerly%20known%20as%20Abuse%20Mailbox)/v1_abuse_mailbox_not_analyzed_retrieve)** - Get details of messages submitted to AI Security Mailbox that were not analyzed.
 
 - **[Audit](https://app.swaggerhub.com/apis-docs/abnormal-security/abx/1.4.3#/Audit%20Logs)** - Get details of Audit logs for Portal.
 
@@ -16,27 +18,11 @@ The Abnormal Security integration collects four types of logs:
 
 - **[Threat](https://app.swaggerhub.com/apis-docs/abnormal-security/abx/1.4.3#/Threats)** - Get details of Abnormal Threat Logs.
 
+- **[Vendor Case](https://app.swaggerhub.com/apis-docs/abnormal-security/abx/1.4.3#/Vendors)** - Get details of Abnormal Vendor Cases.
+
 ## Requirements
 
-You need to have Elastic Agent installed. For detailed guidance, refer to the Elastic Agent [installation instructions](https://www.elastic.co/guide/en/fleet/current/elastic-agent-installation.html).
-
-### Installing and managing an Elastic Agent
-
-There are several options for installing and managing Elastic Agent:
-
-#### Install a Fleet-managed Elastic Agent (recommended)
-
-With this approach, you install Elastic Agent and use Fleet in Kibana to define, configure, and manage your agents in a central location. We recommend using Fleet management because it makes the management and upgrade of your agents considerably easier.
-
-#### Install Elastic Agent in standalone mode (advanced users)
-
-With this approach, you install Elastic Agent and manually configure the agent locally on the system where it’s installed. You are responsible for managing and upgrading the agents. This approach is reserved for advanced users only.
-
-#### Install Elastic Agent in a containerized environment
-
-You can run Elastic Agent inside a container, either with Fleet Server or standalone. Docker images for all versions of Elastic Agent are available from the Elastic Docker registry, and we provide deployment manifests for running on Kubernetes.
-
-Before installing the Elastic Agent, check the [minimum requirements](https://www.elastic.co/guide/en/fleet/current/elastic-agent-installation.html).
+Elastic Agent must be installed. For more details, check the Elastic Agent [installation instructions](docs-content://reference/fleet/install-elastic-agents.md).
 
 ## Setup
 
@@ -193,6 +179,122 @@ An example event for `ai_security_mailbox` looks as following:
 | abnormal_security.ai_security_mailbox.recipient.address | The email address of the recipient. | keyword |
 | abnormal_security.ai_security_mailbox.recipient.name | The name of the recipient. | keyword |
 | abnormal_security.ai_security_mailbox.subject | Subject of the first email in the abuse campaign. | keyword |
+| data_stream.dataset | Data stream dataset. | constant_keyword |
+| data_stream.namespace | Data stream namespace. | constant_keyword |
+| data_stream.type | Data stream type. | constant_keyword |
+| event.dataset | Event dataset. | constant_keyword |
+| event.module | Event module. | constant_keyword |
+| input.type | Type of filebeat input. | keyword |
+| log.offset | Log offset. | long |
+
+
+### AI Security Mailbox Not Analyzed
+
+This is the `ai_security_mailbox_not_analyzed` dataset.
+
+#### Example
+
+An example event for `ai_security_mailbox_not_analyzed` looks as following:
+
+```json
+{
+    "@timestamp": "2025-03-04T17:03:55.000Z",
+    "abnormal_security": {
+        "ai_security_mailbox_not_analyzed": {
+            "abx_message_id": "-1234567891234568000",
+            "reason": "PHISHING_SIMULATION",
+            "recipient": {
+                "address": "phishing@test.com",
+                "name": "Phishing Test"
+            },
+            "reported_time": "2025-03-04T17:03:55Z",
+            "reporter": {
+                "address": "info@test.com",
+                "name": "Info Test"
+            },
+            "subject": "Fwd: Forwarded email"
+        }
+    },
+    "agent": {
+        "ephemeral_id": "30574c81-fa18-4fa0-88fe-9a5402bf1562",
+        "id": "49766dbb-8c1b-41e5-ac89-e0a87c0d6249",
+        "name": "elastic-agent-94210",
+        "type": "filebeat",
+        "version": "8.17.3"
+    },
+    "data_stream": {
+        "dataset": "abnormal_security.ai_security_mailbox_not_analyzed",
+        "namespace": "17196",
+        "type": "logs"
+    },
+    "ecs": {
+        "version": "8.11.0"
+    },
+    "elastic_agent": {
+        "id": "49766dbb-8c1b-41e5-ac89-e0a87c0d6249",
+        "snapshot": false,
+        "version": "8.17.3"
+    },
+    "email": {
+        "subject": "Fwd: Forwarded email",
+        "to": {
+            "address": [
+                "phishing@test.com"
+            ]
+        }
+    },
+    "event": {
+        "agent_id_status": "verified",
+        "category": [
+            "email"
+        ],
+        "dataset": "abnormal_security.ai_security_mailbox_not_analyzed",
+        "id": "-1234567891234568000",
+        "ingested": "2025-04-08T00:08:23Z",
+        "kind": "event",
+        "original": "{\"abx_message_id\":-1234567891234568000,\"not_analyzed_reason\":\"PHISHING_SIMULATION\",\"recipient\":{\"email\":\"phishing@test.com\",\"name\":\"Phishing Test\"},\"reported_datetime\":\"2025-03-04T17:03:55Z\",\"reporter\":{\"email\":\"info@test.com\",\"name\":\"Info Test\"},\"subject\":\"Fwd: Forwarded email\"}",
+        "reason": "PHISHING_SIMULATION",
+        "type": [
+            "info"
+        ]
+    },
+    "input": {
+        "type": "cel"
+    },
+    "observer": {
+        "product": "Inbound Email Security",
+        "vendor": "Abnormal"
+    },
+    "related": {
+        "user": [
+            "phishing@test.com",
+            "Phishing Test",
+            "info@test.com",
+            "Info Test"
+        ]
+    },
+    "tags": [
+        "preserve_original_event",
+        "preserve_duplicate_custom_fields",
+        "forwarded",
+        "abnormal_security-ai_security_mailbox_not_analyzed"
+    ]
+}
+```
+
+**Exported fields**
+
+| Field | Description | Type |
+|---|---|---|
+| @timestamp | Event timestamp. | date |
+| abnormal_security.ai_security_mailbox_not_analyzed.abx_message_id | Unique ID for the message in Abnormal AI Security Mailbox. | keyword |
+| abnormal_security.ai_security_mailbox_not_analyzed.reason | Reason why this message wasn't analyzed by the AI engine. | keyword |
+| abnormal_security.ai_security_mailbox_not_analyzed.recipient.address | The email address of the recipient. | keyword |
+| abnormal_security.ai_security_mailbox_not_analyzed.recipient.name | The name of the recipient. | keyword |
+| abnormal_security.ai_security_mailbox_not_analyzed.reported_time | Date When the message was reported. | date |
+| abnormal_security.ai_security_mailbox_not_analyzed.reporter.address | The email address of the reporter. | keyword |
+| abnormal_security.ai_security_mailbox_not_analyzed.reporter.name | The name of the reporter. | keyword |
+| abnormal_security.ai_security_mailbox_not_analyzed.subject | Subject of the reported email. | keyword |
 | data_stream.dataset | Data stream dataset. | constant_keyword |
 | data_stream.namespace | Data stream namespace. | constant_keyword |
 | data_stream.type | Data stream type. | constant_keyword |
@@ -433,6 +535,115 @@ An example event for `case` looks as following:
 | abnormal_security.case.severity_level |  | keyword |
 | abnormal_security.case.status |  | keyword |
 | abnormal_security.case.threat_ids | Threats related to Case. | keyword |
+| data_stream.dataset | Data stream dataset. | constant_keyword |
+| data_stream.namespace | Data stream namespace. | constant_keyword |
+| data_stream.type | Data stream type. | constant_keyword |
+| event.dataset | Event dataset. | constant_keyword |
+| event.module | Event module. | constant_keyword |
+| input.type | Type of filebeat input. | keyword |
+| log.offset | Log offset. | long |
+
+
+### Vendor Case
+
+This is the `vendor_case` dataset.
+
+#### Example
+
+An example event for `vendor_case` looks as following:
+
+```json
+{
+    "@timestamp": "2025-04-04T13:15:26.820Z",
+    "abnormal_security": {
+        "vendor_case": {
+            "domain": "domain1.com",
+            "first_observed_time": "2025-04-18T08:02:21.512Z",
+            "id": "1234",
+            "insights": [
+                {
+                    "description": "The language contained in the email body is consistent with fraud.",
+                    "highlight": "Fraud Language"
+                }
+            ],
+            "last_modified_time": "2025-03-15T03:02:21.512Z",
+            "timeline": [
+                {
+                    "event_timestamp": "2025-03-30T08:32:21.512849+05:30",
+                    "marked_as": "Malicious",
+                    "recipient_address": "recipient1@domain.com",
+                    "sender_address": "sender1@domain.com",
+                    "subject": "Subject",
+                    "threat_id": "threat1"
+                }
+            ]
+        }
+    },
+    "agent": {
+        "ephemeral_id": "6458e758-f9d1-4949-98bd-9efaae9e0b53",
+        "id": "3b24d5d3-6344-4f8a-81cd-29846dc47e1c",
+        "name": "elastic-agent-13136",
+        "type": "filebeat",
+        "version": "8.17.3"
+    },
+    "data_stream": {
+        "dataset": "abnormal_security.vendor_case",
+        "namespace": "84924",
+        "type": "logs"
+    },
+    "ecs": {
+        "version": "8.11.0"
+    },
+    "elastic_agent": {
+        "id": "3b24d5d3-6344-4f8a-81cd-29846dc47e1c",
+        "snapshot": false,
+        "version": "8.17.3"
+    },
+    "event": {
+        "agent_id_status": "verified",
+        "dataset": "abnormal_security.vendor_case",
+        "id": "1234",
+        "ingested": "2025-04-04T13:15:29Z",
+        "kind": "event",
+        "original": "{\"firstObservedTime\":\"2025-04-18T13:32:21.512848+05:30\",\"insights\":[{\"description\":\"The language contained in the email body is consistent with fraud.\",\"highlight\":\"Fraud Language\"}],\"lastModifiedTime\":\"2025-03-15T08:32:21.512849+05:30\",\"timeline\":[{\"eventTimestamp\":\"2025-03-30T08:32:21.512849+05:30\",\"markedAs\":\"Malicious\",\"recipientAddress\":\"recipient1@domain.com\",\"senderAddress\":\"sender1@domain.com\",\"subject\":\"Subject\",\"threatId\":\"threat1\"}],\"vendorCaseId\":1234,\"vendorDomain\":\"domain1.com\"}",
+        "start": "2025-04-18T08:02:21.512Z",
+        "type": [
+            "info"
+        ]
+    },
+    "input": {
+        "type": "cel"
+    },
+    "observer": {
+        "product": "Inbound Email Security",
+        "vendor": "Abnormal"
+    },
+    "tags": [
+        "preserve_original_event",
+        "preserve_duplicate_custom_fields",
+        "forwarded",
+        "abnormal_security-vendor_case"
+    ]
+}
+```
+
+**Exported fields**
+
+| Field | Description | Type |
+|---|---|---|
+| @timestamp | Event timestamp. | date |
+| abnormal_security.vendor_case.domain | Domain associated with the vendor. | keyword |
+| abnormal_security.vendor_case.first_observed_time | Timestamp when the case was first observed. | date |
+| abnormal_security.vendor_case.id | Unique identifier for the vendor's case. | keyword |
+| abnormal_security.vendor_case.insights.description | Detailed description of the insight. | text |
+| abnormal_security.vendor_case.insights.highlight | Highlight or category of the insight. | keyword |
+| abnormal_security.vendor_case.last_modified_time | Timestamp when the case was last modified. | date |
+| abnormal_security.vendor_case.timeline.event_timestamp | Timestamp when the event occurred. | date |
+| abnormal_security.vendor_case.timeline.marked_as | Classification of the event (e.g., Malicious). | keyword |
+| abnormal_security.vendor_case.timeline.recipient_address | Email address of the recipient. | keyword |
+| abnormal_security.vendor_case.timeline.sender_address | Email address of the sender. | keyword |
+| abnormal_security.vendor_case.timeline.subject | Email subject line. | text |
+| abnormal_security.vendor_case.timeline.threat_id | Identifier for the associated threat. | keyword |
 | data_stream.dataset | Data stream dataset. | constant_keyword |
 | data_stream.namespace | Data stream namespace. | constant_keyword |
 | data_stream.type | Data stream type. | constant_keyword |

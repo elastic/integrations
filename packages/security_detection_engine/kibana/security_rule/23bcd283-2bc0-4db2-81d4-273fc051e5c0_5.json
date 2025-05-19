@@ -1,0 +1,105 @@
+{
+    "attributes": {
+        "author": [
+            "Elastic"
+        ],
+        "description": "Monitors for the execution of a previously unknown unix binary with read, write and execute memory region permissions. The mprotect() system call is used to change the access protections on a region of memory that has already been allocated. This syscall allows a process to modify the permissions of pages in its virtual address space, enabling or disabling permissions such as read, write, and execute for those pages. RWX permissions on memory is in many cases overly permissive, and should be analyzed thoroughly.",
+        "from": "now-9m",
+        "history_window_start": "now-7d",
+        "index": [
+            "auditbeat-*",
+            "logs-auditd_manager.auditd-*"
+        ],
+        "language": "kuery",
+        "license": "Elastic License v2",
+        "name": "Unknown Execution of Binary with RWX Memory Region",
+        "new_terms_fields": [
+            "process.executable"
+        ],
+        "note": "## Triage and analysis\n\n> **Disclaimer**:\n> This investigation guide was created using generative AI technology and has been reviewed to improve its accuracy and relevance. While every effort has been made to ensure its quality, we recommend validating the content and adapting it to suit your specific environment and operational needs.\n\n### Investigating Unknown Execution of Binary with RWX Memory Region\n\nIn Linux environments, the `mprotect()` system call is crucial for managing memory permissions, allowing processes to modify access rights of memory pages. Adversaries exploit this by granting read, write, and execute (RWX) permissions to inject and execute malicious code. The detection rule identifies suspicious RWX memory allocations by monitoring `mprotect()` calls, excluding known safe binaries, thus highlighting potential threats.\n\n### Possible investigation steps\n\n- Review the process details associated with the alert, focusing on the process.executable and process.name fields to identify the binary that triggered the alert.\n- Investigate the command line arguments and parent process of the suspicious binary to understand its origin and purpose.\n- Check the process's hash against known threat intelligence databases to determine if it is associated with any known malicious activity.\n- Analyze the network activity of the process to identify any suspicious connections or data exfiltration attempts.\n- Examine the user account under which the process is running to assess if it has been compromised or is being used for unauthorized activities.\n- Review recent system logs and audit records for any other anomalies or related suspicious activities around the time of the alert.\n\n### False positive analysis\n\n- Known safe binaries like Node.js, Java, and Apache may trigger the rule due to their legitimate use of RWX memory regions. These are already excluded in the rule, but additional similar applications might need to be added to the exclusion list.\n- Custom or in-house developed applications that require RWX permissions for legitimate functionality can also cause false positives. Identify these applications and add them to the exclusion list to prevent unnecessary alerts.\n- Development environments or testing frameworks that dynamically generate and execute code might be flagged. Consider excluding these environments if they are known and trusted within your organization.\n- Security tools or monitoring software that perform memory analysis or manipulation could be mistakenly identified. Verify their behavior and exclude them if they are part of your security infrastructure.\n- Regularly review and update the exclusion list to ensure it reflects the current environment and any new applications that are introduced.\n\n### Response and remediation\n\n- Immediately isolate the affected system from the network to prevent potential lateral movement or data exfiltration by the malicious code.\n- Terminate the suspicious process identified by the detection rule to halt any ongoing malicious activity.\n- Conduct a forensic analysis of the affected system to identify the source and scope of the compromise, focusing on the unknown binary and its origin.\n- Remove any malicious binaries or scripts identified during the forensic analysis to prevent further execution.\n- Apply security patches and updates to the affected system to address any vulnerabilities that may have been exploited.\n- Restore the system from a known good backup if the integrity of the system is in question and ensure all security patches are applied post-restoration.\n- Escalate the incident to the security operations center (SOC) or incident response team for further investigation and to determine if additional systems are affected.",
+        "query": "event.category:process and host.os.type:linux and auditd.data.syscall:mprotect and auditd.data.a2:7 and not (\n  process.executable:(\n    \"/usr/share/kibana/node/bin/node\" or \"/usr/share/elasticsearch/jdk/bin/java\" or \"/usr/sbin/apache2\"\n  ) or\n  process.name:(httpd or java)\n)\n",
+        "references": [
+            "https://man7.org/linux/man-pages/man2/mprotect.2.html",
+            "https://www.elastic.co/security-labs/linux-detection-engineering-with-auditd"
+        ],
+        "related_integrations": [
+            {
+                "package": "auditd_manager",
+                "version": "^1.18.0"
+            }
+        ],
+        "required_fields": [
+            {
+                "ecs": false,
+                "name": "auditd.data.a2",
+                "type": "unknown"
+            },
+            {
+                "ecs": false,
+                "name": "auditd.data.syscall",
+                "type": "unknown"
+            },
+            {
+                "ecs": true,
+                "name": "event.category",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "host.os.type",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "process.executable",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "process.name",
+                "type": "keyword"
+            }
+        ],
+        "risk_score": 47,
+        "rule_id": "23bcd283-2bc0-4db2-81d4-273fc051e5c0",
+        "setup": "## Setup\n\nThis rule requires the use of the `auditd_manager` integration. `Auditd_manager` is a tool designed to simplify and enhance the management of the audit subsystem in Linux systems. It provides a user-friendly interface and automation capabilities for configuring and monitoring system auditing through the auditd daemon. With `auditd_manager`, administrators can easily define audit rules, track system events, and generate comprehensive audit reports, improving overall security and compliance in the system. The following steps should be executed in order to install and deploy `auditd_manager` on a Linux system.\n```\nKibana -->\nManagement -->\nIntegrations -->\nAuditd Manager -->\nAdd Auditd Manager\n```\n`Auditd_manager` subscribes to the kernel and receives events as they occur without any additional configuration. However, if more advanced configuration is required to detect specific behavior, audit rules can be added to the integration in either the \"audit rules\" configuration box or the \"auditd rule files\" box by specifying a file to read the audit rules from.\nFor this detection rule to trigger, the following additional audit rules are required to be added to the integration:\n```\n-a always,exit -F arch=b64 -S mprotect\n```\nAdd the newly installed `auditd manager` to an agent policy, and deploy the agent on a Linux system from which auditd log files are desirable.\n",
+        "severity": "medium",
+        "tags": [
+            "Domain: Endpoint",
+            "OS: Linux",
+            "Use Case: Threat Detection",
+            "Tactic: Execution",
+            "Data Source: Auditd Manager",
+            "Resources: Investigation Guide"
+        ],
+        "threat": [
+            {
+                "framework": "MITRE ATT&CK",
+                "tactic": {
+                    "id": "TA0002",
+                    "name": "Execution",
+                    "reference": "https://attack.mitre.org/tactics/TA0002/"
+                },
+                "technique": [
+                    {
+                        "id": "T1059",
+                        "name": "Command and Scripting Interpreter",
+                        "reference": "https://attack.mitre.org/techniques/T1059/",
+                        "subtechnique": [
+                            {
+                                "id": "T1059.004",
+                                "name": "Unix Shell",
+                                "reference": "https://attack.mitre.org/techniques/T1059/004/"
+                            }
+                        ]
+                    }
+                ]
+            }
+        ],
+        "timestamp_override": "event.ingested",
+        "type": "new_terms",
+        "version": 5
+    },
+    "id": "23bcd283-2bc0-4db2-81d4-273fc051e5c0_5",
+    "type": "security-rule"
+}
