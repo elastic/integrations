@@ -669,6 +669,10 @@ An example event for `threat` looks as following:
             "abx_message_id": "2260288475997441000",
             "abx_portal_url": "https://portal.abnormalsecurity.com/home/threat-center/remediation-history/3456765434567654",
             "attachment_count": 0,
+            "attachment_names": [
+                "attachment1.txt",
+                "attachment2.txt"
+            ],
             "attack": {
                 "strategy": "Unknown Sender",
                 "type": "Spam",
@@ -682,6 +686,22 @@ An example event for `threat` looks as following:
             "impersonated_party": "None / Others",
             "internet_message_id": "<AZz8NUMEST-qmuz77_koic@example>",
             "is_read": false,
+            "links": [
+                {
+                    "display_text": "This is not a spoof!",
+                    "domain": "lamronba.com",
+                    "source": "body",
+                    "type": "html href",
+                    "url": "http://spoof.lamronba.com"
+                },
+                {
+                    "display_text": "This is not a spoof!",
+                    "domain": "lamronba2.com",
+                    "source": "body",
+                    "type": "html href",
+                    "url": "http://spoof.lamronba2.com"
+                }
+            ],
             "post_remediated": false,
             "received_time": "2024-07-17T23:25:38.000Z",
             "recipient_address": "bob@example.com",
@@ -709,26 +729,40 @@ An example event for `threat` looks as following:
         }
     },
     "agent": {
-        "ephemeral_id": "900a737b-86e9-4b31-8902-9e933e02c4bc",
-        "id": "16312af4-ae1e-4ca5-855f-6cb7e433a5a4",
-        "name": "docker-fleet-agent",
+        "ephemeral_id": "c33499ad-8601-4101-98cb-e589c42e87c8",
+        "id": "97446cfe-0533-47af-b89c-e02d2a21875c",
+        "name": "elastic-agent-92805",
         "type": "filebeat",
-        "version": "8.13.0"
+        "version": "8.17.3"
     },
     "data_stream": {
         "dataset": "abnormal_security.threat",
-        "namespace": "81591",
+        "namespace": "62817",
         "type": "logs"
     },
     "ecs": {
         "version": "8.11.0"
     },
     "elastic_agent": {
-        "id": "16312af4-ae1e-4ca5-855f-6cb7e433a5a4",
+        "id": "97446cfe-0533-47af-b89c-e02d2a21875c",
         "snapshot": false,
-        "version": "8.13.0"
+        "version": "8.17.3"
     },
     "email": {
+        "attachments": [
+            {
+                "file": {
+                    "extension": "txt",
+                    "name": "attachment1.txt"
+                }
+            },
+            {
+                "file": {
+                    "extension": "txt",
+                    "name": "attachment2.txt"
+                }
+            }
+        ],
         "delivery_timestamp": "2024-07-17T23:25:38.000Z",
         "from": {
             "address": [
@@ -752,9 +786,9 @@ An example event for `threat` looks as following:
         ],
         "dataset": "abnormal_security.threat",
         "id": "2260288475997441000",
-        "ingested": "2024-09-03T05:30:00Z",
+        "ingested": "2025-05-19T15:50:22Z",
         "kind": "enrichment",
-        "original": "{\"abxMessageId\":2260288475997441000,\"abxPortalUrl\":\"https://portal.abnormalsecurity.com/home/threat-center/remediation-history/3456765434567654\",\"attachmentCount\":0,\"attachmentNames\":[],\"attackStrategy\":\"Unknown Sender\",\"attackType\":\"Spam\",\"attackVector\":\"Link\",\"attackedParty\":\"Employee (Other)\",\"autoRemediated\":true,\"ccEmails\":[],\"fromAddress\":\"john@example.com\",\"fromName\":\"john\",\"impersonatedParty\":\"None / Others\",\"internetMessageId\":\"\\u003cAZz8NUMEST-qmuz77_koic@example\\u003e\",\"isRead\":false,\"postRemediated\":false,\"receivedTime\":\"2024-07-17T23:25:38Z\",\"recipientAddress\":\"bob@example.com\",\"remediationStatus\":\"Auto-Remediated\",\"remediationTimestamp\":\"2024-07-17T23:25:45.73564Z\",\"replyToEmails\":[],\"returnPath\":\"bounce-bob_H181S7GUCF@example.com\",\"senderDomain\":\"example.com\",\"senderIpAddress\":\"81.2.69.142\",\"sentTime\":\"2024-07-17T23:25:29Z\",\"subject\":\"YoU.have.𝗪𝟬0𝗡𝗡 a K0baIt 215-piece_ToooI_Set_Noo0wW..#GBOB\",\"summaryInsights\":[\"Abnormal Email Body HTML\",\"Invisible characters found in Email\",\"Suspicious Link\",\"Unusual Sender\",\"Unusual Sender Domain\"],\"threatId\":\"bf255f2d-a2ad-3f50-5075-fdcc24308bbd\",\"toAddresses\":[\"bob@example.com\"],\"urlCount\":1,\"urls\":[\"https://www.example.com/\"]}",
+        "original": "{\"abxMessageId\":2260288475997441000,\"abxMessageIdStr\":\"2260288475997441028\",\"abxPortalUrl\":\"https://portal.abnormalsecurity.com/home/threat-center/remediation-history/3456765434567654\",\"attachmentCount\":0,\"attachmentNames\":[],\"attachments\":[\"attachment1.txt\",\"attachment2.txt\"],\"attackStrategy\":\"Unknown Sender\",\"attackType\":\"Spam\",\"attackVector\":\"Link\",\"attackedParty\":\"Employee (Other)\",\"autoRemediated\":true,\"ccEmails\":[],\"fromAddress\":\"john@example.com\",\"fromName\":\"john\",\"impersonatedParty\":\"None / Others\",\"internetMessageId\":\"\\u003cAZz8NUMEST-qmuz77_koic@example\\u003e\",\"isRead\":false,\"links\":[{\"display_text\":\"This is not a spoof!\",\"domain\":\"lamronba.com\",\"source\":\"body\",\"type\":\"html href\",\"url\":\"http://spoof.lamronba.com\"},{\"display_text\":\"This is not a spoof!\",\"domain\":\"lamronba2.com\",\"source\":\"body\",\"type\":\"html href\",\"url\":\"http://spoof.lamronba2.com\"}],\"postRemediated\":false,\"receivedTime\":\"2024-07-17T23:25:38Z\",\"recipientAddress\":\"bob@example.com\",\"remediationStatus\":\"Auto-Remediated\",\"remediationTimestamp\":\"2024-07-17T23:25:45.73564Z\",\"replyToEmails\":[],\"returnPath\":\"bounce-bob_H181S7GUCF@example.com\",\"senderDomain\":\"example.com\",\"senderIpAddress\":\"81.2.69.142\",\"sentTime\":\"2024-07-17T23:25:29Z\",\"subject\":\"YoU.have.𝗪𝟬0𝗡𝗡 a K0baIt 215-piece_ToooI_Set_Noo0wW..#GBOB\",\"summaryInsights\":[\"Abnormal Email Body HTML\",\"Invisible characters found in Email\",\"Suspicious Link\",\"Unusual Sender\",\"Unusual Sender Domain\"],\"threatId\":\"bf255f2d-a2ad-3f50-5075-fdcc24308bbd\",\"toAddresses\":[\"bob@example.com\"],\"urlCount\":1,\"urls\":[\"https://www.example.com/\"]}",
         "reference": "https://portal.abnormalsecurity.com/home/threat-center/remediation-history/3456765434567654",
         "type": [
             "indicator",
@@ -838,7 +872,7 @@ An example event for `threat` looks as following:
 | abnormal_security.threat.abx_message_id | A unique identifier for an individual message within a threat (i.e email campaign). | keyword |
 | abnormal_security.threat.abx_portal_url | The URL at which the specific message details are viewable in Abnormal Security's Portal web interface. | keyword |
 | abnormal_security.threat.attachment_count | Number of attachments in email (only available for IESS customers). | long |
-| abnormal_security.threat.attachment_names | List of attachment names, if any. | keyword |
+| abnormal_security.threat.attachment_names | List of attachment names, if any. Attachments retrieved from the attachments endpoint are appended to this field if enrichment is enabled. | keyword |
 | abnormal_security.threat.attack.strategy |  | keyword |
 | abnormal_security.threat.attack.type | The type of threat the message represents. | keyword |
 | abnormal_security.threat.attack.vector | The attack medium. | keyword |
@@ -851,6 +885,11 @@ An example event for `threat` looks as following:
 | abnormal_security.threat.impersonated_party | Impersonated party, if any. | keyword |
 | abnormal_security.threat.internet_message_id | The internet message ID, per RFC 822. | keyword |
 | abnormal_security.threat.is_read | Whether an email has been read. | boolean |
+| abnormal_security.threat.links.display_text | The link's display text. | keyword |
+| abnormal_security.threat.links.domain | The domain name of the link. | keyword |
+| abnormal_security.threat.links.source | The location in the email where the link may be found. | keyword |
+| abnormal_security.threat.links.type | The type of link in the email. | keyword |
+| abnormal_security.threat.links.url | The URL of the link. | keyword |
 | abnormal_security.threat.post_remediated | Indicates whether Abnormal remediated the campaign at a later time, after landing in the user's Inbox. Note``:`` Abnormal has retained this field and the autoRemediated field to support prior integrations, but in newly created integrations, you should capture this information from the remediationStatus field. | boolean |
 | abnormal_security.threat.received_time | The timestamp at which this message arrived. | date |
 | abnormal_security.threat.recipient_address | the email address of the user who actually received the message. | keyword |
