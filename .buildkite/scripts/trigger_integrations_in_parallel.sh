@@ -59,6 +59,13 @@ for package in ${PACKAGE_LIST}; do
         FORCE_CHECK_ALL: "${FORCE_CHECK_ALL}"
         SERVERLESS: "false"
         UPLOAD_SAFE_LOGS: ${UPLOAD_SAFE_LOGS}
+      plugins:
+        # See https://github.com/elastic/oblt-infra/blob/main/conf/resources/repos/integrations/01-gcp-buildkite-oidc.tf
+        # This plugin authenticates to Google Cloud using the OIDC token.
+        - elastic/oblt-google-auth#v1.3.0:
+            lifetime: 10800 # seconds
+            project-id: "elastic-observability-ci"
+            project-number: "911195782929"
       artifact_paths:
         - build/test-results/*.xml
         - build/test-coverage/*.xml
