@@ -6,27 +6,7 @@
 
 ## Requirements
 
-- Elastic Agent must be installed.
-- You can install only one Elastic Agent per host.
-- Elastic Agent is required to stream data through the REST API and ship the data to Elastic, where the events will then be processed via the integration's ingest pipelines.
-
-### Installing and managing an Elastic Agent:
-
-You have a few options for installing and managing an Elastic Agent:
-
-### Install a Fleet-managed Elastic Agent (recommended):
-
-With this approach, you install Elastic Agent and use Fleet in Kibana to define, configure, and manage your agents in a central location. We recommend using Fleet management because it makes the management and upgrade of your agents considerably easier.
-
-### Install Elastic Agent in standalone mode (advanced users):
-
-With this approach, you install Elastic Agent and manually configure the agent locally on the system where it’s installed. You are responsible for managing and upgrading the agents. This approach is reserved for advanced users only.
-
-### Install Elastic Agent in a containerized environment:
-
-You can run Elastic Agent inside a container, either with Fleet Server or standalone. Docker images for all versions of Elastic Agent are available from the Elastic Docker registry, and we provide deployment manifests for running on Kubernetes.
-
-There are some minimum requirements for running Elastic Agent. For more information, refer to the Elastic Agent [installation guide](https://www.elastic.co/guide/en/fleet/current/elastic-agent-installation.html).
+Elastic Agent must be installed. For more details, check the Elastic Agent [installation instructions](docs-content://reference/fleet/install-elastic-agents.md).
 
 ## Setup
 
@@ -58,20 +38,24 @@ To keep the collected data up to date, **Transforms** are used.
 
 Users can view the transforms by navigating to **Management > Stack Management > Transforms**.
 
+Follow **Steps to enable transforms** to enable transforms and populate `Threat Feed Overview` and `IOC Stream Overview` dashboards.
+
 Here, users can see continuously running transforms and also view the latest transformed GTI data in the **Discover** section.
 
 The `labels.is_transform_source` field indicates log origin:
 - **False** for transformed index
 - **True** for source index
 
-Currently, four transforms are running across all 15 data streams:
+Currently, four transforms are available for IOC stream data stream.
 
-| Transform Name                                                                        | Description                                              |
-| ------------------------------------------------------------------------------------- | -------------------------------------------------------- |
-| IP IOC Stream Transform  (ID: `logs-ti_google_threat_intelligence.ip_ioc_st`)         | Keeps IP entity type data up to date for IOC Stream.     |
-| URL IOC Stream Transform  (ID: `logs-ti_google_threat_intelligence.url_ioc_st`)       | Keeps URL entity type data up to date for IOC Stream.    |
-| Domain IOC Stream Transform  (ID: `logs-ti_google_threat_intelligence.domain_ioc_st`) | Keeps Domain entity type data up to date for IOC Stream. |
-| File IOC Stream Transform  (ID: `logs-ti_google_threat_intelligence.file_ioc_st`)     | Keeps File entity type data up to date for IOC Stream.   |
+The following are four transforms along with their associated pipelines:
+
+| Transform Name                                                                                                                                                           | Description                                              |
+| ------------------------------------------------------------------------------------------------------------------------------------------------------------------------ | -------------------------------------------------------- |
+| IP IOC Stream Transform  (ID: `logs-ti_google_threat_intelligence.ip_ioc_st`, Pipeline: `ti_google_threat_intelligence-latest_ip_ioc_st-transform-pipeline`)             | Keeps IP entity type data up to date for IOC Stream.     |
+| URL IOC Stream Transform  (ID: `logs-ti_google_threat_intelligence.url_ioc_st`, Pipeline: `ti_google_threat_intelligence-latest_url_ioc_st-transform-pipeline`)          | Keeps URL entity type data up to date for IOC Stream.    |
+| Domain IOC Stream Transform  (ID: `logs-ti_google_threat_intelligence.domain_ioc_st`, Pipeline: `ti_google_threat_intelligence-latest_domain_ioc_st-transform-pipeline`) | Keeps Domain entity type data up to date for IOC Stream. |
+| File IOC Stream Transform  (ID: `logs-ti_google_threat_intelligence.file_ioc_st`, Pipeline: `ti_google_threat_intelligence-latest_file_ioc_st-transform-pipeline`)       | Keeps File entity type data up to date for IOC Stream.   |
 
 For example:
 
@@ -104,7 +88,7 @@ To tailor a rule based on elastic Environment:
 
 Once saved, successfully executed rules will generate alerts. Users can view these alerts in the **Alerts** section.
 
-**Note:** One transforms run in the background to filter relevant data from alerts. The  `data_stream.dataset: ti_google_threat_intelligence.enriched_ioc_stream` field represents logs for enriched threat intelligence data, which can be analyzed in the **Discover** section.
+**Note:** One transform is available to filter relevant data from alerts. The `data_stream.dataset: ti_google_threat_intelligence.enriched_ioc_stream` field represents logs for enriched threat intelligence data, which can be analyzed in the **Discover** section.
 
 The following are the names of the four sample rules:
 
@@ -114,6 +98,30 @@ The following are the names of the four sample rules:
 | Google Threat Intelligence Domain IOC Stream Correlation     | Detects and alerts on matches between Domain IOCs collected by GTI IOC Stream data with user's selected Elastic environment data.     |
 | Google Threat Intelligence File IOC Stream Correlation       | Detects and alerts on matches between File IOCs collected by GTI IOC Stream data with user's selected Elastic environment data.       |
 | Google Threat Intelligence IP Address IOC Stream Correlation | Detects and alerts on matches between IP Address IOCs collected by GTI IOC Stream data with user's selected Elastic environment data. |
+
+The following is one transform along with its associated pipeline to filter relevant data from alerts. Follow **Steps to enable transforms** to enable these transforms and populate `IOC Stream Threat Intelligence` dashboard.
+
+| Transform Name                                                                                                                                                                       | Description                                                                      |
+| ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ | -------------------------------------------------------------------------------- |
+| Detected IOC from IOC stream Transform (ID: `logs-ti_google_threat_intelligence.rule_ioc_st`, Pipeline: `ti_google_threat_intelligence-correlation_detection_rule_ioc_st-pipeline`)  | Filters and extracts necessary information from Detected IOCs from IOC stream.   |
+
+### Steps to enable transforms
+
+1. Navigate to **Stack Management > Transforms** in Kibana.
+2. Locate the transform you want to enable by searching for its **Transform ID**.
+3. Click the **three dots** next to the transform, then select **Edit**.
+4. Under the **Destination configuration** section, set the **Ingest Pipeline**:
+   - Each transform in the **Google Threat Intelligence** integration has a corresponding ingest pipeline.
+   - Refer to the **Transforms table** above for the appropriate pipeline name associated with transform.
+   - Prefix the pipeline name with the integration version.  
+     For example:  
+     ```
+     0.1.0-ti_google_threat_intelligence-latest_ip_ioc_st-transform-pipeline
+     ```
+   - Click **Update** to save the changes.
+5. Click the **three dots** again next to the transform and select **Start** to activate it.
+
+**Note:** After updating the integration, make sure to update the pipeline prefix accordingly.
 
 ## Limitations
 
@@ -126,7 +134,10 @@ The following are the names of the four sample rules:
 2. If events are not appearing in the transformed index, check if transforms are running without errors. If you encounter issues, refer to [Troubleshooting transforms](https://www.elastic.co/guide/en/elasticsearch/reference/current/transform-troubleshooting.html).
 3. If detection rules take longer to run, ensure you have specified index patterns and applied queries to make your source events more specific.
    **Note:** More events in index patterns mean more time needed for detection rules to run.
-4. Ensure that relevant fields are correctly mapped in the **Indicator Mapping** section. Verify that fields in the specified index pattern are properly mapped, and ensure entity-specific fields (e.g., IP fields to IP fields, keyword fields like file hash SHA256 to corresponding file hash SHA256 fields) are accurately configured.
+5. Ensure that relevant fields are correctly mapped in the **Indicator Mapping** section. Verify that fields in the specified index pattern are properly mapped, and ensure entity-specific fields (e.g., IP fields to IP fields, keyword fields like file hash SHA256 to corresponding file hash SHA256 fields) are accurately configured.
+6. If any transform is not in a **Healthy** state, try resetting it:
+   - Click the **three dots** next to the transform, then select **Reset**.
+   - After resetting, follow the **Steps to enable transforms** above to reconfigure and restart the transform.
 
 ## Logs Reference
 

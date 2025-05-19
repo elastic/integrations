@@ -1,9 +1,9 @@
 config_version: 2
 interval: {{interval}}
-{{#if enable_request_tracer}}
-resource.tracer.filename: "../../logs/cel/http-request-trace-*.ndjson"
-resource.tracer.maxbackups: 5
-{{/if}}
+resource.tracer:
+  enabled: {{enable_request_tracer}}
+  filename: "../../logs/cel/http-request-trace-*.ndjson"
+  maxbackups: 5
 {{#if proxy_url}}
 resource.proxy_url: {{proxy_url}}
 {{/if}}
@@ -39,16 +39,21 @@ program: |
       }.format_query()
     ).with({
       "Header": {
-        "x-apikey": [string(state.access_token)],
-        "x-tool":["Elastic"]
+        "x-apikey": [state.access_token],
+        "x-tool":["Elastic"],
+        "User-Agent": ["v0.1.0"]
       }
     }).do_request().as(resp, resp.StatusCode == 200 ?
-      bytes(resp.Body).decode_json().as(body, {
-      "events": body.?data.orValue([{"message": "retry"}]).map(e, {
-        "message": e.encode_json()
-      }),
+      resp.Body.decode_json().as(body, {
+      "events": ( has(body.data) && size(body.data) > 0 ?
+          body.data.map(e, {
+            "message": e.encode_json()
+          })
+          :
+            [{"message": "retry"}]
+      ),
       "cursor": {
-        "last_timestamp": has(body.?meta.cursor) ? null : state.end_time,
+        "last_timestamp": has(body.?meta.cursor) ? state.start_time : state.end_time,
       },
       "want_more": has(body.?meta.cursor),
       "next_page": has(body.?meta.cursor) ? body.meta.cursor : null  
@@ -59,7 +64,7 @@ program: |
           "error": {
             "code": string(resp.StatusCode),
             "id": string(resp.Status),
-            "message": "GET:"+(
+            "message": "GET " + state.url.trim_right("/") + "/api/v3/ioc_stream?:" + (
               size(resp.Body) != 0 ?
                 string(resp.Body)
               :

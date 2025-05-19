@@ -6,27 +6,7 @@
 
 ## Requirements
 
-- Elastic Agent must be installed.
-- You can install only one Elastic Agent per host.
-- Elastic Agent is required to stream data through the REST API and ship the data to Elastic, where the events will then be processed via the integration's ingest pipelines.
-
-### Installing and managing an Elastic Agent:
-
-You have a few options for installing and managing an Elastic Agent:
-
-### Install a Fleet-managed Elastic Agent (recommended):
-
-With this approach, you install Elastic Agent and use Fleet in Kibana to define, configure, and manage your agents in a central location. We recommend using Fleet management because it makes the management and upgrade of your agents considerably easier.
-
-### Install Elastic Agent in standalone mode (advanced users):
-
-With this approach, you install Elastic Agent and manually configure the agent locally on the system where it’s installed. You are responsible for managing and upgrading the agents. This approach is reserved for advanced users only.
-
-### Install Elastic Agent in a containerized environment:
-
-You can run Elastic Agent inside a container, either with Fleet Server or standalone. Docker images for all versions of Elastic Agent are available from the Elastic Docker registry, and we provide deployment manifests for running on Kubernetes.
-
-There are some minimum requirements for running Elastic Agent. For more information, refer to the Elastic Agent [installation guide](https://www.elastic.co/guide/en/fleet/current/elastic-agent-installation.html).
+Elastic Agent must be installed. For more details, check the Elastic Agent [installation instructions](docs-content://reference/fleet/install-elastic-agents.md).
 
 ## Setup
 
@@ -58,20 +38,24 @@ To keep the collected data up to date, **Transforms** are used.
 
 Users can view the transforms by navigating to **Management > Stack Management > Transforms**.
 
+Follow **Steps to enable transforms** to enable transforms and populate `Threat Feed Overview` and `IOC Stream Overview` dashboards.
+
 Here, users can see continuously running transforms and also view the latest transformed GTI data in the **Discover** section.
 
 The `labels.is_transform_source` field indicates log origin:
 - **False** for transformed index
 - **True** for source index
 
-Currently, four transforms are running across all 15 data streams:
+Currently, four transforms are available for IOC stream data stream.
 
-| Transform Name                                                                        | Description                                              |
-| ------------------------------------------------------------------------------------- | -------------------------------------------------------- |
-| IP IOC Stream Transform  (ID: `logs-ti_google_threat_intelligence.ip_ioc_st`)         | Keeps IP entity type data up to date for IOC Stream.     |
-| URL IOC Stream Transform  (ID: `logs-ti_google_threat_intelligence.url_ioc_st`)       | Keeps URL entity type data up to date for IOC Stream.    |
-| Domain IOC Stream Transform  (ID: `logs-ti_google_threat_intelligence.domain_ioc_st`) | Keeps Domain entity type data up to date for IOC Stream. |
-| File IOC Stream Transform  (ID: `logs-ti_google_threat_intelligence.file_ioc_st`)     | Keeps File entity type data up to date for IOC Stream.   |
+The following are four transforms along with their associated pipelines:
+
+| Transform Name                                                                                                                                                           | Description                                              |
+| ------------------------------------------------------------------------------------------------------------------------------------------------------------------------ | -------------------------------------------------------- |
+| IP IOC Stream Transform  (ID: `logs-ti_google_threat_intelligence.ip_ioc_st`, Pipeline: `ti_google_threat_intelligence-latest_ip_ioc_st-transform-pipeline`)             | Keeps IP entity type data up to date for IOC Stream.     |
+| URL IOC Stream Transform  (ID: `logs-ti_google_threat_intelligence.url_ioc_st`, Pipeline: `ti_google_threat_intelligence-latest_url_ioc_st-transform-pipeline`)          | Keeps URL entity type data up to date for IOC Stream.    |
+| Domain IOC Stream Transform  (ID: `logs-ti_google_threat_intelligence.domain_ioc_st`, Pipeline: `ti_google_threat_intelligence-latest_domain_ioc_st-transform-pipeline`) | Keeps Domain entity type data up to date for IOC Stream. |
+| File IOC Stream Transform  (ID: `logs-ti_google_threat_intelligence.file_ioc_st`, Pipeline: `ti_google_threat_intelligence-latest_file_ioc_st-transform-pipeline`)       | Keeps File entity type data up to date for IOC Stream.   |
 
 For example:
 
@@ -104,7 +88,7 @@ To tailor a rule based on elastic Environment:
 
 Once saved, successfully executed rules will generate alerts. Users can view these alerts in the **Alerts** section.
 
-**Note:** One transforms run in the background to filter relevant data from alerts. The  `data_stream.dataset: ti_google_threat_intelligence.enriched_ioc_stream` field represents logs for enriched threat intelligence data, which can be analyzed in the **Discover** section.
+**Note:** One transform is available to filter relevant data from alerts. The `data_stream.dataset: ti_google_threat_intelligence.enriched_ioc_stream` field represents logs for enriched threat intelligence data, which can be analyzed in the **Discover** section.
 
 The following are the names of the four sample rules:
 
@@ -114,6 +98,30 @@ The following are the names of the four sample rules:
 | Google Threat Intelligence Domain IOC Stream Correlation     | Detects and alerts on matches between Domain IOCs collected by GTI IOC Stream data with user's selected Elastic environment data.     |
 | Google Threat Intelligence File IOC Stream Correlation       | Detects and alerts on matches between File IOCs collected by GTI IOC Stream data with user's selected Elastic environment data.       |
 | Google Threat Intelligence IP Address IOC Stream Correlation | Detects and alerts on matches between IP Address IOCs collected by GTI IOC Stream data with user's selected Elastic environment data. |
+
+The following is one transform along with its associated pipeline to filter relevant data from alerts. Follow **Steps to enable transforms** to enable these transforms and populate `IOC Stream Threat Intelligence` dashboard.
+
+| Transform Name                                                                                                                                                                       | Description                                                                      |
+| ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ | -------------------------------------------------------------------------------- |
+| Detected IOC from IOC stream Transform (ID: `logs-ti_google_threat_intelligence.rule_ioc_st`, Pipeline: `ti_google_threat_intelligence-correlation_detection_rule_ioc_st-pipeline`)  | Filters and extracts necessary information from Detected IOCs from IOC stream.   |
+
+### Steps to enable transforms
+
+1. Navigate to **Stack Management > Transforms** in Kibana.
+2. Locate the transform you want to enable by searching for its **Transform ID**.
+3. Click the **three dots** next to the transform, then select **Edit**.
+4. Under the **Destination configuration** section, set the **Ingest Pipeline**:
+   - Each transform in the **Google Threat Intelligence** integration has a corresponding ingest pipeline.
+   - Refer to the **Transforms table** above for the appropriate pipeline name associated with transform.
+   - Prefix the pipeline name with the integration version.  
+     For example:  
+     ```
+     0.1.0-ti_google_threat_intelligence-latest_ip_ioc_st-transform-pipeline
+     ```
+   - Click **Update** to save the changes.
+5. Click the **three dots** again next to the transform and select **Start** to activate it.
+
+**Note:** After updating the integration, make sure to update the pipeline prefix accordingly.
 
 ## Limitations
 
@@ -126,7 +134,10 @@ The following are the names of the four sample rules:
 2. If events are not appearing in the transformed index, check if transforms are running without errors. If you encounter issues, refer to [Troubleshooting transforms](https://www.elastic.co/guide/en/elasticsearch/reference/current/transform-troubleshooting.html).
 3. If detection rules take longer to run, ensure you have specified index patterns and applied queries to make your source events more specific.
    **Note:** More events in index patterns mean more time needed for detection rules to run.
-4. Ensure that relevant fields are correctly mapped in the **Indicator Mapping** section. Verify that fields in the specified index pattern are properly mapped, and ensure entity-specific fields (e.g., IP fields to IP fields, keyword fields like file hash SHA256 to corresponding file hash SHA256 fields) are accurately configured.
+5. Ensure that relevant fields are correctly mapped in the **Indicator Mapping** section. Verify that fields in the specified index pattern are properly mapped, and ensure entity-specific fields (e.g., IP fields to IP fields, keyword fields like file hash SHA256 to corresponding file hash SHA256 fields) are accurately configured.
+6. If any transform is not in a **Healthy** state, try resetting it:
+   - Click the **three dots** next to the transform, then select **Reset**.
+   - After resetting, follow the **Steps to enable transforms** above to reconfigure and restart the transform.
 
 ## Logs Reference
 
@@ -142,22 +153,22 @@ An example event for `ioc_stream` looks as following:
 {
     "@timestamp": "2024-12-16T07:54:23.000Z",
     "agent": {
-        "ephemeral_id": "434d6bd6-4006-4c6c-8325-dd518363845f",
-        "id": "556b7d12-deac-4a67-bee5-fabebf19b583",
-        "name": "elastic-agent-80119",
+        "ephemeral_id": "077a2f5c-6866-405a-9597-b0c5f481227c",
+        "id": "b2ea53e1-aa9e-421f-9c38-7b91fd7fbfe5",
+        "name": "elastic-agent-80374",
         "type": "filebeat",
         "version": "8.17.3"
     },
     "data_stream": {
         "dataset": "ti_google_threat_intelligence.ioc_stream",
-        "namespace": "65550",
+        "namespace": "46112",
         "type": "logs"
     },
     "ecs": {
         "version": "8.17.0"
     },
     "elastic_agent": {
-        "id": "556b7d12-deac-4a67-bee5-fabebf19b583",
+        "id": "b2ea53e1-aa9e-421f-9c38-7b91fd7fbfe5",
         "snapshot": false,
         "version": "8.17.3"
     },
@@ -167,7 +178,7 @@ An example event for `ioc_stream` looks as following:
             "threat"
         ],
         "dataset": "ti_google_threat_intelligence.ioc_stream",
-        "ingested": "2025-04-07T13:04:34Z",
+        "ingested": "2025-05-19T16:43:19Z",
         "kind": "enrichment",
         "original": "{\"attributes\":{\"available_tools\":[],\"downloadable\":true,\"exiftool\":{\"FileType\":\"TXT\",\"FileTypeExtension\":\"txt\",\"LineCount\":\"1\",\"MIMEEncoding\":\"us-ascii\",\"MIMEType\":\"text/plain\",\"Newlines\":\"(none)\",\"WordCount\":\"1\"},\"first_seen_itw_date\":1707511993,\"first_submission_date\":1648544390,\"gti_assessment\":{\"contributing_factors\":{\"associated_actor\":[\"source\",\"javascript\",\"js\"],\"mandiant_association_actor\":true,\"mandiant_confidence_score\":75},\"description\":\"This indicator did not match our detection criteria and there is currently no evidence of malicious activity.\",\"severity\":{\"value\":\"SEVERITY_NONE\"},\"threat_score\":{\"value\":1},\"verdict\":{\"value\":\"VERDICT_UNDETECTED\"}},\"last_analysis_date\":1648544390,\"last_analysis_stats\":{\"confirmed-timeout\":0,\"failure\":0,\"harmless\":0,\"malicious\":0,\"suspicious\":0,\"timeout\":0,\"type-unsupported\":16,\"undetected\":57},\"last_modification_date\":1734335663,\"last_seen_itw_date\":1707512002,\"last_submission_date\":1648544390,\"magic\":\"ASCII text, with no line terminators\",\"mandiant_ic_score\":75,\"md5\":\"1e1d23c4e7524bc15a0b3ced0caf9ffc\",\"meaningful_name\":\"Password[1].htm\",\"names\":[\"Password[1].htm\"],\"reputation\":0,\"sha1\":\"4e234b019b77a4f04c168734a60e0b1883989215\",\"sha256\":\"841d999a7a7f0b2cd8bc21e6550fedee985bf53a530fef1033d1c4810b0be5bc\",\"size\":11,\"ssdeep\":\"3:EsaM:t\",\"tags\":[\"javascript\"],\"times_submitted\":1,\"total_votes\":{\"harmless\":0,\"malicious\":0},\"type_description\":\"JavaScript\",\"type_extension\":\"js\",\"type_tag\":\"javascript\",\"type_tags\":[\"source\",\"javascript\",\"js\"],\"unique_sources\":1,\"vhash\":\"9eecb7db59d16c80417c72d1e1f4fbf1\"},\"context_attributes\":{\"hunting_info\":null,\"notification_date\":1742528463,\"notification_id\":\"21769600967\",\"origin\":\"subscriptions\",\"sources\":[{\"id\":\"threat-actor--bfd69ac3-0158-57d3-a101-42496712ddae\",\"label\":\"UNC4515\",\"type\":\"collection\"}],\"tags\":[]},\"id\":\"841d999a7a7f0b2cd8bc21e6550fedee985bf53a530fef1033d1c4810b0be5bc\",\"links\":{\"self\":\"https://www.virustotal.com/api/v3/files/841d999a7a7f0b2cd8bc21e6550fedee985bf53a530fef1033d1c4810b0be5bc\"},\"type\":\"file\"}",
         "type": [
@@ -298,15 +309,20 @@ An example event for `ioc_stream` looks as following:
         "google_threat_intelligence-ioc_stream"
     ],
     "threat": {
+        "feed": {
+            "name": "IOC Stream"
+        },
         "indicator": {
             "file": {
                 "hash": {
                     "sha256": "841d999a7a7f0b2cd8bc21e6550fedee985bf53a530fef1033d1c4810b0be5bc"
                 }
             },
+            "first_seen": "2024-02-09T20:53:13.000Z",
             "id": [
                 "841d999a7a7f0b2cd8bc21e6550fedee985bf53a530fef1033d1c4810b0be5bc"
             ],
+            "name": "841d999a7a7f0b2cd8bc21e6550fedee985bf53a530fef1033d1c4810b0be5bc",
             "type": "file"
         }
     }
@@ -343,9 +359,6 @@ An example event for `ioc_stream` looks as following:
 | gti.ioc_stream.attributes.autostart_locations.entry | Specifies the particular autostart entry associated with the file, indicating how the file is configured to execute automatically upon system startup. | keyword |
 | gti.ioc_stream.attributes.autostart_locations.location | Denotes the specific system location or registry path where the autostart entry is configured. | keyword |
 | gti.ioc_stream.attributes.available_tools | Lists tools or utilities available for further analysis or interaction with the file. | keyword |
-| gti.ioc_stream.attributes.categories.bitdefender | Categorization of the entity as determined by BitDefender, a cybersecurity vendor. | keyword |
-| gti.ioc_stream.attributes.categories.sophos | Classification by Sophos, a cybersecurity vendor providing endpoint protection and threat intelligence. | keyword |
-| gti.ioc_stream.attributes.categories.webroot | Verdict assigned by Webroot, a cybersecurity firm specializing in cloud-based threat intelligence. | keyword |
 | gti.ioc_stream.attributes.continent | The continent where the IP address or domain is geographically located. | keyword |
 | gti.ioc_stream.attributes.country | The country where the IP address or domain is registered or hosted. | keyword |
 | gti.ioc_stream.attributes.creation_date | The timestamp indicating when the artifact was originally created. | date |
@@ -630,7 +643,10 @@ An example event for `ioc_stream` looks as following:
 | gti.ioc_stream.attributes.type_tags | A list of broader tags related to the specific file type, providing additional context about its characteristics or associated platforms. | keyword |
 | gti.ioc_stream.attributes.type_unsupported | Number of engines that do not support the file type. | long |
 | gti.ioc_stream.attributes.unique_sources | Indicates the number of distinct sources that have submitted the file to VirusTotal. | long |
-| gti.ioc_stream.attributes.url.full | The full URL of the analyzed entity. | keyword |
+| gti.ioc_stream.attributes.url | The full URL of the analyzed entity. | keyword |
+| gti.ioc_stream.attributes.vendor_categories.bitdefender | Categorization of the entity as determined by BitDefender, a cybersecurity vendor. | keyword |
+| gti.ioc_stream.attributes.vendor_categories.sophos | Classification by Sophos, a cybersecurity vendor providing endpoint protection and threat intelligence. | keyword |
+| gti.ioc_stream.attributes.vendor_categories.webroot | Verdict assigned by Webroot, a cybersecurity firm specializing in cloud-based threat intelligence. | keyword |
 | gti.ioc_stream.attributes.whois_date | The timestamp of the last WHOIS record update for the domain. | date |
 | gti.ioc_stream.context_attributes.hunting_info | Provides additional information for notifications originating from hunting activities. | keyword |
 | gti.ioc_stream.context_attributes.notification_date | Timestamp (UTC) when the notification was generated. | date |
@@ -639,10 +655,8 @@ An example event for `ioc_stream` looks as following:
 | gti.ioc_stream.context_attributes.sources.id | Identifier of the source object that triggered the notification. | keyword |
 | gti.ioc_stream.context_attributes.sources.label | Label describing the source (if available). | keyword |
 | gti.ioc_stream.context_attributes.sources.type | Type of the source object, e.g., "hunting_ruleset" or "collection". | keyword |
-| gti.ioc_stream.domain.id | A unique identifier assigned to the specific domain in the stream. | keyword |
 | gti.ioc_stream.id | A unique identifier assigned to the specific object in the stream. | keyword |
 | gti.ioc_stream.type | Specifies the type of the object being reported in the stream. | keyword |
-| gti.ioc_stream.url.id | A unique identifier assigned to the specific url in the stream. | keyword |
 | gti.ioc_stream.vhash | Represents the VirusTotal hash, a hash-based signature uniquely identifying files with similar or identical content. | keyword |
 | input.type | Type of filebeat input. | keyword |
 | log.offset | Log offset. | long |

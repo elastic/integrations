@@ -1,12 +1,11 @@
 ---
 description: Pipeline for processing File IOC Stream events from Google Threat Intelligence Threat Feed events.
 processors:
-  - set:
-      field: gti.file_ioc_stream
-      tag: set_gti_ioc_stream_from_ioc_stream
-      copy_from: gti.ioc_stream
-      if: ctx.gti?.ioc_stream != null
-      ignore_empty_value: true
+  - rename:
+      field: gti.ioc_stream
+      tag: rename_gti_ioc_stream_to_gti_threat_indicator
+      target_field: gti.threat.indicator
+      ignore_missing: true
   - set:
       field: data_stream.dataset
       tag: set_data_stream_dataset
