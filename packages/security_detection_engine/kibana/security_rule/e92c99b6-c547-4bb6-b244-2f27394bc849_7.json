@@ -1,0 +1,62 @@
+{
+    "attributes": {
+        "anomaly_threshold": 75,
+        "author": [
+            "Elastic"
+        ],
+        "description": "A machine learning job has detected high bytes of data written to an external device via Airdrop. In a typical operational setting, there is usually a predictable pattern or a certain range of data that is written to external devices. An unusually large amount of data being written is anomalous and can signal illicit data copying or transfer activities.",
+        "from": "now-2h",
+        "interval": "15m",
+        "license": "Elastic License v2",
+        "machine_learning_job_id": "ded_high_bytes_written_to_external_device_airdrop",
+        "name": "Spike in Bytes Sent to an External Device via Airdrop",
+        "note": "## Triage and analysis\n\n> **Disclaimer**:\n> This investigation guide was created using generative AI technology and has been reviewed to improve its accuracy and relevance. While every effort has been made to ensure its quality, we recommend validating the content and adapting it to suit your specific environment and operational needs.\n\n### Investigating Spike in Bytes Sent to an External Device via Airdrop\n\nAirdrop facilitates seamless file sharing between Apple devices, leveraging Bluetooth and Wi-Fi. While convenient, adversaries can exploit it for unauthorized data exfiltration by transferring large volumes of sensitive data. The detection rule employs machine learning to identify anomalies in data transfer patterns, flagging unusual spikes in bytes sent as potential exfiltration attempts, thus aiding in early threat detection.\n\n### Possible investigation steps\n\n- Review the alert details to identify the specific device and user involved in the data transfer. Check for any known associations with previous incidents or suspicious activities.\n- Analyze the volume of data transferred and compare it to typical usage patterns for the device and user. Determine if the spike is significantly higher than usual.\n- Investigate the time and context of the data transfer. Correlate with other logs or alerts to identify any concurrent suspicious activities or anomalies.\n- Check the destination device's details to verify if it is a recognized and authorized device within the organization. Investigate any unknown or unauthorized devices.\n- Contact the user associated with the alert to verify the legitimacy of the data transfer. Gather information on the nature of the files transferred and the purpose of the transfer.\n- Review any recent changes in the user's access privileges or roles that might explain the increased data transfer activity.\n\n### False positive analysis\n\n- Regular large file transfers for legitimate business purposes, such as media companies transferring video files, can trigger false positives. Users can create exceptions for specific devices or user accounts known to perform these tasks regularly.\n- Software updates or backups that involve transferring large amounts of data to external devices may be misidentified as exfiltration attempts. Users should whitelist these activities by identifying the associated processes or applications.\n- Educational institutions or creative teams often share large files for collaborative projects. Establishing a baseline for expected data transfer volumes and excluding these from alerts can reduce false positives.\n- Devices used for testing or development purposes might frequently send large data volumes. Users can exclude these devices from monitoring by adding them to an exception list.\n- Personal use of Airdrop for transferring large media files, such as photos or videos, can be mistaken for suspicious activity. Users can mitigate this by setting thresholds that account for typical personal use patterns.\n\n### Response and remediation\n\n- Immediately isolate the affected device from the network to prevent further data exfiltration.\n- Verify the identity and permissions of the user associated with the anomalous Airdrop activity to ensure they are authorized to transfer data.\n- Conduct a forensic analysis of the device to identify any unauthorized applications or processes that may have facilitated the data transfer.\n- Review and revoke any unnecessary permissions or access rights for the user or device involved in the incident.\n- Escalate the incident to the security operations center (SOC) for further investigation and to determine if the activity is part of a larger threat campaign.\n- Implement additional monitoring on the affected device and similar devices to detect any further anomalous Airdrop activities.\n- Update security policies and controls to restrict Airdrop usage to only trusted devices and networks, reducing the risk of future unauthorized data transfers.",
+        "references": [
+            "https://www.elastic.co/guide/en/security/current/prebuilt-ml-jobs.html",
+            "https://docs.elastic.co/en/integrations/ded",
+            "https://www.elastic.co/blog/detect-data-exfiltration-activity-with-kibanas-new-integration"
+        ],
+        "related_integrations": [
+            {
+                "package": "ded",
+                "version": "^2.3.0"
+            },
+            {
+                "package": "endpoint",
+                "version": "^9.0.0"
+            }
+        ],
+        "risk_score": 21,
+        "rule_id": "e92c99b6-c547-4bb6-b244-2f27394bc849",
+        "setup": "## Setup\n\nThe rule requires the Data Exfiltration Detection integration assets to be installed, as well as network and file events collected by integrations such as Elastic Defend and Network Packet Capture (for network events only).\n\n### Data Exfiltration Detection Setup\nThe Data Exfiltration Detection integration detects data exfiltration activity by identifying abnormalities in network and file events. Anomalies are detected using Elastic's Anomaly Detection feature.\n\n#### Prerequisite Requirements:\n- Fleet is required for Data Exfiltration Detection.\n- To configure Fleet Server refer to the [documentation](https://www.elastic.co/guide/en/fleet/current/fleet-server.html).\n- File events collected by the Elastic Defend integration.\n- To install Elastic Defend, refer to the [documentation](https://www.elastic.co/guide/en/security/current/install-endpoint.html).\n\n#### The following steps should be executed to install assets associated with the Data Exfiltration Detection integration:\n- Go to the Kibana homepage. Under Management, click Integrations.\n- In the query bar, search for Data Exfiltration Detection and select the integration to see more details about it.\n- Follow the instructions under the **Installation** section.\n- For this rule to work, complete the instructions through **Add preconfigured anomaly detection jobs**.\n",
+        "severity": "low",
+        "tags": [
+            "Use Case: Data Exfiltration Detection",
+            "Rule Type: ML",
+            "Rule Type: Machine Learning",
+            "Tactic: Exfiltration",
+            "Resources: Investigation Guide"
+        ],
+        "threat": [
+            {
+                "framework": "MITRE ATT&CK",
+                "tactic": {
+                    "id": "TA0010",
+                    "name": "Exfiltration",
+                    "reference": "https://attack.mitre.org/tactics/TA0010/"
+                },
+                "technique": [
+                    {
+                        "id": "T1011",
+                        "name": "Exfiltration Over Other Network Medium",
+                        "reference": "https://attack.mitre.org/techniques/T1011/"
+                    }
+                ]
+            }
+        ],
+        "type": "machine_learning",
+        "version": 7
+    },
+    "id": "e92c99b6-c547-4bb6-b244-2f27394bc849_7",
+    "type": "security-rule"
+}

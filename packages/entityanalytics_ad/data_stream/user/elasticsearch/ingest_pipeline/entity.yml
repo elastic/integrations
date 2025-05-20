@@ -326,21 +326,11 @@ processors:
       value: true
       if: ctx.activedirectory?.user?.uac_list?.contains('TRUSTED_TO_AUTHENTICATE_FOR_DELEGATION') == true
 
-  - foreach:
-      tag: foreach_group_id
-      field: activedirectory.groups
-      if: ctx.activedirectory?.groups instanceof List
-      processor:
-        set:
-          tag: set_group_id
-          field: "_ingest._value.id"
-          value: "{{{_ingest._value.object_sid}}}"
-
   - script:
       lang: painless
       ignore_failure: true
-      tag: set_privileged_group_member
-      description: Set privileged_group_member flag based on group membership.
+      tag: handle_user_group_details
+      description: Collect user's group details and set privileged_group_member flag based on group membership.
       if: ctx.activedirectory?.groups instanceof List
       # Well-known SIDs - Name to SID mapping
       # https://learn.microsoft.com/en-us/windows-server/identity/ad-ds/manage/understand-security-identifiers#well-known-sids
@@ -358,21 +348,35 @@ processors:
         '549': true
         '551': true
       source: |-
+        ctx.user = ctx.user ?: [:];
+        ctx.user.group = ctx.user.group ?: [:];
+
         for (def group : ctx.activedirectory.groups) {
+          if (group.name != null) {
+            ctx.user.group.name = ctx.user.group.name ?: new HashSet();
+            ctx.user.group.name.add(group.name);
+          }
+
           if (group?.object_sid == null) {
             continue;
           }
+
+          group.id = group.object_sid;
+          ctx.user.group.id = ctx.user.group.id ?: new HashSet();
+          ctx.user.group.id.add(group.id);
+
           int idx = group.object_sid.lastIndexOf('-');
           if (idx < 0) {
             continue;
           }
           def priv = params.get(group.object_sid.substring(idx+1));
-          if (priv != null) {
+          if (priv != null && ctx.activedirectory.user.privileged_group_member == null) {
             ctx.activedirectory.user.privileged_group_member = priv;
-            return;
           }
         }
-        ctx.activedirectory.user.privileged_group_member = false;
+        if (ctx.activedirectory.user.privileged_group_member == null) {
+          ctx.activedirectory.user.privileged_group_member = false;
+        }
 
   - set:
       field: activedirectory.user.account_never_expires

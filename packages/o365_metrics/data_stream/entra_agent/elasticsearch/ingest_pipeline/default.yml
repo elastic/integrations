@@ -1,0 +1,31 @@
+---
+description: Pipeline for processing o365 entra agent metrics.
+processors:
+  - set:
+      field: ecs.version
+      value: 8.17.0
+
+  - set:
+      field: host.os.name
+      copy_from: o365.metrics.entra.agent.os_name
+      tag: set_host_os_name
+      ignore_empty_value: true
+
+  - set:
+      field: host.os.version
+      copy_from: o365.metrics.entra.agent.os_version
+      tag: set_host_os_version
+      ignore_empty_value: true
+
+  - remove:
+      field:
+        - o365.metrics.entra.agent.os_name
+        - o365.metrics.entra.agent.os_version
+      ignore_missing: true
+      tag: remove_os_fields
+
+  - set:
+      field: event.kind
+      value: error
+      tag: set_error_into_event_kind
+      if: ctx.error?.message != null
