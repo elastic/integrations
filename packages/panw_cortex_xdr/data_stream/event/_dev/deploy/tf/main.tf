@@ -2,17 +2,18 @@ provider "google" {
   credentials = var.GOOGLE_CREDENTIALS
 }
 
-resource "google_storage_bucket" "bucket" {
+resource "google_storage_bucket" "panw_cortex_xdr_event_bucket" {
   name     = "${var.BUCKET_NAME}-${var.TEST_RUN_ID}"
   location = "US"
 }
+# See https://github.com/elastic/oblt-infra/blob/main/conf/resources/repos/integrations/01-gcp-buildkite-oidc.tf
 
-resource "google_storage_bucket_object" "object" {
+resource "google_storage_bucket_object" "panw_cortex_xdr_event_bucket_object" {
   name   = var.OBJECT_NAME
-  bucket = google_storage_bucket.bucket.name
+  bucket = google_storage_bucket.panw_cortex_xdr_event_bucket.name
   source = var.FILE_PATH
 }
 
-output "bucket_name" {
-  value = google_storage_bucket.bucket.name
+output "panw_cortex_xdr_event_bucket_name" {
+  value = google_storage_bucket.panw_cortex_xdr_event_bucket.name
 }
