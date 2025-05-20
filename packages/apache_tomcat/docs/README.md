@@ -246,7 +246,6 @@ An example event for `access` looks as following:
         "path": "/"
     }
 }
-
 ```
 
 **ECS Field Reference**
@@ -439,7 +438,6 @@ An example event for `localhost` looks as following:
         "apache_tomcat-localhost"
     ]
 }
-
 ```
 
 **ECS Field Reference**
