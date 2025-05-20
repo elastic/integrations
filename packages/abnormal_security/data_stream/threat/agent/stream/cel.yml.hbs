@@ -50,7 +50,7 @@ program: |
             "Authorization": ["Bearer " + string(state.access_token)],
           }
         }).do_request().as(resp, resp.StatusCode == 200 ?
-            bytes(resp.Body).decode_json().as(body, {
+            resp.Body.decode_json().as(body, {
               "worklist": body,
               "next": 0,
             })
@@ -85,7 +85,7 @@ program: |
             "Authorization": ["Bearer " + string(state.access_token)],
           }
         }).do_request().as(resp, resp.StatusCode == 200 ?
-          bytes(resp.Body).decode_json().as(body,{
+          resp.Body.decode_json().as(body,{
             "events": body.messages.map(e,{
               "message": state.enrichment ?
                 e.with({
@@ -96,8 +96,11 @@ program: |
                       "Authorization": ["Bearer " + string(state.access_token)],
                     }
                   }).do_request().as(attachResp, attachResp.StatusCode == 200 ?
-                    bytes(attachResp.Body).decode_json().as(attachBody,
-                      has(attachBody.attachments) ? attachBody.attachments.filter(a, a.abxMessageIdStr == e.abxMessageIdStr).map(a, a.attachmentName) : []
+                    attachResp.Body.decode_json().as(attachBody,
+                      has(attachBody.attachments) ?
+                        attachBody.attachments.map(a, a.abxMessageIdStr == e.abxMessageIdStr, a.attachmentName)
+                      :
+                        []
                     )
                   :
                     []
@@ -109,14 +112,17 @@ program: |
                       "Authorization": ["Bearer " + string(state.access_token)],
                     }
                   }).do_request().as(linkResp, linkResp.StatusCode == 200 ?
-                    bytes(linkResp.Body).decode_json().as(linkBody,
-                      has(linkBody.links) ? linkBody.links.filter(l, l.abxMessageIdStr == e.abxMessageIdStr).map(l, {
-                        "url": l.linkUrl,
-                        "display_text": l.displayText,
-                        "domain": l.domainLink,
-                        "type": l.linkType,
-                        "source": l.source
-                      }) : []
+                    linkResp.Body.decode_json().as(linkBody,
+                      has(linkBody.links) ?
+                        linkBody.links.map(l, l.abxMessageIdStr == e.abxMessageIdStr, {
+                          "url": l.linkUrl,
+                          "display_text": l.displayText,
+                          "domain": l.domainLink,
+                          "type": l.linkType,
+                          "source": l.source
+                        })
+                      :
+                        []
                     )
                   :
                     []
