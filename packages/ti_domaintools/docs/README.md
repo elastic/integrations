@@ -21,7 +21,7 @@ The DomainTools Feeds integration collects one type of data streams: **logs**
 Log data streams collected by the DomainTools integration include the following feeds:
 
 - `Domain Discovery`
-- `Newly Observed Domains (NOD) feed`
+- `Newly Observed Domains (NOD)`
 - `Newly Active Domains (NAD)`
 
 ## Requirements
