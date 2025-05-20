@@ -122,6 +122,11 @@ if [[ "${BUILDKITE_PIPELINE_SLUG}" =~ ^(integrations|integrations-test-stack)$ ]
 
         BUILDKITE_API_TOKEN=$(retry 5 vault kv get -field buildkite_token "${BUILDKITE_API_TOKEN_PATH}")
         export BUILDKITE_API_TOKEN
+
+        if [ -f "${GOOGLE_APPLICATION_CREDENTIALS:""}" ]; then
+            GOOGLE_CREDENTIALS_SECRET="$(cat ${GOOGLE_APPLICATION_CREDENTIALS})"
+            export GOOGLE_CREDENTIALS_SECRET
+        fi
     fi
 fi
 
