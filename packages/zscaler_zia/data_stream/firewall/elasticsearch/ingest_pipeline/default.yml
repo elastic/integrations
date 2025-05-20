@@ -45,6 +45,8 @@ processors:
       ignore_missing: true
   - script:
       params:
+        pkg_version: 3.12.0
+        data_stream: firewall-log
         expect:
           fields: action|aggregate|avgduration|bypass_time|bypassed_session|cdip|cdport|cltdomain|csip|csport|datacenter|datacentercity|datacentercountry|datetime|day|day_of_month|department|dept|destcountry|deviceappversion|devicehostname|devicemodel|devicename|deviceostype|deviceosversion|deviceowner|dnat|dnatrulelabel|duration|durationms|eedone|epochtime|external_deviceid|flow_type|forward_gateway_name|hour|inbytes|ipcat|ips_custom_signature|ipsrulelabel|location|locationname|login|minute|month|month_of_year|numsessions|nwapp|nwsvc|ocsip|odevicehostname|odevicename|odeviceowner|odnatlabel|ofwd_gw_name|oipcat|oipsrulelabel|ordr_rulename|orulelabel|outbytes|ozpa_app_seg_name|proto|rdr_rulename|recordid|rule|rulelabel|sdip|sdport|second|srcipcountry|ssip|ssport|stateful|threat_name|threatcat|threatname|tsip|tuntype|tz|user|year|zpa_app_seg_name|ztunnelversion
           version: v2
@@ -60,12 +62,12 @@ processors:
           if (signature != params.expect.fields) {
             ctx.error = ctx.error ?: [:];
             ctx.error.message = ctx.error.message ?: [];
-            ctx.error.message.add("field set mismatch: "+signature+" is not expected set of templated fields");
+            ctx.error.message.add("field set mismatch: "+signature+" is not expected set of templated fields (see https://www.elastic.co/docs/reference/integrations/zscaler_zia#"+params.data_stream+")");
           }
-        } else if (ctx.resp?.version != params.expect.version) {
-            ctx.error = ctx.error ?: [:];
-            ctx.error.message = ctx.error.message ?: [];
-            ctx.error.message.add("template version mismatch: "+ctx.resp?.version.toString()+" is not expected version");
+        } else if (ctx.resp.version != params.expect.version) {
+          ctx.error = ctx.error ?: [:];
+          ctx.error.message = ctx.error.message ?: [];
+          ctx.error.message.add("template version mismatch: "+ctx.resp.version.toString()+" is not expected version (see https://www.elastic.co/docs/reference/integrations/zscaler_zia#"+params.data_stream+")");
         }
   - remove:
       field: resp

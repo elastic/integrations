@@ -39,6 +39,8 @@ processors:
       ignore_missing: true
   - script:
       params:
+        pkg_version: 3.12.0
+        data_stream: tunnel-log
         expect:
           fields:
             "Recordtype|datetime|day|dd|destinationip|event|eventreason|hh|locationname|mm|mon|mth|olocationname|ovpncredentialname|recordid|sourceip|sourceport|ss|timezone|tunneltype|user|yyyy": true
@@ -58,12 +60,12 @@ processors:
           if (params.expect.fields[signature] != true) {
             ctx.error = ctx.error ?: [:];
             ctx.error.message = ctx.error.message ?: [];
-            ctx.error.message.add("field set mismatch: "+signature+" is not expected set of templated fields");
+            ctx.error.message.add("field set mismatch: "+signature+" is not expected set of templated fields (see https://www.elastic.co/docs/reference/integrations/zscaler_zia#"+params.data_stream+")");
           }
         } else if (ctx.resp.version != params.expect.version) {
           ctx.error = ctx.error ?: [:];
           ctx.error.message = ctx.error.message ?: [];
-          ctx.error.message.add("template version mismatch: "+ctx.resp.version.toString()+" is not expected version");
+          ctx.error.message.add("template version mismatch: "+ctx.resp.version.toString()+" is not expected version (see https://www.elastic.co/docs/reference/integrations/zscaler_zia#"+params.data_stream+")");
         }
   - remove:
       field: resp
