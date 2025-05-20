@@ -1,10 +1,16 @@
 provider "google" {
-  credentials = var.GOOGLE_CREDENTIALS
+  default_labels = {
+  environment  = var.ENVIRONMENT
+  repo         = var.REPO
+  branch       = var.BRANCH
+  build        = var.BUILD_ID
+  created_date = var.CREATED_DATE
+  }
 }
 
 resource "google_storage_bucket" "panw_cortex_xdr_event_bucket" {
-  name     = "${var.BUCKET_NAME}-${var.TEST_RUN_ID}"
-  location = "US"
+  name     = "elastic-package-gcs-bucket-${var.TEST_RUN_ID}"
+  location = var.BUCKET_REGION
 }
 # See https://github.com/elastic/oblt-infra/blob/main/conf/resources/repos/integrations/01-gcp-buildkite-oidc.tf
 
