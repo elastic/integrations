@@ -1,6 +1,6 @@
-# DomainTools Real Time Unified Feeds
+# DomainTools Feeds
 
-DomainTools Real-Time Threat Intelligence Feeds provide data on the different stages of the domain lifecycle: from first-observed in the wild, to newly re-activated after a period of quiet. Access current feed data in real-time or retrieve historical feed data through separate APIs. Some feeds also offer data for DNS firewalls in Response Policy Zone (RPZ) format.
+DomainTools Feeds provide data on the different stages of the domain lifecycle: from first-observed in the wild, to newly re-activated after a period of quiet. Access current feed data in real-time or retrieve historical feed data through separate APIs. Some feeds also offer data for DNS firewalls in Response Policy Zone (RPZ) format.
 
 Summary of Available Feeds:
 
@@ -16,7 +16,7 @@ Then you can reference ti_domaintools.nod_feed when using visualizations or aler
 
 ## Data streams
 
-The DomainTools Real Time Unified Feeds integration collects one type of data streams: **logs**
+The DomainTools Feeds integration collects one type of data streams: **logs**
 
 Log data streams collected by the DomainTools integration include the following feeds:
 
@@ -42,7 +42,7 @@ For step-by-step instructions on how to set up an integration, see the Getting s
 ### Newly Observed Domains (NOD) Feed
 
 The `nod_feed` data stream provides events from [DomainTools Newly Observed Domains Feed](https://www.domaintools.com/products/threat-intelligence-feeds/).
-This data is collected via the [DomainTools Real Time Feeds API](https://docs.domaintools.com/feeds/realtime/).
+This data is collected via the [DomainTools Feeds API](https://docs.domaintools.com/feeds/realtime/).
 
 #### Example
 
@@ -50,11 +50,10 @@ This data is collected via the [DomainTools Real Time Feeds API](https://docs.do
 
 {{fields "nod_feed"}}
 
-
 ### Newly Active Domains (NAD) Feed
 
 The `nod_feed` data stream provides events from [DomainTools Newly Active Domains Feed](https://www.domaintools.com/products/threat-intelligence-feeds/).
-This data is collected via the [DomainTools Real Time Feeds API](https://docs.domaintools.com/feeds/realtime/).
+This data is collected via the [DomainTools Feeds API](https://docs.domaintools.com/feeds/realtime/).
 
 #### Example
 
@@ -65,7 +64,7 @@ This data is collected via the [DomainTools Real Time Feeds API](https://docs.do
 ### Domain Discovery Feed
 
 The `domaindiscovery feed` data stream provides events from [DomainTools Domain Discovery Feed](https://www.domaintools.com/products/threat-intelligence-feeds/).
-This data is collected via the [DomainTools Real Time Feeds API](https://docs.domaintools.com/feeds/realtime/).
+This data is collected via the [DomainTools Feeds API](https://docs.domaintools.com/feeds/realtime/).
 
 #### Example
 
