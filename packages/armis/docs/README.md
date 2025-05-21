@@ -101,9 +101,9 @@ An example event for `alert` looks as following:
 {
     "@timestamp": "2025-03-29T00:12:57.306Z",
     "agent": {
-        "ephemeral_id": "1fff435b-9a03-41de-9746-3d507c0467bb",
-        "id": "f5180424-1abc-450a-b868-5e1d827954a5",
-        "name": "elastic-agent-93160",
+        "ephemeral_id": "693c9ba7-607a-44d6-b0bc-3afdda78193c",
+        "id": "64c14a85-1de8-434c-9493-8f31805a1c44",
+        "name": "elastic-agent-14454",
         "type": "filebeat",
         "version": "8.18.0"
     },
@@ -129,14 +129,14 @@ An example event for `alert` looks as following:
     },
     "data_stream": {
         "dataset": "armis.alert",
-        "namespace": "39244",
+        "namespace": "11102",
         "type": "logs"
     },
     "ecs": {
         "version": "8.17.0"
     },
     "elastic_agent": {
-        "id": "f5180424-1abc-450a-b868-5e1d827954a5",
+        "id": "64c14a85-1de8-434c-9493-8f31805a1c44",
         "snapshot": false,
         "version": "8.18.0"
     },
@@ -144,7 +144,7 @@ An example event for `alert` looks as following:
         "agent_id_status": "verified",
         "dataset": "armis.alert",
         "id": "61",
-        "ingested": "2025-05-12T05:22:20Z",
+        "ingested": "2025-05-21T07:44:13Z",
         "kind": "alert",
         "original": "{\"activityUUIDs\":[\"6f3d6d3a-6732-44cc-9d63-10a38277fb15\"],\"affectedDevicesCount\":1,\"alertId\":61,\"classification\":\"Security - Other\",\"connectionIds\":[],\"description\":\"The Armis security platform has detected a violation of a policy and generated an alert.\",\"destinationEndpoints\":[],\"deviceIds\":[854],\"lastAlertUpdateTime\":null,\"mitreAttackLabels\":null,\"policyId\":null,\"policyLabels\":null,\"policyTitle\":null,\"severity\":\"Critical\",\"sourceEndpoints\":[],\"status\":\"Unhandled\",\"statusChangeTime\":\"2025-03-29T00:12:57.306928+00:00\",\"time\":\"2025-03-29T00:12:57.306928+00:00\",\"title\":\"[Risk] Device Susceptible to Ransomware\",\"type\":\"System Policy Violation\"}",
         "severity": 99
@@ -210,6 +210,7 @@ An example event for `alert` looks as following:
 | event.dataset | Event dataset. | constant_keyword |
 | event.module | Event module. | constant_keyword |
 | input.type | Type of filebeat input. | keyword |
+| labels.is_transform_source | Distinguishes between documents that are a source for a transform and documents that are an output of a transform, to facilitate easier filtering. | constant_keyword |
 | log.offset | Log offset. | long |
 
 
@@ -227,9 +228,9 @@ An example event for `device` looks as following:
 {
     "@timestamp": "2025-03-29T10:43:55.988Z",
     "agent": {
-        "ephemeral_id": "676dc7fa-df27-437e-9899-f13552edfd88",
-        "id": "63e7f8d1-3918-497a-848c-69ef5495d29e",
-        "name": "elastic-agent-92930",
+        "ephemeral_id": "d10f731b-c124-4bf6-8820-7b873224d411",
+        "id": "14af6cec-a54e-4616-a404-4bd1a7f496cd",
+        "name": "elastic-agent-52983",
         "type": "filebeat",
         "version": "8.18.0"
     },
@@ -287,7 +288,7 @@ An example event for `device` looks as following:
     },
     "data_stream": {
         "dataset": "armis.device",
-        "namespace": "52873",
+        "namespace": "27823",
         "type": "logs"
     },
     "device": {
@@ -300,7 +301,7 @@ An example event for `device` looks as following:
         "version": "8.17.0"
     },
     "elastic_agent": {
-        "id": "63e7f8d1-3918-497a-848c-69ef5495d29e",
+        "id": "14af6cec-a54e-4616-a404-4bd1a7f496cd",
         "snapshot": false,
         "version": "8.18.0"
     },
@@ -310,7 +311,7 @@ An example event for `device` looks as following:
             "host"
         ],
         "dataset": "armis.device",
-        "ingested": "2025-05-12T05:23:05Z",
+        "ingested": "2025-05-21T07:45:04Z",
         "kind": "event",
         "original": "{\"accessSwitch\":null,\"boundaries\":\"Corporate\",\"businessImpact\":\"Unassigned\",\"category\":\"Network Equipment\",\"customProperties\":{},\"dataSources\":[{\"firstSeen\":\"2024-10-09T05:09:02.988081+00:00\",\"instances\":[],\"lastSeen\":\"2025-03-29T10:43:55.988081+00:00\",\"name\":\"Knowledge Base\",\"types\":[\"Traffic Inspection\",\"Data Analysis\"]}],\"displayTitle\":\"Test\",\"firstSeen\":\"2024-10-09T05:09:02.988081+00:00\",\"id\":1154,\"ipAddress\":\"89.160.20.128\",\"ipv6\":[],\"lastSeen\":\"2025-03-29T10:43:55.988081+00:00\",\"macAddress\":\"50:76:AF:D3:3F:AB\",\"manufacturer\":\"Test Manufacturer\",\"model\":\"Test Model\",\"name\":\"Test Name\",\"names\":\"Test Names\",\"operatingSystem\":\"Windows\",\"operatingSystemVersion\":\"Server 2016\",\"protections\":[],\"purdueLevel\":4,\"riskLevel\":10,\"sensor\":{\"name\":\"test Enterprise\",\"type\":\"test LAN Controller\"},\"site\":{\"location\":\"Zurich\",\"name\":\"Zurich Enterprise\"},\"tags\":[\"Misconfigurations\"],\"type\":\"Switches\",\"typeEnum\":\"SWITCH\",\"userIds\":[],\"visibility\":\"Full\"}",
         "start": "2024-10-09T05:09:02.988Z",
@@ -433,9 +434,9 @@ An example event for `vulnerability` looks as following:
 {
     "@timestamp": "2025-04-03T10:38:59.297Z",
     "agent": {
-        "ephemeral_id": "677824d1-81dc-4c34-80be-8f709b7d5e60",
-        "id": "6cc04d8c-ce57-40f8-bd48-c44a580b1b91",
-        "name": "elastic-agent-94040",
+        "ephemeral_id": "10441499-27b3-41da-b6a0-74f54f98a4fd",
+        "id": "044f39cb-175e-4747-a359-2c9e3f202e47",
+        "name": "elastic-agent-53672",
         "type": "filebeat",
         "version": "8.18.0"
     },
@@ -483,7 +484,7 @@ An example event for `vulnerability` looks as following:
     },
     "data_stream": {
         "dataset": "armis.vulnerability",
-        "namespace": "94964",
+        "namespace": "50611",
         "type": "logs"
     },
     "device": {
@@ -493,7 +494,7 @@ An example event for `vulnerability` looks as following:
         "version": "8.17.0"
     },
     "elastic_agent": {
-        "id": "6cc04d8c-ce57-40f8-bd48-c44a580b1b91",
+        "id": "044f39cb-175e-4747-a359-2c9e3f202e47",
         "snapshot": false,
         "version": "8.18.0"
     },
@@ -503,7 +504,7 @@ An example event for `vulnerability` looks as following:
             "vulnerability"
         ],
         "dataset": "armis.vulnerability",
-        "ingested": "2025-05-12T05:23:54Z",
+        "ingested": "2025-05-21T07:45:53Z",
         "kind": "event",
         "original": "{\"affectedDevicesCount\":13,\"attackComplexity\":\"Low\",\"attackVector\":\"Network\",\"availabilityImpact\":\"High\",\"avmRating\":null,\"avmRatingManualChangeReason\":null,\"avmRatingManualChangedBy\":\"\",\"avmRatingManualUpdateTime\":null,\"botnets\":null,\"cisaDueDate\":null,\"commonName\":null,\"confidentialityImpact\":\"High\",\"cveUid\":\"CVE-2024-44148\",\"cvssScore\":10,\"cvssScoreV4\":null,\"description\":\"This issue was addressed with improved validation of file attributes.\",\"epssPercentile\":0.31,\"epssScore\":0.00139,\"exploitabilityScore\":3.9,\"firstDetected\":\"2025-04-03T09:18:31.915543+00:00\",\"firstReferencePublishDate\":null,\"firstWeaponizedReferencePublishDate\":null,\"hasRansomware\":null,\"hasRemediationInfo\":\"No\",\"id\":\"CVE-2024-44148\",\"impactScore\":6,\"integrityImpact\":\"High\",\"isWeaponized\":null,\"lastDetected\":\"2025-04-03T10:38:59.372389+00:00\",\"latestExploitUpdate\":null,\"numOfExploits\":0,\"numberOfThreatActors\":0,\"privilegesRequired\":\"None\",\"publishedDate\":\"2024-09-17T00:15:50.617000+00:00\",\"reportedByGoogleZeroDays\":null,\"scope\":\"Changed\",\"score\":10,\"severity\":\"Critical\",\"status\":\"Open\",\"threatActors\":null,\"threatTags\":null,\"type\":\"OS\",\"userInteraction\":\"None\",\"vulnerability_match\":{\"advisoryId\":null,\"avmRating\":null,\"confidenceLevel\":\"High\",\"confidenceLevelDescription\":null,\"cveUid\":\"CVE-2024-44148\",\"deviceId\":109,\"firstDetected\":\"2025-04-03T10:38:59.297015+00:00\",\"hasRemediationInfo\":\"No\",\"lastDetected\":\"2025-04-03T10:38:59.297015+00:00\",\"matchCriteriaString\":\"OS\",\"recommendedSteps\":null,\"remediationTypes\":null,\"status\":\"Open\",\"statusChangeReason\":null,\"statusSource\":\"Discovered by Armis\"}}",
         "start": "2025-04-03T09:18:31.915Z",

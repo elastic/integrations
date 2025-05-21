@@ -72,7 +72,6 @@ program: |
           "GET",
           state.url.trim_right("/") + "/api/v1/search/?" + {
             "length": [string(state.page_size)],
-            "orderBy": ["statusChangeTime"],
             "aql": ["in:alerts statusChangeTime:" + '"' + string((now - state.start_time.parse_time("2006-01-02T15:04:05")).getSeconds()) + " Seconds" + '"'],
             ?"from": has(state.offset) && state.offset != null ? optional.of([string(state.offset)]) : optional.none(),
           }.format_query()
@@ -90,10 +89,19 @@ program: |
               "is_token_valid": true,
               "offset":body.?data.next.orValue(null),
               "cursor": {
-                  ?"last_timestamp": (has(body.?data.results) && size(body.data.results) > 0) ?
-                    optional.of(body.data.results.map(e, e.time).map(t, timestamp(t)).max().format("2006-01-02T15:04:05"))
+                ?"last_timestamp": (has(body.?data.results) && size(body.data.results) > 0) ?
+                  (has(state.?cursor.last_timestamp) ?
+                    optional.of(
+                      max([
+                        state.cursor.last_timestamp.parse_time("2006-01-02T15:04:05"),
+                        body.data.results.map(e, e.statusChangeTime).map(t, timestamp(t)).max()
+                      ]).format("2006-01-02T15:04:05")
+                    )
+                    :
+                    optional.of(body.data.results.map(e, e.statusChangeTime).map(t, timestamp(t)).max().format("2006-01-02T15:04:05"))
+                  )
                   :
-                    state.?cursor.last_timestamp,
+                    state.?cursor.last_timestamp
               },
               "want_more": body.data.next != null,
             })
