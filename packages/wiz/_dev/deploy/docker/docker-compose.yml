@@ -65,3 +65,30 @@ services:
       - http-server
       - --addr=:8090
       - --config=/files/config-vulnerability.yml
+  wiz-defend-no-auth:
+    image: docker.elastic.co/observability/stream:v0.17.1
+    volumes:
+      - ./sample_logs:/sample_logs:ro
+    environment:
+      - STREAM_PROTOCOL=webhook
+      - STREAM_ADDR=http://elastic-agent:9588/
+    command: log --start-signal=SIGHUP --delay=5s /sample_logs/defend.log
+  wiz-defend-basic:
+    image: docker.elastic.co/observability/stream:v0.17.1
+    volumes:
+      - ./sample_logs:/sample_logs:ro
+    environment:
+      - STREAM_PROTOCOL=webhook
+      - STREAM_ADDR=http://elastic-agent:9589/
+      - STREAM_USERNAME=testuser
+      - STREAM_PASSWORD=xxxx
+    command: log --start-signal=SIGHUP  --webhook-username=testuser --webhook-password=xxxx --delay=5s /sample_logs/defend.log
+  wiz-defend-token:
+    image: docker.elastic.co/observability/stream:v0.17.1
+    volumes:
+      - ./sample_logs:/sample_logs:ro
+    environment:
+      - STREAM_PROTOCOL=webhook
+      - STREAM_ADDR=http://elastic-agent:9590/
+      - STREAM_WEBHOOK_HEADER=testheader=abc123
+    command: log --start-signal=SIGHUP --delay=5s /sample_logs/defend.log

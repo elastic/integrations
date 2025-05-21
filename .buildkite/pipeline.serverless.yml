@@ -6,7 +6,7 @@ env:
   DOCKER_COMPOSE_VERSION: "v2.24.1"
   DOCKER_VERSION: "false" # not required to set since system tests are not running yet
   KIND_VERSION: 'v0.27.0'
-  K8S_VERSION: 'v1.32.0'
+  K8S_VERSION: 'v1.33.0'
   YQ_VERSION: 'v4.35.2'
   IMAGE_UBUNTU_X86_64: "family/core-ubuntu-2204"
   GH_CLI_VERSION: "2.29.0"
@@ -67,6 +67,17 @@ steps:
     agents:
       provider: "gcp"
       image: "${IMAGE_UBUNTU_X86_64}"
+    plugins:
+      # See https://github.com/elastic/oblt-infra/blob/main/conf/resources/repos/integrations/01-aws-buildkite-oidc.tf
+      # This plugin creates the environment variables required by the service deployer (AWS_SECRET_ACCESS_KEY and AWS_SECRET_KEY_ID)
+      - elastic/oblt-aws-auth#v0.1.0:
+          duration: 10800 # seconds
+      # See https://github.com/elastic/oblt-infra/blob/main/conf/resources/repos/integrations/01-gcp-buildkite-oidc.tf
+      # This plugin authenticates to Google Cloud using the OIDC token.
+      - elastic/oblt-google-auth#v1.3.0:
+          lifetime: 10800 # seconds
+          project-id: "elastic-observability-ci"
+          project-number: "911195782929"
     artifact_paths:
       - "build/test-results/*.xml"
       - "build/elastic-stack-dump/*/logs/*.log"
