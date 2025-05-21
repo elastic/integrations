@@ -746,22 +746,22 @@ An example event for `vulnerability` looks as following:
 {
     "@timestamp": "2018-12-31T20:59:47.000Z",
     "agent": {
-        "ephemeral_id": "af171dcd-43b0-4876-959e-1ec1f0e4513f",
-        "id": "2a6e1be3-c855-47fa-b80f-3c4347211ff3",
-        "name": "elastic-agent-99706",
+        "ephemeral_id": "8af23283-0b0c-408e-b021-f0bec246d68c",
+        "id": "a8fb2f9c-9192-4eb5-88aa-ac28bc47355a",
+        "name": "elastic-agent-38760",
         "type": "filebeat",
         "version": "8.18.0"
     },
     "data_stream": {
         "dataset": "tenable_io.vulnerability",
-        "namespace": "27522",
+        "namespace": "19041",
         "type": "logs"
     },
     "ecs": {
         "version": "8.11.0"
     },
     "elastic_agent": {
-        "id": "2a6e1be3-c855-47fa-b80f-3c4347211ff3",
+        "id": "a8fb2f9c-9192-4eb5-88aa-ac28bc47355a",
         "snapshot": false,
         "version": "8.18.0"
     },
@@ -772,7 +772,7 @@ An example event for `vulnerability` looks as following:
         ],
         "created": "2022-11-30T14:09:12.061Z",
         "dataset": "tenable_io.vulnerability",
-        "ingested": "2025-05-20T15:08:31Z",
+        "ingested": "2025-05-21T10:53:18Z",
         "kind": "state",
         "original": "{\"asset\":{\"fqdn\":\"example.com\",\"hostname\":\"89.160.20.112\",\"ipv4\":\"81.2.69.142\",\"network_id\":\"00000000-0000-0000-0000-000000000000\",\"operating_system\":[\"Test Demo OS X 10.5.8\"],\"tracked\":true,\"uuid\":\"cf165808-6a31-48e1-9cf3-c6c3174df51d\"},\"first_found\":\"2018-12-31T20:59:47Z\",\"indexed\":\"2022-11-30T14:09:12.061Z\",\"last_found\":\"2018-12-31T20:59:47Z\",\"output\":\"\\n  Path              : /opt/jdk-11.0.2/\\n  Installed version : 11.0.2\\n  Fixed version     : Upgrade to a version greater than 11.0.18\\n\\n\\n\\n  Path              : /usr/java/jdk1.8.0_232-cloudera/\\n  Installed version : 8.0.232\\n  Fixed version     : Upgrade to a version greater than 8u362\\n\",\"plugin\":{\"cve\":[\"CVE-2016-1620\",\"CVE-2016-1614\",\"CVE-2016-1613\",\"CVE-2016-1612\",\"CVE-2016-1618\",\"CVE-2016-1617\",\"CVE-2016-1616\",\"CVE-2016-1615\",\"CVE-2016-1619\"],\"cvss_base_score\":9.3,\"cvss_temporal_score\":6.9,\"cvss_temporal_vector\":{\"exploitability\":\"Unproven\",\"raw\":\"E:U/RL:OF/RC:C\",\"remediation_level\":\"Official-fix\",\"report_confidence\":\"Confirmed\"},\"cvss_vector\":{\"access_complexity\":\"Medium\",\"access_vector\":\"Network\",\"authentication\":\"None required\",\"availability_impact\":\"Complete\",\"confidentiality_impact\":\"Complete\",\"integrity_impact\":\"Complete\",\"raw\":\"AV:N/AC:M/Au:N/C:C/I:C/A:C\"},\"description\":\"The version of Test  on the remote host is prior to 48.0.2564.82 and is affected by the following vulnerabilities: \\n\\n - An unspecified vulnerability exists in Test V8 when handling compatible receiver checks hidden behind receptors.  An attacker can exploit this to have an unspecified impact.  No other details are available. (CVE-2016-1612)\\n - A use-after-free error exists in `PDFium` due to improper invalidation of `IPWL_FocusHandler` and `IPWL_Provider` upon destruction.  An attacker can exploit this to dereference already freed memory, resulting in the execution of arbitrary code. (CVE-2016-1613)\\n - An unspecified vulnerability exists in `Blink` that is related to the handling of bitmaps.  An attacker can exploit this to access sensitive information.  No other details are available. (CVE-2016-1614)\\n - An unspecified vulnerability exists in `omnibox` that is related to origin confusion.  An attacker can exploit this to have an unspecified impact.  No other details are available. (CVE-2016-1615)\\n - An unspecified vulnerability exists that allows an attacker to spoof a displayed URL.  No other details are available. (CVE-2016-1616)\\n - An unspecified vulnerability exists that is related to history sniffing with HSTS and CSP. No other details are available. (CVE-2016-1617)\\n - A flaw exists in `Blink` due to the weak generation of random numbers by the ARC4-based random number generator.  An attacker can exploit this to gain access to sensitive information.  No other details are available. (CVE-2016-1618)\\n - An out-of-bounds read error exists in `PDFium` in file `fx_codec_jpx_opj.cpp` in the `sycc4{22,44}_to_rgb()` functions. An attacker can exploit this to cause a denial of service by crashing the application linked using the library. (CVE-2016-1619)\\n - Multiple vulnerabilities exist, the most serious of which allow an attacker to execute arbitrary code via a crafted web page. (CVE-2016-1620)\\n - A flaw in `objects.cc` is triggered when handling cleared `WeakCells`, which may allow a context-dependent attacker to have an unspecified impact. No further details have been provided. (CVE-2016-2051)\",\"family\":\"Web Clients\",\"family_id\":1000020,\"has_patch\":false,\"id\":9062,\"name\":\"Test  \\u0026lt; 48.0.2564.82 Multiple Vulnerabilities\",\"risk_factor\":\"HIGH\",\"see_also\":[\"http://testreleases.blogspot.com/2016/01/beta-channel-update_20.html\"],\"solution\":\"Update the  browser to 48.0.2564.82 or later.\",\"synopsis\":\"The remote host is utilizing a web browser that is affected by multiple vulnerabilities.\",\"vpr\":{\"drivers\":{\"age_of_vuln\":{\"lower_bound\":366,\"upper_bound\":730},\"cvss3_impact_score\":5.9,\"cvss_impact_score_predicted\":false,\"exploit_code_maturity\":\"UNPROVEN\",\"product_coverage\":\"LOW\",\"threat_intensity_last28\":\"VERY_LOW\",\"threat_sources_last28\":[\"No recorded events\"]},\"score\":5.9,\"updated\":\"2019-12-31T10:08:58Z\"},\"vuln_publication_date\":\"2023-04-18T00:00:00Z\"},\"port\":{\"port\":\"0\",\"protocol\":\"TCP\"},\"scan\":{\"completed_at\":\"2018-12-31T20:59:47Z\",\"schedule_uuid\":\"6f7db010-9cb6-4870-b745-70a2aea2f81ce1b6640fe8a2217b\",\"started_at\":\"2018-12-31T20:59:47Z\",\"uuid\":\"0e55ec5d-c7c7-4673-a618-438a84e9d1b78af3a9957a077904\"},\"severity\":\"low\",\"severity_default_id\":3,\"severity_id\":3,\"severity_modification_type\":\"NONE\",\"state\":\"OPEN\"}",
         "type": [
@@ -1024,11 +1024,10 @@ An example event for `vulnerability` looks as following:
 | input.type | Input type | keyword |
 | log.offset | Log offset | long |
 | observer.vendor | Vendor name of the observer. | constant_keyword |
-| package |  | nested |
 | package.fixed_version |  | keyword |
-| package.name |  | keyword |
-| package.path |  | keyword |
-| package.version |  | keyword |
+| package.name | Package name | keyword |
+| package.path | Path where the package is installed. | keyword |
+| package.version | Package version | keyword |
 | resource.id |  | keyword |
 | resource.name |  | keyword |
 | tenable_io.vulnerability.asset.agent_uuid | The UUID of the agent that performed the scan where the vulnerability was found. | keyword |
@@ -1166,7 +1165,6 @@ An example event for `vulnerability` looks as following:
 | tenable_io.vulnerability.severity.value | The severity of the vulnerability as defined using the Common Vulnerability Scoring System (CVSS) base score. Possible values include info, low, medium, high and critical. | keyword |
 | tenable_io.vulnerability.source | The source of the scans that identified the vulnerability. Sources can include sensors, connectors, and API imports. The values in the source field correspond to the names of the sources as defined in your organization's implementation of Tenable Vulnerability Management. | keyword |
 | tenable_io.vulnerability.state | The state of the vulnerability as determined by the Tenable Vulnerability Management state service. Possible values include: open, reopen and fixed. | keyword |
-| vulnerability.package |  | nested |
 | vulnerability.package.fixed_version |  | keyword |
 | vulnerability.package.name |  | keyword |
 | vulnerability.package.path |  | keyword |
