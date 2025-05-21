@@ -65,7 +65,7 @@ response.pagination:
       value: '{{limit}}'
 cursor:
   last_timestamp:
-    value: '[[(toInt .first_event.creationDate)]]'
+    value: '[[add (toInt .first_event.creationDate) 1]]'
 
 fields_under_root: true
 fields:
@@ -110,7 +110,7 @@ response.pagination:
 
 cursor:
   last_timestamp:
-    value: '[[.first_event.timestamp]]'
+    value: '[[formatDate (parseTimestampMilli (add (parseDate .first_event.timestamp).UnixMilli 1)) "2006-01-02T15:04:05.999Z"]]'
 {{/if}}
 
 tags:
@@ -128,4 +128,4 @@ publisher_pipeline.disable_host: true
 {{#if processors}}
 processors:
 {{processors}}
-{{/if}} 
+{{/if}}

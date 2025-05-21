@@ -1,0 +1,97 @@
+{
+    "attributes": {
+        "author": [
+            "Elastic"
+        ],
+        "description": "Indicates the update of a scheduled task using Windows event logs. Adversaries can use these to establish persistence, by changing the configuration of a legit scheduled task. Some changes such as disabling or enabling a scheduled task are common and may may generate noise.",
+        "false_positives": [
+            "Legitimate scheduled tasks may be created during installation of new software."
+        ],
+        "from": "now-9m",
+        "index": [
+            "logs-system.security*",
+            "logs-windows.forwarded*",
+            "winlogbeat-*"
+        ],
+        "language": "eql",
+        "license": "Elastic License v2",
+        "name": "A scheduled task was updated",
+        "note": "## Triage and analysis\n\n> **Disclaimer**:\n> This investigation guide was created using generative AI technology and has been reviewed to improve its accuracy and relevance. While every effort has been made to ensure its quality, we recommend validating the content and adapting it to suit your specific environment and operational needs.\n\n### Investigating A scheduled task was updated\n\nScheduled tasks in Windows automate routine tasks, enhancing efficiency. However, adversaries exploit this by modifying tasks to maintain persistence, often altering legitimate tasks to evade detection. The detection rule identifies suspicious updates by filtering out benign changes, such as those by system accounts or known safe tasks, focusing on anomalies that suggest malicious intent.\n\n### Possible investigation steps\n\n- Review the event logs to identify the specific scheduled task that was updated, focusing on the winlog.event_data.TaskName field to determine if it matches any known malicious patterns.\n- Investigate the user account associated with the update by examining the user.name field to ensure it is not a compromised account or an unauthorized user.\n- Check the winlog.event_data.SubjectUserSid field to verify if the update was made by a system account or a potentially malicious user, as system accounts like S-1-5-18, S-1-5-19, and S-1-5-20 are typically benign.\n- Analyze the history of changes to the scheduled task to identify any unusual or unauthorized modifications that could indicate persistence mechanisms.\n- Correlate the scheduled task update with other security events or alerts to determine if it is part of a broader attack pattern or campaign.\n\n### False positive analysis\n\n- Scheduled tasks updated by system accounts can be false positives. Exclude updates made by system accounts by filtering out user names ending with a dollar sign.\n- Legitimate Microsoft tasks often update automatically. Exclude tasks with names containing \"Microsoft\" to reduce noise from these updates.\n- Commonly updated tasks like User Feed Synchronization and OneDrive Reporting are typically benign. Exclude these specific task names to avoid unnecessary alerts.\n- Tasks updated by well-known service SIDs such as S-1-5-18, S-1-5-19, and S-1-5-20 are generally safe. Exclude these SIDs to prevent false positives from routine system operations.\n\n### Response and remediation\n\n- Immediately isolate the affected system from the network to prevent further malicious activity and lateral movement.\n- Review the specific scheduled task that was updated to determine if it was altered by an unauthorized user or process. Revert any unauthorized changes to their original state.\n- Conduct a thorough scan of the affected system using updated antivirus and anti-malware tools to identify and remove any malicious software that may have been introduced.\n- Analyze the user account that made the changes to the scheduled task. If the account is compromised, reset the password and review recent activities for further signs of compromise.\n- Implement additional monitoring on the affected system and similar systems to detect any further unauthorized scheduled task updates or related suspicious activities.\n- Escalate the incident to the security operations team for further investigation and to determine if the threat is part of a larger attack campaign.\n- Review and update access controls and permissions related to scheduled tasks to ensure only authorized personnel can make changes, reducing the risk of future unauthorized modifications.",
+        "query": "iam where event.action == \"scheduled-task-updated\" and\n\n /* excluding tasks created by the computer account */\n not user.name : \"*$\" and\n not winlog.event_data.TaskName : \"*Microsoft*\" and\n not winlog.event_data.TaskName :\n          (\"\\\\User_Feed_Synchronization-*\",\n           \"\\\\OneDrive Reporting Task-S-1-5-21*\",\n           \"\\\\OneDrive Reporting Task-S-1-12-1-*\",\n           \"\\\\Hewlett-Packard\\\\HP Web Products Detection\",\n           \"\\\\Hewlett-Packard\\\\HPDeviceCheck\",\n           \"\\\\Microsoft\\\\Windows\\\\UpdateOrchestrator\\\\UpdateAssistant\",\n           \"\\\\IpamDnsProvisioning\",\n           \"\\\\Microsoft\\\\Windows\\\\UpdateOrchestrator\\\\UpdateAssistantAllUsersRun\",\n           \"\\\\Microsoft\\\\Windows\\\\UpdateOrchestrator\\\\UpdateAssistantCalendarRun\",\n           \"\\\\Microsoft\\\\Windows\\\\UpdateOrchestrator\\\\UpdateAssistantWakeupRun\",\n           \"\\\\Microsoft\\\\Windows\\\\.NET Framework\\\\.NET Framework NGEN v*\",\n           \"\\\\Microsoft\\\\VisualStudio\\\\Updates\\\\BackgroundDownload\") and\n  not winlog.event_data.SubjectUserSid :  (\"S-1-5-18\", \"S-1-5-19\", \"S-1-5-20\")\n",
+        "references": [
+            "https://docs.microsoft.com/en-us/windows/security/threat-protection/auditing/event-4698"
+        ],
+        "related_integrations": [
+            {
+                "package": "system",
+                "version": "^1.64.0"
+            },
+            {
+                "package": "windows",
+                "version": "^2.5.0"
+            }
+        ],
+        "required_fields": [
+            {
+                "ecs": true,
+                "name": "event.action",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "user.name",
+                "type": "keyword"
+            },
+            {
+                "ecs": false,
+                "name": "winlog.event_data.SubjectUserSid",
+                "type": "keyword"
+            },
+            {
+                "ecs": false,
+                "name": "winlog.event_data.TaskName",
+                "type": "unknown"
+            }
+        ],
+        "risk_score": 47,
+        "rule_id": "a02cb68e-7c93-48d1-93b2-2c39023308eb",
+        "severity": "medium",
+        "tags": [
+            "Domain: Endpoint",
+            "OS: Windows",
+            "Use Case: Threat Detection",
+            "Tactic: Persistence",
+            "Data Source: Windows Security Event Logs",
+            "Resources: Investigation Guide"
+        ],
+        "threat": [
+            {
+                "framework": "MITRE ATT&CK",
+                "tactic": {
+                    "id": "TA0003",
+                    "name": "Persistence",
+                    "reference": "https://attack.mitre.org/tactics/TA0003/"
+                },
+                "technique": [
+                    {
+                        "id": "T1053",
+                        "name": "Scheduled Task/Job",
+                        "reference": "https://attack.mitre.org/techniques/T1053/",
+                        "subtechnique": [
+                            {
+                                "id": "T1053.005",
+                                "name": "Scheduled Task",
+                                "reference": "https://attack.mitre.org/techniques/T1053/005/"
+                            }
+                        ]
+                    }
+                ]
+            }
+        ],
+        "timestamp_override": "event.ingested",
+        "type": "eql",
+        "version": 113
+    },
+    "id": "a02cb68e-7c93-48d1-93b2-2c39023308eb_113",
+    "type": "security-rule"
+}

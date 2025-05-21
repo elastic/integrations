@@ -1,0 +1,69 @@
+config_version: 2
+interval: {{interval}}
+resource.tracer:
+  enabled: {{enable_request_tracer}}
+  filename: "../../logs/cel/http-request-trace-*.ndjson"
+  maxbackups: 5
+{{#if proxy_url}}
+resource.proxy_url: {{proxy_url}}
+{{/if}}
+{{#if ssl}}
+resource.ssl: {{ssl}}
+{{/if}}
+{{#if http_client_timeout}}
+resource.timeout: {{http_client_timeout}}
+{{/if}}
+resource.url: {{url}}
+auth.oauth2:
+  client.id: {{client_id}}
+  client.secret: {{client_secret}}
+  token_url: {{url}}/oauth2/token
+state:
+  version: v3.4
+redact:
+  fields: ~
+program: |
+  state.with(
+    request("GET", state.url.trim_right("/") + "/api/" + string(state.version) + "/lockdown"
+    ).do_request().as(resp, resp.StatusCode == 200 ?
+      resp.Body.decode_json().as(body, {
+        "events": body.map(e, {
+          "message": e.encode_json(),
+        })
+      })
+    :
+      {
+        "events": {
+          "error": {
+            "code": string(resp.StatusCode),
+            "id": string(resp.Status),
+            "message": "GET " + state.url.trim_right("/") + "/api/" + string(state.version) + "/lockdown: " + 
+            (
+              (size(resp.Body) != 0) ?
+                string(resp.Body)
+              :
+                string(resp.Status) + " (" + string(resp.StatusCode) + ")"
+            ),
+          },
+        },
+        "want_more": false
+      }
+    )
+  )
+tags:
+{{#if preserve_original_event}}
+  - preserve_original_event
+{{/if}}
+{{#if preserve_duplicate_custom_fields}}
+  - preserve_duplicate_custom_fields
+{{/if}}
+{{#each tags as |tag|}}
+  - {{tag}}
+{{/each}}
+{{#contains "forwarded" tags}}
+publisher_pipeline.disable_host: true
+{{/contains}}
+{{#if processors}}
+processors:
+{{processors}}
+{{/if}}
