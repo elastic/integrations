@@ -366,6 +366,7 @@ Please refer to the following [document](https://www.elastic.co/guide/en/ecs/cur
 | log.file.idxlo | The low-order part of a unique identifier that is associated with a file. (Windows-only) | keyword |
 | log.file.inode | Inode number of the log file. | keyword |
 | log.file.vol | The serial number of the volume that contains a file. (Windows-only) | keyword |
+| log.flags | Flags for the log file. | keyword |
 | log.offset | Log offset. | long |
 
 
