@@ -265,7 +265,7 @@ Please refer to the following [document](https://www.elastic.co/guide/en/ecs/cur
 | data_stream.dataset | Data stream dataset. | constant_keyword |  |
 | data_stream.namespace | Data stream namespace. | constant_keyword |  |
 | data_stream.type | Data stream type. | constant_keyword |  |
-| http.request.process_time | Time taken to process the request, in millis | long |  |
+| http.request.process_time | Time taken to process the request, in millis | double | ms |
 | input.type | Type of Filebeat input. | keyword |  |
 | log.file.device_id | ID of the device containing the filesystem where the file resides. | keyword |  |
 | log.file.fingerprint | The sha256 fingerprint identity of the file when fingerprinting is enabled. | keyword |  |
