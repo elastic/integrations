@@ -246,6 +246,7 @@ An example event for `system` looks as following:
 | log.offset | Offset of the entry in the log file. | long |
 | okta.actor.alternate_id | Alternate identifier of the actor. | keyword |
 | okta.actor.display_name | Display name of the actor. | keyword |
+| okta.actor.display_name.text | Multi-field of `okta.actor.display_name`. | match_only_text |
 | okta.actor.id | Identifier of the actor. | keyword |
 | okta.actor.type | Type of the actor. | keyword |
 | okta.authentication_context.authentication_provider | The information about the authentication provider. Must be one of OKTA_AUTHENTICATION_PROVIDER, ACTIVE_DIRECTORY, LDAP, FEDERATION, SOCIAL, FACTOR_PROVIDER. | keyword |
@@ -262,6 +263,7 @@ An example event for `system` looks as following:
 | okta.client.user_agent.browser | The browser informaton of the client. | keyword |
 | okta.client.user_agent.os | The OS informaton. | keyword |
 | okta.client.user_agent.raw_user_agent | The raw informaton of the user agent. | keyword |
+| okta.client.user_agent.raw_user_agent.text | Multi-field of `okta.client.user_agent.raw_user_agent`. | match_only_text |
 | okta.client.zone | The zone information of the client. | keyword |
 | okta.debug_context.debug_data |  | object |
 | okta.debug_context.debug_data.authnRequestId | The authorization request ID. | keyword |
@@ -312,6 +314,7 @@ An example event for `system` looks as following:
 | okta.debug_context.debug_data.threat_suspected | Threat suspected. | keyword |
 | okta.debug_context.debug_data.tunnels |  | object |
 | okta.debug_context.debug_data.url | The URL. | keyword |
+| okta.debug_context.debug_data.url.text | Multi-field of `okta.debug_context.debug_data.url`. | match_only_text |
 | okta.device.device_integrator |  | flattened |
 | okta.device.disk_encryption_type | The value of the device profile’s disk encryption type. One of "NONE", "FULL", "USER", "ALL_INTERNAL_VOLUMES" or "SYSTEM_VOLUME". | keyword |
 | okta.device.id | Identifier of the device. | keyword |

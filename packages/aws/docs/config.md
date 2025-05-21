@@ -72,11 +72,11 @@ An example event for `config` looks as following:
 
 ```json
 {
-    "@timestamp": "2025-05-16T07:58:23.791Z",
+    "@timestamp": "2025-05-20T07:12:28.179Z",
     "agent": {
-        "ephemeral_id": "6fbe87e6-993e-4c40-abbe-bbe39ee3591c",
-        "id": "7d2ce287-1db4-4b2d-99f9-a00c406e3c06",
-        "name": "elastic-agent-65400",
+        "ephemeral_id": "315016b1-7512-4599-9b25-575562a9e817",
+        "id": "44507658-5b33-414c-b7fc-2e3fa9c24417",
+        "name": "elastic-agent-66460",
         "type": "filebeat",
         "version": "8.18.0"
     },
@@ -125,14 +125,14 @@ An example event for `config` looks as following:
     },
     "data_stream": {
         "dataset": "aws.config",
-        "namespace": "55739",
+        "namespace": "59551",
         "type": "logs"
     },
     "ecs": {
         "version": "8.17.0"
     },
     "elastic_agent": {
-        "id": "7d2ce287-1db4-4b2d-99f9-a00c406e3c06",
+        "id": "44507658-5b33-414c-b7fc-2e3fa9c24417",
         "snapshot": false,
         "version": "8.18.0"
     },
@@ -143,7 +143,7 @@ An example event for `config` looks as following:
         ],
         "created": "2015-09-29T15:52:31.883Z",
         "dataset": "aws.config",
-        "ingested": "2025-05-16T07:58:26Z",
+        "ingested": "2025-05-20T07:12:30Z",
         "kind": "event",
         "original": "{\"ComplianceType\":\"COMPLIANT\",\"ConfigRuleInfo\":{\"ConfigRuleArn\":\"arn:aws:config:us-east-1:11223344556:config-rule/config-rule-id1\",\"ConfigRuleId\":\"config-rule-id1\",\"ConfigRuleName\":\"access-keys-rotated\",\"ConfigRuleState\":\"ACTIVE\",\"Description\":\"Checks whether the active access keys are rotated within the number of days specified in maxAccessKeyAge. The rule is non-compliant if the access keys have not been rotated for more than maxAccessKeyAge number of days.\",\"EvaluationModes\":[{\"Mode\":\"DETECTIVE\"}],\"InputParameters\":\"{\\\"maxAccessKeyAge\\\":\\\"90\\\"}\",\"MaximumExecutionFrequency\":\"TwentyFour_Hours\",\"Source\":{\"Owner\":\"AWS\",\"SourceIdentifier\":\"ACCESS_KEYS_ROTATED\"}},\"ConfigRuleInvokedTime\":1444799479.852,\"EvaluationResultIdentifier\":{\"EvaluationResultQualifier\":{\"ConfigRuleName\":\"access-keys-rotated\",\"EvaluationMode\":\"DETECTIVE\",\"ResourceId\":\"i-0a4468fbfafeeg20h\",\"ResourceType\":\"AWS::EC2::Instance\"},\"OrderingTimestamp\":1443541951.883},\"ResultRecordedTime\":1444799480.061}",
         "outcome": "success",
@@ -160,7 +160,7 @@ An example event for `config` looks as following:
         "vendor": "Amazon"
     },
     "resource": {
-        "id": "arn:aws:config:us-east-1:11223344556:config-rule/config-rule-id1",
+        "id": "i-0a4468fbfafeeg20h",
         "type": "AWS::EC2::Instance"
     },
     "result": {
@@ -224,7 +224,7 @@ Please refer to the following [document](https://www.elastic.co/guide/en/ecs/cur
 | aws.config.rule_info.source.source_details.maximum_execution_frequency | The frequency at which you want AWS Config to run evaluations for a custom rule with a periodic trigger. | keyword |
 | aws.config.rule_info.source.source_details.message_type | The type of notification that triggers AWS Config to run an evaluation for a rule. | keyword |
 | aws.config.rule_info.source.source_identifier | For AWS Config Managed rules, a predefined identifier from a list. | keyword |
-| cloud.provider |  | constant_keyword |
+| cloud.provider | Name of the cloud provider. Example values are aws, azure, gcp, or digitalocean. | constant_keyword |
 | data_stream.dataset | Data stream dataset. | constant_keyword |
 | data_stream.namespace | Data stream namespace. | constant_keyword |
 | data_stream.type | Data stream type. | constant_keyword |
@@ -232,7 +232,7 @@ Please refer to the following [document](https://www.elastic.co/guide/en/ecs/cur
 | event.module | Event module. | constant_keyword |
 | input.type | Type of Filebeat input. | keyword |
 | log.offset | Log offset. | long |
-| observer.vendor |  | constant_keyword |
+| observer.vendor | Vendor name of the observer. | constant_keyword |
 | resource.id |  | keyword |
 | resource.type |  | keyword |
 | result.evaluation |  | keyword |
