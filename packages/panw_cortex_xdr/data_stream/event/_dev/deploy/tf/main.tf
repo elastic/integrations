@@ -11,6 +11,7 @@ provider "google" {
 resource "google_storage_bucket" "panw_cortex_xdr_event_bucket" {
   name     = "elastic-package-gcs-bucket-${var.TEST_RUN_ID}"
   location = var.BUCKET_REGION
+  uniform_bucket_level_access = true
 }
 # See https://github.com/elastic/oblt-infra/blob/main/conf/resources/repos/integrations/01-gcp-buildkite-oidc.tf
 
