@@ -611,7 +611,7 @@ An example event for `event` looks as following:
 | sysdig.event.content.fields.group.name |  | keyword |
 | sysdig.event.content.fields.proc.args |  | keyword |
 | sysdig.event.content.fields.proc.cmdline |  | wildcard |
-| sysdig.event.content.fields.proc.cmdline.text | Multi-field of `sysdig.event.content.fields.proc.cmdline`. | text |
+| sysdig.event.content.fields.proc.cmdline.text | Multi-field of `sysdig.event.content.fields.proc.cmdline`. | match_only_text |
 | sysdig.event.content.fields.proc.cwd |  | keyword |
 | sysdig.event.content.fields.proc.cwd.text | Multi-field of `sysdig.event.content.fields.proc.cwd`. | match_only_text |
 | sysdig.event.content.fields.proc.exepath |  | keyword |
@@ -620,7 +620,7 @@ An example event for `event` looks as following:
 | sysdig.event.content.fields.proc.name |  | keyword |
 | sysdig.event.content.fields.proc.name.text | Multi-field of `sysdig.event.content.fields.proc.name`. | match_only_text |
 | sysdig.event.content.fields.proc.pcmdline |  | wildcard |
-| sysdig.event.content.fields.proc.pcmdline.text | Multi-field of `sysdig.event.content.fields.proc.pcmdline`. | text |
+| sysdig.event.content.fields.proc.pcmdline.text | Multi-field of `sysdig.event.content.fields.proc.pcmdline`. | match_only_text |
 | sysdig.event.content.fields.proc.pexepath |  | keyword |
 | sysdig.event.content.fields.proc.pexepath.text | Multi-field of `sysdig.event.content.fields.proc.pexepath`. | match_only_text |
 | sysdig.event.content.fields.proc.pid |  | long |
