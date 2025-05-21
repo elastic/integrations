@@ -28,7 +28,7 @@ variable "REPO" {
 variable "FILE_PATH" {
   description = "The local path to the file to upload"
   type        = string
-  default     = "./files/test-event.log.gz"
+  default     = "./files/test-event.log"
 }
 
 variable "OBJECT_NAME" {
