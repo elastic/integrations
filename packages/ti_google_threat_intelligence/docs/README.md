@@ -162,7 +162,7 @@ The following transform and its associated pipelines are used to filter relevant
 
 ## Troubleshooting
 
-1. If you encounter a privilege error for a threat feed type, such as: `Permission denied. <Threat Feed> event collection is restricted to Enterprise Plus subscriptions. Contact your administrator or upgrade your subscription to enable this feature.`, verify your privilege level and enable only the threat feeds you have access to.
+1. If you encounter a privilege error for a threat feed type, such as: `You are not authorized to perform the requested operation`, verify your privilege level and enable only the threat feeds you have access to.
 2. If you see an error like `Package 2025031310 is not available until 2025-03-13 at 11:00 UTC because of privacy policy.`, ensure that your initial interval and interval are set in hours and are greater than one hour.
 3. If events are not appearing in the transformed index, check if transforms are running without errors. If you encounter issues, refer to [Troubleshooting transforms](https://www.elastic.co/guide/en/elasticsearch/reference/current/transform-troubleshooting.html).
 4. If detection rules take longer to run, ensure you have specified index patterns and applied queries to make your source events more specific.
