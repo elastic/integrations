@@ -51,18 +51,14 @@ processors:
       field: json.resource.labels.project_id
       target_field: cloud.project.id
       if: ctx.json?.resource?.labels?.project_id != null
-      ignore_missing: true
   - rename:
       field: json.resource.labels.instance_id
       target_field: cloud.instance.id 
       if: ctx.json?.resource?.labels?.instance_id != null
-      ignore_missing: true
   - rename:
       field: json.resource.type
       target_field: gcp.vertexai.audit.resource_type
       if: ctx.json?.resource?.type != null
-      ignore_missing: true
-
 ##
 # AuthenticationInfo
 # .protoPayload.authenticationInfo
@@ -105,10 +101,10 @@ processors:
       ignore_missing: true
       ignore_failure: true
   - rename:
-        field: json.protoPayload.resourceName
-        target_field: gcp.vertexai.audit.resource_name
-        ignore_missing: true
-        ignore_failure: true
+      field: json.protoPayload.resourceName
+      target_field: gcp.vertexai.audit.resource_name
+      ignore_missing: true
+      ignore_failure: true
   - rename:
       field: json.protoPayload.request
       target_field: gcp.vertexai.audit.request
@@ -181,9 +177,9 @@ processors:
       target_field: source.ip
       ignore_missing: true
   - remove:
-        if: ctx.json?.protoPayload?.requestMetadata?.callerIp != null
-        field: json.protoPayload.requestMetadata.callerIp
-        ignore_missing: true
+      if: ctx.json?.protoPayload?.requestMetadata?.callerIp != null
+      field: json.protoPayload.requestMetadata.callerIp
+      ignore_missing: true
   - rename:
       field: json.protoPayload.requestMetadata.callerSuppliedUserAgent
       target_field: user_agent.original
