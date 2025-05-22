@@ -66,7 +66,7 @@ processors:
       ignore_failure: true
 
   - set:
-      if: ctx.opencanary?.logtype >= 2000
+      if: ctx.opencanary?.logtype != null && ctx.opencanary?.logtype >= 2000
       description: Set event.kind as alert if it is of an approriate logtype
       tag: set_event_kind
       field: event.kind
@@ -82,7 +82,7 @@ processors:
       ignore_failure: true
 
   - set:
-      if: ctx.opencanary?.logtype >= 2000
+      if: ctx.opencanary?.logtype != null && ctx.opencanary?.logtype >= 2000
       description: Set event.category as a network/IDS event if it is of an approriate logtype
       tag: set_event_category
       field: event.category
@@ -92,14 +92,15 @@ processors:
       ignore_failure: true
 
   - set:
-      description: Set event.type default value
+      if: ctx.opencanary?.logtype != null
+      description: Set event.type default value if logtype is not null
       tag: set_event_type_default
       field: event.type
       value:
         - info
 
   - set:
-      if: ctx.opencanary?.logtype >= 2000
+      if: ctx.opencanary?.logtype != null && ctx.opencanary?.logtype >= 2000
       description: Set event.type as a connection event if it is of an approriate logtype
       tag: set_event_type
       field: event.type
@@ -109,6 +110,14 @@ processors:
   #############################
   ## Parse OpenCanary Fields ##
   #############################
+  - rename:
+      if: ctx.opencanary?.logdata instanceof String
+      description: Fix opencanary.logdata if it is a string
+      tag: rename_opencanary_logdata_logdata_logdata
+      field: opencanary.logdata
+      target_field: opencanary.logdata.msg.logdata
+      ignore_missing: true
+
   - set:
       description: Copy OpenCanary msg to Message
       tag: rename_opencanary_logdata_msg_logdata_message
@@ -185,6 +194,14 @@ processors:
         } else {
           ctx.log['logger'] = params.get(logType.toString());
         }
+
+  - set:
+      if: ctx.opencanary?.logtype == null
+      description: Set log.logger to LOG_BASE_ERROR as previous script process will have been skipped
+      tag: set_log_logger_LOG_BASE_ERROR
+      field: log.logger
+      value: "LOG_BASE_ERROR"
+
   - rename:
       description: Rename node_id to opencanary.node.id
       tag: rename_opencanary_node_id
@@ -526,6 +543,7 @@ processors:
       ignore_missing: true
       ignore_failure: true
   - set:
+      if: ctx.opencanary?.dst_host != null && ctx.opencanary?.dst_host != "" && ctx.opencanary?.dst_host != "0.0.0.0"
       description: Map dst_host to destination.address
       tag: rename_dst_host
       copy_from: opencanary.dst_host
@@ -543,6 +561,7 @@ processors:
             copy_from: destination.address
             field: destination.domain
             override: true
+
   - set:
       description: Map opencanary.logdata.LOCALNAME to destination.domain
       tag: rename_opencanary_logdata_LOCALNAME
@@ -574,6 +593,7 @@ processors:
       ignore_missing: true
       ignore_failure: true
   - set:
+      if: ctx.opencanary?.src_host != null && ctx.opencanary?.src_host != "" && ctx.opencanary?.src_host != "0.0.0.0"
       description: Map src_host to source.address
       tag: rename_src_host
       copy_from: opencanary.src_host
@@ -591,6 +611,7 @@ processors:
             copy_from: source.address
             field: source.domain
             override: true
+
   - gsub:
       description: Replace ':' characters with '-' for MAC addresses
       tag: gsub_opencanary_logdata_MAC
@@ -774,6 +795,63 @@ processors:
       prefix: '"PASSWORD": "<'
       suffix: '>"'
       ignore_missing: true
+
+  ######################
+  ## GeoIP Enrichment ##
+  ######################
+  - geoip:
+      description: "Enrich event with source IP GeoIP data"
+      field: source.ip
+      target_field: source.geo
+      ignore_missing: true
+
+  - geoip:
+      description: "Enrich event with source IP GeoIP ASN contextual data"
+      field: source.ip
+      target_field: source.as
+      database_file: GeoLite2-ASN.mmdb
+      properties:
+        - asn
+        - organization_name
+      ignore_missing: true
+
+  - rename:
+      field: source.as.asn
+      target_field: source.as.number
+      ignore_missing: true
+
+  - rename:
+      field: source.as.organization_name
+      target_field: source.as.organization.name
+      ignore_missing: true
+
+
+  - geoip:
+      description: "Enrich event with destination IP GeoIP data"
+      field: destination.ip
+      target_field: destination.geo
+      ignore_missing: true
+
+  - geoip:
+      description: "Enrich event with destination IP GeoIP ASN contextual data"
+      field: destination.ip
+      target_field: destination.as
+      database_file: GeoLite2-ASN.mmdb
+      properties:
+        - asn
+        - organization_name
+      ignore_missing: true
+
+  - rename:
+      field: destination.as.asn
+      target_field: destination.as.number
+      ignore_missing: true
+
+  - rename:
+      field: destination.as.organization_name
+      target_field: destination.as.organization.name
+      ignore_missing: true
+
 
   ##############
   ## Clean Up ##

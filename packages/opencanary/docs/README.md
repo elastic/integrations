@@ -50,68 +50,161 @@ An example event for `events` looks as following:
 
 ```json
 {
-    "@timestamp": "2025-02-24T16:47:30.787Z",
+    "@timestamp": "2025-05-21T02:54:23.002Z",
+    "agent": {
+        "ephemeral_id": "8d51c220-ed3c-4159-9811-8da1fcd45066",
+        "id": "25a5d87f-ff90-46b3-bd51-d65a0f0c23c7",
+        "name": "elastic-agent-32912",
+        "type": "filebeat",
+        "version": "8.17.4"
+    },
+    "data_stream": {
+        "dataset": "opencanary.events",
+        "namespace": "80572",
+        "type": "logs"
+    },
     "destination": {
         "address": "1.128.0.1",
+        "as": {
+            "number": 64496,
+            "organization": {
+                "name": "Documentation ASN"
+            }
+        },
+        "geo": {
+            "city_name": "Greenwich",
+            "continent_name": "Europe",
+            "country_iso_code": "GB",
+            "country_name": "United Kingdom",
+            "location": {
+                "lat": 51.47687,
+                "lon": -0.00041
+            },
+            "region_iso_code": "GB-ENG",
+            "region_name": "England"
+        },
         "ip": "1.128.0.1",
-        "port": 21
+        "port": 23
+    },
+    "ecs": {
+        "version": "8.0.0"
+    },
+    "elastic_agent": {
+        "id": "25a5d87f-ff90-46b3-bd51-d65a0f0c23c7",
+        "snapshot": false,
+        "version": "8.17.4"
     },
     "event": {
+        "agent_id_status": "verified",
         "category": [
             "network",
             "intrusion_detection"
         ],
-        "created": "2025-02-24T16:47:30.787Z",
+        "created": "2025-05-21T02:54:23.002Z",
+        "dataset": "opencanary.events",
+        "ingested": "2025-05-22T13:03:43Z",
         "kind": "alert",
-        "original": "{\"dst_host\": \"1.128.0.1\", \"dst_port\": 21, \"local_time\": \"2025-02-24 16:47:30.787072\", \"local_time_adjusted\": \"2025-02-24 16:47:30.787123\", \"logdata\": {\"PASSWORD\": \"<REDACTED>\", \"USERNAME\": \"test\"}, \"logtype\": 2000, \"node_id\": \"opencanary-1\", \"src_host\": \"1.128.0.1\", \"src_port\": 56998, \"utc_time\": \"2025-02-24 16:47:30.787112\"}",
-        "provider": "LOG_FTP_LOGIN_ATTEMPT",
-        "start": "2025-02-24T16:47:30.787Z",
+        "original": "{\"dst_host\": \"1.128.0.1\", \"dst_port\": 23, \"honeycred\": false, \"local_time\": \"2025-05-21 02:54:23.002821\", \"local_time_adjusted\": \"2025-05-21 02:54:23.002888\", \"logdata\": {\"PASSWORD\": \"admin\", \"USERNAME\": \"admin\"}, \"logtype\": 6001, \"node_id\": \"opencanary-1\", \"src_host\": \"1.128.0.10\", \"src_port\": 28884, \"utc_time\": \"2025-05-21 02:54:23.002880\"}",
+        "provider": "LOG_TELNET_LOGIN_ATTEMPT",
+        "start": "2025-05-21T02:54:23.002Z",
+        "timezone": "+00:00",
         "type": [
             "connection"
         ]
     },
+    "host": {
+        "architecture": "aarch64",
+        "containerized": false,
+        "hostname": "elastic-agent-32912",
+        "ip": [
+            "172.22.0.2",
+            "172.20.0.4"
+        ],
+        "mac": [
+            "72-D6-4C-81-59-51",
+            "DA-7B-39-1C-96-A3"
+        ],
+        "name": "elastic-agent-32912",
+        "os": {
+            "kernel": "6.10.14-linuxkit",
+            "name": "Wolfi",
+            "platform": "wolfi",
+            "type": "linux",
+            "version": "20230201"
+        }
+    },
+    "input": {
+        "type": "filestream"
+    },
     "log": {
-        "logger": "LOG_FTP_LOGIN_ATTEMPT"
+        "file": {
+            "device_id": "44",
+            "inode": "116",
+            "path": "/tmp/service_logs/events.log"
+        },
+        "logger": "LOG_TELNET_LOGIN_ATTEMPT",
+        "offset": 0
     },
     "network": {
         "direction": "internal"
     },
     "opencanary": {
         "dst_host": "1.128.0.1",
-        "dst_port": 21,
-        "local_time": "2025-02-24 16:47:30.787072",
-        "local_time_adjusted": "2025-02-24 16:47:30.787123",
+        "dst_port": 23,
+        "honeycred": false,
+        "local_time": "2025-05-21 02:54:23.002821",
+        "local_time_adjusted": "2025-05-21 02:54:23.002888",
         "logdata": {
-            "username": "test"
+            "password": "admin",
+            "username": "admin"
         },
-        "logtype": 2000,
+        "logtype": 6001,
         "node": {
             "id": "opencanary-1"
         },
-        "src_host": "1.128.0.1",
-        "src_port": 56998,
-        "utc_time": "2025-02-24 16:47:30.787112"
+        "src_host": "1.128.0.10",
+        "src_port": 28884,
+        "utc_time": "2025-05-21 02:54:23.002880"
     },
     "related": {
         "ip": [
-            "1.128.0.1"
+            "1.128.0.1",
+            "1.128.0.10"
         ],
         "user": [
-            "test"
+            "admin"
         ]
     },
     "source": {
-        "address": "1.128.0.1",
-        "ip": "1.128.0.1",
-        "port": 56998
+        "address": "1.128.0.10",
+        "as": {
+            "number": 64496,
+            "organization": {
+                "name": "Documentation ASN"
+            }
+        },
+        "geo": {
+            "city_name": "Greenwich",
+            "continent_name": "Europe",
+            "country_iso_code": "GB",
+            "country_name": "United Kingdom",
+            "location": {
+                "lat": 51.47687,
+                "lon": -0.00041
+            },
+            "region_iso_code": "GB-ENG",
+            "region_name": "England"
+        },
+        "ip": "1.128.0.10",
+        "port": 28884
     },
     "tags": [
         "preserve_original_event",
-        "redact_passwords",
-        "preserve_duplicate_custom_fields"
+        "preserve_duplicate_custom_fields",
+        "opencanary-logs"
     ],
     "user": {
-        "name": "test"
+        "name": "admin"
     }
 }
 ```
@@ -138,14 +231,18 @@ An example event for `events` looks as following:
 | opencanary.dst_host |  | keyword |
 | opencanary.dst_port |  | integer |
 | opencanary.honeycred |  | boolean |
+| opencanary.level |  | keyword |
 | opencanary.local_time |  | keyword |
 | opencanary.local_time_adjusted |  | keyword |
 | opencanary.logdata.auditaction |  | keyword |
+| opencanary.logdata.banner_id |  | keyword |
 | opencanary.logdata.community_string |  | keyword |
 | opencanary.logdata.cwr |  | keyword |
+| opencanary.logdata.data |  | keyword |
 | opencanary.logdata.df |  | keyword |
 | opencanary.logdata.domain |  | keyword |
 | opencanary.logdata.ece |  | keyword |
+| opencanary.logdata.function |  | keyword |
 | opencanary.logdata.headers.\* |  | keyword |
 | opencanary.logdata.host |  | keyword |
 | opencanary.logdata.hostname |  | keyword |
