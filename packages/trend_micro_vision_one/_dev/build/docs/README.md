@@ -59,6 +59,8 @@ Refer to [First steps toward using the APIs](https://automation.trendmicro.com/x
 
 Confirm that you have allocated credits for Data Transfer if you are activating the Telemetry data stream.
 
+When the Telemetry data stream starts for the first time it will use the Datalake Pipeline API to bind all telemetry data types to a new pipeline with a distinctive description. If a pipeline with that description already exists, it will be reused. It will never delete the pipeline, so if you stop using the integration, that pipeline should be removed manually.
+
 ## Logs Reference
 
 ### alert
