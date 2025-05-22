@@ -116,19 +116,22 @@ processors:
       lang: painless
       if: ctx.infoblox_nios?.log?.audit?.ip != null
       source: >
-        String ip = ctx.infoblox_nios.log.audit.ip;
-        StringBuilder output = new StringBuilder();
-        int i = 0;
-        while (i < ip.length()) {
-          if (ip.charAt(i) == (char)92) {
-            output.append(':');
-            i += 4;
-          } else {
-            output.append(ip.charAt(i));
+        String s = ctx.infoblox_nios.log.audit.ip;
+        StringBuilder sb = new StringBuilder();
+        for (int i = 0; i < s.length();) {
+            if (s.charAt(i) == (char)'\\') {
+                sb.append(':');
+                int b = Integer.parseInt(s.substring(i+1,i+4), 8);
+                if (b != (char)':') {
+                    sb.append((char)b);
+                }
+                i+=4;
+                continue;
+            }
+            sb.append(s.charAt(i));
             i++;
-          }
         }
-        ctx.infoblox_nios.log.audit.ip = output.toString();
+        ctx.infoblox_nios.log.audit.ip = sb.toString();
       on_failure:
         - append:
             field: error.message
