@@ -77,6 +77,27 @@ processors:
       field: azure.activitylogs.level
       target_field: log.level
       ignore_missing: true
+  ## Convert the severity level integer values to corresponding string value to log the level in single unified format.
+  - set:
+      field: log.level
+      value: "Critical"
+      if: ctx.log?.level != null && ctx.log?.level == "1"
+  - set:
+      field: log.level
+      value: "Error"
+      if: ctx.log?.level != null && ctx.log?.level == "2"
+  - set:
+      field: log.level
+      value: "Warning"
+      if: ctx.log?.level != null && ctx.log?.level == "3"
+  - set:
+      field: log.level
+      value: "Informational"
+      if: ctx.log?.level != null && ctx.log?.level == "4"
+  - set:
+      field: log.level
+      value: "Verbose"
+      if: ctx.log?.level != null && ctx.log?.level == "5"
   - rename:
       field: azure.activitylogs.durationMs
       target_field: event.duration
