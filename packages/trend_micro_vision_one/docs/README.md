@@ -1074,9 +1074,9 @@ An example event for `telemetry` looks as following:
 | trend_micro_vision_one.telemetry.event_data_task_name |  | keyword |
 | trend_micro_vision_one.telemetry.event_data_user_context |  | keyword |
 | trend_micro_vision_one.telemetry.event_hash_id |  | keyword |
-| trend_micro_vision_one.telemetry.event_id |  | integer |
-| trend_micro_vision_one.telemetry.event_source_type |  | integer |
-| trend_micro_vision_one.telemetry.event_sub_id |  | integer |
+| trend_micro_vision_one.telemetry.event_id |  | keyword |
+| trend_micro_vision_one.telemetry.event_source_type |  | keyword |
+| trend_micro_vision_one.telemetry.event_sub_id |  | keyword |
 | trend_micro_vision_one.telemetry.event_subtype |  | keyword |
 | trend_micro_vision_one.telemetry.event_time |  | date |
 | trend_micro_vision_one.telemetry.event_type |  | keyword |
