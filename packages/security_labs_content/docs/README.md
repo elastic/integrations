@@ -2,7 +2,7 @@
 
 ## Overview
 
-The **Security Labs Content** integration provides the security labs contents to be used within elastic security.
+The **Security Labs Content** integration provides the security labs content to be used within elastic security.
 
 This integration is in **beta** and subject to changes. Feedback and contributions are welcome.
 
@@ -13,7 +13,7 @@ This integration is in **beta** and subject to changes. Feedback and contributio
 
 ## Installation
 
-This integration is automatically installed when users visit the **Security Solution** in Kibana. No manual setup is required.
+This integration is automatically installed when users setup the **Security AI Assistant knowledge base** in Kibana. No manual setup is required.
 
 ## Usage
 
