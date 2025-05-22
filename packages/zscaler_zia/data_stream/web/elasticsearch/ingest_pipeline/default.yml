@@ -38,6 +38,7 @@ processors:
       target_field: json
       ignore_missing: true
   - script:
+      tag: check_template_version
       params:
         pkg_version: 3.12.0
         data_stream: web-log
@@ -56,12 +57,12 @@ processors:
           if (signature != params.expect.fields) {
             ctx.error = ctx.error ?: [:];
             ctx.error.message = ctx.error.message ?: [];
-            ctx.error.message.add("field set mismatch: "+signature+" is not expected set of templated fields (see https://epr.elastic.co/package/zscaler_zia/"+params.pkg_version+"/docs/README.md)");
+            ctx.error.message.add("field set mismatch: "+signature+" is not expected set of templated fields (see "+params.data_stream+" https://epr.elastic.co/package/zscaler_zia/"+params.pkg_version+"/docs/README.md)");
           }
         } else if (ctx.resp.version != params.expect.version) {
           ctx.error = ctx.error ?: [:];
           ctx.error.message = ctx.error.message ?: [];
-          ctx.error.message.add("template version mismatch: "+ctx.resp.version.toString()+" is not expected version (see https://epr.elastic.co/package/zscaler_zia/"+params.pkg_version+"/docs/README.md)");
+          ctx.error.message.add("template version mismatch: "+ctx.resp.version.toString()+" is not expected version (see "+params.data_stream+" https://epr.elastic.co/package/zscaler_zia/"+params.pkg_version+"/docs/README.md)");
         }
   - remove:
       field: resp
