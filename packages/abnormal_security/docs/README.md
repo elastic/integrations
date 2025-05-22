@@ -48,6 +48,10 @@ Elastic Agent must be installed. For more details, check the Elastic Agent [inst
 
 **Note**: By default, the URL is set to `https://api.abnormalplatform.com`. We have observed that Abnormal Security Base URL changes based on location so find your own base URL.
 
+### Enabling enrichment for Threat events
+
+Introduced in version 1.8.0, the Abnormal Security integration includes a new option called `Enable Attachments and Links enrichment` for the Threat data stream. When enabled, this feature enriches incoming threat events with additional details about any attachments and links included in the original message.
+
 ## Logs reference
 
 ### AI Security Mailbox
