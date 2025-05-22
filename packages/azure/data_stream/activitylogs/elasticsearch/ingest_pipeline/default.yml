@@ -64,6 +64,15 @@ processors:
       value: '{{source.ip}}'
       allow_duplicates: false
       if: 'ctx.source?.ip != null'
+## The activity log level fields comes in multiple formats from Azure. Making log.level as single source.
+  - convert:
+      field: azure.activitylogs.Level
+      target_field: azure.activitylogs.level
+      type: string
+      ignore_missing: true
+  - remove:
+      field: azure.activitylogs.Level
+      ignore_missing: true
   - rename:
       field: azure.activitylogs.level
       target_field: log.level
@@ -143,10 +152,6 @@ processors:
   - rename:
       field: azure.activitylogs.tenantId
       target_field: azure.activitylogs.tenant_id
-      ignore_missing: true
-  - rename:
-      field: azure.activitylogs.Level
-      target_field: azure.activitylogs.level
       ignore_missing: true
   - rename:
       field: azure.activitylogs.resultSignature
