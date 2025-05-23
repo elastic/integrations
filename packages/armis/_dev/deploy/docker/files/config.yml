@@ -1,0 +1,790 @@
+rules:
+  - path: /api/v1/access_token/
+    methods: ['POST']
+    responses:
+      - status_code: 200
+        headers:
+          Content-Type:
+            - 'application/json'
+        body: |-
+          {"data":{"access_token":"XXXX","expiration_utc":"2025-04-03T08:48:17.963452+00:00"},"success":true}
+  - path: /api/v1/search/
+    methods: ['GET']
+    query_params:
+      aql: "{aql:.*}"
+      length: 1
+      orderBy: lastSeen
+      from: 1
+    request_headers:
+      Authorization:
+        - "XXXX"
+    responses:
+      - status_code: 200
+        headers:
+          Content-Type:
+            - 'application/json'
+        body: |-
+          {{ minify_json `
+          {
+            "data": {
+              "count": 1,
+              "next": 2,
+              "prev": 0,
+              "results": [
+                {
+                  "accessSwitch": null,
+                  "boundaries": "Corporate",
+                  "businessImpact": "Unassigned",
+                  "category": "Imaging",
+                  "customProperties": {},
+                  "dataSources": [
+                    {
+                      "firstSeen": "2025-03-13T17:31:02.861100+00:00",
+                      "instances": [],
+                      "lastSeen": "2025-03-29T22:50:06.124100+00:00",
+                      "name": "Knowledge Base",
+                      "types": ["Traffic Inspection", "Data Analysis"]
+                    },
+                    {
+                      "firstSeen": "2022-10-26T01:02:15.030100+00:00",
+                      "instances": [],
+                      "lastSeen": "2022-10-26T18:45:42.030100+00:00",
+                      "name": "SPAN/TAP",
+                      "types": ["Switch"]
+                    },
+                    {
+                      "firstSeen": "2023-03-15T18:45:42.030100+00:00",
+                      "instances": [],
+                      "lastSeen": "2025-03-26T20:31:29.597100+00:00",
+                      "name": "Traffic Inspection",
+                      "types": ["Traffic Inspection", "Data Analysis"]
+                    },
+                    {
+                      "firstSeen": "2024-10-11T11:18:22.620093+00:00",
+                      "instances": [],
+                      "lastSeen": "2025-03-22T05:07:19.620093+00:00",
+                      "name": "User",
+                      "types": ["Data Upload"]
+                    }
+                  ],
+                  "displayTitle": "display_title_Test",
+                  "firstSeen": "2025-03-13T17:31:02.861100+00:00",
+                  "id": 1177,
+                  "ipAddress": "81.2.69.142",
+                  "ipv6": [],
+                  "lastSeen": "2025-03-29T22:50:06.124100+00:00",
+                  "macAddress": "17:1C:1B:9B:D2:AA",
+                  "manufacturer": "Test Manufacturer",
+                  "model": "Test Model",
+                  "name": "test-accc8ec36cf9",
+                  "names": "test-accc8ec36cf9",
+                  "operatingSystem": "Linux",
+                  "operatingSystemVersion": "4.4.27",
+                  "protections": [],
+                  "purdueLevel": 4,
+                  "riskLevel": 100,
+                  "sensor": {
+                    "name": "Test Enterprise",
+                    "type": "Test Controller"
+                  },
+                  "site": { "location": "Geneva", "name": "Geneva Enterprise" },
+                  "tags": [
+                    "Privileged"
+                  ],
+                  "type": "IP Cameras",
+                  "typeEnum": "IP_CAMERA",
+                  "userIds": [],
+                  "visibility": "Full"
+                }
+              ],
+              "total": 3
+            },
+            "success": true
+          }
+          `}}
+  - path: /api/v1/search/
+    methods: ['GET']
+    query_params:
+      aql: "{aql:.*}"
+      length: 1
+      orderBy: lastSeen
+      from: 2
+    request_headers:
+      Authorization:
+        - "XXXX"
+    responses:
+      - status_code: 200
+        headers:
+          Content-Type:
+            - 'application/json'
+        body: |-
+          {{ minify_json `
+          {
+            "data": {
+              "count": 1,
+              "next": null,
+              "prev": 1,
+              "results": [
+                {
+                  "accessSwitch": null,
+                  "boundaries": "Corporate",
+                  "businessImpact": "Unassigned",
+                  "category": "Network Equipment",
+                  "customProperties": {},
+                  "dataSources": [
+                    {
+                      "firstSeen": "2024-10-09T05:09:02.988081+00:00",
+                      "instances": [],
+                      "lastSeen": "2025-03-29T10:43:55.988081+00:00",
+                      "name": "Knowledge Base",
+                      "types": ["Traffic Inspection", "Data Analysis"]
+                    }
+                  ],
+                  "displayTitle": "Test",
+                  "firstSeen": "2024-10-09T05:09:02.988081+00:00",
+                  "id": 1154,
+                  "ipAddress": "89.160.20.128",
+                  "ipv6": [],
+                  "lastSeen": "2025-03-29T10:43:55.988081+00:00",
+                  "macAddress": "50:76:AF:D3:3F:AB",
+                  "manufacturer": "Test Manufacturer",
+                  "model": "Test Model",
+                  "name": "Test Name",
+                  "names": "Test Names",
+                  "operatingSystem": "Windows",
+                  "operatingSystemVersion": "Server 2016",
+                  "protections": [],
+                  "purdueLevel": 4,
+                  "riskLevel": 10,
+                  "sensor": {
+                    "name": "test Enterprise",
+                    "type": "test LAN Controller"
+                  },
+                  "site": { "location": "Zurich", "name": "Zurich Enterprise" },
+                  "tags": [
+                    "Misconfigurations"
+                  ],
+                  "type": "Switches",
+                  "typeEnum": "SWITCH",
+                  "userIds": [],
+                  "visibility": "Full"
+                }
+              ],
+              "total": 3
+            },
+            "success": true
+          }
+          `}}
+  - path: /api/v1/search/
+    methods: ['GET']
+    query_params:
+      aql: "{aql:.*}"
+      length: 1
+      orderBy: lastSeen
+      from: null
+    request_headers:
+      Authorization:
+        - "XXXX"
+    responses:
+      - status_code: 200
+        headers:
+          Content-Type:
+            - 'application/json'
+        body: |-
+          {{ minify_json `
+          {
+            "data": {
+              "count": 1,
+              "next": 1,
+              "prev": null,
+              "results": [
+                {
+                  "accessSwitch": "test Enterprise",
+                  "boundaries": "Corporate",
+                  "businessImpact": "Unassigned",
+                  "category": "Computers",
+                  "customProperties": {},
+                  "dataSources": [
+                    {
+                      "firstSeen": "2024-12-09T12:01:57.101791+00:00",
+                      "instances": [],
+                      "lastSeen": "2025-03-28T19:04:01.132100+00:00",
+                      "name": "Active Directory",
+                      "types": ["Asset & System Management", "Identity Provider"]
+                    },
+                    {
+                      "firstSeen": "2025-03-18T10:48:01.124100+00:00",
+                      "instances": [],
+                      "lastSeen": "2025-03-29T22:50:07.124100+00:00",
+                      "name": "Knowledge Base",
+                      "types": ["Traffic Inspection", "Data Analysis"]
+                    },
+                    {
+                      "firstSeen": "2024-10-11T11:18:22.620093+00:00",
+                      "instances": [],
+                      "lastSeen": "2025-03-22T05:07:19.620093+00:00",
+                      "name": "User",
+                      "types": ["Data Upload"]
+                    }
+                  ],
+                  "displayTitle": "test_display",
+                  "firstSeen": "2025-03-21T16:59:58.360310+00:00",
+                  "id": 1176,
+                  "ipAddress": "67.43.156.0",
+                  "ipv6": ["fe80::647b:ba0f:9628:6014"],
+                  "lastSeen": "2025-03-29T22:50:07.124100+00:00",
+                  "macAddress": "50:76:AF:D3:3F:AB",
+                  "manufacturer": "test Manufacturer",
+                  "model": "test model",
+                  "name": "test_name",
+                  "names": "test_names",
+                  "operatingSystem": "Windows",
+                  "operatingSystemVersion": "10",
+                  "protections": [],
+                  "purdueLevel": 4,
+                  "riskLevel": 80,
+                  "sensor": {
+                    "name": "test Enterprise",
+                    "type": "Access Switch"
+                  },
+                  "site": { "location": "test", "name": "test Enterprise" },
+                  "tags": [
+                    "Corporate"
+                  ],
+                  "type": "Laptops",
+                  "typeEnum": "LAPTOP",
+                  "userIds": [4],
+                  "visibility": "Full"
+                }
+              ],
+              "total": 3
+            },
+            "success": true
+          }
+          `}}
+  - path: /api/v1/search/
+    methods: ['GET']
+    query_params:
+      aql: "{aql:.*}"
+      length: 1
+      orderBy: lastDetected
+      from: 1
+    request_headers:
+      Authorization:
+        - "XXXX"
+    responses:
+      - status_code: 200
+        headers:
+          Content-Type:
+            - 'application/json'
+        body: |-
+          {{ minify_json `
+          {
+            "data": {
+              "count": 1,
+              "next": 2,
+              "prev": 0,
+              "results": [
+                {
+                  "affectedDevicesCount": 13,
+                  "attackComplexity": "Low",
+                  "attackVector": "Network",
+                  "availabilityImpact": "High",
+                  "avmRating": null,
+                  "avmRatingManualChangeReason": null,
+                  "avmRatingManualChangedBy": "",
+                  "avmRatingManualUpdateTime": null,
+                  "botnets": null,
+                  "cisaDueDate": null,
+                  "commonName": null,
+                  "confidentialityImpact": "High",
+                  "cveUid": "CVE-2024-44146",
+                  "cvssScore": 10,
+                  "cvssScoreV4": null,
+                  "description": "A logic issue was addressed with improved file handling.",
+                  "epssPercentile": 0.31,
+                  "epssScore": 0.00139,
+                  "exploitabilityScore": 3.9,
+                  "firstDetected": "2025-04-03T09:18:31.915543+00:00",
+                  "firstReferencePublishDate": null,
+                  "firstWeaponizedReferencePublishDate": null,
+                  "hasRansomware": null,
+                  "hasRemediationInfo": "No",
+                  "id": "CVE-2024-44146",
+                  "impactScore": 6,
+                  "integrityImpact": "High",
+                  "isWeaponized": null,
+                  "lastDetected": "2025-04-03T10:38:59.372389+00:00",
+                  "latestExploitUpdate": null,
+                  "numOfExploits": 0,
+                  "numberOfThreatActors": 0,
+                  "privilegesRequired": "None",
+                  "publishedDate": "2024-09-17T00:15:50.523000+00:00",
+                  "reportedByGoogleZeroDays": null,
+                  "scope": "Changed",
+                  "score": 10,
+                  "severity": "Critical",
+                  "status": "Open",
+                  "threatActors": null,
+                  "threatTags": null,
+                  "type": "OS",
+                  "userInteraction": "None"
+                }
+              ],
+              "total": 3
+            },
+            "success": true
+          }
+          `}}
+  - path: /api/v1/search/
+    methods: ['GET']
+    query_params:
+      aql: "{aql:.*}"
+      length: 1
+      orderBy: lastDetected
+      from: 2
+    request_headers:
+      Authorization:
+        - "XXXX"
+    responses:
+      - status_code: 200
+        headers:
+          Content-Type:
+            - 'application/json'
+        body: |-
+          {{ minify_json `
+          {
+            "data": {
+              "count": 1,
+              "next": null,
+              "prev": 1,
+              "results": [
+                {
+                  "affectedDevicesCount": 7,
+                  "attackComplexity": "Low",
+                  "attackVector": "Network",
+                  "availabilityImpact": "High",
+                  "avmRating": null,
+                  "avmRatingManualChangeReason": null,
+                  "avmRatingManualChangedBy": "",
+                  "avmRatingManualUpdateTime": null,
+                  "botnets": null,
+                  "cisaDueDate": null,
+                  "commonName": null,
+                  "confidentialityImpact": "High",
+                  "cveUid": "CVE-2023-40455",
+                  "cvssScore": 10,
+                  "cvssScoreV4": null,
+                  "description": "A permissions issue was addressed with additional restrictions.",
+                  "epssPercentile": 0.57,
+                  "epssScore": 0.00392,
+                  "exploitabilityScore": 3.9,
+                  "firstDetected": "2025-04-03T09:18:32.504555+00:00",
+                  "firstReferencePublishDate": null,
+                  "firstWeaponizedReferencePublishDate": null,
+                  "hasRansomware": null,
+                  "hasRemediationInfo": "No",
+                  "id": "CVE-2023-40455",
+                  "impactScore": 6,
+                  "integrityImpact": "High",
+                  "isWeaponized": null,
+                  "lastDetected": "2025-04-03T13:08:51.667361+00:00",
+                  "latestExploitUpdate": null,
+                  "numOfExploits": 0,
+                  "numberOfThreatActors": 0,
+                  "privilegesRequired": "None",
+                  "publishedDate": "2023-09-27T15:19:18.590000+00:00",
+                  "reportedByGoogleZeroDays": null,
+                  "scope": "Changed",
+                  "score": 10,
+                  "severity": "Critical",
+                  "status": "Open",
+                  "threatActors": null,
+                  "threatTags": null,
+                  "type": "OS",
+                  "userInteraction": "None"
+                }
+              ],
+              "total": 3
+            },
+            "success": true
+          }
+          `}}
+  - path: /api/v1/search/
+    methods: ['GET']
+    query_params:
+      aql: "{aql:.*}"
+      length: 1
+      orderBy: lastDetected
+      from: null
+    request_headers:
+      Authorization:
+        - "XXXX"
+    responses:
+      - status_code: 200
+        headers:
+          Content-Type:
+            - 'application/json'
+        body: |-
+          {{ minify_json `
+          {
+            "data": {
+              "count": 1,
+              "next": 1,
+              "prev": null,
+              "results": [
+                {
+                  "affectedDevicesCount": 13,
+                  "attackComplexity": "Low",
+                  "attackVector": "Network",
+                  "availabilityImpact": "High",
+                  "avmRating": null,
+                  "avmRatingManualChangeReason": null,
+                  "avmRatingManualChangedBy": "",
+                  "avmRatingManualUpdateTime": null,
+                  "botnets": null,
+                  "cisaDueDate": null,
+                  "commonName": null,
+                  "confidentialityImpact": "High",
+                  "cveUid": "CVE-2024-44148",
+                  "cvssScore": 10,
+                  "cvssScoreV4": null,
+                  "description": "This issue was addressed with improved validation of file attributes.",
+                  "epssPercentile": 0.31,
+                  "epssScore": 0.00139,
+                  "exploitabilityScore": 3.9,
+                  "firstDetected": "2025-04-03T09:18:31.915543+00:00",
+                  "firstReferencePublishDate": null,
+                  "firstWeaponizedReferencePublishDate": null,
+                  "hasRansomware": null,
+                  "hasRemediationInfo": "No",
+                  "id": "CVE-2024-44148",
+                  "impactScore": 6,
+                  "integrityImpact": "High",
+                  "isWeaponized": null,
+                  "lastDetected": "2025-04-03T10:38:59.372389+00:00",
+                  "latestExploitUpdate": null,
+                  "numOfExploits": 0,
+                  "numberOfThreatActors": 0,
+                  "privilegesRequired": "None",
+                  "publishedDate": "2024-09-17T00:15:50.617000+00:00",
+                  "reportedByGoogleZeroDays": null,
+                  "scope": "Changed",
+                  "score": 10,
+                  "severity": "Critical",
+                  "status": "Open",
+                  "threatActors": null,
+                  "threatTags": null,
+                  "type": "OS",
+                  "userInteraction": "None"
+                }
+              ],
+              "total": 3
+            },
+            "success": true
+          }
+          `}}
+  - path: /api/v1/vulnerability-match/
+    methods: ['GET']
+    query_params:
+      length: "{length:.*}"
+      vulnerability_ids: CVE-2024-44148
+      from: null
+    request_headers:
+      Authorization:
+        - "XXXX"
+    responses:
+      - status_code: 200
+        headers:
+          Content-Type:
+            - 'application/json'
+        body: |-
+          {{ minify_json `
+          {
+            "data": {
+              "paging": {
+                "from": 0,
+                "length": 1,
+                "next": null,
+                "prev": null,
+                "to": 1,
+                "total": 1
+              },
+              "sample": [
+                {
+                  "advisoryId": null,
+                  "avmRating": null,
+                  "confidenceLevel": "High",
+                  "confidenceLevelDescription": null,
+                  "cveUid": "CVE-2024-44148",
+                  "deviceId": 109,
+                  "firstDetected": "2025-04-03T10:38:59.297015+00:00",
+                  "hasRemediationInfo": "No",
+                  "lastDetected": "2025-04-03T10:38:59.297015+00:00",
+                  "matchCriteriaString": "OS",
+                  "recommendedSteps": null,
+                  "remediationTypes": null,
+                  "status": "Open",
+                  "statusChangeReason": null,
+                  "statusSource": "Discovered by Armis"
+                }
+              ]
+            },
+            "success": true
+          }
+          `}}
+  - path: /api/v1/vulnerability-match/
+    methods: ['GET']
+    query_params:
+      length: "{length:.*}"
+      vulnerability_ids: CVE-2024-44146
+      from: null
+    request_headers:
+      Authorization:
+        - "XXXX"
+    responses:
+      - status_code: 200
+        headers:
+          Content-Type:
+            - 'application/json'
+        body: |-
+          {{ minify_json `
+          {
+            "data": {
+              "paging": {
+                "from": 0,
+                "length": 1,
+                "next": null,
+                "prev": null,
+                "to": 1,
+                "total": 1
+              },
+              "sample": [
+                {
+                  "advisoryId": null,
+                  "avmRating": null,
+                  "confidenceLevel": "High",
+                  "confidenceLevelDescription": null,
+                  "cveUid": "CVE-2024-44146",
+                  "deviceId": 109,
+                  "firstDetected": "2025-04-03T10:38:59.297015+00:00",
+                  "hasRemediationInfo": "No",
+                  "lastDetected": "2025-04-03T10:38:59.297015+00:00",
+                  "matchCriteriaString": "OS",
+                  "recommendedSteps": null,
+                  "remediationTypes": null,
+                  "status": "Open",
+                  "statusChangeReason": null,
+                  "statusSource": "Discovered by Armis"
+                }
+              ]
+            },
+            "success": true
+          }
+          `}}
+  - path: /api/v1/vulnerability-match/
+    methods: ['GET']
+    query_params:
+      length: "{length:.*}"
+      vulnerability_ids: CVE-2023-40455
+      from: null
+    request_headers:
+      Authorization:
+        - "XXXX"
+    responses:
+      - status_code: 200
+        headers:
+          Content-Type:
+            - 'application/json'
+        body: |-
+          {{ minify_json `
+          {
+            "data": {
+              "paging": {
+                "from": 0,
+                "length": 1,
+                "next": null,
+                "prev": null,
+                "to": 1,
+                "total": 1
+              },
+              "sample": [
+                {
+                  "advisoryId": null,
+                  "avmRating": null,
+                  "confidenceLevel": "High",
+                  "confidenceLevelDescription": null,
+                  "cveUid": "CVE-2023-40455",
+                  "deviceId": 109,
+                  "firstDetected": "2025-04-03T10:38:59.297015+00:00",
+                  "hasRemediationInfo": "No",
+                  "lastDetected": "2025-04-03T10:38:59.297015+00:00",
+                  "matchCriteriaString": "OS",
+                  "recommendedSteps": null,
+                  "remediationTypes": null,
+                  "status": "Open",
+                  "statusChangeReason": null,
+                  "statusSource": "Discovered by Armis"
+                }
+              ]
+            },
+            "success": true
+          }
+          `}}
+  - path: /api/v1/search/
+    methods: ['GET']
+    query_params:
+      aql: "{aql:.*}"
+      length: 1
+      from: 1
+    request_headers:
+      Authorization:
+        - "XXXX"
+    responses:
+      - status_code: 200
+        headers:
+          Content-Type:
+            - 'application/json'
+        body: |-
+          {{ minify_json `
+          {
+            "data": {
+              "count": 1,
+              "next": 2,
+              "prev": 0,
+              "results": [
+                {
+                  "activityUUIDs": [
+                    "f63f0d20-5642-4631-a8a6-d8f8be63b1d4",
+                    "2a76b04d-4470-4484-a3c6-6f2fbe96ba09",
+                    "99a8bf84-dddb-437e-b53b-1d2eba754d24"
+                  ],
+                  "affectedDevicesCount": 1,
+                  "alertId": 70,
+                  "classification": "Security - Other",
+                  "connectionIds": [],
+                  "description": "Mitre Tactic: Command and Control. Compromised systems will attempt to establish communication with their C2 systems. ",
+                  "destinationEndpoints": [],
+                  "deviceIds": [534],
+                  "lastAlertUpdateTime": null,
+                  "mitreAttackLabels": null,
+                  "policyId": null,
+                  "policyLabels": null,
+                  "policyTitle": null,
+                  "severity": "Critical",
+                  "sourceEndpoints": [],
+                  "status": "Unhandled",
+                  "statusChangeTime": "2025-03-29T02:50:06.124100+00:00",
+                  "time": "2025-03-29T02:50:06.124100+00:00",
+                  "title": "Communication to a suspicious host",
+                  "type": "System Policy Violation"
+                }
+              ],
+              "total": 3
+            },
+            "success": true
+          }
+          `}}
+  - path: /api/v1/search/
+    methods: ['GET']
+    query_params:
+      aql: "{aql:.*}"
+      length: 1
+      from: 2
+    request_headers:
+      Authorization:
+        - "XXXX"
+    responses:
+      - status_code: 200
+        headers:
+          Content-Type:
+            - 'application/json'
+        body: |-
+          {{ minify_json `
+          {
+            "data": {
+              "count": 1,
+              "next": null,
+              "prev": 1,
+              "results": [
+                {
+                  "activityUUIDs": ["6f3d6d3a-6732-44cc-9d63-10a38277fb15"],
+                  "affectedDevicesCount": 1,
+                  "alertId": 61,
+                  "classification": "Security - Other",
+                  "connectionIds": [],
+                  "description": "The Armis security platform has detected a violation of a policy and generated an alert.",
+                  "destinationEndpoints": [],
+                  "deviceIds": [854],
+                  "lastAlertUpdateTime": null,
+                  "mitreAttackLabels": null,
+                  "policyId": null,
+                  "policyLabels": null,
+                  "policyTitle": null,
+                  "severity": "Critical",
+                  "sourceEndpoints": [],
+                  "status": "Unhandled",
+                  "statusChangeTime": "2025-03-29T00:12:57.306928+00:00",
+                  "time": "2025-03-29T00:12:57.306928+00:00",
+                  "title": "[Risk] Device Susceptible to Ransomware",
+                  "type": "System Policy Violation"
+                }
+              ],
+              "total": 3
+            },
+            "success": true
+          }
+          `}}
+  - path: /api/v1/search/
+    methods: ['GET']
+    query_params:
+      aql: "{aql:.*}"
+      length: 1
+      from: null
+    request_headers:
+      Authorization:
+        - "XXXX"
+    responses:
+      - status_code: 200
+        headers:
+          Content-Type:
+            - 'application/json'
+        body: |-
+          {{ minify_json `
+          {
+            "data": {
+              "count": 1,
+              "next": 1,
+              "prev": null,
+              "results": [
+                {
+                  "activityUUIDs": [
+                    "ec44388f-9530-4ca3-9781-8029905776ef",
+                    "0b0900f0-b118-4892-86a3-c06f42f848f3"
+                  ],
+                  "affectedDevicesCount": 2,
+                  "alertId": 71,
+                  "classification": "Security - Other",
+                  "connectionIds": [],
+                  "description": "The Armis security platform has detected a violation of a policy and generated an alert.",
+                  "destinationEndpoints": [],
+                  "deviceIds": [19, 469],
+                  "lastAlertUpdateTime": null,
+                  "mitreAttackLabels": null,
+                  "policyId": null,
+                  "policyLabels": null,
+                  "policyTitle": null,
+                  "severity": "Critical",
+                  "sourceEndpoints": [],
+                  "status": "Unhandled",
+                  "statusChangeTime": "2025-04-02T09:40:44.016184+00:00",
+                  "time": "2025-03-29T02:50:06.124100+00:00",
+                  "title": "[Threat] Heavy Port Scan in Network",
+                  "type": "System Policy Violation"
+                }
+              ],
+              "total": 3
+            },
+            "success": true
+          }
+          `}}
