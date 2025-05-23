@@ -100,6 +100,9 @@ removeOtherPackages() {
     if [[ -d "$dir" ]] && [[ "$(basename "$dir")" != "$PACKAGE_NAME" ]]; then
       echo "Removing directory: $dir"
       rm -rf "$dir"
+
+      echo "Removing ${PACKAGE_NAME} from .github/CODEOWNERS"
+      sed -i "/^\/packages\/${PACKAGE_NAME}\//d" .github/CODEOWNERS
     fi
   done
 }
@@ -152,7 +155,7 @@ updateBackportBranchContents() {
     git checkout "$SOURCE_BRANCH" -- "magefile.go"
 
     # As this script runs in the context of the main branch (mainly go mod tidy), we need to copy
-    # the .go-version file from the main branch to the backport branch. This avoids failures 
+    # the .go-version file from the main branch to the backport branch. This avoids failures
     # installing dependencies in the backport Pull Request.
     echo "Copying .go-version from $SOURCE_BRANCH..."
     git checkout "$SOURCE_BRANCH" -- ".go-version"
@@ -179,6 +182,9 @@ updateBackportBranchContents() {
     git add ${CODEOWNERS_SCRIPTS_FOLDER}
     git add go.mod go.sum
     git add .go-version
+  fi
+  if [ "${REMOVE_OTHER_PACKAGES}" == "true" ]; then
+    git add .github/CODEOWNERS
   fi
 
   git add $PACKAGES_FOLDER_PATH/
