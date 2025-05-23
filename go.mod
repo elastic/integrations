@@ -1,16 +1,21 @@
 module github.com/elastic/integrations
 
-go 1.22.0
+go 1.23.0
+
+toolchain go1.24.1
 
 require (
+	github.com/Masterminds/semver/v3 v3.3.0
 	github.com/blang/semver v3.5.1+incompatible
+	github.com/cli/go-gh/v2 v2.12.0
 	github.com/elastic/elastic-package v0.100.0
 	github.com/elastic/go-licenser v0.4.1
+	github.com/elastic/go-ucfg v0.8.8
 	github.com/elastic/package-registry v1.24.0
 	github.com/magefile/mage v1.15.0
 	github.com/pkg/errors v0.9.1
 	github.com/stretchr/testify v1.9.0
-	golang.org/x/tools v0.21.0
+	golang.org/x/tools v0.21.1-0.20240508182429-e35e4ccd0d2d
 	gopkg.in/yaml.v2 v2.4.0
 )
 
@@ -21,12 +26,12 @@ require (
 	cloud.google.com/go/iam v1.1.7 // indirect
 	cloud.google.com/go/pubsub v1.37.0 // indirect
 	cloud.google.com/go/storage v1.40.0 // indirect
+	dario.cat/mergo v1.0.1 // indirect
 	github.com/AlecAivazis/survey/v2 v2.3.7 // indirect
 	github.com/Azure/go-ansiterm v0.0.0-20210617225240-d185dfc1b5a1 // indirect
 	github.com/MakeNowJust/heredoc v1.0.0 // indirect
 	github.com/Masterminds/goutils v1.1.1 // indirect
-	github.com/Masterminds/semver/v3 v3.2.1 // indirect
-	github.com/Masterminds/sprig/v3 v3.2.3 // indirect
+	github.com/Masterminds/sprig/v3 v3.3.0 // indirect
 	github.com/PaesslerAG/gval v1.2.1 // indirect
 	github.com/PaesslerAG/jsonpath v0.1.1 // indirect
 	github.com/Pallinder/go-randomdata v1.2.0 // indirect
@@ -41,6 +46,7 @@ require (
 	github.com/cbroglie/mustache v1.4.0 // indirect
 	github.com/cespare/xxhash/v2 v2.3.0 // indirect
 	github.com/chai2010/gettext-go v1.0.2 // indirect
+	github.com/cli/safeexec v1.0.0 // indirect
 	github.com/cloudflare/circl v1.3.7 // indirect
 	github.com/creack/pty v1.1.21 // indirect
 	github.com/creasty/defaults v1.7.0 // indirect
@@ -51,7 +57,6 @@ require (
 	github.com/elastic/go-elasticsearch/v7 v7.17.10 // indirect
 	github.com/elastic/go-resource v0.2.0 // indirect
 	github.com/elastic/go-sysinfo v1.9.0 // indirect
-	github.com/elastic/go-ucfg v0.8.8 // indirect
 	github.com/elastic/go-windows v1.0.1 // indirect
 	github.com/elastic/gojsonschema v1.2.1 // indirect
 	github.com/elastic/kbncontent v0.1.3 // indirect
@@ -96,7 +101,7 @@ require (
 	github.com/hashicorp/go-cleanhttp v0.5.2 // indirect
 	github.com/hashicorp/go-multierror v1.1.1 // indirect
 	github.com/hashicorp/go-retryablehttp v0.7.5 // indirect
-	github.com/huandu/xstrings v1.4.0 // indirect
+	github.com/huandu/xstrings v1.5.0 // indirect
 	github.com/imdario/mergo v0.3.16 // indirect
 	github.com/inconshreveable/mousetrap v1.1.0 // indirect
 	github.com/jedib0t/go-pretty v4.3.0+incompatible // indirect
@@ -112,7 +117,7 @@ require (
 	github.com/mailru/easyjson v0.7.7 // indirect
 	github.com/mattn/go-colorable v0.1.13 // indirect
 	github.com/mattn/go-isatty v0.0.20 // indirect
-	github.com/mattn/go-runewidth v0.0.14 // indirect
+	github.com/mattn/go-runewidth v0.0.16 // indirect
 	github.com/mgutz/ansi v0.0.0-20200706080929-d51e80ef957d // indirect
 	github.com/mholt/archiver/v3 v3.5.1 // indirect
 	github.com/mitchellh/copystructure v1.2.0 // indirect
@@ -138,13 +143,13 @@ require (
 	github.com/prometheus/client_model v0.5.0 // indirect
 	github.com/prometheus/common v0.48.0 // indirect
 	github.com/prometheus/procfs v0.12.0 // indirect
-	github.com/rivo/uniseg v0.4.3 // indirect
+	github.com/rivo/uniseg v0.4.7 // indirect
 	github.com/russross/blackfriday/v2 v2.1.0 // indirect
 	github.com/shirou/gopsutil/v3 v3.24.4 // indirect
 	github.com/shoenig/go-m1cpu v0.1.6 // indirect
-	github.com/shopspring/decimal v1.3.1 // indirect
+	github.com/shopspring/decimal v1.4.0 // indirect
 	github.com/spf13/afero v1.11.0 // indirect
-	github.com/spf13/cast v1.6.0 // indirect
+	github.com/spf13/cast v1.7.0 // indirect
 	github.com/spf13/cobra v1.8.0 // indirect
 	github.com/spf13/pflag v1.0.5 // indirect
 	github.com/stretchr/objx v0.5.2 // indirect
@@ -172,14 +177,14 @@ require (
 	go.starlark.net v0.0.0-20230525235612-a134d8f9ddca // indirect
 	go.uber.org/multierr v1.11.0 // indirect
 	go.uber.org/zap v1.27.0 // indirect
-	golang.org/x/crypto v0.23.0 // indirect
+	golang.org/x/crypto v0.35.0 // indirect
 	golang.org/x/mod v0.17.0 // indirect
-	golang.org/x/net v0.25.0 // indirect
+	golang.org/x/net v0.36.0 // indirect
 	golang.org/x/oauth2 v0.18.0 // indirect
-	golang.org/x/sync v0.7.0 // indirect
-	golang.org/x/sys v0.20.0 // indirect
-	golang.org/x/term v0.20.0 // indirect
-	golang.org/x/text v0.15.0 // indirect
+	golang.org/x/sync v0.12.0 // indirect
+	golang.org/x/sys v0.31.0 // indirect
+	golang.org/x/term v0.30.0 // indirect
+	golang.org/x/text v0.23.0 // indirect
 	golang.org/x/time v0.5.0 // indirect
 	google.golang.org/api v0.171.0 // indirect
 	google.golang.org/appengine v1.6.8 // indirect
