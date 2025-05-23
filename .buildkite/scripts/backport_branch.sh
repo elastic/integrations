@@ -134,15 +134,29 @@ updateBackportBranchContents() {
   local MAGEFILE_SCRIPTS_FOLDER="dev/citools"
   local TESTSREPORTER_SCRIPTS_FOLDER="dev/testsreporter"
   local COVERAGE_SCRIPTS_FOLDER="dev/coverage"
+  local CODEOWNERS_SCRIPTS_FOLDER="dev/codeowners"
   if git ls-tree -d --name-only main:${MAGEFILE_SCRIPTS_FOLDER} > /dev/null 2>&1 ; then
     echo "Copying $MAGEFILE_SCRIPTS_FOLDER from $SOURCE_BRANCH..."
     git checkout "$SOURCE_BRANCH" -- "${MAGEFILE_SCRIPTS_FOLDER}"
+
     echo "Copying $TESTSREPORTER_SCRIPTS_FOLDER from $SOURCE_BRANCH..."
     git checkout "$SOURCE_BRANCH" -- "${TESTSREPORTER_SCRIPTS_FOLDER}"
+
     echo "Copying $COVERAGE_SCRIPTS_FOLDER from $SOURCE_BRANCH..."
     git checkout "$SOURCE_BRANCH" -- "${COVERAGE_SCRIPTS_FOLDER}"
+
+    echo "Copying $CODEOWNERS_SCRIPTS_FOLDER from $SOURCE_BRANCH..."
+    git checkout "$SOURCE_BRANCH" -- "${CODEOWNERS_SCRIPTS_FOLDER}"
+
     echo "Copying magefile.go from $SOURCE_BRANCH..."
     git checkout "$SOURCE_BRANCH" -- "magefile.go"
+
+    # As this script runs in the context of the main branch (mainly go mod tidy), we need to copy
+    # the .go-version file from the main branch to the backport branch. This avoids failures 
+    # installing dependencies in the backport Pull Request.
+    echo "Copying .go-version from $SOURCE_BRANCH..."
+    git checkout "$SOURCE_BRANCH" -- ".go-version"
+
     # Run go mod tidy to update just the dependencies related to magefile and dev scripts
     go mod tidy
   fi
@@ -153,10 +167,7 @@ updateBackportBranchContents() {
     ls -la $PACKAGES_FOLDER_PATH
   fi
 
-  echo "Setting up git environment..."
-  update_git_config
-
-  echo "Commiting"
+  echo "Adding files to the stage..."
   git add $BUILDKITE_FOLDER_PATH
   if [ -d "${JENKINS_FOLDER_PATH}" ]; then
     git add "${JENKINS_FOLDER_PATH}"
@@ -164,13 +175,21 @@ updateBackportBranchContents() {
   if [ -d "${MAGEFILE_SCRIPTS_FOLDER}" ] ; then
     git add ${MAGEFILE_SCRIPTS_FOLDER}
     git add ${TESTSREPORTER_SCRIPTS_FOLDER}
+    git add ${COVERAGE_SCRIPTS_FOLDER}
+    git add ${CODEOWNERS_SCRIPTS_FOLDER}
     git add go.mod go.sum
+    git add .go-version
   fi
+
   git add $PACKAGES_FOLDER_PATH/
   git status
 
+  echo "Setting up git environment..."
+  update_git_config
+
   files_cached_num=$(git diff --name-only --cached | wc -l)
   if [ "${files_cached_num}" -gt 0 ]; then
+    echo "Committing changes..."
     git commit -m "Add $BUILDKITE_FOLDER_PATH and $JENKINS_FOLDER_PATH to backport branch: $BACKPORT_BRANCH_NAME from the $SOURCE_BRANCH branch"
   else
     echo "Nothing to commit, skip."
