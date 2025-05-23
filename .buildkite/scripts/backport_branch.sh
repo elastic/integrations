@@ -96,13 +96,15 @@ createLocalBackportBranch() {
 
 removeOtherPackages() {
   local sourceFolder=$1
+  local currentPackage=""
   for dir in "$sourceFolder"/*; do
     if [[ -d "$dir" ]] && [[ "$(basename "$dir")" != "$PACKAGE_NAME" ]]; then
       echo "Removing directory: $dir"
       rm -rf "$dir"
 
-      echo "Removing ${PACKAGE_NAME} from .github/CODEOWNERS"
-      sed -i "/^\/packages\/${PACKAGE_NAME}\//d" .github/CODEOWNERS
+      currentPackage=$(basename "${dir}")
+      echo "Removing ${currentPackage} from .github/CODEOWNERS"
+      sed -i "/^\/packages\/${currentPackage}\//d" .github/CODEOWNERS
     fi
   done
 }
