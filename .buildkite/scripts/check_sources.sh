@@ -7,6 +7,6 @@ set -euo pipefail
 add_bin_path
 with_mage
 
-mage -debug check
+mage -v check
 
 check_git_diff

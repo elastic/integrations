@@ -43,7 +43,7 @@ report_build_failure() {
 
     # if running in Buildkite , add an annotation
     if [ -n "${BUILDKITE_BRANCH+x}" ]; then
-        buildkite-agent annotate "Build package ${package} failed, not published." --ctx "ctx-build-${package}" --style "warning"
+        buildkite-agent annotate "Build package ${package} failed, not published." --context "ctx-build-${package}" --style "warning"
     fi
 }
 
@@ -82,7 +82,7 @@ build_packages() {
 }
 
 if [ "${SKIP_PUBLISHING}" == "true" ] ; then
-    echo "packageStoragePublish: skipping because skip_publishing param is ${SKIP_PUBLISHING}"
+    echo "packageStoragePublish: skipping because SKIP_PUBLISHING environment variable is ${SKIP_PUBLISHING}"
     exit 0
 fi
 
