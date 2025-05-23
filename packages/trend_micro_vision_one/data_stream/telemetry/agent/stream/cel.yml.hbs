@@ -21,10 +21,10 @@ tags:
 {{#contains "forwarded" tags}}
 publisher_pipeline.disable_host: true
 {{/contains}}
-{{#if enable_request_tracer}}
-resource.tracer.filename: "../../logs/cel/http-request-trace-*.ndjson"
-resource.tracer.maxbackups: 5
-{{/if}}
+resource.tracer:
+  enabled: {{enable_request_tracer}}
+  filename: "../../logs/cel/http-request-trace-*.ndjson"
+  maxbackups: 5
 {{#if processors}}
 processors:
 {{processors}}
@@ -80,7 +80,7 @@ program: |
   //
   // [1]: https://automation.trendmicro.com/xdr/api-v3/#tag/Datalake-Pipeline
 
-  (state.?cursor.packages_to_get.orValue([]).size() > 0) ?
+  (state.?cursor.packages_to_get[0].hasValue()) ?
 
     //--------------------------------------------------------------------------
     // have a package to get -> get the package
@@ -106,7 +106,7 @@ program: |
           },
           "want_more": false,
           "cursor": state.cursor.with({
-            "packages_to_get": state.cursor.packages_to_get.filter(p, p != state.cursor.packages_to_get[0]),
+            "packages_to_get": tail(state.cursor.packages_to_get),
           }),
         })
       : (resp.StatusCode == 404) ? // Not Found - skip this package and continue immediately
@@ -114,7 +114,7 @@ program: |
           "events": [{"event": {"reason": "want_more"}}],
           "want_more": true,
           "cursor": state.cursor.with({
-            "packages_to_get": state.cursor.packages_to_get.filter(p, p != state.cursor.packages_to_get[0]),
+            "packages_to_get": tail(state.cursor.packages_to_get),
           }),
         })
       :
@@ -129,7 +129,7 @@ program: |
             (now - duration(state.max_recency) - state.cursor.newStartDateTime.parse_time(time_layout.RFC3339) >= duration(state.min_time_range))
           ),
           "cursor": state.cursor.with({
-            "packages_to_get": state.cursor.packages_to_get.filter(p, p != state.cursor.packages_to_get[0]),
+            "packages_to_get": tail(state.cursor.packages_to_get),
           }),
         })
     )
