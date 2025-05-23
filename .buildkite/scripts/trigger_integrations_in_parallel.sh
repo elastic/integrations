@@ -9,9 +9,12 @@ add_bin_path
 with_yq
 with_mage
 
+echo "Calculating packages:"
 pushd packages > /dev/null
 PACKAGE_LIST=$(list_all_directories)
 popd > /dev/null
+echo "Packages:"
+echo "${PACKAGE_LIST}"
 
 PIPELINE_FILE="packages_pipeline.yml"
 touch packages_pipeline.yml
