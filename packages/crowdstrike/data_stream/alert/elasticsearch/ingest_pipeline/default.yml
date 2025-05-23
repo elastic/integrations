@@ -2072,16 +2072,54 @@ processors:
         - append:
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
-  - set:
-      field: event.severity
-      tag: set_event_severity_from_alert_severity
-      copy_from: crowdstrike.alert.severity
-      ignore_empty_value: true
   - rename:
       field: json.severity_name
       tag: rename_severity_name
       target_field: crowdstrike.alert.severity_name
       ignore_missing: true
+  - script:
+      lang: painless
+      description: Script to set event.severity.
+      tag: set_event_severity
+      if: ctx.crowdstrike?.alert?.severity instanceof long && ctx.crowdstrike.alert.severity_name == null
+      source: |-
+        long severity = ctx.crowdstrike.alert.severity;
+        if (0 <= severity && severity < 20) {
+          ctx.crowdstrike.alert.severity_name = "info";
+        } if (20 <= severity && severity < 40) {
+          ctx.crowdstrike.alert.severity_name = "low";
+        } if (40 <= severity && severity < 60) {
+          ctx.crowdstrike.alert.severity_name = "medium";
+        } if (60 <= severity && severity < 80) {
+          ctx.crowdstrike.alert.severity_name = "high";
+        } if (80 <= severity && severity <= 100) {
+          ctx.crowdstrike.alert.severity_name = "critical";
+        }
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - script:
+      lang: painless
+      description: Script to set event.severity.
+      tag: set_event_severity
+      if: ctx.crowdstrike?.alert?.severity_name instanceof String
+      source: |-
+        ctx.event = ctx.event ?: [:];
+        String risk_score_value = ctx.crowdstrike.alert.severity_name;
+        if (risk_score_value.equalsIgnoreCase("low") || risk_score_value.equalsIgnoreCase("info")) {
+          ctx.event.severity = 21;
+        } else if (risk_score_value.equalsIgnoreCase("medium")) {
+          ctx.event.severity = 47;
+        } else if (risk_score_value.equalsIgnoreCase("high")) {
+          ctx.event.severity = 73;
+        } else if (risk_score_value.equalsIgnoreCase("critical")) {
+          ctx.event.severity = 99;
+        }
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - rename:
       field: json.sha1
       tag: rename_sha1
