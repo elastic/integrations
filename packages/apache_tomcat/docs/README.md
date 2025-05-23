@@ -89,14 +89,14 @@ Here are the steps to configure Log format in Apache Tomcat instance:
 ```
 <Valve className="org.apache.catalina.valves.AccessLogValve" directory="logs"
        prefix="localhost_access_log" suffix=".txt"
-       pattern='%h %l %u %t "%r" %s %b %A %X %T "%{Referer}i" "%{User-Agent}i" X-Forwarded-For="%{X-Forwarded-For}i"' />
+       pattern='%h %l %u %t "%r" %s %b %A %X %F "%{Referer}i" "%{User-Agent}i" X-Forwarded-For="%{X-Forwarded-For}i"' />
 ```
 
 3. The supported log formats are:
 ```
-Common Log Format :- '%h %l %u %t "%r" %s %b'
-Combined Log Format :- '%h %l %u %t "%r" %s %b "%{Referrer}i" "%{User-Agent}i"'
-Combined Log Format + X-Forwarded-For header :- '%h %l %u %t "%r" %s %b %A %X %T "%{Referer}i" "%{User-Agent}i" X-Forwarded-For="%{X-Forwarded-For}i"'
+Common Log Format :- '%h %l %u %t "%r" %s %b ms:%D'
+Combined Log Format :- '%h %l %u %t "%r" %s %b ms:%D "%{Referrer}i" "%{User-Agent}i"'
+Combined Log Format + X-Forwarded-For header :- '%h %l %u %t "%r" %s %b ms:%D %A %X %F "%{Referer}i" "%{User-Agent}i" X-Forwarded-For="%{X-Forwarded-For}i"'
 ```
 
 4. Run the following commands to restart Apache Tomcat instance: -
@@ -265,6 +265,7 @@ Please refer to the following [document](https://www.elastic.co/guide/en/ecs/cur
 | data_stream.dataset | Data stream dataset. | constant_keyword |  |
 | data_stream.namespace | Data stream namespace. | constant_keyword |  |
 | data_stream.type | Data stream type. | constant_keyword |  |
+| http.request.process_time | Time taken to process the request, in millis | double | ms |
 | input.type | Type of Filebeat input. | keyword |  |
 | log.file.device_id | ID of the device containing the filesystem where the file resides. | keyword |  |
 | log.file.fingerprint | The sha256 fingerprint identity of the file when fingerprinting is enabled. | keyword |  |
@@ -365,6 +366,7 @@ Please refer to the following [document](https://www.elastic.co/guide/en/ecs/cur
 | log.file.idxlo | The low-order part of a unique identifier that is associated with a file. (Windows-only) | keyword |
 | log.file.inode | Inode number of the log file. | keyword |
 | log.file.vol | The serial number of the volume that contains a file. (Windows-only) | keyword |
+| log.flags | Flags for the log file. | keyword |
 | log.offset | Log offset. | long |
 
 
