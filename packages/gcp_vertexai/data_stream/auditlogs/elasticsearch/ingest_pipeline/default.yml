@@ -253,6 +253,27 @@ processors:
           target_field: _ingest._value.permission_type
       if: ctx?.gcp?.vertexai?.audit?.authorization_info != null && ctx?.gcp?.vertexai?.audit?.authorization_info instanceof List
 
+  # Remove null and empty values recursively
+  - script:
+      lang: painless
+      description: Drops null/empty values recursively.
+      tag: painless_remove_null
+      source: |-
+        boolean drop(Object object) {
+          if (object == null || object == '') {
+            return true;
+          } else if (object instanceof Map) {
+            ((Map) object).values().removeIf(v -> drop(v));
+            return (((Map) object).size() == 0);
+          } else if (object instanceof List) {
+            ((List) object).removeIf(v -> drop(v));
+            return (((List) object).length == 0);
+          }
+          return false;
+        }
+        drop(ctx);
+
+
   - remove:
       field: json
       ignore_missing: true
