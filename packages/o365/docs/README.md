@@ -449,6 +449,7 @@ An example event for `audit` looks as following:
 | o365.audit.TargetContextId |  | keyword |
 | o365.audit.TargetUserOrGroupName |  | keyword |
 | o365.audit.TargetUserOrGroupType |  | keyword |
+| o365.audit.TaskList |  | keyword |
 | o365.audit.TeamGuid |  | keyword |
 | o365.audit.TeamName |  | keyword |
 | o365.audit.ThreatDetectionMethods |  | keyword |
