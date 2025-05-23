@@ -1,0 +1,112 @@
+title: Collect telemetry data from the Datalake Pipeline API
+type: logs
+streams:
+  - input: cel
+    title: Telemetry
+    description: Collect telemetry data from the Datalake Pipeline API.
+    template_path: cel.yml.hbs
+    vars:
+      - name: interval
+        type: text
+        title: Interval
+        description: Time to wait between checks for new data. The source ingests data at least every 2 minutes. Trend Micro recommends to get data every 15m. Supported units for this parameter are h/m/s.
+        default: 15m
+        multi: false
+        required: true
+        show_user: true
+      - name: preserve_original_event
+        required: true
+        show_user: true
+        title: Preserve original event
+        description: Preserves a raw copy of the original event, added to the field `event.original`.
+        type: bool
+        multi: false
+        default: false
+      - name: tags
+        type: text
+        title: Tags
+        multi: true
+        required: true
+        show_user: false
+        default:
+          - forwarded
+          - trend_micro_vision_one-telemetry
+      - name: preserve_duplicate_custom_fields
+        required: true
+        show_user: false
+        title: Preserve duplicate custom fields
+        description: Preserve trend_micro_vision_one.telemetry fields that were copied to Elastic Common Schema (ECS) fields.
+        type: bool
+        multi: false
+        default: true
+      - name: processors
+        type: yaml
+        title: Processors
+        multi: false
+        required: false
+        show_user: false
+        description: >-
+          Processors are used to reduce the number of fields in the exported event or to enhance the event with metadata. This executes in the agent before the logs are parsed. See [Processors](https://www.elastic.co/guide/en/beats/filebeat/current/filtering-and-enhancing-data.html) for details.
+      - name: http_client_timeout
+        type: text
+        title: HTTP Client Timeout
+        description: Duration before declaring that the HTTP client connection has timed out. Valid time units are ns, us, ms, s, m, h.
+        multi: false
+        required: true
+        show_user: false
+        default: 30s
+      - name: hard_coded_pipeline_id
+        type: text
+        title: Hard-coded Pipeline ID
+        description: Debug use only! The ID of a manually registered pipeline to consume from.
+        multi: false
+        required: false
+        show_user: false
+      - name: initial_interval
+        type: text
+        title: Initial Interval
+        description: Debug use only! Amount of old data to fetch. Only effective if resuming consumption of a previously registered pipeline. Maximum of 168h. Supported units for this parameter are h/m/s.
+        multi: false
+        required: true
+        show_user: false
+        default: 24h
+      - name: top
+        type: integer
+        title: Page Size
+        description: Debug use only! Number of package IDs requested per page. Valid values are 50, 100, 200, 500.
+        multi: false
+        required: true
+        show_user: false
+        default: 500
+      - name: max_recency
+        type: text
+        title: Maximum Recency
+        description: Debug use only! Package IDs will not be requested until they reach this age. The API documentation recommends at least 30s. Supported units for this parameter are h/m/s.
+        multi: false
+        required: true
+        show_user: false
+        default: 30s
+      - name: max_time_range
+        type: text
+        title: Maximum Time Range
+        description: Debug use only! The maximum time range covered by an individual request. The API requires this to be 1h or shorter. Supported units for this parameter are h/m/s.
+        multi: false
+        required: true
+        show_user: false
+        default: 1h
+      - name: min_time_range
+        type: text
+        title: Minimum Time Range
+        description: Debug use only! After retrieving a package, a check for new package IDs will only be performed immediately if it covers a time range at least this long. Supported units for this parameter are h/m/s.
+        multi: false
+        required: true
+        show_user: false
+        default: 1m
+      - name: managed_pipeline_description
+        type: text
+        title: Managed Pipeline Description
+        description: Debug use only! The description value of the pipeline created or used by the integration. This value must not conflict with descriptions used by other users of the API.
+        multi: false
+        required: true
+        show_user: false
+        default: managed-by-elastic-integrations-trend_micro_vision_one-telemetry
