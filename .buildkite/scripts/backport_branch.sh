@@ -121,18 +121,22 @@ updateBackportBranchContents() {
   local BUILDKITE_FOLDER_PATH=".buildkite"
   local JENKINS_FOLDER_PATH=".ci"
   local files_cached_num=""
+
+  git checkout "$BACKPORT_BRANCH_NAME"
+  echo "Copying $BUILDKITE_FOLDER_PATH from $SOURCE_BRANCH..."
+  git checkout $SOURCE_BRANCH -- $BUILDKITE_FOLDER_PATH
+  git add $BUILDKITE_FOLDER_PATH
+
   if git ls-tree -d --name-only main:.ci >/dev/null 2>&1; then
-    git checkout $BACKPORT_BRANCH_NAME
-    echo "Copying $BUILDKITE_FOLDER_PATH from $SOURCE_BRANCH..."
-    git checkout $SOURCE_BRANCH -- $BUILDKITE_FOLDER_PATH
     echo "Copying $JENKINS_FOLDER_PATH from $SOURCE_BRANCH..."
     git checkout $SOURCE_BRANCH -- $JENKINS_FOLDER_PATH
+    git add $JENKINS_FOLDER_PATH
   else
-    git checkout $BACKPORT_BRANCH_NAME
-    echo "Copying $BUILDKITE_FOLDER_PATH from $SOURCE_BRANCH..."
-    git checkout $SOURCE_BRANCH -- $BUILDKITE_FOLDER_PATH
-    echo "Removing $JENKINS_FOLDER_PATH from $BACKPORT_BRANCH_NAME..."
-    rm -rf "$JENKINS_FOLDER_PATH"
+    if [ -d "${JENKINS_FOLDER_PATH}" ]; then
+      echo "Removing $JENKINS_FOLDER_PATH from $BACKPORT_BRANCH_NAME..."
+      rm -rf "$JENKINS_FOLDER_PATH"
+      git add "$JENKINS_FOLDER_PATH"
+    fi
   fi
 
   # Update scripts used by mage
@@ -140,56 +144,50 @@ updateBackportBranchContents() {
   local TESTSREPORTER_SCRIPTS_FOLDER="dev/testsreporter"
   local COVERAGE_SCRIPTS_FOLDER="dev/coverage"
   local CODEOWNERS_SCRIPTS_FOLDER="dev/codeowners"
+
   if git ls-tree -d --name-only main:${MAGEFILE_SCRIPTS_FOLDER} > /dev/null 2>&1 ; then
     echo "Copying $MAGEFILE_SCRIPTS_FOLDER from $SOURCE_BRANCH..."
     git checkout "$SOURCE_BRANCH" -- "${MAGEFILE_SCRIPTS_FOLDER}"
+    git add ${MAGEFILE_SCRIPTS_FOLDER}
 
     echo "Copying $TESTSREPORTER_SCRIPTS_FOLDER from $SOURCE_BRANCH..."
     git checkout "$SOURCE_BRANCH" -- "${TESTSREPORTER_SCRIPTS_FOLDER}"
+    git add ${TESTSREPORTER_SCRIPTS_FOLDER}
 
     echo "Copying $COVERAGE_SCRIPTS_FOLDER from $SOURCE_BRANCH..."
     git checkout "$SOURCE_BRANCH" -- "${COVERAGE_SCRIPTS_FOLDER}"
+    git add ${COVERAGE_SCRIPTS_FOLDER}
 
     echo "Copying $CODEOWNERS_SCRIPTS_FOLDER from $SOURCE_BRANCH..."
     git checkout "$SOURCE_BRANCH" -- "${CODEOWNERS_SCRIPTS_FOLDER}"
+    git add ${CODEOWNERS_SCRIPTS_FOLDER}
 
     echo "Copying magefile.go from $SOURCE_BRANCH..."
     git checkout "$SOURCE_BRANCH" -- "magefile.go"
+    git add magefile.go
 
     # As this script runs in the context of the main branch (mainly go mod tidy), we need to copy
     # the .go-version file from the main branch to the backport branch. This avoids failures
     # installing dependencies in the backport Pull Request.
     echo "Copying .go-version from $SOURCE_BRANCH..."
     git checkout "$SOURCE_BRANCH" -- ".go-version"
+    git add .go-version
 
     # Run go mod tidy to update just the dependencies related to magefile and dev scripts
     go mod tidy
+
+    git add go.mod go.sum
   fi
 
   if [ "${REMOVE_OTHER_PACKAGES}" == "true" ]; then
     echo "Removing all packages from $PACKAGES_FOLDER_PATH folder"
     removeOtherPackages "${PACKAGES_FOLDER_PATH}"
-    ls -la $PACKAGES_FOLDER_PATH
-  fi
+    ls -la "${PACKAGES_FOLDER_PATH}"
 
-  echo "Adding files to the stage..."
-  git add $BUILDKITE_FOLDER_PATH
-  if [ -d "${JENKINS_FOLDER_PATH}" ]; then
-    git add "${JENKINS_FOLDER_PATH}"
-  fi
-  if [ -d "${MAGEFILE_SCRIPTS_FOLDER}" ] ; then
-    git add ${MAGEFILE_SCRIPTS_FOLDER}
-    git add ${TESTSREPORTER_SCRIPTS_FOLDER}
-    git add ${COVERAGE_SCRIPTS_FOLDER}
-    git add ${CODEOWNERS_SCRIPTS_FOLDER}
-    git add go.mod go.sum
-    git add .go-version
-  fi
-  if [ "${REMOVE_OTHER_PACKAGES}" == "true" ]; then
+    git add "${PACKAGES_FOLDER_PATH}/"
     git add .github/CODEOWNERS
   fi
 
-  git add $PACKAGES_FOLDER_PATH/
   git status
 
   echo "Setting up git environment..."
