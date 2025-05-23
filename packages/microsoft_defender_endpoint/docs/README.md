@@ -14,37 +14,18 @@ This integration collects the following logs:
 
 ## Requirements
 
-### Agentless Enabled Integration
+### Agentless enabled integration
 Agentless integrations allow you to collect data without having to manage Elastic Agent in your cloud. They make manual agent deployment unnecessary, so you can focus on your data instead of the agent that collects it. For more information, refer to [Agentless integrations](https://www.elastic.co/guide/en/serverless/current/security-agentless-integrations.html) and the [Agentless integrations FAQ](https://www.elastic.co/guide/en/serverless/current/agentless-integration-troubleshooting.html).
 
 Agentless deployments are only supported in Elastic Serverless and Elastic Cloud environments.  This functionality is in beta and is subject to change. Beta features are not subject to the support SLA of official GA features.
 
-### Agent Based Installation
-- Elastic Agent must be installed
-- You can install only one Elastic Agent per host.
-- Elastic Agent is required to stream data from the GCP Pub/Sub or REST API and ship the data to Elastic, where the events will then be processed via the integration's ingest pipelines.
+### Agent-based installation
 
-#### Installing and managing an Elastic Agent:
-
-You have a few options for installing and managing an Elastic Agent:
-
-#### Install a Fleet-managed Elastic Agent (recommended):
-
-With this approach, you install Elastic Agent and use Fleet in Kibana to define, configure, and manage your agents in a central location. We recommend using Fleet management because it makes the management and upgrade of your agents considerably easier.
-
-#### Install Elastic Agent in standalone mode (advanced users):
-
-With this approach, you install Elastic Agent and manually configure the agent locally on the system where it is installed. You are responsible for managing and upgrading the agents. This approach is reserved for advanced users only.
-
-#### Install Elastic Agent in a containerized environment:
-
-You can run Elastic Agent inside a container, either with Fleet Server or standalone. Docker images for all versions of Elastic Agent are available from the Elastic Docker registry and we provide deployment manifests for running on Kubernetes.
-
-There are some minimum requirements for running Elastic Agent and for more information, refer to the link [here](https://www.elastic.co/guide/en/fleet/current/elastic-agent-installation.html).
+Elastic Agent must be installed. For more details, check the Elastic Agent [installation instructions](docs-content://reference/fleet/install-elastic-agents.md). You can install only one Elastic Agent per host.
 
 ## Setup
 
-### To collect logs through REST API, follow the below steps:
+### Collect logs through REST API
 
 To allow the integration to ingest data from the Microsoft Defender API, you need to create a new application on your Azure domain. The procedure to create an application is found on the [Create a new Azure Application](https://docs.microsoft.com/en-us/windows/security/threat-protection/microsoft-defender-atp/exposed-apis-create-app-webapp) documentation page.
 
@@ -64,14 +45,13 @@ These values are:
 - Client Secret
 - Tenant ID
 
-### Enabling the integration in Elastic:
+### Enable the integration in Elastic
 
-1. In Kibana navigate to Management > Integrations.
-2. In "Search for integrations" top bar, search for `Microsoft Defender for Endpoint`.
-3. Select the "Microsoft Defender for Endpoint" integration from the search results.
-4. Select "Add Microsoft Defender for Endpoint" to add the integration.
-5. Add all the required integration configuration parameters, including the Client ID, Client Secret, Tenant ID to enable data collection.
-6. Select "Save and continue" to save the integration.
+1. In Kibana navigate to **Management** > **Integrations**.
+2. In the search bar, type **Microsoft Defender for Endpoint**.
+3. Select the **Microsoft Defender for Endpoint** integration and add it.
+4. Add all the required integration configuration parameters, including the Client ID, Client Secret, Tenant ID to enable data collection.
+5. Select "Save and continue" to save the integration.
 
 ## ECS mappings
 
@@ -100,6 +80,17 @@ These values are:
 | title                              | message               |
 | severity                           | event.severity        |
 
+## Alert severity mapping
+
+The values used in `event.severity` are consistent with Elastic Detection Rules.
+
+| Severity Name          | `event.severity` |
+|------------------------|:----------------:|
+| Low (or Informational) | 21               |
+| Medium                 | 47               |
+| High                   | 73               |
+| Critical               | 99               |
+
 ## Logs Reference
 
 ### Log
@@ -112,11 +103,11 @@ An example event for `log` looks as following:
 
 ```json
 {
-    "@timestamp": "2025-04-01T09:20:53.806Z",
+    "@timestamp": "2025-05-21T03:59:31.708Z",
     "agent": {
-        "ephemeral_id": "57c2955e-3022-4c82-813b-eff4e3d6a79b",
-        "id": "570010d2-ab7e-4d5b-882e-ed58b15778da",
-        "name": "elastic-agent-88683",
+        "ephemeral_id": "a9dc8629-1a82-466d-b91e-63b94f006d83",
+        "id": "cb777cac-8051-4bfd-a4cc-bf1321f15fa1",
+        "name": "elastic-agent-67072",
         "type": "filebeat",
         "version": "8.18.0"
     },
@@ -131,15 +122,15 @@ An example event for `log` looks as following:
     },
     "data_stream": {
         "dataset": "microsoft_defender_endpoint.log",
-        "namespace": "65879",
+        "namespace": "48808",
         "type": "logs"
     },
     "ecs": {
         "version": "8.11.0"
     },
     "elastic_agent": {
-        "id": "570010d2-ab7e-4d5b-882e-ed58b15778da",
-        "snapshot": true,
+        "id": "cb777cac-8051-4bfd-a4cc-bf1321f15fa1",
+        "snapshot": false,
         "version": "8.18.0"
     },
     "event": {
@@ -154,10 +145,10 @@ An example event for `log` looks as following:
         "duration": 0,
         "end": "2020-06-30T10:07:44.333733Z",
         "id": "da637291085411733957_-1043898914",
-        "ingested": "2025-04-01T09:20:56Z",
+        "ingested": "2025-05-21T03:59:34Z",
         "kind": "alert",
         "provider": "defender_endpoint",
-        "severity": 2,
+        "severity": 21,
         "start": "2020-06-30T10:07:44.333733Z",
         "timezone": "UTC",
         "type": [
@@ -270,25 +261,25 @@ An example event for `machine` looks as following:
 
 ```json
 {
-    "@timestamp": "2025-04-14T05:54:49.518Z",
+    "@timestamp": "2025-05-21T04:00:21.845Z",
     "agent": {
-        "ephemeral_id": "a2b7ac2f-3e28-445c-afa4-539453b79a3a",
-        "id": "33ea3bb6-a939-48aa-9632-9eae9a203137",
-        "name": "elastic-agent-52008",
+        "ephemeral_id": "fde17d92-07df-4688-bf67-4c09e23c280d",
+        "id": "fc6ee605-af2f-4abb-8b05-661cbe108d10",
+        "name": "elastic-agent-14910",
         "type": "filebeat",
         "version": "8.18.0"
     },
     "data_stream": {
         "dataset": "microsoft_defender_endpoint.machine",
-        "namespace": "77636",
+        "namespace": "30298",
         "type": "logs"
     },
     "ecs": {
         "version": "8.11.0"
     },
     "elastic_agent": {
-        "id": "33ea3bb6-a939-48aa-9632-9eae9a203137",
-        "snapshot": true,
+        "id": "fc6ee605-af2f-4abb-8b05-661cbe108d10",
+        "snapshot": false,
         "version": "8.18.0"
     },
     "event": {
@@ -297,7 +288,7 @@ An example event for `machine` looks as following:
             "host"
         ],
         "dataset": "microsoft_defender_endpoint.machine",
-        "ingested": "2025-04-14T05:54:52Z",
+        "ingested": "2025-05-21T04:00:24Z",
         "kind": "event",
         "original": "{\"aadDeviceId\":null,\"agentVersion\":\"10.8760.17763.6414\",\"computerDnsName\":\"dlp-win2k19\",\"deviceValue\":\"Normal\",\"exclusionReason\":null,\"exposureLevel\":\"High\",\"firstSeen\":\"2024-10-17T13:56:23.9412922Z\",\"healthStatus\":\"Inactive\",\"id\":\"c114cb1c0b827fabcdefabcdef2b9cfd469c091b\",\"ipAddresses\":[{\"ipAddress\":\"10.50.11.140\",\"macAddress\":\"00005E005301\",\"operationalStatus\":\"Up\",\"type\":\"Ethernet\"},{\"ipAddress\":\"1.128.0.0\",\"macAddress\":\"00005E00530A\",\"operationalStatus\":\"Up\",\"type\":\"Ethernet\"},{\"ipAddress\":\"2a02:cf40::\",\"macAddress\":\"00005E005302\",\"operationalStatus\":\"Up\",\"type\":\"Ethernet\"},{\"ipAddress\":\"127.0.0.1\",\"macAddress\":null,\"operationalStatus\":\"Up\",\"type\":\"SoftwareLoopback\"},{\"ipAddress\":\"::1\",\"macAddress\":null,\"operationalStatus\":\"Up\",\"type\":\"SoftwareLoopback\"}],\"isAadJoined\":false,\"isExcluded\":false,\"isPotentialDuplication\":false,\"lastExternalIpAddress\":\"1.128.0.0\",\"lastIpAddress\":\"10.50.11.140\",\"lastSeen\":\"2024-10-24T06:12:35.4409708Z\",\"machineTags\":[],\"managedBy\":\"MicrosoftDefenderForEndpoint\",\"managedByStatus\":\"Success\",\"mergedIntoMachineId\":null,\"onboardingStatus\":\"Onboarded\",\"osArchitecture\":\"64-bit\",\"osBuild\":17763,\"osPlatform\":\"WindowsServer2019\",\"osProcessor\":\"x64\",\"osVersion\":null,\"rbacGroupId\":0,\"rbacGroupName\":null,\"riskScore\":\"None\",\"version\":\"1809\",\"vmMetadata\":null}",
         "type": [
@@ -461,23 +452,23 @@ An example event for `machine_action` looks as following:
 {
     "@timestamp": "2024-11-22T12:48:56.768Z",
     "agent": {
-        "ephemeral_id": "75d3d06e-36f0-43c7-9dab-b94443c2b313",
-        "id": "6901ad47-a8e1-47c7-ad4c-baaa28f4d6ba",
-        "name": "elastic-agent-68004",
+        "ephemeral_id": "7427dbed-e0fc-4144-91b7-d4079127b975",
+        "id": "99ee9a89-23d5-46b4-a911-e8500cbef4d8",
+        "name": "elastic-agent-77859",
         "type": "filebeat",
         "version": "8.18.0"
     },
     "data_stream": {
         "dataset": "microsoft_defender_endpoint.machine_action",
-        "namespace": "90899",
+        "namespace": "50403",
         "type": "logs"
     },
     "ecs": {
         "version": "8.11.0"
     },
     "elastic_agent": {
-        "id": "6901ad47-a8e1-47c7-ad4c-baaa28f4d6ba",
-        "snapshot": true,
+        "id": "99ee9a89-23d5-46b4-a911-e8500cbef4d8",
+        "snapshot": false,
         "version": "8.18.0"
     },
     "event": {
@@ -486,7 +477,7 @@ An example event for `machine_action` looks as following:
         "created": "2024-11-22T12:48:33.993Z",
         "dataset": "microsoft_defender_endpoint.machine_action",
         "id": "d72456af-1234-5678-abcd-abcdef87fdee",
-        "ingested": "2025-04-14T05:57:42Z",
+        "ingested": "2025-05-21T04:01:25Z",
         "kind": "event",
         "original": "{\"cancellationComment\":null,\"cancellationDateTimeUtc\":null,\"cancellationRequestor\":null,\"commands\":[],\"computerDnsName\":\"c-lab-24\",\"creationDateTimeUtc\":\"2024-11-22T12:48:33.9936591Z\",\"errorHResult\":0,\"externalId\":null,\"id\":\"d72456af-1234-5678-abcd-abcdef87fdee\",\"lastUpdateDateTimeUtc\":\"2024-11-22T12:48:56.7684808Z\",\"machineId\":\"de693d7fbdabcdefabcdefcfc9cf40b5bf2da1d8\",\"relatedFileInfo\":null,\"requestSource\":\"Portal\",\"requestor\":\"testuser@example.com\",\"requestorComment\":\"Quick Scan\",\"scope\":\"Quick\",\"status\":\"Succeeded\",\"title\":null,\"troubleshootInfo\":null,\"type\":\"RunAntiVirusScan\"}",
         "outcome": "success",

@@ -10,7 +10,6 @@ platform_type_lowercase="${platform_type,,}"
 
 SCRIPTS_BUILDKITE_PATH="${WORKSPACE}/.buildkite/scripts"
 
-GOOGLE_CREDENTIALS_FILENAME="google-cloud-credentials.json"
 export ELASTIC_PACKAGE_BIN=${WORKSPACE}/build/elastic-package
 
 API_BUILDKITE_PIPELINES_URL="https://api.buildkite.com/v2/organizations/elastic/pipelines/"
@@ -255,34 +254,6 @@ with_github_cli() {
     gh version
 }
 
-## Logging and logout from Google Cloud
-google_cloud_auth_safe_logs() {
-    local gsUtilLocation
-    gsUtilLocation=$(mktemp -d -p "${WORKSPACE}" -t "${TMP_FOLDER_TEMPLATE}")
-    local secretFileLocation=${gsUtilLocation}/${GOOGLE_CREDENTIALS_FILENAME}
-
-    echo "${PRIVATE_CI_GCS_CREDENTIALS_SECRET}" > "${secretFileLocation}"
-
-    gcloud auth activate-service-account --key-file "${secretFileLocation}" 2> /dev/null
-    export GOOGLE_APPLICATION_CREDENTIALS=${secretFileLocation}
-}
-
-google_cloud_logout_active_account() {
-  local active_account
-  active_account=$(gcloud auth list --filter=status:ACTIVE --format="value(account)" 2>/dev/null || true)
-  if [[ -n "$active_account" && -n "${GOOGLE_APPLICATION_CREDENTIALS+x}" ]]; then
-    echo "Logging out from GCP for active account"
-    gcloud auth revoke "$active_account" > /dev/null 2>&1
-  else
-    echo "No active GCP accounts found."
-  fi
-
-  if [ -n "${GOOGLE_APPLICATION_CREDENTIALS+x}" ]; then
-    rm -rf "${GOOGLE_APPLICATION_CREDENTIALS}"
-    unset GOOGLE_APPLICATION_CREDENTIALS
-  fi
-}
-
 ## Helpers for integrations pipelines
 check_git_diff() {
     cd "${WORKSPACE}"
@@ -301,7 +272,9 @@ use_elastic_package() {
 is_already_published() {
     local packageZip=$1
 
-    if curl -s --head "https://package-storage.elastic.co/artifacts/packages/${packageZip}" | grep -q "HTTP/2 200" ; then
+    # Avoid using "-q" in grep in this pipe, it could cause some weird behavior in some scenarios due to SIGPIPE errors when "set -o pipefail"
+    # https://tldp.org/LDP/lpg/node20.html
+    if curl -s --head "https://package-storage.elastic.co/artifacts/packages/${packageZip}" | grep "HTTP/2 200" > /dev/null; then
         echo "- Already published ${packageZip}"
         return 0
     fi
@@ -407,7 +380,9 @@ is_package_excluded_in_config() {
     local package_name=""
     package_name=$(package_name_manifest)
 
-    if echo "${excluded_packages}" | grep -q -E "\"${package_name}\""; then
+    # Avoid using "-q" in grep in this pipe, it could cause some weird behavior in some scenarios due to SIGPIPE errors when "set -o pipefail"
+    # https://tldp.org/LDP/lpg/node20.html
+    if echo "${excluded_packages}" | grep -E "\"${package_name}\"" > /dev/null; then
         return 0
     fi
     return 1
@@ -438,7 +413,9 @@ is_supported_capability() {
     fi
 
     for cap in ${capabilities}; do
-        if ! echo "${cap}" | grep -q -E "${capabilities_kibana_grep}"; then
+        # Avoid using "-q" in grep in this pipe, it could cause some weird behavior in some scenarios due to SIGPIPE errors when "set -o pipefail"
+        # https://tldp.org/LDP/lpg/node20.html
+        if ! echo "${cap}" | grep -E "${capabilities_kibana_grep}" > /dev/null; then
             return 1
         fi
     done
@@ -768,12 +745,20 @@ is_pr_affected() {
 
     commit_merge=$(git merge-base "${from}" "${to}")
     echoerr "[${package}] git-diff: check non-package files (${commit_merge}..${to})"
-    if git diff --name-only "${commit_merge}" "${to}" | grep -q -E -v '^(packages/|\.github/(CODEOWNERS|ISSUE_TEMPLATE|PULL_REQUEST_TEMPLATE)|README\.md|docs/)' ; then
+    # Avoid using "-q" in grep in this pipe, it could cause that some files updated are not detected due to SIGPIPE errors when "set -o pipefail"
+    # Example:
+    # https://buildkite.com/elastic/integrations/builds/25606
+    # https://github.com/elastic/integrations/pull/13810
+    if git diff --name-only "${commit_merge}" "${to}" | grep -E -v '^(packages/|\.github/(CODEOWNERS|ISSUE_TEMPLATE|PULL_REQUEST_TEMPLATE)|README\.md|docs/)' > /dev/null; then
         echo "[${package}] PR is affected: found non-package files"
         return 0
     fi
     echoerr "[${package}] git-diff: check package files (${commit_merge}..${to})"
-    if git diff --name-only "${commit_merge}" "${to}" | grep -q -E "^packages/${package}/" ; then
+    # Avoid using "-q" in grep in this pipe, it could cause that some files updated are not detected due to SIGPIPE errors when "set -o pipefail"
+    # Example:
+    # https://buildkite.com/elastic/integrations/builds/25606
+    # https://github.com/elastic/integrations/pull/13810
+    if git diff --name-only "${commit_merge}" "${to}" | grep -E "^packages/${package}/" > /dev/null ; then
         echo "[${package}] PR is affected: found package files"
         return 0
     fi
@@ -969,16 +954,16 @@ upload_safe_logs() {
     local source="$2"
     local target="$3"
 
+    echo "--- Uploading safe logs to GCP bucket ${bucket}"
+
     if ! ls ${source} 2>&1 > /dev/null ; then
         echo "upload_safe_logs: artifacts files not found, nothing will be archived"
         return
     fi
 
-    google_cloud_auth_safe_logs
+    gcloud storage cp ${source} "gs://${bucket}/buildkite/${REPO_BUILD_TAG}/${target}"
 
-    gsutil cp ${source} "gs://${bucket}/buildkite/${REPO_BUILD_TAG}/${target}"
-
-    google_cloud_logout_active_account
+    echo "GCP logout is not required, the BK plugin will do it for us"
 }
 
 clean_safe_logs() {
