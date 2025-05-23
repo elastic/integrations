@@ -17,9 +17,9 @@ processors:
       ignore_missing: true
       if: ctx.event?.original == null
   - remove:
-        field: message
-        ignore_missing: true
-        if: ctx.event?.original != null
+      field: message
+      ignore_missing: true
+      if: ctx.event?.original != null
   - json:
       field: event.original
       target_field: json
@@ -152,6 +152,33 @@ processors:
       field: json.protoPayload.policyViolationInfo.orgPolicyViolationInfo.violationInfo
       target_field: gcp.vertexai.audit.policy_violation_info.violations
       ignore_failure: true
+  - foreach:
+      field: gcp.vertexai.audit.policy_violation_info.violations
+      ignore_missing: true
+      ignore_failure: true
+      processor:
+        rename:
+          field: _ingest._value.errorMessage
+          target_field: _ingest._value.error_message
+      if: ctx?.gcp?.vertexai?.audit?.policy_violation_info?.violations != null && ctx?.gcp?.vertexai?.audit?.policy_violation_info?.violations instanceof List
+  - foreach:
+      field: gcp.vertexai.audit.policy_violation_info.violations
+      ignore_missing: true
+      ignore_failure: true
+      processor:
+        rename:
+          field: _ingest._value.checkedValue
+          target_field: _ingest._value.checked_value
+      if: ctx?.gcp?.vertexai?.audit?.policy_violation_info?.violations != null && ctx?.gcp?.vertexai?.audit?.policy_violation_info?.violations instanceof List
+  - foreach:
+      field: gcp.vertexai.audit.policy_violation_info.violations
+      ignore_missing: true
+      ignore_failure: true
+      processor:
+        rename:
+          field: _ingest._value.policyType
+          target_field: _ingest._value.policy_type
+      if: ctx?.gcp?.vertexai?.audit?.policy_violation_info?.violations != null && ctx?.gcp?.vertexai?.audit?.policy_violation_info?.violations instanceof List
   - rename:
       field: json.protoPayload.policyViolationInfo.orgPolicyViolationInfo.payload
       target_field: gcp.vertexai.audit.policy_violation_info.payload
@@ -208,14 +235,23 @@ processors:
       target_field: gcp.vertexai.audit.authorization_info
       ignore_failure: true
   - foreach:
-      field: gcp.audit.authorization_info
+      field: gcp.vertexai.audit.authorization_info
       ignore_missing: true
       ignore_failure: true
       processor:
         rename:
           field: _ingest._value.resourceAttributes
           target_field: _ingest._value.resource_attributes
-      if: ctx?.gcp?.audit?.authorization_info != null && ctx?.gcp?.audit?.authorization_info instanceof List
+      if: ctx?.gcp?.vertexai?.audit?.authorization_info != null && ctx?.gcp?.vertexai?.audit?.authorization_info instanceof List
+  - foreach:
+      field: gcp.vertexai.audit.authorization_info
+      ignore_missing: true
+      ignore_failure: true
+      processor:
+        rename:
+          field: _ingest._value.permissionType
+          target_field: _ingest._value.permission_type
+      if: ctx?.gcp?.vertexai?.audit?.authorization_info != null && ctx?.gcp?.vertexai?.audit?.authorization_info instanceof List
 
   - remove:
       field: json
