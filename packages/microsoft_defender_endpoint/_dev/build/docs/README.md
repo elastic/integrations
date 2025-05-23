@@ -88,6 +88,17 @@ A full sync pulls in a large volume of data, which can lead to storage issues or
 | title                              | message               |
 | severity                           | event.severity        |
 
+## Alert severity mapping
+
+The values used in `event.severity` are consistent with Elastic Detection Rules.
+
+| Severity Name          | `event.severity` |
+|------------------------|:----------------:|
+| Low (or Informational) | 21               |
+| Medium                 | 47               |
+| High                   | 73               |
+| Critical               | 99               |
+
 ## Logs Reference
 
 ### Log

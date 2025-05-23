@@ -101,6 +101,17 @@ A full sync pulls in a large volume of data, which can lead to storage issues or
 
 > **Note:** The user or service account associated with the integration must have the following **index privileges** on the relevant index have the following permissions `delete`, `delete_index`
 
+## Alert severity mapping
+
+The values used in `event.severity` are consistent with Elastic Detection Rules.
+
+| Severity Name          | `event.severity` |
+|------------------------|:----------------:|
+| Low (or Informational) | 21               |
+| Medium                 | 47               |
+| High                   | 73               |
+| Critical               | 99               |
+
 ## Logs reference
 
 ### alert
