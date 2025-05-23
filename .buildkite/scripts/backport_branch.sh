@@ -137,8 +137,11 @@ updateBackportBranchContents() {
   if git ls-tree -d --name-only main:${MAGEFILE_SCRIPTS_FOLDER} > /dev/null 2>&1 ; then
     echo "Copying $MAGEFILE_SCRIPTS_FOLDER from $SOURCE_BRANCH..."
     git checkout "$SOURCE_BRANCH" -- "${MAGEFILE_SCRIPTS_FOLDER}"
+    echo "Copying $TESTSREPORTER_SCRIPTS_FOLDER from $SOURCE_BRANCH..."
     git checkout "$SOURCE_BRANCH" -- "${TESTSREPORTER_SCRIPTS_FOLDER}"
+    echo "Copying $COVERAGE_SCRIPTS_FOLDER from $SOURCE_BRANCH..."
     git checkout "$SOURCE_BRANCH" -- "${COVERAGE_SCRIPTS_FOLDER}"
+    echo "Copying magefile.go from $SOURCE_BRANCH..."
     git checkout "$SOURCE_BRANCH" -- "magefile.go"
     # Run go mod tidy to update just the dependencies related to magefile and dev scripts
     go mod tidy
