@@ -114,8 +114,9 @@ Default port: _9021_
 | netskope.alerts.audit.category | The subcategories in an application such as IAM, EC in AWS, login, token, file, etc., in case of Google. | keyword |
 | netskope.alerts.audit.type | The sub category in audit according to SaaS / IaaS apps. | keyword |
 | netskope.alerts.bin.timestamp | Applicable to only: Shared Credentials, Data Exfiltration, Bulk Anomaly types( Bulk Upload/Download/Delete) and Failed Login Anomaly type. Bin TimeStamp (is a window used that is used for certain types of anomalies - for breaking into several windows per day/hour). | long |
-| netskope.alerts.breach.date | Breach date for compromised credentials. | double |
-| netskope.alerts.breach.description | N/A | keyword |
+| netskope.alerts.breach.date | Breach date for compromised credentials. | date |
+| netskope.alerts.breach.description | Breach description for compromised credentials. | keyword |
+| netskope.alerts.breach.description.text | Multi-field of `netskope.alerts.breach.description`. | match_only_text |
 | netskope.alerts.breach.id | Breach ID for compromised credentials. | keyword |
 | netskope.alerts.breach.media_references | Media references of breach. | keyword |
 | netskope.alerts.breach.score | Breach score for compromised credentials. | long |
