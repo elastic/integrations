@@ -203,8 +203,8 @@ updateBackportBranchContents() {
 
   if [ "$DRY_RUN" == "true" ];then
     echo "DRY_RUN mode, nothing will be pushed."
-    # Show just the relevant files diff (go.mod, go.sum, .buildkite, dev and package to be backported)
-    git --no-pager diff $SOURCE_BRANCH...$BACKPORT_BRANCH_NAME go.mod go.sum .buildkite/ dev/ "packages/${PACKAGE_NAME}"
+    # Show just the relevant files diff (go.mod, go.sum, .buildkite, dev, .go-version, .github/CODEOWNERS and package to be backported)
+    git --no-pager diff $SOURCE_BRANCH...$BACKPORT_BRANCH_NAME .buildkite/ dev/ go.sum go.mod .go-version .github/CODEOWNERS "packages/${PACKAGE_NAME}"
   else
     echo "Pushing..."
     git push origin $BACKPORT_BRANCH_NAME
