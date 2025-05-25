@@ -130,9 +130,26 @@ updateBackportBranchContents() {
     rm -rf "$JENKINS_FOLDER_PATH"
   fi
 
+  # Update scripts used by mage
+  local MAGEFILE_SCRIPTS_FOLDER="dev/citools"
+  local TESTSREPORTER_SCRIPTS_FOLDER="dev/testsreporter"
+  local COVERAGE_SCRIPTS_FOLDER="dev/coverage"
+  if git ls-tree -d --name-only main:${MAGEFILE_SCRIPTS_FOLDER} > /dev/null 2>&1 ; then
+    echo "Copying $MAGEFILE_SCRIPTS_FOLDER from $SOURCE_BRANCH..."
+    git checkout "$SOURCE_BRANCH" -- "${MAGEFILE_SCRIPTS_FOLDER}"
+    echo "Copying $TESTSREPORTER_SCRIPTS_FOLDER from $SOURCE_BRANCH..."
+    git checkout "$SOURCE_BRANCH" -- "${TESTSREPORTER_SCRIPTS_FOLDER}"
+    echo "Copying $COVERAGE_SCRIPTS_FOLDER from $SOURCE_BRANCH..."
+    git checkout "$SOURCE_BRANCH" -- "${COVERAGE_SCRIPTS_FOLDER}"
+    echo "Copying magefile.go from $SOURCE_BRANCH..."
+    git checkout "$SOURCE_BRANCH" -- "magefile.go"
+    # Run go mod tidy to update just the dependencies related to magefile and dev scripts
+    go mod tidy
+  fi
+
   if [ "${REMOVE_OTHER_PACKAGES}" == "true" ]; then
     echo "Removing all packages from $PACKAGES_FOLDER_PATH folder"
-    removeOtherPackages "$PACKAGES_FOLDER_PATH"
+    removeOtherPackages "${PACKAGES_FOLDER_PATH}"
     ls -la $PACKAGES_FOLDER_PATH
   fi
 
@@ -142,7 +159,12 @@ updateBackportBranchContents() {
   echo "Commiting"
   git add $BUILDKITE_FOLDER_PATH
   if [ -d "${JENKINS_FOLDER_PATH}" ]; then
-    git add $JENKINS_FOLDER_PATH
+    git add "${JENKINS_FOLDER_PATH}"
+  fi
+  if [ -d "${MAGEFILE_SCRIPTS_FOLDER}" ] ; then
+    git add ${MAGEFILE_SCRIPTS_FOLDER}
+    git add ${TESTSREPORTER_SCRIPTS_FOLDER}
+    git add go.mod go.sum
   fi
   git add $PACKAGES_FOLDER_PATH/
   git status
@@ -156,7 +178,8 @@ updateBackportBranchContents() {
 
   if [ "$DRY_RUN" == "true" ];then
     echo "DRY_RUN mode, nothing will be pushed."
-    git diff $SOURCE_BRANCH...$BACKPORT_BRANCH_NAME
+    # Show just the relevant files diff (go.mod, go.sum, .buildkite, dev and package to be backported)
+    git --no-pager diff $SOURCE_BRANCH...$BACKPORT_BRANCH_NAME go.mod go.sum .buildkite/ dev/ "packages/${PACKAGE_NAME}"
   else
     echo "Pushing..."
     git push origin $BACKPORT_BRANCH_NAME

@@ -1,5 +1,17 @@
 {
     "attributes": {
+        "controlGroupInput": {
+            "chainingSystem": "HIERARCHICAL",
+            "controlStyle": "oneLine",
+            "ignoreParentSettingsJSON": {
+                "ignoreFilters": false,
+                "ignoreQuery": false,
+                "ignoreTimerange": false,
+                "ignoreValidations": false
+            },
+            "panelsJSON": {},
+            "showApplySelections": false
+        },
         "description": "",
         "kibanaSavedObjectMeta": {
             "searchSourceJSON": {
@@ -21,7 +33,11 @@
             {
                 "embeddableConfig": {
                     "description": "",
-                    "enhancements": {},
+                    "enhancements": {
+                        "dynamicActions": {
+                            "events": []
+                        }
+                    },
                     "hidePanelTitles": true,
                     "savedVis": {
                         "data": {
@@ -287,7 +303,6 @@
                             "adHocDataViews": {},
                             "datasourceStates": {
                                 "formBased": {
-                                    "currentIndexPatternId": "logs-*",
                                     "layers": {
                                         "32694bc7-4428-4f3f-a8d7-5d57fea61e7e": {
                                             "columnOrder": [
@@ -304,12 +319,11 @@
                                                         "emptyAsNull": true
                                                     },
                                                     "scale": "ratio",
-                                                    "sourceField": "tenable_ot_security.system_log.time_stamp"
+                                                    "sourceField": "___records___"
                                                 }
                                             },
                                             "ignoreGlobalFilters": true,
-                                            "incompleteColumns": {},
-                                            "indexPatternId": "logs-*"
+                                            "incompleteColumns": {}
                                         }
                                     }
                                 },
@@ -397,13 +411,13 @@
                                                 "3c1dc8ff-64aa-4442-b3aa-abb92e9e9774": {
                                                     "dataType": "number",
                                                     "isBucketed": false,
-                                                    "label": "Unique count of tenable_ot_security.assets.id",
+                                                    "label": "Unique count of event.id",
                                                     "operationType": "unique_count",
                                                     "params": {
                                                         "emptyAsNull": true
                                                     },
                                                     "scale": "ratio",
-                                                    "sourceField": "tenable_ot_security.assets.id"
+                                                    "sourceField": "event.id"
                                                 },
                                                 "7e4f1bdc-8920-402d-a6f0-d642c110da85": {
                                                     "dataType": "string",
@@ -570,13 +584,13 @@
                                                 "4bed8fa4-8ae7-4931-9ea9-7d4afa725ffc": {
                                                     "dataType": "number",
                                                     "isBucketed": false,
-                                                    "label": "Unique count of tenable_ot_security.assets.id",
+                                                    "label": "Unique count of event.id",
                                                     "operationType": "unique_count",
                                                     "params": {
                                                         "emptyAsNull": true
                                                     },
                                                     "scale": "ratio",
-                                                    "sourceField": "tenable_ot_security.assets.id"
+                                                    "sourceField": "event.id"
                                                 },
                                                 "7a8c2871-a700-4069-b23e-30e89b14b667": {
                                                     "dataType": "string",
@@ -1575,7 +1589,6 @@
                                     "layers": {
                                         "0332d6c8-a3ff-4d54-a045-2bc3e4c4d542": {
                                             "columnOrder": [
-                                                "892c43f2-4654-4268-9a5a-acdaa9dcd8db",
                                                 "24f3f911-1f2d-459a-aee3-6a68b8b943c5",
                                                 "02160edb-40c8-44f8-b2b4-cf2c9a0d6c4f",
                                                 "72abe1f2-cd67-4d58-bc9c-419a4311a3c3"
@@ -1594,7 +1607,7 @@
                                                         "interval": "1w"
                                                     },
                                                     "scale": "interval",
-                                                    "sourceField": "tenable_ot_security.system_log.time_stamp"
+                                                    "sourceField": "@timestamp"
                                                 },
                                                 "24f3f911-1f2d-459a-aee3-6a68b8b943c5": {
                                                     "customLabel": true,
@@ -1633,33 +1646,6 @@
                                                     },
                                                     "scale": "ratio",
                                                     "sourceField": "___records___"
-                                                },
-                                                "892c43f2-4654-4268-9a5a-acdaa9dcd8db": {
-                                                    "customLabel": true,
-                                                    "dataType": "string",
-                                                    "isBucketed": true,
-                                                    "label": "Message",
-                                                    "operationType": "terms",
-                                                    "params": {
-                                                        "exclude": [],
-                                                        "excludeIsRegex": false,
-                                                        "include": [],
-                                                        "includeIsRegex": false,
-                                                        "missingBucket": false,
-                                                        "orderBy": {
-                                                            "columnId": "72abe1f2-cd67-4d58-bc9c-419a4311a3c3",
-                                                            "type": "column"
-                                                        },
-                                                        "orderDirection": "desc",
-                                                        "otherBucket": false,
-                                                        "parentFormat": {
-                                                            "id": "terms"
-                                                        },
-                                                        "secondaryFields": [],
-                                                        "size": 1000
-                                                    },
-                                                    "scale": "ordinal",
-                                                    "sourceField": "message"
                                                 }
                                             },
                                             "incompleteColumns": {},
@@ -1707,11 +1693,6 @@
                             "visualization": {
                                 "columns": [
                                     {
-                                        "columnId": "892c43f2-4654-4268-9a5a-acdaa9dcd8db",
-                                        "isTransposed": false,
-                                        "width": 590
-                                    },
-                                    {
                                         "columnId": "24f3f911-1f2d-459a-aee3-6a68b8b943c5",
                                         "isTransposed": false
                                     },
@@ -1754,7 +1735,7 @@
                     "y": 66
                 },
                 "panelIndex": "e9592370-e9d4-403c-89ff-88dae3c6abc6",
-                "title": "System Logs",
+                "title": "User by Week",
                 "type": "lens"
             }
         ],
@@ -1763,8 +1744,7 @@
         "version": 2
     },
     "coreMigrationVersion": "8.8.0",
-    "created_at": "2025-04-01T11:07:35.811Z",
-    "created_by": "u_mGBROF_q5bmFCATbLXAcCwKa0k8JvONAwSruelyKA5E_0",
+    "created_at": "2025-05-02T04:58:16.078Z",
     "id": "tenable_ot_security-c6423a0a-fd80-489b-8302-17ba2024f345",
     "managed": false,
     "references": [
