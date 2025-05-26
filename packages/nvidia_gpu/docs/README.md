@@ -183,47 +183,68 @@ An example event for `stats` looks as following:
 | data_stream.dataset | Data stream dataset. | constant_keyword |  |
 | data_stream.namespace | Data stream namespace. | constant_keyword |  |
 | data_stream.type | Data stream type. | constant_keyword |  |
-| gpu.decoder.utilization | Utilization of the decoder engine in the GPU. | float | gauge |
+| gpu.Remapped.correctable_remapped_rows.count | Number of remapped rows for correctable errors | long | gauge |
+| gpu.Remapped.failed_remapped_rows.count | Whether remapping of rows has failed | long | gauge |
+| gpu.Remapped.uncorrectable_remapped_rows.count | Number of remapped rows for uncorrectable errors | long | gauge |
+| gpu.clock.mem.frequency | Memory clock frequency (in MHz). | float | gauge |
+| gpu.clock.streaming_multiprocessor.frequency | SM clock frequency (in MHz). | float | gauge |
+| gpu.dcp.dram.active | Ratio of cycles the device memory interface is active sending or receiving data. | float | gauge |
+| gpu.dcp.fp16_pipe.active | Ratio of cycles the fp16 pipes are active. | float | gauge |
+| gpu.dcp.fp32_pipe.active | Ratio of cycles the fp32 pipes are active. | float | gauge |
+| gpu.dcp.fp64_pipe.active | Ratio of cycles the fp64 pipes are active. | float | gauge |
+| gpu.dcp.graphics_engine.active | Ratio of time the graphics engine is active. | float | gauge |
+| gpu.dcp.pcie.rx_bytes | The rate of data received over the PCIe bus - including both protocol headers and data payloads - in bytes per second. | float | gauge |
+| gpu.dcp.pcie.tx_bytes | The rate of data transmitted over the PCIe bus - including both protocol headers and data payloads - in bytes per second. | float | gauge |
+| gpu.dcp.sm.active | The ratio of cycles an SM has at least one warp assigned. | float | gauge |
+| gpu.dcp.sm.occupancy | The ratio of number of warps resident on an SM. | float | gauge |
+| gpu.dcp.tensor_pipe.active | Ratio of cycles the tensor (HMMA) pipe is active. | float | gauge |
 | gpu.device.brand | Brand of the GPU device. | keyword |  |
+| gpu.device.ecc_info_rom.version | ECC inforom version | keyword |  |
 | gpu.device.id | ID of the GPU device. | keyword |  |
 | gpu.device.info_rom.oem_version | OEM version of the info ROM. | keyword |  |
 | gpu.device.info_rom.version | Version of the info ROM. | keyword |  |
 | gpu.device.model | Model of the GPU device. | keyword |  |
 | gpu.device.name | Name of the GPU device. | keyword |  |
+| gpu.device.power_info_rom.version | Power management object inforom version | keyword |  |
+| gpu.device.serial_number | Device Serial Number | keyword |  |
 | gpu.device.uuid | UUID of the GPU device. | keyword |  |
 | gpu.device.vbios.version | Version of the vbios. | keyword |  |
 | gpu.driver.nvml_version | NVML version of the driver. | keyword |  |
 | gpu.driver.version | Version of the driver. | keyword |  |
-| gpu.encoder.utilization | Utilization of the encoder engine in the GPU. | float |  |
-| gpu.energy.total | Total energy consumption of the GPU since boot in Joules. | long | counter |
+| gpu.ecc.double_bit_persistent | Double-bit persistent errors count for GPU memory. | long | gauge |
+| gpu.ecc.double_bit_volatile | Double-bit volatile errors count for GPU memory. | long | gauge |
+| gpu.ecc.single_bit_persistent | Single-bit persistent errors count for GPU memory. | long | gauge |
+| gpu.ecc.single_bit_volatile | Single-bit volatile errors count for GPU memory. | long | gauge |
 | gpu.error.code | Specific Error code for the XID error on the GPU. | keyword |  |
 | gpu.error.message | Specific Error message for the XID error on the. | keyword |  |
 | gpu.error.xid | The eXerience ID of the error being reported by the GPU. | keyword |  |
-| gpu.framebuffer.size.free | Free size of the framebuffer. | long | gauge |
-| gpu.framebuffer.size.used | Used size of the framebuffer. | long | gauge |
-| gpu.license.vgpu | License status related to vGPU. | keyword |  |
-| gpu.memory.copy_utilization | Utilization of the GPU memory copy engine. | float | gauge |
-| gpu.memory.errors.double_bit_persistent | Double-bit persistent errors count for GPU memory. | long | gauge |
-| gpu.memory.errors.double_bit_volatile | Double-bit volatile errors count for GPU memory. | long | gauge |
-| gpu.memory.errors.single_bit_persistent | Single-bit persistent errors count for GPU memory. | long | gauge |
-| gpu.memory.errors.single_bit_volatile | Single-bit volatile errors count for GPU memory. | long | gauge |
-| gpu.memory.frequency | Clock frequency of the GPU memory. | float | gauge |
-| gpu.memory.size | Size of the GPU memory in MB. | long | gauge |
-| gpu.memory.temperature | Temperature of the GPU memory. | float | gauge |
-| gpu.memory.used | Used size of the GPU memory in MB. | long | gauge |
-| gpu.nvlink.bandwidth.total | Total bandwidth of NVLink. | long | gauge |
+| gpu.license_vgpu_status | vGPU License status. | keyword |  |
+| gpu.memory.framebuffer.size.free | Free size of the framebuffer. | long | gauge |
+| gpu.memory.framebuffer.size.used | Used size of the framebuffer. | long | gauge |
+| gpu.nvlink.bandwidth.total | Total number of NVLink bandwidth counters for all lanes. | long | gauge |
+| gpu.nvlink.bandwidth_l0.total | The number of bytes of active NVLink rx or tx data including both header and payload. | long | gauge |
+| gpu.nvlink.data_crc_errors.count | Total number of NVLink data CRC errors. | long | gauge |
+| gpu.nvlink.flowcontrol_crc_errors.count | Total number of NVLink flow-control CRC errors. | long | gauge |
+| gpu.nvlink.recovery_errors.count | Total number of NVLink recovery errors. | long | gauge |
+| gpu.nvlink.replay_errors.count | Total number of NVLink retries. | long | gauge |
 | gpu.pci.bus.id | Bus ID of the PCI device. | keyword |  |
-| gpu.pcie.replay | Replay counter for the PCIe connection. | long | gauge |
+| gpu.pcie.replay | Replay counter for the PCIe connection. | float | gauge |
+| gpu.pcie.rx_bytes | Total number of bytes received through PCIe RX via NVML. | float | counter |
+| gpu.pcie.tx_bytes | Total number of bytes transmitted through PCIe TX via NVML. | float | counter |
+| gpu.power.energy_consumption.total | Total energy consumption since boot (in mJ). | long | counter |
 | gpu.power.usage | Current power usage of the GPU in Watts. | float | gauge |
-| gpu.streaming_multiprocessor.frequency | Frequency of the streaming multiprocessor. | float | gauge |
-| gpu.temperature | Temperature of the GPU. | float | gauge |
+| gpu.temperature.gpu | GPU temperature (in C). | float | gauge |
+| gpu.temperature.memory | Memory temperature (in C). | float | gauge |
 | gpu.throttling.board_limit | Number of microseconds throttled due to Board limit. | float | gauge |
 | gpu.throttling.low_utilization | Number of microseconds throttled due to low utilization. | float | gauge |
 | gpu.throttling.power | Number of microseconds throttled due to power. | float | gauge |
 | gpu.throttling.reliability | Number of microseconds throttled due to reliability. | float | gauge |
 | gpu.throttling.sync_boost | Number of microseconds throttled due to Sync Boost. | float | gauge |
 | gpu.throttling.thermal | Number of microseconds throttled due to thermals. | float | gauge |
-| gpu.utilization | Overall utilization of the GPU. | float | gauge |
+| gpu.utilization.decoder | Decoder utilization (in %). | float | gauge |
+| gpu.utilization.encoder | Encoder utilization (in %). | float | gauge |
+| gpu.utilization.gpu | GPU utilization (in %). | float | gauge |
+| gpu.utilization.memory_copy | Memory utilization (in %). | float | gauge |
 | kubernetes.container.name | Kubernetes container name | keyword |  |
 | kubernetes.namespace | Kubernetes namespace | keyword |  |
 | kubernetes.pod.name | Kubernetes pod name | keyword |  |
