@@ -186,29 +186,27 @@ An example event for `stats` looks as following:
 | gpu.Remapped.correctable_remapped_rows.count | Number of remapped rows for correctable errors | long | gauge |
 | gpu.Remapped.failed_remapped_rows.count | Whether remapping of rows has failed | long | gauge |
 | gpu.Remapped.uncorrectable_remapped_rows.count | Number of remapped rows for uncorrectable errors | long | gauge |
-| gpu.clock.mem.frequency | Memory clock frequency (in MHz). | float | gauge |
-| gpu.clock.streaming_multiprocessor.frequency | SM clock frequency (in MHz). | float | gauge |
+| gpu.clock.mem_frequency | Memory clock frequency (in MHz). | float | gauge |
+| gpu.clock.streaming_multiprocessor_frequency | SM clock frequency (in MHz). | float | gauge |
 | gpu.dcp.dram.active | Ratio of cycles the device memory interface is active sending or receiving data. | float | gauge |
 | gpu.dcp.fp16_pipe.active | Ratio of cycles the fp16 pipes are active. | float | gauge |
 | gpu.dcp.fp32_pipe.active | Ratio of cycles the fp32 pipes are active. | float | gauge |
 | gpu.dcp.fp64_pipe.active | Ratio of cycles the fp64 pipes are active. | float | gauge |
 | gpu.dcp.graphics_engine.active | Ratio of time the graphics engine is active. | float | gauge |
-| gpu.dcp.pcie.rx_bytes | The rate of data received over the PCIe bus - including both protocol headers and data payloads - in bytes per second. | float | gauge |
-| gpu.dcp.pcie.tx_bytes | The rate of data transmitted over the PCIe bus - including both protocol headers and data payloads - in bytes per second. | float | gauge |
 | gpu.dcp.sm.active | The ratio of cycles an SM has at least one warp assigned. | float | gauge |
 | gpu.dcp.sm.occupancy | The ratio of number of warps resident on an SM. | float | gauge |
 | gpu.dcp.tensor_pipe.active | Ratio of cycles the tensor (HMMA) pipe is active. | float | gauge |
 | gpu.device.brand | Brand of the GPU device. | keyword |  |
-| gpu.device.ecc_info_rom.version | ECC inforom version | keyword |  |
+| gpu.device.ecc_info_rom_version | ECC inforom version | keyword |  |
 | gpu.device.id | ID of the GPU device. | keyword |  |
 | gpu.device.info_rom.oem_version | OEM version of the info ROM. | keyword |  |
-| gpu.device.info_rom.version | Version of the info ROM. | keyword |  |
+| gpu.device.info_rom_version | Version of the info ROM. | keyword |  |
 | gpu.device.model | Model of the GPU device. | keyword |  |
 | gpu.device.name | Name of the GPU device. | keyword |  |
-| gpu.device.power_info_rom.version | Power management object inforom version | keyword |  |
+| gpu.device.power_info_rom_version | Power management object inforom version | keyword |  |
 | gpu.device.serial_number | Device Serial Number | keyword |  |
 | gpu.device.uuid | UUID of the GPU device. | keyword |  |
-| gpu.device.vbios.version | Version of the vbios. | keyword |  |
+| gpu.device.vbios_version | Version of the vbios. | keyword |  |
 | gpu.driver.nvml_version | NVML version of the driver. | keyword |  |
 | gpu.driver.version | Version of the driver. | keyword |  |
 | gpu.ecc.double_bit_persistent | Double-bit persistent errors count for GPU memory. | long | gauge |
@@ -227,7 +225,7 @@ An example event for `stats` looks as following:
 | gpu.nvlink.flowcontrol_crc_errors.count | Total number of NVLink flow-control CRC errors. | long | gauge |
 | gpu.nvlink.recovery_errors.count | Total number of NVLink recovery errors. | long | gauge |
 | gpu.nvlink.replay_errors.count | Total number of NVLink retries. | long | gauge |
-| gpu.pci.bus.id | Bus ID of the PCI device. | keyword |  |
+| gpu.pci_bus.id | Bus ID of the PCI device. | keyword |  |
 | gpu.pcie.replay | Replay counter for the PCIe connection. | float | gauge |
 | gpu.pcie.rx_bytes | Total number of bytes received through PCIe RX via NVML. | float | counter |
 | gpu.pcie.tx_bytes | Total number of bytes transmitted through PCIe TX via NVML. | float | counter |
