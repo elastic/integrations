@@ -120,7 +120,7 @@ An example event for `am_access` looks as following:
 | forgerock.response.detail.scope | The responses's scope. | keyword |
 | forgerock.response.detail.token_type | The responses's token type. | keyword |
 | forgerock.response.detail.username | The responses's username. | keyword |
-| forgerock.response.elapsedTime | Time to execute event. | date |
+| forgerock.response.elapsedTime | Time to execute event. | long |
 | forgerock.response.elapsedTimeUnits | Units for response time. | keyword |
 | forgerock.response.status | Status indicator, usually SUCCESS/SUCCESSFUL or FAIL/FAILED. | keyword |
 | forgerock.roles | IDM roles associated with the request. | keyword |
@@ -618,7 +618,7 @@ An example event for `idm_access` looks as following:
 | forgerock.level | The log level. | keyword |
 | forgerock.request.operation | The request operation. | keyword |
 | forgerock.request.protocol | The protocol associated with the request; REST or PLL. | keyword |
-| forgerock.response.elapsedTime | Time to execute event. | date |
+| forgerock.response.elapsedTime | Time to execute event. | long |
 | forgerock.response.elapsedTimeUnits | Units for response time. | keyword |
 | forgerock.response.status | Status indicator, usually SUCCESS/SUCCESSFUL or FAIL/FAILED. | keyword |
 | forgerock.roles | IDM roles associated with the request. | keyword |
