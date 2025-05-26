@@ -234,18 +234,16 @@ processors:
       field: json.evidence.parentProcessCreationTime
       target_field: process.parent.start
       ignore_missing: true
-  - convert:
-      field: process.pid
-      tag: convert_process_pid_to_string
-      target_field: process.entity_id
-      type: string
-      ignore_missing: true
-  - convert:
-      field: process.parent.pid
-      tag: convert_process_parent_pid_to_string
-      target_field: process.parent.entity_id
-      type: string
-      ignore_missing: true
+  - set:
+      field: process.entity_id
+      tag: set_process_entity_id
+      value: '{{{process.pid}}}'
+      ignore_empty_value: true
+  - set:
+      field: process.parent.entity_id
+      tag: set_process_parent_entity_id
+      value: '{{{process.parent.pid}}}'
+      ignore_empty_value: true
 ##########################
 ## ECS Observer Mapping ##
 ##########################

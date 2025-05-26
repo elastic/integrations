@@ -295,18 +295,16 @@ processors:
       name: '{{ IngestPipeline "scheduled_report_notification_event" }}'
       tag: pipeline_scheduled_report_notification_event
       if: ctx.crowdstrike?.metadata?.eventType == "ScheduledReportNotificationEvent"
-  - convert:
-      field: process.pid
-      tag: convert_process_pid_to_string
-      target_field: process.entity_id
-      type: string
-      ignore_missing: true
-  - convert:
-      field: process.parent.pid
-      tag: convert_process_parent_pid_to_string
-      target_field: process.parent.entity_id
-      type: string
-      ignore_missing: true
+  - set:
+      field: process.entity_id
+      tag: set_process_entity_id
+      value: '{{{process.pid}}}'
+      ignore_empty_value: true
+  - set:
+      field: process.parent.entity_id
+      tag: set_process_parent_entity_id
+      value: '{{{process.parent.pid}}}'
+      ignore_empty_value: true
   - set:
       field: user.email
       copy_from: user.name

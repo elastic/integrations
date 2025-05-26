@@ -295,11 +295,11 @@ processors:
       field: process.pid
       copy_from: trend_micro_vision_one.detection.process.pid
       ignore_failure: true
-  - convert:
-      field: process.pid
-      target_field: process.entity_id
-      type: string
-      ignore_missing: true
+  - set:
+      field: process.entity_id
+      tag: set_process_entity_id
+      value: '{{{process.pid}}}'
+      ignore_empty_value: true
   - convert:
       field: json.src
       target_field: trend_micro_vision_one.detection.source.ip
