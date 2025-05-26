@@ -947,6 +947,16 @@ processors:
       if: ctx.json?.alerts?.evidence instanceof List
       ignore_failure: true
       processor:
+        append:
+          field: device.id
+          tag: append_azureAdDeviceId_into_device_id
+          value: '{{{_ingest._value.azureAdDeviceId}}}'
+          allow_duplicates: false
+  - foreach:
+      field: json.alerts.evidence
+      if: ctx.json?.alerts?.evidence instanceof List
+      ignore_failure: true
+      processor:
         rename:
           field: _ingest._value.azureAdDeviceId
           target_field: _ingest._value.azure_ad_device_id

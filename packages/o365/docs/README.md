@@ -71,9 +71,9 @@ An example event for `audit` looks as following:
 {
     "@timestamp": "2020-02-07T16:43:53.000Z",
     "agent": {
-        "ephemeral_id": "45781bef-7796-4c2d-abca-7c94a2526b1d",
-        "id": "02cb686f-1f15-455b-a55c-227298dab920",
-        "name": "elastic-agent-24075",
+        "ephemeral_id": "abb77bca-e0e6-46be-9afd-01b00e89f7b3",
+        "id": "bd4e87b5-0303-4dd3-8c00-1e85a76205ab",
+        "name": "elastic-agent-71493",
         "type": "filebeat",
         "version": "8.18.0"
     },
@@ -83,14 +83,14 @@ An example event for `audit` looks as following:
     },
     "data_stream": {
         "dataset": "o365.audit",
-        "namespace": "15585",
+        "namespace": "55209",
         "type": "logs"
     },
     "ecs": {
         "version": "8.11.0"
     },
     "elastic_agent": {
-        "id": "02cb686f-1f15-455b-a55c-227298dab920",
+        "id": "bd4e87b5-0303-4dd3-8c00-1e85a76205ab",
         "snapshot": false,
         "version": "8.18.0"
     },
@@ -103,9 +103,9 @@ An example event for `audit` looks as following:
         "code": "SharePoint",
         "dataset": "o365.audit",
         "id": "99d005e6-a4c6-46fd-117c-08d7abeceab5",
-        "ingested": "2025-05-19T11:51:11Z",
+        "ingested": "2025-05-26T09:01:57Z",
         "kind": "event",
-        "original": "{\"Site\":\"d5180cfc-3479-44d6-b410-8c985ac894e3\",\"ObjectId\":\"https://testsiem-my.sharepoint.com/personal/asr_testsiem_onmicrosoft_com/_layouts/15/onedrive.aspx\",\"ItemType\":\"Page\",\"UserKey\":\"i:0h.f|membership|1003200096971f55@live.com\",\"OrganizationId\":\"b86ab9d4-fcf1-4b11-8a06-7a8f91b47fbd\",\"Operation\":\"PageViewed\",\"ClientIP\":\"213.97.47.133\",\"Workload\":\"OneDrive\",\"EventSource\":\"SharePoint\",\"RecordType\":4,\"Version\":1,\"WebId\":\"8c5c94bb-8396-470c-87d7-8999f440cd30\",\"UserId\":\"asr@testsiem.onmicrosoft.com\",\"UserAgent\":\"Mozilla/5.0 (Macintosh; Intel Mac OS X 10.14; rv:72.0) Gecko/20100101 Firefox/72.0\",\"CreationTime\":\"2020-02-07T16:43:53\",\"CustomUniqueId\":true,\"Id\":\"99d005e6-a4c6-46fd-117c-08d7abeceab5\",\"CorrelationId\":\"622b339f-4000-a000-f25f-92b3478c7a25\",\"ListItemUniqueId\":\"59a8433d-9bb8-cfef-6edc-4c0fc8b86875\",\"UserType\":0}",
+        "original": "{\"Site\":\"d5180cfc-3479-44d6-b410-8c985ac894e3\",\"ObjectId\":\"https://testsiem-my.sharepoint.com/personal/asr_testsiem_onmicrosoft_com/_layouts/15/onedrive.aspx\",\"ItemType\":\"Page\",\"UserKey\":\"i:0h.f|membership|1003200096971f55@live.com\",\"Operation\":\"PageViewed\",\"OrganizationId\":\"b86ab9d4-fcf1-4b11-8a06-7a8f91b47fbd\",\"ClientIP\":\"213.97.47.133\",\"Workload\":\"OneDrive\",\"EventSource\":\"SharePoint\",\"RecordType\":4,\"Version\":1,\"WebId\":\"8c5c94bb-8396-470c-87d7-8999f440cd30\",\"UserId\":\"asr@testsiem.onmicrosoft.com\",\"UserAgent\":\"Mozilla/5.0 (Macintosh; Intel Mac OS X 10.14; rv:72.0) Gecko/20100101 Firefox/72.0\",\"CreationTime\":\"2020-02-07T16:43:53\",\"CustomUniqueId\":true,\"Id\":\"99d005e6-a4c6-46fd-117c-08d7abeceab5\",\"CorrelationId\":\"622b339f-4000-a000-f25f-92b3478c7a25\",\"ListItemUniqueId\":\"59a8433d-9bb8-cfef-6edc-4c0fc8b86875\",\"UserType\":0}",
         "outcome": "success",
         "provider": "OneDrive",
         "type": [
@@ -186,6 +186,7 @@ An example event for `audit` looks as following:
 | Field | Description | Type |
 |---|---|---|
 | @timestamp | Event timestamp. | date |
+| application.name |  | keyword |
 | cloud.image.id | Image ID for the cloud instance. | keyword |
 | data_stream.dataset | Data stream dataset name. | constant_keyword |
 | data_stream.namespace | Data stream namespace. | constant_keyword |
@@ -465,4 +466,6 @@ An example event for `audit` looks as following:
 | o365.audit.WorkspaceId |  | keyword |
 | o365.audit.WorkspaceName |  | keyword |
 | o365.audit.YammerNetworkId |  | keyword |
+| session.id |  | keyword |
+| token.id |  | keyword |
 
