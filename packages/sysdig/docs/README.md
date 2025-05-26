@@ -609,6 +609,24 @@ An example event for `event` looks as following:
 | sysdig.event.content.fields.fd.type |  | keyword |
 | sysdig.event.content.fields.group.gid |  | keyword |
 | sysdig.event.content.fields.group.name |  | keyword |
+| sysdig.event.content.fields.proc.acmdline_2 |  | wildcard |
+| sysdig.event.content.fields.proc.acmdline_2.text | Multi-field of `sysdig.event.content.fields.proc.acmdline_2`. | match_only_text |
+| sysdig.event.content.fields.proc.acmdline_3 |  | wildcard |
+| sysdig.event.content.fields.proc.acmdline_3.text | Multi-field of `sysdig.event.content.fields.proc.acmdline_3`. | match_only_text |
+| sysdig.event.content.fields.proc.acmdline_4 |  | wildcard |
+| sysdig.event.content.fields.proc.acmdline_4.text | Multi-field of `sysdig.event.content.fields.proc.acmdline_4`. | match_only_text |
+| sysdig.event.content.fields.proc.aexepath_2 |  | keyword |
+| sysdig.event.content.fields.proc.aexepath_2.text | Multi-field of `sysdig.event.content.fields.proc.aexepath_2`. | match_only_text |
+| sysdig.event.content.fields.proc.aexepath_3 |  | keyword |
+| sysdig.event.content.fields.proc.aexepath_3.text | Multi-field of `sysdig.event.content.fields.proc.aexepath_3`. | match_only_text |
+| sysdig.event.content.fields.proc.aexepath_4 |  | keyword |
+| sysdig.event.content.fields.proc.aexepath_4.text | Multi-field of `sysdig.event.content.fields.proc.aexepath_4`. | match_only_text |
+| sysdig.event.content.fields.proc.aname_2 |  | keyword |
+| sysdig.event.content.fields.proc.aname_2.text | Multi-field of `sysdig.event.content.fields.proc.aname_2`. | match_only_text |
+| sysdig.event.content.fields.proc.aname_3 |  | keyword |
+| sysdig.event.content.fields.proc.aname_3.text | Multi-field of `sysdig.event.content.fields.proc.aname_3`. | match_only_text |
+| sysdig.event.content.fields.proc.aname_4 |  | keyword |
+| sysdig.event.content.fields.proc.aname_4.text | Multi-field of `sysdig.event.content.fields.proc.aname_4`. | match_only_text |
 | sysdig.event.content.fields.proc.args |  | keyword |
 | sysdig.event.content.fields.proc.cmdline |  | wildcard |
 | sysdig.event.content.fields.proc.cmdline.text | Multi-field of `sysdig.event.content.fields.proc.cmdline`. | match_only_text |
