@@ -186,7 +186,7 @@ An example event for `audit` looks as following:
 | Field | Description | Type |
 |---|---|---|
 | @timestamp | Event timestamp. | date |
-| application.name |  | keyword |
+| application.name | Name of the application. | keyword |
 | cloud.image.id | Image ID for the cloud instance. | keyword |
 | data_stream.dataset | Data stream dataset name. | constant_keyword |
 | data_stream.namespace | Data stream namespace. | constant_keyword |
@@ -466,6 +466,6 @@ An example event for `audit` looks as following:
 | o365.audit.WorkspaceId |  | keyword |
 | o365.audit.WorkspaceName |  | keyword |
 | o365.audit.YammerNetworkId |  | keyword |
-| session.id |  | keyword |
-| token.id |  | keyword |
+| session.id | The unique identifier for the authentication session. | keyword |
+| token.id | The unique token identifier of the API call used to make the audited change. | keyword |
 

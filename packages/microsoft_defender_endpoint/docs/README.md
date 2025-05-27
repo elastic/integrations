@@ -103,11 +103,11 @@ An example event for `log` looks as following:
 
 ```json
 {
-    "@timestamp": "2025-05-26T12:38:16.837Z",
+    "@timestamp": "2025-05-27T10:31:25.333Z",
     "agent": {
-        "ephemeral_id": "ab878a60-3c58-4c31-9f9e-230a3f3e0b07",
-        "id": "504a84c7-d264-40f5-9952-3d1682d9127c",
-        "name": "elastic-agent-44601",
+        "ephemeral_id": "f481d28b-2b00-4bf2-b5b2-b1a40c1f3aaf",
+        "id": "69a70946-8492-4834-baf6-1db2cc9db17c",
+        "name": "elastic-agent-16526",
         "type": "filebeat",
         "version": "8.18.0"
     },
@@ -122,14 +122,14 @@ An example event for `log` looks as following:
     },
     "data_stream": {
         "dataset": "microsoft_defender_endpoint.log",
-        "namespace": "88594",
+        "namespace": "48129",
         "type": "logs"
     },
     "ecs": {
         "version": "8.11.0"
     },
     "elastic_agent": {
-        "id": "504a84c7-d264-40f5-9952-3d1682d9127c",
+        "id": "69a70946-8492-4834-baf6-1db2cc9db17c",
         "snapshot": false,
         "version": "8.18.0"
     },
@@ -145,7 +145,7 @@ An example event for `log` looks as following:
         "duration": 0,
         "end": "2020-06-30T10:07:44.333733Z",
         "id": "da637291085411733957_-1043898914",
-        "ingested": "2025-05-26T12:38:19Z",
+        "ingested": "2025-05-27T10:31:28Z",
         "kind": "alert",
         "provider": "defender_endpoint",
         "severity": 21,
@@ -261,24 +261,24 @@ An example event for `machine` looks as following:
 
 ```json
 {
-    "@timestamp": "2025-05-26T10:41:06.664Z",
+    "@timestamp": "2025-05-27T10:32:26.521Z",
     "agent": {
-        "ephemeral_id": "5c5bd461-c2cc-4e87-a76f-014a19b537ba",
-        "id": "c1ff37ae-ad1e-43bb-8507-6eeb4bd4fe03",
-        "name": "elastic-agent-88830",
+        "ephemeral_id": "7835dd57-a5b2-46de-b8a9-44f186b6590a",
+        "id": "f86c55ed-0e3d-44c8-b20f-b5d0001d9f64",
+        "name": "elastic-agent-25017",
         "type": "filebeat",
         "version": "8.18.0"
     },
     "data_stream": {
         "dataset": "microsoft_defender_endpoint.machine",
-        "namespace": "77566",
+        "namespace": "54069",
         "type": "logs"
     },
     "ecs": {
         "version": "8.11.0"
     },
     "elastic_agent": {
-        "id": "c1ff37ae-ad1e-43bb-8507-6eeb4bd4fe03",
+        "id": "f86c55ed-0e3d-44c8-b20f-b5d0001d9f64",
         "snapshot": false,
         "version": "8.18.0"
     },
@@ -288,7 +288,7 @@ An example event for `machine` looks as following:
             "host"
         ],
         "dataset": "microsoft_defender_endpoint.machine",
-        "ingested": "2025-05-26T10:41:09Z",
+        "ingested": "2025-05-27T10:32:29Z",
         "kind": "event",
         "original": "{\"aadDeviceId\":null,\"agentVersion\":\"10.8760.17763.6414\",\"computerDnsName\":\"dlp-win2k19\",\"deviceValue\":\"Normal\",\"exclusionReason\":null,\"exposureLevel\":\"High\",\"firstSeen\":\"2024-10-17T13:56:23.9412922Z\",\"healthStatus\":\"Inactive\",\"id\":\"c114cb1c0b827fabcdefabcdef2b9cfd469c091b\",\"ipAddresses\":[{\"ipAddress\":\"10.50.11.140\",\"macAddress\":\"00005E005301\",\"operationalStatus\":\"Up\",\"type\":\"Ethernet\"},{\"ipAddress\":\"1.128.0.0\",\"macAddress\":\"00005E00530A\",\"operationalStatus\":\"Up\",\"type\":\"Ethernet\"},{\"ipAddress\":\"2a02:cf40::\",\"macAddress\":\"00005E005302\",\"operationalStatus\":\"Up\",\"type\":\"Ethernet\"},{\"ipAddress\":\"127.0.0.1\",\"macAddress\":null,\"operationalStatus\":\"Up\",\"type\":\"SoftwareLoopback\"},{\"ipAddress\":\"::1\",\"macAddress\":null,\"operationalStatus\":\"Up\",\"type\":\"SoftwareLoopback\"}],\"isAadJoined\":false,\"isExcluded\":false,\"isPotentialDuplication\":false,\"lastExternalIpAddress\":\"1.128.0.0\",\"lastIpAddress\":\"10.50.11.140\",\"lastSeen\":\"2024-10-24T06:12:35.4409708Z\",\"machineTags\":[],\"managedBy\":\"MicrosoftDefenderForEndpoint\",\"managedByStatus\":\"Success\",\"mergedIntoMachineId\":null,\"onboardingStatus\":\"Onboarded\",\"osArchitecture\":\"64-bit\",\"osBuild\":17763,\"osPlatform\":\"WindowsServer2019\",\"osProcessor\":\"x64\",\"osVersion\":null,\"rbacGroupId\":0,\"rbacGroupName\":null,\"riskScore\":\"None\",\"version\":\"1809\",\"vmMetadata\":null}",
         "type": [
@@ -452,22 +452,22 @@ An example event for `machine_action` looks as following:
 {
     "@timestamp": "2024-11-22T12:48:56.768Z",
     "agent": {
-        "ephemeral_id": "fd127b0c-2f74-4fe3-b7ca-aab287bf2618",
-        "id": "810fbd15-312c-4a0f-a5fd-ceeea626a31c",
-        "name": "elastic-agent-72736",
+        "ephemeral_id": "b8f3aa0a-03f9-46a5-a7a1-4d7e7fcc8827",
+        "id": "9f7d3c70-f0c6-4f5e-84f3-b6c9806bf2c1",
+        "name": "elastic-agent-61668",
         "type": "filebeat",
         "version": "8.18.0"
     },
     "data_stream": {
         "dataset": "microsoft_defender_endpoint.machine_action",
-        "namespace": "61223",
+        "namespace": "94050",
         "type": "logs"
     },
     "ecs": {
         "version": "8.11.0"
     },
     "elastic_agent": {
-        "id": "810fbd15-312c-4a0f-a5fd-ceeea626a31c",
+        "id": "9f7d3c70-f0c6-4f5e-84f3-b6c9806bf2c1",
         "snapshot": false,
         "version": "8.18.0"
     },
@@ -477,7 +477,7 @@ An example event for `machine_action` looks as following:
         "created": "2024-11-22T12:48:33.993Z",
         "dataset": "microsoft_defender_endpoint.machine_action",
         "id": "d72456af-1234-5678-abcd-abcdef87fdee",
-        "ingested": "2025-05-26T10:42:18Z",
+        "ingested": "2025-05-27T10:33:29Z",
         "kind": "event",
         "original": "{\"cancellationComment\":null,\"cancellationDateTimeUtc\":null,\"cancellationRequestor\":null,\"commands\":[],\"computerDnsName\":\"c-lab-24\",\"creationDateTimeUtc\":\"2024-11-22T12:48:33.9936591Z\",\"errorHResult\":0,\"externalId\":null,\"id\":\"d72456af-1234-5678-abcd-abcdef87fdee\",\"lastUpdateDateTimeUtc\":\"2024-11-22T12:48:56.7684808Z\",\"machineId\":\"de693d7fbdabcdefabcdefcfc9cf40b5bf2da1d8\",\"relatedFileInfo\":null,\"requestSource\":\"Portal\",\"requestor\":\"testuser@example.com\",\"requestorComment\":\"Quick Scan\",\"scope\":\"Quick\",\"status\":\"Succeeded\",\"title\":null,\"troubleshootInfo\":null,\"type\":\"RunAntiVirusScan\"}",
         "outcome": "success",
