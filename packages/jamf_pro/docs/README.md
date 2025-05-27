@@ -104,31 +104,31 @@ An example event for `inventory` looks as following:
 
 ```json
 {
-    "@timestamp": "2024-09-10T16:38:08.084Z",
+    "@timestamp": "2025-05-27T14:11:07.015Z",
     "agent": {
-        "ephemeral_id": "032b2039-1b4d-4eae-b52c-d08936b47ca5",
-        "id": "ba358bea-2bfe-4de2-9315-576d52fe94fc",
-        "name": "elastic-agent-46649",
+        "ephemeral_id": "dab976fe-f898-4ec6-92c6-84b21b4c379a",
+        "id": "16c644f3-4469-4b8d-8ed7-20ccd22185f5",
+        "name": "elastic-agent-58306",
         "type": "filebeat",
-        "version": "8.14.3"
+        "version": "8.13.4"
     },
     "data_stream": {
         "dataset": "jamf_pro.inventory",
-        "namespace": "72595",
+        "namespace": "42032",
         "type": "logs"
     },
     "ecs": {
         "version": "8.11.0"
     },
     "elastic_agent": {
-        "id": "ba358bea-2bfe-4de2-9315-576d52fe94fc",
+        "id": "16c644f3-4469-4b8d-8ed7-20ccd22185f5",
         "snapshot": false,
-        "version": "8.14.3"
+        "version": "8.13.4"
     },
     "event": {
         "agent_id_status": "verified",
         "dataset": "jamf_pro.inventory",
-        "ingested": "2024-09-10T16:38:11Z",
+        "ingested": "2025-05-27T14:11:10Z",
         "kind": "asset"
     },
     "host": {
@@ -164,7 +164,7 @@ An example event for `inventory` looks as following:
                 "remote_management": {
                     "managed": true
                 },
-                "report_date": "2024-06-19T15:54:37.692Z",
+                "report_date": "2024-06-19T15:54:37.68Z",
                 "site": {
                     "id": "-1",
                     "name": "None"
@@ -173,7 +173,7 @@ An example event for `inventory` looks as following:
                 "user_approved_mdm": false
             },
             "id": "3",
-            "udid": "5982CE36-4526-580B-B4B9-ECC6782535BC"
+            "udid": "5982CE36-4526-580B-B4B9-ECC6782535BB"
         }
     },
     "os": {
@@ -182,9 +182,6 @@ An example event for `inventory` looks as following:
     "related": {
         "ip": [
             "10.122.26.87"
-        ],
-        "user": [
-            ""
         ]
     },
     "tags": [
@@ -387,31 +384,32 @@ An example event for `events` looks as following:
 
 ```json
 {
-    "@timestamp": "2024-09-10T16:37:20.274Z",
+    "@timestamp": "2025-05-27T14:10:23.470Z",
     "agent": {
-        "ephemeral_id": "65fb36ce-0e96-4f1f-99fe-5a19a14acfa1",
-        "id": "920d1c20-a89f-4166-b97e-42186275db28",
-        "name": "elastic-agent-21773",
+        "ephemeral_id": "05a484da-a7b8-4044-95c7-faae1b7cffb6",
+        "id": "15f5630f-b7fd-4c63-b4af-730817ddff2d",
+        "name": "elastic-agent-32235",
         "type": "filebeat",
-        "version": "8.14.3"
+        "version": "8.13.4"
     },
     "data_stream": {
         "dataset": "jamf_pro.events",
-        "namespace": "75060",
+        "namespace": "11652",
         "type": "logs"
     },
     "ecs": {
         "version": "8.11.0"
     },
     "elastic_agent": {
-        "id": "920d1c20-a89f-4166-b97e-42186275db28",
+        "id": "15f5630f-b7fd-4c63-b4af-730817ddff2d",
         "snapshot": false,
-        "version": "8.14.3"
+        "version": "8.13.4"
     },
     "event": {
+        "action": "ComputerAdded",
         "agent_id_status": "verified",
         "dataset": "jamf_pro.events",
-        "ingested": "2024-09-10T16:37:21Z",
+        "ingested": "2025-05-27T14:10:24Z",
         "kind": "event",
         "original": "{\"event\":{\"alternateMacAddress\":\"be:aa:e5:54:94:db\",\"building\":\"1S8NPV\",\"department\":\"XDO4C5\",\"deviceName\":\"VPNYC\",\"emailAddress\":\"kghrqq@email.com\",\"ipAddress\":\"89.160.20.156\",\"jssID\":\"1500747557\",\"macAddress\":\"be:aa:e5:54:94:db\",\"managementId\":\"6319330669\",\"model\":\"LJ68RT\",\"osBuild\":\"26.6913\",\"osVersion\":\"92.5786\",\"phone\":\"2183546\",\"position\":\"B64JIO\",\"realName\":\"CPK79\",\"reportedIpAddress\":\"89.160.20.156\",\"room\":\"HQC6S9\",\"serialNumber\":\"7967177\",\"udid\":\"7265694772\",\"userDirectory_id\":\"0389771137\",\"username\":\"John Doe\"},\"webhook\":{\"eventTimestamp\":1725443872001,\"id\":\"8131946016\",\"name\":\"PU17M\",\"webhookEvent\":\"ComputerAdded\"}}"
     },
