@@ -105,6 +105,7 @@ removeOtherPackages() {
       currentPackage=$(basename "${dir}")
       echo "Removing ${currentPackage} from .github/CODEOWNERS"
       sed -i "/^\/packages\/${currentPackage}\//d" .github/CODEOWNERS
+      sed -i "/^\/packages\/${currentPackage} /d" .github/CODEOWNERS
     fi
   done
 }
