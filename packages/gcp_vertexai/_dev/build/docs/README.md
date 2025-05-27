@@ -101,7 +101,7 @@ Now, you can track and monitor different deployment types (provisioned throughpu
 
 ## Logs Datastream
 
-With a properly configured Service Account and the integration setting in place, it's time to start collecting some logs.
+With a properly configured Service Account and the integration setting in place, it's time to start collecting the logs.
 
 ### Requirements
 
