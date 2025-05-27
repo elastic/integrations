@@ -619,7 +619,7 @@ processors:
       if: ctx._tmp?.created_login instanceof List && ctx._tmp.created_login.length == 2
   - set:
       field: user.id
-      copy_from: box.created_by.id
+      copy_from: box.created_by.login
       ignore_empty_value: true
       if: ctx.user?.id == null && ctx.box?.created_by?.type == 'user'
   - append:
@@ -656,10 +656,10 @@ processors:
       field: user.target.domain
       copy_from: _tmp.accessible_login.1
       if: ctx._tmp?.accessible_login instanceof List && ctx._tmp.accessible_login.length == 2
-  - set:
-      field: user.target.id
-      copy_from: box.accessible_by.id
-      ignore_empty_value: true
+  - rename:
+      field: box.accessible_by.login
+      target_field: user.target.id
+      ignore_missing: true
       if: ctx.user?.target?.id == null && ctx.box?.accessible_by?.type == 'user'
   - append:
       field: related.user
