@@ -130,6 +130,61 @@ sqs.notification_parsing_script.source: |
     }
     return evts;
   }
+  function test() {
+    // Test FDR queue
+    var fdrEvents = parse("{\"bucket\":\"fdrBucket\",\"files\":[{\"path\":\"prefix/aidmaster\",\"size\":89118480,\"checksum\":\"d0f566f37295e46f28c75f71ddce9422\"},{\"path\":\"prefix/data\"}]}");
+    if (fdrEvents.length !== 2) {
+      throw "expecting two events";
+    }
+    if (fdrEvents[0].S3.Bucket.Name !== "fdrBucket") {
+        throw "expected bucket === fdrBucket";
+    }
+    if (fdrEvents[0].S3.Object.Key !== "prefix/aidmaster") {
+        throw "expected object key === prefix/aidmaster";
+    }
+    if (fdrEvents[1].S3.Object.Key !== "prefix/data") {
+        throw "expected object key === prefix/data";
+    }
+    // Test S3 -> SQS
+    var sqsEvents = parse("{\"Records\":[{\"eventVersion\":\"2.1\",\"eventSource\":\"aws:s3\",\"awsRegion\":\"us-west-2\",\"eventTime\":\"2025-05-27T11:38:32.511Z\",\"eventName\":\"ObjectCreated:Put\",\"userIdentity\":{\"principalId\":\"AWS:DKASHW31673218\"},\"requestParameters\":{\"sourceIPAddress\":\"81.2.69.142\"},\"responseElements\":{\"x-amz-request-id\":\"adqw312EASDS\",\"x-amz-id-2\":\"SD312ESDAD/ASDASDQX1E21XE/6aeP0eHq4aYCvF\"},\"s3\":{\"s3SchemaVersion\":\"1.0\",\"configurationId\":\"test-sqs-cs-s3-evt-notif-sqs\",\"bucket\":{\"name\":\"test-sqs-cs-s3\",\"ownerIdentity\":{\"principalId\":\"321DSAVDW2E1\"},\"arn\":\"arn:aws:s3:::test-sqs-cs-s3\"},\"object\":{\"key\":\"fdr-sample.log\",\"size\":114782,\"eTag\":\"41cdbd1843a4c49ef0255e2ccd48cb9d\",\"sequencer\":\"006835A4387B4406AF\"}}}]}");
+    if (sqsEvents.length !== 1) {
+      throw "expecting one events";
+    }
+    if (sqsEvents[0].S3.Bucket.Name !== "test-sqs-cs-s3") {
+        throw "expected bucket === test-sqs-cs-s3";
+    }
+    if (sqsEvents[0].S3.Bucket.ARN !== "arn:aws:s3:::test-sqs-cs-s3") {
+        throw "expected Bucket ARN === arn:aws:s3:::test-sqs-cs-s3";
+    }
+    if (sqsEvents[0].S3.Object.Key !== "fdr-sample.log") {
+        throw "expected object key === fdr-sample.log";
+    }
+    // Test S3 -> SNS -> SQS
+    var snsEvents = parse("{\"Type\": \"Notification\",\"MessageId\": \"1066e639-8697-5211-9bbe-86a369b14af5\",\"TopicArn\": \"arn:aws:sns:us-east-2:11111111111:test-crowds-sns\",\"Subject\": \"Amazon S3 Notification\",\"Message\": \"{\\\"Records\\\":[{\\\"eventVersion\\\":\\\"2.1\\\",\\\"eventSource\\\":\\\"aws:s3\\\",\\\"awsRegion\\\":\\\"us-east-2\\\",\\\"eventTime\\\":\\\"2025-05-11T18:31:01.609Z\\\",\\\"eventName\\\":\\\"ObjectCreated:Put\\\",\\\"userIdentity\\\":{\\\"principalId\\\":\\\"AWS:PRINCIPALID\\\"},\\\"requestParameters\\\":{\\\"sourceIPAddress\\\":\\\"81.2.69.192\\\"},\\\"responseElements\\\":{\\\"x-amz-request-id\\\":\\\"dsaddwqdqd\\\",\\\"x-amz-id-2\\\":\\\"w1esdasdadpY=\\\"},\\\"s3\\\":{\\\"s3SchemaVersion\\\":\\\"1.0\\\",\\\"configurationId\\\":\\\"test-crowds-s3-notif\\\",\\\"bucket\\\":{\\\"name\\\":\\\"test-crowds-s3-buck\\\",\\\"ownerIdentity\\\":{\\\"principalId\\\":\\\"asdascedqwdq\\\"},\\\"arn\\\":\\\"arn:aws:s3:::test-crowds-s3-buck\\\"},\\\"object\\\":{\\\"key\\\":\\\"fdr-0_userinfo.log\\\",\\\"size\\\":489,\\\"eTag\\\":\\\"349c96ed5531edce2233ad417123736d\\\",\\\"sequencer\\\":\\\"006820ECE595B767EC\\\"}}}]}\",\"Timestamp\": \"2025-05-11T18:31:02.037Z\",\"SignatureVersion\": \"1\",\"Signature\": \"W131adsfwefQSF223SAsdddsaas+dsdadfadqweweweaxaDSCQQW==\",\"SigningCertURL\": \"https://sns.us-east-2.amazonaws.com/SimpleNotificationService-9c6465fa7f48f5cacd23014631ec1136.pem\",\"UnsubscribeURL\": \"https://sns.us-east-2.amazonaws.com/?Action=Unsubscribe&SubscriptionArn=arn:aws:sns:us-east-2:11111111111:test-crowds-sns:c2e6ff87-e009-4694-866a-5ceb79691a01\"}");
+    if (snsEvents.length !== 1) {
+      throw "expecting one events";
+    }
+    if (snsEvents[0].S3.Bucket.Name !== "test-crowds-s3-buck") {
+        throw "expected bucket === test-crowds-s3-buck";
+    }
+    if (snsEvents[0].AWSRegion !== "us-east-2") {
+        throw "expected AWS region === us-east-2";
+    }
+    // Test S3 -> EventBridge -> SQS
+    var ebEvents = parse("{\"version\":\"0\",\"id\":\"78fee647-ef01-0e61-507f-d19baef343f5\",\"detail-type\":\"Object Created\",\"source\":\"aws.s3\",\"account\":\"11111111111\",\"time\":\"2025-05-11T19:26:39Z\",\"region\":\"ap-south-1\",\"resources\":[\"arn:aws:s3:::test-eb-crowds-s3-buck\"],\"detail\":{\"version\":\"0\",\"bucket\":{\"name\":\"test-eb-crowds-s3-buck\"},\"object\":{\"key\":\"fdr-0_aidmaster.log\",\"size\":4414,\"etag\":\"a06a88462e6950f0be3bb83230047e87\",\"sequencer\":\"006820F9EF8D8284D4\"},\"request-id\":\"321987SDASD1W9\",\"requester\":\"11111111111\",\"source-ip-address\":\"89.160.20.128\",\"reason\":\"PutObject\"}}");
+    if (ebEvents.length !== 1) {
+      throw "expecting one events";
+    }
+    if (ebEvents[0].S3.Bucket.Name !== "test-eb-crowds-s3-buck") {
+        throw "expected bucket === test-eb-crowds-s3-buck";
+    }
+    if (ebEvents[0].S3.Bucket.ARN !== "arn:aws:s3:::test-eb-crowds-s3-buck") {
+        throw "expected Bucket ARN === arn:aws:s3:::test-eb-crowds-s3-buck";
+    }
+    if (ebEvents[0].S3.Object.Key !== "fdr-0_aidmaster.log") {
+        throw "expected object key === fdr-0_aidmaster.log";
+    }
+  }
 {{#if tags.length}}
 tags:
 {{else}}
