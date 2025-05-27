@@ -20,7 +20,8 @@ Before using any GCP integration you will need:
 
 ### Service Account
 
-First, you need to [create a Service Account](https://cloud.google.com/iam/docs/creating-managing-service-accounts). A Service Account (SA) is a particular type of Google account intended to represent a non-human user who needs to access the GCP resources.
+First, you need to [create a Service Account](https://cloud.google.com/iam/docs/creating-managing-service-accounts). Service Accounts (SAs) are [principals](https://cloud.google.com/iam/docs/principals-overview) in Google Cloud, enabling you to grant them access to resources through IAM policies.
+
 
 The Elastic Agent uses the SA to access data on Google Cloud Platform using the Google APIs.
 
@@ -111,7 +112,7 @@ You need to create a few dedicated Google Cloud resources before starting, in de
 - Subscription
 
 
-Here's an example of collecting Vertex AI Audit Logs using a Pub/Sub topic, a subscription, and a Log Router. We will create the resources in the Google Cloud Console and then configure the Google Cloud Platform integration.
+Here's an example of collecting Vertex AI auditlogs using a Pub/Sub topic, a subscription, and a Log Router. We will create the resources in the Google Cloud Console and then configure the Google Cloud Platform integration.
 
 ### On the Google Cloud Console
 
@@ -121,7 +122,7 @@ At a high level, the steps required are:
 - In "Sink destination", select "Cloud Pub/Sub topic" as the sink service. Select an existing topic or "Create a topic". Note the topic name, as it will be provided in the Topic field in the Elastic agent configuration.
 - If you created a new topic, you must remember to go to that topic and create a subscription for it. A subscription directs messages on a topic to subscribers. Note the "Subscription ID", as it will need to be entered in the "Subscription name" field in the integration settings.
 - Under "Choose logs to include in sink", for example add `resource.labels.service=aiplatform.googleapis.com` and
-`resource.type="audited_resource"` in the "Inclusion filter" to include all audit logs.
+`resource.type="audited_resource"` in the "Inclusion filter" to include all auditlogs.
 
 This is just an example to create your filter expression to select the Vertex AI auditlogs  you want to export to the Pub/Sub topic.
 
