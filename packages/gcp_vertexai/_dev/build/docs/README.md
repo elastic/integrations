@@ -66,7 +66,7 @@ The Project Id is the Google Cloud project ID where your resources exist.
 
 ### Credentials File vs Json
 
-Based on your preference, specify the information in either the Credentials File OR the Credentials JSON field.
+Based on your preference, specify the information in either the Credentials File or the Credentials JSON field.
 
 #### Option 1: Credentials File
 
