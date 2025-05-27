@@ -50,7 +50,7 @@ processors:
       field: _tmp.dissectgrok
       tag: 'grok_parse_log_dissectgrok'
       patterns:
-        - '^%{NUMBER:http.response.status_code} (-|%{POSINT:destination.bytes})(?: ms:%{NUMBER:http.request.process_time})?(?: %{GREEDYDATA:_tmp.grok})?$'
+        - '^%{NUMBER:http.response.status_code} (-|%{POSINT:destination.bytes})(?: ms:%{NUMBER:apache_tomcat.access.request_process_time})?(?: %{GREEDYDATA:_tmp.grok})?$'
       on_failure:
         - append:
             field: error.message
@@ -103,7 +103,7 @@ processors:
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag fail-{{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - convert:
-      field: http.request.process_time
+      field: apache_tomcat.access.request_process_time
       tag: 'convert_request.process_time_to_double'
       type: double
       ignore_missing: true

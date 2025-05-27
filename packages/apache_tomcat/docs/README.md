@@ -261,11 +261,11 @@ Please refer to the following [document](https://www.elastic.co/guide/en/ecs/cur
 | apache_tomcat.access.http.ident | Remote logical username from identd. | keyword |  |
 | apache_tomcat.access.http.useragent | The user id of the authenticated user requesting the page (if HTTP authentication is used). | keyword |  |
 | apache_tomcat.access.ip.local | Local IP address. | ip |  |
-| apache_tomcat.access.response_time | Response time of the endpoint. | double | s |
+| apache_tomcat.access.request_process_time | Time taken to process the request, in millis | double | ms |
+| apache_tomcat.access.response_time | Time taken to commit the response, in millis | double | ms |
 | data_stream.dataset | Data stream dataset. | constant_keyword |  |
 | data_stream.namespace | Data stream namespace. | constant_keyword |  |
 | data_stream.type | Data stream type. | constant_keyword |  |
-| http.request.process_time | Time taken to process the request, in millis | double | ms |
 | input.type | Type of Filebeat input. | keyword |  |
 | log.file.device_id | ID of the device containing the filesystem where the file resides. | keyword |  |
 | log.file.fingerprint | The sha256 fingerprint identity of the file when fingerprinting is enabled. | keyword |  |
