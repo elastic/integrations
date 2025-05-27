@@ -112,7 +112,7 @@ You need to create a few dedicated Google Cloud resources before starting, in de
 - Subscription
 
 
-Here's an example of collecting VertexAI Audit Logs using a Pub/Sub topic, a subscription, and a Log Router. We will create the resources in the Google Cloud Console and then configure the Google Cloud Platform integration.
+Here's an example of collecting Vertex AI Audit Logs using a Pub/Sub topic, a subscription, and a Log Router. We will create the resources in the Google Cloud Console and then configure the Google Cloud Platform integration.
 
 ### On the Google Cloud Console
 
