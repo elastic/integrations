@@ -153,22 +153,22 @@ An example event for `ioc_stream` looks as following:
 {
     "@timestamp": "2024-12-16T07:54:23.000Z",
     "agent": {
-        "ephemeral_id": "077a2f5c-6866-405a-9597-b0c5f481227c",
-        "id": "b2ea53e1-aa9e-421f-9c38-7b91fd7fbfe5",
-        "name": "elastic-agent-80374",
+        "ephemeral_id": "9bc22935-ee66-4440-9570-ed56393b4124",
+        "id": "aa105929-b5d4-4165-8366-9472cc093a63",
+        "name": "elastic-agent-54349",
         "type": "filebeat",
         "version": "8.17.3"
     },
     "data_stream": {
         "dataset": "ti_google_threat_intelligence.ioc_stream",
-        "namespace": "46112",
+        "namespace": "28218",
         "type": "logs"
     },
     "ecs": {
         "version": "8.17.0"
     },
     "elastic_agent": {
-        "id": "b2ea53e1-aa9e-421f-9c38-7b91fd7fbfe5",
+        "id": "aa105929-b5d4-4165-8366-9472cc093a63",
         "snapshot": false,
         "version": "8.17.3"
     },
@@ -178,7 +178,7 @@ An example event for `ioc_stream` looks as following:
             "threat"
         ],
         "dataset": "ti_google_threat_intelligence.ioc_stream",
-        "ingested": "2025-05-19T16:43:19Z",
+        "ingested": "2025-05-25T16:49:40Z",
         "kind": "enrichment",
         "original": "{\"attributes\":{\"available_tools\":[],\"downloadable\":true,\"exiftool\":{\"FileType\":\"TXT\",\"FileTypeExtension\":\"txt\",\"LineCount\":\"1\",\"MIMEEncoding\":\"us-ascii\",\"MIMEType\":\"text/plain\",\"Newlines\":\"(none)\",\"WordCount\":\"1\"},\"first_seen_itw_date\":1707511993,\"first_submission_date\":1648544390,\"gti_assessment\":{\"contributing_factors\":{\"associated_actor\":[\"source\",\"javascript\",\"js\"],\"mandiant_association_actor\":true,\"mandiant_confidence_score\":75},\"description\":\"This indicator did not match our detection criteria and there is currently no evidence of malicious activity.\",\"severity\":{\"value\":\"SEVERITY_NONE\"},\"threat_score\":{\"value\":1},\"verdict\":{\"value\":\"VERDICT_UNDETECTED\"}},\"last_analysis_date\":1648544390,\"last_analysis_stats\":{\"confirmed-timeout\":0,\"failure\":0,\"harmless\":0,\"malicious\":0,\"suspicious\":0,\"timeout\":0,\"type-unsupported\":16,\"undetected\":57},\"last_modification_date\":1734335663,\"last_seen_itw_date\":1707512002,\"last_submission_date\":1648544390,\"magic\":\"ASCII text, with no line terminators\",\"mandiant_ic_score\":75,\"md5\":\"1e1d23c4e7524bc15a0b3ced0caf9ffc\",\"meaningful_name\":\"Password[1].htm\",\"names\":[\"Password[1].htm\"],\"reputation\":0,\"sha1\":\"4e234b019b77a4f04c168734a60e0b1883989215\",\"sha256\":\"841d999a7a7f0b2cd8bc21e6550fedee985bf53a530fef1033d1c4810b0be5bc\",\"size\":11,\"ssdeep\":\"3:EsaM:t\",\"tags\":[\"javascript\"],\"times_submitted\":1,\"total_votes\":{\"harmless\":0,\"malicious\":0},\"type_description\":\"JavaScript\",\"type_extension\":\"js\",\"type_tag\":\"javascript\",\"type_tags\":[\"source\",\"javascript\",\"js\"],\"unique_sources\":1,\"vhash\":\"9eecb7db59d16c80417c72d1e1f4fbf1\"},\"context_attributes\":{\"hunting_info\":null,\"notification_date\":1742528463,\"notification_id\":\"21769600967\",\"origin\":\"subscriptions\",\"sources\":[{\"id\":\"threat-actor--bfd69ac3-0158-57d3-a101-42496712ddae\",\"label\":\"UNC4515\",\"type\":\"collection\"}],\"tags\":[]},\"id\":\"841d999a7a7f0b2cd8bc21e6550fedee985bf53a530fef1033d1c4810b0be5bc\",\"links\":{\"self\":\"https://www.virustotal.com/api/v3/files/841d999a7a7f0b2cd8bc21e6550fedee985bf53a530fef1033d1c4810b0be5bc\"},\"type\":\"file\"}",
         "type": [
@@ -488,8 +488,8 @@ An example event for `ioc_stream` looks as following:
 | gti.ioc_stream.attributes.last_https_certificate.tags | A list of descriptive tags associated with the certificate, such as self-signed, wildcard, or Let's Encrypt. | keyword |
 | gti.ioc_stream.attributes.last_https_certificate.thumbprint | The SHA-1 fingerprint (hash) of the certificate, used for quick identification. | keyword |
 | gti.ioc_stream.attributes.last_https_certificate.thumbprint_sha256 | The SHA-256 fingerprint (hash) of the certificate, offering a more secure alternative to SHA-1. | keyword |
-| gti.ioc_stream.attributes.last_https_certificate.validity.not_after | The expiration date of the certificate. | keyword |
-| gti.ioc_stream.attributes.last_https_certificate.validity.not_before | The issue date of the certificate. | keyword |
+| gti.ioc_stream.attributes.last_https_certificate.validity.not_after | The expiration date of the certificate. | date |
+| gti.ioc_stream.attributes.last_https_certificate.validity.not_before | The issue date of the certificate. | date |
 | gti.ioc_stream.attributes.last_https_certificate.version | The X.509 version of the certificate (commonly 3 for modern certificates). | keyword |
 | gti.ioc_stream.attributes.last_https_certificate_date | The timestamp indicating when VirusTotal last retrieved the HTTPS certificate for the domain. | date |
 | gti.ioc_stream.attributes.last_modification_date | The date when the artifact was last modified, represented as a Unix epoch timestamp. | date |
@@ -555,7 +555,6 @@ An example event for `ioc_stream` looks as following:
 | gti.ioc_stream.attributes.severity_data.num_gav_detections | The number of Google antivirus detections, if available. | long |
 | gti.ioc_stream.attributes.sha1 | The SHA-1 hash of the file, serving as a unique identifier for the file's content. | keyword |
 | gti.ioc_stream.attributes.sha256 | The SHA-256 hash of the file, serving as a unique identifier for the file's content. | keyword |
-| gti.ioc_stream.attributes.sigma_analysis_results.match_context.Signature | Contains the name of the digital certificate used to sign the file or process. . | keyword |
 | gti.ioc_stream.attributes.sigma_analysis_results.match_context.command_line | Captures command-line arguments from a detected process execution. | keyword |
 | gti.ioc_stream.attributes.sigma_analysis_results.match_context.company | Contains the official company name that signed or developed the file, based on metadata. | keyword |
 | gti.ioc_stream.attributes.sigma_analysis_results.match_context.creation_time | Represents the creation timestamp of the matched entity. | date |
@@ -578,8 +577,8 @@ An example event for `ioc_stream` looks as following:
 | gti.ioc_stream.attributes.sigma_analysis_results.match_context.logon_guid | A globally unique identifier (GUID) assigned to a specific user logon session in Windows. | keyword |
 | gti.ioc_stream.attributes.sigma_analysis_results.match_context.original_file_name | Represents the original name of the file as specified in its metadata. | keyword |
 | gti.ioc_stream.attributes.sigma_analysis_results.match_context.param1 | Represents an extracted parameter from the event logs, process execution, or command-line arguments that triggered the Sigma rule. | keyword |
-| gti.ioc_stream.attributes.sigma_analysis_results.match_context.parentImage | The full path of the parent process that created or executed the detected process. | keyword |
 | gti.ioc_stream.attributes.sigma_analysis_results.match_context.parent_command_line | Captures the command line arguments of the parent process that executed the detected file. | keyword |
+| gti.ioc_stream.attributes.sigma_analysis_results.match_context.parent_image | The full path of the parent process that created or executed the detected process. | keyword |
 | gti.ioc_stream.attributes.sigma_analysis_results.match_context.parent_process_guid | A globally unique identifier (GUID) assigned to the parent process of the detected activity. | keyword |
 | gti.ioc_stream.attributes.sigma_analysis_results.match_context.process_guid | This field represents the globally unique identifier (GUID) assigned to the process involved in the event. | keyword |
 | gti.ioc_stream.attributes.sigma_analysis_results.match_context.process_id | This field represents the unique identifier assigned by the operating system to the process involved in the event. . | long |
@@ -589,6 +588,7 @@ An example event for `ioc_stream` looks as following:
 | gti.ioc_stream.attributes.sigma_analysis_results.match_context.query_results | Represents the output or result data from an executed query. | keyword |
 | gti.ioc_stream.attributes.sigma_analysis_results.match_context.query_status | Represents the status or result of a query performed as part of Sigma rule detection. | keyword |
 | gti.ioc_stream.attributes.sigma_analysis_results.match_context.rule_name | This field contains the name of the Sigma rule that matched the event. | keyword |
+| gti.ioc_stream.attributes.sigma_analysis_results.match_context.signature | Contains the name of the digital certificate used to sign the file or process. | keyword |
 | gti.ioc_stream.attributes.sigma_analysis_results.match_context.signature_status | Indicates whether a file or process has a valid digital signature. | keyword |
 | gti.ioc_stream.attributes.sigma_analysis_results.match_context.signed | Indicates whether the file or process is digitally signed. | boolean |
 | gti.ioc_stream.attributes.sigma_analysis_results.match_context.source_hostname | This field specifies the hostname of the source system involved in the event. | keyword |
@@ -648,16 +648,22 @@ An example event for `ioc_stream` looks as following:
 | gti.ioc_stream.attributes.vendor_categories.sophos | Classification by Sophos, a cybersecurity vendor providing endpoint protection and threat intelligence. | keyword |
 | gti.ioc_stream.attributes.vendor_categories.webroot | Verdict assigned by Webroot, a cybersecurity firm specializing in cloud-based threat intelligence. | keyword |
 | gti.ioc_stream.attributes.whois_date | The timestamp of the last WHOIS record update for the domain. | date |
-| gti.ioc_stream.context_attributes.hunting_info | Provides additional information for notifications originating from hunting activities. | keyword |
+| gti.ioc_stream.context_attributes.hunting_info.rule_name | Matched rule name. | keyword |
+| gti.ioc_stream.context_attributes.hunting_info.rule_tags | Matched rule tags. | keyword |
+| gti.ioc_stream.context_attributes.hunting_info.snippet | Additional context about surrounding bytes in the match. | keyword |
+| gti.ioc_stream.context_attributes.hunting_info.source_country | Country where the matched file was uploaded from. | keyword |
+| gti.ioc_stream.context_attributes.hunting_info.source_key | Unique identifier for the source in ciphered form. | keyword |
 | gti.ioc_stream.context_attributes.notification_date | Timestamp (UTC) when the notification was generated. | date |
 | gti.ioc_stream.context_attributes.notification_id | Unique identifier for the notification. | long |
 | gti.ioc_stream.context_attributes.origin | Specifies the origin of the notification, such as "hunting" for Livehunt or Retrohunt matches. | keyword |
 | gti.ioc_stream.context_attributes.sources.id | Identifier of the source object that triggered the notification. | keyword |
 | gti.ioc_stream.context_attributes.sources.label | Label describing the source (if available). | keyword |
 | gti.ioc_stream.context_attributes.sources.type | Type of the source object, e.g., "hunting_ruleset" or "collection". | keyword |
+| gti.ioc_stream.context_attributes.tags | List of notification's tags. | keyword |
 | gti.ioc_stream.id | A unique identifier assigned to the specific object in the stream. | keyword |
 | gti.ioc_stream.type | Specifies the type of the object being reported in the stream. | keyword |
 | gti.ioc_stream.vhash | Represents the VirusTotal hash, a hash-based signature uniquely identifying files with similar or identical content. | keyword |
 | input.type | Type of filebeat input. | keyword |
+| labels.is_transform_source | Distinguishes between documents that are a source for a transform and documents that are an output of a transform, to facilitate easier filtering. | constant_keyword |
 | log.offset | Log offset. | long |
 

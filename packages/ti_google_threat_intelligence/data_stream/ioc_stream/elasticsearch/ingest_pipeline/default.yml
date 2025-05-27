@@ -467,11 +467,6 @@ processors:
       tag: rename_attributes_exiftool_OSVersion
       target_field: gti.ioc_stream.attributes.exiftool.os_version
       ignore_missing: true
-  - set:
-      field: os.version
-      tag: set_os_version_from_ioc_stream_attributes_exiftool_os_version
-      copy_from: gti.ioc_stream.attributes.exiftool.os_version
-      ignore_empty_value: true
   - rename:
       field: json.attributes.exiftool.PEType
       tag: rename_attributes_exiftool_PEType
@@ -853,16 +848,28 @@ processors:
       tag: rename_attributes_last_https_certificate_thumbprint_sha256
       target_field: gti.ioc_stream.attributes.last_https_certificate.thumbprint_sha256
       ignore_missing: true
-  - rename:
+  - date:
       field: json.attributes.last_https_certificate.validity.not_after
-      tag: rename_attributes_last_https_certificate_validity_not_after
+      tag: date_attributes_last_https_certificate_validity_not_after
       target_field: gti.ioc_stream.attributes.last_https_certificate.validity.not_after
-      ignore_missing: true
-  - rename:
+      formats:
+        - yyyy-MM-dd HH:mm:ss
+      if: ctx.json?.attributes?.last_https_certificate?.validity?.not_after != null && ctx.json.attributes.last_https_certificate.validity.not_after != ''
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - date:
       field: json.attributes.last_https_certificate.validity.not_before
-      tag: rename_attributes_last_https_certificate_validity_not_before
+      tag: date_attributes_last_https_certificate_validity_not_before
       target_field: gti.ioc_stream.attributes.last_https_certificate.validity.not_before
-      ignore_missing: true
+      formats:
+        - yyyy-MM-dd HH:mm:ss
+      if: ctx.json?.attributes?.last_https_certificate?.validity?.not_before != null && ctx.json.attributes.last_https_certificate.validity.not_before != ''
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - rename:
       field: json.attributes.last_https_certificate.version
       tag: rename_attributes_last_https_certificate_version
@@ -1195,7 +1202,7 @@ processors:
               tag: date_attributes_sigma_analysis_results_match_context_values_CreationUtcTime
               target_field: _ingest._value.creation_time
               formats:
-                - UTC
+                - UNIX
               on_failure:
                 - remove:
                     field: _ingest._value.values.CreationUtcTime
@@ -1671,7 +1678,7 @@ processors:
             rename:
               field: _ingest._value.values.ParentImage
               tag: rename_attributes_sigma_analysis_results_match_context_values_ParentImage
-              target_field: _ingest._value.parentImage
+              target_field: _ingest._value.parent_image
               ignore_missing: true
   - foreach:
       field: json.attributes.sigma_analysis_results
@@ -1819,7 +1826,7 @@ processors:
             rename:
               field: _ingest._value.values.Signature
               tag: rename_attributes_sigma_analysis_results_match_context_values_Signature
-              target_field: _ingest._value.Signature
+              target_field: _ingest._value.signature
               ignore_missing: true
   - foreach:
       field: json.attributes.sigma_analysis_results
@@ -1853,6 +1860,8 @@ processors:
                 - _ingest._value.values.SourceIsIpv6
                 - _ingest._value.values.SourcePort
                 - _ingest._value.values.UtcTime
+                - _ingest._value.values.TerminalSessionId
+                - _ingest._value.values.CreationUtcTime
               tag: remove_attributes_sigma_analysis_results_match_context
               ignore_missing: true
   - rename:
@@ -2184,9 +2193,34 @@ processors:
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - rename:
-      field: json.context_attributes.hunting_info
-      tag: rename_context_attributes_hunting_info
-      target_field: gti.ioc_stream.context_attributes.hunting_info
+      field: json.context_attributes.hunting_info.rule_name
+      tag: rename_context_attributes_hunting_info_rule_name
+      target_field: gti.ioc_stream.context_attributes.hunting_info.rule_name
+      ignore_missing: true
+  - rename:
+      field: json.context_attributes.hunting_info.rule_tags
+      tag: rename_context_attributes_hunting_info_rule_tags
+      target_field: gti.ioc_stream.context_attributes.hunting_info.rule_tags
+      ignore_missing: true
+  - rename:
+      field: json.context_attributes.hunting_info.snippet
+      tag: rename_context_attributes_hunting_info_snippet
+      target_field: gti.ioc_stream.context_attributes.hunting_info.snippet
+      ignore_missing: true
+  - rename:
+      field: json.context_attributes.hunting_info.source_country
+      tag: rename_context_attributes_hunting_info_source_country
+      target_field: gti.ioc_stream.context_attributes.hunting_info.source_country
+      ignore_missing: true
+  - rename:
+      field: json.context_attributes.hunting_info.source_key
+      tag: rename_context_attributes_hunting_info_source_key
+      target_field: gti.ioc_stream.context_attributes.hunting_info.source_key
+      ignore_missing: true
+  - rename:
+      field: json.context_attributes.tags
+      tag: rename_context_attributes_tags
+      target_field: gti.ioc_stream.context_attributes.tags
       ignore_missing: true
   - date:
       field: json.context_attributes.notification_date
@@ -2291,11 +2325,6 @@ processors:
       allow_duplicates: false
   - append:
       field: related.hash
-      tag: append_data_attributes_network
-      value: '{{{gti.ioc_stream.attributes.network}}}'
-      allow_duplicates: false
-  - append:
-      field: related.hash
       tag: append_data_attributes_pe_info_imphash
       value: '{{{gti.ioc_stream.attributes.pe_info.imphash}}}'
       allow_duplicates: false
@@ -2329,6 +2358,17 @@ processors:
       tag: append_data_vhash
       value: '{{{gti.ioc_stream.vhash}}}'
       allow_duplicates: false
+  - append:
+      field: related.hash
+      tag: append_attributes_jarm
+      value: '{{{gti.ioc_stream.attributes.jarm}}}'
+      allow_duplicates: false
+  - append:
+      field: related.hash
+      tag: append_id
+      value: '{{{gti.ioc_stream.id}}}'
+      allow_duplicates: false
+      if: ctx.gti?.ioc_stream?.type == 'url'
   - set:
       field: threat.feed.name
       tag: set_threat_feed_name
@@ -2362,14 +2402,9 @@ processors:
       copy_from: gti.ioc_stream.attributes.country
       ignore_empty_value: true
   - set:
-      field: threat.indicator.geo.continent_name
-      tag: set_threat_indicator_geo_continent_name_from_ioc_stream_attributes_continent
+      field: threat.indicator.geo.continent_code
+      tag: set_threat_indicator_geo_continent_code_from_ioc_stream_attributes_continent
       copy_from: gti.ioc_stream.attributes.continent
-      ignore_empty_value: true
-  - set:
-      field: threat.indicator.geo.country_name
-      tag: set_threat_indicator_geo_country_name_from_ioc_stream_attributes_country
-      copy_from: gti.ioc_stream.attributes.country
       ignore_empty_value: true
   - append:
       field: threat.indicator.id
@@ -2389,7 +2424,7 @@ processors:
   - append:
       field: related.hosts
       tag: append_data_id_domain
-      value: '{{{gti.ioc_stream.type}}}'
+      value: '{{{gti.ioc_stream.id}}}'
       allow_duplicates: false
       if: ctx.gti?.ioc_stream?.type == 'domain'
   - set:
@@ -2398,6 +2433,11 @@ processors:
       copy_from: gti.ioc_stream.id
       if: ctx.gti?.ioc_stream?.type == 'file'
       ignore_empty_value: true
+  - append:
+      field: related.hash
+      tag: append_file_hash_sha256
+      value: '{{{threat.indicator.file.hash.sha256}}}'
+      allow_duplicates: false
   - set:
       field: threat.indicator.ip
       tag: set_threat_indicator_ip_from_ioc_stream_id

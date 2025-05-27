@@ -548,10 +548,10 @@
                   type: group
                   fields:
                     - name: not_after
-                      type: keyword
+                      type: date
                       description: The expiration date of the certificate.
                     - name: not_before
-                      type: keyword
+                      type: date
                       description: The issue date of the certificate.
                 - name: version
                   type: keyword
@@ -793,11 +793,10 @@
                 - name: match_context
                   type: group
                   fields:
-                    - name: Signature
+                    - name: signature
                       type: keyword
                       description: |-
                         Contains the name of the digital certificate used to sign the file or process.
-                        .
                     - name: command_line
                       type: keyword
                       description: Captures command-line arguments from a detected process execution.
@@ -864,7 +863,7 @@
                     - name: param1
                       type: keyword
                       description: Represents an extracted parameter from the event logs, process execution, or command-line arguments that triggered the Sigma rule.
-                    - name: parentImage
+                    - name: parent_image
                       type: keyword
                       description: The full path of the parent process that created or executed the detected process.
                     - name: parent_command_line
@@ -1090,8 +1089,23 @@
           type: group
           fields:
             - name: hunting_info
-              type: keyword
-              description: Provides additional information for notifications originating from hunting activities.
+              type: group
+              fields:
+                - name: rule_name
+                  type: keyword
+                  description: Matched rule name.
+                - name: rule_tags
+                  type: keyword
+                  description: Matched rule tags.
+                - name: snippet
+                  type: keyword
+                  description: Additional context about surrounding bytes in the match.
+                - name: source_country
+                  type: keyword
+                  description: Country where the matched file was uploaded from.
+                - name: source_key
+                  type: keyword
+                  description: Unique identifier for the source in ciphered form.
             - name: notification_date
               type: date
               description: Timestamp (UTC) when the notification was generated.
@@ -1113,9 +1127,12 @@
                 - name: type
                   type: keyword
                   description: Type of the source object, e.g., "hunting_ruleset" or "collection".
+            - name: tags
+              type: keyword
+              description: List of notification's tags.
         - name: id
           type: keyword
-          description: A unique identifier assigned to the specific object in the stream.
+          description: A unique identifier assigned to the specific object in the stream.         
         - name: type
           type: keyword
           description: Specifies the type of the object being reported in the stream.

@@ -141,14 +141,9 @@ processors:
       copy_from: gti.threat.indicator.attributes.country
       ignore_empty_value: true
   - set:
-      field: threat.indicator.geo.continent_name
-      tag: set_threat_indicator_geo_continent_name_from_threat_indicator_attributes_continent
+      field: threat.indicator.geo.continent_code
+      tag: set_threat_indicator_geo_continent_code_from_threat_indicator_attributes_continent
       copy_from: gti.threat.indicator.attributes.continent
-      ignore_empty_value: true
-  - set:
-      field: threat.indicator.geo.country_name
-      tag: set_threat_indicator_geo_country_name_from_threat_indicator_attributes_country
-      copy_from: gti.threat.indicator.attributes.country
       ignore_empty_value: true
   - append:
       field: threat.indicator.id
@@ -159,7 +154,7 @@ processors:
   - append:
       field: related.hosts
       tag: append_data_id_domain
-      value: '{{{gti.threat.indicator.type}}}'
+      value: '{{{gti.threat.indicator.id}}}'
       allow_duplicates: false
       if: ctx.gti?.ioc_stream?.type == 'domain'
   - set:
@@ -176,13 +171,13 @@ processors:
       field: threat.indicator.file.hash.sha256
       tag: set_threat_indicator_file_hash_sha256_from_threat_indicator_id
       copy_from: gti.threat.indicator.id
-      if: ctx.gti?.threat?.indicator?.type != null && ctx.gti?.threat?.indicator?.type == 'file'
+      if: ctx.gti?.threat?.indicator?.type == 'file'
       ignore_empty_value: true
   - set:
       field: threat.indicator.ip
       tag: set_threat_indicator_ip_from_threat_indicator_id
       copy_from: gti.threat.indicator.id
-      if: ctx.gti?.threat?.indicator?.type != null && ctx.gti?.threat?.indicator?.type == 'ip_address'
+      if: ctx.gti?.threat?.indicator?.type == 'ip_address'
       ignore_empty_value: true
   - set:
       field: threat.indicator.first_seen
@@ -190,12 +185,6 @@ processors:
       copy_from: gti.threat.indicator.attributes.first_seen_itw_date
       if: ctx.gti?.threat?.indicator?.attributes?.first_seen_itw_date != null
       ignore_empty_value: true
-  - append:
-      field: related.ip
-      tag: append_data_threat.indicator.ip
-      value: '{{{threat.indicator.ip}}}'
-      allow_duplicates: false
-      if: ctx.threat?.indicator?.ip != null
   - script:
       description: Set threat indicator type from gti ioc stream type.
       if: ctx.gti?.threat?.indicator?.type != null
@@ -221,34 +210,174 @@ processors:
 # Create ECS-compliant mappings for threat.indicator fields.
   - append:
       field: related.hash
+      tag: append_data_attributes_authentihash
+      value: '{{{gti.threat.indicator.attributes.authentihash}}}'
+      allow_duplicates: false
+  - append:
+      field: related.hash
+      tag: append_data_attributes_favicon_dhash
+      value: '{{{gti.threat.indicator.attributes.favicon.dhash}}}'
+      allow_duplicates: false
+  - append:
+      field: related.hash
+      tag: append_data_attributes_favicon_raw_md5
+      value: '{{{gti.threat.indicator.attributes.favicon.raw_md5}}}'
+      allow_duplicates: false
+  - append:
+      field: related.hash
+      tag: append_data_attributes_filecondis_dhash
+      value: '{{{gti.threat.indicator.attributes.filecondis.dhash}}}'
+      allow_duplicates: false
+  - append:
+      field: related.hash
+      tag: append_data_attributes_filecondis_raw_md5
+      value: '{{{gti.threat.indicator.attributes.filecondis.raw_md5}}}'
+      allow_duplicates: false
+  - append:
+      field: related.hash
+      tag: append_data_attributes_last_http_response_content_sha256
+      value: '{{{gti.threat.indicator.attributes.last_http_response_content_sha256}}}'
+      allow_duplicates: false
+  - append:
+      field: related.hash
+      tag: append_data_attributes_last_https_certificate_thumbprint
+      value: '{{{gti.threat.indicator.attributes.last_https_certificate.thumbprint}}}'
+      allow_duplicates: false
+  - append:
+      field: related.hash
+      tag: append_id
+      value: '{{{gti.threat.indicator.id}}}'
+      allow_duplicates: false
+      if: ctx.gti?.threat?.indicator?.type == 'url'
+  - append:
+      field: related.hash
+      tag: append_data_attributes_last_https_certificate_thumbprint_sha256
+      value: '{{{gti.threat.indicator.attributes.last_https_certificate.thumbprint_sha256}}}'
+      allow_duplicates: false
+  - append:
+      field: related.hash
+      tag: append_data_attributes_main_icon_dhash
+      value: '{{{gti.threat.indicator.attributes.main_icon.dhash}}}'
+      allow_duplicates: false
+  - append:
+      field: related.hash
+      tag: append_data_attributes_main_icon_raw_md5
+      value: '{{{gti.threat.indicator.attributes.main_icon.raw_md5}}}'
+      allow_duplicates: false
+  - append:
+      field: related.hash
+      tag: append_data_attributes_md5
+      value: '{{{gti.threat.indicator.attributes.md5}}}'
+      allow_duplicates: false
+  - append:
+      field: related.hash
+      tag: append_data_attributes_pe_info_imphash
+      value: '{{{gti.threat.indicator.attributes.pe_info.imphash}}}'
+      allow_duplicates: false
+  - append:
+      field: related.hash
+      tag: append_data_attributes_pe_info_rich_pe_header_hash
+      value: '{{{gti.threat.indicator.attributes.pe_info.rich_pe_header_hash}}}'
+      allow_duplicates: false
+  - append:
+      field: related.hash
+      tag: append_data_attributes_sha1
+      value: '{{{gti.threat.indicator.attributes.sha1}}}'
+      allow_duplicates: false
+  - append:
+      field: related.hash
+      tag: append_data_attributes_sha256
+      value: '{{{gti.threat.indicator.attributes.sha256}}}'
+      allow_duplicates: false
+  - append:
+      field: related.hash
+      tag: append_data_attributes_ssdeep
+      value: '{{{gti.threat.indicator.attributes.ssdeep}}}'
+      allow_duplicates: false
+  - append:
+      field: related.hash
+      tag: append_data_attributes_tlsh
+      value: '{{{gti.threat.indicator.attributes.tlsh}}}'
+      allow_duplicates: false
+  - append:
+      field: related.hash
+      tag: append_data_vhash
+      value: '{{{gti.threat.indicator.vhash}}}'
+      allow_duplicates: false
+  - append:
+      field: related.hash
+      tag: append_attributes_jarm
+      value: '{{{gti.threat.indicator.attributes.jarm}}}'
+      allow_duplicates: false
+  - append:
+      field: related.hash
       tag: append_file_hash_md5_into_related_hash
       value: '{{{gti.threat.indicator.file.hash.md5}}}'
       allow_duplicates: false
-      if: ctx.gti?.threat?.indicator?.file?.hash?.md5 != null
   - append:
       field: related.hash
-      tag: append_vhash_into_related_hash
-      value: '{{{gti.threat.indicator.vhash}}}'
+      tag: append_file_hash_sha256
+      value: '{{{threat.indicator.file.hash.sha256}}}'
       allow_duplicates: false
-      if: ctx.gti?.threat?.indicator?.vhash != null
-  - append:
-      field: related.hash
-      tag: append_jarm_into_related_hash
-      value: '{{{gti.threat.indicator.jarm}}}'
-      allow_duplicates: false
-      if: ctx.gti?.threat?.indicator?.jarm != null
-  - append:
-      field: related.hash
-      tag: append_file_hash_sha256_into_related_hash
-      value: '{{{gti.threat.indicator.file.hash.sha256}}}'
-      allow_duplicates: false
-      if: ctx.gti?.threat?.indicator?.file?.hash?.sha256 != null
   - append:
       field: related.ip
       tag: append_ip_into_related_ip
       value: '{{{gti.threat.indicator.ip}}}'
       allow_duplicates: false
-      if: ctx.gti?.threat?.indicator?.ip != null
+  - set:
+      field: os.name
+      tag: set_os_name_from_threat_indicator_attributes_exiftool_file_os
+      copy_from: gti.threat.indicator.attributes.exiftool.file.os
+      ignore_empty_value: true
+  - set:
+      field: file.mime_type
+      tag: set_file_mime_type_from_threat_indicator_attributes_exiftool_mime_type
+      copy_from: gti.threat.indicator.attributes.exiftool.mime.type
+      ignore_empty_value: true
+  - set:
+      field: file.mtime
+      tag: set_file_mtime_from_threat_indicator_attributes_exiftool_timestamp
+      copy_from: gti.threat.indicator.attributes.exiftool.timestamp
+      ignore_empty_value: true
+  - set:
+      field: file.hash.md5
+      tag: set_file_hash_md5_from_threat_indicator_attributes_md5
+      copy_from: gti.threat.indicator.attributes.md5
+      ignore_empty_value: true
+  - set:
+      field: file.name
+      tag: set_file_name_from_threat_indicator_attributes_meaningful_name
+      copy_from: gti.threat.indicator.attributes.meaningful_name
+      ignore_empty_value: true
+  - foreach:
+      field: json.attributes.names
+      if: ctx.json?.attributes?.names instanceof List
+      processor:
+        append:
+          field: file.attributes
+          tag: append_attributes_names_into_file_attributes
+          value: '{{{_ingest._value}}}'
+          allow_duplicates: false
+  - set:
+      field: file.hash.sha1
+      tag: set_file_hash_sha1_from_threat_indicator_attributes_sha1
+      copy_from: gti.threat.indicator.attributes.sha1
+      ignore_empty_value: true
+  - set:
+      field: file.hash.sha256
+      tag: set_file_hash_sha256_from_threat_indicator_attributes_sha256
+      copy_from: gti.threat.indicator.attributes.sha256
+      ignore_empty_value: true
+  - set:
+      field: file.type
+      tag: set_file_type_from_threat_indicator_attributes_type_description
+      copy_from: gti.threat.indicator.attributes.type_description
+      ignore_empty_value: true
+  - set:
+      field: file.extension
+      tag: set_file_extension_from_threat_indicator_attributes_type_extension
+      copy_from: gti.threat.indicator.attributes.type_extension
+      ignore_empty_value: true
   - set:
       field: event.created
       tag: set_gti_enriched_ioc_event_created
@@ -268,6 +397,24 @@ processors:
       field: temp_fields
       tag: remove_temp_fields
       ignore_missing: true
+  - script:
+      tag: script_to_drop_null_values
+      lang: painless
+      description: Drops null/empty values recursively.
+      source: |-
+        boolean drop(Object object) {
+          if (object == null || object == '') {
+            return true;
+          } else if (object instanceof Map) {
+            ((Map) object).values().removeIf(v -> drop(v));
+            return (((Map) object).size() == 0);
+          } else if (object instanceof List) {
+            ((List) object).removeIf(v -> drop(v));
+            return (((List) object).length == 0);
+          }
+          return false;
+        }
+        drop(ctx);
   - set:
       field: event.kind
       tag: set_pipeline_error_into_event_kind
