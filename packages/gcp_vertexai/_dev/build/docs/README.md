@@ -26,7 +26,7 @@ The Elastic Agent uses the SA to access data on Google Cloud Platform using the 
 
 ### Service Account Keys
 
-Now, with your brand new Service Account (SA) with access to Google Cloud Platform (GCP) resources, you need some credentials to associate with it: a Service Account Key.
+Now, with your brand new Service Account (SA) with access to Google Cloud Platform (GCP) resources, you need the credentials to associate with it: a Service Account Key.
 
 From the list of SA:
 
