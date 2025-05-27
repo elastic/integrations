@@ -12,11 +12,11 @@ This module has been tested against the Armis API version **v1**.
 
 The Armis integration collects three types of logs.
 
-- **Devices** : Fetches the latest updates for all devices monitored by Armis.
-- **Alerts** : Gathers alerts associated with all devices monitored by Armis.
-- **Vulnerabilities** : Retrieves detected vulnerabilities and possible mitigation steps across all devices monitored by Armis.
+- **Devices**: Fetches the latest updates for all devices monitored by Armis.
+- **Alerts**: Gathers alerts associated with all devices monitored by Armis.
+- **Vulnerabilities**: Retrieves detected vulnerabilities and possible mitigation steps across all devices monitored by Armis.
 
-**Note** :
+**Note**:
 
 1. The **vulnerability data stream** retrieves information by first fetching vulnerabilities and then identifying the devices where these vulnerabilities were detected, using a chained call between the vulnerability search and vulnerability match endpoints.
 
