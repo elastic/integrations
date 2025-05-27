@@ -250,6 +250,12 @@ processors:
       allow_duplicates: false
       if: ctx.threat?.indicator?.file?.hash?.sha256 != null
   - append:
+      field: related.hash
+      tag: append_id
+      value: '{{{gti.threat.indicator.id}}}'
+      allow_duplicates: false
+      if: ctx.gti?.threat?.indicator?.type == 'url'
+  - append:
       field: related.ip
       tag: append_ip_into_related_ip
       value: '{{{threat.indicator.ip}}}'
@@ -269,6 +275,24 @@ processors:
       field: temp_fields
       tag: remove_temp_fields
       ignore_missing: true
+  - script:
+      tag: script_to_drop_null_values
+      lang: painless
+      description: Drops null/empty values recursively.
+      source: |-
+        boolean drop(Object object) {
+          if (object == null || object == '') {
+            return true;
+          } else if (object instanceof Map) {
+            ((Map) object).values().removeIf(v -> drop(v));
+            return (((Map) object).size() == 0);
+          } else if (object instanceof List) {
+            ((List) object).removeIf(v -> drop(v));
+            return (((List) object).length == 0);
+          }
+          return false;
+        }
+        drop(ctx);
   - set:
       field: event.kind
       tag: set_pipeline_error_into_event_kind

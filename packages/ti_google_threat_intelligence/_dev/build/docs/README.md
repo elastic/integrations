@@ -80,7 +80,9 @@ The `labels.is_transform_source` field indicates log origin:
 - **False** for transformed index
 - **True** for source index
 
-Currently, four transforms are running across all 4 data streams:
+Currently, eight transforms are available across all 4 data streams.
+
+The following are eight transforms along with their associated pipelines:
 
 | Transform Name                                                                                                                                                           | Description                                              |
 | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------ | -------------------------------------------------------- |
@@ -104,7 +106,7 @@ Detection Rules match the user's Elastic environment data with GTI data, generat
 
 1. Navigate to **Security > Rules > Detection Rules** and click on **Add Elastic Rules**.
 2. Search for **Google Threat Intelligence** to find prebuilt Elastic detection rules.
-3. Four detection rules are available for **IP, URL, File, and Domain**. Users can install one or more rules as needed.
+3. Eight detection rules are available for **IP, URL, File, and Domain**. Users can install one or more rules as needed.
 
 To tailor a rule based on elastic Environment:
 

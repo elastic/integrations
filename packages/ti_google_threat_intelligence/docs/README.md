@@ -80,7 +80,9 @@ The `labels.is_transform_source` field indicates log origin:
 - **False** for transformed index
 - **True** for source index
 
-Currently, four transforms are running across all 4 data streams:
+Currently, eight transforms are available across all 4 data streams.
+
+The following are eight transforms along with their associated pipelines:
 
 | Transform Name                                                                                                                                                           | Description                                              |
 | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------ | -------------------------------------------------------- |
@@ -104,7 +106,7 @@ Detection Rules match the user's Elastic environment data with GTI data, generat
 
 1. Navigate to **Security > Rules > Detection Rules** and click on **Add Elastic Rules**.
 2. Search for **Google Threat Intelligence** to find prebuilt Elastic detection rules.
-3. Four detection rules are available for **IP, URL, File, and Domain**. Users can install one or more rules as needed.
+3. Eight detection rules are available for **IP, URL, File, and Domain**. Users can install one or more rules as needed.
 
 To tailor a rule based on elastic Environment:
 
@@ -186,22 +188,22 @@ An example event for `cryptominer` looks as following:
 {
     "@timestamp": "2025-01-27T19:51:31.000Z",
     "agent": {
-        "ephemeral_id": "1c63f4ab-eb6a-4af7-beb8-1c2c169ef186",
-        "id": "a1205da4-909f-4308-89bd-5341631162a5",
-        "name": "elastic-agent-68929",
+        "ephemeral_id": "a2dd726b-0db0-4add-bad7-4cc11c828aa5",
+        "id": "eca93b73-66fa-4025-8319-9334c63ae687",
+        "name": "elastic-agent-70731",
         "type": "filebeat",
         "version": "8.17.3"
     },
     "data_stream": {
         "dataset": "ti_google_threat_intelligence.cryptominer",
-        "namespace": "11712",
+        "namespace": "12019",
         "type": "logs"
     },
     "ecs": {
         "version": "8.17.0"
     },
     "elastic_agent": {
-        "id": "a1205da4-909f-4308-89bd-5341631162a5",
+        "id": "eca93b73-66fa-4025-8319-9334c63ae687",
         "snapshot": false,
         "version": "8.17.3"
     },
@@ -211,7 +213,7 @@ An example event for `cryptominer` looks as following:
             "threat"
         ],
         "dataset": "ti_google_threat_intelligence.cryptominer",
-        "ingested": "2025-05-19T13:35:15Z",
+        "ingested": "2025-05-25T14:40:39Z",
         "kind": "enrichment",
         "original": "{\"data\":{\"attributes\":{\"first_submission_date\":1582817050,\"gti_assessment\":{\"severity\":{\"value\":\"SEVERITY_NONE\"},\"threat_score\":{\"value\":1},\"verdict\":{\"value\":\"VERDICT_UNDETECTED\"}},\"last_analysis_date\":1582817050,\"last_analysis_stats\":{\"harmless\":55,\"malicious\":8,\"undetected\":8},\"last_http_response_code\":200,\"last_modification_date\":1738007491,\"last_submission_date\":1582817050,\"positives\":8,\"times_submitted\":1,\"tld\":\"ru\",\"url\":\"http://securepasswel.ru/files/grapes_encrypted_87ed10f.bin\"},\"id\":\"0146b3be6e724b10e620e8090821a8253772af779a4996145cdf295c01e0900c\",\"relationships\":{},\"type\":\"url\"}}",
         "type": [
@@ -260,6 +262,9 @@ An example event for `cryptominer` looks as following:
         "vendor": "Google"
     },
     "related": {
+        "hash": [
+            "0146b3be6e724b10e620e8090821a8253772af779a4996145cdf295c01e0900c"
+        ],
         "hosts": [
             "securepasswel.ru"
         ]
@@ -391,22 +396,22 @@ An example event for `first_stage_delivery_vectors` looks as following:
 {
     "@timestamp": "2025-01-27T19:51:31.000Z",
     "agent": {
-        "ephemeral_id": "9e832dae-f2ef-4ced-98b3-070b1f47f3b4",
-        "id": "3f71dc6f-a247-49f7-955c-732637edd57c",
-        "name": "elastic-agent-25871",
+        "ephemeral_id": "7c98073c-8e37-4c26-b999-f3e2d1e9b96b",
+        "id": "a125581d-b4be-4aa9-a8ab-84061f9f3497",
+        "name": "elastic-agent-17150",
         "type": "filebeat",
         "version": "8.17.3"
     },
     "data_stream": {
         "dataset": "ti_google_threat_intelligence.first_stage_delivery_vectors",
-        "namespace": "94004",
+        "namespace": "11612",
         "type": "logs"
     },
     "ecs": {
         "version": "8.17.0"
     },
     "elastic_agent": {
-        "id": "3f71dc6f-a247-49f7-955c-732637edd57c",
+        "id": "a125581d-b4be-4aa9-a8ab-84061f9f3497",
         "snapshot": false,
         "version": "8.17.3"
     },
@@ -416,7 +421,7 @@ An example event for `first_stage_delivery_vectors` looks as following:
             "threat"
         ],
         "dataset": "ti_google_threat_intelligence.first_stage_delivery_vectors",
-        "ingested": "2025-05-19T13:37:34Z",
+        "ingested": "2025-05-25T14:43:22Z",
         "kind": "enrichment",
         "original": "{\"data\":{\"attributes\":{\"first_submission_date\":1582817050,\"gti_assessment\":{\"severity\":{\"value\":\"SEVERITY_NONE\"},\"threat_score\":{\"value\":1},\"verdict\":{\"value\":\"VERDICT_UNDETECTED\"}},\"last_analysis_date\":1582817050,\"last_analysis_stats\":{\"harmless\":55,\"malicious\":8,\"undetected\":8},\"last_http_response_code\":200,\"last_modification_date\":1738007491,\"last_submission_date\":1582817050,\"positives\":8,\"times_submitted\":1,\"tld\":\"ru\",\"url\":\"http://securepasswel.ru/files/grapes_encrypted_87ed10f.bin\"},\"id\":\"0146b3be6e724b10e620e8090821a8253772af779a4996145cdf295c01e0900c\",\"relationships\":{},\"type\":\"url\"}}",
         "type": [
@@ -465,6 +470,9 @@ An example event for `first_stage_delivery_vectors` looks as following:
         "vendor": "Google"
     },
     "related": {
+        "hash": [
+            "0146b3be6e724b10e620e8090821a8253772af779a4996145cdf295c01e0900c"
+        ],
         "hosts": [
             "securepasswel.ru"
         ]
@@ -596,22 +604,22 @@ An example event for `infostealer` looks as following:
 {
     "@timestamp": "2025-01-27T19:51:31.000Z",
     "agent": {
-        "ephemeral_id": "2b87f06e-1f17-4a01-8bc6-57d3735e76d1",
-        "id": "f5242744-100e-464f-9e46-80bb5a2d200e",
-        "name": "elastic-agent-94523",
+        "ephemeral_id": "3cb42ea6-61b1-4b02-b6f9-9493c33f9587",
+        "id": "56f84b67-a783-4538-ac9a-ae1759326b56",
+        "name": "elastic-agent-42420",
         "type": "filebeat",
         "version": "8.17.3"
     },
     "data_stream": {
         "dataset": "ti_google_threat_intelligence.infostealer",
-        "namespace": "21758",
+        "namespace": "10701",
         "type": "logs"
     },
     "ecs": {
         "version": "8.17.0"
     },
     "elastic_agent": {
-        "id": "f5242744-100e-464f-9e46-80bb5a2d200e",
+        "id": "56f84b67-a783-4538-ac9a-ae1759326b56",
         "snapshot": false,
         "version": "8.17.3"
     },
@@ -621,7 +629,7 @@ An example event for `infostealer` looks as following:
             "threat"
         ],
         "dataset": "ti_google_threat_intelligence.infostealer",
-        "ingested": "2025-05-19T13:39:56Z",
+        "ingested": "2025-05-25T14:46:00Z",
         "kind": "enrichment",
         "original": "{\"data\":{\"attributes\":{\"first_submission_date\":1582817050,\"gti_assessment\":{\"severity\":{\"value\":\"SEVERITY_NONE\"},\"threat_score\":{\"value\":1},\"verdict\":{\"value\":\"VERDICT_UNDETECTED\"}},\"last_analysis_date\":1582817050,\"last_analysis_stats\":{\"harmless\":55,\"malicious\":8,\"undetected\":8},\"last_http_response_code\":200,\"last_modification_date\":1738007491,\"last_submission_date\":1582817050,\"positives\":8,\"times_submitted\":1,\"tld\":\"ru\",\"url\":\"http://securepasswel.ru/files/grapes_encrypted_87ed10f.bin\"},\"id\":\"0146b3be6e724b10e620e8090821a8253772af779a4996145cdf295c01e0900c\",\"relationships\":{},\"type\":\"url\"}}",
         "type": [
@@ -670,6 +678,9 @@ An example event for `infostealer` looks as following:
         "vendor": "Google"
     },
     "related": {
+        "hash": [
+            "0146b3be6e724b10e620e8090821a8253772af779a4996145cdf295c01e0900c"
+        ],
         "hosts": [
             "securepasswel.ru"
         ]
@@ -801,22 +812,22 @@ An example event for `iot` looks as following:
 {
     "@timestamp": "2025-01-27T19:51:31.000Z",
     "agent": {
-        "ephemeral_id": "5a15445c-db8f-4887-879b-a228e057a11e",
-        "id": "5d47065e-b3b4-4d1e-a990-29a43de92031",
-        "name": "elastic-agent-52732",
+        "ephemeral_id": "b591128a-2888-44c7-afa4-72d79927e590",
+        "id": "613fb16e-c170-4ed4-a82b-bd1bdede3ce3",
+        "name": "elastic-agent-90536",
         "type": "filebeat",
         "version": "8.17.3"
     },
     "data_stream": {
         "dataset": "ti_google_threat_intelligence.iot",
-        "namespace": "14621",
+        "namespace": "71655",
         "type": "logs"
     },
     "ecs": {
         "version": "8.17.0"
     },
     "elastic_agent": {
-        "id": "5d47065e-b3b4-4d1e-a990-29a43de92031",
+        "id": "613fb16e-c170-4ed4-a82b-bd1bdede3ce3",
         "snapshot": false,
         "version": "8.17.3"
     },
@@ -826,7 +837,7 @@ An example event for `iot` looks as following:
             "threat"
         ],
         "dataset": "ti_google_threat_intelligence.iot",
-        "ingested": "2025-05-19T13:42:16Z",
+        "ingested": "2025-05-25T14:51:01Z",
         "kind": "enrichment",
         "original": "{\"data\":{\"attributes\":{\"first_submission_date\":1582817050,\"gti_assessment\":{\"severity\":{\"value\":\"SEVERITY_NONE\"},\"threat_score\":{\"value\":1},\"verdict\":{\"value\":\"VERDICT_UNDETECTED\"}},\"last_analysis_date\":1582817050,\"last_analysis_stats\":{\"harmless\":55,\"malicious\":8,\"undetected\":8},\"last_http_response_code\":200,\"last_modification_date\":1738007491,\"last_submission_date\":1582817050,\"positives\":8,\"times_submitted\":1,\"tld\":\"ru\",\"url\":\"http://securepasswel.ru/files/grapes_encrypted_87ed10f.bin\"},\"id\":\"0146b3be6e724b10e620e8090821a8253772af779a4996145cdf295c01e0900c\",\"relationships\":{},\"type\":\"url\"}}",
         "type": [
@@ -875,6 +886,9 @@ An example event for `iot` looks as following:
         "vendor": "Google"
     },
     "related": {
+        "hash": [
+            "0146b3be6e724b10e620e8090821a8253772af779a4996145cdf295c01e0900c"
+        ],
         "hosts": [
             "securepasswel.ru"
         ]
