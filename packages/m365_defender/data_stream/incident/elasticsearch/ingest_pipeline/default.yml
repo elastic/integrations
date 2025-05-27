@@ -952,6 +952,16 @@ processors:
       if: ctx.json?.alerts?.evidence instanceof List
       ignore_failure: true
       processor:
+        append:
+          field: device.id
+          tag: append_azureAdDeviceId_into_device_id
+          value: '{{{_ingest._value.azureAdDeviceId}}}'
+          allow_duplicates: false
+  - foreach:
+      field: json.alerts.evidence
+      if: ctx.json?.alerts?.evidence instanceof List
+      ignore_failure: true
+      processor:
         rename:
           field: _ingest._value.azureAdDeviceId
           target_field: _ingest._value.azure_ad_device_id
@@ -2237,6 +2247,26 @@ processors:
         if (!processParentPid.isEmpty()) {
           ctx.process.parent.pid = convertToOrderedArray(processParentPid);
         }
+  - foreach:
+      field: process.pid
+      tag: foreach_process_pid
+      if: ctx.process?.pid instanceof List
+      processor:
+        append:
+          field: process.entity_id
+          tag: append_process_pid_to_entity_id
+          value: '{{{_ingest._value}}}'
+          allow_duplicates: false
+  - foreach:
+      field: process.parent.pid
+      tag: foreach_process_parent_pid
+      if: ctx.process?.parent?.pid instanceof List
+      processor:
+        append:
+          field: process.parent.entity_id
+          tag: append_process_parent_pid_to_entity_id
+          value: '{{{_ingest._value}}}'
+          allow_duplicates: false
   - foreach:
       field: json.alerts.evidence
       if: ctx.json?.alerts?.evidence instanceof List
