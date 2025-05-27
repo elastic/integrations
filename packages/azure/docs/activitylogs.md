@@ -180,7 +180,7 @@ Please refer to the following [document](https://www.elastic.co/guide/en/ecs/cur
 | azure.activitylogs.identity.claims_initiated_by_user.schema | Schema | keyword |
 | azure.activitylogs.identity.claims_initiated_by_user.surname | Surname | keyword |
 | azure.activitylogs.identity_name | identity name | keyword |
-| azure.activitylogs.level | Level | long |
+| azure.activitylogs.level | Log level. (deprecated, use log.level instead). | long |
 | azure.activitylogs.operation_name | Operation name | keyword |
 | azure.activitylogs.operation_version | Operation version | keyword |
 | azure.activitylogs.properties | Event properties | flattened |
