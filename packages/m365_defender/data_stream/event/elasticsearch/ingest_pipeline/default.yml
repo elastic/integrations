@@ -107,13 +107,23 @@ processors:
       name: '{{ IngestPipeline "pipeline_app_and_identity" }}'
       tag: pipeline_app_and_identity
       if: ctx.m365_defender?.event?.category != null && (ctx.m365_defender.event.category.toLowerCase().contains('identity') || ctx.m365_defender.event.category.toLowerCase().contains('cloudappevents'))
+  - set:
+      field: process.entity_id
+      tag: set_process_entity_id
+      value: '{{{process.pid}}}'
+      ignore_empty_value: true
+  - set:
+      field: process.parent.entity_id
+      tag: set_process_parent_entity_id
+      value: '{{{process.parent.pid}}}'
+      ignore_empty_value: true
 
   # cloud.instance.id is used for the M365 Defender response action.
   - set:
       field: cloud.instance.id
       copy_from: m365_defender.event.device.id
       tag: set_cloud_instance_id
-      override: false      
+      override: false
       ignore_empty_value: true
       if: ctx.m365_defender?.event?.device?.id != null
   - set:
