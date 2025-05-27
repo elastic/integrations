@@ -80,22 +80,22 @@ An example event for `linux` looks as following:
 {
     "@timestamp": "2025-01-27T19:51:31.000Z",
     "agent": {
-        "ephemeral_id": "972bb222-63fe-4291-9cdf-41b13e164dfe",
-        "id": "6e25ab32-7de8-4d7e-bc4d-e1da0b8e123a",
-        "name": "elastic-agent-98095",
+        "ephemeral_id": "e75ac915-fb7f-493d-abbc-8f53c7dd5e01",
+        "id": "9fb4d3c7-be37-48bf-b12e-5cf66fefcf98",
+        "name": "elastic-agent-74350",
         "type": "filebeat",
         "version": "8.17.3"
     },
     "data_stream": {
         "dataset": "ti_google_threat_intelligence.linux",
-        "namespace": "91164",
+        "namespace": "69256",
         "type": "logs"
     },
     "ecs": {
         "version": "8.17.0"
     },
     "elastic_agent": {
-        "id": "6e25ab32-7de8-4d7e-bc4d-e1da0b8e123a",
+        "id": "9fb4d3c7-be37-48bf-b12e-5cf66fefcf98",
         "snapshot": false,
         "version": "8.17.3"
     },
@@ -105,7 +105,7 @@ An example event for `linux` looks as following:
             "threat"
         ],
         "dataset": "ti_google_threat_intelligence.linux",
-        "ingested": "2025-05-19T14:03:06Z",
+        "ingested": "2025-05-25T14:53:39Z",
         "kind": "enrichment",
         "original": "{\"data\":{\"attributes\":{\"first_submission_date\":1582817050,\"gti_assessment\":{\"severity\":{\"value\":\"SEVERITY_NONE\"},\"threat_score\":{\"value\":1},\"verdict\":{\"value\":\"VERDICT_UNDETECTED\"}},\"last_analysis_date\":1582817050,\"last_analysis_stats\":{\"harmless\":55,\"malicious\":8,\"undetected\":8},\"last_http_response_code\":200,\"last_modification_date\":1738007491,\"last_submission_date\":1582817050,\"positives\":8,\"times_submitted\":1,\"tld\":\"ru\",\"url\":\"http://securepasswel.ru/files/grapes_encrypted_87ed10f.bin\"},\"id\":\"0146b3be6e724b10e620e8090821a8253772af779a4996145cdf295c01e0900c\",\"relationships\":{},\"type\":\"url\"}}",
         "type": [
@@ -154,6 +154,9 @@ An example event for `linux` looks as following:
         "vendor": "Google"
     },
     "related": {
+        "hash": [
+            "0146b3be6e724b10e620e8090821a8253772af779a4996145cdf295c01e0900c"
+        ],
         "hosts": [
             "securepasswel.ru"
         ]
@@ -285,22 +288,22 @@ An example event for `malicious_network_infrastructure` looks as following:
 {
     "@timestamp": "2025-01-27T19:51:31.000Z",
     "agent": {
-        "ephemeral_id": "e6be1866-ab82-4a4e-bee7-5b66103b9ce3",
-        "id": "0a8f187e-792d-4933-a7e7-68635a46f47b",
-        "name": "elastic-agent-41899",
+        "ephemeral_id": "902a93a9-790a-4b5e-a6b8-cd6ad3b9994f",
+        "id": "68580c81-e7dc-4305-a5e7-963bb0ca7a5a",
+        "name": "elastic-agent-55395",
         "type": "filebeat",
         "version": "8.17.3"
     },
     "data_stream": {
         "dataset": "ti_google_threat_intelligence.malicious_network_infrastructure",
-        "namespace": "58556",
+        "namespace": "78822",
         "type": "logs"
     },
     "ecs": {
         "version": "8.17.0"
     },
     "elastic_agent": {
-        "id": "0a8f187e-792d-4933-a7e7-68635a46f47b",
+        "id": "68580c81-e7dc-4305-a5e7-963bb0ca7a5a",
         "snapshot": false,
         "version": "8.17.3"
     },
@@ -311,7 +314,7 @@ An example event for `malicious_network_infrastructure` looks as following:
             "network"
         ],
         "dataset": "ti_google_threat_intelligence.malicious_network_infrastructure",
-        "ingested": "2025-05-19T14:05:25Z",
+        "ingested": "2025-05-25T14:56:19Z",
         "kind": "enrichment",
         "original": "{\"data\":{\"attributes\":{\"first_submission_date\":1582817050,\"gti_assessment\":{\"severity\":{\"value\":\"SEVERITY_NONE\"},\"threat_score\":{\"value\":1},\"verdict\":{\"value\":\"VERDICT_UNDETECTED\"}},\"last_analysis_date\":1582817050,\"last_analysis_stats\":{\"harmless\":55,\"malicious\":8,\"undetected\":8},\"last_http_response_code\":200,\"last_modification_date\":1738007491,\"last_submission_date\":1582817050,\"positives\":8,\"times_submitted\":1,\"tld\":\"ru\",\"url\":\"http://securepasswel.ru/files/grapes_encrypted_87ed10f.bin\"},\"id\":\"0146b3be6e724b10e620e8090821a8253772af779a4996145cdf295c01e0900c\",\"relationships\":{},\"type\":\"url\"}}",
         "type": [
@@ -361,6 +364,9 @@ An example event for `malicious_network_infrastructure` looks as following:
         "vendor": "Google"
     },
     "related": {
+        "hash": [
+            "0146b3be6e724b10e620e8090821a8253772af779a4996145cdf295c01e0900c"
+        ],
         "hosts": [
             "securepasswel.ru"
         ]
@@ -492,22 +498,22 @@ An example event for `malware` looks as following:
 {
     "@timestamp": "2025-01-27T19:51:31.000Z",
     "agent": {
-        "ephemeral_id": "3d142c23-15b1-462c-83d7-ab0c49f8f11f",
-        "id": "aaa62ceb-2866-40af-8850-8a9f2865ac4d",
-        "name": "elastic-agent-14233",
+        "ephemeral_id": "155d046c-55f3-42b1-8490-3bb03cb23f34",
+        "id": "7a0848bd-9142-4e0c-bf5c-0431c307729a",
+        "name": "elastic-agent-96548",
         "type": "filebeat",
         "version": "8.17.3"
     },
     "data_stream": {
         "dataset": "ti_google_threat_intelligence.malware",
-        "namespace": "81797",
+        "namespace": "78464",
         "type": "logs"
     },
     "ecs": {
         "version": "8.17.0"
     },
     "elastic_agent": {
-        "id": "aaa62ceb-2866-40af-8850-8a9f2865ac4d",
+        "id": "7a0848bd-9142-4e0c-bf5c-0431c307729a",
         "snapshot": false,
         "version": "8.17.3"
     },
@@ -518,7 +524,7 @@ An example event for `malware` looks as following:
             "malware"
         ],
         "dataset": "ti_google_threat_intelligence.malware",
-        "ingested": "2025-05-19T14:07:44Z",
+        "ingested": "2025-05-25T14:59:00Z",
         "kind": "enrichment",
         "original": "{\"data\":{\"attributes\":{\"first_submission_date\":1582817050,\"gti_assessment\":{\"severity\":{\"value\":\"SEVERITY_NONE\"},\"threat_score\":{\"value\":1},\"verdict\":{\"value\":\"VERDICT_UNDETECTED\"}},\"last_analysis_date\":1582817050,\"last_analysis_stats\":{\"harmless\":55,\"malicious\":8,\"undetected\":8},\"last_http_response_code\":200,\"last_modification_date\":1738007491,\"last_submission_date\":1582817050,\"positives\":8,\"times_submitted\":1,\"tld\":\"ru\",\"url\":\"http://securepasswel.ru/files/grapes_encrypted_87ed10f.bin\"},\"id\":\"0146b3be6e724b10e620e8090821a8253772af779a4996145cdf295c01e0900c\",\"relationships\":{},\"type\":\"url\"}}",
         "type": [
@@ -568,6 +574,9 @@ An example event for `malware` looks as following:
         "vendor": "Google"
     },
     "related": {
+        "hash": [
+            "0146b3be6e724b10e620e8090821a8253772af779a4996145cdf295c01e0900c"
+        ],
         "hosts": [
             "securepasswel.ru"
         ]
@@ -699,22 +708,22 @@ An example event for `mobile` looks as following:
 {
     "@timestamp": "2025-01-27T19:51:31.000Z",
     "agent": {
-        "ephemeral_id": "d6e2cd1e-7de6-431d-b426-f6973f8128bc",
-        "id": "87336d9f-5f95-43f3-bf59-b1833cac04d0",
-        "name": "elastic-agent-13626",
+        "ephemeral_id": "43e638c8-0c88-492d-a828-63f34faedab1",
+        "id": "251b5b7b-36ba-4a10-aa28-8d8bd480b47a",
+        "name": "elastic-agent-98806",
         "type": "filebeat",
         "version": "8.17.3"
     },
     "data_stream": {
         "dataset": "ti_google_threat_intelligence.mobile",
-        "namespace": "60039",
+        "namespace": "88304",
         "type": "logs"
     },
     "ecs": {
         "version": "8.17.0"
     },
     "elastic_agent": {
-        "id": "87336d9f-5f95-43f3-bf59-b1833cac04d0",
+        "id": "251b5b7b-36ba-4a10-aa28-8d8bd480b47a",
         "snapshot": false,
         "version": "8.17.3"
     },
@@ -724,7 +733,7 @@ An example event for `mobile` looks as following:
             "threat"
         ],
         "dataset": "ti_google_threat_intelligence.mobile",
-        "ingested": "2025-05-19T14:10:04Z",
+        "ingested": "2025-05-25T15:01:40Z",
         "kind": "enrichment",
         "original": "{\"data\":{\"attributes\":{\"first_submission_date\":1582817050,\"gti_assessment\":{\"severity\":{\"value\":\"SEVERITY_NONE\"},\"threat_score\":{\"value\":1},\"verdict\":{\"value\":\"VERDICT_UNDETECTED\"}},\"last_analysis_date\":1582817050,\"last_analysis_stats\":{\"harmless\":55,\"malicious\":8,\"undetected\":8},\"last_http_response_code\":200,\"last_modification_date\":1738007491,\"last_submission_date\":1582817050,\"positives\":8,\"times_submitted\":1,\"tld\":\"ru\",\"url\":\"http://securepasswel.ru/files/grapes_encrypted_87ed10f.bin\"},\"id\":\"0146b3be6e724b10e620e8090821a8253772af779a4996145cdf295c01e0900c\",\"relationships\":{},\"type\":\"url\"}}",
         "type": [
@@ -773,6 +782,9 @@ An example event for `mobile` looks as following:
         "vendor": "Google"
     },
     "related": {
+        "hash": [
+            "0146b3be6e724b10e620e8090821a8253772af779a4996145cdf295c01e0900c"
+        ],
         "hosts": [
             "securepasswel.ru"
         ]
@@ -904,22 +916,22 @@ An example event for `osx` looks as following:
 {
     "@timestamp": "2025-01-27T19:51:31.000Z",
     "agent": {
-        "ephemeral_id": "a99b486c-ca11-438d-b26c-317ca60c899b",
-        "id": "9160d5dd-bb9a-4011-b25c-ed943ecc4150",
-        "name": "elastic-agent-96462",
+        "ephemeral_id": "dceed577-7f00-4b9c-8ec7-e2e79fdde06d",
+        "id": "c43eefa8-325c-4da8-9504-c64742834cdd",
+        "name": "elastic-agent-81585",
         "type": "filebeat",
         "version": "8.17.3"
     },
     "data_stream": {
         "dataset": "ti_google_threat_intelligence.osx",
-        "namespace": "45963",
+        "namespace": "89614",
         "type": "logs"
     },
     "ecs": {
         "version": "8.17.0"
     },
     "elastic_agent": {
-        "id": "9160d5dd-bb9a-4011-b25c-ed943ecc4150",
+        "id": "c43eefa8-325c-4da8-9504-c64742834cdd",
         "snapshot": false,
         "version": "8.17.3"
     },
@@ -929,7 +941,7 @@ An example event for `osx` looks as following:
             "threat"
         ],
         "dataset": "ti_google_threat_intelligence.osx",
-        "ingested": "2025-05-19T14:12:24Z",
+        "ingested": "2025-05-25T15:04:20Z",
         "kind": "enrichment",
         "original": "{\"data\":{\"attributes\":{\"first_submission_date\":1582817050,\"gti_assessment\":{\"severity\":{\"value\":\"SEVERITY_NONE\"},\"threat_score\":{\"value\":1},\"verdict\":{\"value\":\"VERDICT_UNDETECTED\"}},\"last_analysis_date\":1582817050,\"last_analysis_stats\":{\"harmless\":55,\"malicious\":8,\"undetected\":8},\"last_http_response_code\":200,\"last_modification_date\":1738007491,\"last_submission_date\":1582817050,\"positives\":8,\"times_submitted\":1,\"tld\":\"ru\",\"url\":\"http://securepasswel.ru/files/grapes_encrypted_87ed10f.bin\"},\"id\":\"0146b3be6e724b10e620e8090821a8253772af779a4996145cdf295c01e0900c\",\"relationships\":{},\"type\":\"url\"}}",
         "type": [
@@ -978,6 +990,9 @@ An example event for `osx` looks as following:
         "vendor": "Google"
     },
     "related": {
+        "hash": [
+            "0146b3be6e724b10e620e8090821a8253772af779a4996145cdf295c01e0900c"
+        ],
         "hosts": [
             "securepasswel.ru"
         ]
