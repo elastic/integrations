@@ -504,6 +504,7 @@ The following non-ECS fields are used in real-time event documents:
 | data_stream.namespace | Data stream namespace. | constant_keyword |
 | data_stream.type | Data stream type. | constant_keyword |
 | event.dataset |  | constant_keyword |
+| event.module |  | constant_keyword |
 | input.type |  | keyword |
 | jamf_pro.events.event.alternate_mac_address |  | keyword |
 | jamf_pro.events.event.asset_tag |  | keyword |
