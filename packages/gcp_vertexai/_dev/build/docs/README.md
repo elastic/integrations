@@ -124,7 +124,7 @@ At a high level, the steps required are:
 - Under "Choose logs to include in sink", for example add `resource.labels.service=aiplatform.googleapis.com` and
 `resource.type="audited_resource"` in the "Inclusion filter" to include all audit logs.
 
-This is just an example to create your filter expression to select the vertexai auditlogs  you want to export to the Pub/Sub topic.
+This is just an example to create your filter expression to select the Vertex AI auditlogs  you want to export to the Pub/Sub topic.
 
 ## Troubleshooting
 
