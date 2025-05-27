@@ -225,26 +225,27 @@ processors:
       tag: rename_severity
       target_field: m365_defender.alert.severity
       ignore_missing: true
-  - set:
-      field: event.severity
-      tag: set_event_severity_1
-      value: 1
-      if: ctx.m365_defender?.alert?.severity?.toLowerCase() == 'informational'
-  - set:
-      field: event.severity
-      tag: set_event_severity_2
-      value: 2
-      if: ctx.m365_defender?.alert?.severity?.toLowerCase() == 'low'
-  - set:
-      field: event.severity
-      tag: set_event_severity_3
-      value: 3
-      if: ctx.m365_defender?.alert?.severity?.toLowerCase() == 'medium'
-  - set:
-      field: event.severity
-      tag: set_event_severity_4
-      value: 4
-      if: ctx.m365_defender?.alert?.severity?.toLowerCase() == 'high'
+  - script:
+      lang: painless
+      description: Script to set event.severity.
+      tag: set_event_severity
+      if: ctx.m365_defender?.alert?.severity instanceof String
+      source: |-
+        ctx.event = ctx.event ?: [:];
+        String risk_score_value = ctx.m365_defender.alert.severity;
+        if (risk_score_value.equalsIgnoreCase("low") || risk_score_value.equalsIgnoreCase("informational")) {
+          ctx.event.severity = 21;
+        } else if (risk_score_value.equalsIgnoreCase("medium")) {
+          ctx.event.severity = 47;
+        } else if (risk_score_value.equalsIgnoreCase("high")) {
+          ctx.event.severity = 73;
+        } else if (risk_score_value.equalsIgnoreCase("critical")) {
+          ctx.event.severity = 99;
+        }
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - date:
       field: json.firstActivityDateTime
       tag: date_firstActivityDateTime
@@ -2445,6 +2446,26 @@ processors:
         if (!processParentPid.isEmpty()) {
           ctx.process.parent.pid = convertToOrderedArray(processParentPid);
         }
+  - foreach:
+      field: process.pid
+      tag: foreach_process_pid
+      if: ctx.process?.pid instanceof List
+      processor:
+        append:
+          field: process.entity_id
+          tag: append_process_pid_to_entity_id
+          value: '{{{_ingest._value}}}'
+          allow_duplicates: false
+  - foreach:
+      field: process.parent.pid
+      tag: foreach_process_parent_pid
+      if: ctx.process?.parent?.pid instanceof List
+      processor:
+        append:
+          field: process.parent.entity_id
+          tag: append_process_parent_pid_to_entity_id
+          value: '{{{_ingest._value}}}'
+          allow_duplicates: false
   - foreach:
       field: json.evidence
       tag: foreach_evidence_remove_fields
