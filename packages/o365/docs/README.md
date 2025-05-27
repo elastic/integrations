@@ -367,6 +367,7 @@ An example event for `audit` looks as following:
 | o365.audit.Members |  | flattened |
 | o365.audit.MessageDate |  | keyword |
 | o365.audit.MessageTime |  | keyword |
+| o365.audit.ModifiedProperties |  | object |
 | o365.audit.ModifiedProperties.\*.\* |  | object |
 | o365.audit.ModifiedProperties.Role_DisplayName.NewValue |  | keyword |
 | o365.audit.Name |  | keyword |
@@ -387,6 +388,7 @@ An example event for `audit` looks as following:
 | o365.audit.P1SenderDomain |  | keyword |
 | o365.audit.P2Sender |  | keyword |
 | o365.audit.P2SenderDomain |  | keyword |
+| o365.audit.Parameters |  | object |
 | o365.audit.Parameters.\* |  | object |
 | o365.audit.Parameters.AccessRights |  | keyword |
 | o365.audit.Parameters.AllowFederatedUsers |  | keyword |

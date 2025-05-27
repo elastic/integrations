@@ -71,6 +71,17 @@ For **Event**, using filebeat's [Azure Event Hub](https://www.elastic.co/guide/e
 2. Permission required for accessing Incident API would be **SecurityIncident.Read.All**. See more details [here](https://learn.microsoft.com/en-us/graph/auth-v2-service?view=graph-rest-1.0)
 3. After the application has been created, it will generate Client ID, Client Secret and Tenant ID values that are required for alert and incident data collection.
 
+## Alert severity mapping
+
+The values used in `event.severity` are consistent with Elastic Detection Rules.
+
+| Severity Name          | `event.severity` |
+|------------------------|:----------------:|
+| Low (or Informational) | 21               |
+| Medium                 | 47               |
+| High                   | 73               |
+| Critical               | 99               |
+
 ## Logs reference
 
 ### alert

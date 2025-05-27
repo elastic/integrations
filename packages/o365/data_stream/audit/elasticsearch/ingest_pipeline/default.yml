@@ -85,6 +85,7 @@ processors:
       field: o365audit.OrganizationId
       target_field: organization.id
       ignore_missing: true
+      ignore_failure: true
 
   - json:
       tag: json-extract-stringly-AdditionalInfo
@@ -361,6 +362,7 @@ processors:
       field: o365audit.OrganizationName
       target_field: organization.name
       ignore_missing: true
+      ignore_failure: true
       if: ctx.event?.code == "ExchangeAdmin"
   - rename:
       field: o365audit.OriginatingServer
@@ -388,6 +390,7 @@ processors:
       field: o365audit.OrganizationName
       target_field: organization.name
       ignore_missing: true
+      ignore_failure: true
       if: ctx.event?.code == "ExchangeItem"
   - rename:
       field: o365audit.OriginatingServer
@@ -519,10 +522,9 @@ processors:
       value: creation
       if: 'ctx.event?.action != null && ["FileUploaded", "FolderCopied", "FolderCreated"].contains(ctx.event?.action)'
   # SecurityComplianceAlerts Schema
-  - rename:
-      field: o365audit.Comments
-      target_field: message
-      ignore_missing: true
+  - set:
+      field: message
+      copy_from: o365audit.Name
       if: ctx.event?.code == "SecurityComplianceAlerts"
   - rename:
       field: o365audit.Name
@@ -1093,6 +1095,7 @@ processors:
   - lowercase:
       field: organization.id
       ignore_missing: true
+      ignore_failure: true
   - set:
       field: host.id
       copy_from: organization.id
