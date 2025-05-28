@@ -158,6 +158,22 @@ processors:
         - append:
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - convert:
+      field: json.prevented
+      tag: convert_prevented_to_boolean
+      target_field: crowdstrike.alert.prevented
+      type: boolean
+      if: ctx.json?.prevented != ""
+      ignore_missing: true
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - rename:
+      field: json.worker_node_name
+      tag: rename_worker_node_name
+      target_field: crowdstrike.alert.worker_node_name
+      ignore_missing: true
   - rename:
       field: json.cmdline
       tag: rename_cmdline

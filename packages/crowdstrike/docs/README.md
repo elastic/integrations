@@ -650,6 +650,7 @@ An example event for `alert` looks as following:
 | crowdstrike.alert.pattern_id |  | keyword |
 | crowdstrike.alert.platform |  | keyword |
 | crowdstrike.alert.poly_id |  | keyword |
+| crowdstrike.alert.prevented |  | boolean |
 | crowdstrike.alert.process_end_time |  | date |
 | crowdstrike.alert.process_id |  | keyword |
 | crowdstrike.alert.process_start_time |  | date |
@@ -713,6 +714,7 @@ An example event for `alert` looks as following:
 | crowdstrike.alert.user_id |  | keyword |
 | crowdstrike.alert.user_name |  | keyword |
 | crowdstrike.alert.user_principal |  | keyword |
+| crowdstrike.alert.worker_node_name |  | keyword |
 | data_stream.dataset | Data stream dataset. | constant_keyword |
 | data_stream.namespace | Data stream namespace. | constant_keyword |
 | data_stream.type | Data stream type. | constant_keyword |
