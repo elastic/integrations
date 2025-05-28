@@ -130,7 +130,7 @@ This is just an example to create your filter expression to select the Vertex AI
 
 Refer to [Google Cloud Platform troubleshooting](https://www.elastic.co/guide/en/integrations/current/gcp.html#_troubleshooting) for more information about troubleshooting.
 
-## Metrics Reference
+## Metrics reference
 
 {{event "metrics"}}
 
