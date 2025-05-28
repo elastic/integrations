@@ -42,7 +42,9 @@ state:
   min_time_range: {{min_time_range}}
   max_time_range: {{max_time_range}}
   managed_pipeline_description: {{managed_pipeline_description}}
+{{#if hard_coded_pipeline_id}}
   hard_coded_pipeline_id: {{hard_coded_pipeline_id}}
+{{/if}}
   want_more: false
   registration_count: 0
 program: |
@@ -80,7 +82,7 @@ program: |
   //
   // [1]: https://automation.trendmicro.com/xdr/api-v3/#tag/Datalake-Pipeline
 
-  (state.?cursor.packages_to_get[0].hasValue()) ?
+  has(state.?cursor.packages_to_get[0]) ?
 
     //--------------------------------------------------------------------------
     // have a package to get -> get the package
@@ -140,7 +142,7 @@ program: |
     // no package to get -> check or setup
     //--------------------------------------------------------------------------
 
-    (state.?cursor.pipeline_id.hasValue()) ?
+    has(state.?cursor.pipeline_id) ?
 
       //------------------------------------------------------------------------
       // have pipeline id -> check for packages, update list of packages to get
@@ -182,7 +184,7 @@ program: |
               "want_more": false,
             })
           :
-            bytes(resp.Body).decode_json().as(body,
+            resp.Body.decode_json().as(body,
               state.with({
                 "events": [{"event": {"reason": "want_more"}}],
                 "cursor": state.cursor.with({
@@ -239,9 +241,9 @@ program: |
               "want_more": false,
             })
           :
-            bytes(resp.Body).decode_json().as(body,
-              body.items.filter(i, i.description == state.managed_pipeline_description)[?0].id.orValue(null).as(id,
-                (id != null) ?
+            resp.Body.decode_json().as(body,
+              body.items.filter(i, i.description == state.managed_pipeline_description)[?0].id.as(id,
+                id.hasValue() ?
 
                   //------------------------------------------------------------
                   // got the pipeline id -> return it in the cursor
@@ -249,7 +251,7 @@ program: |
 
                   state.with({
                     "events": [{"event": {"reason": "want_more"}}],
-                    "cursor": state.?cursor.orValue({}).with({ "pipeline_id": id }),
+                    "cursor": state.?cursor.orValue({}).with({ "pipeline_id": id.value() }),
                     "want_more": true, // use the fetched pipeline id immediately
                   })
 
