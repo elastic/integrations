@@ -56,7 +56,9 @@ Use this integration if you only need to collect data from the AWS Config servic
 5. Add all the required integration configuration parameters, including the aws_region to enable data collection.
 6. Select "Save and continue" to save the integration.
 
-**Note** : For the current integration package, it is compulsory to add Secret Access Key and Access Key ID.
+**Note**
+1. For the current integration package, it is compulsory to add Secret Access Key and Access Key ID.
+2. We perform a full sync during each interval.
 
 ## Logs reference
 
