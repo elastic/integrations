@@ -32,7 +32,7 @@ With your Service Account (SA) with access to Google Cloud Platform (GCP) resour
 From the list of SA:
 
 1. Click the Service Account you just created to open the detailed view.
-2. From the Keys section, click "Add key" > "Create new key" and select JSON as the type.
+2. From the Keys section, click **Add key** > **Create new key** and select JSON as the type.
 3. Download and store the generated private key securely. Note that the private key can't be recovered from GCP if lost.
 
 ### Roles and permissions
@@ -65,7 +65,7 @@ When you add the Google Cloud Platform VertexAI integration, you need to provide
 
 The Project Id is the Google Cloud project ID where your resources exist.
 
-### Credentials File vs Json
+### Credentials File vs JSON
 
 Based on your preference, specify the information in either the Credentials File or the Credentials JSON field.
 
