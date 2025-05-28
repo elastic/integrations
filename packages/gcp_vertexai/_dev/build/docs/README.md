@@ -83,7 +83,7 @@ Specify the content of the JSON file you downloaded from Google Cloud Platform d
 
 ## Metrics Datastream
 
-With a properly configured Service Account and the integration setting in place, it's time to start collecting some metrics.
+With a properly configured Service Account and the integration setting in place, it's time to start collecting the monitoring metrics.
 
 ### Requirements
 
