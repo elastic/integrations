@@ -71,46 +71,46 @@ An example event for `log` looks as following:
 {
     "@timestamp": "2021-10-22T21:01:42.667+05:00",
     "agent": {
-        "ephemeral_id": "03e0d0ad-162e-44f5-a7c2-5126fa84c0c7",
-        "id": "1ec0b954-4169-44b5-8084-b93ffd22c093",
-        "name": "elastic-agent-30208",
+        "ephemeral_id": "9f6c0477-ed78-4030-8b72-4c0794d50c25",
+        "id": "3df05e3b-922c-4316-a0fa-fb72d095657d",
+        "name": "elastic-agent-22472",
         "type": "filebeat",
         "version": "8.13.0"
     },
     "data_stream": {
         "dataset": "keycloak.log",
-        "namespace": "63087",
+        "namespace": "68860",
         "type": "logs"
     },
     "ecs": {
         "version": "8.11.0"
     },
     "elastic_agent": {
-        "id": "1ec0b954-4169-44b5-8084-b93ffd22c093",
+        "id": "3df05e3b-922c-4316-a0fa-fb72d095657d",
         "snapshot": false,
         "version": "8.13.0"
     },
     "event": {
         "agent_id_status": "verified",
         "dataset": "keycloak.log",
-        "ingested": "2025-05-26T11:22:48Z",
+        "ingested": "2025-05-28T08:34:57Z",
         "original": "2021-10-22 21:01:42,667 INFO  [org.jboss.resteasy.resteasy_jaxrs.i18n] (ServerService Thread Pool -- 64) RESTEASY002220: Adding singleton resource org.keycloak.services.resources.admin.AdminRoot from Application class org.keycloak.services.resources.KeycloakApplication",
         "timezone": "+05:00"
     },
     "host": {
         "architecture": "x86_64",
         "containerized": true,
-        "hostname": "elastic-agent-30208",
+        "hostname": "elastic-agent-22472",
         "id": "8259e024976a406e8a54cdbffeb84fec",
         "ip": [
-            "192.168.243.2",
-            "192.168.240.7"
+            "192.168.255.2",
+            "192.168.252.6"
         ],
         "mac": [
-            "02-42-C0-A8-F0-07",
-            "02-42-C0-A8-F3-02"
+            "02-42-C0-A8-FC-06",
+            "02-42-C0-A8-FF-02"
         ],
-        "name": "elastic-agent-30208",
+        "name": "elastic-agent-22472",
         "os": {
             "codename": "focal",
             "family": "debian",
@@ -127,7 +127,7 @@ An example event for `log` looks as following:
     "log": {
         "file": {
             "device_id": "64768",
-            "inode": "10072278",
+            "inode": "19004628",
             "path": "/tmp/service_logs/test-log.log"
         },
         "level": "INFO",
