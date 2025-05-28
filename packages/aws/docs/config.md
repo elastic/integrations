@@ -12,7 +12,7 @@ The AWS Config integration collects one type of data: logs.
 
 **Logs** help you keep a record of the findings in AWS Config, allowing you to track and audit compliance status of your resources.
 
-Within the `config` data stream, we first retrieve all config rules using the [DescribeConfigRules](https://docs.aws.amazon.com/config/latest/APIReference/API_DescribeConfigRules.html) action. Then, for each specific config rule, we fetch its evaluation results using the [GetComplianceDetailsByConfigRule](https://docs.aws.amazon.com/config/latest/APIReference/API_GetComplianceDetailsByConfigRule.html) action. These evaluation results enrich their respective config rules, ultimately producing a finding log.
+The AWS Config integration works by first retrieving all config rules using the [DescribeConfigRules](https://docs.aws.amazon.com/config/latest/APIReference/API_DescribeConfigRules.html) API. Then, for each specific config rule, the integration fetches its evaluation results using the [GetComplianceDetailsByConfigRule](https://docs.aws.amazon.com/config/latest/APIReference/API_GetComplianceDetailsByConfigRule.html) API. These evaluation results enrich their respective config rules, ultimately producing a finding log.
 
 See more details in the [Logs reference](#logs-reference).
 
@@ -58,7 +58,7 @@ Use this integration if you only need to collect data from the AWS Config servic
 
 **Note**
 1. For the current integration package, it is compulsory to add Secret Access Key and Access Key ID.
-2. We perform a full sync during each interval.
+2. The AWS Config integration performs a full ingestion of all findings during each interval.
 
 ## Logs reference
 
