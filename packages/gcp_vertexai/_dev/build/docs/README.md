@@ -105,7 +105,7 @@ With a properly configured Service Account and the integration setting in place,
 
 ### Requirements
 
-You need to create a few dedicated Google Cloud resources before starting, in detail:
+Before you start, you need to create the following Google Cloud resources:
 
 - Log Sink
 - Pub/Sub Topic
