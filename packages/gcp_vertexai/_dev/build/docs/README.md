@@ -59,7 +59,7 @@ For step-by-step instructions on how to set up an integration, refer to the [Get
 
 The next step is to configure the general integration settings used for logs and metrics from the supported services.
 
-The "Project Id" and either the "Credentials File" or "Credentials JSON" will need to be provided in the integration UI when adding the Google Cloud Platform VertexAI integration.
+When you add the Google Cloud Platform VertexAI integration, you need to provide the Project ID and either the Credentials File or Credentials JSON.
 
 ### Project Id
 
