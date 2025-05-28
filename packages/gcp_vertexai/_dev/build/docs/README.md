@@ -65,7 +65,7 @@ When you add the Google Cloud Platform VertexAI integration, you need to provide
 
 The Project Id is the Google Cloud project ID where your resources exist.
 
-### Credentials File vs Json
+### Credentials File vs JSON
 
 Based on your preference, specify the information in either the Credentials File or the Credentials JSON field.
 
