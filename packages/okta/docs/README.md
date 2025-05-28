@@ -253,10 +253,11 @@ An example event for `system` looks as following:
 | okta.authentication_context.authentication_step | The authentication step. | integer |
 | okta.authentication_context.credential_provider | The information about credential provider. Must be one of OKTA_CREDENTIAL_PROVIDER, RSA, SYMANTEC, GOOGLE, DUO, YUBIKEY. | keyword |
 | okta.authentication_context.credential_type | The information about credential type. Must be one of OTP, SMS, PASSWORD, ASSERTION, IWA, EMAIL, OAUTH2, JWT, CERTIFICATE, PRE_SHARED_SYMMETRIC_KEY, OKTA_CLIENT_SESSION, DEVICE_UDID. | keyword |
-| okta.authentication_context.external_session_id | The session identifer of the external session if any. | keyword |
+| okta.authentication_context.external_session_id | The session identifier of the external session if any. | keyword |
 | okta.authentication_context.interface | The interface used. e.g., Outlook, Office365, wsTrust | keyword |
 | okta.authentication_context.issuer.id | The identifier of the issuer. | keyword |
 | okta.authentication_context.issuer.type | The type of the issuer. | keyword |
+| okta.authentication_context.root_session_id | The session identifier of the root if any. | keyword |
 | okta.client.device | The information of the client device. | keyword |
 | okta.client.id | The identifier of the client. | keyword |
 | okta.client.ip | The IP address of the client. | ip |
@@ -344,6 +345,7 @@ An example event for `system` looks as following:
 | okta.target.id | The ID of the target. | keyword |
 | okta.target.type | The type of target. | keyword |
 | okta.transaction.detail.request_api_token_id | ID of the API token used in a request. | keyword |
+| okta.transaction.detail.root_api_token_id | ID of the root API token. | keyword |
 | okta.transaction.id | Identifier of the transaction. | keyword |
 | okta.transaction.type | The type of transaction. Must be one of "WEB", "JOB". | keyword |
 | okta.uuid | The unique identifier of the Okta LogEvent. | keyword |
