@@ -33,7 +33,7 @@ From the list of SA:
 
 1. Click the Service Account you just created to open the detailed view.
 2. From the Keys section, click "Add key" > "Create new key" and select JSON as the type.
-3. Download and store the generated private key securely (remember, the private key can't be recovered from GCP if lost).
+3. Download and store the generated private key securely. Note that the private key can't be recovered from GCP if lost.
 
 ### Roles and permissions
 
