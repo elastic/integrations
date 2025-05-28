@@ -141,7 +141,7 @@ Check the [ECS Field Reference](https://www.elastic.co/guide/en/ecs/current/ecs-
 {{fields "metrics"}}
 
 
-## Logs Reference
+## Logs reference
 
 {{event "auditlogs"}}
 
