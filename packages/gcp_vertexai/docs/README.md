@@ -27,13 +27,13 @@ The Elastic Agent uses the SA to access data on Google Cloud Platform using the 
 
 ### Service Account Keys
 
-Now, with your brand new Service Account (SA) with access to Google Cloud Platform (GCP) resources, you need the credentials to associate with it: a Service Account Key.
+With your Service Account (SA) with access to Google Cloud Platform (GCP) resources, you need the credentials to associate with it: a Service Account Key.
 
 From the list of SA:
 
 1. Click the Service Account you just created to open the detailed view.
 2. From the Keys section, click "Add key" > "Create new key" and select JSON as the type.
-3. Download and store the generated private key securely (remember, the private key can't be recovered from GCP if lost).
+3. Download and store the generated private key securely. Note that the private key can't be recovered from GCP if lost.
 
 ### Roles and permissions
 
@@ -53,13 +53,13 @@ These permissions are included in many roles, but these are some of the most com
 
 
 
-## Setup and Configure the Integration Settings
+## Setup and configure the integration settings
 
 For step-by-step instructions on how to set up an integration, refer to the [Getting Started](https://www.elastic.co/guide/en/starting-with-the-elasticsearch-platform-and-its-solutions/current/getting-started-observability.html) guide.
 
 The next step is to configure the general integration settings used for logs and metrics from the supported services.
 
-The "Project Id" and either the "Credentials File" or "Credentials JSON" will need to be provided in the integration UI when adding the Google Cloud Platform VertexAI integration.
+When you add the Google Cloud Platform VertexAI integration, you need to provide the Project ID and either the Credentials File or Credentials JSON.
 
 ### Project Id
 
@@ -83,11 +83,11 @@ Specify the content of the JSON file you downloaded from Google Cloud Platform d
 
 ## Metrics Datastream
 
-With a properly configured Service Account and the integration setting in place, it's time to start collecting some metrics.
+With a properly configured Service Account and the integration setting in place, it's time to start collecting the monitoring metrics.
 
 ### Requirements
 
-No additional requirement to collect metrics.
+No additional requirements to collect metrics.
 
 ### Deployment types in Vertex AI
 
@@ -101,11 +101,11 @@ Now, you can track and monitor different deployment types (provisioned throughpu
 
 ## Logs Datastream
 
-With a properly configured Service Account and the integration setting in place, it's time to start collecting the logs.
+With a properly configured Service Account and the integration setting in place, you can start collecting the logs.
 
 ### Requirements
 
-You need to create a few dedicated Google Cloud resources before starting, in detail:
+Before you start, you need to create the following Google Cloud resources:
 
 - Log Sink
 - Pub/Sub Topic
@@ -114,15 +114,14 @@ You need to create a few dedicated Google Cloud resources before starting, in de
 
 Here's an example of collecting Vertex AI auditlogs using a Pub/Sub topic, a subscription, and a Log Router. We will create the resources in the Google Cloud Console and then configure the Google Cloud Platform integration.
 
-### On the Google Cloud Console
+On the Google Cloud Console follow these steps:
 
 At a high level, the steps required are:
 
-- Visit "Logging" > "Log Router" > "Create Sink" and provide a sink name and description.
-- In "Sink destination", select "Cloud Pub/Sub topic" as the sink service. Select an existing topic or "Create a topic". Note the topic name, as it will be provided in the Topic field in the Elastic agent configuration.
-- If you created a new topic, you must remember to go to that topic and create a subscription for it. A subscription directs messages on a topic to subscribers. Note the "Subscription ID", as it will need to be entered in the "Subscription name" field in the integration settings.
-- Under "Choose logs to include in sink", for example add `resource.labels.service=aiplatform.googleapis.com` and
-`resource.type="audited_resource"` in the "Inclusion filter" to include all auditlogs.
+1. Visit "Logging" > "Log Router" > "Create Sink" and provide a sink name and description.
+2. In "Sink destination", select "Cloud Pub/Sub topic" as the sink service. Select an existing topic or "Create a topic". Note the topic name, as it will be provided in the Topic field in the Elastic agent configuration.
+3. If you created a new topic, you must remember to go to that topic and create a subscription for it. A subscription directs messages on a topic to subscribers. Note the "Subscription ID", as it will need to be entered in the "Subscription name" field in the integration settings.
+4. Under "Choose logs to include in sink", for example add `resource.labels.service=aiplatform.googleapis.com` and `resource.type="audited_resource"` in the "Inclusion filter" to include all auditlogs.
 
 This is just an example to create your filter expression to select the Vertex AI auditlogs  you want to export to the Pub/Sub topic.
 
@@ -130,7 +129,7 @@ This is just an example to create your filter expression to select the Vertex AI
 
 Refer to [Google Cloud Platform troubleshooting](https://www.elastic.co/guide/en/integrations/current/gcp.html#_troubleshooting) for more information about troubleshooting.
 
-## Metrics Reference
+## Metrics reference
 
 An example event for `metrics` looks as following:
 
@@ -257,7 +256,7 @@ Check the [ECS Field Reference](https://www.elastic.co/guide/en/ecs/current/ecs-
 
 
 
-## Logs Reference
+## Logs reference
 
 An example event for `auditlogs` looks as following:
 

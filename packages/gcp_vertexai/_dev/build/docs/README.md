@@ -114,15 +114,14 @@ Before you start, you need to create the following Google Cloud resources:
 
 Here's an example of collecting Vertex AI auditlogs using a Pub/Sub topic, a subscription, and a Log Router. We will create the resources in the Google Cloud Console and then configure the Google Cloud Platform integration.
 
-### On the Google Cloud Console
+On the Google Cloud Console follow these steps:
 
 At a high level, the steps required are:
 
-- Visit "Logging" > "Log Router" > "Create Sink" and provide a sink name and description.
-- In "Sink destination", select "Cloud Pub/Sub topic" as the sink service. Select an existing topic or "Create a topic". Note the topic name, as it will be provided in the Topic field in the Elastic agent configuration.
-- If you created a new topic, you must remember to go to that topic and create a subscription for it. A subscription directs messages on a topic to subscribers. Note the "Subscription ID", as it will need to be entered in the "Subscription name" field in the integration settings.
-- Under "Choose logs to include in sink", for example add `resource.labels.service=aiplatform.googleapis.com` and
-`resource.type="audited_resource"` in the "Inclusion filter" to include all auditlogs.
+1. Visit "Logging" > "Log Router" > "Create Sink" and provide a sink name and description.
+2. In "Sink destination", select "Cloud Pub/Sub topic" as the sink service. Select an existing topic or "Create a topic". Note the topic name, as it will be provided in the Topic field in the Elastic agent configuration.
+3. If you created a new topic, you must remember to go to that topic and create a subscription for it. A subscription directs messages on a topic to subscribers. Note the "Subscription ID", as it will need to be entered in the "Subscription name" field in the integration settings.
+4. Under "Choose logs to include in sink", for example add `resource.labels.service=aiplatform.googleapis.com` and `resource.type="audited_resource"` in the "Inclusion filter" to include all auditlogs.
 
 This is just an example to create your filter expression to select the Vertex AI auditlogs  you want to export to the Pub/Sub topic.
 
