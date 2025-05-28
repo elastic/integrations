@@ -108,6 +108,11 @@ if [[ "${BUILDKITE_PIPELINE_SLUG}" =~ ^(integrations|integrations-test-stack)$ ]
     if [[ "${BUILDKITE_STEP_KEY}" =~ ^test-integrations- ]]; then
         BUILDKITE_API_TOKEN=$(retry 5 vault kv get -field buildkite_token "${BUILDKITE_API_TOKEN_PATH}")
         export BUILDKITE_API_TOKEN
+
+        if [ -f "${GOOGLE_APPLICATION_CREDENTIALS:-""}" ]; then
+            GOOGLE_OAUTH_ACCESS_TOKEN="$(gcloud auth print-access-token)"
+            export GOOGLE_OAUTH_ACCESS_TOKEN
+        fi
     fi
 fi
 
