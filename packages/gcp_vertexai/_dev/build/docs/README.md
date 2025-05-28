@@ -53,7 +53,7 @@ These permissions are included in many roles, but these are some of the most com
 
 
 
-## Setup and Configure the Integration Settings
+## Setup and configure the integration settings
 
 For step-by-step instructions on how to set up an integration, refer to the [Getting Started](https://www.elastic.co/guide/en/starting-with-the-elasticsearch-platform-and-its-solutions/current/getting-started-observability.html) guide.
 
