@@ -10,7 +10,7 @@ The integration with Google Cloud Platform (GCP) Vertex AI allows you to gather 
 
 The Vertex AI integration collects metrics and logs data.
 
-The GCP Vertex AI includes **Vertex AI Model Garden Publisher Model** metrics under the publisher category, and the **Vertex AI Endpoint** metrics under the prediction category and auditlogs under the logs.
+The GCP Vertex AI includes **Vertex AI Model Garden Publisher Model** metrics under the publisher category, and the **Vertex AI Endpoint** metrics under the prediction category and audit logs under the logs.
 
 ## Requirements
 
@@ -53,7 +53,7 @@ These permissions are included in many roles, but these are some of the most com
 
 
 
-## Setup and configure the integration settings
+## Set up and configure the integration settings
 
 For step-by-step instructions on how to set up an integration, refer to the [Getting Started](https://www.elastic.co/guide/en/starting-with-the-elasticsearch-platform-and-its-solutions/current/getting-started-observability.html) guide.
 
@@ -81,7 +81,7 @@ Specify the content of the JSON file you downloaded from Google Cloud Platform d
 
 
 
-## Metrics Datastream
+## Metrics
 
 With a properly configured Service Account and the integration setting in place, it's time to start collecting the monitoring metrics.
 
@@ -99,7 +99,7 @@ Vertex AI offers two primary deployment types:
 Now, you can track and monitor different deployment types (provisioned throughput and pay-as-you-go) in Vertex AI using the Model Garden Publisher resource.
 
 
-## Logs Datastream
+## Logs
 
 With a properly configured Service Account and the integration setting in place, you can start collecting the logs.
 
@@ -112,7 +112,7 @@ Before you start, you need to create the following Google Cloud resources:
 - Subscription
 
 
-Here's an example of collecting Vertex AI auditlogs using a Pub/Sub topic, a subscription, and a Log Router. We will create the resources in the Google Cloud Console and then configure the Google Cloud Platform integration.
+Here's an example of collecting Vertex AI audit logs using a Pub/Sub topic, a subscription, and a Log Router. We will create the resources in the Google Cloud Console and then configure the Google Cloud Platform integration.
 
 On the Google Cloud Console follow these steps:
 
@@ -121,9 +121,9 @@ At a high level, the steps required are:
 1. Visit "Logging" > "Log Router" > "Create Sink" and provide a sink name and description.
 2. In "Sink destination", select "Cloud Pub/Sub topic" as the sink service. Select an existing topic or "Create a topic". Note the topic name, as it will be provided in the Topic field in the Elastic agent configuration.
 3. If you created a new topic, you must remember to go to that topic and create a subscription for it. A subscription directs messages on a topic to subscribers. Note the "Subscription ID", as it will need to be entered in the "Subscription name" field in the integration settings.
-4. Under "Choose logs to include in sink", for example add `resource.labels.service=aiplatform.googleapis.com` and `resource.type="audited_resource"` in the "Inclusion filter" to include all auditlogs.
+4. Under "Choose logs to include in sink", for example add `resource.labels.service=aiplatform.googleapis.com` and `resource.type="audited_resource"` in the "Inclusion filter" to include all audit logs.
 
-This is just an example to create your filter expression to select the Vertex AI auditlogs  you want to export to the Pub/Sub topic.
+This is just an example to create your filter expression to select the Vertex AI audit logs  you want to export to the Pub/Sub topic.
 
 ## Troubleshooting
 
