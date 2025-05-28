@@ -87,7 +87,7 @@ With a properly configured Service Account and the integration setting in place,
 
 ### Requirements
 
-No additional requirement to collect metrics.
+No additional requirements to collect metrics.
 
 ### Deployment types in Vertex AI
 
