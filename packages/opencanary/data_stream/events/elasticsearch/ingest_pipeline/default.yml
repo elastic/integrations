@@ -653,15 +653,13 @@ processors:
       field: opencanary.logdata.PASSWORD
       ignore_missing: true
       ignore_failure: true
-  - redact:
+  - gsub:
       description: Redact any passwords in the log data
       tag: redact_event_original
       if: 'ctx.tags != null && ctx.tags.contains("redact_passwords") && ctx.event?.original =~ /\"PASSWORD\": \"/'
       field: event.original
-      patterns:
-        - '"PASSWORD": "%{DATA:REDACTED}"'
-      prefix: '"PASSWORD": "<'
-      suffix: '>"'
+      pattern: '(.*"PASSWORD": *").*?(".*)'
+      replacement: '$1<REDACTED>$2'
       ignore_missing: true
   - rename:
       description: Rename opencanary.logdata.DOMAIN to user.domain
