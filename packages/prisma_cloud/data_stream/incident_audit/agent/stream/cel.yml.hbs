@@ -107,12 +107,12 @@ program: |
         }
       }).do_request().as(resp, resp.StatusCode == 200 ?
           resp.Body.decode_json().as(body,{
-            "events": (body != null ?
+            "events": (body != null && body.size() > 0 ?
               body.map(e, {
                 "message": e.encode_json(),
               })
             :
-              [{"message": "no_data"}]
+              []
             ),
             "cursor": {
               ?"last_timestamp": body != null && body.size() > 0 ?
