@@ -1099,10 +1099,10 @@ processors:
   - set:
       field: host.id
       copy_from: organization.id
-      if: ctx.organization?.id != null
+      if: ctx.organization instanceof Map && ctx.organization?.id != null
   - script:
       lang: painless
-      if: 'ctx.organization?.id != null && ctx._conf?.tenants != null'
+      if: ctx.organization instanceof Map && ctx.organization?.id != null && ctx._conf?.tenants != null
       source: >
         def conftenants = ctx._conf.tenants;
         def orgid = ctx.organization.id;
@@ -1113,7 +1113,7 @@ processors:
   - set:
       field: host.name
       copy_from: organization.name
-      if: ctx.organization?.name != null && ctx.host?.name == null
+      if: ctx.organization instanceof Map && ctx.organization?.name != null && ctx.host?.name == null
   - set:
       field: host.name
       copy_from: user.domain
