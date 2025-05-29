@@ -54,201 +54,137 @@ An example event for `stats` looks as following:
 
 ```json
 {
-    "@timestamp": "2025-04-15T15:31:41.513Z",
+    "@timestamp": "2025-05-29T13:19:19.677Z",
     "agent": {
-        "ephemeral_id": "398cee14-e976-4ee0-ae74-df923b06e08f",
-        "id": "60465982-823e-4f9d-b330-4bebc7e0b4aa",
-        "name": "093b05dfeffc",
+        "ephemeral_id": "b128af4e-6389-4d5b-bbea-9247515ba1d6",
+        "id": "69e7d738-53d0-4bb5-afc2-9efdb6d5a698",
+        "name": "elastic-agent-38289",
         "type": "metricbeat",
-        "version": "8.16.6"
+        "version": "8.17.0"
     },
     "data_stream": {
         "dataset": "nvidia_gpu.stats",
-        "namespace": "default",
+        "namespace": "59747",
         "type": "metrics"
     },
     "ecs": {
         "version": "8.17.0"
     },
     "elastic_agent": {
-        "id": "60465982-823e-4f9d-b330-4bebc7e0b4aa",
+        "id": "69e7d738-53d0-4bb5-afc2-9efdb6d5a698",
         "snapshot": false,
-        "version": "8.16.6"
+        "version": "8.17.0"
     },
     "event": {
         "agent_id_status": "verified",
         "dataset": "nvidia_gpu.stats",
-        "duration": 14458458,
-        "ingested": "2025-04-15T15:31:51Z",
+        "duration": 740689,
+        "ingested": "2025-05-29T13:19:22Z",
         "module": "prometheus"
     },
     "gpu": {
-        "decoder": {
-            "utilization": 2
+        "labels": {
+            "instance": "localhost:9090",
+            "job": "prometheus"
         },
-        "device": {
-            "id": "0",
-            "model": "NVIDIA GeForce RTX 2060 SUPER",
-            "name": "nvidia0",
-            "uuid": "GPU-72ca939a-a640-eb0b-df2b-4ac1d7081736"
-        },
-        "driver": {
-            "version": "560.94"
-        },
-        "encoder": {
-            "utilization": 0
-        },
-        "energy": {
-            "total": 68062938297
-        },
-        "framebuffer": {
-            "size": {
-                "free": 247,
-                "used": 7758
-            }
-        },
-        "license": {
-            "vgpu": "0"
-        },
-        "memory": {
-            "copy_utilization": 13,
-            "frequency": 405,
-            "temperature": 0
-        },
-        "nvlink": {
-            "bandwidth": {
-                "total": 0
-            }
-        },
-        "pci": {
-            "bus": {
-                "id": "00000000:01:00.0"
-            }
-        },
-        "power": {
-            "usage": 21.382
-        },
-        "streaming_multiprocessor": {
-            "frequency": 300
-        },
-        "temperature": 44,
-        "utilization": 12
+        "up": 0
     },
     "host": {
-        "architecture": "aarch64",
-        "containerized": false,
-        "hostname": "093b05dfeffc",
+        "architecture": "x86_64",
+        "containerized": true,
+        "hostname": "elastic-agent-38289",
         "ip": [
-            "172.17.0.3"
+            "172.18.0.7",
+            "192.168.112.2"
         ],
         "mac": [
-            "02-42-AC-11-00-03"
+            "02-42-AC-12-00-07",
+            "02-42-C0-A8-70-02"
         ],
-        "name": "093b05dfeffc",
+        "name": "elastic-agent-38289",
         "os": {
-            "codename": "noble",
-            "family": "debian",
-            "kernel": "6.10.14-linuxkit",
-            "name": "Ubuntu",
-            "platform": "ubuntu",
+            "family": "",
+            "kernel": "5.15.153.1-microsoft-standard-WSL2",
+            "name": "Wolfi",
+            "platform": "wolfi",
             "type": "linux",
-            "version": "24.04.1 LTS (Noble Numbat)"
+            "version": "20230201"
         }
     },
     "metricset": {
         "name": "collector",
         "period": 10000
     },
-    "prometheus": {
-        "node": {
-            "hostname": "de4a75bd4194",
-            "job": "prometheus"
-        }
-    },
-    "server": {
-        "address": "192.168.0.192:9400"
-    },
     "service": {
-        "address": "http://192.168.0.192:9400/metrics",
+        "address": "http://localhost:9090/metrics",
         "type": "prometheus"
-    }
+    },
+    "tags": [
+        "preserve_original_event"
+    ]
 }
 ```
 
 **Exported fields**
 
-| Field | Description | Type | Metric Type |
-|---|---|---|---|
-| @timestamp | Event timestamp. | date |  |
-| data_stream.dataset | Data stream dataset. | constant_keyword |  |
-| data_stream.namespace | Data stream namespace. | constant_keyword |  |
-| data_stream.type | Data stream type. | constant_keyword |  |
-| gpu.Remapped.correctable_remapped_rows.count | Number of remapped rows for correctable errors | long | gauge |
-| gpu.Remapped.failed_remapped_rows.count | Whether remapping of rows has failed | long | gauge |
-| gpu.Remapped.uncorrectable_remapped_rows.count | Number of remapped rows for uncorrectable errors | long | gauge |
-| gpu.clock.mem_frequency | Memory clock frequency (in MHz). | float | gauge |
-| gpu.clock.streaming_multiprocessor_frequency | SM clock frequency (in MHz). | float | gauge |
-| gpu.dcp.dram.active | Ratio of cycles the device memory interface is active sending or receiving data. | float | gauge |
-| gpu.dcp.fp16_pipe.active | Ratio of cycles the fp16 pipes are active. | float | gauge |
-| gpu.dcp.fp32_pipe.active | Ratio of cycles the fp32 pipes are active. | float | gauge |
-| gpu.dcp.fp64_pipe.active | Ratio of cycles the fp64 pipes are active. | float | gauge |
-| gpu.dcp.graphics_engine.active | Ratio of time the graphics engine is active. | float | gauge |
-| gpu.dcp.sm.active | The ratio of cycles an SM has at least one warp assigned. | float | gauge |
-| gpu.dcp.sm.occupancy | The ratio of number of warps resident on an SM. | float | gauge |
-| gpu.dcp.tensor_pipe.active | Ratio of cycles the tensor (HMMA) pipe is active. | float | gauge |
-| gpu.device.brand | Brand of the GPU device. | keyword |  |
-| gpu.device.ecc_info_rom_version | ECC inforom version | keyword |  |
-| gpu.device.id | ID of the GPU device. | keyword |  |
-| gpu.device.info_rom.oem_version | OEM version of the info ROM. | keyword |  |
-| gpu.device.info_rom_version | Version of the info ROM. | keyword |  |
-| gpu.device.model | Model of the GPU device. | keyword |  |
-| gpu.device.name | Name of the GPU device. | keyword |  |
-| gpu.device.power_info_rom_version | Power management object inforom version | keyword |  |
-| gpu.device.serial_number | Device Serial Number | keyword |  |
-| gpu.device.uuid | UUID of the GPU device. | keyword |  |
-| gpu.device.vbios_version | Version of the vbios. | keyword |  |
-| gpu.driver.nvml_version | NVML version of the driver. | keyword |  |
-| gpu.driver.version | Version of the driver. | keyword |  |
-| gpu.ecc.double_bit_persistent | Double-bit persistent errors count for GPU memory. | long | gauge |
-| gpu.ecc.double_bit_volatile | Double-bit volatile errors count for GPU memory. | long | gauge |
-| gpu.ecc.single_bit_persistent | Single-bit persistent errors count for GPU memory. | long | gauge |
-| gpu.ecc.single_bit_volatile | Single-bit volatile errors count for GPU memory. | long | gauge |
-| gpu.error.code | Specific Error code for the XID error on the GPU. | keyword |  |
-| gpu.error.message | Specific Error message for the XID error on the. | keyword |  |
-| gpu.error.xid | The eXerience ID of the error being reported by the GPU. | keyword |  |
-| gpu.license_vgpu_status | vGPU License status. | keyword |  |
-| gpu.memory.framebuffer.size.free | Free size of the framebuffer. | long | gauge |
-| gpu.memory.framebuffer.size.used | Used size of the framebuffer. | long | gauge |
-| gpu.nvlink.bandwidth.total | Total number of NVLink bandwidth counters for all lanes. | long | gauge |
-| gpu.nvlink.bandwidth_l0.total | The number of bytes of active NVLink rx or tx data including both header and payload. | long | gauge |
-| gpu.nvlink.data_crc_errors.count | Total number of NVLink data CRC errors. | long | gauge |
-| gpu.nvlink.flowcontrol_crc_errors.count | Total number of NVLink flow-control CRC errors. | long | gauge |
-| gpu.nvlink.recovery_errors.count | Total number of NVLink recovery errors. | long | gauge |
-| gpu.nvlink.replay_errors.count | Total number of NVLink retries. | long | gauge |
-| gpu.pci_bus.id | Bus ID of the PCI device. | keyword |  |
-| gpu.pcie.replay | Replay counter for the PCIe connection. | float | gauge |
-| gpu.pcie.rx_bytes | Total number of bytes received through PCIe RX via NVML. | float | counter |
-| gpu.pcie.tx_bytes | Total number of bytes transmitted through PCIe TX via NVML. | float | counter |
-| gpu.power.energy_consumption.total | Total energy consumption since boot (in mJ). | long | counter |
-| gpu.power.usage | Current power usage of the GPU in Watts. | float | gauge |
-| gpu.temperature.gpu | GPU temperature (in C). | float | gauge |
-| gpu.temperature.memory | Memory temperature (in C). | float | gauge |
-| gpu.throttling.board_limit | Number of microseconds throttled due to Board limit. | float | gauge |
-| gpu.throttling.low_utilization | Number of microseconds throttled due to low utilization. | float | gauge |
-| gpu.throttling.power | Number of microseconds throttled due to power. | float | gauge |
-| gpu.throttling.reliability | Number of microseconds throttled due to reliability. | float | gauge |
-| gpu.throttling.sync_boost | Number of microseconds throttled due to Sync Boost. | float | gauge |
-| gpu.throttling.thermal | Number of microseconds throttled due to thermals. | float | gauge |
-| gpu.utilization.decoder | Decoder utilization (in %). | float | gauge |
-| gpu.utilization.encoder | Encoder utilization (in %). | float | gauge |
-| gpu.utilization.gpu | GPU utilization (in %). | float | gauge |
-| gpu.utilization.memory_copy | Memory utilization (in %). | float | gauge |
-| kubernetes.container.name | Kubernetes container name | keyword |  |
-| kubernetes.namespace | Kubernetes namespace | keyword |  |
-| kubernetes.pod.name | Kubernetes pod name | keyword |  |
-| prometheus.node.hostname | Hostname of the Prometheus node. | keyword |  |
-| prometheus.node.id | ID of the Prometheus node. | integer |  |
-| prometheus.node.job | Job of the Prometheus node. | keyword |  |
-| prometheus.up.value | Whether prometheus reports the targeted instance as up or down. | keyword |  |
-| service.address | Address where data about this service was collected from. This should be a URI, network address (ipv4:port or [ipv6]:port) or a resource path (sockets). | keyword |  |
-| service.type | The type of the service data is collected from. The type can be used to group and correlate logs and metrics from one service type. Example: If logs or metrics are collected from Elasticsearch, `service.type` would be `elasticsearch`. | keyword |  |
+| Field | Description | Type | Unit | Metric Type |
+|---|---|---|---|---|
+| @timestamp | Event timestamp. | date |  |  |
+| data_stream.dataset | Data stream dataset. | constant_keyword |  |  |
+| data_stream.namespace | Data stream namespace. | constant_keyword |  |  |
+| data_stream.type | Data stream type. | constant_keyword |  |  |
+| gpu.clock.mem_frequency | Memory clock frequency (in MHz). | float |  | gauge |
+| gpu.clock.streaming_multiprocessor_frequency | SM clock frequency (in MHz). | float |  | gauge |
+| gpu.dcp.dram.active | Ratio of cycles the device memory interface is active sending or receiving data. | float |  | gauge |
+| gpu.dcp.fp16_pipe.active | Ratio of cycles the fp16 pipes are active. | float |  | gauge |
+| gpu.dcp.fp32_pipe.active | Ratio of cycles the fp32 pipes are active. | float |  | gauge |
+| gpu.dcp.fp64_pipe.active | Ratio of cycles the fp64 pipes are active. | float |  | gauge |
+| gpu.dcp.graphics_engine.active | Ratio of time the graphics engine is active. | float |  | gauge |
+| gpu.dcp.sm.active | The ratio of cycles an SM has at least one warp assigned. | float |  | gauge |
+| gpu.dcp.sm.occupancy | The ratio of number of warps resident on an SM. | float |  | gauge |
+| gpu.dcp.tensor_pipe.active | Ratio of cycles the tensor (HMMA) pipe is active. | float |  | gauge |
+| gpu.device.brand | Brand of the GPU device. | keyword |  |  |
+| gpu.device.ecc_info_rom_version | ECC inforom version | keyword |  |  |
+| gpu.device.power_info_rom_version | Power management object inforom version | keyword |  |  |
+| gpu.device.serial_number | Device Serial Number | keyword |  |  |
+| gpu.ecc.double_bit_persistent | Double-bit persistent errors count for GPU memory. | long |  | counter |
+| gpu.ecc.double_bit_volatile | Double-bit volatile errors count for GPU memory. | long |  | counter |
+| gpu.ecc.single_bit_persistent | Single-bit persistent errors count for GPU memory. | long |  | counter |
+| gpu.ecc.single_bit_volatile | Single-bit volatile errors count for GPU memory. | long |  | counter |
+| gpu.error.xid | The eXerience ID of the error being reported by the GPU. | float |  | gauge |
+| gpu.labels.\* | Nvidia GPU labels | object |  |  |
+| gpu.license_vgpu_status | vGPU License status. | long |  | gauge |
+| gpu.memory.framebuffer.size.free | Free size of the framebuffer (in MiB). | long |  | gauge |
+| gpu.memory.framebuffer.size.used | Used size of the framebuffer (in MiB). | long |  | gauge |
+| gpu.nvlink.bandwidth.total | Total number of NVLink bandwidth counters for all lanes. | long |  | counter |
+| gpu.nvlink.bandwidth_l0.total | The number of bytes of active NVLink rx or tx data including both header and payload. | long |  | counter |
+| gpu.nvlink.data_crc_errors.count | Total number of NVLink data CRC errors. | long |  | counter |
+| gpu.nvlink.flowcontrol_crc_errors.count | Total number of NVLink flow-control CRC errors. | long |  | counter |
+| gpu.nvlink.recovery_errors.count | Total number of NVLink recovery errors. | long |  | counter |
+| gpu.nvlink.replay_errors.count | Total number of NVLink retries. | long |  | counter |
+| gpu.pcie.replay | Replay counter for the PCIe connection. | long |  | counter |
+| gpu.pcie.rx_bytes | Total number of bytes received through PCIe RX via NVML. | long | byte | counter |
+| gpu.pcie.tx_bytes | Total number of bytes transmitted through PCIe TX via NVML. | long | byte | counter |
+| gpu.power.energy_consumption.total | Total energy consumption since boot (in mJ). | long |  | counter |
+| gpu.power.usage | Current power usage of the GPU in Watts. | float |  | gauge |
+| gpu.remapped.correctable_remapped_rows.count | Number of remapped rows for correctable errors | long |  | counter |
+| gpu.remapped.failed_remapped_rows.count | Whether remapping of rows has failed | long |  | gauge |
+| gpu.remapped.uncorrectable_remapped_rows.count | Number of remapped rows for uncorrectable errors | long |  | counter |
+| gpu.retired.double_bit_errors | Total number of retired pages due to double-bit errors. | long |  | counter |
+| gpu.retired.pending | Total number of pages pending retirement. | long |  | counter |
+| gpu.retired.single_bit_errors | Total number of retired pages due to single-bit errors. | long |  | counter |
+| gpu.temperature.gpu | GPU temperature (in C). | float |  | gauge |
+| gpu.temperature.memory | Memory temperature (in C). | float |  | gauge |
+| gpu.throttling.board_limit | Number of microseconds throttled due to Board limit. | long |  | counter |
+| gpu.throttling.low_utilization | Number of microseconds throttled due to low utilization. | long |  | counter |
+| gpu.throttling.power | Number of microseconds throttled due to power. | long |  | counter |
+| gpu.throttling.reliability | Number of microseconds throttled due to reliability. | long |  | counter |
+| gpu.throttling.sync_boost | Number of microseconds throttled due to Sync Boost. | long |  | counter |
+| gpu.throttling.thermal | Number of microseconds throttled due to thermals. | long |  | counter |
+| gpu.up | server running status | float |  | gauge |
+| gpu.utilization.decoder | Decoder utilization (in %). | float | percent | gauge |
+| gpu.utilization.encoder | Encoder utilization (in %). | float | percent | gauge |
+| gpu.utilization.gpu | GPU utilization (in %). | float | percent | gauge |
+| gpu.utilization.memory_copy | Memory utilization (in %). | float | percent | gauge |
+| service.address | Address where data about this service was collected from. This should be a URI, network address (ipv4:port or [ipv6]:port) or a resource path (sockets). | keyword |  |  |
+| service.type | The type of the service data is collected from. The type can be used to group and correlate logs and metrics from one service type. Example: If logs or metrics are collected from Elasticsearch, `service.type` would be `elasticsearch`. | keyword |  |  |

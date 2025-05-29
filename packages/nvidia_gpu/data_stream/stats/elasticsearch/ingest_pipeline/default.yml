@@ -66,14 +66,14 @@ processors:
     field: prometheus.DCGM_FI_DEV_XID_ERRORS.value
     target_field: gpu.error.xid
     ignore_missing: true
-- rename:
-    field: prometheus.labels.err_code
-    target_field: gpu.error.code
-    ignore_missing: true
-- rename:
-    field: prometheus.labels.err_msg
-    target_field: gpu.error.message
-    ignore_missing: true
+# - rename:
+#     field: prometheus.labels.err_code
+#     target_field: gpu.error.code
+#     ignore_missing: true
+# - rename:
+#     field: prometheus.labels.err_msg
+#     target_field: gpu.error.message
+#     ignore_missing: true
 # Framebuffer Usage
 - rename:
     field: prometheus.DCGM_FI_DEV_FB_USED.value
@@ -152,17 +152,21 @@ processors:
     target_field: gpu.device.serial_number
     ignore_missing: true
 - rename:
-    field: prometheus.labels.gpu
-    target_field: gpu.device.id
-    ignore_missing: true
-- rename:
-    field: prometheus.labels.DCGM_FI_DEV_OEM_INFOROM_VER
-    target_field: gpu.device.info_rom.oem_version
-    ignore_missing: true
-- rename:
-    field: prometheus.labels.DCGM_FI_DEV_INFOROM_IMAGE_VER
-    target_field: gpu.device.info_rom_version
-    ignore_missing: true
+      field: prometheus.labels
+      target_field: gpu.labels
+      ignore_missing: true    
+# - rename:
+#     field: prometheus.labels.gpu
+#     target_field: gpu.device.id
+#     ignore_missing: true
+# - rename:
+#     field: prometheus.labels.DCGM_FI_DEV_OEM_INFOROM_VER
+#     target_field: gpu.device.info_rom.oem_version
+#     ignore_missing: true
+# - rename:
+#     field: prometheus.labels.DCGM_FI_DEV_INFOROM_IMAGE_VER
+#     target_field: gpu.device.info_rom_version
+#     ignore_missing: true
 - rename:
     field: prometheus.DCGM_FI_DEV_POWER_INFOROM_VER.value
     target_field: gpu.device.power_info_rom_version
@@ -171,34 +175,34 @@ processors:
     field: prometheus.DCGM_FI_DEV_ECC_INFOROM_VER.value
     target_field: gpu.device.ecc_info_rom_version
     ignore_missing: true
-- rename:
-    field: prometheus.labels.modelName
-    target_field: gpu.device.model
-    ignore_missing: true
-- rename:
-    field: prometheus.labels.UUID
-    target_field: gpu.device.uuid
-    ignore_missing: true
-- rename:
-    field: prometheus.labels.device
-    target_field: gpu.device.name
-    ignore_missing: true
-- rename:
-    field: prometheus.labels.gpu
-    target_field: gpu.device.id
-    ignore_missing: true
-- rename:
-    field: prometheus.labels.DCGM_FI_DEV_VBIOS_VERSION
-    target_field: gpu.device.vbios_version
-    ignore_missing: true
-- rename:
-    field: prometheus.labels.DCGM_FI_DRIVER_VERSION
-    target_field: gpu.driver.version
-    ignore_missing: true
-- rename:
-    field: prometheus.labels.DCGM_FI_NVML_VERSION
-    target_field: gpu.driver.nvml_version
-    ignore_missing: true
+# - rename:
+#     field: prometheus.labels.modelName
+#     target_field: gpu.device.model
+#     ignore_missing: true
+# - rename:
+#     field: prometheus.labels.UUID
+#     target_field: gpu.device.uuid
+#     ignore_missing: true
+# - rename:
+#     field: prometheus.labels.device
+#     target_field: gpu.device.name
+#     ignore_missing: true
+# - rename:
+#     field: prometheus.labels.gpu
+#     target_field: gpu.device.id
+#     ignore_missing: true
+# - rename:
+#     field: prometheus.labels.DCGM_FI_DEV_VBIOS_VERSION
+#     target_field: gpu.device.vbios_version
+#     ignore_missing: true
+# - rename:
+#     field: prometheus.labels.DCGM_FI_DRIVER_VERSION
+#     target_field: gpu.driver.version
+#     ignore_missing: true
+# - rename:
+#     field: prometheus.labels.DCGM_FI_NVML_VERSION
+#     target_field: gpu.driver.nvml_version
+#     ignore_missing: true
 # Throttling
 - rename:
     field: prometheus.DCGM_FI_DEV_SYNC_BOOST_VIOLATION.counter
@@ -257,41 +261,45 @@ processors:
     field: prometheus.DCGM_FI_PROF_PIPE_FP16_ACTIVE.value
     target_field: gpu.dcp.fp16_pipe.active
     ignore_missing: true
+- rename:
+    field: prometheus.up.value
+    target_field: gpu.up
+    ignore_missing: true
 #pci    
-- rename:
-    field: prometheus.labels.pci_bus_id
-    target_field: gpu.pci.bus.id
-    ignore_missing: true
+# - rename:
+#     field: prometheus.labels.pci_bus_id
+#     target_field: gpu.pci.bus.id
+#     ignore_missing: true
 #prometheus
-- rename:
-    field: prometheus.labels.up.value
-    target_field: prometheus.up
-    ignore_missing: true
-- rename:
-    field: prometheus.labels.Hostname.value
-    target_field: prometheus.node.hostname
-    ignore_missing: true
-- rename:
-    field: prometheus.labels.job.value
-    target_field: prometheus.node.job
-    ignore_missing: true
-- rename:
-    field: prometheus.labels.id.value
-    target_field: prometheus.node.id
-    ignore_missing: true
+# - rename:
+#     field: prometheus.labels.up.value
+#     target_field: prometheus.up
+#     ignore_missing: true
+# - rename:
+#     field: prometheus.labels.Hostname.value
+#     target_field: prometheus.node.hostname
+#     ignore_missing: true
+# - rename:
+#     field: prometheus.labels.job.value
+#     target_field: prometheus.node.job
+#     ignore_missing: true
+# - rename:
+#     field: prometheus.labels.id.value
+#     target_field: prometheus.node.id
+#     ignore_missing: true
 #Kubernetes
-- rename:
-    field: prometheus.labels.pod
-    target_field: kubernetes.pod.name
-    ignore_missing: true
-- rename:
-    field: prometheus.labels.container
-    target_field: kubernetes.container.name
-    ignore_missing: true
-- rename:
-    field: prometheus.labels.namespace
-    target_field: kubernetes.namespace
-    ignore_missing: true 
+# - rename:
+#     field: prometheus.labels.pod
+#     target_field: kubernetes.pod.name
+#     ignore_missing: true
+# - rename:
+#     field: prometheus.labels.container
+#     target_field: kubernetes.container.name
+#     ignore_missing: true
+# - rename:
+#     field: prometheus.labels.namespace
+#     target_field: kubernetes.namespace
+#     ignore_missing: true 
 # - remove:
 #     field: 
 #       - "prometheus.DCGM_FI_DEV_PCIE_REPLAY_COUNTER"
