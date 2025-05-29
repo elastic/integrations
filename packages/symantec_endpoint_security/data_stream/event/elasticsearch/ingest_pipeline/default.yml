@@ -1170,12 +1170,14 @@ processors:
       field: file.size
       if: ctx.file?.size instanceof List
       tag: foreach_file_size
+
       processor:
         convert:
           field: _ingest._value
           tag: convert_file_size_to_long
           type: long
           ignore_missing: true
+          ignore_failure: true
           on_failure:
             - remove:
                 field: _ingest._value
