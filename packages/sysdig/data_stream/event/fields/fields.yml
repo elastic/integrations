@@ -1,0 +1,484 @@
+- name: sysdig
+  type: group
+  fields:
+    - name: event
+      type: group
+      fields:
+        - name: actions
+          type: group
+          fields:
+            - name: after_event_ns
+              type: long
+              description: Duration after the event that the capture spans in nanoseconds.
+            - name: before_event_ns
+              type: long
+              description: Duration before the event that the capture spans in nanoseconds.
+            - name: err_msg
+              type: keyword
+              description: When isSuccessful is false, details on why the action failed.
+            - name: is_successful
+              type: boolean
+              description: Whether or not the Capture was taken successfully.
+            - name: token
+              type: keyword
+              description: Token to retrieve the related capture.
+            - name: type
+              type: keyword
+              description: Action type.
+        - name: category
+          type: keyword
+          description: The event category. Possible values are runtime, remote, admissionController, cloudtrail, okta, github, falcocloud, miner.
+        - name: content
+          type: group
+          fields:
+            - name: cluster_name
+              type: keyword
+              description: Kubernetes cluster name.
+            - name: command
+              type: keyword
+              description: The command name.
+            - name: detected_class_probability
+              type: double
+              description: The detected class probability (confidence score).
+            - name: exe
+              type: keyword
+              description: The command path.
+            - name: fields
+              type: group
+              fields:
+                - name: aws
+                  type: group
+                  fields:
+                    - name: account_id
+                      type: keyword
+                    - name: event_name
+                      type: keyword
+                    - name: region
+                      type: keyword
+                    - name: source_ip
+                      type: ip
+                    - name: user
+                      type: keyword
+                - name: container
+                  type: group
+                  fields:
+                    - name: id
+                      type: keyword
+                    - name: image.repository
+                      type: keyword
+                    - name: image.tag
+                      type: keyword
+                    - name: label.io.kubernetes.container.name
+                      type: keyword
+                    - name: label.io.kubernetes.pod.name
+                      type: keyword
+                    - name: label.io.kubernetes.pod.namespace
+                      type: keyword
+                    - name: mounts
+                      type: keyword
+                    - name: name
+                      type: keyword
+                      multi_fields:
+                        - name: text
+                          type: match_only_text
+                    - name: privileged
+                      type: boolean
+                - name: ct
+                  type: group
+                  fields:
+                    - name: id
+                      type: keyword
+                    - name: name
+                      type: keyword
+                    - name: region
+                      type: keyword
+                    - name: request.functionname
+                      type: keyword
+                    - name: request.host
+                      type: keyword
+                    - name: shortsrc
+                      type: keyword
+                    - name: srcdomain
+                      type: keyword
+                    - name: srcip
+                      type: ip
+                    - name: user.accountid
+                      type: keyword
+                    - name: user.arn
+                      type: keyword
+                    - name: user.identitytype
+                      type: keyword
+                    - name: user.principalid
+                      type: keyword
+                    - name: user.value
+                      type: keyword
+                    - name: useragent
+                      type: keyword
+                - name: evt
+                  type: group
+                  fields:
+                    - name: arg.request
+                      type: keyword
+                    - name: dir
+                      type: keyword
+                    - name: res
+                      type: keyword
+                    - name: type
+                      type: keyword
+                - name: fd
+                  type: group
+                  fields:
+                    - name: directory
+                      type: keyword
+                    - name: name
+                      type: keyword
+                    - name: sip
+                      type: ip
+                    - name: sport
+                      type: long
+                    - name: type
+                      type: keyword
+                - name: group
+                  type: group
+                  fields:
+                    - name: gid
+                      type: keyword
+                    - name: name
+                      type: keyword
+                - name: proc
+                  type: group
+                  fields:
+                    - name: acmdline_2
+                      type: wildcard
+                      multi_fields:
+                        - name: text
+                          type: match_only_text
+                    - name: acmdline_3
+                      type: wildcard
+                      multi_fields:
+                        - name: text
+                          type: match_only_text
+                    - name: acmdline_4
+                      type: wildcard
+                      multi_fields:
+                        - name: text
+                          type: match_only_text
+                    - name: aexepath_2
+                      type: keyword
+                      multi_fields:
+                        - name: text
+                          type: match_only_text
+                    - name: aexepath_3
+                      type: keyword
+                      multi_fields:
+                        - name: text
+                          type: match_only_text
+                    - name: aexepath_4
+                      type: keyword
+                      multi_fields:
+                        - name: text
+                          type: match_only_text
+                    - name: aname_2
+                      type: keyword
+                      multi_fields:
+                        - name: text
+                          type: match_only_text
+                    - name: aname_3
+                      type: keyword
+                      multi_fields:
+                        - name: text
+                          type: match_only_text
+                    - name: aname_4
+                      type: keyword
+                      multi_fields:
+                        - name: text
+                          type: match_only_text
+                    - name: args
+                      type: keyword
+                    - name: cmdline
+                      type: wildcard
+                      multi_fields:
+                        - name: text
+                          type: match_only_text
+                    - name: cwd
+                      type: keyword
+                      multi_fields:
+                        - name: text
+                          type: match_only_text
+                    - name: exepath
+                      type: keyword
+                      multi_fields:
+                        - name: text
+                          type: match_only_text
+                    - name: hash.sha256
+                      type: keyword
+                    - name: name
+                      type: keyword
+                      multi_fields:
+                        - name: text
+                          type: match_only_text
+                    - name: pcmdline
+                      type: wildcard
+                      multi_fields:
+                        - name: text
+                          type: match_only_text
+                    - name: pexepath
+                      type: keyword
+                      multi_fields:
+                        - name: text
+                          type: match_only_text
+                    - name: pid
+                      type: long
+                    - name: pid_ts
+                      type: date
+                    - name: pname
+                      type: keyword
+                      multi_fields:
+                        - name: text
+                          type: match_only_text
+                    - name: ppid
+                      type: long
+                    - name: ppid_ts
+                      type: date
+                    - name: sid
+                      type: keyword
+                    - name: stderr.name
+                      type: keyword
+                    - name: stdin.name
+                      type: keyword
+                    - name: stdout.name
+                      type: keyword
+                - name: user
+                  type: group
+                  fields:
+                    - name: loginname
+                      type: keyword
+                    - name: loginuid
+                      type: keyword
+                    - name: name
+                      type: keyword
+                    - name: uid
+                      type: keyword
+            - name: integration_id
+              type: keyword
+              description: The unique identifier of the integration that generated the event.
+            - name: integration_type
+              type: keyword
+              description: The type of integration that generated the event. Possible values are cloudtrail, okta, github, gcp, azure.
+            - name: namespace
+              type: keyword
+              description: Kubernetes namespace.
+            - name: origin
+              type: keyword
+            - name: output
+              type: match_only_text
+              description: Event output, generated after the configured rule.
+            - name: policy_id
+              type: keyword
+              description: ID of the policy that generated the event.
+            - name: policy_notification_channel_ids
+              type: keyword
+              description: The list of notification channels where an alert is sent after event is generated. Doesn't account for aggregations and eventual thresholds.
+            - name: policy_origin
+              type: keyword
+              description: The policy author. Possible values are Sysdig, Sysdig UI, Tuner.
+            - name: policy_version
+              type: keyword
+            - name: priority
+              type: keyword
+              description: Rule priority. Possible values are emergency, alert, critical, error, warning, informational, notice, debug.
+            - name: resource_kind
+              type: keyword
+              description: Kubernetes resource kind
+            - name: resource_name
+              type: keyword
+              description: Kubernetes resource name.
+            - name: rule_name
+              type: keyword
+              description: Name of the rule the event is generated after.
+            - name: rule_sub_type
+              type: long
+            - name: rule_tags
+              type: keyword
+              description: The tags attached to the rule.
+            - name: rule_type
+              type: long
+              description: Rule type.
+            - name: run_book
+              type: keyword
+              description: The runbook URL as configured in the policy.
+            - name: scan_result
+              type: object
+              object_type: keyword
+              object_type_mapping_type: '*'
+            - name: sequence
+              type: group
+              fields:
+                - name: event_id
+                  type: keyword
+                  description: The unique identifier of the log event.
+                - name: event_name
+                  type: keyword
+                  description: The name of the event.
+                - name: event_time
+                  type: date
+                  description: The time when the event occurred.
+                - name: ingestion_id
+                  type: keyword
+                  description: The unique identifier of the ingestion.
+                - name: region
+                  type: keyword
+                  description: The region where the event occurred.
+                - name: source
+                  type: keyword
+                  description: The source of the event.
+                - name: source_ip_address
+                  type: ip
+                  description: The IP address of the source.
+                - name: sub_ingestion_id
+                  type: keyword
+                  description: The unique identifier of the sub ingestion.
+            - name: stats
+              type: group
+              fields:
+                - name: api
+                  type: keyword
+                - name: count
+                  type: long
+            - name: type
+              type: keyword
+              description: The type of the event content.
+            - name: zones
+              type: group
+              fields:
+                - name: id
+                  type: keyword
+                  description: Zone ID.
+                - name: name
+                  type: keyword
+                  description: Zone name.
+        - name: description
+          type: match_only_text
+          description: Description of the policy the event is generated after.
+        - name: engine
+          type: keyword
+          description: The engine used to generate the event out of the raw signal. Possible values are drift, falco, list, machineLearning, malware.
+        - name: id
+          type: keyword
+          description: The event id.
+        - name: labels
+          type: group
+          fields:
+            - name: aws.account_id
+              type: keyword
+            - name: aws.region
+              type: keyword
+            - name: aws.user
+              type: keyword
+            - name: azure.instance_id
+              type: keyword
+            - name: azure.instance_name
+              type: keyword
+            - name: azure.instance_size
+              type: keyword
+            - name: azure.location
+              type: keyword
+            - name: azure.subscription_id
+              type: keyword
+            - name: cloud_provider.account.id
+              type: keyword
+            - name: cloud_provider.name
+              type: keyword
+            - name: cloud_provider.region
+              type: keyword
+            - name: cloud_provider.user
+              type: keyword
+            - name: container.image.digest
+              type: keyword
+            - name: container.image.id
+              type: keyword
+            - name: container.image.repo
+              type: keyword
+            - name: container.image.tag
+              type: keyword
+            - name: container.label.io.kubernetes.container.name
+              type: keyword
+            - name: container.label.io.kubernetes.pod.name
+              type: keyword
+            - name: container.label.io.kubernetes.pod.namespace
+              type: keyword
+            - name: container.name
+              type: keyword
+            - name: gcp.availability_zone
+              type: keyword
+            - name: gcp.instance_id
+              type: keyword
+            - name: gcp.instance_name
+              type: keyword
+            - name: gcp.location
+              type: keyword
+            - name: gcp.machine_type
+              type: keyword
+            - name: gcp.project_id
+              type: keyword
+            - name: gcp.project_name
+              type: keyword
+            - name: host.host_name
+              type: keyword
+            - name: host.mac
+              type: keyword
+            - name: kubernetes.cluster.name
+              type: keyword
+            - name: kubernetes.cron_job.name
+              type: keyword
+            - name: kubernetes.daemon_set.name
+              type: keyword
+            - name: kubernetes.job.name
+              type: keyword
+            - name: kubernetes.namespace.name
+              type: keyword
+            - name: kubernetes.node.name
+              type: keyword
+            - name: kubernetes.pod.name
+              type: keyword
+            - name: kubernetes.service.name
+              type: keyword
+            - name: kubernetes.workload.name
+              type: keyword
+            - name: kubernetes.workload.type
+              type: keyword
+            - name: source.ip
+              type: ip
+        - name: name
+          type: keyword
+          description: Name of the policy the event is generated after.
+        - name: originator
+          type: keyword
+          description: Type of event. Possible values are policy, profilingDetection, falcocloud, admissionController.
+        - name: raw_event_category
+          type: keyword
+          description: The semantic category (area) of the event in the Sysdig product. Possible values are kspm, runtime.
+        - name: raw_event_originator
+          type: keyword
+          description: The agent type, hosting the engine, that generated the event after the raw event. Possilble values are admissionController, agentless, cloudConnector, linuxAgent, serverlessAgent, windowsAgent.
+        - name: severity
+          type: long
+          description: The policy severity.
+        - name: severity_value
+          type: keyword
+          description: The policy severity.
+        - name: source
+          type: keyword
+          description: Source of the event. Possible values are syscall, windows, profiling, K8SAdmissionController, k8s_audit, aws_cloudtrail, awscloudtrail, agentless-aws-ml, gcp_auditlog, azure_platformlogs, okta, agentless-okta-ml, github.
+        - name: source_details
+          type: group
+          fields:
+            - name: sub_type
+              type: keyword
+              description: A deeper particularization for the type of component that generated the raw event. Possible values are auditlogs, auditWebhooks, caas, dynamicAdmissionControl, host, container, workforce.
+            - name: type
+              type: keyword
+              description: The type of component that generated the raw event. Possible values are cloud, git, iam, kubernetes, workload.
+        - name: timestamp
+          type: date
+          description: The event timestamp in nanoseconds.
