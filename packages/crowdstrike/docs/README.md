@@ -1115,11 +1115,11 @@ An example event for `falcon` looks as following:
 {
     "@timestamp": "2023-11-02T13:41:34.000Z",
     "agent": {
-        "ephemeral_id": "3fd78d38-353a-4dbd-812d-a6b8b1ba69ca",
-        "id": "8fbdb665-cf98-4165-86b7-690b75859cb9",
-        "name": "elastic-agent-58400",
+        "ephemeral_id": "8f4a039c-66d4-439c-a43f-c5a95f653dd4",
+        "id": "67072e92-576d-47d8-8a43-ebb347b4250b",
+        "name": "elastic-agent-93422",
         "type": "filebeat",
-        "version": "8.18.0"
+        "version": "8.18.1"
     },
     "crowdstrike": {
         "event": {
@@ -1135,16 +1135,16 @@ An example event for `falcon` looks as following:
     },
     "data_stream": {
         "dataset": "crowdstrike.falcon",
-        "namespace": "65351",
+        "namespace": "99576",
         "type": "logs"
     },
     "ecs": {
         "version": "8.17.0"
     },
     "elastic_agent": {
-        "id": "8fbdb665-cf98-4165-86b7-690b75859cb9",
+        "id": "67072e92-576d-47d8-8a43-ebb347b4250b",
         "snapshot": false,
-        "version": "8.18.0"
+        "version": "8.18.1"
     },
     "event": {
         "action": [
@@ -1157,7 +1157,7 @@ An example event for `falcon` looks as following:
         ],
         "created": "2023-11-02T13:41:34.000Z",
         "dataset": "crowdstrike.falcon",
-        "ingested": "2025-05-26T12:32:10Z",
+        "ingested": "2025-05-30T08:29:21Z",
         "kind": "event",
         "original": "{\"event\":{\"AgentIdString\":\"fffffffff33333\",\"HostnameField\":\"UKCHUDL00206\",\"SessionId\":\"1111-fffff-4bb4-99c1-74c13cfc3e5a\",\"StartTimestamp\":1698932494,\"UserName\":\"admin.rose@example.com\"},\"metadata\":{\"customerIDString\":\"abcabcabc22221\",\"eventCreationTime\":1698932494000,\"eventType\":\"RemoteResponseSessionStartEvent\",\"offset\":1,\"version\":\"1.0\"}}",
         "start": "2023-11-02T13:41:34.000Z",
@@ -1181,6 +1181,7 @@ An example event for `falcon` looks as following:
             "UKCHUDL00206"
         ],
         "user": [
+            "admin.rose",
             "admin.rose@example.com"
         ]
     },
@@ -1190,8 +1191,9 @@ An example event for `falcon` looks as following:
         "crowdstrike-falcon"
     ],
     "user": {
+        "domain": "example.com",
         "email": "admin.rose@example.com",
-        "name": "admin.rose@example.com"
+        "name": "admin.rose"
     }
 }
 ```
