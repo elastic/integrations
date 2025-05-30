@@ -202,7 +202,7 @@ processors:
       target_field: threat.indicator.as.number
       pattern: 'AS'
       replacement: ''
-      if: ctx.greynoise?.ip?.internet_scanner_intelligence?.metadata?.asn != null && ctx.greynoise?.ip?.internet_scanner_intelligence?.metadata?.asn != ''
+      if: ctx.greynoise?.ip?.internet_scanner_intelligence?.metadata?.asn != null && ctx.greynoise.ip.internet_scanner_intelligence.metadata.asn != ''
   - convert:
       field: threat.indicator.as.number
       tag: convert_threat_indicator_as_number
@@ -341,7 +341,7 @@ processors:
       field: threat.indicator.reference
       tag: set_threat_indicator_reference_from_ip_internet_scanner_intelligence_ip
       value: 'https://www.greynoise.io/ip/{{{threat.indicator.ip}}}'
-      if: ctx.threat?.indicator?.ip != null && ctx.threat?.indicator?.ip != ''
+      if: ctx.threat?.indicator?.ip != null && ctx.threat.indicator.ip != ''
   - set:
       field: threat.indicator.provider
       tag: set_threat_indicator_provider
@@ -350,7 +350,11 @@ processors:
       field: threat.indicator.description
       tag: set_threat_indicator_description
       value: '{{{threat.indicator.ip}}} IP has been observed mass scanning the internet by GreyNoise with a classification of {{{greynoise.ip.internet_scanner_intelligence.classification}}}'
-      if: ctx.threat?.indicator?.ip != null && ctx.threat?.indicator?.ip != '' && ctx.greynoise?.ip?.internet_scanner_intelligence?.classification != null && ctx.greynoise?.ip?.internet_scanner_intelligence?.classification != ''
+      if: >-
+        ctx.threat?.indicator?.ip != null &&
+        ctx.threat.indicator.ip != '' &&
+        ctx.greynoise?.ip?.internet_scanner_intelligence?.classification != null &&
+        ctx.greynoise.ip.internet_scanner_intelligence.classification != ''
   - set:
       field: threat.indicator.type
       tag: set_threat_indicator_type
@@ -372,7 +376,7 @@ processors:
       tag: append_threat_indicator_ip_into_related_ip
       value: '{{{threat.indicator.ip}}}'
       allow_duplicates: false
-      if: ctx.threat?.indicator?.ip != null && ctx.threat?.indicator?.ip != ''
+      if: ctx.threat?.indicator?.ip != null && ctx.threat.indicator.ip != ''
   - remove:
       field: json
       tag: remove_json

@@ -10,27 +10,7 @@ Customers must have access to the **Enterprise API** to fetch data from GreyNois
 
 ## Requirements
 
-- Elastic Agent must be installed.
-- Only one Elastic Agent can be installed per host.
-- Elastic Agent is required to stream data through the REST API and ship it to Elastic, where events are processed via the integration's ingest pipelines.
-
-### Installing and Managing Elastic Agent
-
-You have several options for installing and managing Elastic Agent:
-
-#### Install a Fleet-managed Elastic Agent (Recommended)
-
-With this approach, you install Elastic Agent and use Fleet in Kibana to define, configure, and manage your agents centrally. We recommend using Fleet management because it significantly simplifies agent management and upgrades.
-
-#### Install Elastic Agent in Standalone Mode (Advanced Users)
-
-With this approach, you install Elastic Agent and manually configure it locally on the system where it's installed. You are responsible for managing and upgrading the agents. This approach is reserved for advanced users only.
-
-#### Install Elastic Agent in a Containerized Environment
-
-You can run Elastic Agent inside a container, either with Fleet Server or standalone. Docker images for all versions of Elastic Agent are available from the Elastic Docker registry, and we provide deployment manifests for running on Kubernetes.
-
-For minimum requirements and more information, refer to the Elastic Agent [installation guide](https://www.elastic.co/guide/en/fleet/current/elastic-agent-installation.html).
+Elastic Agent must be installed. For more details, check the Elastic Agent [installation instructions](docs-content://reference/fleet/install-elastic-agents.md).
 
 ## Setup
 
