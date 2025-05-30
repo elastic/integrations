@@ -10,7 +10,7 @@ The OpenAI integration leverages the [OpenAI Usage API](https://platform.openai.
 
 ## Data streams
 
-The OpenAI integration collects the following logs data streams:
+The OpenAI integration collects the following data streams:
 
 - `audio_speeches`: Collects audio speeches usage metrics.
 - `audio_transcriptions`: Collects audio transcriptions usage metrics.
@@ -21,7 +21,7 @@ The OpenAI integration collects the following logs data streams:
 - `moderations`: Collects moderations usage metrics.
 - `vector_stores`: Collects vector stores usage metrics.
 
-See more details for data streams in the [Logs](#logs-reference).
+> Note: Users can view OpenAI metrics in the `logs-*` index pattern using Kibana Discover.
 
 ## Requirements
 
@@ -39,9 +39,67 @@ To generate an Admin key, please generate a key or use an existing one from the 
 
 ## Collection behavior
 
-By default, the OpenAI integration fetches metrics with a bucket width of 1 day (`1d`), which means metrics are aggregated by day. metrics are collected from the initial start time until the current time, excluding the current bucket since it is incomplete. So, based on configured bucket width, the integration collects metrics from the initial start time until the current time minus the bucket width.
+Among the configuration options for the OpenAI integration, the following settings are particularly relevant: "Initial interval" and "Bucket width".
 
-## Logs reference
+### Initial interval
+
+- Controls the historical data collection window at startup
+- Default value: 24 hours (`24h`)
+- Purpose: Loads historical context when you first set up the integration
+
+### Bucket width
+
+A "bucket" refers to a time interval where OpenAI usage data is grouped together for reporting purposes. For example, with a 1-minute bucket width, usage metrics are aggregated minute by minute. With a 1-hour bucket width, all activity during that hour is consolidated into a single bucket. The [bucket width](https://platform.openai.com/docs/api-reference/usage/completions#usage-completions-bucket_width) determines your data's granularity and level of detail in your usage reporting.
+
+- Controls the time-based aggregation of metrics
+- Default: `1m` (1 minute)
+- Options: `1m` (1 minute), `1h` (1 hour), `1d` (1 day)
+- Affects API request frequency and data resolution
+
+#### Impact on data resolution
+
+- `1m` buckets provide the highest resolution metrics, with data arriving in near real-time (1-minute delay)
+- `1h` buckets aggregate hourly, with data arriving less frequently (1-hour delay)
+- `1d` buckets aggregate daily, with data arriving once per day (24-hour delay)
+
+Data granularity relationship: `1m` > `1h` > `1d`
+
+#### Storage considerations
+
+Bucket width choice affects storage usage (in Elasticsearch) and data resolution:
+
+- `1m`: Maximum granularity, higher storage needs, ideal for detailed analysis.
+- `1h`: Medium granularity, moderate storage needs, good for hourly patterns.
+- `1d`: Minimum granularity, lowest storage needs, suitable for long-term analysis.
+
+Example: For 100 API calls to a particular model per hour:
+- `1m` buckets: Up to 100 documents
+- `1h` buckets: 1 aggregated document
+- `1d` buckets: 1 daily document
+
+#### API request impact
+
+"Bucket width" and "Initial interval" directly affect API request frequency. When using a 1-minute bucket width, it's strongly recommended to set the "Initial interval" to a shorter duration, optimally 1-day, to ensure smooth performance. While our extensive testing demonstrates excellent results with a 6-month initial interval paired with a 1-day bucket width, the same level of success isn't achievable with 1-minute or 1-hour bucket widths. This is because the OpenAI Usage API returns different bucket quantities based on width (60 buckets per call for 1-minute, 24 for 1-hour, and 7 for 1-day widths). To achieve the best results when gathering historical data over long periods, using 1-day bucket width is the most effective method, ensuring a balance between data granularity and API limitations.
+
+> For optimal results with historical data, use 1-day bucket widths for long periods (15+ days), 1-hour for medium periods (1-15 days), and 1-minute only for the most recent 24 hours of data.
+
+### Collection process
+
+With default settings (Interval: `5m`, Bucket width: `1m`, Initial interval: `24h`), the OpenAI integration follows this collection pattern:
+
+1. Starts collection from (current_time - initial_interval)
+2. Collects data up to (current_time - bucket_width)
+3. Excludes incomplete current bucket for data accuracy and wait for bucket completion
+4. Runs every 5 minutes by default (configurable)
+5. From second collection, start from end of previous bucket timestamp and collect up to (current_time - bucket_width)
+
+#### Example timeline
+
+With default settings (Interval: `5m`, Bucket width: `1m`, Initial interval: `24h`):
+
+The integration starts at 10:00 AM, collects data from 10:00 AM the previous day, and continues until 9:59 AM the current day. The next collection starts at 10:05 AM, collecting from the 10:00 AM bucket to the 10:04 AM bucket, as the "Interval" is 5 minutes.
+
+## Metrics reference
 
 **ECS Field Reference**
 

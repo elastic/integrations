@@ -1,0 +1,210 @@
+- name: aws
+  type: group
+  fields:
+    - name: dimensions
+      type: group
+      fields:
+        - name: Broker
+          description: The name of the broker.
+          type: keyword
+          dimension: true
+        - name: Topic
+          description: The name of the topic.
+          type: keyword
+          dimension: true
+        - name: Queue
+          description: The name of the queue.
+          type: keyword
+          dimension: true
+        - name: NetworkConnector
+          description: The name of the network connector.
+          type: keyword
+          dimension: true
+    - name: cloudwatch.namespace
+      type: keyword
+      description: The namespace specified when query cloudwatch api.
+    - name: amazonmq.metrics.activemq
+      type: group
+      fields:
+        - name: broker
+          type: group
+          fields:
+            - name: AmqpMaximumConnections.max
+              metric_type: gauge
+              type: long
+              description: The maximum number of clients you can connect to your broker using AMQP.
+            - name: BurstBalance.min
+              metric_type: gauge
+              type: long
+              unit: percent
+              description: The percentage of burst credits remaining on the Amazon EBS volume used to persist message data for throughput-optimized brokers.
+            - name: CpuCreditBalance.min
+              metric_type: gauge
+              type: long
+              description: The number of earned CPU credits that an instance has accrued since it was launched or started.
+            - name: CpuUtilization.avg
+              metric_type: gauge
+              type: long
+              unit: percent
+              description: The percentage of allocated Amazon EC2 compute units that the broker currently uses.
+            - name: CurrentConnectionsCount.max
+              metric_type: gauge
+              type: long
+              description: The current number of active connections on the current broker.
+            - name: EstablishedConnectionsCount.max
+              metric_type: gauge
+              type: long
+              description: The total number of connections, active and inactive, that have been established on the broker.
+            - name: HeapUsage.avg
+              metric_type: gauge
+              unit: percent
+              type: long
+              description: The percentage of the ActiveMQ JVM memory limit that the broker currently uses.
+            - name: InactiveDurableTopicSubscribersCount.max
+              metric_type: gauge
+              type: long
+              description: The number of inactive durable topic subscribers.
+            - name: JobSchedulerStorePercentUsage.avg
+              metric_type: gauge
+              unit: percent
+              type: long
+              description: The percentage of disk space used by the job scheduler store.
+            - name: JournalFilesForFastRecovery.max
+              metric_type: gauge
+              type: long
+              description: The number of journal files that will be replayed after a clean shutdown.
+            - name: JournalFilesForFullRecovery.max
+              metric_type: gauge
+              type: long
+              description: The number of journal files that will be replayed after an unclean shutdown.
+            - name: MqttMaximumConnections.max
+              metric_type: gauge
+              type: long
+              description: The maximum number of clients you can connect to your broker using MQTT.
+            - name: NetworkConnectorConnectionCount.max
+              metric_type: gauge
+              type: long
+              description: The number of nodes connected to the broker in a network of brokers using NetworkConnector.
+            - name: NetworkIn.max
+              metric_type: gauge
+              type: long
+              unit: byte
+              description: The volume of incoming traffic for the broker.
+            - name: NetworkOut.max
+              metric_type: gauge
+              type: long
+              unit: byte
+              description: The volume of outgoing traffic for the broker.
+            - name: OpenTransactionCount.max
+              metric_type: gauge
+              type: long
+              description: The total number of transactions in progress.
+            - name: OpenwireMaximumConnections.max
+              metric_type: gauge
+              type: long
+              description: The maximum number of clients you can connect to your broker using OpenWire.
+            - name: StompMaximumConnections.max
+              metric_type: gauge
+              type: long
+              description: The maximum number of clients you can connect to your broker using STOMP.
+            - name: StorePercentUsage.avg
+              metric_type: gauge
+              type: long
+              unit: percent
+              description: The percent used by the storage limit. If this reaches 100, the broker will refuse messages.
+            - name: TempPercentUsage.avg
+              metric_type: gauge
+              type: long
+              unit: percent
+              description: The percentage of available temporary storage used by non-persistent messages.
+            - name: TotalConsumerCount.max
+              metric_type: gauge
+              type: long
+              description: The number of message consumers subscribed to destinations on the current broker.
+            - name: TotalMessageCount.max
+              metric_type: gauge
+              type: long
+              description: The number of messages stored on the broker.
+            - name: TotalProducerCount.max
+              metric_type: gauge
+              type: long
+              description: The number of message producers active on destinations on the current broker.
+            - name: VolumeReadOps.max
+              metric_type: gauge
+              type: long
+              description: The number of read operations performed on the Amazon EBS volume.
+            - name: VolumeWriteOps.max
+              metric_type: gauge
+              type: long
+              description: The number of write operations performed on the Amazon EBS volume.
+            - name: WsMaximumConnections.max
+              metric_type: gauge
+              type: long
+              description: The maximum number of clients you can connect to your broker using WebSocket.
+            # TotalEnqueueCount.max and TotalDequeueCount.max does not hold a queue or topic dimension and hence it is considered as a broker metrics.
+            # aws.amazonmq.metrics.activemq.destination.TotalEnqueueCount.max is included to align with the AWS documentation
+            - name: TotalEnqueueCount.max
+              metric_type: gauge
+              type: long
+              description: The total number of messages that have been sent to the broker.
+            - name: TotalDequeueCount.max
+              metric_type: gauge
+              type: long
+              description: The total number of messages that have been consumed by clients.
+        - name: destination
+          type: group
+          fields: 
+            - name: ConsumerCount.max
+              metric_type: gauge
+              type: long
+              description: The number of consumers subscribed to the destination.
+            - name: EnqueueCount.sum
+              metric_type: gauge
+              type: long
+              description: The number of messages sent to the destination.
+            - name: EnqueueTime.avg
+              metric_type: gauge
+              type: long
+              unit: ms
+              description: The end-to-end latency from when a message arrives at a broker until it is delivered to a consumer.
+            - name: ExpiredCount.sum
+              metric_type: gauge
+              type: long
+              description: The number of messages that could not be delivered because they expired.
+            - name: DispatchCount.sum
+              metric_type: gauge
+              type: long
+              description: The number of messages sent to consumers.
+            - name: DequeueCount.sum
+              metric_type: gauge
+              type: long
+              description: The number of messages acknowledged by consumers.
+            - name: InFlightCount.sum
+              metric_type: gauge
+              type: long
+              description: The number of messages sent to consumers that have not been acknowledged.
+            - name: ReceiveCount.max
+              metric_type: gauge
+              type: long
+              description: The number of messages that have been received from the remote broker for a duplex network connector.
+            - name: MemoryUsage.avg
+              metric_type: gauge
+              type: long
+              unit: percent
+              description: The percentage of the memory limit that the destination currently uses.
+            - name: ProducerCount.max
+              metric_type: gauge
+              type: long
+              description: The number of producers for the destination.
+            - name: QueueSize.max
+              metric_type: gauge
+              type: long
+              description: The number of messages in the queue.
+            - name: TotalEnqueueCount.max
+              metric_type: gauge
+              type: long
+              description: The total number of messages that have been sent to the broker.
+            - name: TotalDequeueCount.max
+              metric_type: gauge
+              type: long
+              description: The total number of messages that have been consumed by clients.

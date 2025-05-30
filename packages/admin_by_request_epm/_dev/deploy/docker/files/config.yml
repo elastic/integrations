@@ -1,0 +1,352 @@
+rules:
+  # START AUDITLOG
+  # First page to get historic data
+  - path: /auditlog/delta
+    methods: ['GET']
+    request_headers:
+      apikey: ['testapikey']
+    query_params:
+      days: 60
+      startid: 0
+      take: 3
+      wantscandetails: 1
+    responses:
+      - status_code: 200
+        headers:
+          Content-Type: ['application/json']
+        body: |
+          {
+            "entries": [
+              {
+                "id": 1,
+                "traceNo": "34376579",
+                "settingsName": "Global",
+                "type": "Run As Admin",
+                "typeCode": 0,
+                "status": "Finished",
+                "statusCode": 2,
+                "reason": "Need to update reader. It says out of date when trying to open PDF files from our supplier.",
+                "approvedBy": "Jim Kerr",
+                "deniedReason": null,
+                "deniedBy": null,
+                "ssoValidated": false,
+                "requestTime": "2020-04-01T12:03:00",
+                "requestTimeUTC": "2020-04-01T12:03:00",
+                "startTime": "2020-04-01T12:03:30",
+                "startTimeUTC": "2020-04-01T12:03:30",
+                "endTime": "2020-04-01T12:09:11",
+                "endTimeUTC": "2020-04-01T12:09:11",
+                "responseTime": "00:00:05.4100000",
+                "auditlogLink": "https://www.example.com/AuditLog?Page=AppElevations&ID=579&ShowFilter=false",
+                "user": {
+                    "account": "ACMEPDH",
+                    "fullName": "Paul David Hewson",
+                    "email": "pdh@acme.com",
+                    "phone": "555.345.6789",
+                    "isAdmin": false
+                },
+                "computer": {
+                    "name": "W1005623",
+                    "platform": "Windows",
+                    "platformCode": 0,
+                    "make": "Dell Inc.",
+                    "model": "XPS 15 9550"
+                },
+                "application": {},
+                "installs": [],
+                "uninstalls": [],
+                "elevatedApplications": [],
+                "scanResults": []
+              },
+              {
+                "id": 2,
+                "traceNo": "34376579",
+                "settingsName": "Global",
+                "type": "Run As Admin",
+                "typeCode": 0,
+                "status": "Finished",
+                "statusCode": 2,
+                "reason": "Need to update reader. It says out of date when trying to open PDF files from our supplier.",
+                "approvedBy": "Jim Kerr",
+                "deniedReason": null,
+                "deniedBy": null,
+                "ssoValidated": false,
+                "requestTime": "2020-04-01T12:03:00",
+                "requestTimeUTC": "2020-04-01T12:03:00",
+                "startTime": "2020-04-01T12:03:30",
+                "startTimeUTC": "2020-04-01T12:03:30",
+                "endTime": "2020-04-01T12:09:11",
+                "endTimeUTC": "2020-04-01T12:09:11",
+                "responseTime": "00:00:05.4100000",
+                "auditlogLink": "https://www.example.com/AuditLog?Page=AppElevations&ID=349&ShowFilter=false",
+                "user": {
+                    "account": "ACMEPDH",
+                    "fullName": "Paul David Hewson",
+                    "email": "pdh@acme.com",
+                    "phone": "555.345.6789",
+                    "isAdmin": false
+                },
+                "computer": {
+                    "name": "W1005623",
+                    "platform": "Windows",
+                    "platformCode": 0,
+                    "make": "Dell Inc.",
+                    "model": "XPS 15 9550"
+                },
+                "application": {},
+                "installs": [],
+                "uninstalls": [],
+                "elevatedApplications": [],
+                "scanResults": []
+              },
+              {
+                "id": 3,
+                "traceNo": "34376579",
+                "settingsName": "Global",
+                "type": "Run As Admin",
+                "typeCode": 0,
+                "status": "Finished",
+                "statusCode": 2,
+                "reason": "Need to update reader. It says out of date when trying to open PDF files from our supplier.",
+                "approvedBy": "Jim Kerr",
+                "deniedReason": null,
+                "deniedBy": null,
+                "ssoValidated": false,
+                "requestTime": "2020-04-01T12:03:00",
+                "requestTimeUTC": "2020-04-01T12:03:00",
+                "startTime": "2020-04-01T12:03:30",
+                "startTimeUTC": "2020-04-01T12:03:30",
+                "endTime": "2020-04-01T12:09:11",
+                "endTimeUTC": "2020-04-01T12:09:11",
+                "responseTime": "00:00:05.4100000",
+                "auditlogLink": "https://www.example.com/AuditLog?Page=AppElevations&ID=34379&ShowFilter=false",
+                "user": {
+                    "account": "ACMEPDH",
+                    "fullName": "Paul David Hewson",
+                    "email": "pdh@acme.com",
+                    "phone": "555.345.6789",
+                    "isAdmin": false
+                },
+                "computer": {
+                    "name": "W1005623",
+                    "platform": "Windows",
+                    "platformCode": 0,
+                    "make": "Dell Inc.",
+                    "model": "XPS 15 9550"
+                },
+                "application": {},
+                "installs": [],
+                "uninstalls": [],
+                "elevatedApplications": [],
+                "scanResults": []
+              }
+            ],
+            "timeNow": 638736819351921800
+          }
+
+  # Empty response to end historic data pull
+  - path: /auditlog/delta
+    methods: ['GET']
+    request_headers:
+      apikey: ['testapikey']
+    query_params:
+      days: 60
+      startid: 4
+      take: 3
+      wantscandetails: 1
+    responses:
+      - status_code: 200
+        headers:
+          Content-Type: ['application/json']
+        body: |
+          {
+            "entries": [],
+            "timeNow": 638736819351921800
+          }
+
+  # Data based on deltaTime parameter
+  - path: /auditlog/delta
+    methods: ['GET']
+    request_headers:
+      apikey: ['testapikey']
+    query_params:
+      deltaTime: 638736819351921800
+      wantscandetails: 1
+    responses:
+      - status_code: 200
+        headers:
+          Content-Type: [ 'application/json' ]
+        body: |
+          {
+            "entries": [
+              {
+                "id": 23,
+                "traceNo": "34376579",
+                "settingsName": "Global",
+                "type": "Run As Admin",
+                "typeCode": 0,
+                "status": "Finished",
+                "statusCode": 2,
+                "reason": "Need to update reader. It says out of date when trying to open PDF files from our supplier.",
+                "approvedBy": "Jim Kerr",
+                "deniedReason": null,
+                "deniedBy": null,
+                "ssoValidated": false,
+                "requestTime": "2020-04-01T12:03:00",
+                "requestTimeUTC": "2020-04-01T12:03:00",
+                "startTime": "2020-04-01T12:03:30",
+                "startTimeUTC": "2020-04-01T12:03:30",
+                "endTime": "2020-04-01T12:09:11",
+                "endTimeUTC": "2020-04-01T12:09:11",
+                "responseTime": "00:00:05.4100000",
+                "auditlogLink": "https://www.example.com/AuditLog?Page=AppElevations&ID=34579&ShowFilter=false",
+                "user": {
+                    "account": "ACMEPDH",
+                    "fullName": "Paul David Hewson",
+                    "email": "pdh@acme.com",
+                    "phone": "555.345.6789",
+                    "isAdmin": false
+                },
+                "computer": {
+                    "name": "W1005623",
+                    "platform": "Windows",
+                    "platformCode": 0,
+                    "make": "Dell Inc.",
+                    "model": "XPS 15 9550"
+                },
+                "application": {},
+                "installs": [],
+                "uninstalls": [],
+                "elevatedApplications": [],
+                "scanResults": []
+              }
+          ],
+            "timeNow": 638736819351921800
+          }
+  # END AUDITLOG
+
+  # START EVENTS
+  - path: /events
+    methods: ['GET']
+    query_params:
+      days: 60
+      take: 3
+    request_headers:
+      apikey: ['testapikey']
+    responses:
+        - status_code: 200
+          headers:
+            Content-Type: [ 'application/json' ]
+          body: |
+            [
+              {
+                "id": 53820480,
+                "eventCode": 92,
+                "eventLevel": 0,
+                "eventText": "Execution of file blocked by policy",
+                "eventTime": "2022-01-27T12:16:38.817",
+                "eventTimeUTC": "2022-01-27T12:16:38.817",
+                "computerName": "FTWIN11",
+                "userAccount": "TEST",
+                "userName": "FastTrack Support",
+                "alertAccount": null,
+                "auditLogURL": null,
+                "rollback": false,
+                "additionalData": null,
+                "application": {
+                  "file": "msedge.exe",
+                  "path": "C:\\Program Files (x86)\\Microsoft\\Edge\\Application",
+                  "name": "Microsoft Edge",
+                  "vendor": "Microsoft Corporation",
+                  "version": "msedge.exe",
+                  "sha256": "3BC499B8B30FE66A91FABC2FF5AE6E6A9452C116AEDCAC7DBC5AEEEAEED2EB9C"
+                }
+              },
+              {
+                "id": 53820481,
+                "eventCode": 92,
+                "eventLevel": 0,
+                "eventText": "Execution of file blocked by policy",
+                "eventTime": "2022-01-27T12:16:38.817",
+                "eventTimeUTC": "2022-01-27T12:16:38.817",
+                "computerName": "FTWIN11",
+                "userAccount": "TEST",
+                "userName": "FastTrack Support",
+                "alertAccount": null,
+                "auditLogURL": null,
+                "rollback": false,
+                "additionalData": null,
+                "application": {
+                  "file": "msedge.exe",
+                  "path": "C:\\Program Files (x86)\\Microsoft\\Edge\\Application",
+                  "name": "Microsoft Edge",
+                  "vendor": "Microsoft Corporation",
+                  "version": "msedge.exe",
+                  "sha256": "3BC499B8B30FE66A91FABC2FF5AE6E6A9452C116AEDCAC7DBC5AEEEAEED2EB9C"
+                }
+              },
+              {
+                "id": 53820482,
+                "eventCode": 92,
+                "eventLevel": 0,
+                "eventText": "Execution of file blocked by policy",
+                "eventTime": "2022-01-27T12:16:38.817",
+                "eventTimeUTC": "2022-01-27T12:16:38.817",
+                "computerName": "FTWIN11",
+                "userAccount": "TEST",
+                "userName": "FastTrack Support",
+                "alertAccount": null,
+                "auditLogURL": null,
+                "rollback": false,
+                "additionalData": null,
+                "application": {
+                  "file": "msedge.exe",
+                  "path": "C:\\Program Files (x86)\\Microsoft\\Edge\\Application",
+                  "name": "Microsoft Edge",
+                  "vendor": "Microsoft Corporation",
+                  "version": "msedge.exe",
+                  "sha256": "3BC499B8B30FE66A91FABC2FF5AE6E6A9452C116AEDCAC7DBC5AEEEAEED2EB9C"
+                }
+              }
+            ]
+
+    # Second Page Request
+  - path: /events
+    methods: ['GET']
+    query_params:
+      startid: 53820483
+      take: 3
+    request_headers:
+      apikey: ['testapikey']
+    responses:
+      - status_code: 200
+        headers:
+          Content-Type: ['application/json']
+        body: |
+          [
+            {
+              "id": 53820484,
+              "eventCode": 92,
+              "eventLevel": 0,
+              "eventText": "Execution of file blocked by policy",
+              "eventTime": "2022-01-27T12:16:38.817",
+              "eventTimeUTC": "2022-01-27T12:16:38.817",
+              "computerName": "FTWIN11",
+              "userAccount": "TEST",
+              "userName": "FastTrack Support",
+              "alertAccount": null,
+              "auditLogURL": null,
+              "rollback": false,
+              "additionalData": null,
+              "application": {
+                "file": "msedge.exe",
+                "path": "C:\\Program Files (x86)\\Microsoft\\Edge\\Application",
+                "name": "Microsoft Edge",
+                "vendor": "Microsoft Corporation",
+                "version": "msedge.exe",
+                "sha256": "3BC499B8B30FE66A91FABC2FF5AE6E6A9452C116AEDCAC7DBC5AEEEAEED2EB9C"
+              }
+            }
+          ]
+
+  # END EVENTS

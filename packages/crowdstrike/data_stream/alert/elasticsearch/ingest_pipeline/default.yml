@@ -4,7 +4,7 @@ processors:
   - set:
       field: ecs.version
       tag: set_ecs_version
-      value: 8.11.0
+      value: 8.17.0
   - set:
       field: event.kind
       tag: set_event_kind
@@ -66,6 +66,11 @@ processors:
       tag: rename_agent_id
       target_field: crowdstrike.alert.agent_id
       ignore_missing: true
+  - set:
+      field: host.id
+      tag: set_host_id_from_alert_agent_id
+      copy_from: crowdstrike.alert.agent_id
+      ignore_empty_value: true
   - rename:
       field: json.agent_scan_id
       tag: rename_agent_scan_id
@@ -153,6 +158,22 @@ processors:
         - append:
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - convert:
+      field: json.prevented
+      tag: convert_prevented_to_boolean
+      target_field: crowdstrike.alert.prevented
+      type: boolean
+      if: ctx.json?.prevented != ""
+      ignore_missing: true
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - rename:
+      field: json.worker_node_name
+      tag: rename_worker_node_name
+      target_field: crowdstrike.alert.worker_node_name
+      ignore_missing: true
   - rename:
       field: json.cmdline
       tag: rename_cmdline
@@ -525,10 +546,6 @@ processors:
       tag: set_host_os_platform_from_alert_device_platform_name
       copy_from: crowdstrike.alert.device.platform_name
       ignore_empty_value: true
-  - lowercase:
-      field: crowdstrike.alert.device.platform_name
-      target_field: host.os.type
-      ignore_failure: true
   - rename:
       field: json.device.pod_labels
       tag: rename_device_pod_labels
@@ -1401,6 +1418,36 @@ processors:
       tag: set_host_os_name_from_alert_operating_system
       copy_from: crowdstrike.alert.operating_system
       ignore_empty_value: true
+  - script:
+      description: Dynamically set host.os.type values.
+      tag: script_map_host_os_type
+      lang: painless
+      params:
+        os_type:
+          - linux
+          - macos
+          - unix
+          - windows
+          - ios
+          - android
+      source: |
+        if (ctx.crowdstrike?.alert?.device?.platform_name != null) {
+          String platform_name = ctx.crowdstrike.alert.device.platform_name.toLowerCase();
+          for (String os: params.os_type) {
+            if (platform_name.contains(os)) {
+              ctx.host.os.put('type', os);
+              return;
+            }
+          }
+        } else if (ctx.crowdstrike?.alert?.operating_system != null) {
+          String operating_system = ctx.crowdstrike.alert.operating_system.toLowerCase();
+          for (String os: params.os_type) {
+            if (operating_system.contains(os)) {
+              ctx.host.os.put('type', os);
+              return;
+            }
+          }
+        }
   - rename:
       field: json.os_name
       tag: rename_os_name
@@ -1545,6 +1592,11 @@ processors:
       tag: rename_parent_process_id
       target_field: crowdstrike.alert.parent_process_id
       ignore_missing: true
+  - set:
+      field: process.parent.entity_id
+      tag: set_process_parent_entity_id
+      copy_from: crowdstrike.alert.parent_process_id
+      ignore_empty_value: true
   - convert:
       field: crowdstrike.alert.parent_process_id
       tag: convert_alert_parent_process_id
@@ -1918,6 +1970,11 @@ processors:
       tag: rename_process_id
       target_field: crowdstrike.alert.process_id
       ignore_missing: true
+  - set:
+      field: process.entity_id
+      tag: set_process_entity_id
+      copy_from: crowdstrike.alert.process_id
+      ignore_empty_value: true
   - convert:
       field: crowdstrike.alert.process_id
       tag: convert_alert_process_id_to_long
@@ -2031,16 +2088,54 @@ processors:
         - append:
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
-  - set:
-      field: event.severity
-      tag: set_event_severity_from_alert_severity
-      copy_from: crowdstrike.alert.severity
-      ignore_empty_value: true
   - rename:
       field: json.severity_name
       tag: rename_severity_name
       target_field: crowdstrike.alert.severity_name
       ignore_missing: true
+  - script:
+      lang: painless
+      description: Script to set event.severity.
+      tag: set_event_severity
+      if: ctx.crowdstrike?.alert?.severity instanceof long && ctx.crowdstrike.alert.severity_name == null
+      source: |-
+        long severity = ctx.crowdstrike.alert.severity;
+        if (0 <= severity && severity < 20) {
+          ctx.crowdstrike.alert.severity_name = "info";
+        } if (20 <= severity && severity < 40) {
+          ctx.crowdstrike.alert.severity_name = "low";
+        } if (40 <= severity && severity < 60) {
+          ctx.crowdstrike.alert.severity_name = "medium";
+        } if (60 <= severity && severity < 80) {
+          ctx.crowdstrike.alert.severity_name = "high";
+        } if (80 <= severity && severity <= 100) {
+          ctx.crowdstrike.alert.severity_name = "critical";
+        }
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - script:
+      lang: painless
+      description: Script to set event.severity.
+      tag: set_event_severity
+      if: ctx.crowdstrike?.alert?.severity_name instanceof String
+      source: |-
+        ctx.event = ctx.event ?: [:];
+        String risk_score_value = ctx.crowdstrike.alert.severity_name;
+        if (risk_score_value.equalsIgnoreCase("low") || risk_score_value.equalsIgnoreCase("info")) {
+          ctx.event.severity = 21;
+        } else if (risk_score_value.equalsIgnoreCase("medium")) {
+          ctx.event.severity = 47;
+        } else if (risk_score_value.equalsIgnoreCase("high")) {
+          ctx.event.severity = 73;
+        } else if (risk_score_value.equalsIgnoreCase("critical")) {
+          ctx.event.severity = 99;
+        }
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - rename:
       field: json.sha1
       tag: rename_sha1
@@ -2566,6 +2661,7 @@ processors:
       ignore_missing: true
   - remove:
       field:
+        - crowdstrike.alert.agent_id
         - crowdstrike.alert.command_line
         - crowdstrike.alert.description
         - crowdstrike.alert.device.device_id

@@ -1,5 +1,9 @@
 listen_address: {{listen_address}}
 listen_port: {{listen_port}}
+{{#if enable_request_tracer}}
+tracer.filename: "../../logs/http_endpoint/http-request-trace-*.ndjson"
+tracer.maxbackups: 5
+{{/if}}
 content_type: ""
 preserve_original_event: true
 {{#if secret_header}}
@@ -23,6 +27,12 @@ publisher_pipeline.disable_host: true
 {{/contains}}
 {{#if ssl}}
 ssl: {{ssl}}
+{{/if}}
+{{#if strict_fields}}
+fields_under_root: true
+fields:
+  _conf:
+    strict_fields: true
 {{/if}}
 {{#if processors}}
 processors:

@@ -1,4 +1,11 @@
-# Custom Filestream Log integration
+# Custom Logs (Filestream) Package
+
+WARNING: Migrating from the "Custom Logs (Deprecated)" to "Custom Logs
+(Filestream)" will cause files to be re-ingested because the state is not migrated.
+
+In future releases it's expected to have an automated way to migrate the state. However, this is not possible at the moment.
+
+The current best option for minimizing the data duplication while migrating to "Custom Logs (Filestream)" is to use the 'Ignore Older' or 'Exclude Files' options.
 
 The `filestream` custom input is used to read lines from active log files. It is the
 new, improved alternative to the `log` input. It comes with various improvements

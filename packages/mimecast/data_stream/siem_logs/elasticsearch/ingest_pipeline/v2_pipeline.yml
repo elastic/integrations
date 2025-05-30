@@ -105,6 +105,10 @@ processors:
       field: mimecast.rejectionInfo
       target_field: event.reason
       ignore_missing: true
+  - set:
+      field: event.kind
+      value: alert
+      if: ctx.mimecast?.rejectionType != null && ctx.mimecast.rejectionType != ''
   - rename:
       field: mimecast.rejectionType
       target_field: error.type
@@ -140,6 +144,10 @@ processors:
       field: mimecast.attachments
       target_field: email.attachments.file.name
       ignore_missing: true
+  - set:
+      field: event.kind
+      value: alert
+      if: ctx.mimecast?.Hld != null && ctx.mimecast.Hld != ''
   - rename:
       field: mimecast.holdReason
       target_field: event.reason
@@ -168,6 +176,10 @@ processors:
       if: ctx.tls?.established instanceof String && ctx.tls.established.equalsIgnoreCase('no')
 
   ### AV LOGS
+  - set:
+      field: event.kind
+      value: alert
+      if: ctx.mimecast?.fileExtension != null && ctx.mimecast.fileExtension != ''
   - rename:
       field: mimecast.fileExtension
       target_field: email.attachments.file.extension
@@ -194,18 +206,30 @@ processors:
       ignore_missing: true
 
   ### SPAM EVENT THREAD LOGS
+  - set:
+      field: event.kind
+      value: alert
+      if: ctx.mimecast?.senderIp != null && ctx.mimecast.senderIp != ''
   - rename:
       field: mimecast.senderIp
       target_field: source.ip
       ignore_missing: true
 
   ### SIEM Email Protect Logs
+  - set:
+      field: event.kind
+      value: alert
+      if: ctx.mimecast?.url != null && ctx.mimecast.url != ''
   - rename:
       field: mimecast.url
       target_field: url.full
       ignore_missing: true
 
   ### SIEM Impersonation logs                       
+  - set:
+      field: event.kind
+      value: alert
+      if: ctx.mimecast?.taggedMalicious == true || ctx.mimecast?.taggedMalicious == 'true'
   - rename:
       field: mimecast.action
       target_field: event.action
@@ -218,6 +242,28 @@ processors:
       field: mimecast.newDomain
       target_field: source.domain
       ignore_missing: true
+  - convert:
+      field: mimecast.taggedExternal
+      tag: convert_tagged_external_to_boolean
+      type: boolean
+      ignore_missing: true
+      on_failure:
+        - remove:
+            field: mimecast.taggedExternal
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - convert:
+      field: mimecast.taggedMalicious
+      tag: convert_tagged_malicious_to_boolean
+      type: boolean
+      ignore_missing: true
+      on_failure:
+        - remove:
+            field: mimecast.taggedMalicious
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
 
   ### SIEM TTP Url Logs
   - rename:
@@ -382,31 +428,6 @@ processors:
         - mimecast._partition
         - mimecast.timestamp
       ignore_missing: true
-  - script:
-      lang: painless
-      description: This script processor iterates over the whole document to remove fields with null values.
-      source: |
-        void handleMap(Map map) {
-          for (def x : map.values()) {
-            if (x instanceof Map) {
-                handleMap(x);
-            } else if (x instanceof List) {
-                handleList(x);
-            }
-          }
-          map.values().removeIf(v -> v == null || v == '' || (v instanceof Map && v.size() == 0) || (v instanceof List && v.size() == 0));
-        }
-        void handleList(List list) {
-          for (def x : list) {
-              if (x instanceof Map) {
-                  handleMap(x);
-              } else if (x instanceof List) {
-                  handleList(x);
-              }
-          }
-          list.removeIf(v -> v == null || v == '' || (v instanceof Map && v.size() == 0) || (v instanceof List && v.size() == 0));
-        }
-        handleMap(ctx);
 
 # Error handling
 on_failure:

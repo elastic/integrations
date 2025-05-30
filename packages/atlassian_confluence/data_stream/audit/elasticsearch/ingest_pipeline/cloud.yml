@@ -1,10 +1,9 @@
 ---
 description: Pipeline for processing Atlassian Confluence Cloud audit logs.
 processors:
-- drop:
-    if: ctx.json?.results instanceof List && ctx.json.results.length == 0
 - date:
     field: json.creationDate
+    if: ctx.json?.creationDate != null
     formats:
       - UNIX_MS
 - rename:
@@ -45,17 +44,18 @@ processors:
     ignore_missing: true
 - script:
     lang: painless
-    description: Modify data to match Self Hosted 
+    description: Modify data to match Self Hosted
+    if: ctx.confluence?.audit != null
     source: >-
-        if(ctx.confluence?.audit?.affected_objects == null) {
+        if(ctx.confluence.audit.affected_objects == null) {
             ArrayList items = new ArrayList();
-            ctx.confluence?.audit.put("affected_objects", items);
+            ctx.confluence.audit.put("affected_objects", items);
         }
         if(ctx.json?.affectedObject != null && !ctx.confluence?.audit?.affected_objects.contains(ctx.json?.affectedObject)) {
-            ctx.confluence?.audit?.affected_objects.add(ctx.json?.affectedObject);
+            ctx.confluence.audit.affected_objects.add(ctx.json?.affectedObject);
         }
                 
-        if(ctx.confluence?.audit?.affected_objects != null) {
+        if(ctx.confluence.audit.affected_objects != null) {
             for (def j = 0; j < ctx.confluence?.audit?.affected_objects.length; j++) {
                 if(ctx.confluence.audit.affected_objects[j]?.objectType != null) {
                     ctx.confluence.audit.affected_objects[j].put('type', ctx.confluence.audit.affected_objects[j].objectType);
@@ -63,8 +63,8 @@ processors:
                 }
             }
         }
-        if(ctx.confluence?.audit?.changed_values != null) {
-            for (def j = 0; j < ctx.confluence?.audit?.changed_values.length; j++) {
+        if(ctx.confluence.audit.changed_values != null) {
+            for (def j = 0; j < ctx.confluence.audit.changed_values.length; j++) {
                 if(ctx.confluence.audit.changed_values[j]?.name != null) {
                     ctx.confluence.audit.changed_values[j].put('i18nKey', ctx.confluence.audit.changed_values[j].name);
                     ctx.confluence.audit.changed_values[j].put('key', ctx.confluence.audit.changed_values[j].name);
@@ -86,4 +86,8 @@ on_failure:
     value: pipeline_error
 - append:
     field: error.message
-    value: '{{{ _ingest.on_failure_message }}}'
+    value: >
+      Processor "{{{ _ingest.on_failure_processor_type }}}"
+      with tag "{{{ _ingest.on_failure_processor_tag }}}"
+      in pipeline "{{{ _ingest.on_failure_pipeline }}}"
+      failed with message "{{{ _ingest.on_failure_message }}}"
