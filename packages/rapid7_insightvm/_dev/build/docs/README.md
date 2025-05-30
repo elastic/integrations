@@ -14,9 +14,19 @@ The Rapid7 InsightVM integration collects two type of events: Asset and Vulnerab
 
 **Vulnerability** is used to retrieve all vulnerabilities that can be assessed. See more details in the API documentation [here](https://help.rapid7.com/insightvm/en-us/api/integrations.html#operation/searchIntegrationVulnerabilities).
 
+**Asset Vulnerability** is used to gather and aggregate data on assets and vulnerabilities to support Native CDR Workflows. 
+
 ## Requirements
 
-Elasticsearch is needed to store and search data, and Kibana is needed for visualizing and managing it. You can use our hosted Elasticsearch Service on Elastic Cloud, which is recommended, or self-manage the Elastic Stack on your hardware.
+### Agent-based installation
+
+Elastic Agent must be installed. For more details, check the Elastic Agent [installation instructions](docs-content://reference/fleet/install-elastic-agents.md).
+
+### Agentless-enabled integration
+
+Agentless integrations allow you to collect data without having to manage Elastic Agent in your cloud. They make manual agent deployment unnecessary, so you can focus on your data instead of the agent that collects it. For more information, refer to [Agentless integrations](https://www.elastic.co/guide/en/serverless/current/security-agentless-integrations.html) and the [Agentless integrations FAQ](https://www.elastic.co/guide/en/serverless/current/agentless-integration-troubleshooting.html).
+
+Agentless deployments are only supported in Elastic Serverless and Elastic Cloud environments. This functionality is in beta and is subject to change. Beta features are not subject to the support SLA of official GA features.
 
 This module uses **InsightVM Cloud Integrations API v4**.
 
@@ -37,6 +47,16 @@ This is the `asset` dataset.
 {{event "asset"}}
 
 {{fields "asset"}}
+
+### asset_vulnerability
+
+This is the `asset_vulnerability` dataset.
+
+#### Example
+
+{{event "asset_vulnerability"}}
+
+{{fields "asset_vulnerability"}}
 
 ### vulnerability
 
