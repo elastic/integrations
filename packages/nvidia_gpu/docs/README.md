@@ -93,7 +93,7 @@ An example event for `stats` looks as following:
             "UUID": "GPU-2492e3fa-2252-1730-0d1a-8d12ab32cdf0",
             "device": "nvidia0",
             "gpu": "0",
-            "instance": "34.47.235.105:9400",
+            "instance": "192.168.0.192:9400",
             "job": "prometheus",
             "modelName": "Tesla T4",
             "pci_bus_id": "00000000:00:04.0"
@@ -159,7 +159,7 @@ An example event for `stats` looks as following:
         "period": 10000
     },
     "service": {
-        "address": "http://34.47.235.105:9400/metrics",
+        "address": "http://192.168.0.192:9400/metrics",
         "type": "prometheus"
     },
     "tags": [
@@ -197,8 +197,8 @@ An example event for `stats` looks as following:
 | gpu.error.xid | The eXerience ID of the error being reported by the GPU. | float |  | gauge |
 | gpu.labels.\* | Nvidia GPU labels | object |  |  |
 | gpu.license_vgpu_status | vGPU License status. | long |  | gauge |
-| gpu.memory.framebuffer.size.free | Free size of the framebuffer (in MiB). | long |  | gauge |
-| gpu.memory.framebuffer.size.used | Used size of the framebuffer (in MiB). | long |  | gauge |
+| gpu.memory.framebuffer.size.free | Free size of the framebuffer (in MiB). | float |  | gauge |
+| gpu.memory.framebuffer.size.used | Used size of the framebuffer (in MiB). | float |  | gauge |
 | gpu.nvlink.bandwidth.total | Total number of NVLink bandwidth counters for all lanes. | long |  | counter |
 | gpu.nvlink.bandwidth_l0.total | The number of bytes of active NVLink rx or tx data including both header and payload. | long |  | counter |
 | gpu.nvlink.data_crc_errors.count | Total number of NVLink data CRC errors. | long |  | counter |
