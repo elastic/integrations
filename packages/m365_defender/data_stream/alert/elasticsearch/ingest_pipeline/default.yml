@@ -1097,6 +1097,16 @@ processors:
       tag: foreach_rename_evidence_azureAdDeviceId
       if: ctx.json?.evidence instanceof List
       processor:
+        append:
+          field: device.id
+          tag: append_azureAdDeviceId_into_device_id
+          value: '{{{_ingest._value.azureAdDeviceId}}}'
+          allow_duplicates: false
+  - foreach:
+      field: json.evidence
+      tag: foreach_rename_evidence_azureAdDeviceId
+      if: ctx.json?.evidence instanceof List
+      processor:
         rename:
           field: _ingest._value.azureAdDeviceId
           tag: rename_foreach_evidence_azureAdDeiveId
@@ -2446,6 +2456,26 @@ processors:
         if (!processParentPid.isEmpty()) {
           ctx.process.parent.pid = convertToOrderedArray(processParentPid);
         }
+  - foreach:
+      field: process.pid
+      tag: foreach_process_pid
+      if: ctx.process?.pid instanceof List
+      processor:
+        append:
+          field: process.entity_id
+          tag: append_process_pid_to_entity_id
+          value: '{{{_ingest._value}}}'
+          allow_duplicates: false
+  - foreach:
+      field: process.parent.pid
+      tag: foreach_process_parent_pid
+      if: ctx.process?.parent?.pid instanceof List
+      processor:
+        append:
+          field: process.parent.entity_id
+          tag: append_process_parent_pid_to_entity_id
+          value: '{{{_ingest._value}}}'
+          allow_duplicates: false
   - foreach:
       field: json.evidence
       tag: foreach_evidence_remove_fields
