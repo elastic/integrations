@@ -146,10 +146,27 @@ processors:
       field: json.User
       target_field: user.name
       ignore_missing: true
+  - set:
+      field: user.email
+      copy_from: user.name
+      tag: copy_user_email
+      if: ctx.user?.name != null && ctx.user.name.contains("@")
+  - dissect:
+      field: user.email
+      pattern: '%{user.name}@%{user.domain}'
+      tag: dissect_user_email
+      ignore_missing: true
+      ignore_failure: true
   - append:
       field: related.user
       value: '{{{user.name}}}'
       if: ctx.user?.name != null
+      allow_duplicates: false
+      ignore_failure: true
+  - append:
+      field: related.user
+      value: '{{{user.email}}}'
+      if: ctx.user?.email != null
       allow_duplicates: false
       ignore_failure: true
   - rename:
