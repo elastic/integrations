@@ -29,7 +29,7 @@ processors:
     ignore_missing: true
 - rename:
     field: prometheus.DCGM_FI_DEV_TOTAL_ENERGY_CONSUMPTION.counter
-    target_field: gpu.power.energy_consumption.total
+    target_field: gpu.power.energy_consumption_total
     ignore_missing: true
 # PCIe
 - rename:
@@ -47,19 +47,19 @@ processors:
 # Utilization
 - rename:
     field: prometheus.DCGM_FI_DEV_GPU_UTIL.value
-    target_field: gpu.utilization.gpu
+    target_field: gpu.utilization.gpu_pct
     ignore_missing: true
 - rename:
     field: prometheus.DCGM_FI_DEV_ENC_UTIL.value
-    target_field: gpu.utilization.encoder
+    target_field: gpu.utilization.encoder_pct
     ignore_missing: true
 - rename:
     field: prometheus.DCGM_FI_DEV_DEC_UTIL.value
-    target_field: gpu.utilization.decoder
+    target_field: gpu.utilization.decoder_pct
     ignore_missing: true
 - rename:
     field: prometheus.DCGM_FI_DEV_MEM_COPY_UTIL.value
-    target_field: gpu.utilization.memory_copy
+    target_field: gpu.utilization.memory_copy_pct
     ignore_missing: true
 # Error Metrics
 - rename:
@@ -69,53 +69,66 @@ processors:
 # Framebuffer Usage
 - rename:
     field: prometheus.DCGM_FI_DEV_FB_USED.value
-    target_field: gpu.memory.framebuffer.size.used
+    target_field: gpu.memory.framebuffer.used_size
     ignore_missing: true
 - rename:
     field: prometheus.DCGM_FI_DEV_FB_FREE.value
-    target_field: gpu.memory.framebuffer.size.free
+    target_field: gpu.memory.framebuffer.free_size
     ignore_missing: true
 # ECC Metrics
 - rename:
     field: prometheus.DCGM_FI_DEV_ECC_DBE_VOL_TOTAL.counter
-    target_field: gpu.ecc.double_bit_volatile
+    target_field: gpu.ecc.double_bit_volatile_count
     ignore_missing: true
 - rename:
     field: prometheus.DCGM_FI_DEV_ECC_DBE_AGG_TOTAL.counter
-    target_field: gpu.ecc.double_bit_persistent
+    target_field: gpu.ecc.double_bit_persistent_count
     ignore_missing: true
 - rename:
     field: prometheus.DCGM_FI_DEV_ECC_SBE_VOL_TOTAL.counter
-    target_field: gpu.ecc.single_bit_volatile
+    target_field: gpu.ecc.single_bit_volatile_count
     ignore_missing: true
 - rename:
     field: prometheus.DCGM_FI_DEV_ECC_SBE_AGG_TOTAL.counter
-    target_field: gpu.ecc.single_bit_persistent
+    target_field: gpu.ecc.single_bit_persistent_count
     ignore_missing: true
+# Retired Metrics
+- rename:
+    field: prometheus.DCGM_FI_DEV_RETIRED_SBE.counter
+    target_field: gpu.retired.single_bit_errors_count
+    ignore_missing: true
+- rename:
+    field: prometheus.DCGM_FI_DEV_RETIRED_DBE.counter
+    target_field: gpu.retired.double_bit_errors_count
+    ignore_missing: true
+- rename:
+    field: prometheus.DCGM_FI_DEV_RETIRED_PENDING.counter
+    target_field: gpu.retired.pending_count
+    ignore_missing: true    
 # NVLink Metrics
 - rename:
     field: prometheus.DCGM_FI_DEV_NVLINK_CRC_FLIT_ERROR_COUNT.counter
-    target_field: gpu.nvlink.flowcontrol_crc_errors.count
+    target_field: gpu.nvlink.flowcontrol_crc_errors_count
     ignore_missing: true
 - rename:
     field: prometheus.DCGM_FI_DEV_NVLINK_CRC_DATA_ERROR_COUNT.counter
-    target_field: gpu.nvlink.data_crc_errors.count
+    target_field: gpu.nvlink.data_crc_errors_count
     ignore_missing: true
 - rename:
     field: prometheus.DCGM_FI_DEV_NVLINK_REPLAY_ERROR_COUNT.counter
-    target_field: gpu.nvlink.replay_errors.count
+    target_field: gpu.nvlink.replay_errors_count
     ignore_missing: true
 - rename:
     field: prometheus.DCGM_FI_DEV_NVLINK_RECOVERY_ERROR_COUNT.counter
-    target_field: gpu.nvlink.recovery_errors.count
+    target_field: gpu.nvlink.recovery_errors_count
     ignore_missing: true
 - rename:
     field: prometheus.DCGM_FI_DEV_NVLINK_BANDWIDTH_TOTAL.counter
-    target_field: gpu.nvlink.bandwidth.total
+    target_field: gpu.nvlink.bandwidth_total
     ignore_missing: true
 - rename:
     field: prometheus.DCGM_FI_DEV_NVLINK_BANDWIDTH_L0.counter
-    target_field: gpu.nvlink.bandwidth_l0.total
+    target_field: gpu.nvlink.bandwidth_l0_total
     ignore_missing: true
 - rename:
     field: prometheus.DCGM_FI_DEV_VGPU_LICENSE_STATUS.value
@@ -124,15 +137,15 @@ processors:
 # Remapped Rows
 - rename:
     field: prometheus.DCGM_FI_DEV_UNCORRECTABLE_REMAPPED_ROWS.counter
-    target_field: gpu.Remapped.uncorrectable_remapped_rows.count
+    target_field: gpu.Remapped.uncorrectable_remapped_rows_count
     ignore_missing: true
 - rename:
     field: prometheus.DCGM_FI_DEV_CORRECTABLE_REMAPPED_ROWS.counter
-    target_field: gpu.Remapped.correctable_remapped_rows.count
+    target_field: gpu.Remapped.correctable_remapped_rows_count
     ignore_missing: true
 - rename:
     field: prometheus.DCGM_FI_DEV_ROW_REMAP_FAILURE.value
-    target_field: gpu.Remapped.failed_remapped_rows.count
+    target_field: gpu.Remapped.failed_remapped_rows_count
     ignore_missing: true
 # Device
 - rename:
@@ -158,27 +171,27 @@ processors:
 # Throttling
 - rename:
     field: prometheus.DCGM_FI_DEV_SYNC_BOOST_VIOLATION.counter
-    target_field: gpu.throttling.sync_boost
+    target_field: gpu.throttling._ussync_boost
     ignore_missing: true
 - rename:
     field: prometheus.DCGM_FI_DEV_THERMAL_VIOLATION.counter
-    target_field: gpu.throttling.thermal
+    target_field: gpu.throttling.thermal_us
     ignore_missing: true
 - rename:
     field: prometheus.DCGM_FI_DEV_LOW_UTIL_VIOLATION.counter
-    target_field: gpu.throttling.low_utilization
+    target_field: gpu.throttling.low_utilization_us
     ignore_missing: true
 - rename:
     field: prometheus.DCGM_FI_DEV_BOARD_LIMIT_VIOLATION.counter
-    target_field: gpu.throttling.board_limit
+    target_field: gpu.throttling.board_limit_us
     ignore_missing: true
 - rename:
     field: prometheus.DCGM_FI_DEV_POWER_VIOLATION.counter
-    target_field: gpu.throttling.power
+    target_field: gpu.throttling.power_us
     ignore_missing: true
 - rename:
     field: prometheus.DCGM_FI_DEV_RELIABILITY_VIOLATION.counter
-    target_field: gpu.throttling.reliability
+    target_field: gpu.throttling.reliability_us
     ignore_missing: true       
 # DCP Activity Metrics
 - rename:
