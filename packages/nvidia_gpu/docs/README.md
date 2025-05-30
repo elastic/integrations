@@ -54,54 +54,97 @@ An example event for `stats` looks as following:
 
 ```json
 {
-    "@timestamp": "2025-05-29T13:19:19.677Z",
+    "@timestamp": "2025-05-30T04:41:15.537Z",
     "agent": {
-        "ephemeral_id": "b128af4e-6389-4d5b-bbea-9247515ba1d6",
-        "id": "69e7d738-53d0-4bb5-afc2-9efdb6d5a698",
-        "name": "elastic-agent-38289",
+        "ephemeral_id": "4d61d6ff-d82f-4775-a439-31f8e6da6ae2",
+        "id": "fb13f214-2cea-49d6-9de1-ae6c9857ee81",
+        "name": "elastic-agent-10784",
         "type": "metricbeat",
         "version": "8.17.0"
     },
     "data_stream": {
         "dataset": "nvidia_gpu.stats",
-        "namespace": "59747",
+        "namespace": "20283",
         "type": "metrics"
     },
     "ecs": {
         "version": "8.17.0"
     },
     "elastic_agent": {
-        "id": "69e7d738-53d0-4bb5-afc2-9efdb6d5a698",
+        "id": "fb13f214-2cea-49d6-9de1-ae6c9857ee81",
         "snapshot": false,
         "version": "8.17.0"
     },
     "event": {
         "agent_id_status": "verified",
         "dataset": "nvidia_gpu.stats",
-        "duration": 740689,
-        "ingested": "2025-05-29T13:19:22Z",
+        "duration": 18298544,
+        "ingested": "2025-05-30T04:41:18Z",
         "module": "prometheus"
     },
     "gpu": {
-        "labels": {
-            "instance": "localhost:9090",
-            "job": "prometheus"
+        "clock": {
+            "mem_frequency": 405,
+            "streaming_multiprocessor_frequency": 300
         },
-        "up": 0
+        "labels": {
+            "DCGM_FI_DRIVER_VERSION": "525.105.17",
+            "Hostname": "924e17218b6f",
+            "UUID": "GPU-2492e3fa-2252-1730-0d1a-8d12ab32cdf0",
+            "device": "nvidia0",
+            "gpu": "0",
+            "instance": "34.47.235.105:9400",
+            "job": "prometheus",
+            "modelName": "Tesla T4",
+            "pci_bus_id": "00000000:00:04.0"
+        },
+        "license_vgpu_status": 0,
+        "memory": {
+            "framebuffer": {
+                "size": {
+                    "free": 14923,
+                    "used": 5
+                }
+            }
+        },
+        "nvlink": {
+            "bandwidth": {
+                "total": 0
+            }
+        },
+        "pcie": {
+            "replay": 0
+        },
+        "power": {
+            "energy_consumption": {
+                "total": 2896518860
+            },
+            "usage": 11.941
+        },
+        "temperature": {
+            "gpu": 38,
+            "memory": 0
+        },
+        "utilization": {
+            "decoder": 0,
+            "encoder": 0,
+            "gpu": 0,
+            "memory_copy": 0
+        }
     },
     "host": {
         "architecture": "x86_64",
         "containerized": true,
-        "hostname": "elastic-agent-38289",
+        "hostname": "elastic-agent-10784",
         "ip": [
-            "172.18.0.7",
+            "172.18.0.4",
             "192.168.112.2"
         ],
         "mac": [
-            "02-42-AC-12-00-07",
+            "02-42-AC-12-00-04",
             "02-42-C0-A8-70-02"
         ],
-        "name": "elastic-agent-38289",
+        "name": "elastic-agent-10784",
         "os": {
             "family": "",
             "kernel": "5.15.153.1-microsoft-standard-WSL2",
@@ -116,7 +159,7 @@ An example event for `stats` looks as following:
         "period": 10000
     },
     "service": {
-        "address": "http://localhost:9090/metrics",
+        "address": "http://34.47.235.105:9400/metrics",
         "type": "prometheus"
     },
     "tags": [
@@ -181,7 +224,6 @@ An example event for `stats` looks as following:
 | gpu.throttling.reliability | Number of microseconds throttled due to reliability. | long |  | counter |
 | gpu.throttling.sync_boost | Number of microseconds throttled due to Sync Boost. | long |  | counter |
 | gpu.throttling.thermal | Number of microseconds throttled due to thermals. | long |  | counter |
-| gpu.up | server running status | float |  | gauge |
 | gpu.utilization.decoder | Decoder utilization (in %). | float | percent | gauge |
 | gpu.utilization.encoder | Encoder utilization (in %). | float | percent | gauge |
 | gpu.utilization.gpu | GPU utilization (in %). | float | percent | gauge |
