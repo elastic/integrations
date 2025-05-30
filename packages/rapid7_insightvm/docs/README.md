@@ -48,24 +48,24 @@ An example event for `asset` looks as following:
 
 ```json
 {
-    "@timestamp": "2025-05-30T08:45:28.249Z",
+    "@timestamp": "2025-05-30T11:10:37.869Z",
     "agent": {
-        "ephemeral_id": "949db32c-9ca8-41ae-a908-2a8e8166cbac",
-        "id": "87221170-ce21-40cd-ae6a-780544239840",
-        "name": "elastic-agent-91445",
+        "ephemeral_id": "6545769f-e426-4e1c-9549-44bd7f788ee4",
+        "id": "afb159d9-5bc3-429a-b8a7-3cda969112a5",
+        "name": "elastic-agent-88629",
         "type": "filebeat",
         "version": "8.18.0"
     },
     "data_stream": {
         "dataset": "rapid7_insightvm.asset",
-        "namespace": "87300",
+        "namespace": "81787",
         "type": "logs"
     },
     "ecs": {
         "version": "8.11.0"
     },
     "elastic_agent": {
-        "id": "87221170-ce21-40cd-ae6a-780544239840",
+        "id": "afb159d9-5bc3-429a-b8a7-3cda969112a5",
         "snapshot": false,
         "version": "8.18.0"
     },
@@ -74,9 +74,9 @@ An example event for `asset` looks as following:
         "category": [
             "host"
         ],
-        "created": "2025-05-30T08:45:28.249Z",
+        "created": "2025-05-30T11:10:37.869Z",
         "dataset": "rapid7_insightvm.asset",
-        "ingested": "2025-05-30T08:45:31Z",
+        "ingested": "2025-05-30T11:10:40Z",
         "kind": "state",
         "original": "{\"assessed_for_policies\":false,\"assessed_for_vulnerabilities\":true,\"critical_vulnerabilities\":0,\"exploits\":0,\"id\":\"452534235-25a7-40a3-9321-28ce0b5cc90e-default-asset-199\",\"ip\":\"10.1.0.128\",\"last_assessed_for_vulnerabilities\":\"2020-03-20T19:19:42.611Z\",\"last_scan_end\":\"2020-03-20T19:19:42.611Z\",\"last_scan_start\":\"2020-03-20T19:18:13.611Z\",\"malware_kits\":0,\"moderate_vulnerabilities\":2,\"new\":[],\"os_architecture\":\"x86_64\",\"os_description\":\"CentOS Linux 2.6.18\",\"os_family\":\"Linux\",\"os_name\":\"Linux\",\"os_system_name\":\"CentOS Linux\",\"os_type\":\"General\",\"os_vendor\":\"CentOS\",\"os_version\":\"2.6.18\",\"remediated\":[],\"risk_score\":0,\"severe_vulnerabilities\":0,\"tags\":[{\"name\":\"lab\",\"type\":\"SITE\"}],\"total_vulnerabilities\":2}",
         "type": [
@@ -249,22 +249,22 @@ An example event for `asset_vulnerability` looks as following:
 {
     "@timestamp": "2025-05-27T18:21:36.279Z",
     "agent": {
-        "ephemeral_id": "843312ee-1b90-4305-b2a4-ad903d21aad6",
-        "id": "e08b1df5-acc0-426e-8e25-090ccc2ed0ac",
-        "name": "elastic-agent-39481",
+        "ephemeral_id": "1f134173-6086-4111-ab6c-78895b63908d",
+        "id": "d16b29fe-9b2e-43cf-b0e1-82325680132b",
+        "name": "elastic-agent-34771",
         "type": "filebeat",
         "version": "8.18.0"
     },
     "data_stream": {
         "dataset": "rapid7_insightvm.asset_vulnerability",
-        "namespace": "63091",
+        "namespace": "27649",
         "type": "logs"
     },
     "ecs": {
         "version": "8.11.0"
     },
     "elastic_agent": {
-        "id": "e08b1df5-acc0-426e-8e25-090ccc2ed0ac",
+        "id": "d16b29fe-9b2e-43cf-b0e1-82325680132b",
         "snapshot": false,
         "version": "8.18.0"
     },
@@ -276,7 +276,7 @@ An example event for `asset_vulnerability` looks as following:
         "created": "2025-05-12T16:25:35.000Z",
         "dataset": "rapid7_insightvm.asset_vulnerability",
         "id": "8babcde1-1234-5678-0912-cabcdef1284e-default-asset-6|unix-anonymous-root-logins|2025-05-27T18:21:36.279Z",
-        "ingested": "2025-05-30T08:46:29Z",
+        "ingested": "2025-05-30T11:11:51Z",
         "kind": "event",
         "original": "{\"assessed_for_policies\":false,\"assessed_for_vulnerabilities\":true,\"credential_assessments\":[{\"port\":22,\"protocol\":\"TCP\",\"status\":\"NO_CREDS_SUPPLIED\"}],\"critical_vulnerabilities\":3,\"exploits\":0,\"host_name\":\"computer-test\",\"id\":\"8babcde1-1234-5678-0912-cabcdef1284e-default-asset-6\",\"ip\":\"10.50.5.112\",\"last_assessed_for_vulnerabilities\":\"2025-05-27T18:21:36.279Z\",\"last_scan_end\":\"2025-05-27T18:21:36.279Z\",\"last_scan_start\":\"2025-05-27T18:20:41.505Z\",\"mac\":\"00:00:5E:00:53:02\",\"malware_kits\":0,\"moderate_vulnerabilities\":1,\"os_architecture\":\"x86_64\",\"os_description\":\"Red Hat Enterprise Linux 7.9\",\"os_family\":\"Linux\",\"os_name\":\"Enterprise Linux\",\"os_system_name\":\"Red Hat Linux\",\"os_type\":\"\",\"os_vendor\":\"Red Hat\",\"os_version\":\"7.9\",\"risk_score\":18250,\"severe_vulnerabilities\":48,\"tags\":[{\"name\":\"Ahmedabad\",\"type\":\"LOCATION\"},{\"name\":\"test\",\"type\":\"SITE\"},{\"name\":\"rapid7 insight agents\",\"type\":\"SITE\"}],\"total_vulnerabilities\":52,\"type\":\"guest\",\"unique_identifiers\":[{\"id\":\"CEF12345-ABCD-1234-ABCD-95ABCDEF1234\",\"source\":\"dmidecode\"},{\"id\":\"e80644e940123456789abcdef66a8b16\",\"source\":\"R7 Agent\"}],\"vuln\":{\"added\":\"2004-11-30T00:00:00Z\",\"categories\":\"CVSS Score Predicted with Rapid7 AI,UNIX\",\"check_id\":null,\"cves\":\"\",\"cvss_v2_access_complexity\":\"low\",\"cvss_v2_access_vector\":\"network\",\"cvss_v2_authentication\":\"single\",\"cvss_v2_availability_impact\":\"partial\",\"cvss_v2_confidentiality_impact\":\"partial\",\"cvss_v2_exploit_score\":7.9520000338554375,\"cvss_v2_impact_score\":6.442976653521584,\"cvss_v2_integrity_impact\":\"partial\",\"cvss_v2_score\":6.5,\"cvss_v2_vector\":\"(AV:N/AC:L/Au:S/C:P/I:P/A:P)\",\"cvss_v3_attack_complexity\":\"low\",\"cvss_v3_attack_vector\":\"local\",\"cvss_v3_availability_impact\":\"high\",\"cvss_v3_confidentiality_impact\":\"high\",\"cvss_v3_exploit_score\":2.515145325,\"cvss_v3_impact_score\":5.873118720000001,\"cvss_v3_integrity_impact\":\"high\",\"cvss_v3_privileges_required\":\"none\",\"cvss_v3_scope\":\"unchanged\",\"cvss_v3_score\":8.4,\"cvss_v3_user_interaction\":\"none\",\"cvss_v3_vector\":\"CVSS:3.0/AV:L/AC:L/PR:N/UI:N/S:U/C:H/I:H/A:H\",\"denial_of_service\":false,\"description\":\"Anonymous root logins should only be allowed from system console. /etc/securetty allows you to specify on which tty's and virtual consoles root is allowed to login. The tty and vc's listed in this file will allow root to login on certain tty's and VC's. On other tty or vc's root user will not be allowed and user has to \\\"su\\\" to become root.\",\"exploits\":[],\"first_found\":\"2025-05-12T16:25:35Z\",\"id\":\"unix-anonymous-root-logins\",\"key\":\"\",\"last_found\":\"2025-05-27T18:21:36.279Z\",\"links\":[],\"malware_kits\":[],\"modified\":\"2025-02-18T00:00:00Z\",\"nic\":null,\"pci_cvss_score\":6.5,\"pci_fail\":true,\"pci_severity_score\":4,\"pci_special_notes\":\"\",\"pci_status\":\"fail\",\"port\":null,\"proof\":\"\\u003cp\\u003e\\u003cp\\u003eFollowing entries in /etc/securetty \\n                                 may allow anonymous root logins: \\u003cul\\u003e\\u003cli\\u003ettyS0\\u003c/li\\u003e\\u003cli\\u003ettysclp0\\u003c/li\\u003e\\u003cli\\u003esclp_line0\\u003c/li\\u003e\\u003cli\\u003e3270/tty1\\u003c/li\\u003e\\u003cli\\u003ehvc0\\u003c/li\\u003e\\u003cli\\u003ehvc1\\u003c/li\\u003e\\u003cli\\u003ehvc2\\u003c/li\\u003e\\u003cli\\u003ehvc3\\u003c/li\\u003e\\u003cli\\u003ehvc4\\u003c/li\\u003e\\u003cli\\u003ehvc5\\u003c/li\\u003e\\u003cli\\u003ehvc6\\u003c/li\\u003e\\u003cli\\u003ehvc7\\u003c/li\\u003e\\u003cli\\u003ehvsi0\\u003c/li\\u003e\\u003cli\\u003ehvsi1\\u003c/li\\u003e\\u003cli\\u003ehvsi2\\u003c/li\\u003e\\u003cli\\u003exvc0\\u003c/li\\u003e\\u003c/ul\\u003e\\u003c/p\\u003e\\u003c/p\\u003e\",\"protocol\":null,\"published\":\"2004-11-30T00:00:00Z\",\"references\":\"\",\"reintroduced\":null,\"risk_score\":562,\"severity\":\"severe\",\"severity_score\":7,\"solution_fix\":\"\\u003cp\\u003e\\u003cp\\u003eRemove all the entries in /etc/securetty except console,\\n            tty[0-9]* and vc\\\\[0-9]* \\u003c/p\\u003e\\u003cp\\u003eNote: ssh does not use /etc/securetty. To disable root login\\n            through ssh, use the \\u0026quot;PermitRootLogin\\u0026quot; setting in /etc/ssh/sshd_config\\n            and restart the ssh daemon. \\u003c/p\\u003e\\u003c/p\\u003e\",\"solution_id\":\"unix-anonymous-root-logins\",\"solution_summary\":\"Edit '/etc/securetty' entries\",\"solution_type\":\"workaround\",\"status\":\"VULNERABLE_EXPL\",\"title\":\"Anonymous root login is allowed\",\"vulnerability_id\":\"unix-anonymous-root-logins\"},\"vulnerability\":[{\"check_id\":null,\"first_found\":\"2025-05-12T16:25:35Z\",\"key\":\"\",\"last_found\":\"2025-05-27T18:21:36.279Z\",\"nic\":null,\"port\":null,\"proof\":\"\\u003cp\\u003e\\u003cp\\u003eFollowing entries in /etc/securetty \\n                                 may allow anonymous root logins: \\u003cul\\u003e\\u003cli\\u003ettyS0\\u003c/li\\u003e\\u003cli\\u003ettysclp0\\u003c/li\\u003e\\u003cli\\u003esclp_line0\\u003c/li\\u003e\\u003cli\\u003e3270/tty1\\u003c/li\\u003e\\u003cli\\u003ehvc0\\u003c/li\\u003e\\u003cli\\u003ehvc1\\u003c/li\\u003e\\u003cli\\u003ehvc2\\u003c/li\\u003e\\u003cli\\u003ehvc3\\u003c/li\\u003e\\u003cli\\u003ehvc4\\u003c/li\\u003e\\u003cli\\u003ehvc5\\u003c/li\\u003e\\u003cli\\u003ehvc6\\u003c/li\\u003e\\u003cli\\u003ehvc7\\u003c/li\\u003e\\u003cli\\u003ehvsi0\\u003c/li\\u003e\\u003cli\\u003ehvsi1\\u003c/li\\u003e\\u003cli\\u003ehvsi2\\u003c/li\\u003e\\u003cli\\u003exvc0\\u003c/li\\u003e\\u003c/ul\\u003e\\u003c/p\\u003e\\u003c/p\\u003e\",\"protocol\":null,\"reintroduced\":null,\"solution_fix\":\"\\u003cp\\u003e\\u003cp\\u003eRemove all the entries in /etc/securetty except console,\\n            tty[0-9]* and vc\\\\[0-9]* \\u003c/p\\u003e\\u003cp\\u003eNote: ssh does not use /etc/securetty. To disable root login\\n            through ssh, use the \\u0026quot;PermitRootLogin\\u0026quot; setting in /etc/ssh/sshd_config\\n            and restart the ssh daemon. \\u003c/p\\u003e\\u003c/p\\u003e\",\"solution_id\":\"unix-anonymous-root-logins\",\"solution_summary\":\"Edit '/etc/securetty' entries\",\"solution_type\":\"workaround\",\"status\":\"VULNERABLE_EXPL\",\"vulnerability_id\":\"unix-anonymous-root-logins\"},{\"check_id\":null,\"first_found\":\"2025-05-14T13:52:10Z\",\"key\":\"\",\"last_found\":\"2025-05-27T18:21:36.279Z\",\"nic\":null,\"port\":null,\"proof\":\"\\u003cp\\u003e\\u003cp\\u003eThe following world writable files were found.\\u003cul\\u003e\\u003cli\\u003e/var/.com.zerog.registry.xml (-rwxrwxrwx)\\u003c/li\\u003e\\u003c/ul\\u003e\\u003c/p\\u003e\\u003c/p\\u003e\",\"protocol\":null,\"reintroduced\":null,\"solution_fix\":\"\\u003cp\\u003e\\u003cp\\u003eFor each world-writable file, determine whether there is a good reason for\\n         it to be world writable.  If not, remove world write permissions for the file.\\n         The output here is limited to 50 files. In order to find all of these files without needing to\\n         run another Nexpose scan run the following command:\\u003c/p\\u003e\\u003cpre\\u003e find / -type f -perm -02\\u003c/pre\\u003e\\u003cp\\u003ePlease note; it may be necessary exclude particular paths or file share types, run \\u0026#39;man find\\u0026#39; for information.\\u003c/p\\u003e\\u003c/p\\u003e\",\"solution_id\":\"unix-world-writable-files\",\"solution_summary\":\"Remove world write permissions\",\"solution_type\":\"workaround\",\"status\":\"VULNERABLE_EXPL\",\"vulnerability_id\":\"unix-world-writable-files\"}]}",
         "severity": 7,
@@ -588,22 +588,22 @@ An example event for `vulnerability` looks as following:
 {
     "@timestamp": "2018-06-08T00:00:00.000Z",
     "agent": {
-        "ephemeral_id": "30ed4ebf-b82c-4ad8-b690-2ed0455d3454",
-        "id": "3b4ebced-1156-411e-9160-ed235c2109b8",
-        "name": "elastic-agent-78422",
+        "ephemeral_id": "dbee2821-362a-4d7a-9e8e-0fcd816d4696",
+        "id": "6a264171-bdc2-47a0-a131-9a515aa1c01f",
+        "name": "elastic-agent-42291",
         "type": "filebeat",
         "version": "8.18.0"
     },
     "data_stream": {
         "dataset": "rapid7_insightvm.vulnerability",
-        "namespace": "46101",
+        "namespace": "75615",
         "type": "logs"
     },
     "ecs": {
         "version": "8.11.0"
     },
     "elastic_agent": {
-        "id": "3b4ebced-1156-411e-9160-ed235c2109b8",
+        "id": "6a264171-bdc2-47a0-a131-9a515aa1c01f",
         "snapshot": false,
         "version": "8.18.0"
     },
@@ -612,10 +612,10 @@ An example event for `vulnerability` looks as following:
         "category": [
             "vulnerability"
         ],
-        "created": "2025-05-30T08:47:25.492Z",
+        "created": "2025-05-30T11:12:58.134Z",
         "dataset": "rapid7_insightvm.vulnerability",
         "id": "7-zip-cve-2008-6536",
-        "ingested": "2025-05-30T08:47:27Z",
+        "ingested": "2025-05-30T11:13:00Z",
         "kind": "event",
         "original": "{\"added\":\"2018-05-16T00:00:00Z\",\"categories\":\"7-Zip\",\"cves\":\"CVE-2008-6536\",\"cvss_v2_access_complexity\":\"low\",\"cvss_v2_access_vector\":\"network\",\"cvss_v2_authentication\":\"none\",\"cvss_v2_availability_impact\":\"complete\",\"cvss_v2_confidentiality_impact\":\"complete\",\"cvss_v2_exploit_score\":9.996799,\"cvss_v2_impact_score\":10.000845,\"cvss_v2_integrity_impact\":\"complete\",\"cvss_v2_score\":10,\"cvss_v2_vector\":\"AV:N/AC:L/Au:N/C:C/I:C/A:C\",\"cvss_v3_attack_complexity\":null,\"cvss_v3_attack_vector\":null,\"cvss_v3_availability_impact\":null,\"cvss_v3_confidentiality_impact\":null,\"cvss_v3_exploit_score\":0,\"cvss_v3_impact_score\":0,\"cvss_v3_integrity_impact\":null,\"cvss_v3_privileges_required\":null,\"cvss_v3_scope\":null,\"cvss_v3_score\":0,\"cvss_v3_user_interaction\":null,\"cvss_v3_vector\":null,\"denial_of_service\":false,\"description\":\"Unspecified vulnerability in 7-zip before 4.5.7 has unknown impact and remote attack vectors, as demonstrated by the PROTOS GENOME test suite for Archive Formats (c10).\",\"exploits\":[],\"id\":\"7-zip-cve-2008-6536\",\"links\":[{\"href\":\"http://www.securityfocus.com/bid/28285\",\"id\":\"28285\",\"rel\":\"advisory\",\"source\":\"bid\"},{\"href\":\"https://exchange.xforce.ibmcloud.com/vulnerabilities/41247\",\"id\":\"41247\",\"rel\":\"advisory\",\"source\":\"xf\"},{\"href\":\"http://nvd.nist.gov/vuln/detail/CVE-2008-6536\",\"id\":\"CVE-2008-6536\",\"rel\":\"advisory\",\"source\":\"cve\"},{\"href\":\"http://www.cert.fi/haavoittuvuudet/joint-advisory-archive-formats.html\",\"id\":\"http://www.cert.fi/haavoittuvuudet/joint-advisory-archive-formats.html\",\"rel\":\"advisory\",\"source\":\"url\"},{\"href\":\"http://www.ee.oulu.fi/research/ouspg/protos/testing/c10/archive/\",\"id\":\"http://www.ee.oulu.fi/research/ouspg/protos/testing/c10/archive/\",\"rel\":\"advisory\",\"source\":\"url\"},{\"href\":\"http://www.securityfocus.com/bid/28285\",\"id\":\"http://www.securityfocus.com/bid/28285\",\"rel\":\"advisory\",\"source\":\"url\"},{\"href\":\"http://www.vupen.com/english/advisories/2008/0914/references\",\"id\":\"http://www.vupen.com/english/advisories/2008/0914/references\",\"rel\":\"advisory\",\"source\":\"url\"},{\"href\":\"http://www.xerox.com/download/security/security-bulletin/16287-4d6b7b0c81f7b/cert_XRX13-003_v1.0.pdf\",\"id\":\"http://www.xerox.com/download/security/security-bulletin/16287-4d6b7b0c81f7b/cert_XRX13-003_v1.0.pdf\",\"rel\":\"advisory\",\"source\":\"url\"},{\"href\":\"https://exchange.xforce.ibmcloud.com/vulnerabilities/41247\",\"id\":\"https://exchange.xforce.ibmcloud.com/vulnerabilities/41247\",\"rel\":\"advisory\",\"source\":\"url\"}],\"malware_kits\":[],\"modified\":\"2018-06-08T00:00:00Z\",\"pci_cvss_score\":10,\"pci_fail\":true,\"pci_severity_score\":5,\"pci_special_notes\":\"\",\"pci_status\":\"fail\",\"published\":\"2009-03-29T00:00:00Z\",\"references\":\"bid:28285,xf:41247,cve:CVE-2008-6536,url:http://www.cert.fi/haavoittuvuudet/joint-advisory-archive-formats.html,url:http://www.ee.oulu.fi/research/ouspg/protos/testing/c10/archive/,url:http://www.securityfocus.com/bid/28285,url:http://www.vupen.com/english/advisories/2008/0914/references,url:http://www.xerox.com/download/security/security-bulletin/16287-4d6b7b0c81f7b/cert_XRX13-003_v1.0.pdf,url:https://exchange.xforce.ibmcloud.com/vulnerabilities/41247\",\"risk_score\":885.16,\"severity\":\"critical\",\"severity_score\":10,\"title\":\"7-Zip: CVE-2008-6536: Unspecified vulnerability in 7-zip before 4.5.7\"}",
         "risk_score": 885.16,
