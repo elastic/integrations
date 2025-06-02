@@ -181,10 +181,10 @@ An example event for `stats` looks as following:
 | gpu.device.ecc_info_rom_version | ECC inforom version | keyword |  |  |
 | gpu.device.power_info_rom_version | Power management object inforom version | keyword |  |  |
 | gpu.device.serial_number | Device Serial Number | keyword |  |  |
-| gpu.ecc.double_bit_persistent_count | Double-bit persistent errors count for GPU memory. | long |  | counter |
-| gpu.ecc.double_bit_volatile_count | Double-bit volatile errors count for GPU memory. | long |  | counter |
-| gpu.ecc.single_bit_persistent_count | Single-bit persistent errors count for GPU memory. | long |  | counter |
-| gpu.ecc.single_bit_volatile_count | Single-bit volatile errors count for GPU memory. | long |  | counter |
+| gpu.ecc.double_bit_persistent.count | Double-bit persistent errors count for GPU memory. | long |  | counter |
+| gpu.ecc.double_bit_volatile.count | Double-bit volatile errors count for GPU memory. | long |  | counter |
+| gpu.ecc.single_bit_persistent.count | Single-bit persistent errors count for GPU memory. | long |  | counter |
+| gpu.ecc.single_bit_volatile.count | Single-bit volatile errors count for GPU memory. | long |  | counter |
 | gpu.error.xid | The eXerience ID of the error being reported by the GPU. | float |  | gauge |
 | gpu.labels.\* | Nvidia GPU labels | object |  |  |
 | gpu.license_vgpu_status | vGPU License status. | long |  | gauge |
@@ -192,32 +192,32 @@ An example event for `stats` looks as following:
 | gpu.memory.framebuffer.used_size | Used size of the framebuffer (in MiB). | float |  | gauge |
 | gpu.nvlink.bandwidth_l0_total | The number of bytes of active NVLink rx or tx data including both header and payload. | long |  | counter |
 | gpu.nvlink.bandwidth_total | Total number of NVLink bandwidth counters for all lanes. | long |  | counter |
-| gpu.nvlink.data_crc_errors_count | Total number of NVLink data CRC errors. | long |  | counter |
-| gpu.nvlink.flowcontrol_crc_errors_count | Total number of NVLink flow-control CRC errors. | long |  | counter |
-| gpu.nvlink.recovery_errors_count | Total number of NVLink recovery errors. | long |  | counter |
-| gpu.nvlink.replay_errors_count | Total number of NVLink retries. | long |  | counter |
+| gpu.nvlink.data_crc_errors.count | Total number of NVLink data CRC errors. | long |  | counter |
+| gpu.nvlink.flowcontrol_crc_errors.count | Total number of NVLink flow-control CRC errors. | long |  | counter |
+| gpu.nvlink.recovery_errors.count | Total number of NVLink recovery errors. | long |  | counter |
+| gpu.nvlink.replay_errors.count | Total number of NVLink retries. | long |  | counter |
 | gpu.pcie.replay | Replay counter for the PCIe connection. | long |  | counter |
 | gpu.pcie.rx_bytes | Total number of bytes received through PCIe RX via NVML. | long | byte | counter |
 | gpu.pcie.tx_bytes | Total number of bytes transmitted through PCIe TX via NVML. | long | byte | counter |
 | gpu.power.energy_consumption_total | Total energy consumption since boot (in mJ). | long |  | counter |
 | gpu.power.usage | Current power usage of the GPU in Watts. | float |  | gauge |
-| gpu.remapped.correctable_remapped_rows_count | Number of remapped rows for correctable errors | long |  | counter |
-| gpu.remapped.failed_remapped_rows_count | Whether remapping of rows has failed | long |  | gauge |
-| gpu.remapped.uncorrectable_remapped_rows_count | Number of remapped rows for uncorrectable errors | long |  | counter |
-| gpu.retired.double_bit_errors_count | Total number of retired pages due to double-bit errors. | long |  | counter |
-| gpu.retired.pending_count | Total number of pages pending retirement. | long |  | counter |
-| gpu.retired.single_bit_errors_count | Total number of retired pages due to single-bit errors. | long |  | counter |
+| gpu.remapped.correctable_remapped_rows.count | Number of remapped rows for correctable errors | long |  | counter |
+| gpu.remapped.failed_remapped_rows.count | Whether remapping of rows has failed | long |  | gauge |
+| gpu.remapped.uncorrectable_remapped_rows.count | Number of remapped rows for uncorrectable errors | long |  | counter |
+| gpu.retired.double_bit_errors.count | Total number of retired pages due to double-bit errors. | long |  | counter |
+| gpu.retired.pending.count | Total number of pages pending retirement. | long |  | counter |
+| gpu.retired.single_bit_errors.count | Total number of retired pages due to single-bit errors. | long |  | counter |
 | gpu.temperature.gpu | GPU temperature (in C). | float |  | gauge |
 | gpu.temperature.memory | Memory temperature (in C). | float |  | gauge |
-| gpu.throttling.board_limit_us | Number of microseconds throttled due to Board limit. | long |  | counter |
-| gpu.throttling.low_utilization_us | Number of microseconds throttled due to low utilization. | long |  | counter |
-| gpu.throttling.power_us | Number of microseconds throttled due to power. | long |  | counter |
-| gpu.throttling.reliability_us | Number of microseconds throttled due to reliability. | long |  | counter |
-| gpu.throttling.sync_boost_us | Number of microseconds throttled due to Sync Boost. | long |  | counter |
-| gpu.throttling.thermal_us | Number of microseconds throttled due to thermals. | long |  | counter |
-| gpu.utilization.decoder_pct | Decoder utilization (in %). | float | percent | gauge |
-| gpu.utilization.encoder_pct | Encoder utilization (in %). | float | percent | gauge |
-| gpu.utilization.gpu_pct | GPU utilization (in %). | float | percent | gauge |
-| gpu.utilization.memory_copy_pct | Memory utilization (in %). | float | percent | gauge |
+| gpu.throttling.board_limit.us | Number of microseconds throttled due to Board limit. | long |  | counter |
+| gpu.throttling.low_utilization.us | Number of microseconds throttled due to low utilization. | long |  | counter |
+| gpu.throttling.power.us | Number of microseconds throttled due to power. | long |  | counter |
+| gpu.throttling.reliability.us | Number of microseconds throttled due to reliability. | long |  | counter |
+| gpu.throttling.sync_boost.us | Number of microseconds throttled due to Sync Boost. | long |  | counter |
+| gpu.throttling.thermal.us | Number of microseconds throttled due to thermals. | long |  | counter |
+| gpu.utilization.decoder.pct | Decoder utilization (in %). | float | percent | gauge |
+| gpu.utilization.encoder.pct | Encoder utilization (in %). | float | percent | gauge |
+| gpu.utilization.gpu.pct | GPU utilization (in %). | float | percent | gauge |
+| gpu.utilization.memory_copy.pct | Memory utilization (in %). | float | percent | gauge |
 | service.address | Address where data about this service was collected from. This should be a URI, network address (ipv4:port or [ipv6]:port) or a resource path (sockets). | keyword |  |  |
 | service.type | The type of the service data is collected from. The type can be used to group and correlate logs and metrics from one service type. Example: If logs or metrics are collected from Elasticsearch, `service.type` would be `elasticsearch`. | keyword |  |  |
