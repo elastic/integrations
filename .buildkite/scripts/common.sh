@@ -540,9 +540,6 @@ prepare_serverless_stack() {
     fi
     create_elastic_package_profile "${profile_name}"
 
-    export EC_API_KEY=${EC_API_KEY_SECRET}
-    export EC_HOST=${EC_HOST_SECRET}
-
     echo "Boot up the Elastic stack"
     # grep command required to remove password from the output
     if ! ${ELASTIC_PACKAGE_BIN} stack up \
