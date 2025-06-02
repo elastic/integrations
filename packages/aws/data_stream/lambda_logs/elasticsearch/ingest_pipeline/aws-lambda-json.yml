@@ -38,12 +38,33 @@ processors:
     ignore_failure: true
 
 # Flatten important fields from each log type
+- set:
+    field: aws.lambda.message
+    if: "ctx.parsed?.record != null"
+    copy_from: parsed.record
+    ignore_failure: true
 
-- set: { field: aws.lambda.message, if: "ctx.parsed?.record != null", copy_from: parsed.record, ignore_failure: true }
-- set: { field: aws.lambda.message, if: "ctx.parsed?._aws != null", copy_from: parsed._aws, ignore_failure: true }
-- rename: { field: parsed.service, target_field: service.name, ignore_missing: true }
-- rename: { field: parsed.level, target_field: log.level, ignore_missing: true }
-- rename: { field: parsed.requestId, target_field: aws.lambda.request_id, ignore_missing: true }
+- set:
+    field: aws.lambda.message
+    if: "ctx.parsed?._aws != null"
+    copy_from: parsed._aws
+    ignore_failure: true
+
+- rename:
+    field: parsed.service
+    target_field: service.name
+    ignore_missing: true
+
+- rename:
+    field: parsed.level
+    target_field: log.level
+    ignore_missing: true
+
+- rename:
+    field: parsed.requestId
+    target_field: aws.lambda.request_id
+    ignore_missing: true
+
 - script:
     description: "Join stackTrace array into single multiline string"
     if: "ctx.parsed instanceof Map && ctx.parsed.containsKey('stackTrace') && ctx.parsed.stackTrace instanceof List"
@@ -72,38 +93,175 @@ processors:
         }
         ctx.parsed.message.stack_trace_flattened = completionText.toString();
 
-- rename: { field: parsed.record.functionArn, target_field: aws.lambda.arn, ignore_missing: true, ignore_failure: true }
-- rename: { field: parsed.record.requestId, target_field: aws.lambda.request_id, ignore_missing: true, ignore_failure: true }
-- rename: { field: parsed.record.version, target_field: aws.lambda.version, ignore_missing: true, ignore_failure: true }
-- rename: { field: parsed.record.status, target_field: aws.lambda.status, ignore_missing: true, ignore_failure: true }
+- rename:
+    field: parsed.record.functionArn
+    target_field: aws.lambda.arn
+    ignore_missing: true
+    ignore_failure: true
+
+- rename:
+    field: parsed.record.requestId
+    target_field: aws.lambda.request_id
+    ignore_missing: true
+    ignore_failure: true
+
+- rename:
+    field: parsed.record.version
+    target_field: aws.lambda.version
+    ignore_missing: true
+    ignore_failure: true
+
+- rename:
+    field: parsed.record.status
+    target_field: aws.lambda.status
+    ignore_missing: true
+    ignore_failure: true
 
 # Rename Lambda metrics
-- rename: { field: parsed.record.metrics.billedDurationMs, target_field: aws.lambda.metrics.billed_duration_ms, ignore_missing: true, ignore_failure: true }
-- rename: { field: parsed.record.metrics.durationMs, target_field: aws.lambda.metrics.duration_ms, ignore_missing: true, ignore_failure: true }
-- rename: { field: parsed.record.metrics.initDurationMs, target_field: aws.lambda.metrics.init_duration_ms, ignore_missing: true, ignore_failure: true }
-- rename: { field: parsed.record.metrics.maxMemoryUsedMB, target_field: aws.lambda.metrics.max_memory_used_mb, ignore_missing: true, ignore_failure: true }
-- rename: { field: parsed.record.metrics.producedBytes, target_field: aws.lambda.metrics.produced_bytes, ignore_missing: true, ignore_failure: true }
-- rename: { field: parsed.record.metrics.memorySizeMB, target_field: aws.lambda.metrics.memory_size_mb, ignore_missing: true, ignore_failure: true }
-- rename: { field: parsed.record.instanceMaxMemory, target_field: aws.lambda.metrics.instance_max_memory, ignore_missing: true, ignore_failure: true }
-- rename: { field: parsed.record.droppedRecords, target_field: aws.lambda.metrics.dropped_records, ignore_missing: true, ignore_failure: true }
-- rename: { field: parsed.record.droppedBytes, target_field: aws.lambda.metrics.dropped_bytes, ignore_missing: true, ignore_failure: true }
+- rename:
+    field: parsed.record.metrics.billedDurationMs
+    target_field: aws.lambda.metrics.billed_duration_ms
+    ignore_missing: true
+    ignore_failure: true
+
+- rename:
+    field: parsed.record.metrics.durationMs
+    target_field: aws.lambda.metrics.duration_ms
+    ignore_missing: true
+    ignore_failure: true
+
+- rename:
+    field: parsed.record.metrics.initDurationMs
+    target_field: aws.lambda.metrics.init_duration_ms
+    ignore_missing: true
+    ignore_failure: true
+
+- rename:
+    field: parsed.record.metrics.maxMemoryUsedMB
+    target_field: aws.lambda.metrics.max_memory_used_mb
+    ignore_missing: true
+    ignore_failure: true
+
+- rename:
+    field: parsed.record.metrics.producedBytes
+    target_field: aws.lambda.metrics.produced_bytes
+    ignore_missing: true
+    ignore_failure: true
+
+- rename:
+    field: parsed.record.metrics.memorySizeMB
+    target_field: aws.lambda.metrics.memory_size_mb
+    ignore_missing: true
+    ignore_failure: true
+
+- rename:
+    field: parsed.record.instanceMaxMemory
+    target_field: aws.lambda.metrics.instance_max_memory
+    ignore_missing: true
+    ignore_failure: true
+
+- rename:
+    field: parsed.record.droppedRecords
+    target_field: aws.lambda.metrics.dropped_records
+    ignore_missing: true
+    ignore_failure: true
+
+- rename:
+    field: parsed.record.droppedBytes
+    target_field: aws.lambda.metrics.dropped_bytes
+    ignore_missing: true
+    ignore_failure: true
 
 # Rename Lambda tracing fields
-- rename: { field: parsed.record.tracing.spanId, target_field: aws.lambda.tracing.span_id, ignore_missing: true, ignore_failure: true }
-- rename: { field: parsed.record.tracing.type, target_field: aws.lambda.tracing.type, ignore_missing: true, ignore_failure: true }
-- rename: { field: parsed.record.tracing.value, target_field: aws.lambda.tracing.value, ignore_missing: true, ignore_failure: true }
-- rename: { field: parsed.record.errorType, target_field: aws.lambda.error.type, ignore_missing: true, ignore_failure: true }
-- rename: { field: parsed.record.initializationType, target_field: aws.lambda.initialization_type, ignore_missing: true, ignore_failure: true }
-- rename: { field: parsed.record.phase, target_field: aws.lambda.phase, ignore_missing: true, ignore_failure: true }
-- rename: { field: parsed.record.functionVersion, target_field: aws.lambda.version, ignore_missing: true, ignore_failure: true }
-- rename: { field: parsed.record.functionName, target_field: aws.lambda.name, ignore_missing: true, ignore_failure: true }
-- rename: { field: parsed.record.instanceId, target_field: aws.lambda.instance_id, ignore_missing: true, ignore_failure: true }
-- rename: { field: parsed.record.runtimeVersion, target_field: aws.lambda.runtime_version, ignore_missing: true, ignore_failure: true }
-- rename: { field: parsed.record.runtimeVersionArn, target_field: aws.lambda.runtime_version_arn, ignore_missing: true, ignore_failure: true }
-- rename: { field: parsed.record.name, target_field: aws.lambda.extension.name, ignore_missing: true, ignore_failure: true }
-- rename: { field: parsed.record.state, target_field: aws.lambda.extension.state, ignore_missing: true, ignore_failure: true }
-- rename: { field: parsed.record.events, target_field: aws.lambda.extension.events, ignore_missing: true, ignore_failure: true }
-- rename: { field: parsed.record.spans, target_field: aws.lambda.spans, ignore_missing: true, ignore_failure: true }
+- rename:
+    field: parsed.record.tracing.spanId
+    target_field: aws.lambda.tracing.span_id
+    ignore_missing: true
+    ignore_failure: true
+
+- rename:
+    field: parsed.record.tracing.type
+    target_field: aws.lambda.tracing.type
+    ignore_missing: true
+    ignore_failure: true
+
+- rename:
+    field: parsed.record.tracing.value
+    target_field: aws.lambda.tracing.value
+    ignore_missing: true
+    ignore_failure: true
+
+- rename:
+    field: parsed.record.errorType
+    target_field: aws.lambda.error.type
+    ignore_missing: true
+    ignore_failure: true
+
+- rename:
+    field: parsed.record.initializationType
+    target_field: aws.lambda.initialization_type
+    ignore_missing: true
+    ignore_failure: true
+
+- rename:
+    field: parsed.record.phase
+    target_field: aws.lambda.phase
+    ignore_missing: true
+    ignore_failure: true
+
+- rename:
+    field: parsed.record.functionVersion
+    target_field: aws.lambda.version
+    ignore_missing: true
+    ignore_failure: true
+
+- rename:
+    field: parsed.record.functionName
+    target_field: aws.lambda.name
+    ignore_missing: true
+    ignore_failure: true
+
+- rename:
+    field: parsed.record.instanceId
+    target_field: aws.lambda.instance_id
+    ignore_missing: true
+    ignore_failure: true
+
+- rename:
+    field: parsed.record.runtimeVersion
+    target_field: aws.lambda.runtime_version
+    ignore_missing: true
+    ignore_failure: true
+
+- rename:
+    field: parsed.record.runtimeVersionArn
+    target_field: aws.lambda.runtime_version_arn
+    ignore_missing: true
+    ignore_failure: true
+
+- rename:
+    field: parsed.record.name
+    target_field: aws.lambda.extension.name
+    ignore_missing: true
+    ignore_failure: true
+
+- rename:
+    field: parsed.record.state
+    target_field: aws.lambda.extension.state
+    ignore_missing: true
+    ignore_failure: true
+
+- rename:
+    field: parsed.record.events
+    target_field: aws.lambda.extension.events
+    ignore_missing: true
+    ignore_failure: true
+
+- rename:
+    field: parsed.record.spans
+    target_field: aws.lambda.spans
+    ignore_missing: true
+    ignore_failure: true
 
 # General fields
 - rename:
@@ -113,19 +271,84 @@ processors:
     ignore_failure: true
     if: "ctx['@timestamp'] == null"
 
-- rename: { field: parsed.errorMessage, target_field: aws.lambda.error.message, ignore_missing: true, ignore_failure: true }
-- rename: { field: parsed.errorType, target_field: aws.lambda.error.type, ignore_missing: true, ignore_failure: true }
-- rename: { field: parsed.logger, target_field: log.logger, ignore_missing: true, ignore_failure: true }
-- rename: { field: parsed.stack_trace_flattened, target_field: aws.lambda.error.stack_trace, ignore_missing: true, ignore_failure: true }
-- rename: { field: parsed.message.stack_trace_flattened, target_field: aws.lambda.error.stack_trace, ignore_missing: true, ignore_failure: true }
-- rename: { field: parsed.message.errorType, target_field: aws.lambda.error.type, ignore_missing: true, ignore_failure: true }
-- rename: { field: parsed.message.errorMessage, target_field: aws.lambda.error.message, ignore_missing: true, ignore_failure: true }
-- rename: { field: parsed.time, target_field: "@timestamp", ignore_missing: true, ignore_failure: true }
-- rename: { field: parsed.timestamp, target_field: "@timestamp", ignore_missing: true, ignore_failure: true }
-- rename: { field: parsed.type, target_field: aws.lambda.event_type, ignore_missing: true, ignore_failure: true }
-- rename: { field: parsed.cold_start, target_field: aws.lambda.cold_start, ignore_missing: true, ignore_failure: true }
-- rename: { field: parsed.correlation_id, target_field: aws.lambda.correlation_id, ignore_missing: true, ignore_failure: true }
-- rename: { field: parsed.function_arn, target_field: aws.lambda.arn, ignore_missing: true, ignore_failure: true }
+- rename:
+    field: parsed.errorMessage
+    target_field: aws.lambda.error.message
+    ignore_missing: true
+    ignore_failure: true
+
+- rename:
+    field: parsed.errorType
+    target_field: aws.lambda.error.type
+    ignore_missing: true
+    ignore_failure: true
+
+- rename:
+    field: parsed.logger
+    target_field: log.logger
+    ignore_missing: true
+    ignore_failure: true
+
+- rename:
+    field: parsed.stack_trace_flattened
+    target_field: aws.lambda.error.stack_trace
+    ignore_missing: true
+    ignore_failure: true
+
+- rename:
+    field: parsed.message.stack_trace_flattened
+    target_field: aws.lambda.error.stack_trace
+    ignore_missing: true
+    ignore_failure: true
+
+- rename:
+    field: parsed.message.errorType
+    target_field: aws.lambda.error.type
+    ignore_missing: true
+    ignore_failure: true
+
+- rename:
+    field: parsed.message.errorMessage
+    target_field: aws.lambda.error.message
+    ignore_missing: true
+    ignore_failure: true
+
+- rename:
+    field: parsed.time
+    target_field: "@timestamp"
+    ignore_missing: true
+    ignore_failure: true
+
+- rename:
+    field: parsed.timestamp
+    target_field: "@timestamp"
+    ignore_missing: true
+    ignore_failure: true
+
+- rename:
+    field: parsed.type
+    target_field: aws.lambda.event_type
+    ignore_missing: true
+    ignore_failure: true
+
+- rename:
+    field: parsed.cold_start
+    target_field: aws.lambda.cold_start
+    ignore_missing: true
+    ignore_failure: true
+
+- rename:
+    field: parsed.correlation_id
+    target_field: aws.lambda.correlation_id
+    ignore_missing: true
+    ignore_failure: true
+
+- rename:
+    field: parsed.function_arn
+    target_field: aws.lambda.arn
+    ignore_missing: true
+    ignore_failure: true
+
 - convert:
     field: parsed.function_memory_size
     target_field: aws.lambda.metrics.memory_size_mb
@@ -133,21 +356,95 @@ processors:
     ignore_missing: true
     ignore_failure: true
 
-- rename: { field: parsed.function_name, target_field: aws.lambda.name, ignore_missing: true, ignore_failure: true }
-- rename: { field: parsed.function_request_id, target_field: aws.lambda.request_id, ignore_missing: true, ignore_failure: true }
-- rename: { field: parsed.location, target_field: aws.lambda.error.location, ignore_missing: true, ignore_failure: true }
-- rename: { field: parsed.message, target_field: aws.lambda.message, ignore_missing: true, ignore_failure: true }
-- rename: { field: parsed.users, target_field: aws.lambda.users, ignore_missing: true, ignore_failure: true }
-- rename: { field: parsed.timestamp, target_field: "@timestamp", ignore_missing: true, ignore_failure: true }
-- rename: { field: parsed.tracing.xray_trace_id, target_field: aws.lambda.xray_trace_id, ignore_missing: true, ignore_failure: true }
-- rename: { field: parsed.ColdStart, target_field: aws.lambda.cold_start_int, ignore_missing: true, ignore_failure: true }
-- rename: { field: parsed.FunctionName, target_field: aws.lambda.name, ignore_missing: true, ignore_failure: true }
-- rename: { field: parsed.Service, target_field: aws.lambda.service.name, ignore_missing: true, ignore_failure: true }
-- rename: { field: parsed.executionEnvironment, target_field: aws.lambda.execution_environment, ignore_missing: true, ignore_failure: true }
-- rename: { field: parsed.functionVersion, target_field: aws.lambda.version, ignore_missing: true, ignore_failure: true }
-- rename: { field: parsed.logStreamId, target_field: aws.lambda.log_stream_id, ignore_missing: true, ignore_failure: true }
-- rename: { field: parsed.traceId, target_field: aws.lambda.trace_id, ignore_missing: true, ignore_failure: true }
-- rename: { field: parsed.AWSRequestId, target_field: aws.lambda.aws_request_id, ignore_missing: true, ignore_failure: true }
+- rename:
+    field: parsed.function_name
+    target_field: aws.lambda.name
+    ignore_missing: true
+    ignore_failure: true
+
+- rename:
+    field: parsed.function_request_id
+    target_field: aws.lambda.request_id
+    ignore_missing: true
+    ignore_failure: true
+
+- rename:
+    field: parsed.location
+    target_field: aws.lambda.error.location
+    ignore_missing: true
+    ignore_failure: true
+
+- rename:
+    field: parsed.message
+    target_field: aws.lambda.message
+    ignore_missing: true
+    ignore_failure: true
+
+- rename:
+    field: parsed.users
+    target_field: aws.lambda.users
+    ignore_missing: true
+    ignore_failure: true
+
+- rename:
+    field: parsed.timestamp
+    target_field: "@timestamp"
+    ignore_missing: true
+    ignore_failure: true
+
+- rename:
+    field: parsed.tracing.xray_trace_id
+    target_field: aws.lambda.xray_trace_id
+    ignore_missing: true
+    ignore_failure: true
+
+- rename:
+    field: parsed.ColdStart
+    target_field: aws.lambda.cold_start_int
+    ignore_missing: true
+    ignore_failure: true
+
+- rename:
+    field: parsed.FunctionName
+    target_field: aws.lambda.name
+    ignore_missing: true
+    ignore_failure: true
+
+- rename:
+    field: parsed.Service
+    target_field: aws.lambda.service.name
+    ignore_missing: true
+    ignore_failure: true
+
+- rename:
+    field: parsed.executionEnvironment
+    target_field: aws.lambda.execution_environment
+    ignore_missing: true
+    ignore_failure: true
+
+- rename:
+    field: parsed.functionVersion
+    target_field: aws.lambda.version
+    ignore_missing: true
+    ignore_failure: true
+
+- rename:
+    field: parsed.logStreamId
+    target_field: aws.lambda.log_stream_id
+    ignore_missing: true
+    ignore_failure: true
+
+- rename:
+    field: parsed.traceId
+    target_field: aws.lambda.trace_id
+    ignore_missing: true
+    ignore_failure: true
+
+- rename:
+    field: parsed.AWSRequestId
+    target_field: aws.lambda.aws_request_id
+    ignore_missing: true
+    ignore_failure: true
 
 - rename:
     field: parsed
@@ -161,8 +458,15 @@ processors:
     copy_from: event.original
     if: "ctx.parsed == null"
 
-- remove: { field: parsed, ignore_missing: true, ignore_failure: true }
-- remove: { field: parsed._aws, ignore_missing: true, ignore_failure: true }
+- remove:
+    field: parsed
+    ignore_missing: true
+    ignore_failure: true
+
+- remove:
+    field: parsed._aws
+    ignore_missing: true
+    ignore_failure: true
 
 - script:
     description: Drops null/empty values recursively
