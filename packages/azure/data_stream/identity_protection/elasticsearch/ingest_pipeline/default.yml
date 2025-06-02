@@ -200,39 +200,39 @@ processors:
      description: "Unique ID of the user."
      ignore_missing: true
   - remove:
-      description: Drop user_id field if value is null.
-      if: ctx?.azure?.identityprotection?.properties?.user_id == null
-      field: azure.identityprotection.properties.user_id
-      ignore_missing: true
+     description: Drop user_id field if value is null.
+     if: ctx?.azure?.identityprotection?.properties?.user_id == null
+     field: azure.identityprotection.properties.user_id
+     ignore_missing: true
   - set:
-      field: user.id
-      copy_from: azure.identityprotection.properties.user_id
-      ignore_empty_value: true
+     field: user.id
+     copy_from: azure.identityprotection.properties.user_id
+     ignore_empty_value: true
   - rename:
      field: azure.identityprotection.properties.userDisplayName
      target_field: azure.identityprotection.properties.user_display_name
      description: "The user principal name (UPN) of the user."
      ignore_missing: true
   - set:
-      field: user.full_name
-      copy_from: azure.identityprotection.properties.user_display_name
-      ignore_empty_value: true
+     field: user.full_name
+     copy_from: azure.identityprotection.properties.user_display_name
+     ignore_empty_value: true
   - rename:
      field: azure.identityprotection.properties.userPrincipalName
      target_field: azure.identityprotection.properties.user_principal_name
      description: "The user principal name (UPN) of the user."
      ignore_missing: true
   - set:
-      field: user.email
-      copy_from: azure.identityprotection.properties.user_principal_name
-      if: ctx.azure?.identityprotection?.properties?.user_principal_name?.contains('@') == true
+     field: user.email
+     copy_from: azure.identityprotection.properties.user_principal_name
+     ignore_empty_value: true
   - grok:
-      field: azure.identityprotection.properties.user_principal_name
-      patterns:
-        - '%{USERNAME:user.name}@%{HOSTNAME:user.domain}'
-        - '%{GREEDYDATA:user.name}'
-      ignore_missing: true
-      ignore_failure: true
+     field: azure.identityprotection.properties.user_principal_name
+     patterns:
+       - '%{USERNAME:user.name}@%{HOSTNAME:user.domain}'
+       - '%{GREEDYDATA:user.name}'
+     ignore_missing: true
+     ignore_failure: true
   - rename:
      field: azure.identityprotection.properties.userType
      target_field: azure.identityprotection.properties.user_type
