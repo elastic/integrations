@@ -334,7 +334,7 @@ An example event for `audit` looks as following:
 | o365.audit.ExtendedProperties.RequestType |  | keyword |
 | o365.audit.ExternalAccess |  | boolean |
 | o365.audit.FileExtension |  | keyword |
-| o365.audit.FileSize |  | long |
+| o365.audit.FileSize |  | keyword |
 | o365.audit.FileSizeBytes |  | long |
 | o365.audit.FilteringDate |  | date |
 | o365.audit.GroupName |  | keyword |
