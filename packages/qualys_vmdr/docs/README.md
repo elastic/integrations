@@ -35,7 +35,7 @@ Elastic Agent must be installed. For more details, check the Elastic Agent [inst
 
 ### Permissions
 
-#### Asset Host Detection
+#### Asset host detection
 
 | Role                    | Permission                                     |
 |-------------------------|------------------------------------------------|
@@ -44,11 +44,11 @@ Elastic Agent must be installed. For more details, check the Elastic Agent [inst
 | _Scanners_              | VM scanned hosts in user’s account             |
 | _Readers_               | VM scanned hosts in user’s account             |
 
-#### Knowledge Base
+#### Knowledge base
 
 _Managers_, _Unit Managers_, _Scanners_, _Readers_ have permission to download vulnerability data from the KnowledgeBase.
 
-#### User Activity Log
+#### User activity log
 
 | Role                    | Permission                                     |
 |-------------------------|------------------------------------------------|
