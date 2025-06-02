@@ -103,3 +103,17 @@ sql_queries:
 
 The `merge_results` feature will create a combined event, where `blks_hit`, `blks_read`, `checkpoints_timed` and `checkpoints_req` are part of the same event.
 
+### Fetch from all databases (for `mssql` driver only)
+
+Executes given queries for all database(s) present in a server
+
+Assuming a user could have 100s of databases on their server and then it becomes cumbersome to add them manually to the query. If `fetch_from_all_databases` is set to true then SQL module would fetch the databases names automatically and prefix the database selector statement to the queries so that the queries can run against the database provided.
+
+Currently, this feature only works with `mssql` driver, for example, if we set the query to:
+
+```
+- query: SELECT DB_NAME() AS 'database_name';
+  response_format: table
+```
+
+For an mssql instance, by default only four databases are present namely — `master`, `model`, `msdb`, `tempdb`. So, if `fetch_from_all_databases` is enabled then query `SELECT DB_NAME() AS 'database_name'` runs for each one of them i.e., there would be in total 4 documents (one each for 4 databases) for every scrape.
