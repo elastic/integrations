@@ -31,14 +31,12 @@ processors:
       field: message
       ignore_missing: true
 
-  - redact:
+  - gsub:
       if: 'ctx.tags != null && ctx.tags.contains("redact_passwords") && !(ctx.event?.original =~ /\"Password\": *\"\"/)'
       description: "Redact any passwords in event.original"
       field: event.original
-      patterns:
-        - '"Password": *"%{DATA:REDACTED}"'
-      prefix: '"Password": "<'
-      suffix: '>"'
+      pattern: '(.*"Password": *").*?(".*)'
+      replacement: '$1<REDACTED>$2'
       ignore_missing: true
       tag: redact_event_original
 

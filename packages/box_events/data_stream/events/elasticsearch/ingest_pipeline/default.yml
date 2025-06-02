@@ -594,11 +594,25 @@ processors:
       target_field: event.id
       ignore_missing: true
 # User details: set rather than rename is used in these to avoid breaking change.
+  - set:
+      field: user.full_name
+      copy_from: box.created_by.name
+      ignore_empty_value: true
+      if: ctx.user?.full_name == null && ctx.box?.created_by?.type == 'user'
+  - set:
+      field: user.email
+      copy_from: box.created_by.login
+      ignore_empty_value: true
+      if: ctx.user?.email == null && ctx.box?.created_by?.login != null
   - split:
       field: box.created_by.login
       target_field: _tmp.created_login
       separator: '@'
       if: ctx.box?.created_by?.login instanceof String && ctx.box.created_by.login.length() > 2
+  - set:
+      field: user.name
+      copy_from: _tmp.created_login.0
+      if: ctx._tmp?.created_login instanceof List && ctx._tmp.created_login.length == 2
   - set:
       field: user.domain
       copy_from: _tmp.created_login.1
@@ -610,25 +624,34 @@ processors:
       if: ctx.user?.id == null && ctx.box?.created_by?.type == 'user'
   - append:
       field: related.user
-      value: '{{{user.id}}}'
-      if: ctx.user?.id != null && ctx.user.id != ''
+      value: '{{{user.email}}}'
+      if: ctx.user?.email != null && ctx.user.email != ''
       allow_duplicates: false
-  - set:
-      field: user.name
-      copy_from: box.created_by.name
-      ignore_empty_value: true
-      if: ctx.user?.name == null && ctx.box?.created_by?.type == 'user'
   - append:
       field: related.user
-      value: '{{{user.name}}}'
-      if: ctx.user?.name != null && ctx.user.name != ''
+      value: '{{{user.full_name}}}'
+      if: ctx.user?.full_name != null && ctx.user.full_name != ''
       allow_duplicates: false
 # Collaboration events.
+  - set:
+      field: user.target.full_name
+      copy_from: box.accessible_by.name
+      ignore_empty_value: true
+      if: ctx.user?.target?.full_name == null && ctx.box?.accessible_by?.name != null
+  - set:
+      field: user.target.email
+      copy_from: box.accessible_by.login
+      ignore_empty_value: true
+      if: ctx.user?.target?.email == null && ctx.box?.accessible_by?.login != null
   - split:
       field: box.accessible_by.login
       target_field: _tmp.accessible_login
       separator: '@'
       if: ctx.box?.accessible_by?.login instanceof String && ctx.box.accessible_by.login.length() > 2
+  - set:
+      field: user.target.name
+      copy_from: _tmp.accessible_login.0
+      if: ctx._tmp?.accessible_login instanceof List && ctx._tmp.accessible_login.length == 2
   - set:
       field: user.target.domain
       copy_from: _tmp.accessible_login.1
@@ -640,18 +663,13 @@ processors:
       if: ctx.user?.target?.id == null && ctx.box?.accessible_by?.type == 'user'
   - append:
       field: related.user
-      value: '{{{user.target.id}}}'
-      if: ctx.user?.target?.id != null && ctx.user.target.id != ''
+      value: '{{{user.target.email}}}'
+      if: ctx.user?.target?.email != null && ctx.user.target.email != ''
       allow_duplicates: false
-  - rename:
-      field: box.accessible_by.name
-      target_field: user.target.name
-      ignore_missing: true
-      if: ctx.user?.target?.name == null
   - append:
       field: related.user
-      value: '{{{user.target.name}}}'
-      if: ctx.user?.target?.name != null && ctx.user.target.name != ''
+      value: '{{{user.target.full_name}}}'
+      if: ctx.user?.target?.full_name != null && ctx.user.target.full_name != ''
       allow_duplicates: false
   - rename:
       field: box.source.folder_id
