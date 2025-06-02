@@ -54,32 +54,32 @@ An example event for `stats` looks as following:
 
 ```json
 {
-    "@timestamp": "2025-05-30T17:39:30.967Z",
+    "@timestamp": "2025-06-02T06:29:11.719Z",
     "agent": {
-        "ephemeral_id": "86d5c897-d333-4ea2-8756-86de79b8590e",
-        "id": "6e0307e5-4554-4231-86cf-3226ddfcdc60",
-        "name": "elastic-agent-42980",
+        "ephemeral_id": "f4ac2d0f-71de-49c1-abc8-3d27a324fd45",
+        "id": "00f7f2be-4202-425f-94f0-a76ceb9b90b7",
+        "name": "elastic-agent-77526",
         "type": "metricbeat",
         "version": "8.17.0"
     },
     "data_stream": {
         "dataset": "nvidia_gpu.stats",
-        "namespace": "77972",
+        "namespace": "41920",
         "type": "metrics"
     },
     "ecs": {
         "version": "8.17.0"
     },
     "elastic_agent": {
-        "id": "6e0307e5-4554-4231-86cf-3226ddfcdc60",
+        "id": "00f7f2be-4202-425f-94f0-a76ceb9b90b7",
         "snapshot": false,
         "version": "8.17.0"
     },
     "event": {
         "agent_id_status": "verified",
         "dataset": "nvidia_gpu.stats",
-        "duration": 13363770,
-        "ingested": "2025-05-30T17:39:33Z",
+        "duration": 66478366,
+        "ingested": "2025-06-02T06:29:13Z",
         "module": "prometheus"
     },
     "gpu": {
@@ -112,33 +112,41 @@ An example event for `stats` looks as following:
             "replay": 0
         },
         "power": {
-            "energy_consumption_total": 3446652137,
-            "usage": 12.432
+            "energy_consumption_total": 6027115649,
+            "usage": 12.14
         },
         "temperature": {
-            "gpu": 37,
+            "gpu": 38,
             "memory": 0
         },
         "utilization": {
-            "decoder_pct": 0,
-            "encoder_pct": 0,
-            "gpu_pct": 0,
-            "memory_copy_pct": 0
+            "decoder": {
+                "pct": 0
+            },
+            "encoder": {
+                "pct": 0
+            },
+            "gpu": {
+                "pct": 0
+            },
+            "memory_copy": {
+                "pct": 0
+            }
         }
     },
     "host": {
         "architecture": "x86_64",
         "containerized": true,
-        "hostname": "elastic-agent-42980",
+        "hostname": "elastic-agent-77526",
         "ip": [
-            "172.18.0.7",
+            "172.18.0.4",
             "192.168.112.2"
         ],
         "mac": [
-            "02-42-AC-12-00-07",
+            "02-42-AC-12-00-04",
             "02-42-C0-A8-70-02"
         ],
-        "name": "elastic-agent-42980",
+        "name": "elastic-agent-77526",
         "os": {
             "family": "",
             "kernel": "5.15.153.1-microsoft-standard-WSL2",
