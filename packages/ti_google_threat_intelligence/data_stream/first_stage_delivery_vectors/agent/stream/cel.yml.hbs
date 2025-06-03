@@ -33,7 +33,7 @@ program: |
         ?"query": has(state.query) ? optional.of([state.query]) : optional.none(),
         "limit": ["4000"],
         "x-tool": ["Elastic"],
-        "User-Agent": ["v0.1.0"]
+        "User-Agent": ["v0.1.0"],  // Include integration version here; used for identifying and monitoring requests
       }.format_query()
     ).with({
       "Header": {
@@ -52,7 +52,7 @@ program: |
         "cursor": {
           "last_timestamp": (state.start_time.parse_time("2006010215") + duration("1h")).format("2006010215"),
         },
-        "want_more": (state.start_time.parse_time("2006010215") + duration("1h")).format("2006010215") < now.format("2006010215")
+        "want_more": (state.start_time.parse_time("2006010215") + duration("1h")) < (now.format("2006010215")).parse_time("2006010215")
       })
     :
       {

@@ -4,7 +4,7 @@
 
 [Google Threat Intelligence](https://gtidocs.virustotal.com/) is a security solution that helps organizations detect, analyze, and mitigate threats. It leverages Google's global telemetry, advanced analytics, and vast infrastructure to provide actionable insights. Key features include threat detection, malware and phishing analysis, and real-time threat alerts.
 
-Google Threat Intelligence uses the **[Threat List API](https://gtidocs.virustotal.com/reference/api-overview)** to deliver hourly data chunks. The Threat Lists feature allows customers to consume **Indicators of Compromise (IOCs)** categorized by various threat types.
+Google Threat Intelligence uses the **[Threat List API](https://gtidocs.virustotal.com/reference/get-hourly-threat-list)** to deliver hourly data chunks. The Threat Lists feature allows customers to consume **Indicators of Compromise (IOCs)** categorized by various threat types.
 
 ## Threat List API Feeds
 
@@ -48,7 +48,7 @@ Elastic Agent must be installed. For more details, check the Elastic Agent [inst
 - VirusTotal URL will work as the base URL for this integration: https://www.virustotal.com
 - An API key will be used to authenticate your request.
 - **Time Selection of Initial Interval and Interval**:
-  - Users need to specify the **initial interval** and **interval** in an hourly format, such as **2h, 3h**, etc.
+  - Users need to specify the **initial interval** and **interval** in an hourly format, such as **2h**, **3h**, etc.
 **Note:** Please make sure both initial interval and interval are in hours and greater than 1 hour.
 
 ### Enabling the integration in Elastic:
@@ -96,7 +96,7 @@ For example:
 - The query `event.module: ti_google_threat_intelligence and labels.is_transform_source: true` indicates that the logs originate from the **source index**.
 - The query `event.module: ti_google_threat_intelligence and labels.is_transform_source: false` indicates that the logs originate from the **transformed index**.
 
-A **retention policy** is used to remove data older than the default retention period. For more details, refer to the [Retention Policy Documentation](<https://www.elastic.co/guide/en/elasticsearch/reference/current/put-transform.html#:~:text=to%20false.-,retention_policy,-(Optional%2C%20object)%20Defines>).
+A **retention policy** is used to remove data older than the default retention period. For more details, refer to the [Retention Policy Documentation](https://www.elastic.co/docs/api/doc/elasticsearch/operation/operation-transform-put-transform#operation-transform-put-transform-body-application-json-retention_policy).
 
 In this integration, all data streams have a **retention period of 30 days**.
 

@@ -4,7 +4,7 @@
 
 [Google Threat Intelligence](https://gtidocs.virustotal.com/) is a security solution that helps organizations detect, analyze, and mitigate threats. It leverages Google's global telemetry, advanced analytics, and vast infrastructure to provide actionable insights. Key features include threat detection, malware and phishing analysis, and real-time threat alerts.
 
-Google Threat Intelligence uses the **[Threat List API](https://gtidocs.virustotal.com/reference/api-overview)** to deliver hourly data chunks. The Threat Lists feature allows customers to consume **Indicators of Compromise (IOCs)** categorized by various threat types.
+Google Threat Intelligence uses the **[Threat List API](https://gtidocs.virustotal.com/reference/get-hourly-threat-list)** to deliver hourly data chunks. The Threat Lists feature allows customers to consume **Indicators of Compromise (IOCs)** categorized by various threat types.
 
 ## Threat List API Feeds
 
@@ -48,7 +48,7 @@ Elastic Agent must be installed. For more details, check the Elastic Agent [inst
 - VirusTotal URL will work as the base URL for this integration: https://www.virustotal.com
 - An API key will be used to authenticate your request.
 - **Time Selection of Initial Interval and Interval**:
-  - Users need to specify the **initial interval** and **interval** in an hourly format, such as **2h, 3h**, etc.
+  - Users need to specify the **initial interval** and **interval** in an hourly format, such as **2h**, **3h**, etc.
 **Note:** Please make sure both initial interval and interval are in hours and greater than 1 hour.
 
 ### Enabling the integration in Elastic:
@@ -96,7 +96,7 @@ For example:
 - The query `event.module: ti_google_threat_intelligence and labels.is_transform_source: true` indicates that the logs originate from the **source index**.
 - The query `event.module: ti_google_threat_intelligence and labels.is_transform_source: false` indicates that the logs originate from the **transformed index**.
 
-A **retention policy** is used to remove data older than the default retention period. For more details, refer to the [Retention Policy Documentation](<https://www.elastic.co/guide/en/elasticsearch/reference/current/put-transform.html#:~:text=to%20false.-,retention_policy,-(Optional%2C%20object)%20Defines>).
+A **retention policy** is used to remove data older than the default retention period. For more details, refer to the [Retention Policy Documentation](https://www.elastic.co/docs/api/doc/elasticsearch/operation/operation-transform-put-transform#operation-transform-put-transform-body-application-json-retention_policy).
 
 In this integration, all data streams have a **retention period of 30 days**.
 
@@ -188,24 +188,24 @@ An example event for `cryptominer` looks as following:
 {
     "@timestamp": "2025-01-27T19:51:31.000Z",
     "agent": {
-        "ephemeral_id": "a2dd726b-0db0-4add-bad7-4cc11c828aa5",
-        "id": "eca93b73-66fa-4025-8319-9334c63ae687",
-        "name": "elastic-agent-70731",
+        "ephemeral_id": "6e343759-95b9-417e-856e-ace3c03853e6",
+        "id": "0a800239-cd1a-495d-88fc-db204c4fdc07",
+        "name": "elastic-agent-87123",
         "type": "filebeat",
-        "version": "8.17.3"
+        "version": "8.16.0"
     },
     "data_stream": {
         "dataset": "ti_google_threat_intelligence.cryptominer",
-        "namespace": "12019",
+        "namespace": "74935",
         "type": "logs"
     },
     "ecs": {
         "version": "8.17.0"
     },
     "elastic_agent": {
-        "id": "eca93b73-66fa-4025-8319-9334c63ae687",
+        "id": "0a800239-cd1a-495d-88fc-db204c4fdc07",
         "snapshot": false,
-        "version": "8.17.3"
+        "version": "8.16.0"
     },
     "event": {
         "agent_id_status": "verified",
@@ -213,7 +213,7 @@ An example event for `cryptominer` looks as following:
             "threat"
         ],
         "dataset": "ti_google_threat_intelligence.cryptominer",
-        "ingested": "2025-05-25T14:40:39Z",
+        "ingested": "2025-06-03T07:03:00Z",
         "kind": "enrichment",
         "original": "{\"data\":{\"attributes\":{\"first_submission_date\":1582817050,\"gti_assessment\":{\"severity\":{\"value\":\"SEVERITY_NONE\"},\"threat_score\":{\"value\":1},\"verdict\":{\"value\":\"VERDICT_UNDETECTED\"}},\"last_analysis_date\":1582817050,\"last_analysis_stats\":{\"harmless\":55,\"malicious\":8,\"undetected\":8},\"last_http_response_code\":200,\"last_modification_date\":1738007491,\"last_submission_date\":1582817050,\"positives\":8,\"times_submitted\":1,\"tld\":\"ru\",\"url\":\"http://securepasswel.ru/files/grapes_encrypted_87ed10f.bin\"},\"id\":\"0146b3be6e724b10e620e8090821a8253772af779a4996145cdf295c01e0900c\",\"relationships\":{},\"type\":\"url\"}}",
         "type": [
@@ -396,24 +396,24 @@ An example event for `first_stage_delivery_vectors` looks as following:
 {
     "@timestamp": "2025-01-27T19:51:31.000Z",
     "agent": {
-        "ephemeral_id": "7c98073c-8e37-4c26-b999-f3e2d1e9b96b",
-        "id": "a125581d-b4be-4aa9-a8ab-84061f9f3497",
-        "name": "elastic-agent-17150",
+        "ephemeral_id": "faf4f769-0b42-4cfe-97bf-3612a293b7d5",
+        "id": "ec755067-12d9-4668-a6db-5ad73d3bc0d5",
+        "name": "elastic-agent-36721",
         "type": "filebeat",
-        "version": "8.17.3"
+        "version": "8.16.0"
     },
     "data_stream": {
         "dataset": "ti_google_threat_intelligence.first_stage_delivery_vectors",
-        "namespace": "11612",
+        "namespace": "53284",
         "type": "logs"
     },
     "ecs": {
         "version": "8.17.0"
     },
     "elastic_agent": {
-        "id": "a125581d-b4be-4aa9-a8ab-84061f9f3497",
+        "id": "ec755067-12d9-4668-a6db-5ad73d3bc0d5",
         "snapshot": false,
-        "version": "8.17.3"
+        "version": "8.16.0"
     },
     "event": {
         "agent_id_status": "verified",
@@ -421,7 +421,7 @@ An example event for `first_stage_delivery_vectors` looks as following:
             "threat"
         ],
         "dataset": "ti_google_threat_intelligence.first_stage_delivery_vectors",
-        "ingested": "2025-05-25T14:43:22Z",
+        "ingested": "2025-06-03T07:03:50Z",
         "kind": "enrichment",
         "original": "{\"data\":{\"attributes\":{\"first_submission_date\":1582817050,\"gti_assessment\":{\"severity\":{\"value\":\"SEVERITY_NONE\"},\"threat_score\":{\"value\":1},\"verdict\":{\"value\":\"VERDICT_UNDETECTED\"}},\"last_analysis_date\":1582817050,\"last_analysis_stats\":{\"harmless\":55,\"malicious\":8,\"undetected\":8},\"last_http_response_code\":200,\"last_modification_date\":1738007491,\"last_submission_date\":1582817050,\"positives\":8,\"times_submitted\":1,\"tld\":\"ru\",\"url\":\"http://securepasswel.ru/files/grapes_encrypted_87ed10f.bin\"},\"id\":\"0146b3be6e724b10e620e8090821a8253772af779a4996145cdf295c01e0900c\",\"relationships\":{},\"type\":\"url\"}}",
         "type": [
@@ -604,24 +604,24 @@ An example event for `infostealer` looks as following:
 {
     "@timestamp": "2025-01-27T19:51:31.000Z",
     "agent": {
-        "ephemeral_id": "3cb42ea6-61b1-4b02-b6f9-9493c33f9587",
-        "id": "56f84b67-a783-4538-ac9a-ae1759326b56",
-        "name": "elastic-agent-42420",
+        "ephemeral_id": "ed53e573-351f-46b6-8f81-76a36fbb7ffd",
+        "id": "5541f854-d3c3-4ef2-9c45-81926f60678a",
+        "name": "elastic-agent-96027",
         "type": "filebeat",
-        "version": "8.17.3"
+        "version": "8.16.0"
     },
     "data_stream": {
         "dataset": "ti_google_threat_intelligence.infostealer",
-        "namespace": "10701",
+        "namespace": "65942",
         "type": "logs"
     },
     "ecs": {
         "version": "8.17.0"
     },
     "elastic_agent": {
-        "id": "56f84b67-a783-4538-ac9a-ae1759326b56",
+        "id": "5541f854-d3c3-4ef2-9c45-81926f60678a",
         "snapshot": false,
-        "version": "8.17.3"
+        "version": "8.16.0"
     },
     "event": {
         "agent_id_status": "verified",
@@ -629,7 +629,7 @@ An example event for `infostealer` looks as following:
             "threat"
         ],
         "dataset": "ti_google_threat_intelligence.infostealer",
-        "ingested": "2025-05-25T14:46:00Z",
+        "ingested": "2025-06-03T07:04:41Z",
         "kind": "enrichment",
         "original": "{\"data\":{\"attributes\":{\"first_submission_date\":1582817050,\"gti_assessment\":{\"severity\":{\"value\":\"SEVERITY_NONE\"},\"threat_score\":{\"value\":1},\"verdict\":{\"value\":\"VERDICT_UNDETECTED\"}},\"last_analysis_date\":1582817050,\"last_analysis_stats\":{\"harmless\":55,\"malicious\":8,\"undetected\":8},\"last_http_response_code\":200,\"last_modification_date\":1738007491,\"last_submission_date\":1582817050,\"positives\":8,\"times_submitted\":1,\"tld\":\"ru\",\"url\":\"http://securepasswel.ru/files/grapes_encrypted_87ed10f.bin\"},\"id\":\"0146b3be6e724b10e620e8090821a8253772af779a4996145cdf295c01e0900c\",\"relationships\":{},\"type\":\"url\"}}",
         "type": [
@@ -812,24 +812,24 @@ An example event for `iot` looks as following:
 {
     "@timestamp": "2025-01-27T19:51:31.000Z",
     "agent": {
-        "ephemeral_id": "b591128a-2888-44c7-afa4-72d79927e590",
-        "id": "613fb16e-c170-4ed4-a82b-bd1bdede3ce3",
-        "name": "elastic-agent-90536",
+        "ephemeral_id": "e0a0f286-496f-4ffd-9c9c-54be65d8b4cc",
+        "id": "88d27132-b45a-4362-aa86-b5fd57ad3d98",
+        "name": "elastic-agent-57924",
         "type": "filebeat",
-        "version": "8.17.3"
+        "version": "8.16.0"
     },
     "data_stream": {
         "dataset": "ti_google_threat_intelligence.iot",
-        "namespace": "71655",
+        "namespace": "45128",
         "type": "logs"
     },
     "ecs": {
         "version": "8.17.0"
     },
     "elastic_agent": {
-        "id": "613fb16e-c170-4ed4-a82b-bd1bdede3ce3",
+        "id": "88d27132-b45a-4362-aa86-b5fd57ad3d98",
         "snapshot": false,
-        "version": "8.17.3"
+        "version": "8.16.0"
     },
     "event": {
         "agent_id_status": "verified",
@@ -837,7 +837,7 @@ An example event for `iot` looks as following:
             "threat"
         ],
         "dataset": "ti_google_threat_intelligence.iot",
-        "ingested": "2025-05-25T14:51:01Z",
+        "ingested": "2025-06-03T07:07:52Z",
         "kind": "enrichment",
         "original": "{\"data\":{\"attributes\":{\"first_submission_date\":1582817050,\"gti_assessment\":{\"severity\":{\"value\":\"SEVERITY_NONE\"},\"threat_score\":{\"value\":1},\"verdict\":{\"value\":\"VERDICT_UNDETECTED\"}},\"last_analysis_date\":1582817050,\"last_analysis_stats\":{\"harmless\":55,\"malicious\":8,\"undetected\":8},\"last_http_response_code\":200,\"last_modification_date\":1738007491,\"last_submission_date\":1582817050,\"positives\":8,\"times_submitted\":1,\"tld\":\"ru\",\"url\":\"http://securepasswel.ru/files/grapes_encrypted_87ed10f.bin\"},\"id\":\"0146b3be6e724b10e620e8090821a8253772af779a4996145cdf295c01e0900c\",\"relationships\":{},\"type\":\"url\"}}",
         "type": [
