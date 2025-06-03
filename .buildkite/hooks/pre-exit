@@ -4,6 +4,11 @@ source .buildkite/scripts/common.sh
 
 set -euo pipefail
 
+if [[ "$BUILDKITE_PIPELINE_SLUG" == "integrations-backport" && "$BUILDKITE_STEP_KEY" == "create-backport-branch" ]]; then
+  cd "${WORKSPACE}"
+  git config remote.origin.url "https://github.com/elastic/integrations.git"
+fi
+
 if [[ "$BUILDKITE_PIPELINE_SLUG" =~ ^(integrations|integrations-test-stack|integrations-serverless)$ ]]; then
     # it should match "^test-integration-" steps created in the integrations and integrations-test-stack pipelines (e.g. test-integration-apache or test-integration-aws)
     # as well as the step ID "test-integrations-serverless-project" from the "integrations-serverless" pipeline
@@ -18,14 +23,11 @@ if [[ "$BUILDKITE_PIPELINE_SLUG" =~ ^(integrations|integrations-test-stack|integ
             ${ELASTIC_PACKAGE_BIN} stack down -v
         fi
 
-        echo "Documentation to access logs: https://docs.elastic.dev/ingest-dev-docs/elastic-packages/ecosystem-ci-pipelines#private-logs"
+        echo "--- :bookmark: Documentation to access logs: https://docs.elastic.dev/ingest-dev-docs/elastic-packages/ecosystem-ci-pipelines#private-logs"
     fi
 fi
 
+echo "--- Cleaning up"
 unset_secrets
 cleanup
 
-if [[ "$BUILDKITE_PIPELINE_SLUG" == "integrations-backport" && "$BUILDKITE_STEP_KEY" == "create-backport-branch" ]]; then
-  cd "${WORKSPACE}"
-  git config remote.origin.url "https://github.com/elastic/integrations.git"
-fi
