@@ -246,22 +246,25 @@ An example event for `system` looks as following:
 | log.offset | Offset of the entry in the log file. | long |
 | okta.actor.alternate_id | Alternate identifier of the actor. | keyword |
 | okta.actor.display_name | Display name of the actor. | keyword |
+| okta.actor.display_name.text | Multi-field of `okta.actor.display_name`. | match_only_text |
 | okta.actor.id | Identifier of the actor. | keyword |
 | okta.actor.type | Type of the actor. | keyword |
 | okta.authentication_context.authentication_provider | The information about the authentication provider. Must be one of OKTA_AUTHENTICATION_PROVIDER, ACTIVE_DIRECTORY, LDAP, FEDERATION, SOCIAL, FACTOR_PROVIDER. | keyword |
 | okta.authentication_context.authentication_step | The authentication step. | integer |
 | okta.authentication_context.credential_provider | The information about credential provider. Must be one of OKTA_CREDENTIAL_PROVIDER, RSA, SYMANTEC, GOOGLE, DUO, YUBIKEY. | keyword |
 | okta.authentication_context.credential_type | The information about credential type. Must be one of OTP, SMS, PASSWORD, ASSERTION, IWA, EMAIL, OAUTH2, JWT, CERTIFICATE, PRE_SHARED_SYMMETRIC_KEY, OKTA_CLIENT_SESSION, DEVICE_UDID. | keyword |
-| okta.authentication_context.external_session_id | The session identifer of the external session if any. | keyword |
+| okta.authentication_context.external_session_id | The session identifier of the external session if any. | keyword |
 | okta.authentication_context.interface | The interface used. e.g., Outlook, Office365, wsTrust | keyword |
 | okta.authentication_context.issuer.id | The identifier of the issuer. | keyword |
 | okta.authentication_context.issuer.type | The type of the issuer. | keyword |
+| okta.authentication_context.root_session_id | The session identifier of the root if any. | keyword |
 | okta.client.device | The information of the client device. | keyword |
 | okta.client.id | The identifier of the client. | keyword |
 | okta.client.ip | The IP address of the client. | ip |
 | okta.client.user_agent.browser | The browser informaton of the client. | keyword |
 | okta.client.user_agent.os | The OS informaton. | keyword |
 | okta.client.user_agent.raw_user_agent | The raw informaton of the user agent. | keyword |
+| okta.client.user_agent.raw_user_agent.text | Multi-field of `okta.client.user_agent.raw_user_agent`. | match_only_text |
 | okta.client.zone | The zone information of the client. | keyword |
 | okta.debug_context.debug_data |  | object |
 | okta.debug_context.debug_data.authnRequestId | The authorization request ID. | keyword |
@@ -312,6 +315,7 @@ An example event for `system` looks as following:
 | okta.debug_context.debug_data.threat_suspected | Threat suspected. | keyword |
 | okta.debug_context.debug_data.tunnels |  | object |
 | okta.debug_context.debug_data.url | The URL. | keyword |
+| okta.debug_context.debug_data.url.text | Multi-field of `okta.debug_context.debug_data.url`. | match_only_text |
 | okta.device.device_integrator |  | flattened |
 | okta.device.disk_encryption_type | The value of the device profile’s disk encryption type. One of "NONE", "FULL", "USER", "ALL_INTERNAL_VOLUMES" or "SYSTEM_VOLUME". | keyword |
 | okta.device.id | Identifier of the device. | keyword |
@@ -341,6 +345,7 @@ An example event for `system` looks as following:
 | okta.target.id | The ID of the target. | keyword |
 | okta.target.type | The type of target. | keyword |
 | okta.transaction.detail.request_api_token_id | ID of the API token used in a request. | keyword |
+| okta.transaction.detail.root_api_token_id | ID of the root API token. | keyword |
 | okta.transaction.id | Identifier of the transaction. | keyword |
 | okta.transaction.type | The type of transaction. Must be one of "WEB", "JOB". | keyword |
 | okta.uuid | The unique identifier of the Okta LogEvent. | keyword |

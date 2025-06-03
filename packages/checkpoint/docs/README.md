@@ -547,6 +547,7 @@ An example event for `firewall` looks as following:
 | checkpoint.site_name | Site name. | keyword |
 | checkpoint.smartdefense_profile |  | keyword |
 | checkpoint.snid | The Check Point session ID. | keyword |
+| checkpoint.source | Provides additional context for the source of the event. | keyword |
 | checkpoint.source_interface | External Interface name for source interface or Null if not found. | keyword |
 | checkpoint.source_object | Matched object name on source column. | keyword |
 | checkpoint.source_os | OS which generated the attack. | keyword |
