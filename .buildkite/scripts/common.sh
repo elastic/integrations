@@ -1,6 +1,6 @@
 #!/bin/bash
 
-set -euo pipefail
+# set -euo pipefail
 
 WORKSPACE="$(pwd)"
 BIN_FOLDER="${WORKSPACE}/bin"
@@ -1111,14 +1111,15 @@ get_comment_with_pattern() {
 }
 
 ## Buildkite output
-function inline_link {
+inline_link() {
     local url="$1"
     local text="${2:-""}"
     local link=""
+
     link=$(printf "url='%s'" "$url")
 
-    if [[ "${title}" != "" ]]; then
-        link=$(printf "%s;content='%s'" "$link" "$title")
+    if [[ "${text}" != "" ]]; then
+        link=$(printf "%s;content='%s'" "$link" "$text")
     fi
 
     printf '\033]1339;%s\a\n' "$link"
