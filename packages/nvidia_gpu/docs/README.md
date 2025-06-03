@@ -189,6 +189,7 @@ An example event for `stats` looks as following:
 | gpu.device.ecc_info_rom_version | ECC inforom version | keyword |  |  |
 | gpu.device.power_info_rom_version | Power management object inforom version | keyword |  |  |
 | gpu.device.serial_number | Device Serial Number | keyword |  |  |
+| gpu.device.vbios_version | VBIOS version of the device | keyword |  |  |
 | gpu.ecc.double_bit_persistent.count | Double-bit persistent errors count for GPU memory. | long |  | counter |
 | gpu.ecc.double_bit_volatile.count | Double-bit volatile errors count for GPU memory. | long |  | counter |
 | gpu.ecc.single_bit_persistent.count | Single-bit persistent errors count for GPU memory. | long |  | counter |
