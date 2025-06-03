@@ -701,25 +701,25 @@ processors:
   ###############################
   - set:
       description: Rename opencanary.logdata.USERNAME to user.name
-      tag: rename_opencanary_logdata_USERNAME
+      tag: set_opencanary_logdata_USERNAME
       copy_from: opencanary.logdata.USERNAME
       field: user.name
       ignore_empty_value: true
   - set:
       description: Rename opencanary.logdata.USER to user.name
-      tag: rename_opencanary_logdata_USER
+      tag: set_opencanary_logdata_USER
       copy_from: opencanary.logdata.USER
       field: user.name
       ignore_empty_value: true
   - set:
       description: Rename opencanary.logdata.UserName to user.name
-      tag: rename_opencanary_logdata_UserName
+      tag: set_opencanary_logdata_UserName
       copy_from: opencanary.logdata.UserName
       field: user.name
       ignore_empty_value: true
   - set:
       description: Rename opencanary.logdata.DOMAIN to user.domain
-      tag: rename_opencanary_logdata_DOMAIN
+      tag: set_opencanary_logdata_DOMAIN
       copy_from: opencanary.logdata.DOMAIN
       field: user.domain
       ignore_empty_value: true
@@ -784,16 +784,13 @@ processors:
         - opencanary.vnc.password
       ignore_missing: true
       ignore_failure: true
-  - redact:
-      description: Redact any passwords in the log data
+  - gsub:
+      description: Redact various forms of password fields that may be in the log data
       tag: redact_event_original
-      if: >-
-        ctx.tags != null && ctx.tags.contains("redact_passwords") && ctx.event?.original =~ /"PASSWORD": "/
+      if: 'ctx.tags != null && ctx.tags.contains("redact_passwords") && ctx.event?.original =~ /(PASSWORD|Password|password)\\*"\: *\\*"[^\\"]+?/'
       field: event.original
-      patterns:
-        - '"PASSWORD": "%{DATA:REDACTED}"'
-      prefix: '"PASSWORD": "<'
-      suffix: '>"'
+      pattern: '((PASSWORD|Password|password)\\*": *\\*")(.+?)(\\*(\" *,|\" *}))'
+      replacement: '$1<REDACTED>$4'
       ignore_missing: true
 
   ######################
