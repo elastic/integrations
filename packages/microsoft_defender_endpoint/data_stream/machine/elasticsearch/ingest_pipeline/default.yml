@@ -60,6 +60,11 @@ processors:
       tag: rename_aadDeviceId
       target_field: microsoft_defender_endpoint.machine.aad_device_id
       ignore_missing: true
+  - set:
+      field: device.id
+      tag: set_device_id
+      copy_from: microsoft_defender_endpoint.machine.aad_device_id
+      ignore_empty_value: true
   - append:
       field: related.hosts
       tag: append_microsoft_defender_endpoint_machine_aad_device_id_into_related_hosts
@@ -454,6 +459,7 @@ processors:
       ignore_missing: true
   - remove:
       field:
+        - microsoft_defender_endpoint.machine.aad_device_id
         - microsoft_defender_endpoint.machine.computer_dns_name
         - microsoft_defender_endpoint.machine.id
         - microsoft_defender_endpoint.machine.last_external_ip_address
