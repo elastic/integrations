@@ -119,7 +119,6 @@ if running_on_buildkite ; then
     fi
 fi
 
-echo "Documentation to access logs: https://docs.elastic.dev/ingest-dev-docs/elastic-packages/ecosystem-ci-pipelines#private-logs"
 if [ $any_package_failing -eq 1 ] ; then
     echo "These packages have failed:"
     cat "${FAILED_PACKAGES_FILE_PATH}"

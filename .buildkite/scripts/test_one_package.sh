@@ -33,5 +33,4 @@ if ! process_package "${package}" ; then
 fi
 popd > /dev/null
 
-echo "Documentation to access logs: https://docs.elastic.dev/ingest-dev-docs/elastic-packages/ecosystem-ci-pipelines#private-logs"
 exit "${exit_code}"
