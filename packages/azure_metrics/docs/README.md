@@ -167,7 +167,7 @@ The settings' main section contains all the options needed to access the Azure A
 
 ### Advanced options
 
-There are two additional advanced options:
+There are three additional advanced options:
 
 `Resource Manager Endpoint` _string_
 : Optional. By default, the integration uses the Azure public environment. To override, users can provide a specific resource manager endpoint to use a different Azure environment.
@@ -188,6 +188,11 @@ Examples:
 * `https://login.microsoftonline.de` for Azure GermanCloud
 * `https://login.microsoftonline.com` for Azure PublicCloud
 * `https://login.microsoftonline.us` for Azure USGovernmentCloud
+
+`Enable Batch Api` _boolean_
+: Optional, by default is set to False. Set this to True when facing scalability issues. When configured, the azure batch api will be used
+ to fetch metrics of multiple resources in one api call. 
+ Currently supported data streams are monitor, container_registry, container_instance, container_service, compute_vm, compute_vm_scaleset, database_account and storage_account. 
 
 ## Metrics reference
 
