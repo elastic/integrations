@@ -226,7 +226,7 @@ processors:
   - set:
       field: user.email
       copy_from: azure.signinlogs.properties.user_principal_name
-      ignore_empty_value: true
+      if: "(ctx.azure?.signinlogs?.properties?.user_principal_name ?: '') =~ /^[^@]+@[^@]+$/"
   - grok:
       field: azure.signinlogs.properties.user_principal_name
       patterns:
