@@ -2,36 +2,33 @@
 
 [Qualys WAS](https://www.qualys.com/apps/vulnerability-management-detection-response/) integration ingests vulnerability detection data from scans performed by the Qualys Web Application 
 Scan product. 
-The Qualys Web Application Scanning product is a cloud-based application security product that continuously discovers, 
-detects, and catalogs web applications and APIs (Application Programming Interface). Uncovers runtime vulnerabilities, 
+The Qualys Web Application Scanning product is a security product that continuously discovers, 
+detects, and catalogs web applications and APIs (Application Programming Interface), uncovers runtime vulnerabilities, 
 misconfigurations, Personal Identifying Information (PII) exposures, and web malware across modern web applications 
 or APIs.
 
-The Qualys WAS integration uses REST API mode to collect vulnerability detection data. 
-Elastic Agent fetches data via API endpoints. Detection data is augmented with Qualys Knowledge
-Base data about each type of detection.
+The Qualys WAS integration uses the REST API mode to collect vulnerability detection data. 
+Elastic Agent fetches data via API endpoints. Detection data is augmented by XML based queries to 
+the Qualys Knowledge Base about each detection.
 
 ## Compatibility
 
-This module has been tested against the latest Qualys WAS version **4.5**.
+This module has been tested against the latest Qualys WAS version **4.5** ,
+the **3.0** version REST API, and the **3.0** version of the detection Knowledge Base API.
 
 ## Data streams
 
-The Qualys WAS integration collects data vulnerability reports (findings) that are produced from scans. 
+The Qualys WAS integration collects data vulnerability reports called findings (detections) that are produced from scans. 
 Scans are performed on a schedule and/or manually. 
-Vulnerability reports (findings) are produced from the scans. Vulnerabilities have historical context
-such as the first time the vulnerability was seen.
-This integration ingests the vulnerability reports. 
+Vulnerability reports are produced from the scans. Vulnerabilities have historical context
+such as the first time the vulnerability was seen, the last time the vulnerability was detected
+and status updates.
+ 
+The Rest API reference for vulnerability reports: [Rest API guide](https://cdn2.qualys.com/docs/qualys-was-api-user-guide.pdf).
+The XML knowledge base api has been updated to 3.0 since this reference was published due to changes in the DTD. The changes
+are minimal.
 
-The API documentation tends to not be comprehensive. The original API was XML based.
-The JSON Rest API is based on the XML API. JSON specific documentation is sparse.
-This reference covers a few of the JSON Rest endpoints. 
-Reference for [Rest API guide](https://cdn2.qualys.com/docs/qualys-was-api-user-guide.pdf)
-
-This reference covers more JSON endpoints and their filters. 
-Reference for [Rest API quick start](https://cdn2.qualys.com/docs/qualys-api-quick-reference.pdf)
-
-## Requirements
+## Requirements for running with an Elastic Agent
 
 - Elastic Agent must be installed.
 - You can install only one Elastic Agent per host.
@@ -64,9 +61,9 @@ There are some minimum requirements for running Elastic Agent and for more infor
 
 #### Web Application 
 
-| Role             | Permission                           | API access |
-|------------------|--------------------------------------|------------|
-| WAS Scanner User | Query access to Web application data | Yes        |
+| Role   | Module                          | API access |
+|--------|---------------------------------|------------|
+| Reader | Web Application Scanning Module | Yes        |
 
 ## Setup
 
@@ -96,22 +93,34 @@ for descriptions of type of detection data returned and severity levels.
    - disable Senstive Content
    - disable Verbose
 #### Notes about verbose mode
-The integration uses verbose mode by default. The additional data available with verbose mode are:
-- the detection score
-- tags associated with the web application on which the vulnerability was found
+The integration uses verbose mode by default. IN addition to the ingested data enumerated below,
+verbose mode returns the history of all scans on the target. If the Qualys WAS application is not configured to
+delete old scans, the amount of data that is returned is significant. The agent may experience issues related
+to memory exhaustion. Deleting old scans on a schedule will mitigate the issue. Removing old scan data will not affect 
+vulnerability reports. If deleting old scans in not an option, other ways to mitigate the issue are:
+- turning off verbose mode
+- reducing batch size
+- increasing memory on the agent 
+
+The additional data available with verbose mode are:
+- Web application tags
 - OWASP name, code and URL for the detection
-- CWE code
+- WASC name, code and URL for the detection
+- CWE code (becomes ECS value vulnerability.id)
+- updatedDateTime
+- param value for the test
 - results of the most recent scan including the requests made, the response and details what about the response resulted
   in a vulnerability report (stored as flattened data)
 
 ## Processing Logic
-Cel scripts are used to fetch the data from Qualys endpoints and processing into events that 
+Cel scripts are used to fetch the data from Qualys endpoints and processed into events that 
 are consumed by the pipelines.
-The cell script requests Findings (vulnerability) data through the REST API using a filter of timestamps 
-for the "lastTestedDate" which is the scan datetime. The qid (qualys id) is the id for the detection type. This id
-is used to request knowledge base data from an XML endpoint which augments each Finding. Findings are paginated
-by the qualys vulnerability id, an unique id for the finding. Knowledge base data is cached between pages to reduce
-the volume of data transported during a single run.
+The cell script requests Findings (detection) data through the REST API using a filter for the "lastTestedDate",
+which is the scan datetime. The qid (qualys id) is the id the vulnerability found that maps to a
+knowledge base article in the qualys knowledge base. This id is used to request knowledge base data from an 
+endpoint which augments each Finding the knowledge base data. Findings are paginated
+by the qualys_was.vulnerability.id, a unique id for the finding. Knowledge base data is cached between pages to reduce
+the volume of data transported during a single run of the cel script.
 
 
 ## Data reference
@@ -496,6 +505,14 @@ An example event for a Vulnerability finding after processing by the input pipel
 | data_stream.type                                                                       | An overarching type for the data stream. Currently allowed values are "logs" and "metrics". We expect to also add "traces" and "synthetics" in the near future.                                                                                                                                                                                                                                                                                                                                                                | constant_keyword |
 | event.dataset                                                                          | Name of the dataset. If an event source publishes more than one type of log or events (e.g. access log, error log), the dataset is used to specify which one the event comes from. It's recommended but not required to start the dataset name with the module name, followed by a dot, then the dataset name.                                                                                                                                                                                                                 | constant_keyword |
 | event.module                                                                           | Name of the module this data is coming from. If your monitoring agent supports the concept of modules or plugins to process events of a given source (e.g. Apache logs), `event.module` should contain the name of this module.                                                                                                                                                                                                                                                                                                | constant_keyword |
+| vulnerability.id                                                                       | The identification (ID) is the number portion of a vulnerability entry                                                                                                                                                                                                                                                                                                                                                                                                                                                         | keyword          |
+| vulnerability.classification                                                           | The classification of the vulnerability scoring system                                                                                                                                                                                                                                                                                                                                                                                                                                                                         | constant_keyword |
+| vulnerability.enumeration                                                              | The type of identifier used for this vulnerability                                                                                                                                                                                                                                                                                                                                                                                                                                                                             | constant_keyword |
+| vulnerability.category                                                                 | The type of system or architecture that the vulnerability affects.                                                                                                                                                                                                                                                                                                                                                                                                                                                             | constant_keyword |
+| vulnerability.scanner.vendor                                                           | The name of the vulnerability scanner vendor.                                                                                                                                                                                                                                                                                                                                                                                                                                                                                  | constant_keyword |
+| vulnerability.severity                                                                 | The severity of the vulnerability                                                                                                                                                                                                                                                                                                                                                                                                                                                                                              | keyword          |
+| vulnerability.score.base                                                               | Available in verbose mode. Scores can range from 0.0 to 10.0, with 10.0 being the most severe. Base scores cover an assessment for exploitability metrics (attack vector, complexity, privileges, and user interaction), impact metrics (confidentiality, integrity, and availability), and scope.                                                                                                                                                                                                                             | float            |
+| vulnerability.score.temporal                                                           | Available in verbose mode. Scores can range from 0.0 to 10.0, with 10.0 being the most severe. Temporal scores cover an assessment for code maturity, remediation level, and confidence.                                                                                                                                                                                                                                                                                                                                       | float            |
 | qualys_was.vulnerability.id                                                            | Id for the vulnerability report                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                | long      
 | qualys_was.vulnerability.name                                                          | A descriptive name for vulnerability                                                                                                                                                                                                                                                                                                                                                                                                                                                                                           | keyword   
 | qualys_was.vulnerability.last_found_datetime                                           | The last scqan date where the vulnerability was found                                                                                                                                                                                                                                                                                                                                                                                                                                                                          | date      
@@ -609,13 +626,5 @@ An example event for a Vulnerability finding after processing by the input pipel
 | qualys_was.vulnerability.knowledge_base.threat_intelligence.intel.text                 |                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                |keyword
 | qualys_was.vulnerability.knowledge_base.title                                          |                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                |keyword
 | qualys_was.vulnerability.knowledge_base.vuln_type                                      |                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                |keyword
-| vulnerability.id                                                                       | The identification (ID) is the number portion of a vulnerability entry                                                                                                                                                                                                                                                                                                                                                                                                                                                         | keyword          |
-| vulnerability.classification                                                           | The classification of the vulnerability scoring system                                                                                                                                                                                                                                                                                                                                                                                                                                                                         | constant_keyword |
-| vulnerability.enumeration                                                              | The type of identifier used for this vulnerability                                                                                                                                                                                                                                                                                                                                                                                                                                                                             | constant_keyword |
-| vulnerability.category                                                                 | The type of system or architecture that the vulnerability affects.                                                                                                                                                                                                                                                                                                                                                                                                                                                             | constant_keyword |
-| vulnerability.scanner.vendor                                                           | The name of the vulnerability scanner vendor.                                                                                                                                                                                                                                                                                                                                                                                                                                                                                  | constant_keyword |
-| vulnerability.severity                                                                 | The severity of the vulnerability                                                                                                                                                                                                                                                                                                                                                                                                                                                                                              | keyword          |
-| vulnerability.score.base                                                               | Available in verbose mode. Scores can range from 0.0 to 10.0, with 10.0 being the most severe. Base scores cover an assessment for exploitability metrics (attack vector, complexity, privileges, and user interaction), impact metrics (confidentiality, integrity, and availability), and scope.                                                                                                                                                                                                                             | float            |
-| vulnerability.score.temporal                                                           | Available in verbose mode. Scores can range from 0.0 to 10.0, with 10.0 being the most severe. Temporal scores cover an assessment for code maturity, remediation level, and confidence.                                                                                                                                                                                                                                                                                                                                       | float            |
 
 
