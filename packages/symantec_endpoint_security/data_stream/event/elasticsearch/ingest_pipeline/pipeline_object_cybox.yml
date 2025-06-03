@@ -156,27 +156,33 @@ processors:
           tag: append_cybox_files_accessed_into_file_accessed
           value: '{{{_ingest._value.accessed}}}'
           allow_duplicates: false
-  - foreach:
-      field: ses.cybox.files
+
+  - script:
+      description: Convert attribute ids to strings
+      tag: script_to_convert_attribute_ids
       if: ctx.ses?.cybox?.files instanceof List
-      tag: foreach_cybox_files
-      processor:
-        foreach:
-          field: _ingest._value.attribute_ids
-          tag: foreach_cybox_files_attribute_ids
-          processor:
-            convert:
-              field: _ingest._value
-              tag: convert_cybox_files_attribute_ids_to_string
-              type: string
-              ignore_missing: true
-              on_failure:
-                - remove:
-                    field: _ingest._value
-                    ignore_missing: true
-                - append:
-                    field: error.message
-                    value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+
+      lang: painless
+      source: >-
+          for (int i = 0; i < ctx.ses.cybox.files.length; i++) {
+            def file = ctx.ses.cybox.files[i];
+            if (file.containsKey('attribute_ids') && file.attribute_ids != null) {
+              def new_ids = [];
+              for (int j = 0; j < file.attribute_ids.length; j++) {
+                def id = file.attribute_ids[j];
+                if (id != null) {
+                  new_ids.add(id.toString());
+                }
+              }
+              file.attribute_ids = new_ids;
+            }
+          }
+
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+
   - script:
       description: Add value for file attributes based on cybox file attribute id.
       tag: script_to_add_file_attributes
@@ -202,10 +208,12 @@ processors:
             }
           }
         for (def file : ctx.ses.cybox.files) {
-          for (def id : file.attribute_ids) {
-            if (params.containsKey(id.toString())) {
-              def type = params.get(id.toString());
-              var.add(type);
+        if (file.attribute_ids != null) {
+            for (def id : file.attribute_ids) {
+              if (params.containsKey(id.toString())) {
+                def type = params.get(id.toString());
+                var.add(type);
+              }
             }
           }
         }
@@ -572,27 +580,32 @@ processors:
             - append:
                 field: error.message
                 value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
-  - foreach:
-      field: ses.cybox.files
+
+  - script:
+      description: Convert signature value ids to strings
+      tag: script_to_convert_signature_value_ids
       if: ctx.ses?.cybox?.files instanceof List
-      tag: foreach_signature_value_ids
-      processor:
-        foreach:
-          field: _ingest._value.signature_value_ids
-          tag: foreach_cybox_files_signature_value_ids
-          processor:
-            convert:
-              field: _ingest._value
-              tag: convert_cybox_files_signature_value_ids_to_string
-              type: string
-              ignore_missing: true
-              on_failure:
-                - remove:
-                    field: _ingest._value
-                    ignore_missing: true
-                - append:
-                    field: error.message
-                    value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+
+      lang: painless
+      source: >-
+          for (int i = 0; i < ctx.ses.cybox.files.length; i++) {
+            def file = ctx.ses.cybox.files[i];
+            if (file.containsKey('signature_value_ids') && file.signature_value_ids != null) {
+            def new_ids = [];
+            for (int j = 0; j < file.signature_value_ids.length; j++) {
+              def id = file.signature_value_ids[j];
+              if (id != null) {
+                new_ids.add(id.toString());
+              }
+            }
+            file.signature_value_ids = new_ids;
+            }
+          }
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+
   - foreach:
       field: ses.cybox.files
       if: ctx.ses?.cybox?.files instanceof List
@@ -702,10 +715,12 @@ processors:
           }
         }
         for (def file : ctx.ses.cybox.files) {
-          def type_id = file.type_id;
-          if (params.containsKey(type_id.toString())) {
-            def type = params.get(type_id.toString());
-            var.add(type);
+          if (file.type_id != null) {
+            def type_id = file.type_id;
+            if (params.containsKey(type_id.toString())) {
+              def type = params.get(type_id.toString());
+              var.add(type);
+            }
           }
         }
         
