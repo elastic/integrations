@@ -11,12 +11,12 @@ processors:
       ignore_missing: true
       if: 'ctx.event?.original != null'
       description: 'The `message` field is no longer required if the document has an `event.original` field.'
-  - set:
-      field: event.original
-      value: "{{{o365audit}}}"
-      if: ctx.event?.original == null
+  - script:
       tag: set_event_original
-      ignore_empty_value: true
+      if: ctx.event?.original == null
+      source: |-
+        ctx.event = ctx.event ?: [:];
+        ctx.event.original = Json.dump(ctx.o365audit)
   - set:
       field: ecs.version
       value: '8.11.0'
@@ -85,6 +85,7 @@ processors:
       field: o365audit.OrganizationId
       target_field: organization.id
       ignore_missing: true
+      ignore_failure: true
 
   - json:
       tag: json-extract-stringly-AdditionalInfo
@@ -361,6 +362,7 @@ processors:
       field: o365audit.OrganizationName
       target_field: organization.name
       ignore_missing: true
+      ignore_failure: true
       if: ctx.event?.code == "ExchangeAdmin"
   - rename:
       field: o365audit.OriginatingServer
@@ -388,6 +390,7 @@ processors:
       field: o365audit.OrganizationName
       target_field: organization.name
       ignore_missing: true
+      ignore_failure: true
       if: ctx.event?.code == "ExchangeItem"
   - rename:
       field: o365audit.OriginatingServer
@@ -519,10 +522,9 @@ processors:
       value: creation
       if: 'ctx.event?.action != null && ["FileUploaded", "FolderCopied", "FolderCreated"].contains(ctx.event?.action)'
   # SecurityComplianceAlerts Schema
-  - rename:
-      field: o365audit.Comments
-      target_field: message
-      ignore_missing: true
+  - set:
+      field: message
+      copy_from: o365audit.Name
       if: ctx.event?.code == "SecurityComplianceAlerts"
   - rename:
       field: o365audit.Name
@@ -1093,13 +1095,14 @@ processors:
   - lowercase:
       field: organization.id
       ignore_missing: true
+      ignore_failure: true
   - set:
       field: host.id
       copy_from: organization.id
-      if: ctx.organization?.id != null
+      if: ctx.organization instanceof Map && ctx.organization?.id != null
   - script:
       lang: painless
-      if: 'ctx.organization?.id != null && ctx._conf?.tenants != null'
+      if: ctx.organization instanceof Map && ctx.organization?.id != null && ctx._conf?.tenants != null
       source: >
         def conftenants = ctx._conf.tenants;
         def orgid = ctx.organization.id;
@@ -1110,7 +1113,7 @@ processors:
   - set:
       field: host.name
       copy_from: organization.name
-      if: ctx.organization?.name != null && ctx.host?.name == null
+      if: ctx.organization instanceof Map && ctx.organization?.name != null && ctx.host?.name == null
   - set:
       field: host.name
       copy_from: user.domain
@@ -1492,6 +1495,26 @@ processors:
       target_field: o365audit.PhishConfidenceLevel
       tag: rename_entities.PhishConfidenceLevel
       ignore_missing: true
+  - set:
+      field: device.id
+      copy_from: o365audit.AppAccessContext.DeviceId
+      tag: set_device_id_from_AppAccessContext_DeviceID
+      ignore_empty_value: true
+  - set:
+      field: session.id
+      copy_from: o365audit.AppAccessContext.AADSessionId
+      tag: set_session_id_from_AppAccessContext_AADSessionId
+      ignore_empty_value: true
+  - set:
+      field: token.id
+      copy_from: o365audit.AppAccessContext.UniqueTokenId
+      tag: set_token_id_from_AppAccessContext_UniqueTokenId
+      ignore_empty_value: true
+  - set:
+      field: application.name
+      copy_from: o365audit.ApplicationDisplayName
+      tag: set_application_name
+      ignore_empty_value: true
   - script:
       description: Handle _tmp.entities.ThreatDetectionMethods containing list of lists.
       lang: painless

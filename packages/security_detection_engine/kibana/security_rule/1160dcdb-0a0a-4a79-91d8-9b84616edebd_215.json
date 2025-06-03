@@ -1,0 +1,107 @@
+{
+    "attributes": {
+        "author": [
+            "Elastic"
+        ],
+        "description": "Identifies an instance of a Windows trusted program that is known to be vulnerable to DLL Search Order Hijacking starting after being renamed or from a non-standard path. This is uncommon behavior and may indicate an attempt to evade defenses via side loading a malicious DLL within the memory space of one of those processes.",
+        "from": "now-9m",
+        "index": [
+            "winlogbeat-*",
+            "logs-endpoint.events.process-*",
+            "logs-windows.sysmon_operational-*",
+            "endgame-*",
+            "logs-m365_defender.event-*"
+        ],
+        "language": "eql",
+        "license": "Elastic License v2",
+        "name": "Potential DLL Side-Loading via Trusted Microsoft Programs",
+        "note": "## Triage and analysis\n\n> **Disclaimer**:\n> This investigation guide was created using generative AI technology and has been reviewed to improve its accuracy and relevance. While every effort has been made to ensure its quality, we recommend validating the content and adapting it to suit your specific environment and operational needs.\n\n### Investigating Potential DLL Side-Loading via Trusted Microsoft Programs\n\nDLL side-loading exploits the DLL search order to load malicious code into trusted Microsoft programs, which are often whitelisted by security tools. Adversaries rename or relocate these programs to execute unauthorized DLLs, evading detection. The detection rule identifies unusual execution paths or renamed instances of these programs, signaling potential misuse and enabling timely threat response.\n\n### Possible investigation steps\n\n- Review the process details to confirm the original file name and the path from which the process was executed. Check if the process.pe.original_file_name matches any of the specified trusted programs like \"WinWord.exe\", \"EXPLORER.EXE\", \"w3wp.exe\", or \"DISM.EXE\".\n- Investigate the process execution path to determine if it deviates from the standard paths listed in the query, such as \"?:\\Windows\\explorer.exe\" or \"?:\\Program Files\\Microsoft Office\\root\\Office*\\WINWORD.EXE\".\n- Examine the process creation history and parent process to identify any unusual or suspicious parent-child relationships that might indicate malicious activity.\n- Check for any recent file modifications or creations in the directory from which the process was executed, which could suggest the presence of a malicious DLL.\n- Correlate the event with other security logs or alerts from data sources like Elastic Endgame, Elastic Defend, Sysmon, or Microsoft Defender for Endpoint to gather additional context and identify potential patterns of malicious behavior.\n- Assess the risk and impact of the event by considering the risk score and severity level provided, and determine if immediate containment or further investigation is necessary.\n\n### False positive analysis\n\n- Legitimate software updates or installations may temporarily execute trusted Microsoft programs from non-standard paths. Users can create exceptions for known update processes to prevent false alerts.\n- Custom enterprise applications might use renamed instances of trusted Microsoft programs for legitimate purposes. Identify and whitelist these specific applications to avoid unnecessary alerts.\n- Virtual environments or sandboxed applications may execute trusted programs from unusual paths as part of their normal operation. Review and exclude these environments if they are known and trusted.\n- Security or IT administrative tools might mimic trusted Microsoft programs for monitoring or management tasks. Verify these tools and add them to an exception list if they are part of standard operations.\n- Development or testing environments often involve renamed or relocated executables for debugging purposes. Ensure these environments are recognized and excluded from the detection rule to reduce false positives.\n\n### Response and remediation\n\n- Isolate the affected system from the network to prevent further spread of the potential threat and unauthorized access.\n- Terminate the suspicious process identified by the detection rule to stop any ongoing malicious activity.\n- Conduct a forensic analysis of the affected system to identify any malicious DLLs or additional compromised files, and remove them.\n- Restore the affected system from a known good backup to ensure all malicious changes are reverted.\n- Update and patch all software on the affected system, focusing on the trusted Microsoft programs identified in the alert, to mitigate vulnerabilities exploited by DLL side-loading.\n- Monitor the network for any signs of lateral movement or additional compromised systems, using the indicators of compromise identified during the investigation.\n- Escalate the incident to the security operations center (SOC) or incident response team for further analysis and to determine if additional systems or data have been affected.",
+        "query": "process where host.os.type == \"windows\" and event.type == \"start\" and\n  process.pe.original_file_name in (\"WinWord.exe\", \"EXPLORER.EXE\", \"w3wp.exe\", \"DISM.EXE\") and \n  not process.executable : (\"?:\\\\Windows\\\\explorer.exe\", \n                            \"?:\\\\Windows\\\\SysWOW64\\\\explorer.exe\",\n                            \"?:\\\\Program Files\\\\Microsoft Office\\\\root\\\\Office*\\\\WINWORD.EXE\", \n                            \"?:\\\\Program Files (x86)\\\\Microsoft Office\\\\root\\\\Office*\\\\WINWORD.EXE\", \n                            \"?:\\\\Windows\\\\System32\\\\Dism.exe\", \n                            \"?:\\\\Windows\\\\SysWOW64\\\\Dism.exe\",  \n                            \"?:\\\\Program Files (x86)\\\\Windows Kits\\\\10\\\\Assessment and Deployment Kit\\\\Deployment Tools\\\\amd64\\\\DISM\\\\dism.exe\",\n                            \"?:\\\\Windows\\\\System32\\\\inetsrv\\\\w3wp.exe\", \n                            \"?:\\\\Windows\\\\SysWOW64\\\\inetsrv\\\\w3wp.exe\")\n",
+        "related_integrations": [
+            {
+                "package": "endpoint",
+                "version": "^9.0.0"
+            },
+            {
+                "package": "windows",
+                "version": "^3.0.0"
+            },
+            {
+                "package": "m365_defender",
+                "version": "^3.0.0"
+            }
+        ],
+        "required_fields": [
+            {
+                "ecs": true,
+                "name": "event.type",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "host.os.type",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "process.executable",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "process.pe.original_file_name",
+                "type": "keyword"
+            }
+        ],
+        "risk_score": 73,
+        "rule_id": "1160dcdb-0a0a-4a79-91d8-9b84616edebd",
+        "setup": "## Setup\n\nIf enabling an EQL rule on a non-elastic-agent index (such as beats) for versions <8.2,\nevents will not define `event.ingested` and default fallback for EQL rules was not added until version 8.2.\nHence for this rule to work effectively, users will need to add a custom ingest pipeline to populate\n`event.ingested` to @timestamp.\nFor more details on adding a custom ingest pipeline refer - https://www.elastic.co/guide/en/fleet/current/data-streams-pipeline-tutorial.html\n",
+        "severity": "high",
+        "tags": [
+            "Domain: Endpoint",
+            "OS: Windows",
+            "Use Case: Threat Detection",
+            "Tactic: Defense Evasion",
+            "Tactic: Execution",
+            "Data Source: Elastic Endgame",
+            "Data Source: Elastic Defend",
+            "Data Source: Sysmon",
+            "Data Source: Microsoft Defender for Endpoint",
+            "Resources: Investigation Guide"
+        ],
+        "threat": [
+            {
+                "framework": "MITRE ATT&CK",
+                "tactic": {
+                    "id": "TA0005",
+                    "name": "Defense Evasion",
+                    "reference": "https://attack.mitre.org/tactics/TA0005/"
+                },
+                "technique": [
+                    {
+                        "id": "T1036",
+                        "name": "Masquerading",
+                        "reference": "https://attack.mitre.org/techniques/T1036/"
+                    },
+                    {
+                        "id": "T1574",
+                        "name": "Hijack Execution Flow",
+                        "reference": "https://attack.mitre.org/techniques/T1574/",
+                        "subtechnique": [
+                            {
+                                "id": "T1574.002",
+                                "name": "DLL Side-Loading",
+                                "reference": "https://attack.mitre.org/techniques/T1574/002/"
+                            }
+                        ]
+                    }
+                ]
+            }
+        ],
+        "timestamp_override": "event.ingested",
+        "type": "eql",
+        "version": 215
+    },
+    "id": "1160dcdb-0a0a-4a79-91d8-9b84616edebd_215",
+    "type": "security-rule"
+}
