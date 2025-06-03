@@ -167,7 +167,36 @@ The settings' main section contains all the options needed to access the Azure A
 
 ### Advanced options
 
-There are three additional advanced options:
+There are the following additional advanced options:
+
+`Latency` _string_
+: Optional. Latency is the time it takes for the Azure service to publish the metric values to Azure Monitor. The integration uses the latency value to compensate for the delay in metric value publishing.
+
+Default value is `0`. Typical values are `30s` or `1m`.
+
+```text
+  |                                                        |
+  |                                                        |             Now
+  |                                                        │              |
+  |                                            time grain  │              |
+  │                                          │◀──(PT1M)──▶ │              |
+  │                                                        │              |
+  ├──────────────────────────────────────────┼─────────────┼──────────────|
+  │                                                        │              |
+  │                       timespan           │             │              |
+  |◀───────────────────────(5min)─────────────────────────▶│              |
+  │                                          │             │              |
+  |                        period                          │              |
+  │◀───────────────────────(5min)─────────────────────────▶|              │
+  │                                                        │              |
+  │                                                        │              |
+  |                                                        │   latency    |
+  |                                                        | ◀──(1min)──▶ |
+  │                                                        │              |
+  │                                                        │              |
+Start                                                     End             |
+  │                                                        │              |
+```
 
 `Resource Manager Endpoint` _string_
 : Optional. By default, the integration uses the Azure public environment. To override, users can provide a specific resource manager endpoint to use a different Azure environment.
