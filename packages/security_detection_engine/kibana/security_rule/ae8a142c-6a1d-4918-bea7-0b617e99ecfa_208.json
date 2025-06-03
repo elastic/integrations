@@ -1,0 +1,148 @@
+{
+    "attributes": {
+        "author": [
+            "Elastic"
+        ],
+        "description": "Identifies execution of common Microsoft Office applications to launch an Office Add-In from a suspicious path or with an unusual parent process. This may indicate an attempt to get initial access via a malicious phishing MS Office Add-In.",
+        "from": "now-9m",
+        "index": [
+            "winlogbeat-*",
+            "logs-endpoint.events.process-*",
+            "logs-windows.sysmon_operational-*",
+            "endgame-*",
+            "logs-m365_defender.event-*",
+            "logs-sentinel_one_cloud_funnel.*"
+        ],
+        "language": "eql",
+        "license": "Elastic License v2",
+        "name": "Suspicious Execution via Microsoft Office Add-Ins",
+        "note": "## Triage and analysis\n\n> **Disclaimer**:\n> This investigation guide was created using generative AI technology and has been reviewed to improve its accuracy and relevance. While every effort has been made to ensure its quality, we recommend validating the content and adapting it to suit your specific environment and operational needs.\n\n### Investigating Suspicious Execution via Microsoft Office Add-Ins\n\nMicrosoft Office Add-Ins enhance productivity by integrating additional features into Office applications. However, adversaries can exploit this by embedding malicious code within add-ins, often delivered through phishing. The detection rule identifies unusual execution patterns, such as Office apps launching add-ins from suspicious paths or with atypical parent processes, signaling potential threats. It filters out known benign activities to minimize false positives, focusing on genuine anomalies indicative of malicious intent.\n\n### Possible investigation steps\n\n- Review the process name and arguments to confirm if the execution involves a Microsoft Office application launching an add-in from a suspicious path, as indicated by the process.name and process.args fields.\n- Check the parent process name to determine if the Office application was launched by an unusual or potentially malicious parent process, such as cmd.exe or powershell.exe, using the process.parent.name field.\n- Investigate the file path from which the add-in was executed to assess if it matches any of the suspicious paths listed in the query, such as the Temp or Downloads directories, using the process.args field.\n- Examine the host's recent activity logs to identify any related events or patterns that might indicate a broader attack or compromise, focusing on the host.os.type and event.type fields.\n- Correlate the alert with any recent phishing attempts or suspicious emails received by the user to determine if the execution is part of a phishing campaign, leveraging the MITRE ATT&CK tactic and technique information provided.\n- Verify if the execution is a false positive by checking against the known benign activities excluded in the query, such as specific VSTOInstaller.exe paths or arguments, to rule out legitimate software installations or updates.\n\n### False positive analysis\n\n- Logitech software installations can trigger false positives when VSTO files are executed by Logitech's PlugInInstallerUtility. To mitigate this, exclude processes with paths related to Logitech installations from the detection rule.\n- The VSTOInstaller.exe process may be flagged when uninstalling applications. Exclude processes with the /Uninstall argument to prevent these false positives.\n- Rundll32.exe executing with specific arguments related to MSI temporary files can be benign. Exclude these specific rundll32.exe executions to avoid false alerts.\n- Sidekick.vsto installations from the specified URL can be legitimate. Exclude this specific VSTOInstaller.exe process with the Sidekick.vsto argument to reduce false positives.\n\n### Response and remediation\n\n- Isolate the affected system from the network to prevent further spread of the potential threat and to contain any ongoing malicious activity.\n- Terminate any suspicious processes identified by the detection rule, such as those involving unusual parent processes or originating from suspicious paths.\n- Conduct a thorough scan of the affected system using updated antivirus or endpoint detection and response (EDR) tools to identify and remove any malicious add-ins or related malware.\n- Review and clean up any unauthorized or suspicious Office add-ins from the affected applications to ensure no malicious code remains.\n- Restore the system from a known good backup if the integrity of the system is compromised and cannot be assured through cleaning alone.\n- Escalate the incident to the security operations center (SOC) or incident response team for further investigation and to determine if additional systems are affected.\n- Implement additional monitoring and alerting for similar suspicious activities to enhance detection and response capabilities for future incidents.",
+        "query": "process where\n\n    host.os.type == \"windows\" and event.type == \"start\" and\n\n    process.name : (\"WINWORD.EXE\", \"EXCEL.EXE\", \"POWERPNT.EXE\", \"MSACCESS.EXE\", \"VSTOInstaller.exe\") and\n\n    process.args regex~ \"\"\".+\\.(wll|xll|ppa|ppam|xla|xlam|vsto)\"\"\" and\n\n    /* Office Add-In from suspicious paths */\n    (process.args :\n             (\"?:\\\\Users\\\\*\\\\Temp\\\\7z*\",\n              \"?:\\\\Users\\\\*\\\\Temp\\\\Rar$*\",\n              \"?:\\\\Users\\\\*\\\\Temp\\\\Temp?_*\",\n              \"?:\\\\Users\\\\*\\\\Temp\\\\BNZ.*\",\n              \"?:\\\\Users\\\\*\\\\Downloads\\\\*\",\n              \"?:\\\\Users\\\\*\\\\AppData\\\\Roaming\\\\*\",\n              \"?:\\\\Users\\\\Public\\\\*\",\n              \"?:\\\\ProgramData\\\\*\",\n              \"?:\\\\Windows\\\\Temp\\\\*\",\n              \"\\\\Device\\\\*\",\n              \"http*\") or\n\n    process.parent.name : (\"explorer.exe\", \"OpenWith.exe\") or\n\n    /* Office Add-In from suspicious parent */\n    process.parent.name : (\"cmd.exe\", \"powershell.exe\")) and\n\n    /* False Positives */\n    not (process.args : \"*.vsto\" and\n         process.parent.executable :\n                   (\"?:\\\\Program Files\\\\Logitech\\\\LogiOptions\\\\PlugInInstallerUtility*.exe\",\n                    \"?:\\\\ProgramData\\\\Logishrd\\\\LogiOptions\\\\Plugins\\\\VSTO\\\\*\\\\VSTOInstaller.exe\",\n                    \"?:\\\\Program Files\\\\Logitech\\\\LogiOptions\\\\PlugInInstallerUtility.exe\",\n                    \"?:\\\\Program Files\\\\LogiOptionsPlus\\\\PlugInInstallerUtility*.exe\",\n                    \"?:\\\\ProgramData\\\\Logishrd\\\\LogiOptionsPlus\\\\Plugins\\\\VSTO\\\\*\\\\VSTOInstaller.exe\",\n                    \"?:\\\\Program Files\\\\Common Files\\\\microsoft shared\\\\VSTO\\\\*\\\\VSTOInstaller.exe\")) and\n    not (process.args : \"/Uninstall\" and process.name : \"VSTOInstaller.exe\") and\n    not (process.parent.name : \"rundll32.exe\" and\n         process.parent.args : \"?:\\\\WINDOWS\\\\Installer\\\\MSI*.tmp,zzzzInvokeManagedCustomActionOutOfProc\") and\n    not (process.name : \"VSTOInstaller.exe\" and process.args : \"https://dl.getsidekick.com/outlook/vsto/Sidekick.vsto\")\n",
+        "references": [
+            "https://github.com/Octoberfest7/XLL_Phishing",
+            "https://labs.f-secure.com/archive/add-in-opportunities-for-office-persistence/"
+        ],
+        "related_integrations": [
+            {
+                "package": "endpoint",
+                "version": "^9.0.0"
+            },
+            {
+                "package": "windows",
+                "version": "^3.0.0"
+            },
+            {
+                "package": "m365_defender",
+                "version": "^3.0.0"
+            },
+            {
+                "package": "sentinel_one_cloud_funnel",
+                "version": "^1.9.0"
+            }
+        ],
+        "required_fields": [
+            {
+                "ecs": true,
+                "name": "event.type",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "host.os.type",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "process.args",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "process.name",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "process.parent.args",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "process.parent.executable",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "process.parent.name",
+                "type": "keyword"
+            }
+        ],
+        "risk_score": 47,
+        "rule_id": "ae8a142c-6a1d-4918-bea7-0b617e99ecfa",
+        "severity": "medium",
+        "tags": [
+            "Domain: Endpoint",
+            "OS: Windows",
+            "Use Case: Threat Detection",
+            "Tactic: Initial Access",
+            "Tactic: Persistence",
+            "Data Source: Elastic Endgame",
+            "Data Source: Elastic Defend",
+            "Data Source: Sysmon",
+            "Data Source: Microsoft Defender for Endpoint",
+            "Data Source: SentinelOne",
+            "Resources: Investigation Guide"
+        ],
+        "threat": [
+            {
+                "framework": "MITRE ATT&CK",
+                "tactic": {
+                    "id": "TA0001",
+                    "name": "Initial Access",
+                    "reference": "https://attack.mitre.org/tactics/TA0001/"
+                },
+                "technique": [
+                    {
+                        "id": "T1566",
+                        "name": "Phishing",
+                        "reference": "https://attack.mitre.org/techniques/T1566/",
+                        "subtechnique": [
+                            {
+                                "id": "T1566.001",
+                                "name": "Spearphishing Attachment",
+                                "reference": "https://attack.mitre.org/techniques/T1566/001/"
+                            }
+                        ]
+                    }
+                ]
+            },
+            {
+                "framework": "MITRE ATT&CK",
+                "tactic": {
+                    "id": "TA0003",
+                    "name": "Persistence",
+                    "reference": "https://attack.mitre.org/tactics/TA0003/"
+                },
+                "technique": [
+                    {
+                        "id": "T1137",
+                        "name": "Office Application Startup",
+                        "reference": "https://attack.mitre.org/techniques/T1137/",
+                        "subtechnique": [
+                            {
+                                "id": "T1137.006",
+                                "name": "Add-ins",
+                                "reference": "https://attack.mitre.org/techniques/T1137/006/"
+                            }
+                        ]
+                    }
+                ]
+            }
+        ],
+        "timestamp_override": "event.ingested",
+        "type": "eql",
+        "version": 208
+    },
+    "id": "ae8a142c-6a1d-4918-bea7-0b617e99ecfa_208",
+    "type": "security-rule"
+}

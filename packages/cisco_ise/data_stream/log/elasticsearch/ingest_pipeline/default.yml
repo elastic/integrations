@@ -63,9 +63,16 @@ processors:
       allow_duplicates: false
       ignore_failure: true
   - rename:
-      field: _tmp.timezone
+      field: _conf.tz_offset
       target_field: event.timezone
+      if: ctx._conf?.tz_offset != null
+      tag: rename_tz_offset
       ignore_missing: true
+  - set:
+      field: event.timezone
+      tag: set_event_timezone
+      copy_from: _tmp.timezone
+      ignore_empty_value: true
   - date:
       field: _tmp.timestamp
       tag: default-tmp-timestamp parsing
