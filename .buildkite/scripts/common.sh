@@ -1109,3 +1109,17 @@ get_comment_with_pattern() {
 
     echo "${comment_id}"
 }
+
+## Buildkite output
+function inline_link {
+    local url="$1"
+    local text="${2:-""}"
+    local link=""
+    link=$(printf "url='%s'" "$url")
+
+    if [[ "${title}" != "" ]]; then
+        link=$(printf "%s;content='%s'" "$link" "$title")
+    fi
+
+    printf '\033]1339;%s\a\n' "$link"
+}
