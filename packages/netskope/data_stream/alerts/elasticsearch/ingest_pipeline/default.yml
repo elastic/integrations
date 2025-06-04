@@ -1563,11 +1563,14 @@ processors:
               Processor '{{{ _ingest.on_failure_processor_type }}}'
               {{{#_ingest.on_failure_processor_tag}}}with tag '{{{ _ingest.on_failure_processor_tag }}}'
               {{{/_ingest.on_failure_processor_tag}}}failed with message '{{{ _ingest.on_failure_message }}}'
-  - convert:
-      tag: convert_netskope_alerts_breach_date
+  - date:
+      tag: date_netskope_alerts_breach_date
       field: netskope.alerts.breach.date
-      type: double
-      ignore_missing: true
+      if: ctx.netskope?.alerts?.breach?.date != null && ctx.netskope.alerts.breach.date != ''
+      formats:
+        - UNIX
+      target_field: netskope.alerts.breach.date
+      ignore_failure: true
       on_failure:
         - remove:
             field: netskope.alerts.breach.date
