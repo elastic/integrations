@@ -53,11 +53,11 @@ An example event for `useraudit` looks as following:
 {
     "@timestamp": "2025-01-22T18:19:25.637Z",
     "agent": {
-        "ephemeral_id": "f94c5e7a-6c1c-44dd-88a4-9745f5ee5af2",
-        "id": "fd188fac-3736-4ead-b591-2ffe3fedad55",
-        "name": "elastic-agent-49819",
+        "ephemeral_id": "7adefb3b-23df-4b35-99e4-713ba34299aa",
+        "id": "b48a19c9-614a-498a-9e6a-426f10a6a68a",
+        "name": "elastic-agent-62041",
         "type": "filebeat",
-        "version": "8.15.0"
+        "version": "8.18.1"
     },
     "beyondinsight_password_safe": {
         "useraudit": {
@@ -72,16 +72,16 @@ An example event for `useraudit` looks as following:
     },
     "data_stream": {
         "dataset": "beyondinsight_password_safe.useraudit",
-        "namespace": "83646",
+        "namespace": "50600",
         "type": "logs"
     },
     "ecs": {
         "version": "8.11.0"
     },
     "elastic_agent": {
-        "id": "fd188fac-3736-4ead-b591-2ffe3fedad55",
+        "id": "b48a19c9-614a-498a-9e6a-426f10a6a68a",
         "snapshot": false,
-        "version": "8.15.0"
+        "version": "8.18.1"
     },
     "event": {
         "agent_id_status": "verified",
@@ -89,7 +89,7 @@ An example event for `useraudit` looks as following:
             "iam"
         ],
         "dataset": "beyondinsight_password_safe.useraudit",
-        "ingested": "2025-01-23T19:44:13Z",
+        "ingested": "2025-05-30T15:01:07Z",
         "kind": "event",
         "module": "beyondinsight_password_safe",
         "type": [
