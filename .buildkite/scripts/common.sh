@@ -1111,6 +1111,7 @@ get_comment_with_pattern() {
 }
 
 ## Buildkite output
+# https://buildkite.com/docs/pipelines/configure/links-and-images-in-log-output#links
 inline_link() {
     local url="$1"
     local text="${2:-""}"
