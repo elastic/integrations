@@ -139,12 +139,41 @@ processors:
       tag: set_vulnerability_idescription
       copy_from: github.security_advisory.description
       ignore_empty_value: true
+  - convert:
+      field: json.epss.percentage
+      if: ctx.json?.epss?.percentage != null
+      tag: convert_epss_percentage_to_float
+      target_field: github.security_advisory.epss.percentage
+      type: float
+      on_failure:
+        - append:
+            field: error.message
+            value: >-
+              Processor {{{_ingest.on_failure_processor_type}}} with tag
+              {{{_ingest.on_failure_processor_tag}}} in pipeline
+              {{{_ingest.on_failure_pipeline}}} failed with message:
+              {{{_ingest.on_failure_message}}}
+  - convert:
+      field: json.epss.percentile
+      if: ctx.json?.epss?.percentile != null
+      tag: convert_epss_percentile_to_float
+      target_field: github.security_advisory.epss.percentile
+      type: float
+      on_failure:
+        - append:
+            field: error.message
+            value: >-
+              Processor {{{_ingest.on_failure_processor_type}}} with tag
+              {{{_ingest.on_failure_processor_tag}}} in pipeline
+              {{{_ingest.on_failure_pipeline}}} failed with message:
+              {{{_ingest.on_failure_message}}}
   - rename:
       field: json.ghsa_id
       tag: rename_ghsa_id
       target_field: github.security_advisory.ghsa_id
   - date:
       field: json.github_reviewed_at
+      if: ctx.json?.github_reviewed_at != null
       tag: date_github_reviewed_at
       formats:
         - strict_date_optional_time_nanos
@@ -176,12 +205,14 @@ processors:
       target_field: github.security_advisory.identifiers
   - date:
       field: json.nvd_published_at
+      if: ctx.json?.nvd_published_at != null
       tag: date_nvd_published_at
       formats:
         - strict_date_optional_time_nanos
       target_field: github.security_advisory.nvd_published_at
   - date:
       field: json.published_at
+      if: ctx.json?.published_at != null
       tag: date_published_at
       formats:
         - strict_date_optional_time_nanos
@@ -217,6 +248,7 @@ processors:
       target_field: github.security_advisory.type
   - date:
       field: json.updated_at
+      if: ctx.json?.updated_at != null
       tag: date_updated_at
       formats:
         - strict_date_optional_time_nanos
@@ -231,11 +263,11 @@ processors:
       target_field: github.security_advisory.vulnerabilities
   - date:
       field: json.withdrawn_at
+      if: ctx.json?.withdrawn_at != null
       tag: date_withdrawn_at
       formats:
         - strict_date_optional_time_nanos
       target_field: github.security_advisory.withdrawn_at
-      if: ctx.json?.withdrawn_at != null
   - set:
       field: vulnerability.classification
       tag: set_vulnerability_classification
