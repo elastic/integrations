@@ -1,0 +1,69 @@
+config_version: 2
+interval: {{interval}}
+resource.tracer:
+  enabled: {{enable_request_tracer}}
+  filename: "../../logs/cel/http-request-trace-*.ndjson"
+  maxbackups: 5
+{{#if proxy_url}}
+resource.proxy_url: {{proxy_url}}
+{{/if}}
+{{#if ssl}}
+resource.ssl: {{ssl}}
+{{/if}}
+{{#if http_client_timeout}}
+resource.timeout: {{http_client_timeout}}
+{{/if}}
+resource.url: {{url}}
+state:
+  api_key: {{api_key}}
+  entity: {{entity}}
+  list: {{list}}
+{{#if custom_url}}
+  custom_url: {{custom_url}}
+{{/if}}
+redact:
+  fields:
+    - api_key
+fields_under_root: true
+fields:
+  _conf:
+    list: '{{list}}'
+    entity: {{entity}}
+program: |
+  (
+    has(state.custom_url) ?
+      state.custom_url
+    :
+      state.url.trim_right("/") + "/v2/" + state.entity + "/risklist?" + {
+        "format": ["csv/splunk"],
+        "gzip": ["true"],
+        "list": [state.list],
+      }.format_query()
+  ).as(full_url,
+    request("GET", full_url).with({
+      "Header": ({
+        "accept": ["application/json"],
+        "X-RFToken": [state.api_key],
+      })
+    }).do_request().as(resp, state.with({
+      "events": try({ "data": resp.Body.mime("application/gzip") }, "error").as(unzipped,
+        (has(unzipped.error) ? resp.Body : unzipped.data).mime("text/csv; header=present").as(parsed,
+          parsed.map(e, { "message": e.encode_json() })
+        )
+      )
+    }))
+  )
+tags:
+{{#if preserve_original_event}}
+  - preserve_original_event
+{{/if}}
+{{#each tags as |tag|}}
+  - {{tag}}
+{{/each}}
+{{#contains "forwarded" tags}}
+publisher_pipeline.disable_host: true
+{{/contains}}
+{{#if processors}}
+processors:
+{{processors}}
+{{/if}}
