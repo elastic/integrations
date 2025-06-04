@@ -56,11 +56,11 @@ An example event for `antibot` looks as following:
 {
     "@timestamp": "2024-09-02T08:53:44.000Z",
     "agent": {
-        "ephemeral_id": "cebc2bcd-9723-4948-bfd6-fc0e0dfd5784",
-        "id": "d4e5bf31-1f9a-4721-9f32-d3d87eca6898",
-        "name": "elastic-agent-88462",
+        "ephemeral_id": "adbf1a5d-67d7-4df5-9129-b1bc51722367",
+        "id": "35e31f3e-4075-4b2a-ba7f-ec06989dbfed",
+        "name": "elastic-agent-68500",
         "type": "filebeat",
-        "version": "8.15.1"
+        "version": "8.14.0"
     },
     "checkpoint_harmony_endpoint": {
         "antibot": {
@@ -97,7 +97,7 @@ An example event for `antibot` looks as following:
     },
     "data_stream": {
         "dataset": "checkpoint_harmony_endpoint.antibot",
-        "namespace": "78732",
+        "namespace": "91312",
         "type": "logs"
     },
     "destination": {
@@ -107,12 +107,12 @@ An example event for `antibot` looks as following:
         "ip": "89.160.20.128"
     },
     "ecs": {
-        "version": "8.11.0"
+        "version": "8.17.0"
     },
     "elastic_agent": {
-        "id": "d4e5bf31-1f9a-4721-9f32-d3d87eca6898",
+        "id": "35e31f3e-4075-4b2a-ba7f-ec06989dbfed",
         "snapshot": false,
-        "version": "8.15.1"
+        "version": "8.14.0"
     },
     "event": {
         "action": "Detect",
@@ -121,8 +121,8 @@ An example event for `antibot` looks as following:
             "malware"
         ],
         "dataset": "checkpoint_harmony_endpoint.antibot",
-        "id": "a4640108-91b1-0f19-66d5-7d9d00000000",
-        "ingested": "2024-10-24T05:31:25Z",
+        "id": "a4640108-91b1-0f19-66d5-7d9d00000003",
+        "ingested": "2025-05-29T09:49:34Z",
         "kind": "event",
         "module": "checkpoint_harmony_endpoint",
         "type": [
