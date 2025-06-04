@@ -88,7 +88,7 @@ Agentless deployments are only supported in Elastic Serverless and Elastic Cloud
 #### Support for Elastic Vulnerability Findings page.
 
 Version `4.0.0` of the Tenable Vulnerability Management integration adds support for [Elastic Cloud Security workflow](https://www.elastic.co/docs/solutions/security/cloud/ingest-third-party-cloud-security-data#_ingest_third_party_security_posture_and_vulnerability_data). The enhancement enables the users of Tenable Vulnerability Management integration to ingest their enriched asset vulnerabilities from Tenable platform into Elastic and get insights directly from Elastic [Vulnerability Findings page](https://www.elastic.co/docs/solutions/security/cloud/findings-page-3).
-This update adds [Elastic Latest Transform](https://www.elastic.co/docs/explore-analyze/transforms/transform-overview#latest-transform-overview) which copies the latest vulnerability findings from source indices macthing the pattern `logs-tenable_io.vulnerability-*` into new destination indices matching the pattern `security_solution-tenable_io.vulnerability_latest-*`. The Elastic Vulnerability Findings page will display vulnerablities based on the destination indices.
+This update adds [Elastic Latest Transform](https://www.elastic.co/docs/explore-analyze/transforms/transform-overview#latest-transform-overview) which copies the latest vulnerability findings from source indices matching the pattern `logs-tenable_io.vulnerability-*` into new destination indices matching the pattern `security_solution-tenable_io.vulnerability_latest-*`. The Elastic Vulnerability Findings page will display vulnerabilities based on the destination indices.
 
 For existing users of Tenable Vulnerability Management integration, before upgrading to `4.0.0` please ensure following requirements are met:
 
@@ -100,7 +100,7 @@ For existing users of Tenable Vulnerability Management integration, before upgra
      - grant use of transforms, and
      - grant access to source and destination indices
    For more details on Transform Setup, refer to the link [here](https://www.elastic.co/docs/explore-analyze/transforms/transform-setup)
-3. Because the latest copy of vulnerabilities is now indexed in 2 places, i.e., in both source and destination indices, users must anticipate storage requirements accordingly.
+3. Because the latest copy of vulnerabilities is now indexed in two places, i.e., in both source and destination indices, users must anticipate storage requirements accordingly.
 
 ## Logs reference
 
