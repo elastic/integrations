@@ -6,15 +6,7 @@ processors:
     target_field: parsed
     ignore_failure: true
 
-# 1. EMF metrics (_aws.Timestamp)
-- date:
-    if: "ctx.parsed?._aws != null"
-    field: parsed._aws.Timestamp
-    target_field: "@timestamp"
-    formats: ["UNIX_MS"]
-    ignore_failure: true
-
-# 2. Powertools structured logs (timestamp field)
+# 1. Powertools structured logs (timestamp field)
 - date:
     if: "ctx.parsed?.timestamp != null"
     field: parsed.timestamp
@@ -22,7 +14,7 @@ processors:
     formats: ["yyyy-MM-dd HH:mm:ss,SSSZ"]
     ignore_failure: true
 
-# 3. Platform report logs (time field)
+# 2. Platform report logs (time field)
 - date:
     if: "ctx.parsed?.time != null"
     field: parsed.time
@@ -30,6 +22,7 @@ processors:
     formats: ["ISO8601"]
     ignore_failure: true
 
+# 3. EMF metrics (_aws.Timestamp)
 - date:
     if: "ctx.parsed?._aws?.Timestamp != null"
     field: parsed._aws.Timestamp
@@ -66,32 +59,32 @@ processors:
     ignore_missing: true
 
 - script:
-    description: "Join stackTrace array into single multiline string"
-    if: "ctx.parsed instanceof Map && ctx.parsed.containsKey('stackTrace') && ctx.parsed.stackTrace instanceof List"
+    description: "Join stackTrace arrays into single multiline strings if present"
+    if: "ctx.parsed instanceof Map"
     lang: painless
     source: |
-        def completionText = new StringBuilder();
-        for (int i = 0; i < ctx.parsed.stackTrace.length; i++) {
-            completionText.append(ctx.parsed.stackTrace[i]);
-            if (i != ctx.parsed.stackTrace.length - 1) {
-                completionText.append("\\n");
+        // Flatten ctx.parsed.stackTrace if it's a list
+        if (ctx.parsed.containsKey('stackTrace') && ctx.parsed.stackTrace instanceof List) {
+            def completionText = new StringBuilder();
+            for (int i = 0; i < ctx.parsed.stackTrace.length; i++) {
+                completionText.append(ctx.parsed.stackTrace[i]);
+                if (i != ctx.parsed.stackTrace.length - 1) {
+                    completionText.append("\\n");
+                }
             }
+            ctx.parsed.stack_trace_flattened = completionText.toString();
         }
-        ctx.parsed.stack_trace_flattened = completionText.toString();
-
-- script:
-    description: "Join stackTrace array into single multiline string"
-    if: "ctx.parsed?.message instanceof Map && ctx.parsed.message.containsKey('stackTrace') && ctx.parsed.message.stackTrace instanceof List"
-    lang: painless
-    source: |
-        def completionText = new StringBuilder();
-        for (int i = 0; i < ctx.parsed.message.stackTrace.length; i++) {
-            completionText.append(ctx.parsed.message.stackTrace[i]);
-            if (i != ctx.parsed.message.stackTrace.length - 1) {
-                completionText.append("\\n");
+        // Flatten ctx.parsed.message.stackTrace if message is a map and contains a list
+        if (ctx.parsed.containsKey('message') && ctx.parsed.message instanceof Map && ctx.parsed.message.containsKey('stackTrace') && ctx.parsed.message.stackTrace instanceof List) {
+            def completionText = new StringBuilder();
+            for (int i = 0; i < ctx.parsed.message.stackTrace.length; i++) {
+                completionText.append(ctx.parsed.message.stackTrace[i]);
+                if (i != ctx.parsed.message.stackTrace.length - 1) {
+                    completionText.append("\\n");
+                }
             }
+            ctx.parsed.message.stack_trace_flattened = completionText.toString();
         }
-        ctx.parsed.message.stack_trace_flattened = completionText.toString();
 
 - rename:
     field: parsed.record.functionArn
@@ -118,59 +111,26 @@ processors:
     ignore_failure: true
 
 # Rename Lambda metrics
-- rename:
-    field: parsed.record.metrics.billedDurationMs
-    target_field: aws.lambda.metrics.billed_duration_ms
-    ignore_missing: true
+- script:
+    lang: painless
+    description: Replace spaces, dashes and bom character in field names under parsed.record.metrics.
+    tag: painless_purge_spaces_and_dashes
     ignore_failure: true
-
-- rename:
-    field: parsed.record.metrics.durationMs
-    target_field: aws.lambda.metrics.duration_ms
-    ignore_missing: true
-    ignore_failure: true
-
-- rename:
-    field: parsed.record.metrics.initDurationMs
-    target_field: aws.lambda.metrics.init_duration_ms
-    ignore_missing: true
-    ignore_failure: true
-
-- rename:
-    field: parsed.record.metrics.maxMemoryUsedMB
-    target_field: aws.lambda.metrics.max_memory_used_mb
-    ignore_missing: true
-    ignore_failure: true
-
-- rename:
-    field: parsed.record.metrics.producedBytes
-    target_field: aws.lambda.metrics.produced_bytes
-    ignore_missing: true
-    ignore_failure: true
-
-- rename:
-    field: parsed.record.metrics.memorySizeMB
-    target_field: aws.lambda.metrics.memory_size_mb
-    ignore_missing: true
-    ignore_failure: true
-
-- rename:
-    field: parsed.record.instanceMaxMemory
-    target_field: aws.lambda.metrics.instance_max_memory
-    ignore_missing: true
-    ignore_failure: true
-
-- rename:
-    field: parsed.record.droppedRecords
-    target_field: aws.lambda.metrics.dropped_records
-    ignore_missing: true
-    ignore_failure: true
-
-- rename:
-    field: parsed.record.droppedBytes
-    target_field: aws.lambda.metrics.dropped_bytes
-    ignore_missing: true
-    ignore_failure: true
+    if: ctx.parsed?.record instanceof Map && ctx.parsed.record.metrics instanceof Map
+    source: |
+        String underscore(String s) {
+            def regex = /_?([a-z])([A-Z]+)/;
+            s = regex.matcher(s).replaceAll('$1_$2').toLowerCase();
+            String result = /[ -]/.matcher(s).replaceAll('_').toLowerCase();
+            String result1 = /[\ufeff]/.matcher(result).replaceAll('');
+            return /[()]/.matcher(result1).replaceAll('')
+        }
+        
+        def out = [:];
+        for (def item : ctx.parsed.record.metrics.entrySet()) {
+            out[underscore(item.getKey())] = item.getValue();
+        }
+        ctx.aws.lambda.metrics = out
 
 # Rename Lambda tracing fields
 - rename:
