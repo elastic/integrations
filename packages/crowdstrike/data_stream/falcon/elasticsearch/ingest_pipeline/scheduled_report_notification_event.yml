@@ -45,6 +45,11 @@ processors:
       tag: dissect_user_id
       field: user.id
       pattern: '%{user.name}@%{user.domain}'
+  - set:
+      field: user.email
+      copy_from: user.id
+      tag: copy_user_email
+      if: ctx.user?.id != null && ctx.user.id.indexOf("@") > 0
   - convert:
       field: crowdstrike.event.Status
       type: string

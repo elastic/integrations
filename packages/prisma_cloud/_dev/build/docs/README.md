@@ -34,8 +34,7 @@ The Prisma Cloud integration collects data for the following five events:
 
 **NOTE**:
 
-1. Alert and Audit data-streams are part of [CSPM](https://pan.dev/prisma-cloud/api/cspm/) module, whereas Host, Host Profile and Incident Audit are part of [CWP](https://pan.dev/prisma-cloud/api/cwpp/) module.
-2. Currently, we are unable to collect logs of Incident Audit datastream via defined API. Hence, we have not added the configuration of Incident Audit data stream via REST API.
+Alert and Audit data-streams are part of [CSPM](https://pan.dev/prisma-cloud/api/cspm/) module, whereas Host, Host Profile and Incident Audit are part of [CWP](https://pan.dev/prisma-cloud/api/cwpp/) module.
 
 ## Requirements
 
