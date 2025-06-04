@@ -15,7 +15,7 @@ Elastic Agent must be installed. For more details, check the Elastic Agent [inst
 - VirusTotal URL will work as the base URL for this integration: https://www.virustotal.com
 - An API key will be used to authenticate your request.
 - **Time Selection of Initial Interval and Interval**:
-  - Users need to specify the **initial interval** and **interval** in an hourly format, such as **2h, 3h**, etc.
+  - Users need to specify the **initial interval** and **interval** in an hourly format, such as **2h**, **3h**, etc.
 **Note:** Please make sure both initial interval and interval are in hours and greater than 1 hour.
 
 ### Enabling the integration in Elastic:
@@ -31,6 +31,7 @@ Elastic Agent must be installed. For more details, check the Elastic Agent [inst
    - Interval
    - (Optional) Query to add custom query filtering on relationship, GTI score, and positives.
 6. Click on **Save and Continue** to save the integration.
+**Note:** Please make only the threat feed types you have the privilege to access are enabled.
 
 ## Transforming Data for Up-to-Date Insights
 
@@ -62,7 +63,7 @@ For example:
 - The query `event.module: ti_google_threat_intelligence and labels.is_transform_source: true` indicates that the logs originate from the **source index**.
 - The query `event.module: ti_google_threat_intelligence and labels.is_transform_source: false` indicates that the logs originate from the **transformed index**.
 
-A **retention policy** is used to remove data older than the default retention period. For more details, refer to the [Retention Policy Documentation](<https://www.elastic.co/guide/en/elasticsearch/reference/current/put-transform.html#:~:text=to%20false.-,retention_policy,-(Optional%2C%20object)%20Defines>).
+A **retention policy** is used to remove data older than the default retention period. For more details, refer to the [Retention Policy Documentation](https://www.elastic.co/docs/api/doc/elasticsearch/operation/operation-transform-put-transform#operation-transform-put-transform-body-application-json-retention_policy).
 
 In this integration, all data streams have a **retention period of 30 days**.
 

@@ -15,7 +15,7 @@ Elastic Agent must be installed. For more details, check the Elastic Agent [inst
 - VirusTotal URL will work as the base URL for this integration: https://www.virustotal.com
 - An API key will be used to authenticate your request.
 - **Time Selection of Initial Interval and Interval**:
-  - Users need to specify the **initial interval** and **interval** in an hourly format, such as **2h, 3h**, etc.
+  - Users need to specify the **initial interval** and **interval** in an hourly format, such as **2h**, **3h**, etc.
 **Note:** Please make sure both initial interval and interval are in hours and greater than 1 hour.
 
 ### Enabling the integration in Elastic:
@@ -31,6 +31,7 @@ Elastic Agent must be installed. For more details, check the Elastic Agent [inst
    - Interval
    - (Optional) Query to add custom query filtering on relationship, GTI score, and positives.
 6. Click on **Save and Continue** to save the integration.
+**Note:** Please make only the threat feed types you have the privilege to access are enabled.
 
 ## Transforming Data for Up-to-Date Insights
 
@@ -62,7 +63,7 @@ For example:
 - The query `event.module: ti_google_threat_intelligence and labels.is_transform_source: true` indicates that the logs originate from the **source index**.
 - The query `event.module: ti_google_threat_intelligence and labels.is_transform_source: false` indicates that the logs originate from the **transformed index**.
 
-A **retention policy** is used to remove data older than the default retention period. For more details, refer to the [Retention Policy Documentation](<https://www.elastic.co/guide/en/elasticsearch/reference/current/put-transform.html#:~:text=to%20false.-,retention_policy,-(Optional%2C%20object)%20Defines>).
+A **retention policy** is used to remove data older than the default retention period. For more details, refer to the [Retention Policy Documentation](https://www.elastic.co/docs/api/doc/elasticsearch/operation/operation-transform-put-transform#operation-transform-put-transform-body-application-json-retention_policy).
 
 In this integration, all data streams have a **retention period of 30 days**.
 
@@ -153,24 +154,24 @@ An example event for `ioc_stream` looks as following:
 {
     "@timestamp": "2024-12-16T07:54:23.000Z",
     "agent": {
-        "ephemeral_id": "9bc22935-ee66-4440-9570-ed56393b4124",
-        "id": "aa105929-b5d4-4165-8366-9472cc093a63",
-        "name": "elastic-agent-54349",
+        "ephemeral_id": "85362b3c-cc74-4502-871c-537f732aa018",
+        "id": "b53f2b07-826a-4e4d-8e82-533e8a7a095d",
+        "name": "elastic-agent-85156",
         "type": "filebeat",
-        "version": "8.17.3"
+        "version": "8.16.0"
     },
     "data_stream": {
         "dataset": "ti_google_threat_intelligence.ioc_stream",
-        "namespace": "28218",
+        "namespace": "57866",
         "type": "logs"
     },
     "ecs": {
         "version": "8.17.0"
     },
     "elastic_agent": {
-        "id": "aa105929-b5d4-4165-8366-9472cc093a63",
+        "id": "b53f2b07-826a-4e4d-8e82-533e8a7a095d",
         "snapshot": false,
-        "version": "8.17.3"
+        "version": "8.16.0"
     },
     "event": {
         "agent_id_status": "verified",
@@ -178,7 +179,7 @@ An example event for `ioc_stream` looks as following:
             "threat"
         ],
         "dataset": "ti_google_threat_intelligence.ioc_stream",
-        "ingested": "2025-05-25T16:49:40Z",
+        "ingested": "2025-06-03T07:05:32Z",
         "kind": "enrichment",
         "original": "{\"attributes\":{\"available_tools\":[],\"downloadable\":true,\"exiftool\":{\"FileType\":\"TXT\",\"FileTypeExtension\":\"txt\",\"LineCount\":\"1\",\"MIMEEncoding\":\"us-ascii\",\"MIMEType\":\"text/plain\",\"Newlines\":\"(none)\",\"WordCount\":\"1\"},\"first_seen_itw_date\":1707511993,\"first_submission_date\":1648544390,\"gti_assessment\":{\"contributing_factors\":{\"associated_actor\":[\"source\",\"javascript\",\"js\"],\"mandiant_association_actor\":true,\"mandiant_confidence_score\":75},\"description\":\"This indicator did not match our detection criteria and there is currently no evidence of malicious activity.\",\"severity\":{\"value\":\"SEVERITY_NONE\"},\"threat_score\":{\"value\":1},\"verdict\":{\"value\":\"VERDICT_UNDETECTED\"}},\"last_analysis_date\":1648544390,\"last_analysis_stats\":{\"confirmed-timeout\":0,\"failure\":0,\"harmless\":0,\"malicious\":0,\"suspicious\":0,\"timeout\":0,\"type-unsupported\":16,\"undetected\":57},\"last_modification_date\":1734335663,\"last_seen_itw_date\":1707512002,\"last_submission_date\":1648544390,\"magic\":\"ASCII text, with no line terminators\",\"mandiant_ic_score\":75,\"md5\":\"1e1d23c4e7524bc15a0b3ced0caf9ffc\",\"meaningful_name\":\"Password[1].htm\",\"names\":[\"Password[1].htm\"],\"reputation\":0,\"sha1\":\"4e234b019b77a4f04c168734a60e0b1883989215\",\"sha256\":\"841d999a7a7f0b2cd8bc21e6550fedee985bf53a530fef1033d1c4810b0be5bc\",\"size\":11,\"ssdeep\":\"3:EsaM:t\",\"tags\":[\"javascript\"],\"times_submitted\":1,\"total_votes\":{\"harmless\":0,\"malicious\":0},\"type_description\":\"JavaScript\",\"type_extension\":\"js\",\"type_tag\":\"javascript\",\"type_tags\":[\"source\",\"javascript\",\"js\"],\"unique_sources\":1,\"vhash\":\"9eecb7db59d16c80417c72d1e1f4fbf1\"},\"context_attributes\":{\"hunting_info\":null,\"notification_date\":1742528463,\"notification_id\":\"21769600967\",\"origin\":\"subscriptions\",\"sources\":[{\"id\":\"threat-actor--bfd69ac3-0158-57d3-a101-42496712ddae\",\"label\":\"UNC4515\",\"type\":\"collection\"}],\"tags\":[]},\"id\":\"841d999a7a7f0b2cd8bc21e6550fedee985bf53a530fef1033d1c4810b0be5bc\",\"links\":{\"self\":\"https://www.virustotal.com/api/v3/files/841d999a7a7f0b2cd8bc21e6550fedee985bf53a530fef1033d1c4810b0be5bc\"},\"type\":\"file\"}",
         "type": [

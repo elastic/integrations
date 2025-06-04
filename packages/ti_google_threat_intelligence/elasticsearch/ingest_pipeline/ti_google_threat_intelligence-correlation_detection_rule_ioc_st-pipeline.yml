@@ -4,6 +4,7 @@ processors:
   - script:
       lang: painless
       if: ctx.threat?.enrichments != null;
+      tag: store_matched_indicator_from_alert_into_temp_fields
       description: Store the first 'matched' and 'indicator' object from the alert, as it comes from Google Threat Intelligence API.
       source: >
         for (def obj : ctx.threat.enrichments) {
@@ -31,13 +32,14 @@ processors:
       ignore_missing: true
   - script:
       lang: painless
+      tag: remove_unwanted_fields
       source: |-
         // Define the list of fields to retain
         def fieldsToKeep = ["@timestamp"];
 
         // Define regex patterns
-        def gtiPattern = /^temp_fields.*/;  // Matches keys starting with 'temp_fields'
-        def underscorePattern = /^_.*/;  // Matches keys starting with '_'
+        def gtiPattern = /^temp_fields/;  // Matches keys starting with 'temp_fields'
+        def underscorePattern = /^_/;  // Matches keys starting with '_'
 
         // Get a copy of the current document keys
         def keys = new ArrayList(ctx.keySet());
@@ -325,11 +327,6 @@ processors:
       value: '{{{gti.threat.indicator.ip}}}'
       allow_duplicates: false
   - set:
-      field: os.name
-      tag: set_os_name_from_threat_indicator_attributes_exiftool_file_os
-      copy_from: gti.threat.indicator.attributes.exiftool.file.os
-      ignore_empty_value: true
-  - set:
       field: file.mime_type
       tag: set_file_mime_type_from_threat_indicator_attributes_exiftool_mime_type
       copy_from: gti.threat.indicator.attributes.exiftool.mime.type
@@ -421,9 +418,13 @@ processors:
       value: pipeline_error
       if: ctx.error?.message != null
 on_failure:
-  - set:
-      field: event.kind
-      value: pipeline_error
   - append:
       field: error.message
-      value: '{{{ _ingest.on_failure_message }}}'
+      value: >-
+        Processor '{{{ _ingest.on_failure_processor_type }}}'
+        {{{#_ingest.on_failure_processor_tag}}}with tag '{{{ _ingest.on_failure_processor_tag }}}'
+        {{{/_ingest.on_failure_processor_tag}}}failed with message '{{{ _ingest.on_failure_message }}}'
+  - set:
+      field: event.kind
+      tag: set_pipeline_error_to_event_kind
+      value: pipeline_error
