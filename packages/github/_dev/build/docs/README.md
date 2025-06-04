@@ -82,3 +82,13 @@ To use this integration, users must use GitHub Apps or Personal Access Token wit
 {{fields "issues"}}
 
 {{event "issues"}}
+
+### Security Advisories
+
+The GitHub Security Advisories datastream lets you retrieve reviewed and unreviewed security advisories from the GitHub advisory database. See [Working with security advisories](https://docs.github.com/en/code-security/security-advisories) for more details.
+
+To use this integration, you must [create a fine-grained personal access token](https://docs.github.com/en/authentication/keeping-your-account-and-data-secure/managing-your-personal-access-tokens#creating-a-fine-grained-personal-access-token) with public repositories access. 
+
+{{fields "security_advisories"}}
+
+{{event "security_advisories"}}
