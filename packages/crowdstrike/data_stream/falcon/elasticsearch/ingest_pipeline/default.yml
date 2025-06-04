@@ -309,13 +309,19 @@ processors:
       field: user.email
       copy_from: user.name
       tag: copy_user_email
-      if: ctx.user?.name != null && ctx.user?.name.contains("@")
+      if: ctx.user?.email == null && ctx.user?.name != null && ctx.user.name.indexOf("@") > 0
   - append:
       field: related.user
       value: '{{{user.name}}}'
       allow_duplicates: false
-      tag: append_related_user
+      tag: append_related_user_name
       if: ctx.user?.name != null && ctx.user?.name != ""
+  - append:
+      field: related.user
+      value: '{{{user.email}}}'
+      allow_duplicates: false
+      tag: append_related_user_email
+      if: ctx.user?.email != null
   - append:
       field: related.ip
       value: '{{{source.ip}}}'
@@ -443,6 +449,8 @@ processors:
         - crowdstrike.event.Disposition
         - crowdstrike.event.MatchedTimestamp
         - crowdstrike.event.Tags
+        - crowdstrike.event.UserId
+        - crowdstrike.event.UserName
       ignore_missing: true
 
 on_failure:
