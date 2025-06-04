@@ -57,16 +57,21 @@ program: |-
           }
         ),
         "url": state.url,
-        "want_more": resp.Header.Link[0].re_match("github_link_next"),
+        "want_more": (
+          (has(resp.?Header.Link) && size(resp.Header.Link) != 0) ?
+            true
+          :
+            false
+        ),
         "batch_size": state.batch_size,
         "api_key": state.api_key,
         "cursor": {
-          ?"next_url": resp.Header.Link[0].re_find("github_link_next").trim_prefix("<").split(">")[0].as(next, next != "" ?
-            optional.of(next)
-          :
-            optional.none()
-          )
-          {{!-- "next_url": resp.Header.Link[0].re_find("github_link_next").trim_prefix("<").split(">")[0], --}}
+           ?"next_url": (
+            (has(resp.?Header.Link) && size(resp.Header.Link) != 0) ?
+              resp.Header.Link[0].re_find_submatch("github_link_next")[?1]
+            :
+              optional.none()
+          ),
         },
       }
     )
