@@ -976,6 +976,13 @@ processors:
         - '^Group %{NOTSPACE:_temp_.cisco.webvpn.group_name} User( %{NOTSPACE:source.user.name})? IP %{NOTSPACE:destination.address} AnyConnect session (resumed connection|resumed. Connection) from( IP)? %{NOTSPACE:source.address}\.$'
       pattern_definitions:
         NOTBRACKET: "[^<>]+"
+  - grok:
+      if: "ctx._temp_.cisco.message_id == '717022'"
+      tag: parse_717022
+      field: message
+      description: "717022"
+      patterns:
+        - 'Certificate was successfully validated. serial number:\s*%{NOTSPACE:x509.serial_number}, subject name:\s*%{NOTSPACE:x509.subject.distinguished_name}\.'
   - dissect:
       if: "ctx._temp_.cisco.message_id == '721016'"
       tag: parse_721016
@@ -1108,6 +1115,17 @@ processors:
       patterns:
         - '^IPAA: Session=%{NOTSPACE:_temp_.cisco.session_id}, %{GREEDYDATA:event.reason}$'
         - '^IPAA: %{GREEDYDATA:event.reason}$'
+  - grok:
+      field: message
+      if: "ctx._temp_.cisco.message_id == '751025'"
+      tag: parse_751025
+      patterns:
+        - '^%{DATA} Username:%{USER:source.user.name}\s+%{GREEDYDATA}$'
+      pattern_definitions:
+        GROUP: "(?:%{IKEGROUP}|%{NONIKEGROUP})"
+        IKEGROUP: "IKEv2 Group"
+        NONIKEGROUP: "Group"
+        IPORHOST: "(?:%{IP}|%{HOSTNAME})"
   - dissect:
       if: "ctx._temp_.cisco.message_id == '805001'"
       tag: parse_805001
