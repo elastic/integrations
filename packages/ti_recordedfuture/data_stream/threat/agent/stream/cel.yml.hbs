@@ -30,28 +30,41 @@ fields:
     list: '{{list}}'
     entity: {{entity}}
 program: |
-  (
-    has(state.custom_url) ?
+  {
+    "url": has(state.custom_url) ?
       state.custom_url
     :
       state.url.trim_right("/") + "/v2/" + state.entity + "/risklist?" + {
         "format": ["csv/splunk"],
         "gzip": ["true"],
         "list": [state.list],
-      }.format_query()
-  ).as(full_url,
-    request("GET", full_url).with({
-      "Header": ({
+      }.format_query(),
+    "headers": {
+      "Header": {
         "accept": ["application/json"],
         "X-RFToken": [state.api_key],
-      })
-    }).do_request().as(resp, state.with({
-      "events": try({ "data": resp.Body.mime("application/gzip") }, "error").as(unzipped,
-        (has(unzipped.error) ? resp.Body : unzipped.data).mime("text/csv; header=present").as(parsed,
-          parsed.map(e, { "message": e.encode_json() })
-        )
-      )
-    }))
+      }
+    }
+  }.as(req,
+    request("HEAD", req.url).with(req.headers).do_request().as(headResp,
+      (headResp.StatusCode == 200 && headResp.Header.?Etag[?0].orValue("") == state.?cursor.?etag.orValue("NONE")) ?
+        // no new data - the etag matches what we've seen
+        state.with({
+          "events": [],
+          "want_more": false,
+        })
+      :
+        // new data available
+        request("GET", req.url).with(req.headers).do_request().as(resp, state.with({
+          "events": try({ "data": resp.Body.mime("application/gzip") }, "error").as(unzipped,
+            (has(unzipped.error) ? resp.Body : unzipped.data).mime("text/csv; header=present").as(parsed,
+              parsed.map(e, { "message": e.encode_json() })
+            )
+          ),
+          "cursor": state.?cursor.orValue({}).with({ "etag": resp.Header.?Etag[?0].orValue("NONE") }),
+          "want_more": false,
+       }))
+    )
   )
 tags:
 {{#if preserve_original_event}}
