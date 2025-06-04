@@ -4,7 +4,7 @@
 
 [Google Threat Intelligence](https://gtidocs.virustotal.com/) is a security solution that helps organizations detect, analyze, and mitigate threats. It leverages Google's global telemetry, advanced analytics, and vast infrastructure to provide actionable insights. Key features include threat detection, malware and phishing analysis, and real-time threat alerts.
 
-Google Threat Intelligence uses the **[Threat List API](https://gtidocs.virustotal.com/reference/api-overview)** to deliver hourly data chunks. The Threat Lists feature allows customers to consume **Indicators of Compromise (IOCs)** categorized by various threat types.
+Google Threat Intelligence uses the **[Threat List API](https://gtidocs.virustotal.com/reference/get-hourly-threat-list)** to deliver hourly data chunks. The Threat Lists feature allows customers to consume **Indicators of Compromise (IOCs)** categorized by various threat types.
 
 ## Threat List API Feeds
 
@@ -48,7 +48,7 @@ Elastic Agent must be installed. For more details, check the Elastic Agent [inst
 - VirusTotal URL will work as the base URL for this integration: https://www.virustotal.com
 - An API key will be used to authenticate your request.
 - **Time Selection of Initial Interval and Interval**:
-  - Users need to specify the **initial interval** and **interval** in an hourly format, such as **2h, 3h**, etc.
+  - Users need to specify the **initial interval** and **interval** in an hourly format, such as **2h**, **3h**, etc.
 **Note:** Please make sure both initial interval and interval are in hours and greater than 1 hour.
 
 ### Enabling the integration in Elastic:
