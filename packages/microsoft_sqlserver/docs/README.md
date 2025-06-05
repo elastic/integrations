@@ -2,6 +2,15 @@
 
 The Microsoft SQL Server integration package allows you to search, observe, and visualize the SQL Server audit logs, as well as performance and transaction log metrics, through Elasticsearch.
 
+## ⚠️ Important Note(upgrade 2.12.0 to 3.0.0):
+When upgrading from version 2.12.0 to 3.0.0, you must manually modify the dynamic counter configuration manually for performance metrics data stream. Follow these steps:
+ 1. Before upgrading, note your current `Dynamic Counter Name` values
+ 2. Remove the default value from the `Dynamic Counter Name` configurations
+ 3. Upgrade the integration version to version 3.0.0
+ 4. After the upgrade, re-add your desired counter configurations using the new multi-value input
+ 
+ This is necessary due to changes in how dynamic counters are handled in the new version.
+
 ## Data streams
 
 The Microsoft SQL Server integration collects two types of data streams: logs and metrics.
@@ -110,9 +119,14 @@ Read more in [View the SQL Server error log in SQL Server Management Studio](htt
 
 #### Performance metrics
 
-Collects the `performance` counter metrics. The dynamic counter feature provides flexibility to collect metrics by providing the counter as an input.
-This input can be a regular expression which will filter results based on pattern.
-For example, if %grant% is given as input, it will enable metrics collection for all of the counters with names like 'Memory Grants Pending', 'Active memory grants count' etc.
+Collects the `performance` counter metrics. The dynamic counter feature provides flexibility to collect metrics by specifying one or more counter patterns.
+
+You can add multiple counter patterns using the "Add more" button in the UI. Each pattern can be:
+- A specific counter name with wildcard (e.g., 'Buffer cache hit ratio%')
+- A regular expression pattern to match multiple counters (e.g., '%grant%' will match 'Memory Grants Pending', 'Active memory grants count', etc.)
+
+By default, the integration collects metrics for the 'Memory Grants Pend%' pattern.
+
 MSSQL supports a limited set of regular expressions. For more details, refer to [Pattern Matching in Search Conditions](https://learn.microsoft.com/en-us/previous-versions/sql/sql-server-2008-r2/ms187489(v=sql.105)?redirectedfrom=MSDN).
 
 > Note: Dynamic counters will go through some basic ingest pipeline post-processing to make counter names in lowercase and remove special characters and these fields will not have any static field mappings.
