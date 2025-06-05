@@ -3,7 +3,7 @@
 ## Overview
 
 <!-- Summary of integration -->
-The Palo Alto Network Integration for Elastic enables collection of logs from Palo Alto Networks' PAN-OS firewalls. This integration facilitates real-time visability into network activity, threat detection and security operations.
+The Palo Alto Network Integration for Elastic enables collection of logs from Palo Alto Networks' PAN-OS firewalls. This integration facilitates real-time visibility into network activity, threat detection and security operations.
 
 <!-- compatibility -->
 ### Compatibility
@@ -52,7 +52,7 @@ Permissions are required to configure syslog monitoring or log forwarding on the
 <!-- onboard / configuration -->
 
 <!-- static link to elastic agent setup -->
-<!-- how is this different than static section in prereq? -->
+<!-- how is this different than the static section in prereqs??? -->
 
 ### Collect logs via syslog
 
@@ -66,28 +66,21 @@ To configure log file monitoring, please follow the steps mentioned in [_Configu
 1. In Kibana navigate to **Management** > **Integrations**.
 2. In the search bar, type **Palo Alto Next-Gen Firewall**.
 3. Select the **Palo Alto Next-Gen Firewall** integration and add it.
-4. If needed, install Elastic Agent on the systems which receives syslog messages or log files.
+4. If needed, install Elastic Agent on the systems which receive syslog messages or log files.
 5. Enable and configure only the collection methods which you will use.
 
 **To collect logs via syslog over TCP**, enter the following details for the syslog receiver that will be monitored:
    - Syslog Host
    - Syslog Port
 
-Adjust other options as required.
-
 **To collect logs via syslog over UDP**, enter the following details for the syslog receiver that will be monitored:
   - Syslog Host
   - Syslog Port
 
-Adjust other options as required.
-
 **To collect logs via log file**, please enter the following details for the log file receiver:
   - Paths
 
-Adjust other options as required.
-
 6. Press **Save Integration** to begin collecting logs.
-
 
 <!-- validation -->
 ### Validate log collection
@@ -123,7 +116,7 @@ If you want to see the configuration before and after the change(fields `before-
 
 {{fields "panos"}}
 
-### Sample event
+### Example event
 
 {{event "panos"}}
 
