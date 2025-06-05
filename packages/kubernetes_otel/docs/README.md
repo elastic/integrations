@@ -10,4 +10,4 @@ You can use our hosted Elasticsearch Service on Elastic Cloud, which is recommen
 ## Setup
 
 For step-by-step instructions on how to ingest opentelemetry data using the OpenTelemetry Operator, see the
-[Elastic Distribution for OTel Collector](/app/observabilityOnboarding/otel-kubernetes/?category=logs) installation guide.
+[Elastic Distribution for OTel Collector](https://www.elastic.co/docs/reference/opentelemetry/quickstart/index.html) quickstart guide.

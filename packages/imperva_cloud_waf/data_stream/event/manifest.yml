@@ -47,10 +47,16 @@ streams:
       - name: enable_request_tracer
         type: bool
         title: Enable request tracing
+        default: false
         multi: false
         required: false
         show_user: false
-        description: The request tracer logs requests and responses to the agent's local file-system for debugging configurations. Enabling this request tracing compromises security and should only be used for debugging. See [documentation](https://www.elastic.co/guide/en/beats/filebeat/current/filebeat-input-cel.html#_request_tracer_filename) for details.
+        description: >-
+          The request tracer logs requests and responses to the agent's local file-system for debugging configurations.
+          Enabling this request tracing compromises security and should only be used for debugging. Disabling the request
+          tracer will delete any stored traces.
+          See [documentation](https://www.elastic.co/guide/en/beats/filebeat/current/filebeat-input-cel.html#_resource_tracer_enable)
+          for details.
       - name: tags
         type: text
         title: Tags
@@ -189,7 +195,7 @@ streams:
         description: Time interval for polling listing of the S3 bucket. It should be greater than 5m. Supported units are h/m/s.
       - name: number_of_workers
         type: integer
-        title: "[S3] Number of Workers"
+        title: "[S3/SQS] Number of Workers"
         multi: false
         required: false
         show_user: true
@@ -238,7 +244,7 @@ streams:
         required: false
         show_user: true
         default: 5
-        description: The maximum number of SQS messages that can be inflight at any time.
+        description: Deprecated in agent version 8.16.0, this parameter is ignored if present, use number_of_workers instead. The maximum number of SQS messages that can be inflight at any time.
       - name: file_selectors
         type: yaml
         title: "[SQS] File Selectors"

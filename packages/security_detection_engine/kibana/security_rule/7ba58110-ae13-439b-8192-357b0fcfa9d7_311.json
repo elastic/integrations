@@ -1,0 +1,100 @@
+{
+    "attributes": {
+        "author": [
+            "Elastic"
+        ],
+        "description": "Identifies suspicious access to LSASS handle from a call trace pointing to seclogon.dll and with a suspicious access rights value. This may indicate an attempt to leak an LSASS handle via abusing the Secondary Logon service in preparation for credential access.",
+        "from": "now-9m",
+        "index": [
+            "winlogbeat-*",
+            "logs-windows.sysmon_operational-*"
+        ],
+        "language": "eql",
+        "license": "Elastic License v2",
+        "name": "Suspicious LSASS Access via MalSecLogon",
+        "note": "## Triage and analysis\n\n> **Disclaimer**:\n> This investigation guide was created using generative AI technology and has been reviewed to improve its accuracy and relevance. While every effort has been made to ensure its quality, we recommend validating the content and adapting it to suit your specific environment and operational needs.\n\n### Investigating Suspicious LSASS Access via MalSecLogon\n\nThe Local Security Authority Subsystem Service (LSASS) is crucial for managing security policies and user authentication in Windows environments. Adversaries may exploit the Secondary Logon service to gain unauthorized access to LSASS, aiming to extract sensitive credentials. The detection rule identifies this threat by monitoring for unusual access patterns involving LSASS, specifically when the seclogon.dll is involved, indicating potential credential dumping activities.\n\n### Possible investigation steps\n\n- Review the event logs for the specific event code \"10\" to gather more details about the process that triggered the alert, focusing on the time of occurrence and any associated user accounts.\n- Examine the process details for \"svchost.exe\" to determine if it is running under an expected service or if there are any anomalies in its execution context, such as unusual parent processes or command-line arguments.\n- Investigate the call trace involving \"seclogon.dll\" to understand the sequence of events leading to the LSASS access, and check for any other suspicious modules or DLLs loaded in the process.\n- Analyze the granted access value \"0x14c0\" to confirm if it aligns with typical access patterns for legitimate processes interacting with LSASS, and identify any deviations that could indicate malicious intent.\n- Correlate the alert with other security events or logs from the same host or user account to identify any patterns or additional indicators of compromise, such as failed login attempts or other suspicious process activities.\n- Check for any recent changes or updates to the system that might explain the unusual behavior, such as software installations, patches, or configuration changes that could affect the Secondary Logon service or LSASS.\n\n### False positive analysis\n\n- Legitimate administrative tools or scripts that require access to LSASS for system management tasks may trigger this rule. Users can create exceptions for known tools by excluding specific process names or paths that are verified as safe.\n- Security software or endpoint protection solutions that perform regular scans and require access to LSASS might be flagged. Coordinate with security vendors to identify these processes and exclude them from the rule.\n- System updates or patches that involve the Secondary Logon service could cause temporary access patterns that mimic suspicious behavior. Monitor update schedules and temporarily adjust the rule to prevent false alerts during these periods.\n- Custom enterprise applications that utilize the Secondary Logon service for legitimate purposes may inadvertently match the rule criteria. Work with application developers to understand these access patterns and whitelist the associated processes.\n\n### Response and remediation\n\n- Immediately isolate the affected system from the network to prevent further unauthorized access or data exfiltration.\n- Terminate any suspicious processes associated with svchost.exe that are accessing LSASS with the identified suspicious access rights.\n- Conduct a thorough review of user accounts and privileges on the affected system to identify any unauthorized changes or access.\n- Reset passwords for all accounts that may have been compromised, focusing on high-privilege accounts first.\n- Collect and preserve relevant logs and forensic data from the affected system for further analysis and potential legal action.\n- Escalate the incident to the security operations center (SOC) or incident response team for a comprehensive investigation and to determine the full scope of the breach.\n- Implement additional monitoring and alerting for similar suspicious activities involving LSASS and seclogon.dll to enhance detection capabilities.",
+        "query": "process where host.os.type == \"windows\" and event.code == \"10\" and\n  winlog.event_data.TargetImage : \"?:\\\\WINDOWS\\\\system32\\\\lsass.exe\" and\n\n   /* seclogon service accessing lsass */\n  winlog.event_data.CallTrace : \"*seclogon.dll*\" and process.name : \"svchost.exe\" and\n\n   /* PROCESS_CREATE_PROCESS & PROCESS_DUP_HANDLE & PROCESS_QUERY_INFORMATION */\n  winlog.event_data.GrantedAccess == \"0x14c0\"\n",
+        "references": [
+            "https://splintercod3.blogspot.com/p/the-hidden-side-of-seclogon-part-3.html"
+        ],
+        "related_integrations": [
+            {
+                "package": "windows",
+                "version": "^3.0.0"
+            }
+        ],
+        "required_fields": [
+            {
+                "ecs": true,
+                "name": "event.code",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "host.os.type",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "process.name",
+                "type": "keyword"
+            },
+            {
+                "ecs": false,
+                "name": "winlog.event_data.CallTrace",
+                "type": "keyword"
+            },
+            {
+                "ecs": false,
+                "name": "winlog.event_data.GrantedAccess",
+                "type": "keyword"
+            },
+            {
+                "ecs": false,
+                "name": "winlog.event_data.TargetImage",
+                "type": "keyword"
+            }
+        ],
+        "risk_score": 73,
+        "rule_id": "7ba58110-ae13-439b-8192-357b0fcfa9d7",
+        "setup": "## Setup\n\nIf enabling an EQL rule on a non-elastic-agent index (such as beats) for versions <8.2,\nevents will not define `event.ingested` and default fallback for EQL rules was not added until version 8.2.\nHence for this rule to work effectively, users will need to add a custom ingest pipeline to populate\n`event.ingested` to @timestamp.\nFor more details on adding a custom ingest pipeline refer - https://www.elastic.co/guide/en/fleet/current/data-streams-pipeline-tutorial.html\n",
+        "severity": "high",
+        "tags": [
+            "Domain: Endpoint",
+            "OS: Windows",
+            "Use Case: Threat Detection",
+            "Tactic: Credential Access",
+            "Data Source: Sysmon",
+            "Resources: Investigation Guide"
+        ],
+        "threat": [
+            {
+                "framework": "MITRE ATT&CK",
+                "tactic": {
+                    "id": "TA0006",
+                    "name": "Credential Access",
+                    "reference": "https://attack.mitre.org/tactics/TA0006/"
+                },
+                "technique": [
+                    {
+                        "id": "T1003",
+                        "name": "OS Credential Dumping",
+                        "reference": "https://attack.mitre.org/techniques/T1003/",
+                        "subtechnique": [
+                            {
+                                "id": "T1003.001",
+                                "name": "LSASS Memory",
+                                "reference": "https://attack.mitre.org/techniques/T1003/001/"
+                            }
+                        ]
+                    }
+                ]
+            }
+        ],
+        "timestamp_override": "event.ingested",
+        "type": "eql",
+        "version": 311
+    },
+    "id": "7ba58110-ae13-439b-8192-357b0fcfa9d7_311",
+    "type": "security-rule"
+}

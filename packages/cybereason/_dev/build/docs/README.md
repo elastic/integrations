@@ -30,44 +30,21 @@ The Cybereason integration collects six types of logs: Logon Session, Malop Conn
 
 ## Requirements
 
-- Elastic Agent must be installed. For more details and installation instructions, please refer to the [Elastic Agent Installation Guide](https://www.elastic.co/guide/en/fleet/current/elastic-agent-installation.html).
-- You can install only one Elastic Agent per host.
-- Elastic Agent is required to stream data through the REST API and ship the data to Elastic, where the events will then be processed via the integration's ingest pipelines.
-
-### Installing and managing an Elastic Agent:
-
-There are several options for installing and managing Elastic Agent:
-
-### Install a Fleet-managed Elastic Agent (recommended):
-
-With this approach, you install Elastic Agent and use Fleet in Kibana to define, configure, and manage your agents in a central location. We recommend using Fleet management because it makes the management and upgrade of your agents considerably easier.
-
-### Install Elastic Agent in standalone mode (advanced users):
-
-With this approach, you install Elastic Agent and manually configure the agent locally on the system where it’s installed. You are responsible for managing and upgrading the agents. This approach is reserved for advanced users only.
-
-### Install Elastic Agent in a containerized environment:
-
-You can run Elastic Agent inside a container, either with Fleet Server or standalone. Docker images for all versions of Elastic Agent are available from the Elastic Docker registry, and we provide deployment manifests for running on Kubernetes.
-
-Please note, there are minimum requirements for running Elastic Agent. For more information, refer to the  [Elastic Agent Minimum Requirements](https://www.elastic.co/guide/en/fleet/current/elastic-agent-installation.html#elastic-agent-installation-minimum-requirements).
-
-
+Elastic Agent must be installed. For more details, check the Elastic Agent [installation instructions](docs-content://reference/fleet/install-elastic-agents.md).
 
 ## Setup
 
-### To collect logs through REST API, follow the below steps:
+### Collect logs through REST API
 
-- Visit [this page](https://www.cybereason.com/platform/bundles) to deploy a Cybereason instance in your environment.
-- Once deployed, you'll obtain the parameters such as host, port, username and password for configuring Cybereason integration within your Elasticsearch environment.
+1. To deploy a Cybereason instance in your environment, refer to the [Cybereason documentatiion](https://www.cybereason.com/platform/bundles).
+2. Once deployed, you'll obtain the parameters such as host, port, username and password to configure Cybereason integration within your Elasticsearch environment.
 
-### Enabling the integration in Elastic:
+### Enable the integration in Elastic
 
-1. In Kibana navigate to Management > Integrations.
-2. In "Search for integrations" top bar, search for `Cybereason`.
-3. Select the "Cybereason" integration from the search results.
-4. Select "Add Cybereason Integration" to add the integration.
-5. While adding the integration, please enter the following details to collect logs via REST API:
+1. In Kibana navigate to **Management** > **Integrations**.
+2. In the search bar, type **Cybereason**.
+3. Select the **Cybereason** integration and add it.
+4. While adding the integration, enter the following details to collect logs via REST API:
    - Host
    - Port
    - Username
