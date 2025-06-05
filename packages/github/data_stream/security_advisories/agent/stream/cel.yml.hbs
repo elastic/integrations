@@ -18,9 +18,9 @@ max_executions: 5000
 program: |-
   request(
     "GET",
-    state.?cursor.next_url.orValue(state.url + "?" + {
+    state.?cursor.next_url.orValue(state.url.trim_right("/") + "?" + {
         "per_page": [string(state.batch_size)],
-        "type": [string(state.advisory_type)],
+        "type": [state.advisory_type],
         "sort": ["published"],
         "order": ["desc"]
       }.format_query()
@@ -37,7 +37,7 @@ program: |-
         "error": {
           "code": string(resp.StatusCode),
           "id": string(resp.Status),
-          "message": "GET " + state.url + ": " + (
+          "message": "GET " + state.url.trim_right("/") + ": " + (
             (size(resp.Body) != 0) ?
               string(resp.Body)
             :
@@ -67,12 +67,7 @@ program: |-
           }
         ),
         "url": state.url,
-        "want_more": (
-          (has(resp.?Header.Link) && size(resp.Header.Link) != 0 && resp.Header.Link[0].re_match("github_link_next")) ?
-            true
-          :
-            false
-        ),
+        "want_more": has(resp.?Header.Link) && size(resp.Header.Link) != 0 && resp.Header.Link[0].re_match("github_link_next"),
       }
     )
   )
