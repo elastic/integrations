@@ -3,6 +3,151 @@ rules:
     methods: ["GET"]
     query_params:
       per_page: "100"
+      type: unreviewed
+      sort: published
+      order: desc
+      after: null
+    request_headers:
+      authorization: Bearer xxxxxxxxxx
+    responses:
+      - status_code: 200
+        headers:
+          Content-Type:
+            - application/json
+          Link:
+            - '<http://{{ hostname }}:{{ env "PORT" }}/advisories?after=abcd>; rel="next"'
+        body: |-
+          {{ minify_json `
+          [
+            {
+              "ghsa_id": "GHSA-vpq6-j9hp-2h3w",
+              "cve_id": "CVE-2025-23096",
+              "url": "https://api.github.com/advisories/GHSA-vpq6-j9hp-2h3w",
+              "html_url": "https://github.com/advisories/GHSA-vpq6-j9hp-2h3w",
+              "summary": "An issue was discovered in Samsung Mobile Processor Exynos 1280, 2200, 1380, 1480, 2400. A Double...",
+              "description": "An issue was discovered in Samsung Mobile Processor Exynos 1280, 2200, 1380, 1480, 2400. A Double Free in the mobile processor leads to privilege escalation.",
+              "type": "unreviewed",
+              "severity": "unknown",
+              "repository_advisory_url": null,
+              "source_code_location": "",
+              "identifiers": [
+                {
+                  "value": "GHSA-vpq6-j9hp-2h3w",
+                  "type": "GHSA"
+                },
+                {
+                  "value": "CVE-2025-23096",
+                  "type": "CVE"
+                }
+              ],
+              "references": [
+                "https://nvd.nist.gov/vuln/detail/CVE-2025-23096",
+                "https://semiconductor.samsung.com/support/quality-support/product-security-updates",
+                "https://semiconductor.samsung.com/support/quality-support/product-security-updates/cve-2025-23096",
+                "https://github.com/advisories/GHSA-vpq6-j9hp-2h3w"
+              ],
+              "published_at": "2025-06-04T15:30:41Z",
+              "updated_at": "2025-06-04T15:30:46Z",
+              "github_reviewed_at": null,
+              "nvd_published_at": "2025-06-04T15:15:23Z",
+              "withdrawn_at": null,
+              "vulnerabilities": [],
+              "cvss_severities": {
+                "cvss_v3": {
+                  "vector_string": null,
+                  "score": 0
+                },
+                "cvss_v4": {
+                  "vector_string": null,
+                  "score": 0
+                }
+              },
+              "cwes": [],
+              "credits": [],
+              "cvss": {
+                "vector_string": null,
+                "score": null
+              }
+            }
+          ]
+          `}}
+  - path: /advisories
+    methods: ["GET"]
+    query_params:
+      after: abcd
+    request_headers:
+      authorization: Bearer xxxxxxxxxx
+    responses:
+      - status_code: 200
+        headers:
+          Content-Type:
+            - application/json
+        body: |-
+          {{ minify_json `
+          [
+            {
+              "ghsa_id": "GHSA-p5r3-w88m-mm8j",
+              "cve_id": "CVE-2025-5592",
+              "url": "https://api.github.com/advisories/GHSA-p5r3-w88m-mm8j",
+              "html_url": "https://github.com/advisories/GHSA-p5r3-w88m-mm8j",
+              "summary": "A vulnerability, which was classified as critical, has been found in FreeFloat FTP Server 1.0....",
+              "description": "A vulnerability, which was classified as critical, has been found in FreeFloat FTP Server 1.0. Affected by this issue is some unknown functionality of the component PASSIVE Command Handler. The manipulation leads to buffer overflow. The attack may be launched remotely. The exploit has been disclosed to the public and may be used.",
+              "type": "unreviewed",
+              "severity": "medium",
+              "repository_advisory_url": null,
+              "source_code_location": "",
+              "identifiers": [
+                {
+                  "value": "GHSA-p5r3-w88m-mm8j",
+                  "type": "GHSA"
+                },
+                {
+                  "value": "CVE-2025-5592",
+                  "type": "CVE"
+                }
+              ],
+              "references": [
+                "https://nvd.nist.gov/vuln/detail/CVE-2025-5592",
+                "https://fitoxs.com/exploit/exploit-d28993dd71bcf3fbc63ff58db41e5f10a3ff7932e72d9e25c556cf18921a98e3.txt",
+                "https://vuldb.com/?ctiid.311078",
+                "https://vuldb.com/?id.311078",
+                "https://vuldb.com/?submit.586990",
+                "https://github.com/advisories/GHSA-p5r3-w88m-mm8j"
+              ],
+              "published_at": "2025-06-04T15:30:40Z",
+              "updated_at": "2025-06-04T15:30:46Z",
+              "github_reviewed_at": null,
+              "nvd_published_at": "2025-06-04T14:15:35Z",
+              "withdrawn_at": null,
+              "vulnerabilities": [],
+              "cvss_severities": {
+                "cvss_v3": {
+                  "vector_string": "CVSS:3.1/AV:N/AC:L/PR:N/UI:N/S:U/C:L/I:L/A:L",
+                  "score": 7.3
+                },
+                "cvss_v4": {
+                  "vector_string": "CVSS:4.0/AV:N/AC:L/AT:N/PR:N/UI:N/VC:L/VI:L/VA:L/SC:N/SI:N/SA:N/E:X/CR:X/IR:X/AR:X/MAV:X/MAC:X/MAT:X/MPR:X/MUI:X/MVC:X/MVI:X/MVA:X/MSC:X/MSI:X/MSA:X/S:X/AU:X/R:X/V:X/RE:X/U:X",
+                  "score": 6.9
+                }
+              },
+              "cwes": [
+                {
+                  "cwe_id": "CWE-119",
+                  "name": "Improper Restriction of Operations within the Bounds of a Memory Buffer"
+                }
+              ],
+              "credits": [],
+              "cvss": {
+                "vector_string": "CVSS:3.1/AV:N/AC:L/PR:N/UI:N/S:U/C:L/I:L/A:L",
+                "score": 7.3
+              }
+            }
+          ]
+          `}}
+  - path: /advisories
+    methods: ["GET"]
+    query_params:
+      per_page: "100"
       type: reviewed
       sort: published
       order: desc
@@ -276,148 +421,4 @@ rules:
             }
           ]
           `}}
-  - path: /advisories
-    methods: ["GET"]
-    query_params:
-      per_page: "100"
-      type: unreviewed
-      sort: published
-      order: desc
-      after: null
-    request_headers:
-      authorization: Bearer xxxxxxxxxx
-    responses:
-      - status_code: 200
-        headers:
-          Content-Type:
-            - application/json
-          Link:
-            - '<http://{{ hostname }}:{{ env "PORT" }}/advisories?after=abcd>; rel="next"'
-        body: |-
-          {{ minify_json `
-          [
-            {
-              "ghsa_id": "GHSA-vpq6-j9hp-2h3w",
-              "cve_id": "CVE-2025-23096",
-              "url": "https://api.github.com/advisories/GHSA-vpq6-j9hp-2h3w",
-              "html_url": "https://github.com/advisories/GHSA-vpq6-j9hp-2h3w",
-              "summary": "An issue was discovered in Samsung Mobile Processor Exynos 1280, 2200, 1380, 1480, 2400. A Double...",
-              "description": "An issue was discovered in Samsung Mobile Processor Exynos 1280, 2200, 1380, 1480, 2400. A Double Free in the mobile processor leads to privilege escalation.",
-              "type": "unreviewed",
-              "severity": "unknown",
-              "repository_advisory_url": null,
-              "source_code_location": "",
-              "identifiers": [
-                {
-                  "value": "GHSA-vpq6-j9hp-2h3w",
-                  "type": "GHSA"
-                },
-                {
-                  "value": "CVE-2025-23096",
-                  "type": "CVE"
-                }
-              ],
-              "references": [
-                "https://nvd.nist.gov/vuln/detail/CVE-2025-23096",
-                "https://semiconductor.samsung.com/support/quality-support/product-security-updates",
-                "https://semiconductor.samsung.com/support/quality-support/product-security-updates/cve-2025-23096",
-                "https://github.com/advisories/GHSA-vpq6-j9hp-2h3w"
-              ],
-              "published_at": "2025-06-04T15:30:41Z",
-              "updated_at": "2025-06-04T15:30:46Z",
-              "github_reviewed_at": null,
-              "nvd_published_at": "2025-06-04T15:15:23Z",
-              "withdrawn_at": null,
-              "vulnerabilities": [],
-              "cvss_severities": {
-                "cvss_v3": {
-                  "vector_string": null,
-                  "score": 0
-                },
-                "cvss_v4": {
-                  "vector_string": null,
-                  "score": 0
-                }
-              },
-              "cwes": [],
-              "credits": [],
-              "cvss": {
-                "vector_string": null,
-                "score": null
-              }
-            }
-          ]
-          `}}
-  - path: /advisories
-    methods: ["GET"]
-    query_params:
-      after: abcd
-    request_headers:
-      authorization: Bearer xxxxxxxxxx
-    responses:
-      - status_code: 200
-        headers:
-          Content-Type:
-            - application/json
-        body: |-
-          {{ minify_json `
-          [
-            {
-              "ghsa_id": "GHSA-p5r3-w88m-mm8j",
-              "cve_id": "CVE-2025-5592",
-              "url": "https://api.github.com/advisories/GHSA-p5r3-w88m-mm8j",
-              "html_url": "https://github.com/advisories/GHSA-p5r3-w88m-mm8j",
-              "summary": "A vulnerability, which was classified as critical, has been found in FreeFloat FTP Server 1.0....",
-              "description": "A vulnerability, which was classified as critical, has been found in FreeFloat FTP Server 1.0. Affected by this issue is some unknown functionality of the component PASSIVE Command Handler. The manipulation leads to buffer overflow. The attack may be launched remotely. The exploit has been disclosed to the public and may be used.",
-              "type": "unreviewed",
-              "severity": "medium",
-              "repository_advisory_url": null,
-              "source_code_location": "",
-              "identifiers": [
-                {
-                  "value": "GHSA-p5r3-w88m-mm8j",
-                  "type": "GHSA"
-                },
-                {
-                  "value": "CVE-2025-5592",
-                  "type": "CVE"
-                }
-              ],
-              "references": [
-                "https://nvd.nist.gov/vuln/detail/CVE-2025-5592",
-                "https://fitoxs.com/exploit/exploit-d28993dd71bcf3fbc63ff58db41e5f10a3ff7932e72d9e25c556cf18921a98e3.txt",
-                "https://vuldb.com/?ctiid.311078",
-                "https://vuldb.com/?id.311078",
-                "https://vuldb.com/?submit.586990",
-                "https://github.com/advisories/GHSA-p5r3-w88m-mm8j"
-              ],
-              "published_at": "2025-06-04T15:30:40Z",
-              "updated_at": "2025-06-04T15:30:46Z",
-              "github_reviewed_at": null,
-              "nvd_published_at": "2025-06-04T14:15:35Z",
-              "withdrawn_at": null,
-              "vulnerabilities": [],
-              "cvss_severities": {
-                "cvss_v3": {
-                  "vector_string": "CVSS:3.1/AV:N/AC:L/PR:N/UI:N/S:U/C:L/I:L/A:L",
-                  "score": 7.3
-                },
-                "cvss_v4": {
-                  "vector_string": "CVSS:4.0/AV:N/AC:L/AT:N/PR:N/UI:N/VC:L/VI:L/VA:L/SC:N/SI:N/SA:N/E:X/CR:X/IR:X/AR:X/MAV:X/MAC:X/MAT:X/MPR:X/MUI:X/MVC:X/MVI:X/MVA:X/MSC:X/MSI:X/MSA:X/S:X/AU:X/R:X/V:X/RE:X/U:X",
-                  "score": 6.9
-                }
-              },
-              "cwes": [
-                {
-                  "cwe_id": "CWE-119",
-                  "name": "Improper Restriction of Operations within the Bounds of a Memory Buffer"
-                }
-              ],
-              "credits": [],
-              "cvss": {
-                "vector_string": "CVSS:3.1/AV:N/AC:L/PR:N/UI:N/S:U/C:L/I:L/A:L",
-                "score": 7.3
-              }
-            }
-          ]
-          `}}
+
