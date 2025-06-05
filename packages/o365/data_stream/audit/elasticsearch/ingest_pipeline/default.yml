@@ -70,15 +70,11 @@ processors:
       copy_from: o365audit.FileSize
       ignore_empty_value: true
       override: false
-  - convert:
-      tag: convert_file_size_to_string
-      field: file.size
-      type: string
-      ignore_missing: true
   - gsub:
       field: file.size
       pattern: '\D+'
       replacement: ''
+      if: ctx.file?.size instanceof String
       ignore_missing: true
   - convert:
       tag: convert_file_size_to_long
