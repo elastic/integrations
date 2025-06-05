@@ -24,6 +24,8 @@ Example of supported configuration is as below:
 
 #### Oracle: 
 
+test change
+
 The following two types of host configurations are supported:
 
 1. Old style host configuration :
