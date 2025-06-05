@@ -1,6 +1,6 @@
 # GitHub Integration
 
-The GitHub integration collects events from the [GitHub API](https://docs.github.com/en/rest) and Azure Eventhub.
+The GitHub integration collects events from the [GitHub API](https://docs.github.com/en/rest) and Azure Eventhub. It can also retrieve advisories (reviwed or unreviewed) from the GitHub Security Advisories database. 
 
 ## Logs
 
@@ -982,7 +982,7 @@ An example event for `issues` looks as following:
 
 The GitHub Security Advisories datastream lets you retrieve reviewed and unreviewed security advisories from the GitHub advisory database. See [Working with security advisories](https://docs.github.com/en/code-security/security-advisories) for more details.
 
-To use this integration, you must [create a fine-grained personal access token](https://docs.github.com/en/authentication/keeping-your-account-and-data-secure/managing-your-personal-access-tokens#creating-a-fine-grained-personal-access-token) with public repositories access. 
+To use this integration, you must [create a fine-grained personal access token](https://docs.github.com/en/authentication/keeping-your-account-and-data-secure/managing-your-personal-access-tokens#creating-a-fine-grained-personal-access-token) (GitHub App user access tokens, GitHub App installation access tokens, Fine-grained personal access tokens). This fine-grained token does not require any permissions. 
 
 **Exported fields**
 
@@ -1038,7 +1038,7 @@ To use this integration, you must [create a fine-grained personal access token](
 | github.security_advisory.cvss_severities.cvss_v4.vector_string |  | keyword |
 | github.security_advisory.cwes.cwe_id |  | keyword |
 | github.security_advisory.cwes.name |  | keyword |
-| github.security_advisory.description |  | keyword |
+| github.security_advisory.description |  | match_only_text |
 | github.security_advisory.epss.percentage |  | float |
 | github.security_advisory.epss.percentile |  | float |
 | github.security_advisory.ghsa_id |  | keyword |
