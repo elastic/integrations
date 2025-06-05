@@ -1,4 +1,4 @@
-title: Cloud Assets Inventory
+title: Cloud Assets Discovery
 type: logs
 dataset: cloud_asset_inventory.asset_inventory
 dataset_is_prefix: false
@@ -10,15 +10,56 @@ elasticsearch:
 # IMPORTANT: set all streams as disabled by default
 streams:
   - input: cloudbeat/asset_inventory_aws
-    title: AWS Asset Inventory
-    description: Asset Inventory Discovery for AWS
+    title: AWS Asset Discovery
+    description: Asset Discovery Discovery for AWS
     template_path: aws.yml.hbs
     enabled: false
+    required_vars:
+      assume_role:
+        - name: aws.credentials.type
+          value: assume_role
+        - name: aws.role_arn
+        - name: aws.account_type
+      direct_access_keys:
+        - name: aws.credentials.type
+          value: direct_access_keys
+        - name: aws.access_key_id
+        - name: aws.secret_access_key
+        - name: aws.account_type
+      temporary_session:
+        - name: aws.credentials.type
+          value: temporary_keys
+        - name: aws.access_key_id
+        - name: aws.secret_access_key
+        - name: aws.session_token
+        - name: aws.account_type
+      shared_credentials:
+        - name: aws.credentials.type
+          value: shared_credentials
+        - name: aws.shared_credential_file
+        - name: aws.credential_profile_name
+        - name: aws.account_type
+      cloud_formation:
+        - name: aws.credentials.type
+          value: cloud_formation
+        - name: aws.account_type
+          value: organization-account
+      cloud_formation_single_account:
+        - name: aws.credentials.type
+          value: cloud_formation
+        - name: aws.account_type
+          value: single-account
+      cloud_connectors:
+        - name: aws.credentials.type
+          value: cloud_connectors
+        - name: aws.account_type
+        - name: aws.role_arn
+        - name: aws.credentials.external_id
     vars:
       - name: aws.account_type
         title: Account type
         multi: false
-        required: true
+        required: false
         show_user: true
         type: select
         options:
@@ -26,11 +67,11 @@ streams:
             value: single-account
           - text: AWS Organization
             value: organization-account
-        default: single-account
+        default: organization-account
       - name: aws.credentials.type
         title: Credentials type
         multi: false
-        required: true
+        required: false
         show_user: true
         type: select
         options:
@@ -44,6 +85,8 @@ streams:
             value: temporary_keys
           - text: Shared Credentials (Manual)
             value: shared_credentials
+          - text: Cloud Connectors
+            value: cloud_connectors
       - name: aws.access_key_id
         type: text
         title: Access Key ID
@@ -89,16 +132,85 @@ streams:
         required: false
         show_user: false
         description: Required when using Assume Role
+      - name: aws.supports_cloud_connectors
+        type: bool
+        title: Supports Cloud Connectors
+        multi: false
+        required: false
+        show_user: false
+        secret: false
+      - name: aws.credentials.external_id
+        type: password
+        title: External ID
+        multi: false
+        required: false
+        show_user: false
+        secret: true
   - input: cloudbeat/asset_inventory_azure
-    title: Azure Asset Inventory
-    description: Asset Inventory Discovery for Azure
+    title: Azure Asset Discovery
+    description: Asset Discovery Discovery for Azure
     template_path: azure.yml.hbs
     enabled: false
+    required_vars:
+      organization_account_arm_template:
+        - name: azure.account_type
+          value: organization-account
+        - name: azure.credentials.type
+          value: arm_template
+      organization_account_managed_identity:
+        - name: azure.account_type
+          value: organization-account
+        - name: azure.credentials.type
+          value: managed_identity
+      organization_account_service_principal_secret:
+        - name: azure.account_type
+          value: organization-account
+        - name: azure.credentials.type
+          value: service_principal_with_client_secret
+        - name: azure.credentials.client_id
+        - name: azure.credentials.client_secret
+        - name: azure.credentials.tenant_id
+      organization_account_service_principal_certificate:
+        - name: azure.account_type
+          value: organization-account
+        - name: azure.credentials.type
+          value: service_principal_with_client_certificate
+        - name: azure.credentials.client_id
+        - name: azure.credentials.client_certificate_path
+        - name: azure.credentials.tenant_id
+        - name: azure.credentials.client_certificate_password
+      single_account_arm_template:
+        - name: azure.account_type
+          value: single-account
+        - name: azure.credentials.type
+          value: arm_template
+      single_account_managed_identity:
+        - name: azure.account_type
+          value: single-account
+        - name: azure.credentials.type
+          value: managed_identity
+      single_account_service_principal_secret:
+        - name: azure.account_type
+          value: single-account
+        - name: azure.credentials.type
+          value: service_principal_with_client_secret
+        - name: azure.credentials.client_id
+        - name: azure.credentials.client_secret
+        - name: azure.credentials.tenant_id
+      single_account_service_principal_certificate:
+        - name: azure.account_type
+          value: single-account
+        - name: azure.credentials.type
+          value: service_principal_with_client_certificate
+        - name: azure.credentials.client_id
+        - name: azure.credentials.client_certificate_path
+        - name: azure.credentials.tenant_id
+        - name: azure.credentials.client_certificate_password
     vars:
       - name: azure.account_type
         title: Account type
         multi: false
-        required: true
+        required: false
         show_user: true
         type: select
         options:
@@ -106,11 +218,11 @@ streams:
             value: single-account
           - text: Azure Organization
             value: organization-account
-        default: single-account
+        default: organization-account
       - name: azure.credentials.type
         title: Credentials type
         multi: false
-        required: true
+        required: false
         show_user: true
         type: select
         options:
@@ -160,15 +272,50 @@ streams:
         secret: true
         description: Required when using Service Principal with Client Certificate
   - input: cloudbeat/asset_inventory_gcp
-    title: GCP Asset Inventory
-    description: Asset Inventory Discovery for GCP
+    title: GCP Asset Discovery
+    description: Asset Discovery Discovery for GCP
     template_path: gcp.yml.hbs
     enabled: false
+    required_vars:
+      organization_account_cloud_shell:
+        - name: gcp.account_type
+          value: organization-account
+        - name: gcp.credentials.type
+          value: credentials-none
+      organization_account_manual_file:
+        - name: gcp.account_type
+          value: organization-account
+        - name: gcp.credentials.type
+          value: credentials-file
+        - name: gcp.credentials.file
+      organization_account_manual_json:
+        - name: gcp.account_type
+          value: organization-account
+        - name: gcp.credentials.type
+          value: credentials-json
+        - name: gcp.credentials.json
+      single_account_cloud_shell:
+        - name: gcp.account_type
+          value: single-account
+        - name: gcp.credentials.type
+          value: credentials-none
+      single_account_manual_file:
+        - name: gcp.account_type
+          value: single-account
+        - name: gcp.credentials.type
+          value: credentials-file
+        - name: gcp.credentials.file
+      single_account_manual_json:
+        - name: gcp.account_type
+          value: single-account
+        - name: gcp.credentials.type
+          value: credentials-json
+        - name: gcp.credentials.json
     vars:
       - name: gcp.account_type
         title: Account Type
         multi: false
-        required: true
+        required: false
         show_user: true
         type: select
         options:
@@ -176,7 +323,7 @@ streams:
             value: single-account
           - text: GCP Organization
             value: organization-account
-        default: single-account
+        default: organization-account
       - name: gcp.organization_id
         description: required if Account Type is GCP Organization
         type: text
@@ -189,7 +336,7 @@ streams:
         title: Project ID
         description: the project where the agent will be deployed. if Account Type is Single Account, only this project will be scanned.
         multi: false
-        required: true
+        required: false
         show_user: true
       - name: gcp.credentials.file
         type: text
@@ -206,3 +353,9 @@ streams:
         required: false
         show_user: true
         secret: true
+      - name: gcp.credentials.type
+        type: text
+        title: Credentials type
+        multi: false
+        required: false
+        show_user: false

@@ -374,6 +374,16 @@ processors:
   - foreach:
       field: ses.cybox.files
       if: ctx.ses?.cybox?.files instanceof List
+      tag: foreach_cybox_files_folder
+      processor:
+        append:
+          field: file.directory
+          tag: append_cybox_files_folder_into_file_directory
+          value: '{{{_ingest._value.folder}}}'
+          allow_duplicates: false
+  - foreach:
+      field: ses.cybox.files
+      if: ctx.ses?.cybox?.files instanceof List
       tag: foreach_cybox_files_path
       processor:
         append:
@@ -1014,6 +1024,16 @@ processors:
   - foreach:
       field: ses.cybox.files
       if: ctx.ses?.cybox?.files instanceof List
+      tag: foreach_cybox_files_sha2_file_hash
+      processor:
+        append:
+          field: file.hash.sha256
+          tag: append_cybox_files_sha2_into_file_hash
+          value: '{{{_ingest._value.sha2}}}'
+          allow_duplicates: false
+  - foreach:
+      field: ses.cybox.files
+      if: ctx.ses?.cybox?.files instanceof List
       tag: foreach_cybox_files_parent_sha2_related
       processor:
         append:
@@ -1055,8 +1075,10 @@ processors:
             - _ingest._value.created
             - _ingest._value.md5
             - _ingest._value.sha1
+            - _ingest._value.sha2
             - _ingest._value.mime_type
             - _ingest._value.name
+            - _ingest._value.folder
             - _ingest._value.path
             - _ingest._value.size
             - _ingest._value.signature_issuer

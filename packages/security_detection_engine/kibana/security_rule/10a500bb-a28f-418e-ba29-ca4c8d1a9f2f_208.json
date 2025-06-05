@@ -1,0 +1,101 @@
+{
+    "attributes": {
+        "author": [
+            "Elastic"
+        ],
+        "description": "Identifies the use of the built-in networksetup command to configure webproxy settings. This may indicate an attempt to hijack web browser traffic for credential access via traffic sniffing or redirection.",
+        "false_positives": [
+            "Legitimate WebProxy Settings Modification"
+        ],
+        "from": "now-9m",
+        "index": [
+            "logs-endpoint.events.*"
+        ],
+        "language": "kuery",
+        "license": "Elastic License v2",
+        "name": "WebProxy Settings Modification",
+        "note": "## Triage and analysis\n\n> **Disclaimer**:\n> This investigation guide was created using generative AI technology and has been reviewed to improve its accuracy and relevance. While every effort has been made to ensure its quality, we recommend validating the content and adapting it to suit your specific environment and operational needs.\n\n### Investigating WebProxy Settings Modification\n\nWeb proxy settings in macOS manage how web traffic is routed, often used to enhance security or manage network traffic. Adversaries may exploit these settings to redirect or intercept web traffic, potentially capturing sensitive data like credentials. The detection rule identifies suspicious use of the `networksetup` command to alter proxy settings, excluding known legitimate applications, thus highlighting potential unauthorized modifications indicative of malicious activity.\n\n### Possible investigation steps\n\n- Review the process details to confirm the use of the networksetup command with arguments like -setwebproxy, -setsecurewebproxy, or -setautoproxyurl, which indicate an attempt to modify web proxy settings.\n- Check the parent process information to ensure it is not one of the known legitimate applications such as /Library/PrivilegedHelperTools/com.80pct.FreedomHelper or /Applications/Fiddler Everywhere.app/Contents/Resources/app/out/WebServer/Fiddler.WebUi.\n- Investigate the user account associated with the process to determine if the activity aligns with their typical behavior or if it appears suspicious.\n- Examine recent network traffic logs for unusual patterns or connections that could suggest traffic redirection or interception.\n- Look for any additional alerts or logs related to the same host or user that might indicate a broader pattern of suspicious activity.\n- Assess the system for any signs of compromise or unauthorized access, such as unexpected user accounts or changes to system configurations.\n\n### False positive analysis\n\n- Legitimate applications like FreedomHelper, Fiddler Everywhere, and xpcproxy may trigger the rule when they modify proxy settings. To prevent these from being flagged, ensure they are included in the exclusion list of known applications.\n- Network management tools such as Proxyman and Incoggo might also be detected. Add these to the exclusion list to avoid unnecessary alerts.\n- Regular system updates or configurations by IT administrators can sometimes involve proxy setting changes. Coordinate with IT to identify these activities and consider adding them to the exclusion criteria if they are routine and verified as safe.\n- Automated scripts or maintenance tasks that adjust proxy settings for legitimate reasons should be reviewed and, if deemed non-threatening, excluded from detection to reduce false positives.\n- Monitor for any new applications or processes that may need to be added to the exclusion list as part of ongoing security management to ensure the rule remains effective without generating excessive false alerts.\n\n### Response and remediation\n\n- Immediately isolate the affected macOS device from the network to prevent further unauthorized access or data exfiltration.\n- Terminate any suspicious processes related to the `networksetup` command that are not associated with known legitimate applications.\n- Review and reset the web proxy settings on the affected device to their default or intended configuration to ensure no malicious redirection is in place.\n- Conduct a thorough scan of the affected system using updated security tools to identify and remove any malware or unauthorized software that may have been installed.\n- Analyze logs and network traffic to identify any data that may have been intercepted or exfiltrated, focusing on sensitive information such as credentials.\n- Escalate the incident to the security operations team for further investigation and to determine if other systems may be affected.\n- Implement enhanced monitoring and alerting for similar activities across the network to detect and respond to future attempts promptly.",
+        "query": "event.category:process and host.os.type:macos and event.type:start and\n process.name : networksetup and process.args : ((\"-setwebproxy\" or \"-setsecurewebproxy\" or \"-setautoproxyurl\") and not (Bluetooth or off)) and\n not process.parent.executable : (\"/Library/PrivilegedHelperTools/com.80pct.FreedomHelper\" or\n                                  \"/Applications/Fiddler Everywhere.app/Contents/Resources/app/out/WebServer/Fiddler.WebUi\" or\n                                  \"/usr/libexec/xpcproxy\") and\n not process.Ext.effective_parent.executable : (\"/Applications/Proxyman.app/Contents/MacOS/Proxyman\" or \"/Applications/Incoggo.app/Contents/MacOS/Incoggo.app\")\n",
+        "references": [
+            "https://unit42.paloaltonetworks.com/mac-malware-steals-cryptocurrency-exchanges-cookies/",
+            "https://objectivebythesea.com/v2/talks/OBTS_v2_Zohar.pdf"
+        ],
+        "related_integrations": [
+            {
+                "package": "endpoint",
+                "version": "^9.0.0"
+            }
+        ],
+        "required_fields": [
+            {
+                "ecs": true,
+                "name": "event.category",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "event.type",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "host.os.type",
+                "type": "keyword"
+            },
+            {
+                "ecs": false,
+                "name": "process.Ext.effective_parent.executable",
+                "type": "unknown"
+            },
+            {
+                "ecs": true,
+                "name": "process.args",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "process.name",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "process.parent.executable",
+                "type": "keyword"
+            }
+        ],
+        "risk_score": 47,
+        "rule_id": "10a500bb-a28f-418e-ba29-ca4c8d1a9f2f",
+        "setup": "## Setup\n\nThis rule requires data coming in from Elastic Defend.\n\n### Elastic Defend Integration Setup\nElastic Defend is integrated into the Elastic Agent using Fleet. Upon configuration, the integration allows the Elastic Agent to monitor events on your host and send data to the Elastic Security app.\n\n#### Prerequisite Requirements:\n- Fleet is required for Elastic Defend.\n- To configure Fleet Server refer to the [documentation](https://www.elastic.co/guide/en/fleet/current/fleet-server.html).\n\n#### The following steps should be executed in order to add the Elastic Defend integration on a macOS System:\n- Go to the Kibana home page and click \"Add integrations\".\n- In the query bar, search for \"Elastic Defend\" and select the integration to see more details about it.\n- Click \"Add Elastic Defend\".\n- Configure the integration name and optionally add a description.\n- Select the type of environment you want to protect, for MacOS it is recommended to select \"Traditional Endpoints\".\n- Select a configuration preset. Each preset comes with different default settings for Elastic Agent, you can further customize these later by configuring the Elastic Defend integration policy. [Helper guide](https://www.elastic.co/guide/en/security/current/configure-endpoint-integration-policy.html).\n- We suggest selecting \"Complete EDR (Endpoint Detection and Response)\" as a configuration setting, that provides \"All events; all preventions\"\n- Enter a name for the agent policy in \"New agent policy name\". If other agent policies already exist, you can click the \"Existing hosts\" tab and select an existing policy instead.\nFor more details on Elastic Agent configuration settings, refer to the [helper guide](https://www.elastic.co/guide/en/fleet/current/agent-policy.html).\n- Click \"Save and Continue\".\n- To complete the integration, select \"Add Elastic Agent to your hosts\" and continue to the next section to install the Elastic Agent on your hosts.\nFor more details on Elastic Defend refer to the [helper guide](https://www.elastic.co/guide/en/security/current/install-endpoint.html).\n",
+        "severity": "medium",
+        "tags": [
+            "Domain: Endpoint",
+            "OS: macOS",
+            "Use Case: Threat Detection",
+            "Tactic: Credential Access",
+            "Data Source: Elastic Defend",
+            "Resources: Investigation Guide"
+        ],
+        "threat": [
+            {
+                "framework": "MITRE ATT&CK",
+                "tactic": {
+                    "id": "TA0006",
+                    "name": "Credential Access",
+                    "reference": "https://attack.mitre.org/tactics/TA0006/"
+                },
+                "technique": [
+                    {
+                        "id": "T1539",
+                        "name": "Steal Web Session Cookie",
+                        "reference": "https://attack.mitre.org/techniques/T1539/"
+                    }
+                ]
+            }
+        ],
+        "timestamp_override": "event.ingested",
+        "type": "query",
+        "version": 208
+    },
+    "id": "10a500bb-a28f-418e-ba29-ca4c8d1a9f2f_208",
+    "type": "security-rule"
+}

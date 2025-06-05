@@ -2,503 +2,290 @@
   type: group
   description: Teams Call Quality fields processing
   fields:
-    - name: id
+    - name: call_record_id
       type: keyword
-      description: Unique identifier for the call quality record
-    - name: is_test
-      type: boolean
-      description: Indicates whether the call is a test call
-    - name: modalities
-      type: keyword
-      description: Types of communication used in the call (audio, video, etc.)
+      description: Unique identifier for the call record.
     - name: start_date_time
       type: date
-      description: The start date and time of the call
+      description: UTC time when the first user joined the call.
     - name: end_date_time
       type: date
-      description: The end date and time of the call
-    - name: caller
+      description: UTC time when the last user left the call.
+    - name: sessions
       type: group
-      description: Information about the caller (initiator)
+      description: List of sessions involved in the call. Peer-to-peer calls typically only have one session, whereas group calls typically have at least one session per participant. Read-only. Nullable.
       fields:
-        - name: name
+        - name: session_id
           type: keyword
-          description: The name of the caller
-        - name: user_agent
-          type: group
-          description: Information about the caller's user agent
-          fields:
-            - name: header_value
-              type: keyword
-              description: The header value of the user agent
-            - name: platform
-              type: keyword
-              description: The platform of the caller (e.g., Windows, macOS)
-            - name: product_family
-              type: keyword
-              description: The product family of the caller (e.g., Teams, Skype)
-        - name: cpu_cores.count
-          type: long
-          description: The number of CPU cores on the caller's device
-        - name: cpu_name
+          description: Unique identifier for the session.
+        - name: modalities 
           type: keyword
-          description: The name of the CPU on the caller's device
-        - name: cpu_processor_speed.mhz
-          type: long
-          description: The processor speed in MHz on the caller's CPU
-        - name: identity
+          description: List of modalities present in the session. Possible values are- unknown, audio, video, videoBasedScreenSharing, data, screenSharing, unknownFutureValue.
+        - name: segments
           type: group
-          description: Identity of the caller
+          description: The list of segments involved in the session.
           fields:
-            - name: user
+            - name: segment_id
+              type: keyword
+              description: Unique identifier for the segment.       
+            - name: start_date_time
+              type: date
+              description: UTC time when the segment started.
+            - name: end_date_time
+              type: date
+              description: UTC time when the segment ended.
+            - name: failure_info
               type: group
-              description: User information for the caller
+              description: Failure information associated with the segment if it failed.
               fields:
-                - name: display_name
+                - name: stage
                   type: keyword
-                  description: The display name of the caller
-                - name: id
+                  description: The stage when the failure occurred. Possible values are- unknown, callSetup, midcall, unknownFutureValue.
+                - name: reason
                   type: keyword
-                  description: The unique user ID for the caller
-                - name: tenant_id
-                  type: keyword
-                  description: The tenant ID of the caller's organization
-    - name: callee
-      type: group
-      description: Information about the callee (receiver)
-      fields:
-        - name: name
-          type: keyword
-          description: The name of the callee
-        - name: user_agent
-          type: group
-          description: Information about the callee's user agent
-          fields:
-            - name: header_value
-              type: keyword
-              description: The header value of the user agent
-            - name: platform
-              type: keyword
-              description: The platform of the callee (e.g., Windows, macOS)
-            - name: product_family
-              type: keyword
-              description: The product family of the callee (e.g., Teams, Skype)
-        - name: cpu_cores.count
-          type: long
-          description: The number of CPU cores on the callee's device
-        - name: cpu_name
-          type: keyword
-          description: The name of the CPU on the callee's device
-        - name: cpu_processor_speed.mhz
-          type: long
-          description: The processor speed in MHz on the callee's CPU
-        - name: feedback
-          type: group
-          description: Feedback provided by the callee during the call
-          fields:
-            - name: rating
-              type: keyword
-              description: The rating the callee gave for the call quality
-            - name: tokens
+                  description: Classification of why a call or portion of a call failed.
+            - name: caller
               type: group
-              description: Feedback tokens from the callee
+              description: Information about the caller (initiator).
               fields:
-                - name: distorted_sound
-                  type: boolean
-                  description: Whether distorted sound was reported by the callee
-                - name: echo
-                  type: boolean
-                  description: Whether echo was reported by the callee
-                - name: interruptions
-                  type: boolean
-                  description: Whether interruptions were reported by the callee
-                - name: low_volume
-                  type: boolean
-                  description: Whether low volume was reported by the callee
-                - name: no_sound
-                  type: boolean
-                  description: Whether no sound was reported by the callee
-                - name: noisy
-                  type: boolean
-                  description: Whether background noise was reported by the callee
-                - name: other_no_sound
-                  type: boolean
-                  description: Whether other no sound issues were reported by the callee
-                - name: stopped
-                  type: boolean
-                  description: Whether the call was stopped prematurely by the callee
-        - name: identity
-          type: group
-          description: Identity of the callee
-          fields:
-            - name: user
-              type: group
-              description: User information for the callee
-              fields:
-                - name: display_name
-                  type: keyword
-                  description: The display name of the callee
-                - name: id
-                  type: keyword
-                  description: The unique user ID for the callee
-                - name: tenant_id
-                  type: keyword
-                  description: The tenant ID of the callee's organization
-    - name: segments
-      type: group
-      description: Segments of the call quality
-      fields:
-        - name: id
-          type: keyword
-          description: Unique identifier for the segment
-        - name: start_date_time
-          type: date
-          description: Start time of the segment
-        - name: end_date_time
-          type: date
-          description: End time of the segment
-        - name: quality_score
-          type: float
-          description: Quality score of the call segment
-        - name: callee
-          type: group
-          description: Information about the callee (receiver)
-          fields:
-            - name: name
-              type: keyword
-              description: The name of the callee
-            - name: user_agent
-              type: group
-              description: Information about the callee's user agent
-              fields:
-                - name: header_value
-                  type: keyword
-                  description: The header value of the user agent
-                - name: platform
-                  type: keyword
-                  description: The platform of the callee (e.g., Windows, macOS)
-                - name: product_family
-                  type: keyword
-                  description: The product family of the callee (e.g., Teams, Skype)
-            - name: cpu_cores_count
-              type: long
-              description: The number of CPU cores on the callee's device
-            - name: cpu_name
-              type: keyword
-              description: The name of the CPU on the callee's device
-            - name: cpu_processor_speed_in_mhz
-              type: long
-              description: The processor speed in MHz on the callee's CPU
-            - name: feedback
-              type: group
-              description: Feedback provided by the callee during the call
-              fields:
-                - name: rating
-                  type: keyword
-                  description: The rating the callee gave for the call quality
-                - name: tokens
+                - name: associated_identity
                   type: group
-                  description: Feedback tokens from the callee
-                  fields:
-                    - name: distorted_sound
-                      type: boolean
-                      description: Whether distorted sound was reported by the callee
-                    - name: echo
-                      type: boolean
-                      description: Whether echo was reported by the callee
-                    - name: interruptions
-                      type: boolean
-                      description: Whether interruptions were reported by the callee
-                    - name: low_volume
-                      type: boolean
-                      description: Whether low volume was reported by the callee
-                    - name: no_sound
-                      type: boolean
-                      description: Whether no sound was reported by the callee
-                    - name: noisy
-                      type: boolean
-                      description: Whether background noise was reported by the callee
-                    - name: other_no_sound
-                      type: boolean
-                      description: Whether other no sound issues were reported by the callee
-                    - name: stopped
-                      type: boolean
-                      description: Whether the call was stopped prematurely by the callee
-            - name: identity
-              type: group
-              description: Identity of the callee
-              fields:
-                - name: user
-                  type: group
-                  description: User information for the callee
+                  description: User information for the caller.
                   fields:
                     - name: display_name
                       type: keyword
-                      description: The display name of the callee
+                      description: The display name of the caller.
                     - name: id
                       type: keyword
-                      description: The unique user ID for the callee
+                      description: The unique user ID for the caller.
                     - name: tenant_id
                       type: keyword
-                      description: The tenant ID of the callee's organization
-        - name: caller
-          type: group
-          description: Information about the caller (initiator)
-          fields:
-            - name: name
-              type: keyword
-              description: The name of the caller
-            - name: user_agent
+                      description: The tenant ID of the caller's organization.
+                    - name: user_principal_name
+                      type: keyword
+                      description: The user principal name of the caller.
+            - name: callee
               type: group
-              description: Information about the caller's user agent
+              description: Information about the callee
               fields:
-                - name: header_value
-                  type: keyword
-                  description: The header value of the user agent
-                - name: platform
-                  type: keyword
-                  description: The platform of the caller (e.g., Windows, macOS)
-                - name: product_family
-                  type: keyword
-                  description: The product family of the caller (e.g., Teams, Skype)
-            - name: cpu_cores_count
-              type: long
-              description: The number of CPU cores on the caller's device
-            - name: cpu_name
-              type: keyword
-              description: The name of the CPU on the caller's device
-            - name: cpu_processor_speed_in_mhz
-              type: long
-              description: The processor speed in MHz on the caller's CPU
-            - name: identity
-              type: group
-              description: Identity of the caller
-              fields:
-                - name: user
+                - name: associated_identity
                   type: group
-                  description: User information for the caller
+                  description: User information for the callee.
                   fields:
                     - name: display_name
                       type: keyword
-                      description: The display name of the caller
+                      description: The display name of the callee.
                     - name: id
                       type: keyword
-                      description: The unique user ID for the caller
+                      description: The unique user ID for the callee.
                     - name: tenant_id
                       type: keyword
-                      description: The tenant ID of the caller's organization
-        - name: media
-          type: group
-          description: Media data related to the segment (network and device quality)
-          fields:
-            - name: label
-              type: keyword
-              description: The label for the media stream (e.g., "main-audio")
-            - name: caller_network
+                      description: The tenant ID of the callee's organization.
+                    - name: user_principal_name
+                      type: keyword
+                      description: The user principal name of the callee.
+            - name: media
               type: group
-              description: Network details of the caller during the media stream
+              description: Media associated with this segment.
               fields:
-                - name: ip_address
+                - name: label
                   type: keyword
-                  description: IP address of the caller's network
-                - name: subnet
-                  type: keyword
-                  description: Subnet of the caller's network
-                - name: link_speed
-                  type: long
-                  description: Link speed of the caller's network connection
-                - name: connection_type
-                  type: keyword
-                  description: Type of connection used (e.g., wifi, wired)
-                - name: port
-                  type: long
-                  description: Port used for the connection
-                - name: relay_port
-                  type: long
-                  description: Relay port
-                - name: mac_address
-                  type: keyword
-                  description: MAC address of the caller's device
-                - name: sent_quality_event_ratio
-                  type: float
-                  description: Quality event ratio related to the caller's network
-                - name: received_quality_event_ratio
-                  type: float
-                  description: Quality event ratio related to the received network quality
-                - name: bandwidth_low_event_ratio
-                  type: float
-                  description: The event ratio of low bandwidth for the caller's network
-                - name: delay_event_ratio
-                  type: float
-                  description: The event ratio of delay in the caller's network
-                - name: relay_ip_address
-                  type: keyword
-                  description: Relay IP address for the caller's network
-                - name: dns_suffix
-                  type: keyword
-                  description: DNS suffix for the caller's network
-                - name: reflexive_ip_address
-                  type: keyword
-                  description: Reflexive IP address for the caller's network
-            - name: callee_network
-              type: group
-              description: Network details of the callee during the media stream
-              fields:
-                - name: ip_address
-                  type: keyword
-                  description: IP address of the callee's network
-                - name: subnet
-                  type: keyword
-                  description: Subnet of the callee's network
-                - name: link_speed
-                  type: long
-                  description: Link speed of the callee's network connection
-                - name: connection_type
-                  type: keyword
-                  description: Type of connection used (e.g., wifi, wired)
-                - name: port
-                  type: long
-                  description: Port used for the connection
-                - name: relay_port
-                  type: long
-                  description: Relay port
-                - name: mac_address
-                  type: keyword
-                  description: MAC address of the callee's device
-                - name: sent_quality_event_ratio
-                  type: float
-                  description: Quality event ratio related to the callee's network
-                - name: received_quality_event_ratio
-                  type: float
-                  description: Quality event ratio related to the received network quality
-                - name: bandwidth_low_event_ratio
-                  type: float
-                  description: The event ratio of low bandwidth for the callee's network
-                - name: relay_ip_address
-                  type: keyword
-                  description: Relay IP address for the callee's network
-                - name: dns_suffix
-                  type: keyword
-                  description: DNS suffix for the callee's network
-                - name: reflexive_ip_address
-                  type: keyword
-                  description: Reflexive IP address for the callee's network
-                - name: delay_event_ratio
-                  type: float
-                  description: The event ratio of delay in the callee's network
-            - name: caller_device
-              type: group
-              description: Device details for the caller during the media stream
-              fields:
-                - name: capture_device_name
-                  type: keyword
-                  description: The name of the caller's capture device
-                - name: render_device_name
-                  type: keyword
-                  description: The name of the caller's render device
-                - name: received_signal_level
-                  type: float
-                  description: The received signal level on the caller's device
-                - name: received_noise_level
-                  type: float
-                  description: The received noise level on the caller's device
-                - name: initial_signal_level_root_mean_square
-                  type: float
-                  description: Initial RMS of the caller's signal level
-                - name: render_zero_volume_event_ratio
-                  type: float
-                  description: Ratio of zero volume events during rendering
-                - name: render_mute_event_ratio
-                  type: float
-                  description: Ratio of mute events during rendering
-                - name: mic_glitch_rate
-                  type: float
-                  description: The glitch rate for the caller's microphone
-                - name: speaker_glitch_rate
-                  type: float
-                  description: The glitch rate for the caller's speaker
-            - name: callee_device
-              type: group
-              description: Device details for the callee during the media stream
-              fields:
-                - name: capture_device_name
-                  type: keyword
-                  description: The name of the callee's capture device
-                - name: capture_device_driver
-                  type: keyword
-                  description: The name of the callee's capture device driver
-                - name: render_device_name
-                  type: keyword
-                  description: The name of the callee's render device
-                - name: render_device_driver
-                  type: keyword
-                  description: The name of the callee's render device driver
-                - name: received_signal_level
-                  type: float
-                  description: The received signal level on the callee's device
-                - name: received_noise_level
-                  type: float
-                  description: The received noise level on the callee's device
-                - name: initial_signal_level_root_mean_square
-                  type: float
-                  description: Initial RMS of the callee's signal level
-                - name: mic_glitch_rate
-                  type: float
-                  description: The glitch rate for the callee's microphone
-                - name: speaker_glitch_rate
-                  type: float
-                  description: The glitch rate for the callee's speaker
-            - name: streams
-              type: nested
-              description: Streams of the call
-              fields:
-                - name: stream_id
-                  type: keyword
-                  description: The stream ID
-                - name: stream_direction
-                  type: keyword
-                  description: Direction of the media stream
-                - name: average_packet_loss_rate
-                  type: float
-                  description: Average rate of packet loss
-                - name: max_packet_loss_rate
-                  type: float
-                  description: Maximum rate of packet loss
-                - name: average_round_trip_time
-                  type: keyword
-                  description: Average round trip time in milliseconds
-                - name: max_round_trip_time
-                  type: keyword
-                  description: Maximum round trip time in milliseconds
-                - name: packet_utilization
-                  type: float
-                  description: Utilization rate of packets
-                - name: was_media_bypassed
-                  type: boolean
-                  description: Indicates if media was bypassed
-                - name: is_audio_forward_error_correction_used
-                  type: boolean
-                  description: Indicates if audio forward error correction was used
-                - name: average_jitter
-                  type: keyword
-                  description: Average jitter in milliseconds
-                - name: max_jitter
-                  type: keyword
-                  description: Maximum jitter in milliseconds
-                - name: average_audio_network_jitter
-                  type: keyword
-                  description: Average audio network jitter in milliseconds
-                - name: max_audio_network_jitter
-                  type: keyword
-                  description: Maximum audio network jitter in milliseconds
-                - name: average_bandwidth_estimate
-                  type: float
-                  description: Average bandwidth estimate in bits per second
-                - name: max_ratio_of_concealed_samples
-                  type: float
-                - name: average_audio_degradation
-                  type: float
-                  description: Average audio degradation metric
-                - name: average_ratio_of_concealed_samples
-                  type: float
-                  description: Average ratio of concealed samples
+                  description: How the media was identified during media negotiation stage. (e.g., "main-audio").
+                - name: caller_network
+                  type: group
+                  description: 	Network information associated with the caller endpoint of this media.
+                  fields:
+                    - name: bandwidth_low_event_ratio
+                      type: double
+                      description: Fraction of the call that the media endpoint detected the available bandwidth or bandwidth policy was low enough to cause poor quality of the audio sent.
+                    - name: basic_service_set_identifier
+                      type: keyword
+                      description: The wireless LAN basic service set identifier of the media endpoint used to connect to the network. This property isn't available if the user disables precise location sharing in their operating system or Microsoft Teams app settings.
+                    - name: connection_type
+                      type: keyword
+                      description: Type of network used by the media endpoint. Possible values are- unknown, wired, wifi, mobile, tunnel, unknownFutureValue.
+                    - name: delay_event_ratio
+                      type: double
+                      description: Fraction of the call that the media endpoint detected the network delay was significant enough to impact the ability to have real-time two-way communication.
+                    - name: dns_suffix
+                      type: keyword
+                      description: DNS suffix associated with the network adapter of the media endpoint.
+                    - name: ip_address
+                      type: ip
+                      description: IP address of the media endpoint.
+                    - name: link_speed
+                      type: long
+                      description: Link speed in bits per second reported by the network adapter used by the media endpoint.                      
+                    - name: mac_address
+                      type: keyword
+                      description: The media access control (MAC) address of the media endpoint's network device. 
+                    - name: network_transport_protocol
+                      type: keyword
+                      description: Network protocol used for the transmission of stream. Possible values are- unknown, udp, tcp, unknownFutureValue.
+                    - name: port
+                      type: long
+                      description: Network port number used by media endpoint.
+                    - name: received_quality_event_ratio
+                      type: double
+                      description: Fraction of the call that the media endpoint detected the network was causing poor quality of the audio received.
+                    - name: reflexive_ip_address
+                      type: ip
+                      description: IP address of the media endpoint as seen by the media relay server. This is typically the public internet IP address associated to the endpoint.
+                    - name: relay_ip_address
+                      type: ip
+                      description: IP address of the media relay server allocated by the media endpoint.
+                    - name: relay_port
+                      type: long
+                      description: Network port number allocated on the media relay server by the media endpoint.
+                    - name: sent_quality_event_ratio
+                      type: double
+                      description: Fraction of the call that the media endpoint detected the network was causing poor quality of the audio sent.                      
+                    - name: subnet
+                      type: keyword
+                      description: Subnet used for media stream by the media endpoint.
+                - name: callee_network
+                  type: group
+                  description: Network information associated with the callee endpoint of this media.
+                  fields:
+                    - name: bandwidth_low_event_ratio
+                      type: double
+                      description: Fraction of the call that the media endpoint detected the available bandwidth or bandwidth policy was low enough to cause poor quality of the audio sent.
+                    - name: basic_service_set_identifier
+                      type: keyword
+                      description: The wireless LAN basic service set identifier of the media endpoint used to connect to the network. This property isn't available if the user disables precise location sharing in their operating system or Microsoft Teams app settings.
+                    - name: connection_type
+                      type: keyword
+                      description: Type of network used by the media endpoint. Possible values are- unknown, wired, wifi, mobile, tunnel, unknownFutureValue.
+                    - name: delay_event_ratio
+                      type: double
+                      description: Fraction of the call that the media endpoint detected the network delay was significant enough to impact the ability to have real-time two-way communication.
+                    - name: dns_suffix
+                      type: keyword
+                      description: DNS suffix associated with the network adapter of the media endpoint.
+                    - name: ip_address
+                      type: ip
+                      description: IP address of the media endpoint.
+                    - name: link_speed
+                      type: long
+                      description: Link speed in bits per second reported by the network adapter used by the media endpoint.                      
+                    - name: mac_address
+                      type: keyword
+                      description: The media access control (MAC) address of the media endpoint's network device. 
+                    - name: network_transport_protocol
+                      type: keyword
+                      description: Network protocol used for the transmission of stream. Possible values are- unknown, udp, tcp, unknownFutureValue.
+                    - name: port
+                      type: long
+                      description: Network port number used by media endpoint.
+                    - name: received_quality_event_ratio
+                      type: double
+                      description: Fraction of the call that the media endpoint detected the network was causing poor quality of the audio received.
+                    - name: reflexive_ip_address
+                      type: ip
+                      description: IP address of the media endpoint as seen by the media relay server. This is typically the public internet IP address associated to the endpoint.
+                    - name: relay_ip_address
+                      type: ip
+                      description: IP address of the media relay server allocated by the media endpoint.
+                    - name: relay_port
+                      type: long
+                      description: Network port number allocated on the media relay server by the media endpoint.
+                    - name: sent_quality_event_ratio
+                      type: double
+                      description: Fraction of the call that the media endpoint detected the network was causing poor quality of the audio sent.                      
+                    - name: subnet
+                      type: keyword
+                      description: Subnet used for media stream by the media endpoint.
+                - name: streams
+                  type: group
+                  description: Network streams associated with this media.
+                  fields:
+                    - name: audio_codec
+                      type: keyword
+                      description: Codec name used to encode audio for transmission on the network. Possible values are- unknown, invalid, cn, pcma, pcmu, amrWide, g722, g7221, g7221c, g729, multiChannelAudio, muchv2, opus, satin, satinFullband, rtAudio8, rtAudio16, silk, silkNarrow, silkWide, siren, xmsRta, unknownFutureValue.
+                    - name: average_audio_degradation
+                      type: double
+                      description: Average Network Mean Opinion Score degradation for stream. Represents how much the network loss and jitter has impacted the quality of received audio.
+                    - name: average_audio_network_jitter
+                      type: keyword
+                      description: Average jitter for the stream computed as specified in RFC 3550, denoted in ISO 8601 format. For example, 1 second is denoted as 'PT1S', where 'P' is the duration designator, 'T' is the time designator, and 'S' is the second designator.
+                    - name: average_bandwidth_estimate
+                      type: long
+                      description: Average estimated bandwidth available between two endpoints in bits per second.
+                    - name: average_freeze_duration
+                      type: keyword
+                      description: Average duration of the received freezing time in the video stream.
+                    - name: average_jitter
+                      type: keyword
+                      description: Average jitter for the stream computed as specified in RFC 3550, denoted in ISO 8601 format. For example, 1 second is denoted as 'PT1S', where 'P' is the duration designator, 'T' is the time designator, and 'S' is the second designator.
+                    - name: average_packet_loss_rate
+                      type: double
+                      description: Average packet loss rate for stream.                     
+                    - name: average_ratio_of_concealed_samples
+                      type: double
+                      description: Ratio of the number of audio frames with samples generated by packet loss concealment to the total number of audio frames.
+                    - name: average_received_frame_rate
+                      type: double
+                      description: Average frames per second received for all video streams computed over the duration of the session.
+                    - name: average_round_trip_time
+                      type: keyword
+                      description: Average network propagation round-trip time computed as specified in RFC 3550, denoted in ISO 8601 format. For example, 1 second is denoted as 'PT1S', where 'P' is the duration designator, 'T' is the time designator, and 'S' is the second designator.
+                    - name: average_video_frame_loss_percentage
+                      type: double
+                      description: Average percentage of video frames lost as displayed to the user.
+                    - name: average_video_frame_rate
+                      type: double
+                      description: Average frames per second received for a video stream, computed over the duration of the session.
+                    - name: average_video_packet_loss_rate
+                      type: double
+                      description: Average fraction of packets lost.
+                    - name: end_date_time
+                      type: date
+                      description: UTC time when the stream ended.
+                    - name: is_audio_forward_error_correction_used
+                      type: boolean
+                      description: Indicates whether the forward error correction (FEC) was used at some point during the session. The default value is null.                      
+                    - name: low_frame_rate_ratio
+                      type: double
+                      description: Fraction of the call where frame rate is less than 7.5 frames per second.
+                    - name: low_video_processing_capability_ratio
+                      type: double
+                      description: Fraction of the call that the client is running less than 70% expected video processing capability. 
+                    - name: max_audio_network_jitter
+                      type: keyword
+                      description: Maximum of audio network jitter computed over each of the 20 second windows during the session, denoted in ISO 8601 format. For example, 1 second is denoted as 'PT1S', where 'P' is the duration designator, 'T' is the time designator, and 'S' is the second designator.                                            
+                    - name: max_jitter
+                      type: keyword
+                      description: Maximum jitter for the stream computed as specified in RFC 3550, denoted in ISO 8601 format. For example, 1 second is denoted as 'PT1S', where 'P' is the duration designator, 'T' is the time designator, and 'S' is the second designator. 
+                    - name: max_packet_loss_rate
+                      type: double
+                      description: Maximum packet loss rate for the stream. 
+                    - name: max_ratio_of_concealed_samples
+                      type: double
+                      description: Maximum ratio of packets concealed by the healer.
+                    - name: max_round_trip_time
+                      type: keyword
+                      description: Maximum network propagation round-trip time computed as specified in RFC 3550, denoted in ISO 8601 format. For example, 1 second is denoted as 'PT1S', where 'P' is the duration designator, 'T' is the time designator, and 'S' is the second designator.
+                    - name: packet_utilization
+                      type: long
+                      description: Packet count for the stream. 
+                    - name: post_forward_error_correction_packet_loss_rate
+                      type: double
+                      description: Packet loss rate after FEC has been applied aggregated across all video streams and codecs. 
+                    - name: rms_freeze_duration
+                      type: keyword
+                      description: Average duration of the received freezing time in the video stream represented in root mean square. 
+                    - name: start_date_time
+                      type: date
+                      description: UTC time when the stream started.  
+                    - name: stream_direction
+                      type: keyword
+                      description: Indicates the direction of the media stream. Possible values are- callerToCallee, calleeToCaller.                                                                                                                                                                                                      
+                    - name: stream_id
+                      type: keyword
+                      description: Unique identifier for the stream. 
+                    - name: video_codec
+                      type: keyword
+                      description: Codec name used to encode video for transmission on the network. Possible values are- unknown, invalid, av1, h263, h264, h264s, h264uc, h265, rtvc1, rtVideo, xrtvc1, unknownFutureValue.  
+                    - name: was_media_bypassed
+                      type: boolean 
+                      description: True if the media stream bypassed the Mediation Server and went straight between client and PSTN Gateway/PBX, false otherwise.               
