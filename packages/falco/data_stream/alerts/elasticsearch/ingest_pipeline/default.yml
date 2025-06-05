@@ -72,6 +72,15 @@ processors:
 - dot_expander:
     field: 'proc.vpgid'
     path: falco.output_fields
+- dot_expander:
+    field: 'evt.time'
+    path: falco.output_fields
+- dot_expander:
+    field: 'syslog.facility'
+    path: falco.output_fields
+- dot_expander:
+    field: 'syslog.severity'
+    path: falco.output_fields
 - rename:
     field: falco.output_fields.container.image
     target_field: falco.output_fields.container.image.name
@@ -107,6 +116,18 @@ processors:
 - rename:
     field: falco.output_fields.proc.vpgid
     target_field: falco.output_fields.process.group_leader.vpid
+    ignore_missing: true
+- rename:
+    field: falco.output_fields.syslog.facility
+    target_field: falco.output_fields.syslog_facility
+    ignore_missing: true
+- rename:
+    field: falco.output_fields.evt.time
+    target_field: falco.output_fields.event.time
+    ignore_missing: true
+- rename:
+    field: falco.output_fields.syslog.severity
+    target_field: falco.output_fields.syslog_severity
     ignore_missing: true
 - dot_expander:
     field: '*'
@@ -168,7 +189,7 @@ processors:
     source: |
         def allowedValues = [
             'access',
-            'admin', 
+            'admin',
             'allowed',
             'change',
             'connection',
@@ -303,8 +324,6 @@ processors:
         if (ctx.falco?.output_fields?.evt?.time != null) {
             def timeField = ctx.falco.output_fields.evt.time;
             def inputFormat = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSSZ");
-
-            if (timeField instanceof Map) {
                 if (timeField.iso8601 != null) {
                     if (timeField.iso8601 instanceof String) {
                         def formatted = inputFormat.parse(timeField.iso8601);
@@ -332,14 +351,17 @@ processors:
                         ctx['@timestamp'] = new Date(milliseconds);
                     }
                 }
-            } else {
-                if (timeField instanceof String) {
-                    def formatted = inputFormat.parse(timeField);
-                    ctx['@timestamp'] = formatted;
-                } else if (timeField instanceof Long) {
-                    long milliseconds = timeField / 1000000;
-                    ctx['@timestamp'] = new Date(milliseconds);
-                }
+        } else {
+            def timeField = ctx.falco.output_fields.event.time;
+            def inputFormat = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSSZ");
+            if (ctx.falco?.output_fields?.event?.time != null) {
+              if (timeField instanceof String) {
+                  def formatted = inputFormat.parse(timeField);
+                  ctx['@timestamp'] = formatted;
+              } else if (timeField instanceof Long) {
+                  long milliseconds = timeField / 1000000;
+                  ctx['@timestamp'] = new Date(milliseconds);
+              }
             }
         }
 - set:
