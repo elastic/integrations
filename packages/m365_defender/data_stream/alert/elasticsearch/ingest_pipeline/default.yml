@@ -1097,6 +1097,16 @@ processors:
       tag: foreach_rename_evidence_azureAdDeviceId
       if: ctx.json?.evidence instanceof List
       processor:
+        append:
+          field: device.id
+          tag: append_azureAdDeviceId_into_device_id
+          value: '{{{_ingest._value.azureAdDeviceId}}}'
+          allow_duplicates: false
+  - foreach:
+      field: json.evidence
+      tag: foreach_rename_evidence_azureAdDeviceId
+      if: ctx.json?.evidence instanceof List
+      processor:
         rename:
           field: _ingest._value.azureAdDeviceId
           tag: rename_foreach_evidence_azureAdDeiveId

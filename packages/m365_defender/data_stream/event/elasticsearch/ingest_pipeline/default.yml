@@ -126,7 +126,16 @@ processors:
       override: false
       ignore_empty_value: true
       if: ctx.m365_defender?.event?.device?.id != null
-
+  - set:
+      field: device.id
+      copy_from: m365_defender.event.device.id
+      tag: set_device_id
+      ignore_empty_value: true
+  - set:
+      field: application.name
+      copy_from: m365_defender.event.application
+      tag: set_application_name
+      ignore_empty_value: true
   # Cleanup
   - remove:
       field: json
