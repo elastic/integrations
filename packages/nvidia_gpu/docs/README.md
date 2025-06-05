@@ -47,7 +47,9 @@ See more in the [DCGM Github Repository](https://github.com/NVIDIA/dcgm-exporter
 
 ## Data streams
 
-**stats** give you insight into the state of the NVIDIA GPUs.
+### Stats
+
+`stats` give you insight into the state of the NVIDIA GPUs.
 Metric data streams collected by the Nvidia GPU Monitoring integration include `stats`. See more details in the [Metrics](#metrics-reference).
 
 An example event for `stats` looks as following:
@@ -224,6 +226,7 @@ An example event for `stats` looks as following:
 | gpu.throttling.reliability.us | Number of microseconds throttled due to reliability. | long |  | counter |
 | gpu.throttling.sync_boost.us | Number of microseconds throttled due to Sync Boost. | long |  | counter |
 | gpu.throttling.thermal.us | Number of microseconds throttled due to thermals. | long |  | counter |
+| gpu.up | Fields related to Prometheus `up` data. | keyword |  |  |
 | gpu.utilization.decoder.pct | Decoder utilization (in %). | float | percent | gauge |
 | gpu.utilization.encoder.pct | Encoder utilization (in %). | float | percent | gauge |
 | gpu.utilization.gpu.pct | GPU utilization (in %). | float | percent | gauge |
