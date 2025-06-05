@@ -1282,35 +1282,27 @@ processors:
       description: >-
         Sets the parts to the correct names
       params:
-        "ST":
-          name: "state_or_province"
-        "S":
-          name: "state_or_province"
-        "P":
-          name: "state_or_province"
-        "CN":
-          name: "common_name"
-        "C":
-          name: "country"
-        "L":
-          name: "locality"
-        "O":
-          name: "organization"
-        "OU":
-          name: "organizational_unit"
+        "ST": "state_or_province"
+        "S": "state_or_province"
+        "P": "state_or_province"
+        "CN": "common_name"
+        "C": "country"
+        "L": "locality"
+        "O": "organization"
+        "OU": "organizational_unit"
       source: |
-          def subject = new HashMap();
-          def parts = ctx._temp_.cisco.dn_parts;
-          for (entry in params.entrySet()) {
-            def k = entry.getKey();
-            def _v = entry.getValue();
-            if (parts.containsKey(k)) {
-              def v = parts[k];
-              List values = (v instanceof List) ? v : [v];   // `[v]` is a Painless list literal
-              subject[_v["name"]] = values;
-            }
+          if (ctx._temp_?.cisco?.dn_parts == null) {
+            return;
           }
-          ctx._temp_.cisco.dn_parts = subject;
+          def parts = [:];
+          ctx._temp_.cisco.dn_parts.forEach((k,v) -> {
+            if (params.containsKey(k)) {
+              parts[params[k]] = (v instanceof List) ? v : [v];   // `[v]` is a Painless list literal
+            } else {
+              return false;
+            }
+          });
+          ctx._temp_.cisco.dn_parts = parts;
       if: 'ctx._temp_.cisco?.dn_parts != null'
 
   - rename:
