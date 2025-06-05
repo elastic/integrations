@@ -604,6 +604,8 @@ An example event for `alert` looks as following:
 | crowdstrike.alert.objective |  | keyword |
 | crowdstrike.alert.operating_system |  | keyword |
 | crowdstrike.alert.os_name |  | keyword |
+| crowdstrike.alert.overwatch_note |  | keyword |
+| crowdstrike.alert.overwatch_note_timestamp |  | date |
 | crowdstrike.alert.parent_details.cmdline |  | keyword |
 | crowdstrike.alert.parent_details.filename |  | keyword |
 | crowdstrike.alert.parent_details.filepath |  | keyword |
@@ -650,6 +652,7 @@ An example event for `alert` looks as following:
 | crowdstrike.alert.pattern_id |  | keyword |
 | crowdstrike.alert.platform |  | keyword |
 | crowdstrike.alert.poly_id |  | keyword |
+| crowdstrike.alert.prevented |  | boolean |
 | crowdstrike.alert.process_end_time |  | date |
 | crowdstrike.alert.process_id |  | keyword |
 | crowdstrike.alert.process_start_time |  | date |
@@ -660,6 +663,12 @@ An example event for `alert` looks as following:
 | crowdstrike.alert.quarantined_files.id |  | keyword |
 | crowdstrike.alert.quarantined_files.sha256 |  | keyword |
 | crowdstrike.alert.quarantined_files.state |  | keyword |
+| crowdstrike.alert.rule_group_id |  | keyword |
+| crowdstrike.alert.rule_group_name |  | keyword |
+| crowdstrike.alert.rule_instance_created_by |  | keyword |
+| crowdstrike.alert.rule_instance_id |  | keyword |
+| crowdstrike.alert.rule_instance_name |  | keyword |
+| crowdstrike.alert.rule_instance_version |  | keyword |
 | crowdstrike.alert.scan_id |  | keyword |
 | crowdstrike.alert.scenario |  | keyword |
 | crowdstrike.alert.seconds_to_resolved |  | long |
@@ -713,6 +722,7 @@ An example event for `alert` looks as following:
 | crowdstrike.alert.user_id |  | keyword |
 | crowdstrike.alert.user_name |  | keyword |
 | crowdstrike.alert.user_principal |  | keyword |
+| crowdstrike.alert.worker_node_name |  | keyword |
 | data_stream.dataset | Data stream dataset. | constant_keyword |
 | data_stream.namespace | Data stream namespace. | constant_keyword |
 | data_stream.type | Data stream type. | constant_keyword |
@@ -1113,11 +1123,11 @@ An example event for `falcon` looks as following:
 {
     "@timestamp": "2023-11-02T13:41:34.000Z",
     "agent": {
-        "ephemeral_id": "3fd78d38-353a-4dbd-812d-a6b8b1ba69ca",
-        "id": "8fbdb665-cf98-4165-86b7-690b75859cb9",
-        "name": "elastic-agent-58400",
+        "ephemeral_id": "8f4a039c-66d4-439c-a43f-c5a95f653dd4",
+        "id": "67072e92-576d-47d8-8a43-ebb347b4250b",
+        "name": "elastic-agent-93422",
         "type": "filebeat",
-        "version": "8.18.0"
+        "version": "8.18.1"
     },
     "crowdstrike": {
         "event": {
@@ -1133,16 +1143,16 @@ An example event for `falcon` looks as following:
     },
     "data_stream": {
         "dataset": "crowdstrike.falcon",
-        "namespace": "65351",
+        "namespace": "99576",
         "type": "logs"
     },
     "ecs": {
         "version": "8.17.0"
     },
     "elastic_agent": {
-        "id": "8fbdb665-cf98-4165-86b7-690b75859cb9",
+        "id": "67072e92-576d-47d8-8a43-ebb347b4250b",
         "snapshot": false,
-        "version": "8.18.0"
+        "version": "8.18.1"
     },
     "event": {
         "action": [
@@ -1155,7 +1165,7 @@ An example event for `falcon` looks as following:
         ],
         "created": "2023-11-02T13:41:34.000Z",
         "dataset": "crowdstrike.falcon",
-        "ingested": "2025-05-26T12:32:10Z",
+        "ingested": "2025-05-30T08:29:21Z",
         "kind": "event",
         "original": "{\"event\":{\"AgentIdString\":\"fffffffff33333\",\"HostnameField\":\"UKCHUDL00206\",\"SessionId\":\"1111-fffff-4bb4-99c1-74c13cfc3e5a\",\"StartTimestamp\":1698932494,\"UserName\":\"admin.rose@example.com\"},\"metadata\":{\"customerIDString\":\"abcabcabc22221\",\"eventCreationTime\":1698932494000,\"eventType\":\"RemoteResponseSessionStartEvent\",\"offset\":1,\"version\":\"1.0\"}}",
         "start": "2023-11-02T13:41:34.000Z",
@@ -1179,6 +1189,7 @@ An example event for `falcon` looks as following:
             "UKCHUDL00206"
         ],
         "user": [
+            "admin.rose",
             "admin.rose@example.com"
         ]
     },
@@ -1188,8 +1199,9 @@ An example event for `falcon` looks as following:
         "crowdstrike-falcon"
     ],
     "user": {
+        "domain": "example.com",
         "email": "admin.rose@example.com",
-        "name": "admin.rose@example.com"
+        "name": "admin.rose"
     }
 }
 ```
