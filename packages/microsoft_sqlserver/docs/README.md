@@ -5,9 +5,10 @@ The Microsoft SQL Server integration package allows you to search, observe, and 
 ## ⚠️ Important Note: Upgrading from version 2.12.0 to 3.0.0
 When upgrading from version 2.12.0 to 3.0.0, you must manually modify the dynamic counter configuration for performance metrics data stream. Follow these steps:
  1. Before upgrading, note your current `Dynamic Counter Name` values
- 2. Remove the default value from the `Dynamic Counter Name` configurations
- 3. Upgrade the integration version to version 3.0.0
- 4. After the upgrade, re-add your desired counter configurations using the new multi-value input
+ 2. Remove the default value from the `Dynamic Counter Name` configurations by editing the integration policy
+ 3. Click `Save integration`
+ 4. Upgrade the integration version to version 3.0.0
+ 5. After the upgrade, re-add your desired counter configurations using the new multi-value input
  
  This is necessary due to changes in how dynamic counters are handled in the new version.
 
