@@ -96,12 +96,12 @@
         - "{{data_stream.namespace}}"
         - default
     - target_dataset: aws.s3_daily_storage
-      if: ctx.aws?.cloudwatch?.namespace == "AWS/S3" && (ctx.aws?.s3?.metrics?.BucketSizeBytes != null || ctx.aws?.s3?.metrics?.NumberOfObjects != null)
+      if: ctx.event?.dataset == 'aws.s3_daily_storage'
       namespace:
         - "{{data_stream.namespace}}"
         - default
     - target_dataset: aws.s3_request
-      if: ctx.aws?.cloudwatch?.namespace == "AWS/S3" && ctx.aws?.s3?.metrics?.BucketSizeBytes == null && ctx.aws?.s3?.metrics?.NumberOfObjects == null
+      if: ctx.event?.dataset == 'aws.s3_request'
       namespace:
         - "{{data_stream.namespace}}"
         - default
@@ -112,6 +112,16 @@
         - default
     - target_dataset: aws_bedrock.guardrails
       if: ctx.aws?.cloudwatch?.namespace == "AWS/Bedrock/Guardrails"
+      namespace:
+        - "{{data_stream.namespace}}"
+        - default
+    - target_dataset: aws_mq.activemq_metrics
+      if: ctx.event?.dataset == 'aws_mq.activemq_metrics'
+      namespace:
+        - "{{data_stream.namespace}}"
+        - default
+    - target_dataset: aws_mq.rabbitmq_metrics
+      if: ctx.event?.dataset == 'aws_mq.rabbitmq_metrics'
       namespace:
         - "{{data_stream.namespace}}"
         - default

@@ -1,10 +1,10 @@
 config_version: 2
 interval: {{interval}}
-{{#if enable_request_tracer}}
-resource.tracer.filename: "../../logs/cel/http-request-trace-*.ndjson"
-resource.tracer.maxbackups: 5
-resource.tracer.maxsize: 5
-{{/if}}
+resource.tracer:
+  enabled: {{enable_request_tracer}}
+  filename: "../../logs/cel/http-request-trace-*.ndjson"
+  maxbackups: 5
+  maxsize: 5
 {{#if proxy_url}}
 resource.proxy_url: {{proxy_url}}
 {{/if}}
@@ -26,7 +26,7 @@ redact:
     - password
 program: |
   state.with(
-    request("GET", state.url.trim_right("/") + "/api/2.0/fo/knowledge_base/vuln/?" +
+    request("GET", state.url.trim_right("/") + "/api/3.0/fo/knowledge_base/vuln/?" +
       state.?params.orValue("").parse_query().with({
         "action": ["list"],
         "last_modified_after": [state.?cursor.last_modified.orValue((now - duration(state.initial_interval)).format(time_layout.RFC3339))],
@@ -39,7 +39,7 @@ program: |
     }).do_request().as(resp,
       resp.StatusCode == 200
       ?
-        resp.Body.as(xml, bytes(xml).decode_xml('qualys_api_2_0').as(body, {
+        resp.Body.as(xml, bytes(xml).decode_xml('qualys_api_3_0').as(body, {
           "events": (
             has(body.doc.KNOWLEDGE_BASE_VULN_LIST_OUTPUT.RESPONSE.VULN_LIST)
             ?
@@ -103,7 +103,7 @@ processors:
 {{processors}}
 {{/if}}
 xsd:
-  qualys_api_2_0: |
+  qualys_api_3_0: |
     <xsd:schema xmlns:xsd='http://www.w3.org/2001/XMLSchema'>
 
       <xsd:element name='KNOWLEDGE_BASE_VULN_LIST_OUTPUT'>
@@ -197,6 +197,7 @@ xsd:
           <xsd:element ref='PUBLISHED_DATETIME'/>
           <xsd:element ref='BUGTRAQ_LIST' minOccurs='0' maxOccurs='1'/>
           <xsd:element ref='PATCHABLE'/>
+          <xsd:element ref='PATCH_PUBLISHED_DATE' minOccurs='0' maxOccurs='1'/>
           <xsd:element ref='SOFTWARE_LIST' minOccurs='0' maxOccurs='1'/>
           <xsd:element ref='VENDOR_REFERENCE_LIST' minOccurs='0' maxOccurs='1'/>
           <xsd:element ref='CVE_LIST' minOccurs='0' maxOccurs='1'/>
@@ -279,6 +280,9 @@ xsd:
       </xsd:element>
 
       <xsd:element name='PATCHABLE' type='xsd:string'>
+      </xsd:element>
+
+      <xsd:element name='PATCH_PUBLISHED_DATE' type='xsd:string'>
       </xsd:element>
 
       <xsd:element name='SOFTWARE_LIST'>

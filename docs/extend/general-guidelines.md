@@ -106,7 +106,7 @@ Potential candidates to remove:
 
 This is probably the most important and hardest one of the guidelinesto satisfy, as it requires knowledge of every target system. Identifying relevant metrics should be considered case by case.
 
-There are no well defined guidelines for this exercise. It can be as simple as finding everything in one place (for example the [RabbitMQ documentation](https://www.rabbitmq.com/monitoring.md)) or as difficult as reviewing multiple sources including documentation, blog posts, and other integrations, and consolidating the discovered information in one place for revision. A recommendation is to only collect the metrics that are needed for dashboards and visualizations in general.
+There are no well defined guidelines for this exercise. It can be as simple as finding everything in one place (for example the [RabbitMQ documentation](https://www.rabbitmq.com/monitoring.html)) or as difficult as reviewing multiple sources including documentation, blog posts, and other integrations, and consolidating the discovered information in one place for revision. A recommendation is to only collect the metrics that are needed for dashboards and visualizations in general.
 
 
 ## Keep the original message field [_keep_the_original_message_field]

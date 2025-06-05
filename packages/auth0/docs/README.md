@@ -120,11 +120,11 @@ An example event for `logs` looks as following:
 {
     "@timestamp": "2021-11-03T03:06:05.696Z",
     "agent": {
-        "ephemeral_id": "43a5c1c4-07f0-45c2-b500-d13f835a029b",
-        "id": "69cd4013-cce1-4df6-b3fb-6f59a9969e32",
-        "name": "elastic-agent-38349",
+        "ephemeral_id": "c332091a-27ef-4163-97f1-602c0c5722d2",
+        "id": "0f4499f8-3f89-4f53-945d-1f033cc2bf93",
+        "name": "elastic-agent-42968",
         "type": "filebeat",
-        "version": "8.13.0"
+        "version": "8.18.1"
     },
     "auth0": {
         "logs": {
@@ -164,16 +164,16 @@ An example event for `logs` looks as following:
     },
     "data_stream": {
         "dataset": "auth0.logs",
-        "namespace": "26539",
+        "namespace": "49995",
         "type": "logs"
     },
     "ecs": {
         "version": "8.11.0"
     },
     "elastic_agent": {
-        "id": "69cd4013-cce1-4df6-b3fb-6f59a9969e32",
+        "id": "0f4499f8-3f89-4f53-945d-1f033cc2bf93",
         "snapshot": false,
-        "version": "8.13.0"
+        "version": "8.18.1"
     },
     "event": {
         "action": "failed-login",
@@ -183,7 +183,7 @@ An example event for `logs` looks as following:
         ],
         "dataset": "auth0.logs",
         "id": "90020211103030609732115389415260839021644201259064885298",
-        "ingested": "2025-02-18T00:59:52Z",
+        "ingested": "2025-05-30T14:06:51Z",
         "kind": "event",
         "original": "{\"data\":{\"connection_id\":\"\",\"date\":\"2021-11-03T03:06:05.696Z\",\"description\":\"Callback URL mismatch. http://localhost:3000/callback is not in the list of allowed callback URLs\",\"details\":{\"body\":{},\"error\":{\"message\":\"Callback URL mismatch. http://localhost:3000/callback is not in the list of allowed callback URLs\",\"oauthError\":\"Callback URL mismatch. http://localhost:3000/callback is not in the list of allowed callback URLs. Please go to 'https://manage.auth0.com/#/applications/aI61p8I8aFjmYRliLWgvM9ev97kCCNDB/settings' and make sure you are sending the same callback url from your application.\",\"payload\":{\"attempt\":\"http://localhost:3000/callback\",\"authorized\":[],\"client\":{\"clientID\":\"aI61p8I8aFjmYRliLWgvM9ev97kCCNDB\"},\"code\":\"unauthorized_client\",\"message\":\"Callback URL mismatch. http://localhost:3000/callback is not in the list of allowed callback URLs\",\"name\":\"CallbackMismatchError\",\"status\":403},\"type\":\"callback-url-mismatch\"},\"qs\":{\"client_id\":\"aI61p8I8aFjmYRliLWgvM9ev97kCCNDB\",\"redirect_uri\":\"http://localhost:3000/callback\",\"response_type\":\"code\",\"scope\":\"openid profile\",\"state\":\"Vz6G2zZf95/FCOQALrpvd4bS6jx5xvRos2pVldFAiw4=\"}},\"hostname\":\"dev-yoj8axza.au.auth0.com\",\"ip\":\"81.2.69.143\",\"log_id\":\"90020211103030609732115389415260839021644201259064885298\",\"type\":\"f\",\"user_agent\":\"Mozilla/5.0 (X11; Ubuntu; Linux x86_64; rv:93.0) Gecko/20100101 Firefox/93.0\"},\"log_id\":\"90020211103030609732115389415260839021644201259064885298\"}",
         "outcome": "failure",
@@ -229,7 +229,7 @@ An example event for `logs` looks as following:
         "os": {
             "name": "Ubuntu"
         },
-        "version": "93.0."
+        "version": "93.0"
     }
 }
 ```

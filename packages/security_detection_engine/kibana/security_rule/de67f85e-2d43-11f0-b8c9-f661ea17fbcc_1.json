@@ -1,0 +1,56 @@
+{
+    "attributes": {
+        "author": [
+            "Elastic"
+        ],
+        "description": "Detects a burst of Microsoft 365 user account lockouts within a short 5-minute window. A high number of IdsLocked login errors across multiple user accounts may indicate brute-force attempts for the same users resulting in lockouts.",
+        "from": "now-9m",
+        "language": "esql",
+        "license": "Elastic License v2",
+        "name": "Multiple Microsoft 365 User Account Lockouts in Short Time Window",
+        "note": "## Triage and Analysis\n\n### Investigating Multiple Microsoft 365 User Account Lockouts in Short Time Window\n\nDetects a burst of Microsoft 365 user account lockouts within a short 5-minute window. A high number of IdsLocked login errors across multiple user accounts may indicate brute-force attempts for the same users resulting in lockouts.\n\nThis rule uses ES|QL aggregations and thus has dynamically generated fields. Correlation of the values in the alert document may need to be performed to the original sign-in and Graph events for further context.\n\n### Investigation Steps\n\n- Review the `user_id_list`: Are specific naming patterns targeted (e.g., admin, helpdesk)?\n- Examine `ip_list` and `source_orgs`: Look for suspicious ISPs or hosting providers.\n- Check `duration_seconds`: A very short window with a high lockout rate often indicates automation.\n- Confirm lockout policy thresholds with IAM or Entra ID admins. Did the policy trigger correctly?\n- Use the `first_seen` and `last_seen` values to pivot into related authentication or audit logs.\n- Correlate with any recent detection of password spraying or credential stuffing activity.\n- Review the `request_type` field to identify which authentication methods were used (e.g., OAuth, SAML, etc.).\n- Check for any successful logins from the same IP or ASN after the lockouts.\n\n### False Positive Analysis\n\n- Automated systems with stale credentials may cause repeated failed logins.\n- Legitimate bulk provisioning or scripted tests could unintentionally cause account lockouts.\n- Red team exercises or penetration tests may resemble the same lockout pattern.\n- Some organizations may have a high volume of lockouts due to user behavior or legacy systems.\n\n### Response Recommendations\n\n- Notify affected users and confirm whether activity was expected or suspicious.\n- Lock or reset credentials for impacted accounts.\n- Block the source IP(s) or ASN temporarily using conditional access or firewall rules.\n- Strengthen lockout and retry delay policies if necessary.\n- Review the originating application(s) involved via `request_types`.\n",
+        "query": "FROM logs-o365.audit-*\n\n| MV_EXPAND event.category\n| EVAL\n    time_window = DATE_TRUNC(5 minutes, @timestamp),\n    user_id = TO_LOWER(o365.audit.UserId),\n    ip = source.ip,\n    login_error = o365.audit.LogonError,\n    request_type = TO_LOWER(o365.audit.ExtendedProperties.RequestType),\n    asn_org = source.`as`.organization.name,\n    country = source.geo.country_name,\n    event_time = @timestamp\n\n| WHERE event.dataset == \"o365.audit\"\n  AND event.category == \"authentication\"\n  AND event.provider IN (\"AzureActiveDirectory\", \"Exchange\")\n  AND event.action IN (\"UserLoginFailed\", \"PasswordLogonInitialAuthUsingPassword\")\n  AND request_type RLIKE \"(oauth.*||.*login.*)\"\n  AND login_error == \"IdsLocked\"\n  AND user_id != \"not available\"\n  AND o365.audit.Target.Type IN (\"0\", \"2\", \"6\", \"10\")\n  AND asn_org != \"MICROSOFT-CORP-MSN-AS-BLOCK\"\n\n| STATS\n    unique_users = COUNT_DISTINCT(user_id),\n    user_id_list = VALUES(user_id),\n    ip_list = VALUES(ip),\n    unique_ips = COUNT_DISTINCT(ip),\n    source_orgs = VALUES(asn_org),\n    countries = VALUES(country),\n    unique_country_count = COUNT_DISTINCT(country),\n    unique_asn_orgs = COUNT_DISTINCT(asn_org),\n    request_types = VALUES(request_type),\n    first_seen = MIN(event_time),\n    last_seen = MAX(event_time),\n    total_lockout_responses = COUNT()\n  BY time_window\n\n| EVAL\n    duration_seconds = DATE_DIFF(\"seconds\", first_seen, last_seen)\n\n| KEEP\n    time_window, unique_users, user_id_list, ip_list,\n    unique_ips, source_orgs, countries, unique_country_count,\n    unique_asn_orgs, request_types, first_seen, last_seen,\n    total_lockout_responses, duration_seconds\n\n| WHERE\n    unique_users >= 10 AND\n    total_lockout_responses >= 10 AND\n    duration_seconds <= 300\n",
+        "references": [
+            "https://learn.microsoft.com/en-us/security/operations/incident-response-playbook-password-spray",
+            "https://learn.microsoft.com/en-us/purview/audit-log-detailed-properties",
+            "https://securityscorecard.com/research/massive-botnet-targets-m365-with-stealthy-password-spraying-attacks/",
+            "https://github.com/0xZDH/Omnispray",
+            "https://github.com/0xZDH/o365spray"
+        ],
+        "risk_score": 47,
+        "rule_id": "de67f85e-2d43-11f0-b8c9-f661ea17fbcc",
+        "severity": "medium",
+        "tags": [
+            "Domain: Cloud",
+            "Domain: SaaS",
+            "Data Source: Microsoft 365",
+            "Data Source: Microsoft 365 Audit Logs",
+            "Use Case: Threat Detection",
+            "Use Case: Identity and Access Audit",
+            "Tactic: Credential Access",
+            "Resources: Investigation Guide"
+        ],
+        "threat": [
+            {
+                "framework": "MITRE ATT&CK",
+                "tactic": {
+                    "id": "TA0006",
+                    "name": "Credential Access",
+                    "reference": "https://attack.mitre.org/tactics/TA0006/"
+                },
+                "technique": [
+                    {
+                        "id": "T1110",
+                        "name": "Brute Force",
+                        "reference": "https://attack.mitre.org/techniques/T1110/"
+                    }
+                ]
+            }
+        ],
+        "timestamp_override": "event.ingested",
+        "type": "esql",
+        "version": 1
+    },
+    "id": "de67f85e-2d43-11f0-b8c9-f661ea17fbcc_1",
+    "type": "security-rule"
+}

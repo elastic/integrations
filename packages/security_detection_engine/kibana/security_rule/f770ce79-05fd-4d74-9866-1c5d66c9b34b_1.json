@@ -1,0 +1,54 @@
+{
+    "attributes": {
+        "author": [
+            "Elastic"
+        ],
+        "description": "Identifies PowerShell script blocks associated with multiple distinct detections, indicating likely malicious behavior.",
+        "from": "now-9m",
+        "language": "esql",
+        "license": "Elastic License v2",
+        "name": "Potential Malicious PowerShell Based on Alert Correlation",
+        "note": "## Triage and analysis\n\n### Investigating Potential Malicious PowerShell Based on Alert Correlation\n\nThis detection rule aggregates alert data to identify PowerShell Scripts that have triggered various PowerShell-related detection logic, thereby producing higher-fidelity results.\n\n> **Note**:\n> This investigation guide uses the [Osquery Markdown Plugin](https://www.elastic.co/guide/en/security/current/invest-guide-run-osquery.html) introduced in Elastic Stack version 8.5.0. Older Elastic Stack versions will display unrendered Markdown in this guide.\n\n### Possible investigation steps\n\n- Analyzing the detections triggered by the script should offer insight into the suspicious behaviors it exhibits. This information can be found in the `distinct_alerts` field.\n- Examine the script content that triggered the detection; look for suspicious DLL imports, collection or exfiltration capabilities, suspicious functions, encoded or compressed data, and other potentially malicious characteristics.\n- Investigate the script execution chain (parent process tree) for unknown processes. Examine their executable files for prevalence, whether they are located in expected locations, and if they are signed with valid digital signatures.\n- Examine the script's execution context, such as the user account, privileges, the role of the system on which it was executed, and any relevant timestamps.\n- Investigate other alerts associated with the user/host during the past 48 hours.\n- Evaluate whether the user needs to use PowerShell to complete tasks.\n- Investigate the origin of the PowerShell script, including its source, download method, and any associated URLs or IP addresses.\n- Examine the host for derived artifacts that indicate suspicious activities:\n  - Analyze the script using a private sandboxed analysis system.\n  - Observe and collect information about the following activities in both the sandbox and the alert subject host:\n    - Attempts to contact external domains and addresses.\n      - Use the Elastic Defend network events to determine domains and addresses contacted by the subject process by filtering by the process's `process.entity_id`.\n      - Examine the DNS cache for suspicious or anomalous entries.\n        - !{osquery{\"label\":\"Osquery - Retrieve DNS Cache\",\"query\":\"SELECT * FROM dns_cache\"}}\n    - Use the Elastic Defend registry events to examine registry keys accessed, modified, or created by the related processes in the process tree.\n    - Examine the host services for suspicious or anomalous entries.\n      - !{osquery{\"label\":\"Osquery - Retrieve All Services\",\"query\":\"SELECT description, display_name, name, path, pid, service_type, start_type, status, user_account FROM services\"}}\n      - !{osquery{\"label\":\"Osquery - Retrieve Services Running on User Accounts\",\"query\":\"SELECT description, display_name, name, path, pid, service_type, start_type, status, user_account FROM services WHERE\\nNOT (user_account LIKE '%LocalSystem' OR user_account LIKE '%LocalService' OR user_account LIKE '%NetworkService' OR\\nuser_account == null)\\n\"}}\n      - !{osquery{\"label\":\"Osquery - Retrieve Service Unsigned Executables with Virustotal Link\",\"query\":\"SELECT concat('https://www.virustotal.com/gui/file/', sha1) AS VtLink, name, description, start_type, status, pid,\\nservices.path FROM services JOIN authenticode ON services.path = authenticode.path OR services.module_path =\\nauthenticode.path JOIN hash ON services.path = hash.path WHERE authenticode.result != 'trusted'\\n\"}}\n  - Retrieve the files' SHA-256 hash values using the PowerShell `Get-FileHash` cmdlet and search for the existence and reputation of the hashes in resources like VirusTotal, Hybrid-Analysis, CISCO Talos, Any.run, etc.\n- Investigate potentially compromised accounts. Analysts can do this by searching for login events (for example, 4624) to the target host after the registry modification.\n\n### False positive analysis\n\n- This rule is unlikely to trigger on legitimate activity. Benign true positives (B-TPs) can be added as exceptions if necessary.\n\n### Response and Remediation\n\n- Initiate the incident response process based on the outcome of the triage.\n  - If malicious activity is confirmed, perform a broader investigation to identify the scope of the compromise and determine the appropriate remediation steps.\n- Isolate the involved hosts to prevent further post-compromise behavior.\n- If the triage identified malware, search the environment for additional compromised hosts.\n  - Implement temporary network rules, procedures, and segmentation to contain the malware.\n  - Stop suspicious processes.\n  - Immediately block the identified indicators of compromise (IoCs).\n  - Inspect the affected systems for additional malware backdoors like reverse shells, reverse proxies, or droppers that attackers could use to reinfect the system.\n- Remove and block malicious artifacts identified during triage.\n- Reimage the host operating system or restore the compromised files to clean versions.\n- Restrict PowerShell usage outside of IT and engineering business units using GPOs, AppLocker, Intune, or similar software.\n- Investigate credential exposure on systems compromised or used by the attacker to ensure all compromised accounts are identified. Reset passwords for these accounts and other potentially compromised credentials, such as email, business systems, and web services.\n- Run a full antimalware scan. This may reveal additional artifacts left in the system, persistence mechanisms, and malware components.\n- Determine the initial vector abused by the attacker and take action to prevent reinfection through the same vector.\n- Using the incident response data, update logging and audit policies to improve the mean time to detect (MTTD) and the mean time to respond (MTTR).\n",
+        "query": "FROM .alerts-security.* metadata _id\n\n// Filter for PowerShell related alerts\n| WHERE kibana.alert.rule.name LIKE \"*PowerShell*\"\n\n// As alerts don't have non-ECS fields, parse the script block ID using GROK\n| GROK message \"ScriptBlock ID: (?<powershell.file.script_block_id>.+)\"\n| WHERE powershell.file.script_block_id IS NOT NULL\n\n| KEEP kibana.alert.rule.name, powershell.file.script_block_id, _id\n\n// Count distinct alerts and filter for matches above the threshold\n| STATS distinct_alerts = COUNT_DISTINCT(kibana.alert.rule.name), rules_triggered = VALUES(kibana.alert.rule.name), alert_ids = VALUES(_id) BY powershell.file.script_block_id\n| WHERE distinct_alerts >= 5\n",
+        "risk_score": 73,
+        "rule_id": "f770ce79-05fd-4d74-9866-1c5d66c9b34b",
+        "severity": "high",
+        "tags": [
+            "Domain: Endpoint",
+            "OS: Windows",
+            "Use Case: Threat Detection",
+            "Tactic: Execution",
+            "Rule Type: Higher-Order Rule",
+            "Resources: Investigation Guide"
+        ],
+        "threat": [
+            {
+                "framework": "MITRE ATT&CK",
+                "tactic": {
+                    "id": "TA0002",
+                    "name": "Execution",
+                    "reference": "https://attack.mitre.org/tactics/TA0002/"
+                },
+                "technique": [
+                    {
+                        "id": "T1059",
+                        "name": "Command and Scripting Interpreter",
+                        "reference": "https://attack.mitre.org/techniques/T1059/",
+                        "subtechnique": [
+                            {
+                                "id": "T1059.001",
+                                "name": "PowerShell",
+                                "reference": "https://attack.mitre.org/techniques/T1059/001/"
+                            }
+                        ]
+                    }
+                ]
+            }
+        ],
+        "timestamp_override": "event.ingested",
+        "type": "esql",
+        "version": 1
+    },
+    "id": "f770ce79-05fd-4d74-9866-1c5d66c9b34b_1",
+    "type": "security-rule"
+}
