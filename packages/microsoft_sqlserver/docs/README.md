@@ -2,8 +2,8 @@
 
 The Microsoft SQL Server integration package allows you to search, observe, and visualize the SQL Server audit logs, as well as performance and transaction log metrics, through Elasticsearch.
 
-## ⚠️ Important Note(upgrade 2.12.0 to 3.0.0):
-When upgrading from version 2.12.0 to 3.0.0, you must manually modify the dynamic counter configuration manually for performance metrics data stream. Follow these steps:
+## ⚠️ Important Note: Upgrading from version 2.12.0 to 3.0.0
+When upgrading from version 2.12.0 to 3.0.0, you must manually modify the dynamic counter configuration for performance metrics data stream. Follow these steps:
  1. Before upgrading, note your current `Dynamic Counter Name` values
  2. Remove the default value from the `Dynamic Counter Name` configurations
  3. Upgrade the integration version to version 3.0.0
