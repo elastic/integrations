@@ -23,14 +23,14 @@ Elastic Agent must be installed. For more details, check the Elastic Agent [inst
 
 ## Collect data from Zscaler ZIA Sandbox Report API
 
-1. Go to the Zscaler ZIA Portal and Login by entering an email address and password.
+1. Go to the Zscaler ZIA Portal and login by entering your email address and password.
 2. Configure OAuth 2.0 for [Okta](https://help.zscaler.com/zia/oauth-2.0-configuration-guide-okta) or [Microsoft Entra ID](https://help.zscaler.com/zia/oauth-2.0-configuration-guide-microsoft-entra-id) for generating OAuth2.0 Credentials.
 3. Add [OAuth2.0 Authorization Server](https://help.zscaler.com/zia/managing-oauth-2.0-authorization-servers). 
 
 ## Set up NSS Feeds
 
 1. Enable the integration with the TCP input.
-2. Configure the Zscaler NSS Server and NSS Feeds to send logs to the Elastic Agent that is running this integration. See [Add NSS Server](https://help.zscaler.com/zia/adding-nss-servers) and [Add NSS Feeds](https://help.zscaler.com/zia/adding-nss-feeds). Use the IP address hostname of the Elastic Agent as the 'NSS Feed SIEM IP Address/FQDN', and use the listening port of the Elastic Agent as the 'SIEM TCP Port' on the _Add NSS Feed_ configuration screen. To configure Zscaler NSS Server and NSS Feeds follow the following steps.
+2. Configure the Zscaler NSS Server and NSS Feeds to send logs to the Elastic Agent that is running this integration. Check [Add NSS Server](https://help.zscaler.com/zia/adding-nss-servers) and [Add NSS Feeds](https://help.zscaler.com/zia/adding-nss-feeds). Use the IP address hostname of the Elastic Agent as the 'NSS Feed SIEM IP Address/FQDN', and use the listening port of the Elastic Agent as the 'SIEM TCP Port' on the _Add NSS Feed_ configuration screen. To configure Zscaler NSS Server and NSS Feeds follow the following steps.
     - In the ZIA Admin Portal, add an NSS Server.
         - Log in to the ZIA Admin Portal using your admin account. If you're unable to log in, [contact Support](https://www.zscaler.com/company/contact).
         - Add an NSS server. Refer to Adding NSS Servers to set up an [Add NSS Server](https://help.zscaler.com/zia/adding-nss-servers) for Web and/or Firewall.
@@ -52,7 +52,7 @@ Elastic Agent must be installed. For more details, check the Elastic Agent [inst
             - **Feed Output Type**: Select Custom in Feed output type and paste the appropriate response format in Feed output format as follows:
             ![NSS Feeds setup image](../img/nss_feeds.png?raw=true)
 
-## Steps for setting up Cloud NSS Feeds
+## Set up Cloud NSS Feeds
 
 1. Enable the integration with the HTTP Endpoint input.
 2. Configure the Zscaler Cloud NSS Feeds to send logs to the Elastic Agent that is running this integration. Provide API URL to send logs to the Elastic Agent. To configure Zscaler Cloud NSS Feeds follow the following steps.
@@ -76,12 +76,9 @@ Elastic Agent must be installed. For more details, check the Elastic Agent [inst
           ![Cloud NSS Feeds setup image](../img/cloud_nss_feeds.png?raw=true)
 3. Repeat step 2 for each log type.
 
-**Please make sure to use the given response formats for NSS and Cloud NSS Feeds.**
+**Note**: Make sure to use the latest version of given response formats for NSS and Cloud NSS Feeds.
 
-Note: Please make sure to use latest version of given response formats.
-
-
-## Documentation and configuration
+## Configuration
 
 ### Alerts
 
