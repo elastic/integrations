@@ -982,7 +982,7 @@ processors:
       field: message
       description: "717022"
       patterns:
-        - 'Certificate was successfully validated. serial number:\s*%{NOTSPACE:tls.server.x509.serial_number}, subject name:\s*%{NOTSPACE:tls.server.x509.subject.distinguished_name}\.'
+        - 'Certificate was successfully validated. serial number:\s*%{NOTSPACE:_temp_.cisco.serial_number}, subject name:\s*%{NOTSPACE:_temp_.cisco.distinguished_name}\.'
   - dissect:
       if: "ctx._temp_.cisco.message_id == '721016'"
       tag: parse_721016
@@ -1266,7 +1266,74 @@ processors:
       trim_key: " "
       trim_value: " "
 
-  #
+  - kv:
+      if: 'ctx._temp_.cisco?.distinguished_name != null && ctx._temp_.cisco.distinguished_name.contains(",")'
+      field: "_temp_.cisco.distinguished_name"
+      tag: "kv_distinguished_name"
+      description: "Split distinguished_name into constituent parts"
+      field_split: ","
+      value_split: "="
+      target_field: "_temp_.cisco.dn_parts"
+      trim_key: " "
+      trim_value: " "
+
+  - script:
+      lang: painless
+      description: >-
+        Sets the parts to the correct names
+      params:
+        "ST":
+          name: "state_or_province"
+        "S":
+          name: "state_or_province"
+        "P":
+          name: "state_or_province"
+        "CN":
+          name: "common_name"
+        "C":
+          name: "country"
+        "L":
+          name: "locality"
+        "O":
+          name: "organization"
+        "OU":
+          name: "organizational_unit"
+      source: |
+          def subject = new HashMap();
+          def parts = ctx._temp_.cisco.dn_parts;
+          for (entry in params.entrySet()) {
+            def k = entry.getKey();
+            def _v = entry.getValue();
+            if (parts.containsKey(k)) {
+              def v = parts[k];
+              List values = (v instanceof List) ? v : [v];   // `[v]` is a Painless list literal
+              subject[_v["name"]] = values;
+            }
+          }
+          ctx._temp_.cisco.dn_parts = subject;
+      if: 'ctx._temp_.cisco?.dn_parts != null'
+
+  - rename:
+      description: Rename found x509 parts into ECS.
+      if: 'ctx._temp_?.cisco?.dn_parts != null'
+      tag: rename_distinguished_name_parts
+      field: _temp_.cisco.dn_parts
+      target_field: tls.server.x509.subject
+
+  - rename:
+      description: Rename found x509 distinguished_name into ECS.
+      if: 'ctx._temp_?.cisco?.distinguished_name != null'
+      tag: rename_distinguished_name
+      field: _temp_.cisco.distinguished_name
+      target_field: tls.server.x509.subject.distinguished_name
+
+  - rename:
+      description: Rename found x509 parts into ECS.
+      if: 'ctx._temp_?.cisco?.serial_number != null'
+      tag: renamd_serial_number
+      field: _temp_.cisco.serial_number
+      target_field: tls.server.x509.serial_number
+
   # Remove _temp_.full_message.
   #
   # The field has been used as temporary buffer while decoding. The full message
