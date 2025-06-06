@@ -779,11 +779,6 @@ processors:
       field: json.userIdentity.type
       target_field: aws.cloudtrail.user_identity.type
       ignore_failure: true
-  - append:
-      field: related.user
-      value: '{{json.userIdentity.userName}}'
-      allow_duplicates: false
-      if: ctx.json?.userIdentity?.userName != null
   - rename:
       field: json.userIdentity.userName
       target_field: user.name
@@ -1692,6 +1687,31 @@ processors:
       field: json.tlsDetails.clientProvidedHostHeader
       target_field: tls.client.server_name
       ignore_missing: true
+  # Standardize user fields
+  - rename:
+      field: user.name
+      target_field: user.email
+      tag: rename_user_email
+      if: ctx.user?.email == null && ctx.user?.name != null && ctx.user.name.indexOf("@") > 0
+  - dissect:
+      field: user.email
+      pattern: '%{user.name}@%{user.domain}'
+      tag: dissect_user_email
+      if: ctx.user?.name == null
+      ignore_missing: true
+      ignore_failure: true
+  - append:
+      field: related.user
+      value: '{{{user.name}}}'
+      if: ctx.user?.name != null
+      allow_duplicates: false
+      ignore_failure: true
+  - append:
+      field: related.user
+      value: '{{{user.email}}}'
+      if: ctx.user?.email != null
+      allow_duplicates: false
+      ignore_failure: true
   - remove:
       field: json
       ignore_missing: true

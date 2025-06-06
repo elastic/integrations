@@ -117,11 +117,11 @@ An example event for `audit` looks as following:
 {
     "@timestamp": "2022-08-08T15:31:08.237Z",
     "agent": {
-        "ephemeral_id": "e4d8fc8f-71fa-4e20-bd11-1c06f2e1d137",
-        "id": "f25d13cd-18cc-4e73-822c-c4f849322623",
-        "name": "docker-fleet-agent",
+        "ephemeral_id": "b5c2b3bd-ebac-4fff-8248-b0a38dd9104d",
+        "id": "402f10c7-7275-4c5e-be32-6b143ff5ee3e",
+        "name": "elastic-agent-11041",
         "type": "filebeat",
-        "version": "8.10.1"
+        "version": "8.18.1"
     },
     "client": {
         "user": {
@@ -131,16 +131,16 @@ An example event for `audit` looks as following:
     },
     "data_stream": {
         "dataset": "ping_one.audit",
-        "namespace": "ep",
+        "namespace": "79703",
         "type": "logs"
     },
     "ecs": {
         "version": "8.11.0"
     },
     "elastic_agent": {
-        "id": "f25d13cd-18cc-4e73-822c-c4f849322623",
+        "id": "402f10c7-7275-4c5e-be32-6b143ff5ee3e",
         "snapshot": false,
-        "version": "8.10.1"
+        "version": "8.18.1"
     },
     "event": {
         "action": "user.access_allowed",
@@ -151,7 +151,7 @@ An example event for `audit` looks as following:
         ],
         "dataset": "ping_one.audit",
         "id": "123abc123-12ab-1234-1abc-abc123abc12",
-        "ingested": "2023-09-22T17:21:19Z",
+        "ingested": "2025-06-03T15:46:56Z",
         "kind": "event",
         "original": "{\"_embedded\":{},\"action\":{\"type\":\"USER.ACCESS_ALLOWED\"},\"actors\":{\"client\":{\"environment\":{\"id\":\"123abc123-12ab-1234-1abc-abc123abc12\"},\"href\":\"https://api.pingone.asia/v1/environments/123abc123-12ab-1234-1abc-abc123abc12/applications/123abc123-12ab-1234-1abc-abc123abc12\",\"id\":\"123abc123-12ab-1234-1abc-abc123abc12\",\"name\":\"PingOne Admin Console\",\"type\":\"CLIENT\"},\"user\":{\"environment\":{\"id\":\"123abc123-12ab-1234-1abc-abc123abc12\"},\"href\":\"https://api.pingone.asia/v1/environments/123abc123-12ab-1234-1abc-abc123abc12/users/123abc123-12ab-1234-1abc-abc123abc12\",\"id\":\"123abc123-12ab-1234-1abc-abc123abc12\",\"name\":\"example@gmail.com\",\"population\":{\"id\":\"123abc123-12ab-1234-1abc-abc123abc12\"},\"type\":\"USER\"}},\"id\":\"123abc123-12ab-1234-1abc-abc123abc12\",\"recordedAt\":\"2022-08-08T15:31:08.237Z\",\"resources\":[{\"environment\":{\"id\":\"123abc123-12ab-1234-1abc-abc123abc12\"},\"href\":\"https://api.pingone.asia/v1/environments/123abc123-12ab-1234-1abc-abc123abc12/users/123abc123-12ab-1234-1abc-abc123abc12\",\"id\":\"123abc123-12ab-1234-1abc-abc123abc12\",\"name\":\"example@gmail.com\",\"population\":{\"id\":\"123abc123-12ab-1234-1abc-abc123abc12\"},\"type\":\"USER\"}],\"result\":{\"description\":\"Passed role access control\",\"status\":\"SUCCESS\"}}",
         "outcome": "success",
@@ -218,6 +218,7 @@ An example event for `audit` looks as following:
         "user": [
             "123abc123-12ab-1234-1abc-abc123abc12",
             "PingOne Admin Console",
+            "example",
             "example@gmail.com"
         ]
     },
@@ -234,8 +235,10 @@ An example event for `audit` looks as following:
         "scheme": "https"
     },
     "user": {
+        "domain": "gmail.com",
+        "email": "example@gmail.com",
         "id": "123abc123-12ab-1234-1abc-abc123abc12",
-        "name": "example@gmail.com"
+        "name": "example"
     }
 }
 ```
