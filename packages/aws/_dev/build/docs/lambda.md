@@ -60,7 +60,7 @@ For step-by-step instructions on how to set up an integration, see the
 To enable AWS Lambda logs, ensure that your function's execution role includes the necessary permissions to write to Amazon CloudWatch Logs. Specifically, the role should have the following permissions: 
 - `logs:CreateLogGroup`
 - `logs:CreateLogStream`
-- `logs:PutLogEvents`. 
+- `logs:PutLogEvents` 
 
 You can grant these permissions by attaching the AWS managed policy `AWSLambdaBasicExecutionRole` to your function's execution role.
 
