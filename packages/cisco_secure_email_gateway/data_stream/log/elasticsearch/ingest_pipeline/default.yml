@@ -11,6 +11,7 @@ processors:
   - grok:
       field: _tmp.filepath
       if: ctx.log?.file?.path != null
+      ignore_failure: true
       patterns:
         - '^%{DATA}[\\/]%{WORD:cisco_secure_email_gateway.log.category.name}(?:\.%{HOSTNAME:cisco_secure_email_gateway.log.host})?\.@%{GREEDYDATA}\.s$'
   - rename:
@@ -106,7 +107,7 @@ processors:
       if: ctx.cisco_secure_email_gateway?.log?.category?.name == 'amp'
   - pipeline:
       name: '{{ IngestPipeline "pipeline_consolidated_event" }}'
-      if: ctx.cisco_secure_email_gateway?.log?.category?.name == 'consolidated_event'
+      if: '["consolidated_event", "SplunkGIS"].contains(ctx.cisco_secure_email_gateway?.log?.category?.name)'
   - pipeline:
       name: '{{ IngestPipeline "pipeline_antivirus" }}'
       if: ctx.cisco_secure_email_gateway?.log?.category?.name == 'antivirus'
@@ -149,4 +150,5 @@ on_failure:
       value: pipeline_error
   - append:
       field: error.message
-      value: '{{{ _ingest.on_failure_message }}}'
+      value: |-
+        Processor "{{{ _ingest.on_failure_processor_type }}}" with tag "{{{ _ingest.on_failure_processor_tag }}}" in pipeline "{{{ _ingest.on_failure_pipeline }}}" failed with message "{{{ _ingest.on_failure_message }}}"

@@ -976,6 +976,13 @@ processors:
         - '^Group %{NOTSPACE:_temp_.cisco.webvpn.group_name} User( %{NOTSPACE:source.user.name})? IP %{NOTSPACE:destination.address} AnyConnect session (resumed connection|resumed. Connection) from( IP)? %{NOTSPACE:source.address}\.$'
       pattern_definitions:
         NOTBRACKET: "[^<>]+"
+  - grok:
+      if: "ctx._temp_.cisco.message_id == '717022'"
+      tag: parse_717022
+      field: message
+      description: "717022"
+      patterns:
+        - 'Certificate was successfully validated. serial number:\s*%{NOTSPACE:_temp_.cisco.serial_number}, subject name:\s*%{NOTSPACE:_temp_.cisco.distinguished_name}\.'
   - dissect:
       if: "ctx._temp_.cisco.message_id == '721016'"
       tag: parse_721016
@@ -1108,6 +1115,17 @@ processors:
       patterns:
         - '^IPAA: Session=%{NOTSPACE:_temp_.cisco.session_id}, %{GREEDYDATA:event.reason}$'
         - '^IPAA: %{GREEDYDATA:event.reason}$'
+  - grok:
+      field: message
+      if: "ctx._temp_.cisco.message_id == '751025'"
+      tag: parse_751025
+      patterns:
+        - '^%{DATA} Username:%{USER:source.user.name}\s+%{GREEDYDATA}$'
+      pattern_definitions:
+        GROUP: "(?:%{IKEGROUP}|%{NONIKEGROUP})"
+        IKEGROUP: "IKEv2 Group"
+        NONIKEGROUP: "Group"
+        IPORHOST: "(?:%{IP}|%{HOSTNAME})"
   - dissect:
       if: "ctx._temp_.cisco.message_id == '805001'"
       tag: parse_805001
@@ -1248,7 +1266,65 @@ processors:
       trim_key: " "
       trim_value: " "
 
-  #
+  - kv:
+      if: 'ctx._temp_.cisco?.distinguished_name != null && ctx._temp_.cisco.distinguished_name.contains(",")'
+      field: "_temp_.cisco.distinguished_name"
+      tag: "kv_distinguished_name"
+      description: "Split distinguished_name into constituent parts"
+      field_split: ","
+      value_split: "="
+      target_field: "_temp_.cisco.dn_parts"
+      trim_key: " "
+      trim_value: " "
+
+  - script:
+      lang: painless
+      description: >-
+        Sets the parts to the correct names
+      params:
+        "ST": "state_or_province"
+        "S": "state_or_province"
+        "P": "state_or_province"
+        "CN": "common_name"
+        "C": "country"
+        "L": "locality"
+        "O": "organization"
+        "OU": "organizational_unit"
+      source: |
+          if (ctx._temp_?.cisco?.dn_parts == null) {
+            return;
+          }
+          def parts = [:];
+          ctx._temp_.cisco.dn_parts.forEach((k,v) -> {
+            if (params.containsKey(k)) {
+              parts[params[k]] = (v instanceof List) ? v : [v];   // `[v]` is a Painless list literal
+            } else {
+              return false;
+            }
+          });
+          ctx._temp_.cisco.dn_parts = parts;
+
+  - rename:
+      description: Rename found x509 parts into ECS.
+      if: 'ctx._temp_?.cisco?.dn_parts != null'
+      tag: rename_distinguished_name_parts
+      field: _temp_.cisco.dn_parts
+      target_field: tls.server.x509.subject
+
+  - rename:
+      description: Rename found x509 distinguished_name into ECS.
+      if: 'ctx._temp_?.cisco?.distinguished_name != null'
+      tag: rename_distinguished_name
+      field: _temp_.cisco.distinguished_name
+      target_field: tls.server.x509.subject.distinguished_name
+
+  - rename:
+      description: Rename found x509 parts into ECS.
+      if: 'ctx._temp_?.cisco?.serial_number != null'
+      tag: renamd_serial_number
+      field: _temp_.cisco.serial_number
+      target_field: tls.server.x509.serial_number
+
   # Remove _temp_.full_message.
   #
   # The field has been used as temporary buffer while decoding. The full message
