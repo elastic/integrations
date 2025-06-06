@@ -26,7 +26,7 @@ Elastic Agent must be installed. For more details, check the Elastic Agent [inst
 3. Click the **GreyNoise** integration from the search results.
 4. Click the **Add GreyNoise** button to add the integration.
 5. While adding the integration, provide the following details to collect logs via REST API:
-   - Access Token
+   - API Key
    - Interval
    - (Optional) Query for custom query filtering
 6. Click **Save and Continue** to save the integration.
