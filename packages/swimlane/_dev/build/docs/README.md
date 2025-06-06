@@ -5,7 +5,7 @@ The [Swimlane Turbine](https://swimlane.com/swimlane-turbine/) integration allow
 Use the Swimlane Turbine integration to stream container pod logs into your Elastic deployment. 
 
 ## Data streams
-The Swimlane Turbine integration collects two type of data streams: logs and httpjson
+The Swimlane Turbine integration collects two type of data streams: logs and cel
 
 ### swimlane.audit_logs
 Swimlane Audit Logs help logs keep a record of all audit events occurring within both on-premises and cloud environments. These logs provide a comprehensive history of user actions, configuration changes, access attempts, system events, and other critical activities that support security and compliance monitoring.
