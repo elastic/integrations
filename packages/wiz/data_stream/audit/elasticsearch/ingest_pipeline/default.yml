@@ -9,6 +9,13 @@ processors:
       tag: cel_failure
       if: ctx.error?.message != null && ctx.message == null && ctx.event?.original == null
       message: error message set and no data to process
+  - remove:
+      field: organization
+      if: ctx.organization != null && ctx.organization instanceof String
+      description: |
+        The organization field is added by Agentless as metadata,
+        which can collide with ECS organization fields.
+      tag: remove_organization_agentless
   - rename:
       field: message
       tag: rename_message_to_event_original
