@@ -10,20 +10,10 @@ Google Threat Intelligence uses the **[Threat List API](https://gtidocs.virustot
 
 The Threat List API provides the following types of threat feeds:
 
-- **Ransomware**
-- **Malicious Network Infrastructure**
-- **Malware**
-- **Threat Actor**
-- **Daily Top Trending**
-- **Mobile**
-- **OS X**
-- **Linux**
-- **Internet of Things (IoT)**
 - **Cryptominers**
-- **Phishing**
 - **First Stage Delivery Vectors**
-- **Vulnerability Weaponization**
 - **Infostealers**
+- **Internet of Things (IoT)**
 
 ## GTI Subscription Tiers
 
@@ -72,7 +62,7 @@ To keep the collected data up to date, **Transforms** are used.
 
 Users can view the transforms by navigating to **Management > Stack Management > Transforms**.
 
-Follow **Steps to enable transforms** to enable transforms and populate `Threat Feed Overview` and `IOC Stream Overview` dashboards.
+Follow **Steps to enable transforms** to enable transforms and populate `Threat Feed Overview` dashboard.
 
 Here, users can see continuously running transforms and also view the latest transformed GTI data in the **Discover** section.
 
@@ -80,9 +70,9 @@ The `labels.is_transform_source` field indicates log origin:
 - **False** for transformed index
 - **True** for source index
 
-Currently, eight transforms are available across all 4 data streams.
+Currently, four transforms are available across all 4 data streams.
 
-The following are eight transforms along with their associated pipelines:
+The following are four transforms along with their associated pipelines:
 
 | Transform Name                                                                                                                                                           | Description                                              |
 | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------ | -------------------------------------------------------- |
@@ -106,9 +96,9 @@ Detection Rules match the user's Elastic environment data with GTI data, generat
 
 1. Navigate to **Security > Rules > Detection Rules** and click on **Add Elastic Rules**.
 2. Search for **Google Threat Intelligence** to find prebuilt Elastic detection rules.
-3. Eight detection rules are available for **IP, URL, File, and Domain**. Users can install one or more rules as needed.
+3. Four detection rules are available for **IP, URL, File, and Domain**. Users can install one or more rules as needed.
 
-To tailor a rule based on elastic Environment:
+To tailor a rule based on Elastic environment:
 
 1. Click the three dots on the right side of any detection rule.
 2. Select **Duplicate Rule**.
@@ -150,7 +140,7 @@ The following transform and its associated pipelines are used to filter relevant
    - Prefix the pipeline name with the integration version.  
      For example:  
      ```
-     0.1.0-ti_google_threat_intelligence-latest_ip_ioc_st-transform-pipeline
+     0.1.0-ti_google_threat_intelligence-latest_ip_ioc-transform-pipeline
      ```
    - Click **Update** to save the changes.
 5. Click the **three dots** again next to the transform and select **Start** to activate it.
