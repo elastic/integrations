@@ -19,7 +19,7 @@ resource "aws_redshift_cluster" "test_cluster" {
   database_name       = "mydb"
   master_username     = "exampleuser"
   master_password     = "Mustbe8characters"
-  node_type           = "dc2.large"
+  node_type           = "ra3.large"
   cluster_type        = "single-node"
   skip_final_snapshot = "true"
 }

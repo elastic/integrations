@@ -604,6 +604,8 @@ An example event for `alert` looks as following:
 | crowdstrike.alert.objective |  | keyword |
 | crowdstrike.alert.operating_system |  | keyword |
 | crowdstrike.alert.os_name |  | keyword |
+| crowdstrike.alert.overwatch_note |  | keyword |
+| crowdstrike.alert.overwatch_note_timestamp |  | date |
 | crowdstrike.alert.parent_details.cmdline |  | keyword |
 | crowdstrike.alert.parent_details.filename |  | keyword |
 | crowdstrike.alert.parent_details.filepath |  | keyword |
@@ -661,6 +663,12 @@ An example event for `alert` looks as following:
 | crowdstrike.alert.quarantined_files.id |  | keyword |
 | crowdstrike.alert.quarantined_files.sha256 |  | keyword |
 | crowdstrike.alert.quarantined_files.state |  | keyword |
+| crowdstrike.alert.rule_group_id |  | keyword |
+| crowdstrike.alert.rule_group_name |  | keyword |
+| crowdstrike.alert.rule_instance_created_by |  | keyword |
+| crowdstrike.alert.rule_instance_id |  | keyword |
+| crowdstrike.alert.rule_instance_name |  | keyword |
+| crowdstrike.alert.rule_instance_version |  | keyword |
 | crowdstrike.alert.scan_id |  | keyword |
 | crowdstrike.alert.scenario |  | keyword |
 | crowdstrike.alert.seconds_to_resolved |  | long |
