@@ -56,9 +56,9 @@ An example event for `antibot` looks as following:
 {
     "@timestamp": "2024-09-02T08:53:44.000Z",
     "agent": {
-        "ephemeral_id": "adbf1a5d-67d7-4df5-9129-b1bc51722367",
-        "id": "35e31f3e-4075-4b2a-ba7f-ec06989dbfed",
-        "name": "elastic-agent-68500",
+        "ephemeral_id": "f96c672e-e52f-49f4-a098-fb8e47463002",
+        "id": "a17315c6-08c5-498c-a743-f2125ce9bf1b",
+        "name": "elastic-agent-77268",
         "type": "filebeat",
         "version": "8.14.0"
     },
@@ -97,7 +97,7 @@ An example event for `antibot` looks as following:
     },
     "data_stream": {
         "dataset": "checkpoint_harmony_endpoint.antibot",
-        "namespace": "91312",
+        "namespace": "67908",
         "type": "logs"
     },
     "destination": {
@@ -110,7 +110,7 @@ An example event for `antibot` looks as following:
         "version": "8.17.0"
     },
     "elastic_agent": {
-        "id": "35e31f3e-4075-4b2a-ba7f-ec06989dbfed",
+        "id": "a17315c6-08c5-498c-a743-f2125ce9bf1b",
         "snapshot": false,
         "version": "8.14.0"
     },
@@ -122,7 +122,7 @@ An example event for `antibot` looks as following:
         ],
         "dataset": "checkpoint_harmony_endpoint.antibot",
         "id": "a4640108-91b1-0f19-66d5-7d9d00000003",
-        "ingested": "2025-05-29T09:49:34Z",
+        "ingested": "2025-06-05T09:35:27Z",
         "kind": "event",
         "module": "checkpoint_harmony_endpoint",
         "type": [
