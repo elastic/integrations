@@ -155,7 +155,7 @@ processors:
       SYSLOGHDR: '%{SYSLOGPRI}%{SYSLOGVER}'
       WORDORHOST: '(?:%{WORD}|%{HOSTNAME})'
       PORTACTION: '(?:changed stp role|status changed)'
-    if: ctx.event.original.startsWith('<') && ctx.cisco_meraki?.event_subtype == "port"
+    if: ctx.event.original.startsWith('<') && ctx.cisco_meraki?.event_subtype == "port" && (ctx.event.original.toLowerCase().contains('status changed') || ctx.event.original.toLowerCase().contains('changed stp role'))
 - gsub:
     field: _temp.port_action
     pattern: ' '
