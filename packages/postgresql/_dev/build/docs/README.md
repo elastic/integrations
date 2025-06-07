@@ -40,6 +40,30 @@ a value greater than 0.
 Both `log_connections` and `log_disconnections` can cause a lot of events if you don't have
 persistent connections, so enable with care.
 
+#### Timezone for logs (Optional)
+
+User can specify a timezone when logging messages by using the `tz_map` parameter. This feature is particularly useful for ensuring logs are recorded in the specified timezone, making it easier to troubleshoot issues based on the time of occurrence in different time zones.
+
+Note: If the tz_map parameter is not specified, it will be default to the timezone of the logs and map it with timestamp accordingly.
+
+#### Supported Timezones
+User can set the `tz_map` to any valid timezone identifier. Here are a few examples of supported timezones:
+
+- `tz_short: 'EDT'`
+- `tz_long: 'America/New_York'`
+- `tz_short: 'IST'`
+- `tz_long: 'Asia/Kolkata'`
+
+#### Example Usage
+
+When logging an event, user can pass the `timezone` parameter to ensure the time is recorded in the desired timezone. Here's an example of how you can use this parameter:
+
+```yaml
+tz_map:
+  - tz_short: 'IST'
+  - tz_long: 'Asia/Kolkata'
+```
+
 **ECS Field Reference**
 
 Please refer to the following [document](https://www.elastic.co/guide/en/ecs/current/ecs-field-reference.html) for detailed information on ECS fields.
