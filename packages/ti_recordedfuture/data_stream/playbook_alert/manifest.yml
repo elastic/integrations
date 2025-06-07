@@ -4,8 +4,8 @@ streams:
   - input: cel
     enabled: false
     template_path: cel.yml.hbs
-    title: Recorded Future Playbook Alert logs
-    description: Collecting Recorded Future Playbook Alert logs via API.
+    title: Playbook alerts
+    description: Collect data from Recorded Future's [API for Playbook Alerts](https://api.recordedfuture.com/playbook-alert).
     vars:
       - name: initial_interval
         type: text
@@ -24,6 +24,14 @@ streams:
         required: true
         show_user: true
         default: 1h
+      - name: preserve_original_event
+        required: true
+        show_user: true
+        title: Preserve original event
+        description: Preserves a raw copy of the original event, added to the field `event.original`
+        type: bool
+        multi: false
+        default: false
       - name: batch_size
         type: text
         title: Batch Size
@@ -58,14 +66,6 @@ streams:
         default:
           - forwarded
           - recordedfuture-playbook_alert
-      - name: preserve_original_event
-        required: true
-        show_user: true
-        title: Preserve original event
-        description: Preserves a raw copy of the original event, added to the field `event.original`
-        type: bool
-        multi: false
-        default: false
       - name: preserve_duplicate_custom_fields
         required: false
         show_user: false
