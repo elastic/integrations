@@ -17,40 +17,40 @@ This module has been tested with the latest(updated as of August 1, 2024) versio
 
 ## Data streams
 
-The ServiceNow integration supports both custom tables and the default tables offered by ServiceNow. Additionally, both types of tables are included in the data stream labeled `event`.
+The ServiceNow integration supports both custom tables and default tables offered by ServiceNow. Additionally, both types of tables are included in the data stream labeled `event`.
 
-Below is a list of the default ones.
+This is the list of the default tables:
 
-- **alm_hardware**
-- **change_request**
-- **change_task**
-- **cmdb**
-- **cmdb_ci**
-- **cmdb_ci_app_server**
-- **cmdb_ci_appl**
-- **cmdb_ci_business_app**
-- **cmdb_ci_computer**
-- **cmdb_ci_db_instance**
-- **cmdb_ci_esx_server**
-- **cmdb_ci_hardware**
-- **cmdb_ci_hyper_v_server**
-- **cmdb_ci_infra_service**
-- **cmdb_ci_linux_server**
-- **cmdb_ci_server**
-- **cmdb_ci_service**
-- **cmdb_ci_vm**
-- **cmdb_ci_win_server**
-- **cmdb_rel_ci**
-- **cmn_department**
-- **cmn_location**
-- **incident**
-- **kb_knowledge**
-- **problem**
-- **sc_req_item**
-- **sys_user**
-- **sys_user_grmember**
-- **sys_user_group**
-- **task_ci**
+- `alm_hardware`
+- `change_request`
+- `change_task`
+- `cmdb`
+- `cmdb_ci`
+- `cmdb_ci_app_server`
+- `cmdb_ci_appl`
+- `cmdb_ci_business_app`
+- `cmdb_ci_computer`
+- `cmdb_ci_db_instance`
+- `cmdb_ci_esx_server`
+- `cmdb_ci_hardware`
+- `cmdb_ci_hyper_v_server`
+- `cmdb_ci_infra_service`
+- `cmdb_ci_linux_server`
+- `cmdb_ci_server`
+- `cmdb_ci_service`
+- `cmdb_ci_vm`
+- `cmdb_ci_win_server`
+- `cmdb_rel_ci`
+- `cmn_department`
+- `cmn_location`
+- `incident`
+- `kb_knowledge`
+- `problem`
+- `sc_req_item`
+- `sys_user`
+- `sys_user_grmember`
+- `sys_user_group`
+- `task_ci`
 
 **Note**:
 
@@ -59,40 +59,20 @@ Below is a list of the default ones.
 
 ## Requirements
 
-- Elastic Agent must be installed.
-- You can install only one Elastic Agent per host.
-- Elastic Agent is required to stream data through the REST API or AWS S3/SQS and ship the data to Elastic, where the events will then be processed via the integration's ingest pipelines.
-
-### Installing and managing an Elastic Agent:
-
-You have a few options for installing and managing an Elastic Agent:
-
-### Install a Fleet-managed Elastic Agent (recommended):
-
-With this approach, you install Elastic Agent and use Fleet in Kibana to define, configure, and manage your agents in a central location. We recommend using Fleet management because it makes the management and upgrade of your agents considerably easier.
-
-### Install Elastic Agent in standalone mode (advanced users):
-
-With this approach, you install Elastic Agent and manually configure the agent locally on the system where it’s installed. You are responsible for managing and upgrading the agents. This approach is reserved for advanced users only.
-
-### Install Elastic Agent in a containerized environment:
-
-You can run Elastic Agent inside a container, either with Fleet Server or standalone. Docker images for all versions of Elastic Agent are available from the Elastic Docker registry, and we provide deployment manifests for running on Kubernetes.
-
-There are some minimum requirements for running Elastic Agent. For more information, refer to the Elastic Agent [installation guide](https://www.elastic.co/guide/en/fleet/current/elastic-agent-installation.html).
+Elastic Agent must be installed. For more details, check the Elastic Agent [installation instructions](docs-content://reference/fleet/install-elastic-agents.md). You can install only one Elastic Agent per host.
 
 ## Setup
 
-### To collect logs through REST API, follow the below steps:
+### Collect logs through REST API
 
-- Your instance URL will serve as your base URL and will be formatted as follows: https://\<instance_id\>.service-now.com
-- Additionally, the username and password you use to log into your instance will be required to fetch logs in our integration.
+Your instance URL will serve as your base URL and will be formatted as follows: https://\<instance_id\>.service-now.com
+Additionally, the username and password you use to log into your instance will be required to fetch logs in our integration.
 
-### To collect logs through AWS S3, follow the below steps:
+### Collect logs through AWS S3
 
-- With an AWS S3 bucket that has been set up, you can configure it with ServiceNow by integrating it using your AWS S3 credentials.
+With an AWS S3 bucket that has been set up, you can configure it with ServiceNow by integrating it using your AWS S3 credentials.
 
-### To collect logs through AWS SQS, follow the below steps:
+### Collect logs through AWS SQS
 
 1. Assuming you've already set up a connection to push data into the AWS bucket you can follow the steps below; if not, see the section above.
 2. To set up an SQS queue, follow "Step 1: Create an Amazon SQS Queue" as described in the [Amazon S3 user guide](https://docs.aws.amazon.com/AmazonS3/latest/userguide/ways-to-add-notification-config-to-bucket.html).
@@ -100,20 +80,21 @@ There are some minimum requirements for running Elastic Agent. For more informat
 3. Configure event notifications for an S3 bucket according to the [Amazon S3 user guide](https://docs.aws.amazon.com/AmazonS3/latest/userguide/enable-event-notifications.html).
    - While creating `event notification` select the event type as s3:ObjectCreated:*, destination type SQS Queue, and select the queue name created in Step 2.
 
-### Time Zone Selection:
-- In the Data Collection section, use the `Time Zone Offset` field to set your preferred timezone. The `.value` field for date data will always be in UTC, while the `.display_value` field can reflect your instance's selected timezone. The system default is set to America/Los_Angeles, but you can change this in your ServiceNow profile settings.
-- Steps to See/Update the timezone in ServiceNow Instance:
-  1. Click the user icon in the top-right corner of the ServiceNow interface.
-  2. Select Profile from the dropdown menu.
-  3. In your Profile settings, locate the Timezone option.
+### Time Zone Selection
 
-### Enabling the integration in Elastic:
+In the Data Collection section, use the `Time Zone Offset` field to set your preferred timezone. The `.value` field for date data will always be in UTC, while the `.display_value` field can reflect your instance's selected timezone. The system default is set to America/Los_Angeles, but you can change this in your ServiceNow profile settings.
 
-1. In Kibana go to Management > Integrations.
-2. In "Search for integrations" search bar, type ServiceNow.
-3. Click on the "ServiceNow" integration from the search results.
-4. Click on the "Add ServiceNow" button to add the integration.
-5. While adding the integration, if you want to collect logs via REST API, then you have to put the following details:
+Follow these steps to See/Update the timezone in ServiceNow Instance:
+1. Click the user icon in the top-right corner of the ServiceNow interface.
+2. Select Profile from the dropdown menu.
+3. In your Profile settings, locate the Timezone option.
+
+### Enable the integration in Elastic
+
+1. In Kibana navigate to **Management** > **Integrations**.
+2. In the search top bar, type **ServiceNow**.
+3. Select the **ServiceNow** integration and add it.
+4. While adding the integration, if you want to collect logs via REST API, then you have to put the following details:
    - collect logs via REST API toggled on
    - API URL
    - username
@@ -139,7 +120,7 @@ There are some minimum requirements for running Elastic Agent. For more informat
    - table name
    - timestamp field
    - timezone offset
-6. Click on "Save and Continue" to save the integration.
+5. Save the integration.
 
 **Note**: To fetch parquet file data, enable the toggle, `Parquet Codec`
 
