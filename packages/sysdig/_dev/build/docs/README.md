@@ -2,11 +2,13 @@
 This integration allows for the shipping of [Sysdig](https://sysdig.com/) logs to Elastic for security, observability and organizational awareness. Logs can then be analyzed by using either the dashboard included with the integration or via the creation of custom dashboards within Kibana.
 
 ## Data Streams
-The Sysdig integration collects two type of logs:
+The Sysdig integration collects three type of logs:
 
 **Alerts** The Alerts data stream collected by the Sysdig integration is comprised of Sysdig Alerts. See more details about Sysdig Alerts in [Sysdig's Alerts Documentation](https://docs.sysdig.com/en/docs/sysdig-monitor/alerts/). A complete list of potential fields used by this integration can be found in the [Logs reference](#logs-reference)
 
 **Event** The event data stream collected through the Sysdig integration consists of Sysdig Security Events. See more details about Security Events in [Sysdig's Events Feed Documentation](https://docs.sysdig.com/en/docs/sysdig-secure/threats/activity/events-feed/).
+
+**Vulnerability** The vulnerability data stream collected through the Sysdig integration consists of Sysdig Vulnerability. See more details about Vulnerability in [Sysdig's Vulnerability Documentation](https://docs.sysdig.com/en/sysdig-secure/vulnerability-management/).
 
 ## Requirements
 
@@ -66,3 +68,13 @@ This is the `event` dataset.
 {{event "event"}}
 
 {{fields "event"}}
+
+### Vulnerability
+
+This is the `vulnerability` dataset.
+
+#### Example
+
+{{event "vulnerability"}}
+
+{{fields "vulnerability"}}
