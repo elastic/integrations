@@ -37,10 +37,12 @@ redact:
   fields: ~
 program: |
   (
+    // Check if the host list is available and not empty
     (has(state.host_list) && size(state.host_list) > 0) ?
-      state
+      state // If host list is available, proceed with the current state
     :
       state.with(
+        // Make a GET request to retrieve the host list
         request(
           "GET",
           state.url.trim_right("/") + "/api/atlas/v2/groups/" + state.group_id + "/processes?" + {
@@ -53,15 +55,20 @@ program: |
               "Accept": ["application/vnd.atlas." + string(timestamp(now).getFullYear()) + "-01-01+json"],
             },
           }
-        ).do_request().as(resp, (resp.StatusCode == 200) ?
+      ).do_request().as(resp,
+        // Check if the response status code is 200
+        (resp.StatusCode == 200) ?
+          // Parse the response body as JSON
           bytes(resp.Body).decode_json().as(body,
             {
+              // Extract the host list and other relevant information
               "host_list": body.results.map(e, state.url.trim_right("/") + "/api/atlas/v2/groups/" + state.group_id + "/processes/" + e.id + "/disks/"),
               "next": 0,
               "page_num": body.links.exists_one(res, res.rel == "next") ? (int(state.page_num) + 1) : 1,
             }
           )
         :
+          // Handle error response
           bytes(resp.Body).decode_json().as(body, (body != null) ?
             {
               "events": [
@@ -89,27 +96,35 @@ program: |
           )
         )
       )
-  ).as(state, !has(state.next) ?
-    state
+  ).as(state,
+  // Check if the next host is available
+  !has(state.next) ?
+    state // If no next host, proceed with the current state
   : (state.next >= size(state.host_list)) ?
-    {}
+    {} // If no more hosts, return an empty object
   :
     state.with(
+      // Make a GET request to retrieve the disk list for the current host
       request("GET", string(state.host_list[state.next] + "?pageNum=" + string(state.disk_page_num) + "&itemsPerPage=100")).with(
         {
           "Header": {
             "Accept": ["application/vnd.atlas." + string(timestamp(now).getFullYear()) + "-01-01+json"],
           },
         }
-      ).do_request().as(resp, (resp.StatusCode == 200) ?
+      ).do_request().as(resp,
+        // Check if the response status code is 200
+        (resp.StatusCode == 200) ?
+          // Parse the response body as JSON
         bytes(resp.Body).decode_json().as(body,
           {
+            // Extract the disk list and other relevant information
             "disk_list": body.results.map(e, e.partitionName),
             "disk_next": 0,
             "disk_page_num": body.links.exists_one(res, res.rel == "next") ? (int(state.disk_page_num) + 1) : 1,
           }
         )
       :
+        // Handle error response
         bytes(resp.Body).decode_json().as(body, (body != null) ?
           {
             "events": [
@@ -137,20 +152,27 @@ program: |
         )
       )
     )
-  ).as(state, !has(state.disk_next) ?
-    state
+  ).as(state,
+  // Check if the next disk is available
+  !has(state.disk_next) ?
+    state // If no next disk, proceed with the current state
   : (state.disk_next >= size(state.disk_list)) ?
-    {}
+    {} // If no more disks, return an empty object
   :
+    // Make a GET request to retrieve the measurement data for the current disk
     request("GET", string(state.host_list[state.next] + state.disk_list[state.disk_next] + state.query)).with(
       {
         "Header": {
           "Accept": ["application/vnd.atlas." + string(timestamp(now).getFullYear()) + "-01-01+json"],
         },
       }
-    ).do_request().as(resp, (resp.StatusCode == 200) ?
+    ).do_request().as(resp,
+      // Check if the response status code is 200
+      (resp.StatusCode == 200) ?
+        // Parse the response body as JSON
       bytes(resp.Body).decode_json().as(body,
         {
+          // Extract the measurement data and other relevant information
           "events": [
             body.with(
               {
@@ -183,6 +205,7 @@ program: |
         }
       )
     :
+      // Handle error response
       bytes(resp.Body).decode_json().as(body, (body != null) ?
         {
           "events": [
