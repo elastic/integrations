@@ -249,24 +249,24 @@ An example event for `asset_vulnerability` looks as following:
 {
     "@timestamp": "2025-05-27T18:21:36.279Z",
     "agent": {
-        "ephemeral_id": "1f134173-6086-4111-ab6c-78895b63908d",
-        "id": "d16b29fe-9b2e-43cf-b0e1-82325680132b",
-        "name": "elastic-agent-34771",
+        "ephemeral_id": "8f30a153-d7fb-4630-8931-752c0f5190e4",
+        "id": "3e3bd5a6-8efb-4f70-b560-987a16383f05",
+        "name": "elastic-agent-64243",
         "type": "filebeat",
-        "version": "8.18.0"
+        "version": "8.19.0"
     },
     "data_stream": {
         "dataset": "rapid7_insightvm.asset_vulnerability",
-        "namespace": "27649",
+        "namespace": "30380",
         "type": "logs"
     },
     "ecs": {
         "version": "8.11.0"
     },
     "elastic_agent": {
-        "id": "d16b29fe-9b2e-43cf-b0e1-82325680132b",
-        "snapshot": false,
-        "version": "8.18.0"
+        "id": "3e3bd5a6-8efb-4f70-b560-987a16383f05",
+        "snapshot": true,
+        "version": "8.19.0"
     },
     "event": {
         "agent_id_status": "verified",
@@ -276,9 +276,9 @@ An example event for `asset_vulnerability` looks as following:
         "created": "2025-05-12T16:25:35.000Z",
         "dataset": "rapid7_insightvm.asset_vulnerability",
         "id": "8babcde1-1234-5678-0912-cabcdef1284e-default-asset-6|unix-anonymous-root-logins|2025-05-27T18:21:36.279Z",
-        "ingested": "2025-05-30T11:11:51Z",
+        "ingested": "2025-06-07T12:24:02Z",
         "kind": "event",
-        "original": "{\"assessed_for_policies\":false,\"assessed_for_vulnerabilities\":true,\"credential_assessments\":[{\"port\":22,\"protocol\":\"TCP\",\"status\":\"NO_CREDS_SUPPLIED\"}],\"critical_vulnerabilities\":3,\"exploits\":0,\"host_name\":\"computer-test\",\"id\":\"8babcde1-1234-5678-0912-cabcdef1284e-default-asset-6\",\"ip\":\"10.50.5.112\",\"last_assessed_for_vulnerabilities\":\"2025-05-27T18:21:36.279Z\",\"last_scan_end\":\"2025-05-27T18:21:36.279Z\",\"last_scan_start\":\"2025-05-27T18:20:41.505Z\",\"mac\":\"00:00:5E:00:53:02\",\"malware_kits\":0,\"moderate_vulnerabilities\":1,\"os_architecture\":\"x86_64\",\"os_description\":\"Red Hat Enterprise Linux 7.9\",\"os_family\":\"Linux\",\"os_name\":\"Enterprise Linux\",\"os_system_name\":\"Red Hat Linux\",\"os_type\":\"\",\"os_vendor\":\"Red Hat\",\"os_version\":\"7.9\",\"risk_score\":18250,\"severe_vulnerabilities\":48,\"tags\":[{\"name\":\"Ahmedabad\",\"type\":\"LOCATION\"},{\"name\":\"test\",\"type\":\"SITE\"},{\"name\":\"rapid7 insight agents\",\"type\":\"SITE\"}],\"total_vulnerabilities\":52,\"type\":\"guest\",\"unique_identifiers\":[{\"id\":\"CEF12345-ABCD-1234-ABCD-95ABCDEF1234\",\"source\":\"dmidecode\"},{\"id\":\"e80644e940123456789abcdef66a8b16\",\"source\":\"R7 Agent\"}],\"vuln\":{\"added\":\"2004-11-30T00:00:00Z\",\"categories\":\"CVSS Score Predicted with Rapid7 AI,UNIX\",\"check_id\":null,\"cves\":\"\",\"cvss_v2_access_complexity\":\"low\",\"cvss_v2_access_vector\":\"network\",\"cvss_v2_authentication\":\"single\",\"cvss_v2_availability_impact\":\"partial\",\"cvss_v2_confidentiality_impact\":\"partial\",\"cvss_v2_exploit_score\":7.9520000338554375,\"cvss_v2_impact_score\":6.442976653521584,\"cvss_v2_integrity_impact\":\"partial\",\"cvss_v2_score\":6.5,\"cvss_v2_vector\":\"(AV:N/AC:L/Au:S/C:P/I:P/A:P)\",\"cvss_v3_attack_complexity\":\"low\",\"cvss_v3_attack_vector\":\"local\",\"cvss_v3_availability_impact\":\"high\",\"cvss_v3_confidentiality_impact\":\"high\",\"cvss_v3_exploit_score\":2.515145325,\"cvss_v3_impact_score\":5.873118720000001,\"cvss_v3_integrity_impact\":\"high\",\"cvss_v3_privileges_required\":\"none\",\"cvss_v3_scope\":\"unchanged\",\"cvss_v3_score\":8.4,\"cvss_v3_user_interaction\":\"none\",\"cvss_v3_vector\":\"CVSS:3.0/AV:L/AC:L/PR:N/UI:N/S:U/C:H/I:H/A:H\",\"denial_of_service\":false,\"description\":\"Anonymous root logins should only be allowed from system console. /etc/securetty allows you to specify on which tty's and virtual consoles root is allowed to login. The tty and vc's listed in this file will allow root to login on certain tty's and VC's. On other tty or vc's root user will not be allowed and user has to \\\"su\\\" to become root.\",\"exploits\":[],\"first_found\":\"2025-05-12T16:25:35Z\",\"id\":\"unix-anonymous-root-logins\",\"key\":\"\",\"last_found\":\"2025-05-27T18:21:36.279Z\",\"links\":[],\"malware_kits\":[],\"modified\":\"2025-02-18T00:00:00Z\",\"nic\":null,\"pci_cvss_score\":6.5,\"pci_fail\":true,\"pci_severity_score\":4,\"pci_special_notes\":\"\",\"pci_status\":\"fail\",\"port\":null,\"proof\":\"\\u003cp\\u003e\\u003cp\\u003eFollowing entries in /etc/securetty \\n                                 may allow anonymous root logins: \\u003cul\\u003e\\u003cli\\u003ettyS0\\u003c/li\\u003e\\u003cli\\u003ettysclp0\\u003c/li\\u003e\\u003cli\\u003esclp_line0\\u003c/li\\u003e\\u003cli\\u003e3270/tty1\\u003c/li\\u003e\\u003cli\\u003ehvc0\\u003c/li\\u003e\\u003cli\\u003ehvc1\\u003c/li\\u003e\\u003cli\\u003ehvc2\\u003c/li\\u003e\\u003cli\\u003ehvc3\\u003c/li\\u003e\\u003cli\\u003ehvc4\\u003c/li\\u003e\\u003cli\\u003ehvc5\\u003c/li\\u003e\\u003cli\\u003ehvc6\\u003c/li\\u003e\\u003cli\\u003ehvc7\\u003c/li\\u003e\\u003cli\\u003ehvsi0\\u003c/li\\u003e\\u003cli\\u003ehvsi1\\u003c/li\\u003e\\u003cli\\u003ehvsi2\\u003c/li\\u003e\\u003cli\\u003exvc0\\u003c/li\\u003e\\u003c/ul\\u003e\\u003c/p\\u003e\\u003c/p\\u003e\",\"protocol\":null,\"published\":\"2004-11-30T00:00:00Z\",\"references\":\"\",\"reintroduced\":null,\"risk_score\":562,\"severity\":\"severe\",\"severity_score\":7,\"solution_fix\":\"\\u003cp\\u003e\\u003cp\\u003eRemove all the entries in /etc/securetty except console,\\n            tty[0-9]* and vc\\\\[0-9]* \\u003c/p\\u003e\\u003cp\\u003eNote: ssh does not use /etc/securetty. To disable root login\\n            through ssh, use the \\u0026quot;PermitRootLogin\\u0026quot; setting in /etc/ssh/sshd_config\\n            and restart the ssh daemon. \\u003c/p\\u003e\\u003c/p\\u003e\",\"solution_id\":\"unix-anonymous-root-logins\",\"solution_summary\":\"Edit '/etc/securetty' entries\",\"solution_type\":\"workaround\",\"status\":\"VULNERABLE_EXPL\",\"title\":\"Anonymous root login is allowed\",\"vulnerability_id\":\"unix-anonymous-root-logins\"},\"vulnerability\":[{\"check_id\":null,\"first_found\":\"2025-05-12T16:25:35Z\",\"key\":\"\",\"last_found\":\"2025-05-27T18:21:36.279Z\",\"nic\":null,\"port\":null,\"proof\":\"\\u003cp\\u003e\\u003cp\\u003eFollowing entries in /etc/securetty \\n                                 may allow anonymous root logins: \\u003cul\\u003e\\u003cli\\u003ettyS0\\u003c/li\\u003e\\u003cli\\u003ettysclp0\\u003c/li\\u003e\\u003cli\\u003esclp_line0\\u003c/li\\u003e\\u003cli\\u003e3270/tty1\\u003c/li\\u003e\\u003cli\\u003ehvc0\\u003c/li\\u003e\\u003cli\\u003ehvc1\\u003c/li\\u003e\\u003cli\\u003ehvc2\\u003c/li\\u003e\\u003cli\\u003ehvc3\\u003c/li\\u003e\\u003cli\\u003ehvc4\\u003c/li\\u003e\\u003cli\\u003ehvc5\\u003c/li\\u003e\\u003cli\\u003ehvc6\\u003c/li\\u003e\\u003cli\\u003ehvc7\\u003c/li\\u003e\\u003cli\\u003ehvsi0\\u003c/li\\u003e\\u003cli\\u003ehvsi1\\u003c/li\\u003e\\u003cli\\u003ehvsi2\\u003c/li\\u003e\\u003cli\\u003exvc0\\u003c/li\\u003e\\u003c/ul\\u003e\\u003c/p\\u003e\\u003c/p\\u003e\",\"protocol\":null,\"reintroduced\":null,\"solution_fix\":\"\\u003cp\\u003e\\u003cp\\u003eRemove all the entries in /etc/securetty except console,\\n            tty[0-9]* and vc\\\\[0-9]* \\u003c/p\\u003e\\u003cp\\u003eNote: ssh does not use /etc/securetty. To disable root login\\n            through ssh, use the \\u0026quot;PermitRootLogin\\u0026quot; setting in /etc/ssh/sshd_config\\n            and restart the ssh daemon. \\u003c/p\\u003e\\u003c/p\\u003e\",\"solution_id\":\"unix-anonymous-root-logins\",\"solution_summary\":\"Edit '/etc/securetty' entries\",\"solution_type\":\"workaround\",\"status\":\"VULNERABLE_EXPL\",\"vulnerability_id\":\"unix-anonymous-root-logins\"},{\"check_id\":null,\"first_found\":\"2025-05-14T13:52:10Z\",\"key\":\"\",\"last_found\":\"2025-05-27T18:21:36.279Z\",\"nic\":null,\"port\":null,\"proof\":\"\\u003cp\\u003e\\u003cp\\u003eThe following world writable files were found.\\u003cul\\u003e\\u003cli\\u003e/var/.com.zerog.registry.xml (-rwxrwxrwx)\\u003c/li\\u003e\\u003c/ul\\u003e\\u003c/p\\u003e\\u003c/p\\u003e\",\"protocol\":null,\"reintroduced\":null,\"solution_fix\":\"\\u003cp\\u003e\\u003cp\\u003eFor each world-writable file, determine whether there is a good reason for\\n         it to be world writable.  If not, remove world write permissions for the file.\\n         The output here is limited to 50 files. In order to find all of these files without needing to\\n         run another Nexpose scan run the following command:\\u003c/p\\u003e\\u003cpre\\u003e find / -type f -perm -02\\u003c/pre\\u003e\\u003cp\\u003ePlease note; it may be necessary exclude particular paths or file share types, run \\u0026#39;man find\\u0026#39; for information.\\u003c/p\\u003e\\u003c/p\\u003e\",\"solution_id\":\"unix-world-writable-files\",\"solution_summary\":\"Remove world write permissions\",\"solution_type\":\"workaround\",\"status\":\"VULNERABLE_EXPL\",\"vulnerability_id\":\"unix-world-writable-files\"}]}",
+        "original": "{\"assessed_for_policies\":false,\"assessed_for_vulnerabilities\":true,\"credential_assessments\":[{\"port\":22,\"protocol\":\"TCP\",\"status\":\"NO_CREDS_SUPPLIED\"}],\"critical_vulnerabilities\":3,\"exploits\":0,\"host_name\":\"computer-test\",\"id\":\"8babcde1-1234-5678-0912-cabcdef1284e-default-asset-6\",\"ip\":\"10.50.5.112\",\"last_assessed_for_vulnerabilities\":\"2025-05-27T18:21:36.279Z\",\"last_scan_end\":\"2025-05-27T18:21:36.279Z\",\"last_scan_start\":\"2025-05-27T18:20:41.505Z\",\"mac\":\"00:00:5E:00:53:02\",\"malware_kits\":0,\"moderate_vulnerabilities\":1,\"os_architecture\":\"x86_64\",\"os_description\":\"Red Hat Enterprise Linux 7.9\",\"os_family\":\"Linux\",\"os_name\":\"Enterprise Linux\",\"os_system_name\":\"Red Hat Linux\",\"os_type\":\"\",\"os_vendor\":\"Red Hat\",\"os_version\":\"7.9\",\"risk_score\":18250,\"severe_vulnerabilities\":48,\"tags\":[{\"name\":\"Ahmedabad\",\"type\":\"LOCATION\"},{\"name\":\"test\",\"type\":\"SITE\"},{\"name\":\"rapid7 insight agents\",\"type\":\"SITE\"}],\"total_vulnerabilities\":52,\"type\":\"guest\",\"unique_identifiers\":[{\"id\":\"CEF12345-ABCD-1234-ABCD-95ABCDEF1234\",\"source\":\"dmidecode\"},{\"id\":\"e80644e940123456789abcdef66a8b16\",\"source\":\"R7 Agent\"}],\"vulnerability\":{\"added\":\"2004-11-30T00:00:00Z\",\"categories\":\"CVSS Score Predicted with Rapid7 AI,UNIX\",\"check_id\":null,\"cves\":\"\",\"cvss_v2_access_complexity\":\"low\",\"cvss_v2_access_vector\":\"network\",\"cvss_v2_authentication\":\"single\",\"cvss_v2_availability_impact\":\"partial\",\"cvss_v2_confidentiality_impact\":\"partial\",\"cvss_v2_exploit_score\":7.9520000338554375,\"cvss_v2_impact_score\":6.442976653521584,\"cvss_v2_integrity_impact\":\"partial\",\"cvss_v2_score\":6.5,\"cvss_v2_vector\":\"(AV:N/AC:L/Au:S/C:P/I:P/A:P)\",\"cvss_v3_attack_complexity\":\"low\",\"cvss_v3_attack_vector\":\"local\",\"cvss_v3_availability_impact\":\"high\",\"cvss_v3_confidentiality_impact\":\"high\",\"cvss_v3_exploit_score\":2.515145325,\"cvss_v3_impact_score\":5.873118720000001,\"cvss_v3_integrity_impact\":\"high\",\"cvss_v3_privileges_required\":\"none\",\"cvss_v3_scope\":\"unchanged\",\"cvss_v3_score\":8.4,\"cvss_v3_user_interaction\":\"none\",\"cvss_v3_vector\":\"CVSS:3.0/AV:L/AC:L/PR:N/UI:N/S:U/C:H/I:H/A:H\",\"denial_of_service\":false,\"description\":\"Anonymous root logins should only be allowed from system console. /etc/securetty allows you to specify on which tty's and virtual consoles root is allowed to login. The tty and vc's listed in this file will allow root to login on certain tty's and VC's. On other tty or vc's root user will not be allowed and user has to \\\"su\\\" to become root.\",\"exploits\":[],\"first_found\":\"2025-05-12T16:25:35Z\",\"id\":\"unix-anonymous-root-logins\",\"key\":\"\",\"last_found\":\"2025-05-27T18:21:36.279Z\",\"links\":[],\"malware_kits\":[],\"modified\":\"2025-02-18T00:00:00Z\",\"nic\":null,\"pci_cvss_score\":6.5,\"pci_fail\":true,\"pci_severity_score\":4,\"pci_special_notes\":\"\",\"pci_status\":\"fail\",\"port\":null,\"proof\":\"\\u003cp\\u003e\\u003cp\\u003eFollowing entries in /etc/securetty \\n                                 may allow anonymous root logins: \\u003cul\\u003e\\u003cli\\u003ettyS0\\u003c/li\\u003e\\u003cli\\u003ettysclp0\\u003c/li\\u003e\\u003cli\\u003esclp_line0\\u003c/li\\u003e\\u003cli\\u003e3270/tty1\\u003c/li\\u003e\\u003cli\\u003ehvc0\\u003c/li\\u003e\\u003cli\\u003ehvc1\\u003c/li\\u003e\\u003cli\\u003ehvc2\\u003c/li\\u003e\\u003cli\\u003ehvc3\\u003c/li\\u003e\\u003cli\\u003ehvc4\\u003c/li\\u003e\\u003cli\\u003ehvc5\\u003c/li\\u003e\\u003cli\\u003ehvc6\\u003c/li\\u003e\\u003cli\\u003ehvc7\\u003c/li\\u003e\\u003cli\\u003ehvsi0\\u003c/li\\u003e\\u003cli\\u003ehvsi1\\u003c/li\\u003e\\u003cli\\u003ehvsi2\\u003c/li\\u003e\\u003cli\\u003exvc0\\u003c/li\\u003e\\u003c/ul\\u003e\\u003c/p\\u003e\\u003c/p\\u003e\",\"protocol\":null,\"published\":\"2004-11-30T00:00:00Z\",\"references\":\"\",\"reintroduced\":null,\"risk_score\":562,\"severity\":\"severe\",\"severity_score\":7,\"solution_fix\":\"\\u003cp\\u003e\\u003cp\\u003eRemove all the entries in /etc/securetty except console,\\n            tty[0-9]* and vc\\\\[0-9]* \\u003c/p\\u003e\\u003cp\\u003eNote: ssh does not use /etc/securetty. To disable root login\\n            through ssh, use the \\u0026quot;PermitRootLogin\\u0026quot; setting in /etc/ssh/sshd_config\\n            and restart the ssh daemon. \\u003c/p\\u003e\\u003c/p\\u003e\",\"solution_id\":\"unix-anonymous-root-logins\",\"solution_summary\":\"Edit '/etc/securetty' entries\",\"solution_type\":\"workaround\",\"status\":\"VULNERABLE_EXPL\",\"title\":\"Anonymous root login is allowed\",\"vulnerability_id\":\"unix-anonymous-root-logins\"}}",
         "severity": 7,
         "type": [
             "info"
@@ -353,7 +353,7 @@ An example event for `asset_vulnerability` looks as following:
                     "source": "R7 Agent"
                 }
             ],
-            "vuln": {
+            "vulnerability": {
                 "added": "2004-11-30T00:00:00.000Z",
                 "categories": [
                     "CVSS Score Predicted with Rapid7 AI",
@@ -503,71 +503,72 @@ An example event for `asset_vulnerability` looks as following:
 | rapid7_insightvm.asset_vulnerability.type | The type of asset. | keyword |
 | rapid7_insightvm.asset_vulnerability.unique_identifiers.id | The unique identifier. | keyword |
 | rapid7_insightvm.asset_vulnerability.unique_identifiers.source | The source of the unique identifier. | keyword |
-| rapid7_insightvm.asset_vulnerability.vuln.added | The date the vulnerability coverage was added. The format is an ISO 8601 date, YYYY-MM-DD. | date |
-| rapid7_insightvm.asset_vulnerability.vuln.categories | Comma-separated list of categories the vulnerability is classified under. | keyword |
-| rapid7_insightvm.asset_vulnerability.vuln.check_id | The identifier of the vulnerability check. | keyword |
-| rapid7_insightvm.asset_vulnerability.vuln.cves | All CVEs assigned to this vulnerability. | keyword |
-| rapid7_insightvm.asset_vulnerability.vuln.cvss_v2.access_complexity | Access Complexity (AC) component which measures the complexity of the attack required to exploit the vulnerability once an attacker has gained access to the target system. | keyword |
-| rapid7_insightvm.asset_vulnerability.vuln.cvss_v2.access_vector | Access Vector (Av) component which reflects how the vulnerability is exploited. | keyword |
-| rapid7_insightvm.asset_vulnerability.vuln.cvss_v2.authentication | Authentication (Au) component which measures the number of times an attacker must authenticate to a target in order to exploit a vulnerability. | keyword |
-| rapid7_insightvm.asset_vulnerability.vuln.cvss_v2.availability_impact | Availability Impact (A) component which measures the impact to availability of a successfully exploited vulnerability. | keyword |
-| rapid7_insightvm.asset_vulnerability.vuln.cvss_v2.confidentiality_impact | Confidentiality Impact (C) component which measures the impact on confidentiality of a successfully exploited vulnerability. | keyword |
-| rapid7_insightvm.asset_vulnerability.vuln.cvss_v2.exploit_score | The CVSS exploit score. | double |
-| rapid7_insightvm.asset_vulnerability.vuln.cvss_v2.impact_score | The CVSS impact score. | double |
-| rapid7_insightvm.asset_vulnerability.vuln.cvss_v2.integrity_impact | Integrity Impact (I) component measures the impact to integrity of a successfully exploited vulnerability. | keyword |
-| rapid7_insightvm.asset_vulnerability.vuln.cvss_v2.score | The CVSS score, which ranges from 0-10. | double |
-| rapid7_insightvm.asset_vulnerability.vuln.cvss_v2.vector | The CVSS v2 vector. | keyword |
-| rapid7_insightvm.asset_vulnerability.vuln.cvss_v3.attack_complexity | Attack Complexity (AC) component with measures the conditions beyond the attacker's control that must exist in order to exploit the vulnerability. | keyword |
-| rapid7_insightvm.asset_vulnerability.vuln.cvss_v3.attack_vector | Attack Vector (AV) component which measures context by which vulnerability exploitation is possible. | keyword |
-| rapid7_insightvm.asset_vulnerability.vuln.cvss_v3.availability_impact | Availability Impact (A) measures the impact to the availability of the impacted component resulting from a successfully exploited vulnerability. | keyword |
-| rapid7_insightvm.asset_vulnerability.vuln.cvss_v3.confidentiality_impact | Confidentiality Impact (C) component which measures the impact on confidentiality of a successfully exploited vulnerability. | keyword |
-| rapid7_insightvm.asset_vulnerability.vuln.cvss_v3.exploit_score | The CVSS exploit score. | double |
-| rapid7_insightvm.asset_vulnerability.vuln.cvss_v3.impact_score | The CVSS impact score. | double |
-| rapid7_insightvm.asset_vulnerability.vuln.cvss_v3.integrity_impact | Integrity Impact (I) measures the impact to integrity of a successfully exploited vulnerability. Integrity refers to the trustworthiness and veracity of information. | keyword |
-| rapid7_insightvm.asset_vulnerability.vuln.cvss_v3.privileges_required | Privileges Required (PR) measures the level of privileges an attacker must possess before successfully exploiting the vulnerability. | keyword |
-| rapid7_insightvm.asset_vulnerability.vuln.cvss_v3.scope | Scope (S) measures the collection of privileges defined by a computing authority (e.g. an application, an operating system, or a sandbox environment) when granting access to computing resources (e.g. files, CPU, memory, etc). These privileges are assigned based on some method of identification and authorization. | keyword |
-| rapid7_insightvm.asset_vulnerability.vuln.cvss_v3.score | The CVSS score, which ranges from 0-10. | double |
-| rapid7_insightvm.asset_vulnerability.vuln.cvss_v3.user_interaction | User Interaction (UI) measures the requirement for a user, other than the attacker, to participate in the successful compromise of the vulnerable component. | keyword |
-| rapid7_insightvm.asset_vulnerability.vuln.cvss_v3.vector | The CVSS v3 vector. | keyword |
-| rapid7_insightvm.asset_vulnerability.vuln.denial_of_service | Whether the vulnerability can lead to Denial of Service (DoS). | boolean |
-| rapid7_insightvm.asset_vulnerability.vuln.description | A verbose description of the vulnerability. | keyword |
-| rapid7_insightvm.asset_vulnerability.vuln.exploits.description | A verbose description of the exploit. | keyword |
-| rapid7_insightvm.asset_vulnerability.vuln.exploits.id | The identifier of the exploit. | keyword |
-| rapid7_insightvm.asset_vulnerability.vuln.exploits.name | The name of the exploit. | keyword |
-| rapid7_insightvm.asset_vulnerability.vuln.exploits.rank | How common the exploit is used. | keyword |
-| rapid7_insightvm.asset_vulnerability.vuln.exploits.skill_level | The level of skill required to use the exploit. | keyword |
-| rapid7_insightvm.asset_vulnerability.vuln.exploits.source | Details about where the exploit is defined. | keyword |
-| rapid7_insightvm.asset_vulnerability.vuln.first_found | The first time the vulnerability was discovered. | date |
-| rapid7_insightvm.asset_vulnerability.vuln.id | The identifier of the vulnerability. | keyword |
-| rapid7_insightvm.asset_vulnerability.vuln.key | The identifier of the assessment key. | keyword |
-| rapid7_insightvm.asset_vulnerability.vuln.last_found | The most recent time the vulnerability was discovered. | date |
-| rapid7_insightvm.asset_vulnerability.vuln.links.href |  | keyword |
-| rapid7_insightvm.asset_vulnerability.vuln.links.id |  | keyword |
-| rapid7_insightvm.asset_vulnerability.vuln.links.rel |  | keyword |
-| rapid7_insightvm.asset_vulnerability.vuln.links.source |  | keyword |
-| rapid7_insightvm.asset_vulnerability.vuln.malware_kits.description | A known Malware Kit that can be used to compromise a vulnerability. | keyword |
-| rapid7_insightvm.asset_vulnerability.vuln.malware_kits.name | The name of the malware kit. | keyword |
-| rapid7_insightvm.asset_vulnerability.vuln.malware_kits.popularity | The popularity of the malware kit. | keyword |
-| rapid7_insightvm.asset_vulnerability.vuln.modified | The last date the vulnerability was modified. The format is an ISO 8601 date, YYYY-MM-DD. | date |
-| rapid7_insightvm.asset_vulnerability.vuln.pci.cvss_score | The CVSS score of the vulnerability, adjusted for PCI rules and exceptions, on a scale of 0-10. | double |
-| rapid7_insightvm.asset_vulnerability.vuln.pci.fail | Whether if present on a host this vulnerability would cause a PCI failure. true if compliance status is "fail", false otherwise. | boolean |
-| rapid7_insightvm.asset_vulnerability.vuln.pci.severity_score | The severity score of the vulnerability, adjusted for PCI rules and exceptions, on a scale of 0-10. | long |
-| rapid7_insightvm.asset_vulnerability.vuln.pci.special_notes | Any special notes or remarks about the vulnerability that pertain to PCI compliance. | keyword |
-| rapid7_insightvm.asset_vulnerability.vuln.pci.status | The PCI compliance status. | keyword |
-| rapid7_insightvm.asset_vulnerability.vuln.port | For services vulnerabilities, the port that is vulnerable. | long |
-| rapid7_insightvm.asset_vulnerability.vuln.proof | The identifier of the vulnerability proof. | keyword |
-| rapid7_insightvm.asset_vulnerability.vuln.protocol | For services vulnerabilities, the protocol that is vulnerable. | keyword |
-| rapid7_insightvm.asset_vulnerability.vuln.published | The date the vulnerability was first published or announced. The format is an ISO 8601 date, YYYY-MM-DD. | date |
-| rapid7_insightvm.asset_vulnerability.vuln.references | References to security standards this vulnerability is a part of, in condensed format (comma-separated). | keyword |
-| rapid7_insightvm.asset_vulnerability.vuln.risk_score | The risk score of the vulnerability. If using the default Rapid7 Real Risk™ model, this value ranges from 0-1000. | double |
-| rapid7_insightvm.asset_vulnerability.vuln.severity | The severity of the vulnerability. | keyword |
-| rapid7_insightvm.asset_vulnerability.vuln.severity_score | The severity score of the vulnerability, on a scale of 0-10. | long |
-| rapid7_insightvm.asset_vulnerability.vuln.solution.fix | The solution fix for the vulnerability. | keyword |
-| rapid7_insightvm.asset_vulnerability.vuln.solution.id | The identifier of the solution for the vulnerability. | keyword |
-| rapid7_insightvm.asset_vulnerability.vuln.solution.summary | The summary for the solution for the vulnerability. | keyword |
-| rapid7_insightvm.asset_vulnerability.vuln.solution.type | The solution type for the vulnerability. | keyword |
-| rapid7_insightvm.asset_vulnerability.vuln.status | The status of the vulnerability finding. | keyword |
-| rapid7_insightvm.asset_vulnerability.vuln.title | The title (summary) of the vulnerability. | keyword |
+| rapid7_insightvm.asset_vulnerability.vulnerability.added | The date the vulnerability coverage was added. The format is an ISO 8601 date, YYYY-MM-DD. | date |
+| rapid7_insightvm.asset_vulnerability.vulnerability.categories | Comma-separated list of categories the vulnerability is classified under. | keyword |
+| rapid7_insightvm.asset_vulnerability.vulnerability.check_id | The identifier of the vulnerability check. | keyword |
+| rapid7_insightvm.asset_vulnerability.vulnerability.cves | All CVEs assigned to this vulnerability. | keyword |
+| rapid7_insightvm.asset_vulnerability.vulnerability.cvss_v2.access_complexity | Access Complexity (AC) component which measures the complexity of the attack required to exploit the vulnerability once an attacker has gained access to the target system. | keyword |
+| rapid7_insightvm.asset_vulnerability.vulnerability.cvss_v2.access_vector | Access Vector (Av) component which reflects how the vulnerability is exploited. | keyword |
+| rapid7_insightvm.asset_vulnerability.vulnerability.cvss_v2.authentication | Authentication (Au) component which measures the number of times an attacker must authenticate to a target in order to exploit a vulnerability. | keyword |
+| rapid7_insightvm.asset_vulnerability.vulnerability.cvss_v2.availability_impact | Availability Impact (A) component which measures the impact to availability of a successfully exploited vulnerability. | keyword |
+| rapid7_insightvm.asset_vulnerability.vulnerability.cvss_v2.confidentiality_impact | Confidentiality Impact (C) component which measures the impact on confidentiality of a successfully exploited vulnerability. | keyword |
+| rapid7_insightvm.asset_vulnerability.vulnerability.cvss_v2.exploit_score | The CVSS exploit score. | double |
+| rapid7_insightvm.asset_vulnerability.vulnerability.cvss_v2.impact_score | The CVSS impact score. | double |
+| rapid7_insightvm.asset_vulnerability.vulnerability.cvss_v2.integrity_impact | Integrity Impact (I) component measures the impact to integrity of a successfully exploited vulnerability. | keyword |
+| rapid7_insightvm.asset_vulnerability.vulnerability.cvss_v2.score | The CVSS score, which ranges from 0-10. | double |
+| rapid7_insightvm.asset_vulnerability.vulnerability.cvss_v2.vector | The CVSS v2 vector. | keyword |
+| rapid7_insightvm.asset_vulnerability.vulnerability.cvss_v3.attack_complexity | Attack Complexity (AC) component with measures the conditions beyond the attacker's control that must exist in order to exploit the vulnerability. | keyword |
+| rapid7_insightvm.asset_vulnerability.vulnerability.cvss_v3.attack_vector | Attack Vector (AV) component which measures context by which vulnerability exploitation is possible. | keyword |
+| rapid7_insightvm.asset_vulnerability.vulnerability.cvss_v3.availability_impact | Availability Impact (A) measures the impact to the availability of the impacted component resulting from a successfully exploited vulnerability. | keyword |
+| rapid7_insightvm.asset_vulnerability.vulnerability.cvss_v3.confidentiality_impact | Confidentiality Impact (C) component which measures the impact on confidentiality of a successfully exploited vulnerability. | keyword |
+| rapid7_insightvm.asset_vulnerability.vulnerability.cvss_v3.exploit_score | The CVSS exploit score. | double |
+| rapid7_insightvm.asset_vulnerability.vulnerability.cvss_v3.impact_score | The CVSS impact score. | double |
+| rapid7_insightvm.asset_vulnerability.vulnerability.cvss_v3.integrity_impact | Integrity Impact (I) measures the impact to integrity of a successfully exploited vulnerability. Integrity refers to the trustworthiness and veracity of information. | keyword |
+| rapid7_insightvm.asset_vulnerability.vulnerability.cvss_v3.privileges_required | Privileges Required (PR) measures the level of privileges an attacker must possess before successfully exploiting the vulnerability. | keyword |
+| rapid7_insightvm.asset_vulnerability.vulnerability.cvss_v3.scope | Scope (S) measures the collection of privileges defined by a computing authority (e.g. an application, an operating system, or a sandbox environment) when granting access to computing resources (e.g. files, CPU, memory, etc). These privileges are assigned based on some method of identification and authorization. | keyword |
+| rapid7_insightvm.asset_vulnerability.vulnerability.cvss_v3.score | The CVSS score, which ranges from 0-10. | double |
+| rapid7_insightvm.asset_vulnerability.vulnerability.cvss_v3.user_interaction | User Interaction (UI) measures the requirement for a user, other than the attacker, to participate in the successful compromise of the vulnerable component. | keyword |
+| rapid7_insightvm.asset_vulnerability.vulnerability.cvss_v3.vector | The CVSS v3 vector. | keyword |
+| rapid7_insightvm.asset_vulnerability.vulnerability.denial_of_service | Whether the vulnerability can lead to Denial of Service (DoS). | boolean |
+| rapid7_insightvm.asset_vulnerability.vulnerability.description | A verbose description of the vulnerability. | keyword |
+| rapid7_insightvm.asset_vulnerability.vulnerability.exploits.description | A verbose description of the exploit. | keyword |
+| rapid7_insightvm.asset_vulnerability.vulnerability.exploits.id | The identifier of the exploit. | keyword |
+| rapid7_insightvm.asset_vulnerability.vulnerability.exploits.name | The name of the exploit. | keyword |
+| rapid7_insightvm.asset_vulnerability.vulnerability.exploits.rank | How common the exploit is used. | keyword |
+| rapid7_insightvm.asset_vulnerability.vulnerability.exploits.skill_level | The level of skill required to use the exploit. | keyword |
+| rapid7_insightvm.asset_vulnerability.vulnerability.exploits.source | Details about where the exploit is defined. | keyword |
+| rapid7_insightvm.asset_vulnerability.vulnerability.first_found | The first time the vulnerability was discovered. | date |
+| rapid7_insightvm.asset_vulnerability.vulnerability.id | The identifier of the vulnerability. | keyword |
+| rapid7_insightvm.asset_vulnerability.vulnerability.is_enriched | Whether the enriched vulnerability information is available. | boolean |
+| rapid7_insightvm.asset_vulnerability.vulnerability.key | The identifier of the assessment key. | keyword |
+| rapid7_insightvm.asset_vulnerability.vulnerability.last_found | The most recent time the vulnerability was discovered. | date |
+| rapid7_insightvm.asset_vulnerability.vulnerability.links.href |  | keyword |
+| rapid7_insightvm.asset_vulnerability.vulnerability.links.id |  | keyword |
+| rapid7_insightvm.asset_vulnerability.vulnerability.links.rel |  | keyword |
+| rapid7_insightvm.asset_vulnerability.vulnerability.links.source |  | keyword |
+| rapid7_insightvm.asset_vulnerability.vulnerability.malware_kits.description | A known Malware Kit that can be used to compromise a vulnerability. | keyword |
+| rapid7_insightvm.asset_vulnerability.vulnerability.malware_kits.name | The name of the malware kit. | keyword |
+| rapid7_insightvm.asset_vulnerability.vulnerability.malware_kits.popularity | The popularity of the malware kit. | keyword |
+| rapid7_insightvm.asset_vulnerability.vulnerability.modified | The last date the vulnerability was modified. The format is an ISO 8601 date, YYYY-MM-DD. | date |
+| rapid7_insightvm.asset_vulnerability.vulnerability.pci.cvss_score | The CVSS score of the vulnerability, adjusted for PCI rules and exceptions, on a scale of 0-10. | double |
+| rapid7_insightvm.asset_vulnerability.vulnerability.pci.fail | Whether if present on a host this vulnerability would cause a PCI failure. true if compliance status is "fail", false otherwise. | boolean |
+| rapid7_insightvm.asset_vulnerability.vulnerability.pci.severity_score | The severity score of the vulnerability, adjusted for PCI rules and exceptions, on a scale of 0-10. | long |
+| rapid7_insightvm.asset_vulnerability.vulnerability.pci.special_notes | Any special notes or remarks about the vulnerability that pertain to PCI compliance. | keyword |
+| rapid7_insightvm.asset_vulnerability.vulnerability.pci.status | The PCI compliance status. | keyword |
+| rapid7_insightvm.asset_vulnerability.vulnerability.port | For services vulnerabilities, the port that is vulnerable. | long |
+| rapid7_insightvm.asset_vulnerability.vulnerability.proof | The identifier of the vulnerability proof. | keyword |
+| rapid7_insightvm.asset_vulnerability.vulnerability.protocol | For services vulnerabilities, the protocol that is vulnerable. | keyword |
+| rapid7_insightvm.asset_vulnerability.vulnerability.published | The date the vulnerability was first published or announced. The format is an ISO 8601 date, YYYY-MM-DD. | date |
+| rapid7_insightvm.asset_vulnerability.vulnerability.references | References to security standards this vulnerability is a part of, in condensed format (comma-separated). | keyword |
+| rapid7_insightvm.asset_vulnerability.vulnerability.risk_score | The risk score of the vulnerability. If using the default Rapid7 Real Risk™ model, this value ranges from 0-1000. | double |
+| rapid7_insightvm.asset_vulnerability.vulnerability.severity | The severity of the vulnerability. | keyword |
+| rapid7_insightvm.asset_vulnerability.vulnerability.severity_score | The severity score of the vulnerability, on a scale of 0-10. | long |
+| rapid7_insightvm.asset_vulnerability.vulnerability.solution.fix | The solution fix for the vulnerability. | keyword |
+| rapid7_insightvm.asset_vulnerability.vulnerability.solution.id | The identifier of the solution for the vulnerability. | keyword |
+| rapid7_insightvm.asset_vulnerability.vulnerability.solution.summary | The summary for the solution for the vulnerability. | keyword |
+| rapid7_insightvm.asset_vulnerability.vulnerability.solution.type | The solution type for the vulnerability. | keyword |
+| rapid7_insightvm.asset_vulnerability.vulnerability.status | The status of the vulnerability finding. | keyword |
+| rapid7_insightvm.asset_vulnerability.vulnerability.title | The title (summary) of the vulnerability. | keyword |
 | resource.id |  | keyword |
 | resource.name |  | keyword |
 | vulnerability.published_date |  | date |
