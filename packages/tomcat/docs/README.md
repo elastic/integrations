@@ -1,3 +1,7 @@
+> ⚠️ **IMPORTANT**
+>
+> This package is *deprecated* and is not supported for installation in Elastic Cloud Serverless.
+
 # Tomcat NetWitness Logs integration (To be deprecated soon)
 
 This integration is for [Tomcat device's](https://tomcat.apache.org/tomcat-10.0-doc/logging.html) logs. It includes the following
