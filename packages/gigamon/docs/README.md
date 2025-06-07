@@ -67,29 +67,29 @@ An example event for `ami` looks as following:
 {
     "@timestamp": "2023-05-16T15:25:25.000Z",
     "agent": {
-        "ephemeral_id": "81522d17-a23d-4c0b-9fc3-619ddebd6764",
-        "id": "ef72383f-04dc-4020-9713-afbc5873e74d",
-        "name": "elastic-agent-95129",
+        "ephemeral_id": "7733f9fd-539a-4020-a4de-15f1ceb8c4bf",
+        "id": "47bbeb84-a39b-4490-9208-eada12c773a0",
+        "name": "elastic-agent-93813",
         "type": "filebeat",
-        "version": "8.15.1"
+        "version": "8.17.0"
     },
     "data_stream": {
         "dataset": "gigamon.ami",
-        "namespace": "49902",
+        "namespace": "46839",
         "type": "logs"
     },
     "ecs": {
         "version": "8.11.0"
     },
     "elastic_agent": {
-        "id": "ef72383f-04dc-4020-9713-afbc5873e74d",
+        "id": "47bbeb84-a39b-4490-9208-eada12c773a0",
         "snapshot": false,
-        "version": "8.15.1"
+        "version": "8.17.0"
     },
     "event": {
         "agent_id_status": "verified",
         "dataset": "gigamon.ami",
-        "ingested": "2024-10-21T06:12:50Z",
+        "ingested": "2025-06-03T09:26:56Z",
         "kind": "event",
         "original": "{\"app_id\":\"32\",\"app_name\":\"dns\",\"device_inbound_interface\":\"0\",\"dns_class\":\"1\",\"dns_flags\":\"0\",\"dns_host\":\"pnstrex-83816.local\",\"dns_host_addr\":\"10.114.82.101\",\"dns_host_class\":\"1\",\"dns_host_raw\":\"706e73747265782d38333831362e6c6f63616c\",\"dns_host_type\":\"PTR\",\"dns_name\":\"a.b.2.b.9.6.c.2.3.9.3.d.6.2.6.a.0.8.0.2.1.0.0.0.0.0.0.0.b.a.c.f. i:p6.arpa\",\"dns_opcode\":\"0\",\"dns_qdcount\":\"4\",\"dns_query\":\"f.7.5.2.e.7.6.2.4.c.1.c.4.c.6.1.0.8.0.2.1.0.0.0.0.0.0.0.b.a.c.f. ip6.arpa\",\"dns_query_type\":\"255\",\"dns_transaction_id\":\"0\",\"dns_ttl\":\"120\",\"dst_bytes\":\"0\",\"dst_ip\":\"224.0.0.251\",\"dst_mac\":\"01:00:5e:00:00:fb\",\"dst_packets\":\"0\",\"dst_port\":\"5353\",\"egress_intf_id\":\"0\",\"end_reason\":\"1\",\"end_time\":\"2023:12:13 15:25:11.181\",\"generator\":\"gs_apps_appInst16_423722da-33ec-1556-b24b-cda2e74a53f6\",\"id\":\"679408454713072647\",\"intf_name\":\"0\",\"ip_version\":\"4\",\"protocol\":\"17\",\"seq_num\":\"656\",\"src_bytes\":\"337\",\"src_ip\":\"10.114.82.101\",\"src_mac\":\"00:50:56:8d:89:41\",\"src_packets\":\"1\",\"src_port\":\"5353\",\"start_time\":\"2023:12:13 15:25:11.181\",\"sys_up_time_first\":\"3497355275\",\"sys_up_time_last\":\"3497355275\",\"ts\":\"Thu May 16 15:25:25 2023\",\"vendor\":\"Gigamon\",\"version\":\"6.5.00\"}"
     },
