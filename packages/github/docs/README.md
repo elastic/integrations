@@ -1067,24 +1067,24 @@ An example event for `security_advisories` looks as following:
 
 ```json
 {
-    "@timestamp": "2025-06-05T16:29:01.790Z",
+    "@timestamp": "2025-06-08T18:11:33.974Z",
     "agent": {
-        "ephemeral_id": "63544fec-4215-4c5a-ac6d-ebe3ff7900a7",
-        "id": "8c8a195f-a836-44be-97fa-5d1ddbaffbc2",
-        "name": "elastic-agent-27163",
+        "ephemeral_id": "bce1f914-1cba-4582-b13b-a1a05311af9d",
+        "id": "b0f52280-30b0-43ad-a061-ba62bb15a0c0",
+        "name": "elastic-agent-27512",
         "type": "filebeat",
         "version": "9.0.1"
     },
     "data_stream": {
         "dataset": "github.security_advisories",
-        "namespace": "12199",
+        "namespace": "19249",
         "type": "logs"
     },
     "ecs": {
-        "version": "8.17.0"
+        "version": "8.11.0"
     },
     "elastic_agent": {
-        "id": "8c8a195f-a836-44be-97fa-5d1ddbaffbc2",
+        "id": "b0f52280-30b0-43ad-a061-ba62bb15a0c0",
         "snapshot": false,
         "version": "9.0.1"
     },
@@ -1094,7 +1094,7 @@ An example event for `security_advisories` looks as following:
             "vulnerability"
         ],
         "dataset": "github.security_advisories",
-        "ingested": "2025-06-05T16:29:04Z",
+        "ingested": "2025-06-08T18:11:36Z",
         "kind": "enrichment",
         "type": [
             "info"
@@ -1144,7 +1144,7 @@ An example event for `security_advisories` looks as following:
     },
     "tags": [
         "forwarded",
-        "github_security_advisory-vulnerability"
+        "github-security-advisories"
     ],
     "url": {
         "domain": "github.com",
