@@ -1,6 +1,6 @@
 # GitHub Integration
 
-The GitHub integration collects events from the [GitHub API](https://docs.github.com/en/rest) and Azure Eventhub.
+The GitHub integration collects events from the [GitHub API](https://docs.github.com/en/rest) and Azure Eventhub. It can also retrieve global advisories (reviewed or unreviewed) from the GitHub Security Advisories database. 
 
 ## Logs
 
@@ -974,6 +974,191 @@ An example event for `issues` looks as following:
     "user": {
         "id": "1",
         "name": "octocat"
+    }
+}
+```
+
+### Security Advisories
+
+The GitHub Security Advisories datastream lets you retrieve reviewed and unreviewed global security advisories from the GitHub advisory database. See [Working with security advisories](https://docs.github.com/en/code-security/security-advisories) for more details.
+
+To use this integration, you must [create a fine-grained personal access token](https://docs.github.com/en/authentication/keeping-your-account-and-data-secure/managing-your-personal-access-tokens#creating-a-fine-grained-personal-access-token) (GitHub App user access tokens, GitHub App installation access tokens, Fine-grained personal access tokens). This fine-grained token does not require any permissions. 
+
+**Exported fields**
+
+| Field | Description | Type |
+|---|---|---|
+| @timestamp | Event timestamp. | date |
+| data_stream.dataset | Data stream dataset. | constant_keyword |
+| data_stream.namespace | Data stream namespace. | constant_keyword |
+| data_stream.type | Data stream type. | constant_keyword |
+| github.security_advisory.credits.avatar_url |  | keyword |
+| github.security_advisory.credits.events_url |  | keyword |
+| github.security_advisory.credits.followers_url |  | keyword |
+| github.security_advisory.credits.following_url |  | keyword |
+| github.security_advisory.credits.gists_url |  | keyword |
+| github.security_advisory.credits.html_url |  | keyword |
+| github.security_advisory.credits.id |  | long |
+| github.security_advisory.credits.login |  | keyword |
+| github.security_advisory.credits.node_id |  | keyword |
+| github.security_advisory.credits.organizations_url |  | keyword |
+| github.security_advisory.credits.received_events_url |  | keyword |
+| github.security_advisory.credits.repos_url |  | keyword |
+| github.security_advisory.credits.site_admin |  | boolean |
+| github.security_advisory.credits.starred_url |  | keyword |
+| github.security_advisory.credits.subscriptions_url |  | keyword |
+| github.security_advisory.credits.type |  | keyword |
+| github.security_advisory.credits.url |  | keyword |
+| github.security_advisory.credits.user.avatar_url |  | keyword |
+| github.security_advisory.credits.user.events_url |  | keyword |
+| github.security_advisory.credits.user.followers_url |  | keyword |
+| github.security_advisory.credits.user.following_url |  | keyword |
+| github.security_advisory.credits.user.gists_url |  | keyword |
+| github.security_advisory.credits.user.gravatar_id |  | keyword |
+| github.security_advisory.credits.user.html_url |  | keyword |
+| github.security_advisory.credits.user.id |  | long |
+| github.security_advisory.credits.user.login |  | keyword |
+| github.security_advisory.credits.user.node_id |  | keyword |
+| github.security_advisory.credits.user.organizations_url |  | keyword |
+| github.security_advisory.credits.user.received_events_url |  | keyword |
+| github.security_advisory.credits.user.repos_url |  | keyword |
+| github.security_advisory.credits.user.site_admin |  | boolean |
+| github.security_advisory.credits.user.starred_url |  | keyword |
+| github.security_advisory.credits.user.subscriptions_url |  | keyword |
+| github.security_advisory.credits.user.type |  | keyword |
+| github.security_advisory.credits.user.url |  | keyword |
+| github.security_advisory.credits.user.user_view_type |  | keyword |
+| github.security_advisory.credits.user_view_type |  | keyword |
+| github.security_advisory.cve_id |  | keyword |
+| github.security_advisory.cvss.score |  | float |
+| github.security_advisory.cvss.vector_string |  | keyword |
+| github.security_advisory.cvss_severities.cvss_v3.score |  | float |
+| github.security_advisory.cvss_severities.cvss_v3.vector_string |  | keyword |
+| github.security_advisory.cvss_severities.cvss_v4.score |  | float |
+| github.security_advisory.cvss_severities.cvss_v4.vector_string |  | keyword |
+| github.security_advisory.cwes.cwe_id |  | keyword |
+| github.security_advisory.cwes.name |  | keyword |
+| github.security_advisory.description |  | match_only_text |
+| github.security_advisory.epss.percentage |  | float |
+| github.security_advisory.epss.percentile |  | float |
+| github.security_advisory.ghsa_id |  | keyword |
+| github.security_advisory.github_reviewed_at |  | date |
+| github.security_advisory.html_url |  | keyword |
+| github.security_advisory.identifiers.type |  | keyword |
+| github.security_advisory.identifiers.value |  | keyword |
+| github.security_advisory.nvd_published_at |  | date |
+| github.security_advisory.published_at |  | date |
+| github.security_advisory.references |  | keyword |
+| github.security_advisory.repository_advisory_url |  | keyword |
+| github.security_advisory.severity |  | keyword |
+| github.security_advisory.source_code_location |  | keyword |
+| github.security_advisory.summary |  | keyword |
+| github.security_advisory.type |  | keyword |
+| github.security_advisory.updated_at |  | date |
+| github.security_advisory.url |  | keyword |
+| github.security_advisory.vulnerabilities.first_patched_version |  | keyword |
+| github.security_advisory.vulnerabilities.package.ecosystem |  | keyword |
+| github.security_advisory.vulnerabilities.package.name |  | keyword |
+| github.security_advisory.vulnerabilities.vulnerable_version_range |  | keyword |
+| input.type | Type of filebeat input. | keyword |
+
+
+An example event for `security_advisories` looks as following:
+
+```json
+{
+    "@timestamp": "2025-06-08T18:11:33.974Z",
+    "agent": {
+        "ephemeral_id": "bce1f914-1cba-4582-b13b-a1a05311af9d",
+        "id": "b0f52280-30b0-43ad-a061-ba62bb15a0c0",
+        "name": "elastic-agent-27512",
+        "type": "filebeat",
+        "version": "9.0.1"
+    },
+    "data_stream": {
+        "dataset": "github.security_advisories",
+        "namespace": "19249",
+        "type": "logs"
+    },
+    "ecs": {
+        "version": "8.11.0"
+    },
+    "elastic_agent": {
+        "id": "b0f52280-30b0-43ad-a061-ba62bb15a0c0",
+        "snapshot": false,
+        "version": "9.0.1"
+    },
+    "event": {
+        "agent_id_status": "verified",
+        "category": [
+            "vulnerability"
+        ],
+        "dataset": "github.security_advisories",
+        "ingested": "2025-06-08T18:11:36Z",
+        "kind": "enrichment",
+        "type": [
+            "info"
+        ]
+    },
+    "github": {
+        "security_advisory": {
+            "cve_id": "CVE-2025-23096",
+            "cvss_severities": {
+                "cvss_v3": {
+                    "score": 0
+                },
+                "cvss_v4": {
+                    "score": 0
+                }
+            },
+            "description": "An issue was discovered in Samsung Mobile Processor Exynos 1280, 2200, 1380, 1480, 2400. A Double Free in the mobile processor leads to privilege escalation.",
+            "ghsa_id": "GHSA-vpq6-j9hp-2h3w",
+            "html_url": "https://github.com/advisories/GHSA-vpq6-j9hp-2h3w",
+            "identifiers": {
+                "type": [
+                    "GHSA",
+                    "CVE"
+                ],
+                "value": [
+                    "GHSA-vpq6-j9hp-2h3w",
+                    "CVE-2025-23096"
+                ]
+            },
+            "nvd_published_at": "2025-06-04T15:15:23.000Z",
+            "published_at": "2025-06-04T15:30:41.000Z",
+            "references": [
+                "https://nvd.nist.gov/vuln/detail/CVE-2025-23096",
+                "https://semiconductor.samsung.com/support/quality-support/product-security-updates",
+                "https://semiconductor.samsung.com/support/quality-support/product-security-updates/cve-2025-23096",
+                "https://github.com/advisories/GHSA-vpq6-j9hp-2h3w"
+            ],
+            "severity": "unknown",
+            "summary": "An issue was discovered in Samsung Mobile Processor Exynos 1280, 2200, 1380, 1480, 2400. A Double...",
+            "type": "unreviewed",
+            "updated_at": "2025-06-04T15:30:46.000Z",
+            "url": "https://api.github.com/advisories/GHSA-vpq6-j9hp-2h3w"
+        }
+    },
+    "input": {
+        "type": "cel"
+    },
+    "tags": [
+        "forwarded",
+        "github-security-advisories"
+    ],
+    "url": {
+        "domain": "github.com",
+        "full": "https://github.com/advisories/GHSA-vpq6-j9hp-2h3w",
+        "original": "https://github.com/advisories/GHSA-vpq6-j9hp-2h3w",
+        "path": "/advisories/GHSA-vpq6-j9hp-2h3w",
+        "scheme": "https"
+    },
+    "vulnerability": {
+        "classification": "CVSS",
+        "description": "An issue was discovered in Samsung Mobile Processor Exynos 1280, 2200, 1380, 1480, 2400. A Double Free in the mobile processor leads to privilege escalation.",
+        "enumeration": "CVE",
+        "id": "CVE-2025-23096",
+        "severity": "unknown"
     }
 }
 ```
