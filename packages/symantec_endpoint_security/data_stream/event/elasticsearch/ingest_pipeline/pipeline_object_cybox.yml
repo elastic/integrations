@@ -712,7 +712,15 @@ processors:
             ctx.file = new HashMap();
           }
         }
-
+        for (def file : ctx.ses.cybox.files) {
+          if (file.type_id != null) {
+            def type_id = file.type_id;
+            if (params.containsKey(type_id.toString())) {
+              def type = params.get(type_id.toString());
+              var.add(type);
+            }
+          }
+        }
         
         ctx.file.put('type', var); 
       on_failure:
