@@ -20,7 +20,7 @@ The Sublime Security integration collects three types of logs:
 
 ## Requirements
 
-Elastic Agent must be installed. For more details and installation instructions, please refer to the [Elastic Agent Installation Guide](https://www.elastic.co/guide/en/fleet/current/elastic-agent-installation.html).
+Elastic Agent must be installed. For more details, check the Elastic Agent [installation instructions](docs-content://reference/fleet/install-elastic-agents.md).
 
 ## Agentless-enabled integration
 
@@ -28,44 +28,26 @@ Agentless integrations allow you to collect data without having to manage Elasti
 
 Agentless deployments are only supported in Elastic Serverless and Elastic Cloud environments. This functionality is in beta and is subject to change. Beta features are not subject to the support SLA of official GA features.
 
-### Installing and managing an Elastic Agent:
-
-There are several options for installing and managing Elastic Agent:
-
-### Install a Fleet-managed Elastic Agent (recommended):
-
-With this approach, you install Elastic Agent and use Fleet in Kibana to define, configure, and manage your agents in a central location. We recommend using Fleet management because it makes the management and upgrade of your agents considerably easier.
-
-### Install Elastic Agent in standalone mode (advanced users):
-
-With this approach, you install Elastic Agent and manually configure the agent locally on the system where it’s installed. You are responsible for managing and upgrading the agents. This approach is reserved for advanced users only.
-
-### Install Elastic Agent in a containerized environment:
-
-You can run Elastic Agent inside a container, either with Fleet Server or standalone. Docker images for all versions of Elastic Agent are available from the Elastic Docker registry, and we provide deployment manifests for running on Kubernetes.
-
-Please note, there are minimum requirements for running Elastic Agent. For more information, refer to the  [Elastic Agent Minimum Requirements](https://www.elastic.co/guide/en/fleet/current/elastic-agent-installation.html#elastic-agent-installation-minimum-requirements).
-
 ## Setup
 
-### To collect data from the Sublime Security API:
+### Collect data from the Sublime Security API
 
 #### Step 1: Go to Platform
 - Visit the [Sublime Security Platform](https://platform.sublime.security/) and select `API` in Developers section.
 
-#### Step 2: Generating the API Key
+#### Step 2: Generate the API Key
 - Retrieve your `API Key`. This key will be used further in the Elastic integration setup to authenticate and access different Sublime Security Logs.
 - `Base URL` of Sublime Security is also required for configuring integration.
 
 **Note**: Users with the `Admin` role are allowed to access `Audit` logs. For more information, refer [here](https://docs.sublime.security/docs/role-based-access-control-rbac).
 
-### To collect data from AWS S3 Bucket or AWS SQS:
+### Collect data from AWS S3 Bucket or AWS SQS
 
-#### For AWS S3 Bucket, follow the below steps:
+For **AWS S3 Bucket**, follow these steps:
 - Create an Amazon S3 bucket. Refer to the link [here](https://docs.aws.amazon.com/AmazonS3/latest/userguide/create-bucket-overview.html).
 - User can set the parameter "Bucket List Prefix" according to the requirement.
 
-#### For AWS SQS, follow the below steps:
+For **AWS SQS**, follow these steps:
 1. If data forwarding to an AWS S3 Bucket hasn't been configured, then first set up an AWS S3 Bucket as mentioned in the above documentation.
 2. To set up an SQS queue, follow "Step 1: Create an Amazon SQS queue" mentioned in the [Documentation](https://docs.aws.amazon.com/AmazonS3/latest/userguide/ways-to-add-notification-config-to-bucket.html).
   - While creating an SQS Queue, please provide the same bucket ARN that has been generated after creating an AWS S3 Bucket.
@@ -78,16 +60,14 @@ Please note, there are minimum requirements for running Elastic Agent. For more 
   - Data collection via AWS S3 Bucket and AWS SQS are mutually exclusive in this case.
   - You can configure a global SQS queue for all data streams or a local SQS queue for each data stream. Configuring data stream specific SQS queues will enable better performance and scalability. Data stream specific SQS queues will always override any global queue definitions for that specific data stream.
 
-### Enabling the integration in Elastic:
+### Enable the integration in Elastic
 
-1. In Kibana navigate to Management > Integrations.
-2. In "Search for integrations" top bar, search for `Sublime Security`.
-3. Select the "Sublime Security" integration from the search results.
-4. Select "Add Sublime Security" to add the integration.
-5. Enable the Integration to collect logs via AWS S3 or API input.
-6. Under the AWS S3 input, there are two types of inputs: using AWS S3 Bucket or using SQS.
-7. Add all the required integration configuration parameters, including API Key, Interval, Initial Interval and Page Size for API input and Access Key, Secret Key and Session Token for AWS input type to enable data collection.
-8. Click on "Save and continue" to save the integration.
+1. In Kibana navigate to **Management** > **Integrations**.
+2. In the search top bar, type **Sublime Security**.
+3. Select the **Sublime Security** integration and add it.
+4. Enable the integration to collect logs via AWS S3 or API input. Under the **AWS S3 input**, there are two types of input: AWS S3 Bucket or SQS.
+6. Add all the required integration configuration parameters, including API Key, Interval, Initial Interval and Page Size for API input and Access Key, Secret Key and Session Token for AWS input type to enable data collection.
+7. Save the integration.
 
 **Note**:
 - The Base URL for Sublime Security cloud customers is `https://api.platform.sublimesecurity.com`. Depending on your type of deployment, yours may be different.

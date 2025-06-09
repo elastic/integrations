@@ -13,36 +13,21 @@ Reference for CrowdStrike Falcon Intelligence APIs - https://falcon.crowdstrike.
 NOTE: Your Base URL depends on your cloud environment region.
 For example, the US-2 cloud environment will have the base URL as https://falcon.us-2.crowdstrike.com.
 
-## Requirements
-
-Elastic Agent must be installed. For more information, refer to the link [here](https://www.elastic.co/guide/en/fleet/current/elastic-agent-installation.html).
-
-### Installing and managing an Elastic Agent:
-
-You have a few options for installing and managing an Elastic Agent:
-
-### Install a Fleet-managed Elastic Agent (recommended):
-
-With this approach, you install Elastic Agent and use Fleet in Kibana to define, configure, and manage your agents in a central location. We recommend using Fleet management because it makes the management and upgrade of your agents considerably easier.
-
-### Install Elastic Agent in standalone mode (advanced users):
-
-With this approach, you install Elastic Agent and manually configure the agent locally on the system where it’s installed. You are responsible for managing and upgrading the agents. This approach is reserved for advanced users only.
-
-### Install Elastic Agent in a containerized environment:
-
-You can run Elastic Agent inside a container, either with Fleet Server or standalone. Docker images for all versions of Elastic Agent are available from the Elastic Docker registry, and we provide deployment manifests for running on Kubernetes.
-
-There are some minimum requirements for running Elastic Agent and for more information, refer to the link [here](https://www.elastic.co/guide/en/fleet/current/elastic-agent-installation.html).
-
-### Permissions
-This integration includes assets such as latest transform which requires users installing the integration to have `kibana_system` built-in role. Follow the [documentation](https://www.elastic.co/guide/en/elasticsearch/reference/current/built-in-roles.html) for information on `kibana_system` built-in role.
+## Compatibility
 
 This module has been tested against the **CrowdStrike Falcon Intelligence API Version v1**.
 
+## Requirements
+
+Elastic Agent must be installed. For more details, check the Elastic Agent [installation instructions](docs-content://reference/fleet/install-elastic-agents.md).
+
+### Permissions
+
+This integration includes assets such as latest transform which requires users installing the integration to have `kibana_system` built-in role. Follow the [documentation](https://www.elastic.co/guide/en/elasticsearch/reference/current/built-in-roles.html) for information on `kibana_system` built-in role.
+
 ## Setup
 
-### To collect data from CrowdStrike Falcon Intelligence, the following parameters from your CrowdStrike Falcon Intelligence instance are required:
+To collect data from CrowdStrike Falcon Intelligence, the following parameters from your CrowdStrike Falcon Intelligence instance are required:
 
 1. Client ID
 2. Client Secret
@@ -60,21 +45,21 @@ Follow the [documentation](https://www.crowdstrike.com/blog/tech-center/consume-
 
 User should either have `admin` role or `Detection Exception Manager` role to access IOCs endpoint. Follow the [documentation](https://falcon.crowdstrike.com/documentation/page/f20650df/default-roles-reference) for managing user roles and permissions.
 
-### Enabling the integration in Elastic:
+### Enable the integration in Elastic
 
-1. In Kibana go to Management > Integrations
-2. In "Search for integrations" search bar, type CrowdStrike Falcon Intelligence
-3. Click on the "CrowdStrike Falcon Intelligence" integration from the search results.
-4. Click on the "Add CrowdStrike Falcon Intelligence" button to add the integration.
-5. Add all the required integration configuration parameters, such as Client ID, Client Secret, URL, and Token URL. For all data streams, these parameters must be provided in order to retrieve logs.
-6. Save the integration.
+1. In Kibana navigate to **Management** > **Integrations**.
+2. In the search top bar, type **CrowdStrike Falcon Intelligence**.
+3. Select the **CrowdStrike Falcon Intelligence** integration and add it.
+4. Add all the required integration configuration parameters, such as Client ID, Client Secret, URL, and Token URL. For all data streams, these parameters must be provided in order to retrieve logs.
+5. Save the integration.
 
-## IoCs Expiration
+## IoCs expiration
 
 The ingested IOCs expire after a certain duration. A separate [Elastic Transform](https://www.elastic.co/guide/en/elasticsearch/reference/current/transforms.html) is created for Intel and IOC datasets to facilitate only active Indicators and IOCs, respectively, being available to the end users. Since we want to retain only valuable information and avoid duplicated data, the CrowdStrike Falcon Intelligence Elastic integration forces the intel indicators to rotate into a custom index called: `logs-ti_crowdstrike_latest.dest_intel` and forces the IOC logs to rotate into a custom index called: `logs-ti_crowdstrike_latest.dest_ioc`.
 **Please, refer to this index in order to set alerts and so on.**
 
-### Transform Permissions
+### Transform permissions
+
 The latest transforms for both Intel and IOC datasets require users to have `kibana_system` role as noted in [permissions](https://www.elastic.co/docs/current/integrations/ti_crowdstrike#permissions).
 
 ### Handling Orphaned IOCs
@@ -87,7 +72,7 @@ This is possible thanks to a transform rule installed along with the integration
 
 Both the data stream and the latest index have applied expiration through ILM and a retention policy in the transform respectively.
 
-## Logs Reference
+## Logs reference
 
 ### Intel
 
