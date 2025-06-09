@@ -1560,6 +1560,15 @@ processors:
   - foreach:
       field: json.alerts.evidence
       if: ctx.json?.alerts?.evidence instanceof List
+      processor:
+        append:
+          field: related.user
+          value: '{{{_ingest._value.user_account.display_name}}}'
+          allow_duplicates: false
+          ignore_failure: true
+  - foreach:
+      field: json.alerts.evidence
+      if: ctx.json?.alerts?.evidence instanceof List
       ignore_failure: true
       processor:
         append:

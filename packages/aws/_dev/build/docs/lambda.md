@@ -10,7 +10,10 @@ For example, you could use this integration to track throttled lambda functions,
 
 ## Data streams
 
-The AWS Lambda integration collects one type of data: metrics.
+The AWS Lambda integration collects metrics and logs.
+
+**Logs** provide detailed information about the execution of AWS Lambda functions.
+They include invocation events, function output, error messages, stack traces, initialization logs, and AWS-generated reports. These logs help you troubleshoot issues, analyze performance, and monitor the behavior of your Lambda functions during runtime.
 
 **Metrics** give you insight into the state of AWS Lambda.
 Metrics collected by the AWS Lambda integration include the number of times your function code is executed, the amount of time that your function code spends processing an event, the number of invocations that result in a function error, and more.
@@ -54,6 +57,21 @@ When you configure the AWS integration, you can collect data from as many AWS se
 For step-by-step instructions on how to set up an integration, see the
 {{ url "getting-started-observability" "Getting started" }} guide.
 
+To enable AWS Lambda logs, ensure that your function's execution role includes the necessary permissions to write to Amazon CloudWatch Logs. Specifically, the role should have the following permissions: 
+- `logs:CreateLogGroup`
+- `logs:CreateLogStream`
+- `logs:PutLogEvents` 
+
+You can grant these permissions by attaching the AWS managed policy `AWSLambdaBasicExecutionRole` to your function's execution role.
+
+By default, AWS Lambda automatically streams logs to CloudWatch Logs. You can view these logs by navigating to the AWS Lambda console, selecting your function, and choosing the "Monitor" tab. From there, click on "View CloudWatch logs" to access the logs in the CloudWatch console.
+
+For more detailed information, refer to the AWS documentation on [Sending Lambda function logs to CloudWatch Logs](https://docs.aws.amazon.com/lambda/latest/dg/monitoring-cloudwatchlogs.html).
+
+## Logs reference
+
+{{event "lambda_logs"}}
+
 ## Metrics reference
 
 {{event "lambda"}}
@@ -63,3 +81,5 @@ For step-by-step instructions on how to set up an integration, see the
 Please refer to the following [document](https://www.elastic.co/guide/en/ecs/current/ecs-field-reference.html) for detailed information on ECS fields.
 
 {{fields "lambda"}}
+
+{{fields "lambda_logs"}}

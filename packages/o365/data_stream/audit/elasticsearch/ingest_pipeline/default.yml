@@ -41,6 +41,70 @@ processors:
         - o365audit.Id
       target_field: "_id"
       ignore_missing: true
+
+  # Miscellaneous
+
+  - set:
+      field: file.extension
+      copy_from: o365audit.FileExtension
+      ignore_empty_value: true
+
+  - set:
+      field: file.hash.sha1
+      copy_from: o365audit.Sha1
+      ignore_empty_value: true
+  - set:
+      field: file.hash.sha256
+      copy_from: o365audit.Sha256
+      ignore_empty_value: true
+
+  - set:
+      field: file.path
+      copy_from: o365audit.FilePath
+      ignore_empty_value: true
+  - set:
+      field: file.path
+      copy_from: o365audit.TargetFilePath
+      ignore_empty_value: true
+      override: false
+
+  - set:
+      field: file.size
+      copy_from: o365audit.FileSizeBytes
+      ignore_empty_value: true
+  - set:
+      field: file.size
+      copy_from: o365audit.FileSize
+      ignore_empty_value: true
+      override: false
+  - gsub:
+      field: file.size
+      pattern: '\D+'
+      replacement: ''
+      if: ctx.file?.size instanceof String
+      ignore_missing: true
+  - convert:
+      tag: convert_file_size_to_long
+      field: file.size
+      type: long
+      ignore_missing: true
+      on_failure:
+        - remove:
+            field: file.size
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+
+  - set:
+      field: process.name
+      copy_from: o365audit.Application
+      ignore_empty_value: true
+
+  - set:
+      field: url.domain
+      copy_from: o365audit.OriginatingDomain
+      ignore_empty_value: true
+
   # General Schema
   - date:
       field: o365audit.CreationTime
@@ -270,6 +334,37 @@ processors:
         - '^-?Identity\s"?%{DATA:o365audit.NetworkMessageId}"?$'
       ignore_missing: true
       ignore_failure: true
+
+  - script:
+      lang: painless
+      tag: collect_email_to_addresses_from_parameters
+      source: >
+        void splitTrimAdd(Set acc, String str) {
+            if (str != null && str != '') {
+                String[] parts = str.splitOnToken(';');
+                for (int i = 0; i < parts.length; i++) {
+                    acc.add(parts[i].trim());
+                }
+            }
+        }
+
+        def addressSet = new HashSet(ctx.email?.to?.address ?: []);
+
+        splitTrimAdd(addressSet, ctx.o365audit?.Parameters?.ForwardAsAttachmentTo);
+        splitTrimAdd(addressSet, ctx.o365audit?.Parameters?.ForwardTo);
+        splitTrimAdd(addressSet, ctx.o365audit?.Parameters?.RedirectTo);
+
+        if (!addressSet.isEmpty()) {
+          ctx.email = ctx.email ?: [:];
+          ctx.email.to = ctx.email.to ?: [:];
+          ctx.email.to.address = addressSet.asList();
+        }
+
+  - set:
+      field: email.from.address
+      copy_from: o365audit.Parameters.From
+      ignore_empty_value: true
+
   - script:
       if: ctx.o365audit?.Platform != null
       lang: painless
@@ -1115,8 +1210,11 @@ processors:
         def orgid = ctx.organization.id;
         if (conftenants instanceof Map && conftenants.containsKey(orgid)) {
           ctx.organization.name = conftenants[orgid];
-          ctx.host.name = conftenants[orgid];
         }
+  - set:
+      field: host.name
+      copy_from: o365audit.DeviceName
+      if: ctx.o365audit?.DeviceName != null && ctx.host?.name == null
   - set:
       field: host.name
       copy_from: organization.name
@@ -1201,12 +1299,16 @@ processors:
       if: ctx.o365audit?.P1Sender != null && ctx.o365audit.P1Sender != ''
       tag: append_email_sender_address_1
       allow_duplicates: false
-  - set:
-      field: email.to.address
-      copy_from: o365audit.Recipients
+  - foreach:
+      field: o365audit.Recipients
       if: ctx.o365audit?.Recipients instanceof List && ctx.o365audit.Recipients.length > 0
-      tag: set_email_to_address_1
-      ignore_empty_value: true
+      tag: foreach_recipient
+      processor:
+        append:
+          field: email.to.address
+          value: "{{{_ingest._value}}}"
+          tag: append_recipient_to_email_to_address
+          allow_duplicates: false
   - append:
       field: related.ip
       value: "{{{o365audit.SenderIp}}}"
