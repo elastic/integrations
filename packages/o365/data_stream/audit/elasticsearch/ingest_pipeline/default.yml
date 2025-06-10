@@ -1404,7 +1404,10 @@ processors:
       type: ip
       ignore_missing: true
       if: ctx.o365audit?.Data?.sip != ''
-      ignore_failure: true
+      on_failure:
+        - remove:
+            field: o365audit.Data.sip
+            ignore_missing: true
   - date:
       field: o365audit.Data.at
       target_field: o365audit.Data.at
