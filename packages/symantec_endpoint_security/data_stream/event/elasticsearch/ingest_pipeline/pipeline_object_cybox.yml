@@ -166,13 +166,16 @@ processors:
       source: >-
           for (int i = 0; i < ctx.ses.cybox.files.length; i++) {
             def file = ctx.ses.cybox.files[i];
-            if (file.containsKey('attribute_ids') && file.attribute_ids != null) {
-              def new_ids = [];
-              for (int j = 0; j < file.attribute_ids.length; j++) {
-                if (file.attribute_ids[j] != null) {
-                  new_ids.add(file.attribute_ids[j].toString());
-                }
+            if (file.attribute_ids == null || !file.containsKey('attribute_ids')) {
+              continue;
+            }
+            def new_ids = [];
+            for (int j = 0; j < file.attribute_ids.length; j++) {
+              if (file.attribute_ids[j] != null) {
+                new_ids.add(file.attribute_ids[j].toString());
               }
+            }
+            if (new_ids.length != 0) {
               file.attribute_ids = new_ids;
             }
           }
@@ -207,12 +210,13 @@ processors:
             }
           }
         for (def file : ctx.ses.cybox.files) {
-          if (file.attribute_ids != null) {
-            for (def id : file.attribute_ids) {
-              if (params.containsKey(id.toString())) {
-                def type = params.get(id.toString());
-                var.add(type);
-              }
+          if (file.attribute_ids == null) {
+            continue;
+          }
+          for (def id : file.attribute_ids) {
+            def type = params[id.toString()];
+            if (type != null) {
+              var.add(type);
             }
           }
         }
@@ -587,18 +591,22 @@ processors:
 
       lang: painless
       source: >-
-          for (int i = 0; i < ctx.ses.cybox.files.length; i++) {
-            def file = ctx.ses.cybox.files[i];
-            if (file.containsKey('signature_value_ids') && file.signature_value_ids != null) {
-            def new_ids = [];
-            for (int j = 0; j < file.signature_value_ids.length; j++) {
-              if (file.signature_value_ids[j] != null) {
-                new_ids.add(file.signature_value_ids[j].toString());
-              }
-            }
-            file.signature_value_ids = new_ids;
+        for (int i = 0; i < ctx.ses.cybox.files.length; i++) {
+          def file = ctx.ses.cybox.files[i];
+          if (file.signature_value_ids == null || !file.containsKey('signature_value_ids')) {
+            continue;
+          }
+          def new_ids = [];
+          for (int j = 0; j < file.signature_value_ids.length; j++) {
+            def value_id = file.signature_value_ids[j];
+            if (value_id != null) {
+              new_ids.add(value_id.toString());
             }
           }
+          if (new_ids.length != 0) {
+            file.signature_value_ids = new_ids;
+          }
+        }
       on_failure:
         - append:
             field: error.message
@@ -712,14 +720,15 @@ processors:
             ctx.file = new HashMap();
           }
         }
+        
         for (def file : ctx.ses.cybox.files) {
-          if (file.type_id != null) {
-            def type_id = file.type_id;
-            if (params.containsKey(type_id.toString())) {
-              def type = params.get(type_id.toString());
-              var.add(type);
-            }
+          if (file.type_id == null) {
+            continue;
           }
+          def type = params[file.type_id.toString()];
+          if (type != null) {
+              var.add(type);
+          }  
         }
         
         ctx.file.put('type', var); 
