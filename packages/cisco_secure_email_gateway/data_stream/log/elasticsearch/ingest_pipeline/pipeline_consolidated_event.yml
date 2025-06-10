@@ -192,14 +192,14 @@ processors:
       field: _tmp.fields.cfp1
       target_field: cisco_secure_email_gateway.log.cfp1
       type: double
-      if: "ctx._tmp?.fields?.cfp1 != 'None' && ctx._tmp?.fields?.cfp1 != 'not enabled'"
+      if: "!['None', 'not enabled', 'rfc1918'].contains(ctx._tmp.fields.cfp1)"
       ignore_missing: true
       on_failure:
         - remove:
             field: _tmp.fields.cfp1
         - append:
             field: error.message
-            value: '{{{_ingest.on_failure_message}}}'
+            value: 'Failed to convert cfp1 field: {{{_ingest.on_failure_message}}}'
   - rename:
       field: _tmp.fields.cs1Label
       target_field: cisco_secure_email_gateway.log.cs1_label
