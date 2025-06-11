@@ -47,7 +47,7 @@ program: |
     }
   }.as(req,
     request("HEAD", req.url).with(req.headers).do_request().as(headResp,
-      (headResp.StatusCode == 200 && headResp.Header.?Etag[?0].orValue("") == state.?cursor.?etag.orValue("NONE")) ?
+      (headResp.StatusCode == 200 && headResp.Header.?Etag[?0].orValue("") == state.?cursor.etag.orValue("NONE")) ?
         // no new data - the etag matches what we've seen
         state.with({
           "events": [],
@@ -61,7 +61,7 @@ program: |
               parsed.map(e, { "message": e.encode_json() })
             )
           ),
-          "cursor": state.?cursor.orValue({}).with({ "etag": resp.Header.?Etag[?0].orValue("NONE") }),
+          "cursor": state.?cursor.orValue({}).with({ "etag": resp.Header.?Etag[0].orValue("NONE") }),
           "want_more": false,
        }))
     )
