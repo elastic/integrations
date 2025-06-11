@@ -1,13 +1,13 @@
-# Qualys Web Application Scanning (WAS)
+  # Qualys Web Application Scanning (WAS)
 
 [Qualys WAS](https://www.qualys.com/apps/vulnerability-management-detection-response/) integration ingests vulnerability detection data from scans performed by the Qualys Web Application 
-Scan product. 
-The Qualys Web Application Scanning product is a security product that continuously discovers, 
-detects, and catalogs web applications and APIs (Application Programming Interface), uncovers runtime vulnerabilities, 
+Scan product.
+The Qualys Web Application Scanning product is a security product that continuously discovers, detects, and catalogs
+web applications and APIs (Application Programming Interface), and uncovers runtime vulnerabilities, 
 misconfigurations, Personal Identifying Information (PII) exposures, and web malware across modern web applications 
 or APIs.
 
-The Qualys WAS integration uses the REST API mode to collect vulnerability detection data. 
+The Qualys WAS integration uses the Qualys REST API mode to collect vulnerability detection data. 
 Elastic Agent fetches data via API endpoints. Detection data is augmented by XML based queries to 
 the Qualys Knowledge Base about each detection.
 
@@ -33,7 +33,7 @@ are minimal.
 Elastic Agent must be installed. 
 For more details, check the Elastic Agent [installation instructions](docs-content://reference/fleet/install-elastic-agents.md).
 
-## Agentless Enabled Integration
+## Agentless enabled integration
 
 Agentless integrations allow you to collect data without having to manage Elastic Agent in your cloud. 
 They make manual agent deployment unnecessary, so you can focus on your data instead of the agent that collects it. 
@@ -117,36 +117,148 @@ An example response from the Qualys WAS API
 
 ```json
 {
-  "ServiceResponse": {
-    "data": [
-      {
-        "Finding": {
-          "timesDetected": 403,
-          "name": "Unencoded characters",
-          "id": 10641200,
-          "detectionScore": 50,
-          "lastDetectedDate": "2025-03-07T06:03:03Z",
-          "webApp": {
-            "url": "https://<web app base url>",
-            "name": "Target Name",
-            "id": 185468750
-          },
-          "potential": "true",
-          "type": "VULNERABILITY",
-          "lastTestedDate": "2025-03-07T06:03:03Z",
-          "severity": "1",
-          "firstDetectedDate": "2020-06-13T08:01:21Z",
-          "uniqueId": "12345678-abcd-1234-1234-123456789012",
-          "qid": 150084,
-          "url": "https:<test url>",
-          "status": "ACTIVE",
-          "param": "show_unusable",
-          "findingType": "QUALYS",
-          "isIgnored": "true"
-        }
-      }
-    ]
-  }
+   "ServiceResponse": {
+      "count": 1,
+      "data": [
+         {
+            "Finding": {
+               "owasp": {
+                  "list": [
+                     {
+                        "OWASP": {
+                           "name": "Injection",
+                           "code": 3,
+                           "url": "https://owasp.org/Top10/A03_2021-Injection/"
+                        }
+                     }
+                  ],
+                  "count": 1
+               },
+               "ignoredComment": "A comment",
+               "cwe": {
+                  "list": [
+                     79
+                  ],
+                  "count": 1
+               },
+               "detectionScore": 50,
+               "type": "VULNERABILITY",
+               "updatedDate": "2025-06-01T08:56:29Z",
+               "name": "Unencoded characters",
+               "severity": "1",
+               "timesDetected": 448,
+               "ignoredReason": "FALSE_POSITIVE",
+               "ignoredDate": "2020-06-23T11:38:44Z",
+               "param": "show_unusable",
+               "status": "ACTIVE",
+               "cvssV3": {
+                  "attackVector": "Network",
+                  "base": 3.1,
+                  "temporal": 2.6
+               },
+               "isIgnored": "true",
+               "firstDetectedDate": "2020-06-13T08:01:21Z",
+               "lastTestedDate": "2025-06-01T06:02:26Z",
+               "wasc": {
+                  "list": [
+                     {
+                        "WASC": {
+                           "url": "http://projects.webappsec.org/w/page/13246934/WASC",
+                           "name": "IMPROPER OUTPUT HANDLING",
+                           "code": 22
+                        }
+                     }
+                  ],
+                  "count": 1
+               },
+               "uniqueId": "12345678-abcd-1234-1234-123456789012",
+               "id": 12345678,
+               "lastDetectedDate": "2025-06-01T06:02:26Z",
+               "ignoredBy": {
+                  "lastName": "Last",
+                  "username": "username",
+                  "firstName": "First",
+                  "id": 987654321
+               },
+               "qid": 150084,
+               "webApp": {
+                  "tags": {
+                     "list": [
+                        {
+                           "Tag": {
+                              "id": 1,
+                              "name": "Tag:1
+                           }
+                        },
+                        {
+                           "Tag": {
+                              "id": 2,
+                              "name": "Tag:2"
+                           }
+                        }
+                     ],
+                     "count": 2
+                  },
+                  "url": "https://web.com/base",
+                  "id": 123,
+                  "name": "Descriptive Name"
+               },
+               "resultList": {
+                  "list": [
+                     {
+                        "Result": {
+                           "payloads": {
+                              "list": [
+                                 {
+                                    "PayloadInstance": {
+                                       "payloadResponce": {
+                                          "offset": 272,
+                                          "length": 25
+                                       },
+                                       "response": "response",
+                                       "payload": "payload",
+                                       "request": {
+                                          "link": "https://web.com/base/testurl",
+                                          "method": "GET",
+                                          "headers": "headers"
+                                       }
+                                    }
+                                 }
+                              ],
+                              "count": 1
+                           },
+                           "ajax": "false",
+                           "authentication": "true",
+                           "accessPath": {
+                              "list": [
+                                 {
+                                    "Url": {
+                                       "value": "https://web.com/base"
+                                    }
+                                 },
+                                 {
+                                    "Url": {
+                                       "value": "https://web.com/base/testurl"
+                                    }
+                                 }
+                              ],
+                              "count": 2
+                           }
+                        }
+                     }
+                  ],
+                  "count": 1
+               },
+               "findingType": "QUALYS",
+               "url": "https://web.com/base/testurl",
+               "potential": "true"
+            }
+         }
+      ],
+      "hasMoreRecords": "true",
+      "responseCode": "SUCCESS",
+      "lastId": 12345678
+   }
 }
 
 
@@ -254,361 +366,22 @@ An example of a Knowledge Base object after decoding from XML to JSON
 }
 ```
 
-An example event for a Vulnerability finding after processing by the input pipeline:
-```json
-{
-   "Finding":{
-      "detection":{
-         "cvssV3":{
-            "attackVector":"Network",
-            "base":3.1,
-            "temporal":2.6
-         },
-         "cwe":{
-            "count":1,
-            "list":[
-               79
-            ]
-         },
-         "detectionScore":50,
-         "findingType":"QUALYS",
-         "firstDetectedDate":"2020-06-13T08:01:21Z",
-         "id":12345670,
-         "ignoredBy":{
-            "firstName":"Some",
-            "id":142870916,
-            "lastName":"Person",
-            "username":"someperson123"
-         },
-         "ignoredComment":"https://github.com/elastic/infosec/issues/3770#issuecomment-648081338",
-         "ignoredDate":"2020-06-23T11:39:09Z",
-         "ignoredReason":"FALSE_POSITIVE",
-         "isIgnored":"true",
-         "lastDetectedDate":"2025-03-21T06:01:54Z",
-         "lastTestedDate":"2025-03-21T06:01:54Z",
-         "name":"Unencoded characters",
-         "owasp":{
-            "count":1,
-            "list":[
-               {
-                  "OWASP":{
-                     "code":3,
-                     "name":"Injection",
-                     "url":"https://owasp.org/Top10/A03_2021-Injection/"
-                  }
-               }
-            ]
-         },
-         "param":"show_deleted",
-         "potential":"true",
-         "qid":150084,
-         "resultList":{
-            "count":1,
-            "list":[
-               {
-                  "Result":{
-                     "accessPath":{
-                        "count":1,
-                        "list":[
-                           {
-                              "Url":{
-                                 "value":"https://web.address.com/"
-                              }
-                           }
-                        ]
-                     },
-                     "ajax":"false",
-                     "authentication":"false",
-                     "payloads":{
-                        "count":4,
-                        "list":[
-                           {
-                              "PayloadInstance":{
-                                 "payload":"show_deleted=%22'%3E%3CqssbVr8SJHx%20%60%3b!--%3D%26%7b()%7d%3E&show_unusable=false",
-                                 "payloadResponce":{
-                                    "length":25,
-                                    "offset":271
-                                 },
-                                 "request":{
-                                    "headers":"123header456",
-                                    "link":"https://web.address.com/api/v1/more/address/stack/versions?show_deleted=%22'%3E%3CqssbVr8SJHx%20%60%3b!--%3D%26%7b()%7d%3E&show_unusable=false",
-                                    "method":"GET"
-                                 },
-                                 "response":"comment: A significant portion of the XSS test payload appeared in the web page, but the response content type is non-HTML.\nResponse content-type: application/json\n\n{\"errors\":[{\"code\":\"root.malformed_query_param\",\"message\":\"The value for show_deleted was malformed. '\\\"'><qssbvr8sjhx `;!--=&{()}>' is not a valid Boolean value\"}]}"
-                              }
-                           },
-                           {
-                              "PayloadInstance":{
-                                 "payload":"show_deleted=%22&show_unusable=false",
-                                 "payloadResponce":{
-                                    "length":28,
-                                    "offset":271
-                                 },
-                                 "request":{
-                                    "headers":"123header456",
-                                    "link":"https://web.address.com/api/v1/more/address/stack/versions?show_deleted=%22&show_unusable=false",
-                                    "method":"GET"
-                                 },
-                                 "response":"comment: A significant portion of the XSS test payload appeared in the web page, but the response content type is non-HTML.\nResponse content-type: application/json\n\n{\"errors\":[{\"code\":\"root.malformed_query_param\",\"message\":\"The value for show_deleted was malformed. '\\\"'><qss a=x93884460340384y1_1z>' is not a valid Boolean value\"}]}"
-                              }
-                           },
-                           {
-                              "PayloadInstance":{
-                                 "payload":"show_deleted=false%22'%3E%3CqssUbPt9tNM%3E&show_unusable=false",
-                                 "payloadResponce":{
-                                    "length":13,
-                                    "offset":276
-                                 },
-                                 "request":{
-                                    "headers":"123header456",
-                                    "link":"https://web.address.com/api/v1/more/address/stack/versions?show_deleted=false%22'%3E%3CqssUbPt9tNM%3E&show_unusable=false",
-                                    "method":"GET"
-                                 },
-                                 "response":"comment: A significant portion of the XSS test payload appeared in the web page, but the response content type is non-HTML.\nResponse content-type: application/json\n\n{\"errors\":[{\"code\":\"root.malformed_query_param\",\"message\":\"The value for show_deleted was malformed. 'false\\\"'><qssubpt9tnm>' is not a valid Boolean value\"}]}"
-                              }
-                           },
-                           {
-                              "PayloadInstance":{
-                                 "payload":"show_deleted=%22%3E%3CqssOzIA5enZ%3E&show_unusable=false",
-                                 "payloadResponce":{
-                                    "length":13,
-                                    "offset":270
-                                 },
-                                 "request":{
-                                    "headers":"123header456",
-                                    "link":"https://web.address.com/api/v1/more/address/stack/versions?show_deleted=%22%3E%3CqssOzIA5enZ%3E&show_unusable=false",
-                                    "method":"GET"
-                                 },
-                                 "response":"comment: A significant portion of the XSS test payload appeared in the web page, but the response content type is non-HTML.\nResponse content-type: application/json\n\n{\"errors\":[{\"code\":\"root.malformed_query_param\",\"message\":\"The value for show_deleted was malformed. '\\\"><qssozia5enz>' is not a valid Boolean value\"}]}"
-                              }
-                           }
-                        ]
-                     }
-                  }
-               }
-            ]
-         },
-         "severity":"1",
-         "status":"ACTIVE",
-         "timesDetected":416,
-         "type":"VULNERABILITY",
-         "uniqueId":"12345678-1234-1234-1234-421234567890",
-         "updatedDate":"2025-03-21T08:45:25Z",
-         "url":"https://web.address.com/api/v1/more/address/stack/versions?show_deleted=%22'%3E%3CqssbVr8SJHx%20%60%3b!--%3D%26%7b()%7d%3E&show_unusable=false",
-         "wasc":{
-            "count":1,
-            "list":[
-               {
-                  "WASC":{
-                     "code":22,
-                     "name":"IMPROPER OUTPUT HANDLING",
-                     "url":"http://projects.webappsec.org/w/page/13246934/WASC"
-                  }
-               }
-            ]
-         },
-         "webApp":{
-            "id":987654321,
-            "name":"GovCloud User Console Scan Target",
-            "tags":{
-               "count":2,
-               "list":[
-                  {
-                     "Tag":{
-                        "id":77439203,
-                        "name":"asset_criticality:3"
-                     }
-                  },
-                  {
-                     "Tag":{
-                        "id":68447639,
-                        "name":"data_classification:nan"
-                     }
-                  }
-               ]
-            },
-            "url":"https://web.address.com"
-         }
-      },
-      "knowledge_base":{
-         "CATEGORY":"Web Application",
-         "CODE_MODIFIED_DATETIME":"2022-08-10T00:00:00Z",
-         "CONSEQUENCE":"No exploit was determined for these reflected characters. The input parameter should be manually analyzed to verify that no other characters can be injected that would lead to an HTML injection (XSS) vulnerability.",
-         "CVSS":{
-            "BASE":{
-               "#text":"5.0",
-               "source":"service"
-            },
-            "TEMPORAL":"3.8",
-            "VECTOR_STRING":"CVSS:2.0/AV:N/AC:L/Au:N/C:P/I:N/A:N/E:U/RL:U/RC:UC"
-         },
-         "CVSS_V3":{
-            "BASE":"3.1",
-            "CVSS3_VERSION":"3.1",
-            "TEMPORAL":"2.6",
-            "VECTOR_STRING":"CVSS:3.1/AV:N/AC:H/PR:N/UI:R/S:U/C:L/I:N/A:N/E:U/RL:U/RC:U"
-         },
-         "DIAGNOSIS":"The web application reflects potentially dangerous characters such as single quotes, double quotes, and angle brackets. These characters are commonly used for HTML injection attacks such as cross-site scripting (XSS).",
-         "DISCOVERY":{
-            "REMOTE":"1"
-         },
-         "LAST_SERVICE_MODIFICATION_DATETIME":"2024-02-12T23:24:03Z",
-         "PATCHABLE":"0",
-         "PCI_FLAG":"0",
-         "PUBLISHED_DATETIME":"2011-03-08T18:40:29Z",
-         "QID":"150084",
-         "SEVERITY_LEVEL":"1",
-         "SOLUTION":"Review the reflected characters to ensure that they are properly handled as defined by the web application's coding practice. Typical solutions are to apply HTML encoding or percent encoding to the characters depending on where they are placed in the HTML. For example, a double quote might be encoded as &quot; when displayed in a text node, but as %22 when placed in the value of an href attribute.",
-         "THREAT_INTELLIGENCE":{
-            "THREAT_INTEL":[
-               {
-                  "#text":"Easy_Exploit",
-                  "id":"5"
-               },
-               {
-                  "#text":"No_Patch",
-                  "id":"8"
-               }
-            ]
-         },
-         "TITLE":"Unencoded characters",
-         "VULN_TYPE":"Potential Vulnerability"
-      }
-   }
-}
+#### Example
 
-```
-
-**Exported fields**
-
-| Field                                                                                  | Description                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                    | Type      
-|----------------------------------------------------------------------------------------|--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|-----------
-| @timestamp                                                                             | Date/time when the event originated. This is the date/time extracted from the event, typically representing when the event was generated by the source. If the event source has no original timestamp, this value is typically populated by the first time the event was received by the pipeline. Required field for all events.                                                                                                                                                                                              | date             |
-| data_stream.dataset                                                                    | The field can contain anything that makes sense to signify the source of the data. Examples include `nginx.access`, `prometheus`, `endpoint` etc. For data streams that otherwise fit, but that do not have dataset set we use the value "generic" for the dataset value. `event.dataset` should have the same value as `data_stream.dataset`. Beyond the Elasticsearch data stream naming criteria noted above, the `dataset` value has additional restrictions:   \* Must not contain `-`   \* No longer than 100 characters | constant_keyword |
-| data_stream.namespace                                                                  | A user defined namespace. Namespaces are useful to allow grouping of data. Many users already organize their indices this way, and the data stream naming scheme now provides this best practice as a default. Many users will populate this field with `default`. If no value is used, it falls back to `default`. Beyond the Elasticsearch index naming criteria noted above, `namespace` value has the additional restrictions:   \* Must not contain `-`   \* No longer than 100 characters                                | constant_keyword |
-| data_stream.type                                                                       | An overarching type for the data stream. Currently allowed values are "logs" and "metrics". We expect to also add "traces" and "synthetics" in the near future.                                                                                                                                                                                                                                                                                                                                                                | constant_keyword |
-| event.dataset                                                                          | Name of the dataset. If an event source publishes more than one type of log or events (e.g. access log, error log), the dataset is used to specify which one the event comes from. It's recommended but not required to start the dataset name with the module name, followed by a dot, then the dataset name.                                                                                                                                                                                                                 | constant_keyword |
-| event.module                                                                           | Name of the module this data is coming from. If your monitoring agent supports the concept of modules or plugins to process events of a given source (e.g. Apache logs), `event.module` should contain the name of this module.                                                                                                                                                                                                                                                                                                | constant_keyword |
-| vulnerability.id                                                                       | The identification (ID) is the number portion of a vulnerability entry                                                                                                                                                                                                                                                                                                                                                                                                                                                         | keyword          |
-| vulnerability.classification                                                           | The classification of the vulnerability scoring system                                                                                                                                                                                                                                                                                                                                                                                                                                                                         | constant_keyword |
-| vulnerability.enumeration                                                              | The type of identifier used for this vulnerability                                                                                                                                                                                                                                                                                                                                                                                                                                                                             | constant_keyword |
-| vulnerability.category                                                                 | The type of system or architecture that the vulnerability affects.                                                                                                                                                                                                                                                                                                                                                                                                                                                             | constant_keyword |
-| vulnerability.scanner.vendor                                                           | The name of the vulnerability scanner vendor.                                                                                                                                                                                                                                                                                                                                                                                                                                                                                  | constant_keyword |
-| vulnerability.severity                                                                 | The severity of the vulnerability                                                                                                                                                                                                                                                                                                                                                                                                                                                                                              | keyword          |
-| vulnerability.score.base                                                               | Available in verbose mode. Scores can range from 0.0 to 10.0, with 10.0 being the most severe. Base scores cover an assessment for exploitability metrics (attack vector, complexity, privileges, and user interaction), impact metrics (confidentiality, integrity, and availability), and scope.                                                                                                                                                                                                                             | float            |
-| vulnerability.score.temporal                                                           | Available in verbose mode. Scores can range from 0.0 to 10.0, with 10.0 being the most severe. Temporal scores cover an assessment for code maturity, remediation level, and confidence.                                                                                                                                                                                                                                                                                                                                       | float            |
-| qualys_was.vulnerability.id                                                            | Id for the vulnerability report                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                | long      
-| qualys_was.vulnerability.name                                                          | A descriptive name for vulnerability                                                                                                                                                                                                                                                                                                                                                                                                                                                                                           | keyword   
-| qualys_was.vulnerability.last_found_datetime                                           | The last scqan date where the vulnerability was found                                                                                                                                                                                                                                                                                                                                                                                                                                                                          | date      
-| qualys_was.vulnerability.first_found_datetime                                          | The first scan date where the vulnerability was found                                                                                                                                                                                                                                                                                                                                                                                                                                                                          | date      
-| qualys_was.vulnerability.last_test_datetime                                            | The last date for which the vulnerability was scanned for (can be set to ignored and not scanned for)                                                                                                                                                                                                                                                                                                                                                                                                                          | date      
-| qualys_was.vulnerability.updated_datetime                                              | Available in verbose mode. Datetime that this detection was updated.                                                                                                                                                                                                                                                                                                                                                                                                                                                           | date      
-| qualys_was.vulnerability.fixed_datetime                                                | Datetime that this detection was set to "FIXED" status                                                                                                                                                                                                                                                                                                                                                                                                                                                                         | date      
-| qualys_was.vulnerability.qid                                                           | Qualys ID for the vulnerability                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                | long      
-| qualys_was.vulnerability.status                                                        | The status (New, Active, Fixed, Reopened)                                                                                                                                                                                                                                                                                                                                                                                                                                                                                      | keyword   
-| qualys_was.vulnerability.detection_score                                               | The detection score                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                            | long      
-| qualys_was.vulnerability.potential                                                     | Potential vulnerabilities are not verified but should be investiagated                                                                                                                                                                                                                                                                                                                                                                                                                                                         | boolean   
-| qualys_was.vulnerability.param                                                         | Available in verbose mode. Param set used in scan request                                                                                                                                                                                                                                                                                                                                                                                                                                                                      | boolean   
-| qualys_was.vulnerability.is_ignored                                                    | Is the vulnerbaility being ignored                                                                                                                                                                                                                                                                                                                                                                                                                                                                                             | boolean   
-| qualys_was.vulnerability.url                                                           | The URL that was scanned                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                       | keyword   
-| qualys_was.vulnerability.unique_vuln_id                                                | Unique id for the vulnerability report                                                                                                                                                                                                                                                                                                                                                                                                                                                                                         | keyword   
-| qualys_was.vulnerability.times_detected                                                | The number of times the vilnerability has been detected                                                                                                                                                                                                                                                                                                                                                                                                                                                                        | long      
-| qualys_was.vulnerability.result_list                                                   | Available in verbose mode. Actual scan result with detials on requst, response and details of finding                                                                                                                                                                                                                                                                                                                                                                                                                          | flattened 
-| qualys_was.vulnerability.ignoredBy.id                                                  | Id of person who ignored this vulnerability                                                                                                                                                                                                                                                                                                                                                                                                                                                                                    | long      
-| qualys_was.vulnerability.ignoredBy.name                                                | Name of person who ignored this vulnerability                                                                                                                                                                                                                                                                                                                                                                                                                                                                                  | keyword   
-| qualys_was.vulnerability.ignoredBy.username                                            | Username of person who ignored this vulnerability                                                                                                                                                                                                                                                                                                                                                                                                                                                                              | keyword   
-| qualys_was.vulnerability.ignoredBy.comment                                             | Comment by person who ignored this vulnerability                                                                                                                                                                                                                                                                                                                                                                                                                                                                               | keyword   
-| qualys_was.vulnerability.ignoredBy.reason                                              | Reason the vulnerability was ignored                                                                                                                                                                                                                                                                                                                                                                                                                                                                                           | keyword   
-| qualys_was.vulnerability.ignoredBy.date                                                | Date the vulnerability was ignored                                                                                                                                                                                                                                                                                                                                                                                                                                                                                             | date      
-| qualys_was.vulnerability.web_app.id                                                    | Web Application ID                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                             | long      
-| qualys_was.vulnerability.web_app.url                                                   | Web Application base URL                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                       | keyword   
-| qualys_was.vulnerability.web_app.tags                                                  | Available in verbose mode. Web Application tags                                                                                                                                                                                                                                                                                                                                                                                                                                                                                | keyword   
-| qualys_was.vulnerability.wasc_references.code                                          | Available in verbose mode. WASC reference code                                                                                                                                                                                                                                                                                                                                                                                                                                                                                 | long      
-| qualys_was.vulnerability.wasc_references.name                                          | Available in verbose mode. WASC reference name                                                                                                                                                                                                                                                                                                                                                                                                                                                                                 | keyword   
-| qualys_was.vulnerability.wasc_references.url                                           | Available in verbose mode. WASC reference URL                                                                                                                                                                                                                                                                                                                                                                                                                                                                                  | keyword   
-| qualys_was.vulnerability.owasp_references.code                                         | Available in verbose mode. OWASP code                                                                                                                                                                                                                                                                                                                                                                                                                                                                                          | long       
-| qualys_was.vulnerability.owasp_references.name                                         | Available in verbose mode. OWASP name                                                                                                                                                                                                                                                                                                                                                                                                                                                                                          | keyword                                                                                               
-| qualys_was.vulnerability.owasp_references.url                                          | Available in verbose mode. OWASP reference URL                                                                                                                                                                                                                                                                                                                                                                                                                                                                                 | keyword                                                                                               
-| qualys_was.vulnerability.knowledge_base.automatic_pci_fail                             |                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                |keyword
-| qualys_was.vulnerability.knowledge_base.bugtraq_list.id                                |                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                |keyword
-| qualys_was.vulnerability.knowledge_base.bugtraq_list.id.url                            |                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                |keyword
-| qualys_was.vulnerability.knowledge_base.id.category                                    |                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                |keyword
-| qualys_was.vulnerability.knowledge_base.changelog_list.info.change_date                |                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                |date
-| qualys_was.vulnerability.knowledge_base.changelog_list.info.comments                   |                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                |keyword
-| qualys_was.vulnerability.knowledge_base.compliance_list.description                    |                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                |keyword
-| qualys_was.vulnerability.knowledge_base.compliance_list.section                        |                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                |keyword
-| qualys_was.vulnerability.knowledge_base.compliance_list.type                           |                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                |keyword
-| qualys_was.vulnerability.knowledge_base.consequence.comment                            |                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                |keyword
-| qualys_was.vulnerability.knowledge_base.consequence.value                              |                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                |keyword
-| qualys_was.vulnerability.knowledge_base.correlation.exploits.explt_src.list.explt.desc |                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                |keyword
-| qualys_was.vulnerability.knowledge_base.correlation.exploits.explt_src.list.explt.link |                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                |keyword
-| qualys_was.vulnerability.knowledge_base.correlation.exploits.explt_src.list.explt.ref  |                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                |keyword
-| qualys_was.vulnerability.knowledge_base.correlation.exploits.explt_src.list.name       |                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                |keyword
-| qualys_was.vulnerability.knowledge_base.correlation.malware.src.list.info.alias        |                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                |keyword
-| qualys_was.vulnerability.knowledge_base.correlation.malware.src.list.info.id           |                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                |keyword
-| qualys_was.vulnerability.knowledge_base.correlation.malware.src.list.info.link         |                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                |keyword
-| qualys_was.vulnerability.knowledge_base.correlation.malware.src.list.info.platform     |                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                |keyword
-| qualys_was.vulnerability.knowledge_base.correlation.malware.src.list.info.rating       |                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                |keyword
-| qualys_was.vulnerability.knowledge_base.correlation.malware.src.list.info.type         |                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                |keyword
-| qualys_was.vulnerability.knowledge_base.correlation.malware.src.list.name              |                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                |keyword
-| qualys_was.vulnerability.knowledge_base.cve_list                                       |                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                |keyword
-| qualys_was.vulnerability.knowledge_base.cvss.access.complexity                         |                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                |keyword
-| qualys_was.vulnerability.knowledge_base.cvss.access.vector                             |                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                |keyword
-| qualys_was.vulnerability.knowledge_base.cvss.authentication                            |                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                |keyword
-| qualys_was.vulnerability.knowledge_base.cvss.base                                      |                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                |keyword
-| qualys_was.vulnerability.knowledge_base.cvss.base_obj                                  |                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                |flattened
-| qualys_was.vulnerability.knowledge_base.cvss.exploitability                            |                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                |keyword
-| qualys_was.vulnerability.knowledge_base.cvss.impact.availability.keyword               
-| qualys_was.vulnerability.knowledge_base.cvss.impact.confidentiality                    |                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                |keyword
-| qualys_was.vulnerability.knowledge_base.cvss.impact.integrity                          |                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                |keyword
-| qualys_was.vulnerability.knowledge_base.cvss.remediation_level                         |                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                |keyword
-| qualys_was.vulnerability.knowledge_base.cvss.report_confidence                         |                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                |keyword
-| qualys_was.vulnerability.knowledge_base.cvss.temporal                                  |                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                |keyword
-| qualys_was.vulnerability.knowledge_base.cvss.vector_string                             |                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                |keyword
-| qualys_was.vulnerability.knowledge_base.cvss_v3.attack.complexity                      |                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                |keyword
-| qualys_was.vulnerability.knowledge_base.cvss_v3.attack.vector                          |                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                |keyword
-| qualys_was.vulnerability.knowledge_base.cvss_v3.base                                   |                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                |keyword
-| qualys_was.vulnerability.knowledge_base.cvss_v3.exploit_code_maturity                  |                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                |keyword
-| qualys_was.vulnerability.knowledge_base.cvss_v3.impact.availability                    |                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                |keyword
-| qualys_was.vulnerability.knowledge_base.cvss_v3.impact.confidentiality                 |                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                |keyword
-| qualys_was.vulnerability.knowledge_base.cvss_v3.impact.integrity                       |                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                |keyword
-| qualys_was.vulnerability.knowledge_base.cvss_v3.privileges_required                    |                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                |keyword
-| qualys_was.vulnerability.knowledge_base.cvss_v3.remediation_level                      |                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                |keyword
-| qualys_was.vulnerability.knowledge_base.cvss_v3.report_confidence                      |                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                |keyword
-| qualys_was.vulnerability.knowledge_base.cvss_v3.scope                                  |                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                |keyword
-| qualys_was.vulnerability.knowledge_base.cvss_v3.temporal                               |                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                |keyword
-| qualys_was.vulnerability.knowledge_base.cvss_v3.user_interaction                       |                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                |keyword
-| qualys_was.vulnerability.knowledge_base.cvss_v3.vector_string                          |                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                |keyword
-| qualys_was.vulnerability.knowledge_base.cvss_v3.version                                |                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                |keyword
-| qualys_was.vulnerability.knowledge_base.detection_info                                 |                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                |keyword
-| qualys_was.vulnerability.knowledge_base.diagnosis.comment                              |                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                |match_only_text
-| qualys_was.vulnerability.knowledge_base.diagnosis.value                                |                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                |match_only_text
-| qualys_was.vulnerability.knowledge_base.discovery.auth_type_list.value                 |                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                |keyword
-| qualys_was.vulnerability.knowledge_base.discovery.additional_info                      |                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                |keyword
-| qualys_was.vulnerability.knowledge_base.discovery.remote                               |                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                |long
-| qualys_was.vulnerability.knowledge_base.error                                          |                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                |keyword
-| qualys_was.vulnerability.knowledge_base.ids                                            |                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                |keyword
-| qualys_was.vulnerability.knowledge_base.id_range                                       |                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                |keyword
-| qualys_was.vulnerability.knowledge_base.is_disabled                                    |                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                |boolean
-| qualys_was.vulnerability.knowledge_base.last.customization.datetime                    |                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                |date
-| qualys_was.vulnerability.knowledge_base.last.customization.user_login                  |                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                |keyword
-| qualys_was.vulnerability.knowledge_base.last.service_modification_datetime             |                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                |date
-| qualys_was.vulnerability.knowledge_base.patchable                                      |                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                |boolean
-| qualys_was.vulnerability.knowledge_base.pci_flag                                       |                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                |boolean
-| qualys_was.vulnerability.knowledge_base.pci_reasons.value                              |                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                |keyword
-| qualys_was.vulnerability.knowledge_base.published_datetime                             |                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                |date
-| qualys_was.vulnerability.knowledge_base.qid                                            |                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                |keyword
-| qualys_was.vulnerability.knowledge_base.severity_level                                 |                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                |keyword
-| qualys_was.vulnerability.knowledge_base.software_list.product                          |                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                |keyword
-| qualys_was.vulnerability.knowledge_base.software_list.vendor                           |                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                |keyword
-| qualys_was.vulnerability.knowledge_base.vendor_reference_list.id                       |                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                |keyword
-| qualys_was.vulnerability.knowledge_base.vendor_reference_list.url                      |                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                |keyword
-| qualys_was.vulnerability.knowledge_base.solution.comment                               |                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                |match_only_text
-| qualys_was.vulnerability.knowledge_base.solution.value                                 |                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                |match_only_text
-| qualys_was.vulnerability.knowledge_base.supported_modules                              |                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                |keyword
-| qualys_was.vulnerability.knowledge_base.threat_intelligence.intel.id                   |                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                |keyword
-| qualys_was.vulnerability.knowledge_base.threat_intelligence.intel.text                 |                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                |keyword
-| qualys_was.vulnerability.knowledge_base.title                                          |                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                |keyword
-| qualys_was.vulnerability.knowledge_base.vuln_type                                      |                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                |keyword
+{{event "vulnerability"}}
 
 
+**ECS fields**
+
+| Field | Description | Type |
+|---|---|---|
+| vulnerability.id                        | The identification (ID) is the number portion of a vulnerability entry                                                                                                                                                                                                                                                                                                                                                                                                                                                         | keyword          |
+| vulnerability.classification            | The classification of the vulnerability scoring system                                                                                                                                                                                                                                                                                                                                                                                                                                                                         | constant_keyword |
+| vulnerability.enumeration               | The type of identifier used for this vulnerability                                                                                                                                                                                                                                                                                                                                                                                                                                                                             | constant_keyword |
+| vulnerability.category                  | The type of system or architecture that the vulnerability affects.                                                                                                                                                                                                                                                                                                                                                                                                                                                             | constant_keyword |
+| vulnerability.scanner.vendor            | The name of the vulnerability scanner vendor.                                                                                                                                                                                                                                                                                                                                                                                                                                                                                  | constant_keyword |
+| vulnerability.severity                  | The severity of the vulnerability                                                                                                                                                                                                                                                                                                                                                                                                                                                                                              | keyword          |
+| vulnerability.score.base                | Available in verbose mode. Scores can range from 0.0 to 10.0, with 10.0 being the most severe. Base scores cover an assessment for exploitability metrics (attack vector, complexity, privileges, and user interaction), impact metrics (confidentiality, integrity, and availability), and scope.                                                                                                                                                                                                                             | float            |
+| vulnerability.score.temporal            | Available in verbose mode. Scores can range from 0.0 to 10.0, with 10.0 being the most severe. Temporal scores cover an assessment for code maturity, remediation level, and confidence.                                                                                                                                                                                                                                                                                                                                       | float            |
+
+{{fields "vulnerability"}}
