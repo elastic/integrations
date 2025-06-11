@@ -54,16 +54,36 @@ program: |
           "want_more": false,
         })
       :
-        // new data available
-        request("GET", req.url).with(req.headers).do_request().as(resp, state.with({
-          "events": try({ "data": resp.Body.mime("application/gzip") }, "error").as(unzipped,
-            (has(unzipped.error) ? resp.Body : unzipped.data).mime("text/csv; header=present").as(parsed,
-              parsed.map(e, { "message": e.encode_json() })
-            )
-          ),
-          "cursor": state.?cursor.orValue({}).with({ "etag": resp.Header.?Etag[0].orValue("NONE") }),
-          "want_more": false,
-       }))
+        // new data available (or etag check failed)
+        request("GET", req.url).with(req.headers).do_request().as(resp, (resp.StatusCode == 200) ?
+          // successful response
+          state.with({
+            "events": try({ "data": resp.Body.mime("application/gzip") }, "error").as(unzipped,
+              (has(unzipped.error) ? resp.Body : unzipped.data).mime("text/csv; header=present").as(parsed,
+                parsed.map(e, { "message": e.encode_json() })
+              )
+            ),
+            "cursor": state.?cursor.orValue({}).with({ "etag": resp.Header.?Etag[0].orValue("NONE") }),
+            "want_more": false,
+         })
+       :
+         // unsuccessful response
+         state.with({
+           "events": {
+             "error": {
+               "code": string(resp.StatusCode),
+               "id": string(resp.Status),
+               "message": "GET " + req.url + (
+                 (size(resp.Body) != 0) ?
+                   string(resp.Body)
+                 :
+                   string(resp.Status) + " (" + string(resp.StatusCode) + ")"
+               ),
+             },
+           },
+           "want_more": false
+         })
+       )
     )
   )
 tags:
