@@ -1005,6 +1005,11 @@ processors:
       value: '{{aws.cloudtrail.flattened.request_parameters.newUserName}}'
       allow_duplicates: false
       if: ctx.aws?.cloudtrail?.flattened?.request_parameters?.newUserName != null
+  - append:
+      field: related.user
+      value: '{{aws.cloudtrail.flattened.response_elements.user.userId}}'
+      allow_duplicates: false
+      if: ctx.aws?.cloudtrail?.flattened?.response_elements?.user?.userId != null
   - script:
       lang: painless
       ignore_failure: true
@@ -1688,28 +1693,23 @@ processors:
       target_field: tls.client.server_name
       ignore_missing: true
   # Standardize user fields
-  - rename:
-      field: user.name
-      target_field: user.email
-      tag: rename_user_email
-      if: ctx.user?.email == null && ctx.user?.name != null && ctx.user.name.indexOf("@") > 0
-  - dissect:
+  - set:
       field: user.email
-      pattern: '%{user.name}@%{user.domain}'
-      tag: dissect_user_email
-      if: ctx.user?.name == null
-      ignore_missing: true
+      copy_from: user.name
+      tag: set_user_email
+      if: ctx.user?.email == null && ctx.user?.name != null && ctx.user.name.indexOf("@") > 0
+  # Don't dissect the user email into <user.name>@<user.domain>
+  # as the parts are meaningless on their own
+  - append:
+      field: related.user
+      value: '{{{user.id}}}'
+      if: ctx.user?.id != null
+      allow_duplicates: false
       ignore_failure: true
   - append:
       field: related.user
       value: '{{{user.name}}}'
       if: ctx.user?.name != null
-      allow_duplicates: false
-      ignore_failure: true
-  - append:
-      field: related.user
-      value: '{{{user.email}}}'
-      if: ctx.user?.email != null
       allow_duplicates: false
       ignore_failure: true
   - remove:
