@@ -181,20 +181,30 @@ processors:
       tag: rename_Administrator
       target_field: cyberark_epm.admin_audit.administrator
       ignore_missing: true
+  - grok:
+      field: cyberark_epm.admin_audit.administrator
+      patterns:
+        - '%{USERNAME:user.name}@%{HOSTNAME:user.domain}'
+        - '%{GREEDYDATA:user.name}'
+      ignore_missing: true
+      ignore_failure: true
   - set:
       field: user.email
       tag: set_user_email_from_admin_audit_administrator
       copy_from: cyberark_epm.admin_audit.administrator
       ignore_empty_value: true
-  - set:
-      field: user.name
-      tag: set_user_name_from_admin_audit_administrator
-      copy_from: cyberark_epm.admin_audit.administrator
-      ignore_empty_value: true
+      if: ctx.cyberark_epm?.admin_audit?.administrator != null && ctx.cyberark_epm.admin_audit.administrator.indexOf("@") > 0
   - append:
       field: related.user
-      tag: append_admin_audit_administrator_to_related_user
-      value: '{{{cyberark_epm.admin_audit.administrator}}}'
+      tag: append_user_name_to_related_user
+      value: '{{{user.name}}}'
+      if: ctx.user?.name != null
+      allow_duplicates: false
+  - append:
+      field: related.user
+      tag: append_user_email_to_related_user
+      value: '{{{user.email}}}'
+      if: ctx.user?.email != null
       allow_duplicates: false
   - rename:
       field: json.Role

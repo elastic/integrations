@@ -176,6 +176,11 @@ An example event for `signinlogs` looks as following:
         ],
         "ip": [
             "81.2.69.144"
+        ],
+        "user": [
+            "8a4de8b5-095c-47d0-a96f-a75130c61d53",
+            "test@elastic.co",
+            "Test LTest"
         ]
     },
     "source": {
@@ -198,11 +203,10 @@ An example event for `signinlogs` looks as following:
         "preserve_original_event"
     ],
     "user": {
-        "domain": "elastic.co",
         "email": "test@elastic.co",
         "full_name": "Test LTest",
         "id": "8a4de8b5-095c-47d0-a96f-a75130c61d53",
-        "name": "test"
+        "name": "test@elastic.co"
     }
 }
 ```
@@ -391,12 +395,18 @@ An example event for `identity_protection` looks as following:
         },
         "ip": "67.43.156.42"
     },
+    "related": {
+        "user": [
+            "51e26eae-d07b-44e5-bb0b-249f49569a8c",
+            "joe.danger@mauriziobrancaoutlook.onmicrosoft.com",
+            "Joe Danger"
+        ]
+    },
     "user": {
-        "domain": "mauriziobrancaoutlook.onmicrosoft.com",
         "email": "joe.danger@mauriziobrancaoutlook.onmicrosoft.com",
         "full_name": "Joe Danger",
         "id": "51e26eae-d07b-44e5-bb0b-249f49569a8c",
-        "name": "joe.danger"
+        "name": "joe.danger@mauriziobrancaoutlook.onmicrosoft.com"
     }
 }
 ```

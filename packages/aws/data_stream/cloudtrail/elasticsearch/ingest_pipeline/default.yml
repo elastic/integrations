@@ -779,11 +779,6 @@ processors:
       field: json.userIdentity.type
       target_field: aws.cloudtrail.user_identity.type
       ignore_failure: true
-  - append:
-      field: related.user
-      value: '{{json.userIdentity.userName}}'
-      allow_duplicates: false
-      if: ctx.json?.userIdentity?.userName != null
   - rename:
       field: json.userIdentity.userName
       target_field: user.name
@@ -1010,6 +1005,11 @@ processors:
       value: '{{aws.cloudtrail.flattened.request_parameters.newUserName}}'
       allow_duplicates: false
       if: ctx.aws?.cloudtrail?.flattened?.request_parameters?.newUserName != null
+  - append:
+      field: related.user
+      value: '{{aws.cloudtrail.flattened.response_elements.user.userId}}'
+      allow_duplicates: false
+      if: ctx.aws?.cloudtrail?.flattened?.response_elements?.user?.userId != null
   - script:
       lang: painless
       ignore_failure: true
@@ -1692,6 +1692,26 @@ processors:
       field: json.tlsDetails.clientProvidedHostHeader
       target_field: tls.client.server_name
       ignore_missing: true
+  # Standardize user fields
+  - set:
+      field: user.email
+      copy_from: user.name
+      tag: set_user_email
+      if: ctx.user?.email == null && ctx.user?.name != null && ctx.user.name.indexOf("@") > 0
+  # Don't dissect the user email into <user.name>@<user.domain>
+  # as the parts are meaningless on their own
+  - append:
+      field: related.user
+      value: '{{{user.id}}}'
+      if: ctx.user?.id != null
+      allow_duplicates: false
+      ignore_failure: true
+  - append:
+      field: related.user
+      value: '{{{user.name}}}'
+      if: ctx.user?.name != null
+      allow_duplicates: false
+      ignore_failure: true
   - remove:
       field: json
       ignore_missing: true
