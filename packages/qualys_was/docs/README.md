@@ -76,15 +76,14 @@ for descriptions of type of detection data returned and severity levels.
    - disable Information Gathered. 
    - disable Senstive Content
    - disable Verbose
+
 #### Notes about verbose mode
-The integration uses verbose mode by default. IN addition to the ingested data enumerated below,
-verbose mode returns the history of all scans on the target. If the Qualys WAS application is not configured to
-delete old scans, the amount of data that is returned is significant. The agent may experience issues related
-to memory exhaustion. Deleting old scans on a schedule will mitigate the issue. Removing old scan data will not affect 
-vulnerability reports. If deleting old scans in not an option, other ways to mitigate the issue are:
-- turning off verbose mode
-- reducing batch size
-- increasing memory on the agent 
+The integration uses verbose mode by default. The size of scan result details that is returned in verbose is unpredictable.
+Should the agent run into memory issues, one or more of the following should solve the problem:
+1. Reduce batch_size in the integration configuration.
+2. Disable verbose mode if the extra data returned is not valuable to the user. 
+3. Increase memory on the agent.
+4. Move the integration to its own agent.
 
 The additional data available with verbose mode are:
 - Web application tags
@@ -94,7 +93,7 @@ The additional data available with verbose mode are:
 - updatedDateTime
 - param value for the test
 - results of the most recent scan including the requests made, the response and details what about the response resulted
-  in a vulnerability report (stored as flattened data)
+  in a vulnerability report. This data is stored as unindexed text data due to its unpredictable size.
 
 ## Processing Logic
 Cel scripts are used to fetch the data from Qualys endpoints and processed into events that 
@@ -102,9 +101,13 @@ are consumed by the pipelines.
 The cell script requests Findings (detection) data through the REST API using a filter for the "lastTestedDate",
 which is the scan datetime. The qid (qualys id) is the id the vulnerability found that maps to a
 knowledge base article in the qualys knowledge base. This id is used to request knowledge base data from an 
-endpoint which augments each Finding the knowledge base data. Findings are paginated
+endpoint which augments each Finding with the knowledge base data. Findings are paginated
 by the qualys_was.vulnerability.id, a unique id for the finding. Knowledge base data is cached between pages to reduce
-the volume of data transported during a single run of the cel script.
+the volume of data transported during a single run of the cel script. The cel script removes history data that is 
+included in verbose mode.
+
+
+
 
 
 ## Data reference
@@ -187,7 +190,7 @@ An example response from the Qualys WAS API
                         {
                            "Tag": {
                               "id": 1,
-                              "name": "Tag:1
+                              "name": "Tag:1"
                            }
                         },
                         {
@@ -362,7 +365,7 @@ An example of a Knowledge Base object after decoding from XML to JSON
   "threat": "A file, directory, or directory listing was discovered on the Web server. These resources are confirmed to be present based on our logic. Some of the content on these files might have sensitive information. \n<P>NOTE: Links found in 150004 are found by forced crawling so will not automatically be added to 150009 Links Crawled or the application site map. If links found in 150004 need to be tested they must be added as Explicit URI so they are included in scope and then will be reported in 150009. Once the link is added to be in scope (i.e. Explicit URI)  this same link will no longer be reported for 150004.",
   "impact": "The contents of this file or directory may disclose sensitive information.",
   "solution": "It is advised to review the contents of the disclosed files. If the contents contain sensitive information, please verify that access to this file or directory is permitted. If necessary, remove it or apply access controls to it.",
-  "signature": null
+  "signature": null[manifest.yml](../../../../qnap_nas/manifest.yml)
 }
 ```
 
@@ -372,90 +375,68 @@ An example event for `vulnerability` looks as following:
 
 ```json
 {
-    "@timestamp": "2025-04-22T06:18:42.000Z",
-    "agent": {
-        "ephemeral_id": "c53530b5-27c4-4589-af1b-e109fa027659",
-        "id": "7261472e-5b72-4691-9320-0ad2b10c109c",
-        "name": "elastic-agent-42837",
-        "type": "filebeat",
-        "version": "8.18.0"
-    },
-    "data_stream": {
-        "dataset": "qualys_was.vulnerability",
-        "namespace": "93053",
-        "type": "logs"
-    },
+    "@timestamp": "2025-03-21T06:01:54.000Z",
     "ecs": {
         "version": "8.16.0"
     },
-    "elastic_agent": {
-        "id": "7261472e-5b72-4691-9320-0ad2b10c109c",
-        "snapshot": false,
-        "version": "8.18.0"
-    },
     "event": {
-        "agent_id_status": "verified",
         "category": [
             "vulnerability"
         ],
-        "created": "2025-06-03T20:29:37.908Z",
-        "dataset": "qualys_was.vulnerability",
-        "ingested": "2025-06-03T20:29:38Z",
         "kind": "event",
-        "original": "{\"Finding\":{\"detection\":{\"cvssV3\":{\"attackVector\":\"Network\",\"base\":3.7,\"temporal\":3.6},\"cwe\":{\"count\":1,\"list\":[200]},\"detectionScore\":45,\"findingType\":\"QUALYS\",\"firstDetectedDate\":\"2021-01-27T10:00:41Z\",\"id\":12499746,\"ignoredBy\":{\"firstName\":\"User\",\"id\":1234,\"lastName\":\"LastName\",\"username\":\"username\"},\"ignoredComment\":\"ignored\",\"ignoredDate\":\"2021-02-22T15:58:34Z\",\"ignoredReason\":\"FALSE_POSITIVE\",\"isIgnored\":\"true\",\"lastDetectedDate\":\"2025-04-22T06:18:42Z\",\"lastTestedDate\":\"2025-04-22T06:18:42Z\",\"name\":\"Sensitive form field has not disabled autocomplete\",\"owasp\":{\"count\":1,\"list\":[{\"OWASP\":{\"code\":5,\"name\":\"Security Misconfiguration\",\"url\":\"https://owasp.org/Top10/A05_2021-Security_Misconfiguration/\"}}]},\"potential\":\"false\",\"qid\":150112,\"resultList\":{\"count\":1,\"list\":[{\"Result\":{\"ajax\":\"false\",\"authentication\":\"true\",\"payloads\":{\"count\":4,\"list\":[{\"PayloadInstance\":{\"payload\":\"N/A\",\"request\":{\"body\":null,\"headers\":\"REDACTED\",\"link\":\"https://testurl.com\",\"method\":\"POST\"},\"response\":\"The following password field(s) in the form do not set autocomplete=\\\"off\\\":\\n(Field name: password, Field id: ibe0d2341-1f42-11f0-95f7-4f1cebf89922)\\nParent URL of form is: https://testurl.com\\n\"}},{\"PayloadInstance\":{\"payload\":\"N/A\",\"request\":{\"body\":null,\"headers\":\"REDACTED\",\"link\":\"https://testurl.com\",\"method\":\"POST\"},\"response\":\"The following password field(s) in the form do not set autocomplete=\\\"off\\\":\\n(Field name: password, Field id: icb0bdbe1-1f42-11f0-b97b-21fc91009e0d)\\nParent URL of form is: https://testurl.com\\n\"}},{\"PayloadInstance\":{\"payload\":\"N/A\",\"request\":{\"body\":null,\"headers\":\"REDACTED\",\"link\":\"https://testurl.com\",\"method\":\"POST\"},\"response\":\"The following password field(s) in the form do not set autocomplete=\\\"off\\\":\\n(Field name: password, Field id: if25e6321-1f42-11f0-81c4-87753333478b)\\nParent URL of form is: https://testurl.com\\n\"}},{\"PayloadInstance\":{\"payload\":\"N/A\",\"request\":{\"body\":null,\"headers\":\"REDACTED\",\"link\":\"https://testurl.com\",\"method\":\"POST\"},\"response\":\"error respoonse message\"}}]}}}]},\"severity\":\"2\",\"status\":\"ACTIVE\",\"timesDetected\":1460,\"type\":\"VULNERABILITY\",\"uniqueId\":\"12345678-abcd-efabcd-234-123456789012\",\"updatedDate\":\"2025-04-22T09:26:31Z\",\"url\":\"https://testurl.com\",\"wasc\":{\"count\":1,\"list\":[{\"WASC\":{\"code\":13,\"name\":\"INFORMATION LEAKAGE\",\"url\":\"http://projects.webappsec.org/w/page/13246936/WASC\"}}]},\"webApp\":{\"id\":1,\"name\":\"PCI Serverless Scan\",\"tags\":{\"count\":2,\"list\":[{\"Tag\":{\"id\":12,\"name\":\"Tag:2\"}},{\"Tag\":{\"id\":13,\"name\":\"Tag:1\"}}]},\"url\":\"https://testurl.com\"}},\"knowledge_base\":{\"CATEGORY\":\"Web Application\",\"CODE_MODIFIED_DATETIME\":\"2013-03-07T19:48:34Z\",\"CONSEQUENCE\":\"If the browser is used in a shared computing environment where more than one person may use the browser, then \\u0026quot;autocomplete\\u0026quot; values may be submitted by an unauthorized user.\",\"CVSS\":{\"BASE\":\"0.0\",\"TEMPORAL\":\"0.0\",\"VECTOR_STRING\":\"CVSS:2.0/AV:N/AC:L/Au:S/C:N/I:N/A:N/E:POC/RL:U/RC:C\"},\"CVSS_V3\":{\"BASE\":\"3.7\",\"CVSS3_VERSION\":\"3.1\",\"TEMPORAL\":\"3.6\",\"VECTOR_STRING\":\"CVSS:3.1/AV:N/AC:H/PR:N/UI:N/S:U/C:L/I:N/A:N/E:H/RL:W/RC:C\"},\"DIAGNOSIS\":\"An HTML form that collects sensitive information does not prevent the browser from prompting the user to save the populated values for later reuse.\\n  Autocomplete should be turned off for any input that takes sensitive information such as credit card number, CVV2/CVC code, U.S. social security number, etc.\",\"DISCOVERY\":{\"REMOTE\":\"1\"},\"LAST_SERVICE_MODIFICATION_DATETIME\":\"2017-10-06T22:01:46Z\",\"PATCHABLE\":\"0\",\"PCI_FLAG\":\"0\",\"PUBLISHED_DATETIME\":\"2013-03-07T19:48:34Z\",\"QID\":\"150112\",\"SEVERITY_LEVEL\":\"2\",\"SOLUTION\":\"Add the following attribute to the form or input element: autocomplete=\\u0026quot;off\\u0026quot;\\n  This attribute prevents the browser from prompting the user to save the populated form values for later reuse.\\n  Most browsers no longer honor autocomplete=\\u0026quot;off\\u0026quot; for password input fields.\\n  These browsers include\\n  Chrome, Firefox, Microsoft Edge, IE, Opera\\n  However, there is still an ability to turn off autocomplete through the browser and that is recommended for a shared computing environment.\\n  Since the ability to turn autocomplete off for password inputs fields is controlled by the user it is highly recommended for application to enforce strong password rules.\",\"THREAT_INTELLIGENCE\":{\"THREAT_INTEL\":[{\"#text\":\"Easy_Exploit\",\"id\":\"5\"},{\"#text\":\"No_Patch\",\"id\":\"8\"}]},\"TITLE\":\"Sensitive form field has not disabled autocomplete\",\"VULN_TYPE\":\"Vulnerability\"}}}",
+        "original": "{\"Finding\":{\"detection\":{\"cvssV3\":{\"attackVector\":\"Network\",\"base\":3.1,\"temporal\":2.6},\"cwe\":{\"count\":1,\"list\":[79]},\"detectionScore\":50,\"findingType\":\"QUALYS\",\"firstDetectedDate\":\"2020-06-13T08:01:21Z\",\"id\":12345670,\"ignoredBy\":{\"firstName\":\"Some\",\"id\":142870916,\"lastName\":\"Person\",\"username\":\"someperson123\"},\"ignoredComment\":\" comment\",\"ignoredDate\":\"2020-06-23T11:39:09Z\",\"ignoredReason\":\"FALSE_POSITIVE\",\"isIgnored\":\"true\",\"lastDetectedDate\":\"2025-03-21T06:01:54Z\",\"lastTestedDate\":\"2025-03-21T06:01:54Z\",\"name\":\"Unencoded characters\",\"owasp\":{\"count\":1,\"list\":[{\"OWASP\":{\"code\":3,\"name\":\"Injection\",\"url\":\"https://owasp.org/Top10/A03_2021-Injection/\"}}]},\"param\":\"show_deleted\",\"potential\":\"true\",\"qid\":150084,\"resultList\":{\"count\":1,\"list\":[{\"Result\":{\"accessPath\":{\"count\":1,\"list\":[{\"Url\":{\"value\":\"https://web.address.com/\"}}]},\"ajax\":\"false\",\"authentication\":\"false\",\"payloads\":{\"count\":4,\"list\":[{\"PayloadInstance\":{\"payload\":\"show_deleted=%22'%3E%3CqssbVr8SJHx%20%60%3b!--%3D%26%7b()%7d%3E&show_unusable=false\",\"payloadResponse\":{\"length\":25,\"offset\":271},\"request\":{\"headers\":\"123header456\",\"link\":\"https://web.address.com/api/v1/more/address/stack/versions?show_deleted=%22'%3E%3CqssbVr8SJHx%20%60%3b!--%3D%26%7b()%7d%3E&show_unusable=false\",\"method\":\"GET\"},\"response\":\"comment: A significant portion of the XSS test payload appeared in the web page, but the response content type is non-HTML.\\nResponse content-type: application/json\\n\\n{\\\"errors\\\":[{\\\"code\\\":\\\"root.malformed_query_param\\\",\\\"message\\\":\\\"The value for show_deleted was malformed. '\\\\\\\"'><qssbvr8sjhx `;!--=&{()}>' is not a valid Boolean value\\\"}]}\"}},{\"PayloadInstance\":{\"payload\":\"show_deleted=%22&show_unusable=false\",\"payloadResponse\":{\"length\":28,\"offset\":271},\"request\":{\"headers\":\"123header456\",\"link\":\"https://web.address.com/api/v1/more/address/stack/versions?show_deleted=%22&show_unusable=false\",\"method\":\"GET\"},\"response\":\"comment: A significant portion of the XSS test payload appeared in the web page, but the response content type is non-HTML.\\nResponse content-type: application/json\\n\\n{\\\"errors\\\":[{\\\"code\\\":\\\"root.malformed_query_param\\\",\\\"message\\\":\\\"The value for show_deleted was malformed. '\\\\\\\"'><qss a=x93884460340384y1_1z>' is not a valid Boolean value\\\"}]}\"}},{\"PayloadInstance\":{\"payload\":\"show_deleted=false%22'%3E%3CqssUbPt9tNM%3E&show_unusable=false\",\"payloadResponse\":{\"length\":13,\"offset\":276},\"request\":{\"headers\":\"123header456\",\"link\":\"https://web.address.com/api/v1/more/address/stack/versions?show_deleted=false%22'%3E%3CqssUbPt9tNM%3E&show_unusable=false\",\"method\":\"GET\"},\"response\":\"comment: A significant portion of the XSS test payload appeared in the web page, but the response content type is non-HTML.\\nResponse content-type: application/json\\n\\n{\\\"errors\\\":[{\\\"code\\\":\\\"root.malformed_query_param\\\",\\\"message\\\":\\\"The value for show_deleted was malformed. 'false\\\\\\\"'><qssubpt9tnm>' is not a valid Boolean value\\\"}]}\"}},{\"PayloadInstance\":{\"payload\":\"show_deleted=%22%3E%3CqssOzIA5enZ%3E&show_unusable=false\",\"payloadResponse\":{\"length\":13,\"offset\":270},\"request\":{\"headers\":\"123header456\",\"link\":\"https://web.address.com/api/v1/more/address/stack/versions?show_deleted=%22%3E%3CqssOzIA5enZ%3E&show_unusable=false\",\"method\":\"GET\"},\"response\":\"comment: A significant portion of the XSS test payload appeared in the web page, but the response content type is non-HTML.\\nResponse content-type: application/json\\n\\n{\\\"errors\\\":[{\\\"code\\\":\\\"root.malformed_query_param\\\",\\\"message\\\":\\\"The value for show_deleted was malformed. '\\\\\\\"><qssozia5enz>' is not a valid Boolean value\\\"}]}\"}}]}}}]},\"severity\":\"1\",\"status\":\"ACTIVE\",\"timesDetected\":416,\"type\":\"VULNERABILITY\",\"uniqueId\":\"12345678-1234-1234-1234-421234567890\",\"updatedDate\":\"2025-03-21T08:45:25Z\",\"url\":\"https://web.address.com/apiE&show_unusable=false\",\"wasc\":{\"count\":1,\"list\":[{\"WASC\":{\"code\":22,\"name\":\"IMPROPER OUTPUT HANDLING\",\"url\":\"http://projects.webappsec.org/w/page/13246934/WASC\"}}]},\"webApp\":{\"id\":987654321,\"name\":\"Description Name\",\"tags\":{\"count\":2,\"list\":[{\"Tag\":{\"id\":12348765,\"name\":\"Tag:1\"}},{\"Tag\":{\"id\":23459876,\"name\":\"Tag:2\"}}]},\"url\":\"https://web.address.com\"}},\"knowledge_base\":{\"CATEGORY\":\"Web Application\",\"CODE_MODIFIED_DATETIME\":\"2022-08-10T00:00:00Z\",\"CONSEQUENCE\":\"No exploit was determined for these reflected characters. The input parameter should be manually analyzed to verify that no other characters can be injected that would lead to an HTML injection (XSS) vulnerability.\",\"CVSS\":{\"BASE\":{\"#text\":\"5.0\",\"source\":\"service\"},\"TEMPORAL\":\"3.8\",\"VECTOR_STRING\":\"CVSS:2.0/AV:N/AC:L/Au:N/C:P/I:N/A:N/E:U/RL:U/RC:UC\"},\"CVSS_V3\":{\"BASE\":\"3.1\",\"CVSS3_VERSION\":\"3.1\",\"TEMPORAL\":\"2.6\",\"VECTOR_STRING\":\"CVSS:3.1/AV:N/AC:H/PR:N/UI:R/S:U/C:L/I:N/A:N/E:U/RL:U/RC:U\"},\"DIAGNOSIS\":\"The web application reflects potentially dangerous characters such as single quotes, double quotes, and angle brackets. These characters are commonly used for HTML injection attacks such as cross-site scripting (XSS).\",\"DISCOVERY\":{\"REMOTE\":\"1\"},\"LAST_SERVICE_MODIFICATION_DATETIME\":\"2024-02-12T23:24:03Z\",\"PATCHABLE\":\"0\",\"PCI_FLAG\":\"0\",\"PUBLISHED_DATETIME\":\"2011-03-08T18:40:29Z\",\"QID\":\"150084\",\"SEVERITY_LEVEL\":\"1\",\"SOLUTION\":\"Review the reflected characters to ensure that they are properly handled as defined by the web application's coding practice. Typical solutions are to apply HTML encoding or percent encoding to the characters depending on where they are placed in the HTML. For example, a double quote might be encoded as &quot; when displayed in a text node, but as %22 when placed in the value of an href attribute.\",\"THREAT_INTELLIGENCE\":{\"THREAT_INTEL\":[{\"#text\":\"Easy_Exploit\",\"id\":\"5\"},{\"#text\":\"No_Patch\",\"id\":\"8\"}]},\"TITLE\":\"Unencoded characters\",\"VULN_TYPE\":\"Potential Vulnerability\"}}}",
         "type": [
             "info"
         ]
     },
-    "event.original": "{\"cvssV3\":{\"attackVector\":\"Network\",\"base\":3.7,\"temporal\":3.6},\"cwe\":{\"count\":1,\"list\":[200]},\"detectionScore\":45,\"findingType\":\"QUALYS\",\"firstDetectedDate\":\"2021-01-27T10:00:41Z\",\"id\":12499746,\"ignoredBy\":{\"firstName\":\"User\",\"id\":1234,\"lastName\":\"LastName\",\"username\":\"username\"},\"ignoredComment\":\"ignored\",\"ignoredDate\":\"2021-02-22T15:58:34Z\",\"ignoredReason\":\"FALSE_POSITIVE\",\"isIgnored\":\"true\",\"lastDetectedDate\":\"2025-04-22T06:18:42Z\",\"lastTestedDate\":\"2025-04-22T06:18:42Z\",\"name\":\"Sensitive form field has not disabled autocomplete\",\"owasp\":{\"count\":1,\"list\":[{\"OWASP\":{\"code\":5,\"name\":\"Security Misconfiguration\",\"url\":\"https://owasp.org/Top10/A05_2021-Security_Misconfiguration/\"}}]},\"potential\":\"false\",\"qid\":150112,\"resultList\":{\"count\":1,\"list\":[{\"Result\":{\"ajax\":\"false\",\"authentication\":\"true\",\"payloads\":{\"count\":4,\"list\":[{\"PayloadInstance\":{\"payload\":\"N/A\",\"request\":{\"body\":null,\"headers\":\"REDACTED\",\"link\":\"https://testurl.com\",\"method\":\"POST\"},\"response\":\"The following password field(s) in the form do not set autocomplete=\\\"off\\\":\\n(Field name: password, Field id: ibe0d2341-1f42-11f0-95f7-4f1cebf89922)\\nParent URL of form is: https://testurl.com\\n\"}},{\"PayloadInstance\":{\"payload\":\"N/A\",\"request\":{\"body\":null,\"headers\":\"REDACTED\",\"link\":\"https://testurl.com\",\"method\":\"POST\"},\"response\":\"The following password field(s) in the form do not set autocomplete=\\\"off\\\":\\n(Field name: password, Field id: icb0bdbe1-1f42-11f0-b97b-21fc91009e0d)\\nParent URL of form is: https://testurl.com\\n\"}},{\"PayloadInstance\":{\"payload\":\"N/A\",\"request\":{\"body\":null,\"headers\":\"REDACTED\",\"link\":\"https://testurl.com\",\"method\":\"POST\"},\"response\":\"The following password field(s) in the form do not set autocomplete=\\\"off\\\":\\n(Field name: password, Field id: if25e6321-1f42-11f0-81c4-87753333478b)\\nParent URL of form is: https://testurl.com\\n\"}},{\"PayloadInstance\":{\"payload\":\"N/A\",\"request\":{\"body\":null,\"headers\":\"REDACTED\",\"link\":\"https://testurl.com\",\"method\":\"POST\"},\"response\":\"error respoonse message\"}}]}}}]},\"severity\":\"2\",\"status\":\"ACTIVE\",\"timesDetected\":1460,\"type\":\"VULNERABILITY\",\"uniqueId\":\"12345678-abcd-efabcd-234-123456789012\",\"updatedDate\":\"2025-04-22T09:26:31Z\",\"url\":\"https://testurl.com\",\"wasc\":{\"count\":1,\"list\":[{\"WASC\":{\"code\":13,\"name\":\"INFORMATION LEAKAGE\",\"url\":\"http://projects.webappsec.org/w/page/13246936/WASC\"}}]},\"webApp\":{\"id\":1,\"name\":\"PCI Serverless Scan\",\"tags\":{\"count\":2,\"list\":[{\"Tag\":{\"id\":12,\"name\":\"Tag:2\"}},{\"Tag\":{\"id\":13,\"name\":\"Tag:1\"}}]},\"url\":\"https://testurl.com\"}}",
-    "input": {
-        "type": "cel"
-    },
     "qualys_was": {
         "vulnerability": {
-            "detection_score": 45,
-            "first_found_datetime": "2021-01-27T10:00:41.000Z",
-            "id": 12499746,
+            "detection_score": 50,
+            "first_found_datetime": "2020-06-13T08:01:21.000Z",
+            "id": 12345670,
             "ignoredBy": {
-                "comment": "ignored",
-                "date": "2021-02-22T15:58:34.000Z",
-                "id": 1234,
+                "comment": " comment",
+                "date": "2020-06-23T11:39:09.000Z",
+                "id": 142870916,
                 "reason": "FALSE_POSITIVE",
-                "username": "username"
+                "username": "someperson123"
             },
             "is_ignored": "true",
             "knowledge_base": {
                 "category": "Web Application",
                 "consequence": {
-                    "value": "If the browser is used in a shared computing environment where more than one person may use the browser, then &quot;autocomplete&quot; values may be submitted by an unauthorized user."
+                    "value": "No exploit was determined for these reflected characters. The input parameter should be manually analyzed to verify that no other characters can be injected that would lead to an HTML injection (XSS) vulnerability."
                 },
                 "cvss": {
-                    "base": "0.0",
-                    "temporal": "0.0",
-                    "vector_string": "CVSS:2.0/AV:N/AC:L/Au:S/C:N/I:N/A:N/E:POC/RL:U/RC:C"
+                    "base_obj": {
+                        "#text": "5.0",
+                        "source": "service"
+                    },
+                    "temporal": "3.8",
+                    "vector_string": "CVSS:2.0/AV:N/AC:L/Au:N/C:P/I:N/A:N/E:U/RL:U/RC:UC"
                 },
                 "cvss_v3": {
-                    "base": "3.7",
-                    "temporal": "3.6",
-                    "vector_string": "CVSS:3.1/AV:N/AC:H/PR:N/UI:N/S:U/C:L/I:N/A:N/E:H/RL:W/RC:C",
+                    "base": "3.1",
+                    "temporal": "2.6",
+                    "vector_string": "CVSS:3.1/AV:N/AC:H/PR:N/UI:R/S:U/C:L/I:N/A:N/E:U/RL:U/RC:U",
                     "version": "3.1"
                 },
                 "diagnosis": {
-                    "value": "An HTML form that collects sensitive information does not prevent the browser from prompting the user to save the populated values for later reuse.\n  Autocomplete should be turned off for any input that takes sensitive information such as credit card number, CVV2/CVC code, U.S. social security number, etc."
+                    "value": "The web application reflects potentially dangerous characters such as single quotes, double quotes, and angle brackets. These characters are commonly used for HTML injection attacks such as cross-site scripting (XSS)."
                 },
                 "discovery": {
                     "remote": 1
                 },
                 "last": {
-                    "service_modification_datetime": "2017-10-06T22:01:46.000Z"
+                    "service_modification_datetime": "2024-02-12T23:24:03.000Z"
                 },
                 "patchable": false,
                 "pci_flag": false,
-                "published_datetime": "2013-03-07T19:48:34.000Z",
-                "qid": "150112",
-                "severity_level": "2",
+                "published_datetime": "2011-03-08T18:40:29.000Z",
+                "qid": "150084",
+                "severity_level": "1",
                 "solution": {
-                    "value": "Add the following attribute to the form or input element: autocomplete=&quot;off&quot;\n  This attribute prevents the browser from prompting the user to save the populated form values for later reuse.\n  Most browsers no longer honor autocomplete=&quot;off&quot; for password input fields.\n  These browsers include\n  Chrome, Firefox, Microsoft Edge, IE, Opera\n  However, there is still an ability to turn off autocomplete through the browser and that is recommended for a shared computing environment.\n  Since the ability to turn autocomplete off for password inputs fields is controlled by the user it is highly recommended for application to enforce strong password rules."
+                    "value": "Review the reflected characters to ensure that they are properly handled as defined by the web application's coding practice. Typical solutions are to apply HTML encoding or percent encoding to the characters depending on where they are placed in the HTML. For example, a double quote might be encoded as &quot; when displayed in a text node, but as %22 when placed in the value of an href attribute."
                 },
                 "threat_intelligence": {
                     "intel": [
@@ -469,86 +450,71 @@ An example event for `vulnerability` looks as following:
                         }
                     ]
                 },
-                "title": "Sensitive form field has not disabled autocomplete",
-                "vuln_type": "Vulnerability"
+                "title": "Unencoded characters",
+                "vuln_type": "Potential Vulnerability"
             },
-            "last_found_datetime": "2025-04-22T06:18:42.000Z",
-            "last_test_datetime": "2025-04-22T06:18:42.000Z",
-            "name": "Sensitive form field has not disabled autocomplete",
-            "potential": "false",
-            "qid": 150112,
-            "result_list": [
+            "last_found_datetime": "2025-03-21T06:01:54.000Z",
+            "last_test_datetime": "2025-03-21T06:01:54.000Z",
+            "name": "Unencoded characters",
+            "owasp_references": [
                 {
-                    "Result": {
-                        "ajax": "false",
-                        "authentication": "true",
-                        "payloads": {
-                            "count": 4,
-                            "list": [
-                                {
-                                    "PayloadInstance": {
-                                        "payload": "N/A",
-                                        "request": {
-                                            "headers": "REDACTED",
-                                            "link": "https://testurl.com",
-                                            "method": "POST"
-                                        },
-                                        "response": "The following password field(s) in the form do not set autocomplete=\"off\":\n(Field name: password, Field id: 1\nParent URL of form is: https://testurl.com\n"
-                                    }
-                                }
-                            ]
-                        }
-                    }
+                    "code": 3,
+                    "name": "Injection",
+                    "url": "https://owasp.org/Top10/A03_2021-Injection/"
                 }
             ],
+            "param": "show_deleted",
+            "potential": "true",
+            "qid": 150084,
+            "result_list_text": [
+                "{Result={accessPath={count=1, list=[{Url={value=https://web.address.com/}}]}, payloads={count=4, list=[{PayloadInstance={request={headers=123header456, method=GET, link=https://web.address.com/api/v1/more/address/stack/versions?show_deleted=%22'%3E%3CqssbVr8SJHx%20%60%3b!--%3D%26%7b()%7d%3E&show_unusable=false}, payload=show_deleted=%22'%3E%3CqssbVr8SJHx%20%60%3b!--%3D%26%7b()%7d%3E&show_unusable=false, response=comment: A significant portion of the XSS test payload appeared in the web page, but the response content type is non-HTML.\nResponse content-type: application/json\n\n{\"errors\":[{\"code\":\"root.malformed_query_param\",\"message\":\"The value for show_deleted was malformed. '\\\"'><qssbvr8sjhx `;!--=&{()}>' is not a valid Boolean value\"}]}, payloadResponse={offset=271, length=25}}}, {PayloadInstance={request={headers=123header456, method=GET, link=https://web.address.com/api/v1/more/address/stack/versions?show_deleted=%22&show_unusable=false}, payload=show_deleted=%22&show_unusable=false, response=comment: A significant portion of the XSS test payload appeared in the web page, but the response content type is non-HTML.\nResponse content-type: application/json\n\n{\"errors\":[{\"code\":\"root.malformed_query_param\",\"message\":\"The value for show_deleted was malformed. '\\\"'><qss a=x93884460340384y1_1z>' is not a valid Boolean value\"}]}, payloadResponse={offset=271, length=28}}}, {PayloadInstance={request={headers=123header456, method=GET, link=https://web.address.com/api/v1/more/address/stack/versions?show_deleted=false%22'%3E%3CqssUbPt9tNM%3E&show_unusable=false}, payload=show_deleted=false%22'%3E%3CqssUbPt9tNM%3E&show_unusable=false, response=comment: A significant portion of the XSS test payload appeared in the web page, but the response content type is non-HTML.\nResponse content-type: application/json\n\n{\"errors\":[{\"code\":\"root.malformed_query_param\",\"message\":\"The value for show_deleted was malformed. 'false\\\"'><qssubpt9tnm>' is not a valid Boolean value\"}]}, payloadResponse={offset=276, length=13}}}, {PayloadInstance={request={headers=123header456, method=GET, link=https://web.address.com/api/v1/more/address/stack/versions?show_deleted=%22%3E%3CqssOzIA5enZ%3E&show_unusable=false}, payload=show_deleted=%22%3E%3CqssOzIA5enZ%3E&show_unusable=false, response=comment: A significant portion of the XSS test payload appeared in the web page, but the response content type is non-HTML.\nResponse content-type: application/json\n\n{\"errors\":[{\"code\":\"root.malformed_query_param\",\"message\":\"The value for show_deleted was malformed. '\\\"><qssozia5enz>' is not a valid Boolean value\"}]}, payloadResponse={offset=270, length=13}}}]}, ajax=false, authentication=false}}"
+            ],
             "status": "ACTIVE",
-            "times_detected": 1460,
+            "times_detected": 416,
             "type": "VULNERABILITY",
-            "unique_vuln_id": "12345678-abcd-efabcd-234-123456789012",
-            "updated_datetime": "2025-04-22T09:26:31.000Z",
+            "unique_vuln_id": "12345678-1234-1234-1234-421234567890",
+            "updated_datetime": "2025-03-21T08:45:25.000Z",
             "wasc_references": [
                 {
-                    "code": 13,
-                    "name": "INFORMATION LEAKAGE",
-                    "url": "http://projects.webappsec.org/w/page/13246936/WASC"
+                    "code": 22,
+                    "name": "IMPROPER OUTPUT HANDLING",
+                    "url": "http://projects.webappsec.org/w/page/13246934/WASC"
                 }
             ],
             "web_app": {
-                "id": 1,
-                "name": "PCI Serverless Scan",
+                "id": 987654321,
+                "name": "Description Name",
                 "tags": [
-                    "Tag:2",
-                    "Tag:1"
+                    "Tag:1",
+                    "Tag:2"
                 ],
-                "url": "https://testurl.com"
+                "url": "https://web.address.com"
             }
         }
     },
     "tags": [
-        "preserve_original_event",
-        "forwarded",
-        "qualys_was_vulnerability"
+        "preserve_original_event"
     ],
     "url": {
-        "full": "https://testurl.com"
+        "full": "https://web.address.com/apiE&show_unusable=false"
     },
     "vulnerability": {
         "category": [
             "Web Application"
         ],
         "classification": "CVSS",
-        "description": "An HTML form that collects sensitive information does not prevent the browser from prompting the user to save the populated values for later reuse.\n  Autocomplete should be turned off for any input that takes sensitive information such as credit card number, CVV2/CVC code, U.S. social security number, etc.",
+        "description": "The web application reflects potentially dangerous characters such as single quotes, double quotes, and angle brackets. These characters are commonly used for HTML injection attacks such as cross-site scripting (XSS).",
         "enumeration": "CWE",
         "id": [
-            "200"
+            "79"
         ],
         "reference": [
-            "https://cwe.mitre.org/data/definitions/200.html"
+            "https://cwe.mitre.org/data/definitions/79.html"
         ],
         "scanner": {
             "vendor": "Qualys"
         },
-        "severity": "Medium"
+        "severity": "Minimal"
     }
 }
 ```
@@ -680,7 +646,7 @@ An example event for `vulnerability` looks as following:
 | qualys_was.vulnerability.param | Parameter set used in scan request. Available in verbose mode. | keyword |
 | qualys_was.vulnerability.potential | Potential vulnerability but not verified. | boolean |
 | qualys_was.vulnerability.qid | Qualys ID for the vulnerability. | long |
-| qualys_was.vulnerability.result_list | Actual scan result with details on request, response and details of finding. Available in verbose mode. | flattened |
+| qualys_was.vulnerability.result_list_text | Unindexed text of actual scan result with details on request, response and details of finding. Available in verbose mode. | text |
 | qualys_was.vulnerability.status | The status of the detection (New, Active, Fixed, Reopened). | keyword |
 | qualys_was.vulnerability.times_detected | The number of times the vulnerability has been detected. | long |
 | qualys_was.vulnerability.type | The type of vulnerability detected (VULNERABILITY, POTENTIAL_VULNERABILITY, SENSITIVE_CONTENT,INFORMATION_GATHERED). | keyword |
