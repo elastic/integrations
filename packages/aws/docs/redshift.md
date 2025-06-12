@@ -189,6 +189,7 @@ Please refer to the following [document](https://www.elastic.co/guide/en/ecs/cur
 | aws.\*.metrics.\*.\* | Metrics that returned from Cloudwatch API query. | double |  |
 | aws.cloudwatch.namespace | The namespace specified when query cloudwatch api. | keyword |  |
 | aws.dimensions.ClusterIdentifier | This dimension filters the data that you request for a specific Cluster identifier | keyword |  |
+| aws.dimensions.InstanceType | This dimension filters the data by the Amazon Redshift instance type (e.g., ra3.4xlarge, dc2.large). | keyword |  |
 | aws.dimensions.NodeID | This dimension filters the data that you request for a specific NodeID. | keyword |  |
 | aws.dimensions.QueryPriority | This dimension filters the data that you request for a specific query priority. | keyword |  |
 | aws.dimensions.QueueName | This dimension filters the data that you request for a specific WLM queue name. | keyword |  |
