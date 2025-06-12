@@ -1,18 +1,27 @@
 # Recorded Future Integration
 
-The Recorded Future integration fetches _risklists_ from the [Recorded Future API](https://api.recordedfuture.com/index.html).
-It supports `domain`, `hash`, `ip` and `url` entities.
+The Recorded Future integration has three data streams:
 
-In order to use it you need to define the `entity` and `list` to fetch. Check with
-Recorded Future for the available lists for each entity. To fetch indicators
-from multiple entities, it's necessary to define one integration for each.
+* `threat`: Threat intelligence from the Recorded Future Connect API's [risklist endpoints](https://api.recordedfuture.com/v2/#!/Domain/Domain_Risk_Lists), or local CSV files of the that data.
+* `playbook_alert`: Playbook alerts data from Recorded Future's [API for Playbook Alerts](https://api.recordedfuture.com/playbook-alert).
+* `triggered_alert`: Triggered alerts data from the Recorded Future Connect API's [alerts endpoint](https://api.recordedfuture.com/v2/#!/Alerts/Alert_Notification_Search).
 
-Alternatively, it's also possible to use the integration to fetch custom Fusion files
-by supplying the URL to the CSV file as the _Custom_ _URL_ configuration option.
+For the `threat` data streamyou need to define the `entity` and `list` to
+fetch. The supported entities are `domain`, `hash`, `ip` and `url`. Check the
+Recorded Future documentation for the available lists for each entity, or use
+the default. To fetch indicators from multiple entities, it's necessary to
+create a separate integration policy for each.
 
-It also fetches [Playbook Alerts](https://api.recordedfuture.com/playbook-alert) from the Recorded Future API, and [Triggered Alerts](https://api.recordedfuture.com/v2/#!/Alerts/Alert_Notification_Search) via the Recorded Future Connect API, ensuring comprehensive threat intelligence coverage.
-This allows for streamlined alert management and improved security monitoring.
-By accessing both alert types, it provides deeper insights into potential threats.
+Alternatively, the `threat` data stream can fetch custom Fusion files by
+supplying the URL to the CSV file as an advanced configuration option.
+
+The `threat` data stream will check whether the available data has changed
+before actually downloading it. A short interval setting will mean that it
+checks frequently, but each version of the data will only be ingested once.
+
+The alerts data allows for streamlined alert management and improved security
+monitoring. By collecting both alert types, it provides deeper insights into
+potential threats.
 
 ### Expiration of Indicators of Compromise (IOCs)
 The ingested IOCs expire after certain duration. An [Elastic Transform](https://www.elastic.co/guide/en/elasticsearch/reference/current/transforms.html) is created to faciliate only active IOCs be available to the end users. This transform creates a destination index named `logs-ti_recordedfuture_latest.threat-1` which only contains active and unexpired IOCs. The destination index also has an alias `logs-ti_recordedfuture_latest.threat`. When setting up indicator match rules, use this latest destination index to avoid false positives from expired IOCs. Please read [ILM Policy](#ilm-policy) below which is added to avoid unbounded growth on source `.ds-logs-ti_recordedfuture.threat-*` indices.
@@ -40,35 +49,34 @@ An example event for `threat` looks as following:
 
 ```json
 {
-    "@timestamp": "2024-08-02T06:24:04.201Z",
+    "@timestamp": "2025-06-11T14:51:44.624Z",
     "agent": {
-        "ephemeral_id": "25d7a936-2b7c-4476-9181-82d1296ce9df",
-        "id": "8299ae35-ee0e-4107-9acb-1b6acfdda1fb",
-        "name": "docker-fleet-agent",
+        "ephemeral_id": "31a55f89-ff5e-4717-8343-51c1d35c3553",
+        "id": "617b70a9-4ef5-4f90-aa80-29ffa16320eb",
+        "name": "elastic-agent-91236",
         "type": "filebeat",
-        "version": "8.13.0"
+        "version": "8.18.0"
     },
     "data_stream": {
         "dataset": "ti_recordedfuture.threat",
-        "namespace": "67234",
+        "namespace": "76002",
         "type": "logs"
     },
     "ecs": {
-        "version": "8.11.0"
+        "version": "8.17.0"
     },
     "elastic_agent": {
-        "id": "8299ae35-ee0e-4107-9acb-1b6acfdda1fb",
+        "id": "617b70a9-4ef5-4f90-aa80-29ffa16320eb",
         "snapshot": false,
-        "version": "8.13.0"
+        "version": "8.18.0"
     },
     "event": {
         "agent_id_status": "verified",
         "category": [
             "threat"
         ],
-        "created": "2024-08-02T06:24:04.201Z",
         "dataset": "ti_recordedfuture.threat",
-        "ingested": "2024-08-02T06:24:16Z",
+        "ingested": "2025-06-11T14:51:47Z",
         "kind": "enrichment",
         "original": "{\"EvidenceDetails\":\"{\\\"EvidenceDetails\\\": [{\\\"Name\\\": \\\"suspectedCncDnsName\\\", \\\"EvidenceString\\\": \\\"1 sighting on 1 source: ThreatFox Infrastructure Analysis. ThreatFox identified ubykou33.top as possible TA0011 (Command and Control) for CryptBot on December 26, 2023. Most recent link (Dec 26, 2023): https://threatfox.abuse.ch/ioc/1223634\\\", \\\"CriticalityLabel\\\": \\\"Unusual\\\", \\\"MitigationString\\\": \\\"\\\", \\\"Rule\\\": \\\"Historical Suspected C\\\\u0026C DNS Name\\\", \\\"SourcesCount\\\": 1.0, \\\"Sources\\\": [\\\"source:sIoEOQ\\\"], \\\"Timestamp\\\": \\\"2023-12-26T17:06:29.000Z\\\", \\\"SightingsCount\\\": 1.0, \\\"Criticality\\\": 1.0}, {\\\"Name\\\": \\\"malwareSiteDetected\\\", \\\"EvidenceString\\\": \\\"2 sightings on 2 sources: External Sensor Data Analysis, Bitdefender. ubykou33.top is observed to be a malware site domain that navigates to malicious content including executables, drive-by infection sites, malicious scripts, viruses, trojans, or code.\\\", \\\"CriticalityLabel\\\": \\\"Unusual\\\", \\\"MitigationString\\\": \\\"\\\", \\\"Rule\\\": \\\"Historically Detected Malware Operation\\\", \\\"SourcesCount\\\": 2.0, \\\"Sources\\\": [\\\"source:kBB1fk\\\", \\\"source:d3Awkm\\\"], \\\"Timestamp\\\": \\\"2024-01-26T00:00:00.000Z\\\", \\\"SightingsCount\\\": 2.0, \\\"Criticality\\\": 1.0}, {\\\"Name\\\": \\\"malwareSiteSuspected\\\", \\\"EvidenceString\\\": \\\"1 sighting on 1 source: Bitdefender. Detected malicious behavior from an endpoint agent via global telemetry. Last observed on Jan 26, 2024.\\\", \\\"CriticalityLabel\\\": \\\"Unusual\\\", \\\"MitigationString\\\": \\\"\\\", \\\"Rule\\\": \\\"Historically Suspected Malware Operation\\\", \\\"SourcesCount\\\": 1.0, \\\"Sources\\\": [\\\"source:d3Awkm\\\"], \\\"Timestamp\\\": \\\"2024-01-26T00:00:00.000Z\\\", \\\"SightingsCount\\\": 1.0, \\\"Criticality\\\": 1.0}, {\\\"Name\\\": \\\"recentMalwareSiteDetected\\\", \\\"EvidenceString\\\": \\\"1 sighting on 1 source: External Sensor Data Analysis. ubykou33.top is observed to be a malware site domain that navigates to malicious content including executables, drive-by infection sites, malicious scripts, viruses, trojans, or code.\\\", \\\"CriticalityLabel\\\": \\\"Malicious\\\", \\\"MitigationString\\\": \\\"\\\", \\\"Rule\\\": \\\"Recently Detected Malware Operation\\\", \\\"SourcesCount\\\": 1.0, \\\"Sources\\\": [\\\"source:kBB1fk\\\"], \\\"Timestamp\\\": \\\"2024-05-08T23:11:43.601Z\\\", \\\"SightingsCount\\\": 1.0, \\\"Criticality\\\": 3.0}]}\",\"Name\":\"ubykou33.top\",\"Risk\":\"67\",\"RiskString\":\"4/52\"}",
         "risk_score": 67,
@@ -77,7 +85,7 @@ An example event for `threat` looks as following:
         ]
     },
     "input": {
-        "type": "httpjson"
+        "type": "cel"
     },
     "recordedfuture": {
         "evidence_details": [
