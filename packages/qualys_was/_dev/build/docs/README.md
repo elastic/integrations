@@ -76,15 +76,14 @@ for descriptions of type of detection data returned and severity levels.
    - disable Information Gathered. 
    - disable Senstive Content
    - disable Verbose
+
 #### Notes about verbose mode
-The integration uses verbose mode by default. IN addition to the ingested data enumerated below,
-verbose mode returns the history of all scans on the target. If the Qualys WAS application is not configured to
-delete old scans, the amount of data that is returned is significant. The agent may experience issues related
-to memory exhaustion. Deleting old scans on a schedule will mitigate the issue. Removing old scan data will not affect 
-vulnerability reports. If deleting old scans in not an option, other ways to mitigate the issue are:
-- turning off verbose mode
-- reducing batch size
-- increasing memory on the agent 
+The integration uses verbose mode by default. The size of scan result details that is returned in verbose is unpredictable.
+Should the agent run into memory issues, one or more of the following should solve the problem:
+1. Reduce batch_size in the integration configuration.
+2. Disable verbose mode if the extra data returned is not valuable to the user. 
+3. Increase memory on the agent.
+4. Move the integration to its own agent.
 
 The additional data available with verbose mode are:
 - Web application tags
@@ -94,7 +93,7 @@ The additional data available with verbose mode are:
 - updatedDateTime
 - param value for the test
 - results of the most recent scan including the requests made, the response and details what about the response resulted
-  in a vulnerability report (stored as flattened data)
+  in a vulnerability report. This data is stored as unindexed text data due to its unpredictable size.
 
 ## Processing Logic
 Cel scripts are used to fetch the data from Qualys endpoints and processed into events that 
@@ -102,9 +101,13 @@ are consumed by the pipelines.
 The cell script requests Findings (detection) data through the REST API using a filter for the "lastTestedDate",
 which is the scan datetime. The qid (qualys id) is the id the vulnerability found that maps to a
 knowledge base article in the qualys knowledge base. This id is used to request knowledge base data from an 
-endpoint which augments each Finding the knowledge base data. Findings are paginated
+endpoint which augments each Finding with the knowledge base data. Findings are paginated
 by the qualys_was.vulnerability.id, a unique id for the finding. Knowledge base data is cached between pages to reduce
-the volume of data transported during a single run of the cel script.
+the volume of data transported during a single run of the cel script. The cel script removes history data that is 
+included in verbose mode.
+
+
+
 
 
 ## Data reference
@@ -187,7 +190,7 @@ An example response from the Qualys WAS API
                         {
                            "Tag": {
                               "id": 1,
-                              "name": "Tag:1
+                              "name": "Tag:1"
                            }
                         },
                         {
@@ -362,7 +365,7 @@ An example of a Knowledge Base object after decoding from XML to JSON
   "threat": "A file, directory, or directory listing was discovered on the Web server. These resources are confirmed to be present based on our logic. Some of the content on these files might have sensitive information. \n<P>NOTE: Links found in 150004 are found by forced crawling so will not automatically be added to 150009 Links Crawled or the application site map. If links found in 150004 need to be tested they must be added as Explicit URI so they are included in scope and then will be reported in 150009. Once the link is added to be in scope (i.e. Explicit URI)  this same link will no longer be reported for 150004.",
   "impact": "The contents of this file or directory may disclose sensitive information.",
   "solution": "It is advised to review the contents of the disclosed files. If the contents contain sensitive information, please verify that access to this file or directory is permitted. If necessary, remove it or apply access controls to it.",
-  "signature": null
+  "signature": null[manifest.yml](../../../../qnap_nas/manifest.yml)
 }
 ```
 
