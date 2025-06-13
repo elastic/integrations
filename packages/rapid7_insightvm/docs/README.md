@@ -540,6 +540,7 @@ An example event for `asset_vulnerability` looks as following:
 | rapid7_insightvm.asset_vulnerability.vulnerability.first_found | The first time the vulnerability was discovered. | date |
 | rapid7_insightvm.asset_vulnerability.vulnerability.id | The identifier of the vulnerability. | keyword |
 | rapid7_insightvm.asset_vulnerability.vulnerability.is_enriched | Whether the enriched vulnerability information is available. | boolean |
+| rapid7_insightvm.asset_vulnerability.vulnerability.is_remediated | Whether the vulnerability has been remediated. | boolean |
 | rapid7_insightvm.asset_vulnerability.vulnerability.key | The identifier of the assessment key. | keyword |
 | rapid7_insightvm.asset_vulnerability.vulnerability.last_found | The most recent time the vulnerability was discovered. | date |
 | rapid7_insightvm.asset_vulnerability.vulnerability.links.href |  | keyword |
