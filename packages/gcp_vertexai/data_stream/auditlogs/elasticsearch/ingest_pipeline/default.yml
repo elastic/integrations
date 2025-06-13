@@ -89,7 +89,6 @@ processors:
       target_field: gcp.vertexai.audit.authentication_info.third_party_principal
       ignore_failure: true
 
-
   - rename:
       field: json.protoPayload.serviceName
       target_field: gcp.vertexai.audit.service_name
@@ -142,6 +141,29 @@ processors:
       target_field: gcp.vertexai.audit.status.details
       ignore_failure: true
       ignore_missing: true
+
+
+##
+# if gcp.vertexai.audit.authorization_info.[0].granted is true then
+# set event.category [network, configuration] and event.type to [access, allowed];
+# Caveat
+# 1. protoPayload.resourceName is a single value while authorization_info[].resource
+# is a list.
+# 2. as per test data authorization_info may not be as per spec.
+##
+  - append:
+      field: event.category
+      value: ['network', 'configuration']
+      if: ctx?.gcp?.vertexai?.audit?.authorization_info != null && ctx?.gcp?.vertexai?.audit?.authorization_info instanceof List && ctx?.gcp?.vertexai?.audit?.authorization_info.size() == 1
+  - append:
+      field: event.type
+      value: ['access', 'allowed']
+      if: ctx?.gcp?.vertexai?.audit?.authorization_info != null && ctx?.gcp?.vertexai?.audit?.authorization_info instanceof List && ctx?.gcp?.vertexai?.audit?.authorization_info.size() == 1 && ctx?.gcp?.vertexai?.audit?.authorization_info[0]?.granted != null && ctx?.gcp?.vertexai?.audit?.authorization_info[0]?.granted
+  - append:
+      field: event.type
+      value: ['access', 'denied']
+      if: ctx?.gcp?.vertexai?.audit?.authorization_info != null && ctx?.gcp?.vertexai?.audit?.authorization_info instanceof List && ctx?.gcp?.vertexai?.audit?.authorization_info.size() == 1 && ctx?.gcp?.vertexai?.audit?.authorization_info[0]?.granted != null && !ctx?.gcp?.vertexai?.audit?.authorization_info[0]?.granted
+
 
 ##
 # PolicyViolationInfo
@@ -215,6 +237,43 @@ processors:
       field: user_agent.original
       ignore_missing: true
 
+
+  # IP Geolocation Lookup
+  - geoip:
+      field: source.ip
+      target_field: source.geo
+      ignore_missing: true
+
+  # IP Autonomous System (AS) Lookup
+  - geoip:
+      database_file: GeoLite2-ASN.mmdb
+      field: source.ip
+      target_field: source.as
+      properties:
+        - asn
+        - organization_name
+      ignore_missing: true
+  - rename:
+      field: source.as.asn
+      target_field: source.as.number
+      ignore_missing: true
+  - rename:
+      field: source.as.organization_name
+      target_field: source.as.organization.name
+      ignore_missing: true
+
+# Related fields
+  - append:
+      field: related.ip
+      value: "{{{source.ip}}}"
+      allow_duplicates: false
+  - append:
+      field: related.user
+      value: "{{{client.user.email}}}"
+      if: ctx.client?.user?.email != null
+      allow_duplicates: false
+
+
 ##
 # Metadata
 # .protoPayload.metadata
@@ -225,6 +284,23 @@ processors:
       target_field: gcp.vertexai.audit.metadata
       if: ctx.json?.protoPayload?.metadata != null
 
+
+
+  # email address of authenticated user (redacted) or service account
+  # principal_email -> client.user.email
+  - rename:
+      field: gcp.vertexai.audit.authentication_info.principal_email
+      target_field: client.user.email
+      if: ctx.client?.user?.email == null
+      ignore_missing: true
+  # identity of requesting first or third party
+  # principal_subject -> client.user.id
+  - rename:
+      field: gcp.vertexai.audit.authentication_info.principal_subject
+      target_field: client.user.id
+      if: ctx.client?.user?.id == null
+      ignore_missing: true
+      
 ##
 # AuthorizationInfo
 # .protoPayload.authorizationInfo
@@ -273,7 +349,8 @@ processors:
         }
         drop(ctx);
 
-
+ 
+## cleanup
   - remove:
       field: json
       ignore_missing: true
