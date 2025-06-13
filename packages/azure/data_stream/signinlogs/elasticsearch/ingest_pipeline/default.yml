@@ -287,6 +287,16 @@ processors:
   - user_agent:
       field: user_agent.original
       ignore_missing: true
+
+  #
+  # conditional_access_audiences data comes in as a list and as a map. If it's a list, these are application IDs.
+  #
+  - rename:
+      field: azure.signinlogs.properties.conditional_access_audiences
+      target_field: azure.signinlogs.properties.conditional_access_audience.application_id
+      ignore_missing: true
+      if: ctx?.azure?.signinlogs?.properties?.conditional_access_audiences instanceof List
+
   - append:
       field: related.entity
       value: '{{{ azure.signinlogs.properties.app_id }}}'
