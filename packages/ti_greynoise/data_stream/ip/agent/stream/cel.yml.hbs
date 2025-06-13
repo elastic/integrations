@@ -1,0 +1,87 @@
+config_version: 2
+interval: {{interval}}
+resource.tracer:
+  enabled: {{enable_request_tracer}}
+  filename: "../../logs/cel/http-request-trace-*.ndjson"
+  maxbackups: 5
+{{#if proxy_url}}
+resource.proxy_url: {{proxy_url}}
+{{/if}}
+{{#if ssl}}
+resource.ssl: {{ssl}}
+{{/if}}
+{{#if http_client_timeout}}
+resource.timeout: {{http_client_timeout}}
+{{/if}}
+resource.url: {{url}}
+state:
+  api_key: {{api_key}}
+  query: {{query}}
+  page_size: {{page_size}}
+redact:
+  fields:
+    - api_key
+program: |
+  state.with(
+    request(
+      "GET",
+      state.url.trim_right("/") + "/v3/gnql?" + {
+        ?"scroll": has(state.?next.scroll) ?
+          optional.of([state.next.scroll])
+        :
+          optional.none(),
+        "query": ["last_seen:1d" + (has(state.query) && state.query != null ? " " + state.query.trim_right(" ") : "")],
+        "size": [int(state.page_size) <= 5000 ? string(state.page_size) : "5000"],
+      }.format_query()
+    ).with({
+      "Header": {
+        "key": [state.api_key]
+      }
+    }).do_request().as(resp, resp.StatusCode == 200 ?
+      resp.Body.decode_json().as(body, {
+        "events": (
+          has(body.data) && size(body.data) > 0 ?
+            body.data.map(e, {
+              "message": e.with({
+                "internet_scanner_intelligence": e.internet_scanner_intelligence.drop("raw_data")
+              }).encode_json(),
+            })
+          :
+            [{"message": "retry"}]
+        ),
+        "want_more": has(body.?request_metadata.complete) && body.request_metadata.complete == false,
+        "next": {?"scroll": body.?request_metadata.scroll},
+      })
+    :
+      {
+        "events": {
+          "error": {
+            "code": string(resp.StatusCode),
+            "id": string(resp.Status),
+            "message": "GET " + state.url.trim_right("/") + "/v3/gnql: " + (
+                size(resp.Body) != 0 ?
+                  string(resp.Body)
+                :
+                  string(resp.Status) + ' (' + string(resp.StatusCode) + ')'
+              ),
+          },
+        },
+        "next": {},
+        "want_more": false,
+      }
+    )
+  )
+tags:
+{{#if preserve_original_event}}
+  - preserve_original_event
+{{/if}}
+{{#each tags as |tag|}}
+  - {{tag}}
+{{/each}}
+{{#contains "forwarded" tags}}
+publisher_pipeline.disable_host: true
+{{/contains}}
+{{#if processors}}
+processors:
+{{processors}}
+{{/if}}
