@@ -31,7 +31,7 @@ program: |
       state.?cursor.last_timestamp.orValue(string(int(now - duration(state.initial_interval)) * 1000))
   ).as(start_time, state.with(
       get_request(state.url.trim_right("/") + "/api/open/query/do?" + {
-        "query": ["variables | where record_created_at > " + string(int(start_time)) + " | sort record_created_at asc"],
+        "query": ["variables | where record_created_at > " + start_time + " | sort record_created_at asc"],
         "skip_total_count": ["true"],
         "page": [string(state.?page.orValue(1))],
         "count": [string(state.batch_size)],
@@ -45,8 +45,8 @@ program: |
             "events": body.result.map(e, {
               "message": e.encode_json(),
             }),
-            "want_more": body[?"result"].hasValue() && size(body.result) >= state.batch_size,
-            "page": body[?"result"].hasValue() && size(body.result) >= state.batch_size ? int(state.?page.orValue(1)) + 1 : 1,
+            "want_more": body.?result.hasValue() && size(body.result) >= state.batch_size,
+            "page": body.?result.hasValue() && size(body.result) >= state.batch_size ? int(state.?page.orValue(1)) + 1 : 1,
             "start_time": start_time,
             "cursor": {
               ?"last_timestamp": has(body.result) && size(body.result) > 0 ?
@@ -62,7 +62,7 @@ program: |
             "error": {
               "code": string(resp.StatusCode),
               "id": string(resp.Status),
-              "message": "GET " + state.url.trim_right("/") + "/api/open/query/do?query=variables: " + 
+              "message": "GET " + state.url.trim_right("/") + "/api/open/query/do?query=variables: " +
               (
                 (size(resp.Body) != 0) ?
                   string(resp.Body)

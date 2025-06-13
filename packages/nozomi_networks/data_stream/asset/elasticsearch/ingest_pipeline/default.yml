@@ -44,10 +44,6 @@ processors:
       tag: set_event_type
       value: info
       allow_duplicates: false
-  - set:
-      field: observer.product
-      tag: set_observer.product
-      value: Vantage
   - fingerprint:
       fields:
         - json.id
@@ -112,11 +108,6 @@ processors:
   - set:
       field: '@timestamp'
       tag: set_@timestamp_from_asset_created_at
-      copy_from: nozomi_networks.asset.created_at
-      ignore_empty_value: true
-  - set:
-      field: event.created
-      tag: set_event_created_from_asset_created_at
       copy_from: nozomi_networks.asset.created_at
       ignore_empty_value: true
   - rename:
@@ -288,11 +279,6 @@ processors:
         - append:
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
-  - set:
-      field: event.end
-      tag: set_event_end_from_asset_last_activity_time
-      copy_from: nozomi_networks.asset.last_activity_time
-      ignore_empty_value: true
   - rename:
       field: json.level
       tag: rename_level
@@ -779,16 +765,6 @@ processors:
         - append:
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
-  - foreach:
-      field: json.risk_configuration.unsafe_countries_list
-      tag: foreach_risk_configuration_unsafe_countries_list
-      if: ctx.json?.risk_configuration?.unsafe_countries_list instanceof List
-      processor:
-        append:
-          field: threat.indicator.geo.country_name
-          tag: append_unsafe_countries_list_into_threat_indicator_geo_country_name
-          value: '{{{_ingest._value}}}'
-          allow_duplicates: false
   - rename:
       field: json.risk_configuration.unsafe_countries_list
       tag: rename_risk_configuration_unsafe_countries_list
@@ -923,7 +899,6 @@ processors:
         - nozomi_networks.asset.appliance_hosts
         - nozomi_networks.asset.id
         - nozomi_networks.asset.ip
-        - nozomi_networks.asset.last_activity_time
         - nozomi_networks.asset.tags
         - nozomi_networks.asset.os
         - nozomi_networks.asset.protocols

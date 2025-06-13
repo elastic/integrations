@@ -34,10 +34,6 @@ processors:
       field: event.kind
       tag: set_event_kind
       value: alert
-  - set:
-      field: observer.product
-      tag: set_observer_product
-      value: Vantage
   - fingerprint:
       fields:
         - json.id
@@ -236,6 +232,28 @@ processors:
       tag: set_destination_ip_from_alert_destination_ip
       copy_from: nozomi_networks.alert.destination_ip
       ignore_empty_value: true
+  - geoip:
+      field: destination.ip
+      target_field: destination.geo
+      ignore_missing: true
+  - geoip:
+      database_file: GeoLite2-ASN.mmdb
+      field: destination.ip
+      target_field: destination.as
+      properties:
+        - asn
+        - organization_name
+      ignore_missing: true
+  - rename:
+      field: destination.as.asn
+      tag: rename_destination_as_asn
+      target_field: destination.as.number
+      ignore_missing: true
+  - rename:
+      field: destination.as.organization_name
+      tag: rename_destination_as_organization_name
+      target_field: destination.as.organization.name
+      ignore_missing: true
   - append:
       field: related.ip
       tag: append_alert_destination_ip_into_related_ip
@@ -260,6 +278,28 @@ processors:
       tag: set_source_ip_from_alert_ip_src
       copy_from: nozomi_networks.alert.source_ip
       ignore_empty_value: true
+  - geoip:
+      field: source.ip
+      target_field: source.geo
+      ignore_missing: true
+  - geoip:
+      database_file: GeoLite2-ASN.mmdb
+      field: source.ip
+      target_field: source.as
+      properties:
+        - asn
+        - organization_name
+      ignore_missing: true
+  - rename:
+      field: source.as.asn
+      tag: rename_source_as_asn
+      target_field: source.as.number
+      ignore_missing: true
+  - rename:
+      field: source.as.organization_name
+      tag: rename_source_as_organization_name
+      target_field: source.as.organization.name
+      ignore_missing: true
   - append:
       field: related.ip
       tag: append_alert_source_ip_into_related_ip
@@ -679,11 +719,21 @@ processors:
       tag: rename_trigger_id
       target_field: nozomi_networks.alert.trigger_id
       ignore_missing: true
+  - set:
+      field: rule.id
+      tag: set_rule_id_from_alert_trigger_id
+      copy_from: nozomi_networks.alert.trigger_id
+      ignore_empty_value: true
   - rename:
       field: json.trigger_type
       tag: rename_trigger_type
       target_field: nozomi_networks.alert.trigger_type
       ignore_missing: true
+  - set:
+      field: rule.name
+      tag: set_rule_name_from_alert_trigger_type
+      copy_from: nozomi_networks.alert.trigger_type
+      ignore_empty_value: true
   - rename:
       field: json.type_id
       tag: rename_type_id
@@ -723,6 +773,8 @@ processors:
         - nozomi_networks.alert.severity
         - nozomi_networks.alert.src_roles
         - nozomi_networks.alert.transport_protocol
+        - nozomi_networks.alert.trigger_id
+        - nozomi_networks.alert.trigger_type
       tag: remove_custom_duplicate_fields
       ignore_missing: true
       if: ctx.tags == null || !ctx.tags.contains('preserve_duplicate_custom_fields')
