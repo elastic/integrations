@@ -1,0 +1,102 @@
+config_version: 2
+interval: {{interval}}
+resource.tracer:
+  enabled: {{enable_request_tracer}}
+  filename: "../../logs/cel/http-request-trace-*.ndjson"
+  maxbackups: 5
+{{#if proxy_url}}
+resource.proxy_url: {{proxy_url}}
+{{/if}}
+{{#if ssl}}
+resource.ssl: {{ssl}}
+{{/if}}
+{{#if http_client_timeout}}
+resource.timeout: {{http_client_timeout}}
+{{/if}}
+resource.url: {{url}}
+state:
+  api_key: {{api_key}}
+  entity: {{entity}}
+  list: {{list}}
+{{#if custom_url}}
+  custom_url: {{custom_url}}
+{{/if}}
+redact:
+  fields:
+    - api_key
+fields_under_root: true
+fields:
+  _conf:
+    list: '{{list}}'
+    entity: {{entity}}
+program: |
+  {
+    "url": has(state.custom_url) ?
+      state.custom_url
+    :
+      state.url.trim_right("/") + "/v2/" + state.entity + "/risklist?" + {
+        "format": ["csv/splunk"],
+        "gzip": ["true"],
+        "list": [state.list],
+      }.format_query(),
+    "headers": {
+      "Header": {
+        "accept": ["application/json"],
+        "X-RFToken": [state.api_key],
+      }
+    }
+  }.as(req,
+    request("HEAD", req.url).with(req.headers).do_request().as(headResp,
+      (headResp.StatusCode == 200 && headResp.Header.?Etag[?0].orValue("") == state.?cursor.etag.orValue("NONE")) ?
+        // no new data - the etag matches what we've seen
+        state.with({
+          "events": [],
+          "want_more": false,
+        })
+      :
+        // new data available (or etag check failed)
+        request("GET", req.url).with(req.headers).do_request().as(resp, (resp.StatusCode == 200) ?
+          // successful response
+          state.with({
+            "events": try({ "data": resp.Body.mime("application/gzip") }, "error").as(unzipped,
+              (has(unzipped.error) ? resp.Body : unzipped.data).mime("text/csv; header=present").as(parsed,
+                parsed.map(e, { "message": e.encode_json() })
+              )
+            ),
+            "cursor": state.?cursor.orValue({}).with({ "etag": resp.Header.?Etag[0].orValue("NONE") }),
+            "want_more": false,
+         })
+       :
+         // unsuccessful response
+         state.with({
+           "events": {
+             "error": {
+               "code": string(resp.StatusCode),
+               "id": string(resp.Status),
+               "message": "GET " + req.url + (
+                 (size(resp.Body) != 0) ?
+                   string(resp.Body)
+                 :
+                   string(resp.Status) + " (" + string(resp.StatusCode) + ")"
+               ),
+             },
+           },
+           "want_more": false
+         })
+       )
+    )
+  )
+tags:
+{{#if preserve_original_event}}
+  - preserve_original_event
+{{/if}}
+{{#each tags as |tag|}}
+  - {{tag}}
+{{/each}}
+{{#contains "forwarded" tags}}
+publisher_pipeline.disable_host: true
+{{/contains}}
+{{#if processors}}
+processors:
+{{processors}}
+{{/if}}

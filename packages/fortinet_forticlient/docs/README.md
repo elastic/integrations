@@ -1,3 +1,7 @@
+> ⚠️ **IMPORTANT**
+>
+> This package is *deprecated* and is not supported for installation in Elastic Cloud Serverless.
+
 # Fortinet FortiClient Integration
 
 This integration is for Fortinet FortiClient logs sent in the syslog format.
