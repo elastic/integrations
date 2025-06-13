@@ -1,0 +1,88 @@
+config_version: 2
+interval: {{interval}}
+resource.tracer:
+  enabled: {{enable_request_tracer}}
+  filename: "../../logs/cel/http-request-trace-*.ndjson"
+  maxbackups: 5
+{{#if proxy_url}}
+resource.proxy_url: {{proxy_url}}
+{{/if}}
+{{#if ssl}}
+resource.ssl: {{ssl}}
+{{/if}}
+{{#if http_client_timeout}}
+resource.timeout: {{http_client_timeout}}
+{{/if}}
+resource.url: {{url}}
+state:
+  initial_interval: {{initial_interval}}
+  access_token: {{access_token}}
+{{#if query}}
+  query: {{query}}
+{{/if}}
+redact:
+  fields:
+    - access_token
+program: |
+  (
+    state.?cursor.last_timestamp.orValue((now - duration(state.initial_interval)).format("2006010215"))
+  ).as(start_time, state.with(
+    request(
+      "GET",
+      state.url.trim_right("/") + "/api/v3/threat_lists/infostealer/" + start_time + "?" + {
+        ?"query": has(state.query) ? optional.of([state.query]) : optional.none(),
+        "limit": ["4000"],
+        "x-tool": ["Elastic"],
+        "User-Agent": ["v0.1.0"], // Keep this in sync with 'version' in package level manifest.yml.
+      }.format_query()
+    ).with({
+      "Header": {
+        "x-apikey": [state.access_token]
+      }
+    }).do_request().as(resp, resp.StatusCode == 200 ?
+      resp.Body.decode_json().as(body, {
+        "events": (
+          has(body.iocs) && size(body.iocs) > 0 ?
+            body.iocs.map(e, {
+              "message": e.encode_json(),
+            })
+          :
+            [{"message": "retry"}]
+        ),
+        "cursor": {
+          "last_timestamp": (start_time.parse_time("2006010215") + duration("1h")).format("2006010215"),
+        },
+        "want_more": (start_time.parse_time("2006010215") + duration("1h")) < (now.format("2006010215")).parse_time("2006010215")
+      })
+    :
+      {
+        "events": {
+          "error": {
+            "code": string(resp.StatusCode),
+            "id": string(resp.Status),
+            "message": "GET " + state.url.trim_right("/") + "/api/v3/threat_lists/infostealer/: " + (
+              size(resp.Body) != 0 ?
+                string(resp.Body)
+              :
+                string(resp.Status) + ' (' + string(resp.StatusCode) + ')'
+            ),
+          },
+        },
+        "want_more": false,
+      }
+    )
+  ))
+tags:
+{{#if preserve_original_event}}
+  - preserve_original_event
+{{/if}}
+{{#each tags as |tag|}}
+  - {{tag}}
+{{/each}}
+{{#contains "forwarded" tags}}
+publisher_pipeline.disable_host: true
+{{/contains}}
+{{#if processors}}
+processors:
+{{processors}}
+{{/if}}
