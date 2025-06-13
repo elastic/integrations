@@ -1,7 +1,7 @@
-format_version: "3.0.2"
+format_version: "3.3.5"
 name: rapid7_insightvm
 title: Rapid7 InsightVM
-version: "1.16.0"
+version: "2.0.0"
 source:
   license: "Elastic-2.0"
 description: Collect logs from Rapid7 InsightVM with Elastic Agent.
@@ -11,7 +11,7 @@ categories:
   - vulnerability_management
 conditions:
   kibana:
-    version: "^8.13.0 || ^9.0.0"
+    version: "^8.19.0 || ^9.1.0"
   elastic:
     subscription: "basic"
 screenshots:
@@ -32,10 +32,22 @@ policy_templates:
   - name: rapid7_insightvm
     title: Rapid7 InsightVM logs
     description: Collect Rapid7 InsightVM logs.
+    deployment_modes: 
+      default:
+        enabled: true 
+      agentless:
+        enabled: true
+        organization: security
+        division: engineering
+        team: security-service-integrations
+        # The default memory allocation of 1Gi for agentless deployment results in the input restarting multiple times and becoming stuck in a loop, unable to complete the ingestion cycle. Increasing the memory to 4Gi solves the issue.
+        resources:
+          requests:
+            memory: 4Gi
     inputs:
       - type: httpjson
-        title: Collect Rapid7 InsightVM logs via API
-        description: Collecting Rapid7 InsightVM via API.
+        title: Collect Rapid7 InsightVM logs via HTTPJSON
+        description: Collecting Rapid7 InsightVM via HTTPJSON.
         vars:
           - name: hostname
             type: text
@@ -51,6 +63,62 @@ policy_templates:
             required: false
             show_user: false
             description: The request tracer logs requests and responses to the agent's local file-system for debugging configurations. Enabling this request tracing compromises security and should only be used for debugging. See [documentation](https://www.elastic.co/guide/en/beats/filebeat/current/filebeat-input-httpjson.html#_request_tracer_filename) for details.
+          - name: api_key
+            type: password
+            title: API Key
+            description: API Key to access Insight platform.
+            multi: false
+            required: true
+            show_user: true
+            secret: true
+          - name: proxy_url
+            type: text
+            title: Proxy URL
+            multi: false
+            required: false
+            show_user: false
+            description: URL to proxy connections in the form of http[s]://<user>:<password>@<server name/ip>:<port>. Please ensure your username and password are in URL encoded format.
+          - name: ssl
+            type: yaml
+            title: SSL Configuration
+            description: SSL configuration options. See [documentation](https://www.elastic.co/guide/en/beats/filebeat/current/configuration-ssl.html#ssl-common-config) for details.
+            multi: false
+            required: false
+            show_user: false
+            default: |
+              #certificate_authorities:
+              #  - |
+              #    -----BEGIN CERTIFICATE-----
+              #    MIIDCjCCAfKgAwIBAgITJ706Mu2wJlKckpIvkWxEHvEyijANBgkqhkiG9w0BAQsF
+              #    ADAUMRIwEAYDVQQDDAlsb2NhbGhvc3QwIBcNMTkwNzIyMTkyOTA0WhgPMjExOTA2
+              #    MjgxOTI5MDRaMBQxEjAQBgNVBAMMCWxvY2FsaG9zdDCCASIwDQYJKoZIhvcNAQEB
+              #    BQADggEPADCCAQoCggEBANce58Y/JykI58iyOXpxGfw0/gMvF0hUQAcUrSMxEO6n
+              #    fZRA49b4OV4SwWmA3395uL2eB2NB8y8qdQ9muXUdPBWE4l9rMZ6gmfu90N5B5uEl
+              #    94NcfBfYOKi1fJQ9i7WKhTjlRkMCgBkWPkUokvBZFRt8RtF7zI77BSEorHGQCk9t
+              #    /D7BS0GJyfVEhftbWcFEAG3VRcoMhF7kUzYwp+qESoriFRYLeDWv68ZOvG7eoWnP
+              #    PsvZStEVEimjvK5NSESEQa9xWyJOmlOKXhkdymtcUd/nXnx6UTCFgnkgzSdTWV41
+              #    CI6B6aJ9svCTI2QuoIq2HxX/ix7OvW1huVmcyHVxyUECAwEAAaNTMFEwHQYDVR0O
+              #    BBYEFPwN1OceFGm9v6ux8G+DZ3TUDYxqMB8GA1UdIwQYMBaAFPwN1OceFGm9v6ux
+              #    8G+DZ3TUDYxqMA8GA1UdEwEB/wQFMAMBAf8wDQYJKoZIhvcNAQELBQADggEBAG5D
+              #    874A4YI7YUwOVsVAdbWtgp1d0zKcPRR+r2OdSbTAV5/gcS3jgBJ3i1BN34JuDVFw
+              #    3DeJSYT3nxy2Y56lLnxDeF8CUTUtVQx3CuGkRg1ouGAHpO/6OqOhwLLorEmxi7tA
+              #    H2O8mtT0poX5AnOAhzVy7QW0D/k4WaoLyckM5hUa6RtvgvLxOwA0U+VGurCDoctu
+              #    8F4QOgTAWyh8EZIwaKCliFRSynDpv3JTUwtfZkxo6K6nce1RhCWFAsMvDZL8Dgc0
+              #    yvgJ38BRsFOtkRuAGSf6ZUwTO8JJRRIFnpUzXflAnGivK9M13D5GEQMmIl6U9Pvk
+              #    sxSmbIUfc2SGJGCJD4I=
+              #    -----END CERTIFICATE-----
+      - type: cel
+        title: Collect Rapid7 InsightVM logs via CEL
+        description: Collecting Rapid7 InsightVM logs via CEL.
+        vars:
+          - name: url
+            type: url
+            title: URL
+            description: URL for the Rapid7 InsightVM API (Add https:// before the hostname). Add a region of the Insight Platform to the URL.
+            default: https://<region>.api.insight.rapid7.com
+            multi: false
+            required: true
+            show_user: true
           - name: api_key
             type: password
             title: API Key
