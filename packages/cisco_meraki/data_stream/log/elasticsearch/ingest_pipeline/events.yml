@@ -145,6 +145,13 @@ processors:
 ####################################################
 # Handle Ports
 ####################################################
+- set:
+    field: _temp.event_original_lower
+    value: "{{{event.original}}}"
+    if: "ctx.event?.original != null"
+- lowercase:
+    field: _temp.event_original_lower
+    ignore_missing: true
 - grok:
     field: event.original
     patterns: 
@@ -155,7 +162,7 @@ processors:
       SYSLOGHDR: '%{SYSLOGPRI}%{SYSLOGVER}'
       WORDORHOST: '(?:%{WORD}|%{HOSTNAME})'
       PORTACTION: '(?:changed stp role|status changed)'
-    if: ctx.event.original.startsWith('<') && ctx.cisco_meraki?.event_subtype == "port"
+    if: ctx.event.original.startsWith('<') && ctx.cisco_meraki?.event_subtype == "port" && ctx._temp?.event_original_lower != null && (ctx._temp.event_original_lower.contains('status changed') || ctx._temp.event_original_lower.contains('changed stp role'))
 - gsub:
     field: _temp.port_action
     pattern: ' '

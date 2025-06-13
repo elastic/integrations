@@ -326,6 +326,18 @@ processors:
       value: true
       if: ctx.activedirectory?.user?.uac_list?.contains('TRUSTED_TO_AUTHENTICATE_FOR_DELEGATION') == true
 
+  - foreach:
+      tag: foreach_group
+      field: activedirectory.groups
+      if: ctx.tags?.contains('preserve_group_member_list') != true
+      ignore_missing: true
+      processor:
+        remove:
+          tag: remove_member_list_from_group
+          description: Remove the member list because of its size and irrelevance to the user
+          field: _ingest._value.member
+          ignore_missing: true
+
   - script:
       lang: painless
       ignore_failure: true
