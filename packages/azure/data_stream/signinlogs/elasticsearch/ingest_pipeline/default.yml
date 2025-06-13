@@ -223,6 +223,10 @@ processors:
       field: event.id
       value: '{{{azure.signinlogs.properties.id}}}'
       ignore_empty_value: true
+  - set:
+      field: user.email
+      copy_from: azure.signinlogs.properties.user_principal_name
+      if: ctx.azure?.signinlogs?.properties?.user_principal_name?.contains('@') == true
   - grok:
       field: azure.signinlogs.properties.user_principal_name
       patterns:
@@ -283,7 +287,6 @@ processors:
   - user_agent:
       field: user_agent.original
       ignore_missing: true
-      
   - append:
       field: related.entity
       value: '{{{ azure.signinlogs.properties.app_id }}}'
@@ -294,6 +297,10 @@ processors:
       value: '{{{ azure.signinlogs.properties.resource_id }}}'
       allow_duplicates: false
       if: ctx.azure?.signinlogs?.properties?.resource_id != null && ctx.azure.signinlogs.properties.resource_id != ''
+  - set:
+      field: service.name
+      copy_from: azure.signinlogs.properties.service_principal_name
+      ignore_empty_value: true
   - append:
       field: related.entity
       value: '{{{ azure.signinlogs.properties.service_principal_id }}}'
