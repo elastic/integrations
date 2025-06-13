@@ -4,9 +4,10 @@ DomainTools Feeds provide data on the different stages of the domain lifecycle: 
 
 Summary of Available Feeds:
 
-- `Domain Discovery`: New domains as they are either discovered in domain registration information, observed by our global sensor network, or reported by trusted third parties.
 - `Newly Active Domains (NAD)`: Apex-level domains (e.g. example.com but not <www.example.com>) that we observe based on the latest lifecycle of the domain. A domain may be seen either for the first time ever, or again after at least 10 days of inactivity (no observed resolutions in DNS). Populated with our global passive DNS (pDNS) sensor network.
 - `Newly Observed Domains (NOD)`: Apex-level domains (e.g. example.com but not <www.example.com>) that we observe for the first time, and have not observed previously with our global DNS sensor network.
+- `Domain Discovery`: New domains as they are either discovered in domain registration information, observed by our global sensor network, or reported by trusted third parties.
+- `Domain RDAP`: Changes to global domain registration information, populated by the Registration Data Access Protocol (RDAP). Compliments the 5-Minute WHOIS Feed as registries and registrars switch from Whois to RDAP.
 
 With over 300,000 new domains observed daily, the feed empowers security teams to identify and block potentially malicious domains before they can be weaponized.
 Ideal for threat hunting, phishing prevention, and brand protection.
@@ -20,9 +21,10 @@ The DomainTools Feeds integration collects one type of data streams: **logs**
 
 Log data streams collected by the DomainTools integration include the following feeds:
 
-- `Domain Discovery`
 - `Newly Observed Domains (NOD)`
 - `Newly Active Domains (NAD)`
+- `Domain Discovery`
+- `Domain RDAP`
 
 ## Requirements
 
@@ -71,3 +73,14 @@ This data is collected via the [DomainTools Feeds API](https://docs.domaintools.
 {{event "domaindiscovery"}}
 
 {{fields "domaindiscovery"}}
+
+### Domain RDAP
+
+The `domainrdap feed` data stream provides events from [DomainTools Domain RDAP](https://www.domaintools.com/products/threat-intelligence-feeds/).
+This data is collected via the [DomainTools Feeds API](https://docs.domaintools.com/feeds/realtime/).
+
+#### Example
+
+{{event "domainrdap"}}
+
+{{fields "domainrdap"}}
