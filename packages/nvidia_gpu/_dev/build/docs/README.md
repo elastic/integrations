@@ -47,7 +47,9 @@ See more in the [DCGM Github Repository](https://github.com/NVIDIA/dcgm-exporter
 
 ## Data streams
 
-**stats** give you insight into the state of the NVIDIA GPUs.
+### Stats
+
+`stats` give you insight into the state of the NVIDIA GPUs.
 Metric data streams collected by the Nvidia GPU Monitoring integration include `stats`. See more details in the [Metrics](#metrics-reference).
 
 {{event "stats"}}
