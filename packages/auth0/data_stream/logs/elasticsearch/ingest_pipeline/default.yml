@@ -59,14 +59,40 @@ processors:
     field: network.type
     value: ipv4
     if: 'ctx.network?.type == null && ctx.source?.ip != null'
+- grok:
+    field: auth0.logs.data.user_name
+    patterns:
+      - '%{USERNAME:user.name}@%{HOSTNAME:user.domain}'
+      - '%{GREEDYDATA:user.name}'
+    ignore_missing: true
+    ignore_failure: true
 - set:
-    field: user.name
+    field: user.email
     copy_from: auth0.logs.data.user_name
-    if: 'ctx?.auth0?.logs?.data?.user_name != null'
+    tag: copy_user_email
+    if: ctx.auth0?.logs?.data?.user_name != null && ctx.auth0.logs.data.user_name.indexOf("@") > 0
 - set:
     field: user.id
     copy_from: auth0.logs.data.user_id
     if: 'ctx?.auth0?.logs?.data?.user_id != null'
+- append:
+    field: related.user
+    value: '{{{user.id}}}'
+    allow_duplicates: false
+    tag: append_related_user_id
+    if: ctx.user?.id != null
+- append:
+    field: related.user
+    value: '{{{user.name}}}'
+    allow_duplicates: false
+    tag: append_related_user_name
+    if: ctx.user?.name != null
+- append:
+    field: related.user
+    value: '{{{user.email}}}'
+    allow_duplicates: false
+    tag: append_related_user_email
+    if: ctx.user?.email != null
 - user_agent:
     field: auth0.logs.data.user_agent
     ignore_missing: true
