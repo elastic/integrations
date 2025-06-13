@@ -1,6 +1,6 @@
 name: azure_metrics
 title: Azure Resource Metrics
-version: 1.7.0
+version: 1.9.0
 description: Collect metrics from Azure resources with Elastic Agent.
 type: integration
 icons:
@@ -21,7 +21,7 @@ categories:
   - custom
 conditions:
   kibana:
-    version: "^8.12.0 || ^9.0.0"
+    version: "~8.17.7 || ^8.18.2 || ^9.0.2"
 vars:
   - name: client_id
     type: text
@@ -67,6 +67,24 @@ vars:
     multi: false
     required: false
     show_user: true
+  - name: enable_batch_api
+    type: bool
+    title: Enable Batch Api
+    description: >
+      When enabled, the azure batch api will be used
+      to fetch metrics of multiple resources in one api call.
+      Enable this when facing scalability issues.
+    multi: false
+    required: false
+    show_user: false
+    default: false
+  - name: latency
+    type: text
+    title: Latency
+    description: Latency is the time it takes for the Azure service to publish the metric values to Azure Monitor. The integration uses the latency value to compensate for the delay in metric value publishing. Default value is `0`. Typical values are `30s` or `1m`. [Learn more](https://www.elastic.co/docs/reference/integrations/azure_metrics/#advanced-options).
+    multi: false
+    required: false
+    show_user: false
 policy_templates:
   - name: monitor
     title: Azure Monitor Metrics
