@@ -8,8 +8,19 @@ crowdstrike_app_id: {{app_id}}
 redact:
   fields: ~
 program: |
-  state.response.decode_json().as(body,{
-    ?"cursor": body.?metadata.optMap(m, {"offset": m.offset}),
+  state.response.decode_json().as(body, {
+    // Handle both old agent behaviour and new multi-resource cursors.
+    ?"cursor": !has(state.feed) ?
+      // Old behaviour: no feed key.
+      body.?metadata.optMap(m, {"offset": m.offset})
+    : has(body.metadata) ?
+      // New behaviour with a cursor from the event.
+      optional.of(state.?cursor.orValue({}).with({
+        ?state.feed: body.?metadata.optMap(m, {"offset": m.offset}),
+      }))
+    :
+      // New behaviour with no cursor; pass through.
+      state.?cursor,
     "events": [{
           "message":  body.encode_json(),
     }],
