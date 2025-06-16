@@ -4,7 +4,7 @@ This integration is for [Thinkst OpenCanary](https://github.com/thinkst/opencana
 
 ## Data streams
 
-The OpenCanary integration collects the following event types: 
+The OpenCanary integration collects the following event types:
 
 `events`: Collects the OpenCanary logs.
 
