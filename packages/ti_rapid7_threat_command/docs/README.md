@@ -31,7 +31,7 @@ Elastic Agent must be installed. For more details, check the Elastic Agent [inst
 
 The minimum **kibana.version** required is **8.12.0**.
 
-Check also the prerequisites for:
+Check the prerequisites for:
 - [Transforms](https://www.elastic.co/guide/en/elasticsearch/reference/current/transform-setup.html#transform-setup).
 - [Actions and Connectors](https://www.elastic.co/guide/en/kibana/current/action-types.html).
 
