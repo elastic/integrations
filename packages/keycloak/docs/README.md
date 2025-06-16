@@ -69,50 +69,52 @@ An example event for `log` looks as following:
 
 ```json
 {
-    "@timestamp": "2021-10-22T21:01:42.667-05:00",
+    "@timestamp": "2021-10-22T21:01:42.667+05:00",
     "agent": {
-        "ephemeral_id": "bb6d890f-5c05-4247-b410-8f3b914e5293",
-        "id": "d053789b-7b04-4a8c-b06c-ca79014bb61a",
-        "name": "docker-fleet-agent",
+        "ephemeral_id": "9f6c0477-ed78-4030-8b72-4c0794d50c25",
+        "id": "3df05e3b-922c-4316-a0fa-fb72d095657d",
+        "name": "elastic-agent-22472",
         "type": "filebeat",
-        "version": "8.10.2"
+        "version": "8.13.0"
     },
     "data_stream": {
         "dataset": "keycloak.log",
-        "namespace": "ep",
+        "namespace": "68860",
         "type": "logs"
     },
     "ecs": {
         "version": "8.11.0"
     },
     "elastic_agent": {
-        "id": "d053789b-7b04-4a8c-b06c-ca79014bb61a",
+        "id": "3df05e3b-922c-4316-a0fa-fb72d095657d",
         "snapshot": false,
-        "version": "8.10.2"
+        "version": "8.13.0"
     },
     "event": {
         "agent_id_status": "verified",
         "dataset": "keycloak.log",
-        "ingested": "2023-10-03T10:29:46Z",
+        "ingested": "2025-05-28T08:34:57Z",
         "original": "2021-10-22 21:01:42,667 INFO  [org.jboss.resteasy.resteasy_jaxrs.i18n] (ServerService Thread Pool -- 64) RESTEASY002220: Adding singleton resource org.keycloak.services.resources.admin.AdminRoot from Application class org.keycloak.services.resources.KeycloakApplication",
-        "timezone": "-05:00"
+        "timezone": "+05:00"
     },
     "host": {
         "architecture": "x86_64",
         "containerized": true,
-        "hostname": "docker-fleet-agent",
-        "id": "efe661d97f0c4d9883075c393da6b0d8",
+        "hostname": "elastic-agent-22472",
+        "id": "8259e024976a406e8a54cdbffeb84fec",
         "ip": [
-            "172.30.0.7"
+            "192.168.255.2",
+            "192.168.252.6"
         ],
         "mac": [
-            "02-42-AC-1E-00-07"
+            "02-42-C0-A8-FC-06",
+            "02-42-C0-A8-FF-02"
         ],
-        "name": "docker-fleet-agent",
+        "name": "elastic-agent-22472",
         "os": {
             "codename": "focal",
             "family": "debian",
-            "kernel": "5.15.90.1-microsoft-standard-WSL2",
+            "kernel": "3.10.0-1160.92.1.el7.x86_64",
             "name": "Ubuntu",
             "platform": "ubuntu",
             "type": "linux",
@@ -124,8 +126,8 @@ An example event for `log` looks as following:
     },
     "log": {
         "file": {
-            "device_id": 2080,
-            "inode": 90612,
+            "device_id": "64768",
+            "inode": "19004628",
             "path": "/tmp/service_logs/test-log.log"
         },
         "level": "INFO",
