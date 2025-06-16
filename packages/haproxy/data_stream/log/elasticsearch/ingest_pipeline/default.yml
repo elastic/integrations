@@ -34,6 +34,10 @@ processors:
         HTTPS_DATA: >-
           %{NUMBER:haproxy.connections.fc_err:long}/%{NUMBER:haproxy.connections.ssl_fc_err:long}/%{NUMBER:haproxy.connections.ssl_c_err:long}/%{NUMBER:haproxy.connections.ssl_c_ca_err:long}/%{NUMBER:temp.ssl_fc_is_resumed:long}
           %{HOSTNAME:tls.client.server_name}/%{DATA:tls.version_protocol}v%{NUMBER:tls.version}/%{NOTSPACE:tls.cipher}
+      on_failure:
+        - append:
+           field: error.message
+           value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag fail-{{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'    
   - set:
       field: event.timezone
       copy_from: _conf.tz_offset
@@ -66,6 +70,10 @@ processors:
       patterns:
         - '%{WORD:http.request.method}%{SPACE}%{URIPATHPARAM:url.original}%{SPACE}HTTP/%{NUMBER:http.version}'
       ignore_missing: true
+      on_failure:
+        - append:
+           field: error.message
+           value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag fail-{{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
       if: 'ctx.haproxy?.http?.request?.raw_request_line != null && !ctx.haproxy?.http?.request?.raw_request_line.isEmpty()'
   - uri_parts:
       field: url.original
@@ -200,11 +208,6 @@ processors:
           }
         }
         handleMap(ctx);
-  - remove:
-      field: event.original
-      if: "ctx?.tags == null || !(ctx.tags.contains('preserve_original_event'))"
-      ignore_failure: true
-      ignore_missing: true
 on_failure:
   - set:
       field: error.message

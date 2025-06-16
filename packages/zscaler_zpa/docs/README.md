@@ -327,25 +327,24 @@ An example event for `audit` looks as following:
 {
     "@timestamp": "2021-11-17T04:29:38.000Z",
     "agent": {
-        "ephemeral_id": "f7eff07b-58ba-49bf-a364-5df94e1adfb6",
-        "hostname": "docker-fleet-agent",
-        "id": "8b86614c-cda7-40f1-9823-ea2294fa4abf",
-        "name": "docker-fleet-agent",
+        "ephemeral_id": "e758c9d6-e963-40d8-a5f9-5976463b25e6",
+        "id": "8a994ef1-4b96-4eb4-9626-07c926e2bef3",
+        "name": "elastic-agent-73196",
         "type": "filebeat",
-        "version": "7.16.2"
+        "version": "8.18.1"
     },
     "data_stream": {
         "dataset": "zscaler_zpa.audit",
-        "namespace": "ep",
+        "namespace": "42685",
         "type": "logs"
     },
     "ecs": {
         "version": "8.11.0"
     },
     "elastic_agent": {
-        "id": "8b86614c-cda7-40f1-9823-ea2294fa4abf",
+        "id": "8a994ef1-4b96-4eb4-9626-07c926e2bef3",
         "snapshot": false,
-        "version": "7.16.2"
+        "version": "8.18.1"
     },
     "event": {
         "agent_id_status": "verified",
@@ -355,9 +354,10 @@ An example event for `audit` looks as following:
         "created": "2021-11-17T04:29:38.000Z",
         "dataset": "zscaler_zpa.audit",
         "id": "11111111-1111-1111-1111-111111111111",
-        "ingested": "2023-02-22T12:09:19Z",
+        "ingested": "2025-05-30T08:14:28Z",
         "kind": "event",
         "original": "{\"ModifiedTime\":\"2021-11-17T04:29:38.000Z\",\"CreationTime\":\"2021-11-17T04:29:38.000Z\",\"ModifiedBy\":12345678901234567,\"RequestID\":\"11111111-1111-1111-1111-111111111111\",\"SessionID\":\"1idn23nlfm2q1txa5h3r4mep6\",\"AuditOldValue\":\"\",\"AuditNewValue\":\"{\\\"id\\\":\\\"72058340288495701\\\",\\\"name\\\":\\\"Some-Name\\\",\\\"domainOrIpAddress\\\":\\\"1.0.0.1\\\",\\\"description\\\":\\\"This is a description field\\\",\\\"enabled\\\":\\\"true\\\"}\",\"AuditOperationType\":\"Create\",\"ObjectType\":\"Server\",\"ObjectName\":\"Some-Name\",\"ObjectID\":12345678901234567,\"CustomerID\":98765432109876543,\"User\":\"zpaadmin@xxxxxxxxxxxxxxxxx.zpa-customer.com\",\"ClientAuditUpdate\":0}",
+        "outcome": "success",
         "type": [
             "creation"
         ]
@@ -367,7 +367,7 @@ An example event for `audit` looks as following:
     },
     "log": {
         "source": {
-            "address": "192.168.64.5:55180"
+            "address": "172.19.0.3:47260"
         }
     },
     "organization": {
@@ -379,6 +379,7 @@ An example event for `audit` looks as following:
         ],
         "user": [
             "12345678901234567",
+            "zpaadmin",
             "zpaadmin@xxxxxxxxxxxxxxxxx.zpa-customer.com"
         ]
     },
@@ -392,8 +393,10 @@ An example event for `audit` looks as following:
         "zscaler_zpa-audit"
     ],
     "user": {
+        "domain": "xxxxxxxxxxxxxxxxx.zpa-customer.com",
+        "email": "zpaadmin@xxxxxxxxxxxxxxxxx.zpa-customer.com",
         "id": "12345678901234567",
-        "name": "zpaadmin@xxxxxxxxxxxxxxxxx.zpa-customer.com"
+        "name": "zpaadmin"
     },
     "zscaler_zpa": {
         "audit": {
@@ -699,12 +702,11 @@ An example event for `user_activity` looks as following:
 {
     "@timestamp": "2019-05-31T17:35:42.000Z",
     "agent": {
-        "ephemeral_id": "47a2e053-f9d2-4244-b6bd-9acf12361804",
-        "hostname": "docker-fleet-agent",
-        "id": "8b86614c-cda7-40f1-9823-ea2294fa4abf",
-        "name": "docker-fleet-agent",
+        "ephemeral_id": "dc5b8414-8d42-4bd7-820f-f19b6f07188b",
+        "id": "43113495-332c-42b0-a84a-dfd7a28a3adc",
+        "name": "elastic-agent-20487",
         "type": "filebeat",
-        "version": "7.16.2"
+        "version": "8.13.0"
     },
     "client": {
         "geo": {
@@ -718,16 +720,16 @@ An example event for `user_activity` looks as following:
     },
     "data_stream": {
         "dataset": "zscaler_zpa.user_activity",
-        "namespace": "ep",
+        "namespace": "11041",
         "type": "logs"
     },
     "ecs": {
         "version": "8.11.0"
     },
     "elastic_agent": {
-        "id": "8b86614c-cda7-40f1-9823-ea2294fa4abf",
+        "id": "43113495-332c-42b0-a84a-dfd7a28a3adc",
         "snapshot": false,
-        "version": "7.16.2"
+        "version": "8.13.0"
     },
     "event": {
         "agent_id_status": "verified",
@@ -735,7 +737,7 @@ An example event for `user_activity` looks as following:
             "iam"
         ],
         "dataset": "zscaler_zpa.user_activity",
-        "ingested": "2023-02-22T12:10:47Z",
+        "ingested": "2025-05-25T22:58:32Z",
         "kind": "event",
         "original": "{\"LogTimestamp\": \"Fri May 31 17:35:42 2019\",\"Customer\": \"Customer XYZ\",\"SessionID\": \"LHJdkjmNDf12nclBsvwA\",\"ConnectionID\": \"SqyZIMkg0JTj7EABsvwA,Q+EjXGdrvbF2lPiBbedm\",\"InternalReason\": \"\",\"ConnectionStatus\": \"active\",\"IPProtocol\": 6,\"DoubleEncryption\": 0,\"Username\": \"ZPA LSS Client\",\"ServicePort\": 10011,\"ClientPublicIP\": \"81.2.69.193\",\"ClientLatitude\": 45.000000,\"ClientLongitude\": -119.000000,\"ClientCountryCode\": \"US\",\"ClientZEN\": \"broker2b.pdx\",\"Policy\": \"ABC Lab Apps\",\"Connector\": \"ZDEMO ABC\",\"ConnectorZEN\": \"broker2b.pdx\",\"ConnectorIP\": \"67.43.156.12\",\"ConnectorPort\": 60266,\"Host\": \"175.16.199.1\",\"Application\": \"ABC Lab Apps\",\"AppGroup\": \"ABC Lab Apps\",\"Server\": \"0\",\"ServerIP\": \"175.16.199.1\",\"ServerPort\": 10011,\"PolicyProcessingTime\": 28,\"CAProcessingTime\": 1330,\"ConnectorZENSetupTime\": 191017,\"ConnectionSetupTime\": 192397,\"ServerSetupTime\": 465,\"AppLearnTime\": 0,\"TimestampConnectionStart\": \"2019-05-30T08:20:42.230Z\",\"TimestampConnectionEnd\": \"\",\"TimestampCATx\": \"2019-05-30T08:20:42.230Z\",\"TimestampCARx\": \"2019-05-30T08:20:42.231Z\",\"TimestampAppLearnStart\": \"\",\"TimestampZENFirstRxClient\": \"2019-05-30T08:20:42.424Z\",\"TimestampZENFirstTxClient\": \"\",\"TimestampZENLastRxClient\": \"2019-05-31T17:34:27.348Z\",\"TimestampZENLastTxClient\": \"\",\"TimestampConnectorZENSetupComplete\": \"2019-05-30T08:20:42.422Z\",\"TimestampZENFirstRxConnector\": \"\",\"TimestampZENFirstTxConnector\": \"2019-05-30T08:20:42.424Z\",\"TimestampZENLastRxConnector\": \"\",\"TimestampZENLastTxConnector\": \"2019-05-31T17:34:27.348Z\",\"ZENTotalBytesRxClient\": 2406926,\"ZENBytesRxClient\": 7115,\"ZENTotalBytesTxClient\": 0,\"ZENBytesTxClient\": 0,\"ZENTotalBytesRxConnector\": 0,\"ZENBytesRxConnector\": 0,\"ZENTotalBytesTxConnector\": 2406926,\"ZENBytesTxConnector\": 7115,\"Idp\": \"Example IDP Config\",\"ClientToClient\": \"0\"}",
         "type": [
@@ -753,11 +755,11 @@ An example event for `user_activity` looks as following:
     },
     "log": {
         "source": {
-            "address": "192.168.64.5:60604"
+            "address": "172.19.0.3:52362"
         }
     },
     "network": {
-        "type": "ipv6"
+        "transport": "tcp"
     },
     "organization": {
         "name": "Customer XYZ"
