@@ -291,9 +291,11 @@ processors:
 ####################################################
 # Handle client_vpn_connect
 ####################################################
-- dissect:
+- grok:
     field: event.original
-    pattern: "%{} events client_vpn_connect user id '%{user.name}' local ip %{network.forwarded_ip} connected from %{_temp.client_ip}"
+    patterns:
+      - "^%{DATA} events client_vpn_connect user id '%{DATA:user.name}' local ip %{IP:network.forwarded_ip} (reconnected from|connected from) %{IP:_temp.client_ip}$"
+      - "^%{GREEDYDATA}$"
     if: ctx?.cisco_meraki?.event_subtype == "client_vpn_connect"
 - grok:
     field: event.original
@@ -371,9 +373,11 @@ processors:
 ####################################################
 # Handle anyconnect_vpn_connect
 ####################################################
-- dissect:
+- grok:
     field: event.original
-    pattern: "%{} events anyconnect_vpn_connect user id '%{user.name}' local ip %{network.forwarded_ip} reconnected from %{_temp.client_ip}"
+    patterns:
+      - "^%{DATA} events anyconnect_vpn_connect user id '%{DATA:user.name}' local ip %{IP:network.forwarded_ip} (reconnected from|connected from) %{IP:_temp.client_ip}$"
+      - "^%{GREEDYDATA}$"
     if: ctx?.cisco_meraki?.event_subtype == "anyconnect_vpn_connect"
 - grok:
     field: event.original
