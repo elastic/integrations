@@ -231,25 +231,6 @@ processors:
       if: ctx.host?.name != null
   - script:
       lang: painless
-      if: 'ctx.cisco?.secure_endpoint?.computer?.user != null && ctx.cisco?.secure_endpoint?.computer?.user.contains("@")'
-      source: >
-        String[] splitmail = ctx.cisco.secure_endpoint.computer.user.splitOnToken("@");
-        if (ctx.user == null) {
-            ctx.user = new HashMap();
-        }
-        if (splitmail.length != 2) {
-            return;
-        }
-        ctx.user.email = ctx.user.id;
-        ctx.user.domain = splitmail[1];
-        ctx.user.name = splitmail[0];
-  - rename:
-      field: cisco.secure_endpoint.computer.user
-      target_field: user.name
-      ignore_missing: true
-      if: ctx.user?.name == null && ctx.cisco?.secure_endpoint?.computer?.user != null
-  - script:
-      lang: painless
       source: |
         if (ctx.host == null) {
             ctx.host = new HashMap();
@@ -278,9 +259,25 @@ processors:
       field: cisco.secure_endpoint.computer.connector_guid
       target_field: host.id
       ignore_missing: true
+  ######################
+  ## ECS User Mapping ##
+  ######################
   - remove:
-      field: user.name
-      if: ctx.user?.name != null && ctx.user?.name == "Not Available"
+      field: cisco.secure_endpoint.computer.user
+      if: ctx.cisco?.secure_endpoint?.computer?.user != null && ctx.cisco.secure_endpoint.computer.user == "Not Available"
+  - grok:
+      field: cisco.secure_endpoint.computer.user
+      patterns:
+        - '%{USERNAME:user.name}@%{HOSTNAME:user.domain}'
+        - '%{GREEDYDATA:user.name}'
+      ignore_missing: true
+      ignore_failure: true
+      tag: grok_user_name
+  - set:
+      field: user.email
+      copy_from: cisco.secure_endpoint.computer.user
+      tag: set_user_email
+      if: ctx.cisco?.secure_endpoint?.computer?.user != null && ctx.cisco.secure_endpoint.computer.user.indexOf("@") > 0
   #########################
   ## ECS Network Mapping ##
   #########################
@@ -451,6 +448,11 @@ processors:
       field: related.user
       value: "{{{ user.name }}}"
       if: ctx.user?.name != null
+      allow_duplicates: false
+  - append:
+      field: related.user
+      value: "{{{ user.email }}}"
+      if: ctx.user?.email != null
       allow_duplicates: false
   - append:
       field: related.hash
