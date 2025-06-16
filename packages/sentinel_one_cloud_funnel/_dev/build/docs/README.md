@@ -124,7 +124,9 @@ A sample JSON Credentials file looks as follows:
 - Configure the integration using either Service Account Credentials or Microsoft Entra ID RBAC with OAuth2 options.For OAuth2 (Entra ID RBAC), you'll need the Client ID, Client Secret, and Tenant ID. For Service Account Credentials, you'll need either the Service Account Key or the URI to access the data.
 - How to setup the `auth.oauth2` credentials can be found in the Azure documentation https://docs.microsoft.com/en-us/azure/active-directory/develop/quickstart-register-app[here]
 
-Note: The service principal must be granted the appropriate permissions to read blobs. Ensure that the necessary role assignments are in place for the service principal to access the storage resources. For more information, please refer to the [Azure Role-Based Access Control (RBAC) documentation](https://learn.microsoft.com/en-us/azure/role-based-access-control/built-in-roles/storage).
+Note:
+- The service principal must be granted the appropriate permissions to read blobs. Ensure that the necessary role assignments are in place for the service principal to access the storage resources. For more information, please refer to the [Azure Role-Based Access Control (RBAC) documentation](https://learn.microsoft.com/en-us/azure/role-based-access-control/built-in-roles/storage).
+- We recommend assigning either the Storage Blob Data Reader or BlobOwner role. The Storage Blob Data Reader role provides read-only access to blob data and is aligned with the principle of least privilege, making it suitable for most use cases. The Storage Blob Data Owner role grants full administrative access — including read, write, and delete permissions — and should be used only when such elevated access is explicitly required.
 
 ### Enabling the integration in Elastic:
 
