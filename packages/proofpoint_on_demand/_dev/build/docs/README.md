@@ -22,7 +22,7 @@ Elastic Agent must be installed. For more details, check the Elastic Agent [inst
 
 The **Cluster ID** is displayed in the upper-right corner of the management interface, next to the release number. Proofpoint will provide the token for each cluster.
 
-**NOTE**: Proofpoint On Demand Log service requires a Remote Syslog Forwarding license. Check the [API documentation](https://proofpointcommunities.force.com/community/s/article/Proofpoint-on-Demand-Pod-Log-API) on how to enable it.
+**NOTE**: Proofpoint On Demand Log service requires a Remote Syslog Forwarding license.
 
 ### Enable the integration in Elastic
 
