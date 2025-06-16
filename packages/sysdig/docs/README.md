@@ -93,7 +93,7 @@ An example event for `alerts` looks as following:
         "type": "logs"
     },
     "ecs": {
-        "version": "8.0.0"
+        "version": "8.17.0"
     },
     "elastic_agent": {
         "id": "89299e77-a11f-45fe-a244-d074225112eb",
