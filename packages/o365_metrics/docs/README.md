@@ -705,6 +705,7 @@ An example event for `groups_activity_group_detail` looks as following:
     },
     "related": {
         "user": [
+            "AV",
             "AV@abc.onmicrosoft.com"
         ]
     },
@@ -713,11 +714,13 @@ An example event for `groups_activity_group_detail` looks as following:
         "preserve_original_event"
     ],
     "user": {
+        "domain": "abc.onmicrosoft.com",
+        "email": "AV@abc.onmicrosoft.com",
         "group": {
             "id": "faa1ff4a-4677-4d4c-842a-dc63eb8b2ae3",
             "name": "delete-1"
         },
-        "name": "AV@abc.onmicrosoft.com"
+        "name": "AV"
     }
 }
 ```
@@ -816,6 +819,7 @@ An example event for `onedrive_usage_account_detail` looks as following:
     },
     "related": {
         "user": [
+            "KR",
             "KR@abc.onmicrosoft.com"
         ]
     },
@@ -824,8 +828,9 @@ An example event for `onedrive_usage_account_detail` looks as following:
         "preserve_original_event"
     ],
     "user": {
+        "domain": "abc.onmicrosoft.com",
         "email": "KR@abc.onmicrosoft.com",
-        "name": "KR@abc.onmicrosoft.com"
+        "name": "KR"
     }
 }
 ```
@@ -1907,6 +1912,7 @@ An example event for `teams_user_activity_user_detail` looks as following:
     "related": {
         "user": [
             "1345424e-c619-41d3-ab66-948ed302c504",
+            "LH",
             "LH@abc.onmicrosoft.com"
         ]
     },
@@ -1915,9 +1921,10 @@ An example event for `teams_user_activity_user_detail` looks as following:
         "preserve_original_event"
     ],
     "user": {
+        "domain": "abc.onmicrosoft.com",
         "email": "LH@abc.onmicrosoft.com",
         "id": "1345424e-c619-41d3-ab66-948ed302c504",
-        "name": "LH@abc.onmicrosoft.com"
+        "name": "LH"
     }
 }
 ```
