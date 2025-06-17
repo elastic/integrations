@@ -228,16 +228,21 @@ Please refer to the following [document](https://www.elastic.co/guide/en/ecs/cur
 | azure.signinlogs.identity | Identity | keyword |
 | azure.signinlogs.operation_name | The operation name | keyword |
 | azure.signinlogs.operation_version | The operation version | keyword |
+| azure.signinlogs.properties.agent.agent_type |  | keyword |
 | azure.signinlogs.properties.app_display_name | App display name | keyword |
 | azure.signinlogs.properties.app_id | App ID | keyword |
+| azure.signinlogs.properties.app_owner_tenant_id |  | keyword |
 | azure.signinlogs.properties.applied_conditional_access_policies | A list of conditional access policies that are triggered by the corresponding sign-in activity. | flattened |
 | azure.signinlogs.properties.authentication_details | The result of the authentication attempt and additional details on the authentication method. | flattened |
 | azure.signinlogs.properties.authentication_processing_details | Additional authentication processing details, such as the agent name in case of PTA/PHS or Server/farm name in case of federated authentication. | flattened |
 | azure.signinlogs.properties.authentication_protocol | Authentication protocol type. | keyword |
 | azure.signinlogs.properties.authentication_requirement | This holds the highest level of authentication needed through all the sign-in steps, for sign-in to succeed. | keyword |
 | azure.signinlogs.properties.authentication_requirement_policies | Set of CA policies that apply to this sign-in, each as CA: policy name, and/or MFA: Per-user | flattened |
+| azure.signinlogs.properties.authentication_strengths |  | flattened |
 | azure.signinlogs.properties.autonomous_system_number | Autonomous system number. | long |
 | azure.signinlogs.properties.client_app_used | Client app used | keyword |
+| azure.signinlogs.properties.client_credential_type |  | keyword |
+| azure.signinlogs.properties.conditional_access_audience.application_id |  | keyword |
 | azure.signinlogs.properties.conditional_access_status | Conditional access status | keyword |
 | azure.signinlogs.properties.correlation_id | Correlation ID | keyword |
 | azure.signinlogs.properties.created_at | Date and time (UTC) the sign-in was initiated. | date |
@@ -255,11 +260,15 @@ Please refer to the following [document](https://www.elastic.co/guide/en/ecs/cur
 | azure.signinlogs.properties.incoming_token_type | Incoming token type. | keyword |
 | azure.signinlogs.properties.is_interactive | Is interactive | boolean |
 | azure.signinlogs.properties.is_tenant_restricted |  | boolean |
+| azure.signinlogs.properties.is_through_global_secure_access |  | boolean |
 | azure.signinlogs.properties.network_location_details | The network location details including the type of network used and its names. | flattened |
 | azure.signinlogs.properties.original_request_id | Original request ID | keyword |
+| azure.signinlogs.properties.original_transfer_method |  | keyword |
 | azure.signinlogs.properties.processing_time_ms | Processing time in milliseconds | float |
 | azure.signinlogs.properties.resource_display_name | Resource display name | keyword |
 | azure.signinlogs.properties.resource_id | The identifier of the resource that the user signed in to. | keyword |
+| azure.signinlogs.properties.resource_owner_tenant_id |  | keyword |
+| azure.signinlogs.properties.resource_service_principal_id |  | keyword |
 | azure.signinlogs.properties.resource_tenant_id |  | keyword |
 | azure.signinlogs.properties.risk_detail | Risk detail | keyword |
 | azure.signinlogs.properties.risk_event_types | The list of risk event types associated with the sign-in. Possible values: unlikelyTravel, anonymizedIPAddress, maliciousIPAddress, unfamiliarFeatures, malwareInfectedIPAddress, suspiciousIPAddress, leakedCredentials, investigationsThreatIntelligence, generic, or unknownFutureValue. | keyword |
@@ -267,13 +276,19 @@ Please refer to the following [document](https://www.elastic.co/guide/en/ecs/cur
 | azure.signinlogs.properties.risk_level_aggregated | Risk level aggregated | keyword |
 | azure.signinlogs.properties.risk_level_during_signin | Risk level during signIn | keyword |
 | azure.signinlogs.properties.risk_state | Risk state | keyword |
+| azure.signinlogs.properties.rngc_status |  | integer |
 | azure.signinlogs.properties.service_principal_credential_key_id | Key id of the service principal that initiated the sign-in. | keyword |
 | azure.signinlogs.properties.service_principal_id | The application identifier used for sign-in. This field is populated when you are signing in using an application. | keyword |
 | azure.signinlogs.properties.service_principal_name | The application name used for sign-in. This field is populated when you are signing in using an application. | keyword |
+| azure.signinlogs.properties.session_id |  | keyword |
+| azure.signinlogs.properties.sign_in_token_protection_status |  | keyword |
 | azure.signinlogs.properties.sso_extension_version |  | keyword |
 | azure.signinlogs.properties.status.error_code | Error code | long |
+| azure.signinlogs.properties.tenant_id |  | keyword |
 | azure.signinlogs.properties.token_issuer_name | Token issuer name | keyword |
 | azure.signinlogs.properties.token_issuer_type | Token issuer type | keyword |
+| azure.signinlogs.properties.token_protection_status_details.sign_in_session_status |  | keyword |
+| azure.signinlogs.properties.token_protection_status_details.sign_in_session_status_code |  | integer |
 | azure.signinlogs.properties.unique_token_identifier | Unique token identifier for the request. | keyword |
 | azure.signinlogs.properties.user_display_name | User display name | keyword |
 | azure.signinlogs.properties.user_id | User ID | keyword |
