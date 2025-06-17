@@ -231,5 +231,9 @@ An example event for `stats` looks as following:
 | gpu.utilization.encoder.pct | Encoder utilization (in %). | float | percent | gauge |
 | gpu.utilization.gpu.pct | GPU utilization (in %). | float | percent | gauge |
 | gpu.utilization.memory_copy.pct | Memory utilization (in %). | float | percent | gauge |
+| gpu.uuid | Nvidia GPU uuid | keyword |  |  |
+| kubernetes.container.name | Kubernetes container name | keyword |  |  |
+| kubernetes.namespace | Kubernetes namespace | keyword |  |  |
+| kubernetes.pod.name | Kubernetes pod name | keyword |  |  |
 | service.address | Address where data about this service was collected from. This should be a URI, network address (ipv4:port or [ipv6]:port) or a resource path (sockets). | keyword |  |  |
 | service.type | The type of the service data is collected from. The type can be used to group and correlate logs and metrics from one service type. Example: If logs or metrics are collected from Elasticsearch, `service.type` would be `elasticsearch`. | keyword |  |  |
