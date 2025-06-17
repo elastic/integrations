@@ -1712,9 +1712,31 @@ processors:
       if: ctx.user?.name != null
       allow_duplicates: false
       ignore_failure: true
+
+  # Remove the fields that the user does not want.
+  # TODO: This is unpleasantly inefficient. It would be ideal if we had not
+  # populated the fields in the first place, but the current state of the
+  # pipeline makes that non-trivial as both the flattened fields and the
+  # non-flattened origin fields are referred to throughout the pipeline,
+  # making it difficult to disentangle them. This the TODO to be done.
   - remove:
-      field: json
+      field:
+        - aws.cloudtrail.flattened
       ignore_missing: true
+      if: ctx._conf?.retain != null && ctx._conf.retain != '' && ctx._conf.retain != 'all' && ctx._conf.retain != 'flattened'
+  - remove:
+      field:
+        - aws.cloudtrail.response_elements
+        - aws.cloudtrail.request_parameters
+        - aws.cloudtrail.additional_eventdata
+      ignore_missing: true
+      if: ctx._conf?.retain != null && ctx._conf.retain != '' && ctx._conf.retain != 'all' && ctx._conf.retain != 'keyword'
+  - remove:
+      field:
+        - json
+        - _conf
+      ignore_missing: true
+
 on_failure:
   - set:
       field: event.kind
