@@ -14,89 +14,87 @@ resource.ssl: {{ssl}}
 resource.timeout: {{http_client_timeout}}
 {{/if}}
 resource.url: {{url}}
-redact:
-fields:
-- exposed_value
 resource.headers:
-Accept:
-- application/json
-Authorization:
-- {{api_token}}
+  Accept:
+    - application/json
+  Authorization:
+    - {{api_token}}
 program: |
-(
-has(state.?cursor.last_timestamp)?
-(timestamp(state.cursor.last_timestamp))
-:
-(now - duration("2160h"))
-).as(start_time, state.with(
-(request("GET", state.url + "?"+ {
-"from": [start_time.format("02/01/2006")],
-"to": [(start_time + duration("24h")).format("02/01/2006") == now.format("02/01/2006") ? "" : (start_time +
-duration("24h")).format("02/01/2006")],
-to not have this at all
-}.format_query())
-.with({
-"Header": {
-"Accept": ["application/json"],
-"Authorization": ["foobar"] // TODO replace with actual auth token or whatever auth
-}
-})
-.do_request()
-.as(response,
-response.Body.decode_json()
-.as(parsed_json,
-(response.StatusCode >= 200 && response.StatusCode < 300)? { "events" : ( parsed_json.map(e, has(e.secrets) &&
-  e.secrets.size()> 0 ?
-  (e.secrets.map(s,
-  {
-  "data": {
-  "date": e.date,
-  "request_id": e.request_id,
-  "secret_type": s.secret_type,
-  "exposed_value": s.exposed_value,
-  "line_number": s.line_number,
-  "timestamp": e.timestamp,
-  }
-  }))
-  :
-  [{
-  "data": {
-  "date": e.date,
-  "request_id": e.request_id,
-  "timestamp": e.timestamp,
-  }
-  }]
-  )
-  ).flatten(),
-  "start_time": start_time,
-  "want_more": false, // D2D Scan: if formatted times are the same then false
-  "cursor": { // D2D Scan: add 1 day to cursor
-  "last_timestamp": parsed_json.size() > 0 ?
-  (start_time + duration("24h"))
-  :
-  timestamp(state.cursor.last_timestamp),
-  }
-  }
-  :
-  {
-  "events": {
-  "error": {
-  "code": string(response.StatusCode),
-  "id": string(response.Status),
-  "message": "GET:"+(
-  size(response.Body) != 0 ?
-  string(parsed_json.message)
-  :
-  string(response.Status) + ' (' + string(response.StatusCode) + ')'
-  ),
-  },
-  },
-  "cursor": {
-  "last_timestamp": state.cursor.last_timestamp,
-  },
-  "want_more": false,
-  }
-  )
-  )
-  )
+  (
+    has(state.?cursor.last_timestamp)? 
+      (timestamp(state.cursor.last_timestamp))
+    :
+      (now - duration("2160h"))
+  ).as(start_time, state.with(
+    (request("GET", state.url + "?"+ {
+      "from": [start_time.format("02/01/2006")],
+      "to": [(start_time + duration("24h")).format("02/01/2006") == now.format("02/01/2006") ? "" : (start_time + duration("24h")).format("02/01/2006")], // D2D Scan: add duration 1 day. But note if it is the day before last you want to not have this at all
+    }.format_query())
+      .with({
+        "Header": {
+          "Accept": ["application/json"],
+          "Authorization": ["foobar"] // TODO replace with actual auth token or whatever auth
+        }
+      })
+      .do_request()
+      .as(response,
+          response.Body.decode_json()
+            .as(parsed_json, 
+            (response.StatusCode >= 200 && response.StatusCode < 300)?
+            {
+              "events": (
+                parsed_json.map(e,
+                  has(e.secrets) && e.secrets.size() > 0 ?
+                    (e.secrets.map(s,
+                      {  
+                        "data": {
+                          "date": e.date,
+                          "request_id": e.request_id,
+                          "secret_type": s.secret_type,
+                          "exposed_value": s.exposed_value,
+                          "line_number": s.line_number,
+                          "timestamp": e.timestamp,
+                        }
+                      }))
+                    :
+                      [{
+                        "data": {
+                          "date": e.date,
+                          "request_id": e.request_id,
+                          "timestamp": e.timestamp,
+                        }
+                      }]
+                )
+              ).flatten(),
+              "start_time": start_time, 
+              "want_more": false, // D2D Scan: if formatted times are the same then false
+              "cursor": { // D2D Scan: add 1 day to cursor
+                "last_timestamp": parsed_json.size() > 0 ?
+                  (start_time + duration("24h"))
+                  :
+                  timestamp(state.cursor.last_timestamp),
+                }
+            }
+            :
+            {
+              "events": {
+                "error": {
+                  "code": string(response.StatusCode),
+                  "id": string(response.Status),
+                  "message": "GET:"+(
+                    size(response.Body) != 0 ?
+                      string(parsed_json.message)
+                    :
+                      string(response.Status) + ' (' + string(response.StatusCode) + ')'
+                  ),
+                },
+              },
+              "cursor": {
+                "last_timestamp": state.cursor.last_timestamp,
+              },
+              "want_more": false,
+            }
+          )
+      )
+    )
   ))
