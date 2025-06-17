@@ -1,0 +1,326 @@
+---
+description: Pipeline for GitHub Security Advisories data
+processors:
+  - set:
+      field: ecs.version
+      tag: set_ecs_version
+      value: 8.11.0
+  - fail:
+      tag: cel_failure
+      if: ctx.error?.message != null && ctx.message == null && ctx.event?.original == null
+      message: error message set and no data to process
+  - set:
+      field: event.kind
+      tag: set_event_kind_1
+      value: enrichment
+  - set:
+      field: event.category
+      tag: set_event_catgeory
+      value:
+        - vulnerability
+  - set:
+      field: event.type
+      tag: set_event_type
+      value:
+        - info
+  - rename:
+      field: message
+      tag: rename_message_to_event_original
+      target_field: event.original
+      ignore_missing: true
+      description: >-
+        Renames the original `message` field to `event.original` to store a copy
+        of the original message. The `event.original` field is not touched if
+        the document already has one; it may happen when Logstash sends the
+        document.
+      if: ctx.event?.original == null
+  - remove:
+      field: message
+      tag: remove_message
+      ignore_missing: true
+      description: >-
+        The `message` field is no longer required if the document has an
+        `event.original` field.
+      if: ctx.event?.original != null
+  - json:
+      field: event.original
+      tag: json_event_original
+      target_field: json
+      on_failure:
+        - append:
+            field: error.message
+            value: >-
+              Processor {{{_ingest.on_failure_processor_type}}} with tag
+              {{{_ingest.on_failure_processor_tag}}} in pipeline
+              {{{_ingest.on_failure_pipeline}}} failed with message:
+              {{{_ingest.on_failure_message}}}
+  - rename:
+      field: json.cve_id
+      tag: rename_cve_id
+      target_field: github.security_advisory.cve_id
+  - set:
+      field: vulnerability.id
+      tag: set_vulnerability_id
+      copy_from: github.security_advisory.cve_id
+      ignore_empty_value: true
+  - rename:
+      field: json.credits
+      tag: rename_credits
+      target_field: github.security_advisory.credits
+  - convert:
+      field: json.cvss.score
+      tag: convert_cvss_score_to_float
+      target_field: github.security_advisory.cvss.score
+      type: float
+      ignore_missing: true
+      on_failure:
+        - append:
+            field: error.message
+            value: >-
+              Processor {{{_ingest.on_failure_processor_type}}} with tag
+              {{{_ingest.on_failure_processor_tag}}} in pipeline
+              {{{_ingest.on_failure_pipeline}}} failed with message:
+              {{{_ingest.on_failure_message}}}
+  - set:
+      field: vulnerability.score.base
+      tag: set_vulnerability_score_base
+      copy_from: github.security_advisory.cvss.score
+      ignore_empty_value: true
+  - rename:
+      field: json.cvss.vector_string
+      tag: rename_cvss_vector_string
+      target_field: github.security_advisory.cvss.vector_string
+  - convert:
+      field: json.cvss_severities.cvss_v3.score
+      tag: convert_cvss_severities_v3_score_to_float
+      target_field: github.security_advisory.cvss_severities.cvss_v3.score
+      type: float
+      ignore_missing: true
+      on_failure:
+        - append:
+            field: error.message
+            value: >-
+              Processor {{{_ingest.on_failure_processor_type}}} with tag
+              {{{_ingest.on_failure_processor_tag}}} in pipeline
+              {{{_ingest.on_failure_pipeline}}} failed with message:
+              {{{_ingest.on_failure_message}}}
+  - rename:
+      field: json.cvss_severities.cvss_v3.vector_string
+      tag: rename_cvss_v3_severities_vector_string
+      target_field: github.security_advisory.cvss_severities.cvss_v3.vector_string
+  - convert:
+      field: json.cvss_severities.cvss_v4.score
+      tag: convert_cvss_severities_v4_score_to_float
+      target_field: github.security_advisory.cvss_severities.cvss_v4.score
+      type: float
+      ignore_missing: true
+      on_failure:
+        - append:
+            field: error.message
+            value: >-
+              Processor {{{_ingest.on_failure_processor_type}}} with tag
+              {{{_ingest.on_failure_processor_tag}}} in pipeline
+              {{{_ingest.on_failure_pipeline}}} failed with message:
+              {{{_ingest.on_failure_message}}}
+  - rename:
+      field: json.cvss_severities.cvss_v4.vector_string
+      tag: rename_cvss_v4_severities_vector_string
+      target_field: github.security_advisory.cvss_severities.cvss_v4.vector_string
+  - rename:
+      field: json.cwes
+      tag: rename_cwes
+      target_field: github.security_advisory.cwes
+  - rename:
+      field: json.description
+      tag: rename_description
+      target_field: github.security_advisory.description
+  - set:
+      field: vulnerability.description
+      tag: set_vulnerability_idescription
+      copy_from: github.security_advisory.description
+      ignore_empty_value: true
+  - convert:
+      field: json.epss.percentage
+      if: ctx.json?.epss?.percentage != null
+      tag: convert_epss_percentage_to_float
+      target_field: github.security_advisory.epss.percentage
+      type: float
+      on_failure:
+        - append:
+            field: error.message
+            value: >-
+              Processor {{{_ingest.on_failure_processor_type}}} with tag
+              {{{_ingest.on_failure_processor_tag}}} in pipeline
+              {{{_ingest.on_failure_pipeline}}} failed with message:
+              {{{_ingest.on_failure_message}}}
+  - convert:
+      field: json.epss.percentile
+      if: ctx.json?.epss?.percentile != null
+      tag: convert_epss_percentile_to_float
+      target_field: github.security_advisory.epss.percentile
+      type: float
+      on_failure:
+        - append:
+            field: error.message
+            value: >-
+              Processor {{{_ingest.on_failure_processor_type}}} with tag
+              {{{_ingest.on_failure_processor_tag}}} in pipeline
+              {{{_ingest.on_failure_pipeline}}} failed with message:
+              {{{_ingest.on_failure_message}}}
+  - rename:
+      field: json.ghsa_id
+      tag: rename_ghsa_id
+      target_field: github.security_advisory.ghsa_id
+  - date:
+      field: json.github_reviewed_at
+      if: ctx.json?.github_reviewed_at != null
+      tag: date_github_reviewed_at
+      formats:
+        - strict_date_optional_time_nanos
+      target_field: github.security_advisory.github_reviewed_at
+  - set:
+      field: vulnerability.reference
+      tag: set_vulnerability_reference
+      copy_from: github.security_advisory.json.html_url
+      ignore_empty_value: true
+  - uri_parts:
+      field: json.html_url
+      if: ctx.json?.html_url != null && ctx.json.html_url != ''
+      on_failure:
+        - set:
+            field: url.original
+            value: '{{{json.html_url}}}'
+            if: ctx.json?.html_url != null && ctx.json.html_url != ''
+  - set:
+      field: url.full
+      value: '{{{url.original}}}'
+      if: ctx.url?.original != null && ctx.url.original != ''
+  - rename:
+      field: json.html_url
+      tag: rename_html_url
+      target_field: github.security_advisory.html_url
+  - rename:
+      field: json.identifiers
+      tag: rename_identifiers
+      target_field: github.security_advisory.identifiers
+  - date:
+      field: json.nvd_published_at
+      if: ctx.json?.nvd_published_at != null
+      tag: date_nvd_published_at
+      formats:
+        - strict_date_optional_time_nanos
+      target_field: github.security_advisory.nvd_published_at
+  - date:
+      field: json.published_at
+      if: ctx.json?.published_at != null
+      tag: date_published_at
+      formats:
+        - strict_date_optional_time_nanos
+      target_field: github.security_advisory.published_at
+  - rename:
+      field: json.references
+      tag: rename_references
+      target_field: github.security_advisory.references
+  - rename:
+      field: json.repository_advisory_url
+      tag: rename_repository_advisory_url
+      target_field: github.security_advisory.repository_advisory_url
+  - rename:
+      field: json.severity
+      tag: rename_severity
+      target_field: github.security_advisory.severity
+  - set:
+      field: vulnerability.severity
+      tag: set_vulnerability_severity
+      copy_from: github.security_advisory.severity
+      ignore_empty_value: true
+  - rename:
+      field: json.source_code_location
+      tag: rename_source_code_location
+      target_field: github.security_advisory.source_code_location
+  - rename:
+      field: json.summary
+      tag: rename_summary
+      target_field: github.security_advisory.summary
+  - rename:
+      field: json.type
+      tag: rename_type
+      target_field: github.security_advisory.type
+  - date:
+      field: json.updated_at
+      if: ctx.json?.updated_at != null
+      tag: date_updated_at
+      formats:
+        - strict_date_optional_time_nanos
+      target_field: github.security_advisory.updated_at
+  - rename:
+      field: json.url
+      tag: rename_url
+      target_field: github.security_advisory.url
+  - rename:
+      field: json.vulnerabilities
+      tag: rename_vulnerabilities
+      target_field: github.security_advisory.vulnerabilities
+  - date:
+      field: json.withdrawn_at
+      if: ctx.json?.withdrawn_at != null
+      tag: date_withdrawn_at
+      formats:
+        - strict_date_optional_time_nanos
+      target_field: github.security_advisory.withdrawn_at
+  - set:
+      field: vulnerability.classification
+      tag: set_vulnerability_classification
+      value: CVSS
+  - set:
+      field: vulnerability.enumeration
+      tag: set_vulnerability_enumeration
+      value: CVE
+  - remove:
+      tag: remove_json
+      field:
+        - json
+  - script:
+      tag: script_to_drop_null_values
+      lang: painless
+      description: Drops null/empty values recursively.
+      source: |-
+        boolean drop(Object object) {
+        if (object == null || object == '') {
+            return true;
+        } else if (object instanceof Map) {
+            ((Map) object).values().removeIf(v -> drop(v));
+            return (((Map) object).size() == 0);
+        } else if (object instanceof List) {
+            ((List) object).removeIf(v -> drop(v));
+            return (((List) object).length == 0);
+        }
+        return false;
+        }
+        drop(ctx);
+  - set:
+      field: event.kind
+      value: pipeline_error
+      if: ctx.error?.message != null
+  - append:
+      field: tags
+      value: preserve_original_event
+      allow_duplicates: false
+      if: ctx.error?.message != null
+on_failure:
+  - append:
+      field: error.message
+      value: >-
+        Processor '{{{ _ingest.on_failure_processor_type }}}'
+        {{{#_ingest.on_failure_processor_tag}}}with tag '{{{
+        _ingest.on_failure_processor_tag }}}'
+        {{{/_ingest.on_failure_processor_tag}}}failed with message '{{{
+        _ingest.on_failure_message }}}'
+  - set:
+      field: event.kind
+      tag: set_pipeline_error_to_event_kind
+      value: pipeline_error
+  - append:
+      field: tags
+      value: preserve_original_event
+      allow_duplicates: false
