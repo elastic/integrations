@@ -1,0 +1,100 @@
+config_version: 2
+interval: {{interval}}
+resource.tracer:
+  enabled: {{enable_request_tracer}}
+  filename: "../../logs/cel/http-request-trace-*.ndjson"
+  maxbackups: 5
+{{#if proxy_url}}
+resource.proxy_url: {{proxy_url}}
+{{/if}}
+{{#if ssl}}
+resource.ssl: {{ssl}}
+{{/if}}
+{{#if http_client_timeout}}
+resource.timeout: {{http_client_timeout}}
+{{/if}}
+resource.url: {{url}}/api/public/audit/account/{{account_id}}/auditlogs
+state:
+  private_token: {{private_token}}
+  page_size: {{page_size}}
+  initial_interval: {{initial_interval}}
+redact:
+  fields:
+    - private_token
+max_executions: 5000
+program: |
+  (
+    has(state.want_more) && state.want_more ?
+      state
+    :
+      state.with({
+        "cursor": {
+          "last_timestamp": state.?cursor.last_timestamp.orValue((now - duration(state.?initial_interval.orValue("1h"))))
+        },
+        "page_size": state.?page_size.orValue(100)
+      })
+  ).as(state,
+    state.with(
+      get_request(
+        (has(state.next_url) && state.next_url != "") ?
+          state.next_url
+        :
+          state.url.trim_right("/") + "?" + {
+            "fromdate": [string(state.cursor.last_timestamp)],
+            "pageSize": [string(state.page_size)]
+          }.format_query()
+      )
+    ).with({
+      "Header": {
+        "Content-Type": ["application/json"],
+        "Private-Token": [state.private_token]
+      }
+    }).do_request().as(resp,
+      resp.StatusCode == 200 ?
+        resp.Body.decode_json().as(body, {
+          "events": has(body.auditlogs) ? body.auditlogs.map(e, {"message": e.encode_json()}) : [{}],
+          "want_more": has(body.next),
+          "next_url": has(body.next) ? state.url.split("/auditlogs")[0] + body.next : "",
+          "cursor": {
+            "last_timestamp": now() - duration("1s")
+          },
+          "page_size": state.page_size,
+          "private_token": state.private_token
+        })
+      :
+        {
+          "events": {
+            "error": {
+              "code": string(resp.StatusCode),
+              "id": string(resp.Status),
+              "message": "GET " + state.url.trim_right("/") + ": " + (
+                size(resp.Body) != 0 ?
+                  string(resp.Body)
+                :
+                  string(resp.Status) + " (" + string(resp.StatusCode) + ")"
+              )
+            }
+          },
+          "want_more": false,
+          "cursor": {
+            "last_timestamp": state.cursor.last_timestamp
+          },
+          "page_size": state.page_size,
+          "private_token": state.private_token
+        }
+    )
+  )
+tags:
+{{#if preserve_original_event}}
+  - preserve_original_event
+{{/if}}
+{{#each tags as |tag|}}
+  - {{tag}}
+{{/each}}
+{{#contains "forwarded" tags}}
+publisher_pipeline.disable_host: true
+{{/contains}}
+{{#if processors}}
+processors:
+{{processors}}
+{{/if}}
