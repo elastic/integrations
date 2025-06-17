@@ -5,7 +5,7 @@ The [Swimlane Turbine](https://swimlane.com/swimlane-turbine/) integration allow
 Use the Swimlane Turbine integration to stream container pod logs into your Elastic deployment. 
 
 ## Data streams
-The Swimlane Turbine integration collects two type of data streams: logs and cel
+The Swimlane Turbine integration collects two type of data streams: logs and cel.
 
 ### swimlane.audit_logs
 Swimlane Audit Logs help logs keep a record of all audit events occurring within both on-premises and cloud environments. These logs provide a comprehensive history of user actions, configuration changes, access attempts, system events, and other critical activities that support security and compliance monitoring.
@@ -61,9 +61,9 @@ An example event for `audit` looks as following:
 {
     "@timestamp": "2025-04-23T22:17:40.362Z",
     "agent": {
-        "ephemeral_id": "f617376a-3307-4241-85f9-2b2dd0ab3aeb",
-        "id": "4908884a-a55b-4b20-a6aa-b5969ddababf",
-        "name": "elastic-agent-32328",
+        "ephemeral_id": "bc351be3-80bf-4251-abfd-0b0313e10026",
+        "id": "9da55cfc-0368-44dd-9f29-94d730a7e3b4",
+        "name": "elastic-agent-80635",
         "type": "filebeat",
         "version": "8.17.4"
     },
@@ -79,21 +79,21 @@ An example event for `audit` looks as following:
     },
     "data_stream": {
         "dataset": "swimlane.audit_logs",
-        "namespace": "40486",
+        "namespace": "42763",
         "type": "logs"
     },
     "ecs": {
         "version": "8.0.0"
     },
     "elastic_agent": {
-        "id": "4908884a-a55b-4b20-a6aa-b5969ddababf",
+        "id": "9da55cfc-0368-44dd-9f29-94d730a7e3b4",
         "snapshot": false,
         "version": "8.17.4"
     },
     "event": {
         "agent_id_status": "verified",
         "dataset": "swimlane.audit_logs",
-        "ingested": "2025-06-10T22:01:08Z",
+        "ingested": "2025-06-16T22:20:19Z",
         "kind": "event",
         "original": "{\"$type\":\"Core.Models.ElasticAudit.AuditLogSchema, Core\",\"accountId\":\"01966444-24d9-7a76-b517-3699a780b068\",\"actionType\":\"Update\",\"authenticationType\":\"JWT\",\"category\":\"Record\",\"description\":\"admin@domain.tld updated report 68095b8dce404ef1b500f7e8\",\"endpoint\":\"/app/a8FJwIi_XeE5big7m\",\"eventOutcome\":\"Success\",\"eventTime\":\"2025-04-23T22:17:40.362641Z\",\"id\":\"68095b8dce404ef1b500f7e8\",\"isAdmin\":true,\"newValue\":\"{\\\"GroupBys\\\":[],\\\"Aggregates\\\":[],\\\"ApplicationIds\\\":[\\\"a8FJwIi_XeE5big7m\\\"],\\\"Keywords\\\":null,\\\"Columns\\\":[\\\"68095b8dce404ef1b500f7e6\\\"],\\\"Sorts\\\":{\\\"68095b8dce404ef1b500f7e6\\\":1},\\\"Filters\\\":[],\\\"CountByApplicationFacet\\\":false,\\\"PageSize\\\":10,\\\"Offset\\\":0,\\\"DefaultSearchReport\\\":true,\\\"Allowed\\\":[],\\\"Permissions\\\":{},\\\"CreatedDate\\\":\\\"2025-04-23T21:28:45.686Z\\\",\\\"ModifiedDate\\\":\\\"2025-04-23T22:17:40.3466444Z\\\",\\\"CreatedByUser\\\":{\\\"Id\\\":\\\"01966448-16a7-7474-9f83-40b1dd9a2fb2\\\",\\\"Name\\\":\\\"admin@swimlane.com\\\"},\\\"ModifiedByUser\\\":{\\\"Id\\\":\\\"01966448-16a7-7474-9f83-40b1dd9a2fb2\\\",\\\"Name\\\":\\\"admin@swimlane.com\\\"},\\\"ChartOptions\\\":null,\\\"StatsDrillin\\\":null,\\\"FilterType\\\":\\\"And\\\",\\\"ColorCoding\\\":[],\\\"Uid\\\":\\\"default-6bbd7\\\",\\\"Version\\\":4,\\\"Id\\\":\\\"68095b8dce404ef1b500f7e8\\\",\\\"Name\\\":\\\"Default\\\",\\\"Disabled\\\":false}\",\"sourceIp\":[\"81.2.69.144\"],\"tenantId\":\"0196648c-68b6-78f0-9f56-e0eea2faa288\",\"user\":\"admin@domain.tld\",\"userAgent\":\"Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/135.0.0.0 Safari/537.36\",\"userId\":\"01966448-16a7-7474-9f83-40b1dd9a2fb2\"}",
         "outcome": "success",
