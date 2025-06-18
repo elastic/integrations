@@ -246,6 +246,24 @@ processors:
       target_field: entityanalytics_okta.roles
       tag: rename_user_roles
       ignore_missing: true
+  - script:
+      tag: script_map_roles_to_ecs
+      if: ctx.entityanalytics_okta?.roles instanceof List
+      source: |-
+        HashSet roles = new HashSet();
+        for (def r: ctx.entityanalytics_okta.roles) {
+          if (r.id != null && r.id != '') {
+            roles.add(r.id);
+          }
+          if (r.label != null && r.label != '') {
+            roles.add(r.label);
+          }
+        }
+        if (roles.size() == 0) {
+          return;
+        }
+        ctx.user = ctx.user ?: [:];
+        ctx.user.roles = roles;
   - rename:
       field: okta.transitioningToStatus
       target_field: entityanalytics_okta.user.transitioning_to_status
