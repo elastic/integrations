@@ -22,7 +22,7 @@ resource.headers:
 program: |
   (
     has(state.?cursor.last_timestamp)? 
-      (timestamp(state.cursor.last_timestamp))
+      (timestamp(state.?cursor.?last_timestamp))
     :
       (now - duration("2160h"))
   ).as(start_time, state.with(
@@ -47,7 +47,7 @@ program: |
                   has(e.secrets) && e.secrets.size() > 0 ?
                     (e.secrets.map(s,
                       {  
-                        "data": {
+                        "entro": {
                           "date": e.date,
                           "request_id": e.request_id,
                           "secret_type": s.secret_type,
@@ -58,7 +58,7 @@ program: |
                       }))
                     :
                       [{
-                        "data": {
+                        "entro": {
                           "date": e.date,
                           "request_id": e.request_id,
                           "timestamp": e.timestamp,
@@ -72,7 +72,7 @@ program: |
                 "last_timestamp": parsed_json.size() > 0 ?
                   (start_time + duration("24h"))
                   :
-                  timestamp(state.cursor.last_timestamp),
+                  timestamp(state.?cursor.?last_timestamp),
                 }
             }
             :
@@ -90,7 +90,7 @@ program: |
                 },
               },
               "cursor": {
-                "last_timestamp": state.cursor.last_timestamp,
+                "last_timestamp": state.?cursor.?last_timestamp,
               },
               "want_more": false,
             }
