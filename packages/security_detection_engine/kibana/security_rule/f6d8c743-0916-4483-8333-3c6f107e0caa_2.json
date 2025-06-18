@@ -1,0 +1,79 @@
+{
+    "attributes": {
+        "author": [
+            "Elastic"
+        ],
+        "description": "Identifies PowerShell scripts that use string concatenation as a form of obfuscation. These methods are designed to evade static analysis and bypass security protections such as the Antimalware Scan Interface (AMSI).",
+        "from": "now-9m",
+        "language": "esql",
+        "license": "Elastic License v2",
+        "name": "Potential PowerShell Obfuscation via String Concatenation",
+        "query": "FROM logs-windows.powershell_operational* metadata _id, _version, _index\n| WHERE event.code == \"4104\"\n\n// Look for scripts with more than 500 chars that contain a related keyword\n| EVAL script_len = LENGTH(powershell.file.script_block_text)\n| WHERE script_len > 500\n\n// Replace string format expressions with \ud83d\udd25 to enable counting the occurrence of the patterns we are looking for\n// The emoji is used because it's unlikely to appear in scripts and has a consistent character length of 1\n| EVAL replaced_with_fire = REPLACE(powershell.file.script_block_text, \"\"\"['\"][A-Za-z0-9.]+['\"](\\s?\\+\\s?['\"][A-Za-z0-9.,\\-\\s]+['\"]){2,}\"\"\", \"\ud83d\udd25\")\n\n// Count how many patterns were detected by calculating the number of \ud83d\udd25 characters inserted\n| EVAL count = LENGTH(replaced_with_fire) - LENGTH(REPLACE(replaced_with_fire, \"\ud83d\udd25\", \"\"))\n\n// Keep the fields relevant to the query, although this is not needed as the alert is populated using _id\n| KEEP count, replaced_with_fire, powershell.file.script_block_text, powershell.file.script_block_id, file.path, powershell.sequence, powershell.total, _id, _index, host.name, agent.id, user.id\n| WHERE count >= 2\n",
+        "related_integrations": [
+            {
+                "package": "windows",
+                "version": "^3.0.0"
+            }
+        ],
+        "risk_score": 47,
+        "rule_id": "f6d8c743-0916-4483-8333-3c6f107e0caa",
+        "setup": "## Setup\n\nThe 'PowerShell Script Block Logging' logging policy must be enabled.\nSteps to implement the logging policy with Advanced Audit Configuration:\n\n```\nComputer Configuration >\nAdministrative Templates >\nWindows PowerShell >\nTurn on PowerShell Script Block Logging (Enable)\n```\n\nSteps to implement the logging policy via registry:\n\n```\nreg add \"hklm\\SOFTWARE\\Policies\\Microsoft\\Windows\\PowerShell\\ScriptBlockLogging\" /v EnableScriptBlockLogging /t REG_DWORD /d 1\n```\n",
+        "severity": "medium",
+        "tags": [
+            "Domain: Endpoint",
+            "OS: Windows",
+            "Use Case: Threat Detection",
+            "Tactic: Defense Evasion",
+            "Data Source: PowerShell Logs"
+        ],
+        "threat": [
+            {
+                "framework": "MITRE ATT&CK",
+                "tactic": {
+                    "id": "TA0005",
+                    "name": "Defense Evasion",
+                    "reference": "https://attack.mitre.org/tactics/TA0005/"
+                },
+                "technique": [
+                    {
+                        "id": "T1027",
+                        "name": "Obfuscated Files or Information",
+                        "reference": "https://attack.mitre.org/techniques/T1027/"
+                    },
+                    {
+                        "id": "T1140",
+                        "name": "Deobfuscate/Decode Files or Information",
+                        "reference": "https://attack.mitre.org/techniques/T1140/"
+                    }
+                ]
+            },
+            {
+                "framework": "MITRE ATT&CK",
+                "tactic": {
+                    "id": "TA0002",
+                    "name": "Execution",
+                    "reference": "https://attack.mitre.org/tactics/TA0002/"
+                },
+                "technique": [
+                    {
+                        "id": "T1059",
+                        "name": "Command and Scripting Interpreter",
+                        "reference": "https://attack.mitre.org/techniques/T1059/",
+                        "subtechnique": [
+                            {
+                                "id": "T1059.001",
+                                "name": "PowerShell",
+                                "reference": "https://attack.mitre.org/techniques/T1059/001/"
+                            }
+                        ]
+                    }
+                ]
+            }
+        ],
+        "timestamp_override": "event.ingested",
+        "type": "esql",
+        "version": 2
+    },
+    "id": "f6d8c743-0916-4483-8333-3c6f107e0caa_2",
+    "type": "security-rule"
+}
