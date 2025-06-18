@@ -2,10 +2,11 @@
 
 This [SentinelOne Cloud Funnel](https://assets.sentinelone.com/training/sentinelone_cloud_fu#page=1) integration enables your security team to securely stream XDR data to Elastic Security, via Amazon S3. When integrated with Elastic Security, this valuable data can be leveraged within Elastic for threat protection, detection, and incident response.
 
-The SentinelOne Cloud Funnel integration can be used in three different modes to collect data:
+The SentinelOne Cloud Funnel integration can be used in four different modes to collect data:
 - AWS S3 polling mode: SentinelOne Cloud Funnel writes data to S3, and Elastic Agent polls the S3 bucket by listing its contents and reading new files.
 - AWS S3 SQS mode: SentinelOne Cloud Funnel writes data to S3, S3 sends a notification of a new object to SQS, the Elastic Agent receives the notification from SQS, and then reads the S3 object. Multiple agents can be used in this mode.
 - GCS polling mode: SentinelOne Cloud Funnel writes data to GCS bucket, and Elastic Agent polls the GCS bucket by listing its contents and reading new files.
+- Azure Blob Storage mode: SentinelOne Cloud Funnel writes data to Azure Blob containers, and Elastic Agent polls the data from containers by listing its contents and reading new files.
 
 ## Compatibility
 
@@ -83,7 +84,7 @@ If you are just starting out creating your GCS bucket, do the following:
 3) Make sure to download the JSON key file once prompted.
 4) Use this JSON key file either inline (JSON string object), or by specifying the path to the file on the host machine, where the agent is running.
 
-A sample JSON Credentials file looks as follows: 
+A sample JSON Credentials file looks as follows:
 ```json
 {
   "type": "dummy_service_account",
@@ -116,12 +117,23 @@ A sample JSON Credentials file looks as follows:
 3. Configure event notifications for an S3 bucket. Follow this [link](https://docs.aws.amazon.com/AmazonS3/latest/userguide/enable-event-notifications.html).
    - While creating `event notification` select the event type as s3:ObjectCreated:*, destination type SQS Queue, and select the queue name created in Step 2.
 
+### To collect data from an Azure Blob Storage, follow the below steps:
+
+- Considering you already have an Blob Storage setup, to configure it with SentinelOne Cloud Funnel, follow the steps mentioned here: `[Your Login URL]/docs/en/how-to-configure-your-amazon-s3-bucket.html`.
+- Enable the Cloud Funnel Streaming as mentioned here: `[Your Login URL]/docs/en/how-to-enable-cloud-funnel-streaming.html#how-to-enable-cloud-funnel-streaming`.
+- Configure the integration using either Service Account Credentials or Microsoft Entra ID RBAC with OAuth2 options.For OAuth2 (Entra ID RBAC), you'll need the Client ID, Client Secret, and Tenant ID. For Service Account Credentials, you'll need either the Service Account Key or the URI to access the data.
+- How to setup the `auth.oauth2` credentials can be found in the Azure documentation https://docs.microsoft.com/en-us/azure/active-directory/develop/quickstart-register-app[here]
+
+Note:
+- The service principal must be granted the appropriate permissions to read blobs. Ensure that the necessary role assignments are in place for the service principal to access the storage resources. For more information, please refer to the [Azure Role-Based Access Control (RBAC) documentation](https://learn.microsoft.com/en-us/azure/role-based-access-control/built-in-roles/storage).
+- We recommend assigning either the Storage Blob Data Reader or BlobOwner role. The Storage Blob Data Reader role provides read-only access to blob data and is aligned with the principle of least privilege, making it suitable for most use cases. The Storage Blob Data Owner role grants full administrative access — including read, write, and delete permissions — and should be used only when such elevated access is explicitly required.
+
 ### Enabling the integration in Elastic:
 
 1. In Kibana go to Management > Integrations
 2. In "Search for integrations" search bar, type SentinelOne Cloud Funnel
 3. Click on the "SentinelOne Cloud Funnel" integration from the search results.
-4. Click on the Add SentinelOne Cloud Funnel Integration button to add the integration.
+4. Click on the Add SentinelOne Cloud Funnel Integration button to add the integration. Here you will have three options to collect data.
 5. While adding the integration, if you want to collect logs via AWS S3, then you have to put the following details:
    - access key id
    - secret access key
@@ -133,6 +145,21 @@ A sample JSON Credentials file looks as follows:
    - secret access key
    - queue url
    - collect logs via S3 Bucket toggled off
+6. To collect logs from Azure Blob Storage, you'll need to provide the following details:
+   For OAuth2 (Microsoft Entra ID RBAC):
+   - Account Name
+   - Client ID
+   - Client Secret
+   - Tenant ID
+   - Container Details.
+
+   For Service Account Credentials:
+   - Service Account Key or the URI
+   - Account Name
+   - Container Details
+7. To collect logs from Google Cloud Storage, you'll need to provide the following details:
+   - Project ID
+   - Either the JSON credential key or the path to the JSON credential file
 
 **NOTE**: There are other input combination options available, please check [here](https://www.elastic.co/guide/en/beats/filebeat/current/filebeat-input-aws-s3.html).
 
