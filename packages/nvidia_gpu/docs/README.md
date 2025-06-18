@@ -197,7 +197,15 @@ An example event for `stats` looks as following:
 | gpu.ecc.single_bit_persistent.count | Single-bit persistent errors count for GPU memory. | long |  | counter |
 | gpu.ecc.single_bit_volatile.count | Single-bit volatile errors count for GPU memory. | long |  | counter |
 | gpu.error.xid | The eXerience ID of the error being reported by the GPU. | float |  | gauge |
-| gpu.labels.\* | Nvidia GPU labels | object |  |  |
+| gpu.labels.device | Nvidia GPU device name | keyword |  |  |
+| gpu.labels.driver_version | Nvidia GPU Driver version | keyword |  |  |
+| gpu.labels.gpu | Nvidia GPU | keyword |  |  |
+| gpu.labels.hostname | Nvidia GPU hostname | keyword |  |  |
+| gpu.labels.instance | Nvidia GPU instance name | keyword |  |  |
+| gpu.labels.job | Nvidia GPU job | keyword |  |  |
+| gpu.labels.modelName | Nvidia GPU model name | keyword |  |  |
+| gpu.labels.pci_bus_id | Nvidia GPU pci bus id | keyword |  |  |
+| gpu.labels.uuid | Nvidia GPU uuid | keyword |  |  |
 | gpu.license_vgpu_status | vGPU License status. | long |  | gauge |
 | gpu.memory.framebuffer.free_size | Free size of the framebuffer (in MiB). | float |  | gauge |
 | gpu.memory.framebuffer.used_size | Used size of the framebuffer (in MiB). | float |  | gauge |
@@ -231,7 +239,6 @@ An example event for `stats` looks as following:
 | gpu.utilization.encoder.pct | Encoder utilization (in %). | float | percent | gauge |
 | gpu.utilization.gpu.pct | GPU utilization (in %). | float | percent | gauge |
 | gpu.utilization.memory_copy.pct | Memory utilization (in %). | float | percent | gauge |
-| gpu.uuid | Nvidia GPU uuid | keyword |  |  |
 | kubernetes.container.name | Kubernetes container name | keyword |  |  |
 | kubernetes.namespace | Kubernetes namespace | keyword |  |  |
 | kubernetes.pod.name | Kubernetes pod name | keyword |  |  |
