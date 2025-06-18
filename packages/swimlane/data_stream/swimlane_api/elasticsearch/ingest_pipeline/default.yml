@@ -37,11 +37,30 @@ processors:
       field: swimlane.audit_log.User
       target_field: user.name
       ignore_missing: true
+  - rename:
+      field: user.name
+      target_field: user.email
+      tag: rename_user_email
+      if: ctx.user?.name != null && ctx.user.name.indexOf("@") > 0
+  - dissect:
+      field: user.email
+      pattern: '%{user.name}@%{user.domain}'
+      tag: dissect_user_email
+      ignore_missing: true
+      ignore_failure: true
+      if: ctx.user?.name == null
   - append:
       field: related.user
-      value: '{{{user.name}}}'
-      allow_duplicates: false
+      value: "{{{user.name}}}"
       if: ctx.user?.name != null
+      allow_duplicates: false
+      ignore_failure: true
+  - append:
+      field: related.user
+      value: "{{{user.email}}}"
+      if: ctx.user?.email != null
+      allow_duplicates: false
+      ignore_failure: true
   - rename:
       field: swimlane.audit_log.AccountId
       target_field: cloud.origin.account.id

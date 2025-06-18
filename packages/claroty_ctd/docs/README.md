@@ -400,7 +400,7 @@ An example event for `event` looks as following:
         "type": "logs"
     },
     "ecs": {
-        "version": "8.11.0"
+        "version": "8.17.0"
     },
     "elastic_agent": {
         "id": "7090d98c-c949-469c-9209-a0de3adaaa65",
@@ -804,7 +804,7 @@ An example event for `asset` looks as following:
         "type": "logs"
     },
     "ecs": {
-        "version": "8.11.0"
+        "version": "8.17.0"
     },
     "elastic_agent": {
         "id": "7090d98c-c949-469c-9209-a0de3adaaa65",
@@ -1112,7 +1112,7 @@ An example event for `baseline` looks as following:
         "mac": "00-00-BC-C7-8F-06"
     },
     "ecs": {
-        "version": "8.11.0"
+        "version": "8.17.0"
     },
     "elastic_agent": {
         "id": "7090d98c-c949-469c-9209-a0de3adaaa65",
