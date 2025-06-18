@@ -63,7 +63,7 @@ An example event for `user` looks as following:
         "type": "logs"
     },
     "ecs": {
-        "version": "8.11.0"
+        "version": "8.17.0"
     },
     "elastic_agent": {
         "id": "277a9e26-8aae-4bc6-abcc-21db22ad29d7",

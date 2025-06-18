@@ -2,12 +2,15 @@ format_version: 3.1.4
 name: tencent_cloud
 title: Tencent Cloud
 version: 0.2.0
-description: 从腾讯云的 COS 中采集审计日志
+
+description: 从腾讯云的 COS 中采集基础设施日志
+
 type: integration
 categories:
   - security
   - iam
   - cloud
+  - observability
 conditions:
   kibana:
     version: "^8.16.0 || ^9.0.0"
@@ -21,16 +24,85 @@ screenshots:
     title: Tencent Cloud Audit Dashboard Screenshot
     size: 600x600
     type: image/png
+  - src: /img/tencent_cloud_clb_dashboard.png
+    title: Tencent Cloud CLB Dashboard
+    size: 600x600
+    type: image/png
+  - src: /img/tencent_cloud_cos_access_dashboard.png
+    title: Tencent Cloud COS Access Dashboard
+    size: 600x600
+    type: image/png
+  - src: /img/tencent_cloud_scf_dashboard.png
+    title: Tencent Cloud SCF Dashboard
+    size: 600x600
+    type: image/png
 policy_templates:
-  - name: Tencent cloud
+  - name: audit
     title: Tencent cloud audit log
     description: 从腾讯云的 COS 中采集审计日志
+    categories:
+      - security
+    data_streams:
+      - audit
     inputs:
       - type: aws-s3
         title: Collect Tencent Cloud Audit logs from Tencent Cloud Object Storage (COS)
         description: Collect Tencent Cloud Audit logs from Tencent Cloud Object Storage (COS)
+    screenshots:
+      - src: /img/tencent_cloud_audit_dashboard.png
+        title: Tencent Cloud Audit Dashboard Screenshot
+        size: 600x600
+        type: image/png
+  - name: scf
+    title: Tencent cloud SCF log
+    description: 从腾讯云的 COS 中采集SCF日志
+    categories:
+      - observability
+    data_streams:
+      - scf
+    inputs:
+      - type: aws-s3
+        title: Collect Tencent Cloud SCF logs from Tencent Cloud Object Storage (COS)
+        description: Collect Tencent Cloud SCF logs from Tencent Cloud Object Storage (COS)
+    screenshots:
+      - src: /img/tencent_cloud_scf_dashboard.png
+        title: Tencent Cloud SCF Dashboard
+        size: 600x600
+        type: image/png
+  - name: cos
+    title: Tencent cloud COS Access log
+    description: 从腾讯云的 COS 中采集 COS Access 日志
+    categories:
+      - security
+      - observability
+    data_streams:
+      - cos
+    inputs:
+      - type: aws-s3
+        title: Collect Tencent Cloud COS Access logs from Tencent Cloud Object Storage (COS)
+        description: Collect Tencent Cloud COS Access logs from Tencent Cloud Object Storage (COS)
+    screenshots:
+      - src: /img/tencent_cloud_cos_access_dashboard.png
+        title: Tencent Cloud COS Access Dashboard
+        size: 600x600
+        type: image/png
+  - name: clb
+    title: Tencent cloud CLB log
+    description: 从腾讯云的 COS 中采集 CLB 日志
+    categories:
+      - security
+      - observability
+    data_streams:
+      - clb
+    inputs:
+      - type: aws-s3
+        title: Collect Tencent Cloud CLB logs from Tencent Cloud Object Storage (COS)
+        description: Collect Tencent Cloud CLB logs from Tencent Cloud Object Storage (COS)
+    screenshots:
+      - src: /img/tencent_cloud_clb_dashboard.png
+        title: Tencent Cloud CLB Dashboard
+        size: 600x600
+        type: image/png
 owner:
   github: elastic/security-service-integrations
   type: community
-
-
