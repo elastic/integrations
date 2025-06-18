@@ -1,0 +1,109 @@
+{
+    "attributes": {
+        "author": [
+            "Elastic"
+        ],
+        "description": "Identifies potential relay attacks against a machine account by identifying network share access events coming from a remote source.ip but using the target server computer account. This may indicate a successful SMB relay attack.",
+        "from": "now-9m",
+        "index": [
+            "logs-system.security*",
+            "logs-windows.forwarded*",
+            "winlogbeat-*"
+        ],
+        "language": "eql",
+        "license": "Elastic License v2",
+        "name": "Potential Machine Account Relay Attack via SMB",
+        "note": "## Triage and analysis\n\n### Investigating Potential Machine Account Relay Attack via SMB\n\n### Possible investigation steps\n- Compare the source.ip to the target server host.ip addresses to make sure it's indeed a remote use of the machine account.\n- Examine the source.ip activities as this is the attacker IP address used to relay.\n- Review all relevant activities such as services creation, file and process events on the target server within the same period.\n- Verify the machine account names that end with a dollar sign ($) to ensure they match the expected hostnames, and investigate any discrepancies.\n- Check the network logon types to confirm if they align with typical usage patterns for the identified machine accounts.\n- Investigate the context of the source IP addresses that do not match the host IP, looking for any signs of unauthorized access or unusual network activity.\n- Correlate the findings with other security logs and alerts to identify any patterns or additional indicators of compromise related to the potential relay attack.\n\n### False positive analysis\n\n- Machine accounts performing legitimate network logons from different IP addresses can trigger false positives. To manage this, identify and whitelist known IP addresses associated with legitimate administrative tasks or automated processes.\n- Scheduled tasks or automated scripts that use machine accounts for network operations may be flagged. Review and document these tasks, then create exceptions for their associated IP addresses and hostnames.\n- Load balancers or proxy servers that alter the source IP address of legitimate authentication requests can cause false alerts. Ensure these devices are accounted for in the network architecture and exclude their IP addresses from the rule.\n- Temporary network reconfigurations or migrations might result in machine accounts appearing to log in from unexpected hosts. During such events, temporarily adjust the rule parameters or disable the rule to prevent unnecessary alerts.\n- Regularly review and update the list of exceptions to ensure they reflect current network configurations and operational practices, minimizing the risk of overlooking genuine threats.\n\n### Response and remediation\n\n- Coordinate isolation of the affected domain controller with infrastructure and identity teams to contain the threat while preserving service availability and forensic evidence. Prioritize this step if active compromise or attacker persistence is confirmed.\n- Reset the domain controller's machine account password, along with any accounts suspected to be compromised or exposed. Ensure strong, unique credentials are used and apply tiered credential hygiene where applicable.\n- Analyze recent authentication logs, event logs, and network traffic, focusing on suspicious activity and the source IPs referenced in the alert. Correlate findings to identify any lateral movement or additional compromised systems.\n- Strengthen network segmentation, especially between domain controllers, administrative workstations, and critical infrastructure. This limits the attack surface and impedes credential relay or reuse across systems.\n- Escalate the incident to the SOC or incident response team to coordinate a full investigation, containment, and recovery plan. Ensure stakeholders are kept informed throughout the response.\n- Enhance detection mechanisms by tuning alerts and deploying additional telemetry focused on credential relay patterns, anomalous authentication, and NTLM-related activity.\n- Conduct a structured post-incident review, documenting findings, identifying control gaps, and updating playbooks, configurations, or security policies to reduce the likelihood of similar incidents in the future.\n",
+        "query": "file where event.code == \"5145\" and endswith(user.name, \"$\") and\n\n /* compare computername with user.name and make sure they match */\n startswith~(winlog.computer_name, substring(user.name, 0, -1)) and\n\n /* exclude local access */\n not endswith(string(source.ip), string(host.ip)) and\n source.ip != \"::\" and source.ip != null and source.ip != \"::1\" and source.ip != \"127.0.0.1\"\n",
+        "references": [
+            "https://github.com/p0dalirius/windows-coerced-authentication-methods",
+            "https://www.thehacker.recipes/a-d/movement/mitm-and-coerced-authentications",
+            "https://attack.mitre.org/techniques/T1187/"
+        ],
+        "related_integrations": [
+            {
+                "package": "system",
+                "version": "^2.0.0"
+            },
+            {
+                "package": "windows",
+                "version": "^3.0.0"
+            }
+        ],
+        "required_fields": [
+            {
+                "ecs": true,
+                "name": "event.code",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "host.ip",
+                "type": "ip"
+            },
+            {
+                "ecs": true,
+                "name": "source.ip",
+                "type": "ip"
+            },
+            {
+                "ecs": true,
+                "name": "user.name",
+                "type": "keyword"
+            },
+            {
+                "ecs": false,
+                "name": "winlog.computer_name",
+                "type": "keyword"
+            }
+        ],
+        "risk_score": 73,
+        "rule_id": "d84a11c0-eb12-4e7d-8a0a-718e38351e29",
+        "severity": "high",
+        "tags": [
+            "Domain: Endpoint",
+            "OS: Windows",
+            "Use Case: Threat Detection",
+            "Tactic: Credential Access",
+            "Data Source: Elastic Defend",
+            "Data Source: Active Directory",
+            "Use Case: Active Directory Monitoring",
+            "Data Source: Windows Security Event Logs",
+            "Resources: Investigation Guide"
+        ],
+        "threat": [
+            {
+                "framework": "MITRE ATT&CK",
+                "tactic": {
+                    "id": "TA0006",
+                    "name": "Credential Access",
+                    "reference": "https://attack.mitre.org/tactics/TA0006/"
+                },
+                "technique": [
+                    {
+                        "id": "T1187",
+                        "name": "Forced Authentication",
+                        "reference": "https://attack.mitre.org/techniques/T1187/"
+                    },
+                    {
+                        "id": "T1557",
+                        "name": "Adversary-in-the-Middle",
+                        "reference": "https://attack.mitre.org/techniques/T1557/",
+                        "subtechnique": [
+                            {
+                                "id": "T1557.001",
+                                "name": "LLMNR/NBT-NS Poisoning and SMB Relay",
+                                "reference": "https://attack.mitre.org/techniques/T1557/001/"
+                            }
+                        ]
+                    }
+                ]
+            }
+        ],
+        "timestamp_override": "event.ingested",
+        "type": "eql",
+        "version": 1
+    },
+    "id": "d84a11c0-eb12-4e7d-8a0a-718e38351e29_1",
+    "type": "security-rule"
+}
