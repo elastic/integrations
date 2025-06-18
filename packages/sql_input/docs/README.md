@@ -103,3 +103,18 @@ sql_queries:
 
 The `merge_results` feature will create a combined event, where `blks_hit`, `blks_read`, `checkpoints_timed` and `checkpoints_req` are part of the same event.
 
+### SSL configuration
+
+#### Using `ssl.*` parameters
+
+Set "SSL enabled" to `true` (checked).
+
+The drivers `mysql`, `mssql`, and `postgres` are supported.
+
+Refer to the metricbeat's `sql` module [documentation](https://www.elastic.co/docs/reference/beats/metricbeat/metricbeat-module-sql).
+
+#### By connection string
+
+Set "SSL enabled" to `false` (unchecked).
+
+It is possible to configure SSL connections using the `hosts` by passing the parameters in the connection string. For example, for `postgres`: `postgres://myuser:mypassword@localhost:5432/mydb?sslcert=.%2Fcert.pem&sslkey=.%2Fkey.pem&sslmode=verify-full&sslrootcert=.%2Fca.pem`. (The parameters needs to be URL encoded).
