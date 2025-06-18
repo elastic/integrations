@@ -80,11 +80,11 @@ An example event for `audit` looks as following:
 {
     "@timestamp": "2022-02-10T16:04:30.263Z",
     "agent": {
-        "ephemeral_id": "a820562f-e713-4f48-81bc-7f329f192335",
-        "id": "45e49275-eb7d-4b20-a8af-d084fb2551c7",
-        "name": "docker-fleet-agent",
+        "ephemeral_id": "d9810f80-bccc-4900-886c-c14f1747369d",
+        "id": "e535dae1-9d56-4f72-9e5b-bd456d3edb8f",
+        "name": "elastic-agent-33765",
         "type": "filebeat",
-        "version": "8.8.0"
+        "version": "8.18.1"
     },
     "carbon_black_cloud": {
         "audit": {
@@ -95,35 +95,37 @@ An example event for `audit` looks as following:
     "client": {
         "ip": "10.10.10.10",
         "user": {
-            "id": "abc@demo.com"
+            "domain": "demo.com",
+            "email": "abc@demo.com",
+            "id": "abc@demo.com",
+            "name": "abc"
         }
     },
     "data_stream": {
         "dataset": "carbon_black_cloud.audit",
-        "namespace": "ep",
+        "namespace": "18603",
         "type": "logs"
     },
     "ecs": {
         "version": "8.11.0"
     },
     "elastic_agent": {
-        "id": "45e49275-eb7d-4b20-a8af-d084fb2551c7",
-        "snapshot": true,
-        "version": "8.8.0"
+        "id": "e535dae1-9d56-4f72-9e5b-bd456d3edb8f",
+        "snapshot": false,
+        "version": "8.18.1"
     },
     "event": {
         "agent_id_status": "verified",
-        "created": "2023-04-19T16:30:46.573Z",
         "dataset": "carbon_black_cloud.audit",
         "id": "2122f8ce8xxxxxxxxxxxxx",
-        "ingested": "2023-04-19T16:30:50Z",
+        "ingested": "2025-06-02T15:02:56Z",
         "kind": "event",
         "original": "{\"clientIp\":\"10.10.10.10\",\"description\":\"Logged in successfully\",\"eventId\":\"2122f8ce8xxxxxxxxxxxxx\",\"eventTime\":1644509070263,\"flagged\":false,\"loginName\":\"abc@demo.com\",\"orgName\":\"cb-xxxx-xxxx.com\",\"requestUrl\":null,\"verbose\":false}",
         "outcome": "success",
         "reason": "Logged in successfully"
     },
     "input": {
-        "type": "httpjson"
+        "type": "cel"
     },
     "organization": {
         "name": "cb-xxxx-xxxx.com"
@@ -131,6 +133,10 @@ An example event for `audit` looks as following:
     "related": {
         "ip": [
             "10.10.10.10"
+        ],
+        "user": [
+            "abc@demo.com",
+            "abc"
         ]
     },
     "tags": [
@@ -171,11 +177,11 @@ An example event for `alert_v7` looks as following:
 {
     "@timestamp": "2024-03-13T08:02:36.578Z",
     "agent": {
-        "ephemeral_id": "9c46ff77-c269-4593-a3d8-efd89fbdca66",
-        "id": "db2930ff-774e-4541-bcd4-1a6a1d656167",
-        "name": "docker-fleet-agent",
+        "ephemeral_id": "c2c6749d-d46f-46f3-a093-004c49de4b47",
+        "id": "3089d948-58aa-4f94-a411-b2e5ad49775b",
+        "name": "elastic-agent-84943",
         "type": "filebeat",
-        "version": "8.12.1"
+        "version": "8.18.1"
     },
     "carbon_black_cloud": {
         "alert": {
@@ -286,23 +292,23 @@ An example event for `alert_v7` looks as following:
     },
     "data_stream": {
         "dataset": "carbon_black_cloud.alert_v7",
-        "namespace": "ep",
+        "namespace": "16313",
         "type": "logs"
     },
     "ecs": {
         "version": "8.11.0"
     },
     "elastic_agent": {
-        "id": "db2930ff-774e-4541-bcd4-1a6a1d656167",
+        "id": "3089d948-58aa-4f94-a411-b2e5ad49775b",
         "snapshot": false,
-        "version": "8.12.1"
+        "version": "8.18.1"
     },
     "event": {
         "agent_id_status": "verified",
         "dataset": "carbon_black_cloud.alert_v7",
         "end": "2024-03-13T08:00:09.894Z",
         "id": "1c6aba68-24cc-41e3-ad8e-4b545a587b55",
-        "ingested": "2024-04-10T09:06:02Z",
+        "ingested": "2025-06-02T14:53:39Z",
         "kind": "alert",
         "original": "{\"alert_notes_present\":false,\"alert_url\":\"defense.conferdeploy.net/alerts?s[c][query_string]=id:1c6aba68-24cc-41e3-ad8e-4b545a587b55\\u0026orgKey=7DESJ9GN\",\"asset_group\":[],\"backend_timestamp\":\"2024-03-13T08:03:29.540Z\",\"backend_update_timestamp\":\"2024-03-13T08:03:29.540Z\",\"childproc_cmdline\":\"\",\"childproc_guid\":\"\",\"childproc_username\":\"\",\"detection_timestamp\":\"2024-03-13T08:02:36.578Z\",\"determination\":{\"change_timestamp\":\"2024-03-13T08:03:29.540Z\",\"changed_by\":\"ALERT_CREATION\",\"changed_by_type\":\"SYSTEM\",\"value\":\"NONE\"},\"device_external_ip\":\"75.98.230.194\",\"device_id\":6612391,\"device_internal_ip\":\"172.16.100.140\",\"device_location\":\"UNKNOWN\",\"device_name\":\"EIP\\\\WW-20002\",\"device_os\":\"WINDOWS\",\"device_os_version\":\"Windows 10 x64\",\"device_policy\":\"default\",\"device_policy_id\":6525,\"device_target_value\":\"MEDIUM\",\"device_uem_id\":\"\",\"device_username\":\"EIP\\\\Administrator\",\"first_event_timestamp\":\"2024-03-13T08:00:09.894Z\",\"id\":\"1c6aba68-24cc-41e3-ad8e-4b545a587b55\",\"ioc_hit\":\"(fileless_scriptload_cmdline:Register-ScheduledTask OR fileless_scriptload_cmdline:New-ScheduledTask OR scriptload_content:Register-ScheduledTask OR scriptload_content:New-ScheduledTask) AND NOT (process_cmdline:windows\\\\\\\\ccm\\\\\\\\systemtemp OR crossproc_name:windows\\\\\\\\ccm\\\\\\\\ccmexec.exe OR (process_publisher:\\\"VMware, Inc.\\\" AND process_publisher_state:FILE_SIGNATURE_STATE_TRUSTED))\",\"ioc_id\":\"d1080521-e617-4e45-94e0-7a145c62c90a\",\"is_updated\":false,\"last_event_timestamp\":\"2024-03-13T08:00:09.894Z\",\"mdr_alert\":false,\"mdr_alert_notes_present\":false,\"mdr_threat_notes_present\":false,\"ml_classification_anomalies\":[],\"ml_classification_final_verdict\":\"NOT_ANOMALOUS\",\"ml_classification_global_prevalence\":\"LOW\",\"ml_classification_org_prevalence\":\"LOW\",\"org_key\":\"7DESJ9GN\",\"parent_cmdline\":\"C:\\\\Windows\\\\system32\\\\svchost.exe -k netsvcs -p -s Schedule\",\"parent_effective_reputation\":\"TRUSTED_WHITE_LIST\",\"parent_guid\":\"7DESJ9GN-0064e5a7-0000077c-00000000-1da5ed7ec07b275\",\"parent_md5\":\"145dcf6706eeea5b066885ee17964c09\",\"parent_name\":\"c:\\\\windows\\\\system32\\\\svchost.exe\",\"parent_pid\":1916,\"parent_reputation\":\"TRUSTED_WHITE_LIST\",\"parent_sha256\":\"f13de58416730d210dab465b242e9c949fb0a0245eef45b07c381f0c6c8a43c3\",\"parent_username\":\"NT AUTHORITY\\\\SYSTEM\",\"policy_applied\":\"NOT_APPLIED\",\"primary_event_id\":\"re9M9hp8TbGLqyk6QXqQqA-0\",\"process_cmdline\":\"\\\"C:\\\\Windows\\\\System32\\\\WindowsPowerShell\\\\v1.0\\\\powershell.exe\\\" -EP Bypass \\\\\\\\eip.demo\\\\sysvol\\\\EIP.DEMO\\\\scripts\\\\Luminol.ps1\",\"process_effective_reputation\":\"TRUSTED_WHITE_LIST\",\"process_guid\":\"7DESJ9GN-0064e5a7-00001434-00000000-1da751c7354ebfe\",\"process_issuer\":[\"Microsoft Windows Production PCA 2011\"],\"process_md5\":\"2e5a8590cf6848968fc23de3fa1e25f1\",\"process_name\":\"c:\\\\windows\\\\system32\\\\windowspowershell\\\\v1.0\\\\powershell.exe\",\"process_pid\":5172,\"process_publisher\":[\"Microsoft Windows\"],\"process_reputation\":\"TRUSTED_WHITE_LIST\",\"process_sha256\":\"9785001b0dcf755eddb8af294a373c0b87b2498660f724e76c4d53f9c217c7a3\",\"process_username\":\"NT AUTHORITY\\\\SYSTEM\",\"reason\":\"Process powershell.exe was detected by the report \\\"Execution - AMSI - New Fileless Scheduled Task Behavior Detected\\\" in watchlist \\\"AMSI Threat Intelligence\\\"\",\"reason_code\":\"c21ca826-573a-3d97-8c1e-93c8471aab7f:8033b29d-81d2-3c47-82d2-f4a7f398b85d\",\"report_description\":\"Newer Powershell versions introduced built-in cmdlets to manage scheduled tasks natively without calling out to typical scheduled task processes like at.exe or schtasks.exe. This detection looks for behaviors related to the fileless execution of scheduled tasks. If you are responding to this alert, be sure to correlate the fileless scriptload events with events typically found in your environment Generally, attackers will create scheduled tasks with binaries that are located in user writable directories like AppData, Temp, or public folders.\",\"report_id\":\"LrKOC7DtQbm4g8w0UFruQg-d1080521-e617-4e45-94e0-7a145c62c90a\",\"report_link\":\"https://attack.mitre.org/techniques/T1053/\",\"report_name\":\"Execution - AMSI - New Fileless Scheduled Task Behavior Detected\",\"report_tags\":[\"execution\",\"privesc\",\"persistence\",\"t1053\",\"windows\",\"amsi\",\"attack\",\"attackframework\"],\"run_state\":\"RAN\",\"sensor_action\":\"ALLOW\",\"severity\":5,\"tags\":null,\"threat_id\":\"C21CA826573A8D974C1E93C8471AAB7F\",\"threat_notes_present\":false,\"type\":\"WATCHLIST\",\"user_update_timestamp\":null,\"watchlists\":[{\"id\":\"Ci7w5B4URg6HN60hatQMQ\",\"name\":\"AMSI Threat Intelligence\"}],\"workflow\":{\"change_timestamp\":\"2024-03-13T08:03:29.540Z\",\"changed_by\":\"ALERT_CREATION\",\"changed_by_type\":\"SYSTEM\",\"closure_reason\":\"NO_REASON\",\"status\":\"OPEN\"}}",
         "reason": "Process powershell.exe was detected by the report \"Execution - AMSI - New Fileless Scheduled Task Behavior Detected\" in watchlist \"AMSI Threat Intelligence\"",
@@ -890,13 +896,13 @@ An example event for `asset_vulnerability_summary` looks as following:
 
 ```json
 {
-    "@timestamp": "2023-04-19T16:29:52.808Z",
+    "@timestamp": "2025-06-02T14:58:13.698Z",
     "agent": {
-        "ephemeral_id": "7a1f920f-4945-405b-9e1f-67f8a3601fdb",
-        "id": "45e49275-eb7d-4b20-a8af-d084fb2551c7",
-        "name": "docker-fleet-agent",
+        "ephemeral_id": "cec373bd-24d4-48f5-9a22-d7630b36e420",
+        "id": "afe3350e-e0ea-4c70-8249-090c14d9d593",
+        "name": "elastic-agent-11440",
         "type": "filebeat",
-        "version": "8.8.0"
+        "version": "8.18.1"
     },
     "carbon_black_cloud": {
         "asset_vulnerability_summary": {
@@ -916,22 +922,21 @@ An example event for `asset_vulnerability_summary` looks as following:
     },
     "data_stream": {
         "dataset": "carbon_black_cloud.asset_vulnerability_summary",
-        "namespace": "ep",
+        "namespace": "93728",
         "type": "logs"
     },
     "ecs": {
         "version": "8.11.0"
     },
     "elastic_agent": {
-        "id": "45e49275-eb7d-4b20-a8af-d084fb2551c7",
-        "snapshot": true,
-        "version": "8.8.0"
+        "id": "afe3350e-e0ea-4c70-8249-090c14d9d593",
+        "snapshot": false,
+        "version": "8.18.1"
     },
     "event": {
         "agent_id_status": "verified",
-        "created": "2023-04-19T16:29:52.808Z",
         "dataset": "carbon_black_cloud.asset_vulnerability_summary",
-        "ingested": "2023-04-19T16:29:56Z",
+        "ingested": "2025-06-02T14:58:16Z",
         "kind": "state",
         "original": "{\"cve_ids\":null,\"device_id\":8,\"highest_risk_score\":10,\"host_name\":\"DESKTOP-008\",\"last_sync_ts\":\"2022-01-17T08:33:37.384932Z\",\"name\":\"DESKTOP-008KK\",\"os_info\":{\"os_arch\":\"64-bit\",\"os_name\":\"Microsoft Windows 10 Education\",\"os_type\":\"WINDOWS\",\"os_version\":\"10.0.17763\"},\"severity\":\"CRITICAL\",\"sync_status\":\"COMPLETED\",\"sync_type\":\"SCHEDULED\",\"type\":\"ENDPOINT\",\"vm_id\":\"\",\"vm_name\":\"\",\"vuln_count\":1770}"
     },
@@ -946,7 +951,7 @@ An example event for `asset_vulnerability_summary` looks as following:
         }
     },
     "input": {
-        "type": "httpjson"
+        "type": "cel"
     },
     "related": {
         "hosts": [

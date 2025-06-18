@@ -1,6 +1,17 @@
 ---
 description: Pipeline for processing Incident logs.
 processors:
+  - remove:
+      field:
+        - organization
+        - division
+        - team
+      ignore_missing: true
+      if: ctx.organization instanceof String && ctx.division instanceof String && ctx.team instanceof String
+      tag: remove_agentless_tags
+      description: >-
+        Removes the fields added by Agentless as metadata,
+        as they can collide with ECS fields.
   - set:
       field: ecs.version
       value: '8.11.0'
@@ -175,15 +186,30 @@ processors:
       field: json.assignedTo
       target_field: m365_defender.incident.assigned_to
       ignore_missing: true
-  - set:
-      field: source.user.name
-      copy_from: m365_defender.incident.assigned_to
+  - grok:
+      field: m365_defender.incident.assigned_to
+      patterns:
+        - '%{USERNAME:source.user.name}@%{HOSTNAME:source.user.domain}'
+        - '%{GREEDYDATA:source.user.name}'
+      ignore_missing: true
       ignore_failure: true
+  - set:
+      field: source.user.email
+      copy_from: m365_defender.incident.assigned_to
+      tag: copy_source_user_email
+      if: ctx.m365_defender?.incident?.assigned_to != null && ctx.m365_defender.incident.assigned_to.indexOf("@") > 0
   - append:
       field: related.user
-      value: '{{{m365_defender.incident.assigned_to}}}'
+      value: '{{{source.user.name}}}'
       allow_duplicates: false
       ignore_failure: true
+      if: ctx.source?.user?.name != null
+  - append:
+      field: related.user
+      value: '{{{source.user.email}}}'
+      allow_duplicates: false
+      ignore_failure: true
+      if: ctx.source?.user?.email != null
   - rename:
       field: json.alerts.threatFamilyName
       target_field: m365_defender.incident.alert.threat_family_name
