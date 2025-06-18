@@ -29,7 +29,7 @@ Elastic Agent must be installed. For more details, check the Elastic Agent [inst
 The minimum **kibana.version** required is **8.10.1**.
 This module has been tested against the **Wiz API Version v1**.
 
-## Agentless enabled integration
+## Agentless-enabled integration
 
 Agentless integrations allow you to collect data without having to manage Elastic Agent in your cloud. They make manual agent deployment unnecessary, so you can focus on your data instead of the agent that collects it. For more information, refer to [Agentless integrations](https://www.elastic.co/guide/en/serverless/current/security-agentless-integrations.html) and the [Agentless integrations FAQ](https://www.elastic.co/guide/en/serverless/current/agentless-integration-troubleshooting.html).
 

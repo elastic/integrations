@@ -40,7 +40,7 @@ To create an API user account, refer to this [article](https://knowledge.threatc
 4. Configure all required integration parameters, including Access Id, Secret Key, and URL, to enable data collection from the ThreatConnect REST API.
 5. Save the integration.
 
-## Indicators expiration
+## Indicator expiration
 
 The ingested indicators expire after certain duration. An [Elastic Transform](https://www.elastic.co/guide/en/elasticsearch/reference/current/transforms.html) is created to facilitate only active indicators be available to the end users. Since we want to retain only valuable information and avoid duplicated data, the ThreatConnect Elastic integration forces the intel indicators to rotate into a custom index called: `logs-ti_threatconnect_latest.dest_indicator-*`.
 **Please, refer to this index in order to set alerts and so on.**
