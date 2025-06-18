@@ -425,7 +425,6 @@ An example event for `alert` looks as following:
         ]
     }
 }
-
 ```
 
 **Exported fields**
@@ -1292,7 +1291,6 @@ An example event for `incident` looks as following:
         }
     }
 }
-
 ```
 
 **Exported fields**
@@ -1681,7 +1679,6 @@ An example event for `vulnerability` looks as following:
         "title": "An inappropriate implementation in the Downloads feature of Google Chrome versions prior to 135.0.7049.52 could allow a remote attacker to perform UI spoofing via a crafted HTML page. This vulnerability, classified with a low severity by Chromium, may also enable bypassing security restrictions when a victim visits a specially crafted website."
     }
 }
-
 ```
 
 **Exported fields**
