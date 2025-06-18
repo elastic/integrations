@@ -1,0 +1,28 @@
+paths:
+{{#each paths as |path|}}
+- {{path}}
+{{/each}}
+prospector.scanner.exclude_files: ['\.gz$']
+take_over: true
+tags:
+{{#if preserve_original_event}}
+- preserve_original_event
+{{/if}}
+{{#if redact_passwords}}
+- redact_passwords
+{{/if}}
+{{#if preserve_duplicate_custom_fields}}
+- preserve_duplicate_custom_fields
+{{/if}}
+{{#each tags as |tag|}}
+- {{tag}}
+{{/each}}
+{{#contains "forwarded" tags}}
+publisher_pipeline.disable_host: true
+{{/contains}}
+processors:
+- add_locale: ~
+- add_host_metadata: ~
+{{#if processors}}
+{{processors}}
+{{/if}}
