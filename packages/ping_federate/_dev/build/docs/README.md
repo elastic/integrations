@@ -37,43 +37,23 @@ CEF:0|Ping Identity|PingFederate|6.4|AUTHN_SESSION_DELETED|AUTHN_SESSION_DELETED
 
 ## Requirements
 
-- Elastic Agent must be installed.
-- You can install only one Elastic Agent per host.
-- Elastic Agent is required to stream data through the Filestream or TCP/UDP and ship the data to Elastic, where the events will then be processed via the integration's ingest pipelines.
-
-### Installing and managing an Elastic Agent:
-
-You have a few options for installing and managing an Elastic Agent:
-
-### Install a Fleet-managed Elastic Agent (recommended):
-
-With this approach, you install Elastic Agent and use Fleet in Kibana to define, configure, and manage your agents in a central location. We recommend using Fleet management because it makes the management and upgrade of your agents considerably easier.
-
-### Install Elastic Agent in standalone mode (advanced users):
-
-With this approach, you install Elastic Agent and manually configure the agent locally on the system where it’s installed. You are responsible for managing and upgrading the agents. This approach is reserved for advanced users only.
-
-### Install Elastic Agent in a containerized environment:
-
-You can run Elastic Agent inside a container, either with Fleet Server or standalone. Docker images for all versions of Elastic Agent are available from the Elastic Docker registry, and we provide deployment manifests for running on Kubernetes.
-
-There are some minimum requirements for running Elastic Agent. For more information, refer to the Elastic Agent [installation guide](https://www.elastic.co/guide/en/fleet/current/elastic-agent-installation.html).
+Elastic Agent must be installed. For more details, check the Elastic Agent [installation instructions](docs-content://reference/fleet/install-elastic-agents.md). You can install only one Elastic Agent per host.
+Elastic Agent is required to stream data through the Filestream or TCP/UDP and ship the data to Elastic, where the events will then be processed via the integration's ingest pipelines.
 
 ## Setup
 
-1. For step-by-step instructions on how to configure log files in PingFederate instance, see the [Log4j 2 logging service and configuration](https://docs.pingidentity.com/pingfederate/latest/administrators_reference_guide/pf_log4j_2_loggin_service_and_config.html) guide.
-2. To write the audit logs in cef format, see the [Writing audit log in CEF](https://docs.pingidentity.com/pingfederate/latest/administrators_reference_guide/pf_writin_audit_log_cef.html) guide.
+1. To configure log files in the PingFederate instance, check the [Log4j 2 logging service and configuration](https://docs.pingidentity.com/pingfederate/latest/administrators_reference_guide/pf_log4j_2_loggin_service_and_config.html) guide.
+2. To write the audit logs in CEF format, check the [Writing audit log in CEF](https://docs.pingidentity.com/pingfederate/latest/administrators_reference_guide/pf_writin_audit_log_cef.html) guide.
 
-### Enabling the integration in Elastic:
+### Enable the integration in Elastic
 
-1. In Kibana go to Management > Integrations.
-2. In "Search for integrations" search bar, type PingFederate.
-3. Click on the "PingFederate" integration from the search results.
-4. Click on the "Add PingFederate" button to add the integration.
-5. Select the toggle for the data stream for which you want to collect logs.
-6. Enable the data collection mode from the following: Filestream, TCP, or UDP. (Admin logs are only supported through Filestream)
-7. Add all the required configuration parameters, such as paths for the filestream or listen address and listen port for the TCP and UDP.
-8. Click on "Save and Continue" to save the integration.
+1. In Kibana go to **Management** > **Integrations**.
+2. In the search top bar, type **PingFederate**.
+3. Select the **PingFederate** integration and add it.
+4. Select the toggle for the data stream for which you want to collect logs.
+5. Enable the data collection mode: Filestream, TCP, or UDP. Admin logs are only supported through Filestream.
+6. Add all the required configuration parameters, such as paths for the filestream or listen address and listen port for the TCP and UDP.
+7. Save the integration.
 
 ## Logs Reference
 
