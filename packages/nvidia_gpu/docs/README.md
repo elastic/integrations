@@ -56,99 +56,54 @@ An example event for `stats` looks as following:
 
 ```json
 {
-    "@timestamp": "2025-06-02T06:29:11.719Z",
+    "@timestamp": "2025-06-19T11:01:58.508Z",
     "agent": {
-        "ephemeral_id": "f4ac2d0f-71de-49c1-abc8-3d27a324fd45",
-        "id": "00f7f2be-4202-425f-94f0-a76ceb9b90b7",
-        "name": "elastic-agent-77526",
+        "ephemeral_id": "5da1c762-479c-4a72-8abb-960a3dcbeae3",
+        "id": "6682006f-8763-47e4-af1d-37a1fb49ce4c",
+        "name": "elastic-agent-62642",
         "type": "metricbeat",
         "version": "8.17.0"
     },
     "data_stream": {
         "dataset": "nvidia_gpu.stats",
-        "namespace": "41920",
+        "namespace": "85686",
         "type": "metrics"
     },
     "ecs": {
         "version": "8.17.0"
     },
     "elastic_agent": {
-        "id": "00f7f2be-4202-425f-94f0-a76ceb9b90b7",
+        "id": "6682006f-8763-47e4-af1d-37a1fb49ce4c",
         "snapshot": false,
         "version": "8.17.0"
     },
     "event": {
         "agent_id_status": "verified",
         "dataset": "nvidia_gpu.stats",
-        "duration": 66478366,
-        "ingested": "2025-06-02T06:29:13Z",
+        "duration": 18410680,
+        "ingested": "2025-06-19T11:02:01Z",
         "module": "prometheus"
     },
     "gpu": {
-        "clock": {
-            "mem_frequency": 405,
-            "streaming_multiprocessor_frequency": 300
-        },
         "labels": {
-            "DCGM_FI_DRIVER_VERSION": "525.105.17",
-            "Hostname": "924e17218b6f",
-            "UUID": "GPU-2492e3fa-2252-1730-0d1a-8d12ab32cdf0",
-            "device": "nvidia0",
-            "gpu": "0",
-            "instance": "192.168.0.192:9400",
-            "job": "prometheus",
-            "modelName": "Tesla T4",
-            "pci_bus_id": "00000000:00:04.0"
+            "instance": "svc-nvidia_gpu:9400",
+            "job": "prometheus"
         },
-        "license_vgpu_status": 0,
-        "memory": {
-            "framebuffer": {
-                "free_size": 14923,
-                "used_size": 5
-            }
-        },
-        "nvlink": {
-            "bandwidth_total": 0
-        },
-        "pcie": {
-            "replay": 0
-        },
-        "power": {
-            "energy_consumption_total": 6027115649,
-            "usage": 12.14
-        },
-        "temperature": {
-            "gpu": 38,
-            "memory": 0
-        },
-        "utilization": {
-            "decoder": {
-                "pct": 0
-            },
-            "encoder": {
-                "pct": 0
-            },
-            "gpu": {
-                "pct": 0
-            },
-            "memory_copy": {
-                "pct": 0
-            }
-        }
+        "up": "1"
     },
     "host": {
         "architecture": "x86_64",
         "containerized": true,
-        "hostname": "elastic-agent-77526",
+        "hostname": "elastic-agent-62642",
         "ip": [
-            "172.18.0.4",
-            "192.168.112.2"
+            "172.18.0.6",
+            "172.25.0.2"
         ],
         "mac": [
-            "02-42-AC-12-00-04",
-            "02-42-C0-A8-70-02"
+            "1A-E2-5B-13-20-FD",
+            "E2-78-59-F3-DA-3E"
         ],
-        "name": "elastic-agent-77526",
+        "name": "elastic-agent-62642",
         "os": {
             "family": "",
             "kernel": "5.15.153.1-microsoft-standard-WSL2",
@@ -163,7 +118,7 @@ An example event for `stats` looks as following:
         "period": 10000
     },
     "service": {
-        "address": "http://192.168.0.192:9400/metrics",
+        "address": "http://svc-nvidia_gpu:9400/metrics",
         "type": "prometheus"
     }
 }
