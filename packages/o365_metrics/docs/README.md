@@ -2574,6 +2574,7 @@ An example event for `subscriptions` looks as following:
         "o365.metrics.subscriptions"
     ]
 }
+
 ```
 
 **ECS Field Reference**
@@ -2910,6 +2911,7 @@ An example event for `teams_call_quality` looks as following:
         "o365.metrics.teams.call.quality"
     ]
 }
+
 ```
 
 **ECS Field Reference**
@@ -3200,6 +3202,7 @@ An example event for `app_registrations` looks as following:
         "o365.metrics.app_registrations"
     ]
 }
+
 ```
 
 **ECS Field Reference**
@@ -3319,6 +3322,7 @@ An example event for `entra_features` looks as following:
         "o365.metrics.entra_features"
     ]
 }
+
 ```
 
 Please refer to the following [document](https://www.elastic.co/guide/en/ecs/current/ecs-field-reference.html) for detailed information on ECS fields.
@@ -3447,6 +3451,7 @@ An example event for `entra_agent` looks as following:
         "o365.metrics.entra_agent"
     ]
 }
+
 ```
 
 Please refer to the following [document](https://www.elastic.co/guide/en/ecs/current/ecs-field-reference.html) for detailed information on ECS fields.
@@ -3570,6 +3575,7 @@ An example event for `entra_alerts` looks as following:
         "o365.metrics.entra_alerts"
     ]
 }
+
 ```
 
 Please refer to the following [document](https://www.elastic.co/guide/en/ecs/current/ecs-field-reference.html) for detailed information on ECS fields.
