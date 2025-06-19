@@ -199,11 +199,13 @@ An example event for `stats` looks as following:
 | gpu.error.xid | The eXerience ID of the error being reported by the GPU. | float |  | gauge |
 | gpu.labels.device | Nvidia GPU device name | keyword |  |  |
 | gpu.labels.driver_version | Nvidia GPU Driver version | keyword |  |  |
+| gpu.labels.err_code | Nvidia GPU error code | keyword |  |  |
+| gpu.labels.err_msg | Nvidia GPU error message | keyword |  |  |
 | gpu.labels.gpu | Nvidia GPU | keyword |  |  |
 | gpu.labels.hostname | Nvidia GPU hostname | keyword |  |  |
 | gpu.labels.instance | Nvidia GPU instance name | keyword |  |  |
 | gpu.labels.job | Nvidia GPU job | keyword |  |  |
-| gpu.labels.modelName | Nvidia GPU model name | keyword |  |  |
+| gpu.labels.model_name | Nvidia GPU model name | keyword |  |  |
 | gpu.labels.pci_bus_id | Nvidia GPU pci bus id | keyword |  |  |
 | gpu.labels.uuid | Nvidia GPU uuid | keyword |  |  |
 | gpu.license_vgpu_status | vGPU License status. | long |  | gauge |
