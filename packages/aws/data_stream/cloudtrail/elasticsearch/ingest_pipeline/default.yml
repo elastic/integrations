@@ -1712,9 +1712,68 @@ processors:
       if: ctx.user?.name != null
       allow_duplicates: false
       ignore_failure: true
+
+  # Remove the fields that the user does not want.
+  # TODO: This is unpleasantly inefficient. It would be ideal if we had not
+  # populated the fields in the first place, but the current state of the
+  # pipeline makes that non-trivial as both the flattened fields and the
+  # non-flattened origin fields are referred to throughout the pipeline,
+  # making it difficult to disentangle them. This the TODO to be done.
+  - script:
+      if: ctx._conf?.retain == 'minimal' && ctx.aws?.cloudtrail?.flattened != null
+      tag: script_retain_minimal_flattened
+      params:
+        # This list of fields is determined by enumerating all fields containing
+        # the string "cloudtrail.flattened" that are in .attributes.required_fields of the
+        # rules in security_detection_engine/kibana/security_rule.
+        # It must be kept up to date with the rules.
+        required_flattened_fields:
+          - aws.cloudtrail.flattened.additional_eventdata.SSEApplied
+          - aws.cloudtrail.flattened.request_parameters.cidrIp
+          - aws.cloudtrail.flattened.request_parameters.dryRun
+          - aws.cloudtrail.flattened.request_parameters.fromPort
+          - aws.cloudtrail.flattened.request_parameters.includeDeprecated
+          - aws.cloudtrail.flattened.request_parameters.policyArn
+          - aws.cloudtrail.flattened.request_parameters.serialNumber
+          - aws.cloudtrail.flattened.request_parameters.withDecryption
+          - aws.cloudtrail.flattened.request_parameters.x-amz-server-side-encryption-customer-algorithm
+      source: |-
+        def set(Map root, String path, def v) {
+          String[] elems = path.splitOnToken('.');
+          def dst = root;
+          for (int i = 0; i < elems.length-1; i++) {
+            dst = dst.computeIfAbsent(elems[i], _ -> new HashMap());
+          }
+          dst[elems[elems.length-1]] = v;
+        }
+        Map flattened = [:];
+        int prefix = "aws.cloudtrail.flattened.".length();
+        for (String f: params.required_flattened_fields) {
+          def v = field(f).get(null);
+          if (v == null) {
+            continue;
+          }
+          set(flattened, f.substring(prefix), v);
+        }
+        ctx.aws.cloudtrail.flattened = flattened;
   - remove:
-      field: json
+      field:
+        - aws.cloudtrail.flattened
       ignore_missing: true
+      if: ctx._conf?.retain != null && ctx._conf.retain != '' && ctx._conf.retain != 'all' && ctx._conf.retain != 'flattened' && ctx._conf.retain != 'minimal'
+  - remove:
+      field:
+        - aws.cloudtrail.response_elements
+        - aws.cloudtrail.request_parameters
+        - aws.cloudtrail.additional_eventdata
+      ignore_missing: true
+      if: ctx._conf?.retain != null && ctx._conf.retain != '' && ctx._conf.retain != 'all' && ctx._conf.retain != 'keyword' && ctx._conf.retain != 'minimal'
+  - remove:
+      field:
+        - json
+        - _conf
+      ignore_missing: true
+
 on_failure:
   - set:
       field: event.kind
