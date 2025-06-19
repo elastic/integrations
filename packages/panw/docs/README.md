@@ -57,16 +57,11 @@ To configure log file monitoring, please follow the steps mentioned in [_Configu
 4. If needed, install Elastic Agent on the systems which receive syslog messages or log files.
 5. Enable and configure only the collection methods which you will use.
 
-* **To collect logs via syslog over TCP**, enter the following details for the syslog receiver that will be monitored:
-   * Syslog Host
-   * Syslog Port
+    * **To collect logs via syslog over TCP**, enter the syslog server host and port details.
 
-* **To collect logs via syslog over UDP**, enter the following details for the syslog receiver that will be monitored:
-  * Syslog Host
-  * Syslog Port
+    * **To collect logs via syslog over UDP**, enter the syslog server host and port details.
 
-* **To collect logs via log file**, please enter the following details for the log file receiver:
-  * Paths
+    * **To collect logs via log file**, set the file path patterns which will be monitored, in the Paths field.
 
 6. Press **Save Integration** to begin collecting logs.
 
@@ -88,6 +83,8 @@ If you want to see the configuration before and after the change(fields `before-
   ``1,$receive_time,$serial,$type,$subtype,2561,$time_generated,$host,$vsys,$cmd,$admin,$client,$result,$path,$before-change-detail,$after-change-detail,$seqno,$actionflags,$dg_hier_level_1,$dg_hier_level_2,$dg_hier_level_3,$dg_hier_level_4,$vsys_name,$device_name,$dg_id,$comment,0,$high_res_timestamp``
 
 ## Performance and scaling
+
+For more information on architectures that can be used for scaling this integration, please see [Ingest Architectures](https://www.elastic.co/docs/manage-data/ingest/ingest-reference-architectures).
 
 ## Reference
 
