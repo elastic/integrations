@@ -24,6 +24,17 @@ ssl.certificate_authorities:
 {{/if}}
 data_stream:
   dataset: {{data_stream.dataset}}
+{{#if leaderelection }}
+{{#if condition }}
+condition: ${kubernetes_leaderelection.leader} == true and {{ condition }}
+{{ else }}
+condition: ${kubernetes_leaderelection.leader} == true
+{{/if}}
+{{ else }}
+{{#if condition }}
+condition: {{ condition }}
+{{/if}}
+{{/if}}
 {{#if processors}}
 processors:
 {{processors}}
