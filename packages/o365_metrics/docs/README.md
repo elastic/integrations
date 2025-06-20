@@ -620,6 +620,7 @@ Please refer to the following [document](https://www.elastic.co/guide/en/ecs/cur
 | host.containerized | If the host is a container. | boolean |  |  |
 | host.os.build | OS build information. | keyword |  |  |
 | host.os.codename | OS codename, if any. | keyword |  |  |
+| input.type | Input type. | keyword |  |  |
 | o365.metrics.mailbox.usage.detail.created_date | The date the mailbox was created. | date |  |  |
 | o365.metrics.mailbox.usage.detail.deleted_date | The date the mailbox was deleted. | date |  |  |
 | o365.metrics.mailbox.usage.detail.deleted_item.count | The number of items in the deleted items folder. | long |  | gauge |
