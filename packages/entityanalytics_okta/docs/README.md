@@ -315,6 +315,13 @@ This is the `User` dataset.
 | data_stream.type | Data stream type. | constant_keyword |
 | entityanalytics_okta.groups.id | The ID for the group. | keyword |
 | entityanalytics_okta.groups.profile.\* | Group profile details. | object |
+| entityanalytics_okta.roles.assignment_type | The Okta type the role is assigned to. | keyword |
+| entityanalytics_okta.roles.created | When the role was created. | date |
+| entityanalytics_okta.roles.id | The ID for the role. | keyword |
+| entityanalytics_okta.roles.label | Name of the role. | keyword |
+| entityanalytics_okta.roles.last_updated | When the role was last updated. | date |
+| entityanalytics_okta.roles.status | Role status. | keyword |
+| entityanalytics_okta.roles.type | Okta role type. | keyword |
 | entityanalytics_okta.user._embedded | embedded resources related to the user. | flattened |
 | entityanalytics_okta.user._links | link relations for the user's current status. | flattened |
 | entityanalytics_okta.user.activated | timestamp when transition to ACTIVE status completed. | date |
