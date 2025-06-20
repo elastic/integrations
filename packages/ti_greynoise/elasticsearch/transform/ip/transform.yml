@@ -1,0 +1,41 @@
+# Use of "*" to use all namespaces defined.
+source:
+  index:
+    - "logs-ti_greynoise.ip*"
+  query:
+    bool:
+      must_not:
+        - exists:
+            field: error.message
+dest:
+  index: "logs-ti_greynoise_latest.ip-1"
+  aliases:
+    - alias: "logs-ti_greynoise_latest.ip"
+      move_on_creation: true
+latest:
+  unique_key:
+    - threat.indicator.ip
+  sort: "@timestamp"
+description: >-
+  Latest IP Address IOC from GreyNoise API. As IP Address IOC get updated, this transform stores only the latest state of each IP Address IOC inside the destination index. Thus the transform's destination index contains only the latest state of the IP Address IOC.
+frequency: 30s
+settings:
+  # This is required to prevent the transform from clobbering the Fleet-managed mappings.
+  deduce_mappings: false
+  unattended: true
+sync:
+  time:
+    field: "event.ingested"
+    # Updated to 120s because of refresh delay in Serverless. With default 60s,
+    # sometimes transform wouldn't process all documents.
+    delay: 120s
+retention_policy:
+  time:
+    field: '@timestamp'
+    max_age: 7d
+_meta:
+  managed: false
+  # Bump this version to delete, reinstall, and restart the transform during
+  # package installation.
+  fleet_transform_version: 0.1.0
+  run_as_kibana_system: false
