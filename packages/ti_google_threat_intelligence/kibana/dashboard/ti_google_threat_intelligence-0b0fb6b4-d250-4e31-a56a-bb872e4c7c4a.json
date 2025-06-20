@@ -1,0 +1,927 @@
+{
+    "attributes": {
+        "controlGroupInput": {
+            "chainingSystem": "HIERARCHICAL",
+            "controlStyle": "oneLine",
+            "ignoreParentSettingsJSON": {
+                "ignoreFilters": false,
+                "ignoreQuery": false,
+                "ignoreTimerange": false,
+                "ignoreValidations": false
+            },
+            "panelsJSON": {},
+            "showApplySelections": false
+        },
+        "description": "This dashboard provides adversary intelligence insights into threat intelligence events detected in the user's environment by Google Threat Intelligence.",
+        "kibanaSavedObjectMeta": {
+            "searchSourceJSON": {
+                "filter": [
+                    {
+                        "$state": {
+                            "store": "appState"
+                        },
+                        "meta": {
+                            "alias": null,
+                            "disabled": false,
+                            "field": "data_stream.dataset",
+                            "indexRefName": "kibanaSavedObjectMeta.searchSourceJSON.filter[0].meta.index",
+                            "key": "data_stream.dataset",
+                            "negate": false,
+                            "params": {
+                                "query": "ti_google_threat_intelligence.enriched_ioc"
+                            },
+                            "type": "phrase"
+                        },
+                        "query": {
+                            "match_phrase": {
+                                "data_stream.dataset": "ti_google_threat_intelligence.enriched_ioc"
+                            }
+                        }
+                    },
+                    {
+                        "$state": {
+                            "store": "appState"
+                        },
+                        "meta": {
+                            "alias": null,
+                            "disabled": false,
+                            "field": "gti.threat.indicator.attributes.last_analysis_stats.malicious",
+                            "indexRefName": "kibanaSavedObjectMeta.searchSourceJSON.filter[1].meta.index",
+                            "key": "gti.threat.indicator.attributes.last_analysis_stats.malicious",
+                            "negate": false,
+                            "params": {
+                                "gte": "1"
+                            },
+                            "type": "range"
+                        },
+                        "query": {
+                            "range": {
+                                "gti.threat.indicator.attributes.last_analysis_stats.malicious": {
+                                    "gte": "1"
+                                }
+                            }
+                        }
+                    }
+                ],
+                "query": {
+                    "language": "kuery",
+                    "query": ""
+                }
+            }
+        },
+        "optionsJSON": {
+            "hidePanelTitles": false,
+            "syncColors": false,
+            "syncCursor": true,
+            "syncTooltips": false,
+            "useMargins": true
+        },
+        "panelsJSON": [
+            {
+                "embeddableConfig": {
+                    "enhancements": {
+                        "dynamicActions": {
+                            "events": []
+                        }
+                    },
+                    "savedVis": {
+                        "data": {
+                            "aggs": [],
+                            "searchSource": {
+                                "filter": [],
+                                "query": {
+                                    "language": "kuery",
+                                    "query": ""
+                                }
+                            }
+                        },
+                        "description": "",
+                        "id": "",
+                        "params": {
+                            "fontSize": 12,
+                            "markdown": "[Threat Intelligence](#/dashboard/ti_google_threat_intelligence-9e8de699-a623-4a1b-9f63-7d641116f531) | **Adversary Intelligence** | [Threat Feed Overview](#/dashboard/ti_google_threat_intelligence-95187e5c-b4a2-45ad-b6a4-d6ce68e1f43e)\n\nThis dashboard provides adversary intelligence insights into threat intelligence events detected in the user's environment by Google Threat Intelligence.\n\nIt categorizes detected threats into malware families, collections, campaigns, reports, software toolkits, threat actors, and vulnerabilities, using saved searches and uses metrics for count of unique adversaries.\n\n[**Integrations Page**](/app/integrations/detail/ti_google_threat_intelligence/overview)",
+                            "openLinksInNewTab": false
+                        },
+                        "title": "",
+                        "type": "markdown",
+                        "uiState": {}
+                    }
+                },
+                "gridData": {
+                    "h": 9,
+                    "i": "63371e19-ca9a-4d11-9767-396b30909406",
+                    "w": 48,
+                    "x": 0,
+                    "y": 0
+                },
+                "panelIndex": "63371e19-ca9a-4d11-9767-396b30909406",
+                "title": "Table of Content",
+                "type": "visualization"
+            },
+            {
+                "embeddableConfig": {
+                    "attributes": {
+                        "references": [
+                            {
+                                "id": "logs-*",
+                                "name": "indexpattern-datasource-layer-3713ec95-e3f4-4b8e-9fd5-a1c7d261c840",
+                                "type": "index-pattern"
+                            }
+                        ],
+                        "state": {
+                            "adHocDataViews": {},
+                            "datasourceStates": {
+                                "formBased": {
+                                    "layers": {
+                                        "3713ec95-e3f4-4b8e-9fd5-a1c7d261c840": {
+                                            "columnOrder": [
+                                                "9345eee9-d2c3-45fd-98fc-e04929d71133"
+                                            ],
+                                            "columns": {
+                                                "9345eee9-d2c3-45fd-98fc-e04929d71133": {
+                                                    "customLabel": true,
+                                                    "dataType": "number",
+                                                    "isBucketed": false,
+                                                    "label": "Detected Unique Campaigns",
+                                                    "operationType": "unique_count",
+                                                    "params": {
+                                                        "emptyAsNull": false,
+                                                        "format": {
+                                                            "id": "number",
+                                                            "params": {
+                                                                "compact": false,
+                                                                "decimals": 0
+                                                            }
+                                                        }
+                                                    },
+                                                    "scale": "ratio",
+                                                    "sourceField": "gti.threat.indicator.relationships.campaigns.id"
+                                                }
+                                            },
+                                            "incompleteColumns": {}
+                                        }
+                                    }
+                                },
+                                "indexpattern": {
+                                    "layers": {}
+                                },
+                                "textBased": {
+                                    "layers": {}
+                                }
+                            },
+                            "filters": [],
+                            "internalReferences": [],
+                            "query": {
+                                "language": "kuery",
+                                "query": ""
+                            },
+                            "visualization": {
+                                "color": "#6092C0",
+                                "layerId": "3713ec95-e3f4-4b8e-9fd5-a1c7d261c840",
+                                "layerType": "data",
+                                "metricAccessor": "9345eee9-d2c3-45fd-98fc-e04929d71133"
+                            }
+                        },
+                        "title": "",
+                        "type": "lens",
+                        "visualizationType": "lnsMetric"
+                    },
+                    "enhancements": {},
+                    "hidePanelTitles": true
+                },
+                "gridData": {
+                    "h": 8,
+                    "i": "66a867cd-2fd1-417d-a993-13afcfd53e73",
+                    "w": 7,
+                    "x": 0,
+                    "y": 9
+                },
+                "panelIndex": "66a867cd-2fd1-417d-a993-13afcfd53e73",
+                "title": "",
+                "type": "lens"
+            },
+            {
+                "embeddableConfig": {
+                    "attributes": {
+                        "references": [
+                            {
+                                "id": "logs-*",
+                                "name": "indexpattern-datasource-layer-3e75a52d-5282-455a-bc22-e4f5f0e587ba",
+                                "type": "index-pattern"
+                            }
+                        ],
+                        "state": {
+                            "adHocDataViews": {},
+                            "datasourceStates": {
+                                "formBased": {
+                                    "layers": {
+                                        "3e75a52d-5282-455a-bc22-e4f5f0e587ba": {
+                                            "columnOrder": [
+                                                "da014db7-4671-4fd5-904f-c836c6c839ab"
+                                            ],
+                                            "columns": {
+                                                "da014db7-4671-4fd5-904f-c836c6c839ab": {
+                                                    "customLabel": true,
+                                                    "dataType": "number",
+                                                    "isBucketed": false,
+                                                    "label": "Detected Unique Reports",
+                                                    "operationType": "unique_count",
+                                                    "params": {
+                                                        "emptyAsNull": false,
+                                                        "format": {
+                                                            "id": "number",
+                                                            "params": {
+                                                                "compact": false,
+                                                                "decimals": 0
+                                                            }
+                                                        }
+                                                    },
+                                                    "scale": "ratio",
+                                                    "sourceField": "gti.threat.indicator.relationships.reports.id"
+                                                }
+                                            },
+                                            "incompleteColumns": {}
+                                        }
+                                    }
+                                },
+                                "indexpattern": {
+                                    "layers": {}
+                                },
+                                "textBased": {
+                                    "layers": {}
+                                }
+                            },
+                            "filters": [],
+                            "internalReferences": [],
+                            "query": {
+                                "language": "kuery",
+                                "query": ""
+                            },
+                            "visualization": {
+                                "color": "#6092C0",
+                                "layerId": "3e75a52d-5282-455a-bc22-e4f5f0e587ba",
+                                "layerType": "data",
+                                "metricAccessor": "da014db7-4671-4fd5-904f-c836c6c839ab"
+                            }
+                        },
+                        "title": "",
+                        "type": "lens",
+                        "visualizationType": "lnsMetric"
+                    },
+                    "enhancements": {},
+                    "hidePanelTitles": true
+                },
+                "gridData": {
+                    "h": 8,
+                    "i": "3708c1b2-7d42-4d9d-83f4-ca7e34d4cb97",
+                    "w": 6,
+                    "x": 7,
+                    "y": 9
+                },
+                "panelIndex": "3708c1b2-7d42-4d9d-83f4-ca7e34d4cb97",
+                "title": "",
+                "type": "lens"
+            },
+            {
+                "embeddableConfig": {
+                    "attributes": {
+                        "references": [
+                            {
+                                "id": "logs-*",
+                                "name": "indexpattern-datasource-layer-c76bd76f-61ec-46a8-8eb5-cb9df819a997",
+                                "type": "index-pattern"
+                            }
+                        ],
+                        "state": {
+                            "adHocDataViews": {},
+                            "datasourceStates": {
+                                "formBased": {
+                                    "layers": {
+                                        "c76bd76f-61ec-46a8-8eb5-cb9df819a997": {
+                                            "columnOrder": [
+                                                "3081e913-ae5e-42d9-9a6b-271aeea07e7f"
+                                            ],
+                                            "columns": {
+                                                "3081e913-ae5e-42d9-9a6b-271aeea07e7f": {
+                                                    "customLabel": true,
+                                                    "dataType": "number",
+                                                    "isBucketed": false,
+                                                    "label": "Detected Unique Malware Families",
+                                                    "operationType": "unique_count",
+                                                    "params": {
+                                                        "emptyAsNull": false,
+                                                        "format": {
+                                                            "id": "number",
+                                                            "params": {
+                                                                "compact": false,
+                                                                "decimals": 0
+                                                            }
+                                                        }
+                                                    },
+                                                    "scale": "ratio",
+                                                    "sourceField": "gti.threat.indicator.relationships.malware_families.id"
+                                                }
+                                            },
+                                            "incompleteColumns": {},
+                                            "sampling": 1
+                                        }
+                                    }
+                                },
+                                "indexpattern": {
+                                    "layers": {}
+                                },
+                                "textBased": {
+                                    "layers": {}
+                                }
+                            },
+                            "filters": [],
+                            "internalReferences": [],
+                            "query": {
+                                "language": "kuery",
+                                "query": ""
+                            },
+                            "visualization": {
+                                "color": "#6092C0",
+                                "layerId": "c76bd76f-61ec-46a8-8eb5-cb9df819a997",
+                                "layerType": "data",
+                                "metricAccessor": "3081e913-ae5e-42d9-9a6b-271aeea07e7f"
+                            }
+                        },
+                        "title": "",
+                        "type": "lens",
+                        "visualizationType": "lnsMetric"
+                    },
+                    "enhancements": {},
+                    "hidePanelTitles": true
+                },
+                "gridData": {
+                    "h": 8,
+                    "i": "802b1ade-8b7c-40e9-9092-64f31d60dd92",
+                    "w": 7,
+                    "x": 13,
+                    "y": 9
+                },
+                "panelIndex": "802b1ade-8b7c-40e9-9092-64f31d60dd92",
+                "title": "",
+                "type": "lens"
+            },
+            {
+                "embeddableConfig": {
+                    "attributes": {
+                        "references": [
+                            {
+                                "id": "logs-*",
+                                "name": "indexpattern-datasource-layer-65a52748-bf7f-4fb7-89ea-c5a132b84572",
+                                "type": "index-pattern"
+                            }
+                        ],
+                        "state": {
+                            "adHocDataViews": {},
+                            "datasourceStates": {
+                                "formBased": {
+                                    "layers": {
+                                        "65a52748-bf7f-4fb7-89ea-c5a132b84572": {
+                                            "columnOrder": [
+                                                "82620d3a-5f91-490c-a9d1-6fb6f9de1bae"
+                                            ],
+                                            "columns": {
+                                                "82620d3a-5f91-490c-a9d1-6fb6f9de1bae": {
+                                                    "customLabel": true,
+                                                    "dataType": "number",
+                                                    "isBucketed": false,
+                                                    "label": "Detected Unique Collections",
+                                                    "operationType": "unique_count",
+                                                    "params": {
+                                                        "emptyAsNull": false,
+                                                        "format": {
+                                                            "id": "number",
+                                                            "params": {
+                                                                "compact": false,
+                                                                "decimals": 0
+                                                            }
+                                                        }
+                                                    },
+                                                    "scale": "ratio",
+                                                    "sourceField": "gti.threat.indicator.relationships.collections.id"
+                                                }
+                                            },
+                                            "incompleteColumns": {}
+                                        }
+                                    }
+                                },
+                                "indexpattern": {
+                                    "layers": {}
+                                },
+                                "textBased": {
+                                    "layers": {}
+                                }
+                            },
+                            "filters": [],
+                            "internalReferences": [],
+                            "query": {
+                                "language": "kuery",
+                                "query": ""
+                            },
+                            "visualization": {
+                                "color": "#6092C0",
+                                "layerId": "65a52748-bf7f-4fb7-89ea-c5a132b84572",
+                                "layerType": "data",
+                                "metricAccessor": "82620d3a-5f91-490c-a9d1-6fb6f9de1bae"
+                            }
+                        },
+                        "title": "",
+                        "type": "lens",
+                        "visualizationType": "lnsMetric"
+                    },
+                    "enhancements": {},
+                    "hidePanelTitles": true
+                },
+                "gridData": {
+                    "h": 8,
+                    "i": "323d8b89-f142-4f52-ba49-0e175312d3ff",
+                    "w": 7,
+                    "x": 20,
+                    "y": 9
+                },
+                "panelIndex": "323d8b89-f142-4f52-ba49-0e175312d3ff",
+                "title": "",
+                "type": "lens"
+            },
+            {
+                "embeddableConfig": {
+                    "attributes": {
+                        "references": [
+                            {
+                                "id": "logs-*",
+                                "name": "indexpattern-datasource-layer-e4ab0fad-5ed0-43f1-87dc-7ad5ab048c94",
+                                "type": "index-pattern"
+                            }
+                        ],
+                        "state": {
+                            "adHocDataViews": {},
+                            "datasourceStates": {
+                                "formBased": {
+                                    "currentIndexPatternId": "logs-*",
+                                    "layers": {
+                                        "e4ab0fad-5ed0-43f1-87dc-7ad5ab048c94": {
+                                            "columnOrder": [
+                                                "01df1772-1dd7-49ee-8107-ae0beedcf896"
+                                            ],
+                                            "columns": {
+                                                "01df1772-1dd7-49ee-8107-ae0beedcf896": {
+                                                    "customLabel": true,
+                                                    "dataType": "number",
+                                                    "isBucketed": false,
+                                                    "label": "Detected Unique Vulnerabilities",
+                                                    "operationType": "unique_count",
+                                                    "params": {
+                                                        "emptyAsNull": false,
+                                                        "format": {
+                                                            "id": "number",
+                                                            "params": {
+                                                                "compact": false,
+                                                                "decimals": 0
+                                                            }
+                                                        }
+                                                    },
+                                                    "scale": "ratio",
+                                                    "sourceField": "gti.threat.indicator.relationships.vulnerabilities.id"
+                                                }
+                                            },
+                                            "incompleteColumns": {},
+                                            "indexPatternId": "logs-*"
+                                        }
+                                    }
+                                },
+                                "indexpattern": {
+                                    "layers": {}
+                                },
+                                "textBased": {
+                                    "layers": {}
+                                }
+                            },
+                            "filters": [],
+                            "internalReferences": [],
+                            "query": {
+                                "language": "kuery",
+                                "query": ""
+                            },
+                            "visualization": {
+                                "color": "#6092C0",
+                                "layerId": "e4ab0fad-5ed0-43f1-87dc-7ad5ab048c94",
+                                "layerType": "data",
+                                "metricAccessor": "01df1772-1dd7-49ee-8107-ae0beedcf896"
+                            }
+                        },
+                        "title": "",
+                        "type": "lens",
+                        "visualizationType": "lnsMetric"
+                    },
+                    "enhancements": {},
+                    "hidePanelTitles": true
+                },
+                "gridData": {
+                    "h": 8,
+                    "i": "bb5f7645-3845-4626-a823-2d746dbff6a0",
+                    "w": 7,
+                    "x": 27,
+                    "y": 9
+                },
+                "panelIndex": "bb5f7645-3845-4626-a823-2d746dbff6a0",
+                "title": "",
+                "type": "lens"
+            },
+            {
+                "embeddableConfig": {
+                    "attributes": {
+                        "references": [
+                            {
+                                "id": "logs-*",
+                                "name": "indexpattern-datasource-layer-f8537e43-0ecd-44f1-8da3-af7c1bf0b530",
+                                "type": "index-pattern"
+                            }
+                        ],
+                        "state": {
+                            "adHocDataViews": {},
+                            "datasourceStates": {
+                                "formBased": {
+                                    "currentIndexPatternId": "logs-*",
+                                    "layers": {
+                                        "f8537e43-0ecd-44f1-8da3-af7c1bf0b530": {
+                                            "columnOrder": [
+                                                "1da14ec5-ba72-482c-9f48-a8c6ed1d4a2d"
+                                            ],
+                                            "columns": {
+                                                "1da14ec5-ba72-482c-9f48-a8c6ed1d4a2d": {
+                                                    "customLabel": true,
+                                                    "dataType": "number",
+                                                    "isBucketed": false,
+                                                    "label": "Detected Unique Software Toolkits",
+                                                    "operationType": "unique_count",
+                                                    "params": {
+                                                        "emptyAsNull": false,
+                                                        "format": {
+                                                            "id": "number",
+                                                            "params": {
+                                                                "compact": false,
+                                                                "decimals": 0
+                                                            }
+                                                        }
+                                                    },
+                                                    "scale": "ratio",
+                                                    "sourceField": "gti.threat.indicator.relationships.software_toolkits.id"
+                                                }
+                                            },
+                                            "incompleteColumns": {},
+                                            "indexPatternId": "logs-*",
+                                            "sampling": 1
+                                        }
+                                    }
+                                },
+                                "indexpattern": {
+                                    "layers": {}
+                                },
+                                "textBased": {
+                                    "layers": {}
+                                }
+                            },
+                            "filters": [],
+                            "internalReferences": [],
+                            "query": {
+                                "language": "kuery",
+                                "query": ""
+                            },
+                            "visualization": {
+                                "color": "#6092C0",
+                                "layerId": "f8537e43-0ecd-44f1-8da3-af7c1bf0b530",
+                                "layerType": "data",
+                                "metricAccessor": "1da14ec5-ba72-482c-9f48-a8c6ed1d4a2d"
+                            }
+                        },
+                        "title": "",
+                        "type": "lens",
+                        "visualizationType": "lnsMetric"
+                    },
+                    "enhancements": {},
+                    "hidePanelTitles": true
+                },
+                "gridData": {
+                    "h": 8,
+                    "i": "6d9e0e8d-4e85-4359-92f8-6bb29daf3469",
+                    "w": 7,
+                    "x": 34,
+                    "y": 9
+                },
+                "panelIndex": "6d9e0e8d-4e85-4359-92f8-6bb29daf3469",
+                "title": "",
+                "type": "lens"
+            },
+            {
+                "embeddableConfig": {
+                    "attributes": {
+                        "references": [
+                            {
+                                "id": "logs-*",
+                                "name": "indexpattern-datasource-layer-f8537e43-0ecd-44f1-8da3-af7c1bf0b530",
+                                "type": "index-pattern"
+                            }
+                        ],
+                        "state": {
+                            "adHocDataViews": {},
+                            "datasourceStates": {
+                                "formBased": {
+                                    "currentIndexPatternId": "logs-*",
+                                    "layers": {
+                                        "f8537e43-0ecd-44f1-8da3-af7c1bf0b530": {
+                                            "columnOrder": [
+                                                "1da14ec5-ba72-482c-9f48-a8c6ed1d4a2d"
+                                            ],
+                                            "columns": {
+                                                "1da14ec5-ba72-482c-9f48-a8c6ed1d4a2d": {
+                                                    "customLabel": true,
+                                                    "dataType": "number",
+                                                    "isBucketed": false,
+                                                    "label": "Detected Unique Software Toolkits",
+                                                    "operationType": "unique_count",
+                                                    "params": {
+                                                        "emptyAsNull": false,
+                                                        "format": {
+                                                            "id": "number",
+                                                            "params": {
+                                                                "compact": false,
+                                                                "decimals": 0
+                                                            }
+                                                        }
+                                                    },
+                                                    "scale": "ratio",
+                                                    "sourceField": "gti.threat.indicator.relationships.software_toolkits.id"
+                                                }
+                                            },
+                                            "incompleteColumns": {},
+                                            "indexPatternId": "logs-*",
+                                            "sampling": 1
+                                        }
+                                    }
+                                },
+                                "indexpattern": {
+                                    "layers": {}
+                                },
+                                "textBased": {
+                                    "layers": {}
+                                }
+                            },
+                            "filters": [],
+                            "internalReferences": [],
+                            "query": {
+                                "language": "kuery",
+                                "query": ""
+                            },
+                            "visualization": {
+                                "color": "#6092C0",
+                                "layerId": "f8537e43-0ecd-44f1-8da3-af7c1bf0b530",
+                                "layerType": "data",
+                                "metricAccessor": "1da14ec5-ba72-482c-9f48-a8c6ed1d4a2d"
+                            }
+                        },
+                        "title": "",
+                        "type": "lens",
+                        "visualizationType": "lnsMetric"
+                    },
+                    "enhancements": {},
+                    "hidePanelTitles": true
+                },
+                "gridData": {
+                    "h": 8,
+                    "i": "ba83a116-04d4-42e3-bf73-176bd162e208",
+                    "w": 7,
+                    "x": 41,
+                    "y": 9
+                },
+                "panelIndex": "ba83a116-04d4-42e3-bf73-176bd162e208",
+                "title": "",
+                "type": "lens"
+            },
+            {
+                "embeddableConfig": {
+                    "description": "",
+                    "enhancements": {}
+                },
+                "gridData": {
+                    "h": 13,
+                    "i": "eee7f615-47d9-47b0-8baa-0b74f4cdbdce",
+                    "w": 48,
+                    "x": 0,
+                    "y": 17
+                },
+                "panelIndex": "eee7f615-47d9-47b0-8baa-0b74f4cdbdce",
+                "panelRefName": "panel_eee7f615-47d9-47b0-8baa-0b74f4cdbdce",
+                "title": "Detected Campaigns Collection Essential Details [Logs Google Threat Intelligence]",
+                "type": "search"
+            },
+            {
+                "embeddableConfig": {
+                    "description": "",
+                    "enhancements": {}
+                },
+                "gridData": {
+                    "h": 13,
+                    "i": "4ba956ed-7f82-4818-ad20-32951289ff29",
+                    "w": 48,
+                    "x": 0,
+                    "y": 30
+                },
+                "panelIndex": "4ba956ed-7f82-4818-ad20-32951289ff29",
+                "panelRefName": "panel_4ba956ed-7f82-4818-ad20-32951289ff29",
+                "title": "Detected Reports Collection Essential Details [Logs Google Threat Intelligence]",
+                "type": "search"
+            },
+            {
+                "embeddableConfig": {
+                    "description": "",
+                    "enhancements": {}
+                },
+                "gridData": {
+                    "h": 14,
+                    "i": "7944c6cd-2435-4565-bc6d-5dfa1c2cc1e5",
+                    "w": 48,
+                    "x": 0,
+                    "y": 43
+                },
+                "panelIndex": "7944c6cd-2435-4565-bc6d-5dfa1c2cc1e5",
+                "panelRefName": "panel_7944c6cd-2435-4565-bc6d-5dfa1c2cc1e5",
+                "title": "Detected Threat Actors Collection Essential Details [Logs Google Threat Intelligence]",
+                "type": "search"
+            },
+            {
+                "embeddableConfig": {
+                    "description": "",
+                    "enhancements": {}
+                },
+                "gridData": {
+                    "h": 14,
+                    "i": "1318a9d1-5385-4349-bf47-bdbac9feeef6",
+                    "w": 48,
+                    "x": 0,
+                    "y": 57
+                },
+                "panelIndex": "1318a9d1-5385-4349-bf47-bdbac9feeef6",
+                "panelRefName": "panel_1318a9d1-5385-4349-bf47-bdbac9feeef6",
+                "title": "Detected Malware Families Collection Essential Details [Logs Google Threat Intelligence]",
+                "type": "search"
+            },
+            {
+                "embeddableConfig": {
+                    "description": "",
+                    "enhancements": {}
+                },
+                "gridData": {
+                    "h": 15,
+                    "i": "aad93615-5c51-4afe-97a2-c9820e5a395a",
+                    "w": 48,
+                    "x": 0,
+                    "y": 71
+                },
+                "panelIndex": "aad93615-5c51-4afe-97a2-c9820e5a395a",
+                "panelRefName": "panel_aad93615-5c51-4afe-97a2-c9820e5a395a",
+                "title": "Detected Collections Collection Essential Details [Logs Google Threat Intelligence]",
+                "type": "search"
+            },
+            {
+                "embeddableConfig": {
+                    "description": "",
+                    "enhancements": {}
+                },
+                "gridData": {
+                    "h": 13,
+                    "i": "7d76ca2d-0a76-4f93-bb62-d6a0b616f954",
+                    "w": 48,
+                    "x": 0,
+                    "y": 86
+                },
+                "panelIndex": "7d76ca2d-0a76-4f93-bb62-d6a0b616f954",
+                "panelRefName": "panel_7d76ca2d-0a76-4f93-bb62-d6a0b616f954",
+                "title": "Detected Vulnerabilities Collection Essential Details [Logs Google Threat Intelligence]",
+                "type": "search"
+            },
+            {
+                "embeddableConfig": {
+                    "description": "",
+                    "enhancements": {}
+                },
+                "gridData": {
+                    "h": 14,
+                    "i": "a92d50bc-679b-42db-bd89-6c71dbb75fe0",
+                    "w": 48,
+                    "x": 0,
+                    "y": 99
+                },
+                "panelIndex": "a92d50bc-679b-42db-bd89-6c71dbb75fe0",
+                "panelRefName": "panel_a92d50bc-679b-42db-bd89-6c71dbb75fe0",
+                "title": "Detected Software Toolkits  Collection Essential Details [Logs Google Threat Intelligence]",
+                "type": "search"
+            }
+        ],
+        "timeRestore": false,
+        "title": "[Logs Google Threat Intelligence] Adversary Intelligence",
+        "version": 2
+    },
+    "coreMigrationVersion": "8.8.0",
+    "created_at": "2025-06-03T08:45:20.592Z",
+    "id": "ti_google_threat_intelligence-0b0fb6b4-d250-4e31-a56a-bb872e4c7c4a",
+    "managed": false,
+    "references": [
+        {
+            "id": "logs-*",
+            "name": "kibanaSavedObjectMeta.searchSourceJSON.filter[0].meta.index",
+            "type": "index-pattern"
+        },
+        {
+            "id": "logs-*",
+            "name": "kibanaSavedObjectMeta.searchSourceJSON.filter[1].meta.index",
+            "type": "index-pattern"
+        },
+        {
+            "id": "logs-*",
+            "name": "66a867cd-2fd1-417d-a993-13afcfd53e73:indexpattern-datasource-layer-3713ec95-e3f4-4b8e-9fd5-a1c7d261c840",
+            "type": "index-pattern"
+        },
+        {
+            "id": "logs-*",
+            "name": "3708c1b2-7d42-4d9d-83f4-ca7e34d4cb97:indexpattern-datasource-layer-3e75a52d-5282-455a-bc22-e4f5f0e587ba",
+            "type": "index-pattern"
+        },
+        {
+            "id": "logs-*",
+            "name": "802b1ade-8b7c-40e9-9092-64f31d60dd92:indexpattern-datasource-layer-c76bd76f-61ec-46a8-8eb5-cb9df819a997",
+            "type": "index-pattern"
+        },
+        {
+            "id": "logs-*",
+            "name": "323d8b89-f142-4f52-ba49-0e175312d3ff:indexpattern-datasource-layer-65a52748-bf7f-4fb7-89ea-c5a132b84572",
+            "type": "index-pattern"
+        },
+        {
+            "id": "logs-*",
+            "name": "bb5f7645-3845-4626-a823-2d746dbff6a0:indexpattern-datasource-layer-e4ab0fad-5ed0-43f1-87dc-7ad5ab048c94",
+            "type": "index-pattern"
+        },
+        {
+            "id": "logs-*",
+            "name": "6d9e0e8d-4e85-4359-92f8-6bb29daf3469:indexpattern-datasource-layer-f8537e43-0ecd-44f1-8da3-af7c1bf0b530",
+            "type": "index-pattern"
+        },
+        {
+            "id": "logs-*",
+            "name": "ba83a116-04d4-42e3-bf73-176bd162e208:indexpattern-datasource-layer-f8537e43-0ecd-44f1-8da3-af7c1bf0b530",
+            "type": "index-pattern"
+        },
+        {
+            "id": "ti_google_threat_intelligence-1539bed1-9500-4751-b492-07bff04c887b",
+            "name": "eee7f615-47d9-47b0-8baa-0b74f4cdbdce:panel_eee7f615-47d9-47b0-8baa-0b74f4cdbdce",
+            "type": "search"
+        },
+        {
+            "id": "ti_google_threat_intelligence-70860d2b-3f3b-4185-b524-f0afdb0d2cf6",
+            "name": "4ba956ed-7f82-4818-ad20-32951289ff29:panel_4ba956ed-7f82-4818-ad20-32951289ff29",
+            "type": "search"
+        },
+        {
+            "id": "ti_google_threat_intelligence-7f91c071-f4d8-47af-bad9-e07e9ad4892c",
+            "name": "7944c6cd-2435-4565-bc6d-5dfa1c2cc1e5:panel_7944c6cd-2435-4565-bc6d-5dfa1c2cc1e5",
+            "type": "search"
+        },
+        {
+            "id": "ti_google_threat_intelligence-e813ee30-c48e-4607-be05-8f2abe2f8bd1",
+            "name": "1318a9d1-5385-4349-bf47-bdbac9feeef6:panel_1318a9d1-5385-4349-bf47-bdbac9feeef6",
+            "type": "search"
+        },
+        {
+            "id": "ti_google_threat_intelligence-8470cc18-e5e2-4a93-ae98-8ef0f93fcc07",
+            "name": "aad93615-5c51-4afe-97a2-c9820e5a395a:panel_aad93615-5c51-4afe-97a2-c9820e5a395a",
+            "type": "search"
+        },
+        {
+            "id": "ti_google_threat_intelligence-38af8948-a1f0-450e-9ebc-8e35544e8c16",
+            "name": "7d76ca2d-0a76-4f93-bb62-d6a0b616f954:panel_7d76ca2d-0a76-4f93-bb62-d6a0b616f954",
+            "type": "search"
+        },
+        {
+            "id": "ti_google_threat_intelligence-7b0a91d7-7d7b-4e23-aff7-dd97e820dae2",
+            "name": "a92d50bc-679b-42db-bd89-6c71dbb75fe0:panel_a92d50bc-679b-42db-bd89-6c71dbb75fe0",
+            "type": "search"
+        },
+        {
+            "id": "ti_google_threat_intelligence-security-solution-default",
+            "name": "tag-ref-ti_google_threat_intelligence-security-solution-default",
+            "type": "tag"
+        },
+        {
+            "id": "ti_google_threat_intelligence-security-solution-default",
+            "name": "tag-ref-security-solution-default",
+            "type": "tag"
+        }
+    ],
+    "type": "dashboard",
+    "typeMigrationVersion": "10.2.0",
+    "updated_by": "u_mGBROF_q5bmFCATbLXAcCwKa0k8JvONAwSruelyKA5E_0"
+}
