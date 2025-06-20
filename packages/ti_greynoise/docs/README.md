@@ -59,37 +59,12 @@ A **retention policy** removes data older than the default retention period. For
 
 In this integration, the IP data stream has a default **retention period of 7 days**.
 
-### Enrichment with Detection Rules
-
-Detection Rules match your Elastic environment data with GreyNoise data, generating an alert when a match is found. To access detection rules:
-
-1. Navigate to **Security > Rules > Detection Rules** and click **Add Elastic Rules**.
-2. Search for **GreyNoise** to find the prebuilt Elastic detection rule.
-3. One detection rule is available for **IP**. You can install and enable the rule as needed.
-
-To customize a rule for your Elastic environment:
-
-1. Click the three dots on the right side of any detection rule.
-2. Select **Duplicate Rule**.
-3. Modify the duplicated rule to suit your Elastic environment:
-   - **Index Pattern**: Add the index pattern relevant to your data. Keeping this specific ensures optimal performance.
-   - **Custom Query**: Further refine rule conditions.
-   - **Indicator Mapping**: Map relevant fields from your Elastic environment to GreyNoise fields. Do not modify the **indicator index field**.
-   - **Schedule Rules**:
-     - **Set Runs Every** - Defines how frequently the rule runs.
-     - **Additional Lookback Time** - Specifies how far back to check for matches.
-
-Once saved, successfully executed rules will generate alerts. You can view these alerts in the **Alerts** section.
-
 ## Troubleshooting
 
 1. If you experience latency issues during data collection, consider increasing the `HTTP Client Timeout` configuration parameter.
 2. If server-side errors occur, consider reducing the `Page Size` configuration parameter.
    **Note:** Avoid setting the `Page Size` too low, as this may increase the number of API requests, potentially causing processing issues.
 3. If events are not appearing in the transformed index, check if transforms are running without errors. For issues, refer to [Troubleshooting transforms](https://www.elastic.co/guide/en/elasticsearch/reference/current/transform-troubleshooting.html).
-4. If detection rules take longer to run, ensure you have specified index patterns and applied queries to make your source events more specific.
-   **Note:** More events in index patterns means more time needed for detection rules to run.
-5. Ensure that relevant fields are correctly mapped in the **Indicator Mapping** section. Verify that fields in the specified index pattern are properly mapped, and ensure entity-specific fields (e.g., IP fields to IP fields) are accurately configured.
 
 ## Logs Reference
 
