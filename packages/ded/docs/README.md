@@ -52,7 +52,7 @@ To customize filters in the Data Exfiltration Detection transform, follow the be
 1. Lastly, select the **Create and Start** option. Your updated transform will now start collecting data. **Note:** Do not forget to update your data view based on the new **Destination index** you have just created.
 ![Data Exfiltration Detection Rules](../img/ded_transform_4.png)
 
-The transform applies only to network data and does not currently support MacOs network logs. 
+The transform applies only to network data and does not currently support macOS network logs. 
 ## Dashboard
 
 After the data view for the dashboard is configured, the **Data Exfiltration Detection Dashboard** is available under **Analytics > Dashboard**. This dashboard gives an overview of anomalies triggered for the data exfiltration detection package.
@@ -65,9 +65,9 @@ After the data view for the dashboard is configured, the **Data Exfiltration Det
 | ded_high_sent_bytes_destination_ip                   | Detects data exfiltration to an unusual geo-location (by IP address).                                              | Linux, Windows |
 | ded_high_sent_bytes_destination_port                 | Detects data exfiltration to an unusual destination port.                                                          | Linux, Windows |
 | ded_high_sent_bytes_destination_region_name          | Detects data exfiltration to an unusual geo-location (by region name).                                             | Linux, Windows |
-| ded_high_bytes_written_to_external_device            | Detects data exfiltration activity by identifying high bytes written to an external device.                        | Linux, Windows |
-| ded_rare_process_writing_to_external_device          | Detects data exfiltration activity by identifying a writing event started by a rare process to an external device. | Linux, Windows |
-| ded_high_bytes_written_to_external_device_airdrop    | Detects data exfiltration activity by identifying high bytes written to an external device via Airdrop.            | MacOs          |
+| ded_high_bytes_written_to_external_device            | Detects data exfiltration activity by identifying high bytes written to an external device.                        | Windows        |
+| ded_rare_process_writing_to_external_device          | Detects data exfiltration activity by identifying a writing event started by a rare process to an external device. | Windows        |
+| ded_high_bytes_written_to_external_device_airdrop    | Detects data exfiltration activity by identifying high bytes written to an external device via Airdrop.            | macOS          |
 
 ## v2.0.0 and beyond
 
