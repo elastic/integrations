@@ -365,7 +365,7 @@ An example of a Knowledge Base object after decoding from XML to JSON
   "threat": "A file, directory, or directory listing was discovered on the Web server. These resources are confirmed to be present based on our logic. Some of the content on these files might have sensitive information. \n<P>NOTE: Links found in 150004 are found by forced crawling so will not automatically be added to 150009 Links Crawled or the application site map. If links found in 150004 need to be tested they must be added as Explicit URI so they are included in scope and then will be reported in 150009. Once the link is added to be in scope (i.e. Explicit URI)  this same link will no longer be reported for 150004.",
   "impact": "The contents of this file or directory may disclose sensitive information.",
   "solution": "It is advised to review the contents of the disclosed files. If the contents contain sensitive information, please verify that access to this file or directory is permitted. If necessary, remove it or apply access controls to it.",
-  "signature": null[manifest.yml](../../../../qnap_nas/manifest.yml)
+  "signature": null
 }
 ```
 
