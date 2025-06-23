@@ -1,8 +1,4 @@
 # Use of "*" to use all namespaces defined.
-# Update the source index to use the pattern "logs-ti_google_threat_intelligence.*-*"
-# and apply the required query in the source section.
-# Remove "run_as_kibana_system: false" once the issue below is resolved:
-# https://github.com/elastic/elastic-package/issues/2676
 source:
   index:
     - "logs-ti_google_threat_intelligence.cryptominer*"
@@ -59,4 +55,14 @@ _meta:
   # Bump this version to delete, reinstall, and restart the transform during
   # package installation.
   fleet_transform_version: 0.1.0
+  # We are currently using multiple source indices in this transform because system tests do not support
+  # executing queries defined within the transform. This causes test failures, so we've raised the issue here:
+  # https://github.com/elastic/elastic-package/issues/2676
+  #
+  # To avoid unauthorized errors when using multiple source indices, we've set "run_as_kibana_system: false".
+  #
+  # Once the issue is resolved:
+  # - Remove "run_as_kibana_system: false"
+  # - Switch to a single index pattern (e.g., "logs-ti_google_threat_intelligence.*-*")
+  # - Apply the appropriate query in the source section  
   run_as_kibana_system: false
