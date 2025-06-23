@@ -489,6 +489,7 @@ Please refer to the following [document](https://www.elastic.co/guide/en/ecs/cur
 | host.containerized | If the host is a container. | boolean |  |  |
 | host.os.build | OS build information. | keyword |  |  |
 | host.os.codename | OS codename, if any. | keyword |  |  |
+| input.type | Input type. | keyword |  |  |
 | o365.metrics.mailbox.usage.quota.status.indeterminate.count | The number of mailboxes where the quota status could not be determined. | long |  | gauge |
 | o365.metrics.mailbox.usage.quota.status.report.date | The specific date for which the report data applies. | date |  |  |
 | o365.metrics.mailbox.usage.quota.status.report.period.day | The duration (e.g., 7 days) over which the quota status data is aggregated. | integer | d |  |
@@ -620,6 +621,7 @@ Please refer to the following [document](https://www.elastic.co/guide/en/ecs/cur
 | host.containerized | If the host is a container. | boolean |  |  |
 | host.os.build | OS build information. | keyword |  |  |
 | host.os.codename | OS codename, if any. | keyword |  |  |
+| input.type | Input type. | keyword |  |  |
 | o365.metrics.mailbox.usage.detail.created_date | The date the mailbox was created. | date |  |  |
 | o365.metrics.mailbox.usage.detail.deleted_date | The date the mailbox was deleted. | date |  |  |
 | o365.metrics.mailbox.usage.detail.deleted_item.count | The number of items in the deleted items folder. | long |  | gauge |
@@ -1302,6 +1304,7 @@ Please refer to the following [document](https://www.elastic.co/guide/en/ecs/cur
 | host.containerized | If the host is a container. | boolean |  |  |
 | host.os.build | OS build information. | keyword |  |  |
 | host.os.codename | OS codename, if any. | keyword |  |  |
+| input.type | Input type. | keyword |  |  |
 | o365.metrics.outlook.activity.emails_read.count | The count of email messages read by users during the reporting period. | long |  | gauge |
 | o365.metrics.outlook.activity.emails_received.count | The count of email messages received by users during the reporting period. | long |  | gauge |
 | o365.metrics.outlook.activity.emails_sent.count | The count of email messages sent by users during the reporting period. | long |  | gauge |
