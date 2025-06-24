@@ -20,11 +20,12 @@ Metrics offer statistics that reflect the performance and health of MySQL. The `
 
 Data streams:
 
-- `error`: Collect error logs from the MySQL server, helping to detect and troubleshoot issues that may affect database functionality. This data stream includes information such as error messages, severities, and error codes.
-- `slowlog`: Collect slow-performing queries that exceed a defined time threshold. This data stream includes details such as query execution time, lock time, rows affected, and the actual query text, which are crucial for pinpointing and optimizing slow queries.
-- `status`: Collect various status and performance indicators, including connection errors, cache performance, binary log usage, network I/O, thread activity, and detailed InnoDB metrics, allowing for a thorough analysis of the MySQL server's health and efficiency.
-- `galera_status`: Collect various status and performance metrics, which provide insights into cluster performance, including replication health and node status, to maintain the robustness and fault tolerance of the distributed database system.
-- `replica_status`:  Collect metrics related to status and performance of the replication process, including details from source and replica servers.
+- `error`: Collects error logs from the MySQL server, helping to detect and troubleshoot issues that may affect database functionality. This data stream includes information such as error messages, severities, and error codes.
+- `slowlog`: Collects slow-performing queries that exceed a defined time threshold. This data stream includes details such as query execution time, lock time, rows affected, and the actual query text, which are crucial for pinpointing and optimizing slow queries.
+- `status`: Collects various status and performance indicators, including connection errors, cache performance, binary log usage, network I/O, thread activity, and detailed InnoDB metrics, allowing for a thorough analysis of the MySQL server's health and efficiency.
+- `galera_status`: Collects various status and performance metrics, which provide insights into cluster performance, including replication health and node status, to maintain the robustness and fault tolerance of the distributed database system.
+- `replica_status`: Collects metrics related to status and performance of the replication process, including details from source and replica servers.
+- `performance`:  Monitors MySQL database performance by collecting metrics that help identify slow queries and track how database indexes are being used. This helps database administrators optimize their databases and troubleshoot performance issues.
 
 ## Note:
 - Users can monitor MySQL logs by using the logs-* index pattern in the Discover feature, while metrics can be viewed using the metrics-* index pattern.
