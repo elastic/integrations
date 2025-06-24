@@ -28,15 +28,13 @@ The Nozomi Networks integration collects logs for eight types of events.
 
 ## Requirements
 
-### Agentless enabled integration
+### Agentless-enabled integration
 Agentless integrations allow you to collect data without having to manage Elastic Agent in your cloud. They make manual agent deployment unnecessary, so you can focus on your data instead of the agent that collects it. For more information, refer to [Agentless integrations](https://www.elastic.co/guide/en/serverless/current/security-agentless-integrations.html) and the [Agentless integrations FAQ](https://www.elastic.co/guide/en/serverless/current/agentless-integration-troubleshooting.html).
 
 Agentless deployments are only supported in Elastic Serverless and Elastic Cloud environments. This functionality is in beta and is subject to change. Beta features are not subject to the support SLA of official GA features.
 
-### Agent based installation
-Elastic Agent must be installed. For more details, check the Elastic Agent [installation instructions](docs-content://reference/fleet/install-elastic-agents.md).
-You can install only one Elastic Agent per host.
-Elastic Agent is required to stream data from the GCP Pub/Sub or REST API and ship the data to Elastic, where the events will then be processed via the integration's ingest pipelines.
+### Agent-based installation
+Elastic Agent must be installed. For more details, check the Elastic Agent [installation instructions](docs-content://reference/fleet/install-elastic-agents.md). You can install only one Elastic Agent per host.
 
 ## Compatibility
 
@@ -44,7 +42,7 @@ For Rest API, this module has been tested against the **N2OS 25.1.0** version.
 
 ## Setup
 
-### To collect data from the Nozomi Networks API:
+### Collect data from the Nozomi Networks API:
 
 1. Navigate to your **Profile > API Keys** in the Vantage UI (top-right corner).
 2. Click on **Add** API Keys.
@@ -68,14 +66,13 @@ For Rest API, this module has been tested against the **N2OS 25.1.0** version.
 
 For more details, see [Nozomi Vantage API Key](https://technicaldocs.nozominetworks.com/products/vantage/topics/administration/teams/t_vantage_admin_teams_api-keys_generate-1.html) and [Role Documentation](https://technicaldocs.nozominetworks.com/products/vantage/topics/administration/teams/r_vantage_admin_teams_groups_roles-permissions.html).
 
-### Enabling the integration in Elastic:
+### Enable the integration in Elastic
 
-1. In Kibana navigate to Management > Integrations.
-2. In "Search for integrations" top bar, search for `Nozomi Networks`.
-3. Click on the "Nozomi Networks" integration from the search results.
-4. Click on the "Add Nozomi Networks" button to add the integration.
-5. Add all the required integration configuration parameters, including the URL, Username, Password, Interval, and Initial Interval, to enable data collection for REST API input type.
-6. Click on the "Save and continue" to save the integration.
+1. In Kibana navigate to **Management** > **Integrations**.
+2. In the search top bar, type **Nozomi Networks**.
+3. Select the **Nozomi Networks** integration and add it.
+4. Add all the required integration configuration parameters: URL, Username and Password.
+5. Save the integration.
 
 ## Logs reference
 
@@ -91,15 +88,15 @@ An example event for `alert` looks as following:
 {
     "@timestamp": "2025-05-21T22:13:30.343Z",
     "agent": {
-        "ephemeral_id": "685b7842-0c0d-4523-bdb3-741b88fb2021",
-        "id": "129b9c85-8b1b-479b-b5b6-0c3cd8cff574",
-        "name": "elastic-agent-19041",
+        "ephemeral_id": "64ad927e-8705-44ce-aaf5-5a0d9501df90",
+        "id": "06f85d75-2919-4003-983b-8bff8fe5eb44",
+        "name": "elastic-agent-50013",
         "type": "filebeat",
         "version": "8.18.0"
     },
     "data_stream": {
         "dataset": "nozomi_networks.alert",
-        "namespace": "23943",
+        "namespace": "52588",
         "type": "logs"
     },
     "destination": {
@@ -134,7 +131,7 @@ An example event for `alert` looks as following:
         "version": "8.17.0"
     },
     "elastic_agent": {
-        "id": "129b9c85-8b1b-479b-b5b6-0c3cd8cff574",
+        "id": "06f85d75-2919-4003-983b-8bff8fe5eb44",
         "snapshot": false,
         "version": "8.18.0"
     },
@@ -143,11 +140,11 @@ An example event for `alert` looks as following:
         "created": "2025-05-16T12:35:06.110Z",
         "dataset": "nozomi_networks.alert",
         "id": "6dbf93f8-d8da-4ae3-bf1a-e91a82fc3041",
-        "ingested": "2025-06-18T06:42:42Z",
+        "ingested": "2025-06-24T06:58:13Z",
         "kind": "alert",
         "original": "{\"ack\":false,\"appliance_host\":\"Sandbox-TAE-Guardian3\",\"appliance_id\":\"d5ab7eaa-9a4b-4b4b-9a4b-4b4b9a4b4b4b\",\"appliance_ip\":\"1.128.0.0\",\"appliance_site\":\"Sandbox\",\"bpf_filter\":\"(ip host 1.128.0.11 and ip host 1.128.0.0 and tcp port 58679 and tcp port 44818) or (vlan and ip host 1.128.0.11 and ip host 1.128.0.0 and tcp port 58679 and tcp port 44818)\",\"capture_device\":\"base.pcap\",\"close_option\":null,\"closed_time\":0,\"created_time\":1747398906110,\"custom_fields_dst\":{},\"custom_fields_src\":{},\"description\":\"Online edits have been made on the PLC with IP 1.128.0.0. The following steps were executed:\\n[1]- Downloaded project [ C:\\\\USERS\\\\NOZOMI\\\\DESKTOP\\\\LADDERBOMB\\\\PLC_LOGIC_CHALLENGE2\\\\challenge2changed.ACD ] to [ \\\\AB_ETHIP-1\\\\1.128.0.0\\\\C1_1756 ]\\n[2]- Changed Controller [ C1_1756 ] to Run Mode\\n[3]- Changed Controller [ C1_1756 ] to Program Mode\\n[4]- Downloaded project [ C:\\\\USERS\\\\NOZOMI\\\\DESKTOP\\\\LADDERBOMB\\\\PLC_LOGIC_CHALLENGE2\\\\challenge2changed.ACD ] to [ \\\\AB_ETHIP-1\\\\1.128.0.0\\\\C1_1756 ]\\n[5]- Changed Controller [ C1_1756 ] to Run Mode\\n[6]- Changed Controller [ C1_1756 ] to Program Mode\\n[7]- Downloaded project [ C:\\\\USERS\\\\NOZOMI\\\\DESKTOP\\\\LADDERBOMB\\\\PLC_LOGIC_CHALLENGE2\\\\challenge2changed.ACD ] to [ \\\\AB_ETHIP-1\\\\1.128.0.0\\\\C1_1756 ]\\n[8]- Changed Controller [ C1_1756 ] to Run Mode\\n[9]- Changed Controller [ C1_1756 ] to Program Mode\\n[10]- Downloaded project [ C:\\\\USERS\\\\NOZOMI\\\\DESKTOP\\\\LADDERBOMB\\\\PLC_LOGIC_CHALLENGE2\\\\challenge2changed.ACD ] to [ \\\\AB_ETHIP-1\\\\1.128.0.0\\\\C1_1756 ]\\n\",\"dst_roles\":\"producer\",\"grouped_visible\":true,\"id\":\"6dbf93f8-d8da-4ae3-bf1a-e91a82fc3041\",\"id_dst\":\"89.160.20.112\",\"id_src\":\"81.2.69.192\",\"incident_keys\":[],\"ip_dst\":\"89.160.20.112\",\"ip_src\":\"81.2.69.192\",\"is_incident\":false,\"is_security\":true,\"label_dst\":\"private.directinvesting.com1\",\"label_src\":\"private.directinvesting.com2\",\"mac_dst\":\"f4:54:33:9f:22:3d\",\"mac_src\":\"00:0c:29:01:98:be\",\"name\":\"Program change\",\"note\":\"User Defined Note\",\"parents\":[\"id1\"],\"playbook_contents\":null,\"port_dst\":44818,\"port_src\":58679,\"properties\":{\"base_risk\":6,\"from_id\":\"1.128.0.11\",\"is_dst_node_learned\":true,\"is_dst_public\":false,\"is_dst_reputation_bad\":false,\"is_src_node_learned\":true,\"is_src_public\":false,\"is_src_reputation_bad\":false,\"mitre_attack_for_ics\":{\"destination\":{\"levels\":[\"2\"],\"types\":[\"Field Controller/RTU/PLC/IED\"]},\"source\":{\"levels\":[\"2\"],\"types\":[\"Engineering Workstation\"]}},\"n2os_version\":\"25.0.0-03042016_D5AB7\",\"raised_by\":\"n2os_ids\",\"to_id\":\"1.128.0.0\"},\"protocol\":\"ethernetip\",\"record_created_at\":1747865610343,\"replicated\":true,\"risk\":6,\"sec_profile_visible\":true,\"session_id\":\"12eszcd-223cds34\",\"severity\":10,\"src_roles\":\"consumer, engineering_station\",\"status\":\"open\",\"synchronized\":true,\"threat_name\":\"Grizzly Steppe Threat Actor\",\"ti_source\":\"\",\"time\":1747398906110,\"trace_sha1\":null,\"trace_status\":\"state_unavailable_for_alert_type\",\"transport_protocol\":\"tcp\",\"trigger_id\":\"indicator--fb15c96c-eb73-48ac-a48a-15bcab2f0fe3\",\"trigger_type\":\"stix_indicators\",\"type_id\":\"SIGN:PROGRAM:CHANGE\",\"type_name\":\"Program change\",\"zone_dst\":\"Production_B\",\"zone_src\":\"Production_B\"}",
         "risk_score": 6,
-        "severity": 10
+        "severity": 73
     },
     "host": {
         "hostname": "Sandbox-TAE-Guardian3",
@@ -232,6 +229,7 @@ An example event for `alert` looks as following:
             "sec_profile_visible": true,
             "session_id": "12eszcd-223cds34",
             "severity": 10,
+            "severity_label": "high",
             "source_ip": "81.2.69.192",
             "src_roles": "consumer, engineering_station",
             "status": "open",
@@ -363,6 +361,7 @@ An example event for `alert` looks as following:
 | nozomi_networks.alert.sec_profile_visible | True if the alert is visible according to the Security Profile. For alerts that are part of incidents, the field value is set to True when at least one child alert has the field value equal to True. | boolean |
 | nozomi_networks.alert.session_id | ID of the Session during which this alert was raised. | keyword |
 | nozomi_networks.alert.severity | Syslog-like severity. | long |
+| nozomi_networks.alert.severity_label |  | keyword |
 | nozomi_networks.alert.source_ip |  | ip |
 | nozomi_networks.alert.src_roles | Roles of the source node. | keyword |
 | nozomi_networks.alert.status | Status of the alert. | keyword |

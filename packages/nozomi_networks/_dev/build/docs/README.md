@@ -28,15 +28,13 @@ The Nozomi Networks integration collects logs for eight types of events.
 
 ## Requirements
 
-### Agentless enabled integration
+### Agentless-enabled integration
 Agentless integrations allow you to collect data without having to manage Elastic Agent in your cloud. They make manual agent deployment unnecessary, so you can focus on your data instead of the agent that collects it. For more information, refer to [Agentless integrations](https://www.elastic.co/guide/en/serverless/current/security-agentless-integrations.html) and the [Agentless integrations FAQ](https://www.elastic.co/guide/en/serverless/current/agentless-integration-troubleshooting.html).
 
 Agentless deployments are only supported in Elastic Serverless and Elastic Cloud environments. This functionality is in beta and is subject to change. Beta features are not subject to the support SLA of official GA features.
 
-### Agent based installation
-Elastic Agent must be installed. For more details, check the Elastic Agent [installation instructions](docs-content://reference/fleet/install-elastic-agents.md).
-You can install only one Elastic Agent per host.
-Elastic Agent is required to stream data from the GCP Pub/Sub or REST API and ship the data to Elastic, where the events will then be processed via the integration's ingest pipelines.
+### Agent-based installation
+Elastic Agent must be installed. For more details, check the Elastic Agent [installation instructions](docs-content://reference/fleet/install-elastic-agents.md). You can install only one Elastic Agent per host.
 
 ## Compatibility
 
@@ -44,7 +42,7 @@ For Rest API, this module has been tested against the **N2OS 25.1.0** version.
 
 ## Setup
 
-### To collect data from the Nozomi Networks API:
+### Collect data from the Nozomi Networks API:
 
 1. Navigate to your **Profile > API Keys** in the Vantage UI (top-right corner).
 2. Click on **Add** API Keys.
@@ -68,14 +66,13 @@ For Rest API, this module has been tested against the **N2OS 25.1.0** version.
 
 For more details, see [Nozomi Vantage API Key](https://technicaldocs.nozominetworks.com/products/vantage/topics/administration/teams/t_vantage_admin_teams_api-keys_generate-1.html) and [Role Documentation](https://technicaldocs.nozominetworks.com/products/vantage/topics/administration/teams/r_vantage_admin_teams_groups_roles-permissions.html).
 
-### Enabling the integration in Elastic:
+### Enable the integration in Elastic
 
-1. In Kibana navigate to Management > Integrations.
-2. In "Search for integrations" top bar, search for `Nozomi Networks`.
-3. Click on the "Nozomi Networks" integration from the search results.
-4. Click on the "Add Nozomi Networks" button to add the integration.
-5. Add all the required integration configuration parameters, including the URL, Username, Password, Interval, and Initial Interval, to enable data collection for REST API input type.
-6. Click on the "Save and continue" to save the integration.
+1. In Kibana navigate to **Management** > **Integrations**.
+2. In the search top bar, type **Nozomi Networks**.
+3. Select the **Nozomi Networks** integration and add it.
+4. Add all the required integration configuration parameters: URL, Username and Password.
+5. Save the integration.
 
 ## Logs reference
 

@@ -649,11 +649,23 @@ processors:
         - append:
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
-  - set:
-      field: event.severity
-      tag: set_event_severity_from_alert_severity
-      copy_from: nozomi_networks.alert.severity
-      ignore_empty_value: true
+  - script:
+      lang: painless
+      description: Script to set event severity and label based on numeric severity scale.
+      tag: set_event_severity_and_label
+      if: ctx.nozomi_networks?.alert?.severity != null
+      source: |-
+        def severity = ctx.nozomi_networks.alert.severity;
+          if (severity >= 0 && severity <= 3) {
+            ctx.nozomi_networks.alert.severity_label = 'low';
+            ctx.event.severity = 21;
+          } else if (severity >= 4 && severity <= 6) {
+            ctx.nozomi_networks.alert.severity_label = 'medium';
+            ctx.event.severity = 47;
+          } else if (severity >= 7 && severity <= 10) {
+            ctx.nozomi_networks.alert.severity_label = 'high';
+            ctx.event.severity = 73;
+          }
   - rename:
       field: json.src_roles
       tag: rename_src_roles
@@ -781,7 +793,6 @@ processors:
         - nozomi_networks.alert.protocol
         - nozomi_networks.alert.record_created_at
         - nozomi_networks.alert.risk
-        - nozomi_networks.alert.severity
         - nozomi_networks.alert.src_roles
         - nozomi_networks.alert.transport_protocol
         - nozomi_networks.alert.trigger_id
