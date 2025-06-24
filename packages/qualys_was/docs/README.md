@@ -87,8 +87,8 @@ Should the agent run into memory issues, one or more of the following should sol
 5. If your system is using the 3.20 API or before, purge scan history. Scan history is the list of all scans have been  
    run for each vulnerability finding. This list is returned in 3.20 and earlier APIs. This list can be quite large if  
    it is not purged by the customer. Due to its size, this list can effect the amount of memory required to process the  
-   qualys API results. The cel script that queries the qualys APIs removes history results before sending the data to  
-   elasticsearch.
+   Qualys API results. The CEL script that queries the Qualys APIs removes history results before sending the data to  
+   Elasticsearch.
 
 The additional data available with verbose mode are:
 - Web application tags
@@ -110,10 +110,6 @@ endpoint which augments each Finding with the knowledge base data. Findings are 
 by the qualys_was.vulnerability.id, a unique id for the finding. Knowledge base data is cached between pages to reduce
 the volume of data transported during a single run of the cel script. The cel script removes history data that is 
 included in verbose mode.
-
-
-
-
 
 ## Data reference
 
@@ -268,7 +264,6 @@ An example response from the Qualys WAS API
       "lastId": 12345678
    }
 }
-
 
 ```
 An example of a Knowledge Base object after decoding from XML to JSON
@@ -523,7 +518,6 @@ An example event for `vulnerability` looks as following:
     }
 }
 ```
-
 
 **ECS fields**
 
