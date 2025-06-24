@@ -20,66 +20,65 @@ resource.headers:
   Authorization:
     - {{api_token}}
 program: |
-    (
-    has(state.?cursor.last_timestamp)?
-      state.cursor.?last_timestamp
-    :
-      now - duration("2160h")
-    ).as(start_time, state.with(
-      request("GET", state.url).with({
-          "Header": {
-            "Accept": ["application/json"],
-            "Authorization": ["Bearer foobar"]
-          }
-        }).do_request().as(resp,
-      (resp.StatusCode == 200) ?
-        resp.Body.decode_json().as(body, {
-          "events": body.map(e,
-            has(e.secrets) && e.secrets.size() > 0 ?
-              (e.secrets.map(s,
-                {
-                  "data": {
-                    "date": e.date,
-                    "request_id": e.request_id,
-                    "secret_type": s.secret_type,
-                    "exposed_value": s.exposed_value,
-                    "line_number": s.line_number,
-                    "timestamp": e.timestamp
-                  }
-                }
-              ))
-            :
-              [{
+  (
+    state.?cursor.?last_timestamp.orValue(now - duration("24h"))
+  ).as(raw_start_value, (
+    type(raw_start_value) == string ? timestamp(raw_start_value) : raw_start_value
+  ).as(start_time, state.with(
+    request("GET", state.url + "?" + {
+      "from": [start_time.format("02/01/2006")],
+      "to": (start_time + duration("24h")).format("02/01/2006") == now.format("02/01/2006") ? [""] : [(start_time + duration("24h")).format("02/01/2006")],
+    }.format_query()).with({
+        "Header": {
+          "Accept": ["application/json"],
+          "Authorization": ["Bearer foobar"]
+        }
+      }).do_request().as(resp,
+    (resp.StatusCode == 200) ?
+      resp.Body.decode_json().as(body, {
+        "events": body.map(e,
+          has(e.secrets) && e.secrets.size() > 0 ?
+            (e.secrets.map(s,
+              {
                 "data": {
                   "date": e.date,
                   "request_id": e.request_id,
+                  "secret_type": s.secret_type,
+                  "exposed_value": s.exposed_value,
+                  "line_number": s.line_number,
                   "timestamp": e.timestamp
                 }
-              }]
-          ).flatten(),
-          "cursor": { 
-            "time_stamp": start_time.format("02/01/2006") == now.format("02/01/2006") ?
-              state.cursor.last_timestamp
-            :
-              (start_time + duration("24h")).format("02/01/2006")
+              }
+            ))
+          :
+            [{
+              "data": {
+                "date": e.date,
+                "request_id": e.request_id,
+                "timestamp": e.timestamp
+              }
+            }]
+        ).flatten(),
+        "cursor": {
+          "last_timestamp": start_time + duration("24h") // but this will incremement if I reran on the same day
+        },
+        "want_more": start_time.format("02/01/2006") != now.format("02/01/2006")
+      })
+    :
+      {
+        "events": [{
+          "error": {
+            "code": string(resp.StatusCode),
+            "id": string(resp.Status),
+            "message": "GET:"+(
+              size(resp.Body) != 0 ?
+                string(resp.Body)
+              :
+                string(resp.Status) + ' (' + string(resp.StatusCode) + ')'
+            ),
           },
-          "want_more": (start_time + duration("24h")).format("02/01/2006") != now.format("02/01/2006")
-        })
-      :
-        {
-          "events": [{
-            "error": {
-              "code": string(resp.StatusCode),
-              "id": string(resp.Status),
-              "message": "GET:"+(
-                size(resp.Body) != 0 ?
-                  string(resp.Body)
-                :
-                  string(resp.Status) + ' (' + string(resp.StatusCode) + ')'
-              ),
-            },
-          }],
-          "want_more": false,
-        }
-      )
-    ))
+        }],
+        "want_more": false,
+      }
+    )
+  ))) // test is passing but how do we limit the number of events returned?
