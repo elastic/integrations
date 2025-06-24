@@ -84,6 +84,10 @@ Should the agent run into memory issues, one or more of the following should sol
 2. Disable verbose mode if the extra data returned is not valuable to the user. 
 3. Increase memory on the agent.
 4. Move the integration to its own agent.
+5. Purge scan history. Scan history is the list of all scans have been run for each vulnerability finding.  
+   This list can be quite large if it is not purged by the customer. Due to its size, this list can effect the amount  
+   of memory required to process the qualys API results. The cel script that queries the qualys APIs removes history  
+   results before sending the data to elasticsearch.
 
 The additional data available with verbose mode are:
 - Web application tags
