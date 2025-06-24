@@ -24,36 +24,18 @@ Starting from Qualys VMDR integration version 6.0, the `Asset Host Detection` da
 
 ## Requirements
 
-- Elastic Agent must be installed.
-- You can install only one Elastic Agent per host.
-- Elastic Agent is required to stream data through the REST API and ship the data to Elastic, where the events will then be processed via the integration's ingest pipelines.
-
-### Agentless Enabled Integration
+### Agentless-enabled integration
 
 Agentless integrations allow you to collect data without having to manage Elastic Agent in your cloud. They make manual agent deployment unnecessary, so you can focus on your data instead of the agent that collects it. For more information, refer to [Agentless integrations](https://www.elastic.co/guide/en/serverless/current/security-agentless-integrations.html) and the [Agentless integrations FAQ](https://www.elastic.co/guide/en/serverless/current/agentless-integration-troubleshooting.html).
 Agentless deployments are only supported in Elastic Serverless and Elastic Cloud environments.  This functionality is in beta and is subject to change. Beta features are not subject to the support SLA of official GA features.
 
-### Installing and managing an Elastic Agent:
+### Agent-based installation
 
-You have a few options for installing and managing an Elastic Agent:
-
-### Install a Fleet-managed Elastic Agent (recommended):
-
-With this approach, you install Elastic Agent and use Fleet in Kibana to define, configure, and manage your agents in a central location. We recommend using Fleet management because it makes the management and upgrade of your agents considerably easier.
-
-### Install Elastic Agent in standalone mode (advanced users):
-
-With this approach, you install Elastic Agent and manually configure the agent locally on the system where it’s installed. You are responsible for managing and upgrading the agents. This approach is reserved for advanced users only.
-
-### Install Elastic Agent in a containerized environment:
-
-You can run Elastic Agent inside a container, either with Fleet Server or standalone. Docker images for all versions of Elastic Agent are available from the Elastic Docker registry, and we provide deployment manifests for running on Kubernetes.
-
-There are some minimum requirements for running Elastic Agent and for more information, refer to the link [here](https://www.elastic.co/guide/en/fleet/current/elastic-agent-installation.html).
+Elastic Agent must be installed. For more details, check the Elastic Agent [installation instructions](docs-content://reference/fleet/install-elastic-agents.md). You can install only one Elastic Agent per host.
 
 ### Permissions
 
-#### Asset Host Detection
+#### Asset host detection
 
 | Role                    | Permission                                     |
 |-------------------------|------------------------------------------------|
@@ -62,11 +44,11 @@ There are some minimum requirements for running Elastic Agent and for more infor
 | _Scanners_              | VM scanned hosts in user’s account             |
 | _Readers_               | VM scanned hosts in user’s account             |
 
-#### Knowledge Base
+#### Knowledge base
 
 _Managers_, _Unit Managers_, _Scanners_, _Readers_ have permission to download vulnerability data from the KnowledgeBase.
 
-#### User Activity Log
+#### User activity log
 
 | Role                    | Permission                                     |
 |-------------------------|------------------------------------------------|
@@ -77,18 +59,17 @@ _Managers_, _Unit Managers_, _Scanners_, _Readers_ have permission to download v
 
 ## Setup
 
-### To collect data through REST API, follow the below steps:
+### Collect data through REST API
 
-- Considering you already have a Qualys user account, to identify your Qualys platform and get the API URL, refer this [link](https://www.qualys.com/platform-identification/).
-- Alternative way to get the API URL is to log in to your Qualys account and go to Help > About. You’ll find your URL under Security Operations Center (SOC).
+Assuming that you already have a Qualys user account, to identify your Qualys platform and get the API URL, check the [Qualys documentation](https://www.qualys.com/platform-identification/).
+Alternatively, to get the API URL log in to your Qualys account and go to **Help** > **About**. You’ll find your URL under **Security Operations Center (SOC)**.
 
-### Enabling the integration in Elastic:
+### Enable the integration in Elastic
 
-1. In Kibana go to Management > Integrations
-2. In "Search for integrations" search bar, type Qualys VMDR
-3. Click on the "Qualys VMDR" integration from the search results.
-4. Click on the Add Qualys VMDR Integration button to add the integration.
-5. While adding the integration, if you want to collect Asset Host Detection data via REST API, then you have to put the following details:
+1. In Kibana navigate to **Management** > **Integrations**.
+2. In the search top bar, type **Qualys VMDR**.
+3. Select the **Qualys VMDR** integration and add it.
+4. While adding the integration, if you want to collect Asset Host Detection data via REST API, then you have to put the following details:
    - username
    - password
    - url
@@ -110,12 +91,13 @@ _Managers_, _Unit Managers_, _Scanners_, _Readers_ have permission to download v
    - url
    - initial interval
    - interval
+5. Save the integration.
 
-**NOTE**: By default, the input parameter is set to "action=list".
+**NOTE**: By default, the input parameter is set to `action=list`.
 
 ## Data reference
 
-### Asset Host Detection
+### Asset host detection
 
 This is the `Asset Host Detection` dataset.
 
@@ -125,11 +107,11 @@ An example event for `asset_host_detection` looks as following:
 
 ```json
 {
-    "@timestamp": "2025-05-15T05:11:08.172Z",
+    "@timestamp": "2025-06-06T07:05:24.052Z",
     "agent": {
-        "ephemeral_id": "dd431651-4b67-46c2-b308-80b2c3e25fbb",
-        "id": "7b906031-1055-4f41-aa3d-9920fb4d5a18",
-        "name": "elastic-agent-16627",
+        "ephemeral_id": "cfed7d76-3f24-45b8-8ebe-2975c2ce33f5",
+        "id": "7a08760a-c972-4143-a43c-960e301c294e",
+        "name": "elastic-agent-89453",
         "type": "filebeat",
         "version": "8.19.0"
     },
@@ -140,14 +122,14 @@ An example event for `asset_host_detection` looks as following:
     },
     "data_stream": {
         "dataset": "qualys_vmdr.asset_host_detection",
-        "namespace": "94818",
+        "namespace": "98699",
         "type": "logs"
     },
     "ecs": {
         "version": "8.11.0"
     },
     "elastic_agent": {
-        "id": "7b906031-1055-4f41-aa3d-9920fb4d5a18",
+        "id": "7a08760a-c972-4143-a43c-960e301c294e",
         "snapshot": true,
         "version": "8.19.0"
     },
@@ -158,9 +140,9 @@ An example event for `asset_host_detection` looks as following:
         ],
         "dataset": "qualys_vmdr.asset_host_detection",
         "id": "11111111",
-        "ingested": "2025-05-15T05:11:11Z",
+        "ingested": "2025-06-06T07:05:26Z",
         "kind": "alert",
-        "original": "{\"DETECTION_LIST\":{\"AFFECT_RUNNING_KERNEL\":\"0\",\"FIRST_FOUND_DATETIME\":\"2021-02-05T04:50:45Z\",\"IS_DISABLED\":\"0\",\"IS_IGNORED\":\"0\",\"LAST_FIXED_DATETIME\":\"2022-12-14T06:52:57Z\",\"LAST_FOUND_DATETIME\":\"2024-03-08T20:15:41Z\",\"LAST_PROCESSED_DATETIME\":\"2024-03-08T20:15:41Z\",\"LAST_TEST_DATETIME\":\"2024-03-08T20:15:41Z\",\"LAST_UPDATE_DATETIME\":\"2024-03-08T20:15:41Z\",\"QDS\":{\"#text\":\"35\",\"severity\":\"LOW\"},\"QDS_FACTORS\":{\"QDS_FACTOR\":[{\"#text\":\"7.7\",\"name\":\"CVSS\"},{\"#text\":\"v3.x\",\"name\":\"CVSS_version\"},{\"#text\":\"0.00232\",\"name\":\"epss\"},{\"#text\":\"AV:N/AC:L/PR:L/UI:N/S:C/C:N/I:N/A:H\",\"name\":\"CVSS_vector\"}]},\"QID\":\"101\",\"RESULTS\":\"Package\\tInstalled Version\\tRequired Version\\nlinux-cloud-tools-4.4.0\\t1074-aws_4.4.0-1074.84\\t1092\\nlinux-aws-tools-4.4.0\\t1074_4.4.0-1074.84\\t1092\\nlinux-aws-headers-4.4.0\\t1074_4.15.0-1126.135\\t1092\\nlinux-tools-4.4.0\\t1074-aws_4.4.0-1074.84\\t1092\\nlinux-aws-cloud-tools-4.4.0\\t1074_4.4.0-1074.84\\t1092\",\"SEVERITY\":\"3\",\"SSL\":\"0\",\"STATUS\":\"Active\",\"TIMES_FOUND\":\"5393\",\"TYPE\":\"Confirmed\",\"UNIQUE_VULN_ID\":\"11111111\"},\"DNS\":\"adfssrvr.adfs.local\",\"DNS_DATA\":{\"DOMAIN\":\"adfs.local\",\"FQDN\":\"adfssrvr.adfs.local\",\"HOSTNAME\":\"adfssrvr\"},\"ID\":\"1\",\"IP\":\"10.50.2.111\",\"KNOWLEDGE_BASE\":{\"CATEGORY\":\"CGI\",\"CONSEQUENCE\":\"Depending on the vulnerability being exploited, an unauthenticated remote attacker could conduct cross-site scripting, clickjacking or MIME-type sniffing attacks.\",\"CVE_LIST\":[\"CVE-2022-31629\",\"CVE-2022-31628\"],\"DIAGNOSIS\":\"This QID reports the absence of the following\",\"DISCOVERY\":{\"REMOTE\":\"1\"},\"LAST_SERVICE_MODIFICATION_DATETIME\":\"2023-06-29T12:20:46Z\",\"PATCHABLE\":\"0\",\"PCI_FLAG\":\"1\",\"PUBLISHED_DATETIME\":\"2017-06-05T21:34:49Z\",\"QID\":\"101\",\"SEVERITY_LEVEL\":\"2\",\"SOFTWARE_LIST\":{\"SOFTWARE\":[{\"PRODUCT\":\"None\",\"VENDOR\":\"multi-vendor\"}]},\"SOLUTION\":\"\\u003cB\\u003eNote:\\u003c/B\\u003e To better debug the results of this QID\",\"THREAT_INTELLIGENCE\":{\"THREAT_INTEL\":[{\"id\":\"8\"}]},\"TITLE\":\"HTTP Security Header Not Detected\",\"VULN_TYPE\":\"Vulnerability\"},\"LAST_PC_SCANNED_DATE\":\"2023-06-28T09:58:12Z\",\"LAST_SCAN_DATETIME\":\"2023-07-03T06:25:17Z\",\"LAST_VM_SCANNED_DATE\":\"2023-07-03T06:23:47Z\",\"LAST_VM_SCANNED_DURATION\":\"1113\",\"NETBIOS\":\"ADFSSRVR\",\"OS\":\"Windows 2016/2019/10\",\"TRACKING_METHOD\":\"IP\",\"interval_id\":\"9c31bece-7add-4341-84ff-3dda69323f25\",\"interval_start\":\"2025-05-15T05:11:08.153794204Z\"}",
+        "original": "{\"DETECTION_LIST\":{\"AFFECT_RUNNING_KERNEL\":\"0\",\"FIRST_FOUND_DATETIME\":\"2021-02-05T04:50:45Z\",\"IS_DISABLED\":\"0\",\"IS_IGNORED\":\"0\",\"LAST_FIXED_DATETIME\":\"2022-12-14T06:52:57Z\",\"LAST_FOUND_DATETIME\":\"2024-03-08T20:15:41Z\",\"LAST_PROCESSED_DATETIME\":\"2024-03-08T20:15:41Z\",\"LAST_TEST_DATETIME\":\"2024-03-08T20:15:41Z\",\"LAST_UPDATE_DATETIME\":\"2024-03-08T20:15:41Z\",\"QDS\":{\"#text\":\"35\",\"severity\":\"LOW\"},\"QDS_FACTORS\":{\"QDS_FACTOR\":[{\"#text\":\"7.7\",\"name\":\"CVSS\"},{\"#text\":\"v3.x\",\"name\":\"CVSS_version\"},{\"#text\":\"0.00232\",\"name\":\"epss\"},{\"#text\":\"AV:N/AC:L/PR:L/UI:N/S:C/C:N/I:N/A:H\",\"name\":\"CVSS_vector\"}]},\"QID\":\"101\",\"RESULTS\":\"Package\\tInstalled Version\\tRequired Version\\nlinux-cloud-tools-4.4.0\\t1074-aws_4.4.0-1074.84\\t1092\\nlinux-aws-tools-4.4.0\\t1074_4.4.0-1074.84\\t1092\\nlinux-aws-headers-4.4.0\\t1074_4.15.0-1126.135\\t1092\\nlinux-tools-4.4.0\\t1074-aws_4.4.0-1074.84\\t1092\\nlinux-aws-cloud-tools-4.4.0\\t1074_4.4.0-1074.84\\t1092\",\"SEVERITY\":\"3\",\"SSL\":\"0\",\"STATUS\":\"Active\",\"TIMES_FOUND\":\"5393\",\"TYPE\":\"Confirmed\",\"UNIQUE_VULN_ID\":\"11111111\"},\"DNS\":\"adfssrvr.adfs.local\",\"DNS_DATA\":{\"DOMAIN\":\"adfs.local\",\"FQDN\":\"adfssrvr.adfs.local\",\"HOSTNAME\":\"adfssrvr\"},\"ID\":\"1\",\"IP\":\"10.50.2.111\",\"KNOWLEDGE_BASE\":{\"CATEGORY\":\"CGI\",\"CONSEQUENCE\":\"Depending on the vulnerability being exploited, an unauthenticated remote attacker could conduct cross-site scripting, clickjacking or MIME-type sniffing attacks.\",\"CVE_LIST\":[\"CVE-2022-31629\",\"CVE-2022-31628\"],\"DIAGNOSIS\":\"This QID reports the absence of the following\",\"DISCOVERY\":{\"REMOTE\":\"1\"},\"LAST_SERVICE_MODIFICATION_DATETIME\":\"2023-06-29T12:20:46Z\",\"PATCHABLE\":\"0\",\"PCI_FLAG\":\"1\",\"PUBLISHED_DATETIME\":\"2017-06-05T21:34:49Z\",\"QID\":\"101\",\"SEVERITY_LEVEL\":\"2\",\"SOFTWARE_LIST\":{\"SOFTWARE\":[{\"PRODUCT\":\"None\",\"VENDOR\":\"multi-vendor\"}]},\"SOLUTION\":\"\\u003cB\\u003eNote:\\u003c/B\\u003e To better debug the results of this QID\",\"THREAT_INTELLIGENCE\":{\"THREAT_INTEL\":[{\"id\":\"8\"}]},\"TITLE\":\"HTTP Security Header Not Detected\",\"VULN_TYPE\":\"Vulnerability\"},\"LAST_PC_SCANNED_DATE\":\"2023-06-28T09:58:12Z\",\"LAST_SCAN_DATETIME\":\"2023-07-03T06:25:17Z\",\"LAST_VM_SCANNED_DATE\":\"2023-07-03T06:23:47Z\",\"LAST_VM_SCANNED_DURATION\":\"1113\",\"NETBIOS\":\"ADFSSRVR\",\"OS\":\"Windows 2016/2019/10\",\"TRACKING_METHOD\":\"IP\",\"interval_id\":\"79023675-8d15-45e7-b97a-7674599ac2ff\",\"interval_start\":\"2025-06-06T07:05:24.044972383Z\"}",
         "type": [
             "info"
         ]
@@ -217,8 +199,8 @@ An example event for `asset_host_detection` looks as following:
                 "hostname": "adfssrvr"
             },
             "id": "1",
-            "interval_id": "9c31bece-7add-4341-84ff-3dda69323f25",
-            "interval_start": "2025-05-15T05:11:08.153Z",
+            "interval_id": "79023675-8d15-45e7-b97a-7674599ac2ff",
+            "interval_start": "2025-06-06T07:05:24.044Z",
             "ip": "10.50.2.111",
             "knowledge_base": {
                 "category": "CGI",
@@ -603,7 +585,7 @@ An example event for `asset_host_detection` looks as following:
 | vulnerability.title |  | keyword |
 
 
-### Knowledge Base
+### Knowledge base
 
 This is the `Knowledge Base` dataset.
 
@@ -794,7 +776,7 @@ An example event for `knowledge_base` looks as following:
 | qualys_vmdr.knowledge_base.vuln_type |  | keyword |
 
 
-### User Activity
+### User activity
 
 This is the `User Activity` dataset. It connects to an [API](
 https://docs.qualys.com/en/vm/api/users/index.htm#t=activity%2Fexport_activity.htm)
