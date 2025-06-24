@@ -1,0 +1,37 @@
+---
+description: Pipeline for processing Entro audit logs
+processors:
+  - set:
+      field: ecs.version
+      value: '8.17.0'
+  - set:
+      field: '@timestamp'
+      copy_from: data.date
+      ignore_empty_value: true
+  - remove:
+      field: data.date
+  - rename:
+      field: data
+      target_field: entro
+  - set:
+      field: event.kind
+      value: event
+      ignore_failure: true
+      ignore_empty_value: true
+  - set:
+      field: event.category
+      value: ["vulnerability"]
+      ignore_failure: true
+      ignore_empty_value: true
+  - set:
+      field: event.type
+      value: ["info"]
+      ignore_failure: true
+      ignore_empty_value: true
+  - set:
+      field: input.type
+      value: cel
+on_failure:
+  - set:
+      field: error.message
+      value: '{{ _ingest.on_failure_message }}'

@@ -1,0 +1,55 @@
+rules:
+  - path: /v1/scan/auditLogs
+    methods: ['GET']
+    request_headers:
+      Authorization:
+        - "Bearer foobar"
+    query_params:
+      from: "{from:.*}"
+      to: "{to:.*}"
+    responses:
+      - status_code: 200
+        headers:
+          Content-Type:
+            - 'application/json'
+        body: |-
+          {{ minify_json `
+              [
+                {
+                  "request_id": "dc7b0d91-ad2e-4783-b7bf-a760445a01c6",
+                  "timestamp": 1742305371,
+                  "date": "2025-05-27T23:15:28.000Z"
+                },
+                {
+                  "request_id": "105d6a3d-6468-4fcc-994e-f525011c53cf",
+                  "secrets": [
+                    {
+                      "secret_type": "GENERIC_CREDS_WINDOWS_PASSWORD",
+                      "exposed_value": "ahmB73Vn",
+                      "line_number": 878
+                    }
+                  ],
+                  "line_number": 129,
+                  "timestamp": 1742317714,
+                  "date": "2025-05-27T20:12:44.000Z"
+                },
+                {
+                  "request_id": "105d6a3d-6468-4fcc-994e-f525011c53cf",
+                  "secrets": [
+                    {
+                      "secret_type": "GENERIC_CREDS_WINDOWS_PASSWORD",
+                      "exposed_value": "ahmB73Vn",
+                      "line_number": 878
+                    },
+                    {
+                      "secret_type": "AWS_ACCESS_KEY_ID",
+                      "exposed_value": "ABCDEF12345789",
+                      "line_number": 878
+                    }
+                  ],
+                  "line_number": 129,
+                  "timestamp": 1742317714,
+                  "date": "2025-05-27T20:12:44.000Z"
+                }
+              ]
+          `}}
