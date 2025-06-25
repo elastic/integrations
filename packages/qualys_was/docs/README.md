@@ -657,5 +657,6 @@ An example event for `vulnerability` looks as following:
 | qualys_was.vulnerability.wasc_references.url | WASC reference URL. Available in verbose mode. | keyword |
 | qualys_was.vulnerability.web_app.id | Web Application ID. | long |
 | qualys_was.vulnerability.web_app.name | Web Application name. | keyword |
-| qualys_was.vulnerability.web_app.tags | Web Application tags. Available in verbose mode. | keyword |
+| qualys_was.vulnerability.web_app.tags.id | ID of tag. | long |
+| qualys_was.vulnerability.web_app.tags.name | Name of tag | keyword |
 | qualys_was.vulnerability.web_app.url | Web Application base URL. | keyword |
