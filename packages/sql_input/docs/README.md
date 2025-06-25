@@ -105,16 +105,83 @@ The `merge_results` feature will create a combined event, where `blks_hit`, `blk
 
 ### SSL configuration
 
-#### Using `ssl.*` parameters
-
-Set "SSL enabled" to `true` (checked).
+#### Option 1. Using "SSL Configuration" section (`ssl.*` parameters)
 
 The drivers `mysql`, `mssql`, and `postgres` are supported.
 
-Refer to the metricbeat's `sql` module [documentation](https://www.elastic.co/docs/reference/beats/metricbeat/metricbeat-module-sql).
+The SSL configuration is driver-specific. Different drivers interpret parameters not in the same way. Subset of the [params](https://www.elastic.co/docs/reference/beats/metricbeat/configuration-ssl#ssl-client-config) is supported.
 
-#### By connection string
+When any `ssl.*` parameters are set, only URL-formatted connection strings are accepted, like `"postgres://myuser:mypassword@localhost:5432/mydb"`, not like `"user=myuser password=mypassword dbname=mydb"`.
 
-Set "SSL enabled" to `false` (unchecked).
+##### `mysql` driver
 
-It is possible to configure SSL connections using the `hosts` by passing the parameters in the connection string. For example, for `postgres`: `postgres://myuser:mypassword@localhost:5432/mydb?sslcert=.%2Fcert.pem&sslkey=.%2Fkey.pem&sslmode=verify-full&sslrootcert=.%2Fca.pem`. (The parameters needs to be URL encoded).
+Params supported: `ssl.verification_mode`, `ssl.certificate`, `ssl.key`, `ssl.certificate_authorities`.
+
+The certificates can be passed both as file paths and as certificate content.
+
+Example 1:
+```
+ssl.certificate_authorities: |
+  -----BEGIN CERTIFICATE-----
+  MIID+jCCAuKgAwIBAgIGAJJMzlxLMA0GCSqGSIb3DQEBCwUAMHoxCzAJBgNVBAYT
+  AlVTMQwwCgYDVQQKEwNJQk0xFjAUBgNVBAsTDURlZmF1bHROb2RlMDExFjAUBgNV
+  BAsTDURlZmF1bHRDZWxsMDExGTAXBgNVBAsTEFJvb3QgQ2VydGlmaWNhdGUxEjAQ
+  BgNVBAMTCWxvY2FsaG9zdDAeFw0yMTEyMTQyMjA3MTZaFw0yMjEyMTQyMjA3MTZa
+  MF8xCzAJBgNVBAYTAlVTMQwwCgYDVQQKEwNJQk0xFjAUBgNVBAsTDURlZmF1bHRO
+  b2RlMDExFjAUBgNVBAsTDURlZmF1bHRDZWxsMDExEjAQBgNVBAMTCWxvY2FsaG9z
+  dDCCASIwDQYJKoZIhvcNAQEBBQADggEPADCCAQoCggEBAMv5HCsJZIpI5zCy+jXV
+  z6lmzNc9UcVSEEHn86h6zT6pxuY90TYeAhlZ9hZ+SCKn4OQ4GoDRZhLPTkYDt+wW
+  CV3NTIy9uCGUSJ6xjCKoxClJmgSQdg5m4HzwfY4ofoEZ5iZQ0Zmt62jGRWc0zuxj
+  hegnM+eO2reBJYu6Ypa9RPJdYJsmn1RNnC74IDY8Y95qn+WZj//UALCpYfX41hko
+  i7TWD9GKQO8SBmAxhjCDifOxVBokoxYrNdzESl0LXvnzEadeZTd9BfUtTaBHhx6t
+  njqqCPrbTY+3jAbZFd4RiERPnhLVKMytw5ot506BhPrUtpr2lusbN5svNXjuLeea
+  MMUCAwEAAaOBoDCBnTATBgNVHSMEDDAKgAhOatpLwvJFqjAdBgNVHSUEFjAUBggr
+  BgEFBQcDAQYIKwYBBQUHAwIwVAYDVR0RBE0wS4E+UHJvZmlsZVVVSUQ6QXBwU3J2
+  MDEtQkFTRS05MDkzMzJjMC1iNmFiLTQ2OTMtYWI5NC01Mjc1ZDI1MmFmNDiCCWxv
+  Y2FsaG9zdDARBgNVHQ4ECgQITzqhA5sO8O4wDQYJKoZIhvcNAQELBQADggEBAKR0
+  gY/BM69S6BDyWp5dxcpmZ9FS783FBbdUXjVtTkQno+oYURDrhCdsfTLYtqUlP4J4
+  CHoskP+MwJjRIoKhPVQMv14Q4VC2J9coYXnePhFjE+6MaZbTjq9WaekGrpKkMaQA
+  iQt5b67jo7y63CZKIo9yBvs7sxODQzDn3wZwyux2vPegXSaTHR/rop/s/mPk3YTS
+  hQprs/IVtPoWU4/TsDN3gIlrAYGbcs29CAt5q9MfzkMmKsuDkTZD0ry42VjxjAmk
+  xw23l/k8RoD1wRWaDVbgpjwSzt+kl+vJE/ip2w3h69eEZ9wbo6scRO5lCO2JM4Pr
+  7RhLQyWn2u00L7/9Omw=
+  -----END CERTIFICATE-----
+```
+
+Example 2:
+```
+ssl.certificate_authorities: /path/to/ca.pem
+```
+
+##### `postgres` driver
+
+Params supported: `ssl.verification_mode`, `ssl.certificate`, `ssl.key`, `ssl.certificate_authorities`.
+
+Only one certificate can be passed to `ssl.certificate_authorities` parameter.
+The certificates can be passed only as file paths. The files have to be present in the environment where the metricbeat is running.
+
+The `ssl.verification_mode` is translated as following:
+
+- `full` -> `verify-full`
+
+- `strict` -> `verify-full`
+
+- `certificate` -> `verify-ca`
+
+- `none` -> `require`
+
+##### `mssql` driver
+
+Params supported: `ssl.verification_mode`, `ssl.certificate_authorities`.
+
+Only one certificate can be passed to `ssl.certificate_authorities` parameter.
+The certificates can be passed only as file paths. The files have to be present in the environment where the metricbeat is running.
+
+If `ssl.verification_mode` is set to `none`, `TrustServerCertificate` will be set to `true`, otherwise it is `false`
+
+
+#### Option 2. Passing SSL configuration in the connection string
+
+It is possible to configure SSL connections using the `hosts` parameter by passing the parameters in the connection string. For example, for `postgres`: `postgres://myuser:mypassword@localhost:5432/mydb?sslcert=.%2Fcert.pem&sslkey=.%2Fkey.pem&sslmode=verify-full&sslrootcert=.%2Fca.pem`. (The parameters needs to be URL encoded). Refer to the documentation of your database for parameters specification.
+
+When you use this option, don't set any parameters in the "SSL Configuration" sections, otherwise parameters you supply in the connection string may be overwritten.
