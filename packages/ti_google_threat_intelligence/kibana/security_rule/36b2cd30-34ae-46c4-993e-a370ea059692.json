@@ -1,0 +1,88 @@
+{
+  "attributes": {
+    "id": "36b2cd30-34ae-46c4-993e-a370ea059692",
+    "name": "Google Threat Intelligence File IOC Correlation",
+    "tags": [
+      "Google Threat Intelligence",
+      "File IOC",
+      "Elastic",
+      "Threat Intelligence"
+    ],
+    "interval": "1h",
+    "revision": 2,
+    "description": "This rule is triggered when File IOC's collected from the Google Threat Intelligence Integration have a match against File hash that were found in the customer environment.",
+    "risk_score": 99,
+    "severity": "critical",
+    "license": "Elastic License v2",
+    "author": ["Elastic"],
+    "false_positives": [],
+    "from": "now-3900s",
+    "rule_id": "36b2cd30-34ae-46c4-993e-a370ea059692",
+    "max_signals": 1000,
+    "risk_score_mapping": [],
+    "severity_mapping": [],
+    "threat": [],
+    "to": "now",
+    "references": [],
+    "version": 1,
+    "exceptions_list": [],
+    "immutable": false,
+    "rule_source": { "type": "internal" },
+    "related_integrations": [
+      { "package": "ti_google_threat_intelligence", "version": "^0.1.0" }
+    ],
+    "required_fields": [
+      {
+        "name": "threat.indicator.file.hash.sha256",
+        "type": "keyword",
+        "ecs": true
+      }
+    ],
+    "setup": "",
+    "type": "threat_match",
+    "language": "kuery",
+    "index": [
+      "apm-*-transaction*",
+      "auditbeat-*",
+      "endgame-*",
+      "filebeat-*",
+      "logs-*",
+      "packetbeat-*",
+      "traces-apm*",
+      "winlogbeat-*",
+      "-*elastic-cloud-logs-*"
+    ],
+    "query": "NOT event.module : \"ti_google_threat_intelligence\" ",
+    "filters": [],
+    "threat_filters": [],
+    "threat_query": "@timestamp >= \"now-30d/d\"",
+    "threat_mapping": [
+      {
+        "entries": [
+          {
+            "field": "file.hash.sha256",
+            "type": "mapping",
+            "value": "threat.indicator.file.hash.sha256"
+          }
+        ]
+      },
+      {
+        "entries": [
+          {
+            "field": "email.attachments.file.hash.sha256",
+            "type": "mapping",
+            "value": "threat.indicator.file.hash.sha256"
+          }
+        ]
+      }
+    ],
+    "threat_language": "kuery",
+    "threat_index": [
+      "logs-ti_google_threat_intelligence_latest.dest_file_ioc-*"
+    ],
+    "threat_indicator_path": "gti.threat.indicator",
+    "actions": []
+  },
+  "type":"security-rule",
+  "id":"36b2cd30-34ae-46c4-993e-a370ea059692"
+}
