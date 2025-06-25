@@ -1,6 +1,9 @@
 ---
 description: Pipeline for processing Event logs.
 processors:
+  - terminate:
+      tag: data_collection_error
+      if: ctx.error?.message != null && ctx.message == null && ctx.event?.original == null
   - set:
       field: ecs.version
       tag: set_ecs_version
@@ -2963,18 +2966,6 @@ processors:
       tag: set_host_geo_timezone_from_event_time_zone_display_value
       copy_from: servicenow.event.time_zone.display_value
       ignore_empty_value: true
-  - gsub:
-      field: servicenow.event.url.display_value
-      tag: encode_servicenow_event_url_display_value_carets
-      pattern: "\\^"
-      replacement: "%5E"
-      if: ctx.servicenow?.event?.url?.display_value != null && ctx.servicenow.event.url.display_value != ''
-  - gsub:
-      field: servicenow.event.url.display_value
-      tag: encode_servicenow_event_url_display_value_spaces
-      pattern: " "
-      replacement: "%20"
-      if: ctx.servicenow?.event?.url?.display_value != null && ctx.servicenow.event.url.display_value != ''
   - uri_parts:
       field: servicenow.event.url.display_value
       tag: uri_parts_url_full
@@ -2988,13 +2979,8 @@ processors:
       tag: set_url_display_value_into_url_full
       if: ctx.url != null && ctx.servicenow?.event?.url?.display_value =~ /^([a-z][a-z0-9+\-.]*):/
       copy_from: servicenow.event.url.display_value
-      description: Only copy the original URL if it has a scheme.
+      description: Only copy the original URL if the original has a scheme
       ignore_empty_value: true
-  - remove:
-      field: url.extension
-      tag: remove_extension_if_url_only_contains_query
-      if: ctx.url?.extension != null && ctx.servicenow?.event?.url?.display_value =~ /^\/[a-z].*/
-      description: Remove extension if the url starts with just a / since this indicates it is just the query part of a request
   - convert:
       field: servicenow.event.unverified.display_value
       tag: convert_unverified_display_value_to_boolean
@@ -3394,10 +3380,11 @@ processors:
           return src;
         }
         filterMassive(ctx);
-  - set:
+  - append:
       field: event.kind
       tag: set_pipeline_error_into_event_kind
       value: pipeline_error
+      allow_duplicates: false
       if: ctx.error?.message != null
   - append:
       field: tags
