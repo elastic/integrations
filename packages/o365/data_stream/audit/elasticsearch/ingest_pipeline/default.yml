@@ -160,7 +160,10 @@ processors:
       field: o365audit.OrganizationId
       target_field: organization.id
       ignore_missing: true
-      ignore_failure: true
+      on_failure:
+        - append:
+            field: error.message
+            value: '{{{_ingest.on_failure_message}}}'
 
   - json:
       tag: json-extract-stringly-AdditionalInfo
@@ -468,8 +471,11 @@ processors:
       field: o365audit.OrganizationName
       target_field: organization.name
       ignore_missing: true
-      ignore_failure: true
       if: ctx.event?.code == "ExchangeAdmin"
+      on_failure:
+        - append:
+            field: error.message
+            value: '{{{_ingest.on_failure_message}}}'
   - rename:
       field: o365audit.OriginatingServer
       target_field: server._temp
@@ -496,8 +502,11 @@ processors:
       field: o365audit.OrganizationName
       target_field: organization.name
       ignore_missing: true
-      ignore_failure: true
       if: ctx.event?.code == "ExchangeItem"
+      on_failure:
+        - append:
+            field: error.message
+            value: '{{{_ingest.on_failure_message}}}'
   - rename:
       field: o365audit.OriginatingServer
       target_field: server._temp
