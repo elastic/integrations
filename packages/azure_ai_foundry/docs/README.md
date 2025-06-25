@@ -29,14 +29,14 @@ Follow these [step-by-step instructions](https://docs.elastic.co/integrations/az
 
 #### Data stream specific configuration notes
 
-`Period`:: (_string_) Reporting interval. Metrics will have a timegrain of 5 minutes, so the `Period` configuration option  for `azure_openai` should have a value of `300s` or multiple of `300s`for relevant results.
+`Period`:: (_string_) Reporting interval. Metrics will have a timegrain of 5 minutes, so the `Period` configuration option  for `azure_ai_foundry` should have a value of `300s` or multiple of `300s`for relevant results.
 
 `Resource IDs`:: (_[]string_) The fully qualified ID's of the resource, including the resource name and resource type. Has the format `/subscriptions/{guid}/resourceGroups/{resource-group-name}/providers/{resource-provider-namespace}/{resource-type}/{resource-name}`.
 Should return a list of resources.
 
-`Resource Groups`:: (_[]string_) This option will return all Azure OpenAI services inside the resource group.
+`Resource Groups`:: (_[]string_) This option will return all Azure AI Foundry services inside the resource group.
 
-If no resource filter is specified, then all Azure OpenAI services inside the entire subscription will be considered.
+If no resource filter is specified, then all Azure AI Foundry services inside the entire subscription will be considered.
 
 The primary aggregation value will be retrieved for all the metrics contained in the namespaces. The aggregation options are `avg`, `sum`, `min`, `max`, `total`, `count`.
 
@@ -153,7 +153,7 @@ For more details on ECS fields, check the [ECS Field Reference](https://www.elas
 | azure.ai_foundry.model_requests.total | Number of calls made to the model API over a period of time. Applies to PTU, PTU-Managed and Pay-as-you-go deployments. | long |  | gauge |
 | azure.ai_foundry.normalized_time_between_tokens.avg | For streaming requests; Model token generation rate, measured in milliseconds. Applies to PTU and PTU-managed deployments. | float |  | gauge |
 | azure.ai_foundry.normalized_time_to_first_token.avg | For streaming and non-streaming requests; time it takes for first byte of response data to be received after request is made by model, normalized by token. Applies to PTU, PTU-managed, and Pay-as-you-go deployments. | float |  | gauge |
-| azure.ai_foundry.output_tokens.total | Number of tokens generated (output) from an OpenAI model. Applies to PTU, PTU-Managed and Pay-as-you-go deployments. | long |  | gauge |
+| azure.ai_foundry.output_tokens.total | Number of tokens generated (output) from an OpenAI and Non-OpenAI models. Applies to PTU, PTU-Managed and Pay-as-you-go deployments. | long |  | gauge |
 | azure.ai_foundry.provisioned_utilization.avg | Utilization % for a provisoned-managed deployment, calculated as (PTUs consumed / PTUs deployed) x 100. When utilization is greater than or equal to 100%, calls are throttled and error code 429 returned. | float | percent | gauge |
 | azure.ai_foundry.time_to_last_byte.avg | For streaming and non-streaming requests; time it takes for last byte of response data to be received after request is made by model. Applies to PTU, PTU-managed, and Pay-as-you-go deployments. | float |  | gauge |
 | azure.ai_foundry.time_to_response.avg | Recommended latency (responsiveness) measure for streaming requests. Applies to PTU and PTU-managed deployments. Calculated as time taken for the first response to appear after a user sends a prompt, as measured by the API gateway. This number increases as the prompt size increases and/or cache hit size reduces. | float |  | gauge |
