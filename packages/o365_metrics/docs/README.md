@@ -1432,6 +1432,7 @@ Please refer to the following [document](https://www.elastic.co/guide/en/ecs/cur
 | host.containerized | If the host is a container. | boolean |  |  |
 | host.os.build | OS build information. | keyword |  |  |
 | host.os.codename | OS codename, if any. | keyword |  |  |
+| input.type | Input type. | keyword |  |  |
 | o365.metrics.outlook.app.usage.version.counts.outlook_2007.count | The count of unique users using Outlook 2007 during the reporting period. | long |  | gauge |
 | o365.metrics.outlook.app.usage.version.counts.outlook_2010.count | The count of unique users using Outlook 2010 during the reporting period. | long |  | gauge |
 | o365.metrics.outlook.app.usage.version.counts.outlook_2013.count | The count of unique users using Outlook 2013 during the reporting period. | long |  | gauge |
@@ -2330,6 +2331,7 @@ Please refer to the following [document](https://www.elastic.co/guide/en/ecs/cur
 | host.containerized | If the host is a container. | boolean |  |  |
 | host.os.build | OS build information. | keyword |  |  |
 | host.os.codename | OS codename, if any. | keyword |  |  |
+| input.type | Input type. | keyword |  |  |
 | o365.metrics.teams.device.usage.user.counts.android_phone.count | The number of active Teams users on Android devices. | long |  | gauge |
 | o365.metrics.teams.device.usage.user.counts.chrome_os.count | The number of active Teams users on Chrome OS devices. | long |  | gauge |
 | o365.metrics.teams.device.usage.user.counts.ios.count | The number of active Teams users on iOS devices (iPhone and iPad). | long |  | gauge |
