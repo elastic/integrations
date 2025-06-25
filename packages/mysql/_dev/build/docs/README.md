@@ -14,9 +14,8 @@ Use the MySQL integration to:
 
 The MySQL integration collects logs and metrics data, providing comprehensive insights into database operations and performance.
 
-Logs provide insights into the operations and events within the MySQL environment. The MySQL integration collects `error` logs helping users to track errors and warnings, understand their causes, and address database-related issues efficiently. This includes monitoring for slow-performing queries through the `slowlog` data stream, which is critical for identifying and resolving queries that negatively affect database performance. 
-
-Metrics offer statistics that reflect the performance and health of MySQL. The `status` data stream, for instance, gathers a variety of performance metrics, including connection errors, cache efficiency, and InnoDB storage engine details. The `galera_status` data stream offers a view into the health and performance of Galera Clusters, which is vital for the maintenance of distributed database systems. For replication health, the `replica_status` data stream provides metrics that shed light on the state of replication between the source and replica servers, ensuring the replication process is functioning correctly. 
+Logs provide insights into the operations and events within the MySQL environment. 
+Metrics offer statistics that reflect the performance and health of MySQL. 
 
 Data streams:
 
