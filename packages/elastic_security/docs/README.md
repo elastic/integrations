@@ -508,7 +508,7 @@ An example event for `alert` looks as following:
     },
     "data_stream": {
         "dataset": "elastic_security.alert",
-        "namespace": "57140",
+        "namespace": "51163",
         "type": "logs"
     },
     "ecs": {
@@ -520,7 +520,7 @@ An example event for `alert` looks as following:
         }
     },
     "elastic_agent": {
-        "id": "4359bb6f-418d-48f1-abb9-fd118245ca90",
+        "id": "d9e85b58-9f44-43a2-816a-ad59e9876b86",
         "snapshot": false,
         "version": "8.18.0"
     },
@@ -535,8 +535,8 @@ An example event for `alert` looks as following:
         "created": "2024-06-09T13:52:07.402627721Z",
         "dataset": "elastic_security.alert",
         "id": "Na7UF0/g6Q++++3Y96",
-        "ingested": "2025-06-24T07:51:09Z",
-        "kind": "signal",
+        "ingested": "2025-06-25T10:13:48Z",
+        "kind": "alert",
         "original": "Malicious Behavior Prevention Alert: Empire Stager Execution",
         "outcome": "success",
         "risk_score": 73,
