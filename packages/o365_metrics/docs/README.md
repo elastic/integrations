@@ -1799,6 +1799,7 @@ Please refer to the following [document](https://www.elastic.co/guide/en/ecs/cur
 | host.containerized | If the host is a container. | boolean |  |  |
 | host.os.build | OS build information. | keyword |  |  |
 | host.os.codename | OS codename, if any. | keyword |  |  |
+| input.type | Input type. | keyword |  |  |
 | o365.metrics.teams.user.activity.user.counts.calls.count | The number of calls made by Teams users. | long |  | gauge |
 | o365.metrics.teams.user.activity.user.counts.meetings.count | The number of meetings attended or organized by Teams users. | long |  | gauge |
 | o365.metrics.teams.user.activity.user.counts.other_actions.count | The count of other user actions within Teams. | long |  | gauge |
@@ -2198,6 +2199,7 @@ Please refer to the following [document](https://www.elastic.co/guide/en/ecs/cur
 | host.containerized | If the host is a container. | boolean |  |  |
 | host.os.build | OS build information. | keyword |  |  |
 | host.os.codename | OS codename, if any. | keyword |  |  |
+| input.type | Input type. | keyword |  |  |
 | o365.metrics.viva.engage.device.usage.user.counts.android_phone.count | The count of users accessing Yammer on Android phones. | long |  | gauge |
 | o365.metrics.viva.engage.device.usage.user.counts.ipad.count | The count of users accessing Yammer on iPads. | long |  | gauge |
 | o365.metrics.viva.engage.device.usage.user.counts.iphone.count | The count of users accessing Yammer on iPhones. | long |  | gauge |
