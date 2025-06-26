@@ -1452,6 +1452,56 @@ An example event for `sharepoint_site_usage_detail` looks as following:
 
 ```json
 {
+    "@timestamp": "2024-12-22",
+    "agent": {
+        "ephemeral_id": "70511d18-aa8a-44f1-bf11-8ef933e3af45",
+        "id": "9513c0f5-fd08-4895-aa1b-8a8a71675ec1",
+        "name": "elastic-agent-80895",
+        "type": "filebeat",
+        "version": "8.16.0"
+    },
+    "data_stream": {
+        "dataset": "o365_metrics.sharepoint_site_usage_detail",
+        "namespace": "66679",
+        "type": "metrics"
+    },
+    "ecs": {
+        "version": "8.16.0"
+    },
+    "elastic_agent": {
+        "id": "9513c0f5-fd08-4895-aa1b-8a8a71675ec1",
+        "snapshot": false,
+        "version": "8.16.0"
+    },
+    "event": {
+        "agent_id_status": "verified",
+        "dataset": "o365_metrics.sharepoint_site_usage_detail",
+        "ingested": "2025-06-26T07:23:55Z"
+    },
+    "host": {
+        "architecture": "x86_64",
+        "containerized": true,
+        "hostname": "elastic-agent-80895",
+        "ip": [
+            "172.29.0.2",
+            "172.18.0.7"
+        ],
+        "mac": [
+            "02-42-AC-12-00-07",
+            "02-42-AC-1D-00-02"
+        ],
+        "name": "elastic-agent-80895",
+        "os": {
+            "kernel": "5.15.153.1-microsoft-standard-WSL2",
+            "name": "Wolfi",
+            "platform": "wolfi",
+            "type": "linux",
+            "version": "20230201"
+        }
+    },
+    "input": {
+        "type": "cel"
+    },
     "o365": {
         "metrics": {
             "sharepoint": {
@@ -1464,8 +1514,10 @@ An example event for `sharepoint_site_usage_detail` looks as following:
                             "file": {
                                 "count": 14
                             },
-                            "is_deleted": "False",
-                            "owner_display_name": "82D28824CBDAF3EA9AD693254DE8CC08",
+                            "is_deleted": false,
+                            "last_activity_date": "2024-12-19",
+                            "owner_display_name": "Alice Johnson",
+                            "owner_principal_name": "alice.j@contoso.com",
                             "page_view": {
                                 "count": 12
                             },
@@ -1477,6 +1529,7 @@ An example event for `sharepoint_site_usage_detail` looks as following:
                             },
                             "root_web_template": "Team Site",
                             "site_id": "00000000-0000-0000-0000-000000000000",
+                            "site_url": "https://contoso.sharepoint.com/sites/MarketingCampaigns",
                             "storage_allocated": {
                                 "byte": 27487790694400
                             },
@@ -1492,57 +1545,8 @@ An example event for `sharepoint_site_usage_detail` looks as following:
             }
         }
     },
-    "agent": {
-        "name": "docker-fleet-agent",
-        "id": "027b7b81-b3c6-49b9-8f61-1a5e892e7bfe",
-        "ephemeral_id": "f4133cae-978e-44e1-83e0-cab27e682a99",
-        "type": "filebeat",
-        "version": "8.16.0"
-    },
-    "@timestamp": "2024-12-26T23:18:42.620Z",
-    "ecs": {
-        "version": "8.16.0"
-    },
-    "data_stream": {
-        "namespace": "default",
-        "type": "metrics",
-        "dataset": "o365_metrics.sharepoint_site_usage_detail"
-    },
-    "host": {
-        "hostname": "docker-fleet-agent",
-        "os": {
-            "kernel": "5.15.153.1-microsoft-standard-WSL2",
-            "codename": "noble",
-            "name": "Ubuntu",
-            "type": "linux",
-            "family": "debian",
-            "version": "24.04.1 LTS (Noble Numbat)",
-            "platform": "ubuntu"
-        },
-        "containerized": true,
-        "ip": [
-            "172.18.0.7"
-        ],
-        "name": "docker-fleet-agent",
-        "mac": [
-            "02-42-AC-12-00-07"
-        ],
-        "architecture": "x86_64"
-    },
-    "elastic_agent": {
-        "id": "027b7b81-b3c6-49b9-8f61-1a5e892e7bfe",
-        "version": "8.16.0",
-        "snapshot": false
-    },
-    "event": {
-        "agent_id_status": "verified",
-        "ingested": "2024-12-26T23:18:52Z",
-        "dataset": "o365_metrics.sharepoint_site_usage_detail",
-        "original": "{\"IsDeleted\":\"False\",\"SiteId\":\"00000000-0000-0000-0000-000000000000\",\"FileCount\":\"14\",\"StorageAllocated(Byte)\":\"27487790694400\",\"ReportRefreshDate\":\"2024-12-22\",\"ReportPeriod\":\"7\",\"ActiveFileCount\":\"16\",\"OwnerPrincipalName\":\"\",\"VisitedPageCount\":\"14\",\"OwnerDisplayName\":\"82D28824CBDAF3EA9AD693254DE8CC08\",\"SiteURL\":\"\",\"StorageUsedByte\":\"1586077\",\"RootWebTemplate\":\"Team Site\",\"LastActivityDate\":\"\",\"PageViewCount\":\"12\"}"
-    },
     "tags": [
-        "o365.metrics.sharepoint_site_usage_detail",
-        "preserve_original_event"
+        "o365.metrics.sharepoint_site_usage_detail"
     ]
 }
 ```
@@ -1589,6 +1593,56 @@ An example event for `sharepoint_site_usage_storage` looks as following:
 
 ```json
 {
+    "@timestamp": "2024-11-23",
+    "agent": {
+        "ephemeral_id": "dcb64714-9b51-4882-8500-e18e0f0191f1",
+        "id": "01496f0a-4072-49a3-a215-eacc33e24e84",
+        "name": "elastic-agent-61558",
+        "type": "filebeat",
+        "version": "8.16.0"
+    },
+    "data_stream": {
+        "dataset": "o365_metrics.sharepoint_site_usage_storage",
+        "namespace": "29930",
+        "type": "metrics"
+    },
+    "ecs": {
+        "version": "8.16.0"
+    },
+    "elastic_agent": {
+        "id": "01496f0a-4072-49a3-a215-eacc33e24e84",
+        "snapshot": false,
+        "version": "8.16.0"
+    },
+    "event": {
+        "agent_id_status": "verified",
+        "dataset": "o365_metrics.sharepoint_site_usage_storage",
+        "ingested": "2025-06-26T06:58:53Z"
+    },
+    "host": {
+        "architecture": "x86_64",
+        "containerized": true,
+        "hostname": "elastic-agent-61558",
+        "ip": [
+            "172.28.0.2",
+            "172.18.0.8"
+        ],
+        "mac": [
+            "02-42-AC-12-00-08",
+            "02-42-AC-1C-00-02"
+        ],
+        "name": "elastic-agent-61558",
+        "os": {
+            "kernel": "5.15.153.1-microsoft-standard-WSL2",
+            "name": "Wolfi",
+            "platform": "wolfi",
+            "type": "linux",
+            "version": "20230201"
+        }
+    },
+    "input": {
+        "type": "cel"
+    },
     "o365": {
         "metrics": {
             "sharepoint": {
@@ -1602,6 +1656,7 @@ An example event for `sharepoint_site_usage_storage` looks as following:
                                 },
                                 "refresh_date": "2024-11-29"
                             },
+                            "site_type": "All",
                             "storage_used": {
                                 "byte": 1933176386
                             }
@@ -1611,57 +1666,8 @@ An example event for `sharepoint_site_usage_storage` looks as following:
             }
         }
     },
-    "agent": {
-        "name": "docker-fleet-agent",
-        "id": "027b7b81-b3c6-49b9-8f61-1a5e892e7bfe",
-        "ephemeral_id": "f4133cae-978e-44e1-83e0-cab27e682a99",
-        "type": "filebeat",
-        "version": "8.16.0"
-    },
-    "@timestamp": "2024-12-26T23:18:42.620Z",
-    "ecs": {
-        "version": "8.16.0"
-    },
-    "data_stream": {
-        "namespace": "default",
-        "type": "metrics",
-        "dataset": "o365_metrics.sharepoint_site_usage_storage"
-    },
-    "host": {
-        "hostname": "docker-fleet-agent",
-        "os": {
-            "kernel": "5.15.153.1-microsoft-standard-WSL2",
-            "codename": "noble",
-            "name": "Ubuntu",
-            "type": "linux",
-            "family": "debian",
-            "version": "24.04.1 LTS (Noble Numbat)",
-            "platform": "ubuntu"
-        },
-        "containerized": true,
-        "ip": [
-            "172.18.0.7"
-        ],
-        "name": "docker-fleet-agent",
-        "mac": [
-            "02-42-AC-12-00-07"
-        ],
-        "architecture": "x86_64"
-    },
-    "elastic_agent": {
-        "id": "027b7b81-b3c6-49b9-8f61-1a5e892e7bfe",
-        "version": "8.16.0",
-        "snapshot": false
-    },
-    "event": {
-        "agent_id_status": "verified",
-        "ingested": "2024-12-26T23:18:52Z",
-        "dataset": "o365_metrics.sharepoint_site_usage_storage",
-        "original": "{\"Report Date\":\"2024-11-23\",\"Report Period\":\"7\",\"Site Type\":\"All\",\"Storage Used (Byte)\":\"1933176386\",\"Report Refresh Date\":\"2024-11-29\"}"
-    },
     "tags": [
-        "o365.metrics.sharepoint_site_usage_storage",
-        "preserve_original_event"
+        "o365.metrics.sharepoint_site_usage_storage"
     ]
 }
 ```
@@ -1686,6 +1692,7 @@ Please refer to the following [document](https://www.elastic.co/guide/en/ecs/cur
 | o365.metrics.sharepoint.site.usage.storage.report.date | The date the report was generated. | date |  |  |
 | o365.metrics.sharepoint.site.usage.storage.report.period.day | The reporting period over which the data is aggregated (in days). | integer | d |  |
 | o365.metrics.sharepoint.site.usage.storage.report.refresh_date | The date when the report data was last updated. | date |  |  |
+| o365.metrics.sharepoint.site.usage.storage.site_type | The type of the site. | keyword |  |  |
 | o365.metrics.sharepoint.site.usage.storage.storage_used.byte | The total storage used across SharePoint sites during the reporting period, in bytes. | long | byte | gauge |
 
 
