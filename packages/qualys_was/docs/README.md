@@ -485,8 +485,14 @@ An example event for `vulnerability` looks as following:
                 "id": 987654321,
                 "name": "Description Name",
                 "tags": [
-                    "Tag:1",
-                    "Tag:2"
+                    {
+                        "id": 12348765,
+                        "name": "Tag:1"
+                    },
+                    {
+                        "id": 23459876,
+                        "name": "Tag:2"
+                    }
                 ],
                 "url": "https://web.address.com"
             }
