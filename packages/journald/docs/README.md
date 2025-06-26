@@ -18,7 +18,7 @@ image.
 To check the version of `journalctl` shipped with an Elastic-Agent
 Docker image, run the following command:
 ```
-docker run --rm -it --entrypoint journalctl docker.elastic.co/elastic-agent/elastic-agent:<VERSION>  --version
+docker run --rm -it --entrypoint journalctl docker.elastic.co/elastic-agent/elastic-agent-complete:<VERSION>  --version
 ```
 
 An example event looks as follows:
