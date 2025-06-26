@@ -1,0 +1,90 @@
+format_version: 3.3.1
+name: ti_greynoise
+title: GreyNoise
+version: 0.1.0
+description: Collect Threat Intelligence Indicators from GreyNoise using Elastic Agent, and perform enrichment on Elasticsearch by correlating Indicators of Compromise (IOCs).
+type: integration
+categories:
+  - threat_intel
+  - security
+conditions:
+  kibana:
+    version: "^8.17.0"
+  elastic:
+    subscription: "basic"
+    capabilities:
+      - security
+icons:
+  - src: /img/greynoise_logo.jpeg
+    title: GreyNoise Logo
+    size: 32x32
+    type: image/svg+xml
+screenshots:
+  - src: /img/greynoise_threat_feed_overview_dashboard.png
+    title: GreyNoise Threat Feed Overview Dashboard
+    size: 600x600
+    type: image/png
+policy_templates:
+  - name: ti_greynoise
+    title: GreyNoise events
+    description: Collect GreyNoise events
+    inputs:
+      - type: cel
+        title: Collect GreyNoise events via API
+        description: Collecting GreyNoise events via API.
+        vars:
+          - name: url
+            type: url
+            title: URL
+            default: https://api.greynoise.io
+            description: GreyNoise URL will work as the base URL for this integration. By default, the URL is set to `https://api.greynoise.io`.
+            multi: false
+            required: true
+            show_user: false
+          - name: api_key
+            type: password
+            title: API Key
+            description: API Key used to authenticate the requests.
+            multi: false
+            required: true
+            show_user: true
+            secret: true
+          - name: proxy_url
+            type: text
+            title: Proxy URL
+            multi: false
+            required: false
+            show_user: false
+            description: URL to proxy connections in the form of http[s]://<user>:<password>@<server name/ip>:<port>. Please ensure your username and password are in URL encoded format.
+          - name: ssl
+            type: yaml
+            title: SSL Configuration
+            description: i.e. certificate_authorities, supported_protocols, verification_mode etc.
+            multi: false
+            required: false
+            show_user: false
+            default: |
+              #certificate_authorities:
+              #  - |
+              #    -----BEGIN CERTIFICATE-----
+              #    MIIDCjCCAfKgAwIBAgITJ706Mu2wJlKckpIvkWxEHvEyijANBgkqhkiG9w0BAQsF
+              #    ADAUMRIwEAYDVQQDDAlsb2NhbGhvc3QwIBcNMTkwNzIyMTkyOTA0WhgPMjExOTA2
+              #    MjgxOTI5MDRaMBQxEjAQBgNVBAMMCWxvY2FsaG9zdDCCASIwDQYJKoZIhvcNAQEB
+              #    BQADggEPADCCAQoCggEBANce58Y/JykI58iyOXpxGfw0/gMvF0hUQAcUrSMxEO6n
+              #    fZRA49b4OV4SwWmA3395uL2eB2NB8y8qdQ9muXUdPBWE4l9rMZ6gmfu90N5B5uEl
+              #    94NcfBfYOKi1fJQ9i7WKhTjlRkMCgBkWPkUokvBZFRt8RtF7zI77BSEorHGQCk9t
+              #    /D7BS0GJyfVEhftbWcFEAG3VRcoMhF7kUzYwp+qESoriFRYLeDWv68ZOvG7eoWnP
+              #    PsvZStEVEimjvK5NSESEQa9xWyJOmlOKXhkdymtcUd/nXnx6UTCFgnkgzSdTWV41
+              #    CI6B6aJ9svCTI2QuoIq2HxX/ix7OvW1huVmcyHVxyUECAwEAAaNTMFEwHQYDVR0O
+              #    BBYEFPwN1OceFGm9v6ux8G+DZ3TUDYxqMB8GA1UdIwQYMBaAFPwN1OceFGm9v6ux
+              #    8G+DZ3TUDYxqMA8GA1UdEwEB/wQFMAMBAf8wDQYJKoZIhvcNAQELBQADggEBAG5D
+              #    874A4YI7YUwOVsVAdbWtgp1d0zKcPRR+r2OdSbTAV5/gcS3jgBJ3i1BN34JuDVFw
+              #    3DeJSYT3nxy2Y56lLnxDeF8CUTUtVQx3CuGkRg1ouGAHpO/6OqOhwLLorEmxi7tA
+              #    H2O8mtT0poX5AnOAhzVy7QW0D/k4WaoLyckM5hUa6RtvgvLxOwA0U+VGurCDoctu
+              #    8F4QOgTAWyh8EZIwaKCliFRSynDpv3JTUwtfZkxo6K6nce1RhCWFAsMvDZL8Dgc0
+              #    yvgJ38BRsFOtkRuAGSf6ZUwTO8JJRRIFnpUzXflAnGivK9M13D5GEQMmIl6U9Pvk
+              #    sxSmbIUfc2SGJGCJD4I=
+              #    -----END CERTIFICATE-----
+owner:
+  github: elastic/security-service-integrations
+  type: community
