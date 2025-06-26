@@ -47,7 +47,7 @@ For existing users of AWS integration, before upgrading to `4.0.0` please ensure
      - grant use of transforms, and
      - grant access to source and destination indices
    For more details on Transform Setup, refer to the link [here](https://www.elastic.co/docs/explore-analyze/transforms/transform-setup)
-3. Because the latest copy of vulnerabilities is now indexed in two places, i.e., in both source and destination indices, users must anticipate storage requirements accordingly.
+3. Because the latest copy of vulnerabilities is now indexed in two places, that is, in both source and destination indices, users must anticipate storage requirements accordingly.
 
 ## Logs
 
@@ -532,14 +532,10 @@ Please refer to the following [document](https://www.elastic.co/guide/en/ecs/cur
 | log.file.path | Path to the log file. | keyword |
 | log.offset | Log offset | long |
 | observer.vendor | Vendor name of the observer. | constant_keyword |
-| package.architecture | Package architecture. | keyword |
-| package.fixed_version |  | keyword |
-| package.name | Package name | keyword |
-| package.path | Path where the package is installed. | keyword |
-| package.version | Package version | keyword |
-| resource.id |  | keyword |
-| vulnerability.cve |  | keyword |
-| vulnerability.published_date |  | date |
+| package.fixed_version | In which version of the package the vulnerability was fixed. | keyword |
+| resource.id | The ID of the vulnerable resource. | keyword |
+| vulnerability.cve | The CVE id of the vulnerability. | keyword |
+| vulnerability.published_date | When the vulnerability was published. | date |
 | vulnerability.scanner.vendor | The name of the vulnerability scanner vendor. | constant_keyword |
-| vulnerability.title |  | keyword |
+| vulnerability.title | The human readeable title of the vulnerability. | keyword |
 

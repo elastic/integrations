@@ -47,7 +47,7 @@ For existing users of AWS integration, before upgrading to `4.0.0` please ensure
      - grant use of transforms, and
      - grant access to source and destination indices
    For more details on Transform Setup, refer to the link [here](https://www.elastic.co/docs/explore-analyze/transforms/transform-setup)
-3. Because the latest copy of vulnerabilities is now indexed in two places, i.e., in both source and destination indices, users must anticipate storage requirements accordingly.
+3. Because the latest copy of vulnerabilities is now indexed in two places, that is, in both source and destination indices, users must anticipate storage requirements accordingly.
 
 ## Logs
 
