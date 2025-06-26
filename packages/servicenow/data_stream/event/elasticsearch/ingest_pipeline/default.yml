@@ -2969,11 +2969,52 @@ processors:
   - uri_parts:
       field: servicenow.event.url.display_value
       tag: uri_parts_url_full
-      if: ctx.servicenow?.event?.url?.display_value != null && ctx.servicenow.event.url.display_value != ''
+      if: >
+        ctx.servicenow?.event?.url?.display_value instanceof String &&
+        ctx.servicenow.event.url.display_value != ''
       on_failure:
-        - append:
-            field: error.message
-            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+        - script:
+            description: >
+              URL values appear to be URI decoded, so attempt encoding the
+              necessary characters to give uri_parts the best chance at success.
+            tag: script_encode_url
+            source: |-
+              String encode(String path) {
+              StringBuilder sb = new StringBuilder();
+              for (int i = 0; i < path.length(); i++) {
+                char c = path.charAt(i);
+                if (
+                  (c >= (char)'a' && c <= (char)'z') ||
+                  (c >= (char)'A' && c <= (char)'Z') ||
+                  (c >= (char)'0' && c <= (char)'9') ||
+                  c != (char)' ' && c != (char)'^'
+                ) {
+                    sb.append(c);
+                    continue;
+                  }
+                  sb.append('%');
+                  sb.append(Integer.toHexString((int)c));
+                }
+                return sb.toString();
+              }
+              field('_tmp.url').set(encode(ctx.servicenow.event.url.display_value));
+        - uri_parts:
+            tag: uri_parts_url_display_value_retry
+            field: _tmp.url
+            keep_original: false
+            on_failure:
+               - append:
+                   field: error.message
+                   value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+        - set:
+            tag: set_uri_original_if_url_decode_succeeds
+            if: ctx.url != null
+            description: Set url.original to the unmodified value.
+            field: url.original
+            copy_from: servicenow.event.url.display_value
+        - remove:
+            description: remove the temporary url field
+            field: _tmp.url
   - set:
       field: url.full
       tag: set_url_display_value_into_url_full
