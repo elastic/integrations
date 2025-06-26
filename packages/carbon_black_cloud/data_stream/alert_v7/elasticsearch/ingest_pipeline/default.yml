@@ -121,26 +121,37 @@ processors:
       if: ctx.host?.hostname != null
       allow_duplicates: false
       ignore_failure: true
-  - rename:
-      field: json.device_username
-      target_field: user.name
-      ignore_missing: true
   - grok:
-      field: user.name
+      field: json.device_username
       patterns:
-        - '^(%{DATA:user.domain})\\(%{GREEDYDATA:user.name})$'
+        - '^%{DATA:user.domain}\\%{GREEDYDATA:user.name}$'
+        - '^%{EMAILADDRESS:user.email}$'
+        - '^%{GREEDYDATA:user.name}$'
       ignore_missing: true
+      ignore_failure: true
+  - dissect:
+      field: user.email
+      pattern: '%{user.name}@%{user.domain}'
+      tag: dissect_user_email
+      ignore_missing: true
+      ignore_failure: true
+      if: ctx.user?.name == null
+  - append:
+      field: related.user
+      value: '{{{user.name}}}'
+      if: ctx.user?.name != null
+      allow_duplicates: false
+      ignore_failure: true
+  - append:
+      field: related.user
+      value: '{{{user.email}}}'
+      if: ctx.user?.email != null
+      allow_duplicates: false
       ignore_failure: true
   - append:
       field: related.hosts
       value: '{{{user.domain}}}'
       if: ctx.user?.domain != null
-      allow_duplicates: false
-      ignore_failure: true
-  - append:
-      field: related.user
-      value: '{{{user.name}}}'
-      if: ctx.user?.name != null
       allow_duplicates: false
       ignore_failure: true
   # carbon_black_cloud fields
@@ -848,6 +859,7 @@ processors:
         - json.first_event_timestamp
         - json.last_event_timestamp
         - json.device_id
+        - json.device_username
         - json.alert_notes_present
         - json.threat_notes_present
         - json.additional_events_present

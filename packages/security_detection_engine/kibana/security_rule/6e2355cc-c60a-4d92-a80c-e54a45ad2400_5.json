@@ -1,0 +1,121 @@
+{
+    "attributes": {
+        "author": [
+            "Elastic"
+        ],
+        "description": "This rule detects the creation of Loadable Kernel Module (LKM) configuration files. Attackers may create or modify these files to allow their LKMs to be loaded upon reboot, ensuring persistence on a compromised system.",
+        "from": "now-9m",
+        "index": [
+            "logs-endpoint.events.file*"
+        ],
+        "language": "eql",
+        "license": "Elastic License v2",
+        "name": "Loadable Kernel Module Configuration File Creation",
+        "note": "## Triage and analysis\n\n> **Disclaimer**:\n> This investigation guide was created using generative AI technology and has been reviewed to improve its accuracy and relevance. While every effort has been made to ensure its quality, we recommend validating the content and adapting it to suit your specific environment and operational needs.\n\n### Investigating Loadable Kernel Module Configuration File Creation\n\nLoadable Kernel Modules (LKMs) are components that can be dynamically loaded into the Linux kernel to extend its functionality without rebooting. Adversaries exploit this by creating or altering LKM configuration files to ensure their malicious modules load at startup, achieving persistence. The detection rule identifies suspicious file creation or renaming activities in key directories, excluding benign processes, to flag potential threats.\n\n### Possible investigation steps\n\n- Review the file path and name to determine if it matches any known or expected LKM configuration files, focusing on paths like /etc/modules, /etc/modprobe.d/*, and others specified in the query.\n- Examine the process executable responsible for the file creation or renaming to identify if it is a known or trusted application, especially if it is not in the list of excluded executables.\n- Check the process name and executable path for any anomalies or signs of masquerading, particularly if they are not in the list of excluded names or paths.\n- Investigate the user account associated with the process to determine if it has legitimate access or if it might be compromised.\n- Correlate the event with other recent system activities to identify any patterns or additional suspicious behavior, such as other file modifications or network connections.\n- Review system logs for any related entries that might provide additional context or evidence of malicious activity.\n- Assess the risk and impact of the detected activity on the system's security posture and determine if further containment or remediation actions are necessary.\n\n### False positive analysis\n\n- System package managers like dpkg, rpm, and yum may trigger false positives when they update or install legitimate kernel modules. To handle this, exclude these processes by adding them to the exception list in the detection rule.\n- Automated system management tools such as Puppet, Chef, and Ansible can create or modify LKM configuration files during routine operations. Exclude these processes by specifying their executables in the exception criteria.\n- Temporary files created by text editors or system processes, such as those with extensions like swp or swx, can be mistaken for suspicious activity. Exclude these file extensions to reduce false positives.\n- Processes running from specific directories like /nix/store or /snap may be part of legitimate software installations. Add these paths to the exclusion list to prevent unnecessary alerts.\n- Scheduled tasks or cron jobs that involve file operations in the monitored directories might be flagged. Identify and exclude these processes by their names or paths to minimize false positives.\n\n### Response and remediation\n\n- Isolate the affected system from the network to prevent further propagation of the malicious loadable kernel module.\n- Terminate any suspicious processes identified in the alert that are associated with the creation or modification of LKM configuration files.\n- Remove or revert any unauthorized changes to LKM configuration files in the specified directories to prevent the malicious module from loading on reboot.\n- Conduct a thorough scan of the system using updated antivirus or endpoint detection and response (EDR) tools to identify and remove any additional malicious components.\n- Review system logs and the history of executed commands to identify the initial vector of compromise and any other affected systems.\n- Escalate the incident to the security operations center (SOC) or incident response team for further investigation and to determine if additional systems are compromised.\n- Implement additional monitoring and alerting for similar suspicious activities to enhance detection and response capabilities for future incidents.",
+        "query": "file where host.os.type == \"linux\" and event.action in (\"rename\", \"creation\") and process.executable != null and\nfile.path like (\n  \"/etc/modules\", \"/etc/modprobe.d/*\", \"/run/modprobe.d/*\", \"/usr/local/lib/modprobe.d/*\", \"/usr/lib/modprobe.d/*\",\n  \"/lib/modprobe.d/*\", \"/etc/modules-load.d/*\", \"/run/modules-load.d/*\", \"/usr/local/lib/modules-load.d/*\",\n  \"/usr/lib/modules-load.d/*\"\n) and not (\n  process.executable in (\n    \"/bin/dpkg\", \"/usr/bin/dpkg\", \"/bin/dockerd\", \"/usr/bin/dockerd\", \"/usr/sbin/dockerd\", \"/bin/microdnf\",\n    \"/usr/bin/microdnf\", \"/bin/rpm\", \"/usr/bin/rpm\", \"/bin/snapd\", \"/usr/bin/snapd\", \"/bin/yum\", \"/usr/bin/yum\",\n    \"/bin/dnf\", \"/usr/bin/dnf\", \"/bin/podman\", \"/usr/bin/podman\", \"/bin/dnf-automatic\", \"/usr/bin/dnf-automatic\",\n    \"/bin/pacman\", \"/usr/bin/pacman\", \"/usr/bin/dpkg-divert\", \"/bin/dpkg-divert\", \"/sbin/apk\", \"/usr/sbin/apk\",\n    \"/usr/local/sbin/apk\", \"/usr/bin/apt\", \"/usr/sbin/pacman\", \"/bin/podman\", \"/usr/bin/podman\", \"/usr/bin/puppet\",\n    \"/bin/puppet\", \"/opt/puppetlabs/puppet/bin/puppet\", \"/usr/bin/chef-client\", \"/bin/chef-client\",\n    \"/bin/autossl_check\", \"/usr/bin/autossl_check\", \"/proc/self/exe\", \"/dev/fd/*\",  \"/usr/bin/pamac-daemon\",\n    \"/bin/pamac-daemon\", \"/usr/local/bin/dockerd\", \"/opt/elasticbeanstalk/bin/platform-engine\",\n    \"/opt/puppetlabs/puppet/bin/ruby\", \"/usr/libexec/platform-python\", \"/opt/imunify360/venv/bin/python3\",\n    \"/opt/eset/efs/lib/utild\", \"/usr/sbin/anacron\", \"/usr/bin/podman\", \"/kaniko/kaniko-executor\", \"/usr/bin/prime-select\"\n  ) or\n  file.extension in (\"swp\", \"swpx\", \"swx\", \"dpkg-remove\") or\n  file.Ext.original.extension == \"dpkg-new\" or\n  process.executable like (\n    \"/nix/store/*\", \"/var/lib/dpkg/info/kmod.postinst\", \"/tmp/vmis.*\", \"/snap/*\", \"/dev/fd/*\",\n    \"/usr/libexec/platform-python*\"\n  ) or\n  process.executable == null or\n  process.name in (\n    \"crond\", \"executor\", \"puppet\", \"droplet-agent.postinst\", \"cf-agent\", \"schedd\", \"imunify-notifier\", \"perl\",\n    \"jumpcloud-agent\", \"crio\", \"dnf_install\", \"utild\"\n  ) or\n  (process.name == \"sed\" and file.name : \"sed*\") or\n  (process.name == \"perl\" and file.name : \"e2scrub_all.tmp*\")\n)\n",
+        "related_integrations": [
+            {
+                "package": "endpoint",
+                "version": "^9.0.0"
+            }
+        ],
+        "required_fields": [
+            {
+                "ecs": true,
+                "name": "event.action",
+                "type": "keyword"
+            },
+            {
+                "ecs": false,
+                "name": "file.Ext.original.extension",
+                "type": "unknown"
+            },
+            {
+                "ecs": true,
+                "name": "file.extension",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "file.name",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "file.path",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "host.os.type",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "process.executable",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "process.name",
+                "type": "keyword"
+            }
+        ],
+        "risk_score": 21,
+        "rule_id": "6e2355cc-c60a-4d92-a80c-e54a45ad2400",
+        "severity": "low",
+        "tags": [
+            "Domain: Endpoint",
+            "OS: Linux",
+            "Use Case: Threat Detection",
+            "Tactic: Persistence",
+            "Tactic: Defense Evasion",
+            "Data Source: Elastic Defend",
+            "Resources: Investigation Guide"
+        ],
+        "threat": [
+            {
+                "framework": "MITRE ATT&CK",
+                "tactic": {
+                    "id": "TA0003",
+                    "name": "Persistence",
+                    "reference": "https://attack.mitre.org/tactics/TA0003/"
+                },
+                "technique": [
+                    {
+                        "id": "T1547",
+                        "name": "Boot or Logon Autostart Execution",
+                        "reference": "https://attack.mitre.org/techniques/T1547/",
+                        "subtechnique": [
+                            {
+                                "id": "T1547.006",
+                                "name": "Kernel Modules and Extensions",
+                                "reference": "https://attack.mitre.org/techniques/T1547/006/"
+                            }
+                        ]
+                    }
+                ]
+            },
+            {
+                "framework": "MITRE ATT&CK",
+                "tactic": {
+                    "id": "TA0005",
+                    "name": "Defense Evasion",
+                    "reference": "https://attack.mitre.org/tactics/TA0005/"
+                },
+                "technique": [
+                    {
+                        "id": "T1014",
+                        "name": "Rootkit",
+                        "reference": "https://attack.mitre.org/techniques/T1014/"
+                    }
+                ]
+            }
+        ],
+        "timestamp_override": "event.ingested",
+        "type": "eql",
+        "version": 5
+    },
+    "id": "6e2355cc-c60a-4d92-a80c-e54a45ad2400_5",
+    "type": "security-rule"
+}
