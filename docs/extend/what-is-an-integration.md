@@ -33,7 +33,7 @@ Integrations have a strict, well-defined structure, and offer a number of benefi
 
 2. Publish the integration to the package registry
 
-    Once an integration (package) has been created, it needs to be built. Built integrations are stored in the [Package Storage repository](https://github.com/elastic/package-storage) and served up via the [{{package-registry}}](https://github.com/elastic/package-registry). The {{fleet}} UI in {{kib}} connects to the {{package-registry}} and allows users to discover, install, and configure Elastic Packages. The {{package-registry}} can also be [deployed on-premise in air-gapped environments](docs-content://reference/fleet/air-gapped.md#air-gapped-diy-epr).
+    Once an integration (package) has been created, it needs to be built. Built integrations are served up via the [{{package-registry}}](https://github.com/elastic/package-registry). The {{fleet}} UI in {{kib}} connects to the {{package-registry}} and allows users to discover, install, and configure Elastic Packages. The {{package-registry}} can also be [deployed on-premise in air-gapped environments](docs-content://reference/fleet/air-gapped.md#air-gapped-diy-epr).
 
 3. Install the integration
 
