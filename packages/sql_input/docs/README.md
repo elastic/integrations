@@ -109,7 +109,9 @@ The drivers `mysql`, `mssql`, and `postgres` are supported.
 
 The SSL configuration is driver-specific. Different drivers have slightly different parameter interpretations. Subset of the [params](https://www.elastic.co/docs/reference/beats/metricbeat/configuration-ssl#ssl-client-config) is supported.
 
-When any "SSL Configuration" parameters are set, only URL-formatted connection strings are accepted, like `"postgres://myuser:mypassword@localhost:5432/mydb"`, not like `"user=myuser password=mypassword dbname=mydb"`.
+When "SSL Configuration" parameters are set, only URL-formatted connection strings are accepted.
+Use this format: `postgres://myuser:mypassword@localhost:5432/mydb`.
+Don't use this format: `user=myuser password=mypassword dbname=mydb`.
 
 Example of SSL configuration:
 ```
@@ -122,7 +124,7 @@ certificate_authorities:
 
 Parameters supported: `verification_mode`, `certificate`, `key`, `certificate_authorities`.
 
-The certificates can be passed both as file paths and as certificate content.
+The certificates can be passed both as file paths and certificate content.
 
 Example with the certificate content "embedded":
 ```
@@ -154,10 +156,10 @@ certificate_authorities:
 
 Parameters supported: `verification_mode`, `certificate`, `key`, `certificate_authorities`.
 
-Only one certificate can be passed to `certificate_authorities` parameter.
+Only one certificate can be passed to the `certificate_authorities` parameter.
 The certificates can be passed only as file paths. The files have to be present in the environment where the metricbeat is running.
 
-The `verification_mode` is translated as following:
+The `verification_mode` is translated as follows:
 
 - `full` -> `verify-full`
 
@@ -171,7 +173,7 @@ The `verification_mode` is translated as following:
 
 Params supported: `verification_mode`, `certificate_authorities`.
 
-Only one certificate can be passed to `certificate_authorities` parameter.
+Only one certificate can be passed to the `certificate_authorities` parameter.
 The certificates can be passed only as file paths. The files have to be present in the environment where the metricbeat is running.
 
-If `verification_mode` is set to `none`, `TrustServerCertificate` will be set to `true`, otherwise it is `false`
+If `verification_mode` is set to `none`, `TrustServerCertificate` will be set to `true`, otherwise it is `false`.
