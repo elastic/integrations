@@ -73,6 +73,8 @@ The primary aggregation value will be retrieved for all the metrics contained in
 
 #### Logs Reference
 
+{{event "logs"}}
+
 **ECS Field Reference**
 
 For more details on ECS fields, check the [ECS Field Reference](https://www.elastic.co/guide/en/ecs/current/ecs-field-reference.html) documentation.
