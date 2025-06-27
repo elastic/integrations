@@ -2,6 +2,8 @@
 
 The Living off the Land Attack (LotL) Detection package contains a supervised machine learning model, called [ProblemChild and associated assets](https://www.elastic.co/security-labs/detecting-living-off-the-land-attacks-with-new-elastic-integration), which are used to detect living off the land (LotL) activity in your environment. This package requires a Platinum subscription. Please ensure that you have a Trial or Platinum level subscription installed on your cluster before proceeding. This package is licensed under [Elastic License 2.0](https://www.elastic.co/licensing/elastic-license).
 
+This package support data from Elastic Endpoint via Elastic Defend or winlogbeat on Windows only, although Elastic Defend is reccomended. Prior to using this integration, Elastic Defend should be installed through Elastic Agent (or winlogbeat should be enrolled) and collecting data from hosts. See [Configure endpoint protection with Elastic Defend](https://www.elastic.co/docs/solutions/security/configure-elastic-defend) for more information.
+
 For more detailed information refer to the following blogs and webinar:
 - [Detecting Living-off-the-land attacks with new Elastic Integration](https://www.elastic.co/security-labs/detecting-living-off-the-land-attacks-with-new-elastic-integration)
 - [ProblemChild: Detecting living-off-the-land attacks using the Elastic Stack](https://www.elastic.co/blog/problemchild-detecting-living-off-the-land-attacks)

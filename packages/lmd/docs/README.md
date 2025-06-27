@@ -2,6 +2,8 @@
 
 The Lateral movement detection model package contains assets that detect lateral movement based on file transfer activity and Windows RDP events. This package requires a Platinum subscription. Please ensure that you have a Trial, Platinum, or Enterprise subscription before proceeding. This package is licensed under [Elastic License 2.0](https://www.elastic.co/licensing/elastic-license).
 
+The package transform supports data from Elastic Endpoint via Elastic Defend. Prior to using this integration, Elastic Defend should be installed through Elastic Agent and collecting data from hosts. See [Configure endpoint protection with Elastic Defend](https://www.elastic.co/docs/solutions/security/configure-elastic-defend) for more information. The transform only supports Linux and Windows. The **Anomaly Detection Jobs** section outlines platform support for each job.
+
 For more detailed information refer to the following blogs:
 - [Detecting Lateral Movement activity: A new Kibana integration](https://www.elastic.co/blog/detecting-lateral-movement-activity-a-new-kibana-integration)
 - [Identifying malicious Remote Desktop Protocol (RDP) connections with Elastic Security](https://www.elastic.co/blog/remote-desktop-protocol-connections-elastic-security)
@@ -102,19 +104,19 @@ Clone the anomaly detection jobs available under the Living off the Land Attack 
 
 Detects potential lateral movement activity by identifying malicious file transfers and RDP sessions in an environment.
 
-| Job                                               | Description                                                                                     |
-|---------------------------------------------------|-------------------------------------------------------------------------------------------------|
-| lmd_high_count_remote_file_transfer                   | Detects unusually high file transfers to a remote host in the network.                          | 
-| lmd_high_file_size_remote_file_transfer               | Detects unusually high size of files shared with a remote host in the network.                  |
-| lmd_rare_file_extension_remote_transfer               | Detects rare file extensions shared with a remote host in the network.                          |
-| lmd_rare_file_path_remote_transfer                    | Detects unusual folders and directories on which a file is transferred (by a host).             |
- | lmd_high_mean_rdp_session_duration                    | Detects unusually high mean of RDP session duration.                                            |
-| lmd_high_var_rdp_session_duration                     | Detects unusually high variance in RDP session duration.                                        |
- | lmd_high_sum_rdp_number_of_processes                  | Detects unusually high number of processes started in a single RDP session.                     |
- | lmd_unusual_time_weekday_rdp_session_start            | Detects an RDP session started at an usual time or weekday.                                     |
- | lmd_high_rdp_distinct_count_source_ip_for_destination | Detects a high count of source IPs making an RDP connection with a single destination IP.       |
- | lmd_high_rdp_distinct_count_destination_ip_for_source | Detects a high count of destination IPs establishing an RDP connection with a single source IP. |
- | lmd_high_mean_rdp_process_args                        | Detects unusually high number of process arguments in an RDP session.                           |
+| Job                                                   | Description                                                                                     | Supported Platform    |
+|-------------------------------------------------------|-------------------------------------------------------------------------------------------------| --------------------- |
+| lmd_high_count_remote_file_transfer                   | Detects unusually high file transfers to a remote host in the network.                          | Linux, macOS, Windows |
+| lmd_high_file_size_remote_file_transfer               | Detects unusually high size of files shared with a remote host in the network.                  | Linux, macOS, Windows |
+| lmd_rare_file_extension_remote_transfer               | Detects rare file extensions shared with a remote host in the network.                          | macOS, Windows        |
+| lmd_rare_file_path_remote_transfer                    | Detects unusual folders and directories on which a file is transferred (by a host).             | macOS, Windows        |
+| lmd_high_mean_rdp_session_duration                    | Detects unusually high mean of RDP session duration.                                            | Windows               |
+| lmd_high_var_rdp_session_duration                     | Detects unusually high variance in RDP session duration.                                        | Windows               |
+| lmd_high_sum_rdp_number_of_processes                  | Detects unusually high number of processes started in a single RDP session.                     | Windows               |
+| lmd_unusual_time_weekday_rdp_session_start            | Detects an RDP session started at an usual time or weekday.                                     | Windows               |
+| lmd_high_rdp_distinct_count_source_ip_for_destination | Detects a high count of source IPs making an RDP connection with a single destination IP.       | Windows               |
+| lmd_high_rdp_distinct_count_destination_ip_for_source | Detects a high count of destination IPs establishing an RDP connection with a single source IP. | Windows               |
+| lmd_high_mean_rdp_process_args                        | Detects unusually high number of process arguments in an RDP session.                           | Windows               |
 
 ## v2.0.0 and beyond
 
