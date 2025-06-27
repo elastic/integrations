@@ -2997,10 +2997,10 @@ processors:
                 }
                 return sb.toString();
               }
-              field('_tmp.url').set(encode(ctx.servicenow.event.url.display_value));
+              ctx._tmp_url = encode(ctx.servicenow.event.url.display_value);
         - uri_parts:
             tag: uri_parts_url_display_value_retry
-            field: _tmp.url
+            field: _tmp_url
             keep_original: false
             on_failure:
                - append:
@@ -3014,7 +3014,7 @@ processors:
             copy_from: servicenow.event.url.display_value
         - remove:
             description: remove the temporary url field
-            field: _tmp.url
+            field: _tmp_url
   - set:
       field: url.full
       tag: set_url_display_value_into_url_full
