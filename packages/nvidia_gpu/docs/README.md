@@ -176,6 +176,7 @@ An example event for `stats` looks as following:
 | Field | Description | Type | Unit | Metric Type |
 |---|---|---|---|---|
 | @timestamp | Event timestamp. | date |  |  |
+| agent.id | Unique identifier of this agent (if one exists). Example: For Beats this would be beat.id. | keyword |  |  |
 | data_stream.dataset | Data stream dataset. | constant_keyword |  |  |
 | data_stream.namespace | Data stream namespace. | constant_keyword |  |  |
 | data_stream.type | Data stream type. | constant_keyword |  |  |
@@ -242,6 +243,7 @@ An example event for `stats` looks as following:
 | gpu.utilization.encoder.pct | Encoder utilization (in %). | float | percent | gauge |
 | gpu.utilization.gpu.pct | GPU utilization (in %). | float | percent | gauge |
 | gpu.utilization.memory_copy.pct | Memory utilization (in %). | float | percent | gauge |
+| host.name | Name of the host. It can contain what hostname returns on Unix systems, the fully qualified domain name (FQDN), or a name specified by the user. The recommended value is the lowercase FQDN of the host. | keyword |  |  |
 | kubernetes.container.name | Kubernetes container name | keyword |  |  |
 | kubernetes.namespace | Kubernetes namespace | keyword |  |  |
 | kubernetes.pod.name | Kubernetes pod name | keyword |  |  |
