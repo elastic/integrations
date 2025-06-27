@@ -4,52 +4,38 @@ This directory contains semantic conventions registry files for Docker container
 
 ## Files
 
-- `registry.yaml` - Main registry file that includes all semantic conventions
-- `registry_manifest.yaml` - Comprehensive manifest with all groups in a single file
-- `container-resource.yaml` - Container resource attributes semantic conventions
-- `container-metrics.yaml` - Container metrics semantic conventions
+- `registry.yaml` - Main registry file that imports OpenTelemetry semantic conventions
+- `registry_manifest.yaml` - Alternative registry format with imports
+- `weaver.yaml` - Weaver configuration file
 
-## Semantic Conventions Covered
+## Design Approach
 
-### Resource Attributes
+Instead of redefining semantic conventions that already exist in OpenTelemetry, this registry imports the official semantic conventions from:
+- `https://opentelemetry.io/otelcol/semconv/v1.29.0`
 
-These attributes identify and describe the container:
+This ensures compatibility and avoids duplication while only defining what's specific to our Docker integration.
 
-- `container.id` - Unique container identifier
+## Imported Semantic Conventions
+
+### From OpenTelemetry Resource Conventions
+- `container.id` - Unique container identifier  
 - `container.name` - Human-readable container name
 - `container.hostname` - Container hostname
 - `container.image.name` - Container image name with optional registry and tag
 - `container.runtime` - Container runtime (e.g., docker, containerd)
 
-### Metrics
+### From OpenTelemetry Container Metrics Conventions
+- Container CPU metrics
+- Container memory metrics  
+- Container block I/O metrics
+- Container network I/O metrics
 
-#### CPU Metrics
+## Docker Integration Group
 
-- `container.cpu.utilization` - CPU usage percentage (0.0-1.0)
-- `container.cpu.usage.usermode` - CPU time in user mode (nanoseconds)
-- `container.cpu.usage.kernelmode` - CPU time in kernel mode (nanoseconds)
-
-#### Memory Metrics
-
-- `container.memory.percent` - Memory usage percentage (0.0-1.0)
-- `container.memory.usage.total` - Total memory used (bytes)
-- `container.memory.usage.limit` - Memory limit (bytes)
-
-#### Block I/O Metrics
-
-- `container.blockio.io_service_bytes_recursive` - Total bytes transferred to/from block devices
-
-#### Network I/O Metrics
-
-- `container.network.io.usage.rx_bytes` - Bytes received
-- `container.network.io.usage.tx_bytes` - Bytes transmitted
-
-### Attributes
-
-Additional attributes used with metrics:
-
-- `device_major` - Major device number for block devices
-- `interface` - Network interface name
+The `docker_otel_integration` group defines:
+- Required and recommended attributes for Docker monitoring
+- Requirement levels for each attribute
+- Integration-specific documentation
 
 ## Usage with Weaver
 
@@ -64,7 +50,6 @@ weaver registry generate --registry=model/registry.yaml --output=generated/
 ## Compatibility
 
 These semantic conventions are based on:
-
 - OpenTelemetry Semantic Conventions v1.29.0
-- Docker container runtime metrics
-- Standard system resource monitoring patterns
+- Official OpenTelemetry container resource and metric conventions
+- Docker container runtime monitoring patterns
