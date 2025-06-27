@@ -1454,34 +1454,34 @@ An example event for `sharepoint_site_usage_detail` looks as following:
 {
     "@timestamp": "2024-12-22",
     "agent": {
-        "ephemeral_id": "70511d18-aa8a-44f1-bf11-8ef933e3af45",
-        "id": "9513c0f5-fd08-4895-aa1b-8a8a71675ec1",
-        "name": "elastic-agent-80895",
+        "ephemeral_id": "3b0563b5-54d3-4397-85a1-391e15536111",
+        "id": "69a80965-c1c3-4f11-9921-95f05c97e6f3",
+        "name": "elastic-agent-69184",
         "type": "filebeat",
         "version": "8.16.0"
     },
     "data_stream": {
         "dataset": "o365_metrics.sharepoint_site_usage_detail",
-        "namespace": "66679",
+        "namespace": "64933",
         "type": "metrics"
     },
     "ecs": {
         "version": "8.16.0"
     },
     "elastic_agent": {
-        "id": "9513c0f5-fd08-4895-aa1b-8a8a71675ec1",
+        "id": "69a80965-c1c3-4f11-9921-95f05c97e6f3",
         "snapshot": false,
         "version": "8.16.0"
     },
     "event": {
         "agent_id_status": "verified",
         "dataset": "o365_metrics.sharepoint_site_usage_detail",
-        "ingested": "2025-06-26T07:23:55Z"
+        "ingested": "2025-06-27T23:16:48Z"
     },
     "host": {
         "architecture": "x86_64",
         "containerized": true,
-        "hostname": "elastic-agent-80895",
+        "hostname": "elastic-agent-69184",
         "ip": [
             "172.29.0.2",
             "172.18.0.7"
@@ -1490,7 +1490,7 @@ An example event for `sharepoint_site_usage_detail` looks as following:
             "02-42-AC-12-00-07",
             "02-42-AC-1D-00-02"
         ],
-        "name": "elastic-agent-80895",
+        "name": "elastic-agent-69184",
         "os": {
             "kernel": "5.15.153.1-microsoft-standard-WSL2",
             "name": "Wolfi",
