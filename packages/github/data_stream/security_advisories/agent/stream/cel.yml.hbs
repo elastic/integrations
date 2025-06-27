@@ -1,0 +1,88 @@
+config_version: 2
+interval: {{interval}}
+resource.tracer:
+  enabled: {{enable_request_tracer}}
+  filename: "../../logs/cel/http-request-trace-*.ndjson"
+  maxbackups: 5
+resource.url: {{api_url}}
+state:
+  api_key: {{api_key}}
+  advisory_type: {{advisory_type}}
+  batch_size: {{batch_size}}
+redact:
+  fields:
+    - api_key
+regexp:
+  github_link_next: '<([^>]+)>; rel="next"'
+max_executions: 5000
+program: |-
+  request(
+    "GET",
+    state.?cursor.next_url.orValue(state.url.trim_right("/") + "?" + {
+        "per_page": [string(state.batch_size)],
+        "type": [state.advisory_type],
+        "sort": ["published"],
+        "order": ["desc"]
+      }.format_query()
+    )
+  ).with({
+    "Header": {
+        "Accept": ["application/vnd.github+json"],
+        "X-GitHub-Api-Version": ["2022-11-28"],
+        "Authorization": ["Bearer " + state.api_key],
+    },
+  }).do_request().as(resp, (resp.StatusCode != 200) ?
+    {
+      "events": {
+        "error": {
+          "code": string(resp.StatusCode),
+          "id": string(resp.Status),
+          "message": "GET " + state.url.trim_right("/") + ": " + (
+            (size(resp.Body) != 0) ?
+              string(resp.Body)
+            :
+              string(resp.Status) + " (" + string(resp.StatusCode) + ")"
+          ),
+        },
+      },
+      "want_more": false,
+    }
+  :
+    bytes(resp.Body).decode_json().as(body,
+      {
+        "api_key": state.api_key,
+        "advisory_type": state.advisory_type,
+        "batch_size": state.batch_size,
+        "cursor": {
+           ?"next_url": (
+            (has(resp.?Header.Link) && size(resp.Header.Link) != 0 && resp.Header.Link[0].re_match("github_link_next")) ?
+              resp.Header.Link[0].re_find_submatch("github_link_next")[?1]
+            :
+              optional.none()
+          ),
+        },
+        "events": body.map(
+          e,
+          {
+            "message": e.encode_json(),
+          }
+        ),
+        "url": state.url,
+        "want_more": has(resp.?Header.Link) && size(resp.Header.Link) != 0 && resp.Header.Link[0].re_match("github_link_next"),
+      }
+    )
+  )
+tags:
+{{#if preserve_original_event}}
+  - preserve_original_event
+{{/if}}
+{{#each tags as |tag|}}
+  - {{tag}}
+{{/each}}
+{{#contains "forwarded" tags}}
+publisher_pipeline.disable_host: true
+{{/contains}}
+{{#if processors}}
+processors:
+{{processors}}
+{{/if}}

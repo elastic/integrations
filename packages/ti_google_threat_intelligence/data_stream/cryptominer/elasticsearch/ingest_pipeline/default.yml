@@ -1,0 +1,590 @@
+---
+description: Pipeline for processing Cryptominer events.
+processors:
+  - set:
+      field: ecs.version
+      tag: set_ecs_version
+      value: 8.17.0
+  - fail:
+      tag: data_collection_error
+      if: ctx.error?.message != null && ctx.message == null && ctx.event?.original == null
+      message: error message set and no data to process.
+  - drop:
+      if: ctx.message == 'retry'
+      tag: drop_retry_events
+  - rename:
+      field: message
+      tag: rename_message_to_event_original
+      target_field: event.original
+      ignore_missing: true
+      description: Renames the original `message` field to `event.original` to store a copy of the original message. The `event.original` field is not touched if the document already has one; it may happen when Logstash sends the document.
+      if: ctx.event?.original == null
+  - remove:
+      field: message
+      tag: remove_message
+      ignore_missing: true
+      description: The `message` field is no longer required if the document has an `event.original` field.
+      if: ctx.event?.original != null
+  - json:
+      field: event.original
+      tag: json_event_original
+      target_field: json
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - fingerprint:
+      fields:
+        - json.data.id
+        - json.data.attributes.last_modification_date
+      tag: fingerprint_cryptominer
+      target_field: _id
+      ignore_missing: true
+  - set:
+      field: event.kind
+      tag: set_event_kind_to_enrichment
+      value: enrichment
+  - append:
+      field: event.category
+      tag: append_event_category
+      value: threat
+  - append:
+      field: event.type
+      tag: append_event_type
+      value: indicator
+  - set:
+      field: observer.vendor
+      tag: set_observer_vendor
+      value: Google
+  - set:
+      field: observer.product
+      tag: set_observer_product
+      value: Threat Intelligence
+  - set:
+      field: threat.feed.name
+      tag: set_threat_feed_name
+      value: Cryptominer
+  - rename:
+      field: json.data.attributes.as_owner
+      tag: rename_data_attributes_as_owner
+      target_field: gti.cryptominer.attributes.as_owner
+      ignore_missing: true
+  - convert:
+      field: json.data.attributes.asn
+      tag: convert_data_attributes_asn_to_long
+      target_field: gti.cryptominer.attributes.as_number
+      type: long
+      ignore_missing: true
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - set:
+      field: threat.indicator.as.number
+      tag: set_threat_indicator_as_number_from_cryptominer_attributes_as_number
+      copy_from: gti.cryptominer.attributes.as_number
+      ignore_empty_value: true
+  - rename:
+      field: json.data.attributes.categories
+      tag: rename_data_attributes_categories
+      target_field: gti.cryptominer.attributes.categories
+      ignore_missing: true
+  - rename:
+      field: json.data.attributes.continent
+      tag: rename_data_attributes_continent
+      target_field: gti.cryptominer.attributes.continent
+      ignore_missing: true
+  - set:
+      field: threat.indicator.geo.continent_code
+      tag: set_threat_indicator_geo_continent_code_from_cryptominer_attributes_continent
+      copy_from: gti.cryptominer.attributes.continent
+      ignore_empty_value: true
+  - rename:
+      field: json.data.attributes.country
+      tag: rename_data_attributes_country
+      target_field: gti.cryptominer.attributes.country
+      ignore_missing: true
+  - set:
+      field: threat.indicator.geo.country_iso_code
+      tag: set_threat_indicator_geo_country_iso_code_from_cryptominer_attributes_country
+      copy_from: gti.cryptominer.attributes.country
+      ignore_empty_value: true
+  - date:
+      field: json.data.attributes.creation_date
+      tag: date_data_attributes_creation_date
+      target_field: gti.cryptominer.attributes.creation_date
+      formats:
+        - UNIX
+      if: ctx.json?.data?.attributes?.creation_date != null
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - set:
+      field: event.created
+      tag: set_event_created_from_cryptominer_attributes_creation_date
+      copy_from: gti.cryptominer.attributes.creation_date
+      ignore_empty_value: true
+  - set:
+      field: threat.indicator.first_seen
+      tag: set_threat_indicator_first_seen_from_event_created
+      copy_from: event.created
+      ignore_empty_value: true
+  - date:
+      field: json.data.attributes.first_submission_date
+      tag: date_data_attributes_first_submission_date
+      target_field: gti.cryptominer.attributes.first_submission_date
+      formats:
+        - UNIX
+      if: ctx.json?.data?.attributes?.first_submission_date != null && ctx.json.data.attributes.first_submission_date != ''
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - rename:
+      field: json.data.attributes.gti_assessment.severity.value
+      tag: rename_data_attributes_gti_assessment_severity
+      target_field: gti.cryptominer.attributes.gti_assessment.severity
+      ignore_missing: true
+  - convert:
+      field: json.data.attributes.gti_assessment.threat_score.value
+      tag: convert_data_attributes_gti_assessment_threat_score_to_long
+      target_field: gti.cryptominer.attributes.gti_assessment.threat_score
+      type: long
+      ignore_missing: true
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - rename:
+      field: json.data.attributes.gti_assessment.verdict.value
+      tag: rename_data_attributes_gti_assessment_verdict
+      target_field: gti.cryptominer.attributes.gti_assessment.verdict
+      ignore_missing: true
+  - rename:
+      field: json.data.attributes.jarm
+      tag: rename_data_attributes_jarm
+      target_field: gti.cryptominer.attributes.jarm
+      ignore_missing: true
+  - append:
+      field: related.hash
+      tag: append_data_attributes_jarm_into_related_hash
+      value: '{{{gti.cryptominer.attributes.jarm}}}'
+      allow_duplicates: false
+  - date:
+      field: json.data.attributes.last_analysis_date
+      tag: date_data_attributes_last_analysis_date
+      target_field: gti.cryptominer.attributes.last_analysis_date
+      formats:
+        - UNIX
+      if: ctx.json?.data?.attributes?.last_analysis_date != null
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - set:
+      field: threat.indicator.last_seen
+      tag: set_threat_indicator_last_seen_from_cryptominer_attributes_last_analysis_date
+      copy_from: gti.cryptominer.attributes.last_analysis_date
+      ignore_empty_value: true
+  - rename:
+      field: json.data.attributes.url
+      tag: rename_data_attributes_url
+      target_field: gti.cryptominer.attributes.url
+      ignore_missing: true
+  - set:
+      field: threat.indicator.url.original
+      tag: set_threat_indicator_url_original_from_cryptominer_attributes_url
+      copy_from: gti.cryptominer.attributes.url
+      ignore_empty_value: true
+  - rename:
+      field: json.data.attributes.last_final_url
+      tag: rename_data_attributes_last_final_url
+      target_field: gti.cryptominer.attributes.last_final_url
+      ignore_missing: true
+  - set:
+      field: threat.indicator.url.full
+      tag: set_threat_indicator_url_full_from_url_original
+      copy_from: threat.indicator.url.original
+      ignore_empty_value: true
+  - set:
+      field: threat.indicator.url.full
+      tag: set_threat_indicator_url_full_from_cryptominer_attributes_last_final_url
+      copy_from: gti.cryptominer.attributes.last_final_url
+      ignore_empty_value: true
+  - convert:
+      field: json.data.attributes.last_http_response_code
+      tag: convert_data_attributes_last_http_response_code_to_long
+      target_field: gti.cryptominer.attributes.last_http_response_code
+      type: long
+      ignore_missing: true
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - set:
+      field: http.response.status_code
+      tag: set_http_response_status_code_from_cryptominer_attributes_last_http_response_code
+      copy_from: gti.cryptominer.attributes.last_http_response_code
+      ignore_empty_value: true
+  - date:
+      field: json.data.attributes.last_modification_date
+      tag: date_data_attributes_last_modification_date
+      target_field: gti.cryptominer.attributes.last_modification_date
+      formats:
+        - UNIX
+      if: ctx.json?.data?.attributes?.last_modification_date != null
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - set:
+      field: '@timestamp'
+      tag: set_@timestamp_from_cryptominer_attributes_last_modification_date
+      copy_from: gti.cryptominer.attributes.last_modification_date
+      ignore_empty_value: true
+  - set:
+      field: threat.indicator.modified_at
+      tag: set_threat_indicator_modified_at_from_cryptominer_attributes_last_modification_date
+      copy_from: gti.cryptominer.attributes.last_modification_date
+      ignore_empty_value: true
+  - date:
+      field: json.data.attributes.last_submission_date
+      tag: date_data_attributes_last_submission_date
+      target_field: gti.cryptominer.attributes.last_submission_date
+      formats:
+        - UNIX
+      if: ctx.json?.data?.attributes?.last_submission_date != null
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - rename:
+      field: json.data.attributes.md5
+      tag: rename_data_attributes_md5
+      target_field: gti.cryptominer.attributes.md5
+      ignore_missing: true
+  - set:
+      field: threat.indicator.file.hash.md5
+      tag: set_threat_indicator_file_hash_md5_from_cryptominer_attributes_md5
+      copy_from: gti.cryptominer.attributes.md5
+      ignore_empty_value: true
+  - append:
+      field: related.hash
+      tag: append_data_attributes_md5_into_related_hash
+      value: '{{{gti.cryptominer.attributes.md5}}}'
+      allow_duplicates: false
+  - rename:
+      field: json.data.attributes.meaningful_name
+      tag: rename_data_attributes_meaningful_name
+      target_field: gti.cryptominer.attributes.meaningful_name
+      ignore_missing: true
+  - rename:
+      field: json.data.attributes.names
+      tag: rename_data_attributes_names
+      target_field: gti.cryptominer.attributes.names
+      ignore_missing: true
+  - set:
+      field: threat.indicator.file.name
+      tag: set_threat_indicator_file_name_from_cryptominer_attributes_names
+      copy_from: gti.cryptominer.attributes.names
+      ignore_empty_value: true
+  - rename:
+      field: json.data.attributes.network
+      tag: rename_data_attributes_network
+      target_field: gti.cryptominer.attributes.network
+      ignore_missing: true
+  - rename:
+      field: json.data.attributes.outgoing_links
+      tag: rename_data_attributes_outgoing_links
+      target_field: gti.cryptominer.attributes.outgoing_links
+      ignore_missing: true
+  - rename:
+      field: json.data.attributes.regional_internet_registry
+      tag: rename_data_attributes_regional_internet_registry
+      target_field: gti.cryptominer.attributes.regional_internet_registry
+      ignore_missing: true
+  - rename:
+      field: json.data.attributes.tags
+      tag: rename_data_attributes_tags
+      target_field: gti.cryptominer.attributes.tags
+      ignore_missing: true
+  - convert:
+      field: json.data.attributes.positives
+      tag: convert_data_attributes_positives_to_long
+      target_field: gti.cryptominer.attributes.positives
+      type: long
+      ignore_missing: true
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - convert:
+      field: json.data.attributes.times_submitted
+      tag: convert_data_attributes_times_submitted_to_long
+      target_field: gti.cryptominer.attributes.times_submitted
+      type: long
+      ignore_missing: true
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - rename:
+      field: json.data.attributes.title
+      tag: rename_data_attributes_title
+      target_field: gti.cryptominer.attributes.title
+      ignore_missing: true
+  - rename:
+      field: json.data.attributes.type_tags
+      tag: rename_data_attributes_type_tags
+      target_field: gti.cryptominer.attributes.type_tags
+      ignore_missing: true
+  - rename:
+      field: json.data.attributes.vhash
+      tag: rename_data_attributes_vhash
+      target_field: gti.cryptominer.attributes.vhash
+      ignore_missing: true
+  - append:
+      field: related.hash
+      tag: append_data_attributes_vhash_into_related_hash
+      value: '{{{gti.cryptominer.attributes.vhash}}}'
+      allow_duplicates: false
+  - append:
+      field: gti.cryptominer.attributes.top_level_domain
+      tag: append_data_attributes_vhash_into_related_hash
+      value: '{{{json.data.attributes.tld}}}'
+      if: ctx.json?.data?.attributes?.tld instanceof String
+  - rename:
+      field: json.data.attributes.tld
+      tag: rename_data_type
+      target_field: gti.cryptominer.attributes.top_level_domain
+      ignore_missing: true
+      if: ctx.json?.data?.attributes?.tld instanceof List
+  - convert:
+      field: json.data.attributes.last_analysis_stats.harmless
+      tag: convert_data_attributes_last_analysis_stats_harmless_to_long
+      target_field: gti.cryptominer.attributes.last_analysis_stats.harmless
+      type: long
+      ignore_missing: true
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - convert:
+      field: json.data.attributes.last_analysis_stats.malicious
+      tag: convert_data_attributes_last_analysis_stats_malicious_to_long
+      target_field: gti.cryptominer.attributes.last_analysis_stats.malicious
+      type: long
+      ignore_missing: true
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - convert:
+      field: json.data.attributes.last_analysis_stats.suspicious
+      tag: convert_data_attributes_last_analysis_stats_suspicious_to_long
+      target_field: gti.cryptominer.attributes.last_analysis_stats.suspicious
+      type: long
+      ignore_missing: true
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - convert:
+      field: json.data.attributes.last_analysis_stats.timeout
+      tag: convert_data_attributes_last_analysis_stats_timeout_to_long
+      target_field: gti.cryptominer.attributes.last_analysis_stats.timeout
+      type: long
+      ignore_missing: true
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - convert:
+      field: json.data.attributes.last_analysis_stats.undetected
+      tag: convert_data_attributes_last_analysis_stats_undetected_to_long
+      target_field: gti.cryptominer.attributes.last_analysis_stats.undetected
+      type: long
+      ignore_missing: true
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - rename:
+      field: json.data.type
+      tag: rename_data_type
+      target_field: gti.cryptominer.type
+      ignore_missing: true
+  - script:
+      description: Set threat indicator type from gti cryptominer type.
+      if: ctx.gti?.cryptominer?.type != null
+      tag: set_threat_indicator_type_from_gti_cryptominer_type
+      lang: painless
+      params:
+        domain: domain-name
+        file: file
+        ip_address: ipv4-addr
+        url: url
+      source: |-
+        if (ctx.threat == null) {
+          ctx.threat = new HashMap();
+        }
+        if (ctx.threat.indicator == null) {
+          ctx.threat.indicator = new HashMap();
+        }
+        ctx.threat.indicator.type = params[ctx.gti.cryptominer.type];
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - append:
+      field: threat.indicator.id
+      tag: append_threat_indicator_id
+      value: '{{{json.data.id}}}'
+      allow_duplicates: false
+  - set:
+      field: threat.indicator.name
+      tag: set_threat_indicator_name_from_id
+      copy_from: json.data.id
+      ignore_empty_value: true
+  - rename:
+      field: json.data.id
+      tag: rename_data_id_with_url
+      target_field: gti.cryptominer.id
+      ignore_missing: true
+  - append:
+      field: related.hosts
+      tag: append_data_id_domain
+      value: '{{{gti.cryptominer.id}}}'
+      allow_duplicates: false
+      if: ctx.gti?.cryptominer?.type == 'domain'
+  - set:
+      field: threat.indicator.file.hash.sha256
+      tag: set_threat_indicator_file_hash_sha256_from_cryptominer_id
+      copy_from: gti.cryptominer.id
+      if: ctx.gti?.cryptominer?.type == 'file'
+      ignore_empty_value: true
+  - append:
+      field: related.hash
+      tag: append_data_id_file_into_related_hash
+      value: '{{{gti.cryptominer.id}}}'
+      allow_duplicates: false
+      if: ctx.gti?.cryptominer?.type == 'file'
+  - append:
+      field: related.hash
+      tag: append_id
+      value: '{{{gti.cryptominer.id}}}'
+      allow_duplicates: false
+      if: ctx.gti?.cryptominer?.type == 'url'
+  - set:
+      field: threat.indicator.ip
+      tag: set_threat_indicator_url_from_cryptominer_id
+      copy_from: gti.cryptominer.id
+      if: ctx.gti?.cryptominer?.type == 'ip_address'
+      ignore_empty_value: true
+  - append:
+      field: related.ip
+      tag: append_data_id_ip_into_related_ip
+      value: '{{{gti.cryptominer.id}}}'
+      allow_duplicates: false
+      if: ctx.gti?.cryptominer?.type == 'ip_address'
+  - uri_parts:
+      field: threat.indicator.url.original
+      tag: uri_parts_url_original
+      ignore_missing: true
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - append:
+      field: related.hosts
+      tag: append_data_url_domain_into_related_host
+      value: '{{{url.domain}}}'
+      allow_duplicates: false
+  - rename:
+      field: json.data.attributes.last_analysis_results
+      tag: rename_data_attributes_last_analysis_results
+      target_field: gti.cryptominer.attributes.last_analysis_results
+      ignore_missing: true
+  - rename:
+      field: json.data.relationships.campaigns.data
+      tag: rename_data_relationships_campaigns_data
+      target_field: gti.cryptominer.relationships.campaigns
+      ignore_missing: true
+  - rename:
+      field: json.data.relationships.collections.data
+      tag: rename_data_relationships_collections_data
+      target_field: gti.cryptominer.relationships.collections
+      ignore_missing: true
+  - rename:
+      field: json.data.relationships.malware_families.data
+      tag: rename_data_relationships_malware_families_data
+      target_field: gti.cryptominer.relationships.malware_families
+      ignore_missing: true
+  - rename:
+      field: json.data.relationships.reports.data
+      tag: rename_data_relationships_reports_data
+      target_field: gti.cryptominer.relationships.reports
+      ignore_missing: true
+  - rename:
+      field: json.data.relationships.software_toolkits.data
+      tag: rename_data_relationships_software_toolkits_data
+      target_field: gti.cryptominer.relationships.software_toolkits
+      ignore_missing: true
+  - rename:
+      field: json.data.relationships.threat_actors.data
+      tag: rename_data_relationships_threat_actors_data
+      target_field: gti.cryptominer.relationships.threat_actors
+      ignore_missing: true
+  - rename:
+      field: json.data.relationships.vulnerabilities.data
+      tag: rename_data_relationships_vulnerabilities_data
+      target_field: gti.cryptominer.relationships.vulnerabilities
+      ignore_missing: true
+  - remove:
+      field: json
+      tag: remove_json
+      ignore_missing: true
+  - script:
+      tag: script_to_drop_null_values
+      lang: painless
+      description: Drops null/empty values recursively.
+      source: |-
+        boolean drop(Object object) {
+          if (object == null || object == '') {
+            return true;
+          } else if (object instanceof Map) {
+            ((Map) object).values().removeIf(v -> drop(v));
+            return (((Map) object).size() == 0);
+          } else if (object instanceof List) {
+            ((List) object).removeIf(v -> drop(v));
+            return (((List) object).length == 0);
+          }
+          return false;
+        }
+        drop(ctx);
+  - set:
+      field: event.kind
+      tag: set_pipeline_error_into_event_kind
+      value: pipeline_error
+      if: ctx.error?.message != null
+  - append:
+      field: tags
+      value: preserve_original_event
+      allow_duplicates: false
+      if: ctx.error?.message != null
+on_failure:
+  - append:
+      field: error.message
+      value: >-
+        Processor '{{{ _ingest.on_failure_processor_type }}}'
+        {{{#_ingest.on_failure_processor_tag}}}with tag '{{{ _ingest.on_failure_processor_tag }}}'
+        {{{/_ingest.on_failure_processor_tag}}}failed with message '{{{ _ingest.on_failure_message }}}'
+  - set:
+      field: event.kind
+      tag: set_pipeline_error_to_event_kind
+      value: pipeline_error
+  - append:
+      field: tags
+      value: preserve_original_event
+      allow_duplicates: false
