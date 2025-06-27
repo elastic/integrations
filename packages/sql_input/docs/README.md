@@ -105,22 +105,28 @@ The `merge_results` feature will create a combined event, where `blks_hit`, `blk
 
 ### SSL configuration
 
-#### Option 1. Using "SSL Configuration" section
-
 The drivers `mysql`, `mssql`, and `postgres` are supported.
 
-The SSL configuration is driver-specific. Different drivers interpret parameters not in the same way. Subset of the [params](https://www.elastic.co/docs/reference/beats/metricbeat/configuration-ssl#ssl-client-config) is supported.
+The SSL configuration is driver-specific. Different drivers have slightly different parameter interpretations. Subset of the [params](https://www.elastic.co/docs/reference/beats/metricbeat/configuration-ssl#ssl-client-config) is supported.
 
 When any "SSL Configuration" parameters are set, only URL-formatted connection strings are accepted, like `"postgres://myuser:mypassword@localhost:5432/mydb"`, not like `"user=myuser password=mypassword dbname=mydb"`.
 
-##### `mysql` driver
+Example of SSL configuration:
+```
+verification_mode: full
+certificate_authorities:
+  - /path/to/ca.pem
+```
 
-Params supported: `verification_mode`, `certificate`, `key`, `certificate_authorities`.
+#### `mysql` driver
+
+Parameters supported: `verification_mode`, `certificate`, `key`, `certificate_authorities`.
 
 The certificates can be passed both as file paths and as certificate content.
 
-Example 1:
+Example with the certificate content "embedded":
 ```
+verification_mode: full
 certificate_authorities:
   - |
     -----BEGIN CERTIFICATE-----
@@ -144,15 +150,9 @@ certificate_authorities:
     -----END CERTIFICATE-----
 ```
 
-Example 2:
-```
-certificate_authorities:
-  - /path/to/ca.pem
-```
+#### `postgres` driver
 
-##### `postgres` driver
-
-Params supported: `verification_mode`, `certificate`, `key`, `certificate_authorities`.
+Parameters supported: `verification_mode`, `certificate`, `key`, `certificate_authorities`.
 
 Only one certificate can be passed to `certificate_authorities` parameter.
 The certificates can be passed only as file paths. The files have to be present in the environment where the metricbeat is running.
@@ -167,7 +167,7 @@ The `verification_mode` is translated as following:
 
 - `none` -> `require`
 
-##### `mssql` driver
+#### `mssql` driver
 
 Params supported: `verification_mode`, `certificate_authorities`.
 
@@ -175,10 +175,3 @@ Only one certificate can be passed to `certificate_authorities` parameter.
 The certificates can be passed only as file paths. The files have to be present in the environment where the metricbeat is running.
 
 If `verification_mode` is set to `none`, `TrustServerCertificate` will be set to `true`, otherwise it is `false`
-
-
-#### Option 2. Passing SSL configuration in the connection string
-
-It is possible to configure SSL connections using the `hosts` parameter by passing the parameters in the connection string. For example, for `postgres`: `postgres://myuser:mypassword@localhost:5432/mydb?sslcert=.%2Fcert.pem&sslkey=.%2Fkey.pem&sslmode=verify-full&sslrootcert=.%2Fca.pem`. (The parameters needs to be URL encoded). Refer to the documentation of your database for parameters specification.
-
-When you use this option, don't set any parameters in the "SSL Configuration" sections, otherwise parameters you supply in the connection string may be overwritten.
