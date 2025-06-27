@@ -672,6 +672,11 @@ processors:
       field: _tmp.resource_tags
       target_field: temp_tags_obj
       ignore_failure: true
+  - set:
+      tag: set_product_region_code_if_null
+      field: aws_billing.cur.product.region_code
+      if: ctx.aws_billing?.cur?.product?.region_code == null
+      value: "No region"
   - script:
       tag: sort_tags_alphabetically
       lang: painless
