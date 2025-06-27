@@ -1,15 +1,6 @@
 ---
-description: Set correlation keys and blended calculation weights.
+description: "Chargeback: Set correlation keys and blended calculation weights."
 processors:
-  - set:
-      field: indexing_weight
-      value: "{{{_conf.indexing_weight}}}"
-  - set:
-      field: querying_weight
-      value: "{{{_conf.querying_weight}}}"
-  - set:
-      field: storage_weight
-      value: "{{{_conf.storage_weight}}}"
   - script:
       lang: painless
       source: >
@@ -23,6 +14,3 @@ processors:
           if (ctx.datastream != null) ctx.composite_datastream_key = ctx.composite_key + '_' + ctx.datastream;
         }
       ignore_failure: true
-  # - remove:
-  #     field:
-  #       - _conf
