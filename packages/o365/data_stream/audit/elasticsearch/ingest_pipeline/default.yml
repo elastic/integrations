@@ -160,7 +160,11 @@ processors:
       field: o365audit.OrganizationId
       target_field: organization.id
       ignore_missing: true
-      ignore_failure: true
+      tag: rename_organization_id
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
 
   - json:
       tag: json-extract-stringly-AdditionalInfo
@@ -468,8 +472,12 @@ processors:
       field: o365audit.OrganizationName
       target_field: organization.name
       ignore_missing: true
-      ignore_failure: true
       if: ctx.event?.code == "ExchangeAdmin"
+      tag: rename_organization_name
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - rename:
       field: o365audit.OriginatingServer
       target_field: server._temp
@@ -496,8 +504,12 @@ processors:
       field: o365audit.OrganizationName
       target_field: organization.name
       ignore_missing: true
-      ignore_failure: true
       if: ctx.event?.code == "ExchangeItem"
+      tag: rename_organization_name_exchange_item
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - rename:
       field: o365audit.OriginatingServer
       target_field: server._temp
