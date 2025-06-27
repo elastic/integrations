@@ -1,0 +1,162 @@
+model:
+  version: 1.29.0
+
+groups:
+  - id: container_cpu_metrics
+    type: metric_group
+    brief: "Container CPU usage metrics for Docker OpenTelemetry monitoring"
+    prefix: container.cpu
+    metrics:
+      - id: utilization
+        type: gauge
+        unit: "1"
+        stability: stable
+        brief: "Container CPU usage as a percentage."
+        note: "The value should be between 0.0 and 1.0 representing CPU utilization from 0% to 100%."
+        instrument: gauge
+        attributes:
+          - ref: container.id
+            requirement_level: required
+          - ref: container.name
+            requirement_level: recommended
+      - id: usage.usermode
+        type: counter
+        unit: "ns"
+        stability: stable
+        brief: "Time the CPU spent running the container processes in user mode."
+        note: "This represents the cumulative CPU time spent in user space."
+        instrument: counter
+        attributes:
+          - ref: container.id
+            requirement_level: required
+          - ref: container.name
+            requirement_level: recommended
+      - id: usage.kernelmode
+        type: counter
+        unit: "ns"
+        stability: stable
+        brief: "Time the CPU spent running the container processes in kernel mode."
+        note: "This represents the cumulative CPU time spent in kernel space."
+        instrument: counter
+        attributes:
+          - ref: container.id
+            requirement_level: required
+          - ref: container.name
+            requirement_level: recommended
+
+  - id: container_memory_metrics
+    type: metric_group
+    brief: "Container memory usage metrics for Docker OpenTelemetry monitoring"
+    prefix: container.memory
+    metrics:
+      - id: percent
+        type: gauge
+        unit: "1"
+        stability: stable
+        brief: "Container memory usage as a percentage."
+        note: "The value should be between 0.0 and 1.0 representing memory utilization from 0% to 100%."
+        instrument: gauge
+        attributes:
+          - ref: container.id
+            requirement_level: required
+          - ref: container.name
+            requirement_level: recommended
+      - id: usage.total
+        type: gauge
+        unit: "By"
+        stability: stable
+        brief: "Total memory usage by the container."
+        note: "This includes all memory used by the container including cache, buffers, etc."
+        instrument: gauge
+        attributes:
+          - ref: container.id
+            requirement_level: required
+          - ref: container.name
+            requirement_level: recommended
+      - id: usage.limit
+        type: gauge
+        unit: "By"
+        stability: stable
+        brief: "Memory usage limit for the container."
+        note: "The maximum amount of memory the container is allowed to use."
+        instrument: gauge
+        attributes:
+          - ref: container.id
+            requirement_level: required
+          - ref: container.name
+            requirement_level: recommended
+
+  - id: container_blockio_metrics
+    type: metric_group
+    brief: "Container block I/O metrics for Docker OpenTelemetry monitoring"
+    prefix: container.blockio
+    metrics:
+      - id: io_service_bytes_recursive
+        type: counter
+        unit: "By"
+        stability: stable
+        brief: "Total bytes transferred to/from block devices by the container."
+        note: "This includes both read and write operations to block devices."
+        instrument: counter
+        attributes:
+          - ref: container.id
+            requirement_level: required
+          - ref: container.name
+            requirement_level: recommended
+          - ref: device_major
+            requirement_level: recommended
+
+  - id: container_network_metrics
+    type: metric_group
+    brief: "Container network I/O metrics for Docker OpenTelemetry monitoring"
+    prefix: container.network
+    metrics:
+      - id: io.usage.rx_bytes
+        type: counter
+        unit: "By"
+        stability: stable
+        brief: "Bytes received by the container network interface."
+        note: "Total number of bytes received over the network interface."
+        instrument: counter
+        attributes:
+          - ref: container.id
+            requirement_level: required
+          - ref: container.name
+            requirement_level: recommended
+          - ref: interface
+            requirement_level: recommended
+      - id: io.usage.tx_bytes
+        type: counter
+        unit: "By"
+        stability: stable
+        brief: "Bytes transmitted by the container network interface."
+        note: "Total number of bytes transmitted over the network interface."
+        instrument: counter
+        attributes:
+          - ref: container.id
+            requirement_level: required
+          - ref: container.name
+            requirement_level: recommended
+          - ref: interface
+            requirement_level: recommended
+
+  - id: container_attributes
+    type: attribute_group
+    brief: "Additional container attributes for Docker OpenTelemetry monitoring"
+    attributes:
+      - id: device_major
+        type: int
+        stability: stable
+        brief: "The major device number for block devices."
+        examples: [8, 253, 7, 1]
+        note: "Used to identify the type of block device (e.g., 8 for SCSI disks, 253 for device mapper)."
+      - id: interface
+        type: string
+        stability: stable
+        brief: "The network interface name."
+        examples:
+          - "eth0"
+          - "wlan0"
+          - "lo"
+          - "docker0"
+        note: "The name of the network interface as seen from inside the container."

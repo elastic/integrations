@@ -1,0 +1,124 @@
+model:
+  version: 1.29.0
+
+groups:
+  - id: container
+    type: resource
+    brief: "Container resource semantic conventions"
+    prefix: container
+    attributes:
+      - id: id
+        type: string
+        brief: "Container ID. Usually a UUID, as for example used to identify Docker containers."
+        examples:
+          - "a3bf90e006b2"
+          - "9f89dc58-2b8d-11e9-ac0a-d3c0bf88a1b4"
+      - id: name
+        type: string
+        brief: "Container name used by container runtime."
+        examples:
+          - "redis-server"
+          - "my-container"
+      - id: hostname
+        type: string
+        brief: "Container hostname."
+        examples:
+          - "redis-01"
+          - "container-hostname"
+      - id: image.name
+        type: string
+        brief: "Name of the container image (repo/image)."
+        examples:
+          - "redis"
+          - "ubuntu:20.04"
+          - "my-registry.com/my-app:1.0.0"
+      - id: runtime
+        type: string
+        brief: "The container runtime managing this container."
+        examples:
+          - "docker"
+          - "containerd"
+          - "rkt"
+
+  - id: container.cpu
+    type: metric_group
+    brief: "Container CPU usage metrics"
+    metrics:
+      - id: utilization
+        type: gauge
+        unit: "1"
+        brief: "Container CPU usage as a percentage."
+        note: "The value should be between 0.0 and 1.0 (or 0% to 100%)."
+      - id: usage.usermode
+        type: counter
+        unit: "ns"
+        brief: "Time the CPU spent running the container in user mode."
+      - id: usage.kernelmode
+        type: counter
+        unit: "ns"
+        brief: "Time the CPU spent running the container in kernel mode."
+
+  - id: container.memory
+    type: metric_group
+    brief: "Container memory usage metrics"
+    metrics:
+      - id: percent
+        type: gauge
+        unit: "1"
+        brief: "Container memory usage as a percentage."
+        note: "The value should be between 0.0 and 1.0 (or 0% to 100%)."
+      - id: usage.total
+        type: gauge
+        unit: "By"
+        brief: "Total memory usage by the container."
+      - id: usage.limit
+        type: gauge
+        unit: "By"
+        brief: "Memory usage limit for the container."
+
+  - id: container.blockio
+    type: metric_group
+    brief: "Container block I/O metrics"
+    metrics:
+      - id: io_service_bytes_recursive
+        type: counter
+        unit: "By"
+        brief: "Total bytes transferred to/from block devices by the container."
+        attributes:
+          - ref: device_major
+            brief: "The major device number."
+
+  - id: container.network
+    type: metric_group
+    brief: "Container network I/O metrics"
+    metrics:
+      - id: io.usage.rx_bytes
+        type: counter
+        unit: "By"
+        brief: "Bytes received by the container network interface."
+        attributes:
+          - ref: interface
+            brief: "The network interface name."
+      - id: io.usage.tx_bytes
+        type: counter
+        unit: "By"
+        brief: "Bytes transmitted by the container network interface."
+        attributes:
+          - ref: interface
+            brief: "The network interface name."
+
+  - id: container.attributes
+    type: attribute_group
+    brief: "Additional container attributes"
+    attributes:
+      - id: device_major
+        type: int
+        brief: "The major device number for block devices."
+        examples: [8, 253]
+      - id: interface
+        type: string
+        brief: "The network interface name."
+        examples:
+          - "eth0"
+          - "wlan0"
+          - "lo"
