@@ -1043,10 +1043,12 @@ processors:
 
           if (res.type == 'AWS_EC2_INSTANCE') {
             ctx.resource.id = res.id;
+            ctx.resource.name = res.tags.Name;
             ctx.cloud.instance.id = res.id;
             ctx.cloud.region = res.region;
             ctx.cloud.machine.type = res.details.aws.ec2_instance.type;
             ctx.host.id = res.id;
+            ctx.host.name = res.tags.Name;
             ctx.host.type = res.details.aws.ec2_instance.type;
             ctx.host.os.platform = res.details.aws.ec2_instance.platform;
             for (ipv4 in res.details.aws.ec2_instance.ipv4_addresses) {
@@ -1080,9 +1082,11 @@ processors:
         // Define fields to be extracted.
         ctx.resource = ctx.resource ?: [:];
         ctx.resource.id = ctx.resource.id ?: [];
+        ctx.resource.name = ctx.resource.name ?: [];
 
         ctx.host = ctx.host ?: [:];
         ctx.host.id = ctx.host.id ?: [];
+        ctx.host.name = ctx.host.name ?: [];
         ctx.host.ip = ctx.host.ip ?: [];
         ctx.host.type = ctx.host.type ?: [];
         ctx.host.os = ctx.host.os ?: [:];
@@ -1099,10 +1103,12 @@ processors:
         for (res in resources) {
           if (res.type == 'AWS_EC2_INSTANCE') {
             ctx.resource.id.add(res.id);
+            ctx.resource.name.add(res.tags.Name);
             ctx.cloud.instance.id.add(res.id);
             ctx.cloud.region.add(res.region);
             ctx.cloud.machine.type.add(res.details.aws.ec2_instance.type);
             ctx.host.id.add(res.id);
+            ctx.host.name.add(res.tags.Name);
             ctx.host.type.add(res.details.aws.ec2_instance.type);
             ctx.host.os.platform.add(res.details.aws.ec2_instance.platform);
             for (ipv4 in res.details.aws.ec2_instance.ipv4_addresses) {

@@ -534,6 +534,7 @@ Please refer to the following [document](https://www.elastic.co/guide/en/ecs/cur
 | observer.vendor | Vendor name of the observer. | constant_keyword |
 | package.fixed_version | In which version of the package the vulnerability was fixed. | keyword |
 | resource.id | The ID of the vulnerable resource. | keyword |
+| resource.name | The name of the vulnerable resource. | keyword |
 | vulnerability.cve | The CVE id of the vulnerability. | keyword |
 | vulnerability.published_date | When the vulnerability was published. | date |
 | vulnerability.scanner.vendor | The name of the vulnerability scanner vendor. | constant_keyword |
