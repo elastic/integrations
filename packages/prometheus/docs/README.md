@@ -267,7 +267,7 @@ remote_write:
   - url: "http://localhost:9201/write"
 ```
 
-In Kuberneter additionally should be created a Service resource:
+In Kubernetes additionally should be created a Service resource:
 ```yml
 ---
 apiVersion: v1
