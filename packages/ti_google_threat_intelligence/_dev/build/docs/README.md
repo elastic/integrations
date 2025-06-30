@@ -14,6 +14,11 @@ The Threat List API provides the following types of threat feeds:
 - **First Stage Delivery Vectors**
 - **Infostealers**
 - **Internet of Things (IoT)**
+- **Linux**
+- **Malicious Network Infrastructure**
+- **Malware**
+- **Mobile**
+- **OS X**
 
 ## GTI Subscription Tiers
 
@@ -25,7 +30,7 @@ Customers can access a subset of the available threat lists based on their **Goo
 
 ## Data Streams
 
-Data collection is available for four feed types: `cryptominer`, `first_stage_delivery_vectors`, `infostealer`, and `iot`, each provided through a separate data stream. Users can enable data streams based on their GTI subscription tier. If a user enables data collection for a data stream they do not have access to, it will result in an error log on the **Discover** page.
+Data collection is available for all four feed types: `cryptominer`, `first_stage_delivery_vectors`, `infostealer`, `iot`, `Linux`, `Malicious Network Infrastructure`, `Malware`, `Mobile` and `OS X`, each with a separate data stream. By default, **Malicious Network Infrastructure** is enabled. Users can enable additional data streams based on their GTI subscription tier. If a user enables data collection for a data stream they do not have access to, it will result in an error log on the **Discover** page.
 
 ## Requirements
 
@@ -205,3 +210,53 @@ This is the `Internet of Things` dataset.
 {{event "iot"}}
 
 {{fields "iot"}}
+
+### Linux
+
+This is the `Linux` dataset.
+
+#### Example
+
+{{event "linux"}}
+
+{{fields "linux"}}
+
+### Malicious Network Infra
+
+This is the `Malicious Network Infra` dataset.
+
+#### Example
+
+{{event "malicious_network_infrastructure"}}
+
+{{fields "malicious_network_infrastructure"}}
+
+### Malware
+
+This is the `Malware` dataset.
+
+#### Example
+
+{{event "malware"}}
+
+{{fields "malware"}}
+
+### Mobile
+
+This is the `Mobile` dataset.
+
+#### Example
+
+{{event "mobile"}}
+
+{{fields "mobile"}}
+
+### OS X
+
+This is the `OS X` dataset.
+
+#### Example
+
+{{event "osx"}}
+
+{{fields "osx"}}
