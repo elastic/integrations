@@ -874,7 +874,7 @@ An example event for `threat` looks as following:
 |---|---|---|
 | @timestamp | Event timestamp. | date |
 | abnormal_security.threat.abx_message_id | A unique identifier for an individual message within a threat (i.e email campaign). | keyword |
-| abnormal_security.threat.abx_portal_url | The URL at which the specific message details are viewable in Abnormal Security's Portal web interface. | keyword |
+| abnormal_security.threat.abx_portal_url | The URL at which the specific message details are viewable in Abnormal AI's Portal web interface. | keyword |
 | abnormal_security.threat.attachment_count | Number of attachments in email (only available for IESS customers). | long |
 | abnormal_security.threat.attachment_names | List of attachment names, if any. Attachments retrieved from the attachments endpoint are appended to this field if enrichment is enabled. | keyword |
 | abnormal_security.threat.attack.strategy |  | keyword |
