@@ -4,6 +4,51 @@ processors:
 - set:
     field: ecs.version
     value: '8.17.0'
+#Labels
+- rename:
+    field: prometheus.labels.DCGM_FI_DRIVER_VERSION
+    target_field: gpu.labels.driver_version
+    ignore_missing: true
+- rename:
+    field: prometheus.labels.Hostname
+    target_field: gpu.labels.hostname
+    ignore_missing: true
+- rename:
+    field: prometheus.labels.UUID
+    target_field: gpu.labels.uuid
+    ignore_missing: true
+- rename:
+    field: prometheus.labels.device
+    target_field: gpu.labels.device
+    ignore_missing: true
+- rename:
+    field: prometheus.labels.gpu
+    target_field: gpu.labels.gpu
+    ignore_missing: true
+- rename:
+    field: prometheus.labels.instance
+    target_field: server.address
+    ignore_missing: true
+- rename:
+    field: prometheus.labels.job
+    target_field: gpu.labels.job
+    ignore_missing: true
+- rename:
+    field: prometheus.labels.modelName
+    target_field: gpu.labels.model_name
+    ignore_missing: true
+- rename:
+    field: prometheus.labels.pci_bus_id
+    target_field: gpu.labels.pci_bus_id
+    ignore_missing: true
+- rename:
+    field: prometheus.labels.err_code
+    target_field: gpu.labels.err_code
+    ignore_missing: true
+- rename:
+    field: prometheus.labels.err_msg
+    target_field: gpu.labels.err_msg
+    ignore_missing: true
 # Clock Frequencies
 - rename:
     field: prometheus.DCGM_FI_DEV_SM_CLOCK.value
@@ -168,10 +213,6 @@ processors:
     field: prometheus.DCGM_FI_DEV_VBIOS_VERSION.value
     target_field: gpu.device.vbios_version
     ignore_missing: true
-- rename:
-      field: prometheus.labels
-      target_field: gpu.labels
-      ignore_missing: true    
 # Throttling
 - rename:
     field: prometheus.DCGM_FI_DEV_SYNC_BOOST_VIOLATION.counter
@@ -233,4 +274,17 @@ processors:
 - rename:
     field: prometheus.up.value
     target_field: gpu.up
+    ignore_missing: true
+#Kubernetes
+- rename:
+    field: prometheus.labels.namespace
+    target_field: kubernetes.namespace   
+    ignore_missing: true
+- rename:
+    field: prometheus.labels.container
+    target_field: kubernetes.container.name     
+    ignore_missing: true
+-  rename:
+    field: prometheus.labels.pod
+    target_field: kubernetes.pod.name    
     ignore_missing: true
