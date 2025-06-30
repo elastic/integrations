@@ -53,7 +53,8 @@ Elastic Agent is required to stream data from the syslog or log file receiver an
 To configure syslog monitoring, follow the steps described in the [Configure Syslog Monitoring](https://docs.paloaltonetworks.com/pan-os/10-2/pan-os-admin/monitoring/use-syslog-for-monitoring/configure-syslog-monitoring) documentation.
 
 ### Collect logs via log file
-To configure log file monitoring, please follow the steps mentioned in [_Configure Log Forwarding_](https://docs.paloaltonetworks.com/pan-os/10-2/pan-os-admin/monitoring/configure-log-forwarding).
+
+To configure log file monitoring, follow the steps described in the [Configure Log Forwarding](https://docs.paloaltonetworks.com/pan-os/10-2/pan-os-admin/monitoring/configure-log-forwarding) documentation.
 
 ### Enable the integration in Elastic
 
@@ -81,13 +82,13 @@ To configure log file monitoring, please follow the steps mentioned in [_Configu
 
 For help with Elastic ingest tools, check [Common problems](https://www.elastic.co/docs/troubleshoot/ingest/fleet/common-problems).
 
-If events are getting truncated, then increase `max_message_size` option for TCP and UDP input type. It can be found under Advanced Options and can be configured as per requirements.
+If events are truncated, increase `max_message_size` option for TCP and UDP input type. You can find it under Advanced Options and configure it as per requirements.
 The default value of `max_message_size` is set to 50KiB.
 
 If the TCP input is used, it is recommended that PAN-OS is configured to send syslog messages using the IETF (RFC 5424) format. In addition, RFC 6587 framing (Octet Counting) will
 be enabled by default on the TCP input.
 
-If you want to see the configuration before and after the change(fields `before-change-detail` and `after-change-detail`) in the [config-log](https://docs.paloaltonetworks.com/pan-os/11-1/pan-os-admin/monitoring/use-syslog-for-monitoring/syslog-field-descriptions/config-log-fields), please use the following [custom log format in the syslog server profile](https://docs.paloaltonetworks.com/pan-os/11-1/pan-os-admin/monitoring/use-syslog-for-monitoring/syslog-field-descriptions/custom-logevent-format):
+To verify the configuration before and after the change (fields `before-change-detail` and `after-change-detail`) in the [config-log](https://docs.paloaltonetworks.com/pan-os/11-1/pan-os-admin/monitoring/use-syslog-for-monitoring/syslog-field-descriptions/config-log-fields), use the following [custom log format in the syslog server profile](https://docs.paloaltonetworks.com/pan-os/11-1/pan-os-admin/monitoring/use-syslog-for-monitoring/syslog-field-descriptions/custom-logevent-format):
   ``1,$receive_time,$serial,$type,$subtype,2561,$time_generated,$host,$vsys,$cmd,$admin,$client,$result,$path,$before-change-detail,$after-change-detail,$seqno,$actionflags,$dg_hier_level_1,$dg_hier_level_2,$dg_hier_level_3,$dg_hier_level_4,$vsys_name,$device_name,$dg_id,$comment,0,$high_res_timestamp``
 
 ## Performance and scaling
