@@ -929,7 +929,7 @@
                                             ],
                                             "index": "3db0d6b31d8afd75067c7a445bb4f066a52d9d451e8237e51956bd0d7e1ecb52",
                                             "query": {
-                                                "esql": "FROM chargeback-monitoring-read\n| EVAL \n    @timestamp = DATE_TRUNC(1 day, @timestamp)\n| WHERE elasticsearch.index.total.indexing.index_time_in_millis \u003e 0\n| STATS \n //   sum_query_time_local = sum(elasticsearch.index.total.search.query_time_in_millis), \n    sum_indexing_time_local = sum(elasticsearch.index.total.indexing.index_time_in_millis)\n//    sum_data_set_store_size_local = sum(elasticsearch.index.primaries.store.total_data_set_size_in_bytes),\n//    sum_store_size_local = sum(elasticsearch.index.total.store.size_in_bytes)\n  BY \n    @timestamp,\n    elasticsearch.cluster.name,\n    elasticsearch.index.datastream\n| STATS \n    total_indexing_portion = sum(sum_indexing_time_local) \n  BY \n    @timestamp, \n    elasticsearch.index.datastream \n| KEEP \n    @timestamp,\n    elasticsearch.index.datastream,\n    total_indexing_portion\n| SORT total_indexing_portion DESC\n"
+                                                "esql": "FROM billing_cluster_cost_lookup\n| LOOKUP JOIN cluster_deployment_contribution_lookup ON composite_key\n| LOOKUP JOIN cluster_datastream_contribution_lookup ON composite_key\n| EVAL querying = CASE (deployment_sum_query_time > 0, datastream_sum_query_time / deployment_sum_query_time * total_ecu)\n| STATS agg_querying = sum(querying) BY @timestamp, datastream.keyword\n| WHERE agg_querying > 0\n| SORT agg_querying DESC"
                                             },
                                             "timeField": "@timestamp"
                                         }
@@ -939,7 +939,7 @@
                             "filters": [],
                             "needsRefresh": false,
                             "query": {
-                                "esql": "FROM chargeback-monitoring-read\n| EVAL \n    @timestamp = DATE_TRUNC(1 day, @timestamp)\n| WHERE elasticsearch.index.total.indexing.index_time_in_millis \u003e 0\n| STATS \n //   sum_query_time_local = sum(elasticsearch.index.total.search.query_time_in_millis), \n    sum_indexing_time_local = sum(elasticsearch.index.total.indexing.index_time_in_millis)\n//    sum_data_set_store_size_local = sum(elasticsearch.index.primaries.store.total_data_set_size_in_bytes),\n//    sum_store_size_local = sum(elasticsearch.index.total.store.size_in_bytes)\n  BY \n    @timestamp,\n    elasticsearch.cluster.name,\n    elasticsearch.index.datastream\n| STATS \n    total_indexing_portion = sum(sum_indexing_time_local) \n  BY \n    @timestamp, \n    elasticsearch.index.datastream \n| KEEP \n    @timestamp,\n    elasticsearch.index.datastream,\n    total_indexing_portion\n| SORT total_indexing_portion DESC\n"
+                                "esql": "FROM billing_cluster_cost_lookup\n| LOOKUP JOIN cluster_deployment_contribution_lookup ON composite_key\n| LOOKUP JOIN cluster_datastream_contribution_lookup ON composite_key\n| EVAL querying = CASE (deployment_sum_query_time > 0, datastream_sum_query_time / deployment_sum_query_time * total_ecu)\n| STATS agg_querying = sum(querying) BY @timestamp, datastream.keyword\n| WHERE agg_querying > 0\n| SORT agg_querying DESC"
                             },
                             "visualization": {
                                 "axisTitlesVisibilitySettings": {
@@ -1012,7 +1012,7 @@
                     },
                     "filters": [],
                     "query": {
-                        "esql": "FROM chargeback-monitoring-read\n| EVAL \n    @timestamp = DATE_TRUNC(1 day, @timestamp)\n| WHERE elasticsearch.index.total.indexing.index_time_in_millis \u003e 0\n| STATS \n //   sum_query_time_local = sum(elasticsearch.index.total.search.query_time_in_millis), \n    sum_indexing_time_local = sum(elasticsearch.index.total.indexing.index_time_in_millis)\n//    sum_data_set_store_size_local = sum(elasticsearch.index.primaries.store.total_data_set_size_in_bytes),\n//    sum_store_size_local = sum(elasticsearch.index.total.store.size_in_bytes)\n  BY \n    @timestamp,\n    elasticsearch.cluster.name,\n    elasticsearch.index.datastream\n| STATS \n    total_indexing_portion = sum(sum_indexing_time_local) \n  BY \n    @timestamp, \n    elasticsearch.index.datastream \n| KEEP \n    @timestamp,\n    elasticsearch.index.datastream,\n    total_indexing_portion\n| SORT total_indexing_portion DESC\n"
+                        "esql": "FROM billing_cluster_cost_lookup\n| LOOKUP JOIN cluster_deployment_contribution_lookup ON composite_key\n| LOOKUP JOIN cluster_datastream_contribution_lookup ON composite_key\n| EVAL querying = CASE (deployment_sum_query_time > 0, datastream_sum_query_time / deployment_sum_query_time * total_ecu)\n| STATS agg_querying = sum(querying) BY @timestamp, datastream.keyword\n| WHERE agg_querying > 0\n| SORT agg_querying DESC"
                     },
                     "searchSessionId": "48b157e3-14ff-4c71-8178-4a69f0592d85",
                     "syncColors": false,
