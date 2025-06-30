@@ -1,6 +1,30 @@
 ---
 description: "Chargeback: Set correlation keys and blended calculation weights."
 processors:
+  # - grok:
+  #     if: ctx?.elasticsearch?.index?.name != null
+  #     field: elasticsearch.index.name
+  #     tag: grok_parse_index_name
+  #     patterns:
+  #       - '^(?:partial-)?(?:restored-)?(?:shrink-.{4}-)?(?:\.ds-)?(?<elasticsearch.index.datastream>[a-z_0-9\-\.]+?)(-(?:\d{4}\.\d{2}(\.\d{2})?))?(?:-\d+)?$'
+  #     ignore_failure: true
+
+  # - script:
+  #     if: ctx?.elasticsearch?.index?.tier_preference != null
+  #     source: |
+  #       def preference = ctx?.elasticsearch?.index?.tier_preference;
+  #       if (preference.contains("data_frozen")) {
+  #         ctx.elasticsearch.index.tier = "frozen";
+  #       } else if (preference.contains("data_cold")) {
+  #         ctx.elasticsearch.index.tier = "cold";
+  #       } else if (preference.contains("data_warm")) {
+  #         ctx.elasticsearch.index.tier = "warm";
+  #       } else if (preference.contains("data_hot") || preference.contains("data_content")) {
+  #         ctx.elasticsearch.index.tier = "hot/content";
+  #       }
+  #       ctx.remove('elasticsearch.index.tier_preference');
+  #     ignore_failure: true
+  #     tag: script_parse_index_tier
   - script:
       lang: painless
       source: >

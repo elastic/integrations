@@ -1,12 +1,41 @@
-description: Aggregates daily total ECU usage per DATASTREAM from billing metrics, using ingested timestamps with a 1-hour sync delay and running every 60 minutes.
+description: Aggregates daily total ECU usage per datastream from billing metrics, using ingested timestamps with a 1-hour sync delay and running every 60 minutes.
 source:
   index:
-    - monitoring-indices
+    - chargeback-monitoring-read # Set this before running the transform. Either to `monitoring-indices` or `metrics-elasticsearch.stack_monitoring.index*,.monitoring-es-*,metricbeat-*`
   query:
-    match_all: {}
+    bool:
+      filter:
+        - bool:
+            filter:
+              # This filters only the documents that have the required fields (ie post 1.16 for the integration)
+              - exists:
+                  field: "elasticsearch.index.creation_date"
+              - exists:
+                  field: "elasticsearch.index.tier_preference"
+            should:
+              - term:
+                  event.dataset: "elasticsearch.index"
+              - term:
+                  event.dataset: "elasticsearch.stack_monitoring.index"
+        # Exclude system indices
+        - bool:
+            should:
+              - bool:
+                  must_not:
+                    - prefix:
+                        elasticsearch.index.name: "."
+              - bool:
+                  filter:
+                    - prefix:
+                        elasticsearch.index.name: ".ds-"
+                  must_not:
+                    - prefix:
+                        elasticsearch.index.name: ".ds-."
+                    - prefix:
+                        elasticsearch.index.name: ".ds-ilm-history"
 dest:
   index: cluster_datastream_contribution_lookup
-  pipeline: metrics-chargeback.usage-0.0.2
+  pipeline: metrics-chargeback.usage-0.0.3
 frequency: 60m
 sync:
   time:
@@ -21,9 +50,67 @@ pivot:
     cluster_name:
       terms:
         field: elasticsearch.cluster.name
+    # datastream:
+    #   terms:
+    #     field: elasticsearch.index.datastream
     datastream:
       terms:
-        field: elasticsearch.index.datastream
+        script:
+          lang: painless
+          source: >
+            if (doc.containsKey('elasticsearch.index.datastream') && !doc['elasticsearch.index.datastream'].empty) {
+              return doc['elasticsearch.index.datastream'].value;
+            }
+
+            def name = doc.containsKey('elasticsearch.index.name') && !doc['elasticsearch.index.name'].empty
+              ? doc['elasticsearch.index.name'].value
+              : null;
+            if (name == null) return 'unknown';
+
+            def matcher = /^(?:partial-)?(?:restored-)?(?:shrink-.{4}-)?(?:\.ds-)?([a-z_0-9\-.]+?)(?:-\d{4}\.\d{2}(?:\.\d{2})?)?(?:-\d+)?$/.matcher(name);
+            if (matcher.matches()) {
+              return matcher.group(1);
+            }
+            return 'unknown';
+    # datastream_alt:
+    #   terms:
+    #     script:
+    #       lang: painless
+    #       source: >
+    #         if (doc.containsKey('elasticsearch.index.datastream') && !doc['elasticsearch.index.datastream'].empty) {
+    #           return doc['elasticsearch.index.datastream'].value;
+    #         }
+
+    #         def name = doc.containsKey('elasticsearch.index.name') && !doc['elasticsearch.index.name'].empty
+    #           ? doc['elasticsearch.index.name'].value
+    #           : null;
+    #         if (name == null) return 'unknown';
+
+    #         if (name.startsWith('.ds-.')) {
+    #           name = '.' + name.substring(5); 
+    #         } else {
+    #           for (prefix in ['partial-', 'restored-', 'shrink-']) {
+    #             if (name.startsWith(prefix)) {
+    #               name = name.substring(prefix.length());
+    #               break;
+    #             }
+    #           }
+    #         }
+
+    #         int idx = name.indexOf("-20");
+    #         if (idx > 0) {
+    #           name = name.substring(0, idx);
+    #         } else {
+    #           int dash = name.lastIndexOf('-');
+    #           if (dash > 0) {
+    #             def maybeSuffix = name.substring(dash + 1);
+    #             if (maybeSuffix.length() <= 6 && maybeSuffix.chars().allMatch(c -> Character.isDigit((char)c))) {
+    #               name = name.substring(0, dash);
+    #             }
+    #           }
+    #         }
+
+    #         return name;
   aggregations:
     datastream_sum_indexing_time:
       sum:
@@ -46,4 +133,4 @@ _meta:
   run_as_kibana_system: false
   # Bump this version to delete, reinstall, and restart the transform during package.
   # Version bump is needed if there is any code change in transform.
-  fleet_transform_version: 0.0.2
+  fleet_transform_version: 0.0.3
