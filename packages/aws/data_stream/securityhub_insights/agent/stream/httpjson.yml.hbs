@@ -81,7 +81,9 @@ response.pagination:
       # This transform's job is to fail and end pagination when finished.
       # It will set a value if the last request was the first in the sequence
       # (which collects the managed insights), or if there is another page of
-      # custom insights to fetch.
+      # custom insights to fetch. Otherwise, there will be a value template
+      # error (.last_response.body.NextToken doesn't exist) and the pagination
+      # sequence will end (because fail_on_template_error is set).
       target: body.NextToken
       value: '[[if (eq (.last_response.page) 0)]][["placeholder"]][[else]][[.last_response.body.NextToken]][[end]]'
       fail_on_template_error: true
