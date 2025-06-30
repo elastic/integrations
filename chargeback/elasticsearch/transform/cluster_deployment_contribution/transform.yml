@@ -1,12 +1,41 @@
-description: Aggregates daily total ECU usage per DEPLOYMENT from billing metrics, using ingested timestamps with a 1-hour sync delay and running every 60 minutes.
+description: Aggregates daily total ECU usage per deployment from billing metrics, using ingested timestamps with a 1-hour sync delay and running every 60 minutes.
 source:
   index:
-    - monitoring-indices
+    - chargeback-monitoring-read # Set this before running the transform. Either to `monitoring-indices` or `metrics-elasticsearch.stack_monitoring.index*,.monitoring-es-*,metricbeat-*`
   query:
-    match_all: {}
+    bool:
+      filter:
+        - bool:
+            filter:
+              # This filters only the documents that have the required fields (ie post 1.16 for the integration)
+              - exists:
+                  field: "elasticsearch.index.creation_date"
+              - exists:
+                  field: "elasticsearch.index.tier_preference"
+            should:
+              - term:
+                  event.dataset: "elasticsearch.index"
+              - term:
+                  event.dataset: "elasticsearch.stack_monitoring.index"
+        # Exclude system indices
+        - bool:
+            should:
+              - bool:
+                  must_not:
+                    - prefix:
+                        elasticsearch.index.name: "."
+              - bool:
+                  filter:
+                    - prefix:
+                        elasticsearch.index.name: ".ds-"
+                  must_not:
+                    - prefix:
+                        elasticsearch.index.name: ".ds-."
+                    - prefix:
+                        elasticsearch.index.name: ".ds-ilm-history"
 dest:
   index: cluster_deployment_contribution_lookup
-  pipeline: metrics-chargeback.usage-0.0.2
+  pipeline: metrics-chargeback.usage-0.0.3
 frequency: 60m
 sync:
   time:
@@ -43,4 +72,4 @@ _meta:
   run_as_kibana_system: false
   # Bump this version to delete, reinstall, and restart the transform during package.
   # Version bump is needed if there is any code change in transform.
-  fleet_transform_version: 0.0.2
+  fleet_transform_version: 0.0.3
