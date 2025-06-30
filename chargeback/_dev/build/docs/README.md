@@ -26,7 +26,19 @@ Currently, Chargeback calculations consider only Elasticsearch data nodes. Contr
 - Querying: 20
 - Storage: 40
 
-This weighting means storage contributes most to the blended cost calculation, with indexing contributing only on the hot tier. Adjust these weights based on your organization's needs and best judgment.
+This weighting means storage contributes most to the blended cost calculation, with indexing contributing only on the hot tier. Adjust these weights based on your organization's needs and best judgment as follows:
+
+```
+POST chargeback_conf_lookup/_update/config
+{
+  "doc": {
+    "conf_ecu_rate": 0.85,
+    "conf_indexing_weight": 50,
+    "conf_query_weight": 20,
+    "conf_storage_weight": 40
+  }
+}
+```
 
 Chargeback data can be viewed in the `[Chargeback] Cost and Consumption breakdown` dashboard.
 
