@@ -3,9 +3,7 @@
 POST _aliases
 {
   "actions": [
-    { "add": { "index": "metrics-elasticsearch.stack_monitoring.index*", "alias": "chargeback-monitoring-read", "is_write_index": false }},
-    { "add": { "index": ".monitoring-es-*", "alias": "chargeback-monitoring-read", "is_write_index": false }},
-    { "add": { "index": "metricbeat-*", "alias": "chargeback-monitoring-read", "is_write_index": false }}
+    { "add": { "index": ".monitoring-es-8-mb", "alias": "chargeback-monitoring-read", "is_write_index": false }}
   ]
 }
 

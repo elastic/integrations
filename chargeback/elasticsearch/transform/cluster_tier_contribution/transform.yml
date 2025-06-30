@@ -39,7 +39,7 @@ dest:
 frequency: 60m
 sync:
   time:
-    field: event.ingested
+    field: "@timestamp"
     delay: 1h
 pivot:
   group_by:
@@ -57,10 +57,10 @@ pivot:
           source: >
             def pref = doc.containsKey('elasticsearch.index.tier_preference') && !doc['elasticsearch.index.tier_preference'].empty ? doc['elasticsearch.index.tier_preference'].value : null;
             if (pref == null) return 'unknown';
-            if (pref.contains('data_frozen')) return 'frozen';
-            if (pref.contains('data_cold')) return 'cold';
-            if (pref.contains('data_warm')) return 'warm';
             if (pref.contains('data_hot') || pref.contains('data_content')) return 'hot/content';
+            if (pref.contains('data_warm')) return 'warm';
+            if (pref.contains('data_cold')) return 'cold';
+            if (pref.contains('data_frozen')) return 'frozen';
             return 'unknown';
   aggregations:
     tier_sum_indexing_time:
