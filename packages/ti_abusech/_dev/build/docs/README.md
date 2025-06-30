@@ -10,12 +10,7 @@ This integration is for [AbuseCH](https://urlhaus.abuse.ch/) logs. It includes t
 ## Note:
 
 AbuseCH requires using an `Auth Key` (API Key) in the requests for authentication.
-
-**If you do not authenticate:**
-- You will experience API rate limiting and may lose access to new data and features.
-- Requests without authentication will be denied.
-
-To ensure uninterrupted access, the `Auth Key` configuration option is mandatory and must be provided to avoid authentication errors and rate limiting.
+Requests without authentication will be denied by the API.
 
 More details on this topic can be found [here](https://abuse.ch/blog/community-first/).
 
