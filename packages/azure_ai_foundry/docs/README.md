@@ -4,6 +4,37 @@ Azure AI Foundry provides a comprehensive suite of AI services that enable devel
 
 ## Data streams
 
+### Logs
+
+The Azure AI Foundry logs data stream captures the gateway log events.
+
+These are the supported Azure log categories:
+
+| Data Stream |       Log Category       |
+|:-----------:|:------------------------:|
+|    logs     | ApiManagementGatewayLogs |
+
+#### Requirements and setup
+
+Refer to the [Azure Logs](https://docs.elastic.co/integrations/azure) page for more information on how to set up and use this integration.
+
+#### API Gateway Logs
+
+The API Management services provide the advanced logging capabilities. The `ApiManagementGatewayLogs` category comes under the advanced logging. This is not directly available in the Azure AI Foundry service itself. You have to set up the API Management services in Azure to access the Azure AI Foundry models. When the setup is complete, add the diagnostic setting for the API Management service.
+
+For more information on how to implement the comprehensive solution using API Management services to monitor the Azure AI Foundry services, check the [AI Foundry API](https://learn.microsoft.com/en-us/azure/api-management/azure-ai-foundry-api) page.
+
+**Diagnostic settings**
+
+- Enable the category `Logs related to ApiManagement Gateway` to stream the logs to the event hub.
+
+```text
+   ┌──────────────────┐      ┌──────────────┐     ┌─────────────────┐
+   │   APIM service   │      │  Diagnostic  │     │    Event Hub    │
+   │    <<source>>    │─────▶│   settings   │────▶│ <<destination>> │
+   └──────────────────┘      └──────────────┘     └─────────────────┘
+```
+
 ### Metrics
 
 The metrics data stream collects the cognitive service metrics that is specific to the Azure AI Foundry service.
@@ -39,6 +70,259 @@ Should return a list of resources.
 If no resource filter is specified, then all Azure AI Foundry services inside the entire subscription will be considered.
 
 The primary aggregation value will be retrieved for all the metrics contained in the namespaces. The aggregation options are `avg`, `sum`, `min`, `max`, `total`, `count`.
+
+#### Logs Reference
+
+An example event for `logs` looks as following:
+
+```json
+{
+    "@timestamp": "2024-07-02T06:31:31.446Z",
+    "azure": {
+        "ai_foundry": {
+            "category": "GatewayLogs",
+            "correlation_id": "99789635-18d0-480f-8182-a3a3c477a6a4",
+            "deployment_version": "0.44.18652.0",
+            "duration_ms": 176,
+            "is_request_success": true,
+            "location": "East US",
+            "operation_name": "Microsoft.ApiManagement/GatewayLogs",
+            "properties": {
+                "api_id": "azure-ai-foundry-apim-api",
+                "api_revision": "1",
+                "backend_method": "POST",
+                "backend_protocol": "HTTP/1.1",
+                "backend_request_body": {
+                    "messages": [
+                        {
+                            "content": "Suggest me a book to read this week?",
+                            "role": "user"
+                        }
+                    ],
+                    "model": "gpt-chat-pilot"
+                },
+                "backend_response_body": {
+                    "choices": [
+                        {
+                            "finish_reason": "stop",
+                            "index": 0,
+                            "message": {
+                                "content": "Of course! Here are a few varied suggestions, depending on what you’re in the mood for:\n\n**1. Fiction:**  \n*“The Night Circus”* by Erin Morgenstern – A magical, imaginative, and beautifully written novel with a captivating atmosphere.\n\n**2. Mystery/Thriller:**  \n*“The Thursday Murder Club”* by Richard Osman – A witty and clever mystery set in a quiet English retirement village.\n\n**3. Non-Fiction:**  \n*“Atomic Habits”* by James Clear – A practical and engaging guide to building better habits and making positive changes.\n\n**4. Science Fiction:**  \n*“Project Hail Mary”* by Andy Weir – Fast-paced, humorous, and inventive, from the author of *The Martian*.\n\nIf you tell me a bit about your interests, I can make a more personalized recommendation!",
+                                "role": "assistant"
+                            }
+                        }
+                    ],
+                    "created": 1719901891,
+                    "id": "chatcmpl-9gRL14hGa8nQstOJKvLjh7EyulsnT",
+                    "model": "gpt-35-turbo",
+                    "object": "chat.completion",
+                    "usage": {
+                        "input_tokens": 16,
+                        "output_tokens": 176,
+                        "total_tokens": 192
+                    }
+                },
+                "backend_response_code": 200,
+                "backend_time": 176,
+                "backend_url": "https://obs-aifoundry-test-01.aifoundry.azure.com/aifoundry/deployments/gpt-chat-pilot/chat/completions?api-version=2024-02-15-preview",
+                "cache": "none",
+                "client_protocol": "HTTP/1.1",
+                "client_tls_version": "1.3",
+                "operation_id": "ChatCompletions_Create",
+                "request_length": 536,
+                "response_length": 1604
+            },
+            "sku": "Basic",
+            "truncated": 0
+        },
+        "resource": {
+            "id": "/subscriptions/12345cabcb4-86e8-404f-a3d2-1dc9982f45ca/resourcegroups/obs-aifoundry-apim-test/providers/microsoft.apimanagement/service/azure-aifoundry-apm"
+        }
+    },
+    "cloud": {
+        "provider": "azure"
+    },
+    "event": {
+        "duration": 176000000,
+        "outcome": "success"
+    },
+    "http": {
+        "request": {
+            "method": "POST"
+        },
+        "response": {
+            "status_code": 200
+        }
+    },
+    "log": {
+        "level": "4"
+    },
+    "source": {
+        "as": {
+            "number": 29518,
+            "organization": {
+                "name": "Bredband2 AB"
+            }
+        },
+        "geo": {
+            "city_name": "Linköping",
+            "continent_name": "Europe",
+            "country_iso_code": "SE",
+            "country_name": "Sweden",
+            "location": {
+                "lat": 58.4167,
+                "lon": 15.6167
+            },
+            "region_iso_code": "SE-E",
+            "region_name": "Östergötland County"
+        },
+        "ip": "89.160.20.156"
+    },
+    "url": {
+        "domain": "azure-aifoundry-apm.azure-api.net",
+        "original": "https://azure-aifoundry-apm.azure-api.net/deployments/gpt-chat-pilot/chat/completions?api-version=2024-02-15-preview",
+        "path": "/deployments/gpt-chat-pilot/chat/completions",
+        "query": "api-version=2024-02-15-preview",
+        "scheme": "https"
+    }
+}
+```
+
+**ECS Field Reference**
+
+For more details on ECS fields, check the [ECS Field Reference](https://www.elastic.co/guide/en/ecs/current/ecs-field-reference.html) documentation.
+
+**Exported fields**
+
+| Field | Description | Type |
+|---|---|---|
+| @timestamp | Event timestamp. | date |
+| azure.ai_foundry.asset_identity | The asset identity key. | keyword |
+| azure.ai_foundry.caller_ip_address | The client IP address. (x - last octet masked). | keyword |
+| azure.ai_foundry.category | The log category name. | keyword |
+| azure.ai_foundry.correlation_id | The correlation id as key. | keyword |
+| azure.ai_foundry.deployment_version | The deployment version. | keyword |
+| azure.ai_foundry.duration_ms | Time taken to process the request in milliseconds. | long |
+| azure.ai_foundry.event | The event type of the service request. | keyword |
+| azure.ai_foundry.is_request_success | True if the request is success else return false. | boolean |
+| azure.ai_foundry.location | The location. | keyword |
+| azure.ai_foundry.operation_name | The log action performed. | keyword |
+| azure.ai_foundry.properties.api_id | The request API Id. | keyword |
+| azure.ai_foundry.properties.api_name | The API name of the request. | keyword |
+| azure.ai_foundry.properties.api_revision | The request API revision. | keyword |
+| azure.ai_foundry.properties.backend_id | Backend id. | keyword |
+| azure.ai_foundry.properties.backend_method | The backend request method. | keyword |
+| azure.ai_foundry.properties.backend_protocol | The backend protocol. | keyword |
+| azure.ai_foundry.properties.backend_request_body.messages.content | The prompt input. | keyword |
+| azure.ai_foundry.properties.backend_request_body.messages.role | The API access role. | keyword |
+| azure.ai_foundry.properties.backend_request_body.model | The model name. | keyword |
+| azure.ai_foundry.properties.backend_response_body.choices.content_filter_results.custom_blocklists.filtered | Request filtered by custom blocklist. | boolean |
+| azure.ai_foundry.properties.backend_response_body.choices.content_filter_results.custom_blocklists.id | The custom blocklist id. | keyword |
+| azure.ai_foundry.properties.backend_response_body.choices.content_filter_results.hate.filtered | True if the content filtered based on severity level. | boolean |
+| azure.ai_foundry.properties.backend_response_body.choices.content_filter_results.hate.severity | The severity levels (safe, low, medium, and high) for hate category. | keyword |
+| azure.ai_foundry.properties.backend_response_body.choices.content_filter_results.jailbreak.detected | True if the jailbreak risk detected. | boolean |
+| azure.ai_foundry.properties.backend_response_body.choices.content_filter_results.jailbreak.filtered | True if the content filtered for jailbreak category. | boolean |
+| azure.ai_foundry.properties.backend_response_body.choices.content_filter_results.profanity.detected | The profanity detected. | boolean |
+| azure.ai_foundry.properties.backend_response_body.choices.content_filter_results.profanity.filtered | Filtered by profanity. | boolean |
+| azure.ai_foundry.properties.backend_response_body.choices.content_filter_results.protected_material_code.citation.license | The license of the repository | keyword |
+| azure.ai_foundry.properties.backend_response_body.choices.content_filter_results.protected_material_code.citation.url | Example citation of public GitHub repository where code snippet was found. | keyword |
+| azure.ai_foundry.properties.backend_response_body.choices.content_filter_results.protected_material_code.detected | The protected material code detected. | boolean |
+| azure.ai_foundry.properties.backend_response_body.choices.content_filter_results.protected_material_code.filtered | Filtered by protected material code. | boolean |
+| azure.ai_foundry.properties.backend_response_body.choices.content_filter_results.protected_material_text.detected | The protected material text detected. | boolean |
+| azure.ai_foundry.properties.backend_response_body.choices.content_filter_results.protected_material_text.filtered | Filtered by protected material text. | boolean |
+| azure.ai_foundry.properties.backend_response_body.choices.content_filter_results.self_harm.filtered | True if the content filtered based on severity level. | boolean |
+| azure.ai_foundry.properties.backend_response_body.choices.content_filter_results.self_harm.severity | The severity levels (safe, low, medium, and high) for self-harm category. | keyword |
+| azure.ai_foundry.properties.backend_response_body.choices.content_filter_results.sexual.filtered | True if the content filtered based on severity level. | boolean |
+| azure.ai_foundry.properties.backend_response_body.choices.content_filter_results.sexual.severity | The severity levels (safe, low, medium, and high) for sexual category. | keyword |
+| azure.ai_foundry.properties.backend_response_body.choices.content_filter_results.ungrounded_material.details.completion_end_offset | End offset of the ungrounded completion content. | long |
+| azure.ai_foundry.properties.backend_response_body.choices.content_filter_results.ungrounded_material.details.completion_start_offset | Start offset of the ungrounded completion content. | long |
+| azure.ai_foundry.properties.backend_response_body.choices.content_filter_results.ungrounded_material.detected | Ungrounded completion content was detected. | boolean |
+| azure.ai_foundry.properties.backend_response_body.choices.content_filter_results.ungrounded_material.filtered | Filtered by ungrounded completion content. | boolean |
+| azure.ai_foundry.properties.backend_response_body.choices.content_filter_results.violence.filtered | True if the content filtered based on severity level. | boolean |
+| azure.ai_foundry.properties.backend_response_body.choices.content_filter_results.violence.severity | The severity levels (safe, low, medium, and high) for violence category. | keyword |
+| azure.ai_foundry.properties.backend_response_body.choices.finish_reason | A string indicating the reason why the response was generated (e.g., "max_tokens"). | keyword |
+| azure.ai_foundry.properties.backend_response_body.choices.index | The index of the response in the array. | long |
+| azure.ai_foundry.properties.backend_response_body.choices.logprobs | An object containing information about the probability distribution over possible responses. | flattened |
+| azure.ai_foundry.properties.backend_response_body.choices.message.content | The response text content. | keyword |
+| azure.ai_foundry.properties.backend_response_body.choices.message.role | The API access role. | keyword |
+| azure.ai_foundry.properties.backend_response_body.content_filtered_categories.category_name | The categories (self-harm, hate, sexual, violence). | keyword |
+| azure.ai_foundry.properties.backend_response_body.content_filtered_categories.severity | The severity levels (safe, low, medium, and high). | keyword |
+| azure.ai_foundry.properties.backend_response_body.created | The timestamp when the request was created. | long |
+| azure.ai_foundry.properties.backend_response_body.error.code | The error code. | keyword |
+| azure.ai_foundry.properties.backend_response_body.error.innererror.code | The error code. | keyword |
+| azure.ai_foundry.properties.backend_response_body.error.innererror.content_filter_result.custom_blocklists.filtered | Request filtered by custom blocklist. | boolean |
+| azure.ai_foundry.properties.backend_response_body.error.innererror.content_filter_result.custom_blocklists.id | The custom blocklist id. | keyword |
+| azure.ai_foundry.properties.backend_response_body.error.innererror.content_filter_result.hate.filtered | True if the content filtered based on severity level. | boolean |
+| azure.ai_foundry.properties.backend_response_body.error.innererror.content_filter_result.hate.severity | The severity levels (safe, low, medium, and high) for hate category. | keyword |
+| azure.ai_foundry.properties.backend_response_body.error.innererror.content_filter_result.jailbreak.detected | True if jailbreak risk is detected. | boolean |
+| azure.ai_foundry.properties.backend_response_body.error.innererror.content_filter_result.jailbreak.filtered | True if the content filtered for jailbreak category. | boolean |
+| azure.ai_foundry.properties.backend_response_body.error.innererror.content_filter_result.profanity.detected | The profanity detected. | boolean |
+| azure.ai_foundry.properties.backend_response_body.error.innererror.content_filter_result.profanity.filtered | Filtered by profanity. | boolean |
+| azure.ai_foundry.properties.backend_response_body.error.innererror.content_filter_result.self_harm.filtered | True if the content filtered based on severity level. | boolean |
+| azure.ai_foundry.properties.backend_response_body.error.innererror.content_filter_result.self_harm.severity | The severity levels (safe, low, medium, and high) for self-harm category. | keyword |
+| azure.ai_foundry.properties.backend_response_body.error.innererror.content_filter_result.sexual.filtered | True if the content filtered based on severity level. | boolean |
+| azure.ai_foundry.properties.backend_response_body.error.innererror.content_filter_result.sexual.severity | The severity levels (safe, low, medium, and high) for sexual category. | keyword |
+| azure.ai_foundry.properties.backend_response_body.error.innererror.content_filter_result.violence.filtered | True if the content filtered based on severity level. | boolean |
+| azure.ai_foundry.properties.backend_response_body.error.innererror.content_filter_result.violence.severity | The severity levels (safe, low, medium, and high) for violence category. | keyword |
+| azure.ai_foundry.properties.backend_response_body.error.innererror.content_filtered_categories.category_name | The categories (self-harm, hate, sexual, violence). | keyword |
+| azure.ai_foundry.properties.backend_response_body.error.innererror.content_filtered_categories.severity | The severity levels (safe, low, medium, and high). | keyword |
+| azure.ai_foundry.properties.backend_response_body.error.message | The error message. | text |
+| azure.ai_foundry.properties.backend_response_body.error.param | Parameter passed to the API. | keyword |
+| azure.ai_foundry.properties.backend_response_body.error.status | The response status code. | long |
+| azure.ai_foundry.properties.backend_response_body.id | A unique identifier for the request. | keyword |
+| azure.ai_foundry.properties.backend_response_body.model | The ID of the Azure AI Foundry model used to generate the response. | keyword |
+| azure.ai_foundry.properties.backend_response_body.object | The operation type. | keyword |
+| azure.ai_foundry.properties.backend_response_body.prompt_filter_results.content_filter_results.hate.filtered | True if the content filtered based on severity level. | boolean |
+| azure.ai_foundry.properties.backend_response_body.prompt_filter_results.content_filter_results.hate.severity | The severity levels (safe, low, medium, and high) for hate category. | keyword |
+| azure.ai_foundry.properties.backend_response_body.prompt_filter_results.content_filter_results.jailbreak.detected | True if the jailbreak risk detected. | boolean |
+| azure.ai_foundry.properties.backend_response_body.prompt_filter_results.content_filter_results.jailbreak.filtered | True if the content filtered for jailbreak category. | boolean |
+| azure.ai_foundry.properties.backend_response_body.prompt_filter_results.content_filter_results.profanity.detected | The profanity detected. | boolean |
+| azure.ai_foundry.properties.backend_response_body.prompt_filter_results.content_filter_results.profanity.filtered | Filtered by profanity. | boolean |
+| azure.ai_foundry.properties.backend_response_body.prompt_filter_results.content_filter_results.self_harm.filtered | True if the content filtered based on severity level. | boolean |
+| azure.ai_foundry.properties.backend_response_body.prompt_filter_results.content_filter_results.self_harm.severity | The severity levels (safe, low, medium, and high) for self-harm category. | keyword |
+| azure.ai_foundry.properties.backend_response_body.prompt_filter_results.content_filter_results.sexual.filtered | True if the content filtered based on severity level. | boolean |
+| azure.ai_foundry.properties.backend_response_body.prompt_filter_results.content_filter_results.sexual.severity | The severity levels (safe, low, medium, and high) for sexual category. | keyword |
+| azure.ai_foundry.properties.backend_response_body.prompt_filter_results.content_filter_results.violence.filtered | True if the content filtered based on severity level. | boolean |
+| azure.ai_foundry.properties.backend_response_body.prompt_filter_results.content_filter_results.violence.severity | The severity levels (safe, low, medium, and high) for violence category. | keyword |
+| azure.ai_foundry.properties.backend_response_body.prompt_filter_results.prompt_index | Index of the prompt used to generate response. | long |
+| azure.ai_foundry.properties.backend_response_body.system_fingerprint | The fingerprint is generated by Azure API Management and is used to track the performance and usage of the backend service. | keyword |
+| azure.ai_foundry.properties.backend_response_body.usage.input_tokens | the total input tokens. | long |
+| azure.ai_foundry.properties.backend_response_body.usage.output_tokens | The total output tokens. | long |
+| azure.ai_foundry.properties.backend_response_body.usage.total_tokens | The sum of input and output tokens. | long |
+| azure.ai_foundry.properties.backend_response_code | The backend HTTP response code. | long |
+| azure.ai_foundry.properties.backend_time | The backend response time. | long |
+| azure.ai_foundry.properties.backend_url | The backend URL connects to the Azure AI Foundry model. | keyword |
+| azure.ai_foundry.properties.cache | The request cache. | keyword |
+| azure.ai_foundry.properties.client_protocol | The client HTTP protocol. | keyword |
+| azure.ai_foundry.properties.client_tls_cipher_suite | The client TLS Cipher Suite. | keyword |
+| azure.ai_foundry.properties.client_tls_version | The client TLS version. | keyword |
+| azure.ai_foundry.properties.model_deployment_name | The deployed model name. | keyword |
+| azure.ai_foundry.properties.model_name | The Azure AI Foundry model. | keyword |
+| azure.ai_foundry.properties.model_version | The Azure AI Foundry model version. | keyword |
+| azure.ai_foundry.properties.object_id | The object id of the request. | keyword |
+| azure.ai_foundry.properties.operation_id | The operation performed. | keyword |
+| azure.ai_foundry.properties.request_length | Length of the request. | double |
+| azure.ai_foundry.properties.request_time | Request time taken. | long |
+| azure.ai_foundry.properties.response_length | Length of the response. | double |
+| azure.ai_foundry.properties.response_time | Response time taken. | long |
+| azure.ai_foundry.properties.stream_type | The stream type of the request. | keyword |
+| azure.ai_foundry.result_signature | The response status. | keyword |
+| azure.ai_foundry.service_name | The service name. | keyword |
+| azure.ai_foundry.sku | Stock Keeping Unit that is associated with a particular API Management instance. | keyword |
+| azure.ai_foundry.tenant | The tenant location. | keyword |
+| azure.ai_foundry.truncated | Condition where the response message is too large to fit in a single packet, so it is truncated or cut off. | long |
+| azure.resource.authorization_rule | Authorization rule | keyword |
+| azure.resource.group | The resource group | keyword |
+| azure.resource.id | Resource ID | keyword |
+| azure.resource.name | The name of the resource | keyword |
+| azure.resource.namespace | Resource type/namespace | keyword |
+| azure.resource.provider | The resource group | keyword |
+| azure.resource.type | The type of the resource | keyword |
+| azure.subscription_id | The subscription ID | keyword |
+| data_stream.dataset | Data stream dataset. | constant_keyword |
+| data_stream.namespace | Data stream namespace. | constant_keyword |
+| data_stream.type | Data stream type. | constant_keyword |
+
 
 #### Metrics Reference
 
