@@ -1,7 +1,7 @@
 format_version: 3.0.2
 name: system
 title: System
-version: "2.2.0"
+version: "2.3.2"
 description: Collect system logs and metrics from your servers with Elastic Agent.
 type: integration
 categories:
@@ -40,12 +40,12 @@ policy_templates:
               to find the available keys and to
               [Conditions](https://www.elastic.co/guide/en/fleet/current/dynamic-input-configuration.html#conditions)
               on how to use the available keys in conditions. It defaults to
-              '${host.os_version} != "12 (bookworm)" and (${host.os_platform} != "amzn" or ${host.os_version} != "2023")'
+              '${host.os_version} != "12 (bookworm)" and (${host.os_platform} != "amzn" or ${host.os_version} != "2023") and (${host.os_platform} != "sles" and startsWith(${host.os_version}, "15") == false)'
             type: text
             multi: false
             required: false
             show_user: true
-            default: ${host.os_version} != "12 (bookworm)" and (${host.os_platform} != "amzn" or ${host.os_version} != "2023")
+            default: ${host.os_version} != "12 (bookworm)" and (${host.os_platform} != "amzn" or ${host.os_version} != "2023") and (${host.os_platform} != "sles" and startsWith(${host.os_version}, "15") == false)
       - type: journald
         title: Collect logs from System instances using Journald
         description: Collecting System auth and syslog logs using Journald
@@ -58,12 +58,12 @@ policy_templates:
               to find the available keys and to
               [Conditions](https://www.elastic.co/guide/en/fleet/current/dynamic-input-configuration.html#conditions)
               on how to use the available keys in conditions. It defaults to
-              '${host.os_version} == "12 (bookworm)" or (${host.os_platform} == "amzn" and ${host.os_version} == "2023")'
+              '${host.os_version} == "12 (bookworm)" or (${host.os_platform} == "amzn" and ${host.os_version} == "2023") or (${host.os_platform} == "sles" and startsWith(${host.os_version}, "15") == true)'
             type: text
             multi: false
             required: false
             show_user: true
-            default: ${host.os_version} == "12 (bookworm)" or (${host.os_platform} == "amzn" and ${host.os_version} == "2023")
+            default: ${host.os_version} == "12 (bookworm)" or (${host.os_platform} == "amzn" and ${host.os_version} == "2023") or (${host.os_platform} == "sles" and startsWith(${host.os_version}, "15") == true)
       - type: winlog
         title: "Collect events from the Windows event log"
         description: "Collecting events from Windows event log"

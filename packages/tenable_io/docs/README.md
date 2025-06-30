@@ -26,34 +26,14 @@ This module has been tested against `Tenable Vulnerability Management release` [
 
 ## Requirements
 
-- Elastic Agent must be installed _or_ use [Agentless integration](#agentless-enabled-integration).
-- You can install only one Elastic Agent per host.
-- Elastic Agent is required to stream data through the REST API and ship the data to Elastic, where the events will then be processed via the integration's ingest pipelines.
+Elastic Agent must be installed. For more details, check the Elastic Agent [installation instructions](docs-content://reference/fleet/install-elastic-agents.md).
 
-### Installing and managing an Elastic Agent:
-
-You have a few options for installing and managing an Elastic Agent:
-
-### Install a Fleet-managed Elastic Agent (recommended):
-
-With this approach, you install Elastic Agent and use Fleet in Kibana to define, configure, and manage your agents in a central location. We recommend using Fleet management because it makes the management and upgrade of your agents considerably easier.
-
-### Install Elastic Agent in standalone mode (advanced users):
-
-With this approach, you install Elastic Agent and manually configure the agent locally on the system where it’s installed. You are responsible for managing and upgrading the agents. This approach is reserved for advanced users only.
-
-### Install Elastic Agent in a containerized environment:
-
-You can run Elastic Agent inside a container, either with Fleet Server or standalone. Docker images for all versions of Elastic Agent are available from the Elastic Docker registry, and we provide deployment manifests for running on Kubernetes.
-
-There are some minimum requirements for running Elastic Agent and for more information, refer to the link [here](https://www.elastic.co/guide/en/fleet/current/elastic-agent-installation.html).
-
-**Note:**
+**Notes:**
   - In this integration, export and plugin endpoints of vulnerability management are used to fetch data.
   - The default value is the recommended value for a batch size by Tenable. Using a smaller batch size can improve performance. A very large value might not work as intended depending on the API and instance limitations.
   - If any long-running export jobs are stuck in the "PROCESSING" state and reach the user-provided timeout, the export job will be terminated, allowing for the initiation of a new export job after the specified interval.
 
-## Agentless Enabled Integration
+## Agentless-enabled integration
 
 Agentless integrations allow you to collect data without having to manage Elastic Agent in your cloud. They make manual agent deployment unnecessary, so you can focus on your data instead of the agent that collects it. For more information, refer to [Agentless integrations](https://www.elastic.co/guide/en/serverless/current/security-agentless-integrations.html) and the [Agentless integrations FAQ](https://www.elastic.co/guide/en/serverless/current/agentless-integration-troubleshooting.html).
 
@@ -61,10 +41,10 @@ Agentless deployments are only supported in Elastic Serverless and Elastic Cloud
 
 ## Setup
 
-### To collect data from the Tenable Vulnerability Management REST APIs, follow the below steps:
+### Collect data from the Tenable Vulnerability Management REST APIs
 
-  1. Create a valid user account with appropriate permissions on Tenable Vulnerability Management.
-  2. Generate the API keys for the account to access all Tenable Vulnerability Management APIs.
+1. Create a valid user account with appropriate permissions on Tenable Vulnerability Management.
+2. Generate the API keys for the account to access all Tenable Vulnerability Management APIs.
 
 **Note:**
   - For the Tenable Vulnerability Management asset and vulnerability API, **ADMINISTRATOR [64]** and **Can View** access control is required in  created user's access key and secret key.
@@ -72,14 +52,13 @@ Agentless deployments are only supported in Elastic Serverless and Elastic Cloud
   - For the Tenable Vulnerability Management audit, **ADMINISTRATOR [64]** user permissions are required in created user's access key and secret key.
   - For more details related to permissions, refer to the link [here](https://developer.tenable.com/docs/permissions).
 
-### Enabling the integration in Elastic:
+### Enable the integration in Elastic
 
-1. In Kibana go to Management > Integrations
-2. In "Search for integrations" search bar, type Tenable Vulnerability Management.
-3. Click on the "Tenable Vulnerability Management" integration from the search results.
-4. Click on the "Add Tenable Vulnerability Management" button to add the integration.
-5. Add all the required integration configuration parameters according to the enabled input type.
-6. Click on "Save and Continue" to save the integration.
+1. In Kibana navigate to **Management** > **Integrations**.
+2. In the search top bar, type **Tenable Vulnerability Management**.
+3. Select the **Tenable Vulnerability Management** integration and add it.
+4. Add all the required integration configuration parameters according to the enabled input type.
+5. Save the integration.
 
 ## Troubleshooting
 
@@ -385,24 +364,24 @@ An example event for `audit` looks as following:
 {
     "@timestamp": "2018-12-31T01:40:07.000Z",
     "agent": {
-        "ephemeral_id": "38f06019-8401-4ccf-b22e-a32a3c92782a",
-        "id": "50882574-d579-4b3a-a674-50631e963312",
-        "name": "elastic-agent-35966",
+        "ephemeral_id": "2b353f6e-e21d-4e61-a426-9b582471c1fa",
+        "id": "1a70a431-df2f-4f16-9352-a30f75fb1df2",
+        "name": "elastic-agent-83695",
         "type": "filebeat",
-        "version": "8.18.0"
+        "version": "8.18.1"
     },
     "data_stream": {
         "dataset": "tenable_io.audit",
-        "namespace": "73246",
+        "namespace": "31446",
         "type": "logs"
     },
     "ecs": {
         "version": "8.11.0"
     },
     "elastic_agent": {
-        "id": "50882574-d579-4b3a-a674-50631e963312",
-        "snapshot": true,
-        "version": "8.18.0"
+        "id": "1a70a431-df2f-4f16-9352-a30f75fb1df2",
+        "snapshot": false,
+        "version": "8.18.1"
     },
     "event": {
         "action": "session-delete",
@@ -412,7 +391,7 @@ An example event for `audit` looks as following:
         ],
         "dataset": "tenable_io.audit",
         "id": "eaac53481de04f67bc7eeea07d2fb0f5",
-        "ingested": "2025-04-01T11:02:14Z",
+        "ingested": "2025-06-03T16:34:47Z",
         "kind": "event",
         "original": "{\"action\":\"session.delete\",\"actor\":{\"id\":\"d2667922-5a27-4c4a-9207-f591fbdc9d23\",\"name\":\"user2@example.com\"},\"crud\":\"d\",\"description\":null,\"fields\":[{\"key\":\"message\",\"value\":\"session timeout\"}],\"id\":\"eaac53481de04f67bc7eeea07d2fb0f5\",\"is_anonymous\":null,\"is_failure\":false,\"received\":\"2018-12-31T01:40:07Z\",\"target\":{\"id\":\"12d024e\",\"name\":null,\"type\":\"Session\"}}",
         "outcome": "success",
@@ -426,6 +405,7 @@ An example event for `audit` looks as following:
     "related": {
         "user": [
             "d2667922-5a27-4c4a-9207-f591fbdc9d23",
+            "user2",
             "user2@example.com"
         ]
     },
@@ -456,8 +436,10 @@ An example event for `audit` looks as following:
         }
     },
     "user": {
+        "domain": "example.com",
+        "email": "user2@example.com",
         "id": "d2667922-5a27-4c4a-9207-f591fbdc9d23",
-        "name": "user2@example.com"
+        "name": "user2"
     }
 }
 ```
