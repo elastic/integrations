@@ -1,0 +1,335 @@
+- name: rapid7_insightvm
+  type: group
+  fields:
+    - name: asset_vulnerability
+      type: group
+      fields:
+        - name: assessed_for_policies
+          type: boolean
+          description: Whether an asset was assessed for policies.
+        - name: assessed_for_vulnerabilities
+          type: boolean
+          description: Whether an asset was assessed for vulnerabilities.
+        - name: credential_assessments
+          type: group
+          fields:
+            - name: port
+              type: long
+              description: The port the authentication was used on.
+            - name: protocol
+              type: keyword
+              description: The protocol the authentication was used on.
+            - name: status
+              type: keyword
+              description: The authentication of the last scan performed.
+        - name: critical_vulnerabilities
+          type: long
+          description: The count of critical vulnerability findings.
+        - name: exploits
+          type: long
+          description: The count of known unique exploits that can be used to exploit vulnerabilities on the asset.
+        - name: host_name
+          type: keyword
+          description: The host name (local or FQDN).
+        - name: id
+          type: keyword
+          description: The identifier of the asset.
+        - name: ip
+          type: ip
+          description: The IPv4 or IPv6 address.
+        - name: last_assessed_for_vulnerabilities
+          type: date
+          description: The time at which an asset was assessed for vulnerabilities.
+        - name: last_scan_end
+          type: date
+          description: The time at which the last scan of the asset ended.
+        - name: last_scan_start
+          type: date
+          description: The time at which the last scan of the asset started.
+        - name: mac
+          type: keyword
+          description: The Media Access Control (MAC) address. The format is six groups of two hexadecimal digits separated by colons.
+        - name: malware_kits
+          type: long
+          description: The count of known unique malware kits that can be used to attack vulnerabilities on the asset.
+        - name: moderate_vulnerabilities
+          type: long
+          description: The count of moderate vulnerability findings.
+        - name: os
+          type: group
+          fields:
+            - name: architecture
+              type: keyword
+              description: The architecture of the operating system.
+            - name: description
+              type: keyword
+              description: The description of the operating system (containing vendor, family, product, version and architecture in a single string).
+            - name: family
+              type: keyword
+              description: The family of the operating system.
+            - name: name
+              type: keyword
+              description: The name of the operating system.
+            - name: system_name
+              type: keyword
+              description: A combination of vendor and family (with redundancies removed), suitable for grouping.
+            - name: type
+              type: keyword
+              description: The type of operating system.
+            - name: vendor
+              type: keyword
+              description: The vendor of the operating system.
+            - name: version
+              type: keyword
+              description: The version of the operating system.
+        - name: risk_score
+          type: double
+          description: The risk score (with criticality adjustments) of the asset.
+        - name: severe_vulnerabilities
+          type: long
+          description: The count of severe vulnerability findings.
+        - name: tags
+          type: group
+          fields:
+            - name: name
+              type: keyword
+              description: The stored value.
+            - name: type
+              type: keyword
+              description: The type of information stored and displayed. For sites, the value is "SITE".
+        - name: total_vulnerabilities
+          type: long
+          description: The total count of vulnerability findings.
+        - name: type
+          type: keyword
+          description: The type of asset.
+        - name: unique_identifiers
+          type: group
+          fields:
+            - name: id
+              type: keyword
+              description: The unique identifier.
+            - name: source
+              type: keyword
+              description: The source of the unique identifier.
+        - name: vulnerability
+          type: group
+          fields:
+            - name: added
+              type: date
+              description: The date the vulnerability coverage was added. The format is an ISO 8601 date, YYYY-MM-DD.
+            - name: categories
+              type: keyword
+              description: Comma-separated list of categories the vulnerability is classified under.
+            - name: check_id
+              type: keyword
+              description: The identifier of the vulnerability check.
+            - name: cves
+              type: keyword
+              description: All CVEs assigned to this vulnerability.
+            - name: cvss_v2
+              type: group
+              fields:
+                - name: access_complexity
+                  type: keyword
+                  description: Access Complexity (AC) component which measures the complexity of the attack required to exploit the vulnerability once an attacker has gained access to the target system.
+                - name: access_vector
+                  type: keyword
+                  description: Access Vector (Av) component which reflects how the vulnerability is exploited.
+                - name: authentication
+                  type: keyword
+                  description: Authentication (Au) component which measures the number of times an attacker must authenticate to a target in order to exploit a vulnerability.
+                - name: availability_impact
+                  type: keyword
+                  description: Availability Impact (A) component which measures the impact to availability of a successfully exploited vulnerability.
+                - name: confidentiality_impact
+                  type: keyword
+                  description: Confidentiality Impact (C) component which measures the impact on confidentiality of a successfully exploited vulnerability.
+                - name: exploit_score
+                  type: double
+                  description: The CVSS exploit score.
+                - name: impact_score
+                  type: double
+                  description: The CVSS impact score.
+                - name: integrity_impact
+                  type: keyword
+                  description: Integrity Impact (I) component measures the impact to integrity of a successfully exploited vulnerability.
+                - name: score
+                  type: double
+                  description: The CVSS score, which ranges from 0-10.
+                - name: vector
+                  type: keyword
+                  description: The CVSS v2 vector.
+            - name: cvss_v3
+              type: group
+              fields:
+                - name: attack_complexity
+                  type: keyword
+                  description: Attack Complexity (AC) component with measures the conditions beyond the attacker's control that must exist in order to exploit the vulnerability.
+                - name: attack_vector
+                  type: keyword
+                  description: Attack Vector (AV) component which measures context by which vulnerability exploitation is possible.
+                - name: availability_impact
+                  type: keyword
+                  description: Availability Impact (A) measures the impact to the availability of the impacted component resulting from a successfully exploited vulnerability.
+                - name: confidentiality_impact
+                  type: keyword
+                  description: Confidentiality Impact (C) component which measures the impact on confidentiality of a successfully exploited vulnerability.
+                - name: exploit_score
+                  type: double
+                  description: The CVSS exploit score.
+                - name: impact_score
+                  type: double
+                  description: The CVSS impact score.
+                - name: integrity_impact
+                  type: keyword
+                  description: Integrity Impact (I) measures the impact to integrity of a successfully exploited vulnerability. Integrity refers to the trustworthiness and veracity of information.
+                - name: privileges_required
+                  type: keyword
+                  description: Privileges Required (PR) measures the level of privileges an attacker must possess before successfully exploiting the vulnerability.
+                - name: scope
+                  type: keyword
+                  description: Scope (S) measures the collection of privileges defined by a computing authority (e.g. an application, an operating system, or a sandbox environment) when granting access to computing resources (e.g. files, CPU, memory, etc). These privileges are assigned based on some method of identification and authorization.
+                - name: score
+                  type: double
+                  description: The CVSS score, which ranges from 0-10.
+                - name: user_interaction
+                  type: keyword
+                  description: User Interaction (UI) measures the requirement for a user, other than the attacker, to participate in the successful compromise of the vulnerable component.
+                - name: vector
+                  type: keyword
+                  description: The CVSS v3 vector.
+            - name: denial_of_service
+              type: boolean
+              description: Whether the vulnerability can lead to Denial of Service (DoS).
+            - name: description
+              type: keyword
+              description: A verbose description of the vulnerability.
+            - name: exploits
+              type: group
+              fields:
+                - name: description
+                  type: keyword
+                  description: A verbose description of the exploit.
+                - name: id
+                  type: keyword
+                  description: The identifier of the exploit.
+                - name: name
+                  type: keyword
+                  description: The name of the exploit.
+                - name: rank
+                  type: keyword
+                  description: How common the exploit is used.
+                - name: skill_level
+                  type: keyword
+                  description: The level of skill required to use the exploit.
+                - name: source
+                  type: keyword
+                  description: Details about where the exploit is defined.
+            - name: first_found
+              type: date
+              description: The first time the vulnerability was discovered.
+            - name: id
+              type: keyword
+              description: The identifier of the vulnerability.
+            - name: is_enriched
+              type: boolean
+              description: Whether the enriched vulnerability information is available.
+            - name: is_remediated
+              type: boolean
+              description: Whether the vulnerability has been remediated.
+            - name: key
+              type: keyword
+              description: The identifier of the assessment key.
+            - name: last_found
+              type: date
+              description: The most recent time the vulnerability was discovered.
+            - name: links
+              type: group
+              fields:
+                - name: href
+                  type: keyword
+                - name: id
+                  type: keyword
+                - name: rel
+                  type: keyword
+                - name: source
+                  type: keyword
+            - name: malware_kits
+              type: group
+              fields:
+                - name: description
+                  type: keyword
+                  description: A known Malware Kit that can be used to compromise a vulnerability.
+                - name: name
+                  type: keyword
+                  description: The name of the malware kit.
+                - name: popularity
+                  type: keyword
+                  description: The popularity of the malware kit.
+            - name: modified
+              type: date
+              description: The last date the vulnerability was modified. The format is an ISO 8601 date, YYYY-MM-DD.
+            - name: pci
+              type: group
+              fields:
+                - name: cvss_score
+                  type: double
+                  description: The CVSS score of the vulnerability, adjusted for PCI rules and exceptions, on a scale of 0-10.
+                - name: fail
+                  type: boolean
+                  description: Whether if present on a host this vulnerability would cause a PCI failure. true if compliance status is "fail", false otherwise.
+                - name: severity_score
+                  type: long
+                  description: The severity score of the vulnerability, adjusted for PCI rules and exceptions, on a scale of 0-10.
+                - name: special_notes
+                  type: keyword
+                  description: Any special notes or remarks about the vulnerability that pertain to PCI compliance.
+                - name: status
+                  type: keyword
+                  description: The PCI compliance status.
+            - name: port
+              type: long
+              description: For services vulnerabilities, the port that is vulnerable.
+            - name: proof
+              type: keyword
+              description: The identifier of the vulnerability proof.
+            - name: protocol
+              type: keyword
+              description: For services vulnerabilities, the protocol that is vulnerable.
+            - name: published
+              type: date
+              description: The date the vulnerability was first published or announced. The format is an ISO 8601 date, YYYY-MM-DD.
+            - name: references
+              type: keyword
+              description: References to security standards this vulnerability is a part of, in condensed format (comma-separated).
+            - name: risk_score
+              type: double
+              description: The risk score of the vulnerability. If using the default Rapid7 Real Risk™ model, this value ranges from 0-1000.
+            - name: severity
+              type: keyword
+              description: The severity of the vulnerability.
+            - name: severity_score
+              type: long
+              description: The severity score of the vulnerability, on a scale of 0-10.
+            - name: solution
+              type: group
+              fields:
+                - name: fix
+                  type: keyword
+                  description: The solution fix for the vulnerability.
+                - name: id
+                  type: keyword
+                  description: The identifier of the solution for the vulnerability.
+                - name: summary
+                  type: keyword
+                  description: The summary for the solution for the vulnerability.
+                - name: type
+                  type: keyword
+                  description: The solution type for the vulnerability.
+            - name: status
+              type: keyword
+              description: The status of the vulnerability finding.
+            - name: title
+              type: keyword
+              description: The title (summary) of the vulnerability.
