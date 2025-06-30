@@ -39,7 +39,7 @@ dest:
 frequency: 60m
 sync:
   time:
-    field: event.ingested
+    field: "@timestamp"
     delay: 1h
 pivot:
   group_by:
@@ -50,9 +50,6 @@ pivot:
     cluster_name:
       terms:
         field: elasticsearch.cluster.name
-    # datastream:
-    #   terms:
-    #     field: elasticsearch.index.datastream
     datastream:
       terms:
         script:
@@ -72,45 +69,6 @@ pivot:
               return matcher.group(1);
             }
             return 'unknown';
-    # datastream_alt:
-    #   terms:
-    #     script:
-    #       lang: painless
-    #       source: >
-    #         if (doc.containsKey('elasticsearch.index.datastream') && !doc['elasticsearch.index.datastream'].empty) {
-    #           return doc['elasticsearch.index.datastream'].value;
-    #         }
-
-    #         def name = doc.containsKey('elasticsearch.index.name') && !doc['elasticsearch.index.name'].empty
-    #           ? doc['elasticsearch.index.name'].value
-    #           : null;
-    #         if (name == null) return 'unknown';
-
-    #         if (name.startsWith('.ds-.')) {
-    #           name = '.' + name.substring(5); 
-    #         } else {
-    #           for (prefix in ['partial-', 'restored-', 'shrink-']) {
-    #             if (name.startsWith(prefix)) {
-    #               name = name.substring(prefix.length());
-    #               break;
-    #             }
-    #           }
-    #         }
-
-    #         int idx = name.indexOf("-20");
-    #         if (idx > 0) {
-    #           name = name.substring(0, idx);
-    #         } else {
-    #           int dash = name.lastIndexOf('-');
-    #           if (dash > 0) {
-    #             def maybeSuffix = name.substring(dash + 1);
-    #             if (maybeSuffix.length() <= 6 && maybeSuffix.chars().allMatch(c -> Character.isDigit((char)c))) {
-    #               name = name.substring(0, dash);
-    #             }
-    #           }
-    #         }
-
-    #         return name;
   aggregations:
     datastream_sum_indexing_time:
       sum:
