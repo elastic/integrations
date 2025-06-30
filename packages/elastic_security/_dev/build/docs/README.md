@@ -2,13 +2,14 @@
 
 ## Overview
 
-Elastic Security Alerts are triggered when detection rules identify suspicious or malicious activity. They provide detailed context like rule name, impacted entities, timestamps, and other necessary details. Alerts can be investigated in Kibana using tools like Timeline. They support custom actions such as notifications or automated responses. These alerts help prioritize and manage security threats efficiently.
+Elastic Security is a free and open solution that helps detect, investigate, and respond to threats using data from endpoints, cloud, and network sources. It offers SIEM and endpoint protection with powerful search, correlation, and visualization features in Kibana.
+It enables security teams to streamline investigations and strengthen their overall security posture.
 
 ## Data streams
 
-This integration collects the following logs:
+The Elastic Security integration collects the following events:
 
-`alert`: - Retrieve alerts from Elastic Instance.
+`alert`: - Retrieve alerts from Elasticsearch Instance using Elasticsearch [_search](https://www.elastic.co/docs/api/doc/elasticsearch/group/endpoint-search) API.
 
 ## Requirements
 
@@ -26,17 +27,21 @@ Elastic Agent must be installed. For more details, check the Elastic Agent [inst
 
 ### To collect data from the Elastic API:
 
-To collect data from the Elastic API, you will need the following information:
+You will need the following information:
 
 1. The URL for the Elasticsearch instance.
-2. Authentication credentials such as username, password, API key, or bearer token depend on the selected authentication type.
+2. Authentication credentials such as username, password, API key, or bearer token depending on the selected authentication type.
+
+Note:
+1. Users must have read index privileges on the `.alerts-security.alerts*` indices to access and query security alerts.
+2. To learn how to create authentication credentials and use the appropriate authentication type, refer to the Elasticsearch Authentication [Documentation](https://www.elastic.co/docs/api/doc/elasticsearch/authentication).
 
 ### Enable the integration in Elastic
 
 1. In Kibana navigate to **Management** > **Integrations**.
 2. In the search top bar, type **Elastic Security**.
 3. Select the **Elastic Security** integration and add it.
-4. Add all the required integration configuration parameters such as username, password, API key, or bearer token depend on the selected authentication type to enable data collection.
+4. Add all the required integration configuration parameters such as username, password, API key, or bearer token depending on the selected authentication type to enable data collection.
 5. Select "Save and continue" to save the integration.
 
 ## Logs reference

@@ -20,7 +20,7 @@ state:
   user: {{username}}
   password: {{password}}
   bearer_token: {{bearer_token}}
-  index: .internal.alerts-security.alerts*
+  index: .alerts-security.alerts*
   batch_size: {{batch_size}}
   initial_interval: {{initial_interval}}
 redact:
@@ -38,8 +38,17 @@ program: |
         state.url.trim_right("/") + "/" + state.index + "/_search?" + {
           "sort": ["@timestamp:asc"],
           "size": [string(state.batch_size)],
-          "q": ["@timestamp:{" + state.start_time + " TO now}"],
-        }.format_query()
+        }.format_query(),
+        {
+          "query": {
+            "range": {
+              "@timestamp": {
+                "gt": state.start_time,
+                "lte": "now"
+              }
+            }
+          }
+        }.encode_json()
       ).with({
         "Header":{
           "Content-Type": ["application/json"],
