@@ -64,11 +64,11 @@ To configure log file monitoring, follow the steps described in the [Configure L
 4. If needed, install Elastic Agent on the systems which receive syslog messages or log files.
 5. Enable and configure only the collection methods which you will use.
 
-    * **To collect logs via syslog over TCP**, enter the syslog server host and port details.
+    * **To collect logs via syslog over TCP**, you'll need to configure the syslog server host and port details.
 
-    * **To collect logs via syslog over UDP**, enter the syslog server host and port details.
+    * **To collect logs via syslog over UDP**, you'll need to configure the syslog server host and port details.
 
-    * **To collect logs via log file**, set the file path patterns which will be monitored, in the Paths field.
+    * **To collect logs via log file**, configure the file path patterns which will be monitored, in the Paths field.
 
 6. Press **Save Integration** to begin collecting logs.
 
