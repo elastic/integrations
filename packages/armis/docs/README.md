@@ -22,7 +22,7 @@ The Armis integration collects three types of logs.
 
 ## Requirements
 
-### Agentless enabled integration
+### Agentless-enabled integration
 
 Agentless integrations allow you to collect data without having to manage Elastic Agent in your cloud. They make manual agent deployment unnecessary, so you can focus on your data instead of the agent that collects it. For more information, refer to [Agentless integrations](https://www.elastic.co/guide/en/serverless/current/security-agentless-integrations.html) and the [Agentless integrations FAQ](https://www.elastic.co/guide/en/serverless/current/agentless-integration-troubleshooting.html).
 
@@ -46,7 +46,7 @@ Elastic Agent must be installed. For more details, check the Elastic Agent [inst
 1. In Kibana navigate to **Management** > **Integrations**.
 2. In the search bar, type **Armis**.
 3. Select the **Armis** integration and add it.
-4. Add all the required integration configuration parameters, including the Client ID, Client Secret, Tenant ID to enable data collection.
+4. Add all the required integration configuration parameters, including the URL, Secret Key to enable data collection.
 5. Save the integration.
 
 ## Limitations

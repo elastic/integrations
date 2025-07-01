@@ -46,7 +46,7 @@ Elastic Agent must be installed. For more details, check the Elastic Agent [inst
 1. In Kibana navigate to **Management** > **Integrations**.
 2. In the search bar, type **Armis**.
 3. Select the **Armis** integration and add it.
-4. Add all the required integration configuration parameters, including the Client ID, Client Secret, Tenant ID to enable data collection.
+4. Add all the required integration configuration parameters, including the URL, Secret Key to enable data collection.
 5. Save the integration.
 
 ## Limitations
