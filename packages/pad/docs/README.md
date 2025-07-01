@@ -1,7 +1,7 @@
 # Privileged Access Detection
 The Privileged Access Detection package contains assets to detect anomalous privilege access activity in the Windows, Linux and Okta system logs. This package requires a Platinum subscription. Please ensure that you have a Trial, Platinum, or Enterprise subscription before proceeding. This package is licensed under [Elastic License 2.0](https://www.elastic.co/licensing/elastic-license).
 
-The package transform supports data from Elastic Endpoint via Elastic Defend and the Okta integration. Prior to using this integration, either the Okta integration should be installed and configured, and/or Elastic Defend should be installed through Elastic Agent and collecting data from hosts. See [Configure endpoint protection with Elastic Defend](https://www.elastic.co/docs/solutions/security/configure-elastic-defend) and [Okta Integration](https://www.elastic.co/docs/reference/integrations/okta) for more information. The **Transform** and **Anomaly Detection Jobs** sections have detailed platform support.
+The package transform supports data from Elastic Endpoint via Elastic Defend and the Okta integration. Prior to using this integration, either the Okta integration should be installed and configured, and/or Elastic Defend should be installed through Elastic Agent and collecting data from hosts, or have equivalent tools/endpoints set up. See [Configure endpoint protection with Elastic Defend](https://www.elastic.co/docs/solutions/security/configure-elastic-defend) and [Okta Integration](https://www.elastic.co/docs/reference/integrations/okta) for more information. The **Transform** and **Anomaly Detection Jobs** sections have detailed platform support.
 
 ## Installation
 
