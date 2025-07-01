@@ -30,9 +30,18 @@ Elastic Agent must be installed. For more details, check the Elastic Agent [inst
 2. In the search top bar, type **Azure Network Watcher VNet**.
 3. Select the **Azure Network Watcher VNet** integration and add it.
 5. To collect logs via Azure Blob Storage, select **Collect VNet logs via Azure Blob Storage** and configure the following parameters:
-   - account name
-   - containers
-   - service account key/service account uri
+   For OAuth2 (Microsoft Entra ID RBAC):
+   - Toggle on **Collect logs using OAuth2 authentication**
+   - Account Name
+   - Client ID
+   - Client Secret
+   - Tenant ID
+   - Container Details.
+
+   For Service Account Credentials:
+   - Service Account Key or the URI
+   - Account Name
+   - Container Details
 6. Save the integration.
 
 ## Limitations

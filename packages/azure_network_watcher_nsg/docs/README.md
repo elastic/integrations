@@ -31,9 +31,18 @@ Elastic Agent must be installed. For more details, check the Elastic Agent [inst
 3. Select the "Azure Network Watcher NSG" integration from the search results.
 4. Select "Add Azure Network Watcher NSG" to add the integration.
 5. While adding the integration, to collect logs via Azure Blob Storage, keep **Collect NSG logs via Azure Blob Storage** toggle on and then configure following parameters:
-   - account name
-   - containers
-   - service account key/service account uri
+   For OAuth2 (Microsoft Entra ID RBAC):
+   - Toggle on **Collect logs using OAuth2 authentication**
+   - Account Name
+   - Client ID
+   - Client Secret
+   - Tenant ID
+   - Container Details.
+
+   For Service Account Credentials:
+   - Service Account Key or the URI
+   - Account Name
+   - Container Details
 6. Save the integration.
 
 ## Logs Reference
