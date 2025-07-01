@@ -50,7 +50,7 @@ The minimum **kibana.version** required is **8.10.1**.
 - Create system events policy.
 - Assign a followed action to a system event policy.
 
-For more information on working with action sets and followed actions, check the Imperva [documentation]( https://docs.imperva.com/bundle/v15.0-waf-management-server-manager-user-guide/page/Working_with_Action_Sets_and_Followed_Actions.htm).
+For more information on working with action sets and followed actions, check the Imperva [documentation](https://docs.imperva.com/bundle/v15.0-waf-management-server-manager-user-guide/page/Working_with_Action_Sets_and_Followed_Actions.htm).
 
 ### Enable the integration in Elastic
 
