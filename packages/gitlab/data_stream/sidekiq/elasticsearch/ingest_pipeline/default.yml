@@ -124,6 +124,11 @@ processors:
   - rename: 
       field: gitlab.sidekiq.duration
       target_field: event.duration
+  - script:
+      tag: convert_duration_to_nanoseconds
+      if: ctx.event?.duration instanceof double
+      source: |-
+        ctx.event.duration = (long) (ctx.event.duration*1e9)
   - date:
       field: gitlab.sidekiq.completed_at
       formats:
