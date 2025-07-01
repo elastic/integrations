@@ -2,13 +2,13 @@
 This integration allows for the shipping of [Sysdig](https://sysdig.com/) logs to Elastic for security, observability and organizational awareness. Logs can then be analyzed by using either the dashboard included with the integration or via the creation of custom dashboards within Kibana.
 
 ## Data Streams
-The Sysdig integration collects three type of logs:
+The Sysdig integration collects three types of logs:
 
 **Alerts** The Alerts data stream collected by the Sysdig integration is comprised of Sysdig Alerts. See more details about Sysdig Alerts in [Sysdig's Alerts Documentation](https://docs.sysdig.com/en/docs/sysdig-monitor/alerts/). A complete list of potential fields used by this integration can be found in the [Logs reference](#logs-reference)
 
 **Event** The event data stream collected through the Sysdig integration consists of Sysdig Security Events. See more details about Security Events in [Sysdig's Events Feed Documentation](https://docs.sysdig.com/en/docs/sysdig-secure/threats/activity/events-feed/).
 
-**Vulnerability** The vulnerability data stream collected through the Sysdig integration consists of Sysdig Vulnerability. See more details about Vulnerability in [Sysdig's Vulnerability Documentation](https://docs.sysdig.com/en/sysdig-secure/vulnerability-management/).
+**Vulnerability** The vulnerability data stream collected through the Sysdig integration consists of Sysdig vulnerability scan results. See more details about vulnerabilities in [Sysdig's Vulnerability Management documentation](https://docs.sysdig.com/en/sysdig-secure/vulnerability-management/).
 
 ## Requirements
 
@@ -755,11 +755,11 @@ An example event for `vulnerability` looks as following:
 {
     "@timestamp": "2025-04-12T06:00:56.541Z",
     "agent": {
-        "ephemeral_id": "ac90e653-c914-4305-82b2-08ea0f00b566",
-        "id": "e8ce191c-10c3-48e1-a7fc-855e6c2d0972",
-        "name": "elastic-agent-98243",
+        "ephemeral_id": "0a02d87a-4628-43a8-9b24-6ccd4ce4b2d5",
+        "id": "293a79aa-47e9-44f8-a266-435dd0f5f4a8",
+        "name": "elastic-agent-26028",
         "type": "filebeat",
-        "version": "8.14.1"
+        "version": "8.15.0"
     },
     "container": {
         "image": {
@@ -772,16 +772,16 @@ An example event for `vulnerability` looks as following:
     },
     "data_stream": {
         "dataset": "sysdig.vulnerability",
-        "namespace": "38208",
+        "namespace": "66490",
         "type": "logs"
     },
     "ecs": {
-        "version": "8.11.0"
+        "version": "8.17.0"
     },
     "elastic_agent": {
-        "id": "e8ce191c-10c3-48e1-a7fc-855e6c2d0972",
+        "id": "293a79aa-47e9-44f8-a266-435dd0f5f4a8",
         "snapshot": false,
-        "version": "8.14.1"
+        "version": "8.15.0"
     },
     "event": {
         "agent_id_status": "verified",
@@ -790,7 +790,7 @@ An example event for `vulnerability` looks as following:
         ],
         "created": "2025-04-12T06:00:56.541Z",
         "dataset": "sysdig.vulnerability",
-        "ingested": "2025-05-23T12:56:36Z",
+        "ingested": "2025-07-01T08:51:19Z",
         "kind": "event",
         "original": "{\"assetType\":\"containerImage\",\"createdAt\":\"2025-04-12T06:00:56Z\",\"imageId\":\"sha256:678546cdd20cd5baaea6f534dbb7482fc9f2f8d24c1f3c53c0e747b699b849da\",\"metadata\":{\"architecture\":\"arm64\",\"baseOs\":\"debian 12.9\",\"createdAt\":\"2025-02-05T21:27:16Z\",\"digest\":\"sha256:02571cc661a41d4f341ca335fe6a0471c4be4ca177c0dbe5e8bb350f7c42118b\",\"imageId\":\"sha256:678546cdd20cd5baaea6f534dbb7482fc9f2f8d24c1f3c53c0e747b699b849da\",\"labels\":{\"maintainer\":\"NGINX Docker Maintainers \\u003cdocker-maint@nginx.com\\u003e\"},\"os\":\"linux\",\"pullString\":\"docker.cloudsmith.io/secure/sysdig/new_nginx:v1\",\"size\":201371136},\"producer\":{\"producedAt\":\"2025-04-12T06:00:56.541163Z\"},\"pullString\":\"docker.cloudsmith.io/secure/sysdig/new_nginx:v1\",\"resultId\":\"18357cce62f36e3c914a3708a1224483\",\"stage\":\"registry\",\"vendor\":\"dockerv2\",\"vulnTotalBySeverity\":{\"critical\":9,\"high\":18,\"low\":7,\"medium\":35,\"negligible\":86}}",
         "type": [
@@ -800,8 +800,9 @@ An example event for `vulnerability` looks as following:
     "host": {
         "architecture": "arm64",
         "os": {
+            "family": "debian",
             "full": "debian 12.9",
-            "platform": "debian",
+            "name": "linux",
             "type": "linux",
             "version": "12.9"
         }
@@ -817,20 +818,17 @@ An example event for `vulnerability` looks as following:
         "hash": [
             "02571cc661a41d4f341ca335fe6a0471c4be4ca177c0dbe5e8bb350f7c42118b",
             "678546cdd20cd5baaea6f534dbb7482fc9f2f8d24c1f3c53c0e747b699b849da"
-        ],
-        "user": [
-            "NGINX Docker Maintainers <docker-maint@nginx.com>"
         ]
     },
     "sysdig": {
         "vulnerability": {
             "asset_type": "containerImage",
             "created_at": "2025-04-12T06:00:56.000Z",
+            "image_id": "sha256:678546cdd20cd5baaea6f534dbb7482fc9f2f8d24c1f3c53c0e747b699b849da",
             "image_id_algorithm": "sha256",
             "image_id_hash": "678546cdd20cd5baaea6f534dbb7482fc9f2f8d24c1f3c53c0e747b699b849da",
             "metadata": {
                 "created_at": "2025-02-05T21:27:16.000Z",
-                "digest": "sha256:02571cc661a41d4f341ca335fe6a0471c4be4ca177c0dbe5e8bb350f7c42118b",
                 "image_id": "sha256:678546cdd20cd5baaea6f534dbb7482fc9f2f8d24c1f3c53c0e747b699b849da",
                 "labels": {
                     "maintainer": "NGINX Docker Maintainers <docker-maint@nginx.com>"
@@ -840,6 +838,7 @@ An example event for `vulnerability` looks as following:
             },
             "pull_string": "docker.cloudsmith.io/secure/sysdig/new_nginx:v1",
             "stage": "registry",
+            "vendor": "dockerv2",
             "vuln_total_by_severity": {
                 "critical": 9,
                 "high": 18,
@@ -859,9 +858,6 @@ An example event for `vulnerability` looks as following:
         "name": "NGINX Docker Maintainers"
     },
     "vulnerability": {
-        "classification": "CVSS",
-        "enumeration": "CVE",
-        "reference": "https://www.cve.org/CVERecord?id=",
         "report_id": "18357cce62f36e3c914a3708a1224483",
         "scanner": {
             "vendor": "Sysdig Secure"
@@ -882,10 +878,12 @@ An example event for `vulnerability` looks as following:
 | event.module | Event module. | constant_keyword |
 | input.type | Type of Filebeat input. | keyword |
 | log.offset | Log offset. | long |
-| resource.id |  | keyword |
-| resource.name |  | keyword |
+| package.fixed_version | In which version of the package the vulnerability was fixed. | keyword |
+| resource.id | The ID of the vulnerable resource. | keyword |
+| resource.name | The name of the vulnerable resource. | keyword |
 | sysdig.vulnerability.asset_type | scan result asset type. | keyword |
 | sysdig.vulnerability.created_at | datetime of creation. | date |
+| sysdig.vulnerability.image_id | Identifier of the image. | keyword |
 | sysdig.vulnerability.image_id_algorithm | algorithm of the image hash. | keyword |
 | sysdig.vulnerability.image_id_hash | Identifier of the image (hash). | keyword |
 | sysdig.vulnerability.is_risk_spotlight_enabled | Whether risk spotlight is enabled or not. | boolean |
@@ -896,7 +894,7 @@ An example event for `vulnerability` looks as following:
 | sysdig.vulnerability.metadata.created_at | datetime of creation. | date |
 | sysdig.vulnerability.metadata.digest | image digest. | keyword |
 | sysdig.vulnerability.metadata.host_id | host id. | keyword |
-| sysdig.vulnerability.metadata.hostname | host name. | keyword |
+| sysdig.vulnerability.metadata.host_name | host name. | keyword |
 | sysdig.vulnerability.metadata.image_id | image id. | keyword |
 | sysdig.vulnerability.metadata.labels.homepage |  | keyword |
 | sysdig.vulnerability.metadata.labels.io.mend.image.dockerfile.path |  | keyword |
@@ -916,6 +914,7 @@ An example event for `vulnerability` looks as following:
 | sysdig.vulnerability.package.layers.base_images.base_images_ref | base images refs. | keyword |
 | sysdig.vulnerability.package.layers.base_images.pull_strings |  | keyword |
 | sysdig.vulnerability.package.layers.command | layer command. | keyword |
+| sysdig.vulnerability.package.layers.digest | sha256 digest of the layer | keyword |
 | sysdig.vulnerability.package.layers.digest_algorithm | algorithm of the layer digest hash. | keyword |
 | sysdig.vulnerability.package.layers.digest_hash | sha256 digest of the layer. | keyword |
 | sysdig.vulnerability.package.layers.index | layer's index. | long |
@@ -1017,14 +1016,13 @@ An example event for `vulnerability` looks as following:
 | sysdig.vulnerability.scope.workload.name |  | keyword |
 | sysdig.vulnerability.scope.workload.orchestrator |  | keyword |
 | sysdig.vulnerability.stage | Enum: "pipeline" "runtime" "registry" scan result stage. | keyword |
+| sysdig.vulnerability.vendor | Identifier the vendor of the image. | keyword |
 | sysdig.vulnerability.vuln_total_by_severity.critical | number of critical vulnerabilities. | long |
 | sysdig.vulnerability.vuln_total_by_severity.high | number of high vulnerabilities. | long |
 | sysdig.vulnerability.vuln_total_by_severity.low | number of low vulnerabilities. | long |
 | sysdig.vulnerability.vuln_total_by_severity.medium | number of medium vulnerabilities. | long |
 | sysdig.vulnerability.vuln_total_by_severity.negligible | number of negligible vulnerabilities. | long |
-| vulnerability.cve |  | keyword |
-| vulnerability.package.fixed_version |  | keyword |
-| vulnerability.package.name |  | keyword |
-| vulnerability.package.version |  | keyword |
-| vulnerability.title |  | keyword |
+| vulnerability.cve | The CVE id of the vulnerability. | keyword |
+| vulnerability.published_date | When the vulnerability was published. | date |
+| vulnerability.title | The human readeable title of the vulnerability. | keyword |
 

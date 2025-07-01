@@ -163,7 +163,7 @@
                         "id": "",
                         "params": {
                             "fontSize": 12,
-                            "markdown": "**Navigation**\n\n**Sysdig**\n\n- [Alerts Overview](#/dashboard/sysdig-fae0ccf1-e806-4876-a7fa-7258b094b15b)\n- [Security Events Overview](#/dashboard/sysdig-d0ac6062-d4da-4f63-948d-4aea617909bf)\n- **Vulnerability Overview**\n\n**Overview**\n\nThis dashboard displays key statistics and visualizations derived from vulnerability logs collected via the Sysdig integration. A line chart shows the trend of critical CVEs over time, enabling teams to monitor changes in threat exposure. Key metrics display current counts of critical and high vulnerabilities, as well as additional insights such as the number of vulnerabilities with no known exploit, those with available fixes, and those confirmed as exploitable. A doughnut chart highlights critical and high vulnerabilities that have available fixes, helping prioritize remediation efforts. Supporting visualizations, including a bar chart of exploitable vulnerabilities and a pie chart of the top affected namespaces, guide teams in identifying and addressing the most impacted areas.\n\n[**Integrations Page**](/app/integrations/detail/sysdig/overview)",
+                            "markdown": "**Navigation**\n\n**Sysdig**\n\n- [Alerts Overview](#/dashboard/sysdig-fae0ccf1-e806-4876-a7fa-7258b094b15b)\n- [Security Events Overview](#/dashboard/sysdig-d0ac6062-d4da-4f63-948d-4aea617909bf)\n- **Vulnerability Overview**\n\n**Overview**\n\nThis dashboard provides an overview of the vulnerability logs collected by the Sysdig integration.\n\nThe dashboard highlights trends in the detection of critical vulnerabilities over time and displays counts of critical and high vulnerabilities. It also features bar charts that show vulnerabilities for which fixes are available and those that are exploitable, along with related metrics. Additionally, it includes a pie chart showing the most affected namespaces.\n\nSelect a suitable time range to avoid seeing partial results.\n\n[**Integrations Page**](/app/integrations/detail/sysdig/overview)",
                             "openLinksInNewTab": false
                         },
                         "title": "",
@@ -190,13 +190,17 @@
                                 "id": "logs-*",
                                 "name": "indexpattern-datasource-layer-e313263d-0f47-4c69-bfba-4a274623335d",
                                 "type": "index-pattern"
+                            },
+                            {
+                                "id": "logs-*",
+                                "name": "d0d29827-3929-4ad0-b02b-5229666dedd4",
+                                "type": "index-pattern"
                             }
                         ],
                         "state": {
                             "adHocDataViews": {},
                             "datasourceStates": {
                                 "formBased": {
-                                    "currentIndexPatternId": "logs-*",
                                     "layers": {
                                         "e313263d-0f47-4c69-bfba-4a274623335d": {
                                             "columnOrder": [
@@ -210,7 +214,13 @@
                                                     "label": "Critical Vulnerabilities",
                                                     "operationType": "count",
                                                     "params": {
-                                                        "emptyAsNull": false
+                                                        "emptyAsNull": false,
+                                                        "format": {
+                                                            "id": "number",
+                                                            "params": {
+                                                                "decimals": 0
+                                                            }
+                                                        }
                                                     },
                                                     "scale": "ratio",
                                                     "sourceField": "___records___"
@@ -218,7 +228,6 @@
                                             },
                                             "ignoreGlobalFilters": false,
                                             "incompleteColumns": {},
-                                            "indexPatternId": "logs-*",
                                             "sampling": 1
                                         }
                                     }
@@ -239,17 +248,17 @@
                                         "alias": null,
                                         "disabled": false,
                                         "field": "vulnerability.severity",
-                                        "index": "048f0290-0916-4dd6-a0c0-8fb7503e4491",
+                                        "index": "d0d29827-3929-4ad0-b02b-5229666dedd4",
                                         "key": "vulnerability.severity",
                                         "negate": false,
                                         "params": {
-                                            "query": "critical"
+                                            "query": "Critical"
                                         },
                                         "type": "phrase"
                                     },
                                     "query": {
                                         "match_phrase": {
-                                            "vulnerability.severity": "critical"
+                                            "vulnerability.severity": "Critical"
                                         }
                                     }
                                 }
@@ -292,13 +301,17 @@
                                 "id": "logs-*",
                                 "name": "indexpattern-datasource-layer-34b4a969-9207-4c86-921f-9c6e923eb8d0",
                                 "type": "index-pattern"
+                            },
+                            {
+                                "id": "logs-*",
+                                "name": "01303ca7-2b67-45df-a578-0c0f3ee942e4",
+                                "type": "index-pattern"
                             }
                         ],
                         "state": {
                             "adHocDataViews": {},
                             "datasourceStates": {
                                 "formBased": {
-                                    "currentIndexPatternId": "logs-*",
                                     "layers": {
                                         "34b4a969-9207-4c86-921f-9c6e923eb8d0": {
                                             "columnOrder": [
@@ -310,13 +323,19 @@
                                                     "customLabel": true,
                                                     "dataType": "number",
                                                     "isBucketed": false,
-                                                    "label": "Critical CVE",
-                                                    "operationType": "unique_count",
+                                                    "label": "Vulnerabilities",
+                                                    "operationType": "count",
                                                     "params": {
-                                                        "emptyAsNull": false
+                                                        "emptyAsNull": true,
+                                                        "format": {
+                                                            "id": "number",
+                                                            "params": {
+                                                                "decimals": 0
+                                                            }
+                                                        }
                                                     },
                                                     "scale": "ratio",
-                                                    "sourceField": "vulnerability.cve"
+                                                    "sourceField": "___records___"
                                                 },
                                                 "bb6e53f6-f2de-481d-bf84-4b1211665368": {
                                                     "customLabel": true,
@@ -327,7 +346,7 @@
                                                     "params": {
                                                         "dropPartials": false,
                                                         "includeEmptyRows": true,
-                                                        "interval": "auto"
+                                                        "interval": "d"
                                                     },
                                                     "scale": "interval",
                                                     "sourceField": "@timestamp"
@@ -335,7 +354,6 @@
                                             },
                                             "ignoreGlobalFilters": false,
                                             "incompleteColumns": {},
-                                            "indexPatternId": "logs-*",
                                             "sampling": 1
                                         }
                                     }
@@ -356,17 +374,17 @@
                                         "alias": null,
                                         "disabled": false,
                                         "field": "vulnerability.severity",
-                                        "index": "ec2a7195-d29c-4a40-890b-fa866ba3b736",
+                                        "index": "01303ca7-2b67-45df-a578-0c0f3ee942e4",
                                         "key": "vulnerability.severity",
                                         "negate": false,
                                         "params": {
-                                            "query": "critical"
+                                            "query": "Critical"
                                         },
                                         "type": "phrase"
                                     },
                                     "query": {
                                         "match_phrase": {
-                                            "vulnerability.severity": "critical"
+                                            "vulnerability.severity": "Critical"
                                         }
                                     }
                                 }
@@ -403,7 +421,7 @@
                                         "layerId": "34b4a969-9207-4c86-921f-9c6e923eb8d0",
                                         "layerType": "data",
                                         "position": "top",
-                                        "seriesType": "line",
+                                        "seriesType": "bar_stacked",
                                         "showGridlines": false,
                                         "xAccessor": "bb6e53f6-f2de-481d-bf84-4b1211665368",
                                         "yConfig": [
@@ -416,9 +434,11 @@
                                 ],
                                 "legend": {
                                     "isVisible": true,
-                                    "position": "right"
+                                    "position": "right",
+                                    "shouldTruncate": false,
+                                    "showSingleSeries": false
                                 },
-                                "preferredSeriesType": "line",
+                                "preferredSeriesType": "bar_stacked",
                                 "title": "Empty XY chart",
                                 "valueLabels": "hide"
                             }
@@ -427,7 +447,11 @@
                         "type": "lens",
                         "visualizationType": "lnsXY"
                     },
-                    "enhancements": {}
+                    "enhancements": {},
+                    "timeRange": {
+                        "from": "now-7d/d",
+                        "to": "now"
+                    }
                 },
                 "gridData": {
                     "h": 16,
@@ -437,7 +461,7 @@
                     "y": 0
                 },
                 "panelIndex": "fa00750d-8a37-4dd3-a557-54e8d1e8a283",
-                "title": "Critical CVEs over Time [Logs Sysdig]",
+                "title": "Critical Vulnerability Detections Over Time [Logs Sysdig]",
                 "type": "lens"
             },
             {
@@ -448,13 +472,17 @@
                                 "id": "logs-*",
                                 "name": "indexpattern-datasource-layer-e313263d-0f47-4c69-bfba-4a274623335d",
                                 "type": "index-pattern"
+                            },
+                            {
+                                "id": "logs-*",
+                                "name": "a37b6bf3-6c36-4347-a0df-80a2553d6a6b",
+                                "type": "index-pattern"
                             }
                         ],
                         "state": {
                             "adHocDataViews": {},
                             "datasourceStates": {
                                 "formBased": {
-                                    "currentIndexPatternId": "logs-*",
                                     "layers": {
                                         "e313263d-0f47-4c69-bfba-4a274623335d": {
                                             "columnOrder": [
@@ -468,7 +496,13 @@
                                                     "label": "High Vulnerabilities",
                                                     "operationType": "count",
                                                     "params": {
-                                                        "emptyAsNull": false
+                                                        "emptyAsNull": false,
+                                                        "format": {
+                                                            "id": "number",
+                                                            "params": {
+                                                                "decimals": 0
+                                                            }
+                                                        }
                                                     },
                                                     "scale": "ratio",
                                                     "sourceField": "___records___"
@@ -476,7 +510,6 @@
                                             },
                                             "ignoreGlobalFilters": false,
                                             "incompleteColumns": {},
-                                            "indexPatternId": "logs-*",
                                             "sampling": 1
                                         }
                                     }
@@ -497,17 +530,17 @@
                                         "alias": null,
                                         "disabled": false,
                                         "field": "vulnerability.severity",
-                                        "index": "1331edd3-5a6b-4ff7-9b89-455c6ce783ce",
+                                        "index": "a37b6bf3-6c36-4347-a0df-80a2553d6a6b",
                                         "key": "vulnerability.severity",
                                         "negate": false,
                                         "params": {
-                                            "query": "high"
+                                            "query": "High"
                                         },
                                         "type": "phrase"
                                     },
                                     "query": {
                                         "match_phrase": {
-                                            "vulnerability.severity": "high"
+                                            "vulnerability.severity": "High"
                                         }
                                     }
                                 }
@@ -548,12 +581,224 @@
                         "references": [
                             {
                                 "id": "logs-*",
+                                "name": "indexpattern-datasource-layer-34b4a969-9207-4c86-921f-9c6e923eb8d0",
+                                "type": "index-pattern"
+                            },
+                            {
+                                "id": "logs-*",
+                                "name": "4817492f-c5ea-4a14-8957-a34af10f2201",
+                                "type": "index-pattern"
+                            }
+                        ],
+                        "state": {
+                            "adHocDataViews": {},
+                            "datasourceStates": {
+                                "formBased": {
+                                    "layers": {
+                                        "34b4a969-9207-4c86-921f-9c6e923eb8d0": {
+                                            "columnOrder": [
+                                                "bb6e53f6-f2de-481d-bf84-4b1211665368",
+                                                "e27dbd33-69ff-463c-86a4-84831e2cef68",
+                                                "9954ed75-c5f2-4741-8e07-dc40ec963986"
+                                            ],
+                                            "columns": {
+                                                "9954ed75-c5f2-4741-8e07-dc40ec963986": {
+                                                    "customLabel": true,
+                                                    "dataType": "number",
+                                                    "isBucketed": false,
+                                                    "label": "Count",
+                                                    "operationType": "count",
+                                                    "params": {
+                                                        "emptyAsNull": false,
+                                                        "format": {
+                                                            "id": "number",
+                                                            "params": {
+                                                                "compact": false,
+                                                                "decimals": 0
+                                                            }
+                                                        }
+                                                    },
+                                                    "scale": "ratio",
+                                                    "sourceField": "___records___"
+                                                },
+                                                "bb6e53f6-f2de-481d-bf84-4b1211665368": {
+                                                    "customLabel": true,
+                                                    "dataType": "date",
+                                                    "isBucketed": true,
+                                                    "label": "Timestamp",
+                                                    "operationType": "date_histogram",
+                                                    "params": {
+                                                        "dropPartials": false,
+                                                        "includeEmptyRows": true,
+                                                        "interval": "auto"
+                                                    },
+                                                    "scale": "interval",
+                                                    "sourceField": "@timestamp"
+                                                },
+                                                "e27dbd33-69ff-463c-86a4-84831e2cef68": {
+                                                    "dataType": "string",
+                                                    "isBucketed": true,
+                                                    "label": "Filters",
+                                                    "operationType": "filters",
+                                                    "params": {
+                                                        "filters": [
+                                                            {
+                                                                "input": {
+                                                                    "language": "kuery",
+                                                                    "query": "sysdig.vulnerability.package.vulnerability.exploitable : false "
+                                                                },
+                                                                "label": "No Exploit"
+                                                            },
+                                                            {
+                                                                "input": {
+                                                                    "language": "kuery",
+                                                                    "query": "package.fixed_version : * "
+                                                                },
+                                                                "label": "Has Fix"
+                                                            },
+                                                            {
+                                                                "input": {
+                                                                    "language": "kuery",
+                                                                    "query": "sysdig.vulnerability.package.vulnerability.exploitable : true "
+                                                                },
+                                                                "label": "Has Exploit"
+                                                            }
+                                                        ]
+                                                    },
+                                                    "scale": "ordinal"
+                                                }
+                                            },
+                                            "ignoreGlobalFilters": false,
+                                            "incompleteColumns": {},
+                                            "sampling": 1
+                                        }
+                                    }
+                                },
+                                "indexpattern": {
+                                    "layers": {}
+                                },
+                                "textBased": {
+                                    "layers": {}
+                                }
+                            },
+                            "filters": [
+                                {
+                                    "$state": {
+                                        "store": "appState"
+                                    },
+                                    "meta": {
+                                        "alias": null,
+                                        "disabled": false,
+                                        "field": "vulnerability.severity",
+                                        "index": "4817492f-c5ea-4a14-8957-a34af10f2201",
+                                        "key": "vulnerability.severity",
+                                        "negate": false,
+                                        "params": [
+                                            "Critical",
+                                            "High"
+                                        ],
+                                        "type": "phrases",
+                                        "value": [
+                                            "Critical",
+                                            "High"
+                                        ]
+                                    },
+                                    "query": {
+                                        "bool": {
+                                            "minimum_should_match": 1,
+                                            "should": [
+                                                {
+                                                    "match_phrase": {
+                                                        "vulnerability.severity": "Critical"
+                                                    }
+                                                },
+                                                {
+                                                    "match_phrase": {
+                                                        "vulnerability.severity": "High"
+                                                    }
+                                                }
+                                            ]
+                                        }
+                                    }
+                                }
+                            ],
+                            "internalReferences": [],
+                            "query": {
+                                "language": "kuery",
+                                "query": ""
+                            },
+                            "visualization": {
+                                "layers": [
+                                    {
+                                        "accessors": [
+                                            "9954ed75-c5f2-4741-8e07-dc40ec963986"
+                                        ],
+                                        "colorMapping": {
+                                            "assignments": [],
+                                            "colorMode": {
+                                                "type": "categorical"
+                                            },
+                                            "paletteId": "eui_amsterdam_color_blind",
+                                            "specialAssignments": [
+                                                {
+                                                    "color": {
+                                                        "type": "loop"
+                                                    },
+                                                    "rule": {
+                                                        "type": "other"
+                                                    },
+                                                    "touched": false
+                                                }
+                                            ]
+                                        },
+                                        "layerId": "34b4a969-9207-4c86-921f-9c6e923eb8d0",
+                                        "layerType": "data",
+                                        "position": "top",
+                                        "seriesType": "bar_stacked",
+                                        "showGridlines": false,
+                                        "splitAccessor": "e27dbd33-69ff-463c-86a4-84831e2cef68",
+                                        "xAccessor": "bb6e53f6-f2de-481d-bf84-4b1211665368",
+                                        "yConfig": []
+                                    }
+                                ],
+                                "legend": {
+                                    "isVisible": true,
+                                    "position": "right"
+                                },
+                                "preferredSeriesType": "bar_stacked",
+                                "title": "Empty XY chart",
+                                "valueLabels": "hide"
+                            }
+                        },
+                        "title": "",
+                        "type": "lens",
+                        "visualizationType": "lnsXY"
+                    },
+                    "enhancements": {}
+                },
+                "gridData": {
+                    "h": 15,
+                    "i": "23e8168e-4e7f-4a14-b3fb-5255c1ecade6",
+                    "w": 28,
+                    "x": 12,
+                    "y": 16
+                },
+                "panelIndex": "23e8168e-4e7f-4a14-b3fb-5255c1ecade6",
+                "title": "All Critical and High Vulnerabilities by Type [Logs Sysdig]",
+                "type": "lens"
+            },
+            {
+                "embeddableConfig": {
+                    "attributes": {
+                        "references": [
+                            {
+                                "id": "logs-*",
                                 "name": "indexpattern-datasource-layer-80d7e9a3-22e7-4aaf-a3eb-ca88a32b1d5c",
                                 "type": "index-pattern"
                             },
                             {
                                 "id": "logs-*",
-                                "name": "1210b4ac-ab74-402e-b5ce-8d085a910248",
+                                "name": "7b3dd07a-d9ee-46d1-a37c-f84eedd9336c",
                                 "type": "index-pattern"
                             }
                         ],
@@ -574,7 +819,13 @@
                                                     "label": "No Exploit",
                                                     "operationType": "count",
                                                     "params": {
-                                                        "emptyAsNull": false
+                                                        "emptyAsNull": false,
+                                                        "format": {
+                                                            "id": "number",
+                                                            "params": {
+                                                                "decimals": 0
+                                                            }
+                                                        }
                                                     },
                                                     "scale": "ratio",
                                                     "sourceField": "___records___"
@@ -602,17 +853,17 @@
                                         "alias": null,
                                         "disabled": false,
                                         "field": "vulnerability.severity",
-                                        "index": "1210b4ac-ab74-402e-b5ce-8d085a910248",
+                                        "index": "7b3dd07a-d9ee-46d1-a37c-f84eedd9336c",
                                         "key": "vulnerability.severity",
                                         "negate": false,
                                         "params": [
-                                            "critical",
-                                            "high"
+                                            "Critical",
+                                            "High"
                                         ],
                                         "type": "phrases",
                                         "value": [
-                                            "critical",
-                                            "high"
+                                            "Critical",
+                                            "High"
                                         ]
                                     },
                                     "query": {
@@ -621,12 +872,12 @@
                                             "should": [
                                                 {
                                                     "match_phrase": {
-                                                        "vulnerability.severity": "critical"
+                                                        "vulnerability.severity": "Critical"
                                                     }
                                                 },
                                                 {
                                                     "match_phrase": {
-                                                        "vulnerability.severity": "high"
+                                                        "vulnerability.severity": "High"
                                                     }
                                                 }
                                             ]
@@ -697,7 +948,12 @@
                             },
                             {
                                 "id": "logs-*",
-                                "name": "7a47bb5e-d2fa-4d70-b24c-67ca6e0c21b8",
+                                "name": "15a927c2-9dd8-4d00-a6b7-5bb8d67e0d62",
+                                "type": "index-pattern"
+                            },
+                            {
+                                "id": "logs-*",
+                                "name": "55fbab74-9981-42ce-8be7-f21522f086b1",
                                 "type": "index-pattern"
                             }
                         ],
@@ -718,7 +974,13 @@
                                                     "label": "Has Fix",
                                                     "operationType": "count",
                                                     "params": {
-                                                        "emptyAsNull": false
+                                                        "emptyAsNull": false,
+                                                        "format": {
+                                                            "id": "number",
+                                                            "params": {
+                                                                "decimals": 0
+                                                            }
+                                                        }
                                                     },
                                                     "scale": "ratio",
                                                     "sourceField": "___records___"
@@ -746,17 +1008,17 @@
                                         "alias": null,
                                         "disabled": false,
                                         "field": "vulnerability.severity",
-                                        "index": "7a47bb5e-d2fa-4d70-b24c-67ca6e0c21b8",
+                                        "index": "15a927c2-9dd8-4d00-a6b7-5bb8d67e0d62",
                                         "key": "vulnerability.severity",
                                         "negate": false,
                                         "params": [
-                                            "critical",
-                                            "high"
+                                            "Critical",
+                                            "High"
                                         ],
                                         "type": "phrases",
                                         "value": [
-                                            "critical",
-                                            "high"
+                                            "Critical",
+                                            "High"
                                         ]
                                     },
                                     "query": {
@@ -765,12 +1027,12 @@
                                             "should": [
                                                 {
                                                     "match_phrase": {
-                                                        "vulnerability.severity": "critical"
+                                                        "vulnerability.severity": "Critical"
                                                     }
                                                 },
                                                 {
                                                     "match_phrase": {
-                                                        "vulnerability.severity": "high"
+                                                        "vulnerability.severity": "High"
                                                     }
                                                 }
                                             ]
@@ -784,15 +1046,16 @@
                                     "meta": {
                                         "alias": null,
                                         "disabled": false,
-                                        "field": "vulnerability.package.fixed_version",
-                                        "index": "6b673340-2e15-4761-b4d0-5b04241b42cc",
-                                        "key": "vulnerability.package.fixed_version",
+                                        "field": "package.fixed_version",
+                                        "index": "55fbab74-9981-42ce-8be7-f21522f086b1",
+                                        "key": "package.fixed_version",
                                         "negate": false,
-                                        "type": "exists"
+                                        "type": "exists",
+                                        "value": "exists"
                                     },
                                     "query": {
                                         "exists": {
-                                            "field": "vulnerability.package.fixed_version"
+                                            "field": "package.fixed_version"
                                         }
                                     }
                                 }
@@ -838,7 +1101,7 @@
                             },
                             {
                                 "id": "logs-*",
-                                "name": "b17fd170-7a74-442b-9df7-ea318b366e6b",
+                                "name": "ff9a1c61-8c4f-4898-94d3-cb069ff30821",
                                 "type": "index-pattern"
                             }
                         ],
@@ -859,7 +1122,13 @@
                                                     "label": "Has Exploit",
                                                     "operationType": "count",
                                                     "params": {
-                                                        "emptyAsNull": false
+                                                        "emptyAsNull": false,
+                                                        "format": {
+                                                            "id": "number",
+                                                            "params": {
+                                                                "decimals": 0
+                                                            }
+                                                        }
                                                     },
                                                     "scale": "ratio",
                                                     "sourceField": "___records___"
@@ -887,17 +1156,17 @@
                                         "alias": null,
                                         "disabled": false,
                                         "field": "vulnerability.severity",
-                                        "index": "b17fd170-7a74-442b-9df7-ea318b366e6b",
+                                        "index": "ff9a1c61-8c4f-4898-94d3-cb069ff30821",
                                         "key": "vulnerability.severity",
                                         "negate": false,
                                         "params": [
-                                            "critical",
-                                            "high"
+                                            "Critical",
+                                            "High"
                                         ],
                                         "type": "phrases",
                                         "value": [
-                                            "critical",
-                                            "high"
+                                            "Critical",
+                                            "High"
                                         ]
                                     },
                                     "query": {
@@ -906,12 +1175,12 @@
                                             "should": [
                                                 {
                                                     "match_phrase": {
-                                                        "vulnerability.severity": "critical"
+                                                        "vulnerability.severity": "Critical"
                                                     }
                                                 },
                                                 {
                                                     "match_phrase": {
-                                                        "vulnerability.severity": "high"
+                                                        "vulnerability.severity": "High"
                                                     }
                                                 }
                                             ]
@@ -977,217 +1246,19 @@
                         "references": [
                             {
                                 "id": "logs-*",
-                                "name": "indexpattern-datasource-layer-34b4a969-9207-4c86-921f-9c6e923eb8d0",
-                                "type": "index-pattern"
-                            }
-                        ],
-                        "state": {
-                            "adHocDataViews": {},
-                            "datasourceStates": {
-                                "formBased": {
-                                    "currentIndexPatternId": "logs-*",
-                                    "layers": {
-                                        "34b4a969-9207-4c86-921f-9c6e923eb8d0": {
-                                            "columnOrder": [
-                                                "bb6e53f6-f2de-481d-bf84-4b1211665368",
-                                                "e27dbd33-69ff-463c-86a4-84831e2cef68",
-                                                "9954ed75-c5f2-4741-8e07-dc40ec963986"
-                                            ],
-                                            "columns": {
-                                                "9954ed75-c5f2-4741-8e07-dc40ec963986": {
-                                                    "customLabel": true,
-                                                    "dataType": "number",
-                                                    "isBucketed": false,
-                                                    "label": "Count",
-                                                    "operationType": "count",
-                                                    "params": {
-                                                        "emptyAsNull": false
-                                                    },
-                                                    "scale": "ratio",
-                                                    "sourceField": "vulnerability.id"
-                                                },
-                                                "bb6e53f6-f2de-481d-bf84-4b1211665368": {
-                                                    "customLabel": true,
-                                                    "dataType": "date",
-                                                    "isBucketed": true,
-                                                    "label": "Timestamp",
-                                                    "operationType": "date_histogram",
-                                                    "params": {
-                                                        "dropPartials": false,
-                                                        "includeEmptyRows": true,
-                                                        "interval": "auto"
-                                                    },
-                                                    "scale": "interval",
-                                                    "sourceField": "@timestamp"
-                                                },
-                                                "e27dbd33-69ff-463c-86a4-84831e2cef68": {
-                                                    "dataType": "string",
-                                                    "isBucketed": true,
-                                                    "label": "Filters",
-                                                    "operationType": "filters",
-                                                    "params": {
-                                                        "filters": [
-                                                            {
-                                                                "input": {
-                                                                    "language": "kuery",
-                                                                    "query": "sysdig.vulnerability.package.vulnerability.exploitable : false "
-                                                                },
-                                                                "label": "No Exploit"
-                                                            },
-                                                            {
-                                                                "input": {
-                                                                    "language": "kuery",
-                                                                    "query": "vulnerability.package.fixed_version : * "
-                                                                },
-                                                                "label": "Has Fix"
-                                                            },
-                                                            {
-                                                                "input": {
-                                                                    "language": "kuery",
-                                                                    "query": "sysdig.vulnerability.package.vulnerability.exploitable : true "
-                                                                },
-                                                                "label": "Has Exploit"
-                                                            }
-                                                        ]
-                                                    },
-                                                    "scale": "ordinal"
-                                                }
-                                            },
-                                            "ignoreGlobalFilters": false,
-                                            "incompleteColumns": {},
-                                            "indexPatternId": "logs-*",
-                                            "sampling": 1
-                                        }
-                                    }
-                                },
-                                "indexpattern": {
-                                    "layers": {}
-                                },
-                                "textBased": {
-                                    "layers": {}
-                                }
-                            },
-                            "filters": [
-                                {
-                                    "$state": {
-                                        "store": "appState"
-                                    },
-                                    "meta": {
-                                        "alias": null,
-                                        "disabled": false,
-                                        "field": "vulnerability.severity",
-                                        "index": "379f05ea-a2c0-4b96-8111-37d67571ee54",
-                                        "key": "vulnerability.severity",
-                                        "negate": false,
-                                        "params": [
-                                            "critical",
-                                            "high"
-                                        ],
-                                        "type": "phrases",
-                                        "value": [
-                                            "critical",
-                                            "high"
-                                        ]
-                                    },
-                                    "query": {
-                                        "bool": {
-                                            "minimum_should_match": 1,
-                                            "should": [
-                                                {
-                                                    "match_phrase": {
-                                                        "vulnerability.severity": "critical"
-                                                    }
-                                                },
-                                                {
-                                                    "match_phrase": {
-                                                        "vulnerability.severity": "high"
-                                                    }
-                                                }
-                                            ]
-                                        }
-                                    }
-                                }
-                            ],
-                            "internalReferences": [],
-                            "query": {
-                                "language": "kuery",
-                                "query": ""
-                            },
-                            "visualization": {
-                                "layers": [
-                                    {
-                                        "accessors": [
-                                            "9954ed75-c5f2-4741-8e07-dc40ec963986"
-                                        ],
-                                        "colorMapping": {
-                                            "assignments": [],
-                                            "colorMode": {
-                                                "type": "categorical"
-                                            },
-                                            "paletteId": "eui_amsterdam_color_blind",
-                                            "specialAssignments": [
-                                                {
-                                                    "color": {
-                                                        "type": "loop"
-                                                    },
-                                                    "rule": {
-                                                        "type": "other"
-                                                    },
-                                                    "touched": false
-                                                }
-                                            ]
-                                        },
-                                        "layerId": "34b4a969-9207-4c86-921f-9c6e923eb8d0",
-                                        "layerType": "data",
-                                        "position": "top",
-                                        "seriesType": "line",
-                                        "showGridlines": false,
-                                        "splitAccessor": "e27dbd33-69ff-463c-86a4-84831e2cef68",
-                                        "xAccessor": "bb6e53f6-f2de-481d-bf84-4b1211665368",
-                                        "yConfig": []
-                                    }
-                                ],
-                                "legend": {
-                                    "isVisible": true,
-                                    "position": "right"
-                                },
-                                "preferredSeriesType": "line",
-                                "title": "Empty XY chart",
-                                "valueLabels": "hide"
-                            }
-                        },
-                        "title": "",
-                        "type": "lens",
-                        "visualizationType": "lnsXY"
-                    },
-                    "enhancements": {}
-                },
-                "gridData": {
-                    "h": 15,
-                    "i": "23e8168e-4e7f-4a14-b3fb-5255c1ecade6",
-                    "w": 28,
-                    "x": 12,
-                    "y": 16
-                },
-                "panelIndex": "23e8168e-4e7f-4a14-b3fb-5255c1ecade6",
-                "title": "All Critical and High Vulnerabilities by Type [Logs Sysdig]",
-                "type": "lens"
-            },
-            {
-                "embeddableConfig": {
-                    "attributes": {
-                        "references": [
-                            {
-                                "id": "logs-*",
                                 "name": "indexpattern-datasource-layer-0c79927f-28a4-4781-9af2-a02c54cd44d0",
                                 "type": "index-pattern"
+                            },
+                            {
+                                "id": "logs-*",
+                                "name": "c799f8c8-2b52-46fa-86d3-a2f57c1fffd9",
+                                "type": "index-pattern"
                             }
                         ],
                         "state": {
                             "adHocDataViews": {},
                             "datasourceStates": {
                                 "formBased": {
-                                    "currentIndexPatternId": "logs-*",
                                     "layers": {
                                         "0c79927f-28a4-4781-9af2-a02c54cd44d0": {
                                             "columnOrder": [
@@ -1202,7 +1273,13 @@
                                                     "label": "Count",
                                                     "operationType": "count",
                                                     "params": {
-                                                        "emptyAsNull": false
+                                                        "emptyAsNull": false,
+                                                        "format": {
+                                                            "id": "number",
+                                                            "params": {
+                                                                "decimals": 0
+                                                            }
+                                                        }
                                                     },
                                                     "scale": "ratio",
                                                     "sourceField": "___records___"
@@ -1236,7 +1313,6 @@
                                             },
                                             "ignoreGlobalFilters": false,
                                             "incompleteColumns": {},
-                                            "indexPatternId": "logs-*",
                                             "sampling": 1
                                         }
                                     }
@@ -1257,17 +1333,17 @@
                                         "alias": null,
                                         "disabled": false,
                                         "field": "vulnerability.severity",
-                                        "index": "5665d06c-a178-4779-a8de-feef25c17111",
+                                        "index": "c799f8c8-2b52-46fa-86d3-a2f57c1fffd9",
                                         "key": "vulnerability.severity",
                                         "negate": false,
                                         "params": {
-                                            "query": "critical"
+                                            "query": "Critical"
                                         },
                                         "type": "phrase"
                                     },
                                     "query": {
                                         "match_phrase": {
-                                            "vulnerability.severity": "critical"
+                                            "vulnerability.severity": "Critical"
                                         }
                                     }
                                 }
@@ -1313,7 +1389,7 @@
                                         "truncateLegend": false
                                     }
                                 ],
-                                "shape": "donut"
+                                "shape": "pie"
                             }
                         },
                         "title": "",
@@ -1325,7 +1401,7 @@
                 "gridData": {
                     "h": 16,
                     "i": "1e0548af-d048-43b1-a120-005cd836bf73",
-                    "w": 24,
+                    "w": 12,
                     "x": 0,
                     "y": 31
                 },
@@ -1341,13 +1417,17 @@
                                 "id": "logs-*",
                                 "name": "indexpattern-datasource-layer-df3e481c-9e01-4c59-802f-a8ec46c16172",
                                 "type": "index-pattern"
+                            },
+                            {
+                                "id": "logs-*",
+                                "name": "a63aa36f-6fca-4a55-bcc4-c695670647a3",
+                                "type": "index-pattern"
                             }
                         ],
                         "state": {
                             "adHocDataViews": {},
                             "datasourceStates": {
                                 "formBased": {
-                                    "currentIndexPatternId": "logs-*",
                                     "layers": {
                                         "df3e481c-9e01-4c59-802f-a8ec46c16172": {
                                             "columnOrder": [
@@ -1362,7 +1442,13 @@
                                                     "label": "Count",
                                                     "operationType": "count",
                                                     "params": {
-                                                        "emptyAsNull": false
+                                                        "emptyAsNull": false,
+                                                        "format": {
+                                                            "id": "number",
+                                                            "params": {
+                                                                "decimals": 0
+                                                            }
+                                                        }
                                                     },
                                                     "scale": "ratio",
                                                     "sourceField": "___records___"
@@ -1371,7 +1457,7 @@
                                                     "customLabel": true,
                                                     "dataType": "string",
                                                     "isBucketed": true,
-                                                    "label": "Top 5 Vulnerability",
+                                                    "label": "Vulnerabilities",
                                                     "operationType": "terms",
                                                     "params": {
                                                         "exclude": [],
@@ -1388,15 +1474,15 @@
                                                         "parentFormat": {
                                                             "id": "terms"
                                                         },
-                                                        "size": 5
+                                                        "secondaryFields": [],
+                                                        "size": 10
                                                     },
                                                     "scale": "ordinal",
-                                                    "sourceField": "vulnerability.id"
+                                                    "sourceField": "vulnerability.cve"
                                                 }
                                             },
                                             "ignoreGlobalFilters": false,
                                             "incompleteColumns": {},
-                                            "indexPatternId": "logs-*",
                                             "sampling": 1
                                         }
                                     }
@@ -1416,16 +1502,16 @@
                                     "meta": {
                                         "alias": null,
                                         "disabled": false,
-                                        "field": "vulnerability.package.fixed_version",
-                                        "index": "2adbacea-c4b2-4187-aa75-be9ab1194f1f",
-                                        "key": "vulnerability.package.fixed_version",
+                                        "field": "package.fixed_version",
+                                        "index": "a63aa36f-6fca-4a55-bcc4-c695670647a3",
+                                        "key": "package.fixed_version",
                                         "negate": false,
                                         "type": "exists",
                                         "value": "exists"
                                     },
                                     "query": {
                                         "exists": {
-                                            "field": "vulnerability.package.fixed_version"
+                                            "field": "package.fixed_version"
                                         }
                                     }
                                 }
@@ -1436,9 +1522,27 @@
                                 "query": ""
                             },
                             "visualization": {
+                                "axisTitlesVisibilitySettings": {
+                                    "x": true,
+                                    "yLeft": true,
+                                    "yRight": true
+                                },
+                                "fittingFunction": "None",
+                                "gridlinesVisibilitySettings": {
+                                    "x": true,
+                                    "yLeft": true,
+                                    "yRight": true
+                                },
+                                "labelsOrientation": {
+                                    "x": 0,
+                                    "yLeft": 0,
+                                    "yRight": 0
+                                },
                                 "layers": [
                                     {
-                                        "categoryDisplay": "default",
+                                        "accessors": [
+                                            "59f2cacc-ead0-4303-b49d-12d0834a118e"
+                                        ],
                                         "colorMapping": {
                                             "assignments": [],
                                             "colorMode": {
@@ -1459,32 +1563,36 @@
                                         },
                                         "layerId": "df3e481c-9e01-4c59-802f-a8ec46c16172",
                                         "layerType": "data",
-                                        "legendDisplay": "show",
-                                        "metrics": [
-                                            "59f2cacc-ead0-4303-b49d-12d0834a118e"
-                                        ],
-                                        "nestedLegend": false,
-                                        "numberDisplay": "percent",
-                                        "primaryGroups": [
-                                            "9c30ff52-7b91-49ff-9ccc-a9d64ccd8fe4"
-                                        ],
-                                        "truncateLegend": false
+                                        "seriesType": "bar_stacked",
+                                        "xAccessor": "9c30ff52-7b91-49ff-9ccc-a9d64ccd8fe4"
                                     }
                                 ],
-                                "shape": "donut"
+                                "legend": {
+                                    "isVisible": true,
+                                    "position": "right",
+                                    "shouldTruncate": false,
+                                    "showSingleSeries": false
+                                },
+                                "preferredSeriesType": "bar_stacked",
+                                "tickLabelsVisibilitySettings": {
+                                    "x": true,
+                                    "yLeft": true,
+                                    "yRight": true
+                                },
+                                "valueLabels": "show"
                             }
                         },
                         "title": "",
                         "type": "lens",
-                        "visualizationType": "lnsPie"
+                        "visualizationType": "lnsXY"
                     },
                     "enhancements": {}
                 },
                 "gridData": {
                     "h": 16,
                     "i": "a4ff7f7c-a976-48a3-ab7b-0ae456efbd76",
-                    "w": 24,
-                    "x": 24,
+                    "w": 36,
+                    "x": 12,
                     "y": 31
                 },
                 "panelIndex": "a4ff7f7c-a976-48a3-ab7b-0ae456efbd76",
@@ -1499,13 +1607,17 @@
                                 "id": "logs-*",
                                 "name": "indexpattern-datasource-layer-1f1932ff-97af-4107-9a9b-58f9a9fb3121",
                                 "type": "index-pattern"
+                            },
+                            {
+                                "id": "logs-*",
+                                "name": "06e3c523-d390-47df-9b5a-0980e9db3305",
+                                "type": "index-pattern"
                             }
                         ],
                         "state": {
                             "adHocDataViews": {},
                             "datasourceStates": {
                                 "formBased": {
-                                    "currentIndexPatternId": "logs-*",
                                     "layers": {
                                         "1f1932ff-97af-4107-9a9b-58f9a9fb3121": {
                                             "columnOrder": [
@@ -1521,7 +1633,13 @@
                                                     "label": "Count",
                                                     "operationType": "count",
                                                     "params": {
-                                                        "emptyAsNull": false
+                                                        "emptyAsNull": false,
+                                                        "format": {
+                                                            "id": "number",
+                                                            "params": {
+                                                                "decimals": 0
+                                                            }
+                                                        }
                                                     },
                                                     "scale": "ratio",
                                                     "sourceField": "___records___"
@@ -1553,9 +1671,10 @@
                                                     "sourceField": "vulnerability.cve"
                                                 },
                                                 "ee1265a4-91e8-4bc9-9f96-3f8973401b6a": {
+                                                    "customLabel": true,
                                                     "dataType": "string",
                                                     "isBucketed": true,
-                                                    "label": "Top 2 values of vulnerability.severity",
+                                                    "label": "Severity",
                                                     "operationType": "terms",
                                                     "params": {
                                                         "exclude": [],
@@ -1568,7 +1687,7 @@
                                                             "type": "column"
                                                         },
                                                         "orderDirection": "desc",
-                                                        "otherBucket": true,
+                                                        "otherBucket": false,
                                                         "parentFormat": {
                                                             "id": "terms"
                                                         },
@@ -1580,7 +1699,6 @@
                                             },
                                             "ignoreGlobalFilters": false,
                                             "incompleteColumns": {},
-                                            "indexPatternId": "logs-*",
                                             "sampling": 1
                                         }
                                     }
@@ -1601,17 +1719,17 @@
                                         "alias": null,
                                         "disabled": false,
                                         "field": "vulnerability.severity",
-                                        "index": "66a0a1e5-169b-46c3-a211-3370e24a9cf7",
+                                        "index": "06e3c523-d390-47df-9b5a-0980e9db3305",
                                         "key": "vulnerability.severity",
                                         "negate": false,
                                         "params": [
-                                            "high",
-                                            "critical"
+                                            "Critical",
+                                            "High"
                                         ],
                                         "type": "phrases",
                                         "value": [
-                                            "high",
-                                            "critical"
+                                            "Critical",
+                                            "High"
                                         ]
                                     },
                                     "query": {
@@ -1620,12 +1738,12 @@
                                             "should": [
                                                 {
                                                     "match_phrase": {
-                                                        "vulnerability.severity": "high"
+                                                        "vulnerability.severity": "Critical"
                                                     }
                                                 },
                                                 {
                                                     "match_phrase": {
-                                                        "vulnerability.severity": "critical"
+                                                        "vulnerability.severity": "High"
                                                     }
                                                 }
                                             ]
@@ -1711,7 +1829,8 @@
                                 ],
                                 "legend": {
                                     "isVisible": true,
-                                    "position": "right"
+                                    "position": "right",
+                                    "shouldTruncate": false
                                 },
                                 "preferredSeriesType": "bar_horizontal_stacked",
                                 "tickLabelsVisibilitySettings": {
@@ -1719,7 +1838,7 @@
                                     "yLeft": true,
                                     "yRight": true
                                 },
-                                "valueLabels": "hide"
+                                "valueLabels": "show"
                             }
                         },
                         "title": "",
@@ -1751,10 +1870,8 @@
         "version": 2
     },
     "coreMigrationVersion": "8.8.0",
-    "created_at": "2025-05-22T12:10:11.723Z",
-    "created_by": "u_mGBROF_q5bmFCATbLXAcCwKa0k8JvONAwSruelyKA5E_0",
+    "created_at": "2025-07-01T08:56:53.603Z",
     "id": "sysdig-3bf1d068-5f08-4824-9b30-72977a718b16",
-    "managed": false,
     "references": [
         {
             "id": "logs-*",
@@ -1768,7 +1885,17 @@
         },
         {
             "id": "logs-*",
+            "name": "dd28ede9-e745-4b09-88f8-4c5b1a0103e0:d0d29827-3929-4ad0-b02b-5229666dedd4",
+            "type": "index-pattern"
+        },
+        {
+            "id": "logs-*",
             "name": "fa00750d-8a37-4dd3-a557-54e8d1e8a283:indexpattern-datasource-layer-34b4a969-9207-4c86-921f-9c6e923eb8d0",
+            "type": "index-pattern"
+        },
+        {
+            "id": "logs-*",
+            "name": "fa00750d-8a37-4dd3-a557-54e8d1e8a283:01303ca7-2b67-45df-a578-0c0f3ee942e4",
             "type": "index-pattern"
         },
         {
@@ -1778,32 +1905,7 @@
         },
         {
             "id": "logs-*",
-            "name": "0b976340-b5d3-451c-961c-e152a93ae3d0:indexpattern-datasource-layer-80d7e9a3-22e7-4aaf-a3eb-ca88a32b1d5c",
-            "type": "index-pattern"
-        },
-        {
-            "id": "logs-*",
-            "name": "0b976340-b5d3-451c-961c-e152a93ae3d0:1210b4ac-ab74-402e-b5ce-8d085a910248",
-            "type": "index-pattern"
-        },
-        {
-            "id": "logs-*",
-            "name": "42e4d195-968a-4ba4-9370-18b8e0662368:indexpattern-datasource-layer-80d7e9a3-22e7-4aaf-a3eb-ca88a32b1d5c",
-            "type": "index-pattern"
-        },
-        {
-            "id": "logs-*",
-            "name": "42e4d195-968a-4ba4-9370-18b8e0662368:7a47bb5e-d2fa-4d70-b24c-67ca6e0c21b8",
-            "type": "index-pattern"
-        },
-        {
-            "id": "logs-*",
-            "name": "12b11bda-a418-486c-86c7-92399b75d2e7:indexpattern-datasource-layer-80d7e9a3-22e7-4aaf-a3eb-ca88a32b1d5c",
-            "type": "index-pattern"
-        },
-        {
-            "id": "logs-*",
-            "name": "12b11bda-a418-486c-86c7-92399b75d2e7:b17fd170-7a74-442b-9df7-ea318b366e6b",
+            "name": "d2b1c070-eb72-4274-9dc8-d2bb6611bbdb:a37b6bf3-6c36-4347-a0df-80a2553d6a6b",
             "type": "index-pattern"
         },
         {
@@ -1813,7 +1915,52 @@
         },
         {
             "id": "logs-*",
+            "name": "23e8168e-4e7f-4a14-b3fb-5255c1ecade6:4817492f-c5ea-4a14-8957-a34af10f2201",
+            "type": "index-pattern"
+        },
+        {
+            "id": "logs-*",
+            "name": "0b976340-b5d3-451c-961c-e152a93ae3d0:indexpattern-datasource-layer-80d7e9a3-22e7-4aaf-a3eb-ca88a32b1d5c",
+            "type": "index-pattern"
+        },
+        {
+            "id": "logs-*",
+            "name": "0b976340-b5d3-451c-961c-e152a93ae3d0:7b3dd07a-d9ee-46d1-a37c-f84eedd9336c",
+            "type": "index-pattern"
+        },
+        {
+            "id": "logs-*",
+            "name": "42e4d195-968a-4ba4-9370-18b8e0662368:indexpattern-datasource-layer-80d7e9a3-22e7-4aaf-a3eb-ca88a32b1d5c",
+            "type": "index-pattern"
+        },
+        {
+            "id": "logs-*",
+            "name": "42e4d195-968a-4ba4-9370-18b8e0662368:15a927c2-9dd8-4d00-a6b7-5bb8d67e0d62",
+            "type": "index-pattern"
+        },
+        {
+            "id": "logs-*",
+            "name": "42e4d195-968a-4ba4-9370-18b8e0662368:55fbab74-9981-42ce-8be7-f21522f086b1",
+            "type": "index-pattern"
+        },
+        {
+            "id": "logs-*",
+            "name": "12b11bda-a418-486c-86c7-92399b75d2e7:indexpattern-datasource-layer-80d7e9a3-22e7-4aaf-a3eb-ca88a32b1d5c",
+            "type": "index-pattern"
+        },
+        {
+            "id": "logs-*",
+            "name": "12b11bda-a418-486c-86c7-92399b75d2e7:ff9a1c61-8c4f-4898-94d3-cb069ff30821",
+            "type": "index-pattern"
+        },
+        {
+            "id": "logs-*",
             "name": "1e0548af-d048-43b1-a120-005cd836bf73:indexpattern-datasource-layer-0c79927f-28a4-4781-9af2-a02c54cd44d0",
+            "type": "index-pattern"
+        },
+        {
+            "id": "logs-*",
+            "name": "1e0548af-d048-43b1-a120-005cd836bf73:c799f8c8-2b52-46fa-86d3-a2f57c1fffd9",
             "type": "index-pattern"
         },
         {
@@ -1823,7 +1970,17 @@
         },
         {
             "id": "logs-*",
+            "name": "a4ff7f7c-a976-48a3-ab7b-0ae456efbd76:a63aa36f-6fca-4a55-bcc4-c695670647a3",
+            "type": "index-pattern"
+        },
+        {
+            "id": "logs-*",
             "name": "dc6d1b58-6fd9-4b15-9ae3-719ca29ba6ad:indexpattern-datasource-layer-1f1932ff-97af-4107-9a9b-58f9a9fb3121",
+            "type": "index-pattern"
+        },
+        {
+            "id": "logs-*",
+            "name": "dc6d1b58-6fd9-4b15-9ae3-719ca29ba6ad:06e3c523-d390-47df-9b5a-0980e9db3305",
             "type": "index-pattern"
         },
         {
@@ -1833,17 +1990,12 @@
         },
         {
             "id": "logs-*",
+            "name": "controlGroup_09777516-5da2-451e-803b-e868272a8b18:optionsListDataView",
+            "type": "index-pattern"
+        },
+        {
+            "id": "logs-*",
             "name": "controlGroup_cd27f401-7d72-42ca-a682-be2db707f153:optionsListDataView",
-            "type": "index-pattern"
-        },
-        {
-            "id": "logs-*",
-            "name": "controlGroup_f50f3591-4bf8-410e-a200-eae572dd226d:optionsListDataView",
-            "type": "index-pattern"
-        },
-        {
-            "id": "logs-*",
-            "name": "controlGroup_ece15ece-a410-4bc9-a210-a84f034a45fe:optionsListDataView",
             "type": "index-pattern"
         },
         {
@@ -1853,7 +2005,12 @@
         },
         {
             "id": "logs-*",
-            "name": "controlGroup_09777516-5da2-451e-803b-e868272a8b18:optionsListDataView",
+            "name": "controlGroup_ece15ece-a410-4bc9-a210-a84f034a45fe:optionsListDataView",
+            "type": "index-pattern"
+        },
+        {
+            "id": "logs-*",
+            "name": "controlGroup_f50f3591-4bf8-410e-a200-eae572dd226d:optionsListDataView",
             "type": "index-pattern"
         }
     ],
