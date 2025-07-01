@@ -21,9 +21,7 @@ The minimum **Kibana version** required is **8.14.1**.
 
 [Configure Squid](https://wiki.squid-cache.org/Features/LogModules#Module:_System_Log) to export access logs using one of the supported methods (file (Module: Standard I/O), udp (Module: UDP Receiver), or tcp (Module: TCP Receiver)).
 
-The integration supports the following formats:
-
-[Native log file](https://wiki.squid-cache.org/Features/LogFormat#squid)
+The integration supports the following format: [Native log file](https://wiki.squid-cache.org/Features/LogFormat#squid).
 
 ### Enable the integration in Elastic
 
