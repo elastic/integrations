@@ -211,8 +211,8 @@ An example event for `cur` looks as following:
 | aws_billing.cur.bill.payer_account_name |  | keyword |
 | aws_billing.cur.bill.type |  | keyword |
 | aws_billing.cur.cost.amortized_cost |  | double |
-| aws_billing.cur.cost.category |  | keyword |
 | aws_billing.cur.cost.net_amortized_cost |  | double |
+| aws_billing.cur.cost_category |  | keyword |
 | aws_billing.cur.discount.bundled_discount |  | double |
 | aws_billing.cur.discount.discount |  | object |
 | aws_billing.cur.discount.total_discount |  | double |

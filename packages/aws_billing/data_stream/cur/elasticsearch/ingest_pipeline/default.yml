@@ -400,10 +400,6 @@ processors:
       target_field: aws_billing.cur.bill.payer_account_name
       ignore_missing: true
   - rename:
-      field: _tmp.cost_category
-      target_field: aws_billing.cur.cost.category
-      ignore_missing: true
-  - rename:
       field: _tmp.discount_bundled_discount
       target_field: aws_billing.cur.discount.bundled_discount
       ignore_missing: true
@@ -681,7 +677,7 @@ processors:
       tag: sort_tags_alphabetically
       lang: painless
       description: "Sorts map keys alphabetically and converts back to a string"
-      if: "ctx.aws_billing.cur != null"
+      if: "ctx.temp_tags_obj != null"
       source: >-
         Map sortedTags = new TreeMap();
         sortedTags.putAll(ctx.temp_tags_obj);
@@ -709,6 +705,44 @@ processors:
   - remove:
       field:
         - temp_tags_obj
+      ignore_failure: true
+  - json:
+      tag: cost_category_to_json
+      field: _tmp.cost_category
+      target_field: temp_cost_category_obj
+      ignore_failure: true
+  - script:
+      tag: sort_cost_categories_alphabetically
+      lang: painless
+      if: "ctx.temp_cost_category_obj != null"
+      description: "Sorts map keys alphabetically and converts back to a string"
+      source: >-
+        Map sortedCostCategories = new TreeMap();
+        sortedCostCategories.putAll(ctx.temp_cost_category_obj);
+
+        StringBuilder sb = new StringBuilder();
+        sb.append('{');
+
+        Iterator it = sortedCostCategories.entrySet().iterator();
+        while (it.hasNext()) {
+          Map.Entry pair = (Map.Entry)it.next();
+          sb.append('"');
+          sb.append(pair.getKey());
+          sb.append('"');
+          sb.append(':');
+          sb.append('"');
+          sb.append(pair.getValue());
+          sb.append('"');
+          if (it.hasNext()) {
+            sb.append(',');
+          }
+        }
+
+        sb.append('}');
+        ctx.aws_billing.cur.cost_category = sb.toString();
+  - remove:
+      field:
+        - temp_cost_category_obj
       ignore_failure: true
   - remove:
       field:

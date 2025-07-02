@@ -11,7 +11,7 @@ source:
             'data_stream.dataset': "aws_billing.cur"
 dest:
   index: "aws_billing.cur-v1"
-  pipeline: "metrics-aws_billing.cur-0.1.0-pipeline_extract_tags"
+  pipeline: "metrics-aws_billing.cur-0.1.0-pipeline_extract_metadata"
   aliases:
     - alias: "aws_billing.cur_latest"
       move_on_creation: true
@@ -92,6 +92,10 @@ pivot:
     aws_billing.cur.line_item.currency_code:
       terms:
         field: aws_billing.cur.line_item.currency_code
+        missing_bucket: true
+    cost_category:
+      terms:
+        field: aws_billing.cur.cost_category
         missing_bucket: true
 description: Hourly transform aggregating AWS billing data by key CUR dimensions for cost analysis and reporting.
 frequency: 1h
