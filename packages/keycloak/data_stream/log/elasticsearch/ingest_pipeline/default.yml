@@ -10,11 +10,28 @@ processors:
       ignore_missing: true
       if: ctx.event?.original == null
       tag: rename_event_original
+  - json:
+      field: event.original
+      target_field: json
+      ignore_failure: true
+  - dot_expander:
+      field: "*"
+      path: json
+      if: ctx.json != null
+  - rename:
+      field: event.original
+      target_field: json.event.original
+      ignore_missing: true
+      if: ctx.json != null
+  - remove:
+      field: _tmp.tz_offset
+      if: ctx.json != null
   - grok:
       field: event.original
       patterns:
         - "%{TIMESTAMP_ISO8601:_tmp.timestamp} %{LOGLEVEL:log.level}%{SPACE}\\[%{JAVACLASS:log.logger}\\] \\(%{DATA:process.thread.name}\\) (?<message>(.|\r|\n)*)"
       tag: grok_event_original
+      if: ctx.json == null
   - set:
       field: event.timezone
       value: "{{{_tmp.tz_offset}}}"
@@ -27,7 +44,7 @@ processors:
       formats:
         - yyyy-MM-dd HH:mm:ss,SSS
         - ISO8601
-      if: ctx.event?.timezone != null
+      if: ctx.event?.timezone != null && ctx.json == null
       tag: date_timestamp_timezone
   - date:
       field: _tmp.timestamp
@@ -35,18 +52,26 @@ processors:
       formats:
         - yyyy-MM-dd HH:mm:ss,SSS
         - ISO8601
-      if: ctx.event?.timezone == null
+      if: ctx.event?.timezone == null && ctx.json == null
       tag: date_timestamp_no_timezone
+  - script:
+      tag: blat_json_to_ctx
+      if: ctx.json instanceof Map
+      source: |-
+        for (def e: ctx.json.entrySet()) {
+          ctx[e.getKey()] = e.getValue();
+        }
   - pipeline:
       name: '{{ IngestPipeline "events" }}'
       if: "ctx.log?.logger == 'org.keycloak.events'"
       tag: pipeline_events
   - drop:
-      if: "ctx._tmp?.only_user_events == true && ctx.log?.logger != 'org.keycloak.events'"
+      if: ctx._tmp?.only_user_events == true && ctx.log?.logger != 'org.keycloak.events'
       tag: drop_user_events
   - remove:
       field:
         - _tmp
+        - json
       ignore_missing: true
       tag: remove_tmp
   - script:
