@@ -12,11 +12,17 @@ These are the supported Azure log categories:
 
 | Data Stream |       Log Category       |
 |:-----------:|:------------------------:|
+|    logs     |          Audit           |
+|    logs     |     RequestResponse      |
 |    logs     | ApiManagementGatewayLogs |
 
 #### Requirements and setup
 
 Refer to the [Azure Logs](https://docs.elastic.co/integrations/azure) page for more information on how to set up and use this integration.
+
+#### Native Logging
+
+The Azure AI Foundry provides native logging and monitoring to track the telemetry of the service. The Audit and RequestResponse log categories come under the native logging. However, the default logging doesn't log the inputs and outputs of the service. This is useful to ensure that the services operates as expected.
 
 #### API Gateway Logs
 
