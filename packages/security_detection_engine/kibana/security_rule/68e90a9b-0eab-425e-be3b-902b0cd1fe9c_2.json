@@ -1,0 +1,94 @@
+{
+    "attributes": {
+        "author": [
+            "Elastic"
+        ],
+        "description": "This rule detects suspicious paths mounted on Linux systems. The mount command is used to attach filesystems to the system, and attackers may use it to mount malicious filesystems or directories for data exfiltration or persistence.",
+        "from": "now-9m",
+        "index": [
+            "logs-endpoint.events.process*"
+        ],
+        "language": "eql",
+        "license": "Elastic License v2",
+        "name": "Suspicious Path Mounted",
+        "note": " ## Triage and analysis\n\n> **Disclaimer**:\n> This investigation guide was created using generative AI technology and has been reviewed to improve its accuracy and relevance. While every effort has been made to ensure its quality, we recommend validating the content and adapting it to suit your specific environment and operational needs.\n\n### Investigating Suspicious Path Mounted\n\nIn Linux environments, the mount command integrates filesystems, enabling access to storage devices. Adversaries exploit this by mounting malicious filesystems in sensitive directories like /tmp or /dev/shm to exfiltrate data or maintain persistence. The detection rule identifies such activities by monitoring the execution of the mount command in unusual paths, excluding legitimate parent processes, thus highlighting potential threats.\n\n### Possible investigation steps\n\n- Review the process details to confirm the execution of the mount command, focusing on the process.name and process.args fields to identify the specific path being mounted.\n- Examine the process.parent.executable field to determine the parent process that initiated the mount command, ensuring it is not a known legitimate process.\n- Investigate the user account associated with the process to determine if it is a privileged account or if there are any signs of compromise.\n- Check for any recent changes or anomalies in the mounted directories, such as unexpected files or modifications, to assess potential data exfiltration or persistence activities.\n- Correlate the event with other security alerts or logs from the same host to identify any related suspicious activities or patterns that could indicate a broader attack.\n\n### False positive analysis\n\n- System maintenance scripts may trigger the rule if they mount filesystems in monitored paths. Review and whitelist these scripts by adding their parent executable paths to the exclusion list.\n- Backup processes that temporarily mount directories for data transfer can be mistaken for suspicious activity. Identify these processes and exclude their parent executables to prevent false alerts.\n- Software installations or updates that require mounting filesystems in user directories might be flagged. Verify these activities and add the responsible parent executables to the exclusion criteria.\n- Development tools that use temporary mounts for testing purposes can generate false positives. Recognize these tools and exclude their parent executables to reduce noise.\n- Custom administrative scripts that perform legitimate mounting operations should be reviewed and, if deemed safe, their parent executables should be added to the exclusion list.\n\n### Response and remediation\n\n- Immediately isolate the affected system to prevent further data exfiltration or persistence by disconnecting it from the network.\n- Terminate any suspicious mount processes identified in the alert to halt potential malicious activity.\n- Conduct a thorough review of mounted filesystems and directories to identify and unmount any unauthorized or suspicious mounts.\n- Restore any compromised files or directories from backups, ensuring they are clean and free from malicious modifications.\n- Implement stricter access controls and permissions on sensitive directories like /tmp, /var/tmp, /dev/shm, /home, and /root to prevent unauthorized mounting.\n- Escalate the incident to the security operations team for further investigation and to assess the scope of the threat, including potential lateral movement or additional compromised systems.\n- Enhance monitoring and detection capabilities by configuring alerts for unusual mount activities and integrating threat intelligence feeds to identify similar tactics used by adversaries.\n",
+        "query": "process where host.os.type == \"linux\" and event.type == \"start\" and event.action == \"exec\" and process.name == \"mount\" and \nprocess.args like (\"/tmp/*\", \"/var/tmp/*\", \"/dev/shm/*\", \"/home/*\", \"/root/*\", \"/mount\") and process.parent.executable != null and\nnot (\n  process.parent.executable like (\"/bin/*\", \"/usr/bin/*\", \"/usr/local/bin/*\", \"/sbin/*\", \"/usr/sbin/*\", \"/usr/local/sbin/*\", \"/usr/libexec/*\") or\n  process.parent.name == \"snapd\"\n)\n",
+        "related_integrations": [
+            {
+                "package": "endpoint",
+                "version": "^9.0.0"
+            }
+        ],
+        "required_fields": [
+            {
+                "ecs": true,
+                "name": "event.action",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "event.type",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "host.os.type",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "process.args",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "process.name",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "process.parent.executable",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "process.parent.name",
+                "type": "keyword"
+            }
+        ],
+        "risk_score": 21,
+        "rule_id": "68e90a9b-0eab-425e-be3b-902b0cd1fe9c",
+        "setup": "## Setup\n\nThis rule requires data coming in from Elastic Defend.\n\n### Elastic Defend Integration Setup\nElastic Defend is integrated into the Elastic Agent using Fleet. Upon configuration, the integration allows the Elastic Agent to monitor events on your host and send data to the Elastic Security app.\n\n#### Prerequisite Requirements:\n- Fleet is required for Elastic Defend.\n- To configure Fleet Server refer to the [documentation](https://www.elastic.co/guide/en/fleet/current/fleet-server.html).\n\n#### The following steps should be executed in order to add the Elastic Defend integration on a Linux System:\n- Go to the Kibana home page and click \"Add integrations\".\n- In the query bar, search for \"Elastic Defend\" and select the integration to see more details about it.\n- Click \"Add Elastic Defend\".\n- Configure the integration name and optionally add a description.\n- Select the type of environment you want to protect, either \"Traditional Endpoints\" or \"Cloud Workloads\".\n- Select a configuration preset. Each preset comes with different default settings for Elastic Agent, you can further customize these later by configuring the Elastic Defend integration policy. [Helper guide](https://www.elastic.co/guide/en/security/current/configure-endpoint-integration-policy.html).\n- We suggest selecting \"Complete EDR (Endpoint Detection and Response)\" as a configuration setting, that provides \"All events; all preventions\"\n- Enter a name for the agent policy in \"New agent policy name\". If other agent policies already exist, you can click the \"Existing hosts\" tab and select an existing policy instead.\nFor more details on Elastic Agent configuration settings, refer to the [helper guide](https://www.elastic.co/guide/en/fleet/8.10/agent-policy.html).\n- Click \"Save and Continue\".\n- To complete the integration, select \"Add Elastic Agent to your hosts\" and continue to the next section to install the Elastic Agent on your hosts.\nFor more details on Elastic Defend refer to the [helper guide](https://www.elastic.co/guide/en/security/current/install-endpoint.html).\n",
+        "severity": "low",
+        "tags": [
+            "Domain: Endpoint",
+            "OS: Linux",
+            "Use Case: Threat Detection",
+            "Tactic: Defense Evasion",
+            "Data Source: Elastic Defend",
+            "Resources: Investigation Guide"
+        ],
+        "threat": [
+            {
+                "framework": "MITRE ATT&CK",
+                "tactic": {
+                    "id": "TA0005",
+                    "name": "Defense Evasion",
+                    "reference": "https://attack.mitre.org/tactics/TA0005/"
+                },
+                "technique": [
+                    {
+                        "id": "T1564",
+                        "name": "Hide Artifacts",
+                        "reference": "https://attack.mitre.org/techniques/T1564/"
+                    }
+                ]
+            }
+        ],
+        "timestamp_override": "event.ingested",
+        "type": "eql",
+        "version": 2
+    },
+    "id": "68e90a9b-0eab-425e-be3b-902b0cd1fe9c_2",
+    "type": "security-rule"
+}

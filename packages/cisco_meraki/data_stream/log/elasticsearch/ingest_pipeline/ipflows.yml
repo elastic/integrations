@@ -19,45 +19,45 @@ processors:
 # source field IP:port handling
 - convert:
     type: ip
-    field: translated_src_ip
-    target_field: source.ip
-    if: ctx?.translated_src_ip != null
-- convert:
-    type: ip
     field: src
     target_field: source.ip
-    if: ctx?.translated_src_ip == null && ctx?.src != null
-- convert:
-    field: translated_port
-    target_field: source.port
-    type: long
-    if: ctx?.translated_src_ip != null && ctx?.translated_port != null
+    if: ctx.src != null
 - convert:
     field: sport
     target_field: source.port
     type: long
-    if: ctx?.translated_src_ip == null && ctx?.sport != null
-# destination field IP:port handling
+    if: ctx.sport != null
 - convert:
     type: ip
-    field: translated_dst_ip
-    target_field: destination.ip
-    if: ctx?.translated_dst_ip != null
+    field: translated_src_ip
+    target_field: source.nat.ip
+    if: ctx.translated_src_ip != null
+- convert:
+    field: translated_port
+    target_field: source.nat.port
+    type: long
+    if: ctx.translated_port != null && ctx.source?.nat?.ip != null
+# destination field IP:port handling
 - convert:
     type: ip
     field: dst
     target_field: destination.ip
-    if: ctx?.translated_dst_ip == null && ctx?.dst != null
-- convert:
-    field: translated_port
-    target_field: destination.port
-    type: long
-    if: ctx?.translated_dst_ip != null && ctx?.translated_port != null
+    if: ctx.dst != null
 - convert:
     field: dport
     target_field: destination.port
     type: long
-    if: ctx?.translated_dst_ip == null && ctx?.dport != null
+    if: ctx.dport != null
+- convert:
+    type: ip
+    field: translated_dst_ip
+    target_field: destination.nat.ip
+    if: ctx.translated_dst_ip != null
+- convert:
+    field: translated_port
+    target_field: destination.nat.port
+    type: long
+    if: ctx.translated_port != null && ctx.destination?.nat?.ip != null
 - rename:
     field: protocol
     target_field: network.protocol

@@ -242,6 +242,60 @@ processors:
           value: '{{{_ingest._value.profile.name}}}'
           allow_duplicates: false
   - rename:
+      field: roles
+      target_field: entityanalytics_okta.roles
+      tag: rename_user_roles
+      ignore_missing: true
+  - foreach:
+      field: entityanalytics_okta.roles
+      if: ctx.entityanalytics_okta?.roles instanceof List
+      processor:
+        append:
+          field: user.roles
+          value: '{{{_ingest._value.id}}}'
+          allow_duplicates: false
+  - foreach:
+      field: entityanalytics_okta.roles
+      if: ctx.entityanalytics_okta?.roles instanceof List
+      processor:
+        append:
+          field: user.roles
+          value: '{{{_ingest._value.label}}}'
+          allow_duplicates: false
+  - foreach:
+      field: entityanalytics_okta.roles
+      if: ctx.entityanalytics_okta?.roles instanceof List
+      processor:
+        rename:
+          field: _ingest._value.assignmentType
+          target_field: _ingest._value.assignment_type
+          tag: rename_user_roles.assignmentType
+          ignore_missing: true
+  - foreach:
+      field: entityanalytics_okta.roles
+      if: ctx.entityanalytics_okta?.roles instanceof List
+      processor:
+        rename:
+          field: _ingest._value.lastUpdated
+          target_field: _ingest._value.last_updated
+          tag: rename_user_roles.assignmentType
+          ignore_missing: true
+  - foreach:
+      field: entityanalytics_okta.roles
+      if: ctx.entityanalytics_okta?.roles instanceof List
+      processor:
+        date:
+          field: _ingest._value.last_updated
+          target_field: _ingest._value.last_updated
+          tag: date_user_roles.lastUpdated
+          formats:
+            - ISO8601
+          on_failure:
+            - rename:
+                field: _ingest._value.last_updated
+                target_field: _ingest._value.lastUpdated
+                ignore_failure: true
+  - rename:
       field: okta.transitioningToStatus
       target_field: entityanalytics_okta.user.transitioning_to_status
       tag: user_transitioning_to_status

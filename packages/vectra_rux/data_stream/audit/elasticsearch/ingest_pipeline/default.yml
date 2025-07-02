@@ -1,0 +1,409 @@
+---
+description: Pipeline for processing audit logs.
+processors:
+  - set:
+      field: ecs.version
+      tag: set_ecs_version
+      value: 8.17.0
+  - rename:
+      field: message
+      tag: rename_message_to_event_original
+      target_field: event.original
+      ignore_missing: true
+      description: Renames the original `message` field to `event.original` to store a copy of the original message. The `event.original` field is not touched if the document already has one; it may happen when Logstash sends the document.
+      if: ctx.event?.original == null
+  - terminate:
+      tag: data_collection_error
+      if: ctx.error?.message != null && ctx.message == null && ctx.event?.original == null
+      description: error message set and no data to process.
+  - remove:
+      field:
+        - organization
+        - division
+        - team
+      ignore_missing: true
+      if: ctx.organization instanceof String && ctx.division instanceof String && ctx.team instanceof String
+      tag: remove_agentless_tags
+      description: >-
+        Removes the fields added by Agentless as metadata,
+        as they can collide with ECS fields.
+  - remove:
+      field: message
+      tag: remove_message
+      ignore_missing: true
+      description: The `message` field is no longer required if the document has an `event.original` field.
+      if: ctx.event?.original != null
+  - json:
+      field: event.original
+      tag: json_event_original
+      target_field: json
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - set:
+      field: event.kind
+      tag: set_event_kind
+      value: event
+  - set:
+      field: observer.product
+      tag: set_observer_product
+      value: Vectra RUX
+  - append:
+      field: event.category
+      tag: append_category_session
+      value: session
+      allow_duplicates: false
+      if: ctx.json?.event_action?.contains('logout') == true
+  - append:
+      field: event.category
+      tag: append_category_authentication
+      value: authentication
+      allow_duplicates: false
+      if: ctx.json?.event_action?.contains('login') == true
+  - append:
+      field: event.category
+      tag: append_category_configuration
+      value: configuration
+      allow_duplicates: false
+      if: >-
+        ctx.json?.event_action?.contains('created') == true ||
+        ctx.json?.event_action?.contains('deleted') == true ||
+        ctx.json?.event_action?.contains('updated') == true ||
+        ctx.json?.event_action?.contains('lock') == true ||
+        ctx.json?.event_action?.contains('unlock') == true ||
+        ctx.json?.event_action?.contains('marked_as_fixed') == true ||
+        ctx.json?.event_action?.contains('unmarked_as_fixed') == true
+  - append:
+      field: event.category
+      tag: append_category_access
+      value: access
+      allow_duplicates: false
+      if: >-
+        ctx.json?.event_action?.contains('lock') == true ||
+        ctx.json?.event_action?.contains('unlock') == true
+  - append:
+      field: event.type
+      tag: append_type_change
+      value: change
+      allow_duplicates: false
+      if: >-
+        ctx.json?.event_action?.contains('updated') == true ||
+        ctx.json?.event_action?.contains('marked_as_fixed') == true ||
+        ctx.json?.event_action?.contains('unmarked_as_fixed') == true
+  - append:
+      field: event.type
+      tag: append_type_creation
+      value: creation
+      allow_duplicates: false
+      if: ctx.json?.event_action?.contains('created') == true
+  - append:
+      field: event.type
+      tag: append_type_deletion
+      value: deletion
+      allow_duplicates: false
+      if: ctx.json?.event_action?.contains('deleted') == true
+  - rename:
+      field: json.api_client_id
+      tag: rename_api_client_id
+      target_field: vectra_rux.audit.api_client_id
+      ignore_missing: true
+  - rename:
+      field: json.event_action
+      tag: rename_event_action
+      target_field: vectra_rux.audit.event.action
+      ignore_missing: true
+  - set:
+      field: event.action
+      tag: set_event_action_from_audit_event_action
+      copy_from: vectra_rux.audit.event.action
+      ignore_empty_value: true
+  - lowercase:
+      field: event.action
+      tag: lowercase_event_action
+      ignore_missing: true
+  - split:
+      field: event.action
+      tag: split_event_action
+      separator: \s+
+      ignore_missing: true
+      if: ctx.event?.action != ''
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - join:
+      field: event.action
+      tag: join_event_action
+      separator: '-'
+      if: ctx.event?.action != null
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - rename:
+      field: json.event_data
+      tag: rename_event_data
+      target_field: vectra_rux.audit.event.data
+      ignore_missing: true
+  - rename:
+      field: json.event_object
+      tag: rename_event_object
+      target_field: vectra_rux.audit.event.object
+      ignore_missing: true
+  - date:
+      field: json.event_timestamp
+      tag: date_event_timestamp
+      target_field: vectra_rux.audit.event.timestamp
+      formats:
+        - ISO8601
+      if: ctx.json?.event_timestamp != null && ctx.json.event_timestamp != ''
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - set:
+      field: '@timestamp'
+      tag: set_@timestamp_from_audit_event_timestamp
+      copy_from: vectra_rux.audit.event.timestamp
+      ignore_empty_value: true
+  - convert:
+      field: json.id
+      tag: convert_id
+      type: string
+      target_field: vectra_rux.audit.id
+      ignore_missing: true
+  - rename:
+      field: json.message
+      tag: rename_message
+      target_field: vectra_rux.audit.message
+      ignore_missing: true
+  - set:
+      field: message
+      tag: set_message_from_audit_message
+      copy_from: vectra_rux.audit.message
+      ignore_empty_value: true
+  - rename:
+      field: json.result_status
+      tag: rename_result_status
+      target_field: vectra_rux.audit.result_status
+      ignore_missing: true
+  - set:
+      field: event.outcome
+      tag: set_event_outcome_from_audit_result_status
+      copy_from: vectra_rux.audit.result_status
+      ignore_empty_value: true
+  - convert:
+      field: json.source_ip
+      tag: convert_source_ip_to_ip
+      target_field: vectra_rux.audit.source_ip
+      type: ip
+      ignore_missing: true
+      if: ctx.json?.source_ip != ''
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - set:
+      field: source.ip
+      tag: set_source_ip_from_audit_source_ip
+      copy_from: vectra_rux.audit.source_ip
+      ignore_empty_value: true
+  - geoip:
+      field: source.ip
+      target_field: source.geo
+      ignore_missing: true
+  - geoip:
+      database_file: GeoLite2-ASN.mmdb
+      field: source.ip
+      target_field: source.as
+      properties:
+        - asn
+        - organization_name
+      ignore_missing: true
+  - rename:
+      field: source.as.asn
+      tag: rename_source_as_asn
+      target_field: source.as.number
+      ignore_missing: true
+  - rename:
+      field: source.as.organization_name
+      tag: rename_source_as_organization_name
+      target_field: source.as.organization.name
+      ignore_missing: true
+  - append:
+      field: related.ip
+      tag: append_vectra_rux_audit_source_ip_into_related_ip
+      value: '{{{vectra_rux.audit.source_ip}}}'
+      allow_duplicates: false
+      if: ctx.vectra_rux?.audit?.source_ip != null
+  - convert:
+      field: json.user_id
+      tag: convert_user_id_to_string
+      type: string
+      target_field: vectra_rux.audit.user.id
+      ignore_missing: true
+  - set:
+      field: user.id
+      tag: set_user_id_from_audit_user_id
+      copy_from: vectra_rux.audit.user.id
+      ignore_empty_value: true
+  - append:
+      field: related.user
+      tag: append_vectra_rux_audit_user_id_into_related_user
+      value: '{{{vectra_rux.audit.user.id}}}'
+      allow_duplicates: false
+      if: ctx.vectra_rux?.audit?.user?.id != null
+  - rename:
+      field: json.username
+      tag: rename_username
+      target_field: vectra_rux.audit.user.name
+      ignore_missing: true
+  - set:
+      field: user.name
+      tag: set_user_name_from_audit_user_name
+      copy_from: vectra_rux.audit.user.name
+      ignore_empty_value: true
+  - rename:
+      field: user.name
+      target_field: user.email
+      tag: rename_user_email
+      if: ctx.user?.name != null && ctx.user.name.indexOf("@") > 0
+  - dissect:
+      field: user.email
+      pattern: '%{user.name}@%{user.domain}'
+      tag: dissect_user_email
+      ignore_missing: true
+      ignore_failure: true
+      if: ctx.user?.name == null
+  - append:
+      field: related.user
+      tag: append_vectra_rux_audit_user_name_into_related_user
+      value: '{{{user.name}}}'
+      allow_duplicates: false
+      if: ctx.user?.name != null
+  - append:
+      field: related.user
+      tag: append_vectra_rux_audit_user_email_into_related_user
+      value: '{{{user.email}}}'
+      allow_duplicates: false
+      if: ctx.user?.email != null
+  - rename:
+      field: json.user_role
+      tag: rename_user_role
+      target_field: vectra_rux.audit.user.role
+      ignore_missing: true
+  - append:
+      field: user.roles
+      tag: append_vectra_rux_audit_user_role_into_user_roles
+      value: '{{{vectra_rux.audit.user.role}}}'
+      allow_duplicates: false
+      if: ctx.vectra_rux?.audit?.user?.role != null
+  - rename:
+      field: json.role
+      tag: rename_role
+      target_field: vectra_rux.audit.role
+      ignore_missing: true
+  - rename:
+      field: json.user_type
+      tag: rename_user_type
+      target_field: vectra_rux.audit.user.type
+      ignore_missing: true
+  - rename:
+      field: json.version
+      tag: rename_version
+      target_field: vectra_rux.audit.version
+      ignore_missing: true
+  - set:
+      field: observer.version
+      tag: set_observer_version_from_audit_version
+      copy_from: vectra_rux.audit.version
+      ignore_empty_value: true
+  - remove:
+      field:
+        - vectra_rux.audit.event.timestamp
+        - vectra_rux.audit.message
+        - vectra_rux.audit.result_status
+        - vectra_rux.audit.source_ip
+        - vectra_rux.audit.user.id
+        - vectra_rux.audit.user.name
+        - vectra_rux.audit.user.role
+        - vectra_rux.audit.version
+      tag: remove_custom_duplicate_fields
+      ignore_missing: true
+      if: ctx.tags == null || !ctx.tags.contains('preserve_duplicate_custom_fields')
+  - remove:
+      field: json
+      tag: remove_json
+      ignore_missing: true
+  - script:
+       tag: script_to_truncate_long_fields
+       lang: painless
+       description: Truncate fields that are over length.
+       source: |-
+         def filterMassive(def src) {
+           if (src instanceof Map) {
+             for (def entry: src.entrySet()) {
+               entry.setValue(filterMassive(entry.getValue()));
+             }
+             return src;
+           } else if (src instanceof List) {
+             for (int i = 0; i < src.length; i++) {
+               src[i] = filterMassive(src[i]);
+             }
+             return src;
+           } else if (src instanceof String && src.length() > 32766) {
+             return src.substring(0, 32700)+' (truncated)';
+           }
+           return src;
+         }
+         filterMassive(ctx);
+  # Cleanup
+  - script:
+      description: This script processor iterates over the whole document to remove fields with null values.
+      tag: script_to_drop_null_values
+      lang: painless
+      source: |
+        void handleMap(Map map) {
+          map.values().removeIf(v -> {
+            if (v instanceof Map) {
+                handleMap(v);
+            } else if (v instanceof List) {
+                handleList(v);
+            }
+            return v == null || v == '' || (v instanceof Map && v.size() == 0) || (v instanceof List && v.size() == 0)
+          });
+        }
+        void handleList(List list) {
+          list.removeIf(v -> {
+            if (v instanceof Map) {
+                handleMap(v);
+            } else if (v instanceof List) {
+                handleList(v);
+            }
+            return v == null || v == '' || (v instanceof Map && v.size() == 0) || (v instanceof List && v.size() == 0)
+          });
+        }
+        handleMap(ctx);
+  - set:
+      field: event.kind
+      tag: set_pipeline_error_to_event_kind
+      value: pipeline_error
+      if: ctx.error?.message != null
+  - append:
+      field: tags
+      value: preserve_original_event
+      allow_duplicates: false
+      if: ctx.error?.message != null
+on_failure:
+  - append:
+      field: error.message
+      value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - set:
+      field: event.kind
+      tag: set_pipeline_error_to_event_kind
+      value: pipeline_error
+  - append:
+      field: tags
+      value: preserve_original_event
+      allow_duplicates: false

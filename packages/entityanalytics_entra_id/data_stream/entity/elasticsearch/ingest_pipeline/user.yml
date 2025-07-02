@@ -19,13 +19,76 @@ processors:
       field: asset.type
       tag: set_asset_type
       value: microsoft_entra_id_user
+  - rename:
+      field: azure_ad
+      tag: rename_azure_ad
+      target_field: entityanalytics_entra_id.user
+      ignore_missing: true
+  ##############################################################################
+  # rename to snake case
+  ##############################################################################
+  - script:
+      tag: script_convert_camelcase_to_snake_case
+      lang: painless
+      description: Convert camelCase to snake_case
+      source: |
+        // Helper function to convert camelCase to snake_case
+        String camelToSnake(String str) {
+          def result = "";
+          def lastCharWasUpperCase = false;
+          for (int i = 0; i < str.length(); i++) {
+            char c = str.charAt(i);
+            if (Character.isUpperCase(c)) {
+              if (i > 0 && !lastCharWasUpperCase) {
+                result += "_";
+              }
+              result += Character.toLowerCase(c);
+              lastCharWasUpperCase = true;
+            } else {
+              result += c;
+              lastCharWasUpperCase = false;
+            }
+          }
+          return result;
+        }
+
+        // Recursive function to handle nested fields
+        def convertToSnakeCase(def obj) {
+          if (obj instanceof Map) {
+            // Convert each key in the map
+            def newObj = [:];
+            for (entry in obj.entrySet()) {
+              // Skip fields that contain '@' in their name
+              if (!entry.getKey().contains("@")) {
+                String newKey = camelToSnake(entry.getKey());
+                newObj[newKey] = convertToSnakeCase(entry.getValue());
+              }
+            }
+            return newObj;
+          } else if (obj instanceof List) {
+            // If it's a list, process each item recursively
+            def newList = [];
+            for (item in obj) {
+              newList.add(convertToSnakeCase(item));
+            }
+            return newList;
+          } else {
+            return obj;
+          }
+        }
+
+        // Apply the conversion
+        if (ctx.entityanalytics_entra_id?.user != null) {
+          ctx.entityanalytics_entra_id.user = convertToSnakeCase(ctx.entityanalytics_entra_id.user);
+        }
   - convert:
-      field: azure_ad.accountEnabled
+      field: entityanalytics_entra_id.user.account_enabled
       tag: convert_accountEnabled_to_boolean
-      target_field: entityanalytics_entra_id.user.account_enabled
       type: boolean
       ignore_missing: true
       on_failure:
+        - remove:
+            field: entityanalytics_entra_id.user.account_enabled
         - append:
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
@@ -34,11 +97,6 @@ processors:
       value: true
       tag: set_user_enabled
       if: ctx.entityanalytics_entra_id?.user?.account_enabled == true
-  - rename:
-      field: azure_ad.mail
-      tag: rename_mail
-      target_field: entityanalytics_entra_id.user.mail
-      ignore_missing: true
   - append:
       field: related.user
       value: "{{{entityanalytics_entra_id.user.mail}}}"
@@ -50,11 +108,6 @@ processors:
       copy_from: entityanalytics_entra_id.user.mail
       tag: set_user_email
       ignore_empty_value: true
-  - rename:
-      field: azure_ad.userPrincipalName
-      tag: rename_userPrincipalName
-      target_field: entityanalytics_entra_id.user.user_principal_name
-      ignore_missing: true
   - append:
       field: related.user
       value: "{{{entityanalytics_entra_id.user.user_principal_name}}}"
@@ -66,11 +119,6 @@ processors:
       copy_from: entityanalytics_entra_id.user.user_principal_name
       tag: set_user_name
       ignore_empty_value: true
-  - rename:
-      field: azure_ad.displayName
-      tag: rename_displayName
-      target_field: entityanalytics_entra_id.user.display_name
-      ignore_missing: true
   - append:
       field: related.user
       value: "{{{entityanalytics_entra_id.user.display_name}}}"
@@ -82,36 +130,16 @@ processors:
       copy_from: entityanalytics_entra_id.user.display_name
       tag: set_user_full_name
       ignore_empty_value: true
-  - rename:
-      field: azure_ad.givenName
-      tag: rename_givenName
-      target_field: entityanalytics_entra_id.user.given_name
-      ignore_missing: true
   - set:
       field: user.first_name
       copy_from: entityanalytics_entra_id.user.given_name
       tag: set_user_first_name
       ignore_empty_value: true
-  - rename:
-      field: azure_ad.surname
-      tag: rename_surname
-      target_field: entityanalytics_entra_id.user.surname
-      ignore_missing: true
   - set:
       field: user.last_name
       copy_from: entityanalytics_entra_id.user.surname
       tag: set_user_last_name
       ignore_empty_value: true
-  - rename:
-      field: azure_ad.mobilePhone
-      tag: rename_mobilePhone
-      target_field: entityanalytics_entra_id.user.mobile_phone
-      ignore_missing: true
-  - rename:
-      field: azure_ad.businessPhones
-      tag: rename_businessPhones
-      target_field: entityanalytics_entra_id.user.business_phones
-      ignore_missing: true
   - append:
       field: user.phone
       value: "{{{entityanalytics_entra_id.user.mobile_phone}}}"
@@ -133,31 +161,16 @@ processors:
           value: "{{{_ingest._value}}}"
           tag: append_business_phones_into_user_phone_if_list
           allow_duplicates: false
-  - rename:
-      field: azure_ad.jobTitle
-      tag: rename_jobTitle
-      target_field: entityanalytics_entra_id.user.job_title
-      ignore_missing: true
   - set:
       field: user.job_title
       copy_from: entityanalytics_entra_id.user.job_title
       tag: set_user_job_title
       ignore_empty_value: true
-  - rename:
-      field: azure_ad.officeLocation
-      tag: rename_officeLocation
-      target_field: entityanalytics_entra_id.user.office_location
-      ignore_missing: true
   - set:
       field: user.work.location_name
       copy_from: entityanalytics_entra_id.user.office_location
       tag: set_user_work_location
       ignore_empty_value: true
-  - rename:
-      field: azure_ad.preferredLanguage
-      tag: rename_preferredLanguage
-      target_field: entityanalytics_entra_id.user.preferred_language
-      ignore_missing: true
   - set:
       field: entityanalytics_entra_id.user.id
       copy_from: user.id

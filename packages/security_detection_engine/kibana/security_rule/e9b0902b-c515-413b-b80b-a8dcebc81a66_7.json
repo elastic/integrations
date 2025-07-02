@@ -1,0 +1,63 @@
+{
+    "attributes": {
+        "anomaly_threshold": 70,
+        "author": [
+            "Elastic"
+        ],
+        "description": "A machine learning job has detected an abnormal volume of remote files shared on the host indicating potential lateral movement activity. One of the primary goals of attackers after gaining access to a network is to locate and exfiltrate valuable information. Attackers might perform multiple small transfers to match normal egress activity in the network, to evade detection.",
+        "from": "now-90m",
+        "interval": "15m",
+        "license": "Elastic License v2",
+        "machine_learning_job_id": "lmd_high_count_remote_file_transfer",
+        "name": "Spike in Remote File Transfers",
+        "note": "## Triage and analysis\n\n> **Disclaimer**:\n> This investigation guide was created using generative AI technology and has been reviewed to improve its accuracy and relevance. While every effort has been made to ensure its quality, we recommend validating the content and adapting it to suit your specific environment and operational needs.\n\n### Investigating Spike in Remote File Transfers\n\nRemote file transfer technologies facilitate data sharing across networks, essential for collaboration and operations. However, adversaries exploit these to move laterally within a network, often transferring data stealthily to avoid detection. The 'Spike in Remote File Transfers' detection rule leverages machine learning to identify unusual transfer volumes, signaling potential malicious activity by comparing against established network baselines.\n\n### Possible investigation steps\n\n- Review the alert details to identify the specific host and time frame associated with the abnormal file transfer activity.\n- Analyze network logs and remote file transfer logs to determine the source and destination of the transfers, focusing on any unusual or unauthorized endpoints.\n- Cross-reference the identified host with known assets and user accounts to verify if the activity aligns with expected behavior or if it involves unauthorized access.\n- Investigate any associated user accounts for signs of compromise, such as unusual login times or locations, by reviewing authentication logs.\n- Check for any recent changes or anomalies in the network baseline that could explain the spike in file transfers, such as new software deployments or legitimate large data migrations.\n- Correlate the detected activity with other security alerts or incidents to identify potential patterns or coordinated attacks within the network.\n\n### False positive analysis\n\n- Regularly scheduled data backups or synchronization tasks can trigger false positives. Identify these tasks and create exceptions to prevent them from being flagged.\n- Automated software updates or patch management systems may cause spikes in file transfers. Exclude these systems from the rule to reduce false alerts.\n- Internal data sharing between departments for legitimate business purposes might be misidentified. Establish a baseline for these activities and adjust the detection thresholds accordingly.\n- High-volume data transfers during specific business operations, such as end-of-month reporting, can be mistaken for malicious activity. Temporarily adjust the rule settings during these periods to accommodate expected increases in transfer volumes.\n- Frequent file transfers from trusted external partners or vendors should be monitored and, if consistently benign, added to an allowlist to minimize unnecessary alerts.\n\n### Response and remediation\n\n- Isolate the affected host immediately to prevent further lateral movement and potential data exfiltration. Disconnect it from the network to contain the threat.\n- Conduct a thorough analysis of the transferred files to determine if sensitive data was involved and assess the potential impact of the data exposure.\n- Review and terminate any unauthorized remote access sessions or services on the affected host to prevent further exploitation.\n- Reset credentials for any accounts that were used or potentially compromised during the incident to prevent unauthorized access.\n- Apply security patches and updates to the affected systems to address any vulnerabilities that may have been exploited by the attackers.\n- Monitor network traffic for any additional unusual remote file transfer activities, using enhanced logging and alerting to detect similar threats in the future.\n- Escalate the incident to the security operations center (SOC) or incident response team for further investigation and to ensure comprehensive remediation efforts are undertaken.",
+        "references": [
+            "https://www.elastic.co/guide/en/security/current/prebuilt-ml-jobs.html",
+            "https://docs.elastic.co/en/integrations/lmd",
+            "https://www.elastic.co/blog/detecting-lateral-movement-activity-a-new-kibana-integration",
+            "https://www.elastic.co/blog/remote-desktop-protocol-connections-elastic-security"
+        ],
+        "related_integrations": [
+            {
+                "package": "lmd",
+                "version": "^2.3.0"
+            },
+            {
+                "package": "endpoint",
+                "version": "^9.0.0"
+            }
+        ],
+        "risk_score": 21,
+        "rule_id": "e9b0902b-c515-413b-b80b-a8dcebc81a66",
+        "setup": "## Setup\n\nThe rule requires the Lateral Movement Detection integration assets to be installed, as well as file and Windows RDP process events collected by the Elastic Defend integration.\n\n### Lateral Movement Detection Setup\nThe Lateral Movement Detection integration detects lateral movement activity by identifying abnormalities in file and Windows RDP events. Anomalies are detected using Elastic's Anomaly Detection feature.\n\n#### Prerequisite Requirements:\n- Fleet is required for Lateral Movement Detection.\n- To configure Fleet Server refer to the [documentation](https://www.elastic.co/guide/en/fleet/current/fleet-server.html).\n- File events collected by the [Elastic Defend](https://docs.elastic.co/en/integrations/endpoint) integration.\n- To install Elastic Defend, refer to the [documentation](https://www.elastic.co/guide/en/security/current/install-endpoint.html).\n\n#### The following steps should be executed to install assets associated with the Lateral Movement Detection integration:\n- Go to the Kibana homepage. Under Management, click Integrations.\n- In the query bar, search for Lateral Movement Detection and select the integration to see more details about it.\n- Follow the instructions under the **Installation** section.\n- For this rule to work, complete the instructions through **Add preconfigured anomaly detection jobs**.\n",
+        "severity": "low",
+        "tags": [
+            "Use Case: Lateral Movement Detection",
+            "Rule Type: ML",
+            "Rule Type: Machine Learning",
+            "Tactic: Lateral Movement",
+            "Resources: Investigation Guide"
+        ],
+        "threat": [
+            {
+                "framework": "MITRE ATT&CK",
+                "tactic": {
+                    "id": "TA0008",
+                    "name": "Lateral Movement",
+                    "reference": "https://attack.mitre.org/tactics/TA0008/"
+                },
+                "technique": [
+                    {
+                        "id": "T1210",
+                        "name": "Exploitation of Remote Services",
+                        "reference": "https://attack.mitre.org/techniques/T1210/"
+                    }
+                ]
+            }
+        ],
+        "type": "machine_learning",
+        "version": 7
+    },
+    "id": "e9b0902b-c515-413b-b80b-a8dcebc81a66_7",
+    "type": "security-rule"
+}

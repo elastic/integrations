@@ -784,24 +784,24 @@ An example event for `setupaudittrail` looks as following:
 {
     "@timestamp": "2022-08-16T09:26:38.000Z",
     "agent": {
-        "ephemeral_id": "8a1bedda-17d6-4895-b914-851f067b9106",
-        "id": "ea40bcb3-cd35-4db9-b0d3-81d94e75b64d",
-        "name": "docker-fleet-agent",
+        "ephemeral_id": "cef7c9c7-0840-4353-ab0f-c7566d56cb92",
+        "id": "20144ad6-195d-44c9-9d2e-33fc4bf15207",
+        "name": "elastic-agent-93629",
         "type": "filebeat",
-        "version": "8.14.0"
+        "version": "8.18.1"
     },
     "data_stream": {
         "dataset": "salesforce.setupaudittrail",
-        "namespace": "ep",
+        "namespace": "70319",
         "type": "logs"
     },
     "ecs": {
         "version": "8.11.0"
     },
     "elastic_agent": {
-        "id": "ea40bcb3-cd35-4db9-b0d3-81d94e75b64d",
+        "id": "20144ad6-195d-44c9-9d2e-33fc4bf15207",
         "snapshot": false,
-        "version": "8.14.0"
+        "version": "8.18.1"
     },
     "event": {
         "action": "insertConnectedApplication",
@@ -809,7 +809,7 @@ An example event for `setupaudittrail` looks as following:
         "created": "2022-08-16T09:26:38.000Z",
         "dataset": "salesforce.setupaudittrail",
         "id": "0Ym5j000019nwonCAA",
-        "ingested": "2024-06-21T16:40:13Z",
+        "ingested": "2025-06-03T15:55:33Z",
         "kind": "event",
         "module": "salesforce",
         "original": "{\"Action\":\"insertConnectedApplication\",\"CreatedByContext\":\"Einstein\",\"CreatedById\":\"0055j000000utlPAAQ\",\"CreatedDate\":\"2022-08-16T09:26:38.000+0000\",\"DelegateUser\":\"user1\",\"Display\":\"For user user@elastic.co, the User Verified Email status changed to verified\",\"Id\":\"0Ym5j000019nwonCAA\",\"Section\":\"Connected Apps\"}",
@@ -819,32 +819,38 @@ An example event for `setupaudittrail` looks as following:
         ]
     },
     "host": {
-        "architecture": "x86_64",
-        "containerized": true,
-        "hostname": "docker-fleet-agent",
-        "id": "345c85cf1fe945e2b19719b370c09a48",
+        "architecture": "aarch64",
+        "containerized": false,
+        "hostname": "elastic-agent-93629",
         "ip": [
-            "192.168.251.7"
+            "172.19.0.2",
+            "172.18.0.4"
         ],
         "mac": [
-            "02-42-C0-A8-FB-07"
+            "02-42-AC-12-00-04",
+            "02-42-AC-13-00-02"
         ],
-        "name": "docker-fleet-agent",
+        "name": "elastic-agent-93629",
         "os": {
-            "codename": "focal",
-            "family": "debian",
-            "kernel": "3.10.0-1160.114.2.el7.x86_64",
-            "name": "Ubuntu",
-            "platform": "ubuntu",
+            "kernel": "6.10.14-linuxkit",
+            "name": "Wolfi",
+            "platform": "wolfi",
             "type": "linux",
-            "version": "20.04.6 LTS (Focal Fossa)"
+            "version": "20230201"
         }
     },
     "input": {
         "type": "salesforce"
     },
+    "related": {
+        "user": [
+            "0055j000000utlPAAQ",
+            "user",
+            "user@elastic.co"
+        ]
+    },
     "salesforce": {
-        "instance_url": "http://elastic-package-service-salesforce-1:8010",
+        "instance_url": "http://svc-salesforce:8010",
         "setup_audit_trail": {
             "created_by_context": "Einstein",
             "created_by_id": "0055j000000utlPAAQ",
@@ -858,8 +864,10 @@ An example event for `setupaudittrail` looks as following:
         "salesforce-setupaudittrail"
     ],
     "user": {
+        "domain": "elastic.co",
+        "email": "user@elastic.co",
         "id": "0055j000000utlPAAQ",
-        "name": "user@elastic.co"
+        "name": "user"
     }
 }
 ```

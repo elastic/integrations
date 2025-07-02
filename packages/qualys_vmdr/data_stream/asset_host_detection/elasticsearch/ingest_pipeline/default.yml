@@ -1,6 +1,17 @@
 ---
 description: Pipeline for processing Asset Host Detection data.
 processors:
+  - remove:
+      field:
+        - organization
+        - division
+        - team
+      ignore_missing: true
+      if: ctx.organization instanceof String && ctx.division instanceof String && ctx.team instanceof String
+      tag: remove_agentless_tags
+      description: >-
+        Removes the fields added by Agentless as metadata,
+        as they can collide with ECS fields.
   - set:
       field: ecs.version
       tag: set_ecs_version
@@ -30,10 +41,26 @@ processors:
       ignore_missing: true
       ignore_failure: true
 
-  - fail:
-      tag: cel_failure
+  - rename:
+      field: interval_id
+      tag: rename_interval_id
+      target_field: qualys_vmdr.asset_host_detection.interval_id
+      ignore_missing: true
+  - date:
+      field: interval_start
+      tag: date_interval_start
+      target_field: qualys_vmdr.asset_host_detection.interval_start
+      formats:
+        - ISO8601
+      if: ctx.interval_start != null && ctx.interval_start != ''
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - terminate:
+      tag: data_collection_error
       if: ctx.error?.message != null && ctx.message == null && ctx.event?.original == null
-      message: error message set and no data to process
+      description: error message set and no data to process.
   - set:
       field: event.kind
       tag: set_event_kind_1
@@ -58,6 +85,22 @@ processors:
       field: message
       tag: json_message
       target_field: json
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - rename:
+      field: json.interval_id
+      tag: rename_json_interval_id
+      target_field: qualys_vmdr.asset_host_detection.interval_id
+      ignore_missing: true
+  - date:
+      field: json.interval_start
+      tag: date_json_interval_start
+      target_field: qualys_vmdr.asset_host_detection.interval_start
+      formats:
+        - ISO8601
+      if: ctx.json?.interval_start != null && ctx.json.interval_start != ''
       on_failure:
         - append:
             field: error.message
@@ -1582,6 +1625,8 @@ processors:
       field:
         - json
         - message
+        - interval_id
+        - interval_start
         - _conf
         - qualys_vmdr.asset_host_detection.vulnerability.FIRST_FOUND_DATETIME
         - qualys_vmdr.asset_host_detection.vulnerability.FIRST_REOPENED_DATETIME

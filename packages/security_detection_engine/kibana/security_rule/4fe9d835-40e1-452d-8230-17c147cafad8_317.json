@@ -1,0 +1,118 @@
+{
+    "attributes": {
+        "author": [
+            "Elastic"
+        ],
+        "description": "Identifies execution from the Remote Desktop Protocol (RDP) shared mountpoint tsclient on the target host. This may indicate a lateral movement attempt.",
+        "from": "now-9m",
+        "index": [
+            "endgame-*",
+            "logs-crowdstrike.fdr*",
+            "logs-endpoint.events.process-*",
+            "logs-m365_defender.event-*",
+            "logs-sentinel_one_cloud_funnel.*",
+            "logs-system.security*",
+            "logs-windows.forwarded*",
+            "logs-windows.sysmon_operational-*",
+            "winlogbeat-*"
+        ],
+        "language": "eql",
+        "license": "Elastic License v2",
+        "name": "Execution via TSClient Mountpoint",
+        "note": "## Triage and analysis\n\n> **Disclaimer**:\n> This investigation guide was created using generative AI technology and has been reviewed to improve its accuracy and relevance. While every effort has been made to ensure its quality, we recommend validating the content and adapting it to suit your specific environment and operational needs.\n\n### Investigating Execution via TSClient Mountpoint\n\nThe TSClient mountpoint is a feature of the Remote Desktop Protocol (RDP) that allows users to access local drives from a remote session. Adversaries can exploit this by executing malicious files from the shared mountpoint, facilitating lateral movement within a network. The detection rule identifies such activities by monitoring for process executions originating from the TSClient path, signaling potential unauthorized access attempts.\n\n### Possible investigation steps\n\n- Review the alert details to confirm the process execution path matches the pattern \"\\\\Device\\\\Mup\\\\tsclient\\\\*.exe\" and verify the host operating system is Windows.\n- Identify the user account associated with the RDP session and check for any unusual or unauthorized access patterns, such as logins from unexpected locations or at odd times.\n- Examine the executed process's hash and compare it against known malicious hashes in threat intelligence databases to determine if the file is potentially harmful.\n- Investigate the source system from which the RDP session originated to identify any signs of compromise or unauthorized access that could indicate lateral movement.\n- Check for any additional suspicious activities on the target host, such as unexpected network connections or file modifications, that may correlate with the execution event.\n- Review the security logs from data sources like Microsoft Defender for Endpoint or Sysmon for any related alerts or anomalies that could provide further context on the incident.\n\n### False positive analysis\n\n- Legitimate software updates or installations may trigger the rule if they are executed from a local drive mapped through TSClient. To manage this, create exceptions for known update processes or installation paths that are frequently used in your environment.\n- IT administrative tasks performed via RDP sessions can also cause false positives. Identify and exclude specific administrative tools or scripts that are regularly executed from TSClient paths by trusted personnel.\n- Automated backup or synchronization software that accesses local drives through RDP might be flagged. Review and whitelist these processes if they are part of routine operations.\n- Development or testing activities involving remote execution of scripts or applications from TSClient can be mistaken for threats. Establish a list of approved development tools and paths to exclude from monitoring.\n- Regularly review and update the list of exceptions to ensure that only verified and necessary exclusions are maintained, minimizing the risk of overlooking genuine threats.\n\n### Response and remediation\n\n- Immediately isolate the affected host from the network to prevent further lateral movement and potential data exfiltration.\n- Terminate any suspicious processes running from the TSClient path to halt any ongoing malicious activity.\n- Conduct a thorough scan of the affected host using endpoint detection and response (EDR) tools to identify and remove any malicious files or artifacts.\n- Review and analyze RDP logs and session details to identify unauthorized access attempts and determine the source of the intrusion.\n- Reset credentials for any accounts that were accessed or potentially compromised during the incident to prevent unauthorized access.\n- Implement network segmentation to limit RDP access to only necessary systems and users, reducing the attack surface for similar threats.\n- Escalate the incident to the security operations center (SOC) or incident response team for further investigation and to ensure comprehensive remediation efforts.",
+        "query": "process where host.os.type == \"windows\" and event.type == \"start\" and process.executable : \"\\\\Device\\\\Mup\\\\tsclient\\\\*.exe\"\n",
+        "references": [
+            "https://posts.specterops.io/revisiting-remote-desktop-lateral-movement-8fb905cb46c3",
+            "https://www.elastic.co/security-labs/hunting-for-lateral-movement-using-event-query-language"
+        ],
+        "related_integrations": [
+            {
+                "package": "endpoint",
+                "version": "^9.0.0"
+            },
+            {
+                "package": "windows",
+                "version": "^3.0.0"
+            },
+            {
+                "package": "system",
+                "version": "^2.0.0"
+            },
+            {
+                "package": "m365_defender",
+                "version": "^3.0.0"
+            },
+            {
+                "package": "sentinel_one_cloud_funnel",
+                "version": "^1.9.0"
+            },
+            {
+                "package": "crowdstrike",
+                "version": "^1.51.0"
+            }
+        ],
+        "required_fields": [
+            {
+                "ecs": true,
+                "name": "event.type",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "host.os.type",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "process.executable",
+                "type": "keyword"
+            }
+        ],
+        "risk_score": 73,
+        "rule_id": "4fe9d835-40e1-452d-8230-17c147cafad8",
+        "severity": "high",
+        "tags": [
+            "Domain: Endpoint",
+            "OS: Windows",
+            "Use Case: Threat Detection",
+            "Tactic: Lateral Movement",
+            "Data Source: Elastic Endgame",
+            "Data Source: Elastic Defend",
+            "Data Source: Windows Security Event Logs",
+            "Data Source: Microsoft Defender for Endpoint",
+            "Data Source: Sysmon",
+            "Data Source: SentinelOne",
+            "Data Source: Crowdstrike",
+            "Resources: Investigation Guide"
+        ],
+        "threat": [
+            {
+                "framework": "MITRE ATT&CK",
+                "tactic": {
+                    "id": "TA0008",
+                    "name": "Lateral Movement",
+                    "reference": "https://attack.mitre.org/tactics/TA0008/"
+                },
+                "technique": [
+                    {
+                        "id": "T1021",
+                        "name": "Remote Services",
+                        "reference": "https://attack.mitre.org/techniques/T1021/",
+                        "subtechnique": [
+                            {
+                                "id": "T1021.001",
+                                "name": "Remote Desktop Protocol",
+                                "reference": "https://attack.mitre.org/techniques/T1021/001/"
+                            }
+                        ]
+                    }
+                ]
+            }
+        ],
+        "timestamp_override": "event.ingested",
+        "type": "eql",
+        "version": 317
+    },
+    "id": "4fe9d835-40e1-452d-8230-17c147cafad8_317",
+    "type": "security-rule"
+}
