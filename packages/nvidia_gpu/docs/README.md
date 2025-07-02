@@ -56,32 +56,32 @@ An example event for `stats` looks as following:
 
 ```json
 {
-    "@timestamp": "2025-06-02T06:29:11.719Z",
+    "@timestamp": "2025-06-24T05:16:10.082Z",
     "agent": {
-        "ephemeral_id": "f4ac2d0f-71de-49c1-abc8-3d27a324fd45",
-        "id": "00f7f2be-4202-425f-94f0-a76ceb9b90b7",
-        "name": "elastic-agent-77526",
+        "ephemeral_id": "158b1ab5-1d8f-40df-a960-73d24cffa507",
+        "id": "c509a40e-38fb-4be5-8e70-ba382ce8eff0",
+        "name": "elastic-agent-58660",
         "type": "metricbeat",
         "version": "8.17.0"
     },
     "data_stream": {
         "dataset": "nvidia_gpu.stats",
-        "namespace": "41920",
+        "namespace": "52265",
         "type": "metrics"
     },
     "ecs": {
         "version": "8.17.0"
     },
     "elastic_agent": {
-        "id": "00f7f2be-4202-425f-94f0-a76ceb9b90b7",
+        "id": "c509a40e-38fb-4be5-8e70-ba382ce8eff0",
         "snapshot": false,
         "version": "8.17.0"
     },
     "event": {
         "agent_id_status": "verified",
         "dataset": "nvidia_gpu.stats",
-        "duration": 66478366,
-        "ingested": "2025-06-02T06:29:13Z",
+        "duration": 3737970,
+        "ingested": "2025-06-24T05:16:13Z",
         "module": "prometheus"
     },
     "gpu": {
@@ -90,15 +90,14 @@ An example event for `stats` looks as following:
             "streaming_multiprocessor_frequency": 300
         },
         "labels": {
-            "DCGM_FI_DRIVER_VERSION": "525.105.17",
-            "Hostname": "924e17218b6f",
-            "UUID": "GPU-2492e3fa-2252-1730-0d1a-8d12ab32cdf0",
             "device": "nvidia0",
+            "driver_version": "525.105.17",
             "gpu": "0",
-            "instance": "192.168.0.192:9400",
+            "hostname": "924e17218b6f",
             "job": "prometheus",
-            "modelName": "Tesla T4",
-            "pci_bus_id": "00000000:00:04.0"
+            "model_name": "Tesla T4",
+            "pci_bus_id": "00000000:00:04.0",
+            "uuid": "GPU-2492e3fa-2252-1730-0d1a-8d12ab32cdf0"
         },
         "license_vgpu_status": 0,
         "memory": {
@@ -114,11 +113,11 @@ An example event for `stats` looks as following:
             "replay": 0
         },
         "power": {
-            "energy_consumption_total": 6027115649,
-            "usage": 12.14
+            "energy_consumption_total": 27649212030,
+            "usage": 12.239
         },
         "temperature": {
-            "gpu": 38,
+            "gpu": 36,
             "memory": 0
         },
         "utilization": {
@@ -139,16 +138,16 @@ An example event for `stats` looks as following:
     "host": {
         "architecture": "x86_64",
         "containerized": true,
-        "hostname": "elastic-agent-77526",
+        "hostname": "elastic-agent-58660",
         "ip": [
-            "172.18.0.4",
-            "192.168.112.2"
+            "172.18.0.7",
+            "192.168.32.2"
         ],
         "mac": [
-            "02-42-AC-12-00-04",
-            "02-42-C0-A8-70-02"
+            "A6-27-18-C5-0D-F0",
+            "EA-10-B8-A2-8C-94"
         ],
-        "name": "elastic-agent-77526",
+        "name": "elastic-agent-58660",
         "os": {
             "family": "",
             "kernel": "5.15.153.1-microsoft-standard-WSL2",
@@ -162,8 +161,11 @@ An example event for `stats` looks as following:
         "name": "collector",
         "period": 10000
     },
+    "server": {
+        "address": "svc-nvidia_gpu:9400"
+    },
     "service": {
-        "address": "http://192.168.0.192:9400/metrics",
+        "address": "http://svc-nvidia_gpu:9400/metrics",
         "type": "prometheus"
     }
 }
@@ -174,6 +176,13 @@ An example event for `stats` looks as following:
 | Field | Description | Type | Unit | Metric Type |
 |---|---|---|---|---|
 | @timestamp | Event timestamp. | date |  |  |
+| agent.id | Unique identifier of this agent (if one exists). Example: For Beats this would be beat.id. | keyword |  |  |
+| cloud.account.id | The cloud account or organization id used to identify different entities in a multi-tenant environment. Examples: AWS account id, Google Cloud ORG Id, or other unique identifier. | keyword |  |  |
+| cloud.availability_zone | Availability zone in which this host, resource, or service is located. | keyword |  |  |
+| cloud.instance.id | Instance ID of the host machine. | keyword |  |  |
+| cloud.provider | Name of the cloud provider. Example values are aws, azure, gcp, or digitalocean. | keyword |  |  |
+| cloud.region | Region in which this host, resource, or service is located. | keyword |  |  |
+| container.id | Unique container id. | keyword |  |  |
 | data_stream.dataset | Data stream dataset. | constant_keyword |  |  |
 | data_stream.namespace | Data stream namespace. | constant_keyword |  |  |
 | data_stream.type | Data stream type. | constant_keyword |  |  |
@@ -197,7 +206,16 @@ An example event for `stats` looks as following:
 | gpu.ecc.single_bit_persistent.count | Single-bit persistent errors count for GPU memory. | long |  | counter |
 | gpu.ecc.single_bit_volatile.count | Single-bit volatile errors count for GPU memory. | long |  | counter |
 | gpu.error.xid | The eXerience ID of the error being reported by the GPU. | float |  | gauge |
-| gpu.labels.\* | Nvidia GPU labels | object |  |  |
+| gpu.labels.device | Nvidia GPU device name | keyword |  |  |
+| gpu.labels.driver_version | Nvidia GPU Driver version | keyword |  |  |
+| gpu.labels.err_code | Nvidia GPU error code | keyword |  |  |
+| gpu.labels.err_msg | Nvidia GPU error message | keyword |  |  |
+| gpu.labels.gpu | Nvidia GPU | keyword |  |  |
+| gpu.labels.hostname | Nvidia GPU hostname | keyword |  |  |
+| gpu.labels.job | Nvidia GPU job | keyword |  |  |
+| gpu.labels.model_name | Nvidia GPU model name | keyword |  |  |
+| gpu.labels.pci_bus_id | Nvidia GPU pci bus id | keyword |  |  |
+| gpu.labels.uuid | Nvidia GPU UUID | keyword |  |  |
 | gpu.license_vgpu_status | vGPU License status. | long |  | gauge |
 | gpu.memory.framebuffer.free_size | Free size of the framebuffer (in MiB). | float |  | gauge |
 | gpu.memory.framebuffer.used_size | Used size of the framebuffer (in MiB). | float |  | gauge |
@@ -231,5 +249,9 @@ An example event for `stats` looks as following:
 | gpu.utilization.encoder.pct | Encoder utilization (in %). | float | percent | gauge |
 | gpu.utilization.gpu.pct | GPU utilization (in %). | float | percent | gauge |
 | gpu.utilization.memory_copy.pct | Memory utilization (in %). | float | percent | gauge |
+| host.name | Name of the host. It can contain what hostname returns on Unix systems, the fully qualified domain name (FQDN), or a name specified by the user. The recommended value is the lowercase FQDN of the host. | keyword |  |  |
+| kubernetes.container.name | Kubernetes container name | keyword |  |  |
+| kubernetes.namespace | Kubernetes namespace | keyword |  |  |
+| kubernetes.pod.name | Kubernetes pod name | keyword |  |  |
 | service.address | Address where data about this service was collected from. This should be a URI, network address (ipv4:port or [ipv6]:port) or a resource path (sockets). | keyword |  |  |
 | service.type | The type of the service data is collected from. The type can be used to group and correlate logs and metrics from one service type. Example: If logs or metrics are collected from Elasticsearch, `service.type` would be `elasticsearch`. | keyword |  |  |
