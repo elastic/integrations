@@ -191,7 +191,7 @@ For more details about the AWS-S3 input settings, check this [documentation](htt
    - URL
    - Token URL
 
-   or if you want to collect logs via Azure Blob    Storage, you'll need to provide the following    details:
+   or if you want to collect logs via Azure Blob Storage, you'll need to provide the following details:
    For OAuth2 (Microsoft Entra ID RBAC):
    - Account Name
    - Client ID
