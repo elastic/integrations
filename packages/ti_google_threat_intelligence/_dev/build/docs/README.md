@@ -30,7 +30,7 @@ Customers can access a subset of the available threat lists based on their **Goo
 
 ## Data Streams
 
-Data collection is available for all four feed types: `cryptominer`, `first_stage_delivery_vectors`, `infostealer`, `iot`, `Linux`, `Malicious Network Infrastructure`, `Malware`, `Mobile` and `OS X`, each with a separate data stream. By default, **Malicious Network Infrastructure** is enabled. Users can enable additional data streams based on their GTI subscription tier. If a user enables data collection for a data stream they do not have access to, it will result in an error log on the **Discover** page.
+Data collection is available for all nine feed types: `cryptominer`, `first_stage_delivery_vectors`, `infostealer`, `iot`, `linux`, `malicious_network_infrastructure`, `malware`, `mobile` and `osx`, each with a separate data stream. By default, **Malicious Network Infrastructure** is enabled. Users can enable additional data streams based on their GTI subscription tier. If a user enables data collection for a data stream they do not have access to, it will result in an error log on the **Discover** page.
 
 ## Requirements
 
@@ -75,7 +75,7 @@ The `labels.is_transform_source` field indicates log origin:
 - **False** for transformed index
 - **True** for source index
 
-Currently, four transforms are available across all 4 data streams.
+Currently, four transforms are available across all 9 data streams.
 
 The following are four transforms along with their associated pipelines:
 
@@ -142,10 +142,10 @@ The following transform and its associated pipelines are used to filter relevant
 4. Under the **Destination configuration** section, set the **Ingest Pipeline**:
    - Each transform in the **Google Threat Intelligence** integration has a corresponding ingest pipeline.
    - Refer to the **Transforms table** above for the appropriate pipeline name associated with transform.
-   - Prefix the pipeline name with the integration version.  
-     For example:  
+   - Prefix the pipeline name with the integration version.
+     For example:
      ```
-     0.1.0-ti_google_threat_intelligence-latest_ip_ioc-transform-pipeline
+     0.2.0-ti_google_threat_intelligence-latest_ip_ioc-transform-pipeline
      ```
    - Click **Update** to save the changes.
 5. Click the **three dots** again next to the transform and select **Start** to activate it.
@@ -221,9 +221,9 @@ This is the `Linux` dataset.
 
 {{fields "linux"}}
 
-### Malicious Network Infra
+### Malicious Network Infrastructure
 
-This is the `Malicious Network Infra` dataset.
+This is the `Malicious Network Infrastructure` dataset.
 
 #### Example
 
