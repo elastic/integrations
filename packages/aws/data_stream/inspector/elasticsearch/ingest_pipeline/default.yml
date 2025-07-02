@@ -1043,26 +1043,30 @@ processors:
 
           if (res.type == 'AWS_EC2_INSTANCE') {
             ctx.resource.id = res.id;
-            ctx.resource.name = res.tags.Name;
+            ctx.resource.name = res.tags?.Name;
             ctx.cloud.instance.id = res.id;
             ctx.cloud.region = res.region;
-            ctx.cloud.machine.type = res.details.aws.ec2_instance.type;
+            ctx.cloud.machine.type = res.details?.aws?.ec2_instance?.type;
             ctx.host.id = res.id;
-            ctx.host.name = res.tags.Name;
-            ctx.host.type = res.details.aws.ec2_instance.type;
-            ctx.host.os.platform = res.details.aws.ec2_instance.platform;
-            for (ipv4 in res.details.aws.ec2_instance.ipv4_addresses) {
-              ctx.host.ip.add(ipv4);
+            ctx.host.name = res.tags?.Name;
+            ctx.host.type = res.details?.aws?.ec2_instance?.type;
+            ctx.host.os.platform = res.details?.aws?.ec2_instance?.platform;
+            if (res.details?.aws?.ec2_instance?.ipv4_addresses instanceof List) {
+              for (ipv4 in res.details?.aws?.ec2_instance?.ipv4_addresses) {
+                ctx.host.ip.add(ipv4);
+              }
             }
-            for (ipv6 in res.details.aws.ec2_instance.ipv6_addresses) {
-              ctx.host.ip.add(ipv6);
+            if (res.details?.aws?.ec2_instance?.ipv6_addresses instanceof List) {
+              for (ipv6 in res.details?.aws?.ec2_instance?.ipv6_addresses) {
+                ctx.host.ip.add(ipv6);
+              }
             }
-            def platform = res.details.aws.ec2_instance.platform.toLowerCase();
-            if (platform.contains('windows')) {
+            def platform = res.details?.aws?.ec2_instance?.platform?.toLowerCase();
+            if (platform?.contains('windows') == true) {
               ctx.host.os.type = 'windows';
-            } else if (platform.contains('linux')) {
+            } else if (platform?.contains('linux') == true) {
               ctx.host.os.type = 'linux';
-            } else if (platform.contains('macos')) {
+            } else if (platform?.contains('macos') == true) {
               ctx.host.os.type = 'macos';
             }
           }
@@ -1103,26 +1107,30 @@ processors:
         for (res in resources) {
           if (res.type == 'AWS_EC2_INSTANCE') {
             ctx.resource.id.add(res.id);
-            ctx.resource.name.add(res.tags.Name);
+            ctx.resource.name.add(res.tags?.Name);
             ctx.cloud.instance.id.add(res.id);
             ctx.cloud.region.add(res.region);
-            ctx.cloud.machine.type.add(res.details.aws.ec2_instance.type);
+            ctx.cloud.machine.type.add(res.details?.aws?.ec2_instance?.type);
             ctx.host.id.add(res.id);
-            ctx.host.name.add(res.tags.Name);
-            ctx.host.type.add(res.details.aws.ec2_instance.type);
-            ctx.host.os.platform.add(res.details.aws.ec2_instance.platform);
-            for (ipv4 in res.details.aws.ec2_instance.ipv4_addresses) {
-              ctx.host.ip.add(ipv4);
+            ctx.host.name.add(res.tags?.Name);
+            ctx.host.type.add(res.details?.aws?.ec2_instance?.type);
+            ctx.host.os.platform.add(res.details?.aws?.ec2_instance?.platform);
+            if (res.details?.aws?.ec2_instance?.ipv4_addresses instanceof List) {
+              for (ipv4 in res.details?.aws?.ec2_instance?.ipv4_addresses) {
+                ctx.host.ip.add(ipv4);
+              }
             }
-            for (ipv6 in res.details.aws.ec2_instance.ipv6_addresses) {
-              ctx.host.ip.add(ipv6);
+            if (res.details?.aws?.ec2_instance?.ipv6_addresses instanceof List) {
+              for (ipv6 in res.details?.aws?.ec2_instance?.ipv6_addresses) {
+                ctx.host.ip.add(ipv6);
+              }
             }
-            def platform = res.details.aws.ec2_instance.platform.toLowerCase();
-            if (platform.contains('windows')) {
+            def platform = res.details?.aws?.ec2_instance?.platform?.toLowerCase();
+            if (platform?.contains('windows') == true) {
               ctx.host.os.type = 'windows';
-            } else if (platform.contains('linux')) {
+            } else if (platform?.contains('linux') == true) {
               ctx.host.os.type = 'linux';
-            } else if (platform.contains('macos')) {
+            } else if (platform?.contains('macos') == true) {
               ctx.host.os.type = 'macos';
             }
           }
