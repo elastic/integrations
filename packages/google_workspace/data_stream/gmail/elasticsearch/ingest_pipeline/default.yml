@@ -1,0 +1,806 @@
+---
+description: Pipeline for processing gmail logs.
+processors:
+  - set:
+      field: ecs.version
+      tag: set_ecs_version
+      value: 8.16.0
+  - terminate:
+      tag: data_collection_error
+      if: ctx.error?.message != null && ctx.message == null && ctx.event?.original == null
+      description: error message set and no data to process.
+  - remove:
+      field:
+        - organization
+        - division
+        - team
+      ignore_missing: true
+      if: ctx.organization instanceof String && ctx.division instanceof String && ctx.team instanceof String
+      tag: remove_agentless_tags
+      description: >-
+        Removes the fields added by Agentless as metadata,
+        as they can collide with ECS fields.
+  - rename:
+      field: message
+      tag: rename_message_to_event_original
+      target_field: event.original
+      ignore_missing: true
+      description: Renames the original `message` field to `event.original` to store a copy of the original message. The `event.original` field is not touched if the document already has one; it may happen when Logstash sends the document.
+      if: ctx.event?.original == null
+  - remove:
+      field: message
+      tag: remove_message
+      ignore_missing: true
+      description: The `message` field is no longer required if the document has an `event.original` field.
+      if: ctx.event?.original != null
+  - json:
+      field: event.original
+      tag: json_event_original
+      target_field: json
+      if: ctx.event?.original != null
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - script:
+      description: Flatten BigQuery API result.
+      tag: script_to_flatten_bigquery_api_result
+      if: ctx.json != null
+      lang: painless
+      source: |-
+        def transformRow(def row, def schemaFields) {
+          if (row == null || schemaFields == null) {
+            return null;
+          }
+          def transformed = new HashMap();
+          for (int i = 0; i < schemaFields.size(); i++) {
+            def fieldSchema = schemaFields[i];
+            // Get the corresponding value from the row,
+            // Set fieldValue to null if the value does not exists for the current field.
+            def fieldValue = (row.size() > i && row[i] != null) ? row[i].v : null;
+            // I the current field type is RECORD than we need to recursively extract nested fields.
+            if (fieldSchema.type == 'RECORD') {
+              def list = new ArrayList();
+              // Field mode REPEATED indicates a list of values.
+              if (fieldSchema.mode != null && fieldSchema.mode == 'REPEATED') {
+                if (fieldValue instanceof List && fieldValue.size() > 0) {
+                  for (def item : fieldValue) {
+                    // Recursively call transformRow to transform each nested record.
+                    if (item != null && item instanceof Map) {
+                      list.add(transformRow(item.v.f, fieldSchema.fields));
+                    } else {
+                      // Handle scalar values for REPEATED mode.
+                      list.add(item);
+                    }
+                  }
+                }
+                transformed[fieldSchema.name] = list;
+              } else {
+                // Handle non-repeated RECORD fields.
+                if (fieldValue != null && fieldValue instanceof Map) {
+                  transformed[fieldSchema.name] = transformRow(fieldValue.f, fieldSchema.fields);
+                } else {
+                  transformed[fieldSchema.name] = null;
+                }
+              }
+            } else {
+              // For scalar field type, map the value to the field name.
+              if (fieldSchema.mode != null && fieldSchema.mode == 'REPEATED'){
+                def value_list = new ArrayList();
+                for (def item : fieldValue) {
+                  value_list.add(item.v);
+                }
+                transformed[fieldSchema.name] = value_list;
+              } else{
+                transformed[fieldSchema.name] = fieldValue;
+              }
+            }
+          }
+          return transformed;
+        }
+
+        // Entry point: Check whether row and schema exists.
+        if (ctx.json?.row?.f != null && ctx.json.schema != null) {
+          ctx.google_workspace = ctx.google_workspace ?: [:];
+          ctx.google_workspace.gmail = ctx.google_workspace.gmail ?: [:];
+          ctx.google_workspace.gmail = transformRow(ctx.json.row.f, ctx.json.schema.fields);
+        }
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - set:
+      field: event.kind
+      tag: set_event_kind
+      value: event
+  - append:
+      field: event.category
+      tag: append_email_to_event_category
+      value: email
+  - append:
+      field: event.type
+      tag: append_info_to_event_type
+      value: info
+  - set:
+      field: user.email
+      tag: set_user_email_from_gmail_event_info_client_context_session_context_delegate_user_email
+      copy_from: google_workspace.gmail.event_info.client_context.session_context.delegate_user_email
+      ignore_empty_value: true
+  - set:
+      field: user.name
+      tag: set_user_name_from_user_email
+      copy_from: user.email
+      ignore_empty_value: true
+  - dissect:
+      field: user.email
+      tag: dissect_user_email
+      if: ctx.user?.email != null && ctx.user.email.contains('@')
+      pattern: '%{}@%{user.domain}'
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - set:
+      field: user.id
+      tag: set_user_id_from_gmail_event_info_client_context_session_context_dusi
+      copy_from: google_workspace.gmail.event_info.client_context.session_context.dusi
+      ignore_empty_value: true
+  - convert:
+      field: google_workspace.gmail.event_info.elapsed_time_usec
+      tag: convert_event_info_elapsed_time_usec_to_long
+      target_field: google_workspace.gmail.event_info.elapsed_time_usec
+      type: long
+      ignore_missing: true
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - script:
+      description: Set event duration in nanoseconds.
+      if: ctx.google_workspace?.gmail?.event_info?.elapsed_time_usec != null
+      tag: set_event_duration_from_event_info_elapse_time_usec_in_nanoseconds
+      lang: painless
+      source: |-
+        ctx.event = ctx.event ?: [:];
+        ctx.event.duration = ctx.google_workspace.gmail.event_info.elapsed_time_usec * 1000
+      on_failure:
+          - append:
+              field: error.message
+              value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - convert:
+      field: google_workspace.gmail.event_info.success
+      tag: convert_event_info_success_to_boolean
+      target_field: google_workspace.gmail.event_info.success
+      type: boolean
+      ignore_missing: true
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - set:
+      field: event.outcome
+      tag: set_event_outcome_to_success
+      value: success
+      if: ctx.google_workspace?.gmail?.event_info?.success == true
+  - set:
+      field: event.outcome
+      tag: set_event_outcome_to_failure
+      value: failure
+      if: ctx.google_workspace?.gmail?.event_info?.success == false
+  - set:
+      field: event.outcome
+      tag: set_event_outcome_to_unknown
+      value: unknown
+      override: false
+  - convert:
+      field: google_workspace.gmail.event_info.timestamp_usec
+      tag: convert_event_info_timestamp_usec_to_long
+      target_field: google_workspace.gmail.event_info.timestamp_usec
+      type: long
+      ignore_missing: true
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - script:
+      description: Convert microseconds to milliseconds.
+      tag: convert_timestamp_usec_to_milliseconds
+      lang: painless
+      if: ctx?.google_workspace?.gmail?.event_info?.timestamp_usec != null
+      source: >
+        ctx._temp_ = [:];
+        ctx._temp_.timestamp_usec = ctx.google_workspace.gmail.event_info.timestamp_usec / 1000;
+  - date:
+      field: _temp_.timestamp_usec
+      tag: date_temp_timestamp_usec
+      target_field: '@timestamp'
+      formats:
+        - UNIX_MS
+      if: ctx._temp_?.timestamp_usec != null && ctx._temp_.timestamp_usec != ''
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - convert:
+      field: google_workspace.gmail.message_connection_info.smtp_user_agent_ip
+      tag: convert_message_connection_info_smtp_user_agent_ip_to_ip
+      target_field: google_workspace.gmail.message_connection_info.smtp_user_agent_ip
+      type: ip
+      ignore_missing: true
+      if: ctx.google_workspace?.gmail?.message_connection_info?.smtp_user_agent_ip != ''
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - set:
+      field: email.attachments.file.extension
+      tag: set_email_attachments_file_extension_from_gmail_message_info_attachment_file_extension_type
+      copy_from: google_workspace.gmail.message_info.attachment.file_extension_type
+      ignore_empty_value: true
+  - set:
+      field: email.attachments.file.name
+      tag: set_email_attachments_file_name_from_gmail_message_info_attachment_file_name
+      copy_from: google_workspace.gmail.message_info.attachment.file_name
+      ignore_empty_value: true
+  - set:
+      field: email.attachments.file.hash.sha256
+      tag: set_email_attachments_file_hash_sha256_from_gmail_message_info_attachment_sha256
+      copy_from: google_workspace.gmail.message_info.attachment.sha256
+      ignore_empty_value: true
+  - convert:
+      field: google_workspace.gmail.message_info.confidential_mode_info.is_confidential_mode
+      tag: convert_message_info_confidential_mode_info_is_confidential_mode_to_boolean
+      target_field: google_workspace.gmail.message_info.confidential_mode_info.is_confidential_mode
+      type: boolean
+      ignore_missing: true
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - convert:
+      field: google_workspace.gmail.message_info.connection_info.client_ip
+      tag: convert_message_info_connection_info_client_ip_to_ip
+      target_field: google_workspace.gmail.message_info.connection_info.client_ip
+      type: ip
+      ignore_missing: true
+      if: ctx.google_workspace?.gmail?.message_info?.connection_info?.client_ip != ''
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - set:
+      field: client.ip
+      tag: set_client_ip_from_gmail_message_info_connection_info_client_ip
+      copy_from: google_workspace.gmail.message_info.connection_info.client_ip
+      ignore_empty_value: true
+  - geoip:
+      field: client.ip
+      tag: geoip_client_geo_from_client_ip
+      target_field: client.geo
+      ignore_missing: true
+  - geoip:
+      field: client.ip
+      tag: set_client_as_from_client_ip
+      database_file: GeoLite2-ASN.mmdb
+      target_field: client.as
+      properties:
+        - asn
+        - organization_name
+      ignore_missing: true
+  - rename:
+      field: client.as.asn
+      tag: rename_client_as_asn
+      target_field: client.as.number
+      ignore_missing: true
+  - rename:
+      field: client.as.organization_name
+      tag: rename_client_as_organization_name
+      target_field: client.as.organization.name
+      ignore_missing: true
+  - convert:
+      field: google_workspace.gmail.message_info.connection_info.dkim_pass
+      tag: convert_message_info_connection_info_dkim_pass_to_boolean
+      target_field: google_workspace.gmail.message_info.connection_info.dkim_pass
+      type: boolean
+      ignore_missing: true
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - convert:
+      field: google_workspace.gmail.message_info.connection_info.dmarc_pass
+      tag: convert_message_info_connection_info_dmarc_pass_to_boolean
+      target_field: google_workspace.gmail.message_info.connection_info.dmarc_pass
+      type: boolean
+      ignore_missing: true
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - convert:
+      field: google_workspace.gmail.message_info.connection_info.failed_smtp_out_connect_ip
+      tag: convert_message_info_connection_info_failed_smtp_out_connect_ip_to_ip
+      target_field: google_workspace.gmail.message_info.connection_info.failed_smtp_out_connect_ip
+      type: ip
+      ignore_missing: true
+      if: ctx.google_workspace?.gmail?.message_info?.connection_info?.failed_smtp_out_connect_ip != ''
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - set:
+      field: client.geo.city_name
+      tag: set_client_geo_city_name_from_gmail_message_info_connection_info_ip_geo_city
+      copy_from: google_workspace.gmail.message_info.connection_info.ip_geo_city
+      ignore_empty_value: true
+  - set:
+      field: client.geo.country_name
+      tag: set_client_geo_country_name_from_gmail_message_info_connection_info_ip_geo_country
+      copy_from: google_workspace.gmail.message_info.connection_info.ip_geo_country
+      ignore_empty_value: true
+  - convert:
+      field: google_workspace.gmail.message_info.connection_info.is_internal
+      tag: convert_message_info_connection_info_is_internal_to_boolean
+      target_field: google_workspace.gmail.message_info.connection_info.is_internal
+      type: boolean
+      ignore_missing: true
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - convert:
+      field: google_workspace.gmail.message_info.connection_info.is_intra_domain
+      tag: convert_message_info_connection_info_is_intra_domain_to_boolean
+      target_field: google_workspace.gmail.message_info.connection_info.is_intra_domain
+      type: boolean
+      ignore_missing: true
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - convert:
+      field: google_workspace.gmail.message_info.connection_info.smtp_in_connect_ip
+      tag: convert_message_info_connection_info_smtp_in_connect_ip_to_ip
+      target_field: google_workspace.gmail.message_info.connection_info.smtp_in_connect_ip
+      type: ip
+      ignore_missing: true
+      if: ctx.google_workspace?.gmail?.message_info?.connection_info?.smtp_in_connect_ip != ''
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - convert:
+      field: google_workspace.gmail.message_info.connection_info.smtp_out_connect_ip
+      tag: convert_message_info_connection_info_smtp_out_connect_ip_to_ip
+      target_field: google_workspace.gmail.message_info.connection_info.smtp_out_connect_ip
+      type: ip
+      ignore_missing: true
+      if: ctx.google_workspace?.gmail?.message_info?.connection_info?.smtp_out_connect_ip != ''
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - convert:
+      field: google_workspace.gmail.message_info.connection_info.smtp_reply_code
+      tag: convert_message_info_connection_info_smtp_reply_code_to_long
+      target_field: google_workspace.gmail.message_info.connection_info.smtp_reply_code
+      type: long
+      ignore_missing: true
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - set:
+      field: tls.cipher
+      tag: set_tls_cipher_from_gmail_message_info_connection_info_smtp_tls_cipher
+      copy_from: google_workspace.gmail.message_info.connection_info.smtp_tls_cipher
+      ignore_empty_value: true
+  - set:
+      field: tls.version
+      tag: set_tls_version_from_gmail_message_info_connection_info_smtp_tls_version
+      copy_from: google_workspace.gmail.message_info.connection_info.smtp_tls_version
+      ignore_empty_value: true
+  - convert:
+      field: google_workspace.gmail.message_info.connection_info.spf_pass
+      tag: convert_message_info_connection_info_spf_pass_to_boolean
+      target_field: google_workspace.gmail.message_info.connection_info.spf_pass
+      type: boolean
+      ignore_missing: true
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - convert:
+      field: google_workspace.gmail.message_info.connection_info.tls_required_but_unavailable
+      tag: convert_message_info_connection_info_tls_required_but_unavailable_to_boolean
+      target_field: google_workspace.gmail.message_info.connection_info.tls_required_but_unavailable
+      type: boolean
+      ignore_missing: true
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - foreach:
+      field: google_workspace.gmail.message_info.destination
+      if: ctx.google_workspace?.gmail?.message_info?.destination instanceof List
+      processor:
+        append:
+          field: email.to.address
+          tag: append_email_to_address_from_gmail_message_info_destination_address
+          value: '{{_ingest._value.address}}'
+  - convert:
+      field: google_workspace.gmail.message_info.destination.smime_decryption_success
+      tag: convert_message_info_destination_smime_decryption_success_to_boolean
+      target_field: google_workspace.gmail.message_info.destination.smime_decryption_success
+      type: boolean
+      ignore_missing: true
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - convert:
+      field: google_workspace.gmail.message_info.destination.smime_extraction_success
+      tag: convert_message_info_destination_smime_extraction_success_to_boolean
+      target_field: google_workspace.gmail.message_info.destination.smime_extraction_success
+      type: boolean
+      ignore_missing: true
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - convert:
+      field: google_workspace.gmail.message_info.destination.smime_parsing_success
+      tag: convert_message_info_destination_smime_parsing_success_to_boolean
+      target_field: google_workspace.gmail.message_info.destination.smime_parsing_success
+      type: boolean
+      ignore_missing: true
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - convert:
+      field: google_workspace.gmail.message_info.destination.smime_signature_verification_success
+      tag: convert_message_info_destination_smime_signature_verification_success_to_boolean
+      target_field: google_workspace.gmail.message_info.destination.smime_signature_verification_success
+      type: boolean
+      ignore_missing: true
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - convert:
+      field: google_workspace.gmail.message_info.is_policy_check_for_sender
+      tag: convert_message_info_is_policy_check_for_sender_to_boolean
+      target_field: google_workspace.gmail.message_info.is_policy_check_for_sender
+      type: boolean
+      ignore_missing: true
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - convert:
+      field: google_workspace.gmail.message_info.is_spam
+      tag: convert_message_info_is_spam_to_boolean
+      target_field: google_workspace.gmail.message_info.is_spam
+      type: boolean
+      ignore_missing: true
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - convert:
+      field: google_workspace.gmail.message_info.num_message_attachments
+      tag: convert_message_info_num_message_attachments_to_long
+      target_field: google_workspace.gmail.message_info.num_message_attachments
+      type: long
+      ignore_missing: true
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - convert:
+      field: google_workspace.gmail.message_info.payload_size
+      tag: convert_message_info_payload_size_to_long
+      target_field: google_workspace.gmail.message_info.payload_size
+      type: long
+      ignore_missing: true
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - convert:
+      field: google_workspace.gmail.message_info.smime_encrypt_message
+      tag: convert_message_info_smime_encrypt_message_to_boolean
+      target_field: google_workspace.gmail.message_info.smime_encrypt_message
+      type: boolean
+      ignore_missing: true
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - convert:
+      field: google_workspace.gmail.message_info.smime_extraction_success
+      tag: convert_message_info_smime_extraction_success_to_boolean
+      target_field: google_workspace.gmail.message_info.smime_extraction_success
+      type: boolean
+      ignore_missing: true
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - convert:
+      field: google_workspace.gmail.message_info.smime_packaging_success
+      tag: convert_message_info_smime_packaging_success_to_boolean
+      target_field: google_workspace.gmail.message_info.smime_packaging_success
+      type: boolean
+      ignore_missing: true
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - convert:
+      field: google_workspace.gmail.message_info.smime_sign_message
+      tag: convert_message_info_smime_sign_message_to_boolean
+      target_field: google_workspace.gmail.message_info.smime_sign_message
+      type: boolean
+      ignore_missing: true
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - set:
+      field: error.type
+      tag: set_error_type_from_gmail_message_info_smtp_relay_error
+      copy_from: google_workspace.gmail.message_info.smtp_relay_error
+      ignore_empty_value: true
+  - append:
+      field: email.from.address
+      tag: set_source_user_email_from_gmail_message_info_source_address
+      value: '{{google_workspace.gmail.message_info.source.address}}'
+      allow_duplicates: false
+  - script:
+      description: Convert microseconds to milliseconds.
+      tag: convert_message_info_spam_info_classification_timestamp_usec_to_milliseconds
+      lang: painless
+      if: ctx.google_workspace?.gmail?.message_info?.spam_info?.classification_timestamp_usec != null
+      source: >
+        ctx.google_workspace.gmail.message_info.spam_info.classification_timestamp_usec /= 1000;
+      on_failure:
+          - append:
+              field: error.message
+              value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - date:
+      field: google_workspace.gmail.message_info.spam_info.classification_timestamp_usec
+      tag: date_message_info_spam_info_classification_timestamp_usec
+      target_field: google_workspace.gmail.message_info.spam_info.classification_timestamp_usec
+      formats:
+        - UNIX_MS
+      if: ctx.google_workspace?.gmail?.message_info?.spam_info?.classification_timestamp_usec != null && ctx.google_workspace?.gmail.message_info.spam_info.classification_timestamp_usec != ''
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - script:
+      description: Convert seconds to milliseconds.
+      if: ctx?.google_workspace?.gmail?.message_info?.structured_policy_log_info?.exchange_journal_info?.timestamp != null
+      tag: convert_message_info_structured_policy_log_info_exchange_journal_info_timestamp_to_milliseconds
+      lang: painless
+      source: >
+        ctx.google_workspace.gmail.message_info.structured_policy_log_info.exchange_journal_info.timestamp *= 1000;
+      on_failure:
+          - append:
+              field: error.message
+              value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - date:
+      field: google_workspace.gmail.message_info.structured_policy_log_info.exchange_journal_info.timestamp
+      tag: date_message_info_structured_policy_log_info_exchange_journal_info_timestamp
+      target_field: google_workspace.gmail.message_info.structured_policy_log_info.exchange_journal_info.timestamp
+      formats:
+        - UNIX_MS
+      if: ctx.google_workspace?.gmail?.message_info?.structured_policy_log_info?.exchange_journal_info?.timestamp != null && ctx.google_workspace.gmail.message_info.structured_policy_log_info.exchange_journal_info.timestamp != ''
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - convert:
+      field: google_workspace.gmail.resource_details.applied_labels.field_values.selection_value.badged
+      tag: convert_resource_details_applied_labels_field_values_selection_value_badged_to_boolean
+      target_field: google_workspace.gmail.resource_details.applied_labels.field_values.selection_value.badged
+      type: boolean
+      ignore_missing: true
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - set:
+      field: email.subject
+      tag: set_email_subject_from_message_info_subject
+      copy_from: google_workspace.gmail.message_info.subject
+      ignore_empty_value: true
+  - script:
+      description: Set email content type based on S/MIME type of a message.
+      if: ctx.google_workspace?.gmail?.message_info?.smime_content_type != null
+      tag: set_email_content_type_based_on_smime_type_of_message
+      lang: painless
+      params:
+        '1': 'multipart/signed'
+        '2': 'application/pkcs7-mime'
+        '3': 'application/pkcs7-mime'
+        '4': 'application/pkcs7-mime'
+      source: |-
+        ctx.email = ctx.email ?: [:];
+        ctx.email.content_type = params.get(ctx.google_workspace.gmail.message_info.smime_content_type);
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - append:
+      field: related.user
+      tag: append_event_info_client_context_session_context_delegate_user_email_into_related_user
+      value: '{{{google_workspace.gmail.event_info.client_context.session_context.delegate_user_email}}}'
+      allow_duplicates: false
+      if: ctx.google_workspace?.gmail?.event_info?.client_context?.session_context?.delegate_user_email != null
+  - foreach:
+      field: email.to.address
+      if: ctx.email?.to?.address instanceof List
+      processor:
+        append:
+          field: related.user
+          tag: append_email_to_address_into_related_user
+          value: '{{{_ingest._value}}}'
+          allow_duplicates: false
+  - append:
+      field: related.user
+      tag: append_email_from_address_into_related_user
+      value: '{{{email.from.address}}}'
+      allow_duplicates: false
+      if: ctx.source?.user?.email != null
+  - foreach:
+      field: google_workspace.gmail.message_info.triggered_rule_info
+      if: ctx.google_workspace?.gmail?.message_info?.triggered_rule_info instanceof List
+      processor:
+        append:
+          field: related.user
+          tag: append_triggered_rule_info_policy_holder_address_into_related_user
+          value: '{{{_ingest._value.policy_holder_address}}}'
+          allow_duplicates: false
+  - foreach:
+      field: google_workspace.gmail.message_info.connection_info.authenticated_domain
+      if: ctx.google_workspace?.gmail?.message_info?.connection_info?.authenticated_domain instanceof List
+      processor:
+        append:
+          field: related.hosts
+          tag: append_authenticated_domain_name_into_related_hosts
+          value: '{{{_ingest._value.name}}}'
+          allow_duplicates: false
+  - append:
+      field: related.hosts
+      tag: append_message_info_connection_info_dmarc_published_domain_into_related_hosts
+      value: '{{{google_workspace.gmail.message_info.connection_info.dmarc_published_domain}}}'
+      allow_duplicates: false
+      if: ctx.google_workspace?.gmail?.message_info?.connection_info?.dmarc_published_domain != null
+  - append:
+      field: related.hosts
+      tag: append_message_info_connection_info_smtp_out_remote_host_into_related_hosts
+      value: '{{{google_workspace.gmail.message_info.connection_info.smtp_out_remote_host}}}'
+      allow_duplicates: false
+      if: ctx.google_workspace?.gmail?.message_info?.connection_info?.smtp_out_remote_host != null
+  - append:
+      field: related.ip
+      tag: append_message_info_connection_info_client_ip_into_related_ip
+      value: '{{{google_workspace.gmail.message_info.connection_info.client_ip}}}'
+      allow_duplicates: false
+      if: ctx.google_workspace?.gmail?.message_info?.connection_info?.client_ip != null
+  - foreach:
+      field: google_workspace.gmail.message_info.connection_info.failed_smtp_out_connect_ip
+      if: ctx.google_workspace?.gmail?.message_info?.connection_info?.failed_smtp_out_connect_ip instanceof List
+      processor: 
+        append:
+          field: related.ip
+          tag: append_connection_info_failed_smtp_out_connect_ip_into_related_ip
+          value: '{{{_ingest._value}}}'
+          allow_duplicates: false
+  - append:
+      field: related.ip
+      tag: append_message_info_connection_info_smtp_in_connect_ip_into_related_ip
+      value: '{{{google_workspace.gmail.message_info.connection_info.smtp_in_connect_ip}}}'
+      allow_duplicates: false
+      if: ctx.google_workspace?.gmail?.message_info?.connection_info?.smtp_in_connect_ip != null
+  - append:
+      field: related.ip
+      tag: append_message_info_connection_info_smtp_out_connect_ip_into_related_ip
+      value: '{{{google_workspace.gmail.message_info.connection_info.smtp_out_connect_ip}}}'
+      allow_duplicates: false
+      if: ctx.google_workspace?.gmail?.message_info?.connection_info?.smtp_out_connect_ip != null
+  - append:
+      field: related.ip
+      tag: append_message_info_connection_info_smtp_user_agent_ip_into_related_ip
+      value: '{{{google_workspace.gmail.message_info.connection_info.smtp_user_agent_ip}}}'
+      allow_duplicates: false
+      if: ctx.google_workspace?.gmail?.message_info?.connection_info?.smtp_user_agent_ip != null
+  - append:
+      field: related.hash
+      tag: append_message_info_post_delivery_info_interaction_attachment_sha256_into_related_hash
+      value: '{{{google_workspace.gmail.message_info.post_delivery_info.interaction.attachment.sha256}}}'
+      allow_duplicates: false
+      if: ctx.google_workspace?.gmail?.message_info?.post_delivery_info?.interaction?.attachment?.sha256 != null
+  - remove:
+      field:
+        - google_workspace.gmail.event_info.client_context.session_context.delegate_user_email
+        - google_workspace.gmail.event_info.client_context.session_context.dusi
+        - google_workspace.gmail.event_info.elapsed_time_usec
+        - google_workspace.gmail.message_info.subject
+        - google_workspace.gmail.event_info.success
+        - google_workspace.gmail.event_info.timestamp_usec
+        - google_workspace.gmail.message_info.attachment.file_extension_type
+        - google_workspace.gmail.message_info.attachment.file_name
+        - google_workspace.gmail.message_info.attachment.sha256
+        - google_workspace.gmail.message_info.connection_info.client_ip
+        - google_workspace.gmail.message_info.connection_info.ip_geo_city
+        - google_workspace.gmail.message_info.connection_info.ip_geo_country
+        - google_workspace.gmail.message_info.connection_info.smtp_tls_cipher
+        - google_workspace.gmail.message_info.connection_info.smtp_tls_version
+        # - google_workspace.gmail.message_info.destination.address
+        - google_workspace.gmail.message_info.smtp_relay_error
+        - google_workspace.gmail.message_info.source.address
+      tag: remove_custom_duplicate_fields
+      ignore_missing: true
+      if: ctx.tags == null || !ctx.tags.contains('preserve_duplicate_custom_fields')
+  - remove:
+      tag: remove_json_remove_temp
+      field:
+        - json
+        - _temp_
+      ignore_missing: true
+  # Cleanup
+  - script:
+      description: This script processor iterates over the whole document to remove fields with null values.
+      tag: script_to_drop_null_values
+      lang: painless
+      source: |
+        void handleMap(Map map) {
+          map.values().removeIf(v -> {
+            if (v instanceof Map) {
+                handleMap(v);
+            } else if (v instanceof List) {
+                handleList(v);
+            }
+            return v == null || v == '' || (v instanceof Map && v.size() == 0) || (v instanceof List && v.size() == 0)
+          });
+        }
+        void handleList(List list) {
+          list.removeIf(v -> {
+            if (v instanceof Map) {
+                handleMap(v);
+            } else if (v instanceof List) {
+                handleList(v);
+            }
+            return v == null || v == '' || (v instanceof Map && v.size() == 0) || (v instanceof List && v.size() == 0)
+          });
+        }
+        handleMap(ctx);
+  - set:
+      field: event.kind
+      tag: set_pipeline_error_into_event_kind
+      value: pipeline_error
+      if: ctx.error?.message != null
+  - append:
+      field: tags
+      value: preserve_original_event
+      allow_duplicates: false
+      if: ctx.error?.message != null
+on_failure:
+  - append:
+      field: error.message
+      value: >-
+        Processor '{{{ _ingest.on_failure_processor_type }}}'
+        {{{#_ingest.on_failure_processor_tag}}}with tag '{{{ _ingest.on_failure_processor_tag }}}'
+        {{{/_ingest.on_failure_processor_tag}}}failed with message '{{{ _ingest.on_failure_message }}}'
+  - append:
+      field: tags
+      value: preserve_original_event
+      allow_duplicates: false
+  - set:
+      field: event.kind
+      tag: set_pipeline_error_to_event_kind
+      value: pipeline_error
