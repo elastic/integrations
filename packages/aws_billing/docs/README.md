@@ -107,9 +107,7 @@ An example event for `cur` looks as following:
                 "payer_account_name": "tech-innovators",
                 "type": "Bill"
             },
-            "cost": {
-                "category": "{\"cloud_discount\":\"10%\"}"
-            },
+            "cost_category": "{\"cloud_discount\":\"10%\"}",
             "discount": {
                 "total_discount": 0.0
             },
