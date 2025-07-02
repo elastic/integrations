@@ -16,7 +16,7 @@ The Claroty xDome integration collects three types of logs.
 - **Events** - Collects events related to Operational Technology activities.
 - **Vulnerabilities** - Retrieves vulnerabilities and their affected devices from Claroty xDome.
 
-**NOTES:**
+**NOTE:**
 
 1. The **alert data stream** combines data from the alerts and affected devices endpoints using a chain call. It first retrieves all alerts and then fetches affected devices for each alert ID.
 
@@ -26,7 +26,7 @@ The Claroty xDome integration collects three types of logs.
 
 ## Requirements
 
-### Agentless enabled integration
+### Agentless-enabled integration
 
 Agentless integrations allow you to collect data without having to manage Elastic Agent in your cloud. They make manual agent deployment unnecessary, so you can focus on your data instead of the agent that collects it. For more information, refer to [Agentless integrations](https://www.elastic.co/guide/en/serverless/current/security-agentless-integrations.html) and the [Agentless integrations FAQ](https://www.elastic.co/guide/en/serverless/current/agentless-integration-troubleshooting.html).
 
